@@ -4108,8 +4108,8 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             this._$el = $el;
         }
         PropertyBag.prototype._isHasProp = function (prop) {
-            var res = checks.isHasProp(this, prop);
-            if (!res && this._$el.length > 0) {
+            var res = false;
+            if (this._$el.length > 0) {
                 var el = this._$el.get(0);
                 res = checks.isHasProp(el, prop);
             }

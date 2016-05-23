@@ -75,8 +75,8 @@ export class PropertyBag extends BaseObject implements IPropertyBag {
     }
     //override
     _isHasProp(prop: string) {
-        let res = checks.isHasProp(this, prop);
-        if (!res && this._$el.length > 0) {
+        let res = false;
+        if (this._$el.length > 0) {
             let el = this._$el.get(0);
             res = checks.isHasProp(el, prop);
         }
