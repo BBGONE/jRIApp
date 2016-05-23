@@ -1,0 +1,147 @@
+﻿<div style="width: 100%; margin:0px;" data-bind="{this.dataContext,mode=OneWay}" data-view="name=dataform">
+    <table style="width: 95%">
+        <thead>
+            <tr>
+                <th>
+                    Название
+                </th>
+                <th>
+                    Значение
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    ID:
+                </td>
+                <td>
+                    <span data-content="fieldName:ProductID"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Name:
+                </td>
+                <td>
+                    <span data-content="fieldName:Name,css:{displayCss:'name-display',editCss:'name-edit'},name:multyline,options:{rows:3,cols:20,wrap:hard}">
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    ProductNumber:
+                </td>
+                <td>
+                    <span data-content="fieldName:ProductNumber"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Color:
+                </td>
+                <td>
+                    <span data-content="fieldName:Color"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Cost:
+                </td>
+                <td>
+                    <span data-content="fieldName:StandardCost"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Price:
+                </td>
+                <td>
+                    <span data-content="fieldName:ListPrice"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Size:
+                </td>
+                <td>
+                    <span data-content="fieldName:Size"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Weight:
+                </td>
+                <td>
+                    <span data-content="fieldName:Weight"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Category:
+                </td>
+                <td>
+                    <span data-content="fieldName=ProductCategoryID,name:lookup,options:{dataSource=dbContext.dbSets.ProductCategory,valuePath=ProductCategoryID,textPath=Name},css:{editCss:'listbox-edit'}">
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Model:
+                </td>
+                <td>
+                    <span data-content="fieldName=ProductModelID,name:lookup,options:{dataSource=dbContext.dbSets.ProductModel,valuePath=ProductModelID,textPath=Name},css:{editCss:'listbox-edit'}">
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    SellStartDate:
+                </td>
+                <td>
+                    <span data-content="fieldName:SellStartDate,name:datepicker"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    SellEndDate:
+                </td>
+                <td>
+                    <span data-content="fieldName:SellEndDate,name:datepicker"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    DiscontinuedDate:
+                </td>
+                <td>
+                    <span data-content="fieldName:DiscontinuedDate,name:datepicker,readOnly:true"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    rowguid:
+                </td>
+                <td>
+                    <span data-content="fieldName:rowguid"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    When Modified:
+                </td>
+                <td>
+                    <span data-content="fieldName=ModifiedDate"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    IsActive:
+                </td>
+                <td>
+                    <span data-content="fieldName=IsActive"></span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

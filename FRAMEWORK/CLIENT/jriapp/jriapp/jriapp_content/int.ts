@@ -1,0 +1,60 @@
+﻿import { IContentOptions, ITemplateInfo, IBindingInfo }  from "../jriapp_core/shared";
+import { Utils as utils } from "../jriapp_utils/utils";
+import { parser } from "../jriapp_core/parser";
+
+const coreUtils = utils.core;
+
+export const css = {
+    content: "ria-content-field",
+    required: "ria-required-field"
+};
+
+//the result of parsing of the data-content attribute
+export interface IDataContentAttr {
+    fieldName?: string;
+    readOnly?: boolean;
+    css?: { displayCss: string; editCss: string; };
+    template?: ITemplateInfo;
+    name?: string;
+    options?: any;
+}
+
+export function parseContentAttr(content_attr: string): IContentOptions {
+    let contentOptions: IContentOptions = {
+        name: null,
+        templateInfo: null,
+        bindingInfo: null,
+        displayInfo: null,
+        fieldName: null,
+        options: null
+    };
+
+    let attr: IDataContentAttr, temp_opts = parser.parseOptions(content_attr);
+
+    if (temp_opts.length === 0)
+        return contentOptions;
+    attr = temp_opts[0];
+    if (!attr.template && !!attr.fieldName) {
+        let bindInfo: IBindingInfo = {
+            target: null, source: null,
+            targetPath: null, sourcePath: attr.fieldName,
+            mode: "OneWay",
+            converter: null, converterParam: null
+        };
+
+        contentOptions.bindingInfo = bindInfo;
+        contentOptions.displayInfo = attr.css;
+        contentOptions.fieldName = attr.fieldName;
+        if (!!attr.name)
+            contentOptions.name = attr.name;
+        if (!!attr.options)
+            contentOptions.options = attr.options;
+        if (attr.readOnly !== undefined)
+            contentOptions.readOnly = coreUtils.parseBool(attr.readOnly);
+    }
+    else if (!!attr.template) {
+        contentOptions.templateInfo = attr.template;
+        delete attr.template;
+    }
+    return contentOptions;
+}

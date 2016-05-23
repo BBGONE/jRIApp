@@ -1,0 +1,234 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ERR_ASSOC_EMPTY_NAME" xml:space="preserve">
+    <value>Association has empty name</value>
+  </data>
+  <data name="ERR_ASSOC_INVALID_CHILD" xml:space="preserve">
+    <value>Association: {0} contains invalid childDbSetName: {1}</value>
+  </data>
+  <data name="ERR_ASSOC_INVALID_CHILD_FIELD" xml:space="preserve">
+    <value>Association: {0} contains invalid child field name: {1}</value>
+  </data>
+  <data name="ERR_ASSOC_INVALID_NAV_FIELD" xml:space="preserve">
+    <value>Association: {0} has childToParentName: {1} which already exists in child DbSet's fields</value>
+  </data>
+  <data name="ERR_ASSOC_INVALID_PARENT" xml:space="preserve">
+    <value>Association: {0} contains invalid parentDbSetName: {1}</value>
+  </data>
+  <data name="ERR_ASSOC_INVALID_PARENT_FIELD" xml:space="preserve">
+    <value>Association: {0} contains invalid parent field name: {1}</value>
+  </data>
+  <data name="ERR_CAN_NOT_SET_PARENT_FIELD" xml:space="preserve">
+    <value>Field {0} does not exist on entity type {1}</value>
+  </data>
+  <data name="ERR_CHUNK_NOT_FOUND" xml:space="preserve">
+    <value>Query result's chunk is not found in cache</value>
+  </data>
+  <data name="ERR_CODEGEN_DISABLED" xml:space="preserve">
+    <value>Method {0} is disabled on the {1}</value>
+  </data>
+  <data name="ERR_DBSET_HAS_NO_PK" xml:space="preserve">
+    <value>DbSet {0} has no primary key fields</value>
+  </data>
+  <data name="ERR_DB_DELETE_NOT_IMPLEMENTED" xml:space="preserve">
+    <value>Entity: {0} delete data method is not implemented by {1}</value>
+  </data>
+  <data name="ERR_DB_ENTITYTYPE_INVALID" xml:space="preserve">
+    <value>DbSetInfo {0} has empty EntityType property</value>
+  </data>
+  <data name="ERR_DB_INSERT_NOT_IMPLEMENTED" xml:space="preserve">
+    <value>Entity: {0} insert data method is not implemented by {1}</value>
+  </data>
+  <data name="ERR_DB_UPDATE_NOT_IMPLEMENTED" xml:space="preserve">
+    <value>Entity: {0} update data method is not implemented by {2}</value>
+  </data>
+  <data name="ERR_FIELD_IS_AUTO_GENERATED" xml:space="preserve">
+    <value>Field {0} is autogenerated, and does not allow editing</value>
+  </data>
+  <data name="ERR_FIELD_IS_NOT_NULLABLE" xml:space="preserve">
+    <value>Field  '{0}'  is not nullable</value>
+  </data>
+  <data name="ERR_INCL_NAVIG_INVALID" xml:space="preserve">
+    <value>Navigation path {0} for included result is invalid</value>
+  </data>
+  <data name="ERR_METH_APPLY_INVALID" xml:space="preserve">
+    <value>the Method  was invoked outside the scope of it's application</value>
+  </data>
+  <data name="ERR_METH_NAME_INVALID" xml:space="preserve">
+    <value>Method with name {0} is not found among service methods</value>
+  </data>
+  <data name="ERR_MULTYPAGE_REQUEST" xml:space="preserve">
+    <value>Can not return included child entities for multypage requests</value>
+  </data>
+  <data name="ERR_NO_SERIALIZER" xml:space="preserve">
+    <value>The dataservice class expects a serializer instance</value>
+  </data>
+  <data name="ERR_PPROPERTY_ISNULL" xml:space="preserve">
+    <value>Object: {0} property {1} is NULL</value>
+  </data>
+  <data name="ERR_PROPERTY_IS_MISSING" xml:space="preserve">
+    <value>Object: {0} does not have property {1}</value>
+  </data>
+  <data name="ERR_PROPERTY_IS_READONLY" xml:space="preserve">
+    <value>Object: {0} property {1} is readonly and can not be written</value>
+  </data>
+  <data name="ERR_QUERY_NAME_INVALID" xml:space="preserve">
+    <value>Query with name {0} is not found among service query methods</value>
+  </data>
+  <data name="ERR_REC_CHANGETYPE_INVALID" xml:space="preserve">
+    <value>Entity: {0} does not support changeType: {1}</value>
+  </data>
+  <data name="ERR_REC_FIELDNAME_INVALID" xml:space="preserve">
+    <value>Entity: {0} has no  field with the name: {1} </value>
+  </data>
+  <data name="ERR_REC_HAS_BEEN_CHANGED" xml:space="preserve">
+    <value>Record has been changed by another user.</value>
+  </data>
+  <data name="ERR_REC_REFRESH_INVALID" xml:space="preserve">
+    <value>Refresh method for {0} is not implemented by the dataService {1}</value>
+  </data>
+  <data name="ERR_ROWINFO_PKVAL_INVALID" xml:space="preserve">
+    <value>RowInfo for the entity: {0} has invalid primary key: {1} value</value>
+  </data>
+  <data name="ERR_SVC_CHANGES_ARENOT_VALID" xml:space="preserve">
+    <value>Submitted items has validation errors</value>
+  </data>
+  <data name="ERR_USER_ACCESS_DENIED" xml:space="preserve">
+    <value>The access is denied. Please, ask administrator to assign user rights to your account: "{0}".</value>
+  </data>
+  <data name="ERR_VAL_DATATYPE_INVALID" xml:space="preserve">
+    <value>Invalid datatype value {0}</value>
+  </data>
+  <data name="ERR_VAL_DATEFORMAT_INVALID" xml:space="preserve">
+    <value>Value has invalid datetime value format {0}</value>
+  </data>
+  <data name="ERR_VAL_EXCEEDS_MAXLENGTH" xml:space="preserve">
+    <value>Field {0} value exceeds maximum length: {1}</value>
+  </data>
+  <data name="ERR_VAL_IS_NOT_VALID" xml:space="preserve">
+    <value>Field {0} value does not match rules for the value format</value>
+  </data>
+  <data name="ERR_VAL_ORIGINAL_INVALID" xml:space="preserve">
+    <value>Field {0} value has invalid original value</value>
+  </data>
+  <data name="ERR_VAL_RANGE_NOT_VALID" xml:space="preserve">
+    <value>Field {0} value does not falls inside the allowed range of values {1}</value>
+  </data>
+</root>

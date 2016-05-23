@@ -1,0 +1,130 @@
+﻿@model RIAppDemo.Models.SPATemplate
+
+@{
+    Layout = null;
+}
+
+<div id="customerInfo" data-role="template" style="max-width: 800px;" data-bind="{this.dataContext,to=currentItem}" data-view="name=dataform" data-require="test1,test3,css!css/test1.css">
+    <fieldset>
+        <legend><span style="color: Blue; font-weight: bold;" data-bind="{this.value,to=ComplexProp.Name}"></span></legend>
+        <nav>
+            <ul class="nav nav-pills">
+                <li>
+                    <a data-bind="{this.command,to=switchViewCommand,source=customerVM}{this.commandParam,to=uiMainView.custTemplName,source=customerVM}"><i class="icon-list"></i>&nbsp;Back to all customers</a>
+                </li>
+                <li>
+                    <a data-bind="{this.command,to=switchDetViewCommand,source=customerVM}{this.commandParam,to=uiDetailView.adrTemplName,source=customerVM}"><i class="icon-envelope"></i>&nbsp;Customer's addresses</a>
+                </li>
+            </ul>
+        </nav>
+
+        <table style="background-color: transparent; border: none; table-layout: fixed; width: 95%;">
+            <colgroup>
+                <col style="border: none; text-align: left; width: 125px;"/>
+                <col style="border: none; text-align: left; width: 100%;"/>
+            </colgroup>
+            <tbody>
+            <tr>
+                <td>ID:</td>
+                <td>
+                    <span data-content="fieldName:CustomerID,readOnly:true,css:{displayCss:'custInfo'}"></span></td>
+            </tr>
+            <tr>
+                <td>Title:</td>
+                <td>
+                    <span data-content="fieldName:Title,css:{displayCss:'custInfo'}"></span></td>
+            </tr>
+            <tr>
+                <td>FirstName:</td>
+                <td>
+                    <span data-content="fieldName:ComplexProp.FirstName,css:{displayCss:'custInfo'}"></span></td>
+            </tr>
+            <tr>
+                <td>MiddleName:</td>
+                <td>
+                    <span data-content="fieldName:ComplexProp.MiddleName,css:{displayCss:'custInfo'}"></span></td>
+            </tr>
+            <tr>
+                <td>LastName:</td>
+                <td>
+                    <span data-content="fieldName:ComplexProp.LastName,css:{displayCss:'custInfo'}"></span></td>
+            </tr>
+            <tr>
+                <td>Suffix:</td>
+                <td>
+                    <span data-content="fieldName:Suffix,css:{displayCss:'custInfo'}"></span></td>
+            </tr>
+            <tr>
+                <td>CompanyName:</td>
+                <td>
+                    <span data-content="fieldName:CompanyName,css:{displayCss:'custInfo'}"></span></td>
+            </tr>
+            <tr>
+                <td>SalesPerson:</td>
+                <td>
+                    <span data-content="template={displayID=salespersonTemplate1,editID=salespersonTemplate2},css:{displayCss:'custInfo'}"></span></td>
+            </tr>
+            <tr>
+                <td>Email:</td>
+                <td>
+                    <span data-content="fieldName=ComplexProp.ComplexProp.EmailAddress,css:{displayCss:'custInfo'}"></span></td>
+            </tr>
+            <tr>
+                <td>Phone:</td>
+                <td>
+                    <span data-content="fieldName:ComplexProp.ComplexProp.Phone,css:{displayCss:'custInfo'}"></span></td>
+            </tr>
+            </tbody>
+        </table>
+        <!--this nested dataform is only to test how the dataform nesting is working!!! it is not needed here, really.-->
+        <div style="float: right; margin-right: 60px;" data-bind="{this.dataContext}" data-view="name=dataform" data-name="test1">
+            <button class="btn btn-info btn-small" style="margin: 5px;" data-bind="{this.command,to=editCommand,source=customerVM}{this.isVisible,to=_aspect.isEditing,converter=notConverter}"><i class="icon-plus"></i>&nbsp;Edit Customer</button>
+            <button class="btn btn-info btn-small" style="margin: 5px; width: 100px;" data-bind="{this.command,to=endEditCommand,source=customerVM}{this.isVisible,to=_aspect.isEditing}">OK</button>
+            <button class="btn btn-info btn-small" style="margin: 5px; width: 100px;" data-bind="{this.command,to=cancelEditCommand,source=customerVM}{this.isVisible,to=_aspect.isEditing}">Cancel</button>
+        </div>
+    </fieldset>
+</div>
+
+<div id="salespersonTemplate1" data-role="template">
+    <span data-bind="{this.value,to=SalesPerson}"></span>
+</div>
+
+<div id="salespersonTemplate2" data-role="template">
+    <input type="text" style="margin-left: 0px; width: 200px;" data-bind="{this.value,to=SalesPerson,mode=TwoWay}{this.dataContext}"
+           data-view="name=autocomplete,options={dbContext:dbContext,fieldName:SalesPerson,dbSetName:SalesInfo,queryName:ReadSalesInfo,templateId:salePerAutocompleteTemplate,width:200px,height:200px}"/>
+    &nbsp;<span style="color: Gray;">&lt;--autocomplete here</span>
+</div>
+
+@*example of autocomplete implementation*@
+<div id="salePerAutocompleteTemplate" data-role="template" style="height: 97%; margin: 0px; padding: 2px; position: relative;">
+    <div style="margin-left: 1px; position: relative; vertical-align: top;"
+         data-bind="{this.isBusy,to=isLoading}" data-view="name=busy_indicator">
+        <table style="position: relative" data-name="lookupGrid" data-bind="{this.dataSource,to=gridDataSource}"
+               data-view="options={wrapCss:autocompleteSalePTableWrap,headerCss:autocompleteTableHeader}">
+            <thead>
+            <tr>
+                <th data-column="width:100%,sortable:true,title:Name" data-content="fieldName:SalesPerson"></th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <div style="position: relative; text-align: left;">
+        <!--pager-->
+        <div style="float: left;" data-bind="{this.dataSource,to=gridDataSource}" data-view="name=pager,options={sliderSize:4,hideOnSinglePage=true}">
+        </div>
+        <div style="float: left; padding-left: 10px; padding-top: 10px;">
+            <span>Total:</span>&nbsp;<span data-bind="{this.value,to=gridDataSource.totalCount}"></span>
+        </div>
+    </div>
+    <br style="clear: both;position:relative;" />
+    <div style="margin-top:5px; margin-bottom: 5px; text-align: center; position:relative;">
+        <a class="btn btn-info btn-small" style="width: 70px;position:relative;" data-name="btnOk" data-bind="{this.text,to=txtOk,source=TEXT}">
+            <i class="icon-ok"></i>
+        </a><span class="space"></span>
+        <a class="btn btn-info btn-small" style="width: 70px;position:relative;" data-name="btnCancel" data-bind="{this.text,to=txtCancel,source=TEXT}">
+            <i class="icon-remove"></i>
+        </a>
+    </div>
+</div>

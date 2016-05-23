@@ -1,0 +1,118 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Microsoft.TypeScript.MSBuild.1.8.9\tools\Microsoft.TypeScript.Default.props" Condition="Exists('..\packages\Microsoft.TypeScript.MSBuild.1.8.9\tools\Microsoft.TypeScript.Default.props')" />
+  <Import Project="..\packages\Microsoft.TypeScript.MSBuild.1.8.9\tools\Microsoft.TypeScript.NuGet.props" Condition="Exists('..\packages\Microsoft.TypeScript.MSBuild.1.8.9\tools\Microsoft.TypeScript.NuGet.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <ProjectGuid>{4BCCAAB0-F3B9-44FE-B237-ECE697EAA6BF}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <OutputPath>bin</OutputPath>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <UseIISExpress>true</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <TypeScriptToolsVersion>1.8</TypeScriptToolsVersion>
+    <UseGlobalApplicationHostFile />
+  </PropertyGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="demo\test1.ts" />
+    <TypeScriptCompile Include="demo\test2.ts" />
+    <TypeScriptCompile Include="demo\test3.ts" />
+    <TypeScriptCompile Include="demo\treeDemo.ts" />
+    <TypeScriptCompile Include="demo\gridDemo.ts" />
+    <TypeScriptCompile Include="demo\common.ts" />
+    <TypeScriptCompile Include="demo\header.ts" />
+    <TypeScriptCompile Include="demo\autocomplete.ts" />
+    <TypeScriptCompile Include="demo\demoDB.ts" />
+    <TypeScriptCompile Include="demo\masterDetDemo.ts" />
+    <TypeScriptCompile Include="demo\manToManDemo.ts" />
+    <TypeScriptCompile Include="demo\bindingsDemo.ts" />
+    <TypeScriptCompile Include="demo\filesDemo.ts" />
+    <TypeScriptCompile Include="demo\folderBrowserSvc.ts" />
+    <TypeScriptCompile Include="demo\collectionDemo.ts" />
+    <TypeScriptCompile Include="demo\ssevents.ts" />
+    <TypeScriptCompile Include="demo\websocket.ts" />
+    <TypeScriptCompile Include="jriapp\thirdparty\jquery.d.ts" />
+    <TypeScriptCompile Include="jriapp\thirdparty\moment.d.ts" />
+    <TypeScriptCompile Include="jriapp\thirdparty\qtip2.d.ts" />
+    <TypeScriptCompile Include="jriapp\thirdparty\require.d.ts" />
+    <TypeScriptCompile Include="jriapp\thirdparty\sse.d.ts" />
+    <TypeScriptCompile Include="nancydemo\common.ts" />
+    <TypeScriptCompile Include="nancydemo\demoMain.ts" />
+    <TypeScriptCompile Include="nancydemo\demoDB.ts" />
+    <TypeScriptCompile Include="nancydemo\gridDemo.ts" />
+    <TypeScriptCompile Include="nancydemo\header.ts" />
+    <TypeScriptCompile Include="spademo\animation.ts" />
+    <TypeScriptCompile Include="spademo\autocomplete.ts" />
+    <TypeScriptCompile Include="spademo\common.ts" />
+    <TypeScriptCompile Include="spademo\domainModel.ts" />
+    <TypeScriptCompile Include="spademo\gridElView.ts" />
+    <TypeScriptCompile Include="spademo\spaMain.ts" />
+    <TypeScriptCompile Include="spademo\spaDemoApp.ts" />
+    <TypeScriptCompile Include="spademo\spaDemoViewModels.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="jriapp\addins\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="spademo\tsconfig.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="demo\tsconfig.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="nancydemo\tsconfig.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="packages.config" />
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>jriappTS</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>5965</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:1401/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+    <TypeScriptIncludeComments>true</TypeScriptIncludeComments>
+    <TypeScriptSourceMap>False</TypeScriptSourceMap>
+    <TypeScriptModuleKind>AMD</TypeScriptModuleKind>
+    <TypeScriptNoImplicitAny>True</TypeScriptNoImplicitAny>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+    <TypeScriptIncludeComments>false</TypeScriptIncludeComments>
+    <TypeScriptSourceMap>false</TypeScriptSourceMap>
+    <TypeScriptModuleKind>AMD</TypeScriptModuleKind>
+  </PropertyGroup>
+  <Import Project="..\packages\Microsoft.TypeScript.MSBuild.1.8.9\tools\Microsoft.TypeScript.targets" Condition="Exists('..\packages\Microsoft.TypeScript.MSBuild.1.8.9\tools\Microsoft.TypeScript.targets')" />
+</Project>

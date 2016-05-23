@@ -1,0 +1,69 @@
+﻿/*
+The MIT License (MIT)
+
+Copyright(c) 2016 Maxim V.Tsapov
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+import { Utils as utils } from "../jriapp_utils/utils";
+import { ERRS } from "../jriapp_core/lang";
+
+import { IPropInfo } from "int";
+import { BaseList, IListItem, IListItemConstructor } from "list";
+
+const strUtils = utils.str, checks = utils.check;
+
+export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TItem, TObj>{
+    private _keyName: string;
+    constructor(itemType: IListItemConstructor<TItem, TObj>, keyName: string, props: IPropInfo[]) {
+        if (!keyName)
+            throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "keyName", keyName));
+        super(itemType, props);
+        this._keyName = keyName;
+        let keyFld = this.getFieldInfo(keyName);
+        if (!keyFld)
+            throw new Error(strUtils.format(ERRS.ERR_DICTKEY_IS_NOTFOUND, keyName));
+        keyFld.isPrimaryKey = 1;
+    }
+    protected _getNewKey(item: TItem) {
+        if (!item) {
+            return super._getNewKey(null);
+        }
+        let key = (<any>item)[this._keyName];
+        if (checks.isNt(key))
+            throw new Error(strUtils.format(ERRS.ERR_DICTKEY_IS_EMPTY, this.keyName));
+        return "" + key;
+    }
+    protected _onItemAdded(item: TItem) {
+        super._onItemAdded(item);
+        let key = (<any>item)[this._keyName];
+        this.raisePropertyChanged("[" + key + "]");
+    }
+    protected _onRemoved(item: TItem, pos: number) {
+        let key = (<any>item)[this._keyName];
+        super._onRemoved(item, pos);
+        this.raisePropertyChanged("[" + key + "]");
+    }
+    get keyName() {
+        return this._keyName;
+    }
+    toString() {
+        return "BaseDictionary";
+    }
+}

@@ -1,0 +1,8 @@
+﻿export class {{LIST_NAME}} extends RIAPP.BaseList<{{ITEM_TYPE_NAME}},{{INTERFACE_NAME}}> {
+	constructor() {
+		super({{ITEM_TYPE_NAME}},{{PROP_INFOS}});
+	}
+	toString() {
+		return '{{LIST_NAME}}';
+	}
+}

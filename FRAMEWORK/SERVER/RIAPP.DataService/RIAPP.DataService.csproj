@@ -1,0 +1,210 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{5FA08D23-6BAE-47AD-930B-A11EAFFF11DC}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>RIAPP.DataService</RootNamespace>
+    <AssemblyName>RIAPP.DataService</AssemblyName>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="DomainService\Attributes\RefreshAttribute.cs" />
+    <Compile Include="DomainService\Attributes\ValidateAttribute.cs" />
+    <Compile Include="DomainService\Attributes\DeleteAttribute.cs" />
+    <Compile Include="DomainService\Attributes\UpdateAttribute.cs" />
+    <Compile Include="DomainService\Attributes\InsertAttribute.cs" />
+    <Compile Include="DomainService\BaseValidator.cs" />
+    <Compile Include="DomainService\Config\ServiceConfig.cs" />
+    <Compile Include="DomainService\Config\DataManagerContainer.cs" />
+    <Compile Include="DomainService\Exceptions\DummyException.cs" />
+    <Compile Include="DomainService\Interfaces\IEntityVersionProvider.cs" />
+    <Compile Include="DomainService\Interfaces\IServicesProvider.cs" />
+    <Compile Include="DomainService\Interfaces\IServiceContainer.cs" />
+    <Compile Include="DomainService\Interfaces\IDataManager.cs" />
+    <Compile Include="DomainService\Interfaces\IValidator.cs" />
+    <Compile Include="DomainService\Interfaces\IDataManagerContainer.cs" />
+    <Compile Include="DomainService\Interfaces\IValidatorContainer.cs" />
+    <Compile Include="DomainService\RequestContext.cs" />
+    <Compile Include="DomainService\RowGenerator.cs" />
+    <Compile Include="DomainService\Security\OverrideAuthorizeAttribute.cs" />
+    <Compile Include="DomainService\ServiceContainerFactory.cs" />
+    <Compile Include="DomainService\ServiceOperationsHelper.cs" />
+    <Compile Include="DomainService\SubsetsGenerator.cs" />
+    <Compile Include="DomainService\Types\SubResult.cs" />
+    <Compile Include="DomainService\Types\FieldName.cs" />
+    <Compile Include="DomainService\Types\Subset.cs" />
+    <Compile Include="DomainService\Types\ParamMetadata.cs" />
+    <Compile Include="DomainService\ServiceArgs.cs" />
+    <Compile Include="DomainService\Interfaces\IServiceArgs.cs" />
+    <Compile Include="DomainService\Security\AuthorizeAttribute.cs" />
+    <Compile Include="DomainService\Security\AllowAnonymousAttribute.cs" />
+    <Compile Include="DomainService\Attributes\CommentAttribute.cs" />
+    <Compile Include="DomainService\Attributes\ExtendsAttribute.cs" />
+    <Compile Include="DomainService\Attributes\TypeNameAttribute.cs" />
+    <Compile Include="DomainService\Attributes\ListAttribute.cs" />
+    <Compile Include="DomainService\Attributes\DictionaryAttribute.cs" />
+    <Compile Include="DomainService\Exceptions\UnsupportedTypeException.cs" />
+    <Compile Include="DomainService\Types\Permissions.cs" />
+    <Compile Include="DomainService\Security\Authorizer.cs" />
+    <Compile Include="DomainService\BaseDomainService.cs" />
+    <Compile Include="DomainService\Attributes\QueryAttribute.cs" />
+    <Compile Include="DomainService\Attributes\DateOptionAttribute.cs" />
+    <Compile Include="DomainService\Attributes\InvokeAttribute.cs" />
+    <Compile Include="DomainService\ChangesetGraph.cs" />
+    <Compile Include="DomainService\Interfaces\IAuthorizer.cs" />
+    <Compile Include="DomainService\Types\TrackAssoc.cs" />
+    <Compile Include="DomainService\Security\SecurityHelper.cs" />
+    <Compile Include="DomainService\ServiceContainer.cs" />
+    <Compile Include="DomainService\Types\TypedLists.cs" />
+    <Compile Include="DomainService\Config\ValidatorContainer.cs" />
+    <Compile Include="DomainService\BaseDataManager.cs" />
+    <Compile Include="Utils\CallContext.cs" />
+    <Compile Include="Utils\Extensions\StringEx.cs" />
+    <Compile Include="Utils\Interfaces\IMultiMap.cs" />
+    <Compile Include="Utils\MetadataCache.cs" />
+    <Compile Include="Utils\Extensions\FieldEx.cs" />
+    <Compile Include="Utils\Extensions\MethodInfoEx.cs" />
+    <Compile Include="Utils\MetadataHelper.cs" />
+    <Compile Include="Utils\CodeGen\ComplexTypeBuilder.cs" />
+    <Compile Include="Utils\CodeGen\DotNet2TS.cs" />
+    <Compile Include="Utils\Interfaces\IDataHelper.cs" />
+    <Compile Include="Utils\Interfaces\ISerializer.cs" />
+    <Compile Include="Utils\Interfaces\IValidationHelper.cs" />
+    <Compile Include="Utils\Interfaces\IValueConverter.cs" />
+    <Compile Include="Utils\Extensions\RowInfoEx.cs" />
+    <Compile Include="Utils\Extensions\DbSetInfoEx.cs" />
+    <Compile Include="Utils\MethodInfoData.cs" />
+    <Compile Include="Utils\OperationalMethods.cs" />
+    <Compile Include="Utils\MethodMap.cs" />
+    <Compile Include="Utils\MultiMap.cs" />
+    <Compile Include="Utils\ResourceHelper.cs" />
+    <Compile Include="Utils\CachedMetadata.cs" />
+    <Compile Include="DomainService\Exceptions\ValidationException.cs" />
+    <Compile Include="DomainService\Types\Association.cs" />
+    <Compile Include="DomainService\Types\ErrorInfo.cs" />
+    <Compile Include="DomainService\Types\Metadata.cs" />
+    <Compile Include="Utils\TemplateParser.cs" />
+    <Compile Include="Utils\CodeGen\TypeScriptHelper.cs" />
+    <Compile Include="Utils\ValueConverter.cs" />
+    <Compile Include="Utils\ValidationHelper.cs" />
+    <Compile Include="Utils\Extensions\QueryHelperEx.cs" />
+    <Compile Include="DomainService\Types\ValidationErrorInfo.cs" />
+    <Compile Include="DomainService\Types\Value.cs" />
+    <Compile Include="DomainService\Types\Row.cs" />
+    <Compile Include="DomainService\Types\QueryResult.cs" />
+    <Compile Include="DomainService\Types\InvokeResponse.cs" />
+    <Compile Include="DomainService\Types\InvokeRequest.cs" />
+    <Compile Include="DomainService\Types\MethodDescription.cs" />
+    <Compile Include="DomainService\Types\MethodParameters.cs" />
+    <Compile Include="DomainService\Types\DbSetPermit.cs" />
+    <Compile Include="DomainService\Exceptions\ConcurrencyException.cs" />
+    <Compile Include="DomainService\Exceptions\AccessDeniedException.cs" />
+    <Compile Include="DomainService\Exceptions\DomainServiceException.cs" />
+    <Compile Include="DomainService\Interfaces\IDomainService.cs" />
+    <Compile Include="DomainService\Types\MetadataResult.cs" />
+    <Compile Include="DomainService\Types\DbSetInfo.cs" />
+    <Compile Include="DomainService\ServiceOperationType.cs" />
+    <Compile Include="DomainService\EntityChangeState.cs" />
+    <Compile Include="DomainService\Types\RefreshInfo.cs" />
+    <Compile Include="Utils\DiffGram.cs" />
+    <Compile Include="Utils\DynamicQuery.cs" />
+    <Compile Include="Resources\ErrorStrings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ErrorStrings.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Utils\DataHelper.cs" />
+    <Compile Include="DomainService\Types\Enums.cs" />
+    <Compile Include="DomainService\Types\Field.cs" />
+    <Compile Include="DomainService\Types\ValueChange.cs" />
+    <Compile Include="DomainService\Types\FilterInfo.cs" />
+    <Compile Include="DomainService\Types\QueryRequest.cs" />
+    <Compile Include="DomainService\Types\QueryResponse.cs" />
+    <Compile Include="DomainService\Types\RowInfo.cs" />
+    <Compile Include="DomainService\Types\SortInfo.cs" />
+    <Compile Include="DomainService\Types\ChangeSet.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils\STAThreadSync\BlockingQueue.cs" />
+    <Compile Include="Utils\STAThreadSync\SendOrPostCallbackItem.cs" />
+    <Compile Include="Utils\STAThreadSync\StaSynchronizationContext.cs" />
+    <Compile Include="Utils\STAThreadSync\StaThread.cs" />
+    <Compile Include="Utils\STAThreadSync\SyncronizationQueue.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\ErrorStrings.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ErrorStrings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\DbSet.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Entity.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\DbContext.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Dictionary.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\List.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\RootComplexProperty.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\ChildComplexProperty.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\ListItem.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Header.txt" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

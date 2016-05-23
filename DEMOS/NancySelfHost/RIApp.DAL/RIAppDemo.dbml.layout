@@ -1,0 +1,150 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ordesignerObjectsDiagram dslVersion="1.0.0.0" absoluteBounds="0, 0, 11, 10.875" name="RIAppDemo">
+  <DataContextMoniker Name="/RIAppDemoDataContext" />
+  <nestedChildShapes>
+    <classShape Id="1c4fb5ea-c842-4513-a144-0ab6e4295581" absoluteBounds="3.5, 0.5, 2, 2.5401025390625">
+      <DataClassMoniker Name="/RIAppDemoDataContext/Address" />
+      <nestedChildShapes>
+        <elementListCompartment Id="da7e6bc4-a795-4616-b861-74995651df9a" absoluteBounds="3.515, 0.96, 1.9700000000000002, 1.9801025390625" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="e51979b0-63ac-4763-abc7-2d3f39c8ac73" absoluteBounds="0.5, 0.5, 2, 3.6939111328124996">
+      <DataClassMoniker Name="/RIAppDemoDataContext/Customer" />
+      <nestedChildShapes>
+        <elementListCompartment Id="c080b426-65fe-4f3c-ab11-5f62c47d902f" absoluteBounds="0.515, 0.96, 1.9700000000000002, 3.1339111328125" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="269e78be-3f73-432a-9945-216a09a4f15b" absoluteBounds="0.5, 4.5, 2, 1.7708968098958327">
+      <DataClassMoniker Name="/RIAppDemoDataContext/CustomerAddress" />
+      <nestedChildShapes>
+        <elementListCompartment Id="3a880734-01ec-41bd-8640-1439228f1be4" absoluteBounds="0.51500000000000012, 4.96, 1.9700000000000002, 1.2108968098958333" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="f96a5fdb-0ad4-4566-a455-53c967a38a91" absoluteBounds="3.375, 3.75, 2, 4.0785139973958326">
+      <DataClassMoniker Name="/RIAppDemoDataContext/Product" />
+      <nestedChildShapes>
+        <elementListCompartment Id="c4284197-6649-4afb-9ba0-bf2a6384605d" absoluteBounds="3.3899999999999997, 4.2100000000000009, 1.9700000000000002, 3.518513997395833" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="7e7653d6-0991-4461-9f14-2e449633ee37" absoluteBounds="0.5, 6.5, 2, 1.7708968098958327">
+      <DataClassMoniker Name="/RIAppDemoDataContext/ProductCategory" />
+      <nestedChildShapes>
+        <elementListCompartment Id="de7e5d09-f17e-4214-84bb-23ffc625430b" absoluteBounds="0.51500000000000012, 6.9600000000000009, 1.9700000000000002, 1.2108968098958333" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="715d93b5-b31a-43d1-bc0a-bec20711d8b5" absoluteBounds="6.5, 9, 2, 1.5785953776041666">
+      <DataClassMoniker Name="/RIAppDemoDataContext/ProductDescription" />
+      <nestedChildShapes>
+        <elementListCompartment Id="bed712b6-8158-4d52-acc7-1df4aeb3f279" absoluteBounds="6.5150000000000006, 9.46, 1.9700000000000002, 1.0185953776041665" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="61a0b2ba-b819-400d-9c88-030da977a426" absoluteBounds="0.5, 8.5, 2, 1.7708968098958344">
+      <DataClassMoniker Name="/RIAppDemoDataContext/ProductModel" />
+      <nestedChildShapes>
+        <elementListCompartment Id="27c6e88f-cdf4-49e9-a996-0544efef8495" absoluteBounds="0.51500000000000012, 8.96, 1.9700000000000002, 1.2108968098958333" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="80237d48-18b2-41af-ac5a-577b14720c90" absoluteBounds="3.375, 8.5, 2, 1.7708968098958344">
+      <DataClassMoniker Name="/RIAppDemoDataContext/ProductModelProductDescription" />
+      <nestedChildShapes>
+        <elementListCompartment Id="2dcf5a34-f9ee-403a-ae4c-d3f36523d8c9" absoluteBounds="3.3899999999999997, 8.96, 1.9700000000000002, 1.2108968098958333" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="1de3a0b3-e60a-4b07-b123-b9f852a7469e" absoluteBounds="8.5, 5.75, 2, 2.5401025390624996">
+      <DataClassMoniker Name="/RIAppDemoDataContext/SalesOrderDetail" />
+      <nestedChildShapes>
+        <elementListCompartment Id="771b7799-10d3-4eb2-bb17-1fc60944378c" absoluteBounds="8.515, 6.21, 1.9700000000000002, 1.9801025390625" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="888458d2-1983-41f0-86d1-c569250c9454" absoluteBounds="6.75, 0.5, 2, 5.0400211588541657">
+      <DataClassMoniker Name="/RIAppDemoDataContext/SalesOrderHeader" />
+      <nestedChildShapes>
+        <elementListCompartment Id="b486a56f-4d7a-4738-94fe-bc1b7e6b4087" absoluteBounds="6.765, 0.96, 1.9700000000000002, 4.4800211588541661" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <associationConnector edgePoints="[(3.5 : 3.0401025390625); (3.125 : 3.4151025390625); (2.875 : 3.4151025390625); (2.875 : 4.125); (2.5 : 4.5)]" fixedFrom="NotFixed" fixedTo="NotFixed">
+      <AssociationMoniker Name="/RIAppDemoDataContext/Address/Address_CustomerAddress" />
+      <nodes>
+        <classShapeMoniker Id="1c4fb5ea-c842-4513-a144-0ab6e4295581" />
+        <classShapeMoniker Id="269e78be-3f73-432a-9945-216a09a4f15b" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(1.5 : 4.1939111328125); (1.5 : 4.5)]" fixedFrom="NotFixed" fixedTo="NotFixed">
+      <AssociationMoniker Name="/RIAppDemoDataContext/Customer/Customer_CustomerAddress" />
+      <nodes>
+        <classShapeMoniker Id="e51979b0-63ac-4763-abc7-2d3f39c8ac73" />
+        <classShapeMoniker Id="269e78be-3f73-432a-9945-216a09a4f15b" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(2.5 : 7.16425699869792); (2.79166666666667 : 7.16425699869792 : JumpStart); (2.95833333333333 : 7.16425699869792 : JumpEnd); (3.375 : 7.16425699869792)]" fixedFrom="NotFixed" fixedTo="NotFixed">
+      <AssociationMoniker Name="/RIAppDemoDataContext/ProductCategory/ProductCategory_Product" />
+      <nodes>
+        <classShapeMoniker Id="7e7653d6-0991-4461-9f14-2e449633ee37" />
+        <classShapeMoniker Id="f96a5fdb-0ad4-4566-a455-53c967a38a91" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(1.20552987154447 : 8.27089680989583); (1.20552987154447 : 8.52089680989583); (1.80849251552484 : 8.52089680989583); (1.80849251552484 : 8.27089680989583)]" fixedFrom="NotFixed" fixedTo="NotFixed">
+      <AssociationMoniker Name="/RIAppDemoDataContext/ProductCategory/ProductCategory_ProductCategory" />
+      <nodes>
+        <classShapeMoniker Id="7e7653d6-0991-4461-9f14-2e449633ee37" />
+        <classShapeMoniker Id="7e7653d6-0991-4461-9f14-2e449633ee37" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(2.5 : 8.50136122831531); (2.875 : 8.12636122831531); (2.875 : 6.24360020182292); (3.375 : 6.24360020182292)]" fixedFrom="NotFixed" fixedTo="NotFixed">
+      <AssociationMoniker Name="/RIAppDemoDataContext/ProductModel/ProductModel_Product" />
+      <nodes>
+        <classShapeMoniker Id="61a0b2ba-b819-400d-9c88-030da977a426" />
+        <classShapeMoniker Id="f96a5fdb-0ad4-4566-a455-53c967a38a91" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(6.5 : 9.63544840494792); (5.375 : 9.63544840494792)]" fixedFrom="NotFixed" fixedTo="NotFixed">
+      <AssociationMoniker Name="/RIAppDemoDataContext/ProductDescription/ProductDescription_ProductModelProductDescription" />
+      <nodes>
+        <classShapeMoniker Id="715d93b5-b31a-43d1-bc0a-bec20711d8b5" />
+        <classShapeMoniker Id="80237d48-18b2-41af-ac5a-577b14720c90" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(2.5 : 9.32585007486979); (3.375 : 9.32585007486979)]" fixedFrom="NotFixed" fixedTo="NotFixed">
+      <AssociationMoniker Name="/RIAppDemoDataContext/ProductModel/ProductModel_ProductModelProductDescription" />
+      <nodes>
+        <classShapeMoniker Id="61a0b2ba-b819-400d-9c88-030da977a426" />
+        <classShapeMoniker Id="80237d48-18b2-41af-ac5a-577b14720c90" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(5.375 : 6.78925699869792); (8.5 : 6.78925699869792)]" fixedFrom="NotFixed" fixedTo="NotFixed">
+      <AssociationMoniker Name="/RIAppDemoDataContext/Product/Product_SalesOrderDetail" />
+      <nodes>
+        <classShapeMoniker Id="f96a5fdb-0ad4-4566-a455-53c967a38a91" />
+        <classShapeMoniker Id="1de3a0b3-e60a-4b07-b123-b9f852a7469e" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(7.593748 : 5.54002115885417); (7.593748 : 7.57093176888021); (8.5 : 7.57093176888021)]" fixedFrom="NotFixed" fixedTo="NotFixed">
+      <AssociationMoniker Name="/RIAppDemoDataContext/SalesOrderHeader/SalesOrderHeader_SalesOrderDetail" />
+      <nodes>
+        <classShapeMoniker Id="888458d2-1983-41f0-86d1-c569250c9454" />
+        <classShapeMoniker Id="1de3a0b3-e60a-4b07-b123-b9f852a7469e" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(5.5 : 1.77005126953125); (6.75 : 1.77005126953125)]" fixedFrom="NotFixed" fixedTo="NotFixed">
+      <AssociationMoniker Name="/RIAppDemoDataContext/Address/Address_SalesOrderHeader" />
+      <nodes>
+        <classShapeMoniker Id="1c4fb5ea-c842-4513-a144-0ab6e4295581" />
+        <classShapeMoniker Id="888458d2-1983-41f0-86d1-c569250c9454" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(5.5 : 1.07252563476563); (6.75 : 1.07252563476563)]" fixedFrom="NotFixed" fixedTo="NotFixed">
+      <AssociationMoniker Name="/RIAppDemoDataContext/Address/Address_SalesOrderHeader1" />
+      <nodes>
+        <classShapeMoniker Id="1c4fb5ea-c842-4513-a144-0ab6e4295581" />
+        <classShapeMoniker Id="888458d2-1983-41f0-86d1-c569250c9454" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(2.5 : 3.1963525390625); (6.75 : 3.1963525390625)]" fixedFrom="NotFixed" fixedTo="NotFixed">
+      <AssociationMoniker Name="/RIAppDemoDataContext/Customer/Customer_SalesOrderHeader" />
+      <nodes>
+        <classShapeMoniker Id="e51979b0-63ac-4763-abc7-2d3f39c8ac73" />
+        <classShapeMoniker Id="888458d2-1983-41f0-86d1-c569250c9454" />
+      </nodes>
+    </associationConnector>
+  </nestedChildShapes>
+</ordesignerObjectsDiagram>

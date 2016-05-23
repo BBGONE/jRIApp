@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25123.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jriappTS", "jriapp\jriappTS.csproj", "{1BF71F16-DB40-4BF1-A9BB-CF053FBD0F03}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "built", "built", "{848B12A9-322C-44DE-8EB8-33C900C25EB6}"
+	ProjectSection(SolutionItems) = preProject
+		built\jriapp.d.ts = built\jriapp.d.ts
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "addinsTS", "addins\addinsTS.csproj", "{F9AEFF61-FEDF-4254-9DE9-286A2C6C4756}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1BF71F16-DB40-4BF1-A9BB-CF053FBD0F03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1BF71F16-DB40-4BF1-A9BB-CF053FBD0F03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1BF71F16-DB40-4BF1-A9BB-CF053FBD0F03}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1BF71F16-DB40-4BF1-A9BB-CF053FBD0F03}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9AEFF61-FEDF-4254-9DE9-286A2C6C4756}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9AEFF61-FEDF-4254-9DE9-286A2C6C4756}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9AEFF61-FEDF-4254-9DE9-286A2C6C4756}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9AEFF61-FEDF-4254-9DE9-286A2C6C4756}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

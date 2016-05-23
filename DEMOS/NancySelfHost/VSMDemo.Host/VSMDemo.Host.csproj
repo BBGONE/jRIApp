@@ -1,0 +1,254 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{DD3CDDF0-0149-49C9-BB52-F05D15ED2F2C}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>VSMDemo.Host</RootNamespace>
+    <AssemblyName>VSMDemo.Host</AssemblyName>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Nancy, Version=1.4.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nancy.1.4.2\lib\net40\Nancy.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Nancy.Authentication.Forms, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nancy.Authentication.Forms.1.4.1\lib\net40\Nancy.Authentication.Forms.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Nancy.Hosting.Self, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nancy.Hosting.Self.1.4.1\lib\net40\Nancy.Hosting.Self.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Nancy.Owin, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nancy.Owin.1.4.1\lib\net40\Nancy.Owin.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Nancy.Serialization.JsonNet, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nancy.Serialization.JsonNet.1.4.1\lib\net40\Nancy.Serialization.JsonNet.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.8.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
+      <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.Linq" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Authentication\UserIdentity.cs" />
+    <Compile Include="Authentication\UserDatabase.cs" />
+    <Compile Include="CustomBootstrapper.cs" />
+    <Compile Include="Modules\ConfigModule.cs" />
+    <Compile Include="Modules\DemoSvcModule.cs" />
+    <Compile Include="Modules\DemoModule.cs" />
+    <Compile Include="Modules\MainModule.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils\ErrorHelper.cs" />
+    <Compile Include="Utils\NetSh.cs" />
+    <Compile Include="ViewModels\ConfigInfo.cs" />
+    <Compile Include="ViewModels\UploadedFile.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Content\scripts\qtip\jquery.qtip.min.map" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Content\images\Misc\note.png" />
+    <Content Include="Content\images\Misc\phone.png" />
+    <Content Include="Content\images\Themes\blue.png" />
+    <Content Include="Content\images\Themes\green.png" />
+    <Content Include="Content\images\Themes\purple.png" />
+    <Content Include="Content\images\Themes\red.png" />
+    <Content Include="Content\scripts\demo\common.js" />
+    <Content Include="Content\scripts\demo\demoDB.js" />
+    <Content Include="Content\scripts\demo\demoMain.js" />
+    <Content Include="Content\scripts\demo\gridDemo.js" />
+    <Content Include="Content\scripts\demo\header.js" />
+    <Content Include="Content\scripts\jquery\jquery-2.2.2.min.js" />
+    <Content Include="Content\scripts\jriapp\jriapp.js" />
+    <Content Include="Content\scripts\jriapp\jriapp_db.js" />
+    <Content Include="Content\scripts\jriapp\jriapp_langs.js" />
+    <Content Include="Content\scripts\jriapp\jriapp_ui.js" />
+    <Content Include="Content\scripts\jriapp\img\actions.png" />
+    <Content Include="Content\scripts\jriapp\img\cancel.png" />
+    <Content Include="Content\scripts\jriapp\img\collapse.jpg" />
+    <Content Include="Content\scripts\jriapp\img\column-asc.png" />
+    <Content Include="Content\scripts\jriapp\img\column-desc.png" />
+    <Content Include="Content\scripts\jriapp\img\column-sortable.png" />
+    <Content Include="Content\scripts\jriapp\img\delete.png" />
+    <Content Include="Content\scripts\jriapp\img\edit.png" />
+    <Content Include="Content\scripts\jriapp\img\expand.jpg" />
+    <Content Include="Content\scripts\jriapp\img\headerbg.gif" />
+    <Content Include="Content\scripts\jriapp\img\help.gif" />
+    <Content Include="Content\scripts\jriapp\img\loader.gif" />
+    <Content Include="Content\scripts\jriapp\img\loader2.gif" />
+    <Content Include="Content\scripts\jriapp\img\minus.png" />
+    <Content Include="Content\scripts\jriapp\img\ok.png" />
+    <Content Include="Content\scripts\jriapp\img\plus.png" />
+    <Content Include="Content\scripts\jriapp\img\warning.png" />
+    <Content Include="Content\scripts\jriapp\css\jriapp.css" />
+    <Content Include="Content\scripts\jriapp\css\jriapp_ui.css" />
+    <Content Include="Content\Site.css" />
+    <Content Include="Content\themes\redmond\images\animated-overlay.gif" />
+    <Content Include="Content\themes\redmond\images\ui-bg_flat_0_aaaaaa_40x100.png" />
+    <Content Include="Content\themes\redmond\images\ui-bg_flat_55_fbec88_40x100.png" />
+    <Content Include="Content\themes\redmond\images\ui-bg_glass_75_d0e5f5_1x400.png" />
+    <Content Include="Content\themes\redmond\images\ui-bg_glass_85_dfeffc_1x400.png" />
+    <Content Include="Content\themes\redmond\images\ui-bg_glass_95_fef1ec_1x400.png" />
+    <Content Include="Content\themes\redmond\images\ui-bg_gloss-wave_55_5c9ccc_500x100.png" />
+    <Content Include="Content\themes\redmond\images\ui-bg_inset-hard_100_f5f8f9_1x100.png" />
+    <Content Include="Content\themes\redmond\images\ui-bg_inset-hard_100_fcfdfd_1x100.png" />
+    <Content Include="Content\themes\redmond\images\ui-icons_217bc0_256x240.png" />
+    <Content Include="Content\themes\redmond\images\ui-icons_2e83ff_256x240.png" />
+    <Content Include="Content\themes\redmond\images\ui-icons_469bdd_256x240.png" />
+    <Content Include="Content\themes\redmond\images\ui-icons_6da8d5_256x240.png" />
+    <Content Include="Content\themes\redmond\images\ui-icons_cd0a0a_256x240.png" />
+    <Content Include="Content\themes\redmond\images\ui-icons_d8e7f3_256x240.png" />
+    <Content Include="Content\themes\redmond\images\ui-icons_f9bd01_256x240.png" />
+    <Content Include="Content\themes\redmond\jquery-ui-1.10.4.custom.css" />
+    <Content Include="Content\themes\redmond\jquery-ui-1.10.4.custom.min.css" />
+    <Content Include="Content\scripts\bootstrap\css\bootstrap-responsive.css" />
+    <Content Include="Content\scripts\bootstrap\css\bootstrap-responsive.min.css" />
+    <Content Include="Content\scripts\bootstrap\css\bootstrap.css" />
+    <Content Include="Content\scripts\bootstrap\css\bootstrap.min.css" />
+    <Content Include="Content\scripts\bootstrap\img\glyphicons-halflings-white.png" />
+    <Content Include="Content\scripts\bootstrap\img\glyphicons-halflings.png" />
+    <Content Include="Content\scripts\bootstrap\js\bootstrap.js" />
+    <Content Include="Content\scripts\bootstrap\js\bootstrap.min.js" />
+    <Content Include="Content\scripts\dynatree\GPL-LICENSE.txt" />
+    <Content Include="Content\scripts\dynatree\jquery.dynatree.js" />
+    <Content Include="Content\scripts\dynatree\jquery.dynatree.min.js" />
+    <Content Include="Content\scripts\dynatree\MIT-License.txt" />
+    <Content Include="Content\scripts\dynatree\skin-vista\icons.gif" />
+    <Content Include="Content\scripts\dynatree\skin-vista\loading.gif" />
+    <Content Include="Content\scripts\dynatree\skin-vista\ui.dynatree.css" />
+    <Content Include="Content\scripts\dynatree\skin\icons-rtl.gif" />
+    <Content Include="Content\scripts\dynatree\skin\icons.gif" />
+    <Content Include="Content\scripts\dynatree\skin\loading.gif" />
+    <Content Include="Content\scripts\dynatree\skin\ui.dynatree.css" />
+    <Content Include="Content\scripts\dynatree\skin\vline-rtl.gif" />
+    <Content Include="Content\scripts\dynatree\skin\vline.gif" />
+    <Content Include="Content\scripts\jquery\jquery-ui-1.10.4.custom.js" />
+    <Content Include="Content\scripts\jquery\jquery-ui-1.10.4.custom.min.js" />
+    <Content Include="Content\scripts\jquery\jquery.cookie.js" />
+    <Content Include="Content\scripts\moment\moment.min.js" />
+    <Content Include="Content\scripts\qtip\imagesloaded.pkg.min.js" />
+    <Content Include="Content\scripts\qtip\jquery.qtip.css" />
+    <Content Include="Content\scripts\qtip\jquery.qtip.js" />
+    <Content Include="Content\scripts\qtip\jquery.qtip.min.css" />
+    <Content Include="Content\scripts\qtip\jquery.qtip.min.js" />
+    <Content Include="Content\scripts\require.js" />
+    <Content Include="Views\demo\DataGridDemo.html" />
+    <Content Include="Views\demo\MasterDemo.html" />
+    <Content Include="Views\menu.html" />
+    <EmbeddedResource Include="Content\resource\2014-03-28-08-36-49-98966.jpg" />
+    <Content Include="Views\config\index.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Content\layout.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Content\style.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\demo\templates\DataGridDemo.html" />
+    <Content Include="Views\demo\templates\productEditTemplate.html" />
+    <Content Include="Views\demo\templates\sizeDisplayTemplate.html" />
+    <Content Include="Views\index.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\login.html" />
+    <Content Include="Views\MasterPage.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\FRAMEWORK\SERVER\RIAPP.DataService.LinqSql\RIAPP.DataService.LinqSql.csproj">
+      <Project>{8603c41c-dc36-4902-b4fe-b0315d28fb05}</Project>
+      <Name>RIAPP.DataService.LinqSql</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\FRAMEWORK\SERVER\RIAPP.DataService.Nancy\RIAPP.DataService.Nancy.csproj">
+      <Project>{d645fd04-7c68-4106-8c2d-699f8a7e301f}</Project>
+      <Name>RIAPP.DataService.Nancy</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\FRAMEWORK\SERVER\RIAPP.DataService\RIAPP.DataService.csproj">
+      <Project>{5fa08d23-6bae-47ad-930b-a11eafff11dc}</Project>
+      <Name>RIAPP.DataService</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RIApp.BLL\RIAppDemo.BLL.csproj">
+      <Project>{16c37fab-5dc5-4728-84ed-2a4d710ac985}</Project>
+      <Name>RIAppDemo.BLL</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

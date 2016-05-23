@@ -1,0 +1,153 @@
+﻿@{
+    Layout = null;
+}
+<div id="sizeEditTemplate" data-role="template">
+    <span>Size:</span>
+    <input type="text" style="margin-left: 5px; width: 150px;" data-bind="{this.value,to=Size,mode=TwoWay}"/>
+</div>
+
+<!--Grid details product template-->
+<div id="productDetailsTemplate" style="background-color: white; margin: 0px; min-height: 200px; width: 100%;" data-role="template">
+    <div data-name="tabs" style="margin: 5px; padding: 5px; width: 95%;" data-bind="{this.tabsEvents,to=tabsEvents,source=productVM}" data-view="name='tabs'">
+        <div id="myTabs">
+            <ul>
+                <li>
+                    <a href="#a">Some Info</a>
+                </li>
+                <li>
+                    <a href="#b">Photo</a>
+                </li>
+                <li>
+                    <a href="#c">Sales Order Details</a>
+                </li>
+            </ul>
+            <div id="a">
+                <span>Product Name: </span>
+                <input type="text" style="color: Green; margin: 5px; width: 220px;" data-bind="{this.value,to=Name,mode=TwoWay}"/>
+                <br/>
+                <a class="btn btn-info btn-small" data-bind="{this.command,to=testInvokeCommand,source=productVM}{this.commandParam}"
+                   data-view="options={tip='Invokes method on the server and displays result'}">
+                    Click Me to invoke service method
+                </a>
+            </div>
+            <div id="b">
+                <img style="float: left; max-height: 200px; max-width: 350px;" data-bind="{this.id,to=ProductID}{this.fileName,to=ThumbnailPhotoFileName}" alt="Product Image" src="" data-view="name=fileImage,options={baseUri:'@Url.Action("DownloadThumbnail", "File", new {httproute = "ApiByAction"})'}"/><br/>
+                <div style="float: left; margin-left: 8px;">
+                    click to download the image: <a class="btn btn-info btn-small" data-bind="{this.text,to=ThumbnailPhotoFileName}{this.id,to=ProductID}" data-view="name=fileLink,options={baseUri:'@Url.RouteUrl("Default", new {controller = "Download", action = "ThumbnailDownload"})'}">
+                    </a>
+                </div>
+                <div style="clear: both; padding: 5px 0px 5px 0px;">
+                    <!--bind commandParameter to current datacontext, that is product entity-->
+                    <a class="btn btn-info btn-small" data-name="upload" data-bind="{this.command,to=dialogCommand,source=uploadVM}{this.commandParam}"
+                       data-view="options={tip='click me to upload product thumbnail photo'}">
+                        Upload product thumbnail
+                    </a>
+                </div>
+            </div>
+            <div id="c">
+                <table style="font-size: 9pt;" data-name="tblOrderDetails" data-bind="{this.dataSource,to=vwSalesOrderDet,source=productVM}"
+                       data-view="options={wrapCss:orderDetailTableWrap,isHandleAddNew:true,editor:{templateID:orderDetEditTemplate,width:650,height:550,submitOnOK:true,title:'Order Detail editing'}}">
+                    <thead>
+                    <tr>
+                        <th data-column="width:50px,type:row_actions"></th>
+                        <th data-column="width:80px,sortable:true,title:OrderQty" data-content="fieldName:OrderQty"></th>
+                        <th data-column="width:80px,sortable:true,title:UnitPrice" data-content="fieldName:UnitPrice"></th>
+                        <th data-column="width:80px,sortable:true,title:UnitPriceDiscount" data-content="fieldName:UnitPriceDiscount"></th>
+                        <th data-column="width:80px,sortable:true,title:LineTotal" data-content="fieldName:LineTotal"></th>
+                        <th data-column="width:80px,sortable:true,title:Status" data-content="fieldName:SalesOrderHeader.Status"></th>
+                        <th data-column="width:100%,title:Product" data-content="fieldName:Product.Name"></th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        <!--myTabs-->
+    </div>
+</div>
+<!--upload thumbnail dialog template-->
+<div id="uploadTemplate" style="margin: 5px;" data-role="template">
+    <!--dummy form action to satisfy HTML5 specification-->
+    <form data-name="uploadForm" action="#">
+        <div data-name="uploadBlock">
+            <input data-name="files-to-upload" type="file" style="visibility: hidden;"/>
+            <div class="input-append">
+                <input data-name="files-input" class="span4" type="text">
+                <a data-name="btn-input" class="btn btn-info btn-small">
+                    <i class="icon-folder-open">
+                    </i>
+                </a><a data-name="btn-load" class="btn btn-info btn-small" data-bind="{this.command,to=uploadCommand}"
+                       data-view="options={tip='Click to upload a file'}">
+                    Upload
+                </a>
+            </div>
+            <span>File info:</span><text>&nbsp;</text>
+            <div style="display: inline-block" data-bind="{this.html,to=fileInfo}">
+            </div>
+            <div data-name="progressDiv">
+                <progress data-name="progressBar" class="span4" value="0" max="100">
+                </progress><span data-name="percentageCalc"></span>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!--test service invoke method result display-->
+<div id="invokeResultTemplate" data-role="template">
+    <div style="background-color: White; color: Blue; height: 100%; width: 100%;">
+        <div style="display: inline-block" data-bind="{this.html,to=invokeResult}">
+        </div>
+    </div>
+</div>
+<div id="orderDetEditTemplate" style="margin: 0px; width: 100%;" data-role="template">
+    <div style="width: 100%" data-bind="{this.dataContext,mode=OneWay}" data-view="name=dataform">
+        <table style="background-color: transparent; border: none; table-layout: fixed; width: 95%;">
+            <colgroup>
+                <col style="border: none; text-align: left; width: 225px;"/>
+                <col style="border: none; text-align: left; width: 100%;"/>
+            </colgroup>
+            <tbody>
+            <tr>
+                <td>
+                    ID:
+                </td>
+                <td>
+                    <span data-content="fieldName:SalesOrderDetailID"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    OrderQty:
+                </td>
+                <td>
+                    <span data-content="fieldName:OrderQty,css:{editCss:'qtyEdit'}"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    UnitPrice:
+                </td>
+                <td>
+                    <span data-content="fieldName:UnitPrice"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    UnitPriceDiscount:
+                </td>
+                <td>
+                    <span data-content="fieldName:UnitPriceDiscount"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    LineTotal:
+                </td>
+                <td>
+                    <span data-content="fieldName:LineTotal,readOnly:true"></span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

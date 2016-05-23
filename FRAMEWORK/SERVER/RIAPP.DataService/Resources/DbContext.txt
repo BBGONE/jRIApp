@@ -1,0 +1,23 @@
+﻿export class DbSets extends dbMOD.DbSets{
+	constructor(dbContext:DbContext) {
+		super(dbContext);
+		this._dbSetNames = {{DBSETS_NAMES}};
+{{DBSETS}}
+	}
+{{DBSETS_PROPS}}
+}
+
+export class DbContext extends dbMOD.DbContext
+{
+	protected _initDbSets(){
+		super._initDbSets();
+		this._dbSets = new DbSets(this);
+		var associations ={{ASSOCIATIONS}};
+		this._initAssociations(associations);
+		var methods ={{METHODS}};
+		this._initMethods(methods);
+	}
+	get associations() { return <IAssocs>this._assoc; }
+	get dbSets() { return <DbSets>this._dbSets; }
+	get serviceMethods() { return <ISvcMethods>this._svcMethods; }
+}

@@ -1,0 +1,293 @@
+/* ***************** DataGrid styles ************** */
+.ria-table-container {
+    border: none;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    position: relative;
+    vertical-align: top;
+    height: 100%;
+    font-size: 12px;
+}
+
+/*wraps table element to display vertical scrolling*/
+.ria-table-wrap {
+    padding: 0;
+    margin: 0;
+    overflow: auto;
+    overflow-x: hidden;
+    background-color: transparent;
+    position: relative;
+    border: none;
+}
+
+/*placeholder to put new table column headers as div elements*/
+.ria-table-header {
+    color: White;
+    background-color: #336699;
+    background-image: url('data:image/gif;base64,R0lGODlhKgAZAMQAADNmmaW70myRtc3a5kt4pYWjwubs873O3lyFrZWvykNyof///3ydvbXI2t7m72SLsTtsna3C1tbg61N+qY2pxsXU4p21znSXue7y9wAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAQUAP8ALAAAAAAqABkAAAXOICCOZGmeqAmtbOu+cPwqdG3feK7jRO//wKBwGJwYj8ikcslUIp7QqHRKrU4f2Kx2y+16uYKweEwum8/li3rNbrvfcDdjTq/b7/j8vcDv+/+AgYKAFIWGh4iJiouJCY6PkJGSk5SSFpeYmZqbnJ2bAaChoqOkpaakEamqq6ytrq+tDbKztLW2t7i2B7u8vb6/wMG/FcTFxsfIycrIA83Oz9DR0tPREtbX2Nna29zaDt/g4eLj5OXjBujp6uvs7e7sGPHy8/T19vf4+fr79SEAOw==');
+    background-position: 0% 100%;
+    background-repeat: repeat-x;
+    font-weight: bold;
+    min-height: 28px;
+    height: 28px;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+    left: 0;
+    top: 0;
+    display:table;
+    table-layout: fixed;
+    border-collapse: collapse;
+    box-sizing: border-box;
+}
+
+    /*new table column header*/
+    .ria-table-header .ria-col-ex {
+        margin: 0;
+        padding: 0;
+        background-color: transparent;
+        overflow: hidden;
+        border: none;
+        outline: none;
+        display: table-cell;
+        box-sizing: border-box;
+        vertical-align: middle;
+    }
+
+.ria-data-table {
+    width: 100%;
+    margin: 0;
+    border-left: 1px solid dimgray;
+    border-right: 1px solid dimgray;
+    border-bottom: 1px solid dimgray;
+    table-layout: fixed;
+    box-sizing: border-box;
+}
+
+    .ria-data-table td {
+        vertical-align: middle;
+        text-align: left;
+        border: 1px ridge dimgray;
+        padding: 3px 5px;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+
+    .ria-data-table tr.ria-fill-vspace {
+        background-color: transparent;
+        border: none;
+        box-sizing: border-box;
+    }
+
+        .ria-data-table tr.ria-fill-vspace td {
+            background-color: transparent;
+            border: none;
+            border-bottom: 1px ridge dimgray;
+            box-sizing: border-box;
+        }
+
+        .ria-data-table div.ria-fill-vspace {
+            visibility: hidden;
+            background-color: transparent;
+            width: 1px;
+            height: 0px;
+            margin: 0;
+            padding: 0;
+            border: none;
+            box-sizing: border-box;
+        }
+
+ /* can be used to highlight currently selected column header */
+.ria-table-header div.ria-col-selected {
+}
+
+
+/* expander column header */
+.ria-table-header div.ria-row-expander {
+}
+
+/* actions column header */
+.ria-table-header div.ria-row-actions {
+}
+
+/* row selector column header */
+.ria-table-header div.ria-row-selector {
+    text-align: center;
+}
+
+    .ria-table-header div.ria-row-selector input[type="checkbox"] {
+        margin:0;
+    }
+
+/* data column header */
+.ria-table-header div.ria-data-column {
+   text-align: center;
+}
+
+/* Sorting icon in the sortable table column header */
+.ria-table-header div.ria-sortable {
+    background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAASCAYAAABSO15qAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAANxJREFUeNqkk98LwVAUx00jiSY8iKTkjcQj/gB/ukSK2osXP8qLWlEeSMwnnYe17u7u2qlPbTv3fM+9535n+b6fSRPZmHwbhroFtiZXhAk4cINzkh3YUlwBS57LSQT60A28OyKSNxFowVg6B6MDgziBUlQnERyJkFKgAFOoxgx9BjXVLTShAS/QmSMHPfD+20prJDs0pLlh3RaW4RmcYGFQfIRN1C24sNcUe9L5HSXwhTVcFcUvyd3jjPSAFTxD33dyTCMrX4LnJA4ikOhvdMUXdRnuR7UotQ9+AgwA7ksriziTBNMAAAAASUVORK5CYII=') no-repeat right center;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+/* Ascending sorted icon in the table column header */
+.ria-table-header div.ria-sort-asc {
+    background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAASCAYAAABSO15qAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAOJJREFUeNpi/P//PwMlgImAvCcQl+BVAXIBDiwBxNeA+C8Qe+FSh0szFxCv+I8At4BYkRQDSoH4z39UsAGI+YkxwAWIP/7HBCCv1BEyQB6IL/3HDb4BsS8uA0SAeN1/wuAREBvA9LEgRYgDENsA8TtQ5OCJOB4gjgTiCyAOI6UJCdkF/ECsQqS+F0D8FD0lfgTix0Ro/gDEz3El5ddA/BaP5m9A/ASI/+EyABQgz4D4KxbNf6FyPwllpl9QhX/QxF9CvUlUbvyE7E8geA8NOLyxgA5eQeOcC+pvrPFNcToACDAA4NRralo8bQIAAAAASUVORK5CYII=') no-repeat right center;
+}
+
+/* Descending sorted icon in the table column header */
+.ria-table-header div.ria-sort-desc {
+    background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAASCAYAAABSO15qAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAANlJREFUeNpi/P//PwMlgImAPD8Qi+NTwIJHjhWIZYCYA4h/APFHUlwAEpeFamaAstlJMUAUiAWQ+OxQ1zATYwAfEEsCMSOaOMhAMUIGsOGyCQokoAGL1QAWqF85CcSaHBBzYYsFXiDmAeI/BKIW5DpBIP4G4jBSMyH5AvF/InEnXBfIBUi44D9hsB6IeWB60A1gAeL5eDSfB2JVZD3oBoCwPBAfx6L5HRD7oqvHZgAIuwDxKzQDqrGpxWUACOcD8T+o5jVAzE6qAUxAvBKI70C9hVUdxekAIMAAoONY4+ufuFgAAAAASUVORK5CYII=') no-repeat right center;
+}
+
+td.ria-row-expanded {
+    background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAALCAIAAAAmzuBxAAAABGdBTUEAALGPC/xhBQAAABh0RVh0U29mdHdhcmUAUGFpbnQuTkVUIHYzLjM2qefiJQAAAONJREFUKFM9UEmqhFAMjOI8uxIUvP+V3IgudOOEA35nf71O01kUlaRSCSEiCsMQqOu653mWZYEjQOI4Fsz3/aqq9n0/z7Ou63Vdt2173/c4jqIo0jQlTdOQoDSOIxAxzzPw7xO2bQubpmlQwjQrYAa8ruu+b1mWSVEUbkCBwBw4lrJIkiTCdbwiCAL4JUnCV6O4LIvwcF03z3Pkbds+z4ONuAP+0zQhFQp4QMuLEMMwMOn7Hggz8Yzf/dzrui7LMub8G4I/EnylLMvfNBbBJooioTAMA5+BmWma3xKRqqqO46D7D3n74PgpWZxXAAAAAElFTkSuQmCC') no-repeat center;
+}
+
+td.ria-row-collapsed {
+    background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAALCAIAAAAmzuBxAAAABGdBTUEAALGPC/xhBQAAABh0RVh0U29mdHdhcmUAUGFpbnQuTkVUIHYzLjM2qefiJQAAANpJREFUKFNFkMeKhUAQRduADxOIuBDx///KtYoRxRxmjlMPpxdFVXHrhjZ837dte9u2KIru+z7PUymlaVoYhoye5ynTNOd5BrEsS57nP39vmiZGGtDPk+0wDNTruoqieHGO4zyIuq7HcWTbNI2u6zSw7vsuiurz+cgKVaGFRgz1fZ+m6b+KKGKLalkWVo7jMAxDQSumoOXadV1GKNl8VbiAM8syAQVB0LYtfdd17B9aEr9BaKqqkiAg+IJHFMmyLN8j3BF7XVfxkSTJ4wNtHGFb0sdxzNn3r5T6BRPh4Omrv0LQAAAAAElFTkSuQmCC') no-repeat center;
+}
+
+td.ria-row-expander {
+    width: 30px;
+    cursor: pointer;
+    padding: 0;
+    text-align: center;
+}
+
+/* table's data cell */
+td.ria-data-cell {
+}
+
+td.ria-data-cell input[type="text"], textarea, select {
+        width: 100%;
+        min-width: 0;
+        margin: 0;
+}
+
+td.ria-data-cell input[type="checkbox"] {
+    margin: 0;
+}
+
+td.ria-row-actions {
+      text-align: center;
+      padding: 3px 0;
+}
+
+td.ria-row-selector {
+      text-align: center;
+      padding: 0;
+}
+
+td.ria-row-selector input[type="checkbox"] {
+    margin: 0px;
+}
+
+.ria-data-table tr {
+    background-color: White;
+}
+
+    .ria-data-table tr.ria-row-highlight {
+        background-color: gainsboro !important;
+    }
+
+    .ria-data-table tr.ria-row-deleted {
+        display: none !important;
+    }
+
+    .ria-data-table .ria-row-error {
+        border: 1px solid red !important;
+    }
+
+    /*hides real table header row*/
+    .ria-data-table  tr.ria-col-info {
+        background-color: transparent;
+        border: none;
+        margin: 0;
+        padding: 0;
+    }
+
+     /* it hides the real table header */
+    .ria-data-table tr.ria-col-info > th {
+        background-color: transparent;
+        border-color: transparent;
+        border-width: 0;
+        margin: 0;
+        padding: 0;
+        height: 0;
+        overflow: hidden;
+        box-sizing: border-box;
+        border-bottom: 1px solid dimgray;
+    }
+
+    .ria-data-table tr.ria-row-details > td {
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        text-align: left;
+        vertical-align: middle;
+        background-color: transparent;
+        box-sizing: border-box;
+    }
+
+
+/* ************** Pager styles ***************** */
+
+.ria-pager {
+    font-family: Frutiger Linotype, Trebuchet MS, Tahoma, Arial;
+    font-size: 10pt;
+    color: white;
+    margin-top: 8px;
+}
+
+    .ria-pager .ria-pager-info {
+        font-family: Frutiger Linotype, Trebuchet MS, Tahoma, Arial;
+        font-size: 10pt;
+        padding: 2px;
+    }
+
+    .ria-pager .ria-pager-current-page {
+        font-family: Frutiger Linotype, Trebuchet MS, Tahoma, Arial;
+        font-size: 10pt;
+        font-weight: bold;
+        color: #000000;
+        background-color: #ffffcc;
+        border: 1px ridge dimgray;
+        padding: 2px;
+        margin: 1px;
+    }
+
+    .ria-pager .ria-pager-other-page {
+        font-family: Frutiger Linotype, Trebuchet MS, Tahoma, Arial;
+        font-size: 10pt;
+        background-color: #f0f1f2;
+        padding: 2px;
+        margin: 1px;
+    }
+
+/* ************ StackPanel styles ************* */
+
+.ria-stackpanel {
+    margin-top: 10px;
+    margin-bottom: 5px;
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+
+    .ria-stackpanel .ria-stackpanel-item {
+        margin: 1px 3px 1px 3px;
+        box-sizing: border-box;
+    }
+
+.ria-horizontal-panel .ria-stackpanel-item {
+    display: inline-block;
+    margin: 3px 1px 1px 1px;
+}
+
+.ria-stackpanel .ria-current-item .ria-template-container {
+    outline: 1px dashed black;
+}

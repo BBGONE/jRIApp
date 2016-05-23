@@ -1,0 +1,605 @@
+﻿@model RIAppDemo.Models.SPATemplate
+
+@{
+    Layout = null;
+}
+
+@*first page view of customers*@
+<div id="SPAcustTemplate" data-role="template" data-view="name=template">
+    <div style="height: 85%; vertical-align: top;">
+        <table data-name="gridCustomers"
+               data-bind-1="{this.dataSource,to=dbSet,source=customerVM}"
+               data-bind-2="{this.myGridEvents,to=gridEvents,source=customerVM}"
+               data-view="name=my_grid,options={wrapCss:customerTableWrap,isHandleAddNew:true,editor:{templateID:customerEditTemplate,width:500,height:550,title:'Customer editing'},details:{templateID:customerDetailsTemplate}}">
+            <thead>
+            <tr>
+                <th data-column="width:35px,type:row_expander"></th>
+                <th data-column="width:40px,type:row_actions"></th>
+                <th data-column="width:30px,title:***" data-content="template={displayID=goToInfoColTemplate}"></th>
+                <th data-column="width:40px,sortable:true,title:Title" data-content="fieldName:Title,readOnly:true"></th>
+                <th data-column="width:150px,sortable:true,title:Customer Name,sortMemberName=ComplexProp.LastName;ComplexProp.MiddleName;ComplexProp.FirstName" data-content="fieldName:ComplexProp.Name,readOnly:true"></th>
+                <th data-column="width:50%,sortable:true,title:CompanyName" data-content="fieldName:CompanyName,readOnly:true"></th>
+                <th data-column="width:150px,sortable:true,title:SalesPerson" data-content="fieldName:SalesPerson,readOnly:true"></th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div style="border: none; height: 15%; margin-top: 40px; text-align: left; width: 100%;">
+        <!--pager-->
+        <div style="float: left;" data-bind="{this.dataSource,to=dbSet,source=customerVM}" data-view="name=pager,options={sliderSize:20}"></div>
+        <div style="float: left; padding-left: 10px; padding-top: 10px;"><span>Total:</span>&nbsp;<span data-bind="{this.value,to=dbSet.totalCount,source=customerVM}"></span></div>
+
+        <div style="float: right;">
+            <button class="btn btn-info btn-small" data-bind="{this.command,to=switchViewCommand}{this.commandParam,to=uiMainView.custDetTemplName}"><i class="icon-user"></i>&nbsp;Customer's details</button>
+            <button class="btn btn-info btn-small" data-bind="{this.command,to=addNewCommand}"><i class="icon-plus"></i>&nbsp;New Customer</button>
+            <button class="btn btn-info btn-small" data-bind="{this.command,to=saveCommand}"><i class="icon-ok-circle"></i>&nbsp;Save changes</button>
+            <button class="btn btn-info btn-small" data-bind="{this.command,to=undoCommand}"><i class="icon-remove"></i>&nbsp;Undo changes</button>
+        </div>
+    </div>
+</div>
+
+<div id="goToInfoColTemplate" data-role="template">
+    <a style="display: inline-block; padding: 2px;" data-bind="{this.command,to=switchViewCommand,source=customerVM}{this.commandParam,to=uiMainView.custDetTemplName,source=customerVM}" data-view="options={tip:'Go to details'}">
+        <i class="icon-user"></i>
+    </a>
+</div>
+
+@*second page view of customer's details*@
+<div id="SPAcustDetailTemplate" data-role="template">
+    <!--for switching views between customerInfo and customerAddr-->
+    <div id="infoDynaContent" data-bind="{this.templateID,to=uiDetailView.viewName}{this.dataContext}{this.animation,to=uiDetailView.animation}" data-view="name=dynacontent"></div>
+</div>
+
+
+<div id="customerEditTemplate" style="margin: 0px; width: 100%;" data-role="template">
+    <div style="width: 100%" data-bind="{this.dataContext,mode=OneWay}" data-view="name=dataform">
+        <table style="background-color: transparent; border: none; table-layout: fixed; width: 95%;">
+            <colgroup>
+                <col style="border: none; text-align: left; width: 125px;"/>
+                <col style="border: none; text-align: left; width: 100%;"/>
+            </colgroup>
+            <tbody>
+            <tr>
+                <td>
+                    ID:
+                </td>
+                <td>
+                    <span data-content="fieldName:CustomerID,css:{displayCss:'custInfo',editCss:'custEdit'}"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Title:
+                </td>
+                <td>
+                    <span data-content="fieldName:Title,css:{displayCss:'custInfo',editCss:'custEdit'}"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    FirstName:
+                </td>
+                <td>
+                    <span data-content="fieldName:ComplexProp.FirstName,css:{displayCss:'custInfo',editCss:'custEdit'}"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    MiddleName:
+                </td>
+                <td>
+                    <span data-content="fieldName:ComplexProp.MiddleName,css:{displayCss:'custInfo',editCss:'custEdit'}"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    LastName:
+                </td>
+                <td>
+                    <span data-content="fieldName:ComplexProp.LastName,css:{displayCss:'custInfo',editCss:'custEdit'}"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Suffix:
+                </td>
+                <td>
+                    <span data-content="fieldName:Suffix,css:{displayCss:'custInfo',editCss:'custEdit'}"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    CompanyName:
+                </td>
+                <td>
+                    <span data-content="fieldName:CompanyName,css:{displayCss:'custInfo',editCss:'custEdit'}"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    SalesPerson:
+                </td>
+                <td>
+                    <span data-content="fieldName:SalesPerson,css:{displayCss:'custInfo',editCss:'custEdit'}"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Email:
+                </td>
+                <td>
+                    <span data-content="fieldName=ComplexProp.ComplexProp.EmailAddress,css:{displayCss:'custInfo',editCss:'custEdit'}"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Phone:
+                </td>
+                <td>
+                    <span data-content="fieldName:ComplexProp.ComplexProp.Phone,css:{displayCss:'custInfo',editCss:'custEdit'}"></span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@*Grid details template for customer's orders*@
+<div id="customerDetailsTemplate" style="margin: 0px; min-height: 400px; width: 100%;" data-role="template">
+    <div data-name="tabs" style="margin: 5px; padding: 5px; width: 95%;" data-view="name='tabs',options:{hide:{effect:clip,duration:500},show:{effect:clip,duration:500}}">
+        <div id="detailsTabs">
+            <ul>
+                <li>
+                    <a href="#custDetails">Details on&nbsp;<span data-bind="{this.value,to=ComplexProp.Name}"></span></a>
+                </li>
+                <li>
+                    <a href="#custOrders">Customer's Orders</a>
+                </li>
+            </ul>
+            <div id="custDetails">
+                <form class="form-horizontal customerInfo" action="#">
+                    <div class="control-group">
+                        <label class="control-label">
+                            ID:
+                        </label>
+                        <div class="controls">
+                            <input type="text" class="value" data-bind="{this.value,to=CustomerID}" readonly="readonly"/>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">
+                            Title:
+                        </label>
+                        <div class="controls">
+                            <input type="text" class="value" data-bind="{this.value,to=Title}" readonly="readonly"/>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">
+                            Suffix:
+                        </label>
+                        <div class="controls">
+                            <input type="text" class="value" data-bind="{this.value,to=Suffix}" readonly="readonly"/>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">
+                            CompanyName:
+                        </label>
+                        <div class="controls">
+                            <input type="text" class="value" data-bind="{this.value,to=CompanyName}" readonly="readonly"/>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">
+                            EmailAddress:
+                        </label>
+                        <div class="controls">
+                            <input type="text" class="value" data-bind="{this.value,to=ComplexProp.ComplexProp.EmailAddress}" readonly="readonly"/>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">
+                            Phone:
+                        </label>
+                        <div class="controls">
+                            <input type="text" class="value" data-bind="{this.value,to=ComplexProp.ComplexProp.Phone}" readonly="readonly"/>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div id="custOrders">
+                DISCLAIMER: This example allows you to add and delete the orders. But In the real
+                world it should never be done in this way.<br/>
+                It is here just to show you the capabilties you have with the framework to manage
+                master-details.
+                <table style="font-size: 9pt; margin-bottom: 3px;" data-name="tblOrders"
+                       data-bind-1="{this.dataSource,to=dbSet,source=customerVM.ordersVM}"
+                       data-bind-2="{this.myGridEvents,to=gridEvents,source=customerVM.ordersVM}"
+                       data-view="name=my_grid,options={isUseScrollIntoDetails:false,isHandleAddNew:true,editor:{templateID:orderEditTemplate,width:650,height:550,title:'Order editing'},details:{templateID:orderDetailsTemplate}}">
+                    <thead>
+                    <tr>
+                        <th data-column="width:20px,type:row_expander"></th>
+                        <th data-column="width:50px,type:row_actions"></th>
+                        <th data-column="width:50%,sortable:true,title:SalesOrderNumber" data-content="fieldName:SalesOrderNumber"></th>
+                        <th data-column="width:50%,sortable:true,title:PurchaseOrderNumber" data-content="fieldName:PurchaseOrderNumber,readOnly:true"></th>
+                        <th data-column="width:110px,sortable:true,title:OrderDate" data-content="fieldName:OrderDate,readOnly:true"></th>
+                        <th data-column="width:110px,sortable:true,title:DueDate" data-content="fieldName:DueDate,readOnly:true"></th>
+                        <th data-column="width:110px,sortable:true,title:ShipDate" data-content="fieldName:ShipDate,readOnly:true"></th>
+                        <th data-column="width:150px,sortable:true,title:TotalDue" data-content="fieldName:TotalDue,readOnly:true"></th>
+                        <th data-column="width:150px,sortable:true,title:IsOnlineOrder" data-content="fieldName:OnlineOrderFlag,readOnly:true"></th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <button class="btn btn-info btn-small"
+                        data-bind="@Model.BindAddNewOrder"
+                        data-view="@Model.OptionsAddNewOrder">
+                    <i class="icon-plus"></i>&nbsp;New Order
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="orderEditTemplate" style="margin: 0px; width: 100%;" data-role="template">
+    <div style="width: 100%" data-bind="{this.dataContext,mode=OneWay}" data-view="name=dataform">
+        <table style="background-color: transparent; border: none; table-layout: fixed; width: 95%;">
+            <colgroup>
+                <col style="border: none; text-align: left; width: 225px;"/>
+                <col style="border: none; text-align: left; width: 100%;"/>
+            </colgroup>
+            <tbody>
+            <tr>
+                <td>
+                    ID:
+                </td>
+                <td>
+                    <span data-content="fieldName:SalesOrderID"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Order Date:
+                </td>
+                <td>
+                    <span data-content="fieldName:OrderDate,name:datepicker"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Due Date:
+                </td>
+                <td>
+                    <span data-content="fieldName:DueDate,name:datepicker"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Ship Date:
+                </td>
+                <td>
+                    <span data-content="fieldName:ShipDate,name:datepicker"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Order Status:
+                </td>
+                <td>
+                    <span data-content="fieldName:Status,name:lookup,options:{dataSource=customerVM.ordersVM.orderStatuses,valuePath=key,textPath=val},css:{editCss:'listbox-edit'}"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Ship to Address:
+                </td>
+                <td>
+                    <span data-content="fieldName:ShipToAddressID,name:lookup,options:{dataSource=customerVM.custAdressView,valuePath=Address.AddressID,textPath=Address.AddressLine1},css:{editCss:'listbox-edit'}"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Bill to Address:
+                </td>
+                <td>
+                    <span data-content="fieldName:BillToAddressID,name:lookup,options:{dataSource=customerVM.custAdressView,valuePath=Address.AddressID,textPath=Address.AddressLine1},css:{editCss:'listbox-edit'}"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Is Online Order:
+                </td>
+                <td>
+                    <span data-content="fieldName:OnlineOrderFlag"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    SalesOrder Number:
+                </td>
+                <td>
+                    <span data-content="fieldName:SalesOrderNumber"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Ship Method:
+                </td>
+                <td>
+                    <span data-content="fieldName:ShipMethod"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Credit Card Approval Code:
+                </td>
+                <td>
+                    <span data-content="fieldName=CreditCardApprovalCode"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    SubTotal:
+                </td>
+                <td>
+                    <span data-content="fieldName:SubTotal"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    TaxAmt:
+                </td>
+                <td>
+                    <span data-content="fieldName:TaxAmt"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Freight:
+                </td>
+                <td>
+                    <span data-content="fieldName:Freight"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    TotalDue:
+                </td>
+                <td>
+                    <span data-content="fieldName:TotalDue"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Comment:
+                </td>
+                <td>
+                    <span data-content="fieldName:Comment,name:multyline,options:{wrap:hard}"></span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="orderDetEditTemplate" style="margin: 0px; width: 100%;" data-role="template">
+    <div style="width: 100%" data-bind="{this.dataContext,mode=OneWay}" data-view="name=dataform">
+        <table style="background-color: transparent; border: none; table-layout: fixed; width: 95%;">
+            <colgroup>
+                <col style="border: none; text-align: left; width: 225px;"/>
+                <col style="border: none; text-align: left; width: 100%;"/>
+            </colgroup>
+            <tbody>
+            <tr>
+                <td>
+                    ID:
+                </td>
+                <td>
+                    <span data-content="fieldName:SalesOrderDetailID"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    OrderQty:
+                </td>
+                <td>
+                    <span data-content="fieldName:OrderQty,css:{editCss:'qtyEdit'}"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Product:
+                </td>
+                <td>
+                    <span data-content="template={displayID=productTemplate1,editID=productTemplate2}"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    UnitPrice:
+                </td>
+                <td>
+                    <span data-content="fieldName:UnitPrice"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    UnitPriceDiscount:
+                </td>
+                <td>
+                    <span data-content="fieldName:UnitPriceDiscount"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    LineTotal:
+                </td>
+                <td>
+                    <span data-content="fieldName:LineTotal,readOnly:true"></span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@*Grid details template for order Details*@
+<div id="orderDetailsTemplate" style="margin: 0px; width: 100%;" data-role="template">
+    <div data-name="tabs" style="margin: 5px; padding: 5px; width: 95%;" data-bind="this.tabsEvents,to=tabsEvents,source=customerVM.ordersVM" data-view="name='tabs',options:{hide:{effect:clip,duration:500},show:{effect:clip,duration:500}}">
+        <div id="odeTabs">
+            <ul>
+                <li>
+                    <a href="#sta">ShipToAddress</a>
+                </li>
+                <li>
+                    <a href="#bta">BillToAddress</a>
+                </li>
+                <li>
+                    <a href="#ode">Order Details</a>
+                </li>
+            </ul>
+            <div id="sta">
+                <form action="#" style="padding: 15px; width: 100%;" data-bind="{this.dataContext,to=Address}"
+                      data-view="name=dataform">
+                    <dl class="dl-horizontal">
+                        <dt>
+                            <span class="addressLabel">AddressLine1:</span></dt>
+                        <dd>
+                            <!--inside data form we can use span tag with data-content attribute-->
+                            <span class="address" data-content="fieldName:AddressLine1"></span>
+                        </dd>
+                        <dt>
+                            <span class="addressLabel">AddressLine2:</span></dt>
+                        <dd>
+                            <span class="address" data-content="fieldName:AddressLine2"></span>
+                        </dd>
+                        <dt>
+                            <span class="addressLabel">City:</span></dt>
+                        <dd>
+                            <span class="address" data-content="fieldName:City"></span>
+                        </dd>
+                        <dt>
+                            <span class="addressLabel">StateProvince:</span></dt>
+                        <dd>
+                            <span class="address" data-content="fieldName:StateProvince"></span>
+                        </dd>
+                        <dt>
+                            <span class="addressLabel">CountryRegion:</span></dt>
+                        <dd>
+                            <span class="address" data-content="fieldName:CountryRegion"></span>
+                        </dd>
+                        <dt>
+                            <span class="addressLabel">PostalCode:</span></dt>
+                        <dd>
+                            <span class="address" data-content="fieldName:PostalCode"></span>
+                        </dd>
+                    </dl>
+                </form>
+            </div>
+            <div id="bta">
+                <form action="#" style="padding: 15px; width: 100%;" data-bind="{this.dataContext,to=Address1}"
+                      data-view="name=dataform">
+                    <dl class="dl-horizontal">
+                        <dt>
+                            <span class="addressLabel">AddressLine1:</span></dt>
+                        <dd>
+                            <!--inside data form we can use span tag with data-content attribute-->
+                            <span class="address" data-content="fieldName:AddressLine1"></span>
+                        </dd>
+                        <dt>
+                            <span class="addressLabel">AddressLine2:</span></dt>
+                        <dd>
+                            <span class="address" data-content="fieldName:AddressLine2"></span>
+                        </dd>
+                        <dt>
+                            <span class="addressLabel">City:</span></dt>
+                        <dd>
+                            <span class="address" data-content="fieldName:City"></span>
+                        </dd>
+                        <dt>
+                            <span class="addressLabel">StateProvince:</span></dt>
+                        <dd>
+                            <span class="address" data-content="fieldName:StateProvince"></span>
+                        </dd>
+                        <dt>
+                            <span class="addressLabel">CountryRegion:</span></dt>
+                        <dd>
+                            <span class="address" data-content="fieldName:CountryRegion"></span>
+                        </dd>
+                        <dt>
+                            <span class="addressLabel">PostalCode:</span></dt>
+                        <dd>
+                            <span class="address" data-content="fieldName:PostalCode"></span>
+                        </dd>
+                    </dl>
+                </form>
+            </div>
+            <div id="ode">
+                <table style="font-size: 9pt;" data-name="tblOrderDetails"
+                       data-bind="{this.dataSource,to=dbSet,source=customerVM.ordersVM.orderDetailsVM}"
+                       data-view="options={wrapCss:orderDetailTableWrap,isHandleAddNew:true,editor:{templateID:orderDetEditTemplate,width:650,height:550,title:'Order Detail editing'}}">
+                    <thead>
+                    <tr>
+                        <th data-column="width:50px,type:row_actions"></th>
+                        <th data-column="width:80px,sortable:true,title:OrderQty" data-content="fieldName:OrderQty,readOnly:true"></th>
+                        <th data-column="width:80px,sortable:true,title:UnitPrice" data-content="fieldName:UnitPrice,readOnly:true"></th>
+                        <th data-column="width:80px,sortable:true,title:UnitPriceDiscount" data-content="fieldName:UnitPriceDiscount,readOnly:true"></th>
+                        <th data-column="width:80px,sortable:true,title:LineTotal" data-content="fieldName:LineTotal,readOnly:true"></th>
+                        <th data-column="width:80px,sortable:true,title:Status" data-content="fieldName:SalesOrderHeader.Status,readOnly:true"></th>
+                        <th data-column="width:100%,title:Product" data-content="fieldName:Product.Name,readOnly:true"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="productTemplate1" data-role="template">
+    <span data-bind="{this.value,to=Product.Name}"></span>
+</div>
+
+
+<div id="productTemplate2" data-role="template">
+    autocomplete here-->
+    <input type="text" style="margin-left: 0px; width: 300px;" data-bind="{this.dataContext}"
+           data-view="name=productAutocomplete,options={dbContext:dbContext,fieldName:Name,dbSetName:LookUpProduct,queryName:ReadProductLookUp,templateId:prodAutocompleteTemplate,width:300px}"/>&nbsp;<b>*</b>
+</div>
+
+@*example of autocomplete implementation*@
+<div id="prodAutocompleteTemplate" data-role="template" style="height: 98%; margin: 0px; padding: 2px; position: relative;">
+    <div style="margin-left: 1px; position: relative; vertical-align: top;"
+         data-bind="{this.isBusy,to=isLoading}" data-view="name=busy_indicator">
+        <table style="position: relative" data-name="lookupGrid" data-bind="{this.dataSource,to=gridDataSource}"
+               data-view="options={wrapCss:autocompleteTableWrap,headerCss:autocompleteTableHeader}">
+            <thead>
+            <tr>
+                <th data-column="width:100%,sortable:true,title:Name" data-content="fieldName:Name"></th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <div style="position: relative; text-align: left;">
+        <!--pager-->
+        <div style="float: left;" data-bind="{this.dataSource,to=gridDataSource}" data-view="name=pager,options={sliderSize:4,hideOnSinglePage=true}">
+        </div>
+        <div style="float: left; padding-left: 10px; padding-top: 10px;">
+            <span>Total:</span>&nbsp;<span data-bind="{this.value,to=gridDataSource.totalCount}"></span>
+        </div>
+    </div>
+    <br style="clear: left"/>
+    <div style="bottom: 4px; left: 15px; margin-top: 4px; position: absolute; text-align: center;">
+        <a class="btn btn-info btn-small" style="width: 100px;" data-name="btnOk" data-bind="{this.text,to=txtOk,source=TEXT}">
+            <i class="icon-ok"></i>
+        </a><span class="space"></span>
+        <a class="btn btn-info btn-small" style="width: 100px;" data-name="btnCancel" data-bind="{this.text,to=txtCancel,source=TEXT}">
+            <i class="icon-remove"></i>
+        </a>
+    </div>
+</div>

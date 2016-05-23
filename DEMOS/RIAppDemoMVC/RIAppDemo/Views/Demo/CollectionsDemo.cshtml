@@ -1,0 +1,156 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutDemo.cshtml";
+}
+@{
+    ViewBag.Title = "Collections Demo";
+}
+
+<style type="text/css">
+    #demoHeader label { color: Blue; }
+
+    #demoContent {
+        height: 600px;
+        overflow: visible;
+        position: relative;
+        vertical-align: top;
+    }
+
+    #demoContent > fieldset { border-radius: 5px; }
+
+    #demoContent fieldset > legend {
+        color: Blue;
+        font-weight: bold;
+    }
+
+    #demoContent .radioItem {
+        display: inline-block;
+        margin: 4px;
+        padding: 4px;
+    }
+
+    .stackPanelItemV {
+        background-color: ButtonFace;
+        color: ButtonText;
+        height: auto;
+        margin: 3px 0px 3px 0px;
+        min-width: 120px;
+        padding: 4px;
+        width: auto;
+    }
+
+    .stackPanelItemH {
+        background-color: ButtonFace;
+        color: ButtonText;
+        height: auto;
+        margin: 0px 3px 0px 3px;
+        padding: 4px;
+        width: 140px;
+    }
+
+    .stackPanelV {
+        border: 1px solid gray;
+        float: left;
+        max-height: 250px;
+        min-height: 65px;
+        overflow: auto;
+        width: 150px;
+    }
+
+    .stackPanelH {
+        border: 1px solid gray;
+        float: left;
+        height: 65px;
+        margin-left: 15px;
+        max-width: 650px;
+        min-width: 145px;
+        overflow: auto;
+    }
+
+    .ria-stack-panel-item fieldset { border-radius: 5px; }
+
+    .ria-stack-panel-item fieldset legend {
+        color: blue;
+        font-weight: bold;
+    }
+</style>
+
+<script type="text/javascript">
+    require(["jriapp", "collectionDemo", "jriapp_ui", "jriapp_ru"],
+        function(RIAPP, DEMO, UI, LANG) {
+            RIAPP.bootstrap.init(function(bootstrap) {
+                console.log('bootstrap.init');
+            });
+
+            //create and start application here
+            RIAPP.bootstrap.startApp(function() {
+                    return new DEMO.DemoApplication(DEMO.appOptions);
+                },
+                function(app) {
+                    console.log('application startup');
+                });
+        });
+</script>
+
+<h2 class="ex8">@ViewBag.Title</h2>
+
+<!--using dataform is convenient because it sets a datacontext scope for all its content-->
+<div id="demoContent" data-bind="{this.dataContext,source=demoVM}" data-view="name=dataform">
+    <fieldset>
+        <legend>Radios elements data binding example (using Dictionary in View Models)</legend>
+        <div class="radioItem">
+            <input type="radio" name="radioItem" data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue1}"/>
+            <span data-bind1="{this.value,to=radioValues['radioValue1'].value}" data-bind2="{this.toolTip,to=radioValues['radioValue1'].comment}"></span>
+        </div>
+        <div class="radioItem">
+            <input type="radio" name="radioItem" data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue2}"/>
+            <span data-bind1="{this.value,to=radioValues['radioValue2'].value}" data-bind2="{this.toolTip,to=radioValues['radioValue2'].comment}"></span>
+        </div>
+        <div class="radioItem">
+            <input type="radio" name="radioItem" data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue3}"/>
+            <span data-bind1="{this.value,to=radioValues['radioValue3'].value}" data-bind2="{this.toolTip,to=radioValues['radioValue3'].comment}"></span>
+        </div>
+        <div class="radioItem">
+            <input type="radio" name="radioItem" data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue4}"/>
+            <span data-bind1="{this.value,to=radioValues['radioValue4'].value}" data-bind2="{this.toolTip,to=radioValues['radioValue4'].comment}"></span>
+        </div>
+    </fieldset>
+    <h3>
+        Demo of using Vertical and Horizontal StackPanels &nbsp;(count:&nbsp;<span data-bind="{this.value,to=historyList.count}"></span>)
+    </h3>
+    <!--example of using stackpanel for vertical and horizontal list view-->
+    <div class="stackPanelV" data-bind="{this.dataSource,to=historyList}" data-view="name=stackpanel,options:{templateID:stackPanelItemTemplateV,orientation:vertical}"></div>
+    <div class="stackPanelH" data-bind="{this.dataSource,to=historyList}" data-view="name=stackpanel,options:{templateID:stackPanelItemTemplateH,orientation:horizontal}"></div>
+    <br style="clear: both"/>
+    <button class="btn btn-info btn-small" style="margin: 5px 5px 5px 0px;" data-bind="{this.command,to=clearListCommand}">Clear list</button>
+
+    <br/>
+    <fieldset>
+        <legend>Summary (ordered list)</legend>
+        <ol style="max-height: 150px; overflow: auto; width: 300px;" data-bind="{this.dataSource,to=historyList}" data-view="options:{templateID:ItemListTemplate}"></ol>
+    </fieldset>
+</div>
+
+<script id="stackPanelItemTemplateV" type="text/html" data-role="template">
+    <div class="stackPanelItemV">
+        <strong>
+            <span style="color: Blue;" data-bind="{this.value,to=radioValue}"></span>
+        </strong>
+        <br/>
+        Time:&nbsp;<span data-bind="{this.value,to=time,converter=dateTimeConverter,converterParam='HH:mm:ss'}"></span>
+    </div>
+</script>
+<script id="stackPanelItemTemplateH" type="text/html" data-role="template">
+    <div class="stackPanelItemH">
+        <strong>
+            <span style="color: Blue;" data-bind="{this.value,to=radioValue}"></span>
+        </strong>
+        <br/>
+        Time:&nbsp;<span data-bind="{this.value,to=time,converter=dateTimeConverter,converterParam='HH:mm:ss'}"></span>
+    </div>
+</script>
+<script id="ItemListTemplate" type="text/html" data-role="template">
+    <div style="padding-left: 5px;">
+        <span style="color: Blue; margin-right: 10px;" data-bind="{this.value,to=radioValue}"></span>Time:&nbsp;
+        <span data-bind="{this.value,to=time,converter=dateTimeConverter,converterParam='HH:mm:ss'}"></span>
+    </div>
+</script>

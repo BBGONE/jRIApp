@@ -1,0 +1,197 @@
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+body {
+    font-size: 10.5pt;
+    line-height: normal;
+    margin: 0px auto;
+    max-width: 1200px;
+    min-width: 1024px;
+}
+
+.ria-navbar { font-size: 120%; }
+
+select, textarea, input[type="text"], input[type="password"], input[type="datetime"],
+input[type="datetime-local"], input[type="date"], input[type="month"],
+input[type="time"], input[type="week"], input[type="number"],
+input[type="email"], input[type="url"], input[type="search"],
+input[type="tel"], input[type="color"], .uneditable-input {
+    font-size: 10.5pt !important;
+    height: inherit !important;
+    line-height: normal !important;
+    margin-bottom: 3px !important;
+}
+
+.btn {
+    border-radius: 4px !important;
+    font-size: 10pt !important;
+    padding: 4px 10px !important;
+}
+
+.btn-small {
+    border-radius: 4px;
+    font-size: 10pt;
+    padding: 4px 10px;
+}
+
+img { border: none; }
+
+.ex4 { text-shadow: 0 1px 0 #999, 0 2px 0 #888, 0 3px 0 #777, 0 4px 0 #666; }
+
+.ex6 { text-shadow: 0 1px 0 #999, 0 2px 0 #888, 0 3px 0 #777, 0 4px 0 #666, 0 5px 0 #555, 0 6px 0 #444; }
+
+.ex8 { text-shadow: 0 1px 0 #999, 0 2px 0 #888, 0 3px 0 #777, 0 4px 0 #666, 0 5px 0 #555, 0 6px 0 #444, 0 7px 0 #333, 0 8px 7px #000b21; }
+
+/* FORM LAYOUT ELEMENTS   
+----------------------------------------------------------*/
+
+textarea { min-height: 75px; }
+
+
+/* TABLE
+----------------------------------------------------------*/
+
+table {
+    border: solid 1px #e8eef4;
+    border-collapse: collapse;
+}
+
+table td {
+    border: solid 1px #e8eef4;
+    padding: 5px;
+}
+
+table th {
+    background-color: #e8eef4;
+    border: solid 1px #e8eef4;
+    padding: 6px 5px;
+    text-align: left;
+}
+
+/* MISC  
+----------------------------------------------------------*/
+
+.clear { clear: both; }
+
+.error { color: Red; }
+
+#logindisplay {
+    color: Blue;
+    display: block;
+    font-size: 1.1em;
+    margin: 10px;
+    text-align: right;
+}
+
+#logindisplay a:link {
+    color: Blue;
+    text-decoration: underline;
+}
+
+#logindisplay a:visited {
+    color: Blue;
+    text-decoration: underline;
+}
+
+#logindisplay a:hover {
+    color: Purple;
+    text-decoration: none;
+}
+
+/* Styles for validation helpers
+-----------------------------------------------------------*/
+
+.field-validation-error { color: #ff0000; }
+
+.field-validation-valid { display: none; }
+
+.input-validation-error {
+    background-color: #ffeeee;
+    border: 1px solid #ff0000;
+}
+
+.validation-summary-errors {
+    color: #ff0000;
+    font-weight: bold;
+}
+
+.validation-summary-valid { display: none; }
+
+/* Styles for editor and display helpers
+----------------------------------------------------------*/
+
+.display-label,
+.editor-label { margin: 1em 0 0 0; }
+
+.display-field,
+.editor-field { margin: 0.5em 0 0 0; }
+
+.text-box { width: 30em; }
+
+.text-box.multi-line { height: 6.5em; }
+
+.tri-state { width: 6em; }
+
+.expandable-header {
+    color: #000066;
+    cursor: pointer;
+}
+
+.expandable-content { display: none; }
+
+#demoHeader {
+    background-color: #ECF2F6;
+    border: 1px solid darkgray;
+    border-radius: 4px;
+    display: none;
+    margin-bottom: 5px;
+    min-height: 5px;
+    padding: 5px;
+    position: relative;
+    width: 99%;
+}
+
+#title {
+    width: 99%;
+    border: 1px solid lightblue;
+    padding: 0px;
+    margin: 0px;
+    margin-bottom: 5px;
+    border-radius: 4px;
+}
+
+    #title > a {
+        margin-left: 10px;
+        margin-top: 5px;
+        margin-bottom: 5px;
+        display: inline-block;
+    }
+
+#demoHeader {
+    position: relative;
+    display: none;
+    padding: 0px;
+    min-height: 5px;
+    width: 99%;
+    background-color: #ECF2F6;
+    border: 1px solid darkgray;
+    border-radius: 4px;
+    margin-bottom: 5px;
+    font: normal 9.5pt inherit;
+}
+
+       #demoHeader > table {
+            margin-left:5px;
+        }
+
+       #demoHeader label { color: blue; }
+
+    #demoContent {
+        height: 570px;
+        overflow: visible;
+        vertical-align: top;
+    }

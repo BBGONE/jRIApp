@@ -1,0 +1,12 @@
+﻿export class {{TYPE_NAME}} extends dbMOD.RootComplexProperty
+{
+{{FIELDS_DEF}}
+	constructor(name: string, owner: dbMOD.EntityAspect<dbMOD.IEntityItem, DbContext>) {
+		super(name, owner);
+{{FIELDS_INIT}}
+	}
+{{PROPERTIES}}
+	toString() {
+		return '{{TYPE_NAME}}';
+	}
+}

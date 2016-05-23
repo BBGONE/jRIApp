@@ -1,0 +1,12 @@
+﻿export class {{TYPE_NAME}} extends dbMOD.ChildComplexProperty
+{
+{{FIELDS_DEF}}
+	constructor(name: string, parent: dbMOD.BaseComplexProperty) {
+		super(name,parent);
+{{FIELDS_INIT}}
+	}
+{{PROPERTIES}}
+	toString() {
+		return '{{TYPE_NAME}}';
+	}
+}

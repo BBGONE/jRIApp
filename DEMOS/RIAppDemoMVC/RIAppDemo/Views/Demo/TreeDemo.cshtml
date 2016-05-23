@@ -1,0 +1,69 @@
+﻿@using RIAPP.DataService.Mvc.Utils
+@{
+    Layout = "~/Views/Shared/_LayoutDemo.cshtml";
+}
+@{
+    ViewBag.Title = "TreeView Demo";
+}
+
+<style type="text/css">
+    #demoHeader label { color: Blue; }
+
+    .dynatree-container {
+        max-height: 450px;
+        overflow: auto;
+        width: 600px;
+        box-sizing:border-box;
+    }
+
+    .dynatree-container li:last-child { background-image: none; }
+
+    span.dynatree-title {
+        display: inline-block;
+        margin-left: 5px;
+        box-sizing:border-box;
+    }
+
+    .dynatree-container li:last-child .dynatree-exp span.dynatree-expander /* Collapsed, last sibling */ { background-position: 0px -96px; }
+
+    .dynatree-container li:last-child .dynatree-exp-e span.dynatree-expander /* Expanded, last sibling */ { background-position: -32px -80px; }
+
+    .dynatree-container .ria-current-item div.ria-template-container { outline: none; }
+</style>
+
+<script type="text/javascript">
+    require(["treeDemo", "jriapp_ui", "jriapp_ru"],
+        function(DEMO, UI, LANG) {
+            var mainOptions = {
+                service_url: null,
+                permissionInfo: null,
+                //load styles dynamically (the example how to do it)
+                styles: ['@Url.Content("~/Scripts/dynatree/skin/ui.dynatree.css", true)'],
+                user_modules: []
+            };
+
+            (function(ops) {
+                ops.service_url = '@Url.RouteUrl("Default", new {controller = "FolderBrowserService", action = ""})';
+                ops.permissionInfo = @Html.Action("PermissionsInfo", "FolderBrowserService");
+            })(mainOptions);
+
+            DEMO.start(mainOptions);
+        });
+</script>
+
+<h2 class="ex8">@ViewBag.Title</h2>
+
+<ul class="dynatree-container" data-bind="{this.dataSource,to=rootView,source=fbrowserVM}" data-view="options:{templateID:ItemListTemplate}"></ul>
+
+<a class="btn btn-info btn-small" style="margin: 15px 5px 5px 0px;" data-bind="{this.command,to=collapseCommand,source=fbrowserVM}">Collapse Tree</a>&nbsp;
+<a class="btn btn-info btn-small" style="margin: 15px 5px 5px 0px;" data-bind="{this.command,to=reloadCommand,source=fbrowserVM}">Reload Tree</a>
+
+<script id="ItemListTemplate" type="text/html" data-role="template">
+    <div>
+        <span data-bind="{this.css,to=ExtraProps.css1}">
+            <a style="margin: 0px; padding: 0px;" data-bind="{this.command,to=ExtraProps.toggleCommand}"><span data-bind="{this.css,to=ExtraProps.css2}"></span></a>
+            <a style="margin: 0px; padding: 0px;" data-bind="{this.command,to=ExtraProps.clickCommand}" href="#"><span class="dynatree-icon"></span><span class="dynatree-title" data-bind="{this.value,to=Name}"></span></a>
+        </span>
+        <ul data-bind="{this.dataSource,to=ExtraProps.childView}" data-view="options:{templateID:ItemListTemplate}"></ul>
+    </div>
+</script>

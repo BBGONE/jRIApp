@@ -1,0 +1,11 @@
+﻿export class {{DICT_NAME}} extends RIAPP.BaseDictionary<{{ITEM_TYPE_NAME}},{{INTERFACE_NAME}}> {
+	constructor() {
+		super({{ITEM_TYPE_NAME}},'{{KEY_NAME}}',{{PROPS}});
+	}
+	findItem({{PK_VALS}}): {{ITEM_TYPE_NAME}} {
+		return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
+	}
+	toString() {
+		return '{{DICT_NAME}}';
+	}
+}

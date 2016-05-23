@@ -1,0 +1,21 @@
+﻿export class {{DBSET_TYPE}} extends dbMOD.DbSet<{{ENTITY_TYPE}}, DbContext>
+{
+	constructor(dbContext: DbContext) {
+		var opts: dbMOD.IDbSetConstuctorOptions = {
+			dbContext: dbContext,
+			dbSetInfo: {{DBSET_INFO}},
+			childAssoc: ({{CHILD_ASSOC}}),
+			parentAssoc: ({{PARENT_ASSOC}}) 
+		};
+		opts.dbSetInfo.fieldInfos = ({{FIELD_INFOS}});
+		super(opts, {{ENTITY_TYPE}});
+	}
+	findEntity({{PK_VALS}}): {{ENTITY_TYPE}} {
+		return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
+	}
+	toString() {
+		return '{{DBSET_TYPE}}';
+	}
+{{QUERIES}}
+{{CALC_FIELDS}}
+}

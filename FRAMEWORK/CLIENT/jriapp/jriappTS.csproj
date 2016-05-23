@@ -1,0 +1,151 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Microsoft.TypeScript.MSBuild.1.8.9\tools\Microsoft.TypeScript.Default.props" Condition="Exists('..\packages\Microsoft.TypeScript.MSBuild.1.8.9\tools\Microsoft.TypeScript.Default.props')" />
+  <Import Project="..\packages\Microsoft.TypeScript.MSBuild.1.8.9\tools\Microsoft.TypeScript.NuGet.props" Condition="Exists('..\packages\Microsoft.TypeScript.MSBuild.1.8.9\tools\Microsoft.TypeScript.NuGet.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <ProjectGuid>{1BF71F16-DB40-4BF1-A9BB-CF053FBD0F03}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <OutputPath>bin</OutputPath>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <TypeScriptToolsVersion>1.8</TypeScriptToolsVersion>
+    <UseIISExpress>true</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
+  </PropertyGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>jriappTS</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\WebApplications\Microsoft.WebApplication.targets" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\WebApplications\Microsoft.WebApplication.targets')" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>1258</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:1258/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <TypeScriptRemoveComments>false</TypeScriptRemoveComments>
+    <TypeScriptSourceMap>False</TypeScriptSourceMap>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <TypeScriptRemoveComments>true</TypeScriptRemoveComments>
+    <TypeScriptSourceMap>false</TypeScriptSourceMap>
+  </PropertyGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="jriapp\jriapp_collection\base.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_collection\dictionary.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_collection\int.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_collection\item.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_collection\aspect.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_collection\list.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_collection\utils.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_collection\validation.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_content\basic.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_content\bool.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_content\date.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_content\datetime.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_content\factory.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_content\int.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_content\multyline.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_content\number.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_content\string.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_content\template.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_core\app.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_core\databindsvc.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_elview\all.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_elview\anchor.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_core\eventstore.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_elview\elview.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_elview\block.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_elview\busy.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_elview\button.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_elview\checkbox3.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_elview\checkbox.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_elview\command.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_elview\expander.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_elview\hidden.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_elview\img.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_elview\input.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_elview\radio.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_elview\span.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_elview\factory.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_elview\textarea.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_elview\textbox.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_core\binding.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_core\bootstrap.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_collection\collection.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_core\const.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_core\converter.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_core\shared.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_utils\coreutils.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_core\dataform.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_core\datepicker.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_core\defaults.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_utils\deferred.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_core\lang.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_core\mvvm.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_core\object.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_core\parser.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_utils\mloader.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_utils\path.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_core\template.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_utils\tloader.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_utils\sloader.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_utils\utils.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_utils\tooltip.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_utils\checks.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_utils\syschecks.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_utils\dblclick.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_utils\http.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_utils\async.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_utils\dom.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_utils\strutils.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_utils\listhelper.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_utils\debounce.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_utils\arrhelper.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_utils\waitqueue.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_utils\propwatcher.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_utils\lifetime.ts" />
+    <TypeScriptCompile Include="thirdparty\jquery.d.ts" />
+    <TypeScriptCompile Include="thirdparty\moment.d.ts" />
+    <TypeScriptCompile Include="thirdparty\qtip2.d.ts" />
+    <TypeScriptCompile Include="thirdparty\require.d.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="jriapp\tsconfig.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="packages.config" />
+  </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <TypeScriptModuleKind>amd</TypeScriptModuleKind>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <Import Project="..\packages\Microsoft.TypeScript.MSBuild.1.8.9\tools\Microsoft.TypeScript.targets" Condition="Exists('..\packages\Microsoft.TypeScript.MSBuild.1.8.9\tools\Microsoft.TypeScript.targets')" />
+</Project>

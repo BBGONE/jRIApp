@@ -1,0 +1,6 @@
+﻿export class {{LIST_ITEM_NAME}} extends RIAPP.CollectionItem<RIAPP.ListItemAspect<{{LIST_ITEM_NAME}}, {{INTERFACE_NAME}}>> implements RIAPP.IListItem, {{INTERFACE_NAME}} {
+{{ITEM_PROPS}}
+	toString() {
+		return '{{LIST_ITEM_NAME}}';
+	}
+}

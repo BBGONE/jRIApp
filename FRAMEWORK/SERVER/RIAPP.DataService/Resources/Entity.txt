@@ -1,0 +1,12 @@
+﻿export class {{ENTITY_TYPE}} extends RIAPP.CollectionItem<dbMOD.EntityAspect<{{ENTITY_TYPE}}, DbContext>> implements dbMOD.IEntityItem 
+{
+{{FIELDS_DEF}}
+	constructor(aspect: dbMOD.EntityAspect<{{ENTITY_TYPE}}, DbContext>) {
+		super(aspect);
+{{FIELDS_INIT}}
+	}
+	toString() {
+		return '{{ENTITY_TYPE}}';
+	}         
+{{ENTITY_FIELDS}}              
+}

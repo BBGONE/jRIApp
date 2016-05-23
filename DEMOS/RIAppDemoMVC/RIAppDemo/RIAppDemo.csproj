@@ -1,0 +1,357 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{7500EB0A-9796-40AB-9BF3-3CDF7208AC38}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>RIAppDemo</RootNamespace>
+    <AssemblyName>RIAppDemo</AssemblyName>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <MvcBuildViews>false</MvcBuildViews>
+    <UseIISExpress>true</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <TargetFrameworkProfile />
+    <UseGlobalApplicationHostFile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.8.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Abstractions" />
+    <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.Helpers.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.3\lib\net45\System.Web.Http.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.Http.WebHost, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.5.2.3\lib\net45\System.Web.Http.WebHost.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.Mvc, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Mvc.5.2.3\lib\net45\System.Web.Mvc.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Razor.3.2.3\lib\net45\System.Web.Razor.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.Routing" />
+    <Reference Include="System.Web.WebPages, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Deployment, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Deployment.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Controllers\AssetsController.cs" />
+    <Compile Include="Controllers\FileWebApiController.cs" />
+    <Compile Include="Controllers\RIAppDemoServiceEFController.cs" />
+    <Compile Include="Controllers\RIAppDemoEFWebApiController.cs" />
+    <Compile Include="Controllers\SSEWebApiController.cs" />
+    <Compile Include="Controllers\TemplatesController.cs" />
+    <Compile Include="Controllers\FolderBrowserServiceController.cs" />
+    <Compile Include="Controllers\DemoController.cs" />
+    <Compile Include="Controllers\DownloadController.cs" />
+    <Compile Include="Controllers\UploadController.cs" />
+    <Compile Include="Global.asax.cs">
+      <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="Models\MasterDetailDemo.cs" />
+    <Compile Include="Models\SSEMessage.cs" />
+    <Compile Include="Models\SPATemplate.cs" />
+    <Compile Include="Models\UploadedFile.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="App_Start\FilterConfig.cs" />
+    <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="App_Start\WebApiConfig.cs" />
+    <Content Include="Content\images\Misc\note.png" />
+    <Content Include="Content\images\Misc\phone.png" />
+    <Content Include="Content\images\Themes\blue.png" />
+    <Content Include="Content\images\Themes\green.png" />
+    <Content Include="Content\images\Themes\purple.png" />
+    <Content Include="Content\images\Themes\red.png" />
+    <Content Include="Content\Site.css" />
+    <Content Include="Content\themes\redmond\images\animated-overlay.gif" />
+    <Content Include="Content\themes\redmond\images\ui-bg_flat_0_aaaaaa_40x100.png" />
+    <Content Include="Content\themes\redmond\images\ui-bg_flat_55_fbec88_40x100.png" />
+    <Content Include="Content\themes\redmond\images\ui-bg_glass_75_d0e5f5_1x400.png" />
+    <Content Include="Content\themes\redmond\images\ui-bg_glass_85_dfeffc_1x400.png" />
+    <Content Include="Content\themes\redmond\images\ui-bg_glass_95_fef1ec_1x400.png" />
+    <Content Include="Content\themes\redmond\images\ui-bg_gloss-wave_55_5c9ccc_500x100.png" />
+    <Content Include="Content\themes\redmond\images\ui-bg_inset-hard_100_f5f8f9_1x100.png" />
+    <Content Include="Content\themes\redmond\images\ui-bg_inset-hard_100_fcfdfd_1x100.png" />
+    <Content Include="Content\themes\redmond\images\ui-icons_217bc0_256x240.png" />
+    <Content Include="Content\themes\redmond\images\ui-icons_2e83ff_256x240.png" />
+    <Content Include="Content\themes\redmond\images\ui-icons_469bdd_256x240.png" />
+    <Content Include="Content\themes\redmond\images\ui-icons_6da8d5_256x240.png" />
+    <Content Include="Content\themes\redmond\images\ui-icons_cd0a0a_256x240.png" />
+    <Content Include="Content\themes\redmond\images\ui-icons_d8e7f3_256x240.png" />
+    <Content Include="Content\themes\redmond\images\ui-icons_f9bd01_256x240.png" />
+    <Content Include="Content\themes\redmond\jquery-ui-1.10.4.custom.css" />
+    <Content Include="Content\themes\redmond\jquery-ui-1.10.4.custom.min.css" />
+    <Content Include="Global.asax" />
+    <Content Include="Scripts\bootstrap\css\bootstrap-responsive.css" />
+    <Content Include="Scripts\bootstrap\css\bootstrap-responsive.min.css" />
+    <Content Include="Scripts\bootstrap\css\bootstrap.css" />
+    <Content Include="Scripts\bootstrap\css\bootstrap.min.css" />
+    <Content Include="Scripts\bootstrap\img\glyphicons-halflings-white.png" />
+    <Content Include="Scripts\bootstrap\img\glyphicons-halflings.png" />
+    <Content Include="Scripts\bootstrap\js\bootstrap.js" />
+    <Content Include="Scripts\bootstrap\js\bootstrap.min.js" />
+    <Content Include="Scripts\demo\autocomplete.js" />
+    <Content Include="Scripts\demo\bindingsDemo.js" />
+    <Content Include="Scripts\demo\collectionDemo.js" />
+    <Content Include="Scripts\demo\common.js" />
+    <Content Include="Scripts\demo\css\test2.css" />
+    <Content Include="Scripts\demo\css\test1.css" />
+    <Content Include="Scripts\demo\demoDB.js" />
+    <Content Include="Scripts\demo\filesDemo.js" />
+    <Content Include="Scripts\demo\folderBrowserSvc.js" />
+    <Content Include="Scripts\demo\gridDemo.js" />
+    <Content Include="Scripts\demo\header.js" />
+    <Content Include="Scripts\demo\manToManDemo.js" />
+    <Content Include="Scripts\demo\masterDetDemo.js" />
+    <Content Include="Scripts\demo\spa\demo.js" />
+    <Content Include="Scripts\demo\ssevents.js" />
+    <Content Include="Scripts\demo\test1.js" />
+    <Content Include="Scripts\demo\test2.js" />
+    <Content Include="Scripts\demo\test3.js" />
+    <Content Include="Scripts\demo\treeDemo.js" />
+    <Content Include="Scripts\demo\websocket.js" />
+    <Content Include="Scripts\dynatree\GPL-LICENSE.txt" />
+    <Content Include="Scripts\dynatree\jquery.dynatree.js" />
+    <Content Include="Scripts\dynatree\jquery.dynatree.min.js" />
+    <Content Include="Scripts\dynatree\MIT-License.txt" />
+    <Content Include="Scripts\dynatree\skin-vista\icons.gif" />
+    <Content Include="Scripts\dynatree\skin-vista\loading.gif" />
+    <Content Include="Scripts\dynatree\skin-vista\ui.dynatree.css" />
+    <Content Include="Scripts\dynatree\skin\icons-rtl.gif" />
+    <Content Include="Scripts\dynatree\skin\icons.gif" />
+    <Content Include="Scripts\dynatree\skin\loading.gif" />
+    <Content Include="Scripts\dynatree\skin\ui.dynatree.css" />
+    <Content Include="Scripts\dynatree\skin\vline-rtl.gif" />
+    <Content Include="Scripts\dynatree\skin\vline.gif" />
+    <Content Include="Scripts\jquery\jquery-2.2.2.js" />
+    <Content Include="Scripts\jquery\jquery-2.2.2.min.js" />
+    <Content Include="Scripts\jquery\jquery-ui-1.10.4.custom.js" />
+    <Content Include="Scripts\jquery\jquery-ui-1.10.4.custom.min.js" />
+    <Content Include="Scripts\jquery\jquery.cookie.js" />
+    <Content Include="Scripts\jriapp\jriapp.js" />
+    <Content Include="Scripts\jriapp\jriapp_db.js" />
+    <Content Include="Scripts\jriapp\jriapp_langs.js" />
+    <Content Include="Scripts\jriapp\jriapp_ui.js" />
+    <Content Include="Scripts\jriapp\img\actions.png" />
+    <Content Include="Scripts\jriapp\img\cancel.png" />
+    <Content Include="Scripts\jriapp\img\collapse.jpg" />
+    <Content Include="Scripts\jriapp\img\column-asc.png" />
+    <Content Include="Scripts\jriapp\img\column-desc.png" />
+    <Content Include="Scripts\jriapp\img\column-sortable.png" />
+    <Content Include="Scripts\jriapp\img\delete.png" />
+    <Content Include="Scripts\jriapp\img\edit.png" />
+    <Content Include="Scripts\jriapp\img\expand.jpg" />
+    <Content Include="Scripts\jriapp\img\headerbg.gif" />
+    <Content Include="Scripts\jriapp\img\help.gif" />
+    <Content Include="Scripts\jriapp\img\loader.gif" />
+    <Content Include="Scripts\jriapp\img\loader2.gif" />
+    <Content Include="Scripts\jriapp\img\minus.png" />
+    <Content Include="Scripts\jriapp\img\ok.png" />
+    <Content Include="Scripts\jriapp\img\plus.png" />
+    <Content Include="Scripts\jriapp\img\warning.png" />
+    <Content Include="Scripts\jriapp\css\jriapp.css" />
+    <Content Include="Scripts\jriapp\css\jriapp_ui.css" />
+    <Content Include="Scripts\moment\moment.min.js" />
+    <Content Include="Scripts\qtip\imagesloaded.pkg.min.js" />
+    <Content Include="Scripts\qtip\jquery.qtip.css" />
+    <Content Include="Scripts\qtip\jquery.qtip.js" />
+    <Content Include="Scripts\qtip\jquery.qtip.min.css" />
+    <Content Include="Scripts\qtip\jquery.qtip.min.js" />
+    <Content Include="Scripts\require.js" />
+    <Content Include="Scripts\require.min.js" />
+    <Content Include="Templates\productEditTemplate.html" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Web.Debug.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </Content>
+    <Content Include="Web.Release.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </Content>
+    <Content Include="Views\Web.config">
+      <SubType>Designer</SubType>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="App_Data\" />
+    <Folder Include="Utils\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\FRAMEWORK\SERVER\RIAPP.DataService.EF6_CF\RIAPP.DataService.EF6_CF.csproj">
+      <Project>{8a2062b4-6992-4132-9341-6f95cd3ff138}</Project>
+      <Name>RIAPP.DataService.EF6_CF</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\FRAMEWORK\SERVER\RIAPP.DataService.Mvc\RIAPP.DataService.Mvc.csproj">
+      <Project>{bb05e399-1f91-4aff-8218-d2595da49e1b}</Project>
+      <Name>RIAPP.DataService.Mvc</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\FRAMEWORK\SERVER\RIAPP.DataService.WebApi\RIAPP.DataService.WebApi.csproj">
+      <Project>{9a60da2e-0c01-45dc-8171-68a6503718a5}</Project>
+      <Name>RIAPP.DataService.WebApi</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\FRAMEWORK\SERVER\RIAPP.DataService\RIAPP.DataService.csproj">
+      <Project>{5fa08d23-6bae-47ad-930b-a11eafff11dc}</Project>
+      <Name>RIAPP.DataService</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RIApp.BLL\RIAppDemo.BLL.csproj">
+      <Project>{16c37fab-5dc5-4728-84ed-2a4d710ac985}</Project>
+      <Name>RIAppDemo.BLL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RIApp.DAL\RIAppDemo.DAL.csproj">
+      <Project>{068797ec-d63a-4f1c-8b1c-aefeabe171e3}</Project>
+      <Name>RIAppDemo.DAL</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Demo\BindingsDemo.cshtml" />
+    <Content Include="Views\Demo\CollectionsDemo.cshtml" />
+    <Content Include="Views\Demo\DataGridDemo.cshtml" />
+    <Content Include="Views\Demo\Index.cshtml" />
+    <Content Include="Views\Demo\ManyToManyDemo.cshtml" />
+    <Content Include="Views\Demo\MasterDetailDemo.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Shared\Error.cshtml" />
+    <Content Include="Views\Shared\_LayoutDemo.cshtml" />
+    <Content Include="Views\Shared\_MenuPartial.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\_ViewStart.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Demo\FilesDemo.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Templates\DataGridDemo.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Templates\SPADemoTemplate1.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Demo\SPADemo.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Templates\SPADemoTemplate2.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Templates\SPADemoTemplate3.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Scripts\qtip\jquery.qtip.min.map" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Demo\TreeDemo.cshtml" />
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <Target Name="MvcBuildViews" AfterTargets="AfterBuild" Condition="'$(MvcBuildViews)'=='true'">
+    <AspNetCompiler VirtualPath="temp" PhysicalPath="$(WebProjectOutputDir)" />
+  </Target>
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>False</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>3482</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:2911/RIAppDemo</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>http://localhost:8080/WebSite1/</CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target> -->
+</Project>
