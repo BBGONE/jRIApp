@@ -4116,22 +4116,13 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             return res;
         };
         PropertyBag.prototype.getProperty = function (name) {
-            if (checks.isHasProp(this, name)) {
-                return this[name];
-            }
-            else
-                return this._$el.prop(name);
+            return this._$el.prop(name);
         };
         PropertyBag.prototype.setProperty = function (name, val) {
-            if (checks.isHasProp(this, name)) {
-                this[name] = val;
-            }
-            else {
-                var old = this._$el.prop(name);
-                if (old !== val) {
-                    this._$el.prop(name, val);
-                    this.raisePropertyChanged(name);
-                }
+            var old = this._$el.prop(name);
+            if (old !== val) {
+                this._$el.prop(name, val);
+                this.raisePropertyChanged(name);
             }
         };
         PropertyBag.prototype.toString = function () {
@@ -4271,7 +4262,9 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             configurable: true
         });
         Object.defineProperty(BaseElView.prototype, "el", {
-            get: function () { return this._$el.get(0); },
+            get: function () {
+                return this._$el.get(0);
+            },
             enumerable: true,
             configurable: true
         });

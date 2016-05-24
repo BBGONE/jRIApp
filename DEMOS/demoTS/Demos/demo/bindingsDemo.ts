@@ -23,19 +23,22 @@ export class UppercaseConverter extends RIAPP.BaseConverter {
 }
 
 export class TestObject extends RIAPP.BaseObject {
-    _testProperty1: string;
-    _testProperty2: string;
-    _testCommand: RIAPP.ICommand;
-    _month: number;
-    _months: DEMODB.KeyValDictionary;
-    _format: string;
-    _formats: DEMODB.StrKeyValDictionary;
+    private _testProperty1: string;
+    private _testProperty2: string;
+    private _testProperty3: string;
+    private _testCommand: RIAPP.ICommand;
+    private _month: number;
+    private _months: DEMODB.KeyValDictionary;
+    private _format: string;
+    private _formats: DEMODB.StrKeyValDictionary;
 
     constructor(initPropValue: string) {
         super();
         var self = this;
         this._testProperty1 = initPropValue;
         this._testProperty2 = null;
+        this._testProperty3 = null;
+
         this._testCommand = new RIAPP.Command(function (sender, args) {
             self._onTestCommandExecuted();
         }, self,
@@ -72,6 +75,13 @@ export class TestObject extends RIAPP.BaseObject {
         if (this._testProperty2 != v) {
             this._testProperty2 = v;
             this.raisePropertyChanged('testProperty2');
+        }
+    }
+    get testProperty3() { return this._testProperty3; }
+    set testProperty3(v) {
+        if (this._testProperty3 != v) {
+            this._testProperty3 = v;
+            this.raisePropertyChanged('testProperty3');
         }
     }
     get testCommand() { return this._testCommand; }

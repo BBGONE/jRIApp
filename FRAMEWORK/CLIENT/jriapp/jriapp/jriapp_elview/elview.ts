@@ -66,6 +66,7 @@ export const PROP_NAME = {
     click: "click"
 };
 
+// wraps HTMLElement to watch property changes and to bind declaratively to its properties
 export class PropertyBag extends BaseObject implements IPropertyBag {
     private _$el: JQuery;
 
@@ -84,22 +85,13 @@ export class PropertyBag extends BaseObject implements IPropertyBag {
     }
     //implement IPropertyBag
     getProperty(name: string): any {
-        if (checks.isHasProp(this, name)) {
-            return (<any>this)[name];
-        }
-        else
-            return this._$el.prop(name);
+        return this._$el.prop(name);
     }
     setProperty(name: string, val: any): void {
-        if (checks.isHasProp(this, name)) {
-            (<any>this)[name] = val;
-        }
-        else {
-            let old = this._$el.prop(name);
-            if (old !== val) {
-                this._$el.prop(name, val);
-                this.raisePropertyChanged(name);
-            }
+        let old = this._$el.prop(name);
+        if (old !== val) {
+            this._$el.prop(name, val);
+            this.raisePropertyChanged(name);
         }
     }
     toString() {
@@ -246,7 +238,9 @@ export class BaseElView extends BaseObject implements IElView {
     get $el() {
         return this._$el;
     }
-    get el(): HTMLElement { return this._$el.get(0); }
+    get el(): HTMLElement {
+        return this._$el.get(0);
+    }
     get uniqueID() { return this._objId; }
     get isVisible() {
         let v = this.$el.css("display");

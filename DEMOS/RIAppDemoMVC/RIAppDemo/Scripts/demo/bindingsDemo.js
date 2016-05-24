@@ -33,6 +33,7 @@ define(["require", "exports", "jriapp", "./demoDB", "./common"], function (requi
             var self = this;
             this._testProperty1 = initPropValue;
             this._testProperty2 = null;
+            this._testProperty3 = null;
             this._testCommand = new RIAPP.Command(function (sender, args) {
                 self._onTestCommandExecuted();
             }, self, function (sender, args) {
@@ -69,6 +70,17 @@ define(["require", "exports", "jriapp", "./demoDB", "./common"], function (requi
                 if (this._testProperty2 != v) {
                     this._testProperty2 = v;
                     this.raisePropertyChanged('testProperty2');
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TestObject.prototype, "testProperty3", {
+            get: function () { return this._testProperty3; },
+            set: function (v) {
+                if (this._testProperty3 != v) {
+                    this._testProperty3 = v;
+                    this.raisePropertyChanged('testProperty3');
                 }
             },
             enumerable: true,
