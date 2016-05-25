@@ -26,9 +26,8 @@ The Moment and the QTip are easily replaceable, but JQuery is more widely used i
 </br>
 The framework's concept is to be as versatile as it can be, and to have enough features to implement any kind of applications.
 <br/>
-Now the framework is more capable out of the box than any existing framework.
 <ul>
-<li>It uses typescript that can be compiled to ES5, ES6 or possibly to any future EcmaScript standards - just recompile it with new settings.</li>
+<li>It is written in typescript that can be compiled to ES5, ES6 or possibly to any future EcmaScript standards - just recompile it with new settings.</li>
 <li>It can work with (<i>data bind</i>) to any existing HTML Element or Web Component directly and subscribe to its events, declaratively.</li>
 <li>It has built-in ability to work with data stores on the server (<i>no need for a separate third party framework and its adaptation</i>).
 <li>It has very good components like Data Grid and others (<i>and be used declaratively</i>). It's easy to add custom ones.</li>
@@ -37,12 +36,8 @@ Now the framework is more capable out of the box than any existing framework.
 <li>It has superb performance because it does not use polling for any property changes and does not use
 intermixed HTML and Scripts inside template (the code is 100% separated from HTML- if you choose to do it).</li>
 <li>And the Javascript code does not know (agnostic) about HTML structure (in the React framework it is built in the code).</li>
-<li>The framework internally is much more simple than major frameworks, it uses HTML5 features implemented, at present, in most of the browsers and
+<li>The framework internally is much more simple than major frameworks, it uses HTML5 features implemented now in most of the browsers and
 does not need Polyfills. The code is not bloated.</li>
-<li>The framework's simplicity helps it to be maintained by only one man. No need to wait for some feature to be added by the authors while one can add it
-himself (herself). No need for multiple tools to compile it - any IDE which supports TypeScript will do.
-</li>
-</li>
 </ul>
 It can be used to work with NOSQL and relational databases because it can work with complex properties of unlimited depth. 
 The entities and DbContext is strongly typed because the clent domain model (entities, lists, dictionaries, dbsets, dbcontext) is generated in typescript language by data service methods
