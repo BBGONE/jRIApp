@@ -12,7 +12,7 @@ export interface IExpanderOptions extends IAncorOptions {
 }
 
 export const PROP_NAME = {
-    isExpanded: "isExpanded",
+    isExpanded: "isExpanded"
 };
 
 const COLLAPSE_IMG = "collapse.jpg", EXPAND_IMG = "expand.jpg";

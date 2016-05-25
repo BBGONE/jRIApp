@@ -79,7 +79,8 @@ The framework's data binding resembles Microsoft Silverlight data bindings style
 The framework is protected from overposting attacks out of the box because it uses metadata on the  server which checks what is posted and it uses special
 tabular format to transfer queries data to and from the server.
 Protection from XSRF attacks is handled by allowing to add headers to all requests to the server. This feature can be used to attach
-anti XSRF tokens to the requests.
+anti XSRF tokens to the requests.<br/>
+The full framework minified size is 377KB.
 </p>
 <p>
 <b>The framework contains the docs which at present for the old version of the framework, but i will update it later to reflect the new usage of the framework.</b>

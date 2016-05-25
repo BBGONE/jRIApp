@@ -7677,7 +7677,7 @@ define("jriapp_elview/expander", ["require", "exports", "jriapp_utils/utils", "j
     "use strict";
     var $ = utils_22.Utils.dom.$;
     exports.PROP_NAME = {
-        isExpanded: "isExpanded",
+        isExpanded: "isExpanded"
     };
     var COLLAPSE_IMG = "collapse.jpg", EXPAND_IMG = "expand.jpg";
     var ExpanderElView = (function (_super) {
