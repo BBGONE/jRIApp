@@ -1505,7 +1505,7 @@ define("jriapp_core/mvvm", ["require", "exports", "jriapp_core/object", "jriapp_
     }(object_1.BaseObject));
     exports.ViewModel = ViewModel;
 });
-define("jriapp_core/eventstore", ["require", "exports", "jriapp_core/object", "jriapp_utils/syschecks"], function (require, exports, object_2, syschecks_3) {
+define("jriapp_utils/eventstore", ["require", "exports", "jriapp_core/object", "jriapp_utils/syschecks"], function (require, exports, object_2, syschecks_3) {
     "use strict";
     (function (EVENT_CHANGE_TYPE) {
         EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["None"] = 0] = "None";
@@ -4048,7 +4048,7 @@ define("jriapp_content/int", ["require", "exports", "jriapp_utils/utils", "jriap
     }
     exports.parseContentAttr = parseContentAttr;
 });
-define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/syschecks", "jriapp_core/bootstrap", "jriapp_utils/utils", "jriapp_core/mvvm", "jriapp_core/eventstore"], function (require, exports, const_4, lang_7, object_9, syschecks_5, bootstrap_3, utils_3, mvvm_1, eventstore_1) {
+define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/syschecks", "jriapp_core/bootstrap", "jriapp_utils/utils", "jriapp_core/mvvm", "jriapp_utils/eventstore"], function (require, exports, const_4, lang_7, object_9, syschecks_5, bootstrap_3, utils_3, mvvm_1, eventstore_1) {
     "use strict";
     exports.EVENT_CHANGE_TYPE = eventstore_1.EVENT_CHANGE_TYPE;
     var coreUtils = utils_3.Utils.core, $ = utils_3.Utils.dom.$, checks = utils_3.Utils.check;
@@ -4130,7 +4130,6 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
         };
         return PropertyBag;
     }(object_9.BaseObject));
-    exports.PropertyBag = PropertyBag;
     var BaseElView = (function (_super) {
         __extends(BaseElView, _super);
         function BaseElView(options) {

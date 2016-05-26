@@ -1,4 +1,5 @@
-﻿import { TOOLTIP_SVC, DATA_ATTR } from "../jriapp_core/const";
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+import { TOOLTIP_SVC, DATA_ATTR } from "../jriapp_core/const";
 import { ITooltipService, IElView, IValidationInfo, IApplication, IViewOptions, IPropertyBag } from "../jriapp_core/shared";
 import { ERRS, STRS } from "../jriapp_core/lang";
 import { BaseObject }  from "../jriapp_core/object";
@@ -6,7 +7,7 @@ import { SysChecks } from "../jriapp_utils/syschecks";
 import { bootstrap } from "../jriapp_core/bootstrap";
 import { Utils as utils } from "../jriapp_utils/utils";
 import { TAction, TCommand, ICommand, Command, TPredicate } from "../jriapp_core/mvvm";
-import { IEventStore, EventStore, EVENT_CHANGE_TYPE, IEventChangedArgs } from "../jriapp_core/eventstore";
+import { IEventStore, EventStore, EVENT_CHANGE_TYPE, IEventChangedArgs } from "../jriapp_utils/eventstore";
 
 export { IEventChangedArgs, IEventStore, EVENT_CHANGE_TYPE };
 
@@ -67,7 +68,7 @@ export const PROP_NAME = {
 };
 
 // wraps HTMLElement to watch property changes and to bind declaratively to its properties
-export class PropertyBag extends BaseObject implements IPropertyBag {
+class PropertyBag extends BaseObject implements IPropertyBag {
     private _$el: JQuery;
 
     constructor($el: JQuery) {

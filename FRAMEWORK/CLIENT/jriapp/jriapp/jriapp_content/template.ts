@@ -1,4 +1,5 @@
-﻿import { IContent, ITemplateEvents, IApplication, ITemplate, ITemplateInfo, IConstructorContentOptions }  from "../jriapp_core/shared";
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+import { IContent, ITemplateEvents, IApplication, ITemplate, ITemplateInfo, IConstructorContentOptions }  from "../jriapp_core/shared";
 import { BaseObject }  from "../jriapp_core/object";
 import { ERRS } from "../jriapp_core/lang";
 import { ERROR } from "../jriapp_utils/coreutils";

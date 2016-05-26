@@ -1,4 +1,5 @@
-﻿import { SORT_ORDER } from "jriapp_core/const";
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+import { SORT_ORDER } from "jriapp_core/const";
 import { IIndexer, IBaseObject, IExternallyCachable } from "jriapp_core/shared";
 import { Utils as utils } from "jriapp_utils/utils";
 

@@ -1,4 +1,5 @@
-﻿import { BINDING_MODE } from "../jriapp_core/const";
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+import { BINDING_MODE } from "../jriapp_core/const";
 import { IElView }  from "../jriapp_core/shared";
 import { LifeTimeScope } from "../jriapp_utils/utils";
 import { CheckBoxElView } from "../jriapp_elview/checkbox";

@@ -1,4 +1,5 @@
-﻿import { DATA_ATTR, STORE_KEY } from "../jriapp_core/const";
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+import { DATA_ATTR, STORE_KEY } from "../jriapp_core/const";
 import { IElViewStore, IElView, IIndexer, IViewType, IApplication, IExports, IViewOptions, IErrorHandler,
     IElViewFactory, IElViewRegister } from "../jriapp_core/shared";
 import { bootstrap } from "../jriapp_core/bootstrap";

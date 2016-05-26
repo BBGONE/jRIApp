@@ -1,4 +1,5 @@
-﻿import { IApplication, IConstructorContentOptions, IBindingInfo, IBindingOptions, IElView, IBaseObject }  from "../jriapp_core/shared";
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+import { IApplication, IConstructorContentOptions, IBindingInfo, IBindingOptions, IElView, IBaseObject }  from "../jriapp_core/shared";
 import { ERRS } from "../jriapp_core/lang";
 import { Utils as utils } from "../jriapp_utils/utils";
 

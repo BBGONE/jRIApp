@@ -1,4 +1,5 @@
-﻿import { DATA_ATTR } from "jriapp_core/const";
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+import { DATA_ATTR } from "jriapp_core/const";
 import { Utils as utils } from "jriapp_utils/utils";
 
 import { css, ROW_ACTION } from "../const";

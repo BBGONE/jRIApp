@@ -1,4 +1,5 @@
-﻿import { IContentOptions, ITemplateInfo, IBindingInfo }  from "../jriapp_core/shared";
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+import { IContentOptions, ITemplateInfo, IBindingInfo }  from "../jriapp_core/shared";
 import { Utils as utils } from "../jriapp_utils/utils";
 import { parser } from "../jriapp_core/parser";
 

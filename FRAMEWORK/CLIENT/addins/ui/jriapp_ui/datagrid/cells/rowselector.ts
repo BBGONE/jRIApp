@@ -1,4 +1,5 @@
-﻿import { IContent, IBindingInfo, IContentOptions } from "jriapp_core/shared";
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+import { IContent, IBindingInfo, IContentOptions } from "jriapp_core/shared";
 import { BoolContent } from "jriapp_content/bool";
 import { Utils as utils } from "jriapp_utils/utils";
 

@@ -1,4 +1,5 @@
-﻿import { DATA_ATTR, } from "jriapp_core/const";
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+import { DATA_ATTR, } from "jriapp_core/const";
 import { ERRS, STRS } from "jriapp_core/lang";
 import { ButtonCss } from "jriapp_core/shared";
 import { fn_addToolTip } from "jriapp_elview/elview";

@@ -1,4 +1,5 @@
-﻿import { DATA_ATTR } from "jriapp_core/const";
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+import { DATA_ATTR } from "jriapp_core/const";
 import { IContentOptions } from "jriapp_core/shared";
 import { BaseObject } from "jriapp_core/object";
 import { Utils as utils } from "jriapp_utils/utils";

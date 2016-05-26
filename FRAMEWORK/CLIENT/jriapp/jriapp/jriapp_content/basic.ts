@@ -1,4 +1,5 @@
-﻿import { FIELD_TYPE, BINDING_MODE } from "../jriapp_core/const";
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+import { FIELD_TYPE, BINDING_MODE } from "../jriapp_core/const";
 import { IApplication, IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IElView, IViewOptions,
     IBaseObject, IBindingInfo, IBindingOptions, IFieldInfo }  from "../jriapp_core/shared";
 import { BaseObject }  from "../jriapp_core/object";

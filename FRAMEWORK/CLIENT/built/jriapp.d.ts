@@ -927,7 +927,7 @@ declare module "jriapp_core/mvvm" {
         app: TApp;
     }
 }
-declare module "jriapp_core/eventstore" {
+declare module "jriapp_utils/eventstore" {
     import { ICommand } from "jriapp_core/mvvm";
     import { BaseObject } from "jriapp_core/object";
     export const enum EVENT_CHANGE_TYPE {
@@ -1424,7 +1424,7 @@ declare module "jriapp_elview/elview" {
     import { IElView, IValidationInfo, IApplication, IViewOptions, IPropertyBag } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
     import { TAction, TCommand, ICommand, TPredicate } from "jriapp_core/mvvm";
-    import { IEventStore, EVENT_CHANGE_TYPE, IEventChangedArgs } from "jriapp_core/eventstore";
+    import { IEventStore, EVENT_CHANGE_TYPE, IEventChangedArgs } from "jriapp_utils/eventstore";
     export { IEventChangedArgs, IEventStore, EVENT_CHANGE_TYPE };
     export function fn_addToolTip($el: JQuery, tip: string, isError?: boolean, pos?: string): void;
     export type PropChangedCommand = TCommand<{
@@ -1472,14 +1472,6 @@ declare module "jriapp_elview/elview" {
         src: string;
         click: string;
     };
-    export class PropertyBag extends BaseObject implements IPropertyBag {
-        private _$el;
-        constructor($el: JQuery);
-        _isHasProp(prop: string): boolean;
-        getProperty(name: string): any;
-        setProperty(name: string, val: any): void;
-        toString(): string;
-    }
     export class BaseElView extends BaseObject implements IElView {
         private _objId;
         private _$el;

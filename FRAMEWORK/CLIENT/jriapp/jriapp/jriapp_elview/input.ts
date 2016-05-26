@@ -1,4 +1,5 @@
-﻿import { IViewOptions } from "../jriapp_core/shared";
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+import { IViewOptions } from "../jriapp_core/shared";
 import { BaseElView, PROP_NAME } from "./elview";
 
 export class InputElView extends BaseElView {

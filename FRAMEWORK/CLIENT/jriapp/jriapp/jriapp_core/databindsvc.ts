@@ -1,4 +1,5 @@
-﻿import { DATA_ATTR } from "./const";
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+import { DATA_ATTR } from "./const";
 import { IElViewFactory, IElView, IViewType, IIndexer, IApplication, IErrorHandler, IExports, ILifeTimeScope, IBindableElement,
     IPromise, IVoidPromise, IBindingOptions, DummyError, IDataBindingService, IModuleLoader } from "./shared";
 import { ERRS } from "./lang";

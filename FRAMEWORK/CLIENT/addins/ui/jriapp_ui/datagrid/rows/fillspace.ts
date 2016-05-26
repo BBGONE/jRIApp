@@ -1,4 +1,5 @@
-﻿import { BaseObject } from "jriapp_core/object";
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+import { BaseObject } from "jriapp_core/object";
 import { Utils as utils } from "jriapp_utils/utils";
 
 import { css } from "../const";

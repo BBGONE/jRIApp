@@ -1,4 +1,5 @@
-﻿import { KEYS } from "../jriapp_core/const";
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+import { KEYS } from "../jriapp_core/const";
 import { ERRS } from "../jriapp_core/lang";
 import { IApplication, IElView, IConstructorContentOptions, IFieldInfo }  from "../jriapp_core/shared";
 import { Utils as utils } from "../jriapp_utils/utils";

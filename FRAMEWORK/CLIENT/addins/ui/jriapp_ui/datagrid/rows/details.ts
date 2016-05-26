@@ -1,4 +1,5 @@
-﻿import { BaseObject } from "jriapp_core/object";
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+import { BaseObject } from "jriapp_core/object";
 import { Utils as utils, Debounce, DblClick, ERROR, DomUtils as dom } from "jriapp_utils/utils";
 import { ICollection, ICollectionItem, ICollChangedArgs, COLL_CHANGE_TYPE, COLL_CHANGE_REASON, ITEM_STATUS,
     ICollItemArgs, ICollItemAddedArgs } from "jriapp_collection/collection";

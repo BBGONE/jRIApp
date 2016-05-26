@@ -1,4 +1,5 @@
-﻿import { IContent } from "jriapp_core/shared";
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+import { IContent } from "jriapp_core/shared";
 import { ERRS } from "jriapp_core/lang";
 import { contentFactories } from "jriapp_content/factory";
 import { Utils as utils } from "jriapp_utils/utils";

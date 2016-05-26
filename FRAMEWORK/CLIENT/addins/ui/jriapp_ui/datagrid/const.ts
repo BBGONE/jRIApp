@@ -1,4 +1,5 @@
-﻿import { IIndexer } from "jriapp_core/shared";
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+import { IIndexer } from "jriapp_core/shared";
 
 export const COLUMN_TYPE = {
     DATA: "data",

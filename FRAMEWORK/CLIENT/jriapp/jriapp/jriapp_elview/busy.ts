@@ -1,4 +1,5 @@
-﻿import { LOADER_GIF } from "../jriapp_core/const";
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+import { LOADER_GIF } from "../jriapp_core/const";
 import { IViewOptions } from "../jriapp_core/shared";
 import { Checks as checks } from "../jriapp_utils/coreutils";
 import { Utils as utils } from "../jriapp_utils/utils";
