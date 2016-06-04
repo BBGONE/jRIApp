@@ -1028,19 +1028,6 @@ define(["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "./demoDB", ".
         alert(args.error.message);
         args.isHandled = true;
     });
-    bootstrap.addOnUnResolvedBinding(function (s, args) {
-        var msg = "unresolved databound property for";
-        if (args.bindTo == 0) {
-            msg += " Source: ";
-        }
-        else {
-            msg += " Target: ";
-        }
-        msg += "'" + args.root + "'";
-        msg += ", property: '" + args.propName + "'";
-        msg += ", binding path: '" + args.path + "'";
-        console.log(msg);
-    });
     function start(mainOptions) {
         mainOptions.modulesInits = {
             "COMMON": COMMON.initModule

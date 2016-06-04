@@ -49,35 +49,29 @@
         };
         requirejs.config(config);
     </script>
-    <script id="errorTemplate" type="text/html" data-role="template">
-        @*error dialog template*@
-        <div id="errorTemplate" data-role="template">
-            <div style="background-color: White; height: 100%; width: 100%;">
-                <div style="color: Red; margin-bottom: 1em;" data-bind="{this.value,to=message}"></div>
-                Handled errors count:
-                <div style="display: inline-block" data-bind="{this.value,to=errorCount}"></div>
-            </div>
-        </div>
-    </script>
 </head>
 <body>
-<div class="container-fluid">
-    <div class="row-fluid" style="border-bottom: 1px #5C87B2 solid;">
-        <div class="ria-navbar">
-            @Html.Partial("_MenuPartial")
+    <div>
+        <div style="border-bottom: 1px #5C87B2 solid;">
+            <div>
+                @Html.Partial("_MenuPartial")
+            </div>
         </div>
+        <div id="bodyDiv">
+            @RenderBody()
+        </div>
+        <footer>
+            @RenderSection("Footer", false)
+        </footer>
     </div>
-    <div id="bodyDiv">
-        @RenderBody()
-    </div>
-    <footer>
-        @RenderSection("Footer", false)
-    </footer>
-</div>
 
-@*invisible section to hold data template*@
-<section class="ria-template">
-    @RenderSection("RiaTemplates", false)
-</section>
+    <script id="errorTemplate" type="text/html" data-role="template">
+        @*error dialog template*@
+        <div style="background-color: white; height: 100%; width: 100%;">
+            <div style="color: red; margin-bottom: 1em;" data-bind="{this.value,to=message}"></div>
+            Handled errors count:
+            <div style="display: inline-block" data-bind="{this.value,to=errorCount}"></div>
+        </div>
+    </script>
 </body>
 </html>

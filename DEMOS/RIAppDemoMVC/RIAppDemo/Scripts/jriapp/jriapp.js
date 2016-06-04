@@ -726,6 +726,21 @@ define("jriapp_utils/coreutils", ["require", "exports", "jriapp_core/const", "jr
         return ERROR;
     }());
     exports.ERROR = ERROR;
+    var LOG = (function () {
+        function LOG() {
+        }
+        LOG.log = function (str) {
+            console.log(str);
+        };
+        LOG.warn = function (str) {
+            console.warn(str);
+        };
+        LOG.error = function (str) {
+            console.error(str);
+        };
+        return LOG;
+    }());
+    exports.LOG = LOG;
     var CoreUtils = (function () {
         function CoreUtils() {
         }
@@ -956,6 +971,7 @@ define("jriapp_core/lang", ["require", "exports", "jriapp_utils/coreutils"], fun
         ERR_TEMPLATE_ALREADY_REGISTERED: "TEMPLATE with the name: {0} is already registered",
         ERR_TEMPLATE_NOTREGISTERED: "TEMPLATE with the name: {0} is not registered",
         ERR_TEMPLATE_GROUP_NOTREGISTERED: "TEMPLATE's group: {0} is not registered",
+        ERR_TEMPLATE_HAS_NO_ID: "TEMPLATE inside SCRIPT tag must have an ID attribute",
         ERR_CONVERTER_NOTREGISTERED: "Converter: {0} is not registered",
         ERR_JQUERY_DATEPICKER_NOTFOUND: "Application is dependent on JQuery.UI.datepicker. Please include it in the scripts.",
         ERR_PARAM_INVALID: "Parameter: {0} has invalid value: {1}",
@@ -3341,8 +3357,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
     var GLOB_EVENTS = {
         load: "load",
         unload: "unload",
-        initialized: "initialize",
-        unresolvedBinding: "unresolvedBind"
+        initialized: "initialize"
     };
     var PROP_NAME = {
         curSelectable: "currentSelectable",
@@ -3410,9 +3425,6 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
                 },
                 getConverter: function (name) {
                     return self._getConverter(name);
-                },
-                onUnResolvedBinding: function (bindTo, root, path, propName) {
-                    self._onUnResolvedBinding(bindTo, root, path, propName);
                 }
             };
             this._defaults = new defaults_1.Defaults(this);
@@ -3458,21 +3470,14 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             tmpDiv.innerHTML = html;
             this._processTemplateSection(tmpDiv, app);
         };
-        Bootstrap.prototype._processTemplateSections = function () {
-            var self = this, root = dom_6.DomUtils.document;
-            var sections = coreutils_12.CoreUtils.arr.fromList(root.querySelectorAll(_TEMPLATES_SELECTOR));
-            sections.forEach(function (el) {
-                self._processTemplateSection(el, null);
-                dom_6.DomUtils.removeNode(el);
-            });
-        };
         Bootstrap.prototype._processTemplateSection = function (templateSection, app) {
             var self = this, templates = coreutils_12.CoreUtils.arr.fromList(templateSection.querySelectorAll(_TEMPLATE_SELECTOR));
             templates.forEach(function (el) {
-                var tmpDiv = document.createElement("div"), html, name = el.getAttribute("id");
+                var html, name = el.getAttribute("id");
+                if (!name)
+                    throw new Error(lang_5.ERRS.ERR_TEMPLATE_HAS_NO_ID);
                 el.removeAttribute("id");
-                tmpDiv.appendChild(el);
-                html = tmpDiv.innerHTML;
+                html = el.outerHTML;
                 self._processTemplate(name, html, app);
             });
         };
@@ -3480,7 +3485,9 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             var self = this, root = dom_6.DomUtils.document, templates = coreutils_12.CoreUtils.arr.fromList(root.querySelectorAll(_TEMPLATE_SELECTOR2));
             templates.forEach(function (el) {
                 var name = el.getAttribute("id");
-                var html = $(el).html();
+                if (!name)
+                    throw new Error(lang_5.ERRS.ERR_TEMPLATE_HAS_NO_ID);
+                var html = el.innerHTML;
                 self._processTemplate(name, html, null);
             });
         };
@@ -3527,7 +3534,6 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             self._bootState = 2;
             self.raiseEvent(GLOB_EVENTS.initialized, {});
             try {
-                self._processTemplateSections();
                 self._processScriptTemplates();
             }
             catch (err) {
@@ -3610,10 +3616,6 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
                 throw new Error(coreutils_12.StringUtils.format(lang_5.ERRS.ERR_CONVERTER_NOTREGISTERED, name));
             return res;
         };
-        Bootstrap.prototype._onUnResolvedBinding = function (bindTo, root, path, propName) {
-            var args = { bindTo: bindTo, root: root, path: path, propName: propName };
-            this.raiseEvent(GLOB_EVENTS.unresolvedBinding, args);
-        };
         Bootstrap.prototype._getInternal = function () {
             return this._internal;
         };
@@ -3625,12 +3627,6 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
         };
         Bootstrap.prototype.addOnInitialize = function (fn, nmspace, context) {
             this._addHandler(GLOB_EVENTS.initialized, fn, nmspace, context, false);
-        };
-        Bootstrap.prototype.addOnUnResolvedBinding = function (fn, nmspace, context) {
-            this._addHandler(GLOB_EVENTS.unresolvedBinding, fn, nmspace, context, false);
-        };
-        Bootstrap.prototype.removeOnUnResolvedBinding = function (nmspace) {
-            this._removeHandler(GLOB_EVENTS.unresolvedBinding, nmspace);
         };
         Bootstrap.prototype.addModuleInit = function (fn) {
             if (this._moduleInits.filter(function (val) { return val === fn; }).length === 0) {
@@ -3790,7 +3786,7 @@ define("jriapp_core/converter", ["require", "exports", "jriapp_core/lang", "jria
     }());
     exports.BaseConverter = BaseConverter;
     ;
-    var baseConverter = new BaseConverter();
+    exports.baseConverter = new BaseConverter();
     var DateConverter = (function () {
         function DateConverter() {
         }
@@ -3993,7 +3989,7 @@ define("jriapp_core/converter", ["require", "exports", "jriapp_core/lang", "jria
         return NotConverter;
     }());
     exports.NotConverter = NotConverter;
-    bootstrap_2.bootstrap.registerConverter("BaseConverter", baseConverter);
+    bootstrap_2.bootstrap.registerConverter("BaseConverter", exports.baseConverter);
     bootstrap_2.bootstrap.registerConverter("dateConverter", dateConverter);
     bootstrap_2.bootstrap.registerConverter("dateTimeConverter", dateTimeConverter);
     bootstrap_2.bootstrap.registerConverter("numberConverter", numberConverter);
@@ -4390,11 +4386,37 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
     exports.BaseElView = BaseElView;
     bootstrap_3.bootstrap.registerElView("generic", BaseElView);
 });
-define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/syschecks", "jriapp_utils/coreutils", "jriapp_core/bootstrap", "jriapp_utils/utils", "jriapp_core/parser"], function (require, exports, lang_8, object_10, syschecks_6, coreutils_14, bootstrap_4, utils_4, parser_3) {
+define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/converter", "jriapp_core/bootstrap", "jriapp_core/parser", "jriapp_utils/syschecks", "jriapp_utils/coreutils", "jriapp_utils/utils"], function (require, exports, lang_8, object_10, converter_1, bootstrap_4, parser_3, syschecks_6, coreutils_14, utils_4) {
     "use strict";
+    var utils = utils_4.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
     syschecks_6.SysChecks._isBinding = function (obj) {
         return (!!obj && obj instanceof Binding);
     };
+    function onUnResolvedBinding(bindTo, root, path, propName) {
+        if (!coreutils_14.DEBUG.isDebugging()) {
+            return;
+        }
+        coreutils_14.DEBUG.checkStartDebugger();
+        var msg = "UnResolved data binding for ";
+        if (bindTo == 0) {
+            msg += " Source: ";
+        }
+        else {
+            msg += " Target: ";
+        }
+        msg += "'" + root + "'";
+        msg += ", property: '" + propName + "'";
+        msg += ", binding path: '" + path + "'";
+        coreutils_14.LOG.warn(msg);
+    }
+    ;
+    var _newID = 0;
+    function getNewID() {
+        var id = "bnd" + _newID;
+        _newID += 1;
+        return id;
+    }
+    ;
     var bindModeMap = {
         OneTime: 0,
         OneWay: 1,
@@ -4424,7 +4446,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
         if (!!bindInfo.mode)
             bindingOpts.mode = bindModeMap[bindInfo.mode];
         if (!!bindInfo.converter) {
-            if (coreutils_14.Checks.isString(bindInfo.converter))
+            if (checks.isString(bindInfo.converter))
                 bindingOpts.converter = app.getConverter(bindInfo.converter);
             else
                 bindingOpts.converter = bindInfo.converter;
@@ -4432,7 +4454,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
         if (!fixedTarget)
             bindingOpts.target = defaultTarget;
         else {
-            if (coreutils_14.Checks.isString(fixedTarget)) {
+            if (checks.isString(fixedTarget)) {
                 if (fixedTarget === "this")
                     bindingOpts.target = defaultTarget;
                 else {
@@ -4447,7 +4469,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
         }
         else {
             bindingOpts.isSourceFixed = true;
-            if (coreutils_14.Checks.isString(fixedSource)) {
+            if (checks.isString(fixedSource)) {
                 if (fixedSource === "this") {
                     bindingOpts.source = defaultTarget;
                 }
@@ -4465,21 +4487,21 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
         __extends(Binding, _super);
         function Binding(options, appName) {
             _super.call(this);
-            var opts = coreutils_14.CoreUtils.extend({
+            var opts = coreUtils.extend({
                 target: null, source: null,
                 targetPath: null, sourcePath: null, mode: 1,
                 converter: null, converterParam: null, isSourceFixed: false
             }, options);
-            if (coreutils_14.Checks.isString(opts.mode)) {
+            if (checks.isString(opts.mode)) {
                 opts.mode = bindModeMap[opts.mode];
             }
-            if (!coreutils_14.Checks.isString(opts.targetPath)) {
+            if (!checks.isString(opts.targetPath)) {
                 coreutils_14.DEBUG.checkStartDebugger();
-                throw new Error(coreutils_14.StringUtils.format(lang_8.ERRS.ERR_BIND_TGTPATH_INVALID, opts.targetPath));
+                throw new Error(strUtils.format(lang_8.ERRS.ERR_BIND_TGTPATH_INVALID, opts.targetPath));
             }
-            if (coreutils_14.Checks.isNt(opts.mode)) {
+            if (checks.isNt(opts.mode)) {
                 coreutils_14.DEBUG.checkStartDebugger();
-                throw new Error(coreutils_14.StringUtils.format(lang_8.ERRS.ERR_BIND_MODE_INVALID, opts.mode));
+                throw new Error(strUtils.format(lang_8.ERRS.ERR_BIND_MODE_INVALID, opts.mode));
             }
             if (!opts.target) {
                 throw new Error(lang_8.ERRS.ERR_BIND_TARGET_EMPTY);
@@ -4490,15 +4512,15 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             this._appName = appName;
             this._state = null;
             this._mode = opts.mode;
-            this._converter = opts.converter || bootstrap_4.bootstrap._getInternal().getConverter("BaseConverter");
+            this._converter = opts.converter || converter_1.baseConverter;
             this._converterParam = opts.converterParam;
             this._srcPath = parser_3.parser.getPathParts(opts.sourcePath);
             this._tgtPath = parser_3.parser.getPathParts(opts.targetPath);
             if (this._tgtPath.length < 1)
-                throw new Error(coreutils_14.StringUtils.format(lang_8.ERRS.ERR_BIND_TGTPATH_INVALID, opts.targetPath));
+                throw new Error(strUtils.format(lang_8.ERRS.ERR_BIND_TGTPATH_INVALID, opts.targetPath));
             this._isSourceFixed = (!!opts.isSourceFixed);
             this._pathItems = {};
-            this._objId = "bnd" + coreutils_14.CoreUtils.getNewID();
+            this._objId = getNewID();
             this._ignoreSrcChange = false;
             this._ignoreTgtChange = false;
             this._sourceObj = null;
@@ -4507,7 +4529,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             this._target = null;
             this.target = opts.target;
             this.source = opts.source;
-            var err_notif = utils_4.Utils.getErrorNotification(this._sourceObj);
+            var err_notif = utils.getErrorNotification(this._sourceObj);
             if (!!err_notif && err_notif.getIsHasErrors())
                 this._onSrcErrorsChanged(err_notif);
         }
@@ -4580,11 +4602,8 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                     if (!!nextObj) {
                         self._parseSrcPath2(nextObj, path.slice(1), lvl + 1);
                     }
-                    else if (coreutils_14.Checks.isUndefined(nextObj)) {
-                        if (coreutils_14.DEBUG.isDebugging()) {
-                            coreutils_14.DEBUG.checkStartDebugger();
-                            bootstrap_4.bootstrap._getInternal().onUnResolvedBinding(0, self.source, self._srcPath.join("."), path[0]);
-                        }
+                    else if (checks.isUndefined(nextObj)) {
+                        onUnResolvedBinding(0, self.source, self._srcPath.join("."), path[0]);
                     }
                 }
                 return;
@@ -4592,21 +4611,20 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             if (!!obj && path.length === 1) {
                 isValidProp = true;
                 if (coreutils_14.DEBUG.isDebugging())
-                    isValidProp = isBaseObj ? obj._isHasProp(path[0]) : coreutils_14.Checks.isHasProp(obj, path[0]);
+                    isValidProp = isBaseObj ? obj._isHasProp(path[0]) : checks.isHasProp(obj, path[0]);
                 if (isValidProp) {
                     var updateOnChange = isBaseObj && (self._mode === 1 || self._mode === 2);
                     if (updateOnChange) {
                         obj.addOnPropertyChange(path[0], self._updateTarget, self._objId, self);
                     }
-                    var err_notif = utils_4.Utils.getErrorNotification(obj);
+                    var err_notif = utils.getErrorNotification(obj);
                     if (!!err_notif) {
                         err_notif.addOnErrorsChanged(self._onSrcErrorsChanged, self._objId, self);
                     }
                     self._sourceObj = obj;
                 }
                 else {
-                    coreutils_14.DEBUG.checkStartDebugger();
-                    bootstrap_4.bootstrap._getInternal().onUnResolvedBinding(0, self.source, self._srcPath.join("."), path[0]);
+                    onUnResolvedBinding(0, self.source, self._srcPath.join("."), path[0]);
                 }
             }
         };
@@ -4642,19 +4660,17 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                     if (!!nextObj) {
                         self._parseTgtPath2(nextObj, path.slice(1), lvl + 1);
                     }
-                    else if (coreutils_14.Checks.isUndefined(nextObj)) {
-                        if (coreutils_14.DEBUG.isDebugging()) {
-                            coreutils_14.DEBUG.checkStartDebugger();
-                            bootstrap_4.bootstrap._getInternal().onUnResolvedBinding(1, self.target, self._tgtPath.join("."), path[0]);
-                        }
+                    else if (checks.isUndefined(nextObj)) {
+                        onUnResolvedBinding(1, self.target, self._tgtPath.join("."), path[0]);
                     }
                 }
                 return;
             }
             if (!!obj && path.length === 1) {
                 isValidProp = true;
-                if (coreutils_14.DEBUG.isDebugging())
-                    isValidProp = isBaseObj ? obj._isHasProp(path[0]) : coreutils_14.Checks.isHasProp(obj, path[0]);
+                if (coreutils_14.DEBUG.isDebugging()) {
+                    isValidProp = isBaseObj ? obj._isHasProp(path[0]) : checks.isHasProp(obj, path[0]);
+                }
                 if (isValidProp) {
                     var updateOnChange = isBaseObj && (self._mode === 2 || self._mode === 3);
                     if (updateOnChange) {
@@ -4663,8 +4679,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                     self._targetObj = obj;
                 }
                 else {
-                    coreutils_14.DEBUG.checkStartDebugger();
-                    bootstrap_4.bootstrap._getInternal().onUnResolvedBinding(1, self.target, self._tgtPath.join("."), path[0]);
+                    onUnResolvedBinding(1, self.target, self._tgtPath.join("."), path[0]);
                 }
             }
         };
@@ -4679,7 +4694,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                         key = "t" + i;
                         break;
                     default:
-                        throw new Error(coreutils_14.StringUtils.format(lang_8.ERRS.ERR_PARAM_INVALID, "bindingTo", bindingTo));
+                        throw new Error(strUtils.format(lang_8.ERRS.ERR_PARAM_INVALID, "bindingTo", bindingTo));
                 }
                 oldObj = this._pathItems[key];
                 if (!!oldObj) {
@@ -4694,7 +4709,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
         Binding.prototype._cleanUpObj = function (oldObj) {
             if (!!oldObj) {
                 oldObj.removeNSHandlers(this._objId);
-                var err_notif = utils_4.Utils.getErrorNotification(oldObj);
+                var err_notif = utils.getErrorNotification(oldObj);
                 if (!!err_notif) {
                     err_notif.removeOnErrorsChanged(this._objId);
                 }
@@ -4789,7 +4804,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                 this._target = value;
                 this._bindToTarget();
                 if (!!this._target && !this._targetObj)
-                    throw new Error(coreutils_14.StringUtils.format(lang_8.ERRS.ERR_BIND_TGTPATH_INVALID, this._tgtPath.join(".")));
+                    throw new Error(strUtils.format(lang_8.ERRS.ERR_BIND_TGTPATH_INVALID, this._tgtPath.join(".")));
             }
         };
         Binding.prototype._setSource = function (value) {
@@ -4819,8 +4834,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                 return;
             this._isDestroyCalled = true;
             var self = this;
-            coreutils_14.CoreUtils.forEachProp(this._pathItems, function (key) {
-                var old = self._pathItems[key];
+            coreUtils.iterateIndexer(this._pathItems, function (key, old) {
                 self._cleanUpObj(old);
             });
             this._pathItems = {};
@@ -10005,9 +10019,9 @@ define("jriapp_utils/mloader", ["require", "exports", "jriapp_utils/utils", "jri
         return ModuleLoader;
     }());
 });
-define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "jriapp_core/shared", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_utils/mloader", "jriapp_core/binding", "jriapp_core/parser"], function (require, exports, const_8, shared_5, lang_22, object_19, coreutils_25, utils_34, mloader_1, binding_2, parser_6) {
+define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "jriapp_core/shared", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/syschecks", "jriapp_utils/utils", "jriapp_utils/mloader", "jriapp_core/binding", "jriapp_core/parser"], function (require, exports, const_8, shared_5, lang_22, object_19, syschecks_8, utils_34, mloader_1, binding_2, parser_6) {
     "use strict";
-    var $ = utils_34.Utils.dom.$, document = utils_34.Utils.dom.document, strUtils = utils_34.Utils.str;
+    var $ = utils_34.Utils.dom.$, document = utils_34.Utils.dom.document, strUtils = utils_34.Utils.str, syschecks = syschecks_8.SysChecks;
     function create(app, root, elViewFactory) {
         return new DataBindingService(app, root, elViewFactory);
     }
@@ -10090,7 +10104,7 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
         };
         DataBindingService.prototype._updDataFormAttr = function (bindElems) {
             bindElems.forEach(function (bindElem) {
-                if (!bindElem.dataForm && coreutils_25.SysChecks._isDataForm(bindElem.el)) {
+                if (!bindElem.dataForm && syschecks._isDataForm(bindElem.el)) {
                     bindElem.el.setAttribute(const_8.DATA_ATTR.DATA_FORM, "yes");
                     bindElem.dataForm = "yes";
                 }
@@ -10100,7 +10114,7 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
             var self = this, op, bind_attr, temp_opts, app = self.app;
             lftm.addObj(elView);
             if (isInsideTemplate)
-                coreutils_25.SysChecks._setIsInsideTemplate(elView);
+                syschecks._setIsInsideTemplate(elView);
             bind_attr = bindElem.expressions.join("");
             if (!!bind_attr) {
                 var temp_opts_1 = parser_6.parser.parseOptions(bind_attr);
@@ -10127,7 +10141,7 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
                 self._updDataFormAttr(bindElems);
                 var forms_1 = self._getOnlyDataFormElems(bindElems);
                 var needBinding = bindElems.filter(function (bindElem) {
-                    return !coreutils_25.SysChecks._isInNestedForm(templateEl, forms_1, bindElem.el);
+                    return !syschecks._isInNestedForm(templateEl, forms_1, bindElem.el);
                 });
                 needBinding.forEach(function (bindElem) {
                     var elView = self._elViewFactory.getOrCreateElView(bindElem.el);
@@ -10170,7 +10184,7 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
                 }
                 var forms_2 = self._getOnlyDataFormElems(bindElems);
                 var needBinding = bindElems.filter(function (bindElem) {
-                    return !coreutils_25.SysChecks._isInNestedForm(scope, forms_2, bindElem.el);
+                    return !syschecks._isInNestedForm(scope, forms_2, bindElem.el);
                 });
                 needBinding.forEach(function (bindElem) {
                     var elView = self._elViewFactory.getOrCreateElView(bindElem.el);
@@ -10217,7 +10231,7 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
         return DataBindingService;
     }(object_19.BaseObject));
 });
-define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_core/shared", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_elview/factory", "jriapp_core/databindsvc", "jriapp_core/template"], function (require, exports, const_9, shared_6, lang_23, object_20, bootstrap_24, coreutils_26, utils_35, factory_3, databindsvc_1, template_3) {
+define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_core/shared", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_elview/factory", "jriapp_core/databindsvc", "jriapp_core/template"], function (require, exports, const_9, shared_6, lang_23, object_20, bootstrap_24, coreutils_25, utils_35, factory_3, databindsvc_1, template_3) {
     "use strict";
     var $ = utils_35.Utils.dom.$, document = utils_35.Utils.dom.document;
     var APP_EVENTS = {
@@ -10290,7 +10304,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
             });
         };
         Application.prototype.handleError = function (error, source) {
-            if (coreutils_26.ERROR.checkIsDummy(error)) {
+            if (coreutils_25.ERROR.checkIsDummy(error)) {
                 return true;
             }
             var isHandled = _super.prototype.handleError.call(this, error, source);
@@ -10384,7 +10398,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
                         self._app_state = 2;
                     }, function (err) {
                         self._app_state = 4;
-                        coreutils_26.ERROR.reThrow(err, true);
+                        coreutils_25.ERROR.reThrow(err, true);
                     });
                 }
                 catch (ex) {
@@ -10404,7 +10418,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
             }
             catch (ex) {
                 this._app_state = 4;
-                coreutils_26.ERROR.reThrow(ex, self.handleError(ex, self));
+                coreutils_25.ERROR.reThrow(ex, self.handleError(ex, self));
             }
         };
         Application.prototype.createTemplate = function (dataContext, templEvents) {
@@ -10532,7 +10546,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
     }(object_20.BaseObject));
     exports.Application = Application;
 });
-define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/const", "jriapp_core/shared", "jriapp_utils/syschecks", "jriapp_core/lang", "jriapp_core/converter", "jriapp_core/object", "jriapp_utils/coreutils", "jriapp_core/bootstrap", "jriapp_content/factory", "jriapp_core/binding", "jriapp_core/datepicker", "jriapp_core/dataform", "jriapp_core/template", "jriapp_elview/all", "jriapp_utils/utils", "jriapp_core/mvvm", "jriapp_collection/collection", "jriapp_core/app"], function (require, exports, bootstrap_25, const_10, shared_7, syschecks_8, lang_24, converter_1, object_21, coreutils_27, bootstrap_26, factory_4, binding_3, datepicker_1, dataform_1, template_4, all_1, utils_36, mvvm_2, collection_1, app_1) {
+define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/const", "jriapp_core/shared", "jriapp_utils/syschecks", "jriapp_core/lang", "jriapp_core/converter", "jriapp_core/object", "jriapp_utils/coreutils", "jriapp_core/bootstrap", "jriapp_content/factory", "jriapp_core/binding", "jriapp_core/datepicker", "jriapp_core/dataform", "jriapp_core/template", "jriapp_elview/all", "jriapp_utils/utils", "jriapp_core/mvvm", "jriapp_collection/collection", "jriapp_core/app"], function (require, exports, bootstrap_25, const_10, shared_7, syschecks_9, lang_24, converter_2, object_21, coreutils_26, bootstrap_26, factory_4, binding_3, datepicker_1, dataform_1, template_4, all_1, utils_36, mvvm_2, collection_1, app_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -10547,15 +10561,15 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.BINDING_MODE = const_10.BINDING_MODE;
     exports.BindTo = const_10.BindTo;
     exports.BaseError = shared_7.BaseError;
-    exports.SysChecks = syschecks_8.SysChecks;
+    exports.SysChecks = syschecks_9.SysChecks;
     exports.LocaleSTRS = lang_24.STRS;
     exports.LocaleERRS = lang_24.ERRS;
-    exports.BaseConverter = converter_1.BaseConverter;
+    exports.BaseConverter = converter_2.BaseConverter;
     exports.BaseObject = object_21.BaseObject;
-    exports.Debounce = coreutils_27.Debounce;
-    exports.DblClick = coreutils_27.DblClick;
-    exports.DEBUG = coreutils_27.DEBUG;
-    exports.ERROR = coreutils_27.ERROR;
+    exports.Debounce = coreutils_26.Debounce;
+    exports.DblClick = coreutils_26.DblClick;
+    exports.DEBUG = coreutils_26.DEBUG;
+    exports.ERROR = coreutils_26.ERROR;
     exports.bootstrap = bootstrap_26.bootstrap;
     exports.contentFactories = factory_4.contentFactories;
     exports.Binding = binding_3.Binding;
@@ -10581,6 +10595,6 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.COLL_CHANGE_REASON = collection_1.COLL_CHANGE_REASON;
     exports.COLL_CHANGE_TYPE = collection_1.COLL_CHANGE_TYPE;
     exports.Application = app_1.Application;
-    exports.VERSION = "0.9.51";
+    exports.VERSION = "0.9.52";
     bootstrap_25.Bootstrap._initFramework();
 });

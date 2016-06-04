@@ -3754,19 +3754,6 @@ define("spaDemoApp", ["require", "exports", "jriapp", "spaDemoViewModels", "doma
         debugger;
         alert(args.error.message);
     });
-    RIAPP.bootstrap.addOnUnResolvedBinding(function (s, args) {
-        var msg = "unresolved databound property for";
-        if (args.bindTo == 0) {
-            msg += " Source: ";
-        }
-        else {
-            msg += " Target: ";
-        }
-        msg += "'" + args.root + "'";
-        msg += ", property: '" + args.propName + "'";
-        msg += ", binding path: '" + args.path + "'";
-        console.log(msg);
-    });
     exports.mainOptions = {
         service_url: null,
         permissionInfo: null,
