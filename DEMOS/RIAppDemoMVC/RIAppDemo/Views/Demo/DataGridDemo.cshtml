@@ -100,7 +100,7 @@
                 //download template is using ASP.NET MVC - it first goes through the Razor engine to create links
                 ops.templates_url = '@Url.Action("Download", "Templates", new {name = "DataGridDemo"})';
 
-                @*
+            @*
             ops.modelData = @Html.Action("ProductModelData", "RIAppDemoService");
             ops.categoryData = @Html.Action("ProductCategoryData", "RIAppDemoService");
             *@
@@ -108,9 +108,7 @@
                 //these links are using WEB API instead of ASP.NET MVC (as an example that all is possible)
                 ops.service_url = '@Url.Action("", "RIAppDemoEFWebApi", new {httproute = "ApiByAction"})';
                 ops.upload_thumb_url = '@Url.Action("UploadThumbnail", "File", new {httproute = "ApiByAction"})';
-                ops
-                    .productEditTemplate_url =
-                    '@Url.Action("DownloadTemplate", "File", new {httproute = "ApiByName", name = "productEditTemplate"})';
+                ops.productEditTemplate_url = '@Url.Action("DownloadTemplate", "File", new {httproute = "ApiByName", name = "productEditTemplate"})';
 
                 //TESTING Server Side Events - it uses Web API
                 @{
@@ -246,8 +244,8 @@
 
 <!--template for the size grid's cell - it is picked automatically by the engine-->
 <script id="sizeDisplayTemplate" type="text/html" data-role="template">
-    <div>
+    <span>
         <span style="color: red;">Size:</span>
         <span style="color: Blue; margin-left: 5px;" data-bind="{this.value,to=Size}"></span>
-    </div>
+    </span>
 </script>
