@@ -63,6 +63,7 @@ export interface IErrors extends coreMOD.IIndexer<string> {
     ERR_BIND_TGTPATH_INVALID: string;
     ERR_BIND_MODE_INVALID: string;
     ERR_BIND_TARGET_INVALID: string;
+    ERR_EXPR_BRACES_INVALID: string;
     ERR_APP_SETUP_INVALID: string;
     ERR_GRID_DATASRC_INVALID: string;
     ERR_COLLECTION_CHANGETYPE_INVALID: string;
@@ -183,6 +184,7 @@ let _ERRS: IErrors = {
     ERR_BIND_TGTPATH_INVALID: "Binding targetPath has invalid value: {0}",
     ERR_BIND_MODE_INVALID: "Binding mode has invalid value: {0}",
     ERR_BIND_TARGET_INVALID: "Binding target must be a descendant of BaseObject",
+    ERR_EXPR_BRACES_INVALID: "Expression {0} has no closing braces",
     ERR_APP_SETUP_INVALID: "Application's setUp method parameter must be a valid function",
     ERR_GRID_DATASRC_INVALID: "DataGrid's datasource must be a descendant of Collection type",
     ERR_COLLECTION_CHANGETYPE_INVALID: "Invalid Collection change type value: {0}",

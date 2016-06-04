@@ -768,6 +768,7 @@ declare module "jriapp_core/lang" {
         ERR_BIND_TGTPATH_INVALID: string;
         ERR_BIND_MODE_INVALID: string;
         ERR_BIND_TARGET_INVALID: string;
+        ERR_EXPR_BRACES_INVALID: string;
         ERR_APP_SETUP_INVALID: string;
         ERR_GRID_DATASRC_INVALID: string;
         ERR_COLLECTION_CHANGETYPE_INVALID: string;
@@ -981,7 +982,7 @@ declare module "jriapp_core/parser" {
         setPropertyValue(obj: any, prop: string, val: any): void;
         resolveBindingSource(root: any, srcParts: string[]): any;
         resolvePath(obj: any, path: string): any;
-        getBraceParts(val: string, firstOnly: boolean): string[];
+        private getBraceParts(val, firstOnly);
         trimOuterBraces(val: string): string;
         trimQuotes(val: string): string;
         trimBrackets(val: string): string;

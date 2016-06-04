@@ -1,5 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { IPropertyBag } from "shared";
+import { ERRS } from "./lang";
 import { BaseObject }  from "object";
 import { IEventStore } from "../jriapp_utils/eventstore";
 import { SysChecks } from "../jriapp_utils/syschecks";
@@ -20,7 +21,7 @@ export class Parser {
     //extract key - value pairs
     protected _getKeyVals(val: string) {
         let i: number, ch: string, literal: string, parts: { key: string; val: any; }[] = [],
-            kv: { key: string; val: any; } = { key: "", val: "" }, isKey = true, bracePart: string,
+            kv: { key: string; val: any; } = { key: "", val: "" }, isKey = true,
             vd1 = Parser.__valueDelimeter1, vd2 = Parser.__valueDelimeter2, kvd = Parser.__keyValDelimeter;
 
         let addNewKeyValPair = function (kv: { key: string; val: any; }) {
@@ -55,10 +56,16 @@ export class Parser {
 
             //value inside braces
             if (!literal && ch === "{" && !isKey) {
-                bracePart = val.substr(i);
-                bracePart = this.getBraceParts(bracePart, true)[0];
-                kv.val += bracePart;
-                i += bracePart.length - 1;
+                let bracePart = val.substr(i);
+                let braceParts = this.getBraceParts(bracePart, true);
+                if (braceParts.length > 0) {
+                    bracePart = braceParts[0];
+                    kv.val += bracePart;
+                    i += bracePart.length - 1;
+                }
+                else {
+                    throw new Error(strUtils.format(ERRS.ERR_EXPR_BRACES_INVALID, bracePart));
+                }
                 continue;
             }
 
@@ -194,7 +201,7 @@ export class Parser {
         return this.resolveProp(res, parts[len]);
     }
     //extract top level braces
-    getBraceParts(val: string, firstOnly: boolean) {
+    private getBraceParts(val: string, firstOnly: boolean): string[] {
         let i: number, s = "", ch: string, literal: string, cnt = 0, parts: string[] = [];
 
         for (i = 0; i < val.length; i += 1) {

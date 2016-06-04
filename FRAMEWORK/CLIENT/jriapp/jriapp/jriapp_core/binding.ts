@@ -11,9 +11,9 @@ import { ERROR, DEBUG, LOG } from "../jriapp_utils/coreutils";
 import { Utils } from "../jriapp_utils/utils";
 import { BaseElView } from "../jriapp_elview/elview";
 
-let utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+let utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, syschecks = SysChecks;
 
-SysChecks._isBinding = (obj: any) => {
+syschecks._isBinding = (obj: any) => {
     return (!!obj && obj instanceof Binding);
 };
 
@@ -180,7 +180,7 @@ export class Binding extends BaseObject implements IBinding {
             throw new Error(ERRS.ERR_BIND_TARGET_EMPTY);
         }
 
-        if (!SysChecks._isBaseObj(opts.target)) {
+        if (!syschecks._isBaseObj(opts.target)) {
             throw new Error(ERRS.ERR_BIND_TARGET_INVALID);
         }
 
@@ -210,14 +210,14 @@ export class Binding extends BaseObject implements IBinding {
     }
     private static _isDestroyed(obj: any): boolean {
         let res = false;
-        if (SysChecks._isBaseObj(obj)) {
+        if (syschecks._isBaseObj(obj)) {
             res = (<IBaseObject>obj).getIsDestroyCalled();
         }
         return res;
     }
     private _onSrcErrorsChanged(err_notif: IErrorNotification, args?: any) {
         let errors: IValidationInfo[] = [], tgt = this._targetObj, src = this._sourceObj, srcPath = this._srcPath;
-        if (!!tgt && SysChecks._isElView(tgt)) {
+        if (!!tgt && syschecks._isElView(tgt)) {
             if (!!src && srcPath.length > 0) {
                 let prop = srcPath[srcPath.length - 1];
                 errors = err_notif.getFieldErrors(prop);
@@ -265,7 +265,7 @@ export class Binding extends BaseObject implements IBinding {
         }
     }
     private _parseSrcPath2(obj: any, path: string[], lvl: number) {
-        let self = this, nextObj: any, isBaseObj = (!!obj && SysChecks._isBaseObj(obj)), isValidProp: boolean;
+        let self = this, nextObj: any, isBaseObj = (!!obj && syschecks._isBaseObj(obj)), isValidProp: boolean;
 
         if (isBaseObj) {
             (<IBaseObject>obj).addOnDestroyed(self._onSrcDestroyed, self._objId, self);
@@ -330,7 +330,7 @@ export class Binding extends BaseObject implements IBinding {
         }
     }
     private _parseTgtPath2(obj: any, path: string[], lvl: number) {
-        let self = this, nextObj: any, isBaseObj = (!!obj && SysChecks._isBaseObj(obj)), isValidProp: boolean = false;
+        let self = this, nextObj: any, isBaseObj = (!!obj && syschecks._isBaseObj(obj)), isValidProp = false;
 
         if (isBaseObj) {
             (<IBaseObject>obj).addOnDestroyed(self._onTgtDestroyed, self._objId, self);
@@ -462,7 +462,7 @@ export class Binding extends BaseObject implements IBinding {
                 this.sourceValue = res;
         }
         catch (ex) {
-            if (!SysChecks._isValidationError(ex) || !SysChecks._isElView(this._targetObj)) {
+            if (!syschecks._isValidationError(ex) || !syschecks._isElView(this._targetObj)) {
                 //BaseElView is notified about errors in _onSrcErrorsChanged event handler
                 //we only need to invoke _onError in other cases
                 //1) when target is not BaseElView
@@ -496,7 +496,7 @@ export class Binding extends BaseObject implements IBinding {
                 }
             }
             this._setPathItem(null, BindTo.Target, 0, this._tgtPath);
-            if (!!value && !SysChecks._isBaseObj(value))
+            if (!!value && !syschecks._isBaseObj(value))
                 throw new Error(ERRS.ERR_BIND_TARGET_INVALID);
             this._target = value;
             this._bindToTarget();
