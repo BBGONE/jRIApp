@@ -16,8 +16,8 @@ import { DomUtils as dom } from "../jriapp_utils/dom";
 import { AsyncUtils as defer } from "../jriapp_utils/async";
 
 const $ = dom.$, document = dom.document, window = dom.window;
-
-export const cssRiaTemplate = "ria-template";
+const _TEMPLATE_SELECTOR = 'script[type="text/html"][data-role="template"]';
+const stylesLoader = createCssLoader();
 
 const GLOB_EVENTS = {
     load: "load",
@@ -29,7 +29,6 @@ const PROP_NAME = {
     curSelectable: "currentSelectable",
     isReady: "isReady"
 };
-
 
 export interface IInternalBootstrapMethods {
     initialize(): void;
@@ -43,13 +42,6 @@ export interface IInternalBootstrapMethods {
     getObject(root: IExports, name: string): any;
     getConverter(name: string): IConverter;
 }
-
-const _TEMPLATES_SELECTOR = ["section.", cssRiaTemplate].join("");
-const _TEMPLATE_SELECTOR = '*[data-role="template"]';
-const _TEMPLATE_SELECTOR2 = 'script[type="text/html"][data-role="template"]';
-const stylesLoader = createCssLoader();
-//load jriapp.css (it will load only if it is not loaded yet)
-stylesLoader.loadOwnStyle();
 
 const enum BootstrapState {
     None = 0, Initializing = 1, Initialized = 2, Ready = 3, Error = 4
@@ -84,7 +76,9 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         this._moduleInits = [];
         this._templateLoader = null;
         this._templateLoader = new TemplateLoader();
-        this._templateLoader.addOnLoaded((s, a) => { self._onTemplateLoaded(a.html, a.app); });
+        this._templateLoader.addOnLoaded((s, a) => {
+            self._onTemplateLoaded(a.html, a.app);
+        });
         this._templateLoader.addOnError((s, a) => {
             return self.handleError(a.error, a.source);
         });
@@ -123,6 +117,8 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         };
         this._defaults = new Defaults(this);
         this.defaults.imagesPath = PathHelper.getFrameworkImgPath();
+        //load jriapp.css (it will load only if it is not loaded yet)
+        stylesLoader.loadOwnStyle();
     }
     private _onInit(): void {
         let self = this;
@@ -161,39 +157,22 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     private _onTemplateLoaded(html: string, app: IApplication) {
         let tmpDiv = document.createElement("div");
         tmpDiv.innerHTML = html;
-        this._processTemplateSection(tmpDiv, app);
+        this._processTemplates(tmpDiv, app);
     }
-    /*
-    private _processTemplateSections(): void {
-        let self = this, root = dom.document;
-        let sections = coreUtils.arr.fromList<HTMLElement>(root.querySelectorAll(_TEMPLATES_SELECTOR));
-        sections.forEach(function (el) {
-            self._processTemplateSection(el, null);
-            dom.removeNode(el);
-        });
-    }
-    */
-    private _processTemplateSection(templateSection: { querySelectorAll: (selectors: string) => NodeList; }, app: IApplication): void {
-        let self = this, templates = coreUtils.arr.fromList<HTMLElement>(templateSection.querySelectorAll(_TEMPLATE_SELECTOR));
+    private _processTemplates(root: HTMLElement | HTMLDocument, app: IApplication = null): void {
+        let self = this, templates = coreUtils.arr.fromList<HTMLElement>(root.querySelectorAll(_TEMPLATE_SELECTOR));
         templates.forEach(function (el) {
             let html: string, name = el.getAttribute("id");
             if (!name)
                 throw new Error(ERRS.ERR_TEMPLATE_HAS_NO_ID);
-            el.removeAttribute("id");
-            html = el.outerHTML;
+            html = el.innerHTML;
             self._processTemplate(name, html, app);
         });
     }
-    //process templates inside script tags
-    private _processScriptTemplates(): void {
-        let self = this, root = dom.document, templates = coreUtils.arr.fromList<HTMLScriptElement>(root.querySelectorAll(_TEMPLATE_SELECTOR2));
-        templates.forEach(function (el) {
-            let name = el.getAttribute("id");
-            if (!name)
-                throw new Error(ERRS.ERR_TEMPLATE_HAS_NO_ID);
-            let html = el.innerHTML;
-            self._processTemplate(name, html, null);
-        });
+    //process templates in HTML Document
+    private _processHTMLTemplates(): void {
+        let self = this, root = dom.document;
+        self._processTemplates(root);
     }
     private _processTemplate(name: string, html: string, app: IApplication): void {
         let self = this, deferred = defer.createSyncDeferred<string>();
@@ -242,7 +221,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         self.raiseEvent(GLOB_EVENTS.initialized, {});
         try {
             //self._processTemplateSections();
-            self._processScriptTemplates();
+            self._processHTMLTemplates();
         }
         catch (err) {
             self._bootState = BootstrapState.Error;

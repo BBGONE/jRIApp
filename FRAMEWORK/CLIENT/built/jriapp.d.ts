@@ -1278,7 +1278,6 @@ declare module "jriapp_core/bootstrap" {
     import { BaseObject } from "jriapp_core/object";
     import { Defaults } from "jriapp_core/defaults";
     import { TemplateLoader } from "jriapp_utils/tloader";
-    export const cssRiaTemplate: string;
     export interface IInternalBootstrapMethods {
         initialize(): void;
         trackSelectable(selectable: ISelectableProvider): void;
@@ -1305,8 +1304,8 @@ declare module "jriapp_core/bootstrap" {
         constructor();
         private _onInit();
         private _onTemplateLoaded(html, app);
-        private _processTemplateSection(templateSection, app);
-        private _processScriptTemplates();
+        private _processTemplates(root, app?);
+        private _processHTMLTemplates();
         private _processTemplate(name, html, app);
         protected _getEventNames(): string[];
         protected _addHandler(name: string, fn: (sender: any, args: any) => void, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;

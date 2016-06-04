@@ -17,7 +17,7 @@ SysChecks._isBinding = (obj: any) => {
     return (!!obj && obj instanceof Binding);
 };
 
-function onUnResolvedBinding(bindTo: BindTo, root: any, path: string, propName: string): void {
+function fn_onUnResolvedBinding(bindTo: BindTo, root: any, path: string, propName: string): void {
     if (!DEBUG.isDebugging()) {
         return;
     }
@@ -34,6 +34,14 @@ function onUnResolvedBinding(bindTo: BindTo, root: any, path: string, propName: 
     msg += ", binding path: '" + path + "'";
 
     LOG.warn(msg);
+};
+
+function fn_handleError(appName: string, error: any, source: any): boolean {
+    if (!!appName) {
+        return bootstrap.findApp(appName).handleError(error, source);
+    }
+    else
+        return bootstrap.handleError(error, source);
 };
 
 let _newID = 0;
@@ -275,7 +283,7 @@ export class Binding extends BaseObject implements IBinding {
                     self._parseSrcPath2(nextObj, path.slice(1), lvl + 1);
                 }
                 else if (checks.isUndefined(nextObj)) {
-                    onUnResolvedBinding(BindTo.Source, self.source, self._srcPath.join("."), path[0]);
+                    fn_onUnResolvedBinding(BindTo.Source, self.source, self._srcPath.join("."), path[0]);
                 }
             }
             return;
@@ -298,7 +306,7 @@ export class Binding extends BaseObject implements IBinding {
                 self._sourceObj = obj;
             }
             else {
-                onUnResolvedBinding(BindTo.Source, self.source, self._srcPath.join("."), path[0]);
+                fn_onUnResolvedBinding(BindTo.Source, self.source, self._srcPath.join("."), path[0]);
             }
         }
     }
@@ -339,7 +347,7 @@ export class Binding extends BaseObject implements IBinding {
                     self._parseTgtPath2(nextObj, path.slice(1), lvl + 1);
                 }
                 else if (checks.isUndefined(nextObj)) {
-                    onUnResolvedBinding(BindTo.Target, self.target, self._tgtPath.join("."), path[0]);
+                    fn_onUnResolvedBinding(BindTo.Target, self.target, self._tgtPath.join("."), path[0]);
                 }
             }
             return;
@@ -359,7 +367,7 @@ export class Binding extends BaseObject implements IBinding {
                 self._targetObj = obj;
             }
             else {
-                onUnResolvedBinding(BindTo.Target, self.target, self._tgtPath.join("."), path[0]);
+                fn_onUnResolvedBinding(BindTo.Target, self.target, self._tgtPath.join("."), path[0]);
             }
         }
     }
@@ -508,15 +516,7 @@ export class Binding extends BaseObject implements IBinding {
         }
     }
     handleError(error: any, source: any): boolean {
-        let isHandled = super.handleError(error, source);
-        if (!isHandled) {
-            if (!!this._appName) {
-                return bootstrap.findApp(this._appName).handleError(error, source);
-            }
-            else
-                return bootstrap.handleError(error, source);
-        }
-        return isHandled;
+        return fn_handleError(this._appName, error, source);
     }
     destroy() {
         if (this._isDestroyed)
