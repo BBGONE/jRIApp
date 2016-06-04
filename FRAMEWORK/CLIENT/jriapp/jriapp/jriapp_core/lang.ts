@@ -30,6 +30,7 @@ export interface IErrors extends coreMOD.IIndexer<string> {
     ERR_TEMPLATE_ALREADY_REGISTERED: string;
     ERR_TEMPLATE_NOTREGISTERED: string;
     ERR_TEMPLATE_GROUP_NOTREGISTERED: string;
+    ERR_TEMPLATE_HAS_NO_ID: string;
     ERR_CONVERTER_NOTREGISTERED: string;
     ERR_JQUERY_DATEPICKER_NOTFOUND: string;
     ERR_PARAM_INVALID: string;
@@ -149,6 +150,7 @@ let _ERRS: IErrors = {
     ERR_TEMPLATE_ALREADY_REGISTERED: "TEMPLATE with the name: {0} is already registered",
     ERR_TEMPLATE_NOTREGISTERED: "TEMPLATE with the name: {0} is not registered",
     ERR_TEMPLATE_GROUP_NOTREGISTERED: "TEMPLATE's group: {0} is not registered",
+    ERR_TEMPLATE_HAS_NO_ID: "TEMPLATE inside SCRIPT tag must have an ID attribute",
     ERR_CONVERTER_NOTREGISTERED: "Converter: {0} is not registered",
     ERR_JQUERY_DATEPICKER_NOTFOUND: "Application is dependent on JQuery.UI.datepicker. Please include it in the scripts.",
     ERR_PARAM_INVALID: "Parameter: {0} has invalid value: {1}",

@@ -18,7 +18,7 @@ export class BaseConverter implements IConverter {
         return val;
    }
 };
-let baseConverter = new BaseConverter();
+export let baseConverter = new BaseConverter();
 
 export class DateConverter implements IConverter {
     convertToSource(val: any, param: any, dataContext: any): Date {

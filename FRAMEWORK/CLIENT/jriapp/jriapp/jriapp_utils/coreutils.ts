@@ -47,6 +47,18 @@ export class ERROR {
     }
 }
 
+export class LOG {
+    static log(str: string): void {
+        console.log(str);
+    }
+    static warn(str: string): void {
+        console.warn(str);
+    }
+    static error(str: string): void {
+        console.error(str);
+    }
+}
+
 //essential core utils
 export class CoreUtils {
     private static _newID = 0;

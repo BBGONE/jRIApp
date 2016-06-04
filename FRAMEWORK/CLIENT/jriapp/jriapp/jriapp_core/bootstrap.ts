@@ -22,8 +22,7 @@ export const cssRiaTemplate = "ria-template";
 const GLOB_EVENTS = {
     load: "load",
     unload: "unload",
-    initialized: "initialize",
-    unresolvedBinding: "unresolvedBind"
+    initialized: "initialize"
 };
 
 const PROP_NAME = {
@@ -43,7 +42,6 @@ export interface IInternalBootstrapMethods {
     unregisterObject(root: IExports, name: string): void;
     getObject(root: IExports, name: string): any;
     getConverter(name: string): IConverter;
-    onUnResolvedBinding(bindTo: BindTo, root: any, path: string, propName: string): void;
 }
 
 const _TEMPLATES_SELECTOR = ["section.", cssRiaTemplate].join("");
@@ -121,9 +119,6 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             },
             getConverter: (name: string) => {
                 return self._getConverter(name);
-            },
-            onUnResolvedBinding: (bindTo: BindTo, root: any, path: string, propName: string) => {
-                self._onUnResolvedBinding(bindTo, root, path, propName);
             }
         };
         this._defaults = new Defaults(this);
@@ -168,6 +163,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         tmpDiv.innerHTML = html;
         this._processTemplateSection(tmpDiv, app);
     }
+    /*
     private _processTemplateSections(): void {
         let self = this, root = dom.document;
         let sections = coreUtils.arr.fromList<HTMLElement>(root.querySelectorAll(_TEMPLATES_SELECTOR));
@@ -176,13 +172,15 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             dom.removeNode(el);
         });
     }
+    */
     private _processTemplateSection(templateSection: { querySelectorAll: (selectors: string) => NodeList; }, app: IApplication): void {
         let self = this, templates = coreUtils.arr.fromList<HTMLElement>(templateSection.querySelectorAll(_TEMPLATE_SELECTOR));
         templates.forEach(function (el) {
-            let tmpDiv = document.createElement("div"), html: string, name = el.getAttribute("id");
+            let html: string, name = el.getAttribute("id");
+            if (!name)
+                throw new Error(ERRS.ERR_TEMPLATE_HAS_NO_ID);
             el.removeAttribute("id");
-            tmpDiv.appendChild(el);
-            html = tmpDiv.innerHTML;
+            html = el.outerHTML;
             self._processTemplate(name, html, app);
         });
     }
@@ -191,7 +189,9 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         let self = this, root = dom.document, templates = coreUtils.arr.fromList<HTMLScriptElement>(root.querySelectorAll(_TEMPLATE_SELECTOR2));
         templates.forEach(function (el) {
             let name = el.getAttribute("id");
-            let html = $(el).html();
+            if (!name)
+                throw new Error(ERRS.ERR_TEMPLATE_HAS_NO_ID);
+            let html = el.innerHTML;
             self._processTemplate(name, html, null);
         });
     }
@@ -241,7 +241,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         self._bootState = BootstrapState.Initialized;
         self.raiseEvent(GLOB_EVENTS.initialized, {});
         try {
-            self._processTemplateSections();
+            //self._processTemplateSections();
             self._processScriptTemplates();
         }
         catch (err) {
@@ -324,10 +324,6 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             throw new Error(strUtils.format(ERRS.ERR_CONVERTER_NOTREGISTERED, name));
         return res;
     }
-    private _onUnResolvedBinding(bindTo: BindTo, root: any, path: string, propName: string): void {
-        let args: IUnResolvedBindingArgs = { bindTo: bindTo, root: root, path: path, propName: propName };
-        this.raiseEvent(GLOB_EVENTS.unresolvedBinding, args);
-    }
     _getInternal(): IInternalBootstrapMethods {
         return this._internal;
     }
@@ -339,12 +335,6 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     }
     addOnInitialize(fn: TEventHandler<Bootstrap, any>, nmspace?: string, context?: IBaseObject) {
         this._addHandler(GLOB_EVENTS.initialized, fn, nmspace, context, false);
-    }
-    addOnUnResolvedBinding(fn: TEventHandler<Bootstrap, IUnResolvedBindingArgs>, nmspace?: string, context?: IBaseObject) {
-        this._addHandler(GLOB_EVENTS.unresolvedBinding, fn, nmspace, context, false);
-    }
-    removeOnUnResolvedBinding(nmspace?: string) {
-        this._removeHandler(GLOB_EVENTS.unresolvedBinding, nmspace);
     }
     addModuleInit(fn: (app: IApplication) => void): boolean {
         if (this._moduleInits.filter((val) => { return val === fn; }).length === 0) {

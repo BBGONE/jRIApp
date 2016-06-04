@@ -677,6 +677,11 @@ declare module "jriapp_utils/coreutils" {
         static reThrow(ex: any, isHandled: boolean): void;
         static abort(reason?: string): void;
     }
+    export class LOG {
+        static log(str: string): void;
+        static warn(str: string): void;
+        static error(str: string): void;
+    }
     export class CoreUtils {
         private static _newID;
         private static ERR_OBJ_ALREADY_REGISTERED;
@@ -730,6 +735,7 @@ declare module "jriapp_core/lang" {
         ERR_TEMPLATE_ALREADY_REGISTERED: string;
         ERR_TEMPLATE_NOTREGISTERED: string;
         ERR_TEMPLATE_GROUP_NOTREGISTERED: string;
+        ERR_TEMPLATE_HAS_NO_ID: string;
         ERR_CONVERTER_NOTREGISTERED: string;
         ERR_JQUERY_DATEPICKER_NOTFOUND: string;
         ERR_PARAM_INVALID: string;
@@ -1268,8 +1274,7 @@ declare module "jriapp_utils/tooltip" {
     export function create(): ITooltipService;
 }
 declare module "jriapp_core/bootstrap" {
-    import { BindTo } from "jriapp_core/const";
-    import { IApplication, ISelectableProvider, IExports, IConverter, ISvcStore, IIndexer, IBaseObject, IPromise, TEventHandler, IUnResolvedBindingArgs, IStylesLoader, IElViewRegister } from "jriapp_core/shared";
+    import { IApplication, ISelectableProvider, IExports, IConverter, ISvcStore, IIndexer, IBaseObject, IPromise, TEventHandler, IStylesLoader, IElViewRegister } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
     import { Defaults } from "jriapp_core/defaults";
     import { TemplateLoader } from "jriapp_utils/tloader";
@@ -1285,7 +1290,6 @@ declare module "jriapp_core/bootstrap" {
         unregisterObject(root: IExports, name: string): void;
         getObject(root: IExports, name: string): any;
         getConverter(name: string): IConverter;
-        onUnResolvedBinding(bindTo: BindTo, root: any, path: string, propName: string): void;
     }
     export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         static _initFramework(): void;
@@ -1301,7 +1305,6 @@ declare module "jriapp_core/bootstrap" {
         constructor();
         private _onInit();
         private _onTemplateLoaded(html, app);
-        private _processTemplateSections();
         private _processTemplateSection(templateSection, app);
         private _processScriptTemplates();
         private _processTemplate(name, html, app);
@@ -1318,13 +1321,10 @@ declare module "jriapp_core/bootstrap" {
         private _unregisterObject(root, name);
         private _getObject(root, name);
         private _getConverter(name);
-        private _onUnResolvedBinding(bindTo, root, path, propName);
         _getInternal(): IInternalBootstrapMethods;
         addOnLoad(fn: TEventHandler<Bootstrap, any>, nmspace?: string, context?: IBaseObject): void;
         addOnUnLoad(fn: TEventHandler<Bootstrap, any>, nmspace?: string, context?: IBaseObject): void;
         addOnInitialize(fn: TEventHandler<Bootstrap, any>, nmspace?: string, context?: IBaseObject): void;
-        addOnUnResolvedBinding(fn: TEventHandler<Bootstrap, IUnResolvedBindingArgs>, nmspace?: string, context?: IBaseObject): void;
-        removeOnUnResolvedBinding(nmspace?: string): void;
         addModuleInit(fn: (app: IApplication) => void): boolean;
         getExports(): IIndexer<any>;
         findApp(name: string): IApplication;
@@ -1361,6 +1361,7 @@ declare module "jriapp_core/converter" {
         convertToSource(val: any, param: any, dataContext: any): any;
         convertToTarget(val: any, param: any, dataContext: any): any;
     }
+    export let baseConverter: BaseConverter;
     export class DateConverter implements IConverter {
         convertToSource(val: any, param: any, dataContext: any): Date;
         convertToTarget(val: any, param: any, dataContext: any): string;
