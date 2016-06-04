@@ -4,220 +4,240 @@
     Layout = null;
 }
 
-<div id="customerAddr" data-role="template" style="margin: 4px; padding-top:10px; width: 95%;" data-require="test3,test1,test2,css!css/test2.css">
-    <fieldset>
-        <legend>Addresses of <span data-name="test2"  data-bind="{this.value,to=currentItem.ComplexProp.Name}"></span></legend>
-        <nav>
-            <ul class="nav nav-pills">
-                <li>
-                    <a data-bind="{this.command,to=switchViewCommand}{this.commandParam,to=uiMainView.custTemplName}"><i class="icon-list"></i>&nbsp;Back to all customers</a>
-                </li>
-                <li>
-                    <a data-bind="{this.command,to=switchDetViewCommand}{this.commandParam,to=uiDetailView.infoTemplName}"><i class="icon-user"></i>&nbsp;Back to customer's info</a>
-                </li>
-            </ul>
-        </nav>
+<script id="customerAddr" type="text/html" data-role="template">
+    <div style="margin: 4px; padding-top:10px; width: 95%;" data-require="test3,test1,test2,css!css/test2.css">
+        <fieldset>
+            <legend>Addresses of <span data-name="test2" data-bind="{this.value,to=currentItem.ComplexProp.Name}"></span></legend>
+            <nav>
+                <ul class="nav nav-pills">
+                    <li>
+                        <a data-bind="{this.command,to=switchViewCommand}{this.commandParam,to=uiMainView.custTemplName}"><i class="icon-list"></i>&nbsp;Back to all customers</a>
+                    </li>
+                    <li>
+                        <a data-bind="{this.command,to=switchDetViewCommand}{this.commandParam,to=uiDetailView.infoTemplName}"><i class="icon-user"></i>&nbsp;Back to customer's info</a>
+                    </li>
+                </ul>
+            </nav>
 
-        <!--
-        <span data-bind="{this.someProp,to=customerAddressVM}" data-view="name=debugger"></span>
-        -->
-        <table data-name="gridCustAddr" data-bind="{this.dataSource,to=custAdressView}" data-view="options={wrapCss:addressTableWrap,headerCss:addressTableHeader}">
-            <thead>
-            <tr>
-                <th data-column="width:10%,title=Type,sortable:true,sortMemberName=AddressType;AddressLine" data-content="fieldName:AddressType,readOnly:true"></th>
-                <th data-column="width:20%,title=Address1,sortable:true" data-content="fieldName:Address.AddressLine1,readOnly:true"></th>
-                <th data-column="width:20%,title=Address2,sortable:true" data-content="fieldName:Address.AddressLine2,readOnly:true"></th>
-                <th data-column="width:15%,title=City,sortable:true,sortMemberName=Address.City;Address.AddressLine1" data-content="fieldName:Address.City,readOnly:true"></th>
-                <th data-column="width:15%,title=State,sortable:true,sortMemberName=Address.StateProvince;Address.AddressLine1" data-content="fieldName:Address.StateProvince,readOnly:true"></th>
-                <th data-column="width:10%,title=Region,sortable:false" data-content="fieldName:Address.CountryRegion,readOnly:true"></th>
-                <th data-column="width:10%,title=Zip,sortable:false" data-content="fieldName:Address.PostalCode,readOnly:true"></th>
-            </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-        <button class="btn btn-info btn-small" style="float: right; margin: 5px;" data-bind="{this.command,to=customerAddressVM.addAddressVM.addNewCommand}">Manage Addresses</button>
-    </fieldset>
-</div>
+            <!--
+            <span data-bind="{this.someProp,to=customerAddressVM}" data-view="name=debugger"></span>
+            -->
+            <table data-name="gridCustAddr" data-bind="{this.dataSource,to=custAdressView}" data-view="options={wrapCss:addressTableWrap,headerCss:addressTableHeader}">
+                <thead>
+                    <tr>
+                        <th data-column="width:10%,title=Type,sortable:true,sortMemberName=AddressType;AddressLine" data-content="fieldName:AddressType,readOnly:true"></th>
+                        <th data-column="width:20%,title=Address1,sortable:true" data-content="fieldName:Address.AddressLine1,readOnly:true"></th>
+                        <th data-column="width:20%,title=Address2,sortable:true" data-content="fieldName:Address.AddressLine2,readOnly:true"></th>
+                        <th data-column="width:15%,title=City,sortable:true,sortMemberName=Address.City;Address.AddressLine1" data-content="fieldName:Address.City,readOnly:true"></th>
+                        <th data-column="width:15%,title=State,sortable:true,sortMemberName=Address.StateProvince;Address.AddressLine1" data-content="fieldName:Address.StateProvince,readOnly:true"></th>
+                        <th data-column="width:10%,title=Region,sortable:false" data-content="fieldName:Address.CountryRegion,readOnly:true"></th>
+                        <th data-column="width:10%,title=Zip,sortable:false" data-content="fieldName:Address.PostalCode,readOnly:true"></th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <button class="btn btn-info btn-small" style="float: right; margin: 5px;" data-bind="{this.command,to=customerAddressVM.addAddressVM.addNewCommand}">Manage Addresses</button>
+        </fieldset>
+    </div>
+</script>
 
-@*used for display of customer's address*@
-<div id="addressTemplate" data-role="template" class="addressTemplate" style="margin: 4px; width: 95%;">
-    <fieldset>
-        <legend style="font-size: 14px; font-weight: bold; margin-bottom: 4px;">
-            <span class="address" data-bind="{this.value,to=AddressType}"></span></legend>
-        <!-- we can use dataform to assign to it datacontext that is other than inside this template.
-        the look of the form changes to editing when the current entity is began editing
-        -->
-        <form action="#" style="width: 100%" data-bind="{this.dataContext,to=Address}" data-view="name=dataform">
+<script id="addressTemplate" type="text/html" data-role="template">
+    @*used for display of customer's address*@
+    <div class="addressTemplate" style="margin: 4px; width: 95%;">
+        <fieldset>
+            <legend style="font-size: 14px; font-weight: bold; margin-bottom: 4px;">
+                <span class="address" data-bind="{this.value,to=AddressType}"></span>
+            </legend>
+            <!-- we can use dataform to assign to it datacontext that is other than inside this template.
+            the look of the form changes to editing when the current entity is began editing
+            -->
+            <form action="#" style="width: 100%" data-bind="{this.dataContext,to=Address}" data-view="name=dataform">
+                <dl class="dl-horizontal">
+                    <dt>
+                        <span class="addressLabel">AddressLine1:</span>
+                    </dt>
+                    <dd>
+                        <!--inside data form we can use span tag with data-content attribute-->
+                        <span class="address" data-content="fieldName:AddressLine1"></span>
+                    </dd>
+                    <dt>
+                        <span class="addressLabel">AddressLine2:</span>
+                    </dt>
+                    <dd>
+                        <span class="address" data-content="fieldName:AddressLine2"></span>
+                    </dd>
+                    <dt>
+                        <span class="addressLabel">City:</span>
+                    </dt>
+                    <dd>
+                        <span class="address" data-content="fieldName:City"></span>
+                    </dd>
+                    <dt>
+                        <span class="addressLabel">StateProvince:</span>
+                    </dt>
+                    <dd>
+                        <span class="address" data-content="fieldName:StateProvince"></span>
+                    </dd>
+                    <dt>
+                        <span class="addressLabel">CountryRegion:</span>
+                    </dt>
+                    <dd>
+                        <span class="address" data-content="fieldName:CountryRegion"></span>
+                    </dd>
+                    <dt>
+                        <span class="addressLabel">PostalCode:</span>
+                    </dt>
+                    <dd>
+                        <span class="address" data-content="fieldName:PostalCode"></span>
+                    </dd>
+                </dl>
+            </form>
+        </fieldset>
+    </div>
+</script>
+
+<script id="addAddressTemplate" type="text/html" data-role="template">
+    <!--addressTemplate-->
+    @*used for managing of customer's addresses in many to many relationship*@
+    <div style="margin: 4px; width: 95%;">
+        <div style="margin-bottom: 4px;">
+            <span>Customer:</span>&nbsp;<span style="color: Blue; font-weight: bold;" data-bind="{this.value,to=customer.ComplexProp.Name}"></span>
+        </div>
+        <!--for switching views between linkAdrTemplate and newAdrTemplate-->
+        <div id="addrDynaContent" data-bind="{this.templateID,to=uiViewVM.viewName}{this.dataContext}" data-view="name=dynacontent"></div>
+    </div>
+</script>
+
+<script id="linkAdrTemplate" type="text/html" data-role="template">
+    <div data-name="search">
+        <div style="margin: 5px 0px 5px 0px; width: 100%;">
+            <span class="addressLabel">Search existing Address:</span>
+            <input type="text" class="span2"
+                   data-bind-1="{this.value,to=searchString,mode=TwoWay}"
+                   data-bind-2="{this.toolTip,to=searchToolTip}" />
+            <a class="btn btn-info btn-small" data-bind="{this.command,to=execSearchCommand}">
+                <i class="icon-search"></i>
+            </a>
+        </div>
+        <div style="height: 400px; width: 100%;">
+            <table style="border: none; border-collapse: collapse; table-layout: fixed;">
+                <tr>
+                    <!--left section - already linked to customer addresses -->
+                    <td style="vertical-align: top;">
+                        <div style="height: 310px; vertical-align: top; width: 350px;">
+                            <table data-name="gridCustAddr" data-bind="{this.dataSource,to=custAdressView,source=customerVM.customerAddressVM}"
+                                   data-view="options={wrapCss:findAddrTableWrap,isCanDelete=false,isCanEdit=true,isUseScrollInto=false}">
+                                <thead>
+                                    <tr>
+                                        <th data-column="width:50px,type:row_actions"></th>
+                                        <th data-column="width:40%,title=AddressType" data-content="fieldName:AddressType"></th>
+                                        <th data-column="width:60%,title=Address,sortable:true" data-content="fieldName:Address.AddressLine1"></th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </td>
+                    <!--middle section - buttons -->
+                    <td style="text-align: center; vertical-align: middle;">
+                        <div style="padding: 3px">
+                            <a class="btn btn-info btn-small" data-bind="{this.command,to=linkCommand}">
+                                <i class="icon-hand-left"></i>
+                            </a>
+                        </div>
+                        <div style="padding: 3px">
+                            <a class="btn btn-info btn-small" data-bind="{this.command,to=unLinkCommand}">
+                                <i class="icon-hand-right">
+                                </i>
+                            </a>
+                        </div>
+                    </td>
+                    <!--right section AddressInfos -->
+                    <td style="vertical-align: top;">
+                        <div style="height: 310px; vertical-align: top;">
+                            <table style="position: relative" data-bind="{this.dataSource,to=addressInfosView}{this.propChangedCommand,to=propChangeCommand}"
+                                   data-view="options={wrapCss:findAddrTableWrap}">
+                                <thead>
+                                    <tr>
+                                        <th data-column="width:100%,sortable:true,title:Address" data-content="fieldName:AddressLine1,readOnly:true"></th>
+                                        <th data-column="width:100%,sortable:true,title:City,sortMemberName=City;AddressLine1"
+                                            data-content="fieldName:City,readOnly:true">
+                                        </th>
+                                        <th data-column="width:100%,sortable:true,title:CountryRegion,sortMemberName=CountryRegion;City;AddressLine1"
+                                            data-content="fieldName:CountryRegion,readOnly:true">
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <a class="btn btn-info btn-small" data-bind="{this.command,to=addNewAddressCommand}">
+                            <i class="icon-plus"></i>&nbsp;New Address
+                        </a>
+                    </td>
+                    <td>
+                        <div style="border: none; height: 40px; margin-bottom: 5px; margin-top: 3px; text-align: left; width: 100%;">
+                            <!--pager-->
+                            <div style="float: left;" data-bind="{this.dataSource,to=addressInfosView}" data-view="name=pager,options={sliderSize:10}">
+                            </div>
+                            <div style="float: left; padding-left: 10px; padding-top: 10px;">
+                                <span>Total:</span>&nbsp;<span data-bind="{this.value,to=addressInfosView.totalCount}"></span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</script>
+
+<script id="newAdrTemplate" type="text/html" data-role="template">
+    <div data-name="newAddress" style="margin: 4px; max-width: 500px; width: 95%;">
+        <form action="#" style="width: 100%" data-bind="{this.dataContext,to=newAddress}"
+              data-view="name=dataform">
             <dl class="dl-horizontal">
                 <dt>
-                    <span class="addressLabel">AddressLine1:</span></dt>
+                    <span class="addressLabel">AddressLine1:</span>
+                </dt>
                 <dd>
                     <!--inside data form we can use span tag with data-content attribute-->
                     <span class="address" data-content="fieldName:AddressLine1"></span>
                 </dd>
                 <dt>
-                    <span class="addressLabel">AddressLine2:</span></dt>
+                    <span class="addressLabel">AddressLine2:</span>
+                </dt>
                 <dd>
                     <span class="address" data-content="fieldName:AddressLine2"></span>
                 </dd>
                 <dt>
-                    <span class="addressLabel">City:</span></dt>
+                    <span class="addressLabel">City:</span>
+                </dt>
                 <dd>
                     <span class="address" data-content="fieldName:City"></span>
                 </dd>
                 <dt>
-                    <span class="addressLabel">StateProvince:</span></dt>
+                    <span class="addressLabel">StateProvince:</span>
+                </dt>
                 <dd>
                     <span class="address" data-content="fieldName:StateProvince"></span>
                 </dd>
                 <dt>
-                    <span class="addressLabel">CountryRegion:</span></dt>
+                    <span class="addressLabel">CountryRegion:</span>
+                </dt>
                 <dd>
                     <span class="address" data-content="fieldName:CountryRegion"></span>
                 </dd>
                 <dt>
-                    <span class="addressLabel">PostalCode:</span></dt>
+                    <span class="addressLabel">PostalCode:</span>
+                </dt>
                 <dd>
                     <span class="address" data-content="fieldName:PostalCode"></span>
                 </dd>
             </dl>
         </form>
-    </fieldset>
-</div>
-
-<!--addressTemplate-->
-@*used for managing of customer's addresses in many to many relationship*@
-<div id="addAddressTemplate" data-role="template" style="margin: 4px; width: 95%;">
-    <div style="margin-bottom: 4px;">
-        <span>Customer:</span>&nbsp;<span style="color: Blue; font-weight: bold;" data-bind="{this.value,to=customer.ComplexProp.Name}"></span>
     </div>
-    <!--for switching views between linkAdrTemplate and newAdrTemplate-->
-    <div id="addrDynaContent" data-bind="{this.templateID,to=uiViewVM.viewName}{this.dataContext}" data-view="name=dynacontent"></div>
-</div>
-
-<div id="linkAdrTemplate" data-role="template" data-name="search">
-    <div style="margin: 5px 0px 5px 0px; width: 100%;">
-        <span class="addressLabel">Search existing Address:</span>
-        <input type="text" class="span2"
-               data-bind-1="{this.value,to=searchString,mode=TwoWay}"
-               data-bind-2="{this.toolTip,to=searchToolTip}"/>
-        <a class="btn btn-info btn-small" data-bind="{this.command,to=execSearchCommand}">
-            <i class="icon-search"></i>
-        </a>
-    </div>
-    <div style="height: 400px; width: 100%;">
-        <table style="border: none; border-collapse: collapse; table-layout: fixed;">
-            <tr>
-                <!--left section - already linked to customer addresses -->
-                <td style="vertical-align: top;">
-                    <div style="height: 310px; vertical-align: top; width: 350px;">
-                        <table data-name="gridCustAddr" data-bind="{this.dataSource,to=custAdressView,source=customerVM.customerAddressVM}"
-                               data-view="options={wrapCss:findAddrTableWrap,isCanDelete=false,isCanEdit=true,isUseScrollInto=false}">
-                            <thead>
-                            <tr>
-                                <th data-column="width:50px,type:row_actions"></th>
-                                <th data-column="width:40%,title=AddressType" data-content="fieldName:AddressType"></th>
-                                <th data-column="width:60%,title=Address,sortable:true" data-content="fieldName:Address.AddressLine1"></th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        </table>
-                    </div>
-                </td>
-                <!--middle section - buttons -->
-                <td style="text-align: center; vertical-align: middle;">
-                    <div style="padding: 3px">
-                        <a class="btn btn-info btn-small" data-bind="{this.command,to=linkCommand}">
-                            <i class="icon-hand-left"></i>
-                        </a>
-                    </div>
-                    <div style="padding: 3px">
-                        <a class="btn btn-info btn-small" data-bind="{this.command,to=unLinkCommand}">
-                            <i
-                                class="icon-hand-right">
-                            </i>
-                        </a>
-                    </div>
-                </td>
-                <!--right section AddressInfos -->
-                <td style="vertical-align: top;">
-                    <div style="height: 310px; vertical-align: top;">
-                        <table style="position: relative" data-bind="{this.dataSource,to=addressInfosView}{this.propChangedCommand,to=propChangeCommand}"
-                               data-view="options={wrapCss:findAddrTableWrap}">
-                            <thead>
-                            <tr>
-                                <th data-column="width:100%,sortable:true,title:Address" data-content="fieldName:AddressLine1,readOnly:true"></th>
-                                <th data-column="width:100%,sortable:true,title:City,sortMemberName=City;AddressLine1"
-                                    data-content="fieldName:City,readOnly:true">
-                                </th>
-                                <th data-column="width:100%,sortable:true,title:CountryRegion,sortMemberName=CountryRegion;City;AddressLine1"
-                                    data-content="fieldName:CountryRegion,readOnly:true">
-                                </th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        </table>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <a class="btn btn-info btn-small" data-bind="{this.command,to=addNewAddressCommand}">
-                        <i class="icon-plus"></i>&nbsp;New Address
-                    </a>
-                </td>
-                <td>
-                    <div style="border: none; height: 40px; margin-bottom: 5px; margin-top: 3px; text-align: left; width: 100%;">
-                        <!--pager-->
-                        <div style="float: left;" data-bind="{this.dataSource,to=addressInfosView}" data-view="name=pager,options={sliderSize:10}">
-                        </div>
-                        <div style="float: left; padding-left: 10px; padding-top: 10px;">
-                            <span>Total:</span>&nbsp;<span data-bind="{this.value,to=addressInfosView.totalCount}"></span>
-                        </div>
-                    </div>
-                </td>
-            </tr>
-        </table>
-    </div>
-</div>
-
-<div id="newAdrTemplate" data-role="template" data-name="newAddress" style="margin: 4px; max-width: 500px; width: 95%;">
-    <form action="#" style="width: 100%" data-bind="{this.dataContext,to=newAddress}"
-          data-view="name=dataform">
-        <dl class="dl-horizontal">
-            <dt>
-                <span class="addressLabel">AddressLine1:</span></dt>
-            <dd>
-                <!--inside data form we can use span tag with data-content attribute-->
-                <span class="address" data-content="fieldName:AddressLine1"></span>
-            </dd>
-            <dt>
-                <span class="addressLabel">AddressLine2:</span></dt>
-            <dd>
-                <span class="address" data-content="fieldName:AddressLine2"></span>
-            </dd>
-            <dt>
-                <span class="addressLabel">City:</span></dt>
-            <dd>
-                <span class="address" data-content="fieldName:City"></span>
-            </dd>
-            <dt>
-                <span class="addressLabel">StateProvince:</span></dt>
-            <dd>
-                <span class="address" data-content="fieldName:StateProvince"></span>
-            </dd>
-            <dt>
-                <span class="addressLabel">CountryRegion:</span></dt>
-            <dd>
-                <span class="address" data-content="fieldName:CountryRegion"></span>
-            </dd>
-            <dt>
-                <span class="addressLabel">PostalCode:</span></dt>
-            <dd>
-                <span class="address" data-content="fieldName:PostalCode"></span>
-            </dd>
-        </dl>
-    </form>
-</div>
+</script>

@@ -3353,7 +3353,8 @@ define("jriapp_utils/tooltip", ["require", "exports", "jriapp_utils/dom"], funct
 define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jriapp_elview/factory", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/defaults", "jriapp_utils/coreutils", "jriapp_utils/tloader", "jriapp_utils/sloader", "jriapp_utils/path", "jriapp_utils/tooltip", "jriapp_utils/dom", "jriapp_utils/async"], function (require, exports, const_3, factory_1, lang_5, object_8, defaults_1, coreutils_12, tloader_1, sloader_1, path_2, tooltip_1, dom_6, async_6) {
     "use strict";
     var $ = dom_6.DomUtils.$, document = dom_6.DomUtils.document, window = dom_6.DomUtils.window;
-    exports.cssRiaTemplate = "ria-template";
+    var _TEMPLATE_SELECTOR = 'script[type="text/html"][data-role="template"]';
+    var stylesLoader = sloader_1.create();
     var GLOB_EVENTS = {
         load: "load",
         unload: "unload",
@@ -3363,11 +3364,6 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
         curSelectable: "currentSelectable",
         isReady: "isReady"
     };
-    var _TEMPLATES_SELECTOR = ["section.", exports.cssRiaTemplate].join("");
-    var _TEMPLATE_SELECTOR = '*[data-role="template"]';
-    var _TEMPLATE_SELECTOR2 = 'script[type="text/html"][data-role="template"]';
-    var stylesLoader = sloader_1.create();
-    stylesLoader.loadOwnStyle();
     var BootstrapState;
     (function (BootstrapState) {
         BootstrapState[BootstrapState["None"] = 0] = "None";
@@ -3390,7 +3386,9 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             this._moduleInits = [];
             this._templateLoader = null;
             this._templateLoader = new tloader_1.TemplateLoader();
-            this._templateLoader.addOnLoaded(function (s, a) { self._onTemplateLoaded(a.html, a.app); });
+            this._templateLoader.addOnLoaded(function (s, a) {
+                self._onTemplateLoaded(a.html, a.app);
+            });
             this._templateLoader.addOnError(function (s, a) {
                 return self.handleError(a.error, a.source);
             });
@@ -3429,6 +3427,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             };
             this._defaults = new defaults_1.Defaults(this);
             this.defaults.imagesPath = path_2.PathHelper.getFrameworkImgPath();
+            stylesLoader.loadOwnStyle();
         }
         Bootstrap._initFramework = function () {
             $(document).ready(function ($) {
@@ -3468,28 +3467,22 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
         Bootstrap.prototype._onTemplateLoaded = function (html, app) {
             var tmpDiv = document.createElement("div");
             tmpDiv.innerHTML = html;
-            this._processTemplateSection(tmpDiv, app);
+            this._processTemplates(tmpDiv, app);
         };
-        Bootstrap.prototype._processTemplateSection = function (templateSection, app) {
-            var self = this, templates = coreutils_12.CoreUtils.arr.fromList(templateSection.querySelectorAll(_TEMPLATE_SELECTOR));
+        Bootstrap.prototype._processTemplates = function (root, app) {
+            if (app === void 0) { app = null; }
+            var self = this, templates = coreutils_12.CoreUtils.arr.fromList(root.querySelectorAll(_TEMPLATE_SELECTOR));
             templates.forEach(function (el) {
                 var html, name = el.getAttribute("id");
                 if (!name)
                     throw new Error(lang_5.ERRS.ERR_TEMPLATE_HAS_NO_ID);
-                el.removeAttribute("id");
-                html = el.outerHTML;
+                html = el.innerHTML;
                 self._processTemplate(name, html, app);
             });
         };
-        Bootstrap.prototype._processScriptTemplates = function () {
-            var self = this, root = dom_6.DomUtils.document, templates = coreutils_12.CoreUtils.arr.fromList(root.querySelectorAll(_TEMPLATE_SELECTOR2));
-            templates.forEach(function (el) {
-                var name = el.getAttribute("id");
-                if (!name)
-                    throw new Error(lang_5.ERRS.ERR_TEMPLATE_HAS_NO_ID);
-                var html = el.innerHTML;
-                self._processTemplate(name, html, null);
-            });
+        Bootstrap.prototype._processHTMLTemplates = function () {
+            var self = this, root = dom_6.DomUtils.document;
+            self._processTemplates(root);
         };
         Bootstrap.prototype._processTemplate = function (name, html, app) {
             var self = this, deferred = async_6.AsyncUtils.createSyncDeferred();
@@ -3534,7 +3527,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             self._bootState = 2;
             self.raiseEvent(GLOB_EVENTS.initialized, {});
             try {
-                self._processScriptTemplates();
+                self._processHTMLTemplates();
             }
             catch (err) {
                 self._bootState = 4;
@@ -4392,7 +4385,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
     syschecks_6.SysChecks._isBinding = function (obj) {
         return (!!obj && obj instanceof Binding);
     };
-    function onUnResolvedBinding(bindTo, root, path, propName) {
+    function fn_onUnResolvedBinding(bindTo, root, path, propName) {
         if (!coreutils_14.DEBUG.isDebugging()) {
             return;
         }
@@ -4408,6 +4401,14 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
         msg += ", property: '" + propName + "'";
         msg += ", binding path: '" + path + "'";
         coreutils_14.LOG.warn(msg);
+    }
+    ;
+    function fn_handleError(appName, error, source) {
+        if (!!appName) {
+            return bootstrap_4.bootstrap.findApp(appName).handleError(error, source);
+        }
+        else
+            return bootstrap_4.bootstrap.handleError(error, source);
     }
     ;
     var _newID = 0;
@@ -4603,7 +4604,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                         self._parseSrcPath2(nextObj, path.slice(1), lvl + 1);
                     }
                     else if (checks.isUndefined(nextObj)) {
-                        onUnResolvedBinding(0, self.source, self._srcPath.join("."), path[0]);
+                        fn_onUnResolvedBinding(0, self.source, self._srcPath.join("."), path[0]);
                     }
                 }
                 return;
@@ -4624,7 +4625,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                     self._sourceObj = obj;
                 }
                 else {
-                    onUnResolvedBinding(0, self.source, self._srcPath.join("."), path[0]);
+                    fn_onUnResolvedBinding(0, self.source, self._srcPath.join("."), path[0]);
                 }
             }
         };
@@ -4661,7 +4662,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                         self._parseTgtPath2(nextObj, path.slice(1), lvl + 1);
                     }
                     else if (checks.isUndefined(nextObj)) {
-                        onUnResolvedBinding(1, self.target, self._tgtPath.join("."), path[0]);
+                        fn_onUnResolvedBinding(1, self.target, self._tgtPath.join("."), path[0]);
                     }
                 }
                 return;
@@ -4679,7 +4680,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                     self._targetObj = obj;
                 }
                 else {
-                    onUnResolvedBinding(1, self.target, self._tgtPath.join("."), path[0]);
+                    fn_onUnResolvedBinding(1, self.target, self._tgtPath.join("."), path[0]);
                 }
             }
         };
@@ -4819,15 +4820,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             }
         };
         Binding.prototype.handleError = function (error, source) {
-            var isHandled = _super.prototype.handleError.call(this, error, source);
-            if (!isHandled) {
-                if (!!this._appName) {
-                    return bootstrap_4.bootstrap.findApp(this._appName).handleError(error, source);
-                }
-                else
-                    return bootstrap_4.bootstrap.handleError(error, source);
-            }
-            return isHandled;
+            return fn_handleError(this._appName, error, source);
         };
         Binding.prototype.destroy = function () {
             if (this._isDestroyed)

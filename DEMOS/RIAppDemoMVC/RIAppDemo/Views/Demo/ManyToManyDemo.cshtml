@@ -162,7 +162,7 @@
 
 <h2 class="ex8">@ViewBag.Title</h2>
 
-<div id="demoContent" data-bind="{this.isBusy,to=dbContext.isBusy}" data-view="name=busy_indicator">
+<div id="demoContent" data-bind="{this.isBusy,to=dbContext.isBusy}" data-view="name=busy">
     <div id="leftPanel">
         <div style="height: 97%; vertical-align: top;">
             <table data-name="gridCustomers" data-bind="{this.dataSource,to=dbSet,source=customerVM}" data-view="options={wrapCss:customerTableWrap,isHandleAddNew:true,editor:{templateID:customerEditTemplate,width:550,height:650,submitOnOK:true,title:'Customer editing'}}">
@@ -376,24 +376,25 @@
         </form>
     </div>
 </script>
+
 <script id="salespersonTemplate1" type="text/html" data-role="template">
-    <div>
-        <span data-bind="{this.value,to=SalesPerson}"></span>
-    </div>
+    <span data-bind="{this.value,to=SalesPerson}"></span>
 </script>
+
 <script id="salespersonTemplate2" type="text/html" data-role="template">
-    <div>
+    <span>
         <input type="text" style="margin-left: 0px; width: 200px;" data-bind="{this.value,to=SalesPerson,mode=TwoWay}{this.dataContext}"
                data-view="name=autocomplete,options={fieldName:SalesPerson,dbContext:dbContext,dbSetName:SalesInfo,queryName:ReadSalesInfo,templateId:salePerAutocompleteTemplate,width:200px,height:250px}"/>
         &nbsp;<span style="color: Gray;">&lt;--autocomplete here</span>
-    </div>
+    </span>
 </script>
+
 <script id="salePerAutocompleteTemplate" type="text/html" data-role="template">
     @*example of autocomplete implementation*@
     <div style="height: 97%; margin: 0px; padding: 2px; position: relative;">
         <div style="margin-left: 1px; position: relative; vertical-align: top;"
-             data-bind="{this.isBusy,to=isLoading}" data-view="name=busy_indicator">
-            <table style="position: relative" data-name="lookupGrid" data-bind="{this.dataSource,to=gridDataSource}"
+             data-bind="{this.isBusy,to=isLoading}" data-view="name=busy">
+            <table data-name="lookupGrid" data-bind="{this.dataSource,to=gridDataSource}"
                    data-view="options={wrapCss:autocompleteTableWrap,headerCss:autocompleteTableHeader}">
                 <thead>
                 <tr>
@@ -403,25 +404,26 @@
                 <tbody></tbody>
             </table>
         </div>
-        <div style="position: relative; text-align: left;">
+        <div style="text-align: left; position:relative;">
             <!--pager-->
             <div style="float: left;" data-bind="{this.dataSource,to=gridDataSource}" data-view="name=pager,options={sliderSize:4,hideOnSinglePage=true}">
             </div>
-            <div style="float: left; padding-left: 10px; padding-top: 10px;">
+            <div style="float: left; padding: 5px;">
                 <span>Total:</span>&nbsp;<span data-bind="{this.value,to=gridDataSource.totalCount}"></span>
             </div>
         </div>
-        <br style="clear: both;position:relative;"/>
-        <div style="margin-top:5px; margin-bottom: 5px; text-align: center; position:relative;">
-            <a class="btn btn-info btn-small" style="width: 70px;position:relative;" data-name="btnOk" data-bind="{this.text,to=txtOk,source=TEXT}">
+        <br style="clear: both;" />
+        <div style="margin-left: auto;margin-right:auto;left: 0;right: 0;bottom:5px;text-align:center;position:absolute;">
+            <a class="btn btn-info btn-small" style="width: 70px;" data-name="btnOk" data-bind="{this.text,to=txtOk,source=TEXT}">
                 <i class="icon-ok"></i>
             </a><span class="space"></span>
-            <a class="btn btn-info btn-small" style="width: 70px;position:relative;" data-name="btnCancel" data-bind="{this.text,to=txtCancel,source=TEXT}">
+            <a class="btn btn-info btn-small" style="width: 70px;" data-name="btnCancel" data-bind="{this.text,to=txtCancel,source=TEXT}">
                 <i class="icon-remove"></i>
             </a>
         </div>
     </div>
 </script>
+
 <script id="addressTemplate" type="text/html" data-role="template">
     @*used for display of customer's address on the right panel*@
     <div class="addressTemplate">
@@ -471,6 +473,7 @@
         </fieldset>
     </div>
 </script>
+
 <script id="addAddressTemplate" type="text/html" data-role="template">
     <!--addressTemplate-->
     @*used for managing of customer's addresses in many to many relationship*@
@@ -601,6 +604,7 @@
         </div>
     </div>
 </script>
+
 <script id="stackPanelItemTemplate" type="text/html" data-role="template">
     <div class="stackPanelItem" style="width: 200px;">
         <fieldset>

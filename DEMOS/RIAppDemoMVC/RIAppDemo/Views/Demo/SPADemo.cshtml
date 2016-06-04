@@ -106,6 +106,8 @@
 
 <h2 class="ex8">@ViewBag.Title</h2>
 <span>it uses <span style="color: blue;">dynacontent</span> to switch views (templates)</span>
-<div id="demoContent" data-bind="{this.isBusy,to=dbContext.isBusy}" data-view="name=busy_indicator">
-    <div id="demoDynaContent" data-bind="{this.templateID,to=viewName,source=customerVM.uiMainView}{this.dataContext,source=customerVM}{this.animation,to=animation,source=customerVM.uiMainView}" data-view="name=dynacontent"></div>
+<div id="demoContent" data-bind="{this.isBusy,to=dbContext.isBusy}" data-view="name=busy">
+    <div id="demoDynaContent" data-bind-1="{this.templateID,to=viewName,source=customerVM.uiMainView}"
+         data-bind-2="{this.dataContext,source=customerVM}"
+         data-bind-3="{this.animation,to=animation,source=customerVM.uiMainView}" data-view="name=dynacontent"></div>
 </div>
