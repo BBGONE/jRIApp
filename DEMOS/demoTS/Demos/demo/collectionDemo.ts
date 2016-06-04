@@ -142,21 +142,6 @@ bootstrap.addOnError(function (sender, args) {
     alert(args.error.message);
 });
 
-bootstrap.addOnUnResolvedBinding((s, args) => {
-    var msg = "unresolved databound property for";
-    if (args.bindTo == RIAPP.BindTo.Source) {
-        msg += " Source: "
-    }
-    else {
-        msg += " Target: "
-    }
-    msg += "'" + args.root + "'";
-    msg += ", property: '" + args.propName + "'";
-    msg += ", binding path: '" + args.path + "'";
-
-    console.log(msg);
-});
-
 function initModule(app: RIAPP.Application) {
     app.registerConverter('radioValueConverter', new RadioValueConverter());
     return {};

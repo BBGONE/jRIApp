@@ -165,19 +165,6 @@ define(["require", "exports", "jriapp", "./demoDB", "./common"], function (requi
         debugger;
         alert(args.error.message);
     });
-    bootstrap.addOnUnResolvedBinding(function (s, args) {
-        var msg = "unresolved databound property for";
-        if (args.bindTo == 0) {
-            msg += " Source: ";
-        }
-        else {
-            msg += " Target: ";
-        }
-        msg += "'" + args.root + "'";
-        msg += ", property: '" + args.propName + "'";
-        msg += ", binding path: '" + args.path + "'";
-        console.log(msg);
-    });
     function initModule(app) {
         app.registerConverter('radioValueConverter', new RadioValueConverter());
         return {};
