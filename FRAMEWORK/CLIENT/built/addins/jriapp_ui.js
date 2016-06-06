@@ -509,7 +509,7 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_utils/utils", "jr
             this._animation = null;
         }
         DynaContentElView.prototype.templateLoading = function (template) {
-            if (this._isDestroyCalled)
+            if (this.getIsDestroyCalled())
                 return;
             var isFirstShow = !this._prevTemplateID, canShow = !!this._animation && (this._animation.isAnimateFirstShow || (!this._animation.isAnimateFirstShow && !isFirstShow));
             if (canShow) {
@@ -4481,7 +4481,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_core/lang", "jriapp_c
             _super.prototype.destroy.call(this);
         };
         ListBoxElView.prototype.toString = function () {
-            return "SelectElView";
+            return "ListBoxElView";
         };
         Object.defineProperty(ListBoxElView.prototype, "isEnabled", {
             get: function () { return !this.$el.prop("disabled"); },

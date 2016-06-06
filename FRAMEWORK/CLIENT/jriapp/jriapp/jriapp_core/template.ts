@@ -106,7 +106,6 @@ class Template extends BaseObject implements ITemplate {
     //returns a promise which resolves with the loaded template's DOM element
     private _loadTemplateElAsync(name: string): IPromise<HTMLElement> {
         let self = this, fn_loader = this.app.getTemplateLoader(name), promise: IPromise<string>;
-
         if (checks.isFunc(fn_loader) && checks.isThenable(promise = fn_loader())) {
             return promise.then((html: string) => {
                 let tmpDiv: HTMLElement = document.createElement("div");

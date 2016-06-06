@@ -156,7 +156,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     }
     private _onTemplateLoaded(html: string, app: IApplication) {
         let tmpDiv = document.createElement("div");
-        tmpDiv.innerHTML = html;
+        tmpDiv.innerHTML = strUtils.fastTrim(html);
         this._processTemplates(tmpDiv, app);
     }
     private _processTemplates(root: HTMLElement | HTMLDocument, app: IApplication = null): void {
@@ -176,7 +176,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     }
     private _processTemplate(name: string, html: string, app: IApplication): void {
         let self = this, deferred = defer.createSyncDeferred<string>();
-        deferred.resolve(html);
+        let res = strUtils.fastTrim(html);
         let fn = function () {
             return deferred.promise();
         };
@@ -187,6 +187,8 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         self.templateLoader.registerTemplateLoader(name, {
             fn_loader: fn
         });
+
+        deferred.resolve(res);
     }
     protected _getEventNames(): string[] {
         let base_events = super._getEventNames();

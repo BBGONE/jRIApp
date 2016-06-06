@@ -3013,20 +3013,27 @@ define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriap
                             }
                             var loader = self._getTemplateLoaderCore(name);
                             if (!loader || !loader.fn_loader) {
-                                throw new Error(coreutils_11.StringUtils.format(lang_5.ERRS.ERR_TEMPLATE_NOTREGISTERED, name));
+                                var error = coreutils_11.StringUtils.format(lang_5.ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
+                                if (coreutils_11.DEBUG.isDebugging())
+                                    coreutils_11.LOG.error(error);
+                                throw new Error(error);
                             }
                         });
                         var loader = self._getTemplateLoaderCore(name);
                         if (!loader || !loader.fn_loader) {
-                            throw new Error(coreutils_11.StringUtils.format(lang_5.ERRS.ERR_TEMPLATE_NOTREGISTERED, name));
+                            var error = coreutils_11.StringUtils.format(lang_5.ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
+                            if (coreutils_11.DEBUG.isDebugging())
+                                coreutils_11.LOG.error(error);
+                            throw new Error(error);
                         }
                         delete self._templateGroups[loader.groupName];
-                        loader.fn_loader().then(function (html) {
+                        var promise = loader.fn_loader();
+                        promise.then(function (html) {
                             deferred.resolve(html);
                         }, function (err) {
                             deferred.reject(err);
                         });
-                    }, function (err) {
+                    }).fail(function (err) {
                         group_1.promise = null;
                         deferred.reject(err);
                     });
@@ -3473,7 +3480,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
         };
         Bootstrap.prototype._onTemplateLoaded = function (html, app) {
             var tmpDiv = document.createElement("div");
-            tmpDiv.innerHTML = html;
+            tmpDiv.innerHTML = coreutils_12.StringUtils.fastTrim(html);
             this._processTemplates(tmpDiv, app);
         };
         Bootstrap.prototype._processTemplates = function (root, app) {
@@ -3493,7 +3500,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
         };
         Bootstrap.prototype._processTemplate = function (name, html, app) {
             var self = this, deferred = async_6.AsyncUtils.createSyncDeferred();
-            deferred.resolve(html);
+            var res = coreutils_12.StringUtils.fastTrim(html);
             var fn = function () {
                 return deferred.promise();
             };
@@ -3503,6 +3510,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             self.templateLoader.registerTemplateLoader(name, {
                 fn_loader: fn
             });
+            deferred.resolve(res);
         };
         Bootstrap.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
@@ -4407,7 +4415,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
         msg += "'" + root + "'";
         msg += ", property: '" + propName + "'";
         msg += ", binding path: '" + path + "'";
-        coreutils_14.LOG.warn(msg);
+        coreutils_14.LOG.error(msg);
     }
     ;
     function fn_handleError(appName, error, source) {

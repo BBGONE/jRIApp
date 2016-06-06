@@ -634,7 +634,7 @@ export class ListBoxElView extends BaseElView {
         super.destroy();
     }
     toString() {
-        return "SelectElView";
+        return "ListBoxElView";
     }
     get isEnabled() { return !this.$el.prop("disabled"); }
     set isEnabled(v: boolean) {

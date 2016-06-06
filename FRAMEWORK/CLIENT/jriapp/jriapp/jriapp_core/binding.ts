@@ -33,7 +33,7 @@ function fn_onUnResolvedBinding(bindTo: BindTo, root: any, path: string, propNam
     msg += ", property: '" + propName + "'";
     msg += ", binding path: '" + path + "'";
 
-    LOG.warn(msg);
+    LOG.error(msg);
 };
 
 function fn_handleError(appName: string, error: any, source: any): boolean {

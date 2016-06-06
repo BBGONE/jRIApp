@@ -41,32 +41,32 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
         this._templateID = null;
         this._template = null;
         this._animation = null;
-   }
+    }
     templateLoading(template: ITemplate): void {
-        if (this._isDestroyCalled)
+        if (this.getIsDestroyCalled())
             return;
         let isFirstShow = !this._prevTemplateID,
             canShow = !!this._animation && (this._animation.isAnimateFirstShow || (!this._animation.isAnimateFirstShow && !isFirstShow));
         if (canShow) {
             this._animation.beforeShow(template, isFirstShow);
-       }
-   }
+        }
+    }
     templateLoaded(template: ITemplate, error?: any): void {
         if (this.getIsDestroyCalled())
             return;
         if (!utils.dom.isContained(template.el, this.el)) {
             this.el.appendChild(template.el);
-       }
+        }
 
         let isFirstShow = !this._prevTemplateID,
             canShow = !!this._animation && (this._animation.isAnimateFirstShow || (!this._animation.isAnimateFirstShow && !isFirstShow));
         if (canShow) {
             this._animation.show(template, isFirstShow);
-       }
-   }
+        }
+    }
     templateUnLoading(template: ITemplate): void {
         //noop
-   }
+    }
     private _templateChanging(oldName: string, newName: string) {
         let self = this;
         try {
@@ -81,19 +81,19 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
                         self._template = null;
                         self.raisePropertyChanged(PROP_NAME.template);
 
-                   });
-               }
+                    });
+                }
                 else {
                     self._template.destroy();
                     self._template = null;
                     self.raisePropertyChanged(PROP_NAME.template);
-               }
+                }
                 return;
-           }
-       } catch (ex) {
+            }
+        } catch (ex) {
             this.handleError(ex, this);
             ERROR.throwDummy(ex);
-       }
+        }
 
         try {
             if (!this._template) {
@@ -101,7 +101,7 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
                 this._template.templateID = newName;
                 self.raisePropertyChanged(PROP_NAME.template);
                 return;
-           }
+            }
             if (!!this._animation && !!this._template.loadedElem) {
                 this._animation.stop();
                 this._animation.beforeHide(this._template);
@@ -109,15 +109,15 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
                     if (self.getIsDestroyCalled())
                         return;
                     self._template.templateID = newName;
-               });
-           }
+                });
+            }
             else
                 self._template.templateID = newName;
-       } catch (ex) {
+        } catch (ex) {
             this.handleError(ex, this);
             ERROR.throwDummy(ex);
-       }
-   }
+        }
+    }
     destroy() {
         if (this._isDestroyed)
             return
@@ -129,18 +129,18 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
 
         if (checks.isBaseObject(a)) {
             (<IBaseObject><any>a).destroy();
-       }
+        }
         if (!!t) {
             t.destroy();
-       }
+        }
         this._dataContext = null;
         super.destroy();
-   }
+    }
     get template() { return this._template; }
 
     get templateID() {
         return this._templateID;
-   }
+    }
     set templateID(v: string) {
         let old = this._templateID;
         if (old !== v) {
@@ -148,25 +148,25 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
             this._templateID = v;
             this._templateChanging(old, v);
             this.raisePropertyChanged(PROP_NAME.templateID);
-       }
-   }
+        }
+    }
     get dataContext() { return this._dataContext; }
     set dataContext(v) {
         if (this._dataContext !== v) {
             this._dataContext = v;
             if (!!this._template) {
                 this._template.dataContext = this._dataContext;
-           }
+            }
             this.raisePropertyChanged(PROP_NAME.dataContext);
-       }
-   }
+        }
+    }
     get animation() { return this._animation; }
     set animation(v) {
         if (this._animation !== v) {
             this._animation = v;
             this.raisePropertyChanged(PROP_NAME.animation);
-       }
-   }
+        }
+    }
 }
 
 bootstrap.registerElView("dynacontent", DynaContentElView);

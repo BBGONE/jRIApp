@@ -2,7 +2,7 @@
 import { IPromise, IApplication, ITemplateGroupInfo, ITemplateGroupInfoEx, ITemplateLoaderInfo } from "../jriapp_core/shared";
 import { ERRS } from "../jriapp_core/lang";
 import { BaseObject }  from "../jriapp_core/object";
-import { Checks as checks, StringUtils as strUtils, CoreUtils as coreUtils } from "./coreutils";
+import { Checks as checks, StringUtils as strUtils, CoreUtils as coreUtils, LOG, DEBUG } from "./coreutils";
 import { AsyncUtils as defer } from "./async";
 import { HttpUtils as http } from "./http";
 import { WaitQueue } from "./waitqueue";
@@ -132,7 +132,7 @@ export class TemplateLoader extends BaseObject {
             return () => {
                 //it prevents double loading
                 if (!group.promise) {
-                    //start loading only if no another loading in progress
+                   //start loading only if no another loading in progress
                     group.promise = self.loadTemplatesAsync(group.fn_loader, group.app);
                 }
 
@@ -146,24 +146,29 @@ export class TemplateLoader extends BaseObject {
                         }
                         let loader = self._getTemplateLoaderCore(name);
                         if (!loader || !loader.fn_loader) {
-                            throw new Error(strUtils.format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name));
+                            let error = strUtils.format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
+                            if (DEBUG.isDebugging())
+                                LOG.error(error);
+                            throw new Error(error);
                         }
                     });
 
                     let loader = self._getTemplateLoaderCore(name);
                     if (!loader || !loader.fn_loader) {
-                        throw new Error(strUtils.format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name));
+                        let error = strUtils.format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
+                        if (DEBUG.isDebugging())
+                            LOG.error(error);
+                        throw new Error(error);
                     }
 
                     delete self._templateGroups[loader.groupName];
-
-                    loader.fn_loader().then((html) => {
+                    let promise = loader.fn_loader();
+                    promise.then((html) => {
                         deferred.resolve(html);
                     }, (err) => {
                         deferred.reject(err);
                     });
-
-                }, (err) => {
+                }).fail((err) => {
                     group.promise = null;
                     deferred.reject(err);
                 });
