@@ -3367,7 +3367,7 @@ define("jriapp_utils/tooltip", ["require", "exports", "jriapp_utils/dom"], funct
 define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jriapp_elview/factory", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/defaults", "jriapp_utils/coreutils", "jriapp_utils/tloader", "jriapp_utils/sloader", "jriapp_utils/path", "jriapp_utils/tooltip", "jriapp_utils/dom", "jriapp_utils/async"], function (require, exports, const_3, factory_1, lang_6, object_8, defaults_1, coreutils_12, tloader_1, sloader_1, path_2, tooltip_1, dom_6, async_6) {
     "use strict";
     var $ = dom_6.DomUtils.$, document = dom_6.DomUtils.document, window = dom_6.DomUtils.window;
-    var _TEMPLATE_SELECTOR = 'script[type="text/html"][data-role="template"]';
+    var _TEMPLATE_SELECTOR = 'script[type="text/html"]';
     var stylesLoader = sloader_1.create();
     var GLOB_EVENTS = {
         load: "load",

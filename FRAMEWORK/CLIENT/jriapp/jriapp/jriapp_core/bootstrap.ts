@@ -16,7 +16,7 @@ import { DomUtils as dom } from "../jriapp_utils/dom";
 import { AsyncUtils as defer } from "../jriapp_utils/async";
 
 const $ = dom.$, document = dom.document, window = dom.window;
-const _TEMPLATE_SELECTOR = 'script[type="text/html"][data-role="template"]';
+const _TEMPLATE_SELECTOR = 'script[type="text/html"]';
 const stylesLoader = createCssLoader();
 
 const GLOB_EVENTS = {
