@@ -616,6 +616,8 @@ declare module "jriapp_ui/datagrid/datagrid" {
             templateID: string;
         };
         editor?: IDialogConstructorOptions;
+        isPrependNewRows?: boolean;
+        isPrependAllRows?: boolean;
     }
     export interface IDataGridConstructorOptions extends IDataGridOptions {
         app: IApplication;
@@ -727,7 +729,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         protected _createColumn(cellInfo: ICellInfo): BaseColumn;
         protected _appendItems(newItems: ICollectionItem[]): void;
         protected _refresh(isPageChanged: boolean): void;
-        protected _createRowForItem(parent: Node, item: ICollectionItem, pos?: number): Row;
+        protected _createRowForItem(parent: Node, item: ICollectionItem, prepend?: boolean): Row;
         protected _createDetails(): DetailsRow;
         protected _createFillSpace(): FillSpaceRow;
         _getInternal(): IInternalDataGridMethods;

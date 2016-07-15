@@ -2239,7 +2239,9 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
                 rowStateField: null,
                 isCanEdit: null,
                 isCanDelete: null,
-                isHandleAddNew: false
+                isHandleAddNew: false,
+                isPrependNewRows: false,
+                isPrependAllRows: false
             });
             if (!!options.dataSource && !checks.isCollection(options.dataSource))
                 throw new Error(lang_3.ERRS.ERR_GRID_DATASRC_INVALID);
@@ -2864,13 +2866,15 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             return col;
         };
         DataGrid.prototype._appendItems = function (newItems) {
-            if (this._isDestroyCalled)
+            if (this.getIsDestroyCalled())
                 return;
             var self = this, item, tbody = this._tBodyEl;
             for (var i = 0, k = newItems.length; i < k; i += 1) {
                 item = newItems[i];
-                if (!self._rowMap[item._key])
-                    self._createRowForItem(tbody, item);
+                if (!self._rowMap[item._key]) {
+                    var isPrepend = self.options.isPrependAllRows || (self.options.isPrependNewRows && item._aspect.isNew);
+                    self._createRowForItem(tbody, item, isPrepend);
+                }
             }
             this._colSizeDebounce.enqueue(function () {
                 self._updateColsSize();
@@ -2885,8 +2889,8 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             if (!ds)
                 return;
             var docFr = document.createDocumentFragment(), oldTbody = this._tBodyEl, newTbody = document.createElement("tbody");
-            ds.items.forEach(function (item, pos) {
-                self._createRowForItem(docFr, item, pos);
+            ds.items.forEach(function (item, index) {
+                self._createRowForItem(docFr, item, false);
             });
             newTbody.appendChild(docFr);
             self._table.replaceChild(newTbody, oldTbody);
@@ -2904,12 +2908,20 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
                 self._updateTableDisplay();
             });
         };
-        DataGrid.prototype._createRowForItem = function (parent, item, pos) {
+        DataGrid.prototype._createRowForItem = function (parent, item, prepend) {
             var self = this, tr = document.createElement("tr");
             var gridRow = new row_1.Row(self, { tr: tr, item: item });
             self._rowMap[item._key] = gridRow;
             self._rows.push(gridRow);
-            parent.appendChild(gridRow.tr);
+            if (!prepend) {
+                parent.appendChild(gridRow.tr);
+            }
+            else {
+                if (!parent.firstChild)
+                    parent.appendChild(gridRow.tr);
+                else
+                    parent.insertBefore(gridRow.tr, parent.firstChild);
+            }
             return gridRow;
         };
         DataGrid.prototype._createDetails = function () {

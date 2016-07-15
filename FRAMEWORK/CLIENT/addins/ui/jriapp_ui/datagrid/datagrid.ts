@@ -96,6 +96,10 @@ export interface IDataGridOptions {
     isHandleAddNew: boolean;
     details?: { templateID: string; };
     editor?: IDialogConstructorOptions;
+    //if newly created items are prepended to the table (instead of appended)
+    isPrependNewRows?: boolean;
+    //if all additionally added rows are prepended to the table (instead of appended)
+    isPrependAllRows?: boolean;
 }
 
 
@@ -165,8 +169,11 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 rowStateField: null,
                 isCanEdit: null,
                 isCanDelete: null,
-                isHandleAddNew: false
+                isHandleAddNew: false,
+                isPrependNewRows: false,
+                isPrependAllRows: false
             });
+
         if (!!options.dataSource && !checks.isCollection(options.dataSource))
             throw new Error(ERRS.ERR_GRID_DATASRC_INVALID);
         this._options = options;
@@ -805,13 +812,15 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         return col;
     }
     protected _appendItems(newItems: ICollectionItem[]) {
-        if (this._isDestroyCalled)
+        if (this.getIsDestroyCalled())
             return;
         let self = this, item: ICollectionItem, tbody = this._tBodyEl;
         for (let i = 0, k = newItems.length; i < k; i += 1) {
             item = newItems[i];
-            if (!self._rowMap[item._key])
-                self._createRowForItem(tbody, item);
+            if (!self._rowMap[item._key]) {
+                let isPrepend = self.options.isPrependAllRows || (self.options.isPrependNewRows && item._aspect.isNew);
+                self._createRowForItem(tbody, item, isPrepend);
+            }
         }
         this._colSizeDebounce.enqueue(() => {
             self._updateColsSize();
@@ -824,8 +833,8 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         self._clearGrid();
         if (!ds) return;
         let docFr = document.createDocumentFragment(), oldTbody = this._tBodyEl, newTbody = document.createElement("tbody");
-        ds.items.forEach(function (item, pos) {
-            self._createRowForItem(docFr, item, pos);
+        ds.items.forEach(function (item, index) {
+            self._createRowForItem(docFr, item, false);
         });
         newTbody.appendChild(docFr);
         self._table.replaceChild(newTbody, oldTbody);
@@ -843,12 +852,21 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             self._updateTableDisplay();
         });
     }
-    protected _createRowForItem(parent: Node, item: ICollectionItem, pos?: number) {
+    protected _createRowForItem(parent: Node, item: ICollectionItem, prepend?: boolean) {
         let self = this, tr = document.createElement("tr");
         let gridRow = new Row(self, { tr: tr, item: item });
         self._rowMap[item._key] = gridRow;
         self._rows.push(gridRow);
-        parent.appendChild(gridRow.tr);
+        if (!prepend) {
+            parent.appendChild(gridRow.tr);
+        }
+        else {
+            if (!parent.firstChild)
+                parent.appendChild(gridRow.tr);
+            else
+                parent.insertBefore(gridRow.tr, parent.firstChild);
+        }
+
         return gridRow;
     }
     protected _createDetails() {
