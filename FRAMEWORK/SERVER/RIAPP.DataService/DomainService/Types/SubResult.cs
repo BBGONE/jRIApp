@@ -1,4 +1,4 @@
-﻿using System.Collections;
+﻿using System.Collections.Generic;
 
 namespace RIAPP.DataService.DomainService.Types
 {
@@ -6,6 +6,6 @@ namespace RIAPP.DataService.DomainService.Types
     {
         public string dbSetName { get; set; }
 
-        public IEnumerable Result { get; set; }
+        public IEnumerable<object> Result { get; set; }
     }
 }

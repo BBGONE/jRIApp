@@ -21,10 +21,9 @@ namespace RIAPP.DataService.DomainService
             _dataHelper = _domainService.ServiceContainer.DataHelper;
         }
 
-        public IEnumerable<Subset> CreateSubsets(DbSetInfo dbSetInfo, IEnumerable<object> entities,
-            string[] includePaths)
+        public IEnumerable<Subset> CreateSubsets(DbSetInfo dbSetInfo, IEnumerable<object> entities, string[] includePaths)
         {
-            if (includePaths.Length == 0)
+            if (includePaths == null || includePaths.Length == 0)
                 return Enumerable.Empty<Subset>();
             var visited = new Dictionary<string, Subset>();
             var metadata = MetadataHelper.EnsureMetadataInitialized(_domainService);
@@ -43,29 +42,40 @@ namespace RIAPP.DataService.DomainService
             if (subResults == null)
                 return result;
             var metadata = MetadataHelper.EnsureMetadataInitialized(_domainService);
-            var rowCount = 0;
             foreach (var subResult in subResults)
             {
                 var dbSetInfo = metadata.dbSets[subResult.dbSetName];
                 if (result.Any(r => r.dbSetName == subResult.dbSetName))
-                    throw new DomainServiceException(string.Format("The included results already have {0} entities",
-                        dbSetInfo.dbSetName));
-                var entityList = new LinkedList<object>();
-                foreach (var entity in subResult.Result)
-                {
-                    entityList.AddLast(entity);
-                    ++rowCount;
-                }
-                var rowGenerator = new RowGenerator(dbSetInfo, entityList, _dataHelper);
+                    throw new DomainServiceException(string.Format("The included results already have {0} entities", dbSetInfo.dbSetName));
+                var rowGenerator = new RowGenerator(dbSetInfo, subResult.Result, _dataHelper);
                 var current = new Subset
                 {
                     dbSetName = dbSetInfo.dbSetName,
-                    rows = rowGenerator.CreateDistinctRows(ref rowCount),
+                    rows = rowGenerator.CreateDistinctRows(),
                     names = dbSetInfo.GetNames()
                 };
                 result.Add(current);
             }
             return result;
+        }
+
+        private IEnumerable<object> GetResultEntities(IEnumerable<object> inputEntities, string propertyName, bool isChildProperty)
+        {
+            foreach (var entity in inputEntities)
+            {
+                object propValue = _dataHelper.GetValue(entity, propertyName, true);
+                if (isChildProperty && propValue is IEnumerable)
+                {
+                    foreach (var childEntity in (IEnumerable)propValue)
+                    {
+                        yield return childEntity;
+                    }
+                }
+                else if (!isChildProperty && propValue != null)
+                {
+                    yield return propValue;
+                }
+            }
         }
 
         private void CreateSubset(DbSetInfo dbSetInfo, IEnumerable<object> inputEntities, string propertyName,
@@ -74,8 +84,7 @@ namespace RIAPP.DataService.DomainService
             var metadata = MetadataHelper.EnsureMetadataInitialized(_domainService);
             var isChildProperty = false;
             DbSetInfo nextDbSetInfo = null;
-            var assoc =
-                metadata.associations.Values.Where(
+            var assoc =  metadata.associations.Values.Where(
                     a => a.parentDbSetName == dbSetInfo.dbSetName && a.parentToChildrenName == propertyName)
                     .FirstOrDefault();
             if (assoc != null)
@@ -85,8 +94,7 @@ namespace RIAPP.DataService.DomainService
             }
             else
             {
-                assoc =
-                    metadata.associations.Values.Where(
+                assoc = metadata.associations.Values.Where(
                         a => a.childDbSetName == dbSetInfo.dbSetName && a.childToParentName == propertyName)
                         .FirstOrDefault();
                 if (assoc == null)
@@ -97,29 +105,11 @@ namespace RIAPP.DataService.DomainService
 
                 nextDbSetInfo = metadata.dbSets[assoc.parentDbSetName];
             }
+
             if (visited.ContainsKey(nextDbSetInfo.dbSetName + "." + propertyName))
                 return;
 
-            var rowCount = 0;
-            object propValue;
-            var resultEntities = new LinkedList<object>();
-            foreach (var entity in inputEntities)
-            {
-                propValue = _dataHelper.GetValue(entity, propertyName, true);
-                if (isChildProperty && propValue is IEnumerable)
-                {
-                    foreach (var childEntity in (IEnumerable) propValue)
-                    {
-                        resultEntities.AddLast(childEntity);
-                        ++rowCount;
-                    }
-                }
-                else if (!isChildProperty && propValue != null)
-                {
-                    resultEntities.AddLast(propValue);
-                    ++rowCount;
-                }
-            }
+            var resultEntities = this.GetResultEntities(inputEntities, propertyName, isChildProperty);
 
             //create temporary result without rows
             //fills rows at the end of the method
@@ -129,11 +119,13 @@ namespace RIAPP.DataService.DomainService
                 rows = new Row[0],
                 names = nextDbSetInfo.GetNames()
             };
+
             visited.Add(nextDbSetInfo.dbSetName + "." + propertyName, current);
             if (nextParts.Length > 0)
                 CreateSubset(nextDbSetInfo, resultEntities, nextParts[0], nextParts.Skip(1).ToArray(), visited);
+
             var rowGenerator = new RowGenerator(nextDbSetInfo, resultEntities, _dataHelper);
-            current.rows = rowGenerator.CreateDistinctRows(ref rowCount);
+            current.rows = rowGenerator.CreateDistinctRows();
         }
     }
 }

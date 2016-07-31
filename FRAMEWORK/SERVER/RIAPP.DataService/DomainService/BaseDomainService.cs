@@ -218,31 +218,22 @@ namespace RIAPP.DataService.DomainService
             {
                 var instance = _helper.GetMethodOwner(method.methodData);
                 var invokeRes = method.methodData.methodInfo.Invoke(instance, methParams.ToArray());
-                queryResult =
-                    (QueryResult) await ServiceOperationsHelper.GetMethodResult(invokeRes).ConfigureAwait(false);
+                queryResult = (QueryResult) await ServiceOperationsHelper.GetMethodResult(invokeRes).ConfigureAwait(false);
 
 
                 var entities = queryResult.Result;
                 totalCount = queryResult.TotalCount;
-                var rowCnt = 0;
-                var entityList = new LinkedList<object>();
-                foreach (var entity in entities)
-                {
-                    entityList.AddLast(entity);
-                    ++rowCnt;
-                }
-                var rowGenerator = new RowGenerator(queryInfo.dbSetInfo, entityList, ServiceContainer.DataHelper);
-                var rows = rowGenerator.CreateRows(rowCnt);
+                var rowGenerator = new RowGenerator(queryInfo.dbSetInfo, entities, ServiceContainer.DataHelper);
+                var rows = rowGenerator.CreateRows();
+
                 var subsetsGenerator = new SubsetsGenerator(this);
-                var subsets1 = subsetsGenerator.CreateSubsets(queryInfo.dbSetInfo, entityList,
-                    queryResult.includeNavigations);
+                var subsets1 = subsetsGenerator.CreateSubsets(queryInfo.dbSetInfo, entities, queryResult.includeNavigations);
                 var subsets2 = subsetsGenerator.CreateSubsets(queryResult.subResults);
 
                 var subResults = subsets1.Aggregate(subsets2, (lst, subRes) =>
                 {
                     if (lst.Any(r => r.dbSetName == subRes.dbSetName))
-                        throw new DomainServiceException(string.Format(
-                            "The included results already have {0} entities", subRes.dbSetName));
+                        throw new DomainServiceException(string.Format("The included results already have {0} entities", subRes.dbSetName));
                     lst.Add(subRes);
                     return lst;
                 });

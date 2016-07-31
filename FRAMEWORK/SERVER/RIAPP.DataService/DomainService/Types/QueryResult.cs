@@ -16,7 +16,7 @@ namespace RIAPP.DataService.DomainService.Types
 
         public int? TotalCount { get; set; }
 
-        public IEnumerable Result { get; set; }
+        public IEnumerable<object> Result { get; set; }
 
         public object extraInfo { get; set; }
 

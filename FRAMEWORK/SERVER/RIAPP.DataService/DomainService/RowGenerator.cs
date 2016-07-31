@@ -24,36 +24,27 @@ namespace RIAPP.DataService.DomainService
             pkInfos = _dbSetInfo.GetPKFields();
         }
 
-        public IEnumerable<Row> CreateRows(int rowCount)
+        public IEnumerable<Row> CreateRows()
         {
-            var rows = new Row[rowCount];
-            var counter = 0;
             foreach (var entity in _dataSource)
             {
-                var row = CreateRow(entity);
-                rows[counter] = row;
-                ++counter;
+                yield return CreateRow(entity);
             }
-            return rows;
         }
 
-        public IEnumerable<Row> CreateDistinctRows(ref int rowCount)
+        public IEnumerable<Row> CreateDistinctRows()
         {
-            //map rows by PK
-            var rows = new Dictionary<string, Row>(rowCount);
-            var counter = 0;
+            //map by PK
+            var keys = new HashSet<string>();
             foreach (var entity in _dataSource)
             {
                 var row = CreateRow(entity);
-                //here we filter out repeated rows
-                if (!rows.ContainsKey(row.k))
+                if (!keys.Contains(row.k))
                 {
-                    rows.Add(row.k, row);
-                    ++counter;
+                    keys.Add(row.k);
+                    yield return row;
                 }
             }
-            rowCount = counter;
-            return rows.Values;
         }
 
         private Row CreateRow(object entity)
