@@ -428,7 +428,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
             this._onLoaded(result.fetchedItems);
 
         this._onCollectionChanged({
-            changeType: COLL_CHANGE_TYPE.Reset,
+            changeType: !isClearAll ? COLL_CHANGE_TYPE.Add : COLL_CHANGE_TYPE.Reset,
             reason: result.reason,
             oper: COLL_CHANGE_OPER.Fill,
             items: result.newItems.items,

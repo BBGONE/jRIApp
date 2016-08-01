@@ -38,7 +38,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
             fn_filter: null,
             fn_sort: null,
             fn_itemsProvider: null
-       }, options);
+        }, options);
 
         if (!opts.dataSource || !(opts.dataSource instanceof BaseCollection))
             throw new Error(ERRS.ERR_DATAVIEW_DATASRC_INVALID);
@@ -54,22 +54,22 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         let self = this, ds = this._dataSource;
         ds.getFieldNames().forEach(function (name) {
             self._fieldMap[name] = ds.getFieldInfo(name);
-       });
+        });
         this._bindDS();
-   }
+    }
     protected _getEventNames() {
         let base_events = super._getEventNames();
         return [VIEW_EVENTS.refreshed].concat(base_events);
-   }
+    }
     protected _destroyItems() {
         //nothing
-   }
+    }
     addOnViewRefreshed(fn: TEventHandler<DataView<TItem>, any>, nmspace?: string) {
         this._addHandler(VIEW_EVENTS.refreshed, fn, nmspace);
-   }
+    }
     removeOnViewRefreshed(nmspace?: string) {
         this._removeHandler(VIEW_EVENTS.refreshed, nmspace);
-   }
+    }
     protected _filterForPaging(items: TItem[]) {
         let skip = 0, take = 0, pos = -1, cnt = -1, result: TItem[] = [];
         skip = this.pageSize * this.pageIndex;
@@ -78,14 +78,14 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
             cnt += 1;
             if (cnt < skip) {
                 return;
-           }
+            }
             pos += 1;
             if (pos < take) {
                 result.push(item);
-           }
-       });
+            }
+        });
         return result;
-   }
+    }
     protected _onViewRefreshed(args: {}) {
         this.raiseEvent(VIEW_EVENTS.refreshed, args);
     }
@@ -119,19 +119,19 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         catch (ex) {
             ERROR.reThrow(ex, this.handleError(ex, this));
         }
-   }
+    }
     protected _fillItems(data: {
         items: TItem[];
         reason: COLL_CHANGE_REASON;
         clear: boolean;
         isAppend: boolean;
-   }): TItem[] {
+    }): TItem[] {
         data = coreUtils.extend({
             items: [],
             reason: COLL_CHANGE_REASON.None,
             clear: true,
             isAppend: false
-       }, data);
+        }, data);
 
         let self = this, arr: TItem[], newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];
         let isClearAll = !!data.clear;
@@ -141,7 +141,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
 
         if (this.isPagingEnabled && !data.isAppend) {
             arr = this._filterForPaging(data.items);
-       }
+        }
         else
             arr = data.items;
 
@@ -153,15 +153,15 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
                 positions.push(self._items.length - 1);
                 self._items.push(item);
                 items.push(item);
-           }
+            }
             else {
                 items.push(oldItem);
-           }
-       });
+            }
+        });
 
         if (newItems.length > 0) {
             this._onCountChanged();
-       }
+        }
 
         if (isClearAll)
             this.totalCount = data.items.length;
@@ -174,18 +174,18 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
             oper: COLL_CHANGE_OPER.Fill,
             items: newItems,
             pos: positions
-       });
+        });
         this._onFillEnd({
             items: items,
             newItems: newItems,
             reason: data.reason
-       });
+        });
 
         if (isClearAll)
             this.moveFirst();
 
         return newItems;
-   }
+    }
     protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<TItem>) {
         let self = this, item: ICollectionItem, items = args.items;
         switch (args.changeType) {
@@ -197,10 +197,10 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
                     if (!this._isAddingNew) {
                         if (!!self._fn_filter) {
                             items = items.filter(self._fn_filter);
-                       }
+                        }
                         self.appendItems(items);
-                   }
-               }
+                    }
+                }
                 break;
             case COLL_CHANGE_TYPE.Remove:
                 {
@@ -209,9 +209,9 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
                         item = self._itemsByKey[key];
                         if (!!item) {
                             self.removeItem(item);
-                       }
-                   });
-               }
+                        }
+                    });
+                }
                 break;
             case COLL_CHANGE_TYPE.Remap:
                 {
@@ -220,13 +220,13 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
                         delete self._itemsByKey[args.old_key];
                         self._itemsByKey[args.new_key] = <any>item;
                         this._onCollectionChanged(args);
-                   }
-               }
+                    }
+                }
                 break;
             default:
                 throw new Error(strUtils.format(ERRS.ERR_COLLECTION_CHANGETYPE_INVALID, args.changeType));
-       }
-   }
+        }
+    }
     protected _onDSStatusChanged(sender: any, args: ICollItemStatusArgs<TItem>) {
         let self = this, item = args.item, key = args.key, oldStatus = args.oldStatus, isOk: boolean, canFilter = !!self._fn_filter;
         if (!!self._itemsByKey[key]) {
@@ -236,18 +236,18 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
                 isOk = self._fn_filter(item);
                 if (!isOk) {
                     self.removeItem(item);
-               }
-           }
-       }
+                }
+            }
+        }
         else {
             if (canFilter) {
                 isOk = self._fn_filter(item);
                 if (isOk) {
                     self.appendItems([item]);
-               }
-           }
-       }
-   }
+                }
+            }
+        }
+    }
     protected _bindDS() {
         let self = this, ds = this._dataSource;
         if (!ds) return;
@@ -255,8 +255,8 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         ds.addOnBeginEdit(function (sender, args) {
             if (!!self._itemsByKey[args.item._key]) {
                 self._onEditing(args.item, true, false);
-           }
-       }, self._objId);
+            }
+        }, self._objId);
         ds.addOnEndEdit(function (sender, args) {
             let isOk: boolean, item = args.item, canFilter = !!self._fn_filter;
             if (!!self._itemsByKey[item._key]) {
@@ -265,105 +265,105 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
                     isOk = self._fn_filter(item);
                     if (!isOk)
                         self.removeItem(item);
-               }
-           }
+                }
+            }
             else {
                 if (!args.isCanceled && canFilter) {
                     isOk = self._fn_filter(item);
                     if (isOk) {
                         self.appendItems([item]);
-                   }
-               }
-           }
-       }, self._objId);
+                    }
+                }
+            }
+        }, self._objId);
         ds.addOnErrorsChanged(function (sender, args) {
             if (!!self._itemsByKey[args.item._key]) {
                 self._onErrorsChanged(args.item);
-           }
-       }, self._objId);
+            }
+        }, self._objId);
         ds.addOnStatusChanged(self._onDSStatusChanged, self._objId, self);
 
         ds.addOnItemDeleting(function (sender, args) {
             if (!!self._itemsByKey[args.item._key]) {
                 self._onItemDeleting(args);
-           }
-       }, self._objId);
+            }
+        }, self._objId);
         ds.addOnItemAdded(function (sender, args) {
             if (self._isAddingNew) {
                 if (!self._itemsByKey[args.item._key]) {
                     self._attach(args.item);
-               }
+                }
                 self.currentItem = args.item;
                 self._onEditing(args.item, true, false);
                 self._onItemAdded(args.item);
-           }
-       }, self._objId);
+            }
+        }, self._objId);
         ds.addOnItemAdding(function (sender, args) {
             if (self._isAddingNew) {
                 self._onItemAdding(args.item);
-           }
-       }, self._objId);
-   }
+            }
+        }, self._objId);
+    }
     protected _unbindDS() {
         let self = this, ds = this._dataSource;
         if (!ds) return;
         ds.removeNSHandlers(self._objId);
-   }
+    }
     protected _onCurrentChanging(newCurrent: TItem) {
         let ds = this._dataSource, item: TItem;
         try {
             item = (<BaseCollection<TItem>>ds)._getInternal().getEditingItem();
             if (!!item && newCurrent !== item)
                 ds.endEdit();
-       }
+        }
         catch (ex) {
             ds.cancelEdit();
             ERROR.reThrow(ex, this.handleError(ex, this));
-       }
-   }
+        }
+    }
     protected _onPageChanged() {
         this._refresh(COLL_CHANGE_REASON.PageChange);
-   }
+    }
     protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER) {
         super._clear(reason, oper);
         if (reason !== COLL_CHANGE_REASON.PageChange)
             this.pageIndex = 0;
-   }
+    }
     _getStrValue(val: any, fieldInfo: IFieldInfo): string {
         return (<BaseCollection<TItem>>this._dataSource)._getInternal().getStrValue(val, fieldInfo);
-   }
+    }
     _getErrors(item: TItem): IErrors {
         return (<BaseCollection<TItem>>this._dataSource)._getInternal().getErrors(item);
-   }
+    }
     getItemsWithErrors() {
         let ds = this._dataSource;
         return ds.getItemsWithErrors();
-   }
+    }
     appendItems(items: TItem[]) {
         if (this._isDestroyCalled)
             return [];
         return this._fillItems({ items: items, reason: COLL_CHANGE_REASON.None, clear: false, isAppend: true });
-   }
+    }
     addNew() {
         let item: TItem;
         this._isAddingNew = true;
         try {
             item = this._dataSource.addNew();
-       } finally {
+        } finally {
             this._isAddingNew = false;
-       }
+        }
         return item;
-   }
+    }
     removeItem(item: TItem) {
         if (item._key === null) {
             throw new Error(ERRS.ERR_ITEM_IS_DETACHED);
-       }
+        }
         if (!this._itemsByKey[item._key])
             return;
         let oldPos = ArrayHelper.remove(this._items, item);
         if (oldPos < 0) {
             throw new Error(ERRS.ERR_ITEM_IS_NOTFOUND);
-       }
+        }
         delete this._itemsByKey[item._key];
         delete this._errors[item._key];
         this.totalCount = this.totalCount - 1;
@@ -373,15 +373,15 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         if (curPos === oldPos) {
             if (!test) { //it was the last item
                 this._currentPos = curPos - 1;
-           }
+            }
             this._onCurrentChanged();
-       }
+        }
 
         if (curPos > oldPos) {
             this._currentPos = curPos - 1;
             this._onCurrentChanged();
-       }
-   }
+        }
+    }
     sortLocal(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any> {
         let mult = 1, deferred = _async.createDeferred<void>();
         if (sortOrder === SORT_ORDER.DESC)
@@ -401,25 +401,25 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
 
                 if (res !== 0)
                     return res;
-           }
+            }
             return res;
-       };
+        };
         try {
             this.fn_sort = fn_sort;
             deferred.resolve();
-       } catch (ex) {
+        } catch (ex) {
             deferred.reject(ex);
             this.handleError(ex, this);
-       }
+        }
         return deferred.promise();
-   }
+    }
     getIsHasErrors() {
         return this._dataSource.getIsHasErrors();
-   }
+    }
     clear() {
         this._clear(COLL_CHANGE_REASON.None, COLL_CHANGE_OPER.None);
         this.totalCount = 0;
-   }
+    }
     refresh(): void {
         this._refreshDebounce.enqueue(() => {
             this._refresh(COLL_CHANGE_REASON.None);
@@ -436,7 +436,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         this._fn_filter = null;
         this._fn_sort = null;
         super.destroy();
-   }
+    }
     get dataSource() { return this._dataSource; }
     get isPagingEnabled() { return this._options.enablePaging; }
     set isPagingEnabled(v) {
@@ -444,30 +444,30 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
             this._options.enablePaging = v;
             this.raisePropertyChanged(PROP_NAME.isPagingEnabled);
             this._refresh(COLL_CHANGE_REASON.None);
-       }
-   }
+        }
+    }
     get permissions() { return this._dataSource.permissions; }
     get fn_filter() { return this._fn_filter; }
     set fn_filter(v: (item: TItem) => boolean) {
         if (this._fn_filter !== v) {
             this._fn_filter = v;
             this._refresh(COLL_CHANGE_REASON.None);
-       }
-   }
+        }
+    }
     get fn_sort() { return this._fn_sort; }
     set fn_sort(v: (item1: TItem, item2: TItem) => number) {
         if (this._fn_sort !== v) {
             this._fn_sort = v;
             this._refresh(COLL_CHANGE_REASON.Sorting);
-       }
-   }
+        }
+    }
     get fn_itemsProvider() { return this._fn_itemsProvider; }
     set fn_itemsProvider(v: (ds: BaseCollection<TItem>) => TItem[]) {
         if (this._fn_itemsProvider !== v) {
             this._fn_itemsProvider = v;
             this._refresh(COLL_CHANGE_REASON.None);
-       }
-   }
+        }
+    }
 }
 
 export type TDataView = DataView<ICollectionItem>;

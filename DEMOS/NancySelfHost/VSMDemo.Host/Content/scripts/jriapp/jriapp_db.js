@@ -892,7 +892,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_core/lang", "jriapp_uti
             if (!checks.isNt(result.fetchedItems))
                 this._onLoaded(result.fetchedItems);
             this._onCollectionChanged({
-                changeType: 2,
+                changeType: !isClearAll ? 1 : 2,
                 reason: result.reason,
                 oper: 1,
                 items: result.newItems.items,
