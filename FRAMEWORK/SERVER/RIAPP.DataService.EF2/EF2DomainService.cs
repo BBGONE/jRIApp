@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Linq;
-using System.Security.Principal;
-using System.Reflection;
 using System.Transactions;
 using System.Text.RegularExpressions;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Core.Metadata.Edm;
-using System.Data.Entity.Core.Mapping;
 using System.Threading.Tasks;
 using RIAPP.DataService.DomainService;
 using RIAPP.DataService.DomainService.Interfaces;
@@ -130,10 +127,11 @@ namespace RIAPP.DataService.EF2
                 {
                     name = entityEdmType.BaseType.Name;
                 }
-                //string entitySetName = entitySetsDic[name].EntitySetName;
                 var keys = entityEdmType.KeyMembers.Select(k => k.Name).ToArray();
                 //var dbEntityEdm =  dbEntityEdmTypes[dbTableName];
                 //Type entityType = this.GetEntityType(entitySetName);
+                //string entitySetName = entitySetsDic[name].EntitySetName;
+
                 Type entityType = this.GetEntityType2(entityTypeName);
                 DbSetInfo dbSetInfo = new DbSetInfo() { dbSetName = entityTypeName, EntityType = entityType };
                 metadata.DbSets.Add(dbSetInfo);
@@ -260,12 +258,15 @@ namespace RIAPP.DataService.EF2
                 case "DateTime":
                 case "DateTimeOffset":
                     return DataType.DateTime;
+                case "Time":
+                case "TimeSpan":
+                    return DataType.Time;
                 case "Boolean":
                     return DataType.Bool;
                 case "Guid":
                     return DataType.Guid;
                 default:
-                    throw new Exception(string.Format("Unsupported method type {0}", fullName));
+                    throw new Exception(string.Format("Unsupported type {0}", fullName));
             }
         }
 

@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Linq;
-using System.Security.Principal;
-using System.Reflection;
 using System.Transactions;
-using System.Data.Objects;
-using System.Data.Objects.DataClasses;
 using System.Data.Metadata.Edm;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -89,6 +85,9 @@ namespace RIAPP.DataService.EF
                 case "DateTime":
                 case "DateTimeOffset":
                     return DataType.DateTime;
+                case "Time":
+                case "TimeSpan":
+                    return DataType.Time;
                 case "Boolean":
                     return DataType.Bool;
                 case "Guid":

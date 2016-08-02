@@ -12,6 +12,7 @@ namespace RIAPP.DataService.Utils
     public class ValueConverter : IValueConverter
     {
         private readonly IServiceContainer _serviceContainer;
+        private static readonly DateTime DATEZERO = new DateTime(1900, 1, 1);
 
         public ValueConverter(IServiceContainer serviceContainer)
         {
@@ -43,9 +44,12 @@ namespace RIAPP.DataService.Utils
                 case DataType.Date:
                 case DataType.Time:
                     result = ConvertToDate(value, IsNullable, dateConversion);
-                    if (result != null && propMainType == typeof(DateTimeOffset))
+                    if (result != null)
                     {
-                        result = new DateTimeOffset((DateTime) result);
+                        if (propMainType == typeof(DateTimeOffset))
+                            result = new DateTimeOffset((DateTime)result);
+                        else if (propMainType == typeof(TimeSpan))
+                            result = ((DateTime)result).TimeOfDay;
                     }
                     break;
                 case DataType.Guid:
@@ -101,6 +105,10 @@ namespace RIAPP.DataService.Utils
             {
                 return DateToString(value, isNullable);
             }
+            if (realType == typeof(TimeSpan))
+            {
+                return TimeToString(value, isNullable);
+            }
             if (realType == typeof(DateTimeOffset))
             {
                 return DateOffsetToString(value, isNullable);
@@ -147,6 +155,11 @@ namespace RIAPP.DataService.Utils
         protected string DateToValue(DateTime dt)
         {
             return dt.ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture);
+        }
+
+        protected string TimeToValue(TimeSpan time)
+        {
+            return (DATEZERO + time).ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture);
         }
 
         protected string DateOffsetToValue(DateTimeOffset dtoff)
@@ -307,6 +320,21 @@ namespace RIAPP.DataService.Utils
             return DateToValue((DateTime) value);
         }
 
+        protected virtual string TimeToString(object value, bool IsNullable)
+        {
+            if (IsNullable)
+            {
+                TimeSpan time = ((TimeSpan?)value).Value;
+                return TimeToValue(time);
+            }
+            else
+            {
+                TimeSpan time = (TimeSpan)value;
+                return TimeToValue(time);
+            }
+            
+        }
+
         protected virtual string BoolToString(object value)
         {
             return value.ToString().ToLowerInvariant();
@@ -376,6 +404,8 @@ namespace RIAPP.DataService.Utils
                 case "System.DateTime":
                 case "System.DateTimeOffset":
                     return DataType.DateTime;
+                case "System.TimeSpan":
+                    return DataType.Time;
                 case "System.Boolean":
                     return DataType.Bool;
                 case "System.Guid":
