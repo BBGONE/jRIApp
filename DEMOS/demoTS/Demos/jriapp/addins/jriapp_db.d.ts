@@ -93,13 +93,13 @@ declare module "jriapp_db/dataquery" {
         load(): IPromise<IQueryResult<TItem>>;
         destroy(): void;
         toString(): string;
-        serverTimezone: number;
-        entityType: IEntityConstructor<TItem>;
-        dbSet: DbSet<TItem, DbContext>;
-        dbSetName: string;
-        queryName: string;
-        filterInfo: IFilterInfo;
-        sortInfo: ISortInfo;
+        readonly serverTimezone: number;
+        readonly entityType: IEntityConstructor<TItem>;
+        readonly dbSet: DbSet<TItem, DbContext>;
+        readonly dbSetName: string;
+        readonly queryName: string;
+        readonly filterInfo: IFilterInfo;
+        readonly sortInfo: ISortInfo;
         isIncludeTotalCount: boolean;
         isClearPrevData: boolean;
         pageSize: number;
@@ -108,7 +108,7 @@ declare module "jriapp_db/dataquery" {
         isPagingEnabled: boolean;
         loadPageCount: number;
         isClearCacheOnEveryLoad: boolean;
-        isCacheValid: boolean;
+        readonly isCacheValid: boolean;
     }
     export type TDataQuery = DataQuery<IEntityItem>;
 }
@@ -142,11 +142,11 @@ declare module "jriapp_db/datacache" {
         getPageByItem(item: IEntityItem): number;
         destroy(): void;
         toString(): string;
-        _pageCount: number;
-        pageSize: number;
-        loadPageCount: number;
+        readonly _pageCount: number;
+        readonly pageSize: number;
+        readonly loadPageCount: number;
         totalCount: number;
-        cacheSize: number;
+        readonly cacheSize: number;
     }
 }
 declare module "jriapp_db/dbset" {
@@ -247,6 +247,7 @@ declare module "jriapp_db/dbset" {
         protected _destroyQuery(): void;
         protected _getPKFields(): IFieldInfo[];
         protected _getNames(): IFieldName[];
+        protected createEntity(row: IRowData, fieldNames: IFieldName[]): TItem;
         _getInternal(): IInternalDbSetMethods<TItem>;
         addOnLoaded(fn: TEventHandler<DbSet<TItem, TDbContext>, IDbSetLoadedArgs<TItem>>, nmspace?: string, context?: IBaseObject): void;
         removeOnLoaded(nmspace?: string): void;
@@ -265,15 +266,15 @@ declare module "jriapp_db/dbset" {
         createQuery(name: string): DataQuery<TItem>;
         destroy(): void;
         toString(): string;
-        items: TItem[];
-        dbContext: TDbContext;
-        dbSetName: string;
-        entityType: IEntityConstructor<TItem>;
-        query: DataQuery<TItem>;
-        isHasChanges: boolean;
-        cacheSize: number;
+        readonly items: TItem[];
+        readonly dbContext: TDbContext;
+        readonly dbSetName: string;
+        readonly entityType: IEntityConstructor<TItem>;
+        readonly query: DataQuery<TItem>;
+        readonly isHasChanges: boolean;
+        readonly cacheSize: number;
         isSubmitOnDelete: boolean;
-        isBusy: boolean;
+        readonly isBusy: boolean;
     }
     export type TDbSet = DbSet<IEntityItem, DbContext>;
 }
@@ -290,8 +291,8 @@ declare module "jriapp_db/dbsets" {
         constructor(dbContext: DbContext);
         protected _dbSetCreated(dbSet: DbSet<IEntityItem, DbContext>): void;
         protected _createDbSet(name: string, dbSetType: IDbSetConstructor<IEntityItem>): void;
-        dbSetNames: string[];
-        arrDbSets: DbSet<IEntityItem, DbContext>[];
+        readonly dbSetNames: string[];
+        readonly arrDbSets: DbSet<IEntityItem, DbContext>[];
         getDbSet(name: string): DbSet<IEntityItem, DbContext>;
         destroy(): void;
     }
@@ -359,14 +360,14 @@ declare module "jriapp_db/association" {
         refreshChildMap(): string[];
         destroy(): void;
         toString(): string;
-        name: string;
-        parentToChildrenName: string;
-        childToParentName: string;
-        parentDS: DbSet<IEntityItem, DbContext>;
-        childDS: DbSet<IEntityItem, DbContext>;
-        parentFldInfos: IFieldInfo[];
-        childFldInfos: IFieldInfo[];
-        onDeleteAction: DELETE_ACTION;
+        readonly name: string;
+        readonly parentToChildrenName: string;
+        readonly childToParentName: string;
+        readonly parentDS: DbSet<IEntityItem, DbContext>;
+        readonly childDS: DbSet<IEntityItem, DbContext>;
+        readonly parentFldInfos: IFieldInfo[];
+        readonly childFldInfos: IFieldInfo[];
+        readonly onDeleteAction: DELETE_ACTION;
     }
 }
 declare module "jriapp_db/error" {
@@ -377,8 +378,8 @@ declare module "jriapp_db/error" {
         private _operationName;
         protected _origError: any;
         constructor(originalError: any, operationName: DATA_OPER);
-        operationName: DATA_OPER;
-        origError: any;
+        readonly operationName: DATA_OPER;
+        readonly origError: any;
     }
     export class AccessDeniedError extends DataOperationError {
     }
@@ -390,8 +391,8 @@ declare module "jriapp_db/error" {
         private _allSubmitted;
         private _notValidated;
         constructor(origError: any, allSubmitted: IEntityItem[], notValidated: IEntityItem[]);
-        allSubmitted: IEntityItem[];
-        notValidated: IEntityItem[];
+        readonly allSubmitted: IEntityItem[];
+        readonly notValidated: IEntityItem[];
     }
 }
 declare module "jriapp_db/dbcontext" {
@@ -505,15 +506,15 @@ declare module "jriapp_db/dbcontext" {
         rejectChanges(): void;
         abortRequests(reason?: string, operType?: DATA_OPER): void;
         destroy(): void;
-        serviceUrl: string;
-        isInitialized: boolean;
-        isBusy: boolean;
-        isSubmiting: boolean;
-        serverTimezone: number;
-        dbSets: DbSets;
-        serviceMethods: any;
-        isHasChanges: boolean;
-        requestCount: number;
+        readonly serviceUrl: string;
+        readonly isInitialized: boolean;
+        readonly isBusy: boolean;
+        readonly isSubmiting: boolean;
+        readonly serverTimezone: number;
+        readonly dbSets: DbSets;
+        readonly serviceMethods: any;
+        readonly isHasChanges: boolean;
+        readonly requestCount: number;
         requestHeaders: IIndexer<string>;
     }
 }
@@ -525,15 +526,14 @@ declare module "jriapp_db/entity_aspect" {
     import { IEntityItem, IEntityConstructor, IRowData, IFieldName, IValueChange, IRowInfo } from "jriapp_db/int";
     import { DbSet } from "jriapp_db/dbset";
     export interface IEntityAspectConstructor<TItem extends IEntityItem, TDbContext extends DbContext> {
-        new (dbSet: DbSet<TItem, TDbContext>, itemType: IEntityConstructor<TItem>, row: IRowData, names: IFieldName[]): EntityAspect<TItem, TDbContext>;
+        new (dbSet: DbSet<TItem, TDbContext>, row: IRowData, names: IFieldName[]): EntityAspect<TItem, TDbContext>;
     }
     export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContext> extends ItemAspect<TItem> {
         private __srvKey;
         private _isRefreshing;
         private _origVals;
         private _savedStatus;
-        protected _item: TItem;
-        constructor(dbSet: DbSet<TItem, TDbContext>, itemType: IEntityConstructor<TItem>, row: IRowData, names: IFieldName[]);
+        constructor(dbSet: DbSet<TItem, TDbContext>, row: IRowData, names: IFieldName[]);
         protected _fakeDestroy(): void;
         protected _initRowInfo(row: IRowData, names: IFieldName[]): void;
         protected _processValues(path: string, values: any[], names: IFieldName[]): void;
@@ -567,17 +567,16 @@ declare module "jriapp_db/entity_aspect" {
         rejectChanges(): void;
         submitChanges(): IVoidPromise;
         refresh(): IPromise<TItem>;
-        getItem(): TItem;
         toString(): string;
         destroy(): void;
-        _entityType: IEntityConstructor<TItem>;
-        _srvKey: string;
-        isCanSubmit: boolean;
-        isNew: boolean;
-        isDeleted: boolean;
-        dbSetName: string;
-        serverTimezone: number;
-        dbSet: DbSet<TItem, TDbContext>;
+        readonly _entityType: IEntityConstructor<TItem>;
+        readonly _srvKey: string;
+        readonly isCanSubmit: boolean;
+        readonly isNew: boolean;
+        readonly isDeleted: boolean;
+        readonly dbSetName: string;
+        readonly serverTimezone: number;
+        readonly dbSet: DbSet<TItem, TDbContext>;
         isRefreshing: boolean;
     }
 }
@@ -593,18 +592,18 @@ declare module "jriapp_db/int" {
         p: IFieldName[];
     }
     export interface IEntityItem extends ICollectionItem {
-        _aspect: EntityAspect<IEntityItem, DbContext>;
+        readonly _aspect: EntityAspect<IEntityItem, DbContext>;
     }
     export interface IEntityConstructor<TItem extends IEntityItem> {
         new (aspect: EntityAspect<TItem, DbContext>): TItem;
     }
     export interface IQueryParamInfo {
-        dataType: DATA_TYPE;
-        dateConversion: DATE_CONVERSION;
-        isArray: boolean;
-        isNullable: boolean;
-        name: string;
-        ordinal: number;
+        readonly dataType: DATA_TYPE;
+        readonly dateConversion: DATE_CONVERSION;
+        readonly isArray: boolean;
+        readonly isNullable: boolean;
+        readonly name: string;
+        readonly ordinal: number;
     }
     export interface IQueryInfo {
         isQuery: boolean;
@@ -841,9 +840,9 @@ declare module "jriapp_db/dataview" {
         clear(): void;
         refresh(): void;
         destroy(): void;
-        dataSource: ICollection<TItem>;
+        readonly dataSource: ICollection<TItem>;
         isPagingEnabled: boolean;
-        permissions: IPermissions;
+        readonly permissions: IPermissions;
         fn_filter: (item: TItem) => boolean;
         fn_sort: (item1: TItem, item2: TItem) => number;
         fn_itemsProvider: (ds: BaseCollection<TItem>) => TItem[];
@@ -870,7 +869,7 @@ declare module "jriapp_db/child_dataview" {
         destroy(): void;
         toString(): string;
         parentItem: IEntityItem;
-        association: Association;
+        readonly association: Association;
     }
     export type TChildDataView = ChildDataView<IEntityItem>;
 }

@@ -531,7 +531,6 @@ define(["require", "exports", "jriapp", "jriapp_db", "./demoDB", "./autocomplete
             this._customerDbSet.removeNSHandlers(this.uniqueID);
             this._orderVM.removeNSHandlers(this.uniqueID);
             this._orderVM = null;
-            this._customerDbSet = null;
             _super.prototype.destroy.call(this);
         };
         Object.defineProperty(AddressVM.prototype, "_customerDbSet", {
@@ -581,7 +580,6 @@ define(["require", "exports", "jriapp", "jriapp_db", "./demoDB", "./autocomplete
         ProductAutoComplete.prototype._updateSelection = function () {
             if (!!this.dataContext) {
                 var id = this.currentSelection;
-                this.dataContext.ProductID = id;
             }
         };
         ProductAutoComplete.prototype._onHide = function () {
@@ -688,7 +686,6 @@ define(["require", "exports", "jriapp", "jriapp_db", "./demoDB", "./autocomplete
             this._customerDbSet.removeNSHandlers(this.uniqueID);
             this._orderDetailVM.removeNSHandlers(this.uniqueID);
             this._orderDetailVM = null;
-            this._customerDbSet = null;
             _super.prototype.destroy.call(this);
         };
         Object.defineProperty(ProductVM.prototype, "_customerDbSet", {

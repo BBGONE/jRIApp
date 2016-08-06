@@ -5,7 +5,7 @@
     "noImplicitAny": true,
     "removeComments": true,
     "preserveConstEnums": true,
-    "outFile": "../../built/addins/jriapp_ui.js",
+    "outFile": "../../built/jriapp_ui.js",
     "declaration": true,
     "sourceMap": false,
     "noFallthroughCasesInSwitch": true

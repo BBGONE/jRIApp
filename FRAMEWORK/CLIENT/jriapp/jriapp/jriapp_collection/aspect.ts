@@ -15,6 +15,7 @@ const coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
 
 export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implements IItemAspect<TItem> {
     private __key: string;
+    protected _item: TItem;
     private __isEditing: boolean;
     private _collection: BaseCollection<TItem>;
     protected _status: ITEM_STATUS;
@@ -30,9 +31,11 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
             this.raisePropertyChanged(PROP_NAME.isEditing);
         }
     }
+
     constructor(collection: BaseCollection<TItem>) {
         super();
         this.__key = null;
+        this._item = null;
         this.__isEditing = false;
         this._collection = collection;
         this._status = ITEM_STATUS.None;
@@ -76,7 +79,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
             return false;
         this._isEditing = true;
         this._saveVals = coreUtils.clone(this._vals);
-        this.collection.currentItem = this.getItem();
+        this.collection.currentItem = this.item;
         return true;
     }
     protected _endEdit(): boolean {
@@ -87,10 +90,10 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
             return false;
         }
         //revalidate all
-        coll._getInternal().removeAllErrors(this.getItem());
+        coll._getInternal().removeAllErrors(this.item);
         let validation_errors = this._validateAll();
         if (validation_errors.length > 0) {
-            coll._getInternal().addErrors(self.getItem(), validation_errors);
+            coll._getInternal().addErrors(self.item, validation_errors);
         }
         if (this.getIsHasErrors()) {
             return false;
@@ -106,7 +109,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         let changes = this._saveVals;
         this._vals = this._saveVals;
         this._saveVals = null;
-        coll._getInternal().removeAllErrors(this.getItem());
+        coll._getInternal().removeAllErrors(this.item);
         //refresh User interface when values restored
         coll.getFieldNames().forEach(function (name) {
             if (changes[name] !== self._vals[name])
@@ -114,11 +117,11 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         });
         this._isEditing = false;
         if (isNew && this._notEdited)
-            coll.removeItem(this.getItem());
+            coll.removeItem(this.item);
         return true;
     }
     protected _validate(): IValidationInfo {
-        return this.collection._getInternal().validateItem(this.getItem());
+        return this.collection._getInternal().validateItem(this.item);
     }
     protected _skipValidate(fieldInfo: IFieldInfo, val: any) {
         return false;
@@ -140,7 +143,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         } catch (ex) {
             res = { fieldName: fieldName, errors: [ex.message] };
         }
-        let tmp = this.collection._getInternal().validateItemField(this.getItem(), fieldName);
+        let tmp = this.collection._getInternal().validateItemField(this.item, fieldName);
         if (!!res && !!tmp) {
             res.errors = res.errors.concat(tmp.errors);
         }
@@ -251,7 +254,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         return this.collection.getFieldNames();
     }
     getErrorString(): string {
-        let itemErrors = this.collection._getInternal().getErrors(this.getItem());
+        let itemErrors = this.collection._getInternal().getErrors(this.item);
         if (!itemErrors)
             return "";
         let res: string[] = [];
@@ -271,14 +274,14 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         let coll = this.collection;
         if (!this._beginEdit())
             return false;
-        coll._getInternal().onEditing(this.getItem(), true, false);
+        coll._getInternal().onEditing(this.item, true, false);
         return true;
     }
     endEdit(): boolean {
         let coll = this.collection;
         if (!this._endEdit())
             return false;
-        coll._getInternal().onEditing(this.getItem(), false, false);
+        coll._getInternal().onEditing(this.item, false, false);
         this._notEdited = false;
         return true;
     }
@@ -286,23 +289,23 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         let coll = this.collection;
         if (!this._cancelEdit())
             return false;
-        coll._getInternal().onEditing(this.getItem(), false, true);
+        coll._getInternal().onEditing(this.item, false, true);
         return true;
     }
     deleteItem(): boolean {
         let coll = this.collection;
         if (!this.key)
             return false;
-        let args: ICancellableArgs<TItem> = { item: this.getItem(), isCancel: false };
+        let args: ICancellableArgs<TItem> = { item: this.item, isCancel: false };
         coll._getInternal().onItemDeleting(args);
         if (args.isCancel) {
             return false;
         }
-        coll.removeItem(this.getItem());
+        coll.removeItem(this.item);
         return true;
     }
     getIsHasErrors() {
-        let itemErrors = this.collection._getInternal().getErrors(this.getItem());
+        let itemErrors = this.collection._getInternal().getErrors(this.item);
         return !!itemErrors;
     }
     addOnErrorsChanged(fn: TEventHandler<ItemAspect<TItem>, any>, nmspace?: string, context?: any) {
@@ -312,7 +315,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         this._removeHandler(ITEM_EVENTS.errors_changed, nmspace);
     }
     getFieldErrors(fieldName: string): IValidationInfo[] {
-        let itemErrors = this.collection._getInternal().getErrors(this.getItem());
+        let itemErrors = this.collection._getInternal().getErrors(this.item);
         if (!itemErrors)
             return [];
         let name = fieldName;
@@ -327,7 +330,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         ];
     }
     getAllErrors(): IValidationInfo[] {
-        let itemErrors = this.collection._getInternal().getErrors(this.getItem());
+        let itemErrors = this.collection._getInternal().getErrors(this.item);
         if (!itemErrors)
             return [];
         let res: IValidationInfo[] = [];
@@ -348,25 +351,29 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
             return;
         this._isDestroyCalled = true;
         let coll = this._collection;
-        let item = this.getItem();
+        let item = this.item;
         if (!!item && !item._isDetached && !!item._key) {
             coll.removeItem(item);
         }
         if (!!item && !item.getIsDestroyCalled()) {
             item.destroy();
+            this._item = null;
         }
         this.__key = null;
         this._saveVals = null;
         this._vals = {};
         this._isEditing = false;
         this._collection = null;
-        super.destroy();
+        super.destroy(); 
     }
     toString() {
         return "ItemAspect";
     }
-    getItem(): TItem {
-        throw new Error("Not implemented");
+    get item(): TItem {
+        return this._item;
+    }
+    set item(v: TItem) {
+        this._item = v;
     }
     get isCanSubmit(): boolean { return false; }
     get status(): ITEM_STATUS { return this._status; }

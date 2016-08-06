@@ -84,7 +84,7 @@ export class TestObject extends RIAPP.BaseObject {
             this.raisePropertyChanged('testProperty3');
         }
     }
-    get testCommand() { return this._testCommand; }
+    get testCommand(): RIAPP.ICommand { return this._testCommand; }
     get testToolTip() {
         return "Click the button to execute the command.<br/>" +
             "P.S. <b>command is active when the testProperty length > 3</b>";

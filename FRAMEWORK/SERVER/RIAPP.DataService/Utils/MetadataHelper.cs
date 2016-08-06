@@ -178,7 +178,7 @@ namespace RIAPP.DataService.Utils
                         fieldType = FieldType.Navigation,
                         dataType = DataType.None,
                         dependentOn = dependentOn,
-                        _TypeScriptDataType = TypeScriptHelper.GetEntityTypeName(parentDb.dbSetName)
+                        _TypeScriptDataType = TypeScriptHelper.GetEntityInterfaceName(parentDb.dbSetName)
                     });
                 }
 
@@ -192,7 +192,7 @@ namespace RIAPP.DataService.Utils
                         fieldType = FieldType.Navigation,
                         dataType = DataType.None,
                         _TypeScriptDataType =
-                            string.Format("{0}[]", TypeScriptHelper.GetEntityTypeName(childDb.dbSetName))
+                            string.Format("{0}[]", TypeScriptHelper.GetEntityInterfaceName(childDb.dbSetName))
                     });
                 }
             } //foreach (var assoc in metadata.Associations)

@@ -9144,6 +9144,7 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
         function ItemAspect(collection) {
             _super.call(this);
             this.__key = null;
+            this._item = null;
             this.__isEditing = false;
             this._collection = collection;
             this._status = 0;
@@ -9201,7 +9202,7 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
                 return false;
             this._isEditing = true;
             this._saveVals = coreUtils.clone(this._vals);
-            this.collection.currentItem = this.getItem();
+            this.collection.currentItem = this.item;
             return true;
         };
         ItemAspect.prototype._endEdit = function () {
@@ -9211,10 +9212,10 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             if (this.getIsHasErrors()) {
                 return false;
             }
-            coll._getInternal().removeAllErrors(this.getItem());
+            coll._getInternal().removeAllErrors(this.item);
             var validation_errors = this._validateAll();
             if (validation_errors.length > 0) {
-                coll._getInternal().addErrors(self.getItem(), validation_errors);
+                coll._getInternal().addErrors(self.item, validation_errors);
             }
             if (this.getIsHasErrors()) {
                 return false;
@@ -9230,18 +9231,18 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             var changes = this._saveVals;
             this._vals = this._saveVals;
             this._saveVals = null;
-            coll._getInternal().removeAllErrors(this.getItem());
+            coll._getInternal().removeAllErrors(this.item);
             coll.getFieldNames().forEach(function (name) {
                 if (changes[name] !== self._vals[name])
                     self.raisePropertyChanged(name);
             });
             this._isEditing = false;
             if (isNew && this._notEdited)
-                coll.removeItem(this.getItem());
+                coll.removeItem(this.item);
             return true;
         };
         ItemAspect.prototype._validate = function () {
-            return this.collection._getInternal().validateItem(this.getItem());
+            return this.collection._getInternal().validateItem(this.item);
         };
         ItemAspect.prototype._skipValidate = function (fieldInfo, val) {
             return false;
@@ -9264,7 +9265,7 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             catch (ex) {
                 res = { fieldName: fieldName, errors: [ex.message] };
             }
-            var tmp = this.collection._getInternal().validateItemField(this.getItem(), fieldName);
+            var tmp = this.collection._getInternal().validateItemField(this.item, fieldName);
             if (!!res && !!tmp) {
                 res.errors = res.errors.concat(tmp.errors);
             }
@@ -9370,7 +9371,7 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             return this.collection.getFieldNames();
         };
         ItemAspect.prototype.getErrorString = function () {
-            var itemErrors = this.collection._getInternal().getErrors(this.getItem());
+            var itemErrors = this.collection._getInternal().getErrors(this.item);
             if (!itemErrors)
                 return "";
             var res = [];
@@ -9390,14 +9391,14 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             var coll = this.collection;
             if (!this._beginEdit())
                 return false;
-            coll._getInternal().onEditing(this.getItem(), true, false);
+            coll._getInternal().onEditing(this.item, true, false);
             return true;
         };
         ItemAspect.prototype.endEdit = function () {
             var coll = this.collection;
             if (!this._endEdit())
                 return false;
-            coll._getInternal().onEditing(this.getItem(), false, false);
+            coll._getInternal().onEditing(this.item, false, false);
             this._notEdited = false;
             return true;
         };
@@ -9405,23 +9406,23 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             var coll = this.collection;
             if (!this._cancelEdit())
                 return false;
-            coll._getInternal().onEditing(this.getItem(), false, true);
+            coll._getInternal().onEditing(this.item, false, true);
             return true;
         };
         ItemAspect.prototype.deleteItem = function () {
             var coll = this.collection;
             if (!this.key)
                 return false;
-            var args = { item: this.getItem(), isCancel: false };
+            var args = { item: this.item, isCancel: false };
             coll._getInternal().onItemDeleting(args);
             if (args.isCancel) {
                 return false;
             }
-            coll.removeItem(this.getItem());
+            coll.removeItem(this.item);
             return true;
         };
         ItemAspect.prototype.getIsHasErrors = function () {
-            var itemErrors = this.collection._getInternal().getErrors(this.getItem());
+            var itemErrors = this.collection._getInternal().getErrors(this.item);
             return !!itemErrors;
         };
         ItemAspect.prototype.addOnErrorsChanged = function (fn, nmspace, context) {
@@ -9431,7 +9432,7 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             this._removeHandler(int_6.ITEM_EVENTS.errors_changed, nmspace);
         };
         ItemAspect.prototype.getFieldErrors = function (fieldName) {
-            var itemErrors = this.collection._getInternal().getErrors(this.getItem());
+            var itemErrors = this.collection._getInternal().getErrors(this.item);
             if (!itemErrors)
                 return [];
             var name = fieldName;
@@ -9446,7 +9447,7 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             ];
         };
         ItemAspect.prototype.getAllErrors = function () {
-            var itemErrors = this.collection._getInternal().getErrors(this.getItem());
+            var itemErrors = this.collection._getInternal().getErrors(this.item);
             if (!itemErrors)
                 return [];
             var res = [];
@@ -9467,12 +9468,13 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
                 return;
             this._isDestroyCalled = true;
             var coll = this._collection;
-            var item = this.getItem();
+            var item = this.item;
             if (!!item && !item._isDetached && !!item._key) {
                 coll.removeItem(item);
             }
             if (!!item && !item.getIsDestroyCalled()) {
                 item.destroy();
+                this._item = null;
             }
             this.__key = null;
             this._saveVals = null;
@@ -9484,9 +9486,16 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
         ItemAspect.prototype.toString = function () {
             return "ItemAspect";
         };
-        ItemAspect.prototype.getItem = function () {
-            throw new Error("Not implemented");
-        };
+        Object.defineProperty(ItemAspect.prototype, "item", {
+            get: function () {
+                return this._item;
+            },
+            set: function (v) {
+                this._item = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ItemAspect.prototype, "isCanSubmit", {
             get: function () { return false; },
             enumerable: true,
@@ -9551,39 +9560,39 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
 define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/base", "jriapp_collection/aspect", "jriapp_collection/validation"], function (require, exports, coreutils_24, utils_29, lang_21, int_7, utils_30, base_1, aspect_1, validation_3) {
     "use strict";
     var coreUtils = utils_29.Utils.core, strUtils = utils_29.Utils.str, checks = utils_29.Utils.check;
+    function fn_initVals(coll, obj) {
+        var vals = obj || {};
+        if (!!obj) {
+            var fieldInfos = coll.getFieldInfos();
+            utils_30.fn_traverseFields(fieldInfos, function (fld, fullName) {
+                if (fld.fieldType === 5)
+                    coreUtils.setValue(vals, fullName, {}, false);
+                else
+                    coreUtils.setValue(vals, fullName, null, false);
+            });
+        }
+        return vals;
+    }
+    ;
     var ListItemAspect = (function (_super) {
         __extends(ListItemAspect, _super);
-        function ListItemAspect(coll, itemType, obj) {
+        function ListItemAspect(coll, obj) {
             _super.call(this, coll);
             var self = this;
             this._isNew = !obj ? true : false;
-            this._item = null;
             if (!!obj)
                 this._vals = obj;
             else
-                this._vals = ListItemAspect._initVals(coll, obj);
-            this._item = new itemType(this);
+                this._vals = fn_initVals(coll, obj);
         }
-        ListItemAspect._initVals = function (coll, obj) {
-            var vals = obj || {};
-            if (!!obj) {
-                var fieldInfos = coll.getFieldInfos();
-                utils_30.fn_traverseFields(fieldInfos, function (fld, fullName) {
-                    if (fld.fieldType === 5)
-                        coreUtils.setValue(vals, fullName, {}, false);
-                    else
-                        coreUtils.setValue(vals, fullName, null, false);
-                });
-            }
-            return vals;
-        };
         ListItemAspect.prototype._setProp = function (name, val) {
             var validation_error, error, coll = this.collection;
+            var item = this.item;
             if (this._getProp(name) !== val) {
                 try {
                     coreUtils.setValue(this._vals, name, val, false);
-                    this.getItem().raisePropertyChanged(name);
-                    coll._getInternal().removeError(this.getItem(), name);
+                    item.raisePropertyChanged(name);
+                    coll._getInternal().removeError(item, name);
                     validation_error = this._validateField(name);
                     if (!!validation_error) {
                         throw new validation_3.ValidationError([validation_error], this);
@@ -9598,7 +9607,7 @@ define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils"
                             { fieldName: name, errors: [ex.message] }
                         ], this);
                     }
-                    coll._getInternal().addError(this.getItem(), name, error.errors[0].errors);
+                    coll._getInternal().addError(item, name, error.errors[0].errors);
                     throw error;
                 }
             }
@@ -9609,21 +9618,16 @@ define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils"
         ListItemAspect.prototype._resetIsNew = function () {
             this._isNew = false;
         };
-        ListItemAspect.prototype.destroy = function () {
-            if (this._isDestroyed)
-                return;
-            this._isDestroyCalled = true;
-            _super.prototype.destroy.call(this);
-            this._item = null;
-        };
-        ListItemAspect.prototype.getItem = function () {
-            return this._item;
-        };
         ListItemAspect.prototype.toString = function () {
             if (!this._item)
                 return "ListItemAspect";
             return this._item.toString() + "Aspect";
         };
+        Object.defineProperty(ListItemAspect.prototype, "list", {
+            get: function () { return this.collection; },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ListItemAspect.prototype, "vals", {
             get: function () { return this._vals; },
             enumerable: true,
@@ -9672,14 +9676,19 @@ define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils"
             return _super.prototype._attach.call(this, item);
         };
         BaseList.prototype._createNew = function () {
-            var aspect = new ListItemAspect(this, this._itemType, null);
-            aspect.key = this._getNewKey(null);
-            return aspect.getItem();
+            return this.createItem(null);
         };
         BaseList.prototype._getNewKey = function (item) {
             var key = "clkey_" + this._newKey;
             this._newKey += 1;
             return key;
+        };
+        BaseList.prototype.createItem = function (obj) {
+            var aspect = new ListItemAspect(this, obj);
+            var item = new this._itemType(aspect);
+            aspect.key = this._getNewKey(item);
+            aspect.item = item;
+            return item;
         };
         BaseList.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -9696,13 +9705,11 @@ define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils"
                 if (!!clearAll)
                     this.clear();
                 objArray.forEach(function (obj) {
-                    var aspect = new ListItemAspect(self, self._itemType, obj);
-                    var item = aspect.getItem();
-                    aspect.key = self._getNewKey(item);
-                    var oldItem = self._itemsByKey[aspect.key];
+                    var item = self.createItem(obj);
+                    var oldItem = self._itemsByKey[item._key];
                     if (!oldItem) {
                         self._items.push(item);
-                        self._itemsByKey[aspect.key] = item;
+                        self._itemsByKey[item._key] = item;
                         newItems.push(item);
                         positions.push(self._items.length - 1);
                         items.push(item);
@@ -9769,13 +9776,20 @@ define("jriapp_collection/dictionary", ["require", "exports", "jriapp_utils/util
             keyFld.isPrimaryKey = 1;
         }
         BaseDictionary.prototype._getNewKey = function (item) {
-            if (!item) {
-                return _super.prototype._getNewKey.call(this, null);
+            if (!item || item._aspect.isNew) {
+                return null;
             }
             var key = item[this._keyName];
             if (checks.isNt(key))
                 throw new Error(strUtils.format(lang_22.ERRS.ERR_DICTKEY_IS_EMPTY, this.keyName));
             return "" + key;
+        };
+        BaseDictionary.prototype._onItemAdding = function (item) {
+            _super.prototype._onItemAdding.call(this, item);
+            var key = item[this._keyName];
+            if (checks.isNt(key))
+                throw new Error(strUtils.format(lang_22.ERRS.ERR_DICTKEY_IS_EMPTY, this.keyName));
+            item._aspect.key = key;
         };
         BaseDictionary.prototype._onItemAdded = function (item) {
             _super.prototype._onItemAdded.call(this, item);
@@ -10603,6 +10617,6 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.COLL_CHANGE_REASON = collection_1.COLL_CHANGE_REASON;
     exports.COLL_CHANGE_TYPE = collection_1.COLL_CHANGE_TYPE;
     exports.Application = app_1.Application;
-    exports.VERSION = "0.9.52";
+    exports.VERSION = "0.9.60";
     bootstrap_25.Bootstrap._initFramework();
 });

@@ -1,11 +1,11 @@
 ﻿/// <reference path="../jriapp/jriapp.d.ts" />
 /*
-	Generated from: http://localhost:8080/demosvc/code?lang=ts on 2016-02-24 15:48 at 15:48
+	Generated from: http://localhost:8080/demosvc/code?lang=ts on 2016-08-06 17:25 at 17:25
 	Don't make manual changes here, because they will be lost when this db interface will be regenerated!
 */
+
 import * as RIAPP from "jriapp";
 import * as dbMOD from "jriapp_db";
-
 
 //******BEGIN INTERFACE REGION******
 export interface IAddressInfo2 {
@@ -131,9 +131,7 @@ export class TestList extends RIAPP.BaseList<TestModelListItem, IClientTestModel
     toString() {
         return 'TestList';
     }
-}
-
-export class KeyValListItem extends RIAPP.CollectionItem<RIAPP.ListItemAspect<KeyValListItem, IKeyVal>> implements RIAPP.IListItem, IKeyVal {
+} export class KeyValListItem extends RIAPP.CollectionItem<RIAPP.ListItemAspect<KeyValListItem, IKeyVal>> implements RIAPP.IListItem, IKeyVal {
     get key(): number { return <number>this._aspect._getProp('key'); }
     set key(v: number) { this._aspect._setProp('key', v); }
     get val(): string { return <string>this._aspect._getProp('val'); }
@@ -154,9 +152,7 @@ export class KeyValDictionary extends RIAPP.BaseDictionary<KeyValListItem, IKeyV
     toString() {
         return 'KeyValDictionary';
     }
-}
-
-export class StrKeyValListItem extends RIAPP.CollectionItem<RIAPP.ListItemAspect<StrKeyValListItem, IStrKeyVal>> implements RIAPP.IListItem, IStrKeyVal {
+} export class StrKeyValListItem extends RIAPP.CollectionItem<RIAPP.ListItemAspect<StrKeyValListItem, IStrKeyVal>> implements RIAPP.IListItem, IStrKeyVal {
     get key(): string { return <string>this._aspect._getProp('key'); }
     set key(v: string) { this._aspect._setProp('key', v); }
     get val(): string { return <string>this._aspect._getProp('val'); }
@@ -177,9 +173,7 @@ export class StrKeyValDictionary extends RIAPP.BaseDictionary<StrKeyValListItem,
     toString() {
         return 'StrKeyValDictionary';
     }
-}
-
-export class RadioValListItem extends RIAPP.CollectionItem<RIAPP.ListItemAspect<RadioValListItem, IRadioVal>> implements RIAPP.IListItem, IRadioVal {
+} export class RadioValListItem extends RIAPP.CollectionItem<RIAPP.ListItemAspect<RadioValListItem, IRadioVal>> implements RIAPP.IListItem, IRadioVal {
     get key(): string { return <string>this._aspect._getProp('key'); }
     set key(v: string) { this._aspect._setProp('key', v); }
     get value(): string { return <string>this._aspect._getProp('value'); }
@@ -202,9 +196,7 @@ export class RadioValDictionary extends RIAPP.BaseDictionary<RadioValListItem, I
     toString() {
         return 'RadioValDictionary';
     }
-}
-
-export class HistoryItemListItem extends RIAPP.CollectionItem<RIAPP.ListItemAspect<HistoryItemListItem, IHistoryItem>> implements RIAPP.IListItem, IHistoryItem {
+} export class HistoryItemListItem extends RIAPP.CollectionItem<RIAPP.ListItemAspect<HistoryItemListItem, IHistoryItem>> implements RIAPP.IListItem, IHistoryItem {
     get radioValue(): string { return <string>this._aspect._getProp('radioValue'); }
     set radioValue(v: string) { this._aspect._setProp('radioValue', v); }
     get time(): Date { return <Date>this._aspect._getProp('time'); }
@@ -225,14 +217,35 @@ export class HistoryList extends RIAPP.BaseList<HistoryItemListItem, IHistoryIte
 }
 //******END LISTS REGION******
 
-export class Product extends RIAPP.CollectionItem<dbMOD.EntityAspect<Product, DbContext>> implements dbMOD.IEntityItem {
+export interface Product extends dbMOD.IEntityItem {
+    readonly ProductID: number;
+    Name: string;
+    ProductNumber: string;
+    Color: string;
+    StandardCost: number;
+    ListPrice: number;
+    Size: string;
+    Weight: number;
+    ProductCategoryID: number;
+    ProductModelID: number;
+    SellStartDate: Date;
+    SellEndDate: Date;
+    DiscontinuedDate: Date;
+    readonly rowguid: string;
+    readonly ModifiedDate: Date;
+    readonly IsActive: boolean;
+    ThumbnailPhotoFileName: string;
+    readonly SalesOrderDetails: SalesOrderDetail[];
+}
+
+export class ProductEntity extends RIAPP.CollectionItem<dbMOD.EntityAspect<Product, DbContext>> implements Product {
 
     constructor(aspect: dbMOD.EntityAspect<Product, DbContext>) {
         super(aspect);
 
     }
     toString() {
-        return 'Product';
+        return 'ProductEntity';
     }
     get ProductID(): number { return this._aspect._getFieldVal('ProductID'); }
     get Name(): string { return this._aspect._getFieldVal('Name'); }
@@ -265,7 +278,6 @@ export class Product extends RIAPP.CollectionItem<dbMOD.EntityAspect<Product, Db
     get ThumbnailPhotoFileName(): string { return this._aspect._getFieldVal('ThumbnailPhotoFileName'); }
     set ThumbnailPhotoFileName(v: string) { this._aspect._setFieldVal('ThumbnailPhotoFileName', v); }
     get SalesOrderDetails(): SalesOrderDetail[] { return this._aspect._getNavFieldVal('SalesOrderDetails'); }
-
 }
 
 export class ProductDb extends dbMOD.DbSet<Product, DbContext>
@@ -278,7 +290,7 @@ export class ProductDb extends dbMOD.DbSet<Product, DbContext>
             parentAssoc: ([{ "name": "OrdDetailsToProduct", "parentDbSetName": "Product", "childDbSetName": "SalesOrderDetail", "childToParentName": "Product", "parentToChildrenName": "SalesOrderDetails", "onDeleteAction": 0, "fieldRels": [{ "parentField": "ProductID", "childField": "ProductID" }] }])
         };
         opts.dbSetInfo.fieldInfos = ([{ "fieldName": "ProductID", "isPrimaryKey": 1, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Name", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ProductNumber", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 25, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Color", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 15, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "StandardCost", "isPrimaryKey": 0, "dataType": 4, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ListPrice", "isPrimaryKey": 0, "dataType": 4, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "100,5000", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Size", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 5, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Weight", "isPrimaryKey": 0, "dataType": 4, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 5, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ProductCategoryID", "isPrimaryKey": 0, "dataType": 3, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ProductModelID", "isPrimaryKey": 0, "dataType": 3, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "SellStartDate", "isPrimaryKey": 0, "dataType": 7, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "2000-01-01,2015-01-01", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "SellEndDate", "isPrimaryKey": 0, "dataType": 7, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "DiscontinuedDate", "isPrimaryKey": 0, "dataType": 7, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "rowguid", "isPrimaryKey": 0, "dataType": 9, "isNullable": false, "isReadOnly": true, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 16, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 4, "dependentOn": "", "nested": null }, { "fieldName": "ModifiedDate", "isPrimaryKey": 0, "dataType": 6, "isNullable": false, "isReadOnly": true, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "IsActive", "isPrimaryKey": 0, "dataType": 2, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 2, "dependentOn": "SellEndDate", "nested": null }, { "fieldName": "ThumbnailPhotoFileName", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 256, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "SalesOrderDetails", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "", "nested": null }]);
-        super(opts, Product);
+        super(opts, ProductEntity);
     }
     findEntity(productID: number): Product {
         return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -301,24 +313,26 @@ export class ProductDb extends dbMOD.DbSet<Product, DbContext>
         query.params = args;
         return query;
     }
-
-    defineIsActiveField(getFunc: (item: Product) => boolean) { this._defineCalculatedField('IsActive', getFunc); }
-
+    defineIsActiveField(getFunc: (item: ProductEntity) => boolean) { this._defineCalculatedField('IsActive', getFunc); }
 }
 
-export class ProductModel extends RIAPP.CollectionItem<dbMOD.EntityAspect<ProductModel, DbContext>> implements dbMOD.IEntityItem {
+export interface ProductModel extends dbMOD.IEntityItem {
+    readonly ProductModelID: number;
+    Name: string;
+}
+
+export class ProductModelEntity extends RIAPP.CollectionItem<dbMOD.EntityAspect<ProductModel, DbContext>> implements ProductModel {
 
     constructor(aspect: dbMOD.EntityAspect<ProductModel, DbContext>) {
         super(aspect);
 
     }
     toString() {
-        return 'ProductModel';
+        return 'ProductModelEntity';
     }
     get ProductModelID(): number { return this._aspect._getFieldVal('ProductModelID'); }
     get Name(): string { return this._aspect._getFieldVal('Name'); }
     set Name(v: string) { this._aspect._setFieldVal('Name', v); }
-
 }
 
 export class ProductModelDb extends dbMOD.DbSet<ProductModel, DbContext>
@@ -331,7 +345,7 @@ export class ProductModelDb extends dbMOD.DbSet<ProductModel, DbContext>
             parentAssoc: ([])
         };
         opts.dbSetInfo.fieldInfos = ([{ "fieldName": "ProductModelID", "isPrimaryKey": 1, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Name", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }]);
-        super(opts, ProductModel);
+        super(opts, ProductModelEntity);
     }
     findEntity(productModelID: number): ProductModel {
         return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -343,17 +357,42 @@ export class ProductModelDb extends dbMOD.DbSet<ProductModel, DbContext>
         return this.createQuery('ReadProductModel');
     }
 
-
 }
 
-export class SalesOrderHeader extends RIAPP.CollectionItem<dbMOD.EntityAspect<SalesOrderHeader, DbContext>> implements dbMOD.IEntityItem {
+export interface SalesOrderHeader extends dbMOD.IEntityItem {
+    readonly SalesOrderID: number;
+    readonly RevisionNumber: number;
+    OrderDate: Date;
+    DueDate: Date;
+    ShipDate: Date;
+    readonly Status: number;
+    OnlineOrderFlag: boolean;
+    readonly SalesOrderNumber: string;
+    readonly PurchaseOrderNumber: string;
+    AccountNumber: string;
+    CustomerID: number;
+    ShipToAddressID: number;
+    BillToAddressID: number;
+    ShipMethod: string;
+    CreditCardApprovalCode: string;
+    readonly SubTotal: number;
+    readonly TaxAmt: number;
+    readonly Freight: number;
+    readonly TotalDue: number;
+    Comment: string;
+    readonly rowguid: string;
+    readonly ModifiedDate: Date;
+    readonly SalesOrderDetails: SalesOrderDetail[];
+}
+
+export class SalesOrderHeaderEntity extends RIAPP.CollectionItem<dbMOD.EntityAspect<SalesOrderHeader, DbContext>> implements SalesOrderHeader {
 
     constructor(aspect: dbMOD.EntityAspect<SalesOrderHeader, DbContext>) {
         super(aspect);
 
     }
     toString() {
-        return 'SalesOrderHeader';
+        return 'SalesOrderHeaderEntity';
     }
     get SalesOrderID(): number { return this._aspect._getFieldVal('SalesOrderID'); }
     get RevisionNumber(): number { return this._aspect._getFieldVal('RevisionNumber'); }
@@ -389,7 +428,6 @@ export class SalesOrderHeader extends RIAPP.CollectionItem<dbMOD.EntityAspect<Sa
     get rowguid(): string { return this._aspect._getFieldVal('rowguid'); }
     get ModifiedDate(): Date { return this._aspect._getFieldVal('ModifiedDate'); }
     get SalesOrderDetails(): SalesOrderDetail[] { return this._aspect._getNavFieldVal('SalesOrderDetails'); }
-
 }
 
 export class SalesOrderHeaderDb extends dbMOD.DbSet<SalesOrderHeader, DbContext>
@@ -402,7 +440,7 @@ export class SalesOrderHeaderDb extends dbMOD.DbSet<SalesOrderHeader, DbContext>
             parentAssoc: ([{ "name": "OrdDetailsToOrder", "parentDbSetName": "SalesOrderHeader", "childDbSetName": "SalesOrderDetail", "childToParentName": "SalesOrderHeader", "parentToChildrenName": "SalesOrderDetails", "onDeleteAction": 1, "fieldRels": [{ "parentField": "SalesOrderID", "childField": "SalesOrderID" }] }])
         };
         opts.dbSetInfo.fieldInfos = ([{ "fieldName": "SalesOrderID", "isPrimaryKey": 1, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "RevisionNumber", "isPrimaryKey": 0, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "OrderDate", "isPrimaryKey": 0, "dataType": 7, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "DueDate", "isPrimaryKey": 0, "dataType": 7, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ShipDate", "isPrimaryKey": 0, "dataType": 7, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Status", "isPrimaryKey": 0, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "OnlineOrderFlag", "isPrimaryKey": 0, "dataType": 2, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "SalesOrderNumber", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 25, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "PurchaseOrderNumber", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 25, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "AccountNumber", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 15, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "CustomerID", "isPrimaryKey": 0, "dataType": 3, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ShipToAddressID", "isPrimaryKey": 0, "dataType": 3, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "BillToAddressID", "isPrimaryKey": 0, "dataType": 3, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ShipMethod", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "CreditCardApprovalCode", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 15, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "SubTotal", "isPrimaryKey": 0, "dataType": 4, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "TaxAmt", "isPrimaryKey": 0, "dataType": 4, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Freight", "isPrimaryKey": 0, "dataType": 4, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "TotalDue", "isPrimaryKey": 0, "dataType": 4, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Comment", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 0, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "rowguid", "isPrimaryKey": 0, "dataType": 9, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 16, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ModifiedDate", "isPrimaryKey": 0, "dataType": 6, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "SalesOrderDetails", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "", "nested": null }]);
-        super(opts, SalesOrderHeader);
+        super(opts, SalesOrderHeaderEntity);
     }
     findEntity(salesOrderID: number): SalesOrderHeader {
         return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -414,17 +452,30 @@ export class SalesOrderHeaderDb extends dbMOD.DbSet<SalesOrderHeader, DbContext>
         return this.createQuery('ReadSalesOrderHeader');
     }
 
-
 }
 
-export class SalesOrderDetail extends RIAPP.CollectionItem<dbMOD.EntityAspect<SalesOrderDetail, DbContext>> implements dbMOD.IEntityItem {
+export interface SalesOrderDetail extends dbMOD.IEntityItem {
+    SalesOrderID: number;
+    readonly SalesOrderDetailID: number;
+    OrderQty: number;
+    ProductID: number;
+    readonly UnitPrice: number;
+    readonly UnitPriceDiscount: number;
+    readonly LineTotal: number;
+    readonly rowguid: string;
+    readonly ModifiedDate: Date;
+    SalesOrderHeader: SalesOrderHeader;
+    Product: Product;
+}
+
+export class SalesOrderDetailEntity extends RIAPP.CollectionItem<dbMOD.EntityAspect<SalesOrderDetail, DbContext>> implements SalesOrderDetail {
 
     constructor(aspect: dbMOD.EntityAspect<SalesOrderDetail, DbContext>) {
         super(aspect);
 
     }
     toString() {
-        return 'SalesOrderDetail';
+        return 'SalesOrderDetailEntity';
     }
     get SalesOrderID(): number { return this._aspect._getFieldVal('SalesOrderID'); }
     set SalesOrderID(v: number) { this._aspect._setFieldVal('SalesOrderID', v); }
@@ -442,7 +493,6 @@ export class SalesOrderDetail extends RIAPP.CollectionItem<dbMOD.EntityAspect<Sa
     set SalesOrderHeader(v: SalesOrderHeader) { this._aspect._setNavFieldVal('SalesOrderHeader', v); }
     get Product(): Product { return this._aspect._getNavFieldVal('Product'); }
     set Product(v: Product) { this._aspect._setNavFieldVal('Product', v); }
-
 }
 
 export class SalesOrderDetailDb extends dbMOD.DbSet<SalesOrderDetail, DbContext>
@@ -455,7 +505,7 @@ export class SalesOrderDetailDb extends dbMOD.DbSet<SalesOrderDetail, DbContext>
             parentAssoc: ([])
         };
         opts.dbSetInfo.fieldInfos = ([{ "fieldName": "SalesOrderID", "isPrimaryKey": 1, "dataType": 3, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "SalesOrderDetailID", "isPrimaryKey": 2, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "OrderQty", "isPrimaryKey": 0, "dataType": 3, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 2, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ProductID", "isPrimaryKey": 0, "dataType": 3, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "UnitPrice", "isPrimaryKey": 0, "dataType": 4, "isNullable": true, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "UnitPriceDiscount", "isPrimaryKey": 0, "dataType": 4, "isNullable": true, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "LineTotal", "isPrimaryKey": 0, "dataType": 4, "isNullable": false, "isReadOnly": true, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 17, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "rowguid", "isPrimaryKey": 0, "dataType": 9, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 16, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ModifiedDate", "isPrimaryKey": 0, "dataType": 6, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "SalesOrderHeader", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "SalesOrderID", "nested": null }, { "fieldName": "Product", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "ProductID", "nested": null }]);
-        super(opts, SalesOrderDetail);
+        super(opts, SalesOrderDetailEntity);
     }
     findEntity(salesOrderID: number, salesOrderDetailID: number): SalesOrderDetail {
         return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -467,17 +517,24 @@ export class SalesOrderDetailDb extends dbMOD.DbSet<SalesOrderDetail, DbContext>
         return this.createQuery('ReadSalesOrderDetail');
     }
 
-
 }
 
-export class ProductCategory extends RIAPP.CollectionItem<dbMOD.EntityAspect<ProductCategory, DbContext>> implements dbMOD.IEntityItem {
+export interface ProductCategory extends dbMOD.IEntityItem {
+    readonly ProductCategoryID: number;
+    ParentProductCategoryID: number;
+    Name: string;
+    rowguid: string;
+    ModifiedDate: Date;
+}
+
+export class ProductCategoryEntity extends RIAPP.CollectionItem<dbMOD.EntityAspect<ProductCategory, DbContext>> implements ProductCategory {
 
     constructor(aspect: dbMOD.EntityAspect<ProductCategory, DbContext>) {
         super(aspect);
 
     }
     toString() {
-        return 'ProductCategory';
+        return 'ProductCategoryEntity';
     }
     get ProductCategoryID(): number { return this._aspect._getFieldVal('ProductCategoryID'); }
     get ParentProductCategoryID(): number { return this._aspect._getFieldVal('ParentProductCategoryID'); }
@@ -488,7 +545,6 @@ export class ProductCategory extends RIAPP.CollectionItem<dbMOD.EntityAspect<Pro
     set rowguid(v: string) { this._aspect._setFieldVal('rowguid', v); }
     get ModifiedDate(): Date { return this._aspect._getFieldVal('ModifiedDate'); }
     set ModifiedDate(v: Date) { this._aspect._setFieldVal('ModifiedDate', v); }
-
 }
 
 export class ProductCategoryDb extends dbMOD.DbSet<ProductCategory, DbContext>
@@ -501,7 +557,7 @@ export class ProductCategoryDb extends dbMOD.DbSet<ProductCategory, DbContext>
             parentAssoc: ([])
         };
         opts.dbSetInfo.fieldInfos = ([{ "fieldName": "ProductCategoryID", "isPrimaryKey": 1, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ParentProductCategoryID", "isPrimaryKey": 0, "dataType": 3, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Name", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "rowguid", "isPrimaryKey": 0, "dataType": 9, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 16, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 4, "dependentOn": "", "nested": null }, { "fieldName": "ModifiedDate", "isPrimaryKey": 0, "dataType": 6, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }]);
-        super(opts, ProductCategory);
+        super(opts, ProductCategoryEntity);
     }
     findEntity(productCategoryID: number): ProductCategory {
         return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -513,23 +569,26 @@ export class ProductCategoryDb extends dbMOD.DbSet<ProductCategory, DbContext>
         return this.createQuery('ReadProductCategory');
     }
 
-
 }
 
-export class LookUpProduct extends RIAPP.CollectionItem<dbMOD.EntityAspect<LookUpProduct, DbContext>> implements dbMOD.IEntityItem {
+export interface LookUpProduct extends dbMOD.IEntityItem {
+    ProductID: number;
+    Name: string;
+}
+
+export class LookUpProductEntity extends RIAPP.CollectionItem<dbMOD.EntityAspect<LookUpProduct, DbContext>> implements LookUpProduct {
 
     constructor(aspect: dbMOD.EntityAspect<LookUpProduct, DbContext>) {
         super(aspect);
 
     }
     toString() {
-        return 'LookUpProduct';
+        return 'LookUpProductEntity';
     }
     get ProductID(): number { return this._aspect._getFieldVal('ProductID'); }
     set ProductID(v: number) { this._aspect._setFieldVal('ProductID', v); }
     get Name(): string { return this._aspect._getFieldVal('Name'); }
     set Name(v: string) { this._aspect._setFieldVal('Name', v); }
-
 }
 
 export class LookUpProductDb extends dbMOD.DbSet<LookUpProduct, DbContext>
@@ -542,7 +601,7 @@ export class LookUpProductDb extends dbMOD.DbSet<LookUpProduct, DbContext>
             parentAssoc: ([])
         };
         opts.dbSetInfo.fieldInfos = ([{ "fieldName": "ProductID", "isPrimaryKey": 1, "dataType": 3, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Name", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }]);
-        super(opts, LookUpProduct);
+        super(opts, LookUpProductEntity);
     }
     findEntity(productID: number): LookUpProduct {
         return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -553,7 +612,6 @@ export class LookUpProductDb extends dbMOD.DbSet<LookUpProduct, DbContext>
     createReadProductLookUpQuery() {
         return this.createQuery('ReadProductLookUp');
     }
-
 
 }
 
@@ -573,7 +631,6 @@ export class DbSets extends dbMOD.DbSets {
         this._createDbSet("SalesOrderDetail", SalesOrderDetailDb);
         this._createDbSet("ProductCategory", ProductCategoryDb);
         this._createDbSet("LookUpProduct", LookUpProductDb);
-
     }
     get Product() { return <ProductDb>this.getDbSet("Product"); }
     get ProductModel() { return <ProductModelDb>this.getDbSet("ProductModel"); }
@@ -581,7 +638,6 @@ export class DbSets extends dbMOD.DbSets {
     get SalesOrderDetail() { return <SalesOrderDetailDb>this.getDbSet("SalesOrderDetail"); }
     get ProductCategory() { return <ProductCategoryDb>this.getDbSet("ProductCategory"); }
     get LookUpProduct() { return <LookUpProductDb>this.getDbSet("LookUpProduct"); }
-
 }
 
 export class DbContext extends dbMOD.DbContext {

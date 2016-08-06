@@ -83,10 +83,10 @@ declare module "jriapp_ui/dialog" {
         getOption(name: string): any;
         setOption(name: string, value: any): void;
         destroy(): void;
-        app: IApplication;
+        readonly app: IApplication;
         dataContext: any;
-        result: string;
-        template: ITemplate;
+        readonly result: string;
+        readonly template: ITemplate;
         isSubmitOnOK: boolean;
         width: any;
         height: any;
@@ -130,7 +130,7 @@ declare module "jriapp_ui/dynacontent" {
         templateUnLoading(template: ITemplate): void;
         private _templateChanging(oldName, newName);
         destroy(): void;
-        template: ITemplate;
+        readonly template: ITemplate;
         templateID: string;
         dataContext: any;
         animation: IDynaContentAnimation;
@@ -249,12 +249,12 @@ declare module "jriapp_ui/datagrid/columns/base" {
         scrollIntoView(isUp: boolean): void;
         protected _onColumnClicked(): void;
         toString(): string;
-        uniqueID: string;
-        th: HTMLTableHeaderCellElement;
-        $col: JQuery;
-        grid: DataGrid;
-        options: IColumnInfo;
-        title: string;
+        readonly uniqueID: string;
+        readonly th: HTMLTableHeaderCellElement;
+        readonly $col: JQuery;
+        readonly grid: DataGrid;
+        readonly options: IColumnInfo;
+        readonly title: string;
         isSelected: boolean;
     }
 }
@@ -292,8 +292,8 @@ declare module "jriapp_ui/datagrid/columns/data" {
         _getInitContentFn(): (content: IExternallyCachable) => void;
         destroy(): void;
         toString(): string;
-        isSortable: boolean;
-        sortMemberName: string;
+        readonly isSortable: boolean;
+        readonly sortMemberName: string;
         sortOrder: SORT_ORDER;
     }
 }
@@ -336,13 +336,13 @@ declare module "jriapp_ui/datagrid/cells/actions" {
         constructor(options: ICellOptions);
         destroy(): void;
         private _setupImages($images);
-        protected editImages: string;
-        protected viewImages: string;
+        protected readonly editImages: string;
+        protected readonly viewImages: string;
         protected _createButtons(isEditing: boolean): void;
         update(): void;
         toString(): string;
-        isCanEdit: boolean;
-        isCanDelete: boolean;
+        readonly isCanEdit: boolean;
+        readonly isCanDelete: boolean;
     }
 }
 declare module "jriapp_ui/datagrid/columns/rowselector" {
@@ -410,23 +410,23 @@ declare module "jriapp_ui/datagrid/rows/row" {
         updateErrorState(): void;
         scrollIntoView(animate?: boolean, pos?: ROW_POSITION): void;
         toString(): string;
-        tr: HTMLTableRowElement;
-        $tr: JQuery;
-        grid: DataGrid;
-        item: ICollectionItem;
-        cells: BaseCell<BaseColumn>[];
-        columns: BaseColumn[];
-        uniqueID: string;
-        itemKey: string;
+        readonly tr: HTMLTableRowElement;
+        readonly $tr: JQuery;
+        readonly grid: DataGrid;
+        readonly item: ICollectionItem;
+        readonly cells: BaseCell<BaseColumn>[];
+        readonly columns: BaseColumn[];
+        readonly uniqueID: string;
+        readonly itemKey: string;
         isCurrent: boolean;
         isSelected: boolean;
         isExpanded: boolean;
-        expanderCell: ExpanderCell;
-        actionsCell: ActionsCell;
+        readonly expanderCell: ExpanderCell;
+        readonly actionsCell: ActionsCell;
         isDeleted: boolean;
         isDetached: boolean;
-        isEditing: boolean;
-        isHasStateField: boolean;
+        readonly isEditing: boolean;
+        readonly isHasStateField: boolean;
     }
 }
 declare module "jriapp_ui/datagrid/cells/base" {
@@ -457,13 +457,13 @@ declare module "jriapp_ui/datagrid/cells/base" {
         scrollIntoView(): void;
         destroy(): void;
         toString(): string;
-        td: HTMLTableCellElement;
-        row: Row;
-        column: TColumn;
-        grid: DataGrid;
-        item: ICollectionItem;
-        uniqueID: string;
-        num: number;
+        readonly td: HTMLTableCellElement;
+        readonly row: Row;
+        readonly column: TColumn;
+        readonly grid: DataGrid;
+        readonly item: ICollectionItem;
+        readonly uniqueID: string;
+        readonly num: number;
     }
 }
 declare module "jriapp_ui/datagrid/rows/details" {
@@ -493,13 +493,13 @@ declare module "jriapp_ui/datagrid/rows/details" {
         private _hide(onEnd);
         destroy(): void;
         toString(): string;
-        tr: HTMLTableRowElement;
-        $tr: JQuery;
-        grid: DataGrid;
+        readonly tr: HTMLTableRowElement;
+        readonly $tr: JQuery;
+        readonly grid: DataGrid;
         item: ICollectionItem;
-        cell: DetailsCell;
-        uniqueID: string;
-        itemKey: string;
+        readonly cell: DetailsCell;
+        readonly uniqueID: string;
+        readonly itemKey: string;
         parentRow: Row;
     }
 }
@@ -527,11 +527,11 @@ declare module "jriapp_ui/datagrid/cells/details" {
         templateUnLoading(template: ITemplate): void;
         destroy(): void;
         toString(): string;
-        td: HTMLTableCellElement;
-        row: DetailsRow;
-        grid: DataGrid;
+        readonly td: HTMLTableCellElement;
+        readonly row: DetailsRow;
+        readonly grid: DataGrid;
         item: ICollectionItem;
-        template: ITemplate;
+        readonly template: ITemplate;
     }
 }
 declare module "jriapp_ui/datagrid/rows/fillspace" {
@@ -552,10 +552,10 @@ declare module "jriapp_ui/datagrid/rows/fillspace" {
         toString(): string;
         attach(): void;
         detach(): void;
-        tr: HTMLTableRowElement;
-        $tr: JQuery;
-        grid: DataGrid;
-        cell: FillSpaceCell;
+        readonly tr: HTMLTableRowElement;
+        readonly $tr: JQuery;
+        readonly grid: DataGrid;
+        readonly cell: FillSpaceCell;
         height: number;
     }
 }
@@ -573,10 +573,10 @@ declare module "jriapp_ui/datagrid/cells/fillspace" {
         });
         destroy(): void;
         toString(): string;
-        td: HTMLTableCellElement;
-        row: FillSpaceRow;
-        grid: DataGrid;
-        $div: JQuery;
+        readonly td: HTMLTableCellElement;
+        readonly row: FillSpaceRow;
+        readonly grid: DataGrid;
+        readonly $div: JQuery;
         height: number;
     }
 }
@@ -749,27 +749,27 @@ declare module "jriapp_ui/datagrid/datagrid" {
         focus(): void;
         addNew(): void;
         destroy(): void;
-        protected $table: JQuery;
-        app: IApplication;
-        options: IDataGridConstructorOptions;
-        _tBodyEl: Element;
-        _tHeadEl: HTMLTableSectionElement;
-        _tFootEl: HTMLTableSectionElement;
-        _tHeadRow: HTMLTableRowElement;
-        _tHeadCells: HTMLTableHeaderCellElement[];
-        uniqueID: string;
-        name: string;
+        protected readonly $table: JQuery;
+        readonly app: IApplication;
+        readonly options: IDataGridConstructorOptions;
+        readonly _tBodyEl: HTMLTableSectionElement;
+        readonly _tHeadEl: HTMLTableSectionElement;
+        readonly _tFootEl: HTMLTableSectionElement;
+        readonly _tHeadRow: HTMLTableRowElement;
+        readonly _tHeadCells: HTMLTableHeaderCellElement[];
+        readonly uniqueID: string;
+        readonly name: string;
         dataSource: ICollection<ICollectionItem>;
-        rows: Row[];
-        columns: BaseColumn[];
+        readonly rows: Row[];
+        readonly columns: BaseColumn[];
         currentRow: Row;
-        editingRow: Row;
-        isHasEditor: string;
-        isCanEdit: boolean;
-        isCanDelete: boolean;
-        isCanAddNew: boolean;
+        readonly editingRow: Row;
+        readonly isHasEditor: string;
+        readonly isCanEdit: boolean;
+        readonly isCanDelete: boolean;
+        readonly isCanAddNew: boolean;
         isUseScrollInto: boolean;
-        animation: IDataGridAnimation;
+        readonly animation: IDataGridAnimation;
     }
     export interface IDataGridViewOptions extends IDataGridOptions, IViewOptions {
     }
@@ -783,7 +783,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         private _createGrid();
         private _bindGridEvents();
         dataSource: ICollection<ICollectionItem>;
-        grid: DataGrid;
+        readonly grid: DataGrid;
         stateProvider: IRowStateProvider;
         animation: IDataGridAnimation;
     }
@@ -838,10 +838,10 @@ declare module "jriapp_ui/pager" {
         protected _createLast(): JQuery;
         protected _buildTip(page: number): string;
         toString(): string;
-        app: IApplication;
-        el: HTMLElement;
+        readonly app: IApplication;
+        readonly el: HTMLElement;
         dataSource: ICollection<ICollectionItem>;
-        pageCount: number;
+        readonly pageCount: number;
         rowCount: number;
         rowsPerPage: number;
         currentPage: number;
@@ -862,7 +862,7 @@ declare module "jriapp_ui/pager" {
         destroy(): void;
         toString(): string;
         dataSource: ICollection<ICollectionItem>;
-        pager: Pager;
+        readonly pager: Pager;
     }
 }
 declare module "jriapp_ui/listbox" {
@@ -940,11 +940,11 @@ declare module "jriapp_ui/listbox" {
         selectedItem: ICollectionItem;
         valuePath: string;
         textPath: string;
-        statePath: string;
+        readonly statePath: string;
         isEnabled: boolean;
         textProvider: IOptionTextProvider;
         stateProvider: IOptionStateProvider;
-        el: HTMLSelectElement;
+        readonly el: HTMLSelectElement;
     }
     export interface IListBoxViewOptions extends IListBoxOptions, IViewOptions {
     }
@@ -961,7 +961,7 @@ declare module "jriapp_ui/listbox" {
         textPath: string;
         textProvider: IOptionTextProvider;
         stateProvider: IOptionStateProvider;
-        listBox: ListBox;
+        readonly listBox: ListBox;
     }
     export interface ILookupOptions {
         dataSource: string;
@@ -1008,7 +1008,7 @@ declare module "jriapp_ui/listbox" {
         destroy(): void;
         toString(): string;
         value: any;
-        uniqueID: string;
+        readonly uniqueID: string;
     }
     export class ContentFactory implements IContentFactory {
         private _nextFactory;
@@ -1076,13 +1076,13 @@ declare module "jriapp_ui/stackpanel" {
         focus(): void;
         getDivElementByItem(item: ICollectionItem): HTMLElement;
         toString(): string;
-        app: IApplication;
-        el: HTMLElement;
-        uniqueID: string;
-        orientation: "vertical" | "horizontal";
-        templateID: string;
+        readonly app: IApplication;
+        readonly el: HTMLElement;
+        readonly uniqueID: string;
+        readonly orientation: "vertical" | "horizontal";
+        readonly templateID: string;
         dataSource: ICollection<ICollectionItem>;
-        currentItem: ICollectionItem;
+        readonly currentItem: ICollectionItem;
     }
     export interface IStackPanelViewOptions extends IStackPanelOptions, IViewOptions {
     }
@@ -1098,7 +1098,7 @@ declare module "jriapp_ui/stackpanel" {
         toString(): string;
         dataSource: ICollection<ICollectionItem>;
         panelEvents: IPanelEvents;
-        panel: StackPanel;
+        readonly panel: StackPanel;
     }
 }
 declare module "jriapp_ui/tabs" {

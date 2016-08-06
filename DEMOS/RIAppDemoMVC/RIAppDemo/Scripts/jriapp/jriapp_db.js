@@ -791,10 +791,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_core/lang", "jriapp_uti
             return key;
         };
         DbSet.prototype._createNew = function () {
-            var aspect = new entity_aspect_1.EntityAspect(this, this._entityType, null, null);
-            var item = aspect.getItem();
-            aspect.key = this._getNewKey(item);
-            return item;
+            return this.createEntity(null, null);
         };
         DbSet.prototype._clearChangeCache = function () {
             var old = this._changeCount;
@@ -933,8 +930,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_core/lang", "jriapp_uti
                     }
                 }
                 if (!item) {
-                    aspect = new entity_aspect_1.EntityAspect(self, self._entityType, row, fieldNames);
-                    item = aspect.getItem();
+                    item = self.createEntity(row, fieldNames);
                 }
                 else {
                     self._refreshValues("", item, row.v, fieldNames, 1);
@@ -1156,6 +1152,14 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_core/lang", "jriapp_uti
             }, names);
             return names;
         };
+        DbSet.prototype.createEntity = function (row, fieldNames) {
+            var aspect = new entity_aspect_1.EntityAspect(this, row, fieldNames);
+            var item = new this.entityType(aspect);
+            aspect.item = item;
+            if (!row)
+                aspect.key = this._getNewKey(item);
+            return item;
+        };
         DbSet.prototype._getInternal = function () {
             return this._internal;
         };
@@ -1228,8 +1232,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_core/lang", "jriapp_uti
                     throw new Error(lang_1.ERRS.ERR_KEY_IS_EMPTY);
                 var item = self._itemsByKey[key], aspect;
                 if (!item) {
-                    aspect = new entity_aspect_1.EntityAspect(self, self._entityType, row, data.names);
-                    item = aspect.getItem();
+                    item = self.createEntity(row, data.names);
                 }
                 else {
                     self._refreshValues("", item, row.v, data.names, 1);
@@ -3055,7 +3058,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
     }
     var EntityAspect = (function (_super) {
         __extends(EntityAspect, _super);
-        function EntityAspect(dbSet, itemType, row, names) {
+        function EntityAspect(dbSet, row, names) {
             _super.call(this, dbSet);
             var self = this;
             this.__srvKey = null;
@@ -3070,7 +3073,6 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
                     coreUtils.setValue(self._vals, fullName, null, false);
             });
             this._initRowInfo(row, names);
-            this._item = new itemType(this);
         }
         EntityAspect.prototype._fakeDestroy = function () {
             this.raiseEvent(ENTITYASPECT_EVENTS.destroyed, {});
@@ -3102,10 +3104,10 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
             var self = this;
             if (this._isDestroyCalled)
                 return;
-            self.getItem().raisePropertyChanged(fieldName);
+            self.item.raisePropertyChanged(fieldName);
             if (!!fieldInfo.dependents && fieldInfo.dependents.length > 0) {
                 fieldInfo.dependents.forEach(function (d) {
-                    self.getItem().raisePropertyChanged(d);
+                    self.item.raisePropertyChanged(d);
                 });
             }
         };
@@ -3195,7 +3197,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
             this._saveVals = null;
             this.setStatus(this._savedStatus);
             this._savedStatus = null;
-            dbSet._getInternal().removeAllErrors(this.getItem());
+            dbSet._getInternal().removeAllErrors(this.item);
             changes.forEach(function (v) {
                 var fld = self.dbSet.getFieldInfo(v.fieldName);
                 if (!fld)
@@ -3204,7 +3206,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
             });
             this._isEditing = false;
             if (isNew && this._notEdited) {
-                dbSet.removeItem(this.getItem());
+                dbSet.removeItem(this.item);
             }
             return true;
         };
@@ -3216,10 +3218,10 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
                 var oldStatus = this._status;
                 this._status = v;
                 if (v !== 0)
-                    this.dbSet._getInternal().addToChanged(this.getItem());
+                    this.dbSet._getInternal().addToChanged(this.item);
                 else
                     this.dbSet._getInternal().removeFromChanged(this.key);
-                this.dbSet._getInternal().onItemStatusChanged(this.getItem(), oldStatus);
+                this.dbSet._getInternal().onItemStatusChanged(this.item, oldStatus);
             }
         };
         EntityAspect.prototype._updateKeys = function (srvKey) {
@@ -3314,17 +3316,17 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
         EntityAspect.prototype._getCalcFieldVal = function (fieldName) {
             if (this._isDestroyCalled)
                 return null;
-            return this.dbSet._getInternal().getCalcFieldVal(fieldName, this.getItem());
+            return this.dbSet._getInternal().getCalcFieldVal(fieldName, this.item);
         };
         EntityAspect.prototype._getNavFieldVal = function (fieldName) {
             if (this._isDestroyCalled) {
                 return null;
             }
-            return this.dbSet._getInternal().getNavFieldVal(fieldName, this.getItem());
+            return this.dbSet._getInternal().getNavFieldVal(fieldName, this.item);
         };
         EntityAspect.prototype._setNavFieldVal = function (fieldName, value) {
             var dbSet = this.dbSet;
-            dbSet._getInternal().setNavFieldVal(fieldName, this.getItem(), value);
+            dbSet._getInternal().setNavFieldVal(fieldName, this.item, value);
         };
         EntityAspect.prototype._clearFieldVal = function (fieldName) {
             coreUtils.setValue(this._vals, fieldName, null, false);
@@ -3356,7 +3358,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
                         res = true;
                     }
                 }
-                dbSet._getInternal().removeError(this.getItem(), fieldName);
+                dbSet._getInternal().removeError(this.item, fieldName);
                 validation_error = this._validateField(fieldName);
                 if (!!validation_error) {
                     throw new collection_4.ValidationError([validation_error], this);
@@ -3371,7 +3373,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
                         { fieldName: fieldName, errors: [ex.message] }
                     ], this);
                 }
-                dbSet._getInternal().addError(this.getItem(), fieldName, error.errors[0].errors);
+                dbSet._getInternal().addError(this.item, fieldName, error.errors[0].errors);
                 throw error;
             }
             return res;
@@ -3381,19 +3383,19 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
             if (this.key === null)
                 return;
             if (oldStatus !== 0) {
-                internal.onCommitChanges(this.getItem(), true, false, oldStatus);
+                internal.onCommitChanges(this.item, true, false, oldStatus);
                 if (oldStatus === 3) {
-                    dbSet.removeItem(this.getItem());
+                    dbSet.removeItem(this.item);
                     return;
                 }
                 this._origVals = null;
                 if (!!this._saveVals)
                     this._saveVals = coreUtils.clone(this._vals);
                 this.setStatus(0);
-                internal.removeAllErrors(this.getItem());
+                internal.removeAllErrors(this.item);
                 if (!!rowInfo)
                     this._refreshValues(rowInfo, 3);
-                internal.onCommitChanges(this.getItem(), false, false, oldStatus);
+                internal.onCommitChanges(this.item, false, false, oldStatus);
             }
         };
         EntityAspect.prototype._onAttaching = function () {
@@ -3404,13 +3406,13 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
             _super.prototype._onAttach.call(this);
             if (this.key === null)
                 throw new Error(lang_3.ERRS.ERR_ITEM_IS_DETACHED);
-            this.dbSet._getInternal().addToChanged(this.getItem());
+            this.dbSet._getInternal().addToChanged(this.item);
         };
         EntityAspect.prototype.deleteItem = function () {
             return this.deleteOnSubmit();
         };
         EntityAspect.prototype.deleteOnSubmit = function () {
-            var oldStatus = this.status, dbSet = this.dbSet, args = { item: this.getItem(), isCancel: false };
+            var oldStatus = this.status, dbSet = this.dbSet, args = { item: this.item, isCancel: false };
             dbSet._getInternal().onItemDeleting(args);
             if (args.isCancel) {
                 return false;
@@ -3418,7 +3420,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
             if (this.key === null)
                 return false;
             if (oldStatus === 1) {
-                dbSet.removeItem(this.getItem());
+                dbSet.removeItem(this.item);
                 return true;
             }
             this.setStatus(3);
@@ -3432,9 +3434,9 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
             if (!self.key)
                 return;
             if (oldStatus !== 0) {
-                internal.onCommitChanges(self.getItem(), true, true, oldStatus);
+                internal.onCommitChanges(self.item, true, true, oldStatus);
                 if (oldStatus === 1) {
-                    dbSet.removeItem(this.getItem());
+                    dbSet.removeItem(this.item);
                     return;
                 }
                 var changes = self._getValueChanges(true);
@@ -3446,13 +3448,13 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
                     }
                 }
                 self.setStatus(0);
-                internal.removeAllErrors(this.getItem());
+                internal.removeAllErrors(this.item);
                 changes.forEach(function (v) {
                     fn_traverseChanges(v, function (fullName, vc) {
                         self._onFieldChanged(fullName, dbSet.getFieldInfo(fullName));
                     });
                 });
-                internal.onCommitChanges(this.getItem(), false, true, oldStatus);
+                internal.onCommitChanges(this.item, false, true, oldStatus);
             }
         };
         EntityAspect.prototype.submitChanges = function () {
@@ -3474,10 +3476,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
         };
         EntityAspect.prototype.refresh = function () {
             var dbxt = this.dbSet.dbContext;
-            return dbxt._getInternal().refreshItem(this.getItem());
-        };
-        EntityAspect.prototype.getItem = function () {
-            return this._item;
+            return dbxt._getInternal().refreshItem(this.item);
         };
         EntityAspect.prototype.toString = function () {
             return "EntityAspect";
@@ -3503,7 +3502,6 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
             this._savedStatus = null;
             this._isRefreshing = false;
             _super.prototype.destroy.call(this);
-            this._item = null;
         };
         Object.defineProperty(EntityAspect.prototype, "_entityType", {
             get: function () { return this.dbSet.entityType; },

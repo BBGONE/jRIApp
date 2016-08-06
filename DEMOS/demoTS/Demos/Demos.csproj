@@ -1,7 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Microsoft.TypeScript.MSBuild.1.8.9\tools\Microsoft.TypeScript.Default.props" Condition="Exists('..\packages\Microsoft.TypeScript.MSBuild.1.8.9\tools\Microsoft.TypeScript.Default.props')" />
-  <Import Project="..\packages\Microsoft.TypeScript.MSBuild.1.8.9\tools\Microsoft.TypeScript.NuGet.props" Condition="Exists('..\packages\Microsoft.TypeScript.MSBuild.1.8.9\tools\Microsoft.TypeScript.NuGet.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <ProjectGuid>{4BCCAAB0-F3B9-44FE-B237-ECE697EAA6BF}</ProjectGuid>
@@ -16,7 +14,7 @@
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
-    <TypeScriptToolsVersion>1.8</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>2.0</TypeScriptToolsVersion>
     <UseGlobalApplicationHostFile />
   </PropertyGroup>
   <ItemGroup>
@@ -71,9 +69,6 @@
   <ItemGroup>
     <Content Include="nancydemo\tsconfig.json" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="packages.config" />
-  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
@@ -114,5 +109,9 @@
     <TypeScriptSourceMap>false</TypeScriptSourceMap>
     <TypeScriptModuleKind>AMD</TypeScriptModuleKind>
   </PropertyGroup>
-  <Import Project="..\packages\Microsoft.TypeScript.MSBuild.1.8.9\tools\Microsoft.TypeScript.targets" Condition="Exists('..\packages\Microsoft.TypeScript.MSBuild.1.8.9\tools\Microsoft.TypeScript.targets')" />
+  <PropertyGroup>
+    <PostBuildEvent>"C:\Program Files (x86)\Microsoft SDKs\TypeScript\2.0\tsc.exe"  -p "$(ProjectDir)demo"
+"C:\Program Files (x86)\Microsoft SDKs\TypeScript\2.0\tsc.exe"  -p "$(ProjectDir)nancydemo"
+"C:\Program Files (x86)\Microsoft SDKs\TypeScript\2.0\tsc.exe"  -p "$(ProjectDir)spademo"</PostBuildEvent>
+  </PropertyGroup>
 </Project>

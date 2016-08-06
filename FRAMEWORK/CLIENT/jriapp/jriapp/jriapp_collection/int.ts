@@ -41,21 +41,22 @@ export interface IItemAspect<TItem extends ICollectionItem> extends IBaseObject,
     getFieldNames(): string[];
     getErrorString(): string;
     deleteItem(): boolean;
-    getItem(): TItem;
     _onAttaching(): void;
     _onAttach(): void;
     raiseErrorsChanged(args: any): void;
-    status: ITEM_STATUS;
-    isNew: boolean;
-    isDeleted: boolean;
+    readonly isCanSubmit: boolean;
+    readonly status: ITEM_STATUS;
+    readonly isNew: boolean;
+    readonly isDeleted: boolean;
+    readonly collection: ICollection<TItem>;
+    readonly isUpdating: boolean;
+    readonly isHasChanges: boolean;
     key: string;
-    collection: ICollection<TItem>;
-    isUpdating: boolean;
-    isHasChanges: boolean;
+    item: TItem;
 }
 
 export interface ICollectionItem extends IBaseObject {
-    _aspect: IItemAspect<ICollectionItem>;
+    readonly _aspect: IItemAspect<ICollectionItem>;
     _key: string;
     _isCached: boolean;
     _isDetached: boolean;

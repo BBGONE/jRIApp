@@ -14,19 +14,19 @@ export interface IFieldName {
 }
 
 export interface IEntityItem extends ICollectionItem {
-    _aspect: EntityAspect<IEntityItem, DbContext>;
+    readonly _aspect: EntityAspect<IEntityItem, DbContext>;
 }
 export interface IEntityConstructor<TItem extends IEntityItem> {
     new (aspect: EntityAspect<TItem, DbContext>): TItem;
 }
 
 export interface IQueryParamInfo {
-    dataType: DATA_TYPE;
-    dateConversion: DATE_CONVERSION;
-    isArray: boolean;
-    isNullable: boolean;
-    name: string;
-    ordinal: number;
+    readonly dataType: DATA_TYPE;
+    readonly dateConversion: DATE_CONVERSION;
+    readonly isArray: boolean;
+    readonly isNullable: boolean;
+    readonly name: string;
+    readonly ordinal: number;
 }
 
 export interface IQueryInfo {

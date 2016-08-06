@@ -525,27 +525,27 @@ declare module "jriapp_core/shared" {
         private _message;
         constructor(message?: string);
         toString(): string;
-        isDummy: boolean;
-        message: string;
+        readonly isDummy: boolean;
+        readonly message: string;
     }
     export class DummyError extends BaseError {
         private _origError;
         constructor(originalError: any);
-        isDummy: boolean;
-        origError: any;
+        readonly isDummy: boolean;
+        readonly origError: any;
     }
     export class AbortError extends BaseError {
         private _reason;
         constructor(reason?: string);
-        isDummy: boolean;
-        reason: string;
+        readonly isDummy: boolean;
+        readonly reason: string;
     }
     export class AggregateError extends BaseError {
         private _errors;
         constructor(errors?: any[]);
-        errors: any[];
-        count: number;
-        message: string;
+        readonly errors: any[];
+        readonly count: number;
+        readonly message: string;
         toString(): string;
     }
 }
@@ -852,7 +852,7 @@ declare module "jriapp_core/object" {
         protected _removeHandler(name?: string, nmspace?: string): void;
         protected _raiseEvent(name: string, args: any): void;
         protected _checkEventName(name: string): void;
-        protected _isDestroyed: boolean;
+        protected readonly _isDestroyed: boolean;
         protected _isDestroyCalled: boolean;
         _isHasProp(prop: string): boolean;
         handleError(error: any, source: any): boolean;
@@ -900,8 +900,8 @@ declare module "jriapp_core/mvvm" {
         destroy(): void;
         raiseCanExecuteChanged(): void;
         toString(): string;
-        uniqueID: string;
-        thisObj: TThis;
+        readonly uniqueID: string;
+        readonly thisObj: TThis;
     }
     export abstract class BaseCommand<TParam, TThis> extends TCommand<TParam, TThis> {
         constructor(thisObj: TThis);
@@ -930,8 +930,8 @@ declare module "jriapp_core/mvvm" {
         handleError(error: any, source: any): boolean;
         toString(): string;
         destroy(): void;
-        uniqueID: string;
-        app: TApp;
+        readonly uniqueID: string;
+        readonly app: TApp;
     }
 }
 declare module "jriapp_utils/eventstore" {
@@ -1111,7 +1111,7 @@ declare module "jriapp_utils/propwatcher" {
         removeWatch(obj: BaseObject): void;
         destroy(): void;
         toString(): string;
-        uniqueID: string;
+        readonly uniqueID: string;
     }
 }
 declare module "jriapp_utils/waitqueue" {
@@ -1134,8 +1134,8 @@ declare module "jriapp_utils/waitqueue" {
         enQueue(item: IWaitQueueItem): void;
         destroy(): void;
         toString(): string;
-        uniqueID: string;
-        owner: IBaseObject;
+        readonly uniqueID: string;
+        readonly owner: IBaseObject;
     }
 }
 declare module "jriapp_utils/utils" {
@@ -1190,12 +1190,12 @@ declare module "jriapp_core/defaults" {
         dateFormat: string;
         timeFormat: string;
         dateTimeFormat: string;
-        datepicker: coreMOD.IDatepicker;
+        readonly datepicker: coreMOD.IDatepicker;
         imagesPath: string;
         decimalPoint: string;
         thousandSep: string;
         decPrecision: number;
-        ButtonsCSS: typeof coreMOD.ButtonCss;
+        readonly ButtonsCSS: typeof coreMOD.ButtonCss;
     }
 }
 declare module "jriapp_utils/tloader" {
@@ -1226,7 +1226,7 @@ declare module "jriapp_utils/tloader" {
         getTemplateLoader(name: string): () => IPromise<string>;
         registerTemplateGroup(groupName: string, group: ITemplateGroupInfoEx): void;
         loadTemplates(url: string): void;
-        isLoading: boolean;
+        readonly isLoading: boolean;
     }
 }
 declare module "jriapp_utils/path" {
@@ -1339,12 +1339,12 @@ declare module "jriapp_core/bootstrap" {
         getImagePath(imageName: string): string;
         loadOwnStyle(name: string): IPromise<string>;
         toString(): string;
-        stylesLoader: IStylesLoader;
-        elViewRegister: IElViewRegister;
-        templateLoader: TemplateLoader;
+        readonly stylesLoader: IStylesLoader;
+        readonly elViewRegister: IElViewRegister;
+        readonly templateLoader: TemplateLoader;
         currentSelectable: ISelectableProvider;
-        defaults: Defaults;
-        isReady: boolean;
+        readonly defaults: Defaults;
+        readonly isReady: boolean;
     }
     export const bootstrap: Bootstrap;
 }
@@ -1497,18 +1497,18 @@ declare module "jriapp_elview/elview" {
         invokePropChanged(property: string): void;
         handleError(error: any, source: any): boolean;
         toString(): string;
-        $el: JQuery;
-        el: HTMLElement;
-        uniqueID: string;
+        readonly $el: JQuery;
+        readonly el: HTMLElement;
+        readonly uniqueID: string;
         isVisible: boolean;
         propChangedCommand: ICommand;
         validationErrors: IValidationInfo[];
-        dataNameAttr: string;
+        readonly dataNameAttr: string;
         toolTip: string;
         css: string;
-        app: IApplication;
-        events: IEventStore;
-        props: IPropertyBag;
+        readonly app: IApplication;
+        readonly events: IEventStore;
+        readonly props: IPropertyBag;
     }
 }
 declare module "jriapp_core/binding" {
@@ -1557,19 +1557,19 @@ declare module "jriapp_core/binding" {
         handleError(error: any, source: any): boolean;
         destroy(): void;
         toString(): string;
-        bindingID: string;
+        readonly bindingID: string;
         target: IBaseObject;
         source: any;
-        targetPath: string[];
-        sourcePath: string[];
+        readonly targetPath: string[];
+        readonly sourcePath: string[];
         sourceValue: any;
         targetValue: any;
-        mode: BINDING_MODE;
+        readonly mode: BINDING_MODE;
         converter: IConverter;
         converterParam: any;
-        isSourceFixed: boolean;
+        readonly isSourceFixed: boolean;
         isDisabled: boolean;
-        appName: string;
+        readonly appName: string;
     }
 }
 declare module "jriapp_content/basic" {
@@ -1604,11 +1604,11 @@ declare module "jriapp_content/basic" {
         protected render(): void;
         destroy(): void;
         toString(): string;
-        parentEl: HTMLElement;
-        target: IElView;
+        readonly parentEl: HTMLElement;
+        readonly target: IElView;
         isEditing: boolean;
         dataContext: any;
-        app: IApplication;
+        readonly app: IApplication;
     }
 }
 declare module "jriapp_content/template" {
@@ -1634,9 +1634,9 @@ declare module "jriapp_content/template" {
         protected cleanUp(): void;
         destroy(): void;
         toString(): string;
-        app: IApplication;
-        parentEl: HTMLElement;
-        template: ITemplate;
+        readonly app: IApplication;
+        readonly parentEl: HTMLElement;
+        readonly template: ITemplate;
         isEditing: boolean;
         dataContext: any;
     }
@@ -1674,7 +1674,7 @@ declare module "jriapp_content/string" {
     import { BasicContent } from "jriapp_content/basic";
     export class StringContent extends BasicContent {
         static __allowedKeys: number[];
-        private _allowedKeys;
+        private readonly _allowedKeys;
         protected render(): void;
         protected previewKeyPress(fieldInfo: IFieldInfo, keyCode: number, value: string): boolean;
         toString(): string;
@@ -1702,7 +1702,7 @@ declare module "jriapp_content/multyline" {
     import { BasicContent } from "jriapp_content/basic";
     export class MultyLineContent extends BasicContent {
         static __allowedKeys: number[];
-        private _allowedKeys;
+        private readonly _allowedKeys;
         constructor(options: IConstructorContentOptions);
         protected createTargetElement(): IElView;
         protected render(): void;
@@ -1741,7 +1741,7 @@ declare module "jriapp_content/number" {
     import { BasicContent } from "jriapp_content/basic";
     export class NumberContent extends BasicContent {
         static __allowedKeys: number[];
-        private _allowedKeys;
+        private readonly _allowedKeys;
         protected getBindingOption(bindingInfo: IBindingInfo, tgt: IBaseObject, dctx: any, targetPath: string): IBindingOptions;
         protected render(): void;
         protected previewKeyPress(keyCode: number, value: string): boolean;
@@ -1810,7 +1810,7 @@ declare module "jriapp_core/datepicker" {
         formatDate(date: Date): string;
         dateFormat: string;
         datepickerRegion: string;
-        datePickerFn: any;
+        readonly datePickerFn: any;
     }
     export interface IDatePickerOptions extends ITextBoxOptions {
         datepicker?: any;
@@ -1864,8 +1864,8 @@ declare module "jriapp_core/dataform" {
         private _clearContent();
         destroy(): void;
         toString(): string;
-        app: IApplication;
-        el: HTMLElement;
+        readonly app: IApplication;
+        readonly el: HTMLElement;
         dataContext: IBaseObject;
         isEditing: boolean;
         validationErrors: IValidationInfo[];
@@ -1879,7 +1879,7 @@ declare module "jriapp_core/dataform" {
         destroy(): void;
         toString(): string;
         dataContext: IBaseObject;
-        form: DataForm;
+        readonly form: DataForm;
     }
 }
 declare module "jriapp_elview/command" {
@@ -1922,7 +1922,7 @@ declare module "jriapp_core/template" {
         templateUnLoading(template: ITemplate): void;
         toString(): string;
         isEnabled: boolean;
-        template: ITemplate;
+        readonly template: ITemplate;
     }
 }
 declare module "jriapp_elview/button" {
@@ -2071,7 +2071,7 @@ declare module "jriapp_elview/radio" {
         toString(): string;
         checked: boolean;
         value: string;
-        name: string;
+        readonly name: string;
     }
 }
 declare module "jriapp_elview/all" {
@@ -2150,20 +2150,21 @@ declare module "jriapp_collection/int" {
         getFieldNames(): string[];
         getErrorString(): string;
         deleteItem(): boolean;
-        getItem(): TItem;
         _onAttaching(): void;
         _onAttach(): void;
         raiseErrorsChanged(args: any): void;
-        status: ITEM_STATUS;
-        isNew: boolean;
-        isDeleted: boolean;
+        readonly isCanSubmit: boolean;
+        readonly status: ITEM_STATUS;
+        readonly isNew: boolean;
+        readonly isDeleted: boolean;
+        readonly collection: ICollection<TItem>;
+        readonly isUpdating: boolean;
+        readonly isHasChanges: boolean;
         key: string;
-        collection: ICollection<TItem>;
-        isUpdating: boolean;
-        isHasChanges: boolean;
+        item: TItem;
     }
     export interface ICollectionItem extends IBaseObject {
-        _aspect: IItemAspect<ICollectionItem>;
+        readonly _aspect: IItemAspect<ICollectionItem>;
         _key: string;
         _isCached: boolean;
         _isDetached: boolean;
@@ -2349,8 +2350,8 @@ declare module "jriapp_collection/validation" {
         private _errors;
         private _item;
         constructor(errorInfo: IValidationInfo[], item: any);
-        item: any;
-        errors: IValidationInfo[];
+        readonly item: any;
+        readonly errors: IValidationInfo[];
     }
     export class Validations {
         private static _dtRangeToDate(str);
@@ -2485,19 +2486,19 @@ declare module "jriapp_collection/base" {
         destroy(): void;
         waitForNotLoading(callback: () => void, groupName: string): void;
         toString(): string;
-        options: ICollectionOptions;
-        items: TItem[];
+        readonly options: ICollectionOptions;
+        readonly items: TItem[];
         currentItem: TItem;
-        count: number;
+        readonly count: number;
         totalCount: number;
         pageSize: number;
         pageIndex: number;
-        pageCount: number;
-        isPagingEnabled: boolean;
-        isEditing: boolean;
-        isLoading: boolean;
+        readonly pageCount: number;
+        readonly isPagingEnabled: boolean;
+        readonly isEditing: boolean;
+        readonly isLoading: boolean;
         isUpdating: boolean;
-        permissions: IPermissions;
+        readonly permissions: IPermissions;
     }
 }
 declare module "jriapp_collection/aspect" {
@@ -2507,6 +2508,7 @@ declare module "jriapp_collection/aspect" {
     import { BaseCollection } from "jriapp_collection/base";
     export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implements IItemAspect<TItem> {
         private __key;
+        protected _item: TItem;
         private __isEditing;
         private _collection;
         protected _status: ITEM_STATUS;
@@ -2547,16 +2549,16 @@ declare module "jriapp_collection/aspect" {
         getIErrorNotification(): IErrorNotification;
         destroy(): void;
         toString(): string;
-        getItem(): TItem;
-        isCanSubmit: boolean;
-        status: ITEM_STATUS;
-        isNew: boolean;
-        isDeleted: boolean;
+        item: TItem;
+        readonly isCanSubmit: boolean;
+        readonly status: ITEM_STATUS;
+        readonly isNew: boolean;
+        readonly isDeleted: boolean;
         key: string;
-        collection: BaseCollection<TItem>;
-        isUpdating: boolean;
-        isEditing: boolean;
-        isHasChanges: boolean;
+        readonly collection: BaseCollection<TItem>;
+        readonly isUpdating: boolean;
+        readonly isEditing: boolean;
+        readonly isHasChanges: boolean;
     }
 }
 declare module "jriapp_collection/list" {
@@ -2565,27 +2567,24 @@ declare module "jriapp_collection/list" {
     import { BaseCollection } from "jriapp_collection/base";
     import { ItemAspect } from "jriapp_collection/aspect";
     export interface IListItem extends ICollectionItem {
-        _aspect: ListItemAspect<IListItem, any>;
+        readonly _aspect: ListItemAspect<IListItem, any>;
     }
     export interface IListItemAspectConstructor<TItem extends IListItem, TObj> {
-        new (coll: BaseList<TItem, TObj>, itemType: IListItemConstructor<TItem, TObj>, obj?: TObj): ListItemAspect<TItem, TObj>;
+        new (coll: BaseList<TItem, TObj>, obj?: TObj): ListItemAspect<TItem, TObj>;
     }
     export interface IListItemConstructor<TItem extends IListItem, TObj> {
         new (aspect: ListItemAspect<TItem, TObj>): TItem;
     }
     export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TItem> {
         protected _isNew: boolean;
-        protected _item: TItem;
-        constructor(coll: BaseList<TItem, TObj>, itemType: IListItemConstructor<TItem, TObj>, obj?: TObj);
-        protected static _initVals(coll: BaseList<IListItem, any>, obj?: any): any;
+        constructor(coll: BaseList<TItem, TObj>, obj?: TObj);
         _setProp(name: string, val: any): void;
         _getProp(name: string): any;
         _resetIsNew(): void;
-        destroy(): void;
-        getItem(): TItem;
         toString(): string;
-        vals: IIndexer<any>;
-        isNew: boolean;
+        readonly list: BaseList<TItem, TObj>;
+        readonly vals: IIndexer<any>;
+        readonly isNew: boolean;
     }
     export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TItem> {
         protected _itemType: IListItemConstructor<TItem, TObj>;
@@ -2594,6 +2593,7 @@ declare module "jriapp_collection/list" {
         protected _attach(item: TItem): number;
         protected _createNew(): TItem;
         protected _getNewKey(item: TItem): string;
+        protected createItem(obj?: TObj): TItem;
         destroy(): void;
         fillItems(objArray: TObj[], clearAll?: boolean): void;
         toArray(): TObj[];
@@ -2611,7 +2611,7 @@ declare module "jriapp_collection/dictionary" {
         protected _getNewKey(item: TItem): string;
         protected _onItemAdded(item: TItem): void;
         protected _onRemoved(item: TItem, pos: number): void;
-        keyName: string;
+        readonly keyName: string;
         toString(): string;
     }
 }
@@ -2625,7 +2625,7 @@ declare module "jriapp_collection/item" {
         private __isDetached;
         constructor(aspect: TAspect);
         protected _fakeDestroy(): void;
-        _aspect: TAspect;
+        readonly _aspect: TAspect;
         _key: string;
         _isCached: boolean;
         _isDetached: boolean;
@@ -2696,14 +2696,14 @@ declare module "jriapp_core/app" {
         registerTemplateGroup(name: string, group: ITemplateGroupInfo): void;
         destroy(): void;
         toString(): string;
-        elViewFactory: IElViewFactory;
-        elViewRegister: IElViewRegister;
-        uniqueID: string;
-        options: IAppOptions;
-        appName: string;
-        appRoot: Document | HTMLElement;
-        UC: any;
-        app: this;
+        readonly elViewFactory: IElViewFactory;
+        readonly elViewRegister: IElViewRegister;
+        readonly uniqueID: string;
+        readonly options: IAppOptions;
+        readonly appName: string;
+        readonly appRoot: Document | HTMLElement;
+        readonly UC: any;
+        readonly app: this;
     }
 }
 declare module "jriapp" {

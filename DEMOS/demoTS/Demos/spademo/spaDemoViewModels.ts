@@ -703,7 +703,6 @@ export class AddressVM extends RIAPP.ViewModel<DEMO.DemoApplication> {
         this._customerDbSet.removeNSHandlers(this.uniqueID);
         this._orderVM.removeNSHandlers(this.uniqueID);
         this._orderVM = null;
-        this._customerDbSet = null;
         super.destroy();
     }
     get _customerDbSet() { return this._orderVM.customerVM.dbSet; }
@@ -731,7 +730,7 @@ export class ProductAutoComplete extends AUTOCOMPLETE.AutoCompleteElView {
     protected _updateSelection() {
         if (!!this.dataContext) {
             var id = this.currentSelection;
-            this.dataContext.ProductID = id;
+            //this.dataContext.ProductID = id;
         }
     }
     protected _onHide() {
@@ -842,7 +841,6 @@ export class ProductVM extends RIAPP.ViewModel<DEMO.DemoApplication> {
         this._customerDbSet.removeNSHandlers(this.uniqueID);
         this._orderDetailVM.removeNSHandlers(this.uniqueID);
         this._orderDetailVM = null;
-        this._customerDbSet = null;
         super.destroy();
     }
     get _customerDbSet() { return this._orderDetailVM.orderVM.customerVM.dbSet; }

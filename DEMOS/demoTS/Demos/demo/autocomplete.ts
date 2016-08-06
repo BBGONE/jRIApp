@@ -147,7 +147,7 @@ export class AutoCompleteElView extends RIAPP.InputElView implements RIAPP.ITemp
             throw new Error(utils.str.format('dbContext does not contain dbSet with the name: {0}', this._dbSetName))
         }
     }
-    protected _getDbContext() {
+    protected _getDbContext(): dbMOD.DbContext {
         var dbContext = this.app.getObject<dbMOD.DbContext>(this._dbContextName);
         if (!dbContext) {
             throw new Error(utils.str.format('dbContext with the name: {0} is not registered', this._dbContextName))
@@ -158,7 +158,7 @@ export class AutoCompleteElView extends RIAPP.InputElView implements RIAPP.ITemp
         var base_events = super._getEventNames();
         return ['hide', 'show'].concat(base_events);
     }
-    protected _createTemplate() {
+    protected _createTemplate(): RIAPP.ITemplate {
         var t = this.app.createTemplate(this, this);
         t.templateID = this._templateId;
         return t;
@@ -304,17 +304,17 @@ export class AutoCompleteElView extends RIAPP.InputElView implements RIAPP.ITemp
             return null;
     }
     //template instance of drop down area (which contains datagrid) under textbox
-    get template() { return this._template; }
+    get template(): RIAPP.ITemplate { return this._template; }
     //Entity which is databound to the textbox
-    get dataContext() { return this._dataContext; }
-    set dataContext(v) {
+    get dataContext(): RIAPP.IBaseObject { return this._dataContext; }
+    set dataContext(v: RIAPP.IBaseObject) {
         if (this._dataContext !== v) {
             this._dataContext = v;
             this.raisePropertyChanged('dataContext');
         }
     }
     //dbSet for a datagrid's dataSource (for lookup values)
-    get gridDataSource() { return this._gridDataSource; }
+    get gridDataSource(): RIAPP.ICollection<RIAPP.ICollectionItem> { return this._gridDataSource; }
     get value() {
         return this.$el.val();
     }

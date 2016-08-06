@@ -170,7 +170,7 @@ namespace RIAPP.DataService.Utils.CodeGen
                 sb.AppendFormat("\tget {0}() {{ return <{1}>this.getDbSet(\"{0}\"); }}", dbSetInfo.dbSetName, dbSetType);
                 sb.AppendLine();
             });
-            return sb.ToString();
+            return sb.ToString().Trim('\r', '\n', ' ');
         }
 
         private string createIAssocs()
@@ -191,7 +191,7 @@ namespace RIAPP.DataService.Utils.CodeGen
         {
             return string.Format("{0}{1}: {2}{3};", paramInfo.name, paramInfo.isNullable ? "?" : "",
                 paramInfo.dataType == DataType.None
-                    ? _dotNet2TS.GetTSTypeName(paramInfo.ParameterType)
+                    ? _dotNet2TS.RegisterType(paramInfo.ParameterType)
                     : DotNet2TS.GetTSTypeNameFromDataType(paramInfo.dataType),
                 paramInfo.dataType != DataType.None && paramInfo.isArray ? "[]" : "");
         }
@@ -206,7 +206,7 @@ namespace RIAPP.DataService.Utils.CodeGen
                     {
                         //if this is complex type parse parameter to create its typescript interface
                         if (paramInfo.dataType == DataType.None)
-                            _dotNet2TS.GetTSTypeName(paramInfo.ParameterType);
+                            _dotNet2TS.RegisterType(paramInfo.ParameterType);
                     });
                 }
             });
@@ -235,7 +235,7 @@ namespace RIAPP.DataService.Utils.CodeGen
                     {
                         sbArgs.Append("\t}) => RIAPP.IPromise<");
                         sbArgs.Append(
-                            _dotNet2TS.GetTSTypeName(
+                            _dotNet2TS.RegisterType(
                                 MetadataHelper.RemoveTaskFromType(methodInfo.methodData.methodInfo.ReturnType)));
                         sbArgs.Append(">");
                     }
@@ -249,7 +249,7 @@ namespace RIAPP.DataService.Utils.CodeGen
                     if (methodInfo.methodResult)
                     {
                         sbArgs.Append("() => RIAPP.IPromise<");
-                        sbArgs.Append(_dotNet2TS.GetTSTypeName(methodInfo.methodData.methodInfo.ReturnType));
+                        sbArgs.Append(_dotNet2TS.RegisterType(methodInfo.methodData.methodInfo.ReturnType));
                         sbArgs.Append(">");
                     }
                     else
@@ -285,7 +285,7 @@ namespace RIAPP.DataService.Utils.CodeGen
             var pkProp = propList.Where(propInfo => keyName == propInfo.Name).SingleOrDefault();
             if (pkProp == null)
                 throw new Exception(string.Format("Dictionary item does not have a property with a name {0}", keyName));
-            var pkVals = pkProp.Name.toCamelCase() + ": " + _dotNet2TS.GetTSTypeName(pkProp.PropertyType);
+            var pkVals = pkProp.Name.toCamelCase() + ": " + _dotNet2TS.RegisterType(pkProp.PropertyType);
 
 
             new TemplateParser("Dictionary.txt").ProcessParts(part =>
@@ -373,9 +373,9 @@ namespace RIAPP.DataService.Utils.CodeGen
             propInfos.ForEach(propInfo =>
             {
                 sbProps.AppendLine(string.Format("\tget {0}():{1} {{ return <{1}>this._aspect._getProp('{0}'); }}",
-                    propInfo.Name, _dotNet2TS.GetTSTypeName(propInfo.PropertyType)));
+                    propInfo.Name, _dotNet2TS.RegisterType(propInfo.PropertyType)));
                 sbProps.AppendLine(string.Format("\tset {0}(v:{1}) {{ this._aspect._setProp('{0}', v); }}",
-                    propInfo.Name, _dotNet2TS.GetTSTypeName(propInfo.PropertyType)));
+                    propInfo.Name, _dotNet2TS.RegisterType(propInfo.PropertyType)));
             });
 
             var sbListItem = new StringBuilder(512);
@@ -433,7 +433,7 @@ namespace RIAPP.DataService.Utils.CodeGen
             if (listAttr != null)
                 listName = listAttr.ListName == null ? string.Format("{0}List", type.Name) : listAttr.ListName;
             var isListItem = dictAttr != null || listAttr != null;
-            var interfaceName = _dotNet2TS.GetTSTypeName(type);
+            var interfaceName = _dotNet2TS.RegisterType(type);
 
             //can return here if no need to create Dictionary or List
             if (!type.IsClass || !isListItem)
@@ -502,7 +502,7 @@ namespace RIAPP.DataService.Utils.CodeGen
             }
 
 
-            return sb.ToString();
+            return sb.ToString().Trim('\r', '\n', ' ');
         }
 
         /*
@@ -572,7 +572,7 @@ namespace RIAPP.DataService.Utils.CodeGen
                 }
                 sb.AppendLine("\t}");
             });
-            return sb.ToString();
+            return sb.ToString().Trim('\r', '\n', ' ');
         }
 
         private string createCalcFields(DbSetInfo dbSetInfo)
@@ -594,7 +594,7 @@ namespace RIAPP.DataService.Utils.CodeGen
                     }
                 });
             });
-            return sb.ToString();
+            return sb.ToString().Trim('\r', '\n', ' ');
         }
 
         private string createDbContextType()
@@ -626,7 +626,7 @@ namespace RIAPP.DataService.Utils.CodeGen
                             sb.Append(createDbSetProps());
                             break;
                         case "DBSETS":
-                            sb.Append(sbCreateDbSets);
+                            sb.Append(sbCreateDbSets.ToString().Trim('\r', '\n', ' '));
                             break;
                         case "TIMEZONE":
                             sb.Append(_metadata.serverTimezone.ToString());
@@ -647,8 +647,7 @@ namespace RIAPP.DataService.Utils.CodeGen
         {
             var sb = new StringBuilder(512);
             var dbSetType = GetDbSetTypeName(dbSetInfo.dbSetName);
-            var entityName = GetEntityName(dbSetInfo.dbSetName);
-            var entityType = GetEntityTypeName(dbSetInfo.dbSetName);
+            var entityTypeName = GetEntityTypeName(dbSetInfo.dbSetName);
             var entityInterfaceName = GetEntityInterfaceName(dbSetInfo.dbSetName);
             var childAssoc = _metadata.associations.Where(assoc => assoc.childDbSetName == dbSetInfo.dbSetName).ToList();
             var parentAssoc =
@@ -680,11 +679,8 @@ namespace RIAPP.DataService.Utils.CodeGen
                         case "DBSET_TYPE":
                             sb.Append(dbSetType);
                             break;
-                        case "ENTITY_NAME":
-                            sb.Append(entityName);
-                            break;
                         case "ENTITY_TYPE":
-                            sb.Append(entityType);
+                            sb.Append(entityTypeName);
                             break;
                         case "ENTITY_INTERFACE":
                         {
@@ -728,19 +724,17 @@ namespace RIAPP.DataService.Utils.CodeGen
         {
             var sb = new StringBuilder(512);
             var dbSetType = GetDbSetTypeName(dbSetInfo.dbSetName);
-            var entityName = GetEntityName(dbSetInfo.dbSetName);
             var entityInterfaceName = GetEntityInterfaceName(dbSetInfo.dbSetName);
-            var entityType = GetEntityTypeName(dbSetInfo.dbSetName);
+            var entityTypeName = GetEntityTypeName(dbSetInfo.dbSetName);
             var fieldInfos = dbSetInfo.fieldInfos;
             var sbFields = new StringBuilder(512);
             var sbFields2 = new StringBuilder(512);
             var sbFieldsDef = new StringBuilder();
             var sbFieldsInit = new StringBuilder();
 
-            if (_dotNet2TS.IsTypeNameRegistered(entityType))
+            if (_dotNet2TS.IsTypeNameRegistered(entityTypeName))
                 throw new ApplicationException(
-                    string.Format(
-                        "Names collision. Name '{0}' can not be used for an entity type's name because this name is used for a client's type.",
+                    string.Format("Names collision. Name '{0}' can not be used for an entity type's name because this name is used for a client's type.",
                         entityInterfaceName));
 
             Action<Field> AddCalculatedField = f =>
@@ -750,7 +744,7 @@ namespace RIAPP.DataService.Utils.CodeGen
                     dataType);
                 sbFields.AppendLine();
 
-                sbFields2.AppendFormat("\t{0}: {1};", f.fieldName, dataType);
+                sbFields2.AppendFormat("\treadonly {0}: {1};", f.fieldName, dataType);
                 sbFields2.AppendLine();
             };
 
@@ -761,14 +755,15 @@ namespace RIAPP.DataService.Utils.CodeGen
                     dataType);
                 sbFields.AppendLine();
                 //no writable properties to ParentToChildren navigation fields
-                if (!dataType.EndsWith("[]"))
+                bool isReadonly = dataType.EndsWith("[]");
+                if (!isReadonly)
                 {
                     sbFields.AppendFormat("\tset {0}(v: {1}) {{ this._aspect._setNavFieldVal('{0}',v); }}", f.fieldName,
                         dataType);
                     sbFields.AppendLine();
                 }
 
-                sbFields2.AppendFormat("\t{0}: {1};", f.fieldName, dataType);
+                sbFields2.AppendFormat("\t{0}{1}: {2};", isReadonly ? "readonly " : "", f.fieldName, dataType);
                 sbFields2.AppendLine();
             };
 
@@ -776,15 +771,14 @@ namespace RIAPP.DataService.Utils.CodeGen
             Action<Field> AddComplexTypeField = f =>
             {
                 var dataType = GetFieldDataType(f);
-                sbFields.AppendFormat(
-                    "\tget {0}(): {1} {{ if (!this._{0}) {{this._{0} = new {1}('{0}', this._aspect);}} return this._{0}; }}",
+                sbFields.AppendFormat("\tget {0}(): {1} {{ if (!this._{0}) {{this._{0} = new {1}('{0}', this._aspect);}} return this._{0}; }}",
                     f.fieldName, dataType);
                 sbFields.AppendLine();
                 sbFieldsDef.AppendFormat("\tprivate _{0}: {1};", f.fieldName, dataType);
                 sbFieldsDef.AppendLine();
                 sbFieldsInit.AppendFormat("\t\tthis._{0} = null;", f.fieldName);
                 sbFieldsInit.AppendLine();
-                sbFields2.AppendFormat("\t{0}: {1};", f.fieldName, dataType);
+                sbFields2.AppendFormat("\treadonly {0}: {1};", f.fieldName, dataType);
                 sbFields2.AppendLine();
             };
 
@@ -801,7 +795,7 @@ namespace RIAPP.DataService.Utils.CodeGen
                     sbFields.AppendLine();
                 }
 
-                sbFields2.AppendFormat("\t{0}: {1};", f.fieldName, dataType);
+                sbFields2.AppendFormat("\t{0}{1}: {2};", f.isReadOnly?"readonly ":"", f.fieldName, dataType);
                 sbFields2.AppendLine();
             };
 
@@ -841,26 +835,23 @@ namespace RIAPP.DataService.Utils.CodeGen
                         case "DBSET_TYPE":
                             sb.Append(dbSetType);
                             break;
-                        case "ENTITY_NAME":
-                            sb.Append(entityName);
-                            break;
                         case "ENTITY_TYPE":
-                            sb.Append(entityType);
+                            sb.Append(entityTypeName);
                             break;
                         case "ENTITY_INTERFACE":
                             sb.Append(entityInterfaceName);
                             break;
                         case "ENTITY_FIELDS":
-                            sb.Append(sbFields.ToString());
+                            sb.Append(sbFields.ToString().Trim('\r', '\n', ' '));
                             break;
                         case "INTERFACE_FIELDS":
-                            sb.Append(sbFields2.ToString());
+                            sb.Append(sbFields2.ToString().Trim('\r','\n',' '));
                             break;
                         case "FIELDS_DEF":
-                            sb.Append(sbFieldsDef.ToString());
+                            sb.Append(sbFieldsDef.ToString().Trim('\r', '\n', ' '));
                             break;
                         case "FIELDS_INIT":
-                            sb.Append(sbFieldsInit.ToString());
+                            sb.Append(sbFieldsInit.ToString().Trim('\r', '\n', ' '));
                             break;
                     }
                 }
@@ -896,17 +887,12 @@ namespace RIAPP.DataService.Utils.CodeGen
 
         public static string GetEntityTypeName(string dbSetName)
         {
-            return string.Format("{0}", dbSetName);
-        }
-
-        public static string GetEntityName(string dbSetName)
-        {
             return string.Format("{0}Entity", dbSetName);
         }
 
         public static string GetEntityInterfaceName(string dbSetName)
         {
-            return string.Format("I{0}Entity", dbSetName);
+            return string.Format("{0}", dbSetName);
         }
     }
 }

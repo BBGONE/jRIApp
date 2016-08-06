@@ -35,7 +35,12 @@ namespace RIAPP.DataService.Utils.CodeGen
 
         public event EventHandler<NewTypeArgs> newClientTypeAdded;
 
-        public string GetTSTypeName(Type t)
+        /// <summary>
+        /// Registers type
+        /// </summary>
+        /// <param name="t"></param>
+        /// <returns>registered type name</returns>
+        public string RegisterType(Type t)
         {
             var isArray = false;
             var isEnumerable = false;
@@ -78,24 +83,30 @@ namespace RIAPP.DataService.Utils.CodeGen
             catch (UnsupportedTypeException)
             {
                 //complex type
-                return GetTsComplexTypeName(t, isArray, isEnumerable, isEnum);
+                return RegisterComplexType(t, isArray, isEnumerable, isEnum);
             }
         }
 
-        protected internal string GetTsComplexTypeName(Type t, bool isArray, bool isEnumerable, bool isEnum)
+        /// <summary>
+        /// Registers complex type
+        /// </summary>
+        /// <param name="t"></param>
+        /// <param name="isArray"></param>
+        /// <param name="isEnumerable"></param>
+        /// <param name="isEnum"></param>
+        /// <returns>registered type name</returns>
+        protected internal string RegisterComplexType(Type t, bool isArray, bool isEnumerable, bool isEnum)
         {
-            var res = "any";
+            string registeredName = "any";
             ExtendsAttribute extendsAttr = null;
             TypeNameAttribute typeNameAttr = null;
             var typeName = isEnum ? t.Name : string.Format("I{0}", t.Name);
-            typeNameAttr =
-                t.GetCustomAttributes(typeof(TypeNameAttribute), false).OfType<TypeNameAttribute>().FirstOrDefault();
+            typeNameAttr = t.GetCustomAttributes(typeof(TypeNameAttribute), false).OfType<TypeNameAttribute>().FirstOrDefault();
             if (typeNameAttr != null)
                 typeName = typeNameAttr.Name;
             if (!isEnum)
             {
-                extendsAttr =
-                    t.GetCustomAttributes(typeof(ExtendsAttribute), false).OfType<ExtendsAttribute>().FirstOrDefault();
+                extendsAttr = t.GetCustomAttributes(typeof(ExtendsAttribute), false).OfType<ExtendsAttribute>().FirstOrDefault();
                 StringBuilder extendsSb = null;
                 if (extendsAttr != null && extendsAttr.InterfaceNames.Length > 0)
                 {
@@ -109,11 +120,11 @@ namespace RIAPP.DataService.Utils.CodeGen
                         isFirst = false;
                     }
                 }
-                res = GetTSInterface(t, typeName, extendsSb == null ? null : extendsSb.ToString());
+                registeredName = GetTypeInterface(t, typeName, extendsSb == null ? null : extendsSb.ToString());
             }
             else
             {
-                res = GetTSEnum(t, typeName);
+                registeredName = GetTSEnum(t, typeName);
             }
 
             if (isArray || isEnumerable)
@@ -139,19 +150,18 @@ namespace RIAPP.DataService.Utils.CodeGen
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        protected internal string GetTSInterface(Type t, string typeName, string extends)
+        protected internal string GetTypeInterface(Type t, string typeName, string extends)
         {
             if (t == typeof(Type))
                 throw new ArgumentException("Can not generate interface for a System.Type");
 
             var name = typeName;
             if (string.IsNullOrEmpty(typeName))
-                name = GetTSTypeName(t);
+                name = RegisterType(t);
             if (_tsTypes.ContainsKey(name))
                 return _tsTypes[name];
 
-            var commentAttr =
-                t.GetCustomAttributes(typeof(CommentAttribute), false).OfType<CommentAttribute>().FirstOrDefault();
+            var commentAttr = t.GetCustomAttributes(typeof(CommentAttribute), false).OfType<CommentAttribute>().FirstOrDefault();
 
             var sb = new StringBuilder();
             if (commentAttr != null && !string.IsNullOrWhiteSpace(commentAttr.Text))
@@ -167,18 +177,14 @@ namespace RIAPP.DataService.Utils.CodeGen
             sb.AppendLine();
             sb.AppendLine("{");
             var objProps = t.GetProperties();
-            Array.ForEach(objProps, propInfo =>
+            foreach(var propInfo in objProps)
             {
-                sb.AppendFormat("\t{0}:{1};", propInfo.Name, GetTSTypeName(propInfo.PropertyType));
+                sb.AppendFormat("\t{0}{1}:{2};", propInfo.CanWrite ? "" : "readonly ", propInfo.Name, RegisterType(propInfo.PropertyType));
                 sb.AppendLine();
             }
-                );
             sb.AppendLine("}");
             _tsTypes.Add(name, sb.ToString());
-            if (newClientTypeAdded != null)
-            {
-                newClientTypeAdded(this, new NewTypeArgs(t));
-            }
+            newClientTypeAdded?.Invoke(this, new NewTypeArgs(t));
             return _tsTypes[name];
         }
 
@@ -191,7 +197,7 @@ namespace RIAPP.DataService.Utils.CodeGen
         {
             var name = typeName;
             if (string.IsNullOrEmpty(typeName))
-                name = GetTSTypeName(t);
+                name = RegisterType(t);
             if (_tsTypes.ContainsKey(name))
                 return _tsTypes[name];
 

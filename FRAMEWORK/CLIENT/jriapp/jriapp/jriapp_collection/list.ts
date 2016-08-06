@@ -14,51 +14,50 @@ import { ValidationError } from "validation";
 const coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
 
 export interface IListItem extends ICollectionItem {
-    _aspect: ListItemAspect<IListItem, any>;
+    readonly _aspect: ListItemAspect<IListItem, any>;
 }
 export interface IListItemAspectConstructor<TItem extends IListItem, TObj> {
-    new (coll: BaseList<TItem, TObj>, itemType: IListItemConstructor<TItem, TObj>, obj?: TObj): ListItemAspect<TItem, TObj>;
+    new (coll: BaseList<TItem, TObj>, obj?: TObj): ListItemAspect<TItem, TObj>;
 }
 export interface IListItemConstructor<TItem extends IListItem, TObj> {
     new (aspect: ListItemAspect<TItem, TObj>): TItem;
 }
 
+function fn_initVals(coll: BaseList < IListItem, any >, obj ?: any): any {
+    let vals = obj || {};
+    if (!!obj) {
+        //if no object then set all values to nulls
+        let fieldInfos = coll.getFieldInfos();
+        fn_traverseFields(fieldInfos, (fld, fullName) => {
+            if (fld.fieldType === FIELD_TYPE.Object)
+                coreUtils.setValue(vals, fullName, {}, false);
+            else
+                coreUtils.setValue(vals, fullName, null, false);
+        });
+    }
+    return vals;
+};
+
 export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TItem> {
     protected _isNew: boolean;
-    protected _item: TItem;
 
-    constructor(coll: BaseList<TItem, TObj>, itemType: IListItemConstructor<TItem, TObj>, obj?: TObj) {
+    constructor(coll: BaseList<TItem, TObj>, obj?: TObj) {
         super(coll);
         let self = this;
         this._isNew = !obj ? true : false;
-        this._item = null;
         if (!!obj)
             this._vals = <any>obj;
         else
-            this._vals = ListItemAspect._initVals(coll, obj);
-        this._item = new itemType(this);
-    }
-    protected static _initVals(coll: BaseList<IListItem, any>, obj?: any): any {
-        let vals = obj || {};
-        if (!!obj) {
-            //if no object then set all values to nulls
-            let fieldInfos = coll.getFieldInfos();
-            fn_traverseFields(fieldInfos, (fld, fullName) => {
-                if (fld.fieldType === FIELD_TYPE.Object)
-                    coreUtils.setValue(vals, fullName, {}, false);
-                else
-                    coreUtils.setValue(vals, fullName, null, false);
-            });
-        }
-        return vals;
+            this._vals = fn_initVals(coll, obj);
     }
     _setProp(name: string, val: any) {
         let validation_error: IValidationInfo, error: ValidationError, coll = this.collection;
+        let item = this.item;
         if (this._getProp(name) !== val) {
             try {
                 coreUtils.setValue(this._vals, name, val, false);
-                this.getItem().raisePropertyChanged(name);
-                coll._getInternal().removeError(this.getItem(), name);
+                item.raisePropertyChanged(name);
+                coll._getInternal().removeError(item, name);
                 validation_error = this._validateField(name);
                 if (!!validation_error) {
                     throw new ValidationError([validation_error], this);
@@ -72,7 +71,7 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
                         { fieldName: name, errors: [ex.message] }
                     ], this);
                 }
-                coll._getInternal().addError(this.getItem(), name, error.errors[0].errors);
+                coll._getInternal().addError(item, name, error.errors[0].errors);
                 throw error;
             }
         }
@@ -83,27 +82,19 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
     _resetIsNew() {
         this._isNew = false;
     }
-    destroy() {
-        if (this._isDestroyed)
-            return;
-        this._isDestroyCalled = true;
-        super.destroy();
-        this._item = null;
-    }
-    getItem(): TItem {
-        return this._item;
-    }
     toString() {
         if (!this._item)
             return "ListItemAspect";
         return this._item.toString() + "Aspect";
     }
+    get list() { return <BaseList<TItem, TObj>>this.collection; }
     get vals() { return this._vals; }
     get isNew() { return this._isNew; }
 }
 
 export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TItem> {
     protected _itemType: IListItemConstructor<TItem, TObj>;
+
     constructor(itemType: IListItemConstructor<TItem, TObj>, props: IPropInfo[]) {
         super();
         this._itemType = itemType;
@@ -136,11 +127,9 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
         }
         return super._attach(item);
     }
+    //override
     protected _createNew(): TItem {
-        let aspect = new ListItemAspect<TItem, TObj>(this, this._itemType, null);
-        //a new client item ID
-        aspect.key = this._getNewKey(null);
-        return aspect.getItem();
+        return this.createItem(null);
     }
     //the item parameter is not used here, but can be used in descendants
     protected _getNewKey(item: TItem) {
@@ -148,6 +137,13 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
         let key = "clkey_" + this._newKey;
         this._newKey += 1;
         return key;
+    }
+    protected createItem(obj?: TObj): TItem {
+        let aspect = new ListItemAspect<TItem, TObj>(this, obj);
+        let item = new this._itemType(aspect);
+        aspect.key = this._getNewKey(item);
+        aspect.item = item;
+        return item;
     }
     destroy() {
         if (this._isDestroyed)
@@ -163,13 +159,11 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
         try {
             if (!!clearAll) this.clear();
             objArray.forEach(function (obj) {
-                let aspect: ListItemAspect<TItem, TObj> = new ListItemAspect<TItem, TObj>(self, self._itemType, obj);
-                let item = aspect.getItem();
-                aspect.key = self._getNewKey(item);
-                let oldItem = self._itemsByKey[aspect.key];
+                let item = self.createItem(obj);
+                let oldItem = self._itemsByKey[item._key];
                 if (!oldItem) {
                     self._items.push(item);
-                    self._itemsByKey[aspect.key] = item;
+                    self._itemsByKey[item._key] = item;
                     newItems.push(item);
                     positions.push(self._items.length - 1);
                     items.push(item);

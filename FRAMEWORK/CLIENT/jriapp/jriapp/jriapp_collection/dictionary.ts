@@ -20,19 +20,29 @@ export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TIte
         keyFld.isPrimaryKey = 1;
     }
     protected _getNewKey(item: TItem) {
-        if (!item) {
-            return super._getNewKey(null);
+        if (!item || item._aspect.isNew) {
+            return null;
         }
         let key = (<any>item)[this._keyName];
         if (checks.isNt(key))
             throw new Error(strUtils.format(ERRS.ERR_DICTKEY_IS_EMPTY, this.keyName));
         return "" + key;
     }
+    //override
+    protected _onItemAdding(item: TItem) {
+        super._onItemAdding(item);
+        let key = (<any>item)[this._keyName];
+        if (checks.isNt(key))
+            throw new Error(strUtils.format(ERRS.ERR_DICTKEY_IS_EMPTY, this.keyName));
+        item._aspect.key = key;
+    }
+    //override
     protected _onItemAdded(item: TItem) {
         super._onItemAdded(item);
         let key = (<any>item)[this._keyName];
         this.raisePropertyChanged("[" + key + "]");
     }
+    //override
     protected _onRemoved(item: TItem, pos: number) {
         let key = (<any>item)[this._keyName];
         super._onRemoved(item, pos);
