@@ -2,6 +2,7 @@
 import { Utils as utils } from "../jriapp_utils/utils";
 import { ERRS } from "../jriapp_core/lang";
 
+import { COLL_CHANGE_TYPE, COLL_CHANGE_REASON, COLL_CHANGE_OPER } from "int";
 import { IPropInfo } from "int";
 import { BaseList, IListItem, IListItemConstructor } from "list";
 
@@ -21,7 +22,7 @@ export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TIte
     }
     protected _getNewKey(item: TItem) {
         if (!item || item._aspect.isNew) {
-            return null;
+            return super._getNewKey(item);
         }
         let key = (<any>item)[this._keyName];
         if (checks.isNt(key))
@@ -29,18 +30,27 @@ export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TIte
         return "" + key;
     }
     //override
-    protected _onItemAdding(item: TItem) {
-        super._onItemAdding(item);
-        let key = (<any>item)[this._keyName];
-        if (checks.isNt(key))
-            throw new Error(strUtils.format(ERRS.ERR_DICTKEY_IS_EMPTY, this.keyName));
-        item._aspect.key = key;
-    }
-    //override
     protected _onItemAdded(item: TItem) {
         super._onItemAdded(item);
-        let key = (<any>item)[this._keyName];
-        this.raisePropertyChanged("[" + key + "]");
+        let key = (<any>item)[this._keyName], self = this;
+        if (checks.isNt(key))
+            throw new Error(strUtils.format(ERRS.ERR_DICTKEY_IS_EMPTY, this.keyName));
+
+        let oldkey = item._key, newkey = "" + key;
+        if (oldkey !== newkey) {
+            delete self._itemsByKey[oldkey];
+            item._aspect.key = newkey;
+            self._itemsByKey[item._key] = item;
+            self._onCollectionChanged({
+                changeType: COLL_CHANGE_TYPE.Remap,
+                reason: COLL_CHANGE_REASON.None,
+                oper: COLL_CHANGE_OPER.Commit,
+                items: [item],
+                old_key: oldkey,
+                new_key: newkey
+            })
+        }
+        this.raisePropertyChanged("[" + item._key + "]");
     }
     //override
     protected _onRemoved(item: TItem, pos: number) {

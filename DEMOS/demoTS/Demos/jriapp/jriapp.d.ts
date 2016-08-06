@@ -2609,7 +2609,6 @@ declare module "jriapp_collection/dictionary" {
         private _keyName;
         constructor(itemType: IListItemConstructor<TItem, TObj>, keyName: string, props: IPropInfo[]);
         protected _getNewKey(item: TItem): string;
-        protected _onItemAdding(item: TItem): void;
         protected _onItemAdded(item: TItem): void;
         protected _onRemoved(item: TItem, pos: number): void;
         readonly keyName: string;

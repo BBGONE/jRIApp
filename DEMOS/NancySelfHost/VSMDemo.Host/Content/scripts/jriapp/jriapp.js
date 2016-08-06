@@ -9777,24 +9777,33 @@ define("jriapp_collection/dictionary", ["require", "exports", "jriapp_utils/util
         }
         BaseDictionary.prototype._getNewKey = function (item) {
             if (!item || item._aspect.isNew) {
-                return _super.prototype._getNewKey.call(this, null);
+                return _super.prototype._getNewKey.call(this, item);
             }
             var key = item[this._keyName];
             if (checks.isNt(key))
                 throw new Error(strUtils.format(lang_22.ERRS.ERR_DICTKEY_IS_EMPTY, this.keyName));
             return "" + key;
         };
-        BaseDictionary.prototype._onItemAdding = function (item) {
-            _super.prototype._onItemAdding.call(this, item);
-            var key = item[this._keyName];
-            if (checks.isNt(key))
-                throw new Error(strUtils.format(lang_22.ERRS.ERR_DICTKEY_IS_EMPTY, this.keyName));
-            item._aspect.key = key;
-        };
         BaseDictionary.prototype._onItemAdded = function (item) {
             _super.prototype._onItemAdded.call(this, item);
-            var key = item[this._keyName];
-            this.raisePropertyChanged("[" + key + "]");
+            var key = item[this._keyName], self = this;
+            if (checks.isNt(key))
+                throw new Error(strUtils.format(lang_22.ERRS.ERR_DICTKEY_IS_EMPTY, this.keyName));
+            var oldkey = item._key, newkey = "" + key;
+            if (oldkey !== newkey) {
+                delete self._itemsByKey[oldkey];
+                item._aspect.key = newkey;
+                self._itemsByKey[item._key] = item;
+                self._onCollectionChanged({
+                    changeType: 3,
+                    reason: 0,
+                    oper: 4,
+                    items: [item],
+                    old_key: oldkey,
+                    new_key: newkey
+                });
+            }
+            this.raisePropertyChanged("[" + item._key + "]");
         };
         BaseDictionary.prototype._onRemoved = function (item, pos) {
             var key = item[this._keyName];
