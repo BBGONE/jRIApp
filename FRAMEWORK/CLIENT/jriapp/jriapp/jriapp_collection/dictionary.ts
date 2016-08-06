@@ -48,7 +48,7 @@ export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TIte
                 items: [item],
                 old_key: oldkey,
                 new_key: newkey
-            })
+            });
         }
         this.raisePropertyChanged("[" + item._key + "]");
     }

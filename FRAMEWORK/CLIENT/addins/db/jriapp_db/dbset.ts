@@ -596,7 +596,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
                     items: [item],
                     old_key: key,
                     new_key: item._key
-                })
+                });
             }
         });
     }
