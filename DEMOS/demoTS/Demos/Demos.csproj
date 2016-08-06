@@ -57,9 +57,7 @@
   <ItemGroup>
     <Content Include="readme.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="jriapp\addins\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Content Include="spademo\tsconfig.json" />
   </ItemGroup>

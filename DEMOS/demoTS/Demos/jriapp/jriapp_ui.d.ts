@@ -1,4 +1,4 @@
-/// <reference path="../jriapp.d.ts" />
+/// <reference path="jriapp.d.ts" />
 declare module "jriapp_ui/dialog" {
     import { ITemplate, ITemplateEvents, IApplication, IBaseObject, TEventHandler } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";

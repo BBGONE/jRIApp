@@ -1,6 +1,6 @@
 ﻿/// <reference path="../jriapp/jriapp.d.ts" />
-/// <reference path="../jriapp/addins/jriapp_db.d.ts" />
-/// <reference path="../jriapp/addins/jriapp_ui.d.ts" />
+/// <reference path="../jriapp/jriapp_db.d.ts" />
+/// <reference path="../jriapp/jriapp_ui.d.ts" />
 import * as RIAPP from "jriapp";
 import * as dbMOD from "jriapp_db";
 import * as uiMOD from "jriapp_ui";

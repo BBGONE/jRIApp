@@ -1,4 +1,4 @@
-/// <reference path="../jriapp.d.ts" />
+/// <reference path="jriapp.d.ts" />
 declare module "jriapp_db/const" {
     export const enum FLAGS {
         None = 0,
