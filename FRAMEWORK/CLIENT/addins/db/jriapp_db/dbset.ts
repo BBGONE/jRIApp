@@ -472,7 +472,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
             if (!key)
                 throw new Error(ERRS.ERR_KEY_IS_EMPTY);
 
-            let item = self._itemsByKey[key], aspect: EntityAspect<TItem, TDbContext>;
+            let item = self._itemsByKey[key];
             if (!item) {
                 if (!!dataCache) {
                     item = <TItem>dataCache.getItemByKey(key);
@@ -809,7 +809,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
             if (!key)
                 throw new Error(ERRS.ERR_KEY_IS_EMPTY);
 
-            let item = self._itemsByKey[key], aspect: EntityAspect<TItem, TDbContext>;
+            let item = self._itemsByKey[key];
             if (!item) {
                 item = self.createEntity(row, data.names);
             }
