@@ -133,9 +133,11 @@ namespace RIAPP.DataService.Utils.CodeGen
 
             _metadata.dbSets.ForEach(dbSetInfo =>
             {
-                WriteStringLine(createEntityType(dbSetInfo));
+                var res = createEntityType(dbSetInfo);
+                //write interface definition for entity
+                WriteStringLine(res.Key);
                 WriteLine();
-                WriteStringLine(createDbSetType(dbSetInfo));
+                WriteStringLine(createDbSetType(res.Value, dbSetInfo));
                 WriteLine();
             });
 
@@ -578,6 +580,7 @@ namespace RIAPP.DataService.Utils.CodeGen
         private string createCalcFields(DbSetInfo dbSetInfo)
         {
             var entityType = GetEntityTypeName(dbSetInfo.dbSetName);
+            var entityInterfaceName = GetEntityInterfaceName(dbSetInfo.dbSetName);
             var sb = new StringBuilder(256);
             dbSetInfo.fieldInfos.ForEach(fieldInfo =>
             {
@@ -586,7 +589,7 @@ namespace RIAPP.DataService.Utils.CodeGen
                     if (f.fieldType == FieldType.Calculated)
                     {
                         sb.AppendFormat("\tdefine{0}Field(getFunc: (item: {1}) => {2})", fullName.Replace('.', '_'),
-                            entityType, GetFieldDataType(f));
+                            entityInterfaceName, GetFieldDataType(f));
                         sb.Append(" { ");
                         sb.AppendFormat("this._defineCalculatedField('{0}', getFunc);", fullName);
                         sb.Append(" }");
@@ -643,7 +646,7 @@ namespace RIAPP.DataService.Utils.CodeGen
             return sb.ToString();
         }
 
-        private string createDbSetType(DbSetInfo dbSetInfo)
+        private string createDbSetType(string entityDef, DbSetInfo dbSetInfo)
         {
             var sb = new StringBuilder(512);
             var dbSetType = GetDbSetTypeName(dbSetInfo.dbSetName);
@@ -678,6 +681,11 @@ namespace RIAPP.DataService.Utils.CodeGen
                             break;
                         case "DBSET_TYPE":
                             sb.Append(dbSetType);
+                            break;
+                        case "ENTITY":
+                            {
+                                sb.Append(entityDef);
+                            }
                             break;
                         case "ENTITY_TYPE":
                             sb.Append(entityTypeName);
@@ -720,23 +728,48 @@ namespace RIAPP.DataService.Utils.CodeGen
             return sb.ToString();
         }
 
-        private string createEntityType(DbSetInfo dbSetInfo)
+        private string createEntityInterface(string entityInterfaceName, string fieldsDef)
         {
             var sb = new StringBuilder(512);
+            new TemplateParser("EntityInterface.txt").ProcessParts(part =>
+            {
+                if (!part.isPlaceHolder)
+                {
+                    sb.Append(part.value);
+                }
+                else
+                {
+                    switch (part.value)
+                    {
+                        case "ENTITY_INTERFACE":
+                            sb.Append(entityInterfaceName);
+                            break;
+                        case "INTERFACE_FIELDS":
+                            sb.Append(fieldsDef.Trim('\r', '\n', '\t', ' '));
+                            break;
+                    }
+                }
+            });
+            return sb.ToString().Trim('\r', '\n', '\t', ' ');
+        }
+
+        private KeyValuePair<string, string> createEntityType(DbSetInfo dbSetInfo)
+        {
+            var entityDef = new StringBuilder(512);
             var dbSetType = GetDbSetTypeName(dbSetInfo.dbSetName);
             var entityInterfaceName = GetEntityInterfaceName(dbSetInfo.dbSetName);
             var entityTypeName = GetEntityTypeName(dbSetInfo.dbSetName);
             var fieldInfos = dbSetInfo.fieldInfos;
             var sbFields = new StringBuilder(512);
-            var sbFields2 = new StringBuilder(512);
             var sbFieldsDef = new StringBuilder();
             var sbFieldsInit = new StringBuilder();
+            var sbInterfaceFields = new StringBuilder(512);
 
-            if (_dotNet2TS.IsTypeNameRegistered(entityTypeName))
+            if (_dotNet2TS.IsTypeNameRegistered(entityInterfaceName))
                 throw new ApplicationException(
                     string.Format("Names collision. Name '{0}' can not be used for an entity type's name because this name is used for a client's type.",
                         entityInterfaceName));
-
+            
             Action<Field> AddCalculatedField = f =>
             {
                 var dataType = GetFieldDataType(f);
@@ -744,8 +777,8 @@ namespace RIAPP.DataService.Utils.CodeGen
                     dataType);
                 sbFields.AppendLine();
 
-                sbFields2.AppendFormat("\treadonly {0}: {1};", f.fieldName, dataType);
-                sbFields2.AppendLine();
+                sbInterfaceFields.AppendFormat("\treadonly {0}: {1};", f.fieldName, dataType);
+                sbInterfaceFields.AppendLine();
             };
 
             Action<Field> AddNavigationField = f =>
@@ -763,8 +796,8 @@ namespace RIAPP.DataService.Utils.CodeGen
                     sbFields.AppendLine();
                 }
 
-                sbFields2.AppendFormat("\t{0}{1}: {2};", isReadonly ? "readonly " : "", f.fieldName, dataType);
-                sbFields2.AppendLine();
+                sbInterfaceFields.AppendFormat("\t{0}{1}: {2};", isReadonly ? "readonly " : "", f.fieldName, dataType);
+                sbInterfaceFields.AppendLine();
             };
 
 
@@ -778,8 +811,8 @@ namespace RIAPP.DataService.Utils.CodeGen
                 sbFieldsDef.AppendLine();
                 sbFieldsInit.AppendFormat("\t\tthis._{0} = null;", f.fieldName);
                 sbFieldsInit.AppendLine();
-                sbFields2.AppendFormat("\treadonly {0}: {1};", f.fieldName, dataType);
-                sbFields2.AppendLine();
+                sbInterfaceFields.AppendFormat("\treadonly {0}: {1};", f.fieldName, dataType);
+                sbInterfaceFields.AppendLine();
             };
 
             Action<Field> AddSimpleField = f =>
@@ -795,8 +828,8 @@ namespace RIAPP.DataService.Utils.CodeGen
                     sbFields.AppendLine();
                 }
 
-                sbFields2.AppendFormat("\t{0}{1}: {2};", f.isReadOnly?"readonly ":"", f.fieldName, dataType);
-                sbFields2.AppendLine();
+                sbInterfaceFields.AppendFormat("\t{0}{1}: {2};", f.isReadOnly?"readonly ":"", f.fieldName, dataType);
+                sbInterfaceFields.AppendLine();
             };
 
             fieldInfos.ForEach(fieldInfo =>
@@ -823,40 +856,39 @@ namespace RIAPP.DataService.Utils.CodeGen
             {
                 if (!part.isPlaceHolder)
                 {
-                    sb.Append(part.value);
+                    entityDef.Append(part.value);
                 }
                 else
                 {
                     switch (part.value)
                     {
                         case "DBSET_NAME":
-                            sb.Append(dbSetInfo.dbSetName);
+                            entityDef.Append(dbSetInfo.dbSetName);
                             break;
                         case "DBSET_TYPE":
-                            sb.Append(dbSetType);
+                            entityDef.Append(dbSetType);
                             break;
                         case "ENTITY_TYPE":
-                            sb.Append(entityTypeName);
+                            entityDef.Append(entityTypeName);
                             break;
                         case "ENTITY_INTERFACE":
-                            sb.Append(entityInterfaceName);
+                            entityDef.Append(entityInterfaceName);
                             break;
                         case "ENTITY_FIELDS":
-                            sb.Append(sbFields.ToString().Trim('\r', '\n', ' '));
-                            break;
-                        case "INTERFACE_FIELDS":
-                            sb.Append(sbFields2.ToString().Trim('\r','\n',' '));
+                            entityDef.Append(sbFields.ToString().Trim('\r', '\n'));
                             break;
                         case "FIELDS_DEF":
-                            sb.Append(sbFieldsDef.ToString().Trim('\r', '\n', ' '));
+                            entityDef.Append(sbFieldsDef.ToString().Trim('\r', '\n'));
                             break;
                         case "FIELDS_INIT":
-                            sb.Append(sbFieldsInit.ToString().Trim('\r', '\n', ' '));
+                            entityDef.Append(sbFieldsInit.ToString().Trim('\r', '\n'));
                             break;
                     }
                 }
             });
-            return sb.ToString();
+            var interfaceDef = this.createEntityInterface(entityInterfaceName, sbInterfaceFields.ToString().Trim('\r', '\n', '\t', ' '));
+
+            return new KeyValuePair<string, string>(interfaceDef, entityDef.ToString().Trim('\r', '\n', '\t', ' '));
         }
 
         private string GetFieldDataType(Field fieldInfo)

@@ -210,7 +210,7 @@ declare module "jriapp_db/dbset" {
         protected _ignorePageChanged: boolean;
         protected _query: DataQuery<TItem>;
         private _pageDebounce;
-        constructor(opts: IDbSetConstuctorOptions, entityType: IEntityConstructor<TItem>);
+        constructor(opts: IDbSetConstuctorOptions);
         handleError(error: any, source: any): boolean;
         protected _getEventNames(): string[];
         protected _mapAssocFields(): void;

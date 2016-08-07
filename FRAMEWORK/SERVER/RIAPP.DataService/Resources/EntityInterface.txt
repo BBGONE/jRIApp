@@ -1,0 +1,4 @@
+﻿export interface {{ENTITY_INTERFACE}}  extends dbMOD.IEntityItem
+{
+{{INTERFACE_FIELDS}}              
+}

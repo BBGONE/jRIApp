@@ -565,7 +565,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_core/lang", "jriapp_uti
     };
     var DbSet = (function (_super) {
         __extends(DbSet, _super);
-        function DbSet(opts, entityType) {
+        function DbSet(opts) {
             _super.call(this);
             var self = this, dbContext = opts.dbContext, dbSetInfo = opts.dbSetInfo, fieldInfos = dbSetInfo.fieldInfos;
             this._dbContext = dbContext;
@@ -573,7 +573,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_core/lang", "jriapp_uti
             this._options.enablePaging = dbSetInfo.enablePaging;
             this._options.pageSize = dbSetInfo.pageSize;
             this._query = null;
-            this._entityType = entityType;
+            this._entityType = null;
             this._isSubmitOnDelete = false;
             this._navfldMap = {};
             this._calcfldMap = {};

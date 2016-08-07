@@ -8,12 +8,17 @@
 			parentAssoc: ({{PARENT_ASSOC}}) 
 		};
 		opts.dbSetInfo.fieldInfos = ({{FIELD_INFOS}});
-		super(opts, {{ENTITY_TYPE}});
+		super(opts);
+		this._createEntityType();
+	}
+	private _createEntityType(): void {
+		//class expression
+		this._entityType =  {{ENTITY}};
 	}
 	findEntity({{PK_VALS}}): {{ENTITY_INTERFACE}} {
 		return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
 	}
-	toString() {
+	toString(): string {
 		return '{{DBSET_TYPE}}';
 	}
 {{QUERIES}}

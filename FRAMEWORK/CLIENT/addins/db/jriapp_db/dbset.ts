@@ -78,7 +78,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
     protected _query: DataQuery<TItem>;
     private _pageDebounce: Debounce;
 
-    constructor(opts: IDbSetConstuctorOptions, entityType: IEntityConstructor<TItem>) {
+    constructor(opts: IDbSetConstuctorOptions) {
         super();
         let self = this, dbContext = opts.dbContext, dbSetInfo = opts.dbSetInfo, fieldInfos = dbSetInfo.fieldInfos;
         this._dbContext = <TDbContext>dbContext;
@@ -86,7 +86,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         this._options.enablePaging = dbSetInfo.enablePaging;
         this._options.pageSize = dbSetInfo.pageSize;
         this._query = null;
-        this._entityType = entityType;
+        this._entityType = null;
         this._isSubmitOnDelete = false;
         this._navfldMap = {};
         this._calcfldMap = {};
