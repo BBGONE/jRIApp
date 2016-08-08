@@ -681,6 +681,10 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             self._onItemStatusChanged(args.item, args.oldStatus);
         }, self._objId);
         ds.addOnItemAdded(self._onItemAdded, self._objId, self);
+        ds.addOnItemAdding((s, a) => {
+            if (!!self._expandedRow)
+                self._expandDetails(self._expandedRow, false);
+        }, self._objId);
         this._refresh(false);
         this._onDSCurrentChanged();
     }

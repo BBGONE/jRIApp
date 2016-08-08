@@ -1,6 +1,6 @@
 ﻿/// <reference path="../jriapp/jriapp.d.ts" />
 /*
-	Generated from: /RIAppDemoServiceEF/code?lang=ts on 2016-08-07 at 19:30
+	Generated from: /RIAppDemoServiceEF/code?lang=ts on 2016-08-08 at 20:09
 	Don't make manual changes here, because they will be lost when this db interface will be regenerated!
 */
 
@@ -326,7 +326,7 @@ export class CustomerDb extends dbMOD.DbSet<Customer, DbContext>
     }
     createReadCustomerQuery(args?: {
         includeNav?: boolean;
-    }) {
+    }): dbMOD.DataQuery<Customer> {
         var query = this.createQuery('ReadCustomer');
         query.params = args;
         return query;
@@ -393,12 +393,12 @@ export class CustomerAddressDb extends dbMOD.DbSet<CustomerAddress, DbContext>
     }
     createReadAddressForCustomersQuery(args?: {
         custIDs: number[];
-    }) {
+    }): dbMOD.DataQuery<CustomerAddress> {
         var query = this.createQuery('ReadAddressForCustomers');
         query.params = args;
         return query;
     }
-    createReadCustomerAddressQuery() {
+    createReadCustomerAddressQuery(): dbMOD.DataQuery<CustomerAddress> {
         return this.createQuery('ReadCustomerAddress');
     }
 
@@ -467,12 +467,12 @@ export class AddressDb extends dbMOD.DbSet<Address, DbContext>
     }
     createReadAddressByIdsQuery(args?: {
         addressIDs: number[];
-    }) {
+    }): dbMOD.DataQuery<Address> {
         var query = this.createQuery('ReadAddressByIds');
         query.params = args;
         return query;
     }
-    createReadAddressQuery() {
+    createReadAddressQuery(): dbMOD.DataQuery<Address> {
         return this.createQuery('ReadAddress');
     }
 
@@ -564,7 +564,7 @@ export class ProductDb extends dbMOD.DbSet<Product, DbContext>
     }
     createReadProductByIdsQuery(args?: {
         productIDs: number[];
-    }) {
+    }): dbMOD.DataQuery<Product> {
         var query = this.createQuery('ReadProductByIds');
         query.params = args;
         return query;
@@ -572,7 +572,7 @@ export class ProductDb extends dbMOD.DbSet<Product, DbContext>
     createReadProductQuery(args?: {
         param1: number[];
         param2: string;
-    }) {
+    }): dbMOD.DataQuery<Product> {
         var query = this.createQuery('ReadProduct');
         query.params = args;
         return query;
@@ -620,7 +620,7 @@ export class ProductModelDb extends dbMOD.DbSet<ProductModel, DbContext>
     toString(): string {
         return 'ProductModelDb';
     }
-    createReadProductModelQuery() {
+    createReadProductModelQuery(): dbMOD.DataQuery<ProductModel> {
         return this.createQuery('ReadProductModel');
     }
 
@@ -727,7 +727,7 @@ export class SalesOrderHeaderDb extends dbMOD.DbSet<SalesOrderHeader, DbContext>
     toString(): string {
         return 'SalesOrderHeaderDb';
     }
-    createReadSalesOrderHeaderQuery() {
+    createReadSalesOrderHeaderQuery(): dbMOD.DataQuery<SalesOrderHeader> {
         return this.createQuery('ReadSalesOrderHeader');
     }
 
@@ -795,7 +795,7 @@ export class SalesOrderDetailDb extends dbMOD.DbSet<SalesOrderDetail, DbContext>
     toString(): string {
         return 'SalesOrderDetailDb';
     }
-    createReadSalesOrderDetailQuery() {
+    createReadSalesOrderDetailQuery(): dbMOD.DataQuery<SalesOrderDetail> {
         return this.createQuery('ReadSalesOrderDetail');
     }
 
@@ -850,7 +850,7 @@ export class ProductCategoryDb extends dbMOD.DbSet<ProductCategory, DbContext>
     toString(): string {
         return 'ProductCategoryDb';
     }
-    createReadProductCategoryQuery() {
+    createReadProductCategoryQuery(): dbMOD.DataQuery<ProductCategory> {
         return this.createQuery('ReadProductCategory');
     }
 
@@ -894,7 +894,7 @@ export class SalesInfoDb extends dbMOD.DbSet<SalesInfo, DbContext>
     toString(): string {
         return 'SalesInfoDb';
     }
-    createReadSalesInfoQuery() {
+    createReadSalesInfoQuery(): dbMOD.DataQuery<SalesInfo> {
         return this.createQuery('ReadSalesInfo');
     }
 
@@ -941,7 +941,7 @@ export class LookUpProductDb extends dbMOD.DbSet<LookUpProduct, DbContext>
     toString(): string {
         return 'LookUpProductDb';
     }
-    createReadProductLookUpQuery() {
+    createReadProductLookUpQuery(): dbMOD.DataQuery<LookUpProduct> {
         return this.createQuery('ReadProductLookUp');
     }
 
@@ -994,7 +994,7 @@ export class AddressInfoDb extends dbMOD.DbSet<AddressInfo, DbContext>
     toString(): string {
         return 'AddressInfoDb';
     }
-    createReadAddressInfoQuery() {
+    createReadAddressInfoQuery(): dbMOD.DataQuery<AddressInfo> {
         return this.createQuery('ReadAddressInfo');
     }
 

@@ -2744,6 +2744,10 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
                 self._onItemStatusChanged(args.item, args.oldStatus);
             }, self._objId);
             ds.addOnItemAdded(self._onItemAdded, self._objId, self);
+            ds.addOnItemAdding(function (s, a) {
+                if (!!self._expandedRow)
+                    self._expandDetails(self._expandedRow, false);
+            }, self._objId);
             this._refresh(false);
             this._onDSCurrentChanged();
         };

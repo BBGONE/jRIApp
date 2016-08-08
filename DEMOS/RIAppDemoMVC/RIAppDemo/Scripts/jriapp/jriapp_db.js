@@ -923,7 +923,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_core/lang", "jriapp_uti
                 var key = row.k;
                 if (!key)
                     throw new Error(lang_1.ERRS.ERR_KEY_IS_EMPTY);
-                var item = self._itemsByKey[key], aspect;
+                var item = self._itemsByKey[key];
                 if (!item) {
                     if (!!dataCache) {
                         item = dataCache.getItemByKey(key);
@@ -1230,7 +1230,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_core/lang", "jriapp_uti
                 var key = row.k;
                 if (!key)
                     throw new Error(lang_1.ERRS.ERR_KEY_IS_EMPTY);
-                var item = self._itemsByKey[key], aspect;
+                var item = self._itemsByKey[key];
                 if (!item) {
                     item = self.createEntity(row, data.names);
                 }

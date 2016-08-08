@@ -1,6 +1,6 @@
 ﻿/// <reference path="../jriapp/jriapp.d.ts" />
 /*
-	Generated from: /FolderBrowserService/code?lang=ts on 2016-08-07 at 19:39
+	Generated from: /FolderBrowserService/code?lang=ts on 2016-08-08 at 20:07
 	Don't make manual changes here, because they will be lost when this db interface will be regenerated!
 */
 
@@ -72,7 +72,7 @@ export class FileSystemObjectDb extends dbMOD.DbSet<FileSystemObject, DbContext>
         path: string;
         includeFiles: boolean;
         infoType: string;
-    }) {
+    }): dbMOD.DataQuery<FileSystemObject> {
         var query = this.createQuery('ReadChildren');
         query.params = args;
         return query;
@@ -80,7 +80,7 @@ export class FileSystemObjectDb extends dbMOD.DbSet<FileSystemObject, DbContext>
     createReadRootQuery(args?: {
         includeFiles: boolean;
         infoType: string;
-    }) {
+    }): dbMOD.DataQuery<FileSystemObject> {
         var query = this.createQuery('ReadRoot');
         query.params = args;
         return query;

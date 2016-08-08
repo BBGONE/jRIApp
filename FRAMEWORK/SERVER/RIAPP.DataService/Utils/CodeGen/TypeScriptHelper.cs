@@ -539,6 +539,7 @@ namespace RIAPP.DataService.Utils.CodeGen
             var sb = new StringBuilder(256);
             var sbArgs = new StringBuilder(256);
             var queries = _queriesLookup[dbSetInfo.EntityType].ToList();
+            var entityInterfaceName = GetEntityInterfaceName(dbSetInfo.dbSetName);
             queries.ForEach(methodDescription =>
             {
                 sbArgs.Length = 0;
@@ -556,7 +557,7 @@ namespace RIAPP.DataService.Utils.CodeGen
                 {
                     sbArgs.Length = 0;
                 }
-                sb.AppendFormat("\tcreate{0}Query({1})", methodDescription.methodName, sbArgs.ToString());
+                sb.AppendFormat("\tcreate{0}Query({1}): dbMOD.DataQuery<{2}>", methodDescription.methodName, sbArgs.ToString(), entityInterfaceName);
                 sb.AppendLine();
                 sb.Append("\t{");
                 sb.AppendLine();
