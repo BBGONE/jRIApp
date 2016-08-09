@@ -682,8 +682,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         }, self._objId);
         ds.addOnItemAdded(self._onItemAdded, self._objId, self);
         ds.addOnItemAdding((s, a) => {
-            if (!!self._expandedRow)
-                self._expandDetails(self._expandedRow, false);
+            self.collapseDetails();
         }, self._objId);
         this._refresh(false);
         this._onDSCurrentChanged();
@@ -913,8 +912,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             return;
         let old = this._expandedRow;
         if (!!old) {
-            this._expandedRow = null;
-            this.raiseEvent(GRID_EVENTS.row_expanded, { collapsedRow: old, expandedRow: null, isExpanded: false });
+            this._expandDetails(old, false);
         }
     }
     getSelectedRows() {

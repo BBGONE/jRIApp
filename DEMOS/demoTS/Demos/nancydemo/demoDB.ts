@@ -1,6 +1,6 @@
 ﻿/// <reference path="../jriapp/jriapp.d.ts" />
 /*
-	Generated from: http://localhost:8080/demosvc/code?lang=ts on 2016-08-07 19:36 at 19:36
+	Generated from: http://localhost:8080/demosvc/code?lang=ts on 2016-08-09 04:48 at 04:48
 	Don't make manual changes here, because they will be lost when this db interface will be regenerated!
 */
 
@@ -303,7 +303,7 @@ export class ProductDb extends dbMOD.DbSet<Product, DbContext>
     }
     createReadProductByIdsQuery(args?: {
         productIDs: number[];
-    }) {
+    }): dbMOD.DataQuery<Product> {
         var query = this.createQuery('ReadProductByIds');
         query.params = args;
         return query;
@@ -311,7 +311,7 @@ export class ProductDb extends dbMOD.DbSet<Product, DbContext>
     createReadProductQuery(args?: {
         param1: number[];
         param2: string;
-    }) {
+    }): dbMOD.DataQuery<Product> {
         var query = this.createQuery('ReadProduct');
         query.params = args;
         return query;
@@ -359,7 +359,7 @@ export class ProductModelDb extends dbMOD.DbSet<ProductModel, DbContext>
     toString(): string {
         return 'ProductModelDb';
     }
-    createReadProductModelQuery() {
+    createReadProductModelQuery(): dbMOD.DataQuery<ProductModel> {
         return this.createQuery('ReadProductModel');
     }
 
@@ -457,7 +457,7 @@ export class SalesOrderHeaderDb extends dbMOD.DbSet<SalesOrderHeader, DbContext>
     toString(): string {
         return 'SalesOrderHeaderDb';
     }
-    createReadSalesOrderHeaderQuery() {
+    createReadSalesOrderHeaderQuery(): dbMOD.DataQuery<SalesOrderHeader> {
         return this.createQuery('ReadSalesOrderHeader');
     }
 
@@ -525,7 +525,7 @@ export class SalesOrderDetailDb extends dbMOD.DbSet<SalesOrderDetail, DbContext>
     toString(): string {
         return 'SalesOrderDetailDb';
     }
-    createReadSalesOrderDetailQuery() {
+    createReadSalesOrderDetailQuery(): dbMOD.DataQuery<SalesOrderDetail> {
         return this.createQuery('ReadSalesOrderDetail');
     }
 
@@ -580,7 +580,7 @@ export class ProductCategoryDb extends dbMOD.DbSet<ProductCategory, DbContext>
     toString(): string {
         return 'ProductCategoryDb';
     }
-    createReadProductCategoryQuery() {
+    createReadProductCategoryQuery(): dbMOD.DataQuery<ProductCategory> {
         return this.createQuery('ReadProductCategory');
     }
 
@@ -627,7 +627,7 @@ export class LookUpProductDb extends dbMOD.DbSet<LookUpProduct, DbContext>
     toString(): string {
         return 'LookUpProductDb';
     }
-    createReadProductLookUpQuery() {
+    createReadProductLookUpQuery(): dbMOD.DataQuery<LookUpProduct> {
         return this.createQuery('ReadProductLookUp');
     }
 

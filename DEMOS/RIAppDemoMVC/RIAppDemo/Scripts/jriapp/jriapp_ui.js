@@ -2745,8 +2745,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             }, self._objId);
             ds.addOnItemAdded(self._onItemAdded, self._objId, self);
             ds.addOnItemAdding(function (s, a) {
-                if (!!self._expandedRow)
-                    self._expandDetails(self._expandedRow, false);
+                self.collapseDetails();
             }, self._objId);
             this._refresh(false);
             this._onDSCurrentChanged();
@@ -2968,8 +2967,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
                 return;
             var old = this._expandedRow;
             if (!!old) {
-                this._expandedRow = null;
-                this.raiseEvent(GRID_EVENTS.row_expanded, { collapsedRow: old, expandedRow: null, isExpanded: false });
+                this._expandDetails(old, false);
             }
         };
         DataGrid.prototype.getSelectedRows = function () {
