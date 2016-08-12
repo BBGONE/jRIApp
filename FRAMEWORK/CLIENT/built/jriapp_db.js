@@ -433,7 +433,7 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_core/lang", "jriapp
                         }
                         page.items.push(item);
                         keyMap[item._key] = item;
-                        item._isCached = true;
+                        item._aspect.isCached = true;
                     }
                     else {
                         return;
@@ -448,7 +448,7 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_core/lang", "jriapp
                 for (j = 0; j < items.length; j += 1) {
                     item = items[j];
                     if (!!item) {
-                        item._isCached = false;
+                        item._aspect.isCached = false;
                         if (!!item._key && !dbSet.getItemByKey(item._key))
                             item.destroy();
                     }
@@ -466,7 +466,7 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_core/lang", "jriapp
             for (j = 0; j < items.length; j += 1) {
                 item = items[j];
                 if (!!item) {
-                    item._isCached = false;
+                    item._aspect.isCached = false;
                     if (!!item._key) {
                         delete this._itemsByKey[item._key];
                         if (!dbSet.getItemByKey(item._key))
@@ -3190,7 +3190,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
             return true;
         };
         EntityAspect.prototype._cancelEdit = function () {
-            if (!this._isEditing)
+            if (!this.isEditing)
                 return false;
             var self = this, changes = this._getValueChanges(true), isNew = this.isNew, dbSet = this.dbSet;
             this._vals = this._saveVals;
@@ -3204,7 +3204,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
                     throw new Error(strUtils.format(lang_3.ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, v.fieldName));
                 self._onFieldChanged(v.fieldName, fld);
             });
-            this._isEditing = false;
+            this._setIsEditing(false);
             if (isNew && this._notEdited) {
                 dbSet.removeItem(this.item);
             }
@@ -3340,7 +3340,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
             var validation_error, error, dbSetName = this.dbSetName, dbSet = this.dbSet, oldV = this._getFieldVal(fieldName), newV = val, fieldInfo = this.getFieldInfo(fieldName), res = false;
             if (!fieldInfo)
                 throw new Error(strUtils.format(lang_3.ERRS.ERR_DBSET_INVALID_FIELDNAME, dbSetName, fieldName));
-            if (!this._isEditing && !this.isUpdating)
+            if (!this.isEditing && !this.isUpdating)
                 this.beginEdit();
             try {
                 newV = this._checkVal(fieldInfo, newV);
@@ -3485,7 +3485,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
-            if (!!this._item && this._item._isCached) {
+            if (!!this._item && this.isCached) {
                 try {
                     if (!this._item.getIsDestroyCalled())
                         this._item.destroy();

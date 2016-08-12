@@ -2160,14 +2160,15 @@ declare module "jriapp_collection/int" {
         readonly collection: ICollection<TItem>;
         readonly isUpdating: boolean;
         readonly isHasChanges: boolean;
+        readonly isEditing: boolean;
+        isCached: boolean;
+        isDetached: boolean;
         key: string;
         item: TItem;
     }
     export interface ICollectionItem extends IBaseObject {
         readonly _aspect: IItemAspect<ICollectionItem>;
         _key: string;
-        _isCached: boolean;
-        _isDetached: boolean;
     }
     export interface ICollChangedArgs<TItem extends ICollectionItem> {
         changeType: COLL_CHANGE_TYPE;
@@ -2515,7 +2516,9 @@ declare module "jriapp_collection/aspect" {
         protected _saveVals: IIndexer<any>;
         protected _vals: IIndexer<any>;
         protected _notEdited: boolean;
-        protected _isEditing: boolean;
+        private _isCached;
+        private _isDetached;
+        protected _setIsEditing(v: boolean): void;
         constructor(collection: BaseCollection<TItem>);
         protected _getEventNames(): string[];
         protected _onErrorsChanged(args: any): void;
@@ -2559,6 +2562,8 @@ declare module "jriapp_collection/aspect" {
         readonly isUpdating: boolean;
         readonly isEditing: boolean;
         readonly isHasChanges: boolean;
+        isCached: boolean;
+        isDetached: boolean;
     }
 }
 declare module "jriapp_collection/list" {
@@ -2621,14 +2626,10 @@ declare module "jriapp_collection/item" {
     import { ItemAspect } from "jriapp_collection/aspect";
     export class CollectionItem<TAspect extends ItemAspect<ICollectionItem>> extends BaseObject implements ICollectionItem {
         private __aspect;
-        private __isCached;
-        private __isDetached;
         constructor(aspect: TAspect);
         protected _fakeDestroy(): void;
         readonly _aspect: TAspect;
         _key: string;
-        _isCached: boolean;
-        _isDetached: boolean;
         destroy(): void;
         toString(): string;
     }

@@ -195,7 +195,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         return true;
     }
     protected _cancelEdit() {
-        if (!this._isEditing)
+        if (!this.isEditing)
             return false;
         let self = this, changes = this._getValueChanges(true), isNew = this.isNew, dbSet = this.dbSet;
         this._vals = this._saveVals;
@@ -209,7 +209,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
                 throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, v.fieldName));
             self._onFieldChanged(v.fieldName, fld);
         });
-        this._isEditing = false;
+        this._setIsEditing(false);
         if (isNew && this._notEdited) {
             dbSet.removeItem(this.item);
         }
@@ -348,7 +348,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
             oldV = this._getFieldVal(fieldName), newV = val, fieldInfo = this.getFieldInfo(fieldName), res = false;
         if (!fieldInfo)
             throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, dbSetName, fieldName));
-        if (!this._isEditing && !this.isUpdating)
+        if (!this.isEditing && !this.isUpdating)
             this.beginEdit();
         try {
             newV = this._checkVal(fieldInfo, newV);
@@ -495,7 +495,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        if (!!this._item && this._item._isCached) {
+        if (!!this._item && this.isCached) {
             try {
                 if (!this._item.getIsDestroyCalled())
                     this._item.destroy();

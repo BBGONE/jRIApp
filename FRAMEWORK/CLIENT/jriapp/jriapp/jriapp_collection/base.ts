@@ -392,7 +392,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     }
     protected _destroyItems() {
         this._items.forEach(function (item) {
-            item._isDetached = true;
+            item._aspect.isDetached = true;
             item.destroy();
         });
     }

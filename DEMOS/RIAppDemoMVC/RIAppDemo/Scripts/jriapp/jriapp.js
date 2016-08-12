@@ -8596,7 +8596,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
         };
         BaseCollection.prototype._destroyItems = function () {
             this._items.forEach(function (item) {
-                item._isDetached = true;
+                item._aspect.isDetached = true;
                 item.destroy();
             });
         };
@@ -9151,20 +9151,15 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             this._saveVals = null;
             this._vals = {};
             this._notEdited = true;
+            this._isCached = false;
+            this._isDetached = false;
         }
-        Object.defineProperty(ItemAspect.prototype, "_isEditing", {
-            get: function () {
-                return this.__isEditing;
-            },
-            set: function (v) {
-                if (this.__isEditing !== v) {
-                    this.__isEditing = v;
-                    this.raisePropertyChanged(int_6.PROP_NAME.isEditing);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
+        ItemAspect.prototype._setIsEditing = function (v) {
+            if (this.__isEditing !== v) {
+                this.__isEditing = v;
+                this.raisePropertyChanged(int_6.PROP_NAME.isEditing);
+            }
+        };
         ItemAspect.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
             return [int_6.ITEM_EVENTS.errors_changed].concat(base_events);
@@ -9200,13 +9195,13 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             }
             if (!this.key)
                 return false;
-            this._isEditing = true;
+            this._setIsEditing(true);
             this._saveVals = coreUtils.clone(this._vals);
             this.collection.currentItem = this.item;
             return true;
         };
         ItemAspect.prototype._endEdit = function () {
-            if (!this.__isEditing)
+            if (!this.isEditing)
                 return false;
             var coll = this.collection, self = this;
             if (this.getIsHasErrors()) {
@@ -9220,12 +9215,12 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             if (this.getIsHasErrors()) {
                 return false;
             }
-            this._isEditing = false;
+            this._setIsEditing(false);
             this._saveVals = null;
             return true;
         };
         ItemAspect.prototype._cancelEdit = function () {
-            if (!this._isEditing)
+            if (!this.isEditing)
                 return false;
             var coll = this.collection, isNew = this.isNew, self = this;
             var changes = this._saveVals;
@@ -9236,7 +9231,7 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
                 if (changes[name] !== self._vals[name])
                     self.raisePropertyChanged(name);
             });
-            this._isEditing = false;
+            this._setIsEditing(false);
             if (isNew && this._notEdited)
                 coll.removeItem(this.item);
             return true;
@@ -9468,18 +9463,22 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
                 return;
             this._isDestroyCalled = true;
             var coll = this._collection;
-            var item = this.item;
-            if (!!item && !item._isDetached && !!item._key) {
-                coll.removeItem(item);
-            }
-            if (!!item && !item.getIsDestroyCalled()) {
-                item.destroy();
+            var item = this._item;
+            if (!!item) {
+                if (!!item._aspect && !item._aspect.isDetached && !!item._key) {
+                    coll.removeItem(item);
+                }
+                if (!item.getIsDestroyCalled()) {
+                    item.destroy();
+                }
                 this._item = null;
             }
             this.__key = null;
             this._saveVals = null;
             this._vals = {};
-            this._isEditing = false;
+            this._setIsEditing(false);
+            this._isCached = false;
+            this._isDetached = true;
             this._collection = null;
             _super.prototype.destroy.call(this);
         };
@@ -9550,6 +9549,18 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
         });
         Object.defineProperty(ItemAspect.prototype, "isHasChanges", {
             get: function () { return this._status !== 0; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ItemAspect.prototype, "isCached", {
+            get: function () { return this._isCached; },
+            set: function (v) { this._isCached = v; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ItemAspect.prototype, "isDetached", {
+            get: function () { return this._isDetached; },
+            set: function (v) { this._isDetached = v; },
             enumerable: true,
             configurable: true
         });
@@ -9831,8 +9842,6 @@ define("jriapp_collection/item", ["require", "exports", "jriapp_core/object", "j
         function CollectionItem(aspect) {
             _super.call(this);
             this.__aspect = aspect;
-            this.__isCached = false;
-            this.__isDetached = false;
         }
         CollectionItem.prototype._fakeDestroy = function () {
             this.raiseEvent(int_8.ITEM_EVENTS.destroyed, {});
@@ -9850,25 +9859,13 @@ define("jriapp_collection/item", ["require", "exports", "jriapp_core/object", "j
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(CollectionItem.prototype, "_isCached", {
-            get: function () { return this.__isCached; },
-            set: function (v) { this.__isCached = v; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CollectionItem.prototype, "_isDetached", {
-            get: function () { return this.__isDetached; },
-            set: function (v) { this.__isDetached = v; },
-            enumerable: true,
-            configurable: true
-        });
         CollectionItem.prototype.destroy = function () {
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
-            if (this.__isCached) {
+            if (!!this.__aspect && this.__aspect.isCached) {
                 try {
-                    if (!!this.__aspect && !this.__aspect.getIsDestroyCalled()) {
+                    if (!this.__aspect.getIsDestroyCalled()) {
                         this.__aspect.destroy();
                     }
                     this._fakeDestroy();
@@ -9878,7 +9875,6 @@ define("jriapp_collection/item", ["require", "exports", "jriapp_core/object", "j
                 }
                 return;
             }
-            this.__isCached = false;
             _super.prototype.destroy.call(this);
         };
         CollectionItem.prototype.toString = function () {

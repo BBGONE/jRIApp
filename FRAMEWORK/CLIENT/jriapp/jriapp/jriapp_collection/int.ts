@@ -51,6 +51,9 @@ export interface IItemAspect<TItem extends ICollectionItem> extends IBaseObject,
     readonly collection: ICollection<TItem>;
     readonly isUpdating: boolean;
     readonly isHasChanges: boolean;
+    readonly isEditing: boolean;
+    isCached: boolean;
+    isDetached: boolean;
     key: string;
     item: TItem;
 }
@@ -58,8 +61,6 @@ export interface IItemAspect<TItem extends ICollectionItem> extends IBaseObject,
 export interface ICollectionItem extends IBaseObject {
     readonly _aspect: IItemAspect<ICollectionItem>;
     _key: string;
-    _isCached: boolean;
-    _isDetached: boolean;
 }
 
 export interface ICollChangedArgs<TItem extends ICollectionItem> {
