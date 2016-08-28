@@ -7,7 +7,7 @@ namespace RIAPP.DataService.LinqSql
 
     public class LinqServiceContainerFactory : ServiceContainerFactory
     {
-        public override IValueConverter CreateValueConverter(ISerializer serializer)
+        protected override IValueConverter CreateValueConverter(ISerializer serializer)
         {
             return new LinqValueConverter(serializer);
         }

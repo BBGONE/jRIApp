@@ -19,8 +19,7 @@ namespace RIAPP.DataService.DomainService
             var valueConverter = this.CreateValueConverter(serializer);
             serviceContainer.AddService<IValueConverter>(valueConverter);
 
-            var dataHelper = new DataHelper(valueConverter);
-            serviceContainer.AddService<IDataHelper>(dataHelper);
+            serviceContainer.AddService<IDataHelper>(this.CreateDataHelper(serializer, valueConverter));
 
             var validationHelper = new ValidationHelper(valueConverter);
             serviceContainer.AddService<IValidationHelper>(validationHelper);
@@ -28,14 +27,19 @@ namespace RIAPP.DataService.DomainService
             return serviceContainer;
         }
 
-        public virtual IAuthorizer CreateAuthorizer(Type dataServiceType, IPrincipal principal)
+        protected virtual IAuthorizer CreateAuthorizer(Type dataServiceType, IPrincipal principal)
         {
             return new AuthorizerClass(dataServiceType, principal);
         }
 
-        public virtual IValueConverter CreateValueConverter(ISerializer serializer)
+        protected virtual IValueConverter CreateValueConverter(ISerializer serializer)
         {
             return new ValueConverter(serializer);
+        }
+
+        protected virtual IDataHelper CreateDataHelper(ISerializer serializer, IValueConverter valueConverter)
+        {
+            return new DataHelper(serializer, valueConverter);
         }
     }
 }

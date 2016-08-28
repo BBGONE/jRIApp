@@ -12,7 +12,7 @@ namespace RIAPP.DataService.DomainService.Interfaces
         IValueConverter ValueConverter { get; }
         void AddService(Type serviceType, object instance);
 
-        void ReplaceService(Type serviceType, object instance);
+        void AddOrUpdateService(Type serviceType, object instance);
 
         void RemoveService(Type serviceType);
 

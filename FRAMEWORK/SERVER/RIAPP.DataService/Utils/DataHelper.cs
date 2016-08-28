@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.DomainService.Types;
 using RIAPP.DataService.Resources;
 using RIAPP.DataService.Utils.Extensions;
@@ -14,23 +13,30 @@ namespace RIAPP.DataService.Utils
     public class DataHelper : IDataHelper
     {
         private readonly IValueConverter valueConverter;
+        private readonly ISerializer serializer;
 
-        public DataHelper(IValueConverter valueConverter)
+        public DataHelper(ISerializer serializer, IValueConverter valueConverter)
         {
+            this.serializer = serializer;
             this.valueConverter = valueConverter;
         }
 
-        private static IList CreateList<T>()
+        protected static IList CreateList<T>()
         {
             return new List<T>();
         }
 
-        private static IEnumerable CreateArray<T>(List<T> list)
+        protected static IEnumerable CreateArray<T>(List<T> list)
         {
             return list.ToArray();
         }
 
-        private object[] SerializeObjectField(object fieldOwner, Field objectFieldInfo)
+        protected T Deserialize<T>(string val)
+        {
+            return (T)this.serializer.DeSerialize(val, typeof(T));
+        }
+
+        protected object[] SerializeObjectField(object fieldOwner, Field objectFieldInfo)
         {
             var fieldInfos = objectFieldInfo.GetNestedInResultFields();
             var res = new object[fieldInfos.Length];
@@ -41,7 +47,7 @@ namespace RIAPP.DataService.Utils
             return res;
         }
 
-        private object[] DeSerializeObjectField(Type propType, Field objectFieldInfo, object[] values)
+        protected object[] DeSerializeObjectField(Type propType, Field objectFieldInfo, object[] values)
         {
             var fieldInfos = objectFieldInfo.GetNestedInResultFields();
             var res = new object[fieldInfos.Length];
@@ -217,7 +223,7 @@ namespace RIAPP.DataService.Utils
 
             if (isArray && val != null)
             {
-                var arr = this.valueConverter.Deserialize<string[]>(val);
+                var arr = this.Deserialize<string[]>(val);
                 if (arr == null)
                     return null;
                 var list = (IList) typeof(DataHelper).GetMethod("CreateList", BindingFlags.NonPublic | BindingFlags.Static)

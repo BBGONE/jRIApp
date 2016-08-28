@@ -24,17 +24,12 @@ namespace RIAPP.DataService.DomainService
             _services.TryAdd(typeof(T), instance);
         }
 
-        public void ReplaceService(Type serviceType, object instance)
+        public void AddOrUpdateService(Type serviceType, object instance)
         {
-            var isOk = false;
-            while (!isOk)
+            _services.AddOrUpdate(serviceType, instance, (k, v) =>
             {
-                var old = LocateService(serviceType);
-                if (old != null)
-                    isOk = _services.TryUpdate(serviceType, instance, old);
-                else
-                    isOk = _services.TryAdd(serviceType, instance);
-            }
+                return instance;
+            });
         }
 
         public void RemoveService(Type serviceType)

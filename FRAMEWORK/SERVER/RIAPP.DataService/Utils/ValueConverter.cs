@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.Text;
 using RIAPP.DataService.DomainService.Exceptions;
-using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.DomainService.Types;
 using RIAPP.DataService.Resources;
 using RIAPP.DataService.Utils.Interfaces;
@@ -13,21 +12,9 @@ namespace RIAPP.DataService.Utils
     {
         private readonly ISerializer serializer;
 
-        private static readonly DateTime DATEZERO = new DateTime(1900, 1, 1);
-
         public ValueConverter(ISerializer serializer)
         {
             this.serializer = serializer;
-        }
-
-        public T Deserialize<T>(string val)
-        {
-            return (T)this.serializer.DeSerialize(val, typeof(T));
-        }
-
-        public string Serialize(object obj)
-        {
-            return this.serializer.Serialize(obj);
         }
 
         public virtual object DeserializeField(Type propType, Field fieldInfo, string value)
@@ -114,15 +101,15 @@ namespace RIAPP.DataService.Utils
             }
             if (realType == typeof(DateTime))
             {
-                return DateToString(value, isNullable);
+                return DateToString(value, isNullable, fieldInfo.dateConversion);
             }
             if (realType == typeof(TimeSpan))
             {
-                return TimeToString(value, isNullable);
+                return TimeToString(value, isNullable, fieldInfo.dateConversion);
             }
             if (realType == typeof(DateTimeOffset))
             {
-                return DateOffsetToString(value, isNullable);
+                return DateOffsetToString(value, isNullable, fieldInfo.dateConversion);
             }
             if (realType == typeof(bool))
             {
@@ -158,26 +145,6 @@ namespace RIAPP.DataService.Utils
             return val;
         }
 
-        protected DateTime ParseDateTimeValue(string val, DateConversion dateConversion)
-        {
-            return DateTime.ParseExact(val, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
-        }
-
-        protected string DateToValue(DateTime dt)
-        {
-            return dt.ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture);
-        }
-
-        protected string TimeToValue(TimeSpan time)
-        {
-            return (DATEZERO + time).ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture);
-        }
-
-        protected string DateOffsetToValue(DateTimeOffset dtoff)
-        {
-            return DateToValue(dtoff.DateTime);
-        }
-
         protected virtual object ConvertToBool(string value, bool IsNullableType)
         {
             if (value == null)
@@ -191,10 +158,11 @@ namespace RIAPP.DataService.Utils
         {
             if (value == null)
                 return null;
-            var dt = ParseDateTimeValue(value, dateConversion);
+            var dt = DateTimeHelper.ParseDateTime(value, dateConversion);
             if (IsNullableType)
                 return new Nullable<DateTime>(dt);
-            return dt;
+            else
+                return dt;
         }
 
         protected virtual object ConvertToGuid(string value, bool IsNullableType)
@@ -317,31 +285,31 @@ namespace RIAPP.DataService.Utils
             return value.ToString();
         }
 
-        protected virtual string DateOffsetToString(object value, bool IsNullable)
+        protected virtual string DateOffsetToString(object value, bool IsNullable, DateConversion dateConversion)
         {
             if (IsNullable)
-                return DateOffsetToValue(((DateTimeOffset?) value).Value);
-            return DateOffsetToValue((DateTimeOffset) value);
+                return DateTimeHelper.DateOffsetToString(((DateTimeOffset?) value).Value, dateConversion);
+            return DateTimeHelper.DateOffsetToString((DateTimeOffset) value, dateConversion);
         }
 
-        protected virtual string DateToString(object value, bool IsNullable)
+        protected virtual string DateToString(object value, bool IsNullable, DateConversion dateConversion)
         {
             if (IsNullable)
-                return DateToValue(((DateTime?) value).Value);
-            return DateToValue((DateTime) value);
+                return DateTimeHelper.DateToString(((DateTime?) value).Value, dateConversion);
+            return DateTimeHelper.DateToString((DateTime) value, dateConversion);
         }
 
-        protected virtual string TimeToString(object value, bool IsNullable)
+        protected virtual string TimeToString(object value, bool IsNullable, DateConversion dateConversion)
         {
             if (IsNullable)
             {
                 TimeSpan time = ((TimeSpan?)value).Value;
-                return TimeToValue(time);
+                return DateTimeHelper.TimeToString(time, dateConversion);
             }
             else
             {
                 TimeSpan time = (TimeSpan)value;
-                return TimeToValue(time);
+                return DateTimeHelper.TimeToString(time, dateConversion);
             }
             
         }
