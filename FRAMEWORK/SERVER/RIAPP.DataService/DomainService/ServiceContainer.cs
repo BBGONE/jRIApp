@@ -16,21 +16,17 @@ namespace RIAPP.DataService.DomainService
 
         public void AddService(Type serviceType, object instance)
         {
-            _services.TryAdd(serviceType, instance);
-        }
-
-        public void AddService<T>(T instance)
-        {
-            _services.TryAdd(typeof(T), instance);
-        }
-
-        public void AddOrUpdateService(Type serviceType, object instance)
-        {
             _services.AddOrUpdate(serviceType, instance, (k, v) =>
             {
                 return instance;
             });
         }
+
+        public void AddService<T>(T instance)
+        {
+            this.AddService(typeof(T), instance);
+        }
+
 
         public void RemoveService(Type serviceType)
         {
