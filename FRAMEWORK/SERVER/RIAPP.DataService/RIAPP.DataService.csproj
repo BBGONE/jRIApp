@@ -95,6 +95,7 @@
     <Compile Include="DomainService\Config\ValidatorContainer.cs" />
     <Compile Include="DomainService\BaseDataManager.cs" />
     <Compile Include="Utils\CallContext.cs" />
+    <Compile Include="Utils\DateTimeHelper.cs" />
     <Compile Include="Utils\Extensions\StringEx.cs" />
     <Compile Include="Utils\Interfaces\IMultiMap.cs" />
     <Compile Include="Utils\MetadataCache.cs" />

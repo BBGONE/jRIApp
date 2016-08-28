@@ -10,6 +10,5 @@ namespace RIAPP.DataService.Utils.Interfaces
         void Serialize(object obj, TextWriter writer);
 
         object DeSerialize(string input, Type targetType);
-        object DeserializeObject(string input);
     }
 }

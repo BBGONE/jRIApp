@@ -19,19 +19,41 @@ namespace RIAPP.DataService.DomainService
 {
     public abstract class BaseDomainService : IDomainService, IServicesProvider
     {
+        private readonly IPrincipal _User;
+        protected readonly ISerializer serializer;
+        private bool _IsCodeGenEnabled;
+
         public BaseDomainService(IServiceArgs args)
         {
-            if (args.serializer == null)
+            this.serializer = args.serializer;
+            if (this.serializer == null)
                 throw new ArgumentException(ErrorStrings.ERR_NO_SERIALIZER);
-            User = args.principal;
-            ServiceContainer = CreateServiceContainer();
-            ServiceContainer.AddService(typeof(ISerializer), args.serializer);
+            this._User = args.principal;
+            this._IsCodeGenEnabled = false;
+
+            ServiceContainer = this.CreateServiceContainer();
             _helper = new ServiceOperationsHelper(this);
         }
 
-        public IPrincipal User { get; }
+        public IPrincipal User
+        {
+            get
+            {
+                return this._User;
+            }
+        }
 
-        protected bool IsCodeGenEnabled { get; set; } = false;
+        protected bool IsCodeGenEnabled
+        {
+            get
+            {
+                return this._IsCodeGenEnabled;
+            }
+            set
+            {
+                this._IsCodeGenEnabled = value;
+            }
+        }
 
         public IServiceContainer ServiceContainer { get; private set; }
 
@@ -53,7 +75,7 @@ namespace RIAPP.DataService.DomainService
 
         protected virtual IServiceContainer CreateServiceContainer()
         {
-            return new ServiceContainerFactory().CreateServiceContainer(GetType(), User);
+            return new ServiceContainerFactory().CreateServiceContainer(GetType(), this.serializer, User);
         }
 
         protected internal abstract Metadata GetMetadata(bool isDraft);
@@ -450,7 +472,7 @@ namespace RIAPP.DataService.DomainService
             {
                 var metadata = MetadataHelper.EnsureMetadataInitialized(this);
                 var result = new Permissions();
-                result.serverTimezone = DataHelper.GetLocalDateTimezoneOffset(DateTime.Now);
+                result.serverTimezone = DateTimeHelper.GetTimezoneOffset();
                 var authorizer = ServiceContainer.Authorizer;
                 foreach (var dbInfo in metadata.dbSets.Values)
                 {

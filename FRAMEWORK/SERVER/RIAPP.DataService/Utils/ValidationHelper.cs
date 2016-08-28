@@ -11,11 +11,11 @@ namespace RIAPP.DataService.Utils
 {
     public class ValidationHelper : IValidationHelper
     {
-        private readonly IServiceContainer _serviceContainer;
+        private readonly IValueConverter valueConverter;
 
-        public ValidationHelper(IServiceContainer serviceContainer)
+        public ValidationHelper(IValueConverter valueConverter)
         {
-            _serviceContainer = serviceContainer;
+            this.valueConverter = valueConverter;
         }
 
         public void CheckString(Field fieldInfo, string val)
@@ -78,9 +78,7 @@ namespace RIAPP.DataService.Utils
                     case DataType.Date:
                     case DataType.DateTime:
                     {
-                        var dtval =
-                            (DateTime)
-                                _serviceContainer.ValueConverter.DeserializeValue(typeof(DateTime), DataType.DateTime,
+                        var dtval = (DateTime)this.valueConverter.DeserializeValue(typeof(DateTime), DataType.DateTime,
                                     fieldInfo.dateConversion, val);
                         if (!string.IsNullOrEmpty(rangeParts[0]))
                         {

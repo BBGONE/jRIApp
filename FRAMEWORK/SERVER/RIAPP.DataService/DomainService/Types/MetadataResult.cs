@@ -1,5 +1,4 @@
-﻿using System;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 using RIAPP.DataService.Utils;
 
 namespace RIAPP.DataService.DomainService.Types
@@ -9,7 +8,7 @@ namespace RIAPP.DataService.DomainService.Types
     {
         public MetadataResult()
         {
-            serverTimezone = DataHelper.GetLocalDateTimezoneOffset(DateTime.Now);
+            serverTimezone = DateTimeHelper.GetTimezoneOffset();
         }
 
         [DataMember]

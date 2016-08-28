@@ -11,12 +11,23 @@ namespace RIAPP.DataService.Utils
 {
     public class ValueConverter : IValueConverter
     {
-        private readonly IServiceContainer _serviceContainer;
+        private readonly ISerializer serializer;
+
         private static readonly DateTime DATEZERO = new DateTime(1900, 1, 1);
 
-        public ValueConverter(IServiceContainer serviceContainer)
+        public ValueConverter(ISerializer serializer)
         {
-            _serviceContainer = serviceContainer;
+            this.serializer = serializer;
+        }
+
+        public T Deserialize<T>(string val)
+        {
+            return (T)this.serializer.DeSerialize(val, typeof(T));
+        }
+
+        public string Serialize(object obj)
+        {
+            return this.serializer.Serialize(obj);
         }
 
         public virtual object DeserializeField(Type propType, Field fieldInfo, string value)
@@ -280,7 +291,7 @@ namespace RIAPP.DataService.Utils
 
             if (!propMainType.IsValueType)
             {
-                typedVal = _serviceContainer.Serializer.DeSerialize(value, propMainType);
+                typedVal = this.serializer.DeSerialize(value, propMainType);
             }
             else
             {
@@ -290,7 +301,7 @@ namespace RIAPP.DataService.Utils
                 }
                 catch (InvalidCastException)
                 {
-                    typedVal = _serviceContainer.Serializer.DeSerialize(value, propMainType);
+                    typedVal = this.serializer.DeSerialize(value, propMainType);
                 }
             }
 

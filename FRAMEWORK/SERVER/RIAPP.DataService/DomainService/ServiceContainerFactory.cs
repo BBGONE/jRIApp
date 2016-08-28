@@ -9,18 +9,33 @@ namespace RIAPP.DataService.DomainService
 {
     public class ServiceContainerFactory
     {
-        public virtual IServiceContainer CreateServiceContainer(Type dataServiceType, IPrincipal principal)
+        public virtual IServiceContainer CreateServiceContainer(Type dataServiceType, ISerializer serializer, IPrincipal principal)
         {
             var serviceContainer = new ServiceContainer();
-            var authorizer = new AuthorizerClass(dataServiceType, principal);
-            serviceContainer.AddService(typeof(IAuthorizer), authorizer);
-            var valueConverter = new ValueConverter(serviceContainer);
-            serviceContainer.AddService(typeof(IValueConverter), valueConverter);
-            var dataHelper = new DataHelper(serviceContainer);
-            serviceContainer.AddService(typeof(IDataHelper), dataHelper);
-            var validationHelper = new ValidationHelper(serviceContainer);
-            serviceContainer.AddService(typeof(IValidationHelper), validationHelper);
+            serviceContainer.AddService<ISerializer>(serializer);
+
+            serviceContainer.AddService<IAuthorizer>(this.CreateAuthorizer(dataServiceType, principal));
+
+            var valueConverter = this.CreateValueConverter(serializer);
+            serviceContainer.AddService<IValueConverter>(valueConverter);
+
+            var dataHelper = new DataHelper(valueConverter);
+            serviceContainer.AddService<IDataHelper>(dataHelper);
+
+            var validationHelper = new ValidationHelper(valueConverter);
+            serviceContainer.AddService<IValidationHelper>(validationHelper);
+
             return serviceContainer;
+        }
+
+        public virtual IAuthorizer CreateAuthorizer(Type dataServiceType, IPrincipal principal)
+        {
+            return new AuthorizerClass(dataServiceType, principal);
+        }
+
+        public virtual IValueConverter CreateValueConverter(ISerializer serializer)
+        {
+            return new ValueConverter(serializer);
         }
     }
 }

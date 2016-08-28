@@ -19,6 +19,11 @@ namespace RIAPP.DataService.DomainService
             _services.TryAdd(serviceType, instance);
         }
 
+        public void AddService<T>(T instance)
+        {
+            _services.TryAdd(typeof(T), instance);
+        }
+
         public void ReplaceService(Type serviceType, object instance)
         {
             var isOk = false;

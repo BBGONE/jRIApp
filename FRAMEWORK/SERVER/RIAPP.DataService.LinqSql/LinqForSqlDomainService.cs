@@ -29,7 +29,7 @@ namespace RIAPP.DataService.LinqSql
 
         protected override IServiceContainer CreateServiceContainer()
         {
-            return (new LinqServiceContainerFactory()).CreateServiceContainer(this.GetType(), this.User); 
+            return (new LinqServiceContainerFactory()).CreateServiceContainer(this.GetType(), this.serializer, this.User); 
         }
 
    

@@ -9,7 +9,7 @@ namespace RIAPP.DataService.DomainService.Types
     {
         public Permissions()
         {
-            serverTimezone = DataHelper.GetLocalDateTimezoneOffset(DateTime.Now);
+            serverTimezone = DateTimeHelper.GetTimezoneOffset();
         }
 
         [DataMember]
