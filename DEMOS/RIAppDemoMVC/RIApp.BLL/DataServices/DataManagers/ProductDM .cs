@@ -41,7 +41,7 @@ namespace RIAppDemo.BLL.DataServices.DataManagers
             var subResult = new SubResult
             {
                 dbSetName = "SalesOrderDetail",
-                Result = await DB.SalesOrderDetails.Where(sod => productIDs.Contains(sod.ProductID)).ToArrayAsync()
+                Result = await DB.SalesOrderDetails.AsNoTracking().Where(sod => productIDs.Contains(sod.ProductID)).ToArrayAsync()
             };
 
             //include related SalesOrderDetails with the products in the same query result

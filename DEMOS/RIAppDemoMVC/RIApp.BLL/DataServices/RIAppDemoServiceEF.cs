@@ -75,7 +75,7 @@ namespace RIAppDemo.BLL.DataServices
         public QueryResult<ProductModel> ReadProductModel()
         {
             int? totalCount = null;
-            var res = this.PerformQuery(DB.ProductModels, ref totalCount).AsEnumerable();
+            var res = this.PerformQuery(DB.ProductModels.AsNoTracking(), ref totalCount).AsEnumerable();
             return new QueryResult<ProductModel>(res, totalCount);
         }
 
@@ -88,7 +88,7 @@ namespace RIAppDemo.BLL.DataServices
         public QueryResult<ProductCategory> ReadProductCategory()
         {
             int? totalCount = null;
-            var res = this.PerformQuery(DB.ProductCategories, ref totalCount).AsEnumerable();
+            var res = this.PerformQuery(DB.ProductCategories.AsNoTracking(), ref totalCount).AsEnumerable();
             return new QueryResult<ProductCategory>(res, totalCount);
         }
 
@@ -100,7 +100,7 @@ namespace RIAppDemo.BLL.DataServices
             var queryInfo = this.GetCurrentQueryInfo();
             var startsWithVal = queryInfo.filterInfo.filterItems[0].values.First().TrimEnd('%');
             var res =
-                DB.Customers.Where(c => c.SalesPerson.StartsWith(startsWithVal))
+                DB.Customers.AsNoTracking().Where(c => c.SalesPerson.StartsWith(startsWithVal))
                     .Select(s => s.SalesPerson)
                     .Distinct()
                     .OrderBy(s => s)
@@ -114,7 +114,7 @@ namespace RIAppDemo.BLL.DataServices
         {
             int? totalCount = null;
             var res =
-                this.PerformQuery(DB.Addresses, ref totalCount)
+                this.PerformQuery(DB.Addresses.AsNoTracking(), ref totalCount)
                     .Select(
                         a =>
                             new AddressInfo
@@ -233,11 +233,10 @@ namespace RIAppDemo.BLL.DataServices
                 //and is not good from the security considerations
                 includeHierarchy = new[] {"CustomerAddresses.Address"};
             }
-            var customers = DB.Customers as IQueryable<Customer>;
+            var customers = DB.Customers.AsNoTracking() as IQueryable<Customer>;
             var queryInfo = this.GetCurrentQueryInfo();
             //AddressCount does not exists in Database (we calculate it), so it is needed to sort it manually
-            var addressCountSortItem =
-                queryInfo.sortInfo.sortItems.FirstOrDefault(sortItem => sortItem.fieldName == "AddressCount");
+            var addressCountSortItem = queryInfo.sortInfo.sortItems.FirstOrDefault(sortItem => sortItem.fieldName == "AddressCount");
             if (addressCountSortItem != null)
             {
                 queryInfo.sortInfo.sortItems.Remove(addressCountSortItem);
@@ -252,8 +251,7 @@ namespace RIAppDemo.BLL.DataServices
             List<Customer> res = null;
 
             if (includeNav == true)
-                res =
-                    this.PerformQuery(customers, ref totalCount)
+                res =   this.PerformQuery(customers, ref totalCount)
                         .Include(c => c.CustomerAddresses.Select(y => y.Address))
                         .ToList();
             else
@@ -314,7 +312,7 @@ namespace RIAppDemo.BLL.DataServices
         public QueryResult<Address> ReadAddress()
         {
             int? totalCount = null;
-            var res = this.PerformQuery(DB.Addresses, ref totalCount).AsEnumerable();
+            var res = this.PerformQuery(DB.Addresses.AsNoTracking(), ref totalCount).AsEnumerable();
             return new QueryResult<Address>(res, totalCount);
         }
 
@@ -322,7 +320,7 @@ namespace RIAppDemo.BLL.DataServices
         public QueryResult<Address> ReadAddressByIds(int[] addressIDs)
         {
             int? totalCount = null;
-            var res = DB.Addresses.Where(ca => addressIDs.Contains(ca.AddressID));
+            var res = DB.Addresses.AsNoTracking().Where(ca => addressIDs.Contains(ca.AddressID));
             return new QueryResult<Address>(res, totalCount);
         }
 
@@ -366,7 +364,7 @@ namespace RIAppDemo.BLL.DataServices
         public QueryResult<SalesOrderHeader> ReadSalesOrderHeader()
         {
             int? totalCount = null;
-            var res = this.PerformQuery(DB.SalesOrderHeaders, ref totalCount).AsEnumerable();
+            var res = this.PerformQuery(DB.SalesOrderHeaders.AsNoTracking(), ref totalCount).AsEnumerable();
             return new QueryResult<SalesOrderHeader>(res, totalCount);
         }
 
@@ -404,7 +402,7 @@ namespace RIAppDemo.BLL.DataServices
         public QueryResult<SalesOrderDetail> ReadSalesOrderDetail()
         {
             int? totalCount = null;
-            var res = this.PerformQuery(DB.SalesOrderDetails, ref totalCount).AsEnumerable();
+            var res = this.PerformQuery(DB.SalesOrderDetails.AsNoTracking(), ref totalCount).AsEnumerable();
             return new QueryResult<SalesOrderDetail>(res, totalCount);
         }
 

@@ -19,14 +19,14 @@ namespace RIAppDemo.BLL.DataServices.DataManagers
         protected IQueryable<TModel> PerformQuery(ref int? totalCount)
         {
             var dbset = DB.Set<TModel>();
-            return this.PerformQuery(dbset, ref totalCount);
+            return this.PerformQuery(dbset.AsNoTracking(), ref totalCount);
         }
 
         protected IQueryable<TEntity> PerformQuery<TEntity>(ref int? totalCount)
             where TEntity : class
         {
             var dbset = DB.Set<TEntity>();
-            return this.PerformQuery(dbset, ref totalCount);
+            return this.PerformQuery(dbset.AsNoTracking(), ref totalCount);
         }
     }
 }
