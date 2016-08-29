@@ -6,6 +6,7 @@ using RIAPP.DataService.DomainService.Exceptions;
 using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.DomainService.Types;
 using RIAPP.DataService.Resources;
+using RIAPP.DataService.DomainService.Attributes;
 
 namespace RIAPP.DataService.Utils
 {
@@ -21,8 +22,7 @@ namespace RIAPP.DataService.Utils
             ValidatorsContainer = new ValidatorContainer();
             DataManagerContainer = new DataManagerContainer();
             DataManagerContainer.RegisteredDM += _dataManagerContainer_RegisteredDM;
-            _dbSetsByTypeLookUp =
-                new Lazy<ILookup<Type, DbSetInfo>>(() => { return dbSets.Values.ToLookup(v => v.EntityType); }, true);
+            _dbSetsByTypeLookUp = new Lazy<ILookup<Type, DbSetInfo>>(() => { return dbSets.Values.ToLookup(v => v.EntityType); }, true);
             _svcMethods = new MethodMap();
             _operMethods = new OperationalMethods();
         }
@@ -58,9 +58,32 @@ namespace RIAPP.DataService.Utils
         {
             methods.ForEach(md =>
             {
-                if (md.methodData.entityType != null)
+                System.Type entityType = md.methodData.entityType;
+                if (md.isQuery)
                 {
-                    var dbSets = dbSetsByTypeLookUp[md.methodData.entityType];
+                    //First check QueryAtrribute if it contains info for Entity Type or DbSet Name
+                    QueryAttribute queryAttribute = (QueryAttribute)md.methodData.methodInfo.GetCustomAttributes(typeof(QueryAttribute), false).FirstOrDefault();
+                    if (queryAttribute.EntityType != null)
+                    {
+                        entityType = queryAttribute.EntityType;
+                    }
+                    string dbSetName = queryAttribute.DbSetName;
+                    if (!string.IsNullOrWhiteSpace(dbSetName))
+                    {
+                        if (!this.dbSets.ContainsKey(dbSetName))
+                            throw new DomainServiceException(string.Format("Can not determine the DbSet for a query method: {0} by DbSetName {1}", md.methodName, dbSetName));
+                        _svcMethods.Add(dbSetName, md);
+                    }
+                }
+
+                if (entityType != null)
+                {
+                    IEnumerable<DbSetInfo> dbSets = dbSetsByTypeLookUp[entityType];
+                    if (!dbSets.Any())
+                    {
+                        throw new DomainServiceException(string.Format("Can not determine the DbSet for a query method: {0}", md.methodName));
+                    }
+
                     foreach (var dbSetInfo in dbSets)
                     {
                         _svcMethods.Add(dbSetInfo.dbSetName, md);

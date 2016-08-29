@@ -279,8 +279,7 @@ namespace RIAPP.DataService.Utils
 
         private static IEnumerable<MethodInfoData> GetAllMethods(Type fromType)
         {
-            var methodInfos =
-                fromType.GetMethods(BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.Public);
+            var methodInfos = fromType.GetMethods(BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.Public);
             var interfTypes = fromType.GetInterfaces();
             var dataManagerInterface =
                 interfTypes.Where(
@@ -292,8 +291,7 @@ namespace RIAPP.DataService.Utils
             if (isDataManager)
                 crudMethods = fn_getCRUDMethods(fromType, dataManagerInterface);
 
-            var allList =
-                methodInfos.Select(
+            var allList = methodInfos.Select(
                     m =>
                         new MethodInfoData
                         {
@@ -314,8 +312,7 @@ namespace RIAPP.DataService.Utils
                     switch (data.methodType)
                     {
                         case MethodType.Query:
-                            data.entityType =
-                                RemoveTaskFromType(data.methodInfo.ReturnType).GetGenericArguments().First();
+                            data.entityType = RemoveTaskFromType(data.methodInfo.ReturnType).GetGenericArguments().First();
                             break;
                         case MethodType.Invoke:
                             data.entityType = null;

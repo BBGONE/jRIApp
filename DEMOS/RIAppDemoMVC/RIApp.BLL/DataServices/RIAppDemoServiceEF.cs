@@ -82,14 +82,28 @@ namespace RIAppDemo.BLL.DataServices
         #endregion
 
         #region ProductCategory
-
+        /// <summary>
+        /// An example how to return query result of another type as entity
+        /// Query attribute can contain information about the EntityType or DbSetName or both
+        /// </summary>
+        /// <returns>Query result</returns>
         [AllowAnonymous]
-        [Query]
-        public QueryResult<ProductCategory> ReadProductCategory()
+        [Query(DbSetName = "ProductCategory", EntityType = typeof(ProductCategory))]
+        public QueryResult<object> ReadProductCategory()
         {
             int? totalCount = null;
-            var res = this.PerformQuery(DB.ProductCategories.AsNoTracking(), ref totalCount).AsEnumerable();
-            return new QueryResult<ProductCategory>(res, totalCount);
+            //we return anonymous type from query instead of real entities
+            //the framework does not care about the real type of the returned entities as long as they contain all the fields
+            var res = this.PerformQuery(DB.ProductCategories.AsNoTracking(), ref totalCount).Select(p =>
+            new
+            {
+                ProductCategoryID = p.ProductCategoryID,
+                ParentProductCategoryID = p.ParentProductCategoryID,
+                Name = p.Name,
+                rowguid = p.rowguid,
+                ModifiedDate = p.ModifiedDate
+            });
+            return new QueryResult<object>(res, totalCount);
         }
 
         #endregion
