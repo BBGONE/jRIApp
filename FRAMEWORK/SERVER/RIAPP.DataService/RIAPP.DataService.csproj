@@ -53,6 +53,7 @@
     <Compile Include="DomainService\Config\ServiceConfig.cs" />
     <Compile Include="DomainService\Config\DataManagerContainer.cs" />
     <Compile Include="DomainService\Exceptions\DummyException.cs" />
+    <Compile Include="DomainService\Interfaces\ICodeGenProvider.cs" />
     <Compile Include="DomainService\Interfaces\IEntityVersionProvider.cs" />
     <Compile Include="DomainService\Interfaces\IServicesProvider.cs" />
     <Compile Include="DomainService\Interfaces\IServiceContainer.cs" />
@@ -66,6 +67,7 @@
     <Compile Include="DomainService\ServiceContainerFactory.cs" />
     <Compile Include="DomainService\ServiceOperationsHelper.cs" />
     <Compile Include="DomainService\SubsetsGenerator.cs" />
+    <Compile Include="DomainService\Types\CodeGenArgs.cs" />
     <Compile Include="DomainService\Types\SubResult.cs" />
     <Compile Include="DomainService\Types\FieldName.cs" />
     <Compile Include="DomainService\Types\Subset.cs" />
@@ -95,6 +97,9 @@
     <Compile Include="DomainService\Config\ValidatorContainer.cs" />
     <Compile Include="DomainService\BaseDataManager.cs" />
     <Compile Include="Utils\CallContext.cs" />
+    <Compile Include="Utils\CodeGen\BaseCsharpProvider.cs" />
+    <Compile Include="Utils\CodeGen\XamlProvider.cs" />
+    <Compile Include="Utils\CodeGen\TypeScriptProvider.cs" />
     <Compile Include="Utils\DateTimeHelper.cs" />
     <Compile Include="Utils\Extensions\StringEx.cs" />
     <Compile Include="Utils\Interfaces\IMultiMap.cs" />

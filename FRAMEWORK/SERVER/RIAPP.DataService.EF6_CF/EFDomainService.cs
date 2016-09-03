@@ -24,11 +24,12 @@ namespace RIAPP.DataService.EF6_CF
     {
         private TDB _db;
         private bool _ownsDb;
-
+        
         public EFDomainService(TDB db, IServiceArgs args)
             : base(args)
         {
             _db = db;
+            this.AddOrReplaceCodeGen("csharp", () => new CsharpProvider<TDB>(this));
         }
 
         public EFDomainService(IServiceArgs args)
@@ -322,13 +323,6 @@ namespace RIAPP.DataService.EF6_CF
 
             return metadata;
         }
-
-        protected override string GetCSharp()
-        {
-            var metadata = ServiceGetMetadata();
-            return DataServiceMethodsHelper.CreateMethods(metadata, DB);
-        }
-
         #endregion
 
         #region helper methods

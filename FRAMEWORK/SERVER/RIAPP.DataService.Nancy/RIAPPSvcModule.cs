@@ -73,17 +73,20 @@ namespace RIAPP.DataService.Nancy
         private string _GetTypeScript()
         {
             string comment = string.Format("\tGenerated from: {0} on {1:yyyy-MM-dd HH:mm} at {1:HH:mm}\r\n\tDon't make manual changes here, because they will be lost when this db interface will be regenerated!", this.Context.Request.Url.ToString(), DateTime.Now);
-            return this.DomainService.ServiceGetTypeScript(comment);
+            var info = DomainService.ServiceCodeGen(new CodeGenArgs("ts") { comment = comment });
+            return info;
         }
 
         private string _GetXAML()
         {
-            return this.DomainService.ServiceGetXAML();
+            var info = DomainService.ServiceCodeGen(new CodeGenArgs("xaml") { isDraft = true });
+            return info;
         }
 
         private string _GetCSharp()
         {
-            return this.DomainService.ServiceGetCSharp();
+            var info = DomainService.ServiceCodeGen(new CodeGenArgs("csharp"));
+            return info;
         }
         #endregion
 

@@ -47,7 +47,7 @@ namespace RIAPP.DataService.Mvc
                 string.Format(
                     "\tGenerated from: {0} on {1:yyyy-MM-dd} at {1:HH:mm}\r\n\tDon't make manual changes here, because they will be lost when this db interface will be regenerated!",
                     ControllerContext.HttpContext.Request.RawUrl, DateTime.Now);
-            var info = DomainService.ServiceGetTypeScript(comment);
+            var info = DomainService.ServiceCodeGen(new CodeGenArgs("ts") { comment = comment });
             var res = new ContentResult();
             res.ContentEncoding = Encoding.UTF8;
             res.ContentType = MediaTypeNames.Text.Plain;
@@ -59,7 +59,7 @@ namespace RIAPP.DataService.Mvc
         [HttpGet]
         public ActionResult GetXAML(bool isDraft = true)
         {
-            var info = DomainService.ServiceGetXAML(isDraft);
+            var info = DomainService.ServiceCodeGen(new CodeGenArgs("xaml") { isDraft = isDraft });
             var res = new ContentResult();
             res.ContentEncoding = Encoding.UTF8;
             res.ContentType = MediaTypeNames.Text.Plain;
@@ -71,7 +71,7 @@ namespace RIAPP.DataService.Mvc
         [HttpGet]
         public ActionResult GetCSharp()
         {
-            var info = DomainService.ServiceGetCSharp();
+            var info = DomainService.ServiceCodeGen(new CodeGenArgs("csharp"));
             var res = new ContentResult();
             res.ContentEncoding = Encoding.UTF8;
             res.ContentType = MediaTypeNames.Text.Plain;

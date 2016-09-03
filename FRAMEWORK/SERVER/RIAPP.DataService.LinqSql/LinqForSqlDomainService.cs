@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using RIAPP.DataService.DomainService;
 using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.DomainService.Types;
+using RIAPP.DataService.LinqSql.Utils;
 
 namespace RIAPP.DataService.LinqSql
 {
@@ -19,6 +20,7 @@ namespace RIAPP.DataService.LinqSql
             :base(args)
         {
             this._db = db;
+            this.AddOrReplaceCodeGen("csharp", () => new CsharpProvider<TDB>(this));
         }
 
         public LinqForSqlDomainService(IServiceArgs args)
@@ -137,12 +139,6 @@ namespace RIAPP.DataService.LinqSql
                 transScope.Complete();
             }
             return this.AfterExecuteChangeSet();
-        }
-
-        protected override string GetCSharp()
-        {
-            var metadata = this.ServiceGetMetadata();
-            return RIAPP.DataService.LinqSql.Utils.DataServiceMethodsHelper.CreateMethods(metadata, this.DB);
         }
         #endregion
 

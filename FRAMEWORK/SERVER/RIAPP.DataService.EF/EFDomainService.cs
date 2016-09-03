@@ -242,12 +242,6 @@ namespace RIAPP.DataService.EF
             }
             return metadata;
         }
-
-        protected override string GetCSharp()
-        {
-            var metadata = this.ServiceGetMetadata();
-            return RIAPP.DataService.EF.Utils.DataServiceMethodsHelper.CreateMethods(metadata, this.DB);
-        }
         #endregion
 
         #region helper methods
@@ -298,7 +292,7 @@ namespace RIAPP.DataService.EF
         }
         #endregion
 
-        protected TDB DB
+        public TDB DB
         {
             get
             {

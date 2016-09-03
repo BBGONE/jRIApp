@@ -191,8 +191,7 @@ namespace RIAPP.DataService.Utils
                         fieldName = assoc.parentToChildrenName,
                         fieldType = FieldType.Navigation,
                         dataType = DataType.None,
-                        _TypeScriptDataType =
-                            string.Format("{0}[]", TypeScriptHelper.GetEntityInterfaceName(childDb.dbSetName))
+                        _TypeScriptDataType = string.Format("{0}[]", TypeScriptHelper.GetEntityInterfaceName(childDb.dbSetName))
                     });
                 }
             } //foreach (var assoc in metadata.Associations)

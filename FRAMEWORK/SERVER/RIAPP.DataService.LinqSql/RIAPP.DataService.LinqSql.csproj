@@ -50,6 +50,7 @@
       <DependentUpon>ErrorStrings.resx</DependentUpon>
     </Compile>
     <Compile Include="LinqServiceContainerFactory.cs" />
+    <Compile Include="Utils\CsharpProvider.cs" />
     <Compile Include="Utils\DataServiceMethodsHelper.cs" />
     <Compile Include="Utils\LinqValueConverter.cs" />
   </ItemGroup>

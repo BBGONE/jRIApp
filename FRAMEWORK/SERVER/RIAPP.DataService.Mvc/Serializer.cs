@@ -32,10 +32,5 @@ namespace RIAPP.DataService.Mvc
         {
             return JsonConvert.DeserializeObject(input, targetType);
         }
-
-        public object DeserializeObject(string input)
-        {
-            return JsonConvert.DeserializeObject(input);
-        }
     }
 }

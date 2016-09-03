@@ -80,20 +80,20 @@ namespace RIAPP.DataService.WebApi
             }
         }
 
-        public class ChunkedActionResult<T> : IHttpActionResult
-            where T : class
+        public class ChunkedActionResult<TRes> : IHttpActionResult
+            where TRes : class
         {
             private static readonly string ResultContentType = MediaTypeNames.Text.Plain;
             private readonly ISerializer _serializer;
 
-            public ChunkedActionResult(HttpRequestMessage request, T res, ISerializer serializer)
+            public ChunkedActionResult(HttpRequestMessage request, TRes res, ISerializer serializer)
             {
                 Request = request;
                 Data = res;
                 _serializer = serializer;
             }
 
-            public T Data { get; }
+            public TRes Data { get; }
             public HttpRequestMessage Request { get; }
 
             public Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
@@ -124,7 +124,7 @@ namespace RIAPP.DataService.WebApi
         [HttpGet]
         public virtual IHttpActionResult GetXAML(HttpRequestMessage request, bool isDraft = true)
         {
-            var info = DataService.ServiceGetXAML(isDraft);
+            var info = DataService.ServiceCodeGen(new CodeGenArgs("xaml") { isDraft = isDraft });
             return new PlainTextActionResult(request, info);
         }
 
@@ -132,7 +132,7 @@ namespace RIAPP.DataService.WebApi
         [HttpGet]
         public virtual IHttpActionResult GetCSHARP(HttpRequestMessage request)
         {
-            var info = DataService.ServiceGetCSharp();
+            var info = DataService.ServiceCodeGen(new CodeGenArgs("csharp"));
             return new PlainTextActionResult(request, info);
         }
 
@@ -144,7 +144,7 @@ namespace RIAPP.DataService.WebApi
                 string.Format(
                     "\tGenerated from: {0} on {1:yyyy-MM-dd} at {1:HH:mm}\r\n\tDon't make manual changes here, because they will be lost when this db interface will be regenerated!",
                     request.RequestUri, DateTime.Now);
-            var info = DataService.ServiceGetTypeScript(comment);
+            var info = DataService.ServiceCodeGen(new CodeGenArgs("ts") { comment = comment });
             return new PlainTextActionResult(request, info);
         }
 

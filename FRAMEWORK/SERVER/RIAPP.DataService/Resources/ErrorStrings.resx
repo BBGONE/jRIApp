@@ -142,7 +142,10 @@
     <value>Query result's chunk is not found in cache</value>
   </data>
   <data name="ERR_CODEGEN_DISABLED" xml:space="preserve">
-    <value>Method {0} is disabled on the {1}</value>
+    <value>Code generation is disabled</value>
+  </data>
+  <data name="ERR_CODEGEN_NOT_IMPLEMENTED" xml:space="preserve">
+    <value>Code generation for lang: {0} is not implemented</value>
   </data>
   <data name="ERR_DBSET_HAS_NO_PK" xml:space="preserve">
     <value>DbSet {0} has no primary key fields</value>

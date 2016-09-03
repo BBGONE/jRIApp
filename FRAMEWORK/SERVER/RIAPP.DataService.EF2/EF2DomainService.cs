@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using RIAPP.DataService.DomainService;
 using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.DomainService.Types;
+using RIAPP.DataService.EF2.Utils;
 
 namespace RIAPP.DataService.EF2
 {
@@ -23,6 +24,7 @@ namespace RIAPP.DataService.EF2
             :base(args)
         {
             this._db = db;
+            this.AddOrReplaceCodeGen("csharp", () => new CsharpProvider<TDB>(this));
         }
 
         public EFDomainService(IServiceArgs args)
@@ -209,12 +211,6 @@ namespace RIAPP.DataService.EF2
                 }
             }
             return metadata;
-        }
-
-        protected override string GetCSharp()
-        {
-            var metadata = this.ServiceGetMetadata();
-            return RIAPP.DataService.EF2.Utils.DataServiceMethodsHelper.CreateMethods(metadata, this.DB);
         }
         #endregion
 

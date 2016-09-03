@@ -6,10 +6,8 @@ namespace RIAPP.DataService.DomainService.Interfaces
 {
     public interface IDomainService : IDisposable
     {
-        //typescript strongly typed implementation of entities, DbSet and DbContext in the text form
-        string ServiceGetTypeScript(string comment = null);
-        string ServiceGetXAML(bool isDraft = true);
-        string ServiceGetCSharp();
+        //provides differnt code generations implemented by providers (csharp, xaml, typescvript etc.)
+        string ServiceCodeGen(CodeGenArgs args);
 
         //information about permissions to execute service operations for the client
         Permissions ServiceGetPermissions();

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
 using System.Security.Principal;
@@ -22,6 +23,7 @@ namespace RIAPP.DataService.DomainService
         private readonly IPrincipal _User;
         protected readonly ISerializer serializer;
         private bool _IsCodeGenEnabled;
+        private ConcurrentDictionary<string, Func<ICodeGenProvider>> _codeGenProviders;
 
         public BaseDomainService(IServiceArgs args)
         {
@@ -30,9 +32,12 @@ namespace RIAPP.DataService.DomainService
                 throw new ArgumentException(ErrorStrings.ERR_NO_SERIALIZER);
             this._User = args.principal;
             this._IsCodeGenEnabled = false;
+            this._codeGenProviders = new ConcurrentDictionary<string, Func<ICodeGenProvider>>();
 
             ServiceContainer = this.CreateServiceContainer();
-            _helper = new ServiceOperationsHelper(this);
+            this._helper = new ServiceOperationsHelper(this);
+            this.AddOrReplaceCodeGen("ts", () => new TypeScriptProvider(this));
+            this.AddOrReplaceCodeGen("xaml", () => new XamlProvider(this));
         }
 
         public IPrincipal User
@@ -43,13 +48,13 @@ namespace RIAPP.DataService.DomainService
             }
         }
 
-        protected bool IsCodeGenEnabled
+        public bool IsCodeGenEnabled
         {
             get
             {
                 return this._IsCodeGenEnabled;
             }
-            set
+            protected set
             {
                 this._IsCodeGenEnabled = value;
             }
@@ -57,6 +62,10 @@ namespace RIAPP.DataService.DomainService
 
         public IServiceContainer ServiceContainer { get; private set; }
 
+        public void AddOrReplaceCodeGen(string lang, Func<ICodeGenProvider> providerFactory)
+        {
+            this._codeGenProviders.AddOrUpdate(lang, providerFactory, (k, old) => { return providerFactory; });
+        }
 
         protected internal void _OnError(Exception ex)
         {
@@ -156,19 +165,7 @@ namespace RIAPP.DataService.DomainService
             }
         }
 
-        protected virtual string GetTypeScript(string comment = null)
-        {
-            var metadata = ServiceGetMetadata();
-            var helper = new TypeScriptHelper(ServiceContainer, metadata, GetClientTypes());
-            return helper.CreateTypeScript(comment);
-        }
-
-        protected virtual string GetCSharp()
-        {
-            throw new NotImplementedException();
-        }
-
-        protected virtual IEnumerable<Type> GetClientTypes()
+        protected internal virtual IEnumerable<Type> GetClientTypes()
         {
             return Enumerable.Empty<Type>();
         }
@@ -199,10 +196,9 @@ namespace RIAPP.DataService.DomainService
                 authorizer.CheckUserRightsToExecute(domainServiceMethods.Values);
             } //foreach (var dbSet in changeSet.dbSets)
         }
-
         #endregion
 
-        #region DataService Main Methods
+        #region DataService Data Operations
 
         /// <summary>
         ///     Utility method to obtain data from the dataservice's query method
@@ -440,30 +436,14 @@ namespace RIAPP.DataService.DomainService
 
         #region IDomainService Methods
 
-        public string ServiceGetTypeScript(string comment = null)
+        public string ServiceCodeGen(CodeGenArgs args)
         {
-            if (!IsCodeGenEnabled)
-                throw new InvalidOperationException(string.Format(ErrorStrings.ERR_CODEGEN_DISABLED,
-                    MethodBase.GetCurrentMethod().Name, GetType().Name));
-            return GetTypeScript(comment);
-        }
+            Func<ICodeGenProvider> providerFactory = null;
+            if (!this._codeGenProviders.TryGetValue(args.lang, out providerFactory))
+                throw new InvalidOperationException(string.Format(ErrorStrings.ERR_CODEGEN_NOT_IMPLEMENTED,
+                    args.lang));
 
-        public string ServiceGetXAML(bool isDraft = true)
-        {
-            if (!IsCodeGenEnabled)
-                throw new InvalidOperationException(string.Format(ErrorStrings.ERR_CODEGEN_DISABLED,
-                    MethodBase.GetCurrentMethod().Name, GetType().Name));
-            Metadata metadata = null;
-            MetadataHelper.ExecuteOnSTA(state => { metadata = GetMetadata(isDraft); }, this);
-            return metadata.ToXML();
-        }
-
-        public string ServiceGetCSharp()
-        {
-            if (!IsCodeGenEnabled)
-                throw new InvalidOperationException(string.Format(ErrorStrings.ERR_CODEGEN_DISABLED,
-                    MethodBase.GetCurrentMethod().Name, GetType().Name));
-            return GetCSharp();
+            return providerFactory().GetScript(args.comment, args.isDraft);
         }
 
         public Permissions ServiceGetPermissions()
@@ -591,7 +571,6 @@ namespace RIAPP.DataService.DomainService
             }
             return res;
         }
-
         #endregion
 
         #region IDisposable Members
