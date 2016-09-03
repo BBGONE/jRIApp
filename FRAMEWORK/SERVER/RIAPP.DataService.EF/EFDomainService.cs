@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using RIAPP.DataService.DomainService;
 using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.DomainService.Types;
+using RIAPP.DataService.EF.Utils;
 
 namespace RIAPP.DataService.EF
 {
@@ -20,6 +21,7 @@ namespace RIAPP.DataService.EF
             :base(args)
         {
             this._db = db;
+            this.AddOrReplaceCodeGen("csharp", () => new CsharpProvider<TDB>(this));
         }
 
         public EFDomainService(IServiceArgs args)
