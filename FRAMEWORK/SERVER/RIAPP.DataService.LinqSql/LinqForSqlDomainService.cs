@@ -20,7 +20,6 @@ namespace RIAPP.DataService.LinqSql
             :base(args)
         {
             this._db = db;
-            this.AddOrReplaceCodeGen("csharp", () => new CsharpProvider<TDB>(this));
         }
 
         public LinqForSqlDomainService(IServiceArgs args)
@@ -29,13 +28,18 @@ namespace RIAPP.DataService.LinqSql
            
         }
 
-        protected override IServiceContainer CreateServiceContainer()
+        #region Overridable Methods
+        protected override void ConfigureCodeGen()
         {
-            return (new LinqServiceContainerFactory()).CreateServiceContainer(this.GetType(), this.serializer, this.User); 
+            base.ConfigureCodeGen();
+            this.AddOrReplaceCodeGen("csharp", () => new CsharpProvider<TDB>(this));
         }
 
-   
-        #region Overridable Methods
+        protected override IServiceContainer CreateServiceContainer()
+        {
+            return (new LinqServiceContainerFactory()).CreateServiceContainer(this.GetType(), this.serializer, this.User);
+        }
+
         protected virtual TDB CreateDataContext() {
             return Activator.CreateInstance<TDB>();
         }

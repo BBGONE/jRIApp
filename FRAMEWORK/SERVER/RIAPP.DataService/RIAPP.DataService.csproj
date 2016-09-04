@@ -61,6 +61,7 @@
     <Compile Include="DomainService\Interfaces\IValidator.cs" />
     <Compile Include="DomainService\Interfaces\IDataManagerContainer.cs" />
     <Compile Include="DomainService\Interfaces\IValidatorContainer.cs" />
+    <Compile Include="DomainService\Interfaces\IServiceOperationsHelper.cs" />
     <Compile Include="DomainService\RequestContext.cs" />
     <Compile Include="DomainService\RowGenerator.cs" />
     <Compile Include="DomainService\Security\OverrideAuthorizeAttribute.cs" />

@@ -24,7 +24,6 @@ namespace RIAPP.DataService.EF2
             :base(args)
         {
             this._db = db;
-            this.AddOrReplaceCodeGen("csharp", () => new CsharpProvider<TDB>(this));
         }
 
         public EFDomainService(IServiceArgs args)
@@ -35,6 +34,12 @@ namespace RIAPP.DataService.EF2
 
 
         #region Overridable Methods
+        protected override void ConfigureCodeGen()
+        {
+            base.ConfigureCodeGen();
+            this.AddOrReplaceCodeGen("csharp", () => new CsharpProvider<TDB>(this));
+        }
+
         protected virtual TDB CreateDataContext() {
             return Activator.CreateInstance<TDB>();
         }

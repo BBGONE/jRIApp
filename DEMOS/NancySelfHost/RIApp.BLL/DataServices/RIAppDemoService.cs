@@ -31,12 +31,6 @@ namespace RIAppDemo.BLL.DataServices
         public RIAppDemoService(IServiceArgs args)
             : base(args)
         {
-            //it allows getting information via GetCSharp, GetXAML, GetTypeScript
-            //it should be set to false in release version 
-            //allow it only at development time
-            this.IsCodeGenEnabled = true;
-            this.AddOrReplaceCodeGen("ts", () => new TypeScriptProvider(this, new Type[] { typeof(TestModel), typeof(KeyVal),
-                typeof(StrKeyVal), typeof(RadioVal), typeof(HistoryItem), typeof(TestEnum2) }));
         }
 
         protected override RIAppDemoDataContext CreateDataContext()
@@ -60,6 +54,19 @@ namespace RIAppDemo.BLL.DataServices
                 return Metadata.FromXML(RIAppDemo.BLL.Utils.ResourceHelper.GetResourceString("RIAppDemo.BLL.Metadata.MainDemo.xml"));
             }
         }
+
+        protected override void ConfigureCodeGen()
+        {
+            base.ConfigureCodeGen();
+            this.AddOrReplaceCodeGen("ts", () => new TypeScriptProvider(this, new[] { typeof(TestModel), typeof(KeyVal),
+                typeof(StrKeyVal), typeof(RadioVal), typeof(HistoryItem), typeof(TestEnum2)
+            }));
+            //it allows getting information via GetCSharp, GetXAML, GetTypeScript
+            //it should be set to false in release version 
+            //allow it only at development time
+            this.IsCodeGenEnabled = true;
+        }
+
 
         #region Product
         [Query]

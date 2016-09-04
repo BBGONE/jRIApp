@@ -23,9 +23,10 @@ namespace RIAPP.DataService.DomainService
         private readonly IPrincipal _User;
         protected readonly ISerializer serializer;
         private bool _IsCodeGenEnabled;
+        private bool _isCodeGenConfigured = false;
         private ConcurrentDictionary<string, Func<ICodeGenProvider>> _codeGenProviders;
-        protected internal readonly ServiceOperationsHelper _helper;
-
+        private IServiceContainer _serviceContainer;
+        private IServiceOperationsHelper _serviceHelper;
 
         public BaseDomainService(IServiceArgs args)
         {
@@ -35,10 +36,8 @@ namespace RIAPP.DataService.DomainService
             this._User = args.principal;
             this._IsCodeGenEnabled = false;
             this._codeGenProviders = new ConcurrentDictionary<string, Func<ICodeGenProvider>>();
-
-            ServiceContainer = this.CreateServiceContainer();
-            this._helper = new ServiceOperationsHelper(this);
-            this.AddOrReplaceCodeGen("xaml", () => new XamlProvider(this));
+            this._serviceContainer = this.CreateServiceContainer();
+            this._serviceHelper = this.CreateServiceHelper();
         }
 
         public IPrincipal User
@@ -61,9 +60,23 @@ namespace RIAPP.DataService.DomainService
             }
         }
 
-        public IServiceContainer ServiceContainer { get; private set; }
+        public IServiceContainer ServiceContainer
+        {
+            get
+            {
+                return this._serviceContainer;
+            }
+        }
 
-        public void AddOrReplaceCodeGen(string lang, Func<ICodeGenProvider> providerFactory)
+        protected internal IServiceOperationsHelper ServiceHelper
+        {
+            get
+            {
+                return this._serviceHelper;
+            }
+        }
+
+        protected void AddOrReplaceCodeGen(string lang, Func<ICodeGenProvider> providerFactory)
         {
             this._codeGenProviders.AddOrUpdate(lang, providerFactory, (k, old) => { return providerFactory; });
         }
@@ -76,10 +89,19 @@ namespace RIAPP.DataService.DomainService
         }
 
         #region Overridable Methods
+        protected virtual void ConfigureCodeGen()
+        {
+            this.AddOrReplaceCodeGen("xaml", () => new XamlProvider(this));
+        }
 
         protected virtual IServiceContainer CreateServiceContainer()
         {
             return new ServiceContainerFactory().CreateServiceContainer(GetType(), this.serializer, User);
+        }
+
+        protected virtual IServiceOperationsHelper CreateServiceHelper()
+        {
+            return new ServiceOperationsHelper(this);
         }
 
         protected internal abstract Metadata GetMetadata(bool isDraft);
@@ -107,7 +129,7 @@ namespace RIAPP.DataService.DomainService
 
         protected virtual Task AfterExecuteChangeSet()
         {
-            return _helper.AfterExecuteChangeSet();
+            return _serviceHelper.AfterExecuteChangeSet();
         }
 
         protected virtual void ApplyChangesToEntity(RowInfo rowInfo)
@@ -122,13 +144,13 @@ namespace RIAPP.DataService.DomainService
                 switch (rowInfo.changeType)
                 {
                     case ChangeType.Added:
-                        _helper.InsertEntity(metadata, rowInfo);
+                        _serviceHelper.InsertEntity(metadata, rowInfo);
                         break;
                     case ChangeType.Deleted:
-                        _helper.DeleteEntity(metadata, rowInfo);
+                        _serviceHelper.DeleteEntity(metadata, rowInfo);
                         break;
                     case ChangeType.Updated:
-                        _helper.UpdateEntity(metadata, rowInfo);
+                        _serviceHelper.UpdateEntity(metadata, rowInfo);
                         break;
                     default:
                         throw new DomainServiceException(string.Format(ErrorStrings.ERR_REC_CHANGETYPE_INVALID,
@@ -224,7 +246,7 @@ namespace RIAPP.DataService.DomainService
             var req = new RequestContext(this, queryInfo: queryInfo, operation: ServiceOperationType.Query);
             using (var callContext = new RequestCallContext(req))
             {
-                var instance = _helper.GetMethodOwner(method.methodData);
+                var instance = _serviceHelper.GetMethodOwner(method.methodData);
                 var invokeRes = method.methodData.methodInfo.Invoke(instance, methParams.ToArray());
                 queryResult = (QueryResult) await ServiceOperationsHelper.GetMethodResult(invokeRes).ConfigureAwait(false);
 
@@ -316,7 +338,7 @@ namespace RIAPP.DataService.DomainService
                     operation: ServiceOperationType.SaveChanges);
                 using (var callContext = new RequestCallContext(req))
                 {
-                    if (!await _helper.ValidateEntity(metadata, req).ConfigureAwait(false))
+                    if (!await _serviceHelper.ValidateEntity(metadata, req).ConfigureAwait(false))
                     {
                         rowInfo.invalid = rowInfo.changeState.ValidationErrors;
                         hasErrors = true;
@@ -332,7 +354,7 @@ namespace RIAPP.DataService.DomainService
                     operation: ServiceOperationType.SaveChanges);
                 using (var callContext = new RequestCallContext(req))
                 {
-                    if (!await _helper.ValidateEntity(metadata, req).ConfigureAwait(false))
+                    if (!await _serviceHelper.ValidateEntity(metadata, req).ConfigureAwait(false))
                     {
                         rowInfo.invalid = rowInfo.changeState.ValidationErrors;
                         hasErrors = true;
@@ -352,7 +374,7 @@ namespace RIAPP.DataService.DomainService
                 foreach (var rowInfo in graph.allList)
                 {
                     if (rowInfo.changeType != ChangeType.Deleted)
-                        _helper.UpdateRowInfoAfterUpdates(rowInfo);
+                        _serviceHelper.UpdateRowInfoAfterUpdates(rowInfo);
                     else
                         rowInfo.values = null;
                 }
@@ -382,7 +404,7 @@ namespace RIAPP.DataService.DomainService
             var req = new RequestContext(this, operation: ServiceOperationType.InvokeMethod);
             using (var callContext = new RequestCallContext(req))
             {
-                var instance = _helper.GetMethodOwner(method.methodData);
+                var instance = _serviceHelper.GetMethodOwner(method.methodData);
                 var invokeRes = method.methodData.methodInfo.Invoke(instance, methParams.ToArray());
                 var meth_result = await ServiceOperationsHelper.GetMethodResult(invokeRes).ConfigureAwait(false);
                 var res = new InvokeResponse();
@@ -406,14 +428,14 @@ namespace RIAPP.DataService.DomainService
             var req = new RequestContext(this, rowInfo: info.rowInfo, operation: ServiceOperationType.RowRefresh);
             using (var callContext = new RequestCallContext(req))
             {
-                var instance = _helper.GetMethodOwner(methodData);
+                var instance = _serviceHelper.GetMethodOwner(methodData);
                 var invokeRes = methodData.methodInfo.Invoke(instance, new object[] {info});
                 var dbEntity = await ServiceOperationsHelper.GetMethodResult(invokeRes).ConfigureAwait(false);
 
                 var rri = new RefreshInfo {rowInfo = info.rowInfo, dbSetName = info.dbSetName};
                 if (dbEntity != null)
                 {
-                    _helper.UpdateRowInfoFromEntity(dbEntity, info.rowInfo);
+                    _serviceHelper.UpdateRowInfoFromEntity(dbEntity, info.rowInfo);
                 }
                 else
                     rri.rowInfo = null;
@@ -428,10 +450,18 @@ namespace RIAPP.DataService.DomainService
 
         public string ServiceCodeGen(CodeGenArgs args)
         {
+            lock (this._codeGenProviders)
+            {
+                if (!this._isCodeGenConfigured)
+                {
+                    this.ConfigureCodeGen();
+                    this._isCodeGenConfigured = true;
+                }
+            }
+
             if (!this.IsCodeGenEnabled)
                 throw new InvalidOperationException(ErrorStrings.ERR_CODEGEN_DISABLED);
-
-
+            var metadata = MetadataHelper.EnsureMetadataInitialized(this);
             Func<ICodeGenProvider> providerFactory = null;
             if (!this._codeGenProviders.TryGetValue(args.lang, out providerFactory))
                 throw new InvalidOperationException(string.Format(ErrorStrings.ERR_CODEGEN_NOT_IMPLEMENTED,
@@ -571,8 +601,11 @@ namespace RIAPP.DataService.DomainService
 
         protected virtual void Dispose(bool isDisposing)
         {
-            if (_helper != null && isDisposing)
-                _helper.Dispose();
+            if (_serviceHelper is IDisposable && isDisposing)
+                (_serviceHelper as IDisposable).Dispose();
+
+            this._serviceHelper = null;
+            this._serviceContainer = null;
         }
 
         void IDisposable.Dispose()

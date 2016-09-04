@@ -61,9 +61,9 @@ namespace RIAPP.DataService.DomainService
             }
         }
 
-        private ServiceOperationsHelper helper
+        private IServiceOperationsHelper ServiceHelper
         {
-            get { return DataService._helper; }
+            get { return DataService.ServiceHelper; }
         }
 
         public BaseDomainService DataService { get; }
@@ -78,24 +78,24 @@ namespace RIAPP.DataService.DomainService
 
         object IEntityVersionProvider.GetOriginal()
         {
-            return helper.GetOriginalEntity(CurrentRowInfo);
+            return ServiceHelper.GetOriginalEntity(CurrentRowInfo);
         }
 
         public object GetParent(Type entityType)
         {
-            return helper.GetParentEntity(entityType, CurrentRowInfo);
+            return ServiceHelper.GetParentEntity(entityType, CurrentRowInfo);
         }
 
         public TModel GetOriginal<TModel>()
             where TModel : class
         {
-            return helper.GetOriginalEntity<TModel>(CurrentRowInfo);
+            return ServiceHelper.GetOriginalEntity<TModel>(CurrentRowInfo);
         }
 
         public TModel GetParent<TModel>()
             where TModel : class
         {
-            return helper.GetParentEntity<TModel>(CurrentRowInfo);
+            return ServiceHelper.GetParentEntity<TModel>(CurrentRowInfo);
         }
 
         #endregion
