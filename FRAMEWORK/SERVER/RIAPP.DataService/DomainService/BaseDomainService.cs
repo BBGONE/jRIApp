@@ -15,15 +15,16 @@ using RIAPP.DataService.Utils;
 using RIAPP.DataService.Utils.CodeGen;
 using RIAPP.DataService.Utils.Extensions;
 using RIAPP.DataService.Utils.Interfaces;
+using System.Threading;
 
 namespace RIAPP.DataService.DomainService
 {
     public abstract class BaseDomainService : IDomainService, IServicesProvider
     {
+        private readonly object _lockObj = new  object();
         private readonly IPrincipal _User;
         protected readonly ISerializer serializer;
         private bool _IsCodeGenEnabled;
-        private bool _isCodeGenConfigured = false;
         private ConcurrentDictionary<string, Func<ICodeGenProvider>> _codeGenProviders;
         private IServiceContainer _serviceContainer;
         private IServiceOperationsHelper _serviceHelper;
@@ -35,7 +36,7 @@ namespace RIAPP.DataService.DomainService
                 throw new ArgumentException(ErrorStrings.ERR_NO_SERIALIZER);
             this._User = args.principal;
             this._IsCodeGenEnabled = false;
-            this._codeGenProviders = new ConcurrentDictionary<string, Func<ICodeGenProvider>>();
+            this._codeGenProviders = null;
             this._serviceContainer = this.CreateServiceContainer();
             this._serviceHelper = this.CreateServiceHelper();
         }
@@ -134,7 +135,7 @@ namespace RIAPP.DataService.DomainService
 
         protected virtual void ApplyChangesToEntity(RowInfo rowInfo)
         {
-            var metadata = MetadataHelper.EnsureMetadataInitialized(this);
+            var metadata = MetadataHelper.GetInitializedMetadata(this);
             var dbSetInfo = rowInfo.dbSetInfo;
             if (dbSetInfo.EntityType == null)
                 throw new DomainServiceException(string.Format(ErrorStrings.ERR_DB_ENTITYTYPE_INVALID,
@@ -184,7 +185,7 @@ namespace RIAPP.DataService.DomainService
 
         protected virtual void AuthorizeChangeSet(ChangeSet changeSet)
         {
-            var metadata = MetadataHelper.EnsureMetadataInitialized(this);
+            var metadata = MetadataHelper.GetInitializedMetadata(this);
             foreach (var dbSet in changeSet.dbSets)
             {
                 //methods on domain service which are attempted to be executed by client (SaveChanges triggers their execution)
@@ -227,7 +228,7 @@ namespace RIAPP.DataService.DomainService
 
         protected async Task<QueryResponse> ExecQuery(QueryRequest queryInfo)
         {
-            var metadata = MetadataHelper.EnsureMetadataInitialized(this);
+            var metadata = MetadataHelper.GetInitializedMetadata(this);
             var method = metadata.GetQueryMethod(queryInfo.dbSetName, queryInfo.queryName);
             var authorizer = ServiceContainer.Authorizer;
             authorizer.CheckUserRightsToExecute(method.methodData);
@@ -288,7 +289,7 @@ namespace RIAPP.DataService.DomainService
         protected async Task<bool> ApplyChangeSet(ChangeSet changeSet)
         {
             AuthorizeChangeSet(changeSet);
-            var metadata = MetadataHelper.EnsureMetadataInitialized(this);
+            var metadata = MetadataHelper.GetInitializedMetadata(this);
             var graph = new ChangeSetGraph(changeSet, metadata);
             graph.Prepare();
 
@@ -392,7 +393,7 @@ namespace RIAPP.DataService.DomainService
 
         protected async Task<InvokeResponse> InvokeMethod(InvokeRequest invokeInfo)
         {
-            var metadata = MetadataHelper.EnsureMetadataInitialized(this);
+            var metadata = MetadataHelper.GetInitializedMetadata(this);
             var method = metadata.GetInvokeMethod(invokeInfo.methodName);
             var authorizer = ServiceContainer.Authorizer;
             authorizer.CheckUserRightsToExecute(method.methodData);
@@ -416,7 +417,7 @@ namespace RIAPP.DataService.DomainService
 
         protected async Task<RefreshInfo> RefreshRowInfo(RefreshInfo info)
         {
-            var metadata = MetadataHelper.EnsureMetadataInitialized(this);
+            var metadata = MetadataHelper.GetInitializedMetadata(this);
             info.dbSetInfo = metadata.dbSets[info.dbSetName];
             var methodData = metadata.getOperationMethodInfo(info.dbSetName, MethodType.Refresh);
             if (methodData == null)
@@ -450,31 +451,51 @@ namespace RIAPP.DataService.DomainService
 
         public string ServiceCodeGen(CodeGenArgs args)
         {
-            lock (this._codeGenProviders)
+            lock (this._lockObj)
             {
-                if (!this._isCodeGenConfigured)
+                if (this._codeGenProviders == null)
                 {
-                    this.ConfigureCodeGen();
-                    this._isCodeGenConfigured = true;
+                    try
+                    {
+                        this._codeGenProviders = new ConcurrentDictionary<string, Func<ICodeGenProvider>>();
+                        this.ConfigureCodeGen();
+                    }
+                    catch(Exception ex)
+                    {
+                        //if not properly initialized then reset to null
+                        this._codeGenProviders = null;
+                        this._OnError(ex);
+                        throw;
+                    }
                 }
             }
 
-            if (!this.IsCodeGenEnabled)
-                throw new InvalidOperationException(ErrorStrings.ERR_CODEGEN_DISABLED);
-            var metadata = MetadataHelper.EnsureMetadataInitialized(this);
-            Func<ICodeGenProvider> providerFactory = null;
-            if (!this._codeGenProviders.TryGetValue(args.lang, out providerFactory))
-                throw new InvalidOperationException(string.Format(ErrorStrings.ERR_CODEGEN_NOT_IMPLEMENTED,
-                    args.lang));
+            try
+            {
+                if (!this.IsCodeGenEnabled)
+                    throw new InvalidOperationException(ErrorStrings.ERR_CODEGEN_DISABLED);
 
-            return providerFactory().GetScript(args.comment, args.isDraft);
+                var metadata = MetadataHelper.GetInitializedMetadata(this);
+
+                Func<ICodeGenProvider> providerFactory = null;
+                if (!this._codeGenProviders.TryGetValue(args.lang, out providerFactory))
+                    throw new InvalidOperationException(string.Format(ErrorStrings.ERR_CODEGEN_NOT_IMPLEMENTED,
+                        args.lang));
+
+                return providerFactory().GetScript(args.comment, args.isDraft);
+            }
+            catch(Exception ex)
+            {
+                this._OnError(ex);
+                throw;
+            }
         }
 
         public Permissions ServiceGetPermissions()
         {
             try
             {
-                var metadata = MetadataHelper.EnsureMetadataInitialized(this);
+                var metadata = MetadataHelper.GetInitializedMetadata(this);
                 var result = new Permissions();
                 result.serverTimezone = DateTimeHelper.GetTimezoneOffset();
                 var authorizer = ServiceContainer.Authorizer;
@@ -497,7 +518,7 @@ namespace RIAPP.DataService.DomainService
         {
             try
             {
-                var metadata = MetadataHelper.EnsureMetadataInitialized(this);
+                var metadata = MetadataHelper.GetInitializedMetadata(this);
                 var result = new MetadataResult();
                 result.methods = metadata.methodDescriptions;
                 result.associations.AddRange(metadata.associations.Values);

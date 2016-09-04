@@ -46,7 +46,7 @@ namespace RIAPP.DataService.DomainService
                 return _domainService;
             if (methodData.entityType == null)
                 return _domainService;
-            var metadata = MetadataHelper.EnsureMetadataInitialized(_domainService);
+            var metadata = MetadataHelper.GetInitializedMetadata(_domainService);
             var managerInstance = _dataManagers.GetOrAdd(methodData.entityType,
                 t => { return metadata.DataManagerContainer.GetDataManager(_domainService, t); });
             return managerInstance;

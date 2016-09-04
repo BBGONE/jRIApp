@@ -26,7 +26,7 @@ namespace RIAPP.DataService.DomainService
             if (includePaths == null || includePaths.Length == 0)
                 return Enumerable.Empty<Subset>();
             var visited = new Dictionary<string, Subset>();
-            var metadata = MetadataHelper.EnsureMetadataInitialized(_domainService);
+            var metadata = MetadataHelper.GetInitializedMetadata(_domainService);
             foreach (var includePath in includePaths)
             {
                 var pathParts = includePath.Split('.');
@@ -41,7 +41,7 @@ namespace RIAPP.DataService.DomainService
             var result = new SubsetList();
             if (subResults == null)
                 return result;
-            var metadata = MetadataHelper.EnsureMetadataInitialized(_domainService);
+            var metadata = MetadataHelper.GetInitializedMetadata(_domainService);
             foreach (var subResult in subResults)
             {
                 var dbSetInfo = metadata.dbSets[subResult.dbSetName];
@@ -81,7 +81,7 @@ namespace RIAPP.DataService.DomainService
         private void CreateSubset(DbSetInfo dbSetInfo, IEnumerable<object> inputEntities, string propertyName,
             string[] nextParts, Dictionary<string, Subset> visited)
         {
-            var metadata = MetadataHelper.EnsureMetadataInitialized(_domainService);
+            var metadata = MetadataHelper.GetInitializedMetadata(_domainService);
             var isChildProperty = false;
             DbSetInfo nextDbSetInfo = null;
             var assoc =  metadata.associations.Values.Where(
