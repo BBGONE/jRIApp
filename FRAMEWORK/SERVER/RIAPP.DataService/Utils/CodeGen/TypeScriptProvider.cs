@@ -1,17 +1,20 @@
-﻿using RIAPP.DataService.DomainService.Interfaces;
-using RIAPP.DataService.DomainService;
+﻿using RIAPP.DataService.DomainService;
+using RIAPP.DataService.DomainService.Interfaces;
 using System;
-using RIAPP.DataService.Resources;
-using System.Reflection;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace RIAPP.DataService.Utils.CodeGen
 {
     public class TypeScriptProvider : ICodeGenProvider
     {
         private BaseDomainService _owner;
-        public TypeScriptProvider(BaseDomainService owner)
+        private IEnumerable<Type> _clientTypes;
+
+        public TypeScriptProvider(BaseDomainService owner, IEnumerable<Type> clientTypes)
         {
             this._owner = owner;
+            this._clientTypes = clientTypes ?? Enumerable.Empty<Type>();
         }
 
         public string lang
@@ -24,11 +27,8 @@ namespace RIAPP.DataService.Utils.CodeGen
 
         public virtual string GetScript(string comment = null, bool isDraft = false)
         {
-            if (!this._owner.IsCodeGenEnabled)
-                throw new InvalidOperationException(ErrorStrings.ERR_CODEGEN_DISABLED);
-
             var metadata = this._owner.ServiceGetMetadata();
-            var helper = new TypeScriptHelper(this._owner.ServiceContainer, metadata,  this._owner.GetClientTypes());
+            var helper = new TypeScriptHelper(this._owner.ServiceContainer, metadata, this._clientTypes);
             return helper.CreateTypeScript(comment);
         }
     }

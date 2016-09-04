@@ -1,7 +1,5 @@
 ﻿using RIAPP.DataService.DomainService;
 using RIAPP.DataService.DomainService.Interfaces;
-using RIAPP.DataService.Resources;
-using System;
 
 namespace RIAPP.DataService.Utils.CodeGen
 {
@@ -20,12 +18,6 @@ namespace RIAPP.DataService.Utils.CodeGen
             {
                 return "csharp";
             }
-        }
-
-        protected void CheckCodeGen()
-        {
-            if (!this._owner.IsCodeGenEnabled)
-                throw new InvalidOperationException(ErrorStrings.ERR_CODEGEN_DISABLED);
         }
 
         public abstract string GetScript(string comment = null, bool isDraft = false);

@@ -15,7 +15,6 @@ namespace RIAPP.DataService.EF6_CF.Utils
 
         public override string GetScript(string comment = null, bool isDraft = false)
         {
-            this.CheckCodeGen();
             var metadata = this._owner.ServiceGetMetadata();
             return DataServiceMethodsHelper.CreateMethods(metadata, this._db);
         }

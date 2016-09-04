@@ -24,6 +24,8 @@ namespace RIAPP.DataService.DomainService
         protected readonly ISerializer serializer;
         private bool _IsCodeGenEnabled;
         private ConcurrentDictionary<string, Func<ICodeGenProvider>> _codeGenProviders;
+        protected internal readonly ServiceOperationsHelper _helper;
+
 
         public BaseDomainService(IServiceArgs args)
         {
@@ -36,7 +38,6 @@ namespace RIAPP.DataService.DomainService
 
             ServiceContainer = this.CreateServiceContainer();
             this._helper = new ServiceOperationsHelper(this);
-            this.AddOrReplaceCodeGen("ts", () => new TypeScriptProvider(this));
             this.AddOrReplaceCodeGen("xaml", () => new XamlProvider(this));
         }
 
@@ -73,12 +74,6 @@ namespace RIAPP.DataService.DomainService
                 return;
             OnError(ex);
         }
-
-        #region private members
-
-        internal ServiceOperationsHelper _helper;
-
-        #endregion
 
         #region Overridable Methods
 
@@ -163,11 +158,6 @@ namespace RIAPP.DataService.DomainService
             {
                 _OnError(ex);
             }
-        }
-
-        protected internal virtual IEnumerable<Type> GetClientTypes()
-        {
-            return Enumerable.Empty<Type>();
         }
 
         protected virtual void AuthorizeChangeSet(ChangeSet changeSet)
@@ -438,6 +428,10 @@ namespace RIAPP.DataService.DomainService
 
         public string ServiceCodeGen(CodeGenArgs args)
         {
+            if (!this.IsCodeGenEnabled)
+                throw new InvalidOperationException(ErrorStrings.ERR_CODEGEN_DISABLED);
+
+
             Func<ICodeGenProvider> providerFactory = null;
             if (!this._codeGenProviders.TryGetValue(args.lang, out providerFactory))
                 throw new InvalidOperationException(string.Format(ErrorStrings.ERR_CODEGEN_NOT_IMPLEMENTED,
@@ -579,8 +573,6 @@ namespace RIAPP.DataService.DomainService
         {
             if (_helper != null && isDisposing)
                 _helper.Dispose();
-            _helper = null;
-            ServiceContainer = null;
         }
 
         void IDisposable.Dispose()

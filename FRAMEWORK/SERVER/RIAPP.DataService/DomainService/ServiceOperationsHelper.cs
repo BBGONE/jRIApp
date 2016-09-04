@@ -12,7 +12,7 @@ using RIAPP.DataService.Utils.Extensions;
 
 namespace RIAPP.DataService.DomainService
 {
-    internal class ServiceOperationsHelper : IDisposable
+    public class ServiceOperationsHelper : IDisposable
     {
         /// <summary>
         ///     Already created instances of DataManagers indexed by modelType
