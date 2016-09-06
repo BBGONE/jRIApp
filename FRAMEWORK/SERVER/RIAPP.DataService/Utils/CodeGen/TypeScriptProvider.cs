@@ -27,7 +27,7 @@ namespace RIAPP.DataService.Utils.CodeGen
 
         public virtual string GetScript(string comment = null, bool isDraft = false)
         {
-            var metadata = this._owner.ServiceGetMetadata();
+            CachedMetadata metadata = MetadataHelper.GetInitializedMetadata(this._owner);
             var helper = new TypeScriptHelper(this._owner.ServiceContainer, metadata, this._clientTypes);
             return helper.CreateTypeScript(comment);
         }

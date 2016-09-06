@@ -58,15 +58,11 @@ namespace RIAPP.DataService.Utils
         {
             methods.ForEach(md =>
             {
-                System.Type entityType = md.methodData.entityType;
                 if (md.isQuery)
                 {
                     //First check QueryAtrribute if it contains info for Entity Type or DbSet Name
                     QueryAttribute queryAttribute = (QueryAttribute)md.methodData.methodInfo.GetCustomAttributes(typeof(QueryAttribute), false).FirstOrDefault();
-                    if (queryAttribute.EntityType != null)
-                    {
-                        entityType = queryAttribute.EntityType;
-                    }
+
                     string dbSetName = queryAttribute.DbSetName;
                     if (!string.IsNullOrWhiteSpace(dbSetName))
                     {
@@ -74,25 +70,24 @@ namespace RIAPP.DataService.Utils
                             throw new DomainServiceException(string.Format("Can not determine the DbSet for a query method: {0} by DbSetName {1}", md.methodName, dbSetName));
                         _svcMethods.Add(dbSetName, md);
                     }
-                }
-
-                if (entityType != null)
-                {
-                    IEnumerable<DbSetInfo> dbSets = dbSetsByTypeLookUp[entityType];
-                    if (!dbSets.Any())
+                    else
                     {
-                        throw new DomainServiceException(string.Format("Can not determine the DbSet for a query method: {0}", md.methodName));
-                    }
+                        System.Type entityType = queryAttribute.EntityType ?? md.methodData.entityType;
+                  
+                        IEnumerable<DbSetInfo> dbSets = dbSetsByTypeLookUp[entityType];
+                        if (!dbSets.Any())
+                        {
+                            throw new DomainServiceException(string.Format("Can not determine the DbSet for a query method: {0}", md.methodName));
+                        }
 
-                    foreach (var dbSetInfo in dbSets)
-                    {
-                        _svcMethods.Add(dbSetInfo.dbSetName, md);
+                        foreach (var dbSetInfo in dbSets)
+                        {
+                            _svcMethods.Add(dbSetInfo.dbSetName, md);
+                        }
                     }
                 }
                 else
-                {
                     _svcMethods.Add("", md);
-                }
             });
         }
 
@@ -132,14 +127,24 @@ namespace RIAPP.DataService.Utils
             return method;
         }
 
+        public IEnumerable<MethodDescription> GetQueryMethods(string dbSetName)
+        {
+            return _svcMethods.GetQueryMethods(dbSetName);
+        }
+
         public MethodDescription GetInvokeMethod(string name)
         {
-            var method = _svcMethods.GetInvokeMethod("", name);
+            var method = _svcMethods.GetInvokeMethod(name);
             if (method == null)
             {
                 throw new DomainServiceException(string.Format(ErrorStrings.ERR_METH_NAME_INVALID, name));
             }
             return method;
+        }
+
+        public IEnumerable<MethodDescription> GetInvokeMethods()
+        {
+           return _svcMethods.GetInvokeMethods();
         }
 
         public MethodInfoData getOperationMethodInfo(string dbSetName, MethodType methodType)

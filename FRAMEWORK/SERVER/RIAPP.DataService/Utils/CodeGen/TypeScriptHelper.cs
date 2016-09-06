@@ -15,12 +15,14 @@ namespace RIAPP.DataService.Utils.CodeGen
     {
         private readonly List<Type> _clientTypes;
         private DotNet2TS _dotNet2TS;
-        private readonly MetadataResult _metadata;
-        private readonly ILookup<Type, MethodDescription> _queriesLookup;
+        private readonly CachedMetadata _metadata;
+        //private readonly ILookup<Type, MethodDescription> _queriesLookup;
         private readonly StringBuilder _sb = new StringBuilder(4096);
         private readonly IServiceContainer _serviceContainer;
+        private readonly List<DbSetInfo> _dbSets;
+        private readonly List<Association> _associations;
 
-        public TypeScriptHelper(IServiceContainer serviceContainer, MetadataResult metadata,
+        public TypeScriptHelper(IServiceContainer serviceContainer, CachedMetadata metadata,
             IEnumerable<Type> clientTypes)
         {
             if (serviceContainer == null)
@@ -30,7 +32,8 @@ namespace RIAPP.DataService.Utils.CodeGen
                 throw new ArgumentException("metadata parameter must not be null", "metadata");
             _metadata = metadata;
             _clientTypes = new List<Type>(clientTypes == null ? Enumerable.Empty<Type>() : clientTypes);
-            _queriesLookup = _metadata.methods.Where(m => m.isQuery).ToLookup(m => m.methodData.entityType);
+            _dbSets = _metadata.dbSets.Values.OrderBy(v => v.dbSetName).ToList();
+            _associations = _metadata.associations.Values.OrderBy(a=>a.name).ToList();
         }
 
         private void _dotnet2TS_newClientTypeAdded(object sender, NewTypeArgs e)
@@ -100,6 +103,7 @@ namespace RIAPP.DataService.Utils.CodeGen
                 WriteStringLine(isvcMethods);
                 WriteLine();
             }
+
             if (!string.IsNullOrWhiteSpace(listTypes))
             {
                 WriteStringLine(@"//******BEGIN LISTS REGION******");
@@ -111,7 +115,8 @@ namespace RIAPP.DataService.Utils.CodeGen
             //this.WriteStringLine(this.createQueryNames());
 
             var ctbuilder = new ComplexTypeBuilder(_dotNet2TS);
-            _metadata.dbSets.ForEach(dbSetInfo =>
+          
+            _dbSets.ForEach(dbSetInfo =>
             {
                 dbSetInfo.fieldInfos.ForEach(fieldInfo =>
                 {
@@ -131,7 +136,7 @@ namespace RIAPP.DataService.Utils.CodeGen
                 WriteLine();
             }
 
-            _metadata.dbSets.ForEach(dbSetInfo =>
+            _dbSets.ForEach(dbSetInfo =>
             {
                 var res = createEntityType(dbSetInfo);
                 //write interface definition for entity
@@ -166,7 +171,7 @@ namespace RIAPP.DataService.Utils.CodeGen
         private string createDbSetProps()
         {
             var sb = new StringBuilder(512);
-            _metadata.dbSets.ForEach(dbSetInfo =>
+            _dbSets.ForEach(dbSetInfo =>
             {
                 var dbSetType = GetDbSetTypeName(dbSetInfo.dbSetName);
                 sb.AppendFormat("\tget {0}() {{ return <{1}>this.getDbSet(\"{0}\"); }}", dbSetInfo.dbSetName, dbSetType);
@@ -180,11 +185,11 @@ namespace RIAPP.DataService.Utils.CodeGen
             var sb = new StringBuilder(512);
             sb.AppendLine("export interface IAssocs");
             sb.AppendLine("{");
-            _metadata.associations.ForEach(assoc =>
+            foreach(var assoc in _associations)
             {
                 sb.AppendFormat("\tget{0}: {1};", assoc.name, "()=> dbMOD.Association");
                 sb.AppendLine();
-            });
+            }
             sb.AppendLine("}");
             return sb.ToString();
         }
@@ -200,7 +205,7 @@ namespace RIAPP.DataService.Utils.CodeGen
 
         private void processMethodArgs()
         {
-            _metadata.methods.ForEach(methodInfo =>
+            foreach(var methodInfo in _metadata.GetInvokeMethods())
             {
                 if (methodInfo.parameters.Count() > 0)
                 {
@@ -211,7 +216,7 @@ namespace RIAPP.DataService.Utils.CodeGen
                             _dotNet2TS.RegisterType(paramInfo.ParameterType);
                     });
                 }
-            });
+            }
         }
 
         private string createISvcMethods()
@@ -220,7 +225,7 @@ namespace RIAPP.DataService.Utils.CodeGen
             sbISvcMeth.AppendLine("export interface ISvcMethods");
             sbISvcMeth.AppendLine("{");
             var sbArgs = new StringBuilder(255);
-            var svcMethods = _metadata.methods.Where(m => !m.isQuery).ToList();
+            var svcMethods = _metadata.GetInvokeMethods().OrderBy(m=>m.methodName).ToList();
             svcMethods.ForEach(methodInfo =>
             {
                 sbArgs.Length = 0;
@@ -504,7 +509,7 @@ namespace RIAPP.DataService.Utils.CodeGen
             }
 
 
-            return sb.ToString().Trim('\r', '\n', ' ');
+            return sb.ToString();
         }
 
         /*
@@ -538,9 +543,9 @@ namespace RIAPP.DataService.Utils.CodeGen
         {
             var sb = new StringBuilder(256);
             var sbArgs = new StringBuilder(256);
-            var queries = _queriesLookup[dbSetInfo.EntityType].ToList();
+            var queries = _metadata.GetQueryMethods(dbSetInfo.dbSetName);
             var entityInterfaceName = GetEntityInterfaceName(dbSetInfo.dbSetName);
-            queries.ForEach(methodDescription =>
+            foreach(var methodDescription in queries)
             {
                 sbArgs.Length = 0;
                 sbArgs.AppendLine("args?: {");
@@ -574,7 +579,7 @@ namespace RIAPP.DataService.Utils.CodeGen
                     sb.AppendLine();
                 }
                 sb.AppendLine("\t}");
-            });
+            };
             return sb.ToString().Trim('\r', '\n', ' ');
         }
 
@@ -604,9 +609,9 @@ namespace RIAPP.DataService.Utils.CodeGen
         private string createDbContextType()
         {
             var sb = new StringBuilder(512);
-            var dbSetNames = _metadata.dbSets.Select(d => d.dbSetName).ToArray();
+            var dbSetNames = _dbSets.Select(d => d.dbSetName).ToArray();
             var sbCreateDbSets = new StringBuilder(512);
-            _metadata.dbSets.ForEach(dbSetInfo =>
+            _dbSets.ForEach(dbSetInfo =>
             {
                 var dbSetType = GetDbSetTypeName(dbSetInfo.dbSetName);
                 sbCreateDbSets.AppendFormat("\t\tthis._createDbSet(\"{0}\",{1});", dbSetInfo.dbSetName, dbSetType);
@@ -633,13 +638,13 @@ namespace RIAPP.DataService.Utils.CodeGen
                             sb.Append(sbCreateDbSets.ToString().Trim('\r', '\n', ' '));
                             break;
                         case "TIMEZONE":
-                            sb.Append(_metadata.serverTimezone.ToString());
+                            sb.Append(DateTimeHelper.GetTimezoneOffset().ToString());
                             break;
                         case "ASSOCIATIONS":
-                            sb.Append(_serviceContainer.Serializer.Serialize(_metadata.associations));
+                            sb.Append(_serviceContainer.Serializer.Serialize(_associations));
                             break;
                         case "METHODS":
-                            sb.Append(_serviceContainer.Serializer.Serialize(_metadata.methods));
+                            sb.Append(_serviceContainer.Serializer.Serialize(_metadata.GetInvokeMethods().OrderBy(m=>m.methodName)));
                             break;
                     }
                 }
@@ -653,9 +658,8 @@ namespace RIAPP.DataService.Utils.CodeGen
             var dbSetType = GetDbSetTypeName(dbSetInfo.dbSetName);
             var entityTypeName = GetEntityTypeName(dbSetInfo.dbSetName);
             var entityInterfaceName = GetEntityInterfaceName(dbSetInfo.dbSetName);
-            var childAssoc = _metadata.associations.Where(assoc => assoc.childDbSetName == dbSetInfo.dbSetName).ToList();
-            var parentAssoc =
-                _metadata.associations.Where(assoc => assoc.parentDbSetName == dbSetInfo.dbSetName).ToList();
+            var childAssoc = _associations.Where(assoc => assoc.childDbSetName == dbSetInfo.dbSetName).ToList();
+            var parentAssoc = _associations.Where(assoc => assoc.parentDbSetName == dbSetInfo.dbSetName).ToList();
             var fieldInfos = dbSetInfo.fieldInfos;
 
             var pkFields = dbSetInfo.GetPKFields();

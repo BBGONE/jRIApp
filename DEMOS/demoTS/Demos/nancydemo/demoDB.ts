@@ -1,6 +1,6 @@
 ﻿/// <reference path="../jriapp/jriapp.d.ts" />
 /*
-	Generated from: http://localhost:8080/demosvc/code?lang=ts on 2016-08-09 04:48 at 04:48
+	Generated from: http://localhost:8080/demosvc/code?lang=ts on 2016-09-06 12:45 at 12:45
 	Don't make manual changes here, because they will be lost when this db interface will be regenerated!
 */
 
@@ -131,7 +131,9 @@ export class TestList extends RIAPP.BaseList<TestModelListItem, IClientTestModel
     toString() {
         return 'TestList';
     }
-} export class KeyValListItem extends RIAPP.CollectionItem<RIAPP.ListItemAspect<KeyValListItem, IKeyVal>> implements RIAPP.IListItem, IKeyVal {
+}
+
+export class KeyValListItem extends RIAPP.CollectionItem<RIAPP.ListItemAspect<KeyValListItem, IKeyVal>> implements RIAPP.IListItem, IKeyVal {
     get key(): number { return <number>this._aspect._getProp('key'); }
     set key(v: number) { this._aspect._setProp('key', v); }
     get val(): string { return <string>this._aspect._getProp('val'); }
@@ -152,7 +154,9 @@ export class KeyValDictionary extends RIAPP.BaseDictionary<KeyValListItem, IKeyV
     toString() {
         return 'KeyValDictionary';
     }
-} export class StrKeyValListItem extends RIAPP.CollectionItem<RIAPP.ListItemAspect<StrKeyValListItem, IStrKeyVal>> implements RIAPP.IListItem, IStrKeyVal {
+}
+
+export class StrKeyValListItem extends RIAPP.CollectionItem<RIAPP.ListItemAspect<StrKeyValListItem, IStrKeyVal>> implements RIAPP.IListItem, IStrKeyVal {
     get key(): string { return <string>this._aspect._getProp('key'); }
     set key(v: string) { this._aspect._setProp('key', v); }
     get val(): string { return <string>this._aspect._getProp('val'); }
@@ -173,7 +177,9 @@ export class StrKeyValDictionary extends RIAPP.BaseDictionary<StrKeyValListItem,
     toString() {
         return 'StrKeyValDictionary';
     }
-} export class RadioValListItem extends RIAPP.CollectionItem<RIAPP.ListItemAspect<RadioValListItem, IRadioVal>> implements RIAPP.IListItem, IRadioVal {
+}
+
+export class RadioValListItem extends RIAPP.CollectionItem<RIAPP.ListItemAspect<RadioValListItem, IRadioVal>> implements RIAPP.IListItem, IRadioVal {
     get key(): string { return <string>this._aspect._getProp('key'); }
     set key(v: string) { this._aspect._setProp('key', v); }
     get value(): string { return <string>this._aspect._getProp('value'); }
@@ -196,7 +202,9 @@ export class RadioValDictionary extends RIAPP.BaseDictionary<RadioValListItem, I
     toString() {
         return 'RadioValDictionary';
     }
-} export class HistoryItemListItem extends RIAPP.CollectionItem<RIAPP.ListItemAspect<HistoryItemListItem, IHistoryItem>> implements RIAPP.IListItem, IHistoryItem {
+}
+
+export class HistoryItemListItem extends RIAPP.CollectionItem<RIAPP.ListItemAspect<HistoryItemListItem, IHistoryItem>> implements RIAPP.IListItem, IHistoryItem {
     get radioValue(): string { return <string>this._aspect._getProp('radioValue'); }
     set radioValue(v: string) { this._aspect._setProp('radioValue', v); }
     get time(): Date { return <Date>this._aspect._getProp('time'); }

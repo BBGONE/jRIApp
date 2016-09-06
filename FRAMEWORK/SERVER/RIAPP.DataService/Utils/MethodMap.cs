@@ -11,9 +11,9 @@ namespace RIAPP.DataService.Utils
             return this[dbSetName].Where(m => m.methodData.methodType == MethodType.Query);
         }
 
-        public IEnumerable<MethodDescription> GetInvokeMethods(string dbSetName)
+        public IEnumerable<MethodDescription> GetInvokeMethods()
         {
-            return this[dbSetName].Where(m => m.methodData.methodType == MethodType.Invoke);
+            return this[""].Where(m => m.methodData.methodType == MethodType.Invoke);
         }
 
         public MethodDescription GetQueryMethod(string dbSetName, string queryName)
@@ -22,9 +22,9 @@ namespace RIAPP.DataService.Utils
             return list.Where(m => m.methodName == queryName).FirstOrDefault();
         }
 
-        public MethodDescription GetInvokeMethod(string dbSetName, string methodName)
+        public MethodDescription GetInvokeMethod(string methodName)
         {
-            var list = GetInvokeMethods(dbSetName);
+            var list = GetInvokeMethods();
             return list.Where(m => m.methodName == methodName).FirstOrDefault();
         }
     }
