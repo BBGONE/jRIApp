@@ -644,7 +644,7 @@ namespace RIAPP.DataService.Utils.CodeGen
                             sb.Append(_serviceContainer.Serializer.Serialize(_associations));
                             break;
                         case "METHODS":
-                            sb.Append(_serviceContainer.Serializer.Serialize(_metadata.GetInvokeMethods().OrderBy(m=>m.methodName)));
+                            sb.Append(_serviceContainer.Serializer.Serialize(_metadata.methodDescriptions));
                             break;
                     }
                 }
