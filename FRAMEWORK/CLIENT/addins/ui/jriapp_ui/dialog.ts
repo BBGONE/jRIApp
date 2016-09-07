@@ -22,9 +22,9 @@ export interface IDialogConstructorOptions {
     canRefresh?: boolean;
     canCancel?: boolean;
     fn_OnClose?: (dialog: DataEditDialog) => void;
-    fn_OnOK?: (dialog: DataEditDialog) => number;
+    fn_OnOK?: (dialog: DataEditDialog) => DIALOG_ACTION;
     fn_OnShow?: (dialog: DataEditDialog) => void;
-    fn_OnCancel?: (dialog: DataEditDialog) => number;
+    fn_OnCancel?: (dialog: DataEditDialog) => DIALOG_ACTION;
     fn_OnTemplateCreated?: (template: ITemplate) => void;
     fn_OnTemplateDestroy?: (template: ITemplate) => void;
 }
@@ -68,9 +68,9 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     private _canRefresh: boolean;
     private _canCancel: boolean;
     private _fn_OnClose: (dialog: DataEditDialog) => void;
-    private _fn_OnOK: (dialog: DataEditDialog) => number;
+    private _fn_OnOK: (dialog: DataEditDialog) => DIALOG_ACTION;
     private _fn_OnShow: (dialog: DataEditDialog) => void;
-    private _fn_OnCancel: (dialog: DataEditDialog) => number;
+    private _fn_OnCancel: (dialog: DataEditDialog) => DIALOG_ACTION;
     private _fn_OnTemplateCreated: (template: ITemplate) => void;
     private _fn_OnTemplateDestroy: (template: ITemplate) => void;
     private _isEditable: IEditable;

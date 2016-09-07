@@ -17,9 +17,9 @@ declare module "jriapp_ui/dialog" {
         canRefresh?: boolean;
         canCancel?: boolean;
         fn_OnClose?: (dialog: DataEditDialog) => void;
-        fn_OnOK?: (dialog: DataEditDialog) => number;
+        fn_OnOK?: (dialog: DataEditDialog) => DIALOG_ACTION;
         fn_OnShow?: (dialog: DataEditDialog) => void;
-        fn_OnCancel?: (dialog: DataEditDialog) => number;
+        fn_OnCancel?: (dialog: DataEditDialog) => DIALOG_ACTION;
         fn_OnTemplateCreated?: (template: ITemplate) => void;
         fn_OnTemplateDestroy?: (template: ITemplate) => void;
     }
