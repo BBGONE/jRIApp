@@ -181,18 +181,18 @@ export interface IEditable {
     beginEdit(): boolean;
     endEdit(): boolean;
     cancelEdit(): boolean;
-    isEditing: boolean;
+    readonly isEditing: boolean;
 }
 
 export interface ISubmittable {
     submitChanges(): IVoidPromise;
     rejectChanges(): void;
-    isCanSubmit: boolean;
+    readonly isCanSubmit: boolean;
 }
 
 export interface IValidationInfo {
-    fieldName: string;
-    errors: string[];
+    readonly fieldName: string;
+    readonly errors: string[];
 }
 
 export interface IErrorNotification {
