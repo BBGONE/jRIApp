@@ -9459,9 +9459,11 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             return this;
         };
         ItemAspect.prototype.destroy = function () {
+            var _this = this;
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
+            this._setIsEditing(false);
             var coll = this._collection;
             var item = this._item;
             if (!!item) {
@@ -9476,10 +9478,15 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             this.__key = null;
             this._saveVals = null;
             this._vals = {};
-            this._setIsEditing(false);
             this._isCached = false;
             this._isDetached = true;
             this._collection = null;
+            if (!!this._valueBag) {
+                utils_27.Utils.core.forEachProp(this._valueBag, function (name) {
+                    _this.setCustomVal(name, null);
+                });
+                this._valueBag = null;
+            }
             _super.prototype.destroy.call(this);
         };
         ItemAspect.prototype.toString = function () {
@@ -9564,6 +9571,34 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             enumerable: true,
             configurable: true
         });
+        ItemAspect.prototype.setCustomVal = function (name, val, isOwnVal) {
+            if (isOwnVal === void 0) { isOwnVal = true; }
+            if (this.getIsDestroyCalled())
+                return;
+            if (!this._valueBag) {
+                if (checks.isNt(val))
+                    return;
+                this._valueBag = {};
+            }
+            var old = this._valueBag[name];
+            if (!!old && old.isOwnIt && old !== val) {
+                if (checks.isBaseObject(old))
+                    old.destroy();
+            }
+            if (checks.isNt(val))
+                delete this._valueBag[name];
+            else
+                this._valueBag[name] = { val: val, isOwnIt: !!isOwnVal };
+        };
+        ItemAspect.prototype.getCustomVal = function (name) {
+            if (this.getIsDestroyCalled() || !this._valueBag)
+                return null;
+            var obj = this._valueBag[name];
+            if (!obj) {
+                return null;
+            }
+            return obj.val;
+        };
         return ItemAspect;
     }(object_17.BaseObject));
     exports.ItemAspect = ItemAspect;

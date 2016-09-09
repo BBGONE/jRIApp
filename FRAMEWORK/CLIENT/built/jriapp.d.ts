@@ -2518,6 +2518,7 @@ declare module "jriapp_collection/aspect" {
         protected _notEdited: boolean;
         private _isCached;
         private _isDetached;
+        private _valueBag;
         protected _setIsEditing(v: boolean): void;
         constructor(collection: BaseCollection<TItem>);
         protected _getEventNames(): string[];
@@ -2564,6 +2565,8 @@ declare module "jriapp_collection/aspect" {
         readonly isHasChanges: boolean;
         isCached: boolean;
         isDetached: boolean;
+        setCustomVal(name: string, val: any, isOwnVal?: boolean): void;
+        getCustomVal(name: string): any;
     }
 }
 declare module "jriapp_collection/list" {

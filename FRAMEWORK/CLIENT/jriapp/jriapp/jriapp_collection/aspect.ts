@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { FIELD_TYPE, DATA_TYPE } from "../jriapp_core/const";
-import { IIndexer, IValidationInfo, IFieldInfo, IVoidPromise, TEventHandler, IErrorNotification } from "../jriapp_core/shared";
+import { IIndexer, IValidationInfo, IFieldInfo, IVoidPromise, TEventHandler, IErrorNotification, IBaseObject } from "../jriapp_core/shared";
 import { BaseObject }  from "../jriapp_core/object";
 import { ERROR } from "../jriapp_utils/coreutils";
 import { Utils as utils } from "../jriapp_utils/utils";
@@ -24,6 +24,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     protected _notEdited: boolean;
     private _isCached: boolean;
     private _isDetached: boolean;
+    private _valueBag: IIndexer<{ val: any; isOwnIt: boolean; }>;
 
     protected _setIsEditing(v: boolean) {
         if (this.__isEditing !== v) {
@@ -356,6 +357,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
+        this._setIsEditing(false);
         let coll = this._collection;
         let item = this._item;
         if (!!item) {
@@ -370,10 +372,15 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         this.__key = null;
         this._saveVals = null;
         this._vals = {};
-        this._setIsEditing(false);
         this._isCached = false;
         this._isDetached = true;
         this._collection = null;
+        if (!!this._valueBag) {
+            utils.core.forEachProp(this._valueBag, (name) => {
+                this.setCustomVal(name, null);
+            });
+            this._valueBag = null;
+        }
         super.destroy(); 
     }
     toString() {
@@ -410,4 +417,34 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     set isCached(v: boolean) { this._isCached = v; }
     get isDetached(): boolean { return this._isDetached; }
     set isDetached(v: boolean) { this._isDetached = v; }
+    // can be used to store any user object
+    setCustomVal(name: string, val: any, isOwnVal: boolean = true): void {
+        if (this.getIsDestroyCalled())
+            return;
+        if (!this._valueBag) {
+            if (checks.isNt(val))
+                return;
+            this._valueBag = {};
+        }
+
+        let old = this._valueBag[name];
+        if (!!old && old.isOwnIt && old !== val) {
+            if (checks.isBaseObject(old))
+                (<IBaseObject>old).destroy();
+        }
+        if (checks.isNt(val))
+            delete this._valueBag[name];
+        else
+            this._valueBag[name] = { val: val, isOwnIt: !!isOwnVal };
+    }
+    getCustomVal(name: string): any {
+        if (this.getIsDestroyCalled() || !this._valueBag)
+            return null;
+      
+        let obj = this._valueBag[name];
+        if (!obj) {
+            return null;
+        }
+        return obj.val;
+    }
 }
