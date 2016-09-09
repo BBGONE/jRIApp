@@ -16,7 +16,6 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "./co
             this._childView = null;
             if (item.HasSubDirs)
                 this._childView = this.createChildView();
-            this._item.addOnDestroyed(function (s, a) { self.destroy(); });
             this._dbSet = item._aspect.dbSet;
             self._toggleCommand = new RIAPP.Command(function (s, a) {
                 if (!self.childView)
@@ -91,7 +90,6 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "./co
             }
             this._dbSet = null;
             this._dbContext = null;
-            this._item._exProps = null;
             this._item = null;
             _super.prototype.destroy.call(this);
         };
@@ -165,14 +163,13 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "./co
                 return self.getFullPath(item);
             });
             self.dbContext.dbSets.FileSystemObject.defineExtraPropsField(function (item) {
-                if (item.getIsDestroyCalled())
-                    return null;
-                if (item._exProps)
-                    return item._exProps;
-                var res = new ExProps(item, self.dbContext);
-                item._exProps = res;
-                res.addOnClicked(function (s, a) { self._onItemClicked(a.item); });
-                res.addOnDblClicked(function (s, a) { self._onItemDblClicked(a.item); });
+                var res = item._aspect.getCustomVal("exprop");
+                if (!res) {
+                    res = new ExProps(item, self.dbContext);
+                    item._aspect.setCustomVal("exprop", res);
+                    res.addOnClicked(function (s, a) { self._onItemClicked(a.item); });
+                    res.addOnDblClicked(function (s, a) { self._onItemDblClicked(a.item); });
+                }
                 return res;
             });
             this._rootView = this.createDataView();
@@ -222,7 +219,7 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "./co
             });
             self._dbSet.acceptChanges();
             self._dbSet.items.forEach(function (item) {
-                var exProps = item._exProps;
+                var exProps = item._aspect.getCustomVal("exprop");
                 if (!exProps)
                     return;
                 exProps.refreshCss();

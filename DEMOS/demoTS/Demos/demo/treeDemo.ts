@@ -41,7 +41,6 @@ export class ExProps extends RIAPP.BaseObject {
         this._childView = null;
         if (item.HasSubDirs)
             this._childView = this.createChildView();
-        this._item.addOnDestroyed((s, a) => { self.destroy(); });
         this._dbSet = <FOLDERBROWSER_SVC.FileSystemObjectDb>item._aspect.dbSet;
         self._toggleCommand = new RIAPP.Command(function (s, a) {
             if (!self.childView)
@@ -119,7 +118,6 @@ export class ExProps extends RIAPP.BaseObject {
         }
         this._dbSet = null;
         this._dbContext = null;
-        (<any>this._item)._exProps = null;
         this._item = null;
         super.destroy();
     }
@@ -178,17 +176,17 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
         });
 
         self.dbContext.dbSets.FileSystemObject.defineExtraPropsField(function (item) {
-            if (item.getIsDestroyCalled())
-                return null;
+            let res = <ExProps>item._aspect.getCustomVal("exprop");
+            if (!res) {
+                res = new ExProps(item, self.dbContext);
+                item._aspect.setCustomVal("exprop", res);
+                res.addOnClicked((s, a) => { self._onItemClicked(a.item); });
+                res.addOnDblClicked((s, a) => { self._onItemDblClicked(a.item); });
+            }
 
-            if ((<any>item)._exProps)
-                return (<any>item)._exProps;
-            var res = new ExProps(item, self.dbContext);
-            (<any>item)._exProps = res;
-            res.addOnClicked((s, a) => { self._onItemClicked(a.item); });
-            res.addOnDblClicked((s, a) => { self._onItemDblClicked(a.item); });
             return res;
         });
+
         this._rootView = this.createDataView();
     }
     protected _onItemClicked(item: FOLDERBROWSER_SVC.FileSystemObject) {
@@ -239,9 +237,8 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
         });
 
         self._dbSet.acceptChanges();
-
         self._dbSet.items.forEach((item) => {
-            var exProps = <ExProps>(<any>item)._exProps;
+            let exProps = <ExProps>item._aspect.getCustomVal("exprop");
             if (!exProps)
                 return;
             exProps.refreshCss();
