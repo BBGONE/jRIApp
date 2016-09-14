@@ -47,7 +47,7 @@ export interface IEntityAspectConstructor<TItem extends IEntityItem, TDbContext 
 }
 
 export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContext> extends ItemAspect<TItem> {
-    private __srvKey: string;
+    private _srvKey: string;
     private _isRefreshing: boolean;
     private _origVals: IIndexer<any>;
     private _savedStatus: ITEM_STATUS;
@@ -55,7 +55,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
     constructor(dbSet: DbSet<TItem, TDbContext>, row: IRowData, names: IFieldName[]) {
         super(dbSet);
         let self = this;
-        this.__srvKey = null;
+        this._srvKey = null;
         this._isRefreshing = false;
         this._origVals = null;
         this._savedStatus = null;
@@ -76,7 +76,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
     protected _initRowInfo(row: IRowData, names: IFieldName[]) {
         if (!row)
             return;
-        this.__srvKey = row.k;
+        this._srvKey = row.k;
         this.key = row.k;
 
         this._processValues("", row.v, names);
@@ -229,8 +229,9 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
             this.dbSet._getInternal().onItemStatusChanged(this.item, oldStatus);
         }
     }
+    protected getSrvKey(): string { return this._srvKey; }
     _updateKeys(srvKey: string) {
-        this.__srvKey = srvKey;
+        this._srvKey = srvKey;
         this.key = srvKey;
     }
     _checkCanRefresh() {
@@ -314,7 +315,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         let res: IRowInfo = {
             values: this._getValueChanges(false),
             changeType: this.status,
-            serverKey: this._srvKey,
+            serverKey: this.getSrvKey(),
             clientKey: this.key,
             error: null
         };
@@ -489,16 +490,17 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         return dbxt._getInternal().refreshItem(this.item);
     }
     toString() {
-        return "EntityAspect";
+        return this.dbSetName + "EntityAspect";
     }
     destroy() {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        if (!!this._item && this.isCached) {
+        let item = this.item;
+        if (!!item && this.isCached) {
             try {
-                if (!this._item.getIsDestroyCalled())
-                    this._item.destroy();
+                if (!item.getIsDestroyCalled())
+                    item.destroy();
                 this._fakeDestroy();
             }
             finally {
@@ -507,14 +509,13 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
             return;
         }
         this.dbSet._getInternal().removeFromChanged(this.key);
-        this.__srvKey = null;
+        this._srvKey = null;
         this._origVals = null;
         this._savedStatus = null;
         this._isRefreshing = false;
         super.destroy();
     }
-    get _entityType() { return this.dbSet.entityType; }
-    get _srvKey(): string { return this.__srvKey; }
+    get entityType() { return this.dbSet.entityType; }
     get isCanSubmit(): boolean { return true; }
     get isNew(): boolean { return this._status === ITEM_STATUS.Added; }
     get isDeleted(): boolean { return this._status === ITEM_STATUS.Deleted; }

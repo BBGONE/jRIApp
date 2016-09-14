@@ -14,9 +14,9 @@ import { ValidationError, Validations } from "validation";
 const coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
 
 export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implements IItemAspect<TItem> {
-    private __key: string;
-    protected _item: TItem;
-    private __isEditing: boolean;
+    private _key: string;
+    private _item: TItem;
+    private _isEditing: boolean;
     private _collection: BaseCollection<TItem>;
     protected _status: ITEM_STATUS;
     protected _saveVals: IIndexer<any>;
@@ -27,17 +27,17 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     private _valueBag: IIndexer<{ val: any; isOwnIt: boolean; }>;
 
     protected _setIsEditing(v: boolean) {
-        if (this.__isEditing !== v) {
-            this.__isEditing = v;
+        if (this._isEditing !== v) {
+            this._isEditing = v;
             this.raisePropertyChanged(PROP_NAME.isEditing);
         }
     }
 
     constructor(collection: BaseCollection<TItem>) {
         super();
-        this.__key = null;
+        this._key = null;
         this._item = null;
-        this.__isEditing = false;
+        this._isEditing = false;
         this._collection = collection;
         this._status = ITEM_STATUS.None;
         this._saveVals = null;
@@ -63,18 +63,18 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     protected _beginEdit(): boolean {
         let coll = this.collection, isHandled: boolean;
         if (coll.isEditing) {
-            let eitem = coll._getInternal().getEditingItem();
-            if (eitem._aspect === this)
+            let item = coll._getInternal().getEditingItem();
+            if (item._aspect === this)
                 return false;
             try {
-                eitem._aspect.endEdit();
-                if (eitem._aspect.getIsHasErrors()) {
-                    this.handleError(new ValidationError(eitem._aspect.getAllErrors(), eitem), eitem);
-                    eitem._aspect.cancelEdit();
+                item._aspect.endEdit();
+                if (item._aspect.getIsHasErrors()) {
+                    this.handleError(new ValidationError(item._aspect.getAllErrors(), item), item);
+                    item._aspect.cancelEdit();
                 }
             } catch (ex) {
-                isHandled = this.handleError(ex, eitem);
-                eitem._aspect.cancelEdit();
+                isHandled = this.handleError(ex, item);
+                item._aspect.cancelEdit();
                 ERROR.reThrow(ex, isHandled);
             }
         }
@@ -88,15 +88,15 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     protected _endEdit(): boolean {
         if (!this.isEditing)
             return false;
-        let coll = this.collection, self = this;
+        let coll = this.collection, self = this, internal = coll._getInternal();
         if (this.getIsHasErrors()) {
             return false;
         }
         //revalidate all
-        coll._getInternal().removeAllErrors(this.item);
+        internal.removeAllErrors(this.item);
         let validation_errors = this._validateAll();
         if (validation_errors.length > 0) {
-            coll._getInternal().addErrors(self.item, validation_errors);
+            internal.addErrors(self.item, validation_errors);
         }
         if (this.getIsHasErrors()) {
             return false;
@@ -278,25 +278,31 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     rejectChanges(): void {
     }
     beginEdit(): boolean {
-        let coll = this.collection;
+        let coll = this.collection, internal = coll._getInternal();
+        if (!this.isEditing)
+            internal.onBeforeEditing(this.item, true, false);
         if (!this._beginEdit())
             return false;
-        coll._getInternal().onEditing(this.item, true, false);
+        internal.onEditing(this.item, true, false);
         return true;
     }
     endEdit(): boolean {
-        let coll = this.collection;
+        let coll = this.collection, internal = coll._getInternal();
+        if (this.isEditing)
+            internal.onBeforeEditing(this.item, false, false);
         if (!this._endEdit())
             return false;
-        coll._getInternal().onEditing(this.item, false, false);
+        internal.onEditing(this.item, false, false);
         this._notEdited = false;
         return true;
     }
     cancelEdit(): boolean {
-        let coll = this.collection;
+        let coll = this.collection, internal = coll._getInternal();
+        if (this.isEditing)
+            internal.onBeforeEditing(this.item, false, true);
         if (!this._cancelEdit())
             return false;
-        coll._getInternal().onEditing(this.item, false, true);
+        internal.onEditing(this.item, false, true);
         return true;
     }
     deleteItem(): boolean {
@@ -369,7 +375,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
             }
             this._item = null;
         }
-        this.__key = null;
+        this._key = null;
         this._saveVals = null;
         this._vals = {};
         this._isCached = false;
@@ -398,11 +404,11 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         return false;
     }
     get isDeleted(): boolean { return false; }
-    get key(): string { return this.__key; }
+    get key(): string { return this._key; }
     set key(v: string) {
         if (v !== null)
             v = "" + v;
-        this.__key = v;
+        this._key = v;
     }
     get collection(): BaseCollection<TItem> { return this._collection; }
     get isUpdating(): boolean {
@@ -411,7 +417,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
             return false;
         return coll.isUpdating;
     }
-    get isEditing(): boolean { return this.__isEditing; }
+    get isEditing(): boolean { return this._isEditing; }
     get isHasChanges(): boolean { return this._status !== ITEM_STATUS.None; }
     get isCached(): boolean { return this._isCached; }
     set isCached(v: boolean) { this._isCached = v; }

@@ -3061,7 +3061,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
         function EntityAspect(dbSet, row, names) {
             _super.call(this, dbSet);
             var self = this;
-            this.__srvKey = null;
+            this._srvKey = null;
             this._isRefreshing = false;
             this._origVals = null;
             this._savedStatus = null;
@@ -3081,7 +3081,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
         EntityAspect.prototype._initRowInfo = function (row, names) {
             if (!row)
                 return;
-            this.__srvKey = row.k;
+            this._srvKey = row.k;
             this.key = row.k;
             this._processValues("", row.v, names);
         };
@@ -3224,8 +3224,9 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
                 this.dbSet._getInternal().onItemStatusChanged(this.item, oldStatus);
             }
         };
+        EntityAspect.prototype.getSrvKey = function () { return this._srvKey; };
         EntityAspect.prototype._updateKeys = function (srvKey) {
-            this.__srvKey = srvKey;
+            this._srvKey = srvKey;
             this.key = srvKey;
         };
         EntityAspect.prototype._checkCanRefresh = function () {
@@ -3307,7 +3308,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
             var res = {
                 values: this._getValueChanges(false),
                 changeType: this.status,
-                serverKey: this._srvKey,
+                serverKey: this.getSrvKey(),
                 clientKey: this.key,
                 error: null
             };
@@ -3479,16 +3480,17 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
             return dbxt._getInternal().refreshItem(this.item);
         };
         EntityAspect.prototype.toString = function () {
-            return "EntityAspect";
+            return this.dbSetName + "EntityAspect";
         };
         EntityAspect.prototype.destroy = function () {
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
-            if (!!this._item && this.isCached) {
+            var item = this.item;
+            if (!!item && this.isCached) {
                 try {
-                    if (!this._item.getIsDestroyCalled())
-                        this._item.destroy();
+                    if (!item.getIsDestroyCalled())
+                        item.destroy();
                     this._fakeDestroy();
                 }
                 finally {
@@ -3497,19 +3499,14 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
                 return;
             }
             this.dbSet._getInternal().removeFromChanged(this.key);
-            this.__srvKey = null;
+            this._srvKey = null;
             this._origVals = null;
             this._savedStatus = null;
             this._isRefreshing = false;
             _super.prototype.destroy.call(this);
         };
-        Object.defineProperty(EntityAspect.prototype, "_entityType", {
+        Object.defineProperty(EntityAspect.prototype, "entityType", {
             get: function () { return this.dbSet.entityType; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(EntityAspect.prototype, "_srvKey", {
-            get: function () { return this.__srvKey; },
             enumerable: true,
             configurable: true
         });

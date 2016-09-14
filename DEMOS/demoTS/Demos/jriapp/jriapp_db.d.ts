@@ -529,7 +529,7 @@ declare module "jriapp_db/entity_aspect" {
         new (dbSet: DbSet<TItem, TDbContext>, row: IRowData, names: IFieldName[]): EntityAspect<TItem, TDbContext>;
     }
     export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContext> extends ItemAspect<TItem> {
-        private __srvKey;
+        private _srvKey;
         private _isRefreshing;
         private _origVals;
         private _savedStatus;
@@ -547,6 +547,7 @@ declare module "jriapp_db/entity_aspect" {
         protected _cancelEdit(): boolean;
         protected getDbSet(): DbSet<TItem, TDbContext>;
         protected setStatus(v: ITEM_STATUS): void;
+        protected getSrvKey(): string;
         _updateKeys(srvKey: string): void;
         _checkCanRefresh(): void;
         _refreshValue(val: any, fullName: string, refreshMode: REFRESH_MODE): void;
@@ -569,8 +570,7 @@ declare module "jriapp_db/entity_aspect" {
         refresh(): IPromise<TItem>;
         toString(): string;
         destroy(): void;
-        readonly _entityType: IEntityConstructor<TItem>;
-        readonly _srvKey: string;
+        readonly entityType: IEntityConstructor<TItem>;
         readonly isCanSubmit: boolean;
         readonly isNew: boolean;
         readonly isDeleted: boolean;

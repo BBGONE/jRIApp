@@ -20,6 +20,8 @@ const coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
 const COLL_EVENTS = {
     begin_edit: "begin_edit",
     end_edit: "end_edit",
+    before_begin_edit: "before_be",
+    before_end_edit: "before_ee",
     collection_changed: "coll_changed",
     fill: "fill",
     item_deleting: "item_deleting",
@@ -83,6 +85,9 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
             },
             getStrValue: (val: any, fieldInfo: IFieldInfo) => {
                 return self._getStrValue(val, fieldInfo);
+            },
+            onBeforeEditing: (item: TItem, isBegin: boolean, isCanceled: boolean) => {
+                self._onBeforeEditing(item, isBegin, isCanceled);
             },
             onEditing: (item: TItem, isBegin: boolean, isCanceled: boolean) => {
                 self._onEditing(item, isBegin, isCanceled);
@@ -229,6 +234,18 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     }
     removeOnEndEdit(nmspace?: string) {
         this._removeHandler(COLL_EVENTS.end_edit, nmspace);
+    }
+    addOnBeforeBeginEdit(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean) {
+        this._addHandler(COLL_EVENTS.before_begin_edit, fn, nmspace, context, prepend);
+    }
+    removeOnBeforeBeginEdit(nmspace?: string) {
+        this._removeHandler(COLL_EVENTS.before_begin_edit, nmspace);
+    }
+    addOnBeforeEndEdit(fn: TEventHandler<ICollection<TItem>, ICollEndEditArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean) {
+        this._addHandler(COLL_EVENTS.before_end_edit, fn, nmspace, context, prepend);
+    }
+    removeBeforeOnEndEdit(nmspace?: string) {
+        this._removeHandler(COLL_EVENTS.before_end_edit, nmspace);
     }
     addOnCommitChanges(fn: TEventHandler<ICollection<TItem>, ICommitChangesArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean) {
         this._addHandler(COLL_EVENTS.commit_changes, fn, nmspace, context, prepend);
@@ -411,6 +428,16 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     protected _getStrValue(val: any, fieldInfo: IFieldInfo): string {
         let dcnv = fieldInfo.dateConversion, stz = coreUtils.get_timeZoneOffset();
         return valueUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
+    }
+    protected _onBeforeEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void {
+        if (this._isUpdating)
+            return;
+        if (isBegin) {
+            this.raiseEvent(COLL_EVENTS.before_begin_edit, <ICollItemArgs<TItem>>{ item: item });
+        }
+        else {
+            this.raiseEvent(COLL_EVENTS.before_end_edit, { item: item, isCanceled: isCanceled });
+        }
     }
     protected _onEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void {
         if (this._isUpdating)

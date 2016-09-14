@@ -8245,6 +8245,8 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
     var COLL_EVENTS = {
         begin_edit: "begin_edit",
         end_edit: "end_edit",
+        before_begin_edit: "before_be",
+        before_end_edit: "before_ee",
         collection_changed: "coll_changed",
         fill: "fill",
         item_deleting: "item_deleting",
@@ -8287,6 +8289,9 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
                 },
                 getStrValue: function (val, fieldInfo) {
                     return self._getStrValue(val, fieldInfo);
+                },
+                onBeforeEditing: function (item, isBegin, isCanceled) {
+                    self._onBeforeEditing(item, isBegin, isCanceled);
                 },
                 onEditing: function (item, isBegin, isCanceled) {
                     self._onEditing(item, isBegin, isCanceled);
@@ -8433,6 +8438,18 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
         };
         BaseCollection.prototype.removeOnEndEdit = function (nmspace) {
             this._removeHandler(COLL_EVENTS.end_edit, nmspace);
+        };
+        BaseCollection.prototype.addOnBeforeBeginEdit = function (fn, nmspace, context, prepend) {
+            this._addHandler(COLL_EVENTS.before_begin_edit, fn, nmspace, context, prepend);
+        };
+        BaseCollection.prototype.removeOnBeforeBeginEdit = function (nmspace) {
+            this._removeHandler(COLL_EVENTS.before_begin_edit, nmspace);
+        };
+        BaseCollection.prototype.addOnBeforeEndEdit = function (fn, nmspace, context, prepend) {
+            this._addHandler(COLL_EVENTS.before_end_edit, fn, nmspace, context, prepend);
+        };
+        BaseCollection.prototype.removeBeforeOnEndEdit = function (nmspace) {
+            this._removeHandler(COLL_EVENTS.before_end_edit, nmspace);
         };
         BaseCollection.prototype.addOnCommitChanges = function (fn, nmspace, context, prepend) {
             this._addHandler(COLL_EVENTS.commit_changes, fn, nmspace, context, prepend);
@@ -8613,6 +8630,16 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
         BaseCollection.prototype._getStrValue = function (val, fieldInfo) {
             var dcnv = fieldInfo.dateConversion, stz = coreUtils.get_timeZoneOffset();
             return utils_26.valueUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
+        };
+        BaseCollection.prototype._onBeforeEditing = function (item, isBegin, isCanceled) {
+            if (this._isUpdating)
+                return;
+            if (isBegin) {
+                this.raiseEvent(COLL_EVENTS.before_begin_edit, { item: item });
+            }
+            else {
+                this.raiseEvent(COLL_EVENTS.before_end_edit, { item: item, isCanceled: isCanceled });
+            }
         };
         BaseCollection.prototype._onEditing = function (item, isBegin, isCanceled) {
             if (this._isUpdating)
@@ -9143,9 +9170,9 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
         __extends(ItemAspect, _super);
         function ItemAspect(collection) {
             _super.call(this);
-            this.__key = null;
+            this._key = null;
             this._item = null;
-            this.__isEditing = false;
+            this._isEditing = false;
             this._collection = collection;
             this._status = 0;
             this._saveVals = null;
@@ -9155,8 +9182,8 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             this._isDetached = false;
         }
         ItemAspect.prototype._setIsEditing = function (v) {
-            if (this.__isEditing !== v) {
-                this.__isEditing = v;
+            if (this._isEditing !== v) {
+                this._isEditing = v;
                 this.raisePropertyChanged(int_6.PROP_NAME.isEditing);
             }
         };
@@ -9177,19 +9204,19 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
         ItemAspect.prototype._beginEdit = function () {
             var coll = this.collection, isHandled;
             if (coll.isEditing) {
-                var eitem = coll._getInternal().getEditingItem();
-                if (eitem._aspect === this)
+                var item = coll._getInternal().getEditingItem();
+                if (item._aspect === this)
                     return false;
                 try {
-                    eitem._aspect.endEdit();
-                    if (eitem._aspect.getIsHasErrors()) {
-                        this.handleError(new validation_2.ValidationError(eitem._aspect.getAllErrors(), eitem), eitem);
-                        eitem._aspect.cancelEdit();
+                    item._aspect.endEdit();
+                    if (item._aspect.getIsHasErrors()) {
+                        this.handleError(new validation_2.ValidationError(item._aspect.getAllErrors(), item), item);
+                        item._aspect.cancelEdit();
                     }
                 }
                 catch (ex) {
-                    isHandled = this.handleError(ex, eitem);
-                    eitem._aspect.cancelEdit();
+                    isHandled = this.handleError(ex, item);
+                    item._aspect.cancelEdit();
                     coreutils_23.ERROR.reThrow(ex, isHandled);
                 }
             }
@@ -9203,14 +9230,14 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
         ItemAspect.prototype._endEdit = function () {
             if (!this.isEditing)
                 return false;
-            var coll = this.collection, self = this;
+            var coll = this.collection, self = this, internal = coll._getInternal();
             if (this.getIsHasErrors()) {
                 return false;
             }
-            coll._getInternal().removeAllErrors(this.item);
+            internal.removeAllErrors(this.item);
             var validation_errors = this._validateAll();
             if (validation_errors.length > 0) {
-                coll._getInternal().addErrors(self.item, validation_errors);
+                internal.addErrors(self.item, validation_errors);
             }
             if (this.getIsHasErrors()) {
                 return false;
@@ -9383,25 +9410,31 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
         ItemAspect.prototype.rejectChanges = function () {
         };
         ItemAspect.prototype.beginEdit = function () {
-            var coll = this.collection;
+            var coll = this.collection, internal = coll._getInternal();
+            if (!this.isEditing)
+                internal.onBeforeEditing(this.item, true, false);
             if (!this._beginEdit())
                 return false;
-            coll._getInternal().onEditing(this.item, true, false);
+            internal.onEditing(this.item, true, false);
             return true;
         };
         ItemAspect.prototype.endEdit = function () {
-            var coll = this.collection;
+            var coll = this.collection, internal = coll._getInternal();
+            if (this.isEditing)
+                internal.onBeforeEditing(this.item, false, false);
             if (!this._endEdit())
                 return false;
-            coll._getInternal().onEditing(this.item, false, false);
+            internal.onEditing(this.item, false, false);
             this._notEdited = false;
             return true;
         };
         ItemAspect.prototype.cancelEdit = function () {
-            var coll = this.collection;
+            var coll = this.collection, internal = coll._getInternal();
+            if (this.isEditing)
+                internal.onBeforeEditing(this.item, false, true);
             if (!this._cancelEdit())
                 return false;
-            coll._getInternal().onEditing(this.item, false, true);
+            internal.onEditing(this.item, false, true);
             return true;
         };
         ItemAspect.prototype.deleteItem = function () {
@@ -9475,7 +9508,7 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
                 }
                 this._item = null;
             }
-            this.__key = null;
+            this._key = null;
             this._saveVals = null;
             this._vals = {};
             this._isCached = false;
@@ -9525,11 +9558,11 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             configurable: true
         });
         Object.defineProperty(ItemAspect.prototype, "key", {
-            get: function () { return this.__key; },
+            get: function () { return this._key; },
             set: function (v) {
                 if (v !== null)
                     v = "" + v;
-                this.__key = v;
+                this._key = v;
             },
             enumerable: true,
             configurable: true
@@ -9550,7 +9583,7 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             configurable: true
         });
         Object.defineProperty(ItemAspect.prototype, "isEditing", {
-            get: function () { return this.__isEditing; },
+            get: function () { return this._isEditing; },
             enumerable: true,
             configurable: true
         });
@@ -9665,9 +9698,9 @@ define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils"
             this._isNew = false;
         };
         ListItemAspect.prototype.toString = function () {
-            if (!this._item)
+            if (!this.item)
                 return "ListItemAspect";
-            return this._item.toString() + "Aspect";
+            return this.item.toString() + "Aspect";
         };
         Object.defineProperty(ListItemAspect.prototype, "list", {
             get: function () { return this.collection; },

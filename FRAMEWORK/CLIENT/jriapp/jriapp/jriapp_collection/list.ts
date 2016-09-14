@@ -83,9 +83,9 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
         this._isNew = false;
     }
     toString() {
-        if (!this._item)
+        if (!this.item)
             return "ListItemAspect";
-        return this._item.toString() + "Aspect";
+        return this.item.toString() + "Aspect";
     }
     get list() { return <BaseList<TItem, TObj>>this.collection; }
     get vals() { return this._vals; }

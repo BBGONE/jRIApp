@@ -195,6 +195,7 @@ export interface IErrorsList {
 export interface IInternalCollMethods<TItem extends ICollectionItem> {
     getEditingItem(): TItem;
     getStrValue(val: any, fieldInfo: IFieldInfo): string;
+    onBeforeEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void;
     onEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void;
     onCommitChanges(item: TItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS): void;
     validateItem(item: TItem): IValidationInfo;

@@ -2323,6 +2323,7 @@ declare module "jriapp_collection/int" {
     export interface IInternalCollMethods<TItem extends ICollectionItem> {
         getEditingItem(): TItem;
         getStrValue(val: any, fieldInfo: IFieldInfo): string;
+        onBeforeEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void;
         onEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void;
         onCommitChanges(item: TItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS): void;
         validateItem(item: TItem): IValidationInfo;
@@ -2419,6 +2420,10 @@ declare module "jriapp_collection/base" {
         removeOnBeginEdit(nmspace?: string): void;
         addOnEndEdit(fn: TEventHandler<ICollection<TItem>, ICollEndEditArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
         removeOnEndEdit(nmspace?: string): void;
+        addOnBeforeBeginEdit(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        removeOnBeforeBeginEdit(nmspace?: string): void;
+        addOnBeforeEndEdit(fn: TEventHandler<ICollection<TItem>, ICollEndEditArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        removeBeforeOnEndEdit(nmspace?: string): void;
         addOnCommitChanges(fn: TEventHandler<ICollection<TItem>, ICommitChangesArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
         removeOnCommitChanges(nmspace?: string): void;
         addOnStatusChanged(fn: TEventHandler<ICollection<TItem>, ICollItemStatusArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
@@ -2448,6 +2453,7 @@ declare module "jriapp_collection/base" {
         _isHasProp(prop: string): boolean;
         protected _getEditingItem(): TItem;
         protected _getStrValue(val: any, fieldInfo: IFieldInfo): string;
+        protected _onBeforeEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void;
         protected _onEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void;
         protected _onCommitChanges(item: TItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS): void;
         protected _validateItem(item: TItem): IValidationInfo;
@@ -2508,9 +2514,9 @@ declare module "jriapp_collection/aspect" {
     import { ICollectionItem, IItemAspect, ITEM_STATUS } from "jriapp_collection/int";
     import { BaseCollection } from "jriapp_collection/base";
     export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implements IItemAspect<TItem> {
-        private __key;
-        protected _item: TItem;
-        private __isEditing;
+        private _key;
+        private _item;
+        private _isEditing;
         private _collection;
         protected _status: ITEM_STATUS;
         protected _saveVals: IIndexer<any>;
