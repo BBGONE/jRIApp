@@ -90,6 +90,29 @@ namespace RIAPP.DataService.Utils
             parts.ForEach(part => { fn_partsHandler(part); });
         }
 
+        public static void ProcessTemplate(string templateName, IDictionary<string, Func<string>> partsProvider, StringBuilder result)
+        {
+            new TemplateParser(templateName).ProcessParts(part =>
+            {
+                if (!part.isPlaceHolder)
+                {
+                    result.Append(part.value);
+                }
+                else
+                {
+                    if (partsProvider.ContainsKey(part.value))
+                        result.Append(partsProvider[part.value]());
+                }
+            });
+        }
+
+        public static string ProcessTemplate(string templateName, IDictionary<string, Func<string>> partsProvider)
+        {
+            StringBuilder result = new StringBuilder();
+            ProcessTemplate(templateName, partsProvider, result);
+            return result.ToString();
+        }
+
         public struct DocPart
         {
             public bool isPlaceHolder;

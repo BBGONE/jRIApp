@@ -288,89 +288,34 @@ namespace RIAPP.DataService.Utils.CodeGen
         private string createDictionary(string name, string keyName, string itemName, string aspectName,
             string interfaceName, string properties, List<PropertyInfo> propList)
         {
-            var sbDict = new StringBuilder(512);
             var pkProp = propList.Where(propInfo => keyName == propInfo.Name).SingleOrDefault();
             if (pkProp == null)
                 throw new Exception(string.Format("Dictionary item does not have a property with a name {0}", keyName));
             var pkVals = pkProp.Name.toCamelCase() + ": " + _dotNet2TS.RegisterType(pkProp.PropertyType);
 
+            Dictionary<string, Func<string>> dic = new Dictionary<string, Func<string>>();
+            dic.Add("DICT_NAME", () => name);
+            dic.Add("ITEM_TYPE_NAME", () => itemName);
+            dic.Add("ASPECT_NAME", () => aspectName);
+            dic.Add("INTERFACE_NAME", () => interfaceName);
+            dic.Add("PROPS", () => properties);
+            dic.Add("KEY_NAME", () => keyName);
+            dic.Add("PK_VALS", () => pkVals);
 
-            new TemplateParser("Dictionary.txt").ProcessParts(part =>
-            {
-                if (!part.isPlaceHolder)
-                {
-                    sbDict.Append(part.value);
-                }
-                else
-                {
-                    switch (part.value)
-                    {
-                        case "DICT_NAME":
-                            sbDict.Append(name);
-                            break;
-                        case "ITEM_TYPE_NAME":
-                            sbDict.Append(itemName);
-                            break;
-                        case "INTERFACE_NAME":
-                            sbDict.Append(interfaceName);
-                            break;
-                        case "ASPECT_NAME":
-                            sbDict.Append(aspectName);
-                            break;
-                        case "KEY_NAME":
-                            sbDict.Append(keyName);
-                            break;
-                        case "PROPS":
-                        {
-                            sbDict.Append(properties);
-                        }
-                            break;
-                        case "PK_VALS":
-                            sbDict.Append(pkVals);
-                            break;
-                    }
-                }
-            });
-            return sbDict.ToString();
+            return TemplateParser.ProcessTemplate("Dictionary.txt", dic);
         }
 
         private string createList(string name, string itemName, string aspectName, string interfaceName,
             string properties)
         {
-            var sbList = new StringBuilder(512);
+            Dictionary<string, Func<string>> dic = new Dictionary<string, Func<string>>();
+            dic.Add("LIST_NAME", () => name);
+            dic.Add("ITEM_TYPE_NAME", () => itemName);
+            dic.Add("ASPECT_NAME", () => aspectName);
+            dic.Add("INTERFACE_NAME", () => interfaceName);
+            dic.Add("PROP_INFOS", () => properties);
 
-            new TemplateParser("List.txt").ProcessParts(part =>
-            {
-                if (!part.isPlaceHolder)
-                {
-                    sbList.Append(part.value);
-                }
-                else
-                {
-                    switch (part.value)
-                    {
-                        case "LIST_NAME":
-                            sbList.Append(name);
-                            break;
-                        case "ITEM_TYPE_NAME":
-                            sbList.Append(itemName);
-                            break;
-                        case "INTERFACE_NAME":
-                            sbList.Append(interfaceName);
-                            break;
-                        case "ASPECT_NAME":
-                            sbList.Append(aspectName);
-                            break;
-                        case "PROP_INFOS":
-                        {
-                            sbList.Append(properties);
-                        }
-                            break;
-                    }
-                }
-            });
-
-            return sbList.ToString();
+            return TemplateParser.ProcessTemplate("List.txt", dic);
         }
 
         private string createListItem(string itemName, string aspectName, string interfaceName,
@@ -385,48 +330,21 @@ namespace RIAPP.DataService.Utils.CodeGen
                     propInfo.Name, _dotNet2TS.RegisterType(propInfo.PropertyType)));
             });
 
-            var sbListItem = new StringBuilder(512);
+            Dictionary<string, Func<string>> dic = new Dictionary<string, Func<string>>();
+            dic.Add("LIST_ITEM_NAME", () => itemName);
+            dic.Add("INTERFACE_NAME", () => interfaceName);
+            dic.Add("ASPECT_NAME", () => aspectName);
+            dic.Add("ITEM_PROPS", () => sbProps.ToString());
 
-            new TemplateParser("ListItem.txt").ProcessParts(part =>
-            {
-                if (!part.isPlaceHolder)
-                {
-                    sbListItem.Append(part.value);
-                }
-                else
-                {
-                    switch (part.value)
-                    {
-                        case "LIST_ITEM_NAME":
-                            sbListItem.Append(itemName);
-                            break;
-                        case "INTERFACE_NAME":
-                            sbListItem.Append(interfaceName);
-                            break;
-                        case "ASPECT_NAME":
-                            sbListItem.Append(aspectName);
-                            break;
-                        case "ITEM_PROPS":
-                        {
-                            sbListItem.Append(sbProps.ToString());
-                        }
-                            break;
-                    }
-                }
-            });
-
-            sbListItem.AppendLine();
-            return sbListItem.ToString();
+            return TemplateParser.ProcessTemplate("ListItem.txt", dic);
         }
 
         private string createClientType(Type type)
         {
-            var dictAttr =
-                type.GetCustomAttributes(typeof(DictionaryAttribute), false)
+            var dictAttr = type.GetCustomAttributes(typeof(DictionaryAttribute), false)
                     .OfType<DictionaryAttribute>()
                     .FirstOrDefault();
-            var listAttr =
-                type.GetCustomAttributes(typeof(ListAttribute), false).OfType<ListAttribute>().FirstOrDefault();
+            var listAttr = type.GetCustomAttributes(typeof(ListAttribute), false).OfType<ListAttribute>().FirstOrDefault();
 
             if (dictAttr != null && dictAttr.KeyName == null)
                 throw new ArgumentException("DictionaryAttribute KeyName property must not be null");
@@ -489,9 +407,8 @@ namespace RIAPP.DataService.Utils.CodeGen
 
             if (dictAttr != null || listAttr != null)
             {
-                var listItem = createListItem(listItemName, itemAspectName, interfaceName, propInfos);
-                sb.AppendLine(listItem);
-
+                sb.AppendLine(createListItem(listItemName, itemAspectName, interfaceName, propInfos));
+                sb.AppendLine();
                 list_properties = fn_Properties(propInfos);
             }
 
@@ -618,38 +535,14 @@ namespace RIAPP.DataService.Utils.CodeGen
                 sbCreateDbSets.AppendLine();
             });
 
-            new TemplateParser("DbContext.txt").ProcessParts(part =>
-            {
-                if (!part.isPlaceHolder)
-                {
-                    sb.Append(part.value);
-                }
-                else
-                {
-                    switch (part.value)
-                    {
-                        case "DBSETS_NAMES":
-                            sb.Append(_serviceContainer.Serializer.Serialize(dbSetNames));
-                            break;
-                        case "DBSETS_PROPS":
-                            sb.Append(createDbSetProps());
-                            break;
-                        case "DBSETS":
-                            sb.Append(sbCreateDbSets.ToString().Trim('\r', '\n', ' '));
-                            break;
-                        case "TIMEZONE":
-                            sb.Append(DateTimeHelper.GetTimezoneOffset().ToString());
-                            break;
-                        case "ASSOCIATIONS":
-                            sb.Append(_serviceContainer.Serializer.Serialize(_associations));
-                            break;
-                        case "METHODS":
-                            sb.Append(_serviceContainer.Serializer.Serialize(_metadata.methodDescriptions));
-                            break;
-                    }
-                }
-            });
-            return sb.ToString();
+            Dictionary<string, Func<string>> dic = new Dictionary<string, Func<string>>();
+            dic.Add("DBSETS_NAMES", () => _serviceContainer.Serializer.Serialize(dbSetNames));
+            dic.Add("DBSETS_PROPS", () => createDbSetProps());
+            dic.Add("DBSETS", () => sbCreateDbSets.ToString().Trim('\r', '\n', ' '));
+            dic.Add("TIMEZONE", () => DateTimeHelper.GetTimezoneOffset().ToString());
+            dic.Add("ASSOCIATIONS", () => _serviceContainer.Serializer.Serialize(_associations));
+            dic.Add("METHODS", () => _serviceContainer.Serializer.Serialize(_metadata.methodDescriptions.OrderByDescending(m=>m.isQuery).ThenBy(m=>m.methodName)));
+            return TemplateParser.ProcessTemplate("DbContext.txt", dic);
         }
 
         private string createDbSetType(string entityDef, DbSetInfo dbSetInfo)
@@ -670,97 +563,39 @@ namespace RIAPP.DataService.Utils.CodeGen
                     pkVals += ", ";
                 pkVals += pkField.fieldName.toCamelCase() + ": " + GetFieldDataType(pkField);
             }
-
-            new TemplateParser("DbSet.txt").ProcessParts(part =>
-            {
-                if (!part.isPlaceHolder)
-                {
-                    sb.Append(part.value);
-                }
-                else
-                {
-                    switch (part.value)
-                    {
-                        case "DBSET_NAME":
-                            sb.Append(dbSetInfo.dbSetName);
-                            break;
-                        case "DBSET_TYPE":
-                            sb.Append(dbSetType);
-                            break;
-                        case "ENTITY":
-                            {
-                                sb.Append(entityDef);
-                            }
-                            break;
-                        case "ENTITY_TYPE":
-                            sb.Append(entityTypeName);
-                            break;
-                        case "ENTITY_INTERFACE":
-                        {
-                            sb.Append(entityInterfaceName);
-                        }
-                            break;
-                        case "DBSET_INFO":
-                        {
-                            dbSetInfo._fieldInfos = null;
-                            sb.Append(_serviceContainer.Serializer.Serialize(dbSetInfo));
-                            dbSetInfo._fieldInfos = fieldInfos;
-                        }
-                            break;
-                        case "FIELD_INFOS":
-                        {
-                            sb.Append(_serviceContainer.Serializer.Serialize(dbSetInfo.fieldInfos));
-                        }
-                            break;
-                        case "CHILD_ASSOC":
-                            sb.Append(_serviceContainer.Serializer.Serialize(childAssoc));
-                            break;
-                        case "PARENT_ASSOC":
-                            sb.Append(_serviceContainer.Serializer.Serialize(parentAssoc));
-                            break;
-                        case "QUERIES":
-                            sb.Append(createDbSetQueries(dbSetInfo));
-                            break;
-                        case "CALC_FIELDS":
-                            sb.Append(createCalcFields(dbSetInfo));
-                            break;
-                        case "PK_VALS":
-                            sb.Append(pkVals);
-                            break;
-                    }
-                }
+            Dictionary<string, Func<string>> dic = new Dictionary<string, Func<string>>();
+            dic.Add("DBSET_NAME", () => dbSetInfo.dbSetName);
+            dic.Add("DBSET_TYPE", () => dbSetType);
+            dic.Add("ENTITY", () => entityDef);
+            dic.Add("ENTITY_TYPE", () => entityTypeName);
+            dic.Add("ENTITY_INTERFACE", () => entityInterfaceName);
+            dic.Add("DBSET_INFO", () => {
+                dbSetInfo._fieldInfos = null;
+                string res =_serviceContainer.Serializer.Serialize(dbSetInfo);
+                dbSetInfo._fieldInfos = fieldInfos;
+                return res;
             });
-            return sb.ToString();
+            dic.Add("FIELD_INFOS", () => _serviceContainer.Serializer.Serialize(dbSetInfo.fieldInfos));
+            dic.Add("CHILD_ASSOC", () => _serviceContainer.Serializer.Serialize(childAssoc));
+            dic.Add("PARENT_ASSOC", () => _serviceContainer.Serializer.Serialize(parentAssoc));
+            dic.Add("QUERIES", () => createDbSetQueries(dbSetInfo));
+            dic.Add("CALC_FIELDS", () => createCalcFields(dbSetInfo));
+            dic.Add("PK_VALS", () => pkVals);
+
+            return TemplateParser.ProcessTemplate("DbSet.txt", dic);
         }
 
         private string createEntityInterface(string entityInterfaceName, string fieldsDef)
         {
-            var sb = new StringBuilder(512);
-            new TemplateParser("EntityInterface.txt").ProcessParts(part =>
-            {
-                if (!part.isPlaceHolder)
-                {
-                    sb.Append(part.value);
-                }
-                else
-                {
-                    switch (part.value)
-                    {
-                        case "ENTITY_INTERFACE":
-                            sb.Append(entityInterfaceName);
-                            break;
-                        case "INTERFACE_FIELDS":
-                            sb.Append(fieldsDef.Trim('\r', '\n', '\t', ' '));
-                            break;
-                    }
-                }
-            });
-            return sb.ToString().Trim('\r', '\n', '\t', ' ');
+            Dictionary<string, Func<string>> dic = new Dictionary<string, Func<string>>();
+            dic.Add("ENTITY_INTERFACE", () => entityInterfaceName);
+            dic.Add("INTERFACE_FIELDS", () => fieldsDef.Trim('\r', '\n', '\t', ' '));
+            
+            return TemplateParser.ProcessTemplate("EntityInterface.txt", dic).Trim('\r', '\n', '\t', ' ');
         }
 
         private KeyValuePair<string, string> createEntityType(DbSetInfo dbSetInfo)
         {
-            var entityDef = new StringBuilder(512);
             var dbSetType = GetDbSetTypeName(dbSetInfo.dbSetName);
             var entityInterfaceName = GetEntityInterfaceName(dbSetInfo.dbSetName);
             var entityTypeName = GetEntityTypeName(dbSetInfo.dbSetName);
@@ -857,43 +692,19 @@ namespace RIAPP.DataService.Utils.CodeGen
                 }
             });
 
-            new TemplateParser("Entity.txt").ProcessParts(part =>
-            {
-                if (!part.isPlaceHolder)
-                {
-                    entityDef.Append(part.value);
-                }
-                else
-                {
-                    switch (part.value)
-                    {
-                        case "DBSET_NAME":
-                            entityDef.Append(dbSetInfo.dbSetName);
-                            break;
-                        case "DBSET_TYPE":
-                            entityDef.Append(dbSetType);
-                            break;
-                        case "ENTITY_TYPE":
-                            entityDef.Append(entityTypeName);
-                            break;
-                        case "ENTITY_INTERFACE":
-                            entityDef.Append(entityInterfaceName);
-                            break;
-                        case "ENTITY_FIELDS":
-                            entityDef.Append(sbFields.ToString().Trim('\r', '\n'));
-                            break;
-                        case "FIELDS_DEF":
-                            entityDef.Append(sbFieldsDef.ToString().Trim('\r', '\n'));
-                            break;
-                        case "FIELDS_INIT":
-                            entityDef.Append(sbFieldsInit.ToString().Trim('\r', '\n'));
-                            break;
-                    }
-                }
-            });
-            var interfaceDef = this.createEntityInterface(entityInterfaceName, sbInterfaceFields.ToString().Trim('\r', '\n', '\t', ' '));
+            Dictionary<string, Func<string>> dic = new Dictionary<string, Func<string>>();
+            dic.Add("DBSET_NAME", () => dbSetInfo.dbSetName);
+            dic.Add("DBSET_TYPE", () => dbSetType);
+            dic.Add("ENTITY_TYPE", () => entityTypeName);
+            dic.Add("ENTITY_INTERFACE", () => entityInterfaceName);
+            dic.Add("ENTITY_FIELDS", () => sbFields.ToString().Trim('\r', '\n'));
+            dic.Add("FIELDS_DEF", () => sbFieldsDef.ToString().Trim('\r', '\n'));
+            dic.Add("FIELDS_INIT", () => sbFieldsInit.ToString().Trim('\r', '\n'));
 
-            return new KeyValuePair<string, string>(interfaceDef, entityDef.ToString().Trim('\r', '\n', '\t', ' '));
+            string entityDef = TemplateParser.ProcessTemplate("Entity.txt", dic).Trim('\r', '\n', '\t', ' ');
+            string interfaceDef = this.createEntityInterface(entityInterfaceName, sbInterfaceFields.ToString().Trim('\r', '\n', '\t', ' '));
+
+            return new KeyValuePair<string, string>(interfaceDef, entityDef);
         }
 
         private string GetFieldDataType(Field fieldInfo)

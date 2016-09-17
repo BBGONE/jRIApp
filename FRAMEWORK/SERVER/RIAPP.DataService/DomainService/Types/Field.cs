@@ -82,8 +82,7 @@ namespace RIAPP.DataService.DomainService.Types
 
         [DefaultValue(false)]
         [DataMember]
-        [Description(
-            "Applies when value is set readonly, and means that on insert it's value can be assigned on the client")]
+        [Description("Applies when value is set readonly, and means that on insert it's value can be assigned on the client")]
         public bool allowClientDefault { get; set; }
 
         /// <summary>
