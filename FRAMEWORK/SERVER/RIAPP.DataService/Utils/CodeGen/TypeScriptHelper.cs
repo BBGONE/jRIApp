@@ -570,10 +570,12 @@ namespace RIAPP.DataService.Utils.CodeGen
             dic.Add("ENTITY_TYPE", () => entityTypeName);
             dic.Add("ENTITY_INTERFACE", () => entityInterfaceName);
             dic.Add("DBSET_INFO", () => {
-                dbSetInfo._fieldInfos = null;
-                string res =_serviceContainer.Serializer.Serialize(dbSetInfo);
-                dbSetInfo._fieldInfos = fieldInfos;
-                return res;
+                //we are making copy of the object, in order that we don't change original object
+                //while it can be accessed by other threads
+                //we change our own copy, making it threadsafe
+                var copy = dbSetInfo.ShallowCopy();
+                copy._fieldInfos = new FieldsList(); //serialze with empty field infos
+                return _serviceContainer.Serializer.Serialize(copy);
             });
             dic.Add("FIELD_INFOS", () => _serviceContainer.Serializer.Serialize(dbSetInfo.fieldInfos));
             dic.Add("CHILD_ASSOC", () => _serviceContainer.Serializer.Serialize(childAssoc));

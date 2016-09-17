@@ -18,14 +18,11 @@ namespace RIAPP.DataService.DomainService.Types
 
         public DbSetInfo()
         {
-            _inResultFields =
-                new Lazy<Field[]>(
+            _inResultFields = new Lazy<Field[]>(
                     () => _fieldInfos.Where(f => f.GetIsIncludeInResult()).OrderBy(f => f._ordinal).ToArray(), true);
-            _pkFields =
-                new Lazy<Field[]>(
+            _pkFields =  new Lazy<Field[]>(
                     () => fieldInfos.Where(fi => fi.isPrimaryKey > 0).OrderBy(fi => fi.isPrimaryKey).ToArray(), true);
-            _timestampField =
-                new Lazy<Field>(() => fieldInfos.Where(fi => fi.fieldType == FieldType.RowTimeStamp).FirstOrDefault(),
+            _timestampField = new Lazy<Field>(() => fieldInfos.Where(fi => fi.fieldType == FieldType.RowTimeStamp).FirstOrDefault(),
                     true);
 
             enablePaging = true;
@@ -50,6 +47,10 @@ namespace RIAPP.DataService.DomainService.Types
         public string dbSetName { get; set; }
 
         #region NonSerializable properties
+        public DbSetInfo ShallowCopy()
+        {
+            return (DbSetInfo)this.MemberwiseClone();
+        }
 
         public Field[] GetInResultFields()
         {
