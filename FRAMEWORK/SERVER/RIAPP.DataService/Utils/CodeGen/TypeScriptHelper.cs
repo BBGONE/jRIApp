@@ -8,6 +8,7 @@ using RIAPP.DataService.DomainService.Exceptions;
 using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.DomainService.Types;
 using RIAPP.DataService.Utils.Extensions;
+using RIAPP.DataService.Utils.Interfaces;
 
 namespace RIAPP.DataService.Utils.CodeGen
 {
@@ -16,11 +17,19 @@ namespace RIAPP.DataService.Utils.CodeGen
         private readonly List<Type> _clientTypes;
         private DotNet2TS _dotNet2TS;
         private readonly CachedMetadata _metadata;
-        //private readonly ILookup<Type, MethodDescription> _queriesLookup;
         private readonly StringBuilder _sb = new StringBuilder(4096);
         private readonly IServiceContainer _serviceContainer;
         private readonly List<DbSetInfo> _dbSets;
         private readonly List<Association> _associations;
+        private readonly ISerializer _serializer;
+
+        private readonly Lazy<TemplateParser> _entityTemplate = new Lazy<TemplateParser>(() => new TemplateParser("Entity.txt"));
+        private readonly Lazy<TemplateParser> _entityIntfTemplate = new Lazy<TemplateParser>(() => new TemplateParser("EntityInterface.txt"));
+        private readonly Lazy<TemplateParser> _dictionaryTemplate = new Lazy<TemplateParser>(() => new TemplateParser("Dictionary.txt"));
+        private readonly Lazy<TemplateParser> _listTemplate = new Lazy<TemplateParser>(() => new TemplateParser("List.txt"));
+        private readonly Lazy<TemplateParser> _listItemTemplate = new Lazy<TemplateParser>(() => new TemplateParser("ListItem.txt"));
+        private readonly Lazy<TemplateParser> _dbSetTemplate = new Lazy<TemplateParser>(() => new TemplateParser("DbSet.txt"));
+        
 
         public TypeScriptHelper(IServiceContainer serviceContainer, CachedMetadata metadata,
             IEnumerable<Type> clientTypes)
@@ -31,6 +40,7 @@ namespace RIAPP.DataService.Utils.CodeGen
             if (metadata == null)
                 throw new ArgumentException("metadata parameter must not be null", "metadata");
             _metadata = metadata;
+            _serializer = _serviceContainer.Serializer;
             _clientTypes = new List<Type>(clientTypes == null ? Enumerable.Empty<Type>() : clientTypes);
             _dbSets = _metadata.dbSets.Values.OrderBy(v => v.dbSetName).ToList();
             _associations = _metadata.associations.Values.OrderBy(a=>a.name).ToList();
@@ -302,7 +312,7 @@ namespace RIAPP.DataService.Utils.CodeGen
             dic.Add("KEY_NAME", () => keyName);
             dic.Add("PK_VALS", () => pkVals);
 
-            return TemplateParser.ProcessTemplate("Dictionary.txt", dic);
+            return TemplateParser.ProcessTemplate(_dictionaryTemplate.Value, dic);
         }
 
         private string createList(string name, string itemName, string aspectName, string interfaceName,
@@ -315,7 +325,7 @@ namespace RIAPP.DataService.Utils.CodeGen
             dic.Add("INTERFACE_NAME", () => interfaceName);
             dic.Add("PROP_INFOS", () => properties);
 
-            return TemplateParser.ProcessTemplate("List.txt", dic);
+            return TemplateParser.ProcessTemplate(_listTemplate.Value, dic);
         }
 
         private string createListItem(string itemName, string aspectName, string interfaceName,
@@ -336,7 +346,7 @@ namespace RIAPP.DataService.Utils.CodeGen
             dic.Add("ASPECT_NAME", () => aspectName);
             dic.Add("ITEM_PROPS", () => sbProps.ToString());
 
-            return TemplateParser.ProcessTemplate("ListItem.txt", dic);
+            return TemplateParser.ProcessTemplate(_listItemTemplate.Value, dic);
         }
 
         private string createClientType(Type type)
@@ -536,12 +546,12 @@ namespace RIAPP.DataService.Utils.CodeGen
             });
 
             Dictionary<string, Func<string>> dic = new Dictionary<string, Func<string>>();
-            dic.Add("DBSETS_NAMES", () => _serviceContainer.Serializer.Serialize(dbSetNames));
+            dic.Add("DBSETS_NAMES", () => _serializer.Serialize(dbSetNames));
             dic.Add("DBSETS_PROPS", () => createDbSetProps());
             dic.Add("DBSETS", () => sbCreateDbSets.ToString().Trim('\r', '\n', ' '));
             dic.Add("TIMEZONE", () => DateTimeHelper.GetTimezoneOffset().ToString());
-            dic.Add("ASSOCIATIONS", () => _serviceContainer.Serializer.Serialize(_associations));
-            dic.Add("METHODS", () => _serviceContainer.Serializer.Serialize(_metadata.methodDescriptions.OrderByDescending(m=>m.isQuery).ThenBy(m=>m.methodName)));
+            dic.Add("ASSOCIATIONS", () => _serializer.Serialize(_associations));
+            dic.Add("METHODS", () => _serializer.Serialize(_metadata.methodDescriptions.OrderByDescending(m=>m.isQuery).ThenBy(m=>m.methodName)));
             return TemplateParser.ProcessTemplate("DbContext.txt", dic);
         }
 
@@ -575,16 +585,16 @@ namespace RIAPP.DataService.Utils.CodeGen
                 //we change our own copy, making it threadsafe
                 var copy = dbSetInfo.ShallowCopy();
                 copy._fieldInfos = new FieldsList(); //serialze with empty field infos
-                return _serviceContainer.Serializer.Serialize(copy);
+                return _serializer.Serialize(copy);
             });
-            dic.Add("FIELD_INFOS", () => _serviceContainer.Serializer.Serialize(dbSetInfo.fieldInfos));
-            dic.Add("CHILD_ASSOC", () => _serviceContainer.Serializer.Serialize(childAssoc));
-            dic.Add("PARENT_ASSOC", () => _serviceContainer.Serializer.Serialize(parentAssoc));
+            dic.Add("FIELD_INFOS", () => _serializer.Serialize(dbSetInfo.fieldInfos));
+            dic.Add("CHILD_ASSOC", () => _serializer.Serialize(childAssoc));
+            dic.Add("PARENT_ASSOC", () => _serializer.Serialize(parentAssoc));
             dic.Add("QUERIES", () => createDbSetQueries(dbSetInfo));
             dic.Add("CALC_FIELDS", () => createCalcFields(dbSetInfo));
             dic.Add("PK_VALS", () => pkVals);
 
-            return TemplateParser.ProcessTemplate("DbSet.txt", dic);
+            return TemplateParser.ProcessTemplate(_dbSetTemplate.Value, dic);
         }
 
         private string createEntityInterface(string entityInterfaceName, string fieldsDef)
@@ -593,7 +603,7 @@ namespace RIAPP.DataService.Utils.CodeGen
             dic.Add("ENTITY_INTERFACE", () => entityInterfaceName);
             dic.Add("INTERFACE_FIELDS", () => fieldsDef.Trim('\r', '\n', '\t', ' '));
             
-            return TemplateParser.ProcessTemplate("EntityInterface.txt", dic).Trim('\r', '\n', '\t', ' ');
+            return TemplateParser.ProcessTemplate(_entityIntfTemplate.Value, dic).Trim('\r', '\n', '\t', ' ');
         }
 
         private KeyValuePair<string, string> createEntityType(DbSetInfo dbSetInfo)
@@ -641,7 +651,6 @@ namespace RIAPP.DataService.Utils.CodeGen
                 sbInterfaceFields.AppendFormat("\t{0}{1}: {2};", isReadonly ? "readonly " : "", f.fieldName, dataType);
                 sbInterfaceFields.AppendLine();
             };
-
 
             Action<Field> AddComplexTypeField = f =>
             {
@@ -703,7 +712,7 @@ namespace RIAPP.DataService.Utils.CodeGen
             dic.Add("FIELDS_DEF", () => sbFieldsDef.ToString().Trim('\r', '\n'));
             dic.Add("FIELDS_INIT", () => sbFieldsInit.ToString().Trim('\r', '\n'));
 
-            string entityDef = TemplateParser.ProcessTemplate("Entity.txt", dic).Trim('\r', '\n', '\t', ' ');
+            string entityDef = TemplateParser.ProcessTemplate(_entityTemplate.Value, dic).Trim('\r', '\n', '\t', ' ');
             string interfaceDef = this.createEntityInterface(entityInterfaceName, sbInterfaceFields.ToString().Trim('\r', '\n', '\t', ' '));
 
             return new KeyValuePair<string, string>(interfaceDef, entityDef);

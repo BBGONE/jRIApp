@@ -15,7 +15,6 @@ namespace RIAPP.DataService.Utils
 
         public IEnumerable<DocPart> DocParts { get; }
 
-
         private DocPart GetDocPart(string str)
         {
             var parts = str.Split(':').Select(s => s.Trim()).ToArray();
@@ -90,9 +89,9 @@ namespace RIAPP.DataService.Utils
             parts.ForEach(part => { fn_partsHandler(part); });
         }
 
-        public static void ProcessTemplate(string templateName, IDictionary<string, Func<string>> partsProvider, StringBuilder result)
+        public static void ProcessTemplate(TemplateParser parser, IDictionary<string, Func<string>> partsProvider, StringBuilder result)
         {
-            new TemplateParser(templateName).ProcessParts(part =>
+            parser.ProcessParts(part =>
             {
                 if (!part.isPlaceHolder)
                 {
@@ -106,10 +105,22 @@ namespace RIAPP.DataService.Utils
             });
         }
 
+        public static void ProcessTemplate(string templateName, IDictionary<string, Func<string>> partsProvider, StringBuilder result)
+        {
+            ProcessTemplate(new TemplateParser(templateName), partsProvider, result);
+        }
+
         public static string ProcessTemplate(string templateName, IDictionary<string, Func<string>> partsProvider)
         {
             StringBuilder result = new StringBuilder();
-            ProcessTemplate(templateName, partsProvider, result);
+            ProcessTemplate(new TemplateParser(templateName), partsProvider, result);
+            return result.ToString();
+        }
+
+        public static string ProcessTemplate(TemplateParser parser, IDictionary<string, Func<string>> partsProvider)
+        {
+            StringBuilder result = new StringBuilder();
+            ProcessTemplate(parser, partsProvider, result);
             return result.ToString();
         }
 
