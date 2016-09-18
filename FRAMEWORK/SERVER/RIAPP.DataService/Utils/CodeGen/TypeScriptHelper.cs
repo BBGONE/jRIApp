@@ -77,6 +77,14 @@ namespace RIAPP.DataService.Utils.CodeGen
             sb.AppendLine();
         }
 
+        private static string TrimEnd(string s)
+        {
+            if (!string.IsNullOrEmpty(s))
+                return s.TrimEnd('\r', '\n', '\t', ' ');
+
+            return string.Empty;
+        }
+
         public string CreateTypeScript(string comment = null)
         {
             if (_dotNet2TS != null)
@@ -165,17 +173,7 @@ namespace RIAPP.DataService.Utils.CodeGen
 
         private string createHeader()
         {
-            var sbResult = new StringBuilder(512);
-
-            new TemplateParser("Header.txt").ProcessParts(part =>
-            {
-                if (!part.isPlaceHolder)
-                {
-                    sbResult.Append(part.value);
-                }
-            });
-
-            return sbResult.ToString();
+            return TemplateParser.ProcessTemplate("Header.txt", new Dictionary<string, Func<string>>());
         }
 
         private string createDbSetProps()
@@ -187,7 +185,8 @@ namespace RIAPP.DataService.Utils.CodeGen
                 sb.AppendFormat("\tget {0}() {{ return <{1}>this.getDbSet(\"{0}\"); }}", dbSetInfo.dbSetName, dbSetType);
                 sb.AppendLine();
             });
-            return sb.ToString().Trim('\r', '\n', ' ');
+
+            return TrimEnd(sb.ToString());
         }
 
         private string createIAssocs()
@@ -280,19 +279,21 @@ namespace RIAPP.DataService.Utils.CodeGen
             });
 
             sbISvcMeth.AppendLine("}");
-            return sbISvcMeth.ToString().TrimEnd('\r', '\n');
+
+            return TrimEnd(sbISvcMeth.ToString());
         }
 
         private string createClientTypes()
         {
             var sb = new StringBuilder(1024);
+
             for (var i = 0; i < _clientTypes.Count(); ++i)
             {
                 var type = _clientTypes[i];
                 sb.Append(createClientType(type));
             }
 
-            return sb.ToString().TrimEnd('\r', '\n');
+            return TrimEnd(sb.ToString());
         }
 
         private string createDictionary(string name, string keyName, string itemName, string aspectName,
@@ -410,6 +411,7 @@ namespace RIAPP.DataService.Utils.CodeGen
                     isFirst = false;
                 });
                 sbProps.Append("]");
+
                 return sbProps.ToString();
             };
 
@@ -439,39 +441,13 @@ namespace RIAPP.DataService.Utils.CodeGen
             return sb.ToString();
         }
 
-        /*
-        private string createQueryNames()
-        {
-            var sb = new StringBuilder(256);
-            sb.AppendLine("export var QUERY_NAME =");
-            sb.Append("{");
-            bool isFirst = true;
-            this._metadata.methods.ForEach((methodInfo) =>
-            {
-                if (methodInfo.isQuery)
-                {
-                    if (!isFirst)
-                    {
-                        sb.Append(",");
-                        sb.AppendLine();
-                    }
-                    sb.AppendFormat("\t{0}: '{0}'", methodInfo.methodName);
-                  
-                    isFirst = false;
-                }
-            });
-            sb.AppendLine();
-            sb.AppendLine("};");
-            return sb.ToString();
-        }
-        */
-
         private string createDbSetQueries(DbSetInfo dbSetInfo)
         {
             var sb = new StringBuilder(256);
             var sbArgs = new StringBuilder(256);
             var queries = _metadata.GetQueryMethods(dbSetInfo.dbSetName);
             var entityInterfaceName = GetEntityInterfaceName(dbSetInfo.dbSetName);
+
             foreach(var methodDescription in queries)
             {
                 sbArgs.Length = 0;
@@ -507,17 +483,20 @@ namespace RIAPP.DataService.Utils.CodeGen
                 }
                 sb.AppendLine("\t}");
             };
-            return sb.ToString().Trim('\r', '\n', ' ');
+
+            return TrimEnd(sb.ToString());
         }
 
         private string createCalcFields(DbSetInfo dbSetInfo)
         {
             var entityType = GetEntityTypeName(dbSetInfo.dbSetName);
             var entityInterfaceName = GetEntityInterfaceName(dbSetInfo.dbSetName);
+            var dataHelper = _serviceContainer.DataHelper;
             var sb = new StringBuilder(256);
+
             dbSetInfo.fieldInfos.ForEach(fieldInfo =>
             {
-                _serviceContainer.DataHelper.ForEachFieldInfo("", fieldInfo, (fullName, f) =>
+                dataHelper.ForEachFieldInfo("", fieldInfo, (fullName, f) =>
                 {
                     if (f.fieldType == FieldType.Calculated)
                     {
@@ -530,7 +509,8 @@ namespace RIAPP.DataService.Utils.CodeGen
                     }
                 });
             });
-            return sb.ToString().Trim('\r', '\n', ' ');
+
+            return TrimEnd(sb.ToString());
         }
 
         private string createDbContextType()
@@ -552,6 +532,7 @@ namespace RIAPP.DataService.Utils.CodeGen
             dic.Add("TIMEZONE", () => DateTimeHelper.GetTimezoneOffset().ToString());
             dic.Add("ASSOCIATIONS", () => _serializer.Serialize(_associations));
             dic.Add("METHODS", () => _serializer.Serialize(_metadata.methodDescriptions.OrderByDescending(m=>m.isQuery).ThenBy(m=>m.methodName)));
+
             return TemplateParser.ProcessTemplate("DbContext.txt", dic);
         }
 
@@ -601,11 +582,12 @@ namespace RIAPP.DataService.Utils.CodeGen
         {
             Dictionary<string, Func<string>> dic = new Dictionary<string, Func<string>>();
             dic.Add("ENTITY_INTERFACE", () => entityInterfaceName);
-            dic.Add("INTERFACE_FIELDS", () => fieldsDef.Trim('\r', '\n', '\t', ' '));
-            
-            return TemplateParser.ProcessTemplate(_entityIntfTemplate.Value, dic).Trim('\r', '\n', '\t', ' ');
+            dic.Add("INTERFACE_FIELDS", () => fieldsDef);
+
+            return TrimEnd(TemplateParser.ProcessTemplate(_entityIntfTemplate.Value, dic));
         }
 
+        
         private KeyValuePair<string, string> createEntityType(DbSetInfo dbSetInfo)
         {
             var dbSetType = GetDbSetTypeName(dbSetInfo.dbSetName);
@@ -708,12 +690,12 @@ namespace RIAPP.DataService.Utils.CodeGen
             dic.Add("DBSET_TYPE", () => dbSetType);
             dic.Add("ENTITY_TYPE", () => entityTypeName);
             dic.Add("ENTITY_INTERFACE", () => entityInterfaceName);
-            dic.Add("ENTITY_FIELDS", () => sbFields.ToString().Trim('\r', '\n'));
-            dic.Add("FIELDS_DEF", () => sbFieldsDef.ToString().Trim('\r', '\n'));
-            dic.Add("FIELDS_INIT", () => sbFieldsInit.ToString().Trim('\r', '\n'));
+            dic.Add("ENTITY_FIELDS", () => TrimEnd(sbFields.ToString()));
+            dic.Add("FIELDS_DEF", () => TrimEnd(sbFieldsDef.ToString()));
+            dic.Add("FIELDS_INIT", () => TrimEnd(sbFieldsInit.ToString()));
 
-            string entityDef = TemplateParser.ProcessTemplate(_entityTemplate.Value, dic).Trim('\r', '\n', '\t', ' ');
-            string interfaceDef = this.createEntityInterface(entityInterfaceName, sbInterfaceFields.ToString().Trim('\r', '\n', '\t', ' '));
+            string entityDef = TrimEnd(TemplateParser.ProcessTemplate(_entityTemplate.Value, dic));
+            string interfaceDef = this.createEntityInterface(entityInterfaceName, TrimEnd(sbInterfaceFields.ToString()));
 
             return new KeyValuePair<string, string>(interfaceDef, entityDef);
         }
