@@ -10,7 +10,7 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
         function FileSystemObjectDb(dbContext) {
             var opts = {
                 dbContext: dbContext,
-                dbSetInfo: { "fieldInfos": null, "enablePaging": false, "pageSize": 25, "dbSetName": "FileSystemObject" },
+                dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "FileSystemObject" },
                 childAssoc: ([{ "name": "ChildToParent", "parentDbSetName": "FileSystemObject", "childDbSetName": "FileSystemObject", "childToParentName": "Parent", "parentToChildrenName": "Children", "onDeleteAction": 1, "fieldRels": [{ "parentField": "Key", "childField": "ParentKey" }] }]),
                 parentAssoc: ([{ "name": "ChildToParent", "parentDbSetName": "FileSystemObject", "childDbSetName": "FileSystemObject", "childToParentName": "Parent", "parentToChildrenName": "Children", "onDeleteAction": 1, "fieldRels": [{ "parentField": "Key", "childField": "ParentKey" }] }])
             };
@@ -106,7 +106,6 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
         __extends(DbSets, _super);
         function DbSets(dbContext) {
             _super.call(this, dbContext);
-            this._dbSetNames = ["FileSystemObject"];
             this._createDbSet("FileSystemObject", FileSystemObjectDb);
         }
         Object.defineProperty(DbSets.prototype, "FileSystemObject", {

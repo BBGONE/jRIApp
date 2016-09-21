@@ -1440,17 +1440,18 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_core/lang", "jriapp_co
             this._dbContext = dbContext;
             this._arrDbSets = [];
             this._dbSets = {};
-            this._dbSetNames = [];
         }
         DbSets.prototype._dbSetCreated = function (dbSet) {
             var self = this;
             this._arrDbSets.push(dbSet);
             dbSet.addOnPropertyChange(const_4.PROP_NAME.isHasChanges, function (sender, args) {
                 self._dbContext._getInternal().onDbSetHasChangesChanged(sender);
-            }, null);
+            });
         };
         DbSets.prototype._createDbSet = function (name, dbSetType) {
             var self = this, dbContext = this._dbContext;
+            if (!!self._dbSets[name])
+                throw new Error(utils_4.Utils.str.format("DbSet: {0} is already exists", name));
             self._dbSets[name] = function () {
                 var t = new dbSetType(dbContext);
                 var f = function () {
@@ -1463,7 +1464,7 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_core/lang", "jriapp_co
         };
         Object.defineProperty(DbSets.prototype, "dbSetNames", {
             get: function () {
-                return this._dbSetNames;
+                return Object.keys(this._dbSets);
             },
             enumerable: true,
             configurable: true

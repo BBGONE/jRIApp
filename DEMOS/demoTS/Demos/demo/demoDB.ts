@@ -1,6 +1,6 @@
 ﻿/// <reference path="../jriapp/jriapp.d.ts" />
 /*
-	Generated from: /RIAppDemoServiceEF/code?lang=ts on 2016-09-17 at 10:59
+	Generated from: /RIAppDemoServiceEF/code?lang=ts on 2016-09-21 at 14:41
 	Don't make manual changes here, because they will be lost when this db interface will be regenerated!
 */
 
@@ -283,7 +283,7 @@ export class AddressDb extends dbMOD.DbSet<Address, DbContext>
     constructor(dbContext: DbContext) {
         var opts: dbMOD.IDbSetConstuctorOptions = {
             dbContext: dbContext,
-            dbSetInfo: { "fieldInfos": null, "enablePaging": false, "pageSize": 25, "dbSetName": "Address" },
+            dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "Address" },
             childAssoc: ([]),
             parentAssoc: ([{ "name": "CustAddrToAddress", "parentDbSetName": "Address", "childDbSetName": "CustomerAddress", "childToParentName": "Address", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "AddressID" }] }, { "name": "OrdersToBillAddr", "parentDbSetName": "Address", "childDbSetName": "SalesOrderHeader", "childToParentName": "Address1", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "BillToAddressID" }] }, { "name": "OrdersToShipAddr", "parentDbSetName": "Address", "childDbSetName": "SalesOrderHeader", "childToParentName": "Address", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "ShipToAddressID" }] }])
         };
@@ -353,7 +353,7 @@ export class AddressInfoDb extends dbMOD.DbSet<AddressInfo, DbContext>
     constructor(dbContext: DbContext) {
         var opts: dbMOD.IDbSetConstuctorOptions = {
             dbContext: dbContext,
-            dbSetInfo: { "fieldInfos": null, "enablePaging": false, "pageSize": 25, "dbSetName": "AddressInfo" },
+            dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "AddressInfo" },
             childAssoc: ([]),
             parentAssoc: ([{ "name": "CustAddrToAddress2", "parentDbSetName": "AddressInfo", "childDbSetName": "CustomerAddress", "childToParentName": "AddressInfo", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "AddressID" }] }])
         };
@@ -413,7 +413,7 @@ export class CustomerDb extends dbMOD.DbSet<Customer, DbContext>
     constructor(dbContext: DbContext) {
         var opts: dbMOD.IDbSetConstuctorOptions = {
             dbContext: dbContext,
-            dbSetInfo: { "fieldInfos": null, "enablePaging": true, "pageSize": 25, "dbSetName": "Customer" },
+            dbSetInfo: { "fieldInfos": [], "enablePaging": true, "pageSize": 25, "dbSetName": "Customer" },
             childAssoc: ([]),
             parentAssoc: ([{ "name": "CustAddrToCustomer", "parentDbSetName": "Customer", "childDbSetName": "CustomerAddress", "childToParentName": "Customer", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "CustomerID", "childField": "CustomerID" }] }, { "name": "OrdersToCustomer", "parentDbSetName": "Customer", "childDbSetName": "SalesOrderHeader", "childToParentName": "Customer", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "CustomerID", "childField": "CustomerID" }] }])
         };
@@ -485,7 +485,7 @@ export class CustomerAddressDb extends dbMOD.DbSet<CustomerAddress, DbContext>
     constructor(dbContext: DbContext) {
         var opts: dbMOD.IDbSetConstuctorOptions = {
             dbContext: dbContext,
-            dbSetInfo: { "fieldInfos": null, "enablePaging": false, "pageSize": 25, "dbSetName": "CustomerAddress" },
+            dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "CustomerAddress" },
             childAssoc: ([{ "name": "CustAddrToAddress", "parentDbSetName": "Address", "childDbSetName": "CustomerAddress", "childToParentName": "Address", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "AddressID" }] }, { "name": "CustAddrToAddress2", "parentDbSetName": "AddressInfo", "childDbSetName": "CustomerAddress", "childToParentName": "AddressInfo", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "AddressID" }] }, { "name": "CustAddrToCustomer", "parentDbSetName": "Customer", "childDbSetName": "CustomerAddress", "childToParentName": "Customer", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "CustomerID", "childField": "CustomerID" }] }]),
             parentAssoc: ([])
         };
@@ -549,7 +549,7 @@ export class LookUpProductDb extends dbMOD.DbSet<LookUpProduct, DbContext>
     constructor(dbContext: DbContext) {
         var opts: dbMOD.IDbSetConstuctorOptions = {
             dbContext: dbContext,
-            dbSetInfo: { "fieldInfos": null, "enablePaging": true, "pageSize": 25, "dbSetName": "LookUpProduct" },
+            dbSetInfo: { "fieldInfos": [], "enablePaging": true, "pageSize": 25, "dbSetName": "LookUpProduct" },
             childAssoc: ([]),
             parentAssoc: ([])
         };
@@ -612,7 +612,7 @@ export class ProductDb extends dbMOD.DbSet<Product, DbContext>
     constructor(dbContext: DbContext) {
         var opts: dbMOD.IDbSetConstuctorOptions = {
             dbContext: dbContext,
-            dbSetInfo: { "fieldInfos": null, "enablePaging": true, "pageSize": 25, "dbSetName": "Product" },
+            dbSetInfo: { "fieldInfos": [], "enablePaging": true, "pageSize": 25, "dbSetName": "Product" },
             childAssoc: ([]),
             parentAssoc: ([{ "name": "OrdDetailsToProduct", "parentDbSetName": "Product", "childDbSetName": "SalesOrderDetail", "childToParentName": "Product", "parentToChildrenName": "SalesOrderDetails", "onDeleteAction": 0, "fieldRels": [{ "parentField": "ProductID", "childField": "ProductID" }] }])
         };
@@ -701,7 +701,7 @@ export class ProductCategoryDb extends dbMOD.DbSet<ProductCategory, DbContext>
     constructor(dbContext: DbContext) {
         var opts: dbMOD.IDbSetConstuctorOptions = {
             dbContext: dbContext,
-            dbSetInfo: { "fieldInfos": null, "enablePaging": false, "pageSize": 25, "dbSetName": "ProductCategory" },
+            dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "ProductCategory" },
             childAssoc: ([]),
             parentAssoc: ([])
         };
@@ -753,7 +753,7 @@ export class ProductModelDb extends dbMOD.DbSet<ProductModel, DbContext>
     constructor(dbContext: DbContext) {
         var opts: dbMOD.IDbSetConstuctorOptions = {
             dbContext: dbContext,
-            dbSetInfo: { "fieldInfos": null, "enablePaging": false, "pageSize": 25, "dbSetName": "ProductModel" },
+            dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "ProductModel" },
             childAssoc: ([]),
             parentAssoc: ([])
         };
@@ -798,7 +798,7 @@ export class SalesInfoDb extends dbMOD.DbSet<SalesInfo, DbContext>
     constructor(dbContext: DbContext) {
         var opts: dbMOD.IDbSetConstuctorOptions = {
             dbContext: dbContext,
-            dbSetInfo: { "fieldInfos": null, "enablePaging": true, "pageSize": 25, "dbSetName": "SalesInfo" },
+            dbSetInfo: { "fieldInfos": [], "enablePaging": true, "pageSize": 25, "dbSetName": "SalesInfo" },
             childAssoc: ([]),
             parentAssoc: ([])
         };
@@ -852,7 +852,7 @@ export class SalesOrderDetailDb extends dbMOD.DbSet<SalesOrderDetail, DbContext>
     constructor(dbContext: DbContext) {
         var opts: dbMOD.IDbSetConstuctorOptions = {
             dbContext: dbContext,
-            dbSetInfo: { "fieldInfos": null, "enablePaging": false, "pageSize": 25, "dbSetName": "SalesOrderDetail" },
+            dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "SalesOrderDetail" },
             childAssoc: ([{ "name": "OrdDetailsToOrder", "parentDbSetName": "SalesOrderHeader", "childDbSetName": "SalesOrderDetail", "childToParentName": "SalesOrderHeader", "parentToChildrenName": "SalesOrderDetails", "onDeleteAction": 1, "fieldRels": [{ "parentField": "SalesOrderID", "childField": "SalesOrderID" }] }, { "name": "OrdDetailsToProduct", "parentDbSetName": "Product", "childDbSetName": "SalesOrderDetail", "childToParentName": "Product", "parentToChildrenName": "SalesOrderDetails", "onDeleteAction": 0, "fieldRels": [{ "parentField": "ProductID", "childField": "ProductID" }] }]),
             parentAssoc: ([])
         };
@@ -935,7 +935,7 @@ export class SalesOrderHeaderDb extends dbMOD.DbSet<SalesOrderHeader, DbContext>
     constructor(dbContext: DbContext) {
         var opts: dbMOD.IDbSetConstuctorOptions = {
             dbContext: dbContext,
-            dbSetInfo: { "fieldInfos": null, "enablePaging": false, "pageSize": 25, "dbSetName": "SalesOrderHeader" },
+            dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "SalesOrderHeader" },
             childAssoc: ([{ "name": "OrdersToBillAddr", "parentDbSetName": "Address", "childDbSetName": "SalesOrderHeader", "childToParentName": "Address1", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "BillToAddressID" }] }, { "name": "OrdersToCustomer", "parentDbSetName": "Customer", "childDbSetName": "SalesOrderHeader", "childToParentName": "Customer", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "CustomerID", "childField": "CustomerID" }] }, { "name": "OrdersToShipAddr", "parentDbSetName": "Address", "childDbSetName": "SalesOrderHeader", "childToParentName": "Address", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "ShipToAddressID" }] }]),
             parentAssoc: ([{ "name": "OrdDetailsToOrder", "parentDbSetName": "SalesOrderHeader", "childDbSetName": "SalesOrderDetail", "childToParentName": "SalesOrderHeader", "parentToChildrenName": "SalesOrderDetails", "onDeleteAction": 1, "fieldRels": [{ "parentField": "SalesOrderID", "childField": "SalesOrderID" }] }])
         };
@@ -1023,7 +1023,6 @@ export interface IAssocs {
 export class DbSets extends dbMOD.DbSets {
     constructor(dbContext: DbContext) {
         super(dbContext);
-        this._dbSetNames = ["Address", "AddressInfo", "Customer", "CustomerAddress", "LookUpProduct", "Product", "ProductCategory", "ProductModel", "SalesInfo", "SalesOrderDetail", "SalesOrderHeader"];
         this._createDbSet("Address", AddressDb);
         this._createDbSet("AddressInfo", AddressInfoDb);
         this._createDbSet("Customer", CustomerDb);

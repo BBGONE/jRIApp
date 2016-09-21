@@ -284,7 +284,6 @@ declare module "jriapp_db/dbsets" {
     import { DbContext } from "jriapp_db/dbcontext";
     import { DbSet, IDbSetConstructor } from "jriapp_db/dbset";
     export class DbSets extends BaseObject {
-        protected _dbSetNames: string[];
         private _dbContext;
         private _dbSets;
         private _arrDbSets;

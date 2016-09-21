@@ -7,9 +7,18 @@ namespace RIAPP.DataService.Utils
 {
     public class TemplateParser
     {
-        public TemplateParser(string resourceID)
+        private const char LEFT_CHAR = '{';
+        private const char RIGHT_CHAR = '}';
+
+        public TemplateParser(string resourceID):
+            this(()=> ResourceHelper.GetResourceString(resourceID))
         {
-            var template = ResourceHelper.GetResourceString(resourceID);
+         
+        }
+
+        public TemplateParser(Func<string> templateProvider)
+        {
+            var template = templateProvider();
             DocParts = ParseTemplate(template);
         }
 
@@ -18,6 +27,7 @@ namespace RIAPP.DataService.Utils
         private DocPart GetDocPart(string str)
         {
             var parts = str.Split(':').Select(s => s.Trim()).ToArray();
+
             return new DocPart
             {
                 isPlaceHolder = true,
@@ -40,9 +50,9 @@ namespace RIAPP.DataService.Utils
                 var ch = chars[i];
 
 
-                if (ch == '{')
+                if (ch == LEFT_CHAR)
                 {
-                    if (prevChar == '{')
+                    if (prevChar == LEFT_CHAR)
                     {
                         if (sb.Length > 0)
                         {
@@ -52,21 +62,21 @@ namespace RIAPP.DataService.Utils
                         isPlaceHolder = true;
                     }
                 }
-                else if (isPlaceHolder && ch == '}')
+                else if (isPlaceHolder && ch == RIGHT_CHAR)
                 {
-                    if (prevChar == '}')
+                    if (prevChar == RIGHT_CHAR)
                     {
                         list.AddLast(GetDocPart(sb.ToString()));
                         isPlaceHolder = false;
                         sb = new StringBuilder();
                     }
                 }
-                else if (isPlaceHolder && prevChar == '}')
+                else if (isPlaceHolder && prevChar == RIGHT_CHAR)
                 {
                     sb.Append(prevChar);
                     sb.Append(ch);
                 }
-                else if (!isPlaceHolder && prevChar == '{')
+                else if (!isPlaceHolder && prevChar == LEFT_CHAR)
                 {
                     sb.Append(prevChar);
                     sb.Append(ch);

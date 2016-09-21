@@ -522,7 +522,7 @@ namespace RIAPP.DataService.DomainService
                 var result = new MetadataResult();
                 result.methods = metadata.methodDescriptions;
                 result.associations.AddRange(metadata.associations.Values);
-                result.dbSets.AddRange(metadata.dbSets.Values);
+                result.dbSets.AddRange(metadata.dbSets.Values.OrderBy(d=>d.dbSetName));
                 return result;
             }
             catch (Exception ex)

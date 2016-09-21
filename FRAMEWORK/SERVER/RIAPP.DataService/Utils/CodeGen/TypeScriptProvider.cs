@@ -11,7 +11,7 @@ namespace RIAPP.DataService.Utils.CodeGen
         private BaseDomainService _owner;
         private IEnumerable<Type> _clientTypes;
 
-        public TypeScriptProvider(BaseDomainService owner, IEnumerable<Type> clientTypes)
+        public TypeScriptProvider(BaseDomainService owner, IEnumerable<Type> clientTypes = null)
         {
             this._owner = owner;
             this._clientTypes = clientTypes ?? Enumerable.Empty<Type>();

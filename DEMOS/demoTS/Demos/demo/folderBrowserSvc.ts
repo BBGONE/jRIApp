@@ -1,6 +1,6 @@
 ﻿/// <reference path="../jriapp/jriapp.d.ts" />
 /*
-	Generated from: /FolderBrowserService/code?lang=ts on 2016-08-08 at 20:07
+	Generated from: /FolderBrowserService/code?lang=ts on 2016-09-21 at 14:42
 	Don't make manual changes here, because they will be lost when this db interface will be regenerated!
 */
 
@@ -28,7 +28,7 @@ export class FileSystemObjectDb extends dbMOD.DbSet<FileSystemObject, DbContext>
     constructor(dbContext: DbContext) {
         var opts: dbMOD.IDbSetConstuctorOptions = {
             dbContext: dbContext,
-            dbSetInfo: { "fieldInfos": null, "enablePaging": false, "pageSize": 25, "dbSetName": "FileSystemObject" },
+            dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "FileSystemObject" },
             childAssoc: ([{ "name": "ChildToParent", "parentDbSetName": "FileSystemObject", "childDbSetName": "FileSystemObject", "childToParentName": "Parent", "parentToChildrenName": "Children", "onDeleteAction": 1, "fieldRels": [{ "parentField": "Key", "childField": "ParentKey" }] }]),
             parentAssoc: ([{ "name": "ChildToParent", "parentDbSetName": "FileSystemObject", "childDbSetName": "FileSystemObject", "childToParentName": "Parent", "parentToChildrenName": "Children", "onDeleteAction": 1, "fieldRels": [{ "parentField": "Key", "childField": "ParentKey" }] }])
         };
@@ -97,7 +97,6 @@ export interface IAssocs {
 export class DbSets extends dbMOD.DbSets {
     constructor(dbContext: DbContext) {
         super(dbContext);
-        this._dbSetNames = ["FileSystemObject"];
         this._createDbSet("FileSystemObject", FileSystemObjectDb);
     }
     get FileSystemObject() { return <FileSystemObjectDb>this.getDbSet("FileSystemObject"); }

@@ -10,6 +10,7 @@ using RIAPP.DataService.DomainService.Attributes;
 using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.DomainService.Security;
 using RIAPP.DataService.DomainService.Types;
+using RIAPP.DataService.Utils.CodeGen;
 
 namespace RIAppDemo.BLL.DataServices
 {
@@ -27,6 +28,16 @@ namespace RIAppDemo.BLL.DataServices
         protected override Metadata GetMetadata(bool isDraft)
         {
             return Metadata.FromXML(ResourceHelper.GetResourceString("RIAppDemo.BLL.Metadata.FolderBrowser.xml"));
+        }
+
+        protected override void ConfigureCodeGen()
+        {
+            base.ConfigureCodeGen();
+            this.AddOrReplaceCodeGen("ts", () => new TypeScriptProvider(this));
+            //it allows getting information via GetCSharp, GetXAML, GetTypeScript
+            //it should be set to false in release version 
+            //allow it only at development time
+            this.IsCodeGenEnabled = true;
         }
 
         private string GetRootPath(string infoType)

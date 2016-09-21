@@ -1,7 +1,6 @@
 ﻿export class DbSets extends dbMOD.DbSets{
 	constructor(dbContext:DbContext) {
 		super(dbContext);
-		this._dbSetNames = {{DBSETS_NAMES}};
 {{DBSETS}}
 	}
 {{DBSETS_PROPS}}
