@@ -23,29 +23,34 @@ namespace RIAPP.DataService.Utils
         private static readonly StaSynchronizationContext _synchronizer = new StaSynchronizationContext();
         private static readonly MetadataCache _metadataCache = new MetadataCache();
 
+        private class AsyncState
+        {
+            public BaseDomainService domainService;
+            public CachedMetadata cachedMetadata;
+        }
+
         public static CachedMetadata GetInitializedMetadata(BaseDomainService domainService)
         {
-            var thisType = domainService.GetType();
-            CachedMetadata result = null;
-            if (_metadataCache.TryGetValue(thisType, out result))
-                return result;
-            ExecuteOnSTA(state =>
-            {
-                try
+            return _metadataCache.GetOrAdd(domainService.GetType(), (svcType) => {
+                AsyncState asyncState = new AsyncState() { domainService = domainService };
+
+                ExecuteOnSTA(state =>
                 {
-                    InitMetadata((BaseDomainService)state);
-                }
-                catch (Exception ex)
-                {
-                    domainService._OnError(ex);
-                    throw new DummyException(ex.Message, ex);
-                }
-            }, domainService);
-            if (!_metadataCache.TryGetValue(thisType, out result))
-            {
-                throw new InvalidOperationException("Metadata was not initialized properly");
-            }
-            return result;
+                    AsyncState data = (AsyncState)state;
+                    try
+                    {
+                        data.cachedMetadata = InitMetadata(data.domainService);
+                    }
+                    catch (Exception ex)
+                    {
+                        data.domainService._OnError(ex);
+                        throw new DummyException(ex.Message, ex);
+                    }
+
+                }, asyncState);
+
+                return asyncState.cachedMetadata;
+            });
         }
 
         public static void ExecuteOnSTA(SendOrPostCallback action, object state)
@@ -53,18 +58,13 @@ namespace RIAPP.DataService.Utils
             _synchronizer.Send(action, state);
         }
 
-        private static void InitMetadata(BaseDomainService domainService)
+        private static CachedMetadata InitMetadata(BaseDomainService domainService)
         {
-            var thisType = domainService.GetType();
-            CachedMetadata cachedMetadata = null;
-            if (_metadataCache.TryGetValue(thisType, out cachedMetadata))
-            {
-                return;
-            }
             EventHandler<RegisteredDMEventArgs> fn_regDM = (sender, e) => {
                 ProcessMethodDescriptions(domainService.ServiceContainer, e.DataManagerType, (CachedMetadata)sender);
             };
-            cachedMetadata = new CachedMetadata();
+
+            CachedMetadata cachedMetadata = new CachedMetadata();
             //called on every data manager registered while bootstrapping
             cachedMetadata.RegisteredDM += fn_regDM;
             try
@@ -82,7 +82,7 @@ namespace RIAPP.DataService.Utils
                 cachedMetadata.InitCompleted();
             }
 
-            _metadataCache.TryAdd(thisType, cachedMetadata);
+            return cachedMetadata;
         }
 
         private static void InitCachedMetadata(BaseDomainService domainService, CachedMetadata cachedMetadata)
