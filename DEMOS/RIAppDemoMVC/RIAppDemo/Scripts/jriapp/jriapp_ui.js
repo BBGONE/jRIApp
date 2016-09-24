@@ -2715,7 +2715,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
                     ds.currentItem = row2.item;
                 }
             }
-            else if (oldStatus === 3 && newStatus !== 3) {
+            else if (oldStatus === 3) {
                 row.isDeleted = false;
             }
         };
@@ -5035,7 +5035,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_core/const", "jria
             if (newStatus === 3) {
                 $(obj.el).hide();
             }
-            else if (oldStatus === 3 && newStatus !== 3) {
+            else if (oldStatus === 3) {
                 $(obj.el).show();
             }
         };

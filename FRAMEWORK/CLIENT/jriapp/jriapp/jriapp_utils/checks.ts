@@ -74,7 +74,8 @@ export class Checks {
         return SysChecks._isCollection(a);
     }
     static isEditable(obj: any): obj is IEditable {
-        return Checks.isBaseObject(obj) && Checks.isFunc(obj.beginEdit) && !!obj.endEdit && !!obj.cancelEdit && Checks.isHasProp(obj, "isEditing");
+        let isBO = Checks.isBaseObject(obj);
+        return isBO && Checks.isFunc(obj.beginEdit) && !!obj.endEdit && !!obj.cancelEdit && Checks.isHasProp(obj, "isEditing");
     }
     static isSubmittable(obj: any): obj is ISubmittable {
         return !!obj && Checks.isFunc(obj.submitChanges) && !!obj.rejectChanges && Checks.isHasProp(obj, "isCanSubmit");

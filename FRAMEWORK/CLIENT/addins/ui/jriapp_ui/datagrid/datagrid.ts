@@ -638,7 +638,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         }
     }
     protected _onItemStatusChanged(item: ICollectionItem, oldStatus: ITEM_STATUS) {
-        let newStatus = item._aspect.status, ds = this.dataSource;
+        let newStatus: ITEM_STATUS = item._aspect.status, ds = this.dataSource;
         let row = this._rowMap[item._key];
         if (!row)
             return;
@@ -652,7 +652,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 ds.currentItem = row2.item;
             }
         }
-        else if (oldStatus === ITEM_STATUS.Deleted && newStatus !== ITEM_STATUS.Deleted) {
+        else if (oldStatus === ITEM_STATUS.Deleted) {
             row.isDeleted = false;
         }
     }

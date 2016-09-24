@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Microsoft.TypeScript.MSBuild.2.0.3\build\Microsoft.TypeScript.MSBuild.props" Condition="Exists('..\packages\Microsoft.TypeScript.MSBuild.2.0.3\build\Microsoft.TypeScript.MSBuild.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <ProjectGuid>{4BCCAAB0-F3B9-44FE-B237-ECE697EAA6BF}</ProjectGuid>
@@ -16,6 +17,8 @@
     <IISExpressUseClassicPipelineMode />
     <TypeScriptToolsVersion>2.0</TypeScriptToolsVersion>
     <UseGlobalApplicationHostFile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <ItemGroup>
     <TypeScriptCompile Include="demo\test1.ts" />
@@ -57,7 +60,9 @@
   <ItemGroup>
     <Content Include="readme.txt" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="packages.config" />
+  </ItemGroup>
   <ItemGroup>
     <Content Include="spademo\tsconfig.json" />
   </ItemGroup>
@@ -108,8 +113,15 @@
     <TypeScriptModuleKind>AMD</TypeScriptModuleKind>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>"C:\Program Files (x86)\Microsoft SDKs\TypeScript\2.0\tsc.exe"  -p "$(ProjectDir)demo"
-"C:\Program Files (x86)\Microsoft SDKs\TypeScript\2.0\tsc.exe"  -p "$(ProjectDir)nancydemo"
-"C:\Program Files (x86)\Microsoft SDKs\TypeScript\2.0\tsc.exe"  -p "$(ProjectDir)spademo"</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.TypeScript.MSBuild.2.0.3\build\Microsoft.TypeScript.MSBuild.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.TypeScript.MSBuild.2.0.3\build\Microsoft.TypeScript.MSBuild.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.TypeScript.MSBuild.2.0.3\build\Microsoft.TypeScript.MSBuild.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.TypeScript.MSBuild.2.0.3\build\Microsoft.TypeScript.MSBuild.targets'))" />
+  </Target>
+  <Import Project="..\packages\Microsoft.TypeScript.MSBuild.2.0.3\build\Microsoft.TypeScript.MSBuild.targets" Condition="Exists('..\packages\Microsoft.TypeScript.MSBuild.2.0.3\build\Microsoft.TypeScript.MSBuild.targets')" />
 </Project>

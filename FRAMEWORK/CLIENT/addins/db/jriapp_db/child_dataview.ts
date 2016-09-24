@@ -24,7 +24,7 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
     constructor(options: IChildDataViewOptions<TItem>) {
         let save_fn_filter = options.fn_filter, ds = options.association.childDS, opts: any = coreUtils.extend({
             dataSource: ds,
-            fn_filter: (item: TItem) => { return true },
+            fn_filter: (item: TItem): boolean => { return true },
             fn_sort: null,
             fn_itemsProvider: null
         }, options);

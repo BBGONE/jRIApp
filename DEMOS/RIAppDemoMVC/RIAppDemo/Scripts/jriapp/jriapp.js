@@ -541,7 +541,8 @@ define("jriapp_utils/checks", ["require", "exports", "jriapp_utils/syschecks"], 
             return syschecks_1.SysChecks._isCollection(a);
         };
         Checks.isEditable = function (obj) {
-            return Checks.isBaseObject(obj) && Checks.isFunc(obj.beginEdit) && !!obj.endEdit && !!obj.cancelEdit && Checks.isHasProp(obj, "isEditing");
+            var isBO = Checks.isBaseObject(obj);
+            return isBO && Checks.isFunc(obj.beginEdit) && !!obj.endEdit && !!obj.cancelEdit && Checks.isHasProp(obj, "isEditing");
         };
         Checks.isSubmittable = function (obj) {
             return !!obj && Checks.isFunc(obj.submitChanges) && !!obj.rejectChanges && Checks.isHasProp(obj, "isCanSubmit");

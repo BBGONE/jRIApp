@@ -249,7 +249,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider, ITemp
         if (newStatus === ITEM_STATUS.Deleted) {
             $(obj.el).hide();
         }
-        else if (oldStatus === ITEM_STATUS.Deleted && newStatus !== ITEM_STATUS.Deleted) {
+        else if (oldStatus === ITEM_STATUS.Deleted) {
             $(obj.el).show();
         }
     }
