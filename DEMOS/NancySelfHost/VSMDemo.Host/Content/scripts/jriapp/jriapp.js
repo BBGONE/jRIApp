@@ -9417,12 +9417,25 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             if (!this._beginEdit())
                 return false;
             internal.onEditing(this.item, true, false);
+            if (!!this._valueBag && this.isEditing) {
+                coreUtils.iterateIndexer(this._valueBag, function (name, obj) {
+                    if (!!obj && checks.isEditable(obj.val))
+                        obj.val.beginEdit();
+                });
+            }
             return true;
         };
         ItemAspect.prototype.endEdit = function () {
             var coll = this.collection, internal = coll._getInternal();
-            if (this.isEditing)
+            if (this.isEditing) {
                 internal.onBeforeEditing(this.item, false, false);
+                if (!!this._valueBag) {
+                    coreUtils.iterateIndexer(this._valueBag, function (name, obj) {
+                        if (!!obj && checks.isEditable(obj.val))
+                            obj.val.endEdit();
+                    });
+                }
+            }
             if (!this._endEdit())
                 return false;
             internal.onEditing(this.item, false, false);
@@ -9431,8 +9444,15 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
         };
         ItemAspect.prototype.cancelEdit = function () {
             var coll = this.collection, internal = coll._getInternal();
-            if (this.isEditing)
+            if (this.isEditing) {
                 internal.onBeforeEditing(this.item, false, true);
+                if (!!this._valueBag) {
+                    coreUtils.iterateIndexer(this._valueBag, function (name, obj) {
+                        if (!!obj && checks.isEditable(obj.val))
+                            obj.val.cancelEdit();
+                    });
+                }
+            }
             if (!this._cancelEdit())
                 return false;
             internal.onEditing(this.item, false, true);
@@ -9615,14 +9635,20 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
                 this._valueBag = {};
             }
             var old = this._valueBag[name];
-            if (!!old && old.isOwnIt && old !== val) {
-                if (checks.isBaseObject(old))
-                    old.destroy();
+            if (!!old && old.isOwnIt && old.val !== val) {
+                if (checks.isEditable(old.val) && old.val.isEditing)
+                    old.val.cancelEdit();
+                if (checks.isBaseObject(old.val))
+                    old.val.destroy();
             }
-            if (checks.isNt(val))
+            if (checks.isNt(val)) {
                 delete this._valueBag[name];
-            else
+            }
+            else {
                 this._valueBag[name] = { val: val, isOwnIt: !!isOwnVal };
+                if (this.isEditing && checks.isEditable(val))
+                    val.beginEdit();
+            }
         };
         ItemAspect.prototype.getCustomVal = function (name) {
             if (this.getIsDestroyCalled() || !this._valueBag)

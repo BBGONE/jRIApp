@@ -284,12 +284,25 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         if (!this._beginEdit())
             return false;
         internal.onEditing(this.item, true, false);
+        if (!!this._valueBag && this.isEditing) {
+            coreUtils.iterateIndexer(this._valueBag, (name, obj) => {
+                if (!!obj && checks.isEditable(obj.val))
+                    obj.val.beginEdit();
+            });
+        }
         return true;
     }
     endEdit(): boolean {
         let coll = this.collection, internal = coll._getInternal();
-        if (this.isEditing)
+        if (this.isEditing) {
             internal.onBeforeEditing(this.item, false, false);
+            if (!!this._valueBag) {
+                coreUtils.iterateIndexer(this._valueBag, (name, obj) => {
+                    if (!!obj && checks.isEditable(obj.val))
+                        obj.val.endEdit();
+                });
+            }
+        }
         if (!this._endEdit())
             return false;
         internal.onEditing(this.item, false, false);
@@ -298,8 +311,15 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     }
     cancelEdit(): boolean {
         let coll = this.collection, internal = coll._getInternal();
-        if (this.isEditing)
+        if (this.isEditing) {
             internal.onBeforeEditing(this.item, false, true);
+            if (!!this._valueBag) {
+                coreUtils.iterateIndexer(this._valueBag, (name, obj) => {
+                    if (!!obj && checks.isEditable(obj.val))
+                        obj.val.cancelEdit();
+                });
+            }
+        }
         if (!this._cancelEdit())
             return false;
         internal.onEditing(this.item, false, true);
@@ -427,6 +447,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     setCustomVal(name: string, val: any, isOwnVal: boolean = true): void {
         if (this.getIsDestroyCalled())
             return;
+
         if (!this._valueBag) {
             if (checks.isNt(val))
                 return;
@@ -434,14 +455,24 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         }
 
         let old = this._valueBag[name];
-        if (!!old && old.isOwnIt && old !== val) {
-            if (checks.isBaseObject(old))
-                (<IBaseObject>old).destroy();
+
+        if (!!old && old.isOwnIt && old.val !== val) {
+            if (checks.isEditable(old.val) && old.val.isEditing)
+                old.val.cancelEdit();
+
+            if (checks.isBaseObject(old.val))
+                old.val.destroy();
         }
+
         if (checks.isNt(val))
+        {
             delete this._valueBag[name];
-        else
+        }
+        else {
             this._valueBag[name] = { val: val, isOwnIt: !!isOwnVal };
+            if (this.isEditing && checks.isEditable(val))
+                val.beginEdit();
+        }
     }
     getCustomVal(name: string): any {
         if (this.getIsDestroyCalled() || !this._valueBag)
