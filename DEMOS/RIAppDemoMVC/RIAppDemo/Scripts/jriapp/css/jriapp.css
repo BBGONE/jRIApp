@@ -72,6 +72,7 @@ a.disabled {
     padding: 0;
     overflow: inherit;
     box-sizing: border-box;
+    display: block;
 }
 
 .ria-template-error {

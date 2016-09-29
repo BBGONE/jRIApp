@@ -27,6 +27,7 @@ export class ButtonElView extends CommandElView {
         });
     }
     protected _onClick(e: Event) {
+        e.stopPropagation();
         if (this._preventDefault)
             e.preventDefault();
         this.invokeCommand(null, true);

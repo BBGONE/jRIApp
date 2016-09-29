@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { IBaseObject, ITemplate, IErrorHandler } from "../jriapp_core/shared";
-import { BaseObject }  from "../jriapp_core/object";
+import { BaseObject } from "../jriapp_core/object";
 import { CoreUtils as coreUtils } from "../jriapp_utils/coreutils";
 
 export interface ICommand {
@@ -30,33 +30,33 @@ export class TCommand<TParam, TThis> extends BaseObject implements ICommand {
         this._action = fn_action;
         this._thisObj = !thisObj ? null : thisObj;
         this._predicate = !fn_canExecute ? null : fn_canExecute;
-   }
+    }
     protected _getEventNames() {
         let base_events = super._getEventNames();
         return [CMD_EVENTS.can_execute_changed].concat(base_events);
-   }
+    }
     protected _canExecute(sender: any, param: TParam, context: any): boolean {
         if (!this._predicate)
             return true;
         return this._predicate.apply(context, [sender, param, this._thisObj]);
-   }
+    }
     protected _execute(sender: any, param: TParam, context: any) {
         if (!!this._action) {
             this._action.apply(context, [sender, param, this._thisObj]);
-       }
-   }
+        }
+    }
     addOnCanExecuteChanged(fn: (sender: ICommand, args: any) => void, nmspace?: string, context?: IBaseObject) {
         this._addHandler(CMD_EVENTS.can_execute_changed, fn, nmspace, context);
-   }
+    }
     removeOnCanExecuteChanged(nmspace?: string) {
         this._removeHandler(CMD_EVENTS.can_execute_changed, nmspace);
-   }
+    }
     canExecute(sender: any, param: TParam): boolean {
         return this._canExecute(sender, param, this._thisObj || this);
-   }
+    }
     execute(sender: any, param: TParam) {
         this._execute(sender, param, this._thisObj || this);
-   }
+    }
     destroy() {
         if (this._isDestroyed)
             return;
@@ -65,19 +65,19 @@ export class TCommand<TParam, TThis> extends BaseObject implements ICommand {
         this._thisObj = null;
         this._predicate = null;
         super.destroy();
-   }
+    }
     raiseCanExecuteChanged() {
         this.raiseEvent(CMD_EVENTS.can_execute_changed, {});
-   }
+    }
     toString() {
         return "Command";
-   }
+    }
     get uniqueID() {
         return this._objId;
-   }
+    }
     get thisObj() {
         return this._thisObj;
-   }
+    }
 }
 
 export abstract class BaseCommand<TParam, TThis> extends TCommand<TParam, TThis>
@@ -86,13 +86,13 @@ export abstract class BaseCommand<TParam, TThis> extends TCommand<TParam, TThis>
         super(null, thisObj, null);
         this._action = this.Action;
         this._predicate = this.getIsCanExecute;
-   }
+    }
     canExecute(sender: any, param: TParam): boolean {
         return this._canExecute(sender, param, this);
-   }
+    }
     execute(sender: any, param: TParam) {
         this._execute(sender, param, this);
-   }
+    }
     protected abstract Action(sender: any, param: TParam): void;
     protected abstract getIsCanExecute(sender: any, param: TParam): boolean;
 }
@@ -112,23 +112,23 @@ export class ViewModel<TApp extends IErrorHandler> extends BaseObject {
         super();
         this._app = app;
         this._objId = "vm" + coreUtils.getNewID();
-   }
+    }
     handleError(error: any, source: any): boolean {
         let isHandled = super.handleError(error, source);
         if (!isHandled) {
             return this._app.handleError(error, source);
-       }
+        }
         return isHandled;
-   }
+    }
     toString() {
         return "ViewModel";
-   }
+    }
     destroy() {
         this._app = null;
         super.destroy();
-   }
+    }
     get uniqueID() {
         return this._objId;
-   }
+    }
     get app(): TApp { return this._app; }
 }

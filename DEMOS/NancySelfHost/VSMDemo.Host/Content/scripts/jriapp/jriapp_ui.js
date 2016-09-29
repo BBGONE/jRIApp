@@ -798,8 +798,14 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_core/co
             if (!!this._options.width) {
                 $th.css("width", this._options.width);
             }
-            if (!!this._options.title)
+            if (!!this._options.templateID) {
+                this._template = this.grid.app.createTemplate(this.grid.app, this);
+                this._template.templateID = this._options.templateID;
+                this._$col.append(this._template.el);
+            }
+            else if (!!this._options.title) {
                 this._$col.html(this._options.title);
+            }
             if (!!this._options.tip) {
                 elview_2.fn_addToolTip(this._$col, this._options.tip, false, "bottom center");
             }
@@ -816,12 +822,24 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_core/co
             if (!!this._options.tip) {
                 elview_2.fn_addToolTip(this._$col, null);
             }
+            if (!!this._template) {
+                this._template.destroy();
+                this._template = null;
+            }
             this._$col.empty();
             this._$col = null;
             this._th = null;
             this._grid = null;
             this._options = null;
             _super.prototype.destroy.call(this);
+        };
+        BaseColumn.prototype.templateLoading = function (template) {
+        };
+        BaseColumn.prototype.templateLoaded = function (template, error) {
+        };
+        BaseColumn.prototype.templateUnLoading = function (template) {
+            $(template.el).remove();
+            this._template = null;
         };
         BaseColumn.prototype.scrollIntoView = function (isUp) {
             if (!this._$col)
@@ -2000,7 +2018,7 @@ define("jriapp_ui/datagrid/cells/details", ["require", "exports", "jriapp_core/o
         };
         DetailsCell.prototype.templateLoading = function (template) {
         };
-        DetailsCell.prototype.templateLoaded = function (template) {
+        DetailsCell.prototype.templateLoaded = function (template, error) {
         };
         DetailsCell.prototype.templateUnLoading = function (template) {
             this._td.removeChild(template.el);

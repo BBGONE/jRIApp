@@ -7093,6 +7093,7 @@ define("jriapp_elview/button", ["require", "exports", "jriapp_utils/utils", "jri
             });
         }
         ButtonElView.prototype._onClick = function (e) {
+            e.stopPropagation();
             if (this._preventDefault)
                 e.preventDefault();
             this.invokeCommand(null, true);
@@ -7199,6 +7200,7 @@ define("jriapp_elview/anchor", ["require", "exports", "jriapp_utils/utils", "jri
             });
         }
         AnchorElView.prototype._onClick = function (e) {
+            e.stopPropagation();
             if (this._preventDefault)
                 e.preventDefault();
             this.invokeCommand(null, true);

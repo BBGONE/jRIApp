@@ -54,6 +54,7 @@
         display: table-cell;
         box-sizing: border-box;
         vertical-align: middle;
+        height: 100%;
     }
 
 .ria-data-table {

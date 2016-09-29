@@ -218,7 +218,7 @@ declare module "jriapp_ui/datagrid/animation" {
     }
 }
 declare module "jriapp_ui/datagrid/columns/base" {
-    import { IContentOptions } from "jriapp_core/shared";
+    import { IContentOptions, ITemplateEvents, ITemplate } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
     import { DataGrid } from "jriapp_ui/datagrid/datagrid";
     export interface IColumnInfo {
@@ -231,12 +231,13 @@ declare module "jriapp_ui/datagrid/columns/base" {
         width?: any;
         content?: IContentOptions;
         tip?: string;
+        templateID?: string;
     }
     export interface ICellInfo {
         th: HTMLTableHeaderCellElement;
         colInfo: IColumnInfo;
     }
-    export class BaseColumn extends BaseObject {
+    export class BaseColumn extends BaseObject implements ITemplateEvents {
         private _grid;
         private _th;
         private _options;
@@ -244,8 +245,12 @@ declare module "jriapp_ui/datagrid/columns/base" {
         private _objId;
         private _$col;
         private _event_scope;
+        private _template;
         constructor(grid: DataGrid, options: ICellInfo);
         destroy(): void;
+        templateLoading(template: ITemplate): void;
+        templateLoaded(template: ITemplate, error?: any): void;
+        templateUnLoading(template: ITemplate): void;
         scrollIntoView(isUp: boolean): void;
         protected _onColumnClicked(): void;
         toString(): string;
@@ -523,7 +528,7 @@ declare module "jriapp_ui/datagrid/cells/details" {
             details_id: string;
         }): void;
         templateLoading(template: ITemplate): void;
-        templateLoaded(template: ITemplate): void;
+        templateLoaded(template: ITemplate, error?: any): void;
         templateUnLoading(template: ITemplate): void;
         destroy(): void;
         toString(): string;

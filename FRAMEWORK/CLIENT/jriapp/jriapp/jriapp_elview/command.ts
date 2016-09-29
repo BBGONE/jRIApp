@@ -47,7 +47,6 @@ export class CommandElView extends BaseElView {
             }
         }
     }
-
     destroy() {
         if (this._isDestroyed)
             return;

@@ -356,6 +356,11 @@ define(["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "./demoDB", ".
                 viewModel.load();
             }, self, null);
             this._testInvokeCommand = new TestInvokeCommand(this);
+            this._columnCommand = new RIAPP.TCommand(function (sender, product, viewModel) {
+                alert("You clicked on the link in Product Number column, current ProductID is: " + (!product ? "???" : product.ProductID));
+            }, self, function (sender, param, thisobj) {
+                return !!self.currentItem;
+            });
             this._propWatcher.addWatch(self, ['currentItem'], function (property) {
                 self._testInvokeCommand.raiseCanExecuteChanged();
             });
@@ -424,6 +429,7 @@ define(["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "./demoDB", ".
         };
         ProductViewModel.prototype._onCurrentChanged = function () {
             this.raisePropertyChanged('currentItem');
+            this._columnCommand.raiseCanExecuteChanged();
         };
         ProductViewModel.prototype._updateSelection = function () {
             var self = this, keys = self.selectedIDs, grid = self._dataGrid;
@@ -548,6 +554,11 @@ define(["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "./demoDB", ".
         });
         Object.defineProperty(ProductViewModel.prototype, "loadCommand", {
             get: function () { return this._loadCommand; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductViewModel.prototype, "columnCommand", {
+            get: function () { return this._columnCommand; },
             enumerable: true,
             configurable: true
         });

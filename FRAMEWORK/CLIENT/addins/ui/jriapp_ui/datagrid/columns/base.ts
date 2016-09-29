@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { DATA_ATTR } from "jriapp_core/const";
-import { IContentOptions } from "jriapp_core/shared";
+import { IContentOptions, ITemplateEvents, ITemplate } from "jriapp_core/shared";
 import { BaseObject } from "jriapp_core/object";
 import { Utils as utils } from "jriapp_utils/utils";
 import { fn_addToolTip } from "jriapp_elview/elview";
@@ -22,6 +22,7 @@ export interface IColumnInfo {
     width?: any;
     content?: IContentOptions;
     tip?: string;
+    templateID?: string;
 }
 
 export interface ICellInfo {
@@ -29,7 +30,7 @@ export interface ICellInfo {
     colInfo: IColumnInfo;
 }
 
-export class BaseColumn extends BaseObject {
+export class BaseColumn extends BaseObject implements ITemplateEvents {
     private _grid: DataGrid;
     private _th: HTMLTableHeaderCellElement;
     private _options: IColumnInfo;
@@ -37,6 +38,7 @@ export class BaseColumn extends BaseObject {
     private _objId: string;
     private _$col: JQuery;
     private _event_scope: string;
+    private _template: ITemplate;
 
     constructor(grid: DataGrid, options: ICellInfo) {
         super();
@@ -76,8 +78,14 @@ export class BaseColumn extends BaseObject {
             $th.css("width", this._options.width);
         }
 
-        if (!!this._options.title)
+        if (!!this._options.templateID) {
+            this._template = this.grid.app.createTemplate(this.grid.app, this);
+            this._template.templateID = this._options.templateID;
+            this._$col.append(this._template.el);
+        }
+        else if (!!this._options.title) {
             this._$col.html(this._options.title);
+        }
 
         if (!!this._options.tip) {
             fn_addToolTip(this._$col, this._options.tip, false, "bottom center");
@@ -97,12 +105,26 @@ export class BaseColumn extends BaseObject {
         if (!!this._options.tip) {
             fn_addToolTip(this._$col, null);
         }
+
+        if (!!this._template) {
+            this._template.destroy();
+            this._template = null;
+        }
         this._$col.empty();
         this._$col = null;
         this._th = null;
         this._grid = null;
         this._options = null;
         super.destroy();
+    }
+    templateLoading(template: ITemplate): void {
+        //noop
+    }
+    templateLoaded(template: ITemplate, error?: any): void {
+    }
+    templateUnLoading(template: ITemplate): void {
+        $(template.el).remove();
+        this._template = null;
     }
     scrollIntoView(isUp: boolean) {
         if (!this._$col)

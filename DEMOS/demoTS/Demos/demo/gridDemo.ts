@@ -257,6 +257,7 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
     private _testInvokeCommand: RIAPP.ICommand;
     private _addNewCommand: RIAPP.ICommand;
     private _loadCommand: RIAPP.ICommand;
+    private _columnCommand: RIAPP.ICommand;
     private _dialogVM: uiMOD.DialogVM;
     private _vwSalesOrderDet: dbMOD.ChildDataView<DEMODB.SalesOrderDetail>;
     private _rowStateProvider: uiMOD.IRowStateProvider;
@@ -352,6 +353,14 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
         //invokes test service method with parameters and displays result with alert
         this._testInvokeCommand = new TestInvokeCommand(this);
 
+
+        //for testing templates in datagrid columns
+        this._columnCommand = new RIAPP.TCommand<DEMODB.Product, ProductViewModel>(function (sender, product, viewModel) {
+            alert("You clicked on the link in Product Number column, current ProductID is: " + (!product ? "???" : product.ProductID));
+        }, self, function (sender, param, thisobj) {
+            return !!self.currentItem;
+        });
+
         //the property watcher helps us handling properties changes
         //more convenient than using addOnPropertyChange
         this._propWatcher.addWatch(self, ['currentItem'], function (property: string) {
@@ -429,6 +438,7 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
 
     protected _onCurrentChanged() {
         this.raisePropertyChanged('currentItem');
+        this._columnCommand.raiseCanExecuteChanged();
     }
     protected _updateSelection() {
         var self = this, keys = self.selectedIDs, grid = self._dataGrid;
@@ -535,6 +545,7 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
     get currentItem() { return this._dbSet.currentItem; }
     get filter() { return this._filter; }
     get loadCommand() { return this._loadCommand; }
+    get columnCommand() { return this._columnCommand; }
     get selectedCount() { return this._selectedCount; }
     set selectedCount(v) {
         var old = this._selectedCount;

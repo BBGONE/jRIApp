@@ -220,7 +220,7 @@
                 <th data-column="width:35px,type:row_expander,tip='Row expander'"></th>
                 <th data-column="width:50px,type:row_actions,tip='Row actions'"></th>
                 <th data-column="width:40px,type:row_selector,tip='Column selector'"></th>
-                <th data-column="width:100px,sortable:true,title:ProductNumber,tip='Product number'" data-content="fieldName:ProductNumber,css:{displayCss:'number-display',editCss:'number-edit'}"></th>
+                <th data-column="width:100px,sortable:false,templateID:productNumberTemplate,tip='Product number column implemented using template!!!'" data-content="fieldName:ProductNumber,css:{displayCss:'number-display',editCss:'number-edit'}"></th>
                 <th data-column="width:25%,sortable:true,title:Name,tip='Product name'" data-content="fieldName:Name"></th>
                 <th data-column="width:90px,title:'Weight',sortable:true,rowCellCss:weightCell,colCellCss:weightCol,tip='Example of a tooltip in the datagrid column's header'" data-content="fieldName:Weight"></th>
                 <th data-column="width:15%,title=CategoryID,sortable:true,sortMemberName=ProductCategoryID" data-content="fieldName=ProductCategoryID,name:lookup,options:{dataSource=dbContext.dbSets.ProductCategory,valuePath=ProductCategoryID,textPath=Name}"></th>
@@ -246,6 +246,15 @@
 <script id="sizeDisplayTemplate" type="text/html" data-role="template">
     <span>
         <span style="color: red;">Size:</span>
-        <span style="color: Blue; margin-left: 5px;" data-bind="{this.value,to=Size}"></span>
+        <span style="color: blue; margin-left: 5px;" data-bind="{this.value,to=Size}"></span>
     </span>
+</script>
+
+<!--a template inside data grid's column-->
+<script id="productNumberTemplate" type="text/html" data-role="template">
+    <div style="margin-top: 2px; border: 1px solid blue; border-radius: 3px 4px; width:95%; height:90%;">
+        <div style="position: relative; top: 50%; transform: translateY(-50%);">
+            <a style="color: white;" data-bind1="{this.command,to=columnCommand,source=productVM}" data-bind2="{this.commandParam,to=currentItem,source=productVM}">Product #</a>
+        </div>
+    </div>
 </script>
