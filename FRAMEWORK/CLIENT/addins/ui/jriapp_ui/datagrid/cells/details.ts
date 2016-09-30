@@ -32,16 +32,17 @@ export class DetailsCell extends BaseObject implements ITemplateEvents {
         //noop
     }
     templateLoaded(template: ITemplate, error?: any): void {
+        //noop
     }
     templateUnLoading(template: ITemplate): void {
-        this._td.removeChild(template.el);
-        this._template = null;
+        //noop
     }
     destroy() {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
         if (!!this._template) {
+            this._td.removeChild(this._template.el);
             this._template.destroy();
             this._template = null;
         }

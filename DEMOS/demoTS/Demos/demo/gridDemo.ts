@@ -355,8 +355,13 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
 
 
         //for testing templates in datagrid columns
-        this._columnCommand = new RIAPP.TCommand<DEMODB.Product, ProductViewModel>(function (sender, product, viewModel) {
-            alert("You clicked on the link in Product Number column, current ProductID is: " + (!product ? "???" : product.ProductID));
+        this._columnCommand = new RIAPP.TCommand<DEMODB.Product, ProductViewModel>(function (sender, cmdParam, viewModel) {
+            let dataName = "";
+            if (sender instanceof RIAPP.BaseElView) {
+                dataName = (<RIAPP.BaseElView>sender).dataName;
+            } 
+
+            alert(utils.str.format("You clicked on \"{0}\", current ProductID is: {1}", dataName, (!cmdParam ? "Not selected" : cmdParam.ProductID)));
         }, self, function (sender, param, thisobj) {
             return !!self.currentItem;
         });

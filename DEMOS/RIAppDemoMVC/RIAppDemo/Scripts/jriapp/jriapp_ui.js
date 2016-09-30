@@ -823,6 +823,7 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_core/co
                 elview_2.fn_addToolTip(this._$col, null);
             }
             if (!!this._template) {
+                $(this._template.el).remove();
                 this._template.destroy();
                 this._template = null;
             }
@@ -838,8 +839,6 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_core/co
         BaseColumn.prototype.templateLoaded = function (template, error) {
         };
         BaseColumn.prototype.templateUnLoading = function (template) {
-            $(template.el).remove();
-            this._template = null;
         };
         BaseColumn.prototype.scrollIntoView = function (isUp) {
             if (!this._$col)
@@ -2021,14 +2020,13 @@ define("jriapp_ui/datagrid/cells/details", ["require", "exports", "jriapp_core/o
         DetailsCell.prototype.templateLoaded = function (template, error) {
         };
         DetailsCell.prototype.templateUnLoading = function (template) {
-            this._td.removeChild(template.el);
-            this._template = null;
         };
         DetailsCell.prototype.destroy = function () {
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
             if (!!this._template) {
+                this._td.removeChild(this._template.el);
                 this._template.destroy();
                 this._template = null;
             }

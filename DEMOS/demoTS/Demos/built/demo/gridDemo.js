@@ -356,8 +356,12 @@ define(["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "./demoDB", ".
                 viewModel.load();
             }, self, null);
             this._testInvokeCommand = new TestInvokeCommand(this);
-            this._columnCommand = new RIAPP.TCommand(function (sender, product, viewModel) {
-                alert("You clicked on the link in Product Number column, current ProductID is: " + (!product ? "???" : product.ProductID));
+            this._columnCommand = new RIAPP.TCommand(function (sender, cmdParam, viewModel) {
+                var dataName = "";
+                if (sender instanceof RIAPP.BaseElView) {
+                    dataName = sender.dataName;
+                }
+                alert(utils.str.format("You clicked on \"{0}\", current ProductID is: {1}", dataName, (!cmdParam ? "Not selected" : cmdParam.ProductID)));
             }, self, function (sender, param, thisobj) {
                 return !!self.currentItem;
             });

@@ -4267,7 +4267,7 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
         });
         Object.defineProperty(BaseElView.prototype, "el", {
             get: function () {
-                return this._$el.get(0);
+                return this._$el[0];
             },
             enumerable: true,
             configurable: true
@@ -4325,7 +4325,7 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(BaseElView.prototype, "dataNameAttr", {
+        Object.defineProperty(BaseElView.prototype, "dataName", {
             get: function () { return this._$el.attr(const_4.DATA_ATTR.DATA_NAME); },
             enumerable: true,
             configurable: true

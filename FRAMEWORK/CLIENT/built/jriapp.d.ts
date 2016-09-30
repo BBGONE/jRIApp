@@ -1503,7 +1503,7 @@ declare module "jriapp_elview/elview" {
         isVisible: boolean;
         propChangedCommand: ICommand;
         validationErrors: IValidationInfo[];
-        readonly dataNameAttr: string;
+        readonly dataName: string;
         toolTip: string;
         css: string;
         readonly app: IApplication;

@@ -56,6 +56,9 @@ export class DbSets extends BaseObject {
         return f();
     }
     destroy() {
+        if (this._isDestroyed)
+            return;
+        this._isDestroyCalled = true;
         this._arrDbSets.forEach(function (dbSet) {
             dbSet.destroy();
         });

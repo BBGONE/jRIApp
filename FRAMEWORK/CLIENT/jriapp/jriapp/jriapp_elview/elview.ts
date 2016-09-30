@@ -240,7 +240,7 @@ export class BaseElView extends BaseObject implements IElView {
         return this._$el;
     }
     get el(): HTMLElement {
-        return this._$el.get(0);
+        return this._$el[0];
     }
     get uniqueID() { return this._objId; }
     get isVisible() {
@@ -279,7 +279,7 @@ export class BaseElView extends BaseObject implements IElView {
             this._updateErrorUI(this.el, this._errors);
         }
     }
-    get dataNameAttr() { return this._$el.attr(DATA_ATTR.DATA_NAME); }
+    get dataName() { return this._$el.attr(DATA_ATTR.DATA_NAME); }
     get toolTip() { return this._toolTip; }
     set toolTip(v: string) {
         if (this._toolTip !== v) {

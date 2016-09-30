@@ -107,6 +107,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         }
 
         if (!!this._template) {
+            $(this._template.el).remove();
             this._template.destroy();
             this._template = null;
         }
@@ -121,10 +122,10 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         //noop
     }
     templateLoaded(template: ITemplate, error?: any): void {
+        //noop
     }
     templateUnLoading(template: ITemplate): void {
-        $(template.el).remove();
-        this._template = null;
+        //noop
     }
     scrollIntoView(isUp: boolean) {
         if (!this._$col)

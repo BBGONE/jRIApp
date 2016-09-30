@@ -1483,6 +1483,9 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_core/lang", "jriapp_co
             return f();
         };
         DbSets.prototype.destroy = function () {
+            if (this._isDestroyed)
+                return;
+            this._isDestroyCalled = true;
             this._arrDbSets.forEach(function (dbSet) {
                 dbSet.destroy();
             });
