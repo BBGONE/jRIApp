@@ -83,7 +83,7 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
                 if (data.fixed)
                     $grip.html("");
             }
-            $grip.bind('touchstart mousedown', onGripMouseDown);
+            $grip.on('touchstart mousedown', onGripMouseDown);
             if (!isDisabled) {
                 $grip.removeClass('JCLRdisabledGrip').bind('touchstart mousedown', onGripMouseDown);
             }
@@ -93,7 +93,8 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
             var colInfo = { $column: $column, $grip: $grip, w: $column.width(), locked: false };
             data.columns.push(colInfo);
             $column.width(colInfo.w).removeAttr("width");
-            $grip.data(SIGNATURE, { i: index, grid: grid, last: index == data.len - 1, ox: 0, x: 0, l: 0, w: 0 });
+            var gripData = { i: index, grid: grid, last: index == data.len - 1, ox: 0, x: 0, l: 0, w: 0 };
+            $grip.data(SIGNATURE, gripData);
         });
         if (!data.fixed) {
             $table.removeAttr('width').addClass(FLEX);
@@ -171,7 +172,7 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
         var colInfo = data.columns[index];
         var l = data.cellspacing * 1.5 + mw + data.borderW;
         var last = index == data.len - 1;
-        var min = (!!colInfo) ? data.columns[index - 1].$grip.position().left + data.cellspacing + mw : l;
+        var min = (index > 0) ? data.columns[index - 1].$grip.position().left + data.cellspacing + mw : l;
         var max = data.fixed ?
             (index == data.len - 1 ?
                 (data.w - l) :
@@ -302,7 +303,7 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
             var self = this, grid = self.grid;
             _gridCreated(this);
             var defaults = {
-                resizeMode: 'fit',
+                resizeMode: 'flex',
                 draggingClass: 'JCLRgripDrag',
                 gripInnerHtml: '',
                 liveDrag: false,
@@ -310,16 +311,13 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
                 headerOnly: false,
                 hoverCursor: "e-resize",
                 dragCursor: "e-resize",
-                flush: false,
                 marginLeft: null,
                 marginRight: null,
-                disable: false,
-                partialRefresh: false,
                 disabledColumns: [],
                 onDrag: null,
                 onResize: null
             };
-            var opts = $.extend(defaults, options);
+            var opts = utils.core.extend(defaults, options);
             opts.fixed = true;
             opts.overflow = false;
             switch (opts.resizeMode) {

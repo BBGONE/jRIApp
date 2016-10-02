@@ -26,10 +26,10 @@ interface ITableData {
     cellspacing: number;
     borderW: number;
     len: number;
-    columns: IColumnData[];
+    columns: IColumnInfo[];
 }
 
-interface IColumnData {
+interface IColumnInfo {
     $column: JQuery;
     $grip: JQuery;
     w: number;
@@ -41,9 +41,26 @@ interface IGripData {
     grid: uiMOD.DataGrid;
     last: boolean;
     w: number;
-    ox: number;
-    x: number;
+    ox: number; //original x
+    x: number; // x
     l: number;
+}
+
+interface IOptions {
+    resizeMode: 'fit' | 'flex' | 'overflow';
+    draggingClass: string;
+    gripInnerHtml: string;
+    liveDrag: boolean;
+    minWidth: number;
+    headerOnly: boolean;
+    hoverCursor: string;
+    dragCursor: string;
+    marginLeft: string;
+    marginRight: string;
+    disabledColumns: number[];  //column indexes to be excluded
+    //events:
+    onDrag: (e: JQueryEventObject) => void; //callback function to be fired during the column resizing process if liveDrag is enabled
+    onResize: (e: JQueryEventObject) => void;	//callback function fired when the dragging process is over
 }
 
 let _gridsCount = 0;
@@ -69,7 +86,7 @@ function _gridDestroyed(grid: ResizableGrid) {
 //append required CSS rules  
 $head.append("<style type='text/css'>  .JColResizer{table-layout:fixed;} .JCLRgrips{ height:0px; position:relative;} .JCLRgrip{margin-left:-5px; position:absolute; z-index:5; } .JCLRgrip .JColResizer{position:absolute;background-color:red;filter:alpha(opacity=1);opacity:0;width:10px;height:100%;cursor: e-resize;top:0px} .JCLRLastGrip{position:absolute; width:1px; } .JCLRgripDrag{ border-left:1px dotted black;	} .JCLRFlex{width:auto!important;} .JCLRgrip.JCLRdisabledGrip .JColResizer{cursor:default; display:none;}</style>");
 
-let init = function (grid: uiMOD.DataGrid, options: any) {
+let init = function (grid: uiMOD.DataGrid, options: IOptions) {
     let $table: JQuery = grid.$table;
     let tb: HTMLTableElement = <any>$table[0];
     let style = window.getComputedStyle(tb, null);
@@ -86,8 +103,8 @@ let init = function (grid: uiMOD.DataGrid, options: any) {
         options: options,
         mode: options.resizeMode,
         dc: options.disabledColumns,
-        fixed: options.fixed,
-        columns: [],
+        fixed: (<any>options).fixed,
+        columns: <IColumnInfo[]>[],
         w: $table.width(),
         $gripContainer: $gripContainer,
         cellspacing: parseInt(style.borderSpacing) || 2,
@@ -128,10 +145,10 @@ let createGrips = function (grid: uiMOD.DataGrid) {
         if (index == data.len - 1) {  //if the current grip is the last one 
             $grip.addClass("JCLRLastGrip");    //add a different css class to stlye it in a different way if needed
             if (data.fixed)
-                $grip.html("");   //if the table resizing mode is set to fixed, the last grip is removed since table with can not change
+                $grip.html("");   //if the table resizing mode is set to fixed, the last grip is removed since table width can not change
         }
 
-        $grip.bind('touchstart mousedown', onGripMouseDown); //bind the mousedown event to start dragging 
+        $grip.on('touchstart mousedown', onGripMouseDown); //bind the mousedown event to start dragging 
 
         if (!isDisabled) {
             //if normal column bind the mousedown event to start dragging, if disabled then apply its css class
@@ -140,13 +157,14 @@ let createGrips = function (grid: uiMOD.DataGrid) {
             $grip.addClass('JCLRdisabledGrip');
         }
 
-        let colInfo: IColumnData = { $column: $column, $grip: $grip, w: $column.width(), locked: false };
+        let colInfo: IColumnInfo = { $column: $column, $grip: $grip, w: $column.width(), locked: false };
         //the current grip and column are added to its table object
         data.columns.push(colInfo);
         //the width of the column is converted into pixel-based measurements
         $column.width(colInfo.w).removeAttr("width");
         //grip index and its the grid are stored
-        $grip.data(SIGNATURE, { i: index, grid: grid, last: index == data.len - 1, ox: 0, x:0, l:0, w:0 });
+        let gripData: IGripData = { i: index, grid: grid, last: index == data.len - 1, ox: 0, x: 0, l: 0, w: 0 };
+        $grip.data(SIGNATURE, gripData);
     });
 
      if (!data.fixed) {
@@ -171,7 +189,8 @@ let syncGrips = function (grid: uiMOD.DataGrid) {
         let colInfo = data.columns[i];
         let headerHeight = grid._getInternal().get$Header()[0].offsetHeight;
         let tableHeight = grid._getInternal().get$Wrapper()[0].offsetHeight;
-        colInfo.$grip.css({			//height and position of the grip is updated according to the table layout
+        //height and position of the grip is updated according to the table layout
+        colInfo.$grip.css({
             left: colInfo.$column.offset().left - $table.offset().left + colInfo.$column.outerWidth(false) + data.cellspacing / 2 + PX,
             height: data.options.headerOnly ? headerHeight : (headerHeight + tableHeight)
         });
@@ -195,7 +214,7 @@ let syncCols = function (grid: uiMOD.DataGrid, i: number, isOver: boolean) {
     let data: ITableData = $table.data(SIGNATURE);
     let gripData: IGripData = $drag.data(SIGNATURE);
     const inc = gripData.x - gripData.l;
-    const c: IColumnData = data.columns[i], c2: IColumnData = data.columns[i + 1];
+    const c: IColumnInfo = data.columns[i], c2: IColumnInfo = data.columns[i + 1];
 
     const w = c.w + inc;
     const w2 = c2.w - inc;	//their new width is obtained	
@@ -259,11 +278,12 @@ let onGripDrag = function (e: JQueryEventObject) {
 
     let l: number = data.cellspacing * 1.5 + mw + data.borderW;
     let last = index == data.len - 1;  //check if it is the last column's grip (usually hidden)
-    let min = (!!colInfo) ? data.columns[index - 1].$grip.position().left + data.cellspacing + mw : l;	//min position according to the contiguous cells
+    let min = (index > 0) ? data.columns[index - 1].$grip.position().left + data.cellspacing + mw : l;	//min position according to the contiguous cells
     let max = data.fixed ?
         (index == data.len - 1 ?
             (data.w - l) :
-            (data.columns[index + 1].$grip.position().left - data.cellspacing - mw)) :  Infinity; 	//max position according to the contiguous cells 
+            (data.columns[index + 1].$grip.position().left - data.cellspacing - mw)) : Infinity; 	//max position according to the contiguous cells 
+
     x = Math.max(min, Math.min(max, x));	//apply bounding		
     gripData.x = x;
     $drag.css("left", x + PX); 	//apply position increment	
@@ -416,8 +436,8 @@ export class ResizableGrid extends uiMOD.DataGridElView {
         super(options);
         let self = this, grid = self.grid;
         _gridCreated(this);
-        let defaults = {
-            resizeMode: 'fit',                    //mode can be 'fit', 'flex' or 'overflow'
+        let defaults: IOptions = {
+            resizeMode: <'fit' | 'flex' | 'overflow'> 'flex',  //mode can be 'fit', 'flex' or 'overflow'
             draggingClass: 'JCLRgripDrag',	//css-class used when a grip is being dragged (for visual feedback purposes)
             gripInnerHtml: '',				//if it is required to use a custom grip it can be done using some custom HTML				
             liveDrag: false,				//enables table-layout updating while dragging	
@@ -425,33 +445,32 @@ export class ResizableGrid extends uiMOD.DataGridElView {
             headerOnly: false,				//specifies that the size of the the column resizing anchors will be bounded to the size of the first row 
             hoverCursor: "e-resize",  		//cursor to be used on grip hover
             dragCursor: "e-resize",  		//cursor to be used while dragging
-            flush: false, 					//when postbakSafe is enabled, and it is required to prevent layout restoration after postback, 'flush' will remove its associated layout data 
-            marginLeft: <string>null,				//in case the table contains any margins, colResizable needs to know the values used, e.grip. "10%", "15em", "5px" ...
-            marginRight: <string>null, 				//in case the table contains any margins, colResizable needs to know the values used, e.grip. "10%", "15em", "5px" ...
-            disable: false,					//disables all the enhancements performed in a previously colResized table	
-            partialRefresh: false,			//can be used in combination with postbackSafe when the table is inside of an updatePanel,
-            disabledColumns: <any[]>[],     //column indexes to be excluded
-
+            marginLeft: <string>null,		//in case the table contains any margins, colResizable needs to know the values used, e.grip. "10%", "15em", "5px" ...
+            marginRight: <string>null, 		//in case the table contains any margins, colResizable needs to know the values used, e.grip. "10%", "15em", "5px" ...
+            disabledColumns: <number[]>[],  //column indexes to be excluded
             //events:
             onDrag: <(e: JQueryEventObject) => void>null, //callback function to be fired during the column resizing process if liveDrag is enabled
-            onResize: <(e: JQueryEventObject) => void>null				//callback function fired when the dragging process is over
+            onResize: <(e: JQueryEventObject) => void>null	//callback function fired when the dragging process is over
         }
 
-        let opts = $.extend(defaults, options);
+        let opts: IOptions = <IOptions>utils.core.extend(defaults, options);
 
         //since now there are 3 different ways of resizing columns, I changed the external interface to make it clear
         //calling it 'resizeMode' but also to remove the "fixed" attribute which was confusing for many people
-        opts.fixed = true;
-        opts.overflow = false;
+
+        (<any>opts).fixed = true;
+        (<any>opts).overflow = false;
+
         switch (opts.resizeMode) {
             case 'flex':
-                opts.fixed = false;
+                (<any>opts).fixed = false;
                 break;
             case 'overflow':
-                opts.fixed = false;
-                opts.overflow = true;
+                (<any>opts).fixed = false;
+                (<any>opts).overflow = true;
                 break;
         }
+
         this._ds = grid.dataSource;
         init(grid, opts);
         self.bindDS(grid.dataSource);
