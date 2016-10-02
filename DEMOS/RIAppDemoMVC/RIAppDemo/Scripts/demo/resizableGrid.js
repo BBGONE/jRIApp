@@ -6,9 +6,9 @@ var __extends = (this && this.__extends) || function (d, b) {
 define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports, RIAPP, uiMOD) {
     "use strict";
     var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = utils.dom.$;
-    var d = $(utils.dom.document);
-    var h = $("head");
-    var drag = null;
+    var $doc = $(utils.dom.document);
+    var $head = $("head");
+    var $drag = null;
     var ID = "id";
     var PX = "px";
     var SIGNATURE = "JColResizer";
@@ -30,73 +30,74 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
         }
         destroy(grid.grid);
     }
-    h.append("<style type='text/css'>  .JColResizer{table-layout:fixed;} .JCLRgrips{ height:0px; position:relative;} .JCLRgrip{margin-left:-5px; position:absolute; z-index:5; } .JCLRgrip .JColResizer{position:absolute;background-color:red;filter:alpha(opacity=1);opacity:0;width:10px;height:100%;cursor: e-resize;top:0px} .JCLRLastGrip{position:absolute; width:1px; } .JCLRgripDrag{ border-left:1px dotted black;	} .JCLRFlex{width:auto!important;} .JCLRgrip.JCLRdisabledGrip .JColResizer{cursor:default; display:none;}</style>");
+    $head.append("<style type='text/css'>  .JColResizer{table-layout:fixed;} .JCLRgrips{ height:0px; position:relative;} .JCLRgrip{margin-left:-5px; position:absolute; z-index:5; } .JCLRgrip .JColResizer{position:absolute;background-color:red;filter:alpha(opacity=1);opacity:0;width:10px;height:100%;cursor: e-resize;top:0px} .JCLRLastGrip{position:absolute; width:1px; } .JCLRgripDrag{ border-left:1px dotted black;	} .JCLRFlex{width:auto!important;} .JCLRgrip.JCLRdisabledGrip .JColResizer{cursor:default; display:none;}</style>");
     var init = function (grid, options) {
         var $table = grid.$table;
         var tb = $table[0];
-        $table.opt = options;
-        $table.mode = options.resizeMode;
-        $table.dc = $table.opt.disabledColumns;
         var style = window.getComputedStyle(tb, null);
-        if ($table.opt.disable)
-            return destroy($table);
-        $table.p = $table.opt.postbackSafe;
-        if ($table.opt.hoverCursor !== 'e-resize')
-            h.append("<style type='text/css'>.JCLRgrip .JColResizer:hover{cursor:" + $table.opt.hoverCursor + "!important}</style>");
+        if (options.hoverCursor !== 'e-resize')
+            $head.append("<style type='text/css'>.JCLRgrip .JColResizer:hover{cursor:" + options.hoverCursor + "!important}</style>");
         $table.addClass(SIGNATURE);
         var $gripContainer = $('<div class="JCLRgrips"/>');
         grid._getInternal().get$Header().before($gripContainer);
-        $table.grips = [];
-        $table.$columns = [];
-        $table.w = $table.width();
-        $table.$gripContainer = $gripContainer;
-        $table.f = $table.opt.fixed;
+        var data = {
+            options: options,
+            mode: options.resizeMode,
+            dc: options.disabledColumns,
+            fixed: options.fixed,
+            grips: [],
+            $columns: [],
+            w: $table.width(),
+            $gripContainer: $gripContainer,
+            cellspacing: parseInt(style.borderSpacing) || 2,
+            borderW: parseInt(style.borderLeftWidth) || 1,
+            len: 0
+        };
+        $table.data(SIGNATURE, data);
         if (options.marginLeft)
-            $table.$gripContainer.css("marginLeft", options.marginLeft);
+            $gripContainer.css("marginLeft", options.marginLeft);
         if (options.marginRight)
-            $table.$gripContainer.css("marginRight", options.marginRight);
-        $table.cellspacing = parseInt(style.borderSpacing) || 2;
-        $table.b = parseInt(style.borderLeftWidth) || 1;
+            $gripContainer.css("marginRight", options.marginRight);
         createGrips(grid);
     };
     var destroy = function (grid) {
         var $table = grid.$table;
-        $table.removeClass(SIGNATURE + " " + FLEX).$gripContainer.remove();
+        var data = $table.data(SIGNATURE);
+        if (!!data)
+            data.$gripContainer.remove();
+        $table.removeData(SIGNATURE);
+        $table.removeClass(SIGNATURE + " " + FLEX);
     };
     var createGrips = function (grid) {
         var $table = grid.$table;
-        var allth = $(grid._tHeadCells);
-        allth = allth.filter(":visible");
-        $table.cg = $table.find("col");
-        $table.ln = allth.length;
-        allth.each(function (th) {
+        var $allth = $(grid._tHeadCells);
+        $allth = $allth.filter(":visible");
+        var data = $table.data(SIGNATURE);
+        data.len = $allth.length;
+        $allth.each(function (index) {
             var $column = $(this);
-            var dc = $table.dc.indexOf(th) != -1;
-            var $grip = $($table.$gripContainer.append('<div class="JCLRgrip"></div>')[0].lastChild);
-            $grip.append(dc ? "" : $table.opt.gripInnerHtml).append('<div class="' + SIGNATURE + '"></div>');
-            if (th == $table.ln - 1) {
+            var isDisabled = data.dc.indexOf(index) != -1;
+            var $grip = $(data.$gripContainer.append('<div class="JCLRgrip"></div>')[0].lastChild);
+            $grip.append(isDisabled ? "" : data.options.gripInnerHtml).append('<div class="' + SIGNATURE + '"></div>');
+            if (index == data.len - 1) {
                 $grip.addClass("JCLRLastGrip");
-                if ($table.f)
+                if (data.fixed)
                     $grip.html("");
             }
             $grip.bind('touchstart mousedown', onGripMouseDown);
-            if (!dc) {
+            if (!isDisabled) {
                 $grip.removeClass('JCLRdisabledGrip').bind('touchstart mousedown', onGripMouseDown);
             }
             else {
                 $grip.addClass('JCLRdisabledGrip');
             }
-            $grip.grid = grid;
-            $grip.i = th;
-            $grip.$column = $column;
             $column.w = $column.width();
-            $table.grips.push($grip);
-            $table.$columns.push($column);
+            data.grips.push($grip);
+            data.$columns.push($column);
             $column.width($column.w).removeAttr("width");
-            $grip.data(SIGNATURE, { i: th, grid: grid, last: th == $table.ln - 1 });
+            $grip.data(SIGNATURE, { i: index, grid: grid, last: index == data.len - 1 });
         });
-        $table.cg.removeAttr("width");
-        if (!$table.f) {
+        if (!data.fixed) {
             $table.removeAttr('width').addClass(FLEX);
         }
         syncGrips(grid);
@@ -105,14 +106,15 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
         if (grid.getIsDestroyCalled())
             return;
         var $table = grid.$table;
-        $table.$gripContainer.width($table.w);
-        for (var i = 0; i < $table.ln; i++) {
-            var $column = $table.$columns[i];
+        var data = $table.data(SIGNATURE);
+        data.$gripContainer.width(data.w);
+        for (var i = 0; i < data.len; i++) {
+            var $column = data.$columns[i];
             var headerHeight = grid._getInternal().get$Header()[0].offsetHeight;
             var tableHeight = grid._getInternal().get$Wrapper()[0].offsetHeight;
-            $table.grips[i].css({
-                left: $column.offset().left - $table.offset().left + $column.outerWidth(false) + $table.cellspacing / 2 + PX,
-                height: $table.opt.headerOnly ? headerHeight : (headerHeight + tableHeight)
+            data.grips[i].css({
+                left: $column.offset().left - $table.offset().left + $column.outerWidth(false) + data.cellspacing / 2 + PX,
+                height: data.options.headerOnly ? headerHeight : (headerHeight + tableHeight)
             });
         }
         grid.updateColumnsSize();
@@ -121,78 +123,82 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
         if (grid.getIsDestroyCalled())
             return;
         var $table = grid.$table;
-        var inc = drag.x - drag.l, c = $table.$columns[i], c2 = $table.$columns[i + 1];
+        var data = $table.data(SIGNATURE);
+        var gripData = $drag.data(SIGNATURE);
+        var inc = gripData.x - gripData.l, c = data.$columns[i], c2 = data.$columns[i + 1];
         var w = c.w + inc;
         var w2 = c2.w - inc;
         c.width(w + PX);
-        $table.cg.eq(i).width(w + PX);
-        if ($table.f) {
+        if (data.fixed) {
             c2.width(w2 + PX);
-            $table.cg.eq(i + 1).width(w2 + PX);
         }
-        else if ($table.opt.overflow) {
-            $table.css('min-width', $table.w + inc);
+        else if (data.options.overflow) {
+            $table.css('min-width', data.w + inc);
         }
         if (isOver) {
             c.w = w;
-            c2.w = $table.f ? w2 : c2.w;
+            c2.w = data.fixed ? w2 : c2.w;
         }
     };
     var applyBounds = function (grid) {
         if (grid.getIsDestroyCalled())
             return;
         var $table = grid.$table;
-        var w = $.map($table.$columns, function (c) {
+        var data = $table.data(SIGNATURE);
+        var w = $.map(data.$columns, function (c) {
             return c.width();
         });
-        $table.width($table.w = $table.width()).removeClass(FLEX);
-        $.each($table.$columns, function (i, c) {
-            c.width(w[i]).w = w[i];
+        $table.width(data.w = $table.width()).removeClass(FLEX);
+        $.each(data.$columns, function (i, c) {
+            c.width(w[i]);
+            c.w = w[i];
         });
         $table.addClass(FLEX);
     };
     var onGripDrag = function (e) {
-        if (!drag)
+        if (!$drag)
             return;
-        var grid = drag.grid;
+        var gripData = $drag.data(SIGNATURE);
+        var grid = gripData.grid;
         if (grid.getIsDestroyCalled())
             return;
         var $table = grid.$table;
+        var data = $table.data(SIGNATURE);
         var oe = e.originalEvent.touches;
         var ox = oe ? oe[0].pageX : e.pageX;
-        var x = ox - drag.ox + drag.l;
-        var mw = $table.opt.minWidth, i = drag.i;
-        var l = $table.cellspacing * 1.5 + mw + $table.b;
-        var last = i == $table.ln - 1;
-        var min = i ? $table.grips[i - 1].position().left + $table.cellspacing + mw : l;
-        var max = $table.f ?
-            i == $table.ln - 1 ?
-                $table.w - l :
-                $table.grips[i + 1].position().left - $table.cellspacing - mw :
-            Infinity;
+        var x = ox - gripData.ox + gripData.l;
+        var mw = data.options.minWidth;
+        var index = gripData.i;
+        var l = data.cellspacing * 1.5 + mw + data.borderW;
+        var last = index == data.len - 1;
+        var min = index ? data.grips[index - 1].position().left + data.cellspacing + mw : l;
+        var max = data.fixed ?
+            (index == data.len - 1 ?
+                (data.w - l) :
+                (data.grips[index + 1].position().left - data.cellspacing - mw)) : Infinity;
         x = Math.max(min, Math.min(max, x));
-        drag.x = x;
-        drag.css("left", x + PX);
+        gripData.x = x;
+        $drag.css("left", x + PX);
         if (last) {
-            var c = $table.$columns[drag.i];
-            drag.w = c.w + x - drag.l;
+            var column = data.$columns[index];
+            gripData.w = column.w + x - gripData.l;
         }
-        if ($table.opt.liveDrag) {
+        if (!!data.options.liveDrag) {
             if (last) {
-                c.width(drag.w);
-                if (!$table.f && $table.opt.overflow) {
-                    $table.css('min-width', $table.w + x - drag.l);
+                column.width(gripData.w);
+                if (!data.fixed && data.options.overflow) {
+                    $table.css('min-width', data.w + x - gripData.l);
                 }
                 else {
-                    $table.w = $table.width();
+                    data.w = $table.width();
                 }
             }
             else {
-                syncCols(grid, i, false);
+                syncCols(grid, index, false);
             }
             syncGrips(grid);
-            var cb = $table.opt.onDrag;
-            if (cb) {
+            var cb = data.options.onDrag;
+            if (!!cb) {
                 e.currentTarget = $table[0];
                 cb(e);
             }
@@ -200,55 +206,61 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
         return false;
     };
     var onGripDragOver = function (e) {
-        d.unbind('touchend.' + SIGNATURE + ' mouseup.' + SIGNATURE).unbind('touchmove.' + SIGNATURE + ' mousemove.' + SIGNATURE);
-        $("head :last-child").remove();
-        if (!drag)
+        $doc.unbind('touchend.' + SIGNATURE + ' mouseup.' + SIGNATURE).unbind('touchmove.' + SIGNATURE + ' mousemove.' + SIGNATURE);
+        $head.find('#dragCursor').remove();
+        if (!$drag)
             return;
-        var grid = drag.grid;
+        var gripData = $drag.data(SIGNATURE);
+        var grid = gripData.grid;
         if (grid.getIsDestroyCalled())
             return;
         var $table = grid.$table;
-        drag.removeClass($table.opt.draggingClass);
-        if (!(drag.x - drag.l == 0)) {
-            var cb = $table.opt.onResize;
-            var i = drag.i;
-            var last = i == $table.ln - 1;
-            var c = $table.grips[i].$column;
+        var data = $table.data(SIGNATURE);
+        $drag.removeClass(data.options.draggingClass);
+        if (!(gripData.x - gripData.l == 0)) {
+            var cb = data.options.onResize;
+            var i = gripData.i;
+            var last = i == data.len - 1;
+            var c = data.$columns[i];
             if (last) {
-                c.width(drag.w);
-                c.w = drag.w;
+                c.width(gripData.w);
+                c.w = gripData.w;
             }
             else {
                 syncCols(grid, i, true);
             }
-            if (!$table.f)
-                applyBounds($table);
+            if (!data.fixed)
+                applyBounds(grid);
             syncGrips(grid);
-            if (cb) {
+            if (!!cb) {
                 e.currentTarget = $table[0];
                 cb(e);
             }
         }
-        drag = null;
+        $drag = null;
     };
     var onGripMouseDown = function (e) {
-        var o = $(this).data(SIGNATURE);
-        var grid = o.grid;
+        var $grip = $(this);
+        var gripData = $grip.data(SIGNATURE);
+        var grid = gripData.grid;
         if (grid.getIsDestroyCalled())
             return;
-        var $table = grid.$table, $grip = $table.grips[o.i];
+        var $table = grid.$table;
+        var data = $table.data(SIGNATURE);
         var oe = e.originalEvent.touches;
-        $grip.ox = oe ? oe[0].pageX : e.pageX;
-        $grip.l = $grip.position().left;
-        $grip.x = $grip.l;
-        d.bind('touchmove.' + SIGNATURE + ' mousemove.' + SIGNATURE, onGripDrag).bind('touchend.' + SIGNATURE + ' mouseup.' + SIGNATURE, onGripDragOver);
-        h.append("<style type='text/css'>*{cursor:" + $table.opt.dragCursor + "!important}</style>");
-        $grip.addClass($table.opt.draggingClass);
-        drag = $grip;
-        if ($table.$columns[o.i].l) {
-            for (var i = 0, c; i < $table.ln; i++) {
-                c = $table.$columns[i];
-                c.l = false;
+        gripData.ox = oe ? oe[0].pageX : e.pageX;
+        gripData.l = $grip.position().left;
+        gripData.x = gripData.l;
+        $doc.bind('touchmove.' + SIGNATURE + ' mousemove.' + SIGNATURE, onGripDrag).bind('touchend.' + SIGNATURE + ' mouseup.' + SIGNATURE, onGripDragOver);
+        if ($head.find('#dragCursor').length == 0)
+            $head.append("<style id='dragCursor' type='text/css'>*{cursor:" + data.options.dragCursor + "!important}</style>");
+        $grip.addClass(data.options.draggingClass);
+        $drag = $grip;
+        var gripCol = data.$columns[gripData.i];
+        if (gripCol.locked) {
+            for (var i = 0; i < data.len; i++) {
+                var c = data.$columns[i];
+                c.locked = false;
                 c.w = c.width();
             }
         }
@@ -258,14 +270,18 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
         if (grid.getIsDestroyCalled())
             return;
         var $table = grid.$table;
-        var i, mw = 0;
+        var data = $table.data(SIGNATURE);
+        var mw = 0;
         $table.removeClass(SIGNATURE);
-        if ($table.f) {
-            $table.w = $table.width();
-            for (i = 0; i < $table.ln; i++)
-                mw += $table.$columns[i].w;
-            for (i = 0; i < $table.ln; i++)
-                $table.$columns[i].css("width", Math.round(1000 * $table.$columns[i].w / mw) / 10 + "%").l = true;
+        if (data.fixed) {
+            data.w = $table.width();
+            for (var i = 0; i < data.len; i++)
+                mw += data.$columns[i].w;
+            for (var i = 0; i < data.len; i++) {
+                var col = data.$columns[i];
+                col.css("width", Math.round(1000 * col.w / mw) / 10 + "%");
+                col.locked = true;
+            }
         }
         else {
             applyBounds(grid);
@@ -294,7 +310,6 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
                 headerOnly: false,
                 hoverCursor: "e-resize",
                 dragCursor: "e-resize",
-                postbackSafe: false,
                 flush: false,
                 marginLeft: null,
                 marginRight: null,
@@ -345,6 +360,8 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
                 return;
             this._isDestroyCalled = true;
             _gridDestroyed(this);
+            this.unBindDS(this._ds);
+            this._ds = null;
             _super.prototype.destroy.call(this);
         };
         return ResizableGrid;
