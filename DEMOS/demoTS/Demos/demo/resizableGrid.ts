@@ -255,6 +255,7 @@ let applyBounds = function (grid: uiMOD.DataGrid) {
     });
 
     $table.addClass(FLEX);	//allow table width changes
+    grid._getInternal().get$Wrapper().width($table.outerWidth());
 };
 
 /**
@@ -437,7 +438,7 @@ export class ResizableGrid extends uiMOD.DataGridElView {
         let self = this, grid = self.grid;
         _gridCreated(this);
         let defaults: IOptions = {
-            resizeMode: <'fit' | 'flex' | 'overflow'> 'flex',  //mode can be 'fit', 'flex' or 'overflow'
+            resizeMode: <'fit' | 'flex' | 'overflow'>'overflow',  //mode can be 'fit', 'flex' or 'overflow'
             draggingClass: 'JCLRgripDrag',	//css-class used when a grip is being dragged (for visual feedback purposes)
             gripInnerHtml: '',				//if it is required to use a custom grip it can be done using some custom HTML				
             liveDrag: false,				//enables table-layout updating while dragging	

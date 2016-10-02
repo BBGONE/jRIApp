@@ -154,6 +154,7 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
             c.w = widths[i];
         });
         $table.addClass(FLEX);
+        grid._getInternal().get$Wrapper().width($table.outerWidth());
     };
     var onGripDrag = function (e) {
         if (!$drag)
@@ -303,7 +304,7 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
             var self = this, grid = self.grid;
             _gridCreated(this);
             var defaults = {
-                resizeMode: 'flex',
+                resizeMode: 'overflow',
                 draggingClass: 'JCLRgripDrag',
                 gripInnerHtml: '',
                 liveDrag: false,
