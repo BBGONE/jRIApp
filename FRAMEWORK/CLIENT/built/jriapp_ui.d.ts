@@ -604,6 +604,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
     export { BaseColumn as DataGridColumn } from "jriapp_ui/datagrid/columns/base";
     export { ROW_POSITION, COLUMN_TYPE, ROW_ACTION } from "jriapp_ui/datagrid/const";
     export { IDataGridAnimation, DefaultAnimation } from "jriapp_ui/datagrid/animation";
+    export function findDataGrid(gridName: string): DataGrid;
     export interface IRowStateProvider {
         getCSS(item: ICollectionItem, val: any): string;
     }
@@ -632,7 +633,9 @@ declare module "jriapp_ui/datagrid/datagrid" {
     }
     export interface IInternalDataGridMethods {
         isRowExpanded(row: Row): boolean;
-        appendToHeader(el: HTMLElement): void;
+        get$Header(): JQuery;
+        get$Container(): JQuery;
+        get$Wrapper(): JQuery;
         setCurrentColumn(column: BaseColumn): void;
         onRowStateChanged(row: Row, val: any): string;
         onCellDblClicked(cell: BaseCell<BaseColumn>): void;
@@ -641,7 +644,6 @@ declare module "jriapp_ui/datagrid/datagrid" {
         getLastRow(): Row;
         removeRow(row: Row): void;
         expandDetails(parentRow: Row, expanded: boolean): void;
-        get$Table(): JQuery;
     }
     export class DataGrid extends BaseObject implements ISelectableProvider {
         private _options;
@@ -662,9 +664,9 @@ declare module "jriapp_ui/datagrid/datagrid" {
         private _currentColumn;
         private _editingRow;
         private _dialog;
-        private _$headerDiv;
-        private _$wrapDiv;
-        private _contaner;
+        private _$header;
+        private _$wrapper;
+        private _$contaner;
         _columnWidthChecker: () => void;
         private _internal;
         private _selectable;
@@ -699,11 +701,9 @@ declare module "jriapp_ui/datagrid/datagrid" {
             action: ROW_ACTION;
         }>, nmspace?: string, context?: any): void;
         removeOnRowAction(nmspace?: string): void;
-        protected _getContainerEl(): HTMLElement;
         protected _onKeyDown(key: number, event: Event): void;
         protected _onKeyUp(key: number, event: Event): void;
         protected _isRowExpanded(row: Row): boolean;
-        protected _appendToHeader(el: HTMLElement): void;
         protected _setCurrentColumn(column: BaseColumn): void;
         protected _onRowStateChanged(row: Row, val: any): string;
         protected _onCellDblClicked(cell: BaseCell<BaseColumn>): void;
@@ -727,7 +727,6 @@ declare module "jriapp_ui/datagrid/datagrid" {
         protected _bindDS(): void;
         protected _unbindDS(): void;
         protected _clearGrid(): void;
-        protected _updateColsSize(): void;
         protected _wrapTable(): void;
         protected _unWrapTable(): void;
         protected _createColumns(): void;
@@ -738,6 +737,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         protected _createDetails(): DetailsRow;
         protected _createFillSpace(): FillSpaceRow;
         _getInternal(): IInternalDataGridMethods;
+        updateColumnsSize(): void;
         getISelectable(): ISelectable;
         sortByColumn(column: DataColumn): void;
         selectRows(isSelect: boolean): void;
@@ -754,7 +754,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         focus(): void;
         addNew(): void;
         destroy(): void;
-        protected readonly $table: JQuery;
+        readonly $table: JQuery;
         readonly app: IApplication;
         readonly options: IDataGridConstructorOptions;
         readonly _tBodyEl: HTMLTableSectionElement;
@@ -1138,7 +1138,7 @@ declare module "jriapp_ui/tabs" {
 declare module "jriapp_ui" {
     export { DIALOG_ACTION, IDialogConstructorOptions, DataEditDialog, DialogVM } from "jriapp_ui/dialog";
     export { DynaContentElView, IDynaContentAnimation, IDynaContentOptions } from "jriapp_ui/dynacontent";
-    export { DataGrid, DataGridCell, DataGridColumn, DataGridRow, DataGridElView, IDataGridViewOptions, ROW_POSITION, IRowStateProvider } from "jriapp_ui/datagrid/datagrid";
+    export { DataGrid, DataGridCell, DataGridColumn, DataGridRow, DataGridElView, IDataGridViewOptions, ROW_POSITION, IRowStateProvider, findDataGrid } from "jriapp_ui/datagrid/datagrid";
     export * from "jriapp_ui/pager";
     export { ListBox, ListBoxElView, LookupContent, IListBoxViewOptions, IOptionStateProvider, IOptionTextProvider } from "jriapp_ui/listbox";
     export * from "jriapp_ui/stackpanel";

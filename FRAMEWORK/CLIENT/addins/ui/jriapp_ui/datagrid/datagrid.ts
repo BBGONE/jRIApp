@@ -44,7 +44,18 @@ const checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
 const $ = utils.dom.$, document = utils.dom.document;
 
 let _columnWidthInterval: any, _gridsCount: number = 0;
-let _created_grids: { [id: string]: DataGrid; } = {};
+let _created_grids: IIndexer<DataGrid> = { };
+
+export function findDataGrid(gridName: string): DataGrid {
+    let keys = Object.keys(_created_grids);
+    for (let i = 0; i < keys.length; i += 1) {
+        let grid = _created_grids[keys[i]];
+        if (grid.$table.attr(DATA_ATTR.DATA_NAME) === gridName)
+            return grid;
+    }
+
+    return null;
+}
 
 function _gridCreated(grid: DataGrid) {
     _created_grids[grid.uniqueID] = grid;
@@ -112,7 +123,9 @@ export interface IDataGridConstructorOptions extends IDataGridOptions {
 
 export interface IInternalDataGridMethods {
     isRowExpanded(row: Row): boolean;
-    appendToHeader(el: HTMLElement): void;
+    get$Header(): JQuery;
+    get$Container(): JQuery;
+    get$Wrapper(): JQuery;
     setCurrentColumn(column: BaseColumn): void;
     onRowStateChanged(row: Row, val: any): string;
     onCellDblClicked(cell: BaseCell<BaseColumn>): void;
@@ -121,7 +134,6 @@ export interface IInternalDataGridMethods {
     getLastRow(): Row;
     removeRow(row: Row): void;
     expandDetails(parentRow: Row, expanded: boolean): void;
-    get$Table(): JQuery;
 }
 
 export class DataGrid extends BaseObject implements ISelectableProvider {
@@ -143,9 +155,9 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     private _currentColumn: BaseColumn;
     private _editingRow: Row;
     private _dialog: DataEditDialog;
-    private _$headerDiv: JQuery;
-    private _$wrapDiv: JQuery;
-    private _contaner: HTMLElement;
+    private _$header: JQuery;
+    private _$wrapper: JQuery;
+    private _$contaner: JQuery;
     public _columnWidthChecker: () => void;
     private _internal: IInternalDataGridMethods;
     private _selectable: ISelectable;
@@ -197,15 +209,15 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._currentColumn = null;
         this._editingRow = null;
         this._dialog = null;
-        this._$headerDiv = null;
-        this._$wrapDiv = null;
-        this._contaner = null;
+        this._$header = null;
+        this._$wrapper = null;
+        this._$contaner = null;
         this._wrapTable();
         this._colSizeDebounce = new Debounce();
         this._scrollDebounce = new Debounce();
         this._selectable = {
             getContainerEl: () => {
-                return self._getContainerEl();
+                return self._$contaner[0];
             },
             getUniqueID: () => {
                 return self.uniqueID;
@@ -221,8 +233,14 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             isRowExpanded: (row: Row) => {
                 return self._isRowExpanded(row);
             },
-            appendToHeader: (el: HTMLElement) => {
-                self._appendToHeader(el);
+            get$Header: () => {
+                return self._$header;
+            },
+            get$Container: () => {
+                return self._$contaner;
+            },
+            get$Wrapper: () => {
+                return self._$wrapper;
             },
             setCurrentColumn: (column: BaseColumn) => {
                 self._setCurrentColumn(column);
@@ -247,9 +265,6 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             },
             expandDetails: (parentRow: Row, expanded: boolean) => {
                 self._expandDetails(parentRow, expanded);
-            },
-            get$Table: () => {
-                return self._$table;
             }
         };
         this._createColumns();
@@ -297,9 +312,6 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     }
     removeOnRowAction(nmspace?: string) {
         this._removeHandler(GRID_EVENTS.row_action, nmspace);
-    }
-    protected _getContainerEl(): HTMLElement {
-        return this._contaner;
     }
     protected _onKeyDown(key: number, event: Event): void {
         let ds = this.dataSource, self = this;
@@ -383,9 +395,6 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     }
     protected _isRowExpanded(row: Row): boolean {
         return this._expandedRow === row;
-    }
-    protected _appendToHeader(el: HTMLElement): void {
-        this._$headerDiv.append(el);
     }
     protected _setCurrentColumn(column: BaseColumn): void {
         if (!!this._currentColumn)
@@ -708,32 +717,22 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         });
         this._currentRow = null;
     }
-    protected _updateColsSize() {
-        if (this.getIsDestroyCalled())
-            return;
-        let width = 0, headerDiv = this._$headerDiv;
-        this._columns.forEach(function (col) {
-            width += col.th.offsetWidth;
-        });
-        headerDiv.width(width);
-        this._columns.forEach(function (col) {
-            col.$col.css("width", col.th.offsetWidth);
-        });
-    }
     protected _wrapTable() {
-        let $table = this._$table, $headerDiv: JQuery, $wrapDiv: JQuery, $container: JQuery, self = this;
+        let $table = this._$table, $headerDiv: JQuery, $wrapDiv: JQuery, $container: JQuery, self = this,
+            doc = utils.dom.document;
 
-        $table.wrap($("<div></div>").addClass(css.wrapDiv));
-        $wrapDiv = $table.parent();
-        $wrapDiv.wrap($("<div></div>").addClass(css.container));
-        $container = $wrapDiv.parent();
+        $wrapDiv = $table.wrap(doc.createElement('div'));
+        $wrapDiv.addClass(css.wrapDiv);
+        $container = $wrapDiv.wrap(doc.createElement('div'));
+        $container.addClass(css.container);
+        $headerDiv = $(doc.createElement('div')).addClass(css.headerDiv);
+        $headerDiv.insertBefore($wrapDiv);
 
-        $headerDiv = $("<div></div>").addClass(css.headerDiv).insertBefore($wrapDiv);
         $(this._tHeadRow).addClass(css.columnInfo);
-        this._$wrapDiv = $wrapDiv;
-        this._$headerDiv = $headerDiv;
 
-        this._contaner = $container.get(0);
+        this._$wrapper = $wrapDiv;
+        this._$header = $headerDiv;
+        this._$contaner = $container;
 
         if (this._options.containerCss) {
             $container.addClass(this._options.containerCss);
@@ -751,23 +750,23 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             let test = $table.width();
             if (tw !== test) {
                 tw = test;
-                self._updateColsSize();
+                self.updateColumnsSize();
             }
         };
     }
     protected _unWrapTable() {
         let $table = this._$table;
-        if (!this._$headerDiv)
+        if (!this._$header)
             return;
         this._columnWidthChecker = () => { };
-        this._$headerDiv.remove();
-        this._$headerDiv = null;
+        this._$header.remove();
+        this._$header = null;
         //remove wrapDiv
         $table.unwrap();
-        this._$wrapDiv = null;
+        this._$wrapper = null;
         //remove container
         $table.unwrap();
-        this._contaner = null;
+        this._$contaner = null;
     }
     protected _createColumns() {
         let self = this, headCells = this._tHeadCells, cellInfos: ICellInfo[] = [];
@@ -826,7 +825,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             }
         }
         this._colSizeDebounce.enqueue(() => {
-            self._updateColsSize();
+            self.updateColumnsSize();
         });
     }
     protected _refresh(isPageChanged: boolean) {
@@ -851,7 +850,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 this.scrollToCurrent();
         });
         this._colSizeDebounce.enqueue(() => {
-            self._updateColsSize();
+            self.updateColumnsSize();
             self._updateTableDisplay();
         });
     }
@@ -883,6 +882,18 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     }
     _getInternal(): IInternalDataGridMethods {
         return this._internal;
+    }
+    updateColumnsSize() {
+        if (this.getIsDestroyCalled())
+            return;
+        let width = 0, headerDiv = this._$header;
+        this._columns.forEach(function (col) {
+            width += col.th.offsetWidth;
+        });
+        headerDiv.width(width);
+        this._columns.forEach(function (col) {
+            col.$col.css("width", col.th.offsetWidth);
+        });
     }
     getISelectable(): ISelectable {
         return this._selectable;
@@ -954,8 +965,8 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             this._fillSpace.height = 0;
         }
         let $tr = args.row.$tr, animate = !!args.animate, alignBottom = (args.pos === ROW_POSITION.Bottom),
-            viewPortHeight = this._$wrapDiv.innerHeight(), rowHeight = $tr.outerHeight(), currentScrollTop = this._$wrapDiv.scrollTop(),
-            offsetDiff = currentScrollTop + $tr.offset().top - this._$wrapDiv.offset().top;
+            viewPortHeight = this._$wrapper.innerHeight(), rowHeight = $tr.outerHeight(), currentScrollTop = this._$wrapper.scrollTop(),
+            offsetDiff = currentScrollTop + $tr.offset().top - this._$wrapper.offset().top;
 
         if (alignBottom) {
             offsetDiff = Math.floor(offsetDiff + 1);
@@ -1002,7 +1013,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             return;
 
         if (animate) {
-            this._$wrapDiv.animate({
+            this._$wrapper.animate({
                 scrollTop: yPos
             }, {
                     duration: 500,
@@ -1013,7 +1024,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 });
         }
         else
-            this._$wrapDiv.scrollTop(yPos);
+            this._$wrapper.scrollTop(yPos);
     }
     scrollToCurrent(pos?: ROW_POSITION, animate?: boolean) {
         this.scrollToRow({ row: this.currentRow, animate: animate, pos: pos });
@@ -1067,7 +1078,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._selectable = null;
         super.destroy();
     }
-    protected get $table(): JQuery {
+    get $table(): JQuery {
         return this._$table;
     }
     get app() { return this._options.app; }

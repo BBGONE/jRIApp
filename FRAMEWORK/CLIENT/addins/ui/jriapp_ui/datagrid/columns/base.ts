@@ -60,9 +60,9 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
             self._onColumnClicked();
         });
 
-        this._grid._getInternal().appendToHeader(colDiv);
+        this._grid._getInternal().get$Header().append(colDiv);
 
-        let $table = this.grid._getInternal().get$Table();
+        let $table = this.grid.$table;
         $table.on("click", this._event_scope, function (e) {
             e.stopPropagation();
             let $td = $(this), cell = <BaseCell<BaseColumn>>$td.data("cell");
@@ -99,7 +99,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        let $table = this.grid._getInternal().get$Table();
+        let $table = this.grid.$table;
         $table.off("click", this._event_scope);
 
         if (!!this._options.tip) {

@@ -22,7 +22,7 @@ export class ActionsColumn extends BaseColumn {
         this._event_act_scope = ["span[", DATA_ATTR.DATA_EVENT_SCOPE, '="', this.uniqueID, '"]'].join("");
 
         this.$col.addClass(css.rowActions);
-        let $table = this.grid._getInternal().get$Table();
+        let $table = this.grid.$table;
         $table.on("click", this._event_act_scope, function (e) {
             e.stopPropagation();
             let $img = $(this), name = $img.attr(DATA_ATTR.DATA_NAME), cell: ActionsCell = <any>$img.data("cell");
@@ -102,7 +102,7 @@ export class ActionsColumn extends BaseColumn {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        let $table = this.grid._getInternal().get$Table();
+        let $table = this.grid.$table;
         $table.off("click", this._event_act_scope);
         /*
         $table.off("mouseenter", actionsSelector);

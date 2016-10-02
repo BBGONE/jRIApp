@@ -4,8 +4,10 @@ import { bootstrap } from  "jriapp_core/bootstrap";
 
 export { DIALOG_ACTION, IDialogConstructorOptions, DataEditDialog, DialogVM } from "./jriapp_ui/dialog";
 export { DynaContentElView, IDynaContentAnimation, IDynaContentOptions } from "./jriapp_ui/dynacontent";
-export { DataGrid, DataGridCell, DataGridColumn, DataGridRow, DataGridElView, IDataGridViewOptions,
-ROW_POSITION, IRowStateProvider } from "./jriapp_ui/datagrid/datagrid";
+export {
+    DataGrid, DataGridCell, DataGridColumn, DataGridRow, DataGridElView, IDataGridViewOptions,
+    ROW_POSITION, IRowStateProvider, findDataGrid
+} from "./jriapp_ui/datagrid/datagrid";
 export * from "./jriapp_ui/pager";
 export { ListBox, ListBoxElView, LookupContent, IListBoxViewOptions, IOptionStateProvider,
 IOptionTextProvider } from "./jriapp_ui/listbox";
