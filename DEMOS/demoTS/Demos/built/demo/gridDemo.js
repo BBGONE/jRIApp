@@ -3,7 +3,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "./demoDB", "./common", "./header", "./ssevents", "./websocket"], function (require, exports, RIAPP, dbMOD, uiMOD, DEMODB, COMMON, HEADER, SSEVENTS, WEBSOCK) {
+define(["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "./demoDB", "./common", "./header", "./ssevents", "./websocket", "./resizableGrid"], function (require, exports, RIAPP, dbMOD, uiMOD, DEMODB, COMMON, HEADER, SSEVENTS, WEBSOCK, ResizableGrid) {
     "use strict";
     var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = utils.dom.$;
     var ResetCommand = (function (_super) {
@@ -1045,7 +1045,8 @@ define(["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "./demoDB", ".
     });
     function start(mainOptions) {
         mainOptions.modulesInits = {
-            "COMMON": COMMON.initModule
+            "COMMON": COMMON.initModule,
+            "ResizableGrid": ResizableGrid.initModule
         };
         bootstrap.init(function (bootstrap) {
             var ButtonsCSS = bootstrap.defaults.ButtonsCSS;

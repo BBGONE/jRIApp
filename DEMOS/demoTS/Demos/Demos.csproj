@@ -21,6 +21,7 @@
     </NuGetPackageImportStamp>
   </PropertyGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="demo\resizableGrid.ts" />
     <TypeScriptCompile Include="demo\test1.ts" />
     <TypeScriptCompile Include="demo\test2.ts" />
     <TypeScriptCompile Include="demo\test3.ts" />

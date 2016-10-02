@@ -178,6 +178,7 @@
     <Content Include="Scripts\demo\header.js" />
     <Content Include="Scripts\demo\manToManDemo.js" />
     <Content Include="Scripts\demo\masterDetDemo.js" />
+    <Content Include="Scripts\demo\resizableGrid.js" />
     <Content Include="Scripts\demo\spa\demo.js" />
     <Content Include="Scripts\demo\ssevents.js" />
     <Content Include="Scripts\demo\test1.js" />

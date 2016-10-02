@@ -604,6 +604,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
     export { BaseColumn as DataGridColumn } from "jriapp_ui/datagrid/columns/base";
     export { ROW_POSITION, COLUMN_TYPE, ROW_ACTION } from "jriapp_ui/datagrid/const";
     export { IDataGridAnimation, DefaultAnimation } from "jriapp_ui/datagrid/animation";
+    export function getDataGrids(): DataGrid[];
     export function findDataGrid(gridName: string): DataGrid;
     export interface IRowStateProvider {
         getCSS(item: ICollectionItem, val: any): string;
@@ -644,6 +645,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         getLastRow(): Row;
         removeRow(row: Row): void;
         expandDetails(parentRow: Row, expanded: boolean): void;
+        columnWidthCheck: () => void;
     }
     export class DataGrid extends BaseObject implements ISelectableProvider {
         private _options;
@@ -667,7 +669,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         private _$header;
         private _$wrapper;
         private _$contaner;
-        _columnWidthChecker: () => void;
+        private _columnWidthCheck;
         private _internal;
         private _selectable;
         private _colSizeDebounce;
@@ -1138,7 +1140,7 @@ declare module "jriapp_ui/tabs" {
 declare module "jriapp_ui" {
     export { DIALOG_ACTION, IDialogConstructorOptions, DataEditDialog, DialogVM } from "jriapp_ui/dialog";
     export { DynaContentElView, IDynaContentAnimation, IDynaContentOptions } from "jriapp_ui/dynacontent";
-    export { DataGrid, DataGridCell, DataGridColumn, DataGridRow, DataGridElView, IDataGridViewOptions, ROW_POSITION, IRowStateProvider, findDataGrid } from "jriapp_ui/datagrid/datagrid";
+    export { DataGrid, DataGridCell, DataGridColumn, DataGridRow, DataGridElView, IDataGridViewOptions, ROW_POSITION, IRowStateProvider, findDataGrid, getDataGrids } from "jriapp_ui/datagrid/datagrid";
     export * from "jriapp_ui/pager";
     export { ListBox, ListBoxElView, LookupContent, IListBoxViewOptions, IOptionStateProvider, IOptionTextProvider } from "jriapp_ui/listbox";
     export * from "jriapp_ui/stackpanel";

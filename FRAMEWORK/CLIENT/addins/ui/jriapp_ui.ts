@@ -6,7 +6,7 @@ export { DIALOG_ACTION, IDialogConstructorOptions, DataEditDialog, DialogVM } fr
 export { DynaContentElView, IDynaContentAnimation, IDynaContentOptions } from "./jriapp_ui/dynacontent";
 export {
     DataGrid, DataGridCell, DataGridColumn, DataGridRow, DataGridElView, IDataGridViewOptions,
-    ROW_POSITION, IRowStateProvider, findDataGrid
+    ROW_POSITION, IRowStateProvider, findDataGrid, getDataGrids
 } from "./jriapp_ui/datagrid/datagrid";
 export * from "./jriapp_ui/pager";
 export { ListBox, ListBoxElView, LookupContent, IListBoxViewOptions, IOptionStateProvider,

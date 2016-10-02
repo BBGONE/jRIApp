@@ -10,7 +10,7 @@ import * as COMMON from "./common";
 import * as HEADER from "./header";
 import * as  SSEVENTS from "./ssevents"
 import * as  WEBSOCK from "./websocket"
-
+import * as  ResizableGrid from "./resizableGrid"
 
 var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = utils.dom.$;
 
@@ -1009,7 +1009,8 @@ bootstrap.addOnError(function (sender, args) {
 
 export function start(mainOptions: IMainOptions) {
     mainOptions.modulesInits = {
-        "COMMON": COMMON.initModule
+        "COMMON": COMMON.initModule,
+        "ResizableGrid": ResizableGrid.initModule
     };
 
     bootstrap.init((bootstrap) => {

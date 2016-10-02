@@ -2207,6 +2207,16 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
     var $ = utils_16.Utils.dom.$, document = utils_16.Utils.dom.document;
     var _columnWidthInterval, _gridsCount = 0;
     var _created_grids = {};
+    function getDataGrids() {
+        var keys = Object.keys(_created_grids);
+        var res = [];
+        for (var i = 0; i < keys.length; i += 1) {
+            var grid = _created_grids[keys[i]];
+            res.push(grid);
+        }
+        return res;
+    }
+    exports.getDataGrids = getDataGrids;
     function findDataGrid(gridName) {
         var keys = Object.keys(_created_grids);
         for (var i = 0; i < keys.length; i += 1) {
@@ -2221,14 +2231,14 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
         _created_grids[grid.uniqueID] = grid;
         _gridsCount += 1;
         if (_gridsCount === 1) {
-            _columnWidthInterval = setInterval(_checkGridWidth, 250);
+            $(window).on('resize.datagrid', _checkGridWidth);
         }
     }
     function _gridDestroyed(grid) {
         delete _created_grids[grid.uniqueID];
         _gridsCount -= 1;
         if (_gridsCount === 0) {
-            clearInterval(_columnWidthInterval);
+            $(window).off('resize.datagrid');
         }
     }
     function _checkGridWidth() {
@@ -2236,7 +2246,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             var grid = _created_grids[id];
             if (grid.getIsDestroyCalled())
                 return;
-            grid._columnWidthChecker();
+            grid._getInternal().columnWidthCheck();
         });
     }
     var GRID_EVENTS = {
@@ -2272,7 +2282,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             if (!!options.dataSource && !checks.isCollection(options.dataSource))
                 throw new Error(lang_3.ERRS.ERR_GRID_DATASRC_INVALID);
             this._options = options;
-            this._columnWidthChecker = function () { };
+            this._columnWidthCheck = function () { };
             var $t = $(this._options.el);
             this._table = this._options.el;
             this._$table = $t;
@@ -2348,12 +2358,18 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
                 },
                 expandDetails: function (parentRow, expanded) {
                     self._expandDetails(parentRow, expanded);
+                },
+                columnWidthCheck: function () {
+                    self._columnWidthCheck();
                 }
             };
             this._createColumns();
             this._bindDS();
             bootstrap_4.bootstrap._getInternal().trackSelectable(this);
             _gridCreated(this);
+            setTimeout(function () {
+                self._columnWidthCheck();
+            }, 0);
         }
         DataGrid.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
@@ -2797,12 +2813,11 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
         };
         DataGrid.prototype._wrapTable = function () {
             var $table = this._$table, $headerDiv, $wrapDiv, $container, self = this, doc = utils_16.Utils.dom.document;
-            $wrapDiv = $table.wrap(doc.createElement('div'));
-            $wrapDiv.addClass(const_19.css.wrapDiv);
-            $container = $wrapDiv.wrap(doc.createElement('div'));
-            $container.addClass(const_19.css.container);
-            $headerDiv = $(doc.createElement('div')).addClass(const_19.css.headerDiv);
-            $headerDiv.insertBefore($wrapDiv);
+            $table.wrap($("<div></div>").addClass(const_19.css.wrapDiv));
+            $wrapDiv = $table.parent();
+            $wrapDiv.wrap($("<div></div>").addClass(const_19.css.container));
+            $container = $wrapDiv.parent();
+            $headerDiv = $("<div></div>").addClass(const_19.css.headerDiv).insertBefore($wrapDiv);
             $(this._tHeadRow).addClass(const_19.css.columnInfo);
             this._$wrapper = $wrapDiv;
             this._$header = $headerDiv;
@@ -2817,7 +2832,9 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
                 $headerDiv.addClass(this._options.headerCss);
             }
             var tw = $table.width();
-            self._columnWidthChecker = function () {
+            self._columnWidthCheck = function () {
+                if (self.getIsDestroyCalled())
+                    return;
                 var test = $table.width();
                 if (tw !== test) {
                     tw = test;
@@ -2829,7 +2846,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             var $table = this._$table;
             if (!this._$header)
                 return;
-            this._columnWidthChecker = function () { };
+            this._columnWidthCheck = function () { };
             this._$header.remove();
             this._$header = null;
             $table.unwrap();
@@ -5440,6 +5457,7 @@ define("jriapp_ui", ["require", "exports", "jriapp_core/bootstrap", "jriapp_ui/d
     exports.DataGridElView = datagrid_1.DataGridElView;
     exports.ROW_POSITION = datagrid_1.ROW_POSITION;
     exports.findDataGrid = datagrid_1.findDataGrid;
+    exports.getDataGrids = datagrid_1.getDataGrids;
     __export(pager_1);
     exports.ListBox = listbox_1.ListBox;
     exports.ListBoxElView = listbox_1.ListBoxElView;

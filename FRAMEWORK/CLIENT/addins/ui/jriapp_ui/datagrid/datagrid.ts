@@ -46,6 +46,17 @@ const $ = utils.dom.$, document = utils.dom.document;
 let _columnWidthInterval: any, _gridsCount: number = 0;
 let _created_grids: IIndexer<DataGrid> = { };
 
+export function getDataGrids(): DataGrid[] {
+    let keys = Object.keys(_created_grids);
+    let res: DataGrid[] = [];
+    for (let i = 0; i < keys.length; i += 1) {
+        let grid = _created_grids[keys[i]];
+        res.push(grid);
+    }
+
+    return res;
+}
+
 export function findDataGrid(gridName: string): DataGrid {
     let keys = Object.keys(_created_grids);
     for (let i = 0; i < keys.length; i += 1) {
@@ -61,7 +72,8 @@ function _gridCreated(grid: DataGrid) {
     _created_grids[grid.uniqueID] = grid;
     _gridsCount += 1;
     if (_gridsCount === 1) {
-        _columnWidthInterval = setInterval(_checkGridWidth, 250);
+        $(window).on('resize.datagrid', _checkGridWidth);
+        //_columnWidthInterval = setInterval(_checkGridWidth, 250);
     }
 }
 
@@ -69,7 +81,8 @@ function _gridDestroyed(grid: DataGrid) {
     delete _created_grids[grid.uniqueID];
     _gridsCount -= 1;
     if (_gridsCount === 0) {
-        clearInterval(_columnWidthInterval);
+        $(window).off('resize.datagrid');
+        //clearInterval(_columnWidthInterval);
     }
 }
 
@@ -78,7 +91,7 @@ function _checkGridWidth() {
         let grid = _created_grids[id];
         if (grid.getIsDestroyCalled())
             return;
-        grid._columnWidthChecker();
+        grid._getInternal().columnWidthCheck();
     });
 }
 
@@ -134,6 +147,7 @@ export interface IInternalDataGridMethods {
     getLastRow(): Row;
     removeRow(row: Row): void;
     expandDetails(parentRow: Row, expanded: boolean): void;
+    columnWidthCheck: () => void;
 }
 
 export class DataGrid extends BaseObject implements ISelectableProvider {
@@ -158,7 +172,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     private _$header: JQuery;
     private _$wrapper: JQuery;
     private _$contaner: JQuery;
-    public _columnWidthChecker: () => void;
+    private _columnWidthCheck: () => void;
     private _internal: IInternalDataGridMethods;
     private _selectable: ISelectable;
     private _colSizeDebounce: Debounce;
@@ -189,7 +203,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         if (!!options.dataSource && !checks.isCollection(options.dataSource))
             throw new Error(ERRS.ERR_GRID_DATASRC_INVALID);
         this._options = options;
-        this._columnWidthChecker = () => { };
+        this._columnWidthCheck = () => { };
         let $t = $(this._options.el);
         this._table = this._options.el;
         this._$table = $t;
@@ -265,12 +279,19 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             },
             expandDetails: (parentRow: Row, expanded: boolean) => {
                 self._expandDetails(parentRow, expanded);
+            },
+            columnWidthCheck: () => {
+                self._columnWidthCheck();
             }
         };
         this._createColumns();
         this._bindDS();
         bootstrap._getInternal().trackSelectable(this);
         _gridCreated(this);
+
+        setTimeout(() => {
+            self._columnWidthCheck();
+        }, 0);
     }
     protected _getEventNames() {
         let base_events = super._getEventNames();
@@ -721,13 +742,12 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         let $table = this._$table, $headerDiv: JQuery, $wrapDiv: JQuery, $container: JQuery, self = this,
             doc = utils.dom.document;
 
-        $wrapDiv = $table.wrap(doc.createElement('div'));
-        $wrapDiv.addClass(css.wrapDiv);
-        $container = $wrapDiv.wrap(doc.createElement('div'));
-        $container.addClass(css.container);
-        $headerDiv = $(doc.createElement('div')).addClass(css.headerDiv);
-        $headerDiv.insertBefore($wrapDiv);
+        $table.wrap($("<div></div>").addClass(css.wrapDiv));
+        $wrapDiv = $table.parent();
+        $wrapDiv.wrap($("<div></div>").addClass(css.container));
+        $container = $wrapDiv.parent();
 
+        $headerDiv = $("<div></div>").addClass(css.headerDiv).insertBefore($wrapDiv);
         $(this._tHeadRow).addClass(css.columnInfo);
 
         this._$wrapper = $wrapDiv;
@@ -746,7 +766,9 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         }
         let tw = $table.width();
 
-        self._columnWidthChecker = function () {
+        self._columnWidthCheck = function () {
+            if (self.getIsDestroyCalled())
+                return;
             let test = $table.width();
             if (tw !== test) {
                 tw = test;
@@ -758,7 +780,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         let $table = this._$table;
         if (!this._$header)
             return;
-        this._columnWidthChecker = () => { };
+        this._columnWidthCheck = () => { };
         this._$header.remove();
         this._$header = null;
         //remove wrapDiv
