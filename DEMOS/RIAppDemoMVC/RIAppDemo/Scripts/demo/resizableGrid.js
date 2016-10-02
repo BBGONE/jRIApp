@@ -45,8 +45,7 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
             mode: options.resizeMode,
             dc: options.disabledColumns,
             fixed: options.fixed,
-            grips: [],
-            $columns: [],
+            columns: [],
             w: $table.width(),
             $gripContainer: $gripContainer,
             cellspacing: parseInt(style.borderSpacing) || 2,
@@ -70,11 +69,11 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
     };
     var createGrips = function (grid) {
         var $table = grid.$table;
-        var $allth = $(grid._tHeadCells);
-        $allth = $allth.filter(":visible");
+        var $allTH = $(grid._tHeadCells);
+        $allTH = $allTH.filter(":visible");
         var data = $table.data(SIGNATURE);
-        data.len = $allth.length;
-        $allth.each(function (index) {
+        data.len = $allTH.length;
+        $allTH.each(function (index) {
             var $column = $(this);
             var isDisabled = data.dc.indexOf(index) != -1;
             var $grip = $(data.$gripContainer.append('<div class="JCLRgrip"></div>')[0].lastChild);
@@ -91,11 +90,10 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
             else {
                 $grip.addClass('JCLRdisabledGrip');
             }
-            $column.w = $column.width();
-            data.grips.push($grip);
-            data.$columns.push($column);
-            $column.width($column.w).removeAttr("width");
-            $grip.data(SIGNATURE, { i: index, grid: grid, last: index == data.len - 1 });
+            var colInfo = { $column: $column, $grip: $grip, w: $column.width(), locked: false };
+            data.columns.push(colInfo);
+            $column.width(colInfo.w).removeAttr("width");
+            $grip.data(SIGNATURE, { i: index, grid: grid, last: index == data.len - 1, ox: 0, x: 0, l: 0, w: 0 });
         });
         if (!data.fixed) {
             $table.removeAttr('width').addClass(FLEX);
@@ -109,11 +107,11 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
         var data = $table.data(SIGNATURE);
         data.$gripContainer.width(data.w);
         for (var i = 0; i < data.len; i++) {
-            var $column = data.$columns[i];
+            var colInfo = data.columns[i];
             var headerHeight = grid._getInternal().get$Header()[0].offsetHeight;
             var tableHeight = grid._getInternal().get$Wrapper()[0].offsetHeight;
-            data.grips[i].css({
-                left: $column.offset().left - $table.offset().left + $column.outerWidth(false) + data.cellspacing / 2 + PX,
+            colInfo.$grip.css({
+                left: colInfo.$column.offset().left - $table.offset().left + colInfo.$column.outerWidth(false) + data.cellspacing / 2 + PX,
                 height: data.options.headerOnly ? headerHeight : (headerHeight + tableHeight)
             });
         }
@@ -125,12 +123,13 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
         var $table = grid.$table;
         var data = $table.data(SIGNATURE);
         var gripData = $drag.data(SIGNATURE);
-        var inc = gripData.x - gripData.l, c = data.$columns[i], c2 = data.$columns[i + 1];
+        var inc = gripData.x - gripData.l;
+        var c = data.columns[i], c2 = data.columns[i + 1];
         var w = c.w + inc;
         var w2 = c2.w - inc;
-        c.width(w + PX);
+        c.$column.width(w + PX);
         if (data.fixed) {
-            c2.width(w2 + PX);
+            c2.$column.width(w2 + PX);
         }
         else if (data.options.overflow) {
             $table.css('min-width', data.w + inc);
@@ -145,13 +144,13 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
             return;
         var $table = grid.$table;
         var data = $table.data(SIGNATURE);
-        var w = $.map(data.$columns, function (c) {
-            return c.width();
+        var widths = $.map(data.columns, function (c) {
+            return c.$column.width();
         });
         $table.width(data.w = $table.width()).removeClass(FLEX);
-        $.each(data.$columns, function (i, c) {
-            c.width(w[i]);
-            c.w = w[i];
+        $.each(data.columns, function (i, c) {
+            c.$column.width(widths[i]);
+            c.w = widths[i];
         });
         $table.addClass(FLEX);
     };
@@ -169,23 +168,23 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
         var x = ox - gripData.ox + gripData.l;
         var mw = data.options.minWidth;
         var index = gripData.i;
+        var colInfo = data.columns[index];
         var l = data.cellspacing * 1.5 + mw + data.borderW;
         var last = index == data.len - 1;
-        var min = index ? data.grips[index - 1].position().left + data.cellspacing + mw : l;
+        var min = (!!colInfo) ? data.columns[index - 1].$grip.position().left + data.cellspacing + mw : l;
         var max = data.fixed ?
             (index == data.len - 1 ?
                 (data.w - l) :
-                (data.grips[index + 1].position().left - data.cellspacing - mw)) : Infinity;
+                (data.columns[index + 1].$grip.position().left - data.cellspacing - mw)) : Infinity;
         x = Math.max(min, Math.min(max, x));
         gripData.x = x;
         $drag.css("left", x + PX);
         if (last) {
-            var column = data.$columns[index];
-            gripData.w = column.w + x - gripData.l;
+            gripData.w = colInfo.w + x - gripData.l;
         }
         if (!!data.options.liveDrag) {
             if (last) {
-                column.width(gripData.w);
+                colInfo.$column.width(gripData.w);
                 if (!data.fixed && data.options.overflow) {
                     $table.css('min-width', data.w + x - gripData.l);
                 }
@@ -219,15 +218,15 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
         $drag.removeClass(data.options.draggingClass);
         if (!(gripData.x - gripData.l == 0)) {
             var cb = data.options.onResize;
-            var i = gripData.i;
-            var last = i == data.len - 1;
-            var c = data.$columns[i];
+            var index = gripData.i;
+            var last = index == data.len - 1;
+            var colInfo = data.columns[index];
             if (last) {
-                c.width(gripData.w);
-                c.w = gripData.w;
+                colInfo.$column.width(gripData.w);
+                colInfo.w = gripData.w;
             }
             else {
-                syncCols(grid, i, true);
+                syncCols(grid, index, true);
             }
             if (!data.fixed)
                 applyBounds(grid);
@@ -247,21 +246,22 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
             return;
         var $table = grid.$table;
         var data = $table.data(SIGNATURE);
-        var oe = e.originalEvent.touches;
-        gripData.ox = oe ? oe[0].pageX : e.pageX;
+        var touches = e.originalEvent.touches;
+        gripData.ox = touches ? touches[0].pageX : e.pageX;
         gripData.l = $grip.position().left;
         gripData.x = gripData.l;
-        $doc.bind('touchmove.' + SIGNATURE + ' mousemove.' + SIGNATURE, onGripDrag).bind('touchend.' + SIGNATURE + ' mouseup.' + SIGNATURE, onGripDragOver);
+        $doc.bind('touchmove.' + SIGNATURE + ' mousemove.' + SIGNATURE, onGripDrag);
+        $doc.bind('touchend.' + SIGNATURE + ' mouseup.' + SIGNATURE, onGripDragOver);
         if ($head.find('#dragCursor').length == 0)
             $head.append("<style id='dragCursor' type='text/css'>*{cursor:" + data.options.dragCursor + "!important}</style>");
         $grip.addClass(data.options.draggingClass);
         $drag = $grip;
-        var gripCol = data.$columns[gripData.i];
+        var gripCol = data.columns[gripData.i];
         if (gripCol.locked) {
             for (var i = 0; i < data.len; i++) {
-                var c = data.$columns[i];
+                var c = data.columns[i];
                 c.locked = false;
-                c.w = c.width();
+                c.w = c.$column.width();
             }
         }
         return false;
@@ -276,10 +276,10 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
         if (data.fixed) {
             data.w = $table.width();
             for (var i = 0; i < data.len; i++)
-                mw += data.$columns[i].w;
+                mw += data.columns[i].w;
             for (var i = 0; i < data.len; i++) {
-                var col = data.$columns[i];
-                col.css("width", Math.round(1000 * col.w / mw) / 10 + "%");
+                var col = data.columns[i];
+                col.$column.css("width", Math.round(1000 * col.w / mw) / 10 + "%");
                 col.locked = true;
             }
         }

@@ -4,31 +4,46 @@ import * as dbMOD from "jriapp_db";
 import * as uiMOD from "jriapp_ui";
 import * as COMMON from "./common";
 
-var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = utils.dom.$;
+let bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = utils.dom.$;
 
-var $doc = $(utils.dom.document); 	//window object
-var $head = $("head");			//head object
-var $drag: JQuery = null;		//reference to the current grip that is being dragged
+let $doc = $(utils.dom.document); 	//window object
+let $head = $("head");			//head object
+let $drag: JQuery = null;		//reference to the current grip that is being dragged
 
 //common strings for packing
-var ID = "id";
-var PX = "px";
-var SIGNATURE = "JColResizer";
-var FLEX = "JCLRFlex";
+let ID = "id";
+let PX = "px";
+let SIGNATURE = "JColResizer";
+let FLEX = "JCLRFlex";
 
-interface ITableData
-{
+interface ITableData {
     options: any;
     mode: string;
     dc: number[];
     fixed: boolean;
-    grips: JQuery[];
-    $columns: JQuery[];
     w: number;
     $gripContainer: JQuery;
     cellspacing: number;
     borderW: number;
     len: number;
+    columns: IColumnData[];
+}
+
+interface IColumnData {
+    $column: JQuery;
+    $grip: JQuery;
+    w: number;
+    locked: boolean;
+}
+
+interface IGripData {
+    i: number;
+    grid: uiMOD.DataGrid;
+    last: boolean;
+    w: number;
+    ox: number;
+    x: number;
+    l: number;
 }
 
 let _gridsCount = 0;
@@ -54,7 +69,7 @@ function _gridDestroyed(grid: ResizableGrid) {
 //append required CSS rules  
 $head.append("<style type='text/css'>  .JColResizer{table-layout:fixed;} .JCLRgrips{ height:0px; position:relative;} .JCLRgrip{margin-left:-5px; position:absolute; z-index:5; } .JCLRgrip .JColResizer{position:absolute;background-color:red;filter:alpha(opacity=1);opacity:0;width:10px;height:100%;cursor: e-resize;top:0px} .JCLRLastGrip{position:absolute; width:1px; } .JCLRgripDrag{ border-left:1px dotted black;	} .JCLRFlex{width:auto!important;} .JCLRgrip.JCLRdisabledGrip .JColResizer{cursor:default; display:none;}</style>");
 
-var init = function (grid: uiMOD.DataGrid, options: any) {
+let init = function (grid: uiMOD.DataGrid, options: any) {
     let $table: JQuery = grid.$table;
     let tb: HTMLTableElement = <any>$table[0];
     let style = window.getComputedStyle(tb, null);
@@ -72,8 +87,7 @@ var init = function (grid: uiMOD.DataGrid, options: any) {
         mode: options.resizeMode,
         dc: options.disabledColumns,
         fixed: options.fixed,
-        grips: [],
-        $columns: [],
+        columns: [],
         w: $table.width(),
         $gripContainer: $gripContainer,
         cellspacing: parseInt(style.borderSpacing) || 2,
@@ -89,7 +103,7 @@ var init = function (grid: uiMOD.DataGrid, options: any) {
     createGrips(grid);	//grips are created 
 };
 
-var destroy = function (grid: uiMOD.DataGrid) {
+let destroy = function (grid: uiMOD.DataGrid) {
     let $table: JQuery = grid.$table;
     let data: ITableData = $table.data(SIGNATURE);
     if (!!data)
@@ -98,17 +112,17 @@ var destroy = function (grid: uiMOD.DataGrid) {
     $table.removeClass(SIGNATURE + " " + FLEX);
 };
 
-var createGrips = function (grid: uiMOD.DataGrid) {
+let createGrips = function (grid: uiMOD.DataGrid) {
     let $table: JQuery = grid.$table;
-    var $allth = $(grid._tHeadCells);
-    $allth = $allth.filter(":visible");	
+    let $allTH = $(grid._tHeadCells);
+    $allTH = $allTH.filter(":visible");	
     let data: ITableData = $table.data(SIGNATURE);
-    data.len = $allth.length;	//table length is stored	
+    data.len = $allTH.length;	//table length is stored	
 
-    $allth.each(function (index: number) {	//iterate through the table column headers			
-        var $column: JQuery = $(this); //jquery wrap for the current column		
-        var isDisabled: boolean = data.dc.indexOf(index) != -1;   //is this a disabled column?
-        var $grip: JQuery = $(data.$gripContainer.append('<div class="JCLRgrip"></div>')[0].lastChild); //add the visual node to be used as grip
+    $allTH.each(function (index: number) {	//iterate through the table column headers			
+        let $column: JQuery = $(this); //jquery wrap for the current column		
+        let isDisabled: boolean = data.dc.indexOf(index) != -1;   //is this a disabled column?
+        let $grip: JQuery = $(data.$gripContainer.append('<div class="JCLRgrip"></div>')[0].lastChild); //add the visual node to be used as grip
 
         $grip.append(isDisabled ? "" : data.options.gripInnerHtml).append('<div class="' + SIGNATURE + '"></div>');
         if (index == data.len - 1) {  //if the current grip is the last one 
@@ -126,13 +140,13 @@ var createGrips = function (grid: uiMOD.DataGrid) {
             $grip.addClass('JCLRdisabledGrip');
         }
 
-        (<any>$column).w = $column.width();
-
-        data.grips.push($grip);
-        data.$columns.push($column); //the current grip and column are added to its table object
-        $column.width((<any>$column).w).removeAttr("width"); //the width of the column is converted into pixel-based measurements
-
-        $grip.data(SIGNATURE, { i: index, grid: grid, last: index == data.len - 1 });	 //grip index and its table name are stored in the HTML 												
+        let colInfo: IColumnData = { $column: $column, $grip: $grip, w: $column.width(), locked: false };
+        //the current grip and column are added to its table object
+        data.columns.push(colInfo);
+        //the width of the column is converted into pixel-based measurements
+        $column.width(colInfo.w).removeAttr("width");
+        //grip index and its the grid are stored
+        $grip.data(SIGNATURE, { i: index, grid: grid, last: index == data.len - 1, ox: 0, x:0, l:0, w:0 });
     });
 
      if (!data.fixed) {
@@ -146,7 +160,7 @@ var createGrips = function (grid: uiMOD.DataGrid) {
 /**
  * Function that places each grip in the correct position according to the current table layout	 
 */
-var syncGrips = function (grid: uiMOD.DataGrid) {
+let syncGrips = function (grid: uiMOD.DataGrid) {
     if (grid.getIsDestroyCalled())
         return;
     let $table: JQuery = grid.$table;
@@ -154,11 +168,11 @@ var syncGrips = function (grid: uiMOD.DataGrid) {
     data.$gripContainer.width(data.w);	//the grip's container width is updated
 
     for (let i = 0; i < data.len; i++) {	//for each column
-        var $column: JQuery = data.$columns[i];
+        let colInfo = data.columns[i];
         let headerHeight = grid._getInternal().get$Header()[0].offsetHeight;
         let tableHeight = grid._getInternal().get$Wrapper()[0].offsetHeight;
-        data.grips[i].css({			//height and position of the grip is updated according to the table layout
-            left: $column.offset().left - $table.offset().left + $column.outerWidth(false) + data.cellspacing / 2 + PX,
+        colInfo.$grip.css({			//height and position of the grip is updated according to the table layout
+            left: colInfo.$column.offset().left - $table.offset().left + colInfo.$column.outerWidth(false) + data.cellspacing / 2 + PX,
             height: data.options.headerOnly ? headerHeight : (headerHeight + tableHeight)
         });
     }
@@ -170,23 +184,25 @@ var syncGrips = function (grid: uiMOD.DataGrid) {
 	* This function updates column's width according to the horizontal position increment of the grip being
 	* dragged. The function can be called while dragging if liveDragging is enabled and also from the onGripDragOver
 	* event handler to synchronize grip's position with their related columns.
-	* @param {grid ref} grid - dfatya grid object
+	* @param {grid ref} grid - data grid object
 	* @param {number} i - index of the grip being dragged
 	* @param {bool} isOver - to identify when the function is being called from the onGripDragOver event	
 */
-var syncCols = function (grid: uiMOD.DataGrid, i: number, isOver: boolean) {
+let syncCols = function (grid: uiMOD.DataGrid, i: number, isOver: boolean) {
     if (grid.getIsDestroyCalled())
         return;
     let $table: JQuery = grid.$table;
     let data: ITableData = $table.data(SIGNATURE);
-    var gripData = $drag.data(SIGNATURE);
-    var inc = gripData.x - gripData.l, c: any = data.$columns[i], c2: any = data.$columns[i + 1];
+    let gripData: IGripData = $drag.data(SIGNATURE);
+    const inc = gripData.x - gripData.l;
+    const c: IColumnData = data.columns[i], c2: IColumnData = data.columns[i + 1];
 
-    var w = c.w + inc; var w2 = c2.w - inc;	//their new width is obtained	
-    				
-    c.width(w + PX);
+    const w = c.w + inc;
+    const w2 = c2.w - inc;	//their new width is obtained	
+
+    c.$column.width(w + PX);
     if (data.fixed) { //if fixed mode
-        c2.width(w2 + PX);
+        c2.$column.width(w2 + PX);
     }
     else if (data.options.overflow) {	//if overflow is set, incriment min-width to force overflow
         $table.css('min-width', data.w + inc);
@@ -203,20 +219,20 @@ var syncCols = function (grid: uiMOD.DataGrid, i: number, isOver: boolean) {
 	* sum of all columns can exceed the table width in some cases (if fixed is set to false and table has some kind 
 	* of max-width).
 */
-var applyBounds = function (grid: uiMOD.DataGrid) {
+let applyBounds = function (grid: uiMOD.DataGrid) {
     if (grid.getIsDestroyCalled())
         return;
     let $table: JQuery = grid.$table;
     let data: ITableData = $table.data(SIGNATURE);
 
-    var w = $.map(data.$columns, function (c) {			//obtain real widths
-        return c.width();
+    const widths = $.map(data.columns, function (c) {			//obtain real widths
+        return c.$column.width();
     });
 
     $table.width(data.w = $table.width()).removeClass(FLEX);	//prevent table width changes
-    $.each(data.$columns, function (i, c) {
-        c.width(w[i]);
-        (<any>c).w = w[i];	//set column widths applying bounds (table's max-width)
+    $.each(data.columns, function (i, c) {
+        c.$column.width(widths[i]);
+        c.w = widths[i];	//set column widths applying bounds (table's max-width)
     });
 
     $table.addClass(FLEX);	//allow table width changes
@@ -225,40 +241,40 @@ var applyBounds = function (grid: uiMOD.DataGrid) {
 /**
 	 * Event handler used while dragging a grip. It checks if the next grip's position is valid and updates it. 
 */
-var onGripDrag = function (e: JQueryEventObject) {
+let onGripDrag = function (e: JQueryEventObject) {
     if (!$drag)
         return;
-    var gripData = $drag.data(SIGNATURE);
+    let gripData: IGripData = $drag.data(SIGNATURE);
     let grid: uiMOD.DataGrid = gripData.grid;
     if (grid.getIsDestroyCalled())
         return;
-    var $table: JQuery = grid.$table;
+    let $table: JQuery = grid.$table;
     let data: ITableData = $table.data(SIGNATURE);
-    var oe = (<any>e.originalEvent).touches;
-    var ox = oe ? oe[0].pageX : e.pageX;    //original position (touch or mouse)
-    var x = ox - gripData.ox + gripData.l;	//next position according to horizontal mouse position increment
-    var mw = data.options.minWidth; //cell's min width
-    var index = gripData.i;	
+    let oe = (<any>e.originalEvent).touches;
+    let ox = oe ? oe[0].pageX : e.pageX;    //original position (touch or mouse)
+    let x = ox - gripData.ox + gripData.l;	//next position according to horizontal mouse position increment
+    let mw = data.options.minWidth; //cell's min width
+    const index = gripData.i;
+    const colInfo = data.columns[index];
 
-    var l = data.cellspacing * 1.5 + mw + data.borderW;
-    var last = index == data.len - 1;  //check if it is the last column's grip (usually hidden)
-    var min = index ? data.grips[index - 1].position().left + data.cellspacing + mw : l;	//min position according to the contiguous cells
-    var max = data.fixed ? 	//fixed mode?
+    let l: number = data.cellspacing * 1.5 + mw + data.borderW;
+    let last = index == data.len - 1;  //check if it is the last column's grip (usually hidden)
+    let min = (!!colInfo) ? data.columns[index - 1].$grip.position().left + data.cellspacing + mw : l;	//min position according to the contiguous cells
+    let max = data.fixed ?
         (index == data.len - 1 ?
             (data.w - l) :
-            (data.grips[index + 1].position().left - data.cellspacing - mw)) :  Infinity; 	//max position according to the contiguous cells 
+            (data.columns[index + 1].$grip.position().left - data.cellspacing - mw)) :  Infinity; 	//max position according to the contiguous cells 
     x = Math.max(min, Math.min(max, x));	//apply bounding		
     gripData.x = x;
     $drag.css("left", x + PX); 	//apply position increment	
     if (last) {	//if it is the last grip
-        var column = data.$columns[index];	 //width of the last column is obtained
-        gripData.w = (<any>column).w + x - gripData.l;
+        gripData.w = colInfo.w + x - gripData.l;
     }
 
     if (!!data.options.liveDrag) { 	//if liveDrag is enabled
         if (last) {
-            column.width(gripData.w);
-            if (!data.fixed && data.options.overflow) {			//if overflow is set, incriment min-width to force overflow
+            colInfo.$column.width(gripData.w);
+            if (!data.fixed && data.options.overflow) {	//if overflow is set, incriment min-width to force overflow
                 $table.css('min-width', data.w + x - gripData.l);
             } else {
                 data.w = $table.width();
@@ -268,7 +284,7 @@ var onGripDrag = function (e: JQueryEventObject) {
         }
 
         syncGrips(grid);
-        var cb = data.options.onDrag;	//check if there is an onDrag callback
+        let cb = data.options.onDrag;	//check if there is an onDrag callback
         if (!!cb) { (<any>e).currentTarget = $table[0]; cb(e); }		//if any, it is fired			
     }
     return false; 	//prevent text selection while dragging				
@@ -278,29 +294,29 @@ var onGripDrag = function (e: JQueryEventObject) {
 /**
  * Event handler fired when the dragging is over, updating table layout
 */
-var onGripDragOver = function (e: JQueryEventObject) {
+let onGripDragOver = function (e: JQueryEventObject) {
     $doc.unbind('touchend.' + SIGNATURE + ' mouseup.' + SIGNATURE).unbind('touchmove.' + SIGNATURE + ' mousemove.' + SIGNATURE);
     $head.find('#dragCursor').remove();
     if (!$drag)
         return;
-    var gripData = $drag.data(SIGNATURE);
+    let gripData: IGripData = $drag.data(SIGNATURE);
     let grid: uiMOD.DataGrid = gripData.grid;
     if (grid.getIsDestroyCalled())
         return;
-    var $table: JQuery = grid.$table;
+    let $table: JQuery = grid.$table;
     let data: ITableData = $table.data(SIGNATURE);
     $drag.removeClass(data.options.draggingClass);	//remove the grip's dragging css-class
 
     if (!(gripData.x - gripData.l == 0)) {
-        var cb = data.options.onResize; //get some values	
-        var i = gripData.i;                 //column index
-        var last = i == data.len - 1;   //check if it is the last column's grip (usually hidden)
-        var c = data.$columns[i];  //the column being dragged
+        let cb = data.options.onResize; //get some values	
+        let index = gripData.i;   //column index
+        let last = index == data.len - 1;   //check if it is the last column's grip (usually hidden)
+        let colInfo = data.columns[index];  //the column being dragged
         if (last) {
-            c.width(gripData.w);
-            (<any>c).w = gripData.w;
+            colInfo.$column.width(gripData.w);
+            colInfo.w = gripData.w;
         } else {
-            syncCols(grid, i, true);	//the columns are updated
+            syncCols(grid, index, true);	//the columns are updated
         }
         if (!data.fixed)
             applyBounds(grid);	//if not fixed mode, then apply bounds to obtain real width values
@@ -316,65 +332,66 @@ var onGripDragOver = function (e: JQueryEventObject) {
  * Event handler fired when the grip's dragging is about to start. Its main goal is to set up events 
  * and store some values used while dragging.
  */
-var onGripMouseDown = function (e: JQueryEventObject) {
+let onGripMouseDown = function (e: JQueryEventObject) {
     let $grip = $(this);
-    var gripData = $grip.data(SIGNATURE);
+    let gripData: IGripData = $grip.data(SIGNATURE);
     let grid: uiMOD.DataGrid = gripData.grid;
     if (grid.getIsDestroyCalled())
         return;
-    var $table: JQuery = grid.$table;
+    let $table: JQuery = grid.$table;
     let data: ITableData = $table.data(SIGNATURE);
-    var oe = (<any>e.originalEvent).touches;   //touch or mouse event?
-    gripData.ox = oe ? oe[0].pageX : e.pageX;    //the initial position is kept
+    let touches = (<any>e.originalEvent).touches;   //touch or mouse event?
+    gripData.ox = touches ? touches[0].pageX : e.pageX;    //the initial position is kept
     gripData.l = $grip.position().left;
     gripData.x = gripData.l;
-
-    $doc.bind('touchmove.' + SIGNATURE + ' mousemove.' + SIGNATURE, onGripDrag).bind('touchend.' + SIGNATURE + ' mouseup.' + SIGNATURE, onGripDragOver);	//mousemove and mouseup events are bound
+    //mousemove and mouseup events are bound
+    $doc.bind('touchmove.' + SIGNATURE + ' mousemove.' + SIGNATURE, onGripDrag);
+    $doc.bind('touchend.' + SIGNATURE + ' mouseup.' + SIGNATURE, onGripDragOver);
     //change the mouse cursor
     if ($head.find('#dragCursor').length == 0)
         $head.append("<style id='dragCursor' type='text/css'>*{cursor:" + data.options.dragCursor + "!important}</style>");
     $grip.addClass(data.options.draggingClass); 	//add the dragging class (to allow some visual feedback)				
 
     $drag = $grip; //the current grip is stored as the current dragging object
-    let gripCol = data.$columns[gripData.i];
-    if ((<any>gripCol).locked) {
-        for (var i = 0; i < data.len; i++)
+    let gripCol = data.columns[gripData.i];
+    if (gripCol.locked) {
+        for (let i = 0; i < data.len; i++)
         {
             //if the colum is locked (after browser resize), then c.w must be updated		
-            let c: any = data.$columns[i];
+            let c = data.columns[i];
             c.locked = false;
-            c.w = c.width();
+            c.w = c.$column.width();
         } 	
     }
     return false; 	//prevent text selection
 };
 
-var checkResize = function (grid: uiMOD.DataGrid) {
+let checkResize = function (grid: uiMOD.DataGrid) {
     if (grid.getIsDestroyCalled())
         return;
 
-    var $table: JQuery = grid.$table;
+    let $table: JQuery = grid.$table;
     let data: ITableData = $table.data(SIGNATURE);
-    var mw = 0;
+    let mw = 0;
     $table.removeClass(SIGNATURE);   //firefox doesn't like layout-fixed in some cases
 
     if (data.fixed) {                  //in fixed mode
         data.w = $table.width();        //its new width is kept
         for (let i = 0; i < data.len; i++)
-            mw += (<any>data.$columns[i]).w;
+            mw += data.columns[i].w;
 
         //cell rendering is not as trivial as it might seem, and it is slightly different for
         //each browser. In the beginning i had a big switch for each browser, but since the code
         //was extremely ugly now I use a different approach with several re-flows. This works 
         //pretty well but it's a bit slower. For now, lets keep things simple...   
         for (let i = 0; i < data.len; i++) {
-            let col = data.$columns[i];
-            col.css("width", Math.round(1000 * (<any>col).w / mw) / 10 + "%");
+            let col = data.columns[i];
+            col.$column.css("width", Math.round(1000 * (<any>col).w / mw) / 10 + "%");
             //col.locked locks the column, telling us that its c.w is outdated									
-            (<any>col).locked = true;
+            col.locked = true;
         }
     } else {     //in non fixed-sized tables
-        applyBounds(grid);         //apply the new bounds 
+        applyBounds(grid);  //apply the new bounds 
     }
 
     $table.addClass(SIGNATURE);
@@ -385,7 +402,7 @@ var checkResize = function (grid: uiMOD.DataGrid) {
  * Event handler fired when the browser is resized. The main purpose of this function is to update
  * table layout according to the browser's size synchronizing related grips 
  */
-var onResize = function () {
+let onResize = function () {
     RIAPP.Utils.core.iterateIndexer(_created_grids, (name, gridView) => {
         let grid = gridView.grid;
         checkResize(grid);
@@ -397,9 +414,9 @@ export class ResizableGrid extends uiMOD.DataGridElView {
 
     constructor(options: uiMOD.IDataGridViewOptions) {
         super(options);
-        var self = this, grid = self.grid;
+        let self = this, grid = self.grid;
         _gridCreated(this);
-        var defaults = {
+        let defaults = {
             resizeMode: 'fit',                    //mode can be 'fit', 'flex' or 'overflow'
             draggingClass: 'JCLRgripDrag',	//css-class used when a grip is being dragged (for visual feedback purposes)
             gripInnerHtml: '',				//if it is required to use a custom grip it can be done using some custom HTML				
@@ -420,7 +437,7 @@ export class ResizableGrid extends uiMOD.DataGridElView {
             onResize: <(e: JQueryEventObject) => void>null				//callback function fired when the dragging process is over
         }
 
-        var opts = $.extend(defaults, options);
+        let opts = $.extend(defaults, options);
 
         //since now there are 3 different ways of resizing columns, I changed the external interface to make it clear
         //calling it 'resizeMode' but also to remove the "fixed" attribute which was confusing for many people
@@ -449,7 +466,7 @@ export class ResizableGrid extends uiMOD.DataGridElView {
     private bindDS(ds: RIAPP.ICollection<RIAPP.ICollectionItem>) {
         if (!ds)
             return;
-        var self = this;
+        let self = this;
         ds.addOnCleared((s, a) => { setTimeout(() => { syncGrips(self.grid); }, 0); }, this.uniqueID);
         ds.addOnFill((s, a) => {
             setTimeout(() => { syncGrips(self.grid); }, 0);
