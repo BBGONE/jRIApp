@@ -10,24 +10,29 @@ const $ = utils.dom.$;
 
 export interface IButtonOptions extends IViewOptions {
     preventDefault?: boolean;
+    stopPropagation?: boolean;
 }
 
 export class ButtonElView extends CommandElView {
     private _preventDefault: boolean;
+    private _stopPropagation: boolean;
 
     constructor(options: IButtonOptions) {
         super(options);
         this._preventDefault = false;
+        this._stopPropagation = false;
         let self = this, $el = this.$el;
         if (!!options.preventDefault)
             this._preventDefault = true;
-
+        if (!!options.stopPropagation)
+            this._stopPropagation = true;
         $el.on("click." + this.uniqueID, function (e) {
             self._onClick(e);
         });
     }
     protected _onClick(e: Event) {
-        e.stopPropagation();
+        if (this._stopPropagation)
+            e.stopPropagation();
         if (this._preventDefault)
             e.preventDefault();
         this.invokeCommand(null, true);

@@ -7085,15 +7085,19 @@ define("jriapp_elview/button", ["require", "exports", "jriapp_utils/utils", "jri
         function ButtonElView(options) {
             _super.call(this, options);
             this._preventDefault = false;
+            this._stopPropagation = false;
             var self = this, $el = this.$el;
             if (!!options.preventDefault)
                 this._preventDefault = true;
+            if (!!options.stopPropagation)
+                this._stopPropagation = true;
             $el.on("click." + this.uniqueID, function (e) {
                 self._onClick(e);
             });
         }
         ButtonElView.prototype._onClick = function (e) {
-            e.stopPropagation();
+            if (this._stopPropagation)
+                e.stopPropagation();
             if (this._preventDefault)
                 e.preventDefault();
             this.invokeCommand(null, true);
@@ -7188,19 +7192,23 @@ define("jriapp_elview/anchor", ["require", "exports", "jriapp_utils/utils", "jri
             this._span = null;
             this._glyph = null;
             this._preventDefault = false;
+            this._stopPropagation = false;
             if (!!options.imageSrc)
                 this.imageSrc = options.imageSrc;
             if (!!options.glyph)
                 this.glyph = options.glyph;
             if (!!options.preventDefault)
                 this._preventDefault = true;
+            if (!!options.stopPropagation)
+                this._stopPropagation = true;
             $el.addClass(elview_8.css.commandLink);
             $el.on("click." + this.uniqueID, function (e) {
                 self._onClick(e);
             });
         }
         AnchorElView.prototype._onClick = function (e) {
-            e.stopPropagation();
+            if (this._stopPropagation)
+                e.stopPropagation();
             if (this._preventDefault)
                 e.preventDefault();
             this.invokeCommand(null, true);

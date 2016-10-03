@@ -20,6 +20,7 @@ export class AnchorElView extends CommandElView {
     private _image: HTMLImageElement;
     private _span: HTMLSpanElement;
     private _preventDefault: boolean;
+    private _stopPropagation: boolean;
 
     constructor(options: IAncorOptions) {
         super(options);
@@ -29,6 +30,7 @@ export class AnchorElView extends CommandElView {
         this._span = null;
         this._glyph = null;
         this._preventDefault = false;
+        this._stopPropagation = false;
 
         if (!!options.imageSrc)
             this.imageSrc = options.imageSrc;
@@ -37,6 +39,8 @@ export class AnchorElView extends CommandElView {
 
         if (!!options.preventDefault)
             this._preventDefault = true;
+        if (!!options.stopPropagation)
+            this._stopPropagation = true;
 
         $el.addClass(css.commandLink);
         $el.on("click." + this.uniqueID, function (e) {
@@ -44,7 +48,8 @@ export class AnchorElView extends CommandElView {
         });
     }
     protected _onClick(e: Event) {
-        e.stopPropagation();
+        if (this._stopPropagation)
+            e.stopPropagation();
         if (this._preventDefault)
             e.preventDefault();
         this.invokeCommand(null, true);

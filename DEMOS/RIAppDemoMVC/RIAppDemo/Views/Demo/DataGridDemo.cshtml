@@ -256,7 +256,7 @@
 <script id="productNumberTemplate" type="text/html" data-role="template">
     <div style="margin-top: 2px; border: 1px solid blue; border-radius: 3px 4px; width:95%; height:90%;">
         <div style="position: relative; top: 50%; transform: translateY(-50%);">
-            <a style="color: white;" data-name="Product Number Column" data-bind1="{this.command,to=columnCommand,source=productVM}" data-bind2="{this.commandParam,to=currentItem,source=productVM}">Product #</a>
+            <a style="color: white;" data-name="Product Number Column" data-bind1="{this.command,to=columnCommand,source=productVM}" data-bind2="{this.commandParam,to=currentItem,source=productVM}" data-view="options:{stopPropagation=true}">Product #</a>
         </div>
     </div>
 </script>

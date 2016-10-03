@@ -1930,9 +1930,11 @@ declare module "jriapp_elview/button" {
     import { CommandElView } from "jriapp_elview/command";
     export interface IButtonOptions extends IViewOptions {
         preventDefault?: boolean;
+        stopPropagation?: boolean;
     }
     export class ButtonElView extends CommandElView {
         private _preventDefault;
+        private _stopPropagation;
         constructor(options: IButtonOptions);
         protected _onClick(e: Event): void;
         toString(): string;
@@ -1955,6 +1957,7 @@ declare module "jriapp_elview/anchor" {
         private _image;
         private _span;
         private _preventDefault;
+        private _stopPropagation;
         constructor(options: IAncorOptions);
         protected _onClick(e: Event): void;
         protected _updateImage(src: string): void;
