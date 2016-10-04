@@ -110,11 +110,6 @@ span.ria-required-field:after {
 
 /*Validation error styles*/
 .ria-field-error {
-    outline: 1px solid red;
-}
-
-.ria-field-error {
-    display: block;
     outline: 2px solid red;
 }
 
