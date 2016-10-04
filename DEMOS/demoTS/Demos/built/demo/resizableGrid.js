@@ -290,19 +290,22 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
             var data = this._resizeInfo;
             var gripData = $drag.data(SIGNATURE);
             var inc = gripData.x - gripData.l;
-            var c = data.columns[i], c2 = data.columns[i + 1];
-            var w = c.w + inc;
-            var w2 = c2.w - inc;
-            c.$column.width(w + PX);
+            var c = data.columns[i];
             if (data.fixed) {
+                var c2 = data.columns[i + 1];
+                var w2 = c2.w - inc;
                 c2.$column.width(w2 + PX);
+                if (isOver) {
+                    c2.w = w2;
+                }
             }
             else if (data.overflow) {
                 $table.css('min-width', data.w + inc);
             }
+            var w = c.w + inc;
+            c.$column.width(w + PX);
             if (isOver) {
                 c.w = w;
-                c2.w = data.fixed ? w2 : c2.w;
             }
         };
         ResizableGrid.prototype.applyBounds = function () {

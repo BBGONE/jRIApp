@@ -416,22 +416,24 @@ export class ResizableGrid extends uiMOD.DataGridElView {
         const data: IResizeInfo = this._resizeInfo;
         const gripData: IGripData = $drag.data(SIGNATURE);
         const inc = gripData.x - gripData.l;
-        const c: IColumnInfo = data.columns[i], c2: IColumnInfo = data.columns[i + 1];
-
-        const w = c.w + inc;
-        const w2 = c2.w - inc;	//their new width is obtained	
-
-        c.$column.width(w + PX);
+        const c: IColumnInfo = data.columns[i];
+  
         if (data.fixed) { //if fixed mode
+            const c2: IColumnInfo = data.columns[i + 1];
+            const w2 = c2.w - inc;	
             c2.$column.width(w2 + PX);
+            if (isOver) {
+               c2.w = w2;
+            }
         }
         else if (data.overflow) {	//if overflow is set, incriment min-width to force overflow
             $table.css('min-width', data.w + inc);
         }
-
+        
+        const w = c.w + inc;
+        c.$column.width(w + PX);
         if (isOver) {
             c.w = w;
-            c2.w = data.fixed ? w2 : c2.w;
         }
     }
     /**
