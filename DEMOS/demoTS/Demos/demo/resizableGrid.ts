@@ -275,7 +275,7 @@ export class ResizableGrid extends uiMOD.DataGridElView {
             self._ds = grid.dataSource;
         }, this.uniqueID);
 
-        setTimeout(() => { self.checkResize(); }, 0);
+        self.checkResize();
     }
     private bindDS(ds: RIAPP.ICollection<RIAPP.ICollectionItem>) {
         if (!ds)

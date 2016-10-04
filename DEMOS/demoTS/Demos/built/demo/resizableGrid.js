@@ -183,7 +183,7 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
                 self.bindDS(grid.dataSource);
                 self._ds = grid.dataSource;
             }, this.uniqueID);
-            setTimeout(function () { self.checkResize(); }, 0);
+            self.checkResize();
         }
         ResizableGrid.prototype.bindDS = function (ds) {
             if (!ds)
