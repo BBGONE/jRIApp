@@ -113,11 +113,6 @@ span.ria-required-field:after {
     outline: 2px solid red;
 }
 
-span.ria-field-error {
-    display: inline-block;
-    outline: 1px solid red;
-}
-
 img.error-info {
     position: absolute;
     right: 5px;
