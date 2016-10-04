@@ -21,7 +21,6 @@ interface IResizeInfo {
     mode: string;
     dc: number[];
     fixed: boolean;
-    overflow: boolean;
     w: number;
     $gripContainer: JQuery;
     cellspacing: number;
@@ -48,7 +47,7 @@ interface IGripData {
 }
 
 interface IOptions {
-    resizeMode: 'fit' | 'flex' | 'overflow';
+    resizeMode: 'fit' | 'overflow';
     draggingClass: string;
     gripInnerHtml: string;
     liveDrag: boolean;
@@ -133,7 +132,7 @@ let onGripDrag = function (e: JQueryEventObject) {
     if (!!data.options.liveDrag) { 	//if liveDrag is enabled
         if (last) {
             colInfo.$column.width(gripData.w);
-            if (!data.fixed && data.overflow) {	//if overflow is set, incriment min-width to force overflow
+            if (!data.fixed) {	//if overflow is set, incriment min-width to force overflow
                 $table.css('min-width', data.w + x - gripData.l);
             } else {
                 data.w = $table.width();
@@ -179,7 +178,7 @@ let onGripDragOver = function (e: JQueryEventObject) {
         } else {
             grid.syncCols(index, true);	//the columns are updated
         }
-        if (data.overflow)
+        if (!data.fixed)
             grid.applyBounds();
         grid.syncGrips();	//the grips are updated
         if (!!cb) { (<any>e).currentTarget = $table[0]; cb(e); }	//if there is a callback function, it is fired
@@ -247,13 +246,13 @@ export class ResizableGrid extends uiMOD.DataGridElView {
         let self = this, grid = self.grid;
         _gridCreated(this);
         let defaults: IOptions = {
-            resizeMode: <'fit' | 'flex' | 'overflow'>'overflow',  //mode can be 'fit', 'flex' or 'overflow'
+            resizeMode: <'fit' | 'overflow'>'overflow',  //mode can be 'fit' or 'overflow'
             draggingClass: 'JCLRgripDrag',	//css-class used when a grip is being dragged (for visual feedback purposes)
             gripInnerHtml: '',				//if it is required to use a custom grip it can be done using some custom HTML				
             liveDrag: false,				//enables table-layout updating while dragging	
             minWidth: 15, 					//minimum width value in pixels allowed for a column 
             headerOnly: false,				//specifies that the size of the the column resizing anchors will be bounded to the size of the first row 
-            //hoverCursor: "e-resize",  		//cursor to be used on grip hover
+           //hoverCursor: "e-resize",  		//cursor to be used on grip hover
             dragCursor: "e-resize",  		//cursor to be used while dragging
             marginLeft: <string>null,		//in case the table contains any margins, colResizable needs to know the values used, e.grip. "10%", "15em", "5px" ...
             marginRight: <string>null, 		//in case the table contains any margins, colResizable needs to know the values used, e.grip. "10%", "15em", "5px" ...
@@ -275,6 +274,7 @@ export class ResizableGrid extends uiMOD.DataGridElView {
             self.bindDS(grid.dataSource);
             self._ds = grid.dataSource;
         }, this.uniqueID);
+
         setTimeout(() => { self.checkResize(); }, 0);
     }
     private bindDS(ds: RIAPP.ICollection<RIAPP.ICollectionItem>) {
@@ -311,8 +311,7 @@ export class ResizableGrid extends uiMOD.DataGridElView {
             options: options,
             mode: options.resizeMode,
             dc: options.disabledColumns,
-            fixed: true,
-            overflow: false,
+            fixed: options.resizeMode === 'fit',
             columns: <IColumnInfo[]>[],
             w: $table.width(),
             $gripContainer: $gripContainer,
@@ -321,15 +320,6 @@ export class ResizableGrid extends uiMOD.DataGridElView {
             len: 0
         };
 
-        switch (options.resizeMode) {
-            case 'flex':
-                this._resizeInfo.fixed = false;
-                break;
-            case 'overflow':
-                this._resizeInfo.fixed = false;
-                this._resizeInfo.overflow = true;
-                break;
-        }
         if (options.marginLeft) $gripContainer.css("marginLeft", options.marginLeft);  	//if the table contains margins, it must be specified
         if (options.marginRight) $gripContainer.css("marginRight", options.marginRight);  	//since there is no (direct) way to obtain margin values in its original units (%, em, ...)
 
@@ -426,7 +416,7 @@ export class ResizableGrid extends uiMOD.DataGridElView {
                c2.w = w2;
             }
         }
-        else if (data.overflow) {	//if overflow is set, incriment min-width to force overflow
+        else {	//if overflow is set, incriment min-width to force overflow
             $table.css('min-width', data.w + inc);
         }
         
@@ -487,7 +477,7 @@ export class ResizableGrid extends uiMOD.DataGridElView {
                 //col.locked locks the column, telling us that its c.w is outdated									
                 col.locked = true;
             }
-        } else if (data.overflow) { 
+        } else { 
             this.applyBounds();  //apply the new bounds 
         }
 
@@ -505,7 +495,6 @@ export class ResizableGrid extends uiMOD.DataGridElView {
         let data: IResizeInfo = this._resizeInfo;
         if (!!data)
             data.$gripContainer.remove();
-        $table.removeData(SIGNATURE);
         $table.removeClass(SIGNATURE + " " + FLEX);
         this._resizeInfo = null;
         super.destroy();

@@ -66,7 +66,7 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
         if (!!data.options.liveDrag) {
             if (last) {
                 colInfo.$column.width(gripData.w);
-                if (!data.fixed && data.overflow) {
+                if (!data.fixed) {
                     $table.css('min-width', data.w + x - gripData.l);
                 }
                 else {
@@ -110,7 +110,7 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
             else {
                 grid.syncCols(index, true);
             }
-            if (data.overflow)
+            if (!data.fixed)
                 grid.applyBounds();
             grid.syncGrips();
             if (!!cb) {
@@ -209,8 +209,7 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
                 options: options,
                 mode: options.resizeMode,
                 dc: options.disabledColumns,
-                fixed: true,
-                overflow: false,
+                fixed: options.resizeMode === 'fit',
                 columns: [],
                 w: $table.width(),
                 $gripContainer: $gripContainer,
@@ -218,15 +217,6 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
                 borderW: parseInt(style.borderLeftWidth) || 1,
                 len: 0
             };
-            switch (options.resizeMode) {
-                case 'flex':
-                    this._resizeInfo.fixed = false;
-                    break;
-                case 'overflow':
-                    this._resizeInfo.fixed = false;
-                    this._resizeInfo.overflow = true;
-                    break;
-            }
             if (options.marginLeft)
                 $gripContainer.css("marginLeft", options.marginLeft);
             if (options.marginRight)
@@ -299,7 +289,7 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
                     c2.w = w2;
                 }
             }
-            else if (data.overflow) {
+            else {
                 $table.css('min-width', data.w + inc);
             }
             var w = c.w + inc;
@@ -343,7 +333,7 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
                     col.locked = true;
                 }
             }
-            else if (data.overflow) {
+            else {
                 this.applyBounds();
             }
             $table.addClass(SIGNATURE);
@@ -360,7 +350,6 @@ define(["require", "exports", "jriapp", "jriapp_ui"], function (require, exports
             var data = this._resizeInfo;
             if (!!data)
                 data.$gripContainer.remove();
-            $table.removeData(SIGNATURE);
             $table.removeClass(SIGNATURE + " " + FLEX);
             this._resizeInfo = null;
             _super.prototype.destroy.call(this);
