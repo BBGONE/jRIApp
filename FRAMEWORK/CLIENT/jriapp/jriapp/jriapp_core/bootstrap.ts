@@ -31,7 +31,7 @@ const PROP_NAME = {
 };
 
 export interface IInternalBootstrapMethods {
-    initialize(): void;
+    initialize(): IPromise<void>;
     trackSelectable(selectable: ISelectableProvider): void;
     untrackSelectable(selectable: ISelectableProvider): void;
     registerApp(app: IApplication): void;
@@ -85,7 +85,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         this._elViewRegister = createElViewRegister(null);
         this._internal = {
             initialize: () => {
-                self._initialize();
+                return self._initialize();
             },
             trackSelectable: (selectable: ISelectableProvider) => {
                 self._trackSelectable(selectable);
@@ -120,7 +120,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         //load jriapp.css (it will load only if it is not loaded yet)
         stylesLoader.loadOwnStyle();
     }
-    private _onInit(): void {
+    private _bindGlobalEvents(): void {
         let self = this;
         let $win = $(window), $doc = $(document);
 
@@ -206,56 +206,55 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         }
         super._addHandler(name, fn, nmspace, context, prepend);
     }
-    private _init(): void {
-        let self = this;
+    private _init(): IPromise<void> {
+        let self = this, deferred = defer.createDeferred<void>(), invalidOpErr = new Error("Invalid operation");
         if (self.getIsDestroyCalled())
-            return;
-        this._onInit();
+            return deferred.reject(invalidOpErr);
+     
+        this._bindGlobalEvents();
         self.registerSvc(TOOLTIP_SVC, createToolTipSvc());
-        self.addOnInitialize((s, a) => {
-            setTimeout(() => {
-                if (self.getIsDestroyCalled())
-                    return;
-                self.removeHandler(GLOB_EVENTS.initialized, null);
-            }, 0);
-        });
         self._bootState = BootstrapState.Initialized;
         self.raiseEvent(GLOB_EVENTS.initialized, {});
-        try {
-            //self._processTemplateSections();
-            self._processHTMLTemplates();
-        }
-        catch (err) {
-            self._bootState = BootstrapState.Error;
-            self.handleError(err, self);
-            ERROR.throwDummy(err);
-        }
+        self.removeHandler(GLOB_EVENTS.initialized, null);
 
-        self.addOnLoad((s, a) => {
-            setTimeout(() => {
-                if (self.getIsDestroyCalled())
-                    return;
-                self.removeHandler(GLOB_EVENTS.load, null);
-            }, 0);
-        });
-        self._bootState = BootstrapState.Ready;
+
         setTimeout(() => {
-            if (self.getIsDestroyCalled())
-                return;
-            self.raisePropertyChanged(PROP_NAME.isReady);
-            self.raiseEvent(GLOB_EVENTS.load, {});
+            try {
+                if (self.getIsDestroyCalled())
+                    throw invalidOpErr;
+                self._processHTMLTemplates();
+                self._bootState = BootstrapState.Ready;
+                self.raisePropertyChanged(PROP_NAME.isReady);
+                deferred.resolve();
+            }
+            catch (err) {
+                deferred.reject(err);
+            }
         }, 0);
+
+
+        return deferred.promise().then(() => {
+            self.raiseEvent(GLOB_EVENTS.load, {});
+            self.removeHandler(GLOB_EVENTS.load, null);
+        });
     }
-    private _initialize(): void {
+    private _initialize(): IPromise<void> {
+        let self = this, deferred = defer.createDeferred<void>(), invalidOpErr = new Error("Invalid operation");
+
         if (this._bootState !== BootstrapState.None)
-            return;
+            return deferred.reject(invalidOpErr);
+
         this._bootState = BootstrapState.Initializing;
-        this.stylesLoader.whenAllLoaded().then((val) => {
-            this._init();
-        }, (err) => {
+
+        let promise = deferred.resolve(this.stylesLoader.whenAllLoaded()).then(() => {
+            return self._init();
+        }).fail((err) => {
             this._bootState = BootstrapState.Error;
             this.handleError(err, this);
+            throw err;
         });
+
+        return promise;
     }
     private _trackSelectable(selectable: ISelectableProvider): void {
         let self = this, isel = selectable.getISelectable(), el = isel.getContainerEl();
@@ -305,6 +304,23 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             throw new Error(strUtils.format(ERRS.ERR_CONVERTER_NOTREGISTERED, name));
         return res;
     }
+    private _waitLoaded(onLoad: (bootstrap: Bootstrap) => void): void {
+        let self = this;
+
+        self.init(() => {
+            self.addOnLoad((s, a) => {
+                setTimeout(() => {
+                    try {
+                        onLoad(self);
+                    }
+                    catch (err) {
+                        self.handleError(err, self);
+                        throw err;
+                    }
+                }, 0);
+            });
+        });
+    }
     _getInternal(): IInternalBootstrapMethods {
         return this._internal;
     }
@@ -332,31 +348,41 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     }
     init(onInit: (bootstrap: Bootstrap) => void): void {
         let self = this;
+
         self.addOnInitialize((s, a) => {
-            try {
-                onInit(self);
-            }
-            catch (err) {
-                self.handleError(err, self);
-                throw err;
-            }
+            setTimeout(() => {
+                try {
+                    onInit(self);
+                }
+                catch (err) {
+                    self.handleError(err, self);
+                    throw err;
+                }
+            }, 0);
         });
     }
-    startApp<TApp extends IApplication>(appFactory: () => TApp, onStartUp?: (app: TApp) => void): void {
-        let self = this;
-        let fn_start = () => {
+    //starting application - use onStartUp callback to setUp handlers on objects, create viewModels and etc.
+    //all  that we need to do before setting up databindings
+    //returns Promise
+    startApp<TApp extends IApplication>(appFactory: () => TApp, onStartUp?: (app: TApp) => void): IPromise<void> {
+        let self = this, deferred = defer.createDeferred<void>();
+
+        let promise = deferred.promise().fail((err) => {
+            self.handleError(err, self);
+            throw err;
+        });
+
+        self._waitLoaded(() => {
             try {
                 let app = appFactory();
-                app.startUp(onStartUp);
+                deferred.resolve(app.startUp(onStartUp));
             }
             catch (err) {
-                self.handleError(err, self);
-                throw err;
+                deferred.reject(err);
             }
-        };
-        self.init((sender) => {
-            self.addOnLoad((s, a) => { setTimeout(() => { fn_start(); }, 0); });
         });
+    
+        return promise;
     }
     destroy(): void {
         if (this._isDestroyed)

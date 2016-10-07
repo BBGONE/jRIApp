@@ -186,48 +186,51 @@ export class Application extends BaseObject implements IApplication {
         let res = bootstrap._getInternal().getObject(this, name2);
         return res;
     }
-    //set up application - use fn_sandbox callback to setUp handlers on objects, create viewModels and etc.
-    startUp(fn_sandbox?: (app: Application) => void): void {
-        let self = this, fn_init = () => {
-            let defer = utils.defer.createSyncDeferred<void>();
+    //set up application - use onStartUp callback to setUp handlers on objects, create viewModels and etc.
+    //all  that we need to do before setting up databindings
+    startUp(onStartUp?: (app: Application) => void): IPromise<void> {
+        let self = this, deferred = utils.defer.createSyncDeferred<void>();
+
+        if (this._app_state !== AppState.None) {
+            return deferred.reject(new Error("Application can not be started again! Create a new one!"));
+        }
+
+        let fn_init = () => {
             try {
                 self._initAppModules();
                 self.onStartUp();
                 self.raiseEvent(APP_EVENTS.startup, {});
-                if (!!fn_sandbox)
-                    fn_sandbox.apply(self, [self]);
+                if (!!onStartUp)
+                    onStartUp.apply(self, [self]);
 
-                defer.resolve(self._dataBindingService.setUpBindings()).then(() => {
-                    self._app_state = AppState.Started;
-                }, (err) => {
-                    self._app_state = AppState.Error;
-                    ERROR.reThrow(err, true);
-                });
+                deferred.resolve(self._dataBindingService.setUpBindings());
             }
             catch (ex) {
-                self._app_state = AppState.Error;
-                this.handleError(ex, this);
-                defer.reject(new DummyError(ex));
+                deferred.reject(ex);
             }
-
-            return defer.promise();
         };
-
-        if (this._app_state !== AppState.None)
-            throw new Error("Application can not be started again! Create a new one!");
 
         this._app_state = AppState.Starting;
 
+        let promise = deferred.promise().then(() => {
+            self._app_state = AppState.Started;
+        }, (err) => {
+            self._app_state = AppState.Error;
+            throw err;
+            });
+
         try {
-            if (!!fn_sandbox && !utils.check.isFunc(fn_sandbox))
+            if (!!onStartUp && !utils.check.isFunc(onStartUp))
                 throw new Error(ERRS.ERR_APP_SETUP_INVALID);
-            //wait for all templates have been loaded
+
+            //wait until all templates have been loaded (if any)
             bootstrap.templateLoader.waitForNotLoading(fn_init, null);
         }
         catch (ex) {
-            this._app_state = AppState.Error;
-            ERROR.reThrow(ex, self.handleError(ex, self));
+            deferred.reject(ex);
         }
+
+        return promise;
     }
     createTemplate(dataContext?: any, templEvents?: ITemplateEvents): ITemplate {
         let options: ITemplateOptions = {

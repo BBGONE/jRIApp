@@ -3410,7 +3410,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             this._elViewRegister = factory_1.createRegister(null);
             this._internal = {
                 initialize: function () {
-                    self._initialize();
+                    return self._initialize();
                 },
                 trackSelectable: function (selectable) {
                     self._trackSelectable(selectable);
@@ -3449,7 +3449,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
                 exports.bootstrap._getInternal().initialize();
             });
         };
-        Bootstrap.prototype._onInit = function () {
+        Bootstrap.prototype._bindGlobalEvents = function () {
             var self = this;
             var $win = $(window), $doc = $(document);
             $doc.on("click.global", function (e) {
@@ -3528,54 +3528,46 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             _super.prototype._addHandler.call(this, name, fn, nmspace, context, prepend);
         };
         Bootstrap.prototype._init = function () {
-            var self = this;
+            var self = this, deferred = async_6.AsyncUtils.createDeferred(), invalidOpErr = new Error("Invalid operation");
             if (self.getIsDestroyCalled())
-                return;
-            this._onInit();
+                return deferred.reject(invalidOpErr);
+            this._bindGlobalEvents();
             self.registerSvc(const_3.TOOLTIP_SVC, tooltip_1.create());
-            self.addOnInitialize(function (s, a) {
-                setTimeout(function () {
-                    if (self.getIsDestroyCalled())
-                        return;
-                    self.removeHandler(GLOB_EVENTS.initialized, null);
-                }, 0);
-            });
             self._bootState = 2;
             self.raiseEvent(GLOB_EVENTS.initialized, {});
-            try {
-                self._processHTMLTemplates();
-            }
-            catch (err) {
-                self._bootState = 4;
-                self.handleError(err, self);
-                coreutils_12.ERROR.throwDummy(err);
-            }
-            self.addOnLoad(function (s, a) {
-                setTimeout(function () {
-                    if (self.getIsDestroyCalled())
-                        return;
-                    self.removeHandler(GLOB_EVENTS.load, null);
-                }, 0);
-            });
-            self._bootState = 3;
+            self.removeHandler(GLOB_EVENTS.initialized, null);
             setTimeout(function () {
-                if (self.getIsDestroyCalled())
-                    return;
-                self.raisePropertyChanged(PROP_NAME.isReady);
-                self.raiseEvent(GLOB_EVENTS.load, {});
+                try {
+                    if (self.getIsDestroyCalled())
+                        throw invalidOpErr;
+                    self._processHTMLTemplates();
+                    self._bootState = 3;
+                    self.raisePropertyChanged(PROP_NAME.isReady);
+                    deferred.resolve();
+                }
+                catch (err) {
+                    deferred.reject(err);
+                }
             }, 0);
+            return deferred.promise().then(function () {
+                self.raiseEvent(GLOB_EVENTS.load, {});
+                self.removeHandler(GLOB_EVENTS.load, null);
+            });
         };
         Bootstrap.prototype._initialize = function () {
             var _this = this;
+            var self = this, deferred = async_6.AsyncUtils.createDeferred(), invalidOpErr = new Error("Invalid operation");
             if (this._bootState !== 0)
-                return;
+                return deferred.reject(invalidOpErr);
             this._bootState = 1;
-            this.stylesLoader.whenAllLoaded().then(function (val) {
-                _this._init();
-            }, function (err) {
+            var promise = deferred.resolve(this.stylesLoader.whenAllLoaded()).then(function () {
+                return self._init();
+            }).fail(function (err) {
                 _this._bootState = 4;
                 _this.handleError(err, _this);
+                throw err;
             });
+            return promise;
         };
         Bootstrap.prototype._trackSelectable = function (selectable) {
             var self = this, isel = selectable.getISelectable(), el = isel.getContainerEl();
@@ -3625,6 +3617,22 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
                 throw new Error(coreutils_12.StringUtils.format(lang_6.ERRS.ERR_CONVERTER_NOTREGISTERED, name));
             return res;
         };
+        Bootstrap.prototype._waitLoaded = function (onLoad) {
+            var self = this;
+            self.init(function () {
+                self.addOnLoad(function (s, a) {
+                    setTimeout(function () {
+                        try {
+                            onLoad(self);
+                        }
+                        catch (err) {
+                            self.handleError(err, self);
+                            throw err;
+                        }
+                    }, 0);
+                });
+            });
+        };
         Bootstrap.prototype._getInternal = function () {
             return this._internal;
         };
@@ -3653,30 +3661,33 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
         Bootstrap.prototype.init = function (onInit) {
             var self = this;
             self.addOnInitialize(function (s, a) {
-                try {
-                    onInit(self);
-                }
-                catch (err) {
-                    self.handleError(err, self);
-                    throw err;
-                }
+                setTimeout(function () {
+                    try {
+                        onInit(self);
+                    }
+                    catch (err) {
+                        self.handleError(err, self);
+                        throw err;
+                    }
+                }, 0);
             });
         };
         Bootstrap.prototype.startApp = function (appFactory, onStartUp) {
-            var self = this;
-            var fn_start = function () {
+            var self = this, deferred = async_6.AsyncUtils.createDeferred();
+            var promise = deferred.promise().fail(function (err) {
+                self.handleError(err, self);
+                throw err;
+            });
+            self._waitLoaded(function () {
                 try {
                     var app = appFactory();
-                    app.startUp(onStartUp);
+                    deferred.resolve(app.startUp(onStartUp));
                 }
                 catch (err) {
-                    self.handleError(err, self);
-                    throw err;
+                    deferred.reject(err);
                 }
-            };
-            self.init(function (sender) {
-                self.addOnLoad(function (s, a) { setTimeout(function () { fn_start(); }, 0); });
             });
+            return promise;
         };
         Bootstrap.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -10363,7 +10374,7 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
         return DataBindingService;
     }(object_19.BaseObject));
 });
-define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_core/shared", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_elview/factory", "jriapp_core/databindsvc", "jriapp_core/template"], function (require, exports, const_9, shared_6, lang_24, object_20, bootstrap_24, coreutils_25, utils_35, factory_3, databindsvc_1, template_3) {
+define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_elview/factory", "jriapp_core/databindsvc", "jriapp_core/template"], function (require, exports, const_9, lang_24, object_20, bootstrap_24, coreutils_25, utils_35, factory_3, databindsvc_1, template_3) {
     "use strict";
     var $ = utils_35.Utils.dom.$, document = utils_35.Utils.dom.document;
     var APP_EVENTS = {
@@ -10516,42 +10527,40 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
             var res = bootstrap_24.bootstrap._getInternal().getObject(this, name2);
             return res;
         };
-        Application.prototype.startUp = function (fn_sandbox) {
-            var _this = this;
-            var self = this, fn_init = function () {
-                var defer = utils_35.Utils.defer.createSyncDeferred();
+        Application.prototype.startUp = function (onStartUp) {
+            var self = this, deferred = utils_35.Utils.defer.createSyncDeferred();
+            if (this._app_state !== 0) {
+                return deferred.reject(new Error("Application can not be started again! Create a new one!"));
+            }
+            var fn_init = function () {
                 try {
                     self._initAppModules();
                     self.onStartUp();
                     self.raiseEvent(APP_EVENTS.startup, {});
-                    if (!!fn_sandbox)
-                        fn_sandbox.apply(self, [self]);
-                    defer.resolve(self._dataBindingService.setUpBindings()).then(function () {
-                        self._app_state = 2;
-                    }, function (err) {
-                        self._app_state = 4;
-                        coreutils_25.ERROR.reThrow(err, true);
-                    });
+                    if (!!onStartUp)
+                        onStartUp.apply(self, [self]);
+                    deferred.resolve(self._dataBindingService.setUpBindings());
                 }
                 catch (ex) {
-                    self._app_state = 4;
-                    _this.handleError(ex, _this);
-                    defer.reject(new shared_6.DummyError(ex));
+                    deferred.reject(ex);
                 }
-                return defer.promise();
             };
-            if (this._app_state !== 0)
-                throw new Error("Application can not be started again! Create a new one!");
             this._app_state = 1;
+            var promise = deferred.promise().then(function () {
+                self._app_state = 2;
+            }, function (err) {
+                self._app_state = 4;
+                throw err;
+            });
             try {
-                if (!!fn_sandbox && !utils_35.Utils.check.isFunc(fn_sandbox))
+                if (!!onStartUp && !utils_35.Utils.check.isFunc(onStartUp))
                     throw new Error(lang_24.ERRS.ERR_APP_SETUP_INVALID);
                 bootstrap_24.bootstrap.templateLoader.waitForNotLoading(fn_init, null);
             }
             catch (ex) {
-                this._app_state = 4;
-                coreutils_25.ERROR.reThrow(ex, self.handleError(ex, self));
+                deferred.reject(ex);
             }
+            return promise;
         };
         Application.prototype.createTemplate = function (dataContext, templEvents) {
             var options = {
@@ -10678,7 +10687,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
     }(object_20.BaseObject));
     exports.Application = Application;
 });
-define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/const", "jriapp_core/shared", "jriapp_utils/syschecks", "jriapp_core/lang", "jriapp_core/converter", "jriapp_core/object", "jriapp_utils/coreutils", "jriapp_core/bootstrap", "jriapp_content/factory", "jriapp_core/binding", "jriapp_core/datepicker", "jriapp_core/dataform", "jriapp_core/template", "jriapp_elview/all", "jriapp_utils/utils", "jriapp_core/mvvm", "jriapp_collection/collection", "jriapp_core/app"], function (require, exports, bootstrap_25, const_10, shared_7, syschecks_9, lang_25, converter_2, object_21, coreutils_26, bootstrap_26, factory_4, binding_3, datepicker_1, dataform_1, template_4, all_1, utils_36, mvvm_2, collection_1, app_1) {
+define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/const", "jriapp_core/shared", "jriapp_utils/syschecks", "jriapp_core/lang", "jriapp_core/converter", "jriapp_core/object", "jriapp_utils/coreutils", "jriapp_core/bootstrap", "jriapp_content/factory", "jriapp_core/binding", "jriapp_core/datepicker", "jriapp_core/dataform", "jriapp_core/template", "jriapp_elview/all", "jriapp_utils/utils", "jriapp_core/mvvm", "jriapp_collection/collection", "jriapp_core/app"], function (require, exports, bootstrap_25, const_10, shared_6, syschecks_9, lang_25, converter_2, object_21, coreutils_26, bootstrap_26, factory_4, binding_3, datepicker_1, dataform_1, template_4, all_1, utils_36, mvvm_2, collection_1, app_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -10692,7 +10701,7 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.KEYS = const_10.KEYS;
     exports.BINDING_MODE = const_10.BINDING_MODE;
     exports.BindTo = const_10.BindTo;
-    exports.BaseError = shared_7.BaseError;
+    exports.BaseError = shared_6.BaseError;
     exports.SysChecks = syschecks_9.SysChecks;
     exports.LocaleSTRS = lang_25.STRS;
     exports.LocaleERRS = lang_25.ERRS;

@@ -1280,7 +1280,7 @@ declare module "jriapp_core/bootstrap" {
     import { Defaults } from "jriapp_core/defaults";
     import { TemplateLoader } from "jriapp_utils/tloader";
     export interface IInternalBootstrapMethods {
-        initialize(): void;
+        initialize(): IPromise<void>;
         trackSelectable(selectable: ISelectableProvider): void;
         untrackSelectable(selectable: ISelectableProvider): void;
         registerApp(app: IApplication): void;
@@ -1303,7 +1303,7 @@ declare module "jriapp_core/bootstrap" {
         private _moduleInits;
         private _elViewRegister;
         constructor();
-        private _onInit();
+        private _bindGlobalEvents();
         private _onTemplateLoaded(html, app);
         private _processTemplates(root, app?);
         private _processHTMLTemplates();
@@ -1321,6 +1321,7 @@ declare module "jriapp_core/bootstrap" {
         private _unregisterObject(root, name);
         private _getObject(root, name);
         private _getConverter(name);
+        private _waitLoaded(onLoad);
         _getInternal(): IInternalBootstrapMethods;
         addOnLoad(fn: TEventHandler<Bootstrap, any>, nmspace?: string, context?: IBaseObject): void;
         addOnUnLoad(fn: TEventHandler<Bootstrap, any>, nmspace?: string, context?: IBaseObject): void;
@@ -1329,7 +1330,7 @@ declare module "jriapp_core/bootstrap" {
         getExports(): IIndexer<any>;
         findApp(name: string): IApplication;
         init(onInit: (bootstrap: Bootstrap) => void): void;
-        startApp<TApp extends IApplication>(appFactory: () => TApp, onStartUp?: (app: TApp) => void): void;
+        startApp<TApp extends IApplication>(appFactory: () => TApp, onStartUp?: (app: TApp) => void): IPromise<void>;
         destroy(): void;
         registerSvc(name: string, obj: any): void;
         unregisterSvc(name: string, obj: any): any;
@@ -2699,7 +2700,7 @@ declare module "jriapp_core/app" {
         registerElView(name: string, vw_type: IViewType): void;
         registerObject(name: string, obj: any): void;
         getObject(name: string): any;
-        startUp(fn_sandbox?: (app: Application) => void): void;
+        startUp(onStartUp?: (app: Application) => void): IPromise<void>;
         createTemplate(dataContext?: any, templEvents?: ITemplateEvents): ITemplate;
         loadTemplates(url: string): IPromise<any>;
         loadTemplatesAsync(fn_loader: () => IPromise<string>): IPromise<any>;

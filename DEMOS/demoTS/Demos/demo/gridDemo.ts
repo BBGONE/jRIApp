@@ -1012,7 +1012,7 @@ export function start(mainOptions: IMainOptions) {
         "COMMON": COMMON.initModule,
         "ResizableGrid": ResizableGrid.initModule
     };
-
+    
     bootstrap.init((bootstrap) => {
         //replace default buttons styles with something custom
         let ButtonsCSS = bootstrap.defaults.ButtonsCSS;

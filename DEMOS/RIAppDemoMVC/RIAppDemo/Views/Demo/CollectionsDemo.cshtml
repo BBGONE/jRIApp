@@ -76,18 +76,25 @@
 
 <script type="text/javascript">
     require(["jriapp", "collectionDemo", "jriapp_ui", "jriapp_ru"],
-        function(RIAPP, DEMO, UI, LANG) {
-            RIAPP.bootstrap.init(function(bootstrap) {
-                console.log('bootstrap.init');
+        function (RIAPP, DEMO, UI, LANG) {
+            //for example - subscribe to init event
+            RIAPP.bootstrap.init(function (bootstrap) {
+                console.log('bootstrap initialized');
             });
 
             //create and start application here
-            RIAPP.bootstrap.startApp(function() {
+            let promise = RIAPP.bootstrap.startApp(function () {
                     return new DEMO.DemoApplication(DEMO.appOptions);
                 },
                 function(app) {
-                    console.log('application startup');
+                    console.log('application starting');
                 });
+
+            promise.then(function () {
+                console.log('application started successfuly');
+            }, function (err) {
+                console.log('application failed to start');
+            });
         });
 </script>
 
