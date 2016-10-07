@@ -2700,7 +2700,7 @@ declare module "jriapp_core/app" {
         registerElView(name: string, vw_type: IViewType): void;
         registerObject(name: string, obj: any): void;
         getObject(name: string): any;
-        startUp(onStartUp?: (app: Application) => void): IPromise<void>;
+        startUp(onStartUp?: (app: Application) => any): IPromise<void>;
         createTemplate(dataContext?: any, templEvents?: ITemplateEvents): ITemplate;
         loadTemplates(url: string): IPromise<any>;
         loadTemplatesAsync(fn_loader: () => IPromise<string>): IPromise<any>;

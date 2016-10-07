@@ -5,7 +5,8 @@
 import { DATA_ATTR, STORE_KEY } from "./const";
 import { IElViewStore, IElViewFactory, IElView, IViewType, IIndexer, IApplication, IErrorHandler, IExports, ILifeTimeScope, IBindableElement, IPromise, IVoidPromise, DummyError,
     IBindingOptions, IAppOptions, IInternalAppMethods, IBaseObject, TFactoryGetter, TEventHandler, IConverter, IContentOptions, ITemplate, ITemplateEvents,
-    ITemplateGroupInfo, ITemplateGroupInfoEx, IContentFactory, IDataBindingService, IBinding, IElViewRegister } from "./shared";
+    ITemplateGroupInfo, ITemplateGroupInfoEx, IContentFactory, IDataBindingService, IBinding, IElViewRegister, IThenable
+} from "./shared";
 import { ERRS } from "./lang";
 import { BaseObject }  from "./object";
 import { bootstrap } from "./bootstrap";
@@ -188,7 +189,8 @@ export class Application extends BaseObject implements IApplication {
     }
     //set up application - use onStartUp callback to setUp handlers on objects, create viewModels and etc.
     //all  that we need to do before setting up databindings
-    startUp(onStartUp?: (app: Application) => void): IPromise<void> {
+    //onStartUp can optionally return a promise 
+    startUp(onStartUp?: (app: Application) => any): IPromise<void> {
         let self = this, deferred = utils.defer.createSyncDeferred<void>();
 
         if (this._app_state !== AppState.None) {
@@ -200,10 +202,19 @@ export class Application extends BaseObject implements IApplication {
                 self._initAppModules();
                 self.onStartUp();
                 self.raiseEvent(APP_EVENTS.startup, {});
+                let res:any = null;
                 if (!!onStartUp)
-                    onStartUp.apply(self, [self]);
-
-                deferred.resolve(self._dataBindingService.setUpBindings());
+                    res = onStartUp.apply(self, [self]);
+                if (utils.check.isThenable(res)) {
+                    (<IThenable<any>>res).then(() => {
+                        deferred.resolve(self._dataBindingService.setUpBindings());
+                    }, (err) => {
+                        deferred.reject(err);
+                    });
+                }
+                else {
+                    deferred.resolve(self._dataBindingService.setUpBindings());
+                }
             }
             catch (ex) {
                 deferred.reject(ex);

@@ -10537,9 +10537,19 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
                     self._initAppModules();
                     self.onStartUp();
                     self.raiseEvent(APP_EVENTS.startup, {});
+                    var res = null;
                     if (!!onStartUp)
-                        onStartUp.apply(self, [self]);
-                    deferred.resolve(self._dataBindingService.setUpBindings());
+                        res = onStartUp.apply(self, [self]);
+                    if (utils_35.Utils.check.isThenable(res)) {
+                        res.then(function () {
+                            deferred.resolve(self._dataBindingService.setUpBindings());
+                        }, function (err) {
+                            deferred.reject(err);
+                        });
+                    }
+                    else {
+                        deferred.resolve(self._dataBindingService.setUpBindings());
+                    }
                 }
                 catch (ex) {
                     deferred.reject(ex);
