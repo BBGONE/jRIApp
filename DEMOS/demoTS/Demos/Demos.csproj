@@ -21,42 +21,48 @@
     </NuGetPackageImportStamp>
   </PropertyGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="demo\resizableGrid.ts" />
+    <TypeScriptCompile Include="demo\bindingsDemo.ts" />
+    <TypeScriptCompile Include="demo\collectionDemo.ts" />
+    <TypeScriptCompile Include="demo\demoDB.ts" />
+    <TypeScriptCompile Include="demo\filesDemo.ts" />
+    <TypeScriptCompile Include="demo\folderBrowserSvc.ts" />
+    <TypeScriptCompile Include="manToManDemo\addAddressVM.ts" />
+    <TypeScriptCompile Include="manToManDemo\app.ts" />
+    <TypeScriptCompile Include="manToManDemo\custAddressVM.ts" />
+    <TypeScriptCompile Include="manToManDemo\customerVM.ts" />
+    <TypeScriptCompile Include="manToManDemo\main.ts" />
     <TypeScriptCompile Include="demo\test1.ts" />
     <TypeScriptCompile Include="demo\test2.ts" />
     <TypeScriptCompile Include="demo\test3.ts" />
     <TypeScriptCompile Include="demo\treeDemo.ts" />
-    <TypeScriptCompile Include="demo\gridDemo.ts" />
-    <TypeScriptCompile Include="demo\common.ts" />
-    <TypeScriptCompile Include="demo\header.ts" />
-    <TypeScriptCompile Include="demo\autocomplete.ts" />
-    <TypeScriptCompile Include="demo\demoDB.ts" />
-    <TypeScriptCompile Include="demo\masterDetDemo.ts" />
-    <TypeScriptCompile Include="demo\manToManDemo.ts" />
-    <TypeScriptCompile Include="demo\bindingsDemo.ts" />
-    <TypeScriptCompile Include="demo\filesDemo.ts" />
-    <TypeScriptCompile Include="demo\folderBrowserSvc.ts" />
-    <TypeScriptCompile Include="demo\collectionDemo.ts" />
-    <TypeScriptCompile Include="demo\ssevents.ts" />
-    <TypeScriptCompile Include="demo\websocket.ts" />
-    <TypeScriptCompile Include="jriapp\thirdparty\jquery.d.ts" />
-    <TypeScriptCompile Include="jriapp\thirdparty\moment.d.ts" />
-    <TypeScriptCompile Include="jriapp\thirdparty\qtip2.d.ts" />
-    <TypeScriptCompile Include="jriapp\thirdparty\require.d.ts" />
-    <TypeScriptCompile Include="jriapp\thirdparty\sse.d.ts" />
-    <TypeScriptCompile Include="nancydemo\common.ts" />
-    <TypeScriptCompile Include="nancydemo\demoMain.ts" />
+    <TypeScriptCompile Include="gridDemo\app.ts" />
+    <TypeScriptCompile Include="gridDemo\baseUpload.ts" />
+    <TypeScriptCompile Include="gridDemo\commands.ts" />
+    <TypeScriptCompile Include="gridDemo\filters.ts" />
+    <TypeScriptCompile Include="gridDemo\main.ts" />
+    <TypeScriptCompile Include="gridDemo\productVM.ts" />
+    <TypeScriptCompile Include="gridDemo\resizableGrid.ts" />
+    <TypeScriptCompile Include="gridDemo\uploads.ts" />
+    <TypeScriptCompile Include="mastDetDemo\addressVM.ts" />
+    <TypeScriptCompile Include="mastDetDemo\app.ts" />
+    <TypeScriptCompile Include="mastDetDemo\customerVM.ts" />
+    <TypeScriptCompile Include="mastDetDemo\main.ts" />
+    <TypeScriptCompile Include="mastDetDemo\orderDetVM.ts" />
+    <TypeScriptCompile Include="mastDetDemo\orderVM.ts" />
+    <TypeScriptCompile Include="mastDetDemo\prodAutocomplete.ts" />
+    <TypeScriptCompile Include="mastDetDemo\productVM.ts" />
+    <TypeScriptCompile Include="nancydemo\main.ts" />
     <TypeScriptCompile Include="nancydemo\demoDB.ts" />
     <TypeScriptCompile Include="nancydemo\gridDemo.ts" />
-    <TypeScriptCompile Include="nancydemo\header.ts" />
     <TypeScriptCompile Include="spademo\animation.ts" />
-    <TypeScriptCompile Include="spademo\autocomplete.ts" />
-    <TypeScriptCompile Include="spademo\common.ts" />
     <TypeScriptCompile Include="spademo\domainModel.ts" />
     <TypeScriptCompile Include="spademo\gridElView.ts" />
-    <TypeScriptCompile Include="spademo\spaMain.ts" />
-    <TypeScriptCompile Include="spademo\spaDemoApp.ts" />
-    <TypeScriptCompile Include="spademo\spaDemoViewModels.ts" />
+    <TypeScriptCompile Include="spademo\gridEvents.ts" />
+    <TypeScriptCompile Include="spademo\prodAutocomplete.ts" />
+    <TypeScriptCompile Include="spademo\routes.ts" />
+    <TypeScriptCompile Include="spademo\main.ts" />
+    <TypeScriptCompile Include="spademo\app.ts" />
+    <TypeScriptCompile Include="spademo\viewModels.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="readme.txt" />
@@ -68,10 +74,22 @@
     <Content Include="spademo\tsconfig.json" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="nancydemo\tsconfig.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="gridDemo\tsconfig.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="mastDetDemo\tsconfig.json" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="demo\tsconfig.json" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="nancydemo\tsconfig.json" />
+    <Folder Include="obj\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="manToManDemo\tsconfig.json" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>

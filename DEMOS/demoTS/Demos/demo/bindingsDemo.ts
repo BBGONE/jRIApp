@@ -1,9 +1,9 @@
-﻿/// <reference path="../jriapp/jriapp.d.ts" />
+﻿/// <reference path="../../built/shared/shared.d.ts" />
 import * as RIAPP from "jriapp";
 import * as dbMOD from "jriapp_db";
 import * as uiMOD from "jriapp_ui";
 import * as DEMODB from "./demoDB";
-import * as COMMON from "./common";
+import * as COMMON from "common";
 
 var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
 
@@ -157,9 +157,8 @@ bootstrap.addOnError(function (sender, args) {
 
 
 function initModule(app: RIAPP.Application) {
-    console.log("INIT MOdule");
+    console.log("INIT Module");
     app.registerConverter('uppercaseConverter', new UppercaseConverter());
-    return {};
 };
 
 

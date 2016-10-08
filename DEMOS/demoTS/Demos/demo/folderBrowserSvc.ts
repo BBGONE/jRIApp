@@ -1,4 +1,4 @@
-﻿/// <reference path="../jriapp/jriapp.d.ts" />
+﻿/// <reference path="../../jriapp/jriapp.d.ts" />
 /*
 	Generated from: /FolderBrowserService/code?lang=ts on 2016-09-21 at 14:42
 	Don't make manual changes here, because they will be lost when this db interface will be regenerated!

@@ -10528,36 +10528,41 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
             return res;
         };
         Application.prototype.startUp = function (onStartUp) {
-            var self = this, deferred = utils_35.Utils.defer.createSyncDeferred();
+            var self = this, deferred = utils_35.Utils.defer.createDeferred();
             if (this._app_state !== 0) {
-                return deferred.reject(new Error("Application can not be started again! Create a new one!"));
+                return deferred.reject(new Error("Application can not be started when state != AppState.None"));
             }
-            var fn_init = function () {
+            var fn_startApp = function () {
                 try {
                     self._initAppModules();
                     self.onStartUp();
                     self.raiseEvent(APP_EVENTS.startup, {});
-                    var res = null;
-                    if (!!onStartUp)
-                        res = onStartUp.apply(self, [self]);
-                    if (utils_35.Utils.check.isThenable(res)) {
-                        res.then(function () {
-                            deferred.resolve(self._dataBindingService.setUpBindings());
+                    var onStartupRes = (!!onStartUp) ? onStartUp.apply(self, [self]) : null;
+                    var setupPromise = void 0;
+                    if (utils_35.Utils.check.isThenable(onStartupRes)) {
+                        setupPromise = onStartupRes.then(function () {
+                            return self._dataBindingService.setUpBindings();
                         }, function (err) {
                             deferred.reject(err);
                         });
                     }
                     else {
-                        deferred.resolve(self._dataBindingService.setUpBindings());
+                        setupPromise = self._dataBindingService.setUpBindings();
                     }
+                    setupPromise.then(function () {
+                        deferred.resolve(self);
+                    }, function (err) {
+                        deferred.reject(err);
+                    });
                 }
                 catch (ex) {
                     deferred.reject(ex);
                 }
             };
             this._app_state = 1;
-            var promise = deferred.promise().then(function () {
+            var promise = deferred.promise().then(function (app) {
                 self._app_state = 2;
+                return self;
             }, function (err) {
                 self._app_state = 4;
                 throw err;
@@ -10565,7 +10570,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
             try {
                 if (!!onStartUp && !utils_35.Utils.check.isFunc(onStartUp))
                     throw new Error(lang_24.ERRS.ERR_APP_SETUP_INVALID);
-                bootstrap_24.bootstrap.templateLoader.waitForNotLoading(fn_init, null);
+                bootstrap_24.bootstrap.templateLoader.waitForNotLoading(fn_startApp, null);
             }
             catch (ex) {
                 deferred.reject(ex);

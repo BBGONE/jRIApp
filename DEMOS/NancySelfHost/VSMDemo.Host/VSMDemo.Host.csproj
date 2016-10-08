@@ -119,11 +119,10 @@
     <Content Include="Content\images\Themes\green.png" />
     <Content Include="Content\images\Themes\purple.png" />
     <Content Include="Content\images\Themes\red.png" />
-    <Content Include="Content\scripts\demo\common.js" />
     <Content Include="Content\scripts\demo\demoDB.js" />
-    <Content Include="Content\scripts\demo\demoMain.js" />
+    <Content Include="Content\scripts\demo\main.js" />
     <Content Include="Content\scripts\demo\gridDemo.js" />
-    <Content Include="Content\scripts\demo\header.js" />
+    <Content Include="Content\scripts\demo\shared.js" />
     <Content Include="Content\scripts\jquery\jquery-2.2.2.min.js" />
     <Content Include="Content\scripts\jriapp\jriapp.js" />
     <Content Include="Content\scripts\jriapp\jriapp_db.js" />

@@ -1,5 +1,4 @@
-﻿/// <reference path="../jriapp/jriapp.d.ts" />
-/*
+﻿/*
 	Generated from: http://localhost:8080/demosvc/code?lang=ts on 2016-09-21 14:44 at 14:44
 	Don't make manual changes here, because they will be lost when this db interface will be regenerated!
 */

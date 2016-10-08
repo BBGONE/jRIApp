@@ -1,9 +1,9 @@
-﻿/// <reference path="../jriapp/jriapp.d.ts" />
+﻿/// <reference path="../../built/shared/shared.d.ts" />
 import * as RIAPP from "jriapp";
 import * as dbMOD from "jriapp_db";
 import * as uiMOD from "jriapp_ui";
 import * as FOLDERBROWSER_SVC from "./folderBrowserSvc";
-import * as COMMON from "./common";
+import * as COMMON from "common";
 
 var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = utils.dom.$;
 declare var DTNodeStatus_Ok: any;

@@ -90,9 +90,10 @@
     }
 </style>
 
-<script src="@Url.Content("~/Scripts/demo/spa/demo.js", true)" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/demo/spaDemo/main.js", true)" type="text/javascript"></script>
+
 <script type="text/javascript">
-    require(["spaMain", "jriapp_ui", "jriapp_ru"],
+    require(["main", "jriapp_ui", "jriapp_ru"],
         function(DEMO, UI, LANG) {
             var mainOptions = {};
             mainOptions.service_url = '@Url.RouteUrl("Default", new {controller = "RIAppDemoServiceEF", action = ""})';
@@ -100,6 +101,7 @@
             mainOptions.spa_template1_url = '@Url.Action("SPADemoTemplate1", "Templates")';
             mainOptions.spa_template2_url = '@Url.Action("SPADemoTemplate2", "Templates")';
             mainOptions.spa_template3_url = '@Url.Action("SPADemoTemplate3", "Templates")';
+
             DEMO.start(mainOptions);
         });
 </script>

@@ -1,14 +1,15 @@
-﻿/// <reference path="../jriapp/jriapp.d.ts" />
-/// <reference path="../jriapp/jriapp_db.d.ts" />
-/// <reference path="../jriapp/jriapp_ui.d.ts" />
+﻿/// <reference path="../../jriapp/jriapp.d.ts" />
+/// <reference path="../../jriapp/jriapp_db.d.ts" />
+/// <reference path="../../jriapp/jriapp_ui.d.ts" />
+/// <reference path="../../built/shared/shared.d.ts" />
 import * as RIAPP from "jriapp";
 import * as dbMOD from "jriapp_db";
 import * as uiMOD from "jriapp_ui";
 
 //using AMD to load user modules
 import * as DEMODB from "./demoDB";
-import * as COMMON from "./common";
-import * as HEADER from "./header";
+import * as COMMON from "common";
+import * as HEADER from "header";
 
 var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = utils.dom.$;
 
@@ -859,11 +860,11 @@ export interface IMainOptions extends RIAPP.IAppOptions {
 
 //strongly typed aplication's class
 export class DemoApplication extends RIAPP.Application {
-    _dbContext: DEMODB.DbContext;
-    _errorVM: COMMON.ErrorViewModel;
-    _headerVM: HEADER.HeaderVM;
-    _productVM: ProductViewModel;
-    _uploadVM: UploadThumbnailVM;
+    private _dbContext: DEMODB.DbContext;
+    private _errorVM: COMMON.ErrorViewModel;
+    private _headerVM: HEADER.HeaderVM;
+    private _productVM: ProductViewModel;
+    private _uploadVM: UploadThumbnailVM;
  
     constructor(options: IMainOptions) {
         super(options);
@@ -981,7 +982,6 @@ export var appOptions: IMainOptions = {
     sse_url: null,
     sse_clientID: null,
     modulesInits: {
-        "COMMON": COMMON.initModule,
-        "HEADER": HEADER.initModule
+        "COMMON": COMMON.initModule
     }
 };

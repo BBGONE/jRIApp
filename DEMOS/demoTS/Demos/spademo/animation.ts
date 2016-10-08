@@ -1,5 +1,4 @@
-﻿/// <reference path="../jriapp/jriapp.d.ts" />
-import * as RIAPP from "jriapp";
+﻿import * as RIAPP from "jriapp";
 import * as uiMOD from "jriapp_ui";
 
 //local variables for optimization

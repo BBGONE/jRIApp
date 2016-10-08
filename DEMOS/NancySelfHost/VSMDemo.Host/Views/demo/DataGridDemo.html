@@ -95,7 +95,7 @@
 </script>
 <script type="text/javascript">
     var jriapp_config = {
-        bust: "bust=v10"
+        bust: "bust=v11"
     };
     var config = {
         baseUrl: "@Model.siteBase/scripts/demo/",
@@ -108,7 +108,7 @@
     };
     requirejs.config(config);
 
-    require(["demoMain", "jriapp_ru", "jriapp_ui"], function (DEMO) {
+    require(["main", "jriapp_ru", "jriapp_ui"], function (DEMO) {
         var mainOptions = {};
         (function (ops) {
             ops.service_url = '@Model.siteBase/demosvc';

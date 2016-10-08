@@ -1,5 +1,5 @@
-﻿@model RIAppDemo.Models.MasterDetailDemo
-
+﻿@using RIAPP.DataService.Mvc.Utils
+@model RIAppDemo.Models.MasterDetailDemo
 @{
     Layout = "~/Views/Shared/_LayoutDemo.cshtml";
 }
@@ -72,13 +72,14 @@
     table.ria-data-table tr:nth-child(even) { background-color: #ECF2F6; }
 </style>
 
+<script src="@Url.Content("~/Scripts/demo/mastDetDemo/main.js", true)" type="text/javascript"></script>
+
 <script type="text/javascript">
-    require(["masterDetDemo", "jriapp_ui", "jriapp_ru"],
+    require(["mastDetDemo/main", "jriapp_ui", "jriapp_ru"],
         function(DEMO, UI, LANG) {
             var mainOptions = {
                 service_url: null,
-                permissionInfo: null,
-                user_modules: []
+                permissionInfo: null
             };
 
             (function(ops) {
@@ -457,6 +458,7 @@
         </div>
     </div>
 </script>
+
 <script id="orderDetEditTemplate" type="text/html" data-role="template">
     <div style="margin: 0px; width: 100%;">
         <div style="width: 100%" data-bind="{this.dataContext,mode=OneWay}" data-view="name=dataform">
@@ -487,8 +489,7 @@
                         Product:
                     </td>
                     <td>
-                        <span data-content="template={displayID=productTemplate1,editID=productTemplate2}">
-                            </span>
+                        <span data-content="template={displayID=productTemplate1,editID=productTemplate2}"></span>
                     </td>
                 </tr>
                 <tr>
@@ -520,6 +521,7 @@
         </div>
     </div>
 </script>
+
 <script id="orderDetailsTemplate" type="text/html" data-role="template">
     @*Grid details template for order Details*@
     <div style="margin: 0px; width: 100%;">
@@ -633,11 +635,13 @@
         </div>
     </div>
 </script>
+
 <script id="productTemplate1" type="text/html" data-role="template">
     <div>
         <span data-bind="{this.value,to=Product.Name}"></span>
     </div>
 </script>
+
 <script id="productTemplate2" type="text/html" data-role="template">
     <span>
         autocomplete here-->
@@ -645,6 +649,7 @@
                data-view="name=productAutocomplete,options={dbContext:dbContext,fieldName:Name,dbSetName:LookUpProduct,queryName:ReadProductLookUp,templateId:prodAutocompleteTemplate,width:300px}"/>&nbsp;<b>*</b>
     </span>
 </script>
+
 <script id="prodAutocompleteTemplate" type="text/html" data-role="template">
     @*example of autocomplete implementation*@
     <div style="height: 98%; margin: 0px; padding: 2px; position: relative;">

@@ -1,0 +1,13 @@
+﻿{
+  "compilerOptions": {
+    "module": "amd",
+    "target": "es5",
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "outFile": "../../built/demo/gridDemo/main.js",
+    "declaration": false,
+    "sourceMap": false,
+    "noFallthroughCasesInSwitch": true
+  }
+}

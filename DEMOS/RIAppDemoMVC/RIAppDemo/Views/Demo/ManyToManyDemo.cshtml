@@ -1,4 +1,5 @@
-﻿@{
+﻿@using RIAPP.DataService.Mvc.Utils
+@{
     Layout = "~/Views/Shared/_LayoutDemo.cshtml";
 }
 @{
@@ -141,14 +142,14 @@
     }
 </style>
 
+<script src="@Url.Content("~/Scripts/demo/manToManDemo/main.js", true)" type="text/javascript"></script>
 
 <script type="text/javascript">
-    require(["manToManDemo", "jriapp_ui", "jriapp_ru"],
+    require(["manToManDemo/main", "jriapp_ui", "jriapp_ru"],
         function(DEMO, UI, LANG) {
             var mainOptions = {
                 service_url: null,
-                permissionInfo: null,
-                user_modules: []
+                permissionInfo: null
             };
 
             (function(ops) {
