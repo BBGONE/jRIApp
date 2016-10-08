@@ -54,15 +54,21 @@
     <TypeScriptCompile Include="nancydemo\main.ts" />
     <TypeScriptCompile Include="nancydemo\demoDB.ts" />
     <TypeScriptCompile Include="nancydemo\gridDemo.ts" />
+    <TypeScriptCompile Include="spademo\addAddressVM.ts" />
+    <TypeScriptCompile Include="spademo\addressVM.ts" />
     <TypeScriptCompile Include="spademo\animation.ts" />
+    <TypeScriptCompile Include="spademo\custAddressVM.ts" />
+    <TypeScriptCompile Include="spademo\customerVM.ts" />
     <TypeScriptCompile Include="spademo\domainModel.ts" />
     <TypeScriptCompile Include="spademo\gridElView.ts" />
     <TypeScriptCompile Include="spademo\gridEvents.ts" />
+    <TypeScriptCompile Include="spademo\orderDetVM.ts" />
+    <TypeScriptCompile Include="spademo\orderVM.ts" />
     <TypeScriptCompile Include="spademo\prodAutocomplete.ts" />
+    <TypeScriptCompile Include="spademo\productVM.ts" />
     <TypeScriptCompile Include="spademo\routes.ts" />
     <TypeScriptCompile Include="spademo\main.ts" />
     <TypeScriptCompile Include="spademo\app.ts" />
-    <TypeScriptCompile Include="spademo\viewModels.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="readme.txt" />

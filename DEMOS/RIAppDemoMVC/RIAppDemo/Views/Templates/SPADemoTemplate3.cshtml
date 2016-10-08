@@ -11,10 +11,10 @@
             <nav>
                 <ul class="nav nav-pills">
                     <li>
-                        <a data-bind="{this.command,to=switchViewCommand}{this.commandParam,to=uiMainView.custTemplName}"><i class="icon-list"></i>&nbsp;Back to all customers</a>
+                        <a data-bind="{this.command,to=switchViewCommand}{this.commandParam,to=uiMainRoute.custTemplName}"><i class="icon-list"></i>&nbsp;Back to all customers</a>
                     </li>
                     <li>
-                        <a data-bind="{this.command,to=switchDetViewCommand}{this.commandParam,to=uiDetailView.infoTemplName}"><i class="icon-user"></i>&nbsp;Back to customer's info</a>
+                        <a data-bind="{this.command,to=switchDetViewCommand}{this.commandParam,to=uiCustDetRoute.infoTemplName}"><i class="icon-user"></i>&nbsp;Back to customer's info</a>
                     </li>
                 </ul>
             </nav>
@@ -104,7 +104,7 @@
             <span>Customer:</span>&nbsp;<span style="color: Blue; font-weight: bold;" data-bind="{this.value,to=customer.ComplexProp.Name}"></span>
         </div>
         <!--for switching views between linkAdrTemplate and newAdrTemplate-->
-        <div id="addrDynaContent" data-bind="{this.templateID,to=uiViewVM.viewName}{this.dataContext}" data-view="name=dynacontent"></div>
+        <div id="addrDynaContent" data-bind="{this.templateID,to=uiAddressRoute.viewName}{this.dataContext}" data-view="name=dynacontent"></div>
     </div>
 </script>
 

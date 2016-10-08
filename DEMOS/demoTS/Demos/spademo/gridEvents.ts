@@ -4,7 +4,8 @@ import * as uiMOD from "jriapp_ui";
 import * as DEMODB from "./domainModel";
 import * as COMMON from "common";
 
-import { OrderVM, CustomerVM } from "./viewModels";
+import { CustomerVM } from "./customerVM";
+import { OrderVM } from "./orderVM";
 
 export interface IMyGridEvents<TItem extends RIAPP.ICollectionItem> extends COMMON.IGridEvents<TItem> {
     destroy(): void;

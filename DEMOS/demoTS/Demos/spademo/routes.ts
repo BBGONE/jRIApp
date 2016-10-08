@@ -3,7 +3,7 @@ import * as dbMOD from "jriapp_db";
 import * as uiMOD from "jriapp_ui";
 import * as ANIMATION from "./animation";
 
-export class MainViewVM extends RIAPP.BaseObject {
+export class MainRoute extends RIAPP.BaseObject {
     private _custTemplName: string;
     private _custDetTemplName: string;
     private _viewName: string;
@@ -43,7 +43,7 @@ export class MainViewVM extends RIAPP.BaseObject {
     get custDetTemplName() { return this._custDetTemplName; }
 }
 
-export class CustDetViewVM extends RIAPP.BaseObject {
+export class CustDetRoute extends RIAPP.BaseObject {
     private _infoTemplName: string;
     private _adrTemplName: string;
     private _viewName: string;
@@ -83,7 +83,7 @@ export class CustDetViewVM extends RIAPP.BaseObject {
     get adrTemplName() { return this._adrTemplName; }
 }
 
-export class AddrViewVM extends RIAPP.BaseObject {
+export class AddressRoute extends RIAPP.BaseObject {
     private _linkAdrTemplate: string;
     private _newAdrTemplate: string;
     private _viewName: string;

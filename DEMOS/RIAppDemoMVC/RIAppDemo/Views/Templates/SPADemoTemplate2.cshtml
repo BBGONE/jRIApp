@@ -10,10 +10,10 @@
             <nav>
                 <ul class="nav nav-pills">
                     <li>
-                        <a data-bind="{this.command,to=switchViewCommand,source=customerVM}{this.commandParam,to=uiMainView.custTemplName,source=customerVM}"><i class="icon-list"></i>&nbsp;Back to all customers</a>
+                        <a data-bind="{this.command,to=switchViewCommand,source=customerVM}{this.commandParam,to=uiMainRoute.custTemplName,source=customerVM}"><i class="icon-list"></i>&nbsp;Back to all customers</a>
                     </li>
                     <li>
-                        <a data-bind="{this.command,to=switchDetViewCommand,source=customerVM}{this.commandParam,to=uiDetailView.adrTemplName,source=customerVM}"><i class="icon-envelope"></i>&nbsp;Customer's addresses</a>
+                        <a data-bind="{this.command,to=switchDetViewCommand,source=customerVM}{this.commandParam,to=uiCustDetRoute.adrTemplName,source=customerVM}"><i class="icon-envelope"></i>&nbsp;Customer's addresses</a>
                     </li>
                 </ul>
             </nav>

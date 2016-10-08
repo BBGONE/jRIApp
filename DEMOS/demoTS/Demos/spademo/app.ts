@@ -5,7 +5,7 @@ import * as uiMOD from "jriapp_ui";
 
 import * as DEMODB from "./domainModel";
 import { ErrorViewModel } from "common";
-import { CustomerVM } from "./viewModels";
+import { CustomerVM } from "./customerVM";
 
 //local variables for optimization
 var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;

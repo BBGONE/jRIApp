@@ -32,7 +32,7 @@
         <div style="float: left; padding-left: 10px; padding-top: 10px;"><span>Total:</span>&nbsp;<span data-bind="{this.value,to=dbSet.totalCount,source=customerVM}"></span></div>
 
         <div style="float: right;">
-            <button class="btn btn-info btn-small" data-bind="{this.command,to=switchViewCommand}{this.commandParam,to=uiMainView.custDetTemplName}"><i class="icon-user"></i>&nbsp;Customer's details</button>
+            <button class="btn btn-info btn-small" data-bind="{this.command,to=switchViewCommand}{this.commandParam,to=uiMainRoute.custDetTemplName}"><i class="icon-user"></i>&nbsp;Customer's details</button>
             <button class="btn btn-info btn-small" data-bind="{this.command,to=addNewCommand}"><i class="icon-plus"></i>&nbsp;New Customer</button>
             <button class="btn btn-info btn-small" data-bind="{this.command,to=saveCommand}"><i class="icon-ok-circle"></i>&nbsp;Save changes</button>
             <button class="btn btn-info btn-small" data-bind="{this.command,to=undoCommand}"><i class="icon-remove"></i>&nbsp;Undo changes</button>
@@ -43,15 +43,15 @@
 
 <script id="goToInfoColTemplate" type="text/html" data-role="template">
     <a style="display: inline-block; padding: 2px;" data-bind-1="{this.command,to=switchViewCommand,source=customerVM}"
-       data-bind-2="{this.commandParam,to=uiMainView.custDetTemplName,source=customerVM}" data-view="options={tip:'Go to details'}">
+       data-bind-2="{this.commandParam,to=uiMainRoute.custDetTemplName,source=customerVM}" data-view="options={tip:'Go to details'}">
         <i class="icon-user"></i>
     </a>
 </script>
 
 <script id="SPAcustDetailTemplate" type="text/html" data-role="template">
     <!--for switching views between customerInfo and customerAddr-->
-    <div id="infoDynaContent" data-bind-1="{this.templateID,to=uiDetailView.viewName}"  data-bind-2="{this.dataContext}"
-         data-bind-3="{this.animation,to=uiDetailView.animation}" data-view="name=dynacontent"></div>
+    <div id="infoDynaContent" data-bind-1="{this.templateID,to=uiCustDetRoute.viewName}"  data-bind-2="{this.dataContext}"
+         data-bind-3="{this.animation,to=uiCustDetRoute.animation}" data-view="name=dynacontent"></div>
 </script>
 
 <script id="customerEditTemplate" type="text/html" data-role="template">
