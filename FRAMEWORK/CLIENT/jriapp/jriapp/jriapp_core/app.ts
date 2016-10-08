@@ -189,32 +189,39 @@ export class Application extends BaseObject implements IApplication {
     }
     //set up application - use onStartUp callback to setUp handlers on objects, create viewModels and etc.
     //all  that we need to do before setting up databindings
-    //onStartUp can optionally return a promise 
-    startUp(onStartUp?: (app: Application) => any): IPromise<void> {
-        let self = this, deferred = utils.defer.createSyncDeferred<void>();
+    startUp(onStartUp?: (app: Application) => any): IPromise<Application> {
+        let self = this, deferred = utils.defer.createDeferred<Application>();
 
         if (this._app_state !== AppState.None) {
-            return deferred.reject(new Error("Application can not be started again! Create a new one!"));
+            return deferred.reject(new Error("Application can not be started when state != AppState.None"));
         }
 
-        let fn_init = () => {
+        let fn_startApp = () => {
             try {
                 self._initAppModules();
                 self.onStartUp();
                 self.raiseEvent(APP_EVENTS.startup, {});
-                let res:any = null;
-                if (!!onStartUp)
-                    res = onStartUp.apply(self, [self]);
-                if (utils.check.isThenable(res)) {
-                    (<IThenable<any>>res).then(() => {
-                        deferred.resolve(self._dataBindingService.setUpBindings());
+
+                let onStartupRes: any = (!!onStartUp) ? onStartUp.apply(self, [self]) : null;
+                let setupPromise: IThenable<void>;
+
+                if (utils.check.isThenable(onStartupRes)) {
+                    setupPromise = (<IThenable<any>>onStartupRes).then(() => {
+                        return self._dataBindingService.setUpBindings();
                     }, (err) => {
                         deferred.reject(err);
                     });
                 }
                 else {
-                    deferred.resolve(self._dataBindingService.setUpBindings());
+                    setupPromise = self._dataBindingService.setUpBindings();
                 }
+
+                //resolved with an application instance
+                setupPromise.then(() => {
+                    deferred.resolve(self);
+                }, (err) => {
+                    deferred.reject(err);
+                });
             }
             catch (ex) {
                 deferred.reject(ex);
@@ -223,19 +230,20 @@ export class Application extends BaseObject implements IApplication {
 
         this._app_state = AppState.Starting;
 
-        let promise = deferred.promise().then(() => {
+        let promise = deferred.promise().then((app) => {
             self._app_state = AppState.Started;
+            return self;
         }, (err) => {
             self._app_state = AppState.Error;
             throw err;
-            });
+        });
 
         try {
             if (!!onStartUp && !utils.check.isFunc(onStartUp))
                 throw new Error(ERRS.ERR_APP_SETUP_INVALID);
 
             //wait until all templates have been loaded (if any)
-            bootstrap.templateLoader.waitForNotLoading(fn_init, null);
+            bootstrap.templateLoader.waitForNotLoading(fn_startApp, null);
         }
         catch (ex) {
             deferred.reject(ex);

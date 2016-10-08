@@ -495,7 +495,7 @@ export interface IApplication extends IErrorHandler, IExports, IDisposable {
         names: string[];
    }): void;
     bind(opts: IBindingOptions): IBinding;
-    startUp<TApp extends IApplication>(fn_sandbox?: (app: TApp) => void): void;
+    startUp<TApp extends IApplication>(onStartUp?: (app: TApp) => void): IPromise<TApp>;
     uniqueID: string;
     appName: string;
     appRoot: Document | HTMLElement;

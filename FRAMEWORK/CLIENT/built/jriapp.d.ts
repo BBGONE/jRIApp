@@ -510,7 +510,7 @@ declare module "jriapp_core/shared" {
             names: string[];
         }): void;
         bind(opts: IBindingOptions): IBinding;
-        startUp<TApp extends IApplication>(fn_sandbox?: (app: TApp) => void): void;
+        startUp<TApp extends IApplication>(onStartUp?: (app: TApp) => void): IPromise<TApp>;
         uniqueID: string;
         appName: string;
         appRoot: Document | HTMLElement;
@@ -1330,7 +1330,7 @@ declare module "jriapp_core/bootstrap" {
         getExports(): IIndexer<any>;
         findApp(name: string): IApplication;
         init(onInit: (bootstrap: Bootstrap) => void): void;
-        startApp<TApp extends IApplication>(appFactory: () => TApp, onStartUp?: (app: TApp) => void): IPromise<void>;
+        startApp<TApp extends IApplication>(appFactory: () => TApp, onStartUp?: (app: TApp) => void): IPromise<TApp>;
         destroy(): void;
         registerSvc(name: string, obj: any): void;
         unregisterSvc(name: string, obj: any): any;
@@ -2700,7 +2700,7 @@ declare module "jriapp_core/app" {
         registerElView(name: string, vw_type: IViewType): void;
         registerObject(name: string, obj: any): void;
         getObject(name: string): any;
-        startUp(onStartUp?: (app: Application) => any): IPromise<void>;
+        startUp(onStartUp?: (app: Application) => any): IPromise<Application>;
         createTemplate(dataContext?: any, templEvents?: ITemplateEvents): ITemplate;
         loadTemplates(url: string): IPromise<any>;
         loadTemplatesAsync(fn_loader: () => IPromise<string>): IPromise<any>;

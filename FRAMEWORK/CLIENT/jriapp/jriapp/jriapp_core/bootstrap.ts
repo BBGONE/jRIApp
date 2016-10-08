@@ -364,8 +364,8 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     //starting application - use onStartUp callback to setUp handlers on objects, create viewModels and etc.
     //all  that we need to do before setting up databindings
     //returns Promise
-    startApp<TApp extends IApplication>(appFactory: () => TApp, onStartUp?: (app: TApp) => void): IPromise<void> {
-        let self = this, deferred = defer.createDeferred<void>();
+    startApp<TApp extends IApplication>(appFactory: () => TApp, onStartUp?: (app: TApp) => void): IPromise<TApp> {
+        let self = this, deferred = defer.createDeferred<TApp>();
 
         let promise = deferred.promise().fail((err) => {
             self.handleError(err, self);
