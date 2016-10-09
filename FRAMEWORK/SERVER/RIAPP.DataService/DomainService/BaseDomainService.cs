@@ -541,7 +541,7 @@ namespace RIAPP.DataService.DomainService
             }
             catch (Exception ex)
             {
-                while (ex.InnerException != null)
+                if (ex is System.Reflection.TargetInvocationException)
                     ex = ex.InnerException;
                 res = new QueryResponse
                 {
@@ -570,7 +570,7 @@ namespace RIAPP.DataService.DomainService
             }
             catch (Exception ex)
             {
-                while (ex.InnerException != null)
+                if (ex is System.Reflection.TargetInvocationException)
                     ex = ex.InnerException;
                 changeSet.error = new ErrorInfo(ex.Message, ex.GetType().Name);
                 _OnError(ex);
@@ -587,7 +587,7 @@ namespace RIAPP.DataService.DomainService
             }
             catch (Exception ex)
             {
-                while (ex.InnerException != null)
+                if (ex is System.Reflection.TargetInvocationException)
                     ex = ex.InnerException;
                 res = new RefreshInfo
                 {
@@ -609,7 +609,7 @@ namespace RIAPP.DataService.DomainService
             }
             catch (Exception ex)
             {
-                while (ex.InnerException != null)
+                if (ex is System.Reflection.TargetInvocationException)
                     ex = ex.InnerException;
                 res = new InvokeResponse {result = null, error = new ErrorInfo(ex.Message, ex.GetType().Name)};
                 _OnError(ex);
