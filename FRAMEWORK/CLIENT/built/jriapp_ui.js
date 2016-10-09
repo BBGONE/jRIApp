@@ -2232,6 +2232,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
         _gridsCount += 1;
         if (_gridsCount === 1) {
             $(window).on('resize.datagrid', _checkGridWidth);
+            _columnWidthInterval = setInterval(_checkGridWidth, 400);
         }
     }
     function _gridDestroyed(grid) {
@@ -2239,6 +2240,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
         _gridsCount -= 1;
         if (_gridsCount === 0) {
             $(window).off('resize.datagrid');
+            clearInterval(_columnWidthInterval);
         }
     }
     function _checkGridWidth() {
@@ -2367,9 +2369,6 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             this._bindDS();
             bootstrap_4.bootstrap._getInternal().trackSelectable(this);
             _gridCreated(this);
-            setTimeout(function () {
-                self._columnWidthCheck();
-            }, 0);
         }
         DataGrid.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
@@ -2705,10 +2704,14 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             }
         };
         DataGrid.prototype._updateTableDisplay = function () {
+            var _this = this;
             if (!this.dataSource || this.dataSource.count === 0)
                 this.$table.css("visibility", "hidden");
             else
                 this.$table.css("visibility", "visible");
+            setTimeout(function () {
+                _this.updateColumnsSize();
+            }, 0);
         };
         DataGrid.prototype._onPageChanged = function () {
             if (!!this._rowSelectorCol) {
