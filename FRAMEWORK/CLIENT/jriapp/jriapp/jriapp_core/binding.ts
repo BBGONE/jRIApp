@@ -433,7 +433,7 @@ export class Binding extends BaseObject implements IBinding {
         this._parseTgtPath(this.target, this._tgtPath, 0);
     }
     private _updateTarget(sender?: any, args?: any) {
-        if (this._ignoreSrcChange || this._isDestroyCalled)
+        if (this._ignoreSrcChange || this._isDestroyCalled || (this.sourceValue === undefined))
             return;
         this._ignoreTgtChange = true;
         try {
@@ -453,7 +453,7 @@ export class Binding extends BaseObject implements IBinding {
         }
     }
     private _updateSource(sender?: any, args?: any) {
-        if (this._ignoreTgtChange || this._isDestroyCalled)
+        if (this._ignoreTgtChange || this._isDestroyCalled || (this.targetValue === undefined))
             return;
         this._ignoreSrcChange = true;
         try {

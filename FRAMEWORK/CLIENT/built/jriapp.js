@@ -4770,7 +4770,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             this._parseTgtPath(this.target, this._tgtPath, 0);
         };
         Binding.prototype._updateTarget = function (sender, args) {
-            if (this._ignoreSrcChange || this._isDestroyCalled)
+            if (this._ignoreSrcChange || this._isDestroyCalled || (this.sourceValue === undefined))
                 return;
             this._ignoreTgtChange = true;
             try {
@@ -4789,7 +4789,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             }
         };
         Binding.prototype._updateSource = function (sender, args) {
-            if (this._ignoreTgtChange || this._isDestroyCalled)
+            if (this._ignoreTgtChange || this._isDestroyCalled || (this.targetValue === undefined))
                 return;
             this._ignoreSrcChange = true;
             try {
@@ -10751,6 +10751,6 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.COLL_CHANGE_REASON = collection_1.COLL_CHANGE_REASON;
     exports.COLL_CHANGE_TYPE = collection_1.COLL_CHANGE_TYPE;
     exports.Application = app_1.Application;
-    exports.VERSION = "0.9.60";
+    exports.VERSION = "0.9.67";
     bootstrap_25.Bootstrap._initFramework();
 });
