@@ -62,6 +62,17 @@
                     });
                 });
         });
+
+    $(document).ready(function ($) {
+        var $examples = $('script[type="text/x-example"]');
+        $examples.each(function (index, el) {
+            var $script = $(this);
+            var $pre = $("<pre></pre>");
+            $pre.text($script.html());
+            $script.before($pre);
+        });
+        $examples.remove();
+    });
 </script>
 
 <h2 class="ex8">@ViewBag.Title</h2>
@@ -88,13 +99,45 @@
             <label for="sends">Formats: </label><select size="1" style="width: 220px" data-bind="{this.dataSource,to=formats,source=testObject}{this.selectedValue,to=format,mode=TwoWay,source=testObject}" data-view="options:{valuePath=key,textPath=val}"></select>
         </div>
     </fieldset>
-    <span style="color:darkgreen;margin-top:2em; display:inline-block;">The button uses a specialized <b>AnchorElView</b> which can be used only with <b>&lt;a&gt;</b> HTML Elements!</span><br />
-    <a class="btn btn-info btn-small" style="margin: 5px 5px 5px 0px;" data-bind="{this.command,to=testCommand,source=testObject}{this.toolTip,to=testToolTip,source=testObject}">Test command 1</a>
-    <br/>
-    <span style="color:darkblue;margin-top:2em; display:inline-block;">The button uses a Generic <b>BaseElView</b> which can be used with any HTML element!</span><br />
-    <a class="btn btn-info btn-small" style="margin: 5px 5px 5px 0px;min-width:100px; min-height:30px;" 
-       data-bind-1="{this.events.click,to=testCommand,source=testObject}" 
-       data-bind-2="{this.toolTip,to=testToolTip,source=testObject}"
-       data-bind-3="{this.props.text,to=testProperty1,source=testObject}"
-       data-view="name=generic">Test command 2</a>
+    <div>
+        <h4 style="color:darkgreen;margin-top:2em;">The button uses a default <b>AnchorElView</b>!</h4>
+        <script type="text/x-example">
+            <a class="btn btn-info btn-small" style="margin: 5px 5px 5px 0px;" data-bind-1="{this.command,to=testCommand,source=testObject}"
+              data-bind-2="{this.toolTip,to=testToolTip,source=testObject}">Test command 1</a>
+        </script>
+        <a class="btn btn-info btn-small" style="margin: 5px 5px 5px 0px;" data-bind-1="{this.command,to=testCommand,source=testObject}"
+           data-bind-2="{this.toolTip,to=testToolTip,source=testObject}">Test command 1</a>
+    </div>
+    <div>
+        <h4 style="color:darkblue;margin-top:2em;">The button uses a Generic <b>BaseElView</b> which can be used with any HTML element!</h4>
+        <script type="text/x-example">
+            <a class="btn btn-info btn-small" style="margin: 5px 5px 5px 0px;min-width:100px; min-height:30px;"
+               data-bind-1="{this.events.click,to=testCommand,source=testObject}"
+               data-bind-2="{this.toolTip,to=testToolTip,source=testObject}"
+               data-bind-3="{this.props.text,to=testProperty1,source=testObject}"
+               data-view="name=generic">Test command 2</a>
+        </script>
+        <a class="btn btn-info btn-small" style="margin: 5px 5px 5px 0px;min-width:100px; min-height:30px;"
+           data-bind-1="{this.events.click,to=testCommand,source=testObject}"
+           data-bind-2="{this.toolTip,to=testToolTip,source=testObject}"
+           data-bind-3="{this.props.text,to=testProperty1,source=testObject}"
+           data-view="name=generic">Test command 2</a>
+    </div>
+    <div>
+        <h4 style="color:darkblue;margin-top:2em; display: inline-block;">The source can be an inline object too!</h4>&nbsp;
+        <span style="color:darkred;" data-bind="{this.value,to=val,source={val='The databound value have been taken from inline object'}}"></span>
+        <script type="text/x-example">
+            <span data-bind="{this.value,to=val,source={val='The databound value have been taken from inline object'}}"></span>
+        </script>
+    </div>
+    <div>
+        <h4 style="color:darkblue;margin-top:2em; display: inline-block;">Binding the source to the <span style="color:darkred; font-weight:bold;">this</span></h4>&nbsp;
+        <script type="text/x-example">
+            <div data-bind="{this.text,to=html,source=this,mode=OneTime}"><h3>HTML CONVERTED TO TEXT</h3></div>
+        </script>
+        <div data-bind="{this.text,to=html,source=this,mode=OneTime}"><h3>HTML CONVERTED TO TEXT</h3></div>
+    </div>
+    <div style="height:100px; visibility: hidden;">
+        it adds extra space to the bottom
+    </div>
 </div>
