@@ -2234,6 +2234,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             $(window).on('resize.datagrid', _checkGridWidth);
             _columnWidthInterval = setInterval(_checkGridWidth, 400);
         }
+        setTimeout(grid._getInternal().columnWidthCheck, 0);
     }
     function _gridDestroyed(grid) {
         delete _created_grids[grid.uniqueID];
@@ -2284,9 +2285,8 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             if (!!options.dataSource && !checks.isCollection(options.dataSource))
                 throw new Error(lang_3.ERRS.ERR_GRID_DATASRC_INVALID);
             this._options = options;
-            this._columnWidthCheck = function () { };
-            var $t = $(this._options.el);
             this._table = this._options.el;
+            var $t = $(this._table);
             this._$table = $t;
             $t.addClass(const_19.css.dataTable);
             this._name = $t.attr(const_18.DATA_ATTR.DATA_NAME);
@@ -2324,6 +2324,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
                     self._onKeyUp(key, event);
                 }
             };
+            var tw = this._table.offsetWidth;
             this._internal = {
                 isRowExpanded: function (row) {
                     return self._isRowExpanded(row);
@@ -2362,7 +2363,13 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
                     self._expandDetails(parentRow, expanded);
                 },
                 columnWidthCheck: function () {
-                    self._columnWidthCheck();
+                    if (self.getIsDestroyCalled())
+                        return;
+                    var tw2 = self._table.offsetWidth;
+                    if (tw !== tw2) {
+                        tw = tw2;
+                        self.updateColumnsSize();
+                    }
                 }
             };
             this._createColumns();
@@ -2704,14 +2711,10 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             }
         };
         DataGrid.prototype._updateTableDisplay = function () {
-            var _this = this;
             if (!this.dataSource || this.dataSource.count === 0)
                 this.$table.css("visibility", "hidden");
             else
                 this.$table.css("visibility", "visible");
-            setTimeout(function () {
-                _this.updateColumnsSize();
-            }, 0);
         };
         DataGrid.prototype._onPageChanged = function () {
             if (!!this._rowSelectorCol) {
@@ -2834,22 +2837,11 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             if (this._options.headerCss) {
                 $headerDiv.addClass(this._options.headerCss);
             }
-            var tw = $table.width();
-            self._columnWidthCheck = function () {
-                if (self.getIsDestroyCalled())
-                    return;
-                var test = $table.width();
-                if (tw !== test) {
-                    tw = test;
-                    self.updateColumnsSize();
-                }
-            };
         };
         DataGrid.prototype._unWrapTable = function () {
             var $table = this._$table;
             if (!this._$header)
                 return;
-            this._columnWidthCheck = function () { };
             this._$header.remove();
             this._$header = null;
             $table.unwrap();
@@ -2978,7 +2970,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             this._columns.forEach(function (col) {
                 width += col.th.offsetWidth;
             });
-            headerDiv.width(width);
+            headerDiv.css("width", width);
             this._columns.forEach(function (col) {
                 col.$col.css("width", col.th.offsetWidth);
             });

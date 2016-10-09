@@ -75,6 +75,7 @@ function _gridCreated(grid: DataGrid) {
         $(window).on('resize.datagrid', _checkGridWidth);
         _columnWidthInterval = setInterval(_checkGridWidth, 400);
     }
+    setTimeout(grid._getInternal().columnWidthCheck, 0);
 }
 
 function _gridDestroyed(grid: DataGrid) {
@@ -172,7 +173,6 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     private _$header: JQuery;
     private _$wrapper: JQuery;
     private _$contaner: JQuery;
-    private _columnWidthCheck: () => void;
     private _internal: IInternalDataGridMethods;
     private _selectable: ISelectable;
     private _colSizeDebounce: Debounce;
@@ -203,9 +203,8 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         if (!!options.dataSource && !checks.isCollection(options.dataSource))
             throw new Error(ERRS.ERR_GRID_DATASRC_INVALID);
         this._options = options;
-        this._columnWidthCheck = () => { };
-        let $t = $(this._options.el);
         this._table = this._options.el;
+        let $t = $(this._table);
         this._$table = $t;
         $t.addClass(css.dataTable);
         this._name = $t.attr(DATA_ATTR.DATA_NAME);
@@ -243,6 +242,8 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 self._onKeyUp(key, event);
             }
         };
+        let tw = this._table.offsetWidth;
+
         this._internal = {
             isRowExpanded: (row: Row) => {
                 return self._isRowExpanded(row);
@@ -281,7 +282,13 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 self._expandDetails(parentRow, expanded);
             },
             columnWidthCheck: () => {
-                self._columnWidthCheck();
+                if (self.getIsDestroyCalled())
+                    return;
+                let tw2 = self._table.offsetWidth;
+                if (tw !== tw2) {
+                    tw = tw2;
+                    self.updateColumnsSize();
+                }
             }
         };
         this._createColumns();
@@ -632,10 +639,6 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             this.$table.css("visibility", "hidden");
         else
             this.$table.css("visibility", "visible");
-
-        setTimeout(() => {
-            this.updateColumnsSize();
-        }, 0);
     }
     protected _onPageChanged() {
         if (!!this._rowSelectorCol) {
@@ -764,23 +767,11 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         if (this._options.headerCss) {
             $headerDiv.addClass(this._options.headerCss);
         }
-        let tw = $table.width();
-
-        self._columnWidthCheck = function () {
-            if (self.getIsDestroyCalled())
-                return;
-            let test = $table.width();
-            if (tw !== test) {
-                tw = test;
-                self.updateColumnsSize();
-            }
-        };
     }
     protected _unWrapTable() {
         let $table = this._$table;
         if (!this._$header)
             return;
-        this._columnWidthCheck = () => { };
         this._$header.remove();
         this._$header = null;
         //remove wrapDiv
@@ -912,7 +903,9 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._columns.forEach(function (col) {
             width += col.th.offsetWidth;
         });
-        headerDiv.width(width);
+
+        headerDiv.css("width", width);
+
         this._columns.forEach(function (col) {
             col.$col.css("width", col.th.offsetWidth);
         });

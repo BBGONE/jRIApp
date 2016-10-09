@@ -669,7 +669,6 @@ declare module "jriapp_ui/datagrid/datagrid" {
         private _$header;
         private _$wrapper;
         private _$contaner;
-        private _columnWidthCheck;
         private _internal;
         private _selectable;
         private _colSizeDebounce;
