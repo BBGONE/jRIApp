@@ -2482,7 +2482,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
             $(window).off('resize.' + SIGNATURE);
         }
     }
-    $head.append("<style type='text/css'>  .JColResizer{table-layout:fixed;} .JCLRgrips{ height:0px; position:relative;} .JCLRgrip{margin-left:-5px; position:absolute; z-index:5; } .JCLRgrip .JColResizer{position:absolute;background-color:red;filter:alpha(opacity=1);opacity:0;width:10px;height:100%;cursor: e-resize;top:0px} .JCLRLastGrip{position:absolute; width:1px; } .JCLRgripDrag{ border-left:1px dotted black;	} .JCLRFlex{width:auto!important;} .JCLRgrip.JCLRdisabledGrip .JColResizer{cursor:default; display:none;}</style>");
+    $head.append("<style type='text/css'>  .JColResizer{table-layout:fixed; box-sizing: border-box;} .JCLRgrips{ height:0px; position:relative; box-sizing: border-box;} .JCLRgrip{margin-left:-5px; position:absolute; z-index:5; box-sizing: border-box;} .JCLRgrip .JColResizer{position:absolute;background-color:red;filter:alpha(opacity=1);opacity:0;width:10px;height:100%;cursor: e-resize;top:0px; box-sizing: border-box;} .JCLRLastGrip{position:absolute; width:1px; box-sizing: border-box; } .JCLRgripDrag{ border-left:1px dotted black; box-sizing: border-box; } .JCLRFlex{ width:auto!important; } .JCLRgrip.JCLRdisabledGrip .JColResizer{cursor:default; display:none;}</style>");
     var onGripDrag = function (e) {
         if (!$drag)
             return;
@@ -2498,16 +2498,16 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
         var mw = data.options.minWidth;
         var index = gripData.i;
         var colInfo = data.columns[index];
-        var l = data.cellspacing * 1.5 + mw + data.borderW;
+        var minLen = data.cellspacing * 1.5 + mw;
         var last = index == data.len - 1;
-        var min = (index > 0) ? data.columns[index - 1].$grip.position().left + data.cellspacing + mw : l;
+        var min = (index > 0) ? data.columns[index - 1].$grip[0].offsetLeft + data.cellspacing + mw : minLen;
         var max = Infinity;
         if (data.fixed) {
-            if (index == data.len - 1) {
-                max = data.w - l;
+            if (last) {
+                max = data.w - minLen;
             }
             else {
-                max = data.columns[index + 1].$grip.position().left - data.cellspacing - mw;
+                max = data.columns[index + 1].$grip[0].offsetLeft - data.cellspacing - mw;
             }
         }
         x = Math.max(min, Math.min(max, x));
@@ -2518,12 +2518,12 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
         }
         if (!!data.options.liveDrag) {
             if (last) {
-                colInfo.$column.width(gripData.w);
+                colInfo.$column.css("width", gripData.w + PX);
                 if (!data.fixed) {
-                    $table.css('min-width', data.w + x - gripData.l);
+                    $table.css('min-width', (data.w + x - gripData.l) + PX);
                 }
                 else {
-                    data.w = $table.width();
+                    data.w = $table[0].offsetWidth;
                 }
             }
             else {
@@ -2557,7 +2557,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
             var last = index == data.len - 1;
             var colInfo = data.columns[index];
             if (last) {
-                colInfo.$column.width(gripData.w);
+                colInfo.$column.css("width", gripData.w + PX);
                 colInfo.w = gripData.w;
             }
             else {
@@ -2583,7 +2583,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
         var $table = grid.grid.$table;
         var touches = e.originalEvent.touches;
         gripData.ox = touches ? touches[0].pageX : e.pageX;
-        gripData.l = $grip.position().left;
+        gripData.l = $grip[0].offsetLeft;
         gripData.x = gripData.l;
         $doc.on('touchmove.' + SIGNATURE + ' mousemove.' + SIGNATURE, onGripDrag);
         $doc.on('touchend.' + SIGNATURE + ' mouseup.' + SIGNATURE, onGripDragOver);
@@ -2596,7 +2596,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
             for (var i = 0; i < data.len; i++) {
                 var c = data.columns[i];
                 c.locked = false;
-                c.w = c.$column.width();
+                c.w = c.$column[0].offsetWidth;
             }
         }
         return false;
@@ -2664,10 +2664,9 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
                 dc: options.disabledColumns,
                 fixed: options.resizeMode === 'fit',
                 columns: [],
-                w: $table.width(),
+                w: $table[0].offsetWidth,
                 $gripContainer: $gripContainer,
                 cellspacing: parseInt(style.borderSpacing) || 2,
-                borderW: parseInt(style.borderLeftWidth) || 1,
                 len: 0
             };
             if (options.marginLeft)
@@ -2698,9 +2697,9 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
                 else {
                     $grip.addClass('JCLRdisabledGrip');
                 }
-                var colInfo = { $column: $column, $grip: $grip, w: $column.width(), locked: false };
+                var colInfo = { $column: $column, $grip: $grip, w: $column[0].offsetWidth, locked: false };
                 data.columns.push(colInfo);
-                $column.width(colInfo.w).removeAttr("width");
+                $column.css("width", colInfo.w + PX).removeAttr("width");
                 var gripData = { i: index, grid: self, last: index == data.len - 1, ox: 0, x: 0, l: 0, w: 0 };
                 $grip.data(SIGNATURE, gripData);
             });
@@ -2712,16 +2711,18 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
         ResizableGrid.prototype.syncGrips = function () {
             if (this.getIsDestroyCalled())
                 return;
-            var $table = this.grid.$table;
             var data = this._resizeInfo;
-            data.$gripContainer.width(data.w);
+            data.$gripContainer.css("width", data.w + PX);
+            var $table = this.grid.$table;
+            var $header = this.grid._getInternal().get$Header();
+            var $wrapper = this.grid._getInternal().get$Wrapper();
+            var headerHeight = $header[0].offsetHeight;
+            var tableHeight = $wrapper[0].offsetHeight;
             for (var i = 0; i < data.len; i++) {
                 var colInfo = data.columns[i];
-                var headerHeight = this.grid._getInternal().get$Header()[0].offsetHeight;
-                var tableHeight = this.grid._getInternal().get$Wrapper()[0].offsetHeight;
                 colInfo.$grip.css({
-                    left: colInfo.$column.offset().left - $table.offset().left + colInfo.$column.outerWidth(false) + data.cellspacing / 2 + PX,
-                    height: data.options.headerOnly ? headerHeight : (headerHeight + tableHeight)
+                    left: (colInfo.$column[0].offsetLeft - $table[0].offsetLeft + colInfo.$column[0].offsetWidth + data.cellspacing / 2) + PX,
+                    height: (data.options.headerOnly ? headerHeight : (headerHeight + tableHeight)) + PX
                 });
             }
             this.grid.updateColumnsSize();
@@ -2737,18 +2738,18 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
             if (data.fixed) {
                 var c2 = data.columns[i + 1];
                 var w2 = c2.w - inc;
-                c2.$column.width(w2 + PX);
+                c2.$column.css("width", w2 + PX);
                 if (isOver) {
-                    c2.w = w2;
+                    c2.w = c2.$column[0].offsetWidth;
                 }
             }
             else {
-                $table.css('min-width', data.w + inc);
+                $table.css('min-width', (data.w + inc) + PX);
             }
             var w = c.w + inc;
-            c.$column.width(w + PX);
+            c.$column.css("width", w + PX);
             if (isOver) {
-                c.w = w;
+                c.w = c.$column[0].offsetWidth;
             }
         };
         ResizableGrid.prototype.applyBounds = function () {
@@ -2757,17 +2758,20 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
             var $table = this.grid.$table;
             var data = this._resizeInfo;
             var widths = $.map(data.columns, function (c) {
-                return c.$column.width();
+                return c.$column[0].offsetWidth;
             });
-            data.w = $table.width();
-            $table.width(data.w);
+            data.w = $table[0].offsetWidth;
+            $table.css("width", data.w + PX);
             $table.removeClass(FLEX);
             $.each(data.columns, function (i, c) {
-                c.$column.width(widths[i]);
-                c.w = widths[i];
+                c.$column.css("width", widths[i] + PX);
             });
             $table.addClass(FLEX);
-            this.grid._getInternal().get$Wrapper().width($table.outerWidth());
+            $.each(data.columns, function (i, c) {
+                c.w = c.$column[0].offsetWidth;
+            });
+            data.w = $table[0].offsetWidth;
+            this.grid._getInternal().get$Wrapper().css("width", $table.outerWidth(true) + PX);
         };
         ResizableGrid.prototype.checkResize = function () {
             if (this.getIsDestroyCalled())
@@ -2775,9 +2779,8 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
             var $table = this.grid.$table;
             var data = this._resizeInfo;
             var mw = 0;
-            $table.removeClass(SIGNATURE);
             if (data.fixed) {
-                data.w = $table.width();
+                data.w = $table[0].offsetWidth;
                 for (var i = 0; i < data.len; i++)
                     mw += data.columns[i].w;
                 for (var i = 0; i < data.len; i++) {
@@ -2789,7 +2792,6 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
             else {
                 this.applyBounds();
             }
-            $table.addClass(SIGNATURE);
             this.syncGrips();
         };
         ResizableGrid.prototype.destroy = function () {

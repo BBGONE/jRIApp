@@ -8,6 +8,7 @@
     vertical-align: top;
     height: 100%;
     font-size: 12px;
+    box-sizing: border-box;
 }
 
 /*wraps table element to display vertical scrolling*/
@@ -19,6 +20,7 @@
     background-color: transparent;
     position: relative;
     border: none;
+    box-sizing: border-box;
 }
 
 /*placeholder to put new table column headers as div elements*/
@@ -52,9 +54,9 @@
         border: none;
         outline: none;
         display: table-cell;
-        box-sizing: border-box;
         vertical-align: middle;
         height: 100%;
+        box-sizing: border-box;
     }
 
 .ria-data-table {
@@ -189,6 +191,7 @@ td.ria-row-selector input[type="checkbox"] {
 
 .ria-data-table tr {
     background-color: White;
+    box-sizing: border-box;
 }
 
     .ria-data-table tr.ria-row-highlight {
@@ -209,6 +212,7 @@ td.ria-row-selector input[type="checkbox"] {
         border: none;
         margin: 0;
         padding: 0;
+        box-sizing: border-box;
     }
 
      /* it hides the real table header */
@@ -220,8 +224,8 @@ td.ria-row-selector input[type="checkbox"] {
         padding: 0;
         height: 0;
         overflow: hidden;
-        box-sizing: border-box;
         border-bottom: 1px solid dimgray;
+        box-sizing: border-box;
     }
 
     .ria-data-table tr.ria-row-details > td {
@@ -242,12 +246,14 @@ td.ria-row-selector input[type="checkbox"] {
     font-size: 10pt;
     color: white;
     margin-top: 8px;
+    box-sizing: border-box;
 }
 
     .ria-pager .ria-pager-info {
         font-family: Frutiger Linotype, Trebuchet MS, Tahoma, Arial;
         font-size: 10pt;
         padding: 2px;
+        box-sizing: border-box;
     }
 
     .ria-pager .ria-pager-current-page {
@@ -259,6 +265,7 @@ td.ria-row-selector input[type="checkbox"] {
         border: 1px ridge dimgray;
         padding: 2px;
         margin: 1px;
+        box-sizing: border-box;
     }
 
     .ria-pager .ria-pager-other-page {
@@ -267,6 +274,7 @@ td.ria-row-selector input[type="checkbox"] {
         background-color: #f0f1f2;
         padding: 2px;
         margin: 1px;
+        box-sizing: border-box;
     }
 
 /* ************ StackPanel styles ************* */
@@ -291,4 +299,5 @@ td.ria-row-selector input[type="checkbox"] {
 
 .ria-stackpanel .ria-current-item .ria-template-container {
     outline: 1px dashed black;
+    box-sizing: border-box;
 }
