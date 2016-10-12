@@ -6133,7 +6133,8 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
     "use strict";
     var $ = dom_7.DomUtils.$, document = dom_7.DomUtils.document;
     exports.css = {
-        dataform: "ria-dataform"
+        dataform: "ria-dataform",
+        error: "ria-form-error"
     };
     coreutils_17.SysChecks._setIsInsideTemplate = function (elView) {
         if (!!elView && elView instanceof DataFormElView) {
@@ -6575,15 +6576,13 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
             }
             var $el = this.$el;
             if (!!errors && errors.length > 0) {
-                var $img = void 0, image_src = bootstrap_11.bootstrap.getImagePath("warning.png");
-                $img = $('<img name="error_info" alt="error_info" class="error-info" />');
+                var $img = $("<div data-name=\"error_info\" class=\"" + exports.css.error + "\" />");
                 $el.prepend($img);
-                $img.get(0).src = image_src;
                 elview_5.fn_addToolTip($img, this._getErrorTipInfo(errors), true);
                 this._setFieldError(true);
             }
             else {
-                $el.children('img[name="error_info"]').remove();
+                $el.children('div[data-name="error_info"]').remove();
                 this._setFieldError(false);
             }
         };

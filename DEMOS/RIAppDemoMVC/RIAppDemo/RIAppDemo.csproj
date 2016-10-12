@@ -199,6 +199,7 @@
     <Content Include="Scripts\jquery\jquery-ui-1.10.4.custom.js" />
     <Content Include="Scripts\jquery\jquery-ui-1.10.4.custom.min.js" />
     <Content Include="Scripts\jquery\jquery.cookie.js" />
+    <Content Include="Scripts\jriapp\img\warning.png" />
     <Content Include="Scripts\jriapp\jriapp.js" />
     <Content Include="Scripts\jriapp\jriapp_db.js" />
     <Content Include="Scripts\jriapp\jriapp_langs.js" />
@@ -219,7 +220,6 @@
     <Content Include="Scripts\jriapp\img\minus.png" />
     <Content Include="Scripts\jriapp\img\ok.png" />
     <Content Include="Scripts\jriapp\img\plus.png" />
-    <Content Include="Scripts\jriapp\img\warning.png" />
     <Content Include="Scripts\jriapp\css\jriapp.css" />
     <Content Include="Scripts\jriapp\css\jriapp_ui.css" />
     <Content Include="Scripts\moment\moment.min.js" />

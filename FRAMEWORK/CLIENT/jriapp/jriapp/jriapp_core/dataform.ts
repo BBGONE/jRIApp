@@ -17,7 +17,8 @@ import { parseContentAttr } from "../jriapp_content/int";
 const $ = dom.$, document = dom.document;
 
 export const css = {
-    dataform: "ria-dataform"
+    dataform: "ria-dataform",
+    error: "ria-form-error"
 };
 
 SysChecks._setIsInsideTemplate = function (elView: BaseElView) {
@@ -492,15 +493,13 @@ export class DataFormElView extends BaseElView {
        }
         let $el = this.$el;
         if (!!errors && errors.length > 0) {
-            let $img: any, image_src = bootstrap.getImagePath("warning.png");
-            $img = $('<img name="error_info" alt="error_info" class="error-info" />');
+            let $img = $(`<div data-name="error_info" class="${css.error}" />`);
             $el.prepend($img);
-            $img.get(0).src = image_src;
             fn_addToolTip($img, this._getErrorTipInfo(errors), true);
             this._setFieldError(true);
        }
         else {
-            $el.children('img[name="error_info"]').remove();
+            $el.children('div[data-name="error_info"]').remove();
             this._setFieldError(false);
        }
    }

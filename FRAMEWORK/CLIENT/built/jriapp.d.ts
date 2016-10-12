@@ -1828,6 +1828,7 @@ declare module "jriapp_core/dataform" {
     import { BaseElView } from "jriapp_elview/elview";
     export const css: {
         dataform: string;
+        error: string;
     };
     export interface IDataFormOptions {
         app: IApplication;
