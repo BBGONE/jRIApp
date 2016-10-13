@@ -3359,7 +3359,6 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             this._grid.addOnDestroyed(function (s, args) {
                 var self = this;
                 self._grid = null;
-                self.invokePropChanged(const_19.PROP_NAME.grid);
                 self.raisePropertyChanged(const_19.PROP_NAME.grid);
             }, this.uniqueID, this);
         };
@@ -3871,7 +3870,6 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_core/lang", "jriapp_cor
             this._pager = new Pager(options);
             this._pager.addOnDestroyed(function () {
                 self._pager = null;
-                self.invokePropChanged(PROP_NAME.pager);
                 self.raisePropertyChanged(PROP_NAME.pager);
             });
         }
@@ -4502,7 +4500,6 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_core/lang", "jriapp_c
             self._listBox = new ListBox(options);
             self._listBox.addOnDestroyed(function () {
                 self._listBox = null;
-                self.invokePropChanged(PROP_NAME.listBox);
                 self.raisePropertyChanged(PROP_NAME.listBox);
             }, this.uniqueID);
             self._listBox.addOnPropertyChange("*", function (sender, args) {
@@ -5282,7 +5279,6 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_core/const", "jria
             this._panel.addOnDestroyed(function () {
                 var self = this;
                 self._panel = null;
-                self.invokePropChanged(PROP_NAME.panel);
                 self.raisePropertyChanged(PROP_NAME.panel);
             }, this.uniqueID, this);
         };

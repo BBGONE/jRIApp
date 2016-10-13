@@ -16,9 +16,6 @@ const coreUtils = utils.core, $ = utils.dom.$, checks = utils.check;
 SysChecks._isElView = function (obj: any): boolean {
     return !!obj && obj instanceof BaseElView;
 }
-SysChecks._isPropBag = function (obj: any): boolean {
-    return !!obj && obj instanceof PropertyBag;
-}
 
 export function fn_addToolTip($el: JQuery, tip: string, isError?: boolean, pos?: string) {
     let svc = bootstrap.getSvc<ITooltipService>(TOOLTIP_SVC);
@@ -67,7 +64,7 @@ export const PROP_NAME = {
     click: "click"
 };
 
-// wraps HTMLElement to watch property changes and to bind declaratively to its properties
+// wraps HTMLElement to get or change property using data binding
 class PropertyBag extends BaseObject implements IPropertyBag {
     private _$el: JQuery;
 
@@ -85,10 +82,10 @@ class PropertyBag extends BaseObject implements IPropertyBag {
         return res;
     }
     //implement IPropertyBag
-    getProperty(name: string): any {
+    getProp(name: string): any {
         return this._$el.prop(name);
     }
-    setProperty(name: string, val: any): void {
+    setProp(name: string, val: any): void {
         let old = this._$el.prop(name);
         if (old !== val) {
             this._$el.prop(name, val);
@@ -96,21 +93,92 @@ class PropertyBag extends BaseObject implements IPropertyBag {
         }
     }
     toString() {
-        return "PropertyBag";
+        return "IPropertyBag";
+    }
+}
+
+// wraps HTMLElement to add or remove classNames using data binding
+class CSSBag extends BaseObject implements IPropertyBag {
+    private _$el: JQuery;
+    private _className: string;
+
+    constructor($el: JQuery) {
+        super();
+        this._$el = $el;
+        this._className = null;
+    }
+    //override
+    _isHasProp(prop: string) {
+        return true;
+    }
+    private _setClass(val: string): void {
+        let classes: string[] = val.split(" ");
+        let toAdd: string[] = [], toRemove: string[] = [];
+        classes.forEach((v: string) => {
+            if (!v.length)
+                return;
+
+            let className = v.trim();
+            if (!className)
+                return;
+            let op = v.charAt(0);
+            if (op == "+" || op == "-") {
+                className = v.substr(1);
+            }
+            if (op != "-") {
+                toAdd.push(className);
+            }
+            else {
+                toRemove.push(className);
+            }
+        });
+        if (toRemove.length > 0) {
+            this._$el.removeClass(toRemove.join(" "));
+        }
+        if (toAdd.length > 0) {
+            this._$el.addClass(toAdd.join(" "));
+        }
+
+        this._className = val;
+    }
+    //implement IPropertyBag
+    getProp(name: string): any {
+        if (name == "className")
+            return undefined;
+        return this._$el.hasClass(name);
+    }
+    setProp(name: string, val: any): void {
+        if (name == "className" && ("" + val) !== this._className) {
+            //set all classes, where val is "+clasName1 -className2 -className3"
+            //+ means to add the class name, and - means to remove the class name
+            this._setClass("" + val);
+            this.raisePropertyChanged(name);
+            return;
+        }
+
+        //set individual classes
+        if (!val) {
+            this._$el.removeClass(name);
+        }
+        else {
+            this._$el.addClass(name);
+        }
+        this.raisePropertyChanged(name);
+    }
+    toString() {
+        return "IPropertyBag";
     }
 }
 
 export class BaseElView extends BaseObject implements IElView {
     private _objId: string;
     private _$el: JQuery;
-    protected _oldCSSdisplay: string;
-    protected _propChangedCommand: ICommand;
     protected _errors: IValidationInfo[];
     protected _toolTip: string;
-    protected _css: string;
     protected _app: IApplication;
     private _eventStore: EventStore;
     private _props: IPropertyBag;
+    private _css: IPropertyBag;
 
     constructor(options: IViewOptions) {
         super();
@@ -118,18 +186,16 @@ export class BaseElView extends BaseObject implements IElView {
         this._app = options.app;
         this._$el = $(el);
         this._toolTip = options.tip;
-        this._css = options.css
+
         //lazily initialized
         this._eventStore = null;
         this._props = null;
+        this._css = null;
 
-        //to save previous css display style
-        this._oldCSSdisplay = null;
         this._objId = "elv" + coreUtils.getNewID();
-        this._propChangedCommand = null;
         this._errors = null;
-        if (!!this._css) {
-            this.$el.addClass(this._css);
+        if (!!options.css) {
+            this.$el.addClass(options.css);
         }
         this._applyToolTip();
         this._app.elViewFactory.store.setElView(el, this);
@@ -207,7 +273,6 @@ export class BaseElView extends BaseObject implements IElView {
         this._app.elViewFactory.store.setElView(this.el, null);
         let $el = this._$el;
         $el.off("." + this.uniqueID);
-        this._propChangedCommand = null;
         this.validationErrors = null;
         this.toolTip = null;
         if (!!this._eventStore) {
@@ -218,13 +283,11 @@ export class BaseElView extends BaseObject implements IElView {
             this._props.destroy();
             this._props = null;
         }
-        super.destroy();
-    }
-    invokePropChanged(property: string) {
-        let self = this, data = { property: property };
-        if (!!self._propChangedCommand) {
-            self._propChangedCommand.execute(self, data);
+        if (!!this._css) {
+            this._css.destroy();
+            this._css = null;
         }
+        super.destroy();
     }
     public handleError(error: any, source: any): boolean {
         let isHandled = super.handleError(error, source);
@@ -236,42 +299,29 @@ export class BaseElView extends BaseObject implements IElView {
     toString() {
         return "BaseElView";
     }
-    get $el() {
+    get $el(): JQuery {
         return this._$el;
     }
     get el(): HTMLElement {
         return this._$el[0];
     }
-    get uniqueID() { return this._objId; }
-    get isVisible() {
-        let v = this.$el.css("display");
-        return !(v === "none");
+    get uniqueID(): string { return this._objId; }
+    get isVisible(): boolean {
+        return !!this.$el.is(':visible');
     }
-    set isVisible(v) {
-        v = !!v;
-        if (v !== this.isVisible) {
+    set isVisible(v: boolean) {
+        let bv = !!v;
+        if (bv !== this.isVisible) {
             if (!v) {
-                this._oldCSSdisplay = this.$el.css("display");
-                this.$el.css("display", "none");
+                this.$el.hide();
             }
             else {
-                if (!!this._oldCSSdisplay)
-                    this.$el.css("display", this._oldCSSdisplay);
-                else
-                    this.$el.css("display", "");
+                this.$el.show();
             }
             this.raisePropertyChanged(PROP_NAME.isVisible);
         }
     }
-    get propChangedCommand() { return this._propChangedCommand; }
-    set propChangedCommand(v: ICommand) {
-        let old = this._propChangedCommand;
-        if (v !== old) {
-            this._propChangedCommand = v;
-            this.invokePropChanged("*");
-        }
-    }
-    get validationErrors() { return this._errors; }
+    get validationErrors(): IValidationInfo[] { return this._errors; }
     set validationErrors(v: IValidationInfo[]) {
         if (v !== this._errors) {
             this._errors = v;
@@ -279,8 +329,8 @@ export class BaseElView extends BaseObject implements IElView {
             this._updateErrorUI(this.el, this._errors);
         }
     }
-    get dataName() { return this._$el.attr(DATA_ATTR.DATA_NAME); }
-    get toolTip() { return this._toolTip; }
+    get dataName(): string { return this._$el.attr(DATA_ATTR.DATA_NAME); }
+    get toolTip(): string { return this._toolTip; }
     set toolTip(v: string) {
         if (this._toolTip !== v) {
             this._toolTip = v;
@@ -288,19 +338,7 @@ export class BaseElView extends BaseObject implements IElView {
             this.raisePropertyChanged(PROP_NAME.toolTip);
         }
     }
-    get css() { return this._css; }
-    set css(v: string) {
-        let $el = this._$el;
-        if (this._css !== v) {
-            if (!!this._css)
-                $el.removeClass(this._css);
-            this._css = v;
-            if (!!this._css)
-                $el.addClass(this._css);
-            this.raisePropertyChanged(PROP_NAME.css);
-        }
-    }
-    get app() { return this._app; }
+    get app(): IApplication { return this._app; }
     //stores commands for data binding to the HtmlElement's events
     get events(): IEventStore {
         if (!this._eventStore) {
@@ -321,6 +359,15 @@ export class BaseElView extends BaseObject implements IElView {
             this._props = new PropertyBag(this.$el);
         }
         return this._props;
+    }
+    //exposes All CSS Classes for data binding directly to them
+    get css(): IPropertyBag {
+        if (!this._css) {
+            if (this.getIsDestroyCalled())
+                return null;
+            this._css = new CSSBag(this.$el);
+        }
+        return this._css;
     }
 }
 

@@ -442,7 +442,9 @@ define("jriapp_utils/syschecks", ["require", "exports"], function (require, expo
         SysChecks._isBaseObj = function (obj) { return false; };
         SysChecks._isElView = function (obj) { return false; };
         SysChecks._isBinding = function (obj) { return false; };
-        SysChecks._isPropBag = function (obj) { return false; };
+        SysChecks._isPropBag = function (obj) {
+            return SysChecks._isBaseObj(obj) && obj.toString() == "IPropertyBag";
+        };
         SysChecks._isEventStore = function (obj) { return false; };
         SysChecks._isCollection = function (obj) { return false; };
         SysChecks._getItemByProp = function (obj, prop) { return null; };
@@ -1603,6 +1605,9 @@ define("jriapp_utils/eventstore", ["require", "exports", "jriapp_core/object", "
             if (command.canExecute(this, args))
                 command.execute(this, args);
         };
+        EventStore.prototype.toString = function () {
+            return "IEventStore";
+        };
         EventStore.prototype.destroy = function () {
             if (!!this._dic) {
                 this._dic = null;
@@ -1727,7 +1732,7 @@ define("jriapp_core/parser", ["require", "exports", "jriapp_core/lang", "jriapp_
                     return obj.getCommand(prop);
                 }
                 else if (syschecks._isPropBag(obj)) {
-                    return obj.getProperty(prop);
+                    return obj.getProp(prop);
                 }
                 else {
                     return obj[prop];
@@ -1749,7 +1754,7 @@ define("jriapp_core/parser", ["require", "exports", "jriapp_core/lang", "jriapp_
                     return obj.setCommand(prop, val);
                 }
                 else if (syschecks._isPropBag(obj)) {
-                    obj.setProperty(prop, val);
+                    obj.setProp(prop, val);
                 }
                 else {
                     obj[prop] = val;
@@ -4071,9 +4076,6 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
     syschecks_5.SysChecks._isElView = function (obj) {
         return !!obj && obj instanceof BaseElView;
     };
-    syschecks_5.SysChecks._isPropBag = function (obj) {
-        return !!obj && obj instanceof PropertyBag;
-    };
     function fn_addToolTip($el, tip, isError, pos) {
         var svc = bootstrap_3.bootstrap.getSvc(const_4.TOOLTIP_SVC);
         svc.addToolTip($el, tip, isError, pos);
@@ -4131,10 +4133,10 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             }
             return res;
         };
-        PropertyBag.prototype.getProperty = function (name) {
+        PropertyBag.prototype.getProp = function (name) {
             return this._$el.prop(name);
         };
-        PropertyBag.prototype.setProperty = function (name, val) {
+        PropertyBag.prototype.setProp = function (name, val) {
             var old = this._$el.prop(name);
             if (old !== val) {
                 this._$el.prop(name, val);
@@ -4142,9 +4144,71 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             }
         };
         PropertyBag.prototype.toString = function () {
-            return "PropertyBag";
+            return "IPropertyBag";
         };
         return PropertyBag;
+    }(object_9.BaseObject));
+    var CSSBag = (function (_super) {
+        __extends(CSSBag, _super);
+        function CSSBag($el) {
+            _super.call(this);
+            this._$el = $el;
+            this._className = null;
+        }
+        CSSBag.prototype._isHasProp = function (prop) {
+            return true;
+        };
+        CSSBag.prototype._setClass = function (val) {
+            var classes = val.split(" ");
+            var toAdd = [], toRemove = [];
+            classes.forEach(function (v) {
+                if (!v.length)
+                    return;
+                var className = v.trim();
+                if (!className)
+                    return;
+                var op = v.charAt(0);
+                if (op == "+" || op == "-") {
+                    className = v.substr(1);
+                }
+                if (op != "-") {
+                    toAdd.push(className);
+                }
+                else {
+                    toRemove.push(className);
+                }
+            });
+            if (toRemove.length > 0) {
+                this._$el.removeClass(toRemove.join(" "));
+            }
+            if (toAdd.length > 0) {
+                this._$el.addClass(toAdd.join(" "));
+            }
+            this._className = val;
+        };
+        CSSBag.prototype.getProp = function (name) {
+            if (name == "className")
+                return undefined;
+            return this._$el.hasClass(name);
+        };
+        CSSBag.prototype.setProp = function (name, val) {
+            if (name == "className" && ("" + val) !== this._className) {
+                this._setClass("" + val);
+                this.raisePropertyChanged(name);
+                return;
+            }
+            if (!val) {
+                this._$el.removeClass(name);
+            }
+            else {
+                this._$el.addClass(name);
+            }
+            this.raisePropertyChanged(name);
+        };
+        CSSBag.prototype.toString = function () {
+            return "IPropertyBag";
+        };
+        return CSSBag;
     }(object_9.BaseObject));
     var BaseElView = (function (_super) {
         __extends(BaseElView, _super);
@@ -4154,15 +4218,13 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             this._app = options.app;
             this._$el = $(el);
             this._toolTip = options.tip;
-            this._css = options.css;
             this._eventStore = null;
             this._props = null;
-            this._oldCSSdisplay = null;
+            this._css = null;
             this._objId = "elv" + coreUtils.getNewID();
-            this._propChangedCommand = null;
             this._errors = null;
-            if (!!this._css) {
-                this.$el.addClass(this._css);
+            if (!!options.css) {
+                this.$el.addClass(options.css);
             }
             this._applyToolTip();
             this._app.elViewFactory.store.setElView(el, this);
@@ -4240,7 +4302,6 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             this._app.elViewFactory.store.setElView(this.el, null);
             var $el = this._$el;
             $el.off("." + this.uniqueID);
-            this._propChangedCommand = null;
             this.validationErrors = null;
             this.toolTip = null;
             if (!!this._eventStore) {
@@ -4251,13 +4312,11 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
                 this._props.destroy();
                 this._props = null;
             }
-            _super.prototype.destroy.call(this);
-        };
-        BaseElView.prototype.invokePropChanged = function (property) {
-            var self = this, data = { property: property };
-            if (!!self._propChangedCommand) {
-                self._propChangedCommand.execute(self, data);
+            if (!!this._css) {
+                this._css.destroy();
+                this._css = null;
             }
+            _super.prototype.destroy.call(this);
         };
         BaseElView.prototype.handleError = function (error, source) {
             var isHandled = _super.prototype.handleError.call(this, error, source);
@@ -4290,35 +4349,18 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
         });
         Object.defineProperty(BaseElView.prototype, "isVisible", {
             get: function () {
-                var v = this.$el.css("display");
-                return !(v === "none");
+                return !!this.$el.is(':visible');
             },
             set: function (v) {
-                v = !!v;
-                if (v !== this.isVisible) {
+                var bv = !!v;
+                if (bv !== this.isVisible) {
                     if (!v) {
-                        this._oldCSSdisplay = this.$el.css("display");
-                        this.$el.css("display", "none");
+                        this.$el.hide();
                     }
                     else {
-                        if (!!this._oldCSSdisplay)
-                            this.$el.css("display", this._oldCSSdisplay);
-                        else
-                            this.$el.css("display", "");
+                        this.$el.show();
                     }
                     this.raisePropertyChanged(exports.PROP_NAME.isVisible);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BaseElView.prototype, "propChangedCommand", {
-            get: function () { return this._propChangedCommand; },
-            set: function (v) {
-                var old = this._propChangedCommand;
-                if (v !== old) {
-                    this._propChangedCommand = v;
-                    this.invokePropChanged("*");
                 }
             },
             enumerable: true,
@@ -4353,22 +4395,6 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(BaseElView.prototype, "css", {
-            get: function () { return this._css; },
-            set: function (v) {
-                var $el = this._$el;
-                if (this._css !== v) {
-                    if (!!this._css)
-                        $el.removeClass(this._css);
-                    this._css = v;
-                    if (!!this._css)
-                        $el.addClass(this._css);
-                    this.raisePropertyChanged(exports.PROP_NAME.css);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(BaseElView.prototype, "app", {
             get: function () { return this._app; },
             enumerable: true,
@@ -4397,6 +4423,18 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
                     this._props = new PropertyBag(this.$el);
                 }
                 return this._props;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BaseElView.prototype, "css", {
+            get: function () {
+                if (!this._css) {
+                    if (this.getIsDestroyCalled())
+                        return null;
+                    this._css = new CSSBag(this.$el);
+                }
+                return this._css;
             },
             enumerable: true,
             configurable: true
@@ -6537,7 +6575,6 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
             this._form = new DataForm(options);
             this._form.addOnDestroyed(function () {
                 self._form = null;
-                self.invokePropChanged(PROP_NAME.form);
                 self.raisePropertyChanged(PROP_NAME.form);
             });
             this._form.addOnPropertyChange("*", function (form, args) {
@@ -7477,38 +7514,6 @@ define("jriapp_elview/block", ["require", "exports", "jriapp_utils/utils", "jria
         BlockElView.prototype.toString = function () {
             return "BlockElView";
         };
-        Object.defineProperty(BlockElView.prototype, "borderColor", {
-            get: function () {
-                var $el = this.$el;
-                return $el.css("border-top-color");
-            },
-            set: function (v) {
-                var $el = this.$el;
-                var x = $el.css("border-top-color");
-                if (v !== x) {
-                    $el.css("border-color", v);
-                    this.raisePropertyChanged(elview_10.PROP_NAME.borderColor);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BlockElView.prototype, "borderStyle", {
-            get: function () {
-                var $el = this.$el;
-                return $el.css("border-top-style");
-            },
-            set: function (v) {
-                var $el = this.$el;
-                var x = $el.css("border-top-style");
-                if (v !== x) {
-                    $el.css("border-style", v);
-                    this.raisePropertyChanged(elview_10.PROP_NAME.borderStyle);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(BlockElView.prototype, "width", {
             get: function () {
                 var $el = this.$el;
@@ -10750,6 +10755,6 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.COLL_CHANGE_REASON = collection_1.COLL_CHANGE_REASON;
     exports.COLL_CHANGE_TYPE = collection_1.COLL_CHANGE_TYPE;
     exports.Application = app_1.Application;
-    exports.VERSION = "0.9.67";
+    exports.VERSION = "0.9.68";
     bootstrap_25.Bootstrap._initFramework();
 });

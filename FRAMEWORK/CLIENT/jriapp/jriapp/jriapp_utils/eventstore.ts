@@ -95,6 +95,9 @@ export class EventStore extends BaseObject implements IEventStore {
         if (command.canExecute(this, args))
             command.execute(this, args);
     }
+    toString() {
+        return "IEventStore";
+    }
     destroy() {
         if (!!this._dic) {
             this._dic = null;

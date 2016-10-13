@@ -1829,7 +1829,7 @@ define("manToManDemo/addAddressVM", ["require", "exports", "jriapp", "jriapp_db"
             this._currentCustomer = null;
             this._searchToolTip = 'enter any address part then press search button';
             this._newAddress = null;
-            this._adressInfosGrid = null;
+            this._dataGrid = null;
             this._searchString = null;
             this._isAddingNew = false;
             this._dialogVM = new uiMOD.DialogVM(self.app);
@@ -1923,12 +1923,19 @@ define("manToManDemo/addAddressVM", ["require", "exports", "jriapp", "jriapp_db"
             }, self, function (s, a) {
                 return !!self.custAdressView.currentItem;
             });
-            this._propChangeCommand = new RIAPP.PropChangedCommand(function (sender, args) {
-                if (args.property == '*' || args.property == 'grid') {
-                    self._adressInfosGrid = sender.grid;
-                }
-            }, self, null);
         }
+        AddAddressVM.prototype._addGrid = function (grid) {
+            var self = this;
+            if (!!this._dataGrid)
+                this._removeGrid();
+            this._dataGrid = grid;
+        };
+        AddAddressVM.prototype._removeGrid = function () {
+            if (!this._dataGrid)
+                return;
+            this._dataGrid.removeNSHandlers(this.uniqueID);
+            this._dataGrid = null;
+        };
         Object.defineProperty(AddAddressVM.prototype, "isCanSubmit", {
             get: function () { return true; },
             enumerable: true,
@@ -2011,8 +2018,8 @@ define("manToManDemo/addAddressVM", ["require", "exports", "jriapp", "jriapp_db"
             if (!!item) {
                 var appended = this._addressInfosView.appendItems([item]);
                 this._addressInfosView.currentItem = item;
-                if (!!this._adressInfosGrid)
-                    this._adressInfosGrid.scrollToCurrent(0);
+                if (!!this._dataGrid)
+                    this._dataGrid.scrollToCurrent(0);
             }
             return !!item;
         };
@@ -2128,8 +2135,14 @@ define("manToManDemo/addAddressVM", ["require", "exports", "jriapp", "jriapp_db"
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(AddAddressVM.prototype, "propChangeCommand", {
-            get: function () { return this._propChangeCommand; },
+        Object.defineProperty(AddAddressVM.prototype, "grid", {
+            get: function () { return this._dataGrid; },
+            set: function (v) {
+                if (!!v)
+                    this._addGrid(v);
+                else
+                    this._removeGrid();
+            },
             enumerable: true,
             configurable: true
         });

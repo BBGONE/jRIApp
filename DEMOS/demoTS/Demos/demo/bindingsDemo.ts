@@ -8,13 +8,13 @@ import * as COMMON from "common";
 var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
 
 export class UppercaseConverter extends RIAPP.BaseConverter {
-    convertToSource(val: any, param: any, dataContext: any) {
+    convertToSource(val: any, param: any, dataContext: any): any {
         if (utils.check.isString(val))
             return val.toLowerCase();
         else
             return val;
     }
-    convertToTarget(val: any, param: any, dataContext: any) {
+    convertToTarget(val: any, param: any, dataContext: any): any {
         if (utils.check.isString(val))
             return val.toUpperCase();
         else

@@ -2708,7 +2708,7 @@ define("addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"
             this._currentCustomer = self._customerAddressVM.currentCustomer;
             this._searchToolTip = 'enter any address part then press search button';
             this._newAddress = null;
-            this._adressInfosGrid = null;
+            this._dataGrid = null;
             this._searchString = null;
             this._uiAddressRoute = new routes_2.AddressRoute();
             this._dialogVM = new uiMOD.DialogVM(self.app);
@@ -2801,12 +2801,19 @@ define("addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"
             }, self, function (s, a) {
                 return !!self.custAdressView.currentItem;
             });
-            this._propChangeCommand = new RIAPP.PropChangedCommand(function (sender, args) {
-                if (args.property == '*' || args.property == 'grid') {
-                    self._adressInfosGrid = sender.grid;
-                }
-            }, self, null);
         }
+        AddAddressVM.prototype._addGrid = function (grid) {
+            var self = this;
+            if (!!this._dataGrid)
+                this._removeGrid();
+            this._dataGrid = grid;
+        };
+        AddAddressVM.prototype._removeGrid = function () {
+            if (!this._dataGrid)
+                return;
+            this._dataGrid.removeNSHandlers(this.uniqueID);
+            this._dataGrid = null;
+        };
         AddAddressVM.prototype._cancelAddNewAddress = function () {
             var self = this;
             self._newAddress._aspect.cancelEdit();
@@ -2872,8 +2879,8 @@ define("addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"
             if (!!item) {
                 var appended = this._addressInfosView.appendItems([item]);
                 this._addressInfosView.currentItem = item;
-                if (!!this._adressInfosGrid)
-                    this._adressInfosGrid.scrollToCurrent(0);
+                if (!!this._dataGrid)
+                    this._dataGrid.scrollToCurrent(0);
             }
             return !!item;
         };
@@ -2998,8 +3005,14 @@ define("addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(AddAddressVM.prototype, "propChangeCommand", {
-            get: function () { return this._propChangeCommand; },
+        Object.defineProperty(AddAddressVM.prototype, "grid", {
+            get: function () { return this._dataGrid; },
+            set: function (v) {
+                if (!!v)
+                    this._addGrid(v);
+                else
+                    this._removeGrid();
+            },
             enumerable: true,
             configurable: true
         });

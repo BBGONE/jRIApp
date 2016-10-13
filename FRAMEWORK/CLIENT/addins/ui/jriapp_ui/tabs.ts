@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IViewOptions } from "jriapp_core/shared";
+import { IViewOptions, IPropertyBag } from "jriapp_core/shared";
 import { Utils as utils, ERROR } from "jriapp_utils/utils";
 import { bootstrap } from "jriapp_core/bootstrap";
 import { BaseElView } from "jriapp_elview/elview";
@@ -12,11 +12,13 @@ const PROP_NAME = {
 };
 
 export interface ITabs {
-    uniqueID: string;
-    el: HTMLElement;
+    readonly uniqueID: string;
+    readonly el: HTMLElement;
+    readonly $el: JQuery;
     tabIndex: number;
     isVisible: boolean;
-    css: string;
+    dataName: string;
+    readonly css: IPropertyBag;
 }
 
 export interface ITabsEvents {

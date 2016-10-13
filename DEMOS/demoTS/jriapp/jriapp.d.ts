@@ -173,8 +173,8 @@ declare module "jriapp_core/shared" {
         raiseEvent(name: string, args: any): void;
     }
     export interface IPropertyBag extends IBaseObject {
-        getProperty(name: string): any;
-        setProperty(name: string, val: any): void;
+        getProp(name: string): any;
+        setProp(name: string, val: any): void;
     }
     export interface ILifeTimeScope extends IBaseObject {
         addObj(b: IBaseObject): void;
@@ -371,7 +371,6 @@ declare module "jriapp_core/shared" {
         new (options: IViewOptions): IElView;
     }
     export interface IElView extends IBaseObject {
-        invokePropChanged(property: string): void;
         $el: JQuery;
         el: HTMLElement;
         app: IApplication;
@@ -961,6 +960,7 @@ declare module "jriapp_utils/eventstore" {
         getCommand(name: string): ICommand;
         setCommand(name: string, command: ICommand): void;
         trigger(name: string, args?: any): void;
+        toString(): string;
         destroy(): void;
     }
 }
@@ -1477,14 +1477,12 @@ declare module "jriapp_elview/elview" {
     export class BaseElView extends BaseObject implements IElView {
         private _objId;
         private _$el;
-        protected _oldCSSdisplay: string;
-        protected _propChangedCommand: ICommand;
         protected _errors: IValidationInfo[];
         protected _toolTip: string;
-        protected _css: string;
         protected _app: IApplication;
         private _eventStore;
         private _props;
+        private _css;
         constructor(options: IViewOptions);
         protected _onEventChanged(args: IEventChangedArgs): void;
         protected _onEventAdded(name: string, newVal: ICommand): void;
@@ -1495,21 +1493,19 @@ declare module "jriapp_elview/elview" {
         protected _updateErrorUI(el: HTMLElement, errors: IValidationInfo[]): void;
         protected _setToolTip($el: JQuery, tip: string, isError?: boolean): void;
         destroy(): void;
-        invokePropChanged(property: string): void;
         handleError(error: any, source: any): boolean;
         toString(): string;
         readonly $el: JQuery;
         readonly el: HTMLElement;
         readonly uniqueID: string;
         isVisible: boolean;
-        propChangedCommand: ICommand;
         validationErrors: IValidationInfo[];
         readonly dataName: string;
         toolTip: string;
-        css: string;
         readonly app: IApplication;
         readonly events: IEventStore;
         readonly props: IPropertyBag;
+        readonly css: IPropertyBag;
     }
 }
 declare module "jriapp_core/binding" {
@@ -1828,6 +1824,7 @@ declare module "jriapp_core/dataform" {
     import { BaseElView } from "jriapp_elview/elview";
     export const css: {
         dataform: string;
+        error: string;
     };
     export interface IDataFormOptions {
         app: IApplication;
@@ -1988,8 +1985,6 @@ declare module "jriapp_elview/block" {
     import { SpanElView } from "jriapp_elview/span";
     export class BlockElView extends SpanElView {
         toString(): string;
-        borderColor: string;
-        borderStyle: string;
         width: number;
         height: number;
     }

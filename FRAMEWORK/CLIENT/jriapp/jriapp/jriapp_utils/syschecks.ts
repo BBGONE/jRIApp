@@ -6,7 +6,9 @@ export class SysChecks {
     static _isBaseObj: (obj: any) => boolean = (obj) => { return false; };
     static _isElView: (obj: any) => boolean = (obj) => { return false; };
     static _isBinding: (obj: any) => boolean = (obj) => { return false; };
-    static _isPropBag: (obj: any) => boolean = (obj) => { return false; };
+    static _isPropBag: (obj: any) => boolean = (obj) => {
+        return SysChecks._isBaseObj(obj) && obj.toString() == "IPropertyBag";
+    };
     static _isEventStore: (obj: any) => boolean = (obj) => { return false; };
     
     //DUMMY implementations collection

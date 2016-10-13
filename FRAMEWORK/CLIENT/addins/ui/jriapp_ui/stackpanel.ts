@@ -455,7 +455,6 @@ export class StackPanelElView extends BaseElView {
         this._panel.addOnDestroyed(function () {
             let self: StackPanelElView = this;
             self._panel = null;
-            self.invokePropChanged(PROP_NAME.panel);
             self.raisePropertyChanged(PROP_NAME.panel);
         }, this.uniqueID, this);
     }

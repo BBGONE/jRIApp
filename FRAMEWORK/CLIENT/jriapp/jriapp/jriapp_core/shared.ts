@@ -72,8 +72,8 @@ export interface IBaseObject extends IErrorHandler, IDisposable {
 }
 
 export interface IPropertyBag extends IBaseObject {
-    getProperty(name: string): any;
-    setProperty(name: string, val: any): void;
+    getProp(name: string): any;
+    setProp(name: string, val: any): void;
 }
 
 export interface ILifeTimeScope extends IBaseObject {
@@ -342,7 +342,6 @@ export interface IViewType {
 }
 
 export interface IElView extends IBaseObject {
-    invokePropChanged(property: string): void;
     $el: JQuery;
     el: HTMLElement;
     app: IApplication;

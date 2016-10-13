@@ -454,7 +454,6 @@ export class DataFormElView extends BaseElView {
         this._form = new DataForm(options);
         this._form.addOnDestroyed(function () {
             self._form = null;
-            self.invokePropChanged(PROP_NAME.form);
             self.raisePropertyChanged(PROP_NAME.form);
        });
         this._form.addOnPropertyChange("*", function (form, args) {

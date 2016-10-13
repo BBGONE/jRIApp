@@ -1238,7 +1238,6 @@ export class DataGridElView extends BaseElView {
         this._grid.addOnDestroyed(function (s, args) {
             let self: DataGridElView = this;
             self._grid = null;
-            self.invokePropChanged(PROP_NAME.grid);
             self.raisePropertyChanged(PROP_NAME.grid);
         }, this.uniqueID, this);
 

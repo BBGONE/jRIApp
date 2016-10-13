@@ -605,7 +605,6 @@ export class ListBoxElView extends BaseElView {
         self._listBox = new ListBox(<IListBoxConstructorOptions>options);
         self._listBox.addOnDestroyed(function () {
             self._listBox = null;
-            self.invokePropChanged(PROP_NAME.listBox);
             self.raisePropertyChanged(PROP_NAME.listBox);
         }, this.uniqueID);
         self._listBox.addOnPropertyChange("*", function (sender, args) {

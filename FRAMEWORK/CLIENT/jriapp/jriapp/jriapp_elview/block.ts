@@ -10,30 +10,6 @@ export class BlockElView extends SpanElView {
     toString() {
         return "BlockElView";
     }
-    get borderColor() {
-        let $el = this.$el;
-        return $el.css("border-top-color");
-    }
-    set borderColor(v) {
-        let $el = this.$el;
-        let x = $el.css("border-top-color");
-        if (v !== x) {
-            $el.css("border-color", v);
-            this.raisePropertyChanged(PROP_NAME.borderColor);
-        }
-    }
-    get borderStyle() {
-        let $el = this.$el;
-        return $el.css("border-top-style");
-    }
-    set borderStyle(v) {
-        let $el = this.$el;
-        let x = $el.css("border-top-style");
-        if (v !== x) {
-            $el.css("border-style", v);
-            this.raisePropertyChanged(PROP_NAME.borderStyle);
-        }
-    }
     get width() {
         let $el = this.$el;
         return $el.width();

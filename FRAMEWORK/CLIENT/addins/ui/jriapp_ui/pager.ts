@@ -459,7 +459,6 @@ export class PagerElView extends BaseElView {
         this._pager = new Pager(<IPagerConstructorOptions>options);
         this._pager.addOnDestroyed(function () {
             self._pager = null;
-            self.invokePropChanged(PROP_NAME.pager);
             self.raisePropertyChanged(PROP_NAME.pager);
        });
    }

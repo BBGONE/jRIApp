@@ -15,7 +15,7 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
     private _currentCustomer: DEMODB.Customer;
     private _searchToolTip: string;
     private _newAddress: DEMODB.Address;
-    private _adressInfosGrid: uiMOD.DataGrid;
+    private _dataGrid: uiMOD.DataGrid;
     private _searchString: string;
     private _isAddingNew: boolean;
     private _dialogVM: uiMOD.DialogVM;
@@ -25,7 +25,6 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
     private _unLinkCommand: RIAPP.ICommand;
     private _execSearchCommand: RIAPP.ICommand;
     private _addNewAddressCommand: RIAPP.ICommand;
-    private _propChangeCommand: RIAPP.ICommand;
 
     constructor(customerAddressVM: CustomerAddressVM) {
         super(customerAddressVM.app);
@@ -35,7 +34,7 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
         this._currentCustomer = null;
         this._searchToolTip = 'enter any address part then press search button';
         this._newAddress = null;
-        this._adressInfosGrid = null;
+        this._dataGrid = null;
         this._searchString = null;
         this._isAddingNew = false;
         this._dialogVM = new uiMOD.DialogVM(self.app);
@@ -150,16 +149,18 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
         }, self, function (s, a) {
             return !!self.custAdressView.currentItem;
         });
-
-        //this is bound to the grid element view on the page
-        //by this command we can get hold of the datagrid control
-        //this command executed when element view property changes
-        //we grab grid property from the sender (which is element view, and has property - grid)
-        this._propChangeCommand = new RIAPP.PropChangedCommand(function (sender, args) {
-            if (args.property == '*' || args.property == 'grid') {
-                self._adressInfosGrid = sender.grid;
-            }
-        }, self, null);
+    }
+    protected _addGrid(grid: uiMOD.DataGrid): void {
+        var self = this;
+        if (!!this._dataGrid)
+            this._removeGrid();
+        this._dataGrid = grid;
+    }
+    protected _removeGrid(): void {
+        if (!this._dataGrid)
+            return;
+        this._dataGrid.removeNSHandlers(this.uniqueID);
+        this._dataGrid = null;
     }
     get isCanSubmit(): boolean { return true; }
     submitChanges(): RIAPP.IVoidPromise { return this.dbContext.submitChanges(); }
@@ -253,8 +254,8 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
             //if found, try append to the view
             var appended = this._addressInfosView.appendItems([item]);
             this._addressInfosView.currentItem = item;
-            if (!!this._adressInfosGrid)
-                this._adressInfosGrid.scrollToCurrent(uiMOD.ROW_POSITION.Up);
+            if (!!this._dataGrid)
+                this._dataGrid.scrollToCurrent(uiMOD.ROW_POSITION.Up);
         }
         return !!item;
     }
@@ -308,6 +309,12 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
     get newAddress() { return this._newAddress; }
     get customer() { return this._currentCustomer; }
     get isAddingNew() { return this._isAddingNew; }
-    get propChangeCommand() { return this._propChangeCommand; }
+    get grid(): uiMOD.DataGrid { return this._dataGrid; }
+    set grid(v: uiMOD.DataGrid) {
+        if (!!v)
+            this._addGrid(v);
+        else
+            this._removeGrid();
+    }
     get searchToolTip() { return this._searchToolTip; }
 }

@@ -14,6 +14,24 @@ import * as  ResizableGrid from "./resizableGrid";
 
 var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = utils.dom.$;
 
+export class SizeConverter extends RIAPP.BaseConverter {
+    convertToSource(val: any, param: any, dataContext: any): any {
+        return undefined;
+    }
+    convertToTarget(val: any, param: any, dataContext: any): any {
+        let size = "" + val;
+        switch (size) {
+            case "L":
+                return "+lsize -msize -ssize";
+            case "M":
+                return "-lsize +msize -ssize";
+            case "S":
+                return "-lsize -msize +ssize";
+            default:
+                return "-lsize -msize -ssize";
+        }
+    }
+}
 
 //bootstrap error handler - the last resort (typically display message to the user)
 bootstrap.addOnError(function (sender, args) {
@@ -42,6 +60,8 @@ export function start(options: IMainOptions) {
     bootstrap.startApp(() => {
         return new DemoApplication(options);
     }, (app) => {
+        app.registerConverter('sizeConverter', new SizeConverter());
+
         //an example of how to load a file with templates from the server (for loading group of templates- see spaDEMO.ts)
         app.loadTemplates(options.templates_url);
 

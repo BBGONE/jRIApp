@@ -143,7 +143,7 @@ export class Parser {
                 return (<IEventStore>obj).getCommand(prop);
             }
             else if (syschecks._isPropBag(obj)) {
-                return (<IPropertyBag>obj).getProperty(prop);
+                return (<IPropertyBag>obj).getProp(prop);
             }
             else {
                 return obj[prop];
@@ -168,7 +168,7 @@ export class Parser {
                 return (<IEventStore>obj).setCommand(prop, val);
             }
             else if (syschecks._isPropBag(obj)) {
-                (<IPropertyBag>obj).setProperty(prop, val);
+                (<IPropertyBag>obj).setProp(prop, val);
             }
             else {
                 obj[prop] = val;
