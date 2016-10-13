@@ -22,13 +22,13 @@ export class SizeConverter extends RIAPP.BaseConverter {
         let size = "" + val;
         switch (size) {
             case "L":
-                return "+lsize -msize -ssize";
+                return ["+lsize", "-*"];
             case "M":
-                return "-lsize +msize -ssize";
+                return ["+msize", "-*"];
             case "S":
-                return "-lsize -msize +ssize";
+                return ["+ssize", "-*"];
             default:
-                return "-lsize -msize -ssize";
+                return ["-*"];
         }
     }
 }

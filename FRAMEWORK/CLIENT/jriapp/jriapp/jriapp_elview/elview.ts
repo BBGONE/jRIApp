@@ -100,20 +100,17 @@ class PropertyBag extends BaseObject implements IPropertyBag {
 // wraps HTMLElement to add or remove classNames using data binding
 class CSSBag extends BaseObject implements IPropertyBag {
     private _$el: JQuery;
-    private _className: string;
 
     constructor($el: JQuery) {
         super();
         this._$el = $el;
-        this._className = null;
     }
     //override
     _isHasProp(prop: string) {
         return true;
     }
-    private _setClass(val: string): void {
-        let classes: string[] = val.split(" ");
-        let toAdd: string[] = [], toRemove: string[] = [];
+    private _setClasses(classes: string[]): void {
+        let toAdd: string[] = [], toRemove: string[] = [], removeAll = false;
         classes.forEach((v: string) => {
             if (!v.length)
                 return;
@@ -129,40 +126,75 @@ class CSSBag extends BaseObject implements IPropertyBag {
                 toAdd.push(className);
             }
             else {
-                toRemove.push(className);
+                if (className === "*")
+                    removeAll = true;
+                else
+                    toRemove.push(className);
             }
         });
-        if (toRemove.length > 0) {
-            this._$el.removeClass(toRemove.join(" "));
-        }
-        if (toAdd.length > 0) {
-            this._$el.addClass(toAdd.join(" "));
+
+        let el = this._$el[0], clst = el.classList;
+        if (removeAll) {
+            el.className = "";
+            toRemove = [];
         }
 
-        this._className = val;
+        //if classlist not supported
+        if (!clst) {
+            if (toRemove.length > 0) {
+                this._$el.removeClass(toRemove.join(" "));
+            }
+            if (toAdd.length > 0) {
+                this._$el.addClass(toAdd.join(" "));
+            }
+        }
+        else {
+            //use classlist
+            for (let i = 0; i < toRemove.length; i += 1) {
+                clst.remove(toRemove[i]);
+            }
+            for (let i = 0; i < toAdd.length; i += 1) {
+                clst.add(toAdd[i]);
+            }
+        }
     }
     //implement IPropertyBag
     getProp(name: string): any {
-        if (name == "className")
+        if (name === "className")
             return undefined;
+
         return this._$el.hasClass(name);
     }
     setProp(name: string, val: any): void {
-        if (name == "className" && ("" + val) !== this._className) {
+        if (name === "className") {
             //set all classes, where val is "+clasName1 -className2 -className3"
             //+ means to add the class name, and - means to remove the class name
-            this._setClass("" + val);
-            this.raisePropertyChanged(name);
+            //-* means to remove all classes
+            if (checks.isArray(val))
+            {
+                this._setClasses(<string[]>val);
+            }
+            else if (checks.isString(val)) {
+                this._setClasses(val.split(" "));
+            }
             return;
         }
 
+        let el = this._$el[0], clst = el.classList;
         //set individual classes
         if (!val) {
-            this._$el.removeClass(name);
+            if (!clst)
+                this._$el.removeClass(name);
+            else
+                clst.remove(name);
         }
         else {
-            this._$el.addClass(name);
+            if (!clst)
+                this._$el.addClass(name);
+            else
+                clst.add(name);
         }
+
         this.raisePropertyChanged(name);
     }
     toString() {

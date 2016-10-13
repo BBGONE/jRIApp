@@ -2835,13 +2835,13 @@ define("gridDemo/main", ["require", "exports", "jriapp", "common", "gridDemo/app
             var size = "" + val;
             switch (size) {
                 case "L":
-                    return "+lsize -msize -ssize";
+                    return ["+lsize", "-*"];
                 case "M":
-                    return "-lsize +msize -ssize";
+                    return ["+msize", "-*"];
                 case "S":
-                    return "-lsize -msize +ssize";
+                    return ["+ssize", "-*"];
                 default:
-                    return "-lsize -msize -ssize";
+                    return ["-*"];
             }
         };
         return SizeConverter;

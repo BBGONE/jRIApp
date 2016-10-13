@@ -4153,14 +4153,12 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
         function CSSBag($el) {
             _super.call(this);
             this._$el = $el;
-            this._className = null;
         }
         CSSBag.prototype._isHasProp = function (prop) {
             return true;
         };
-        CSSBag.prototype._setClass = function (val) {
-            var classes = val.split(" ");
-            var toAdd = [], toRemove = [];
+        CSSBag.prototype._setClasses = function (classes) {
+            var toAdd = [], toRemove = [], removeAll = false;
             classes.forEach(function (v) {
                 if (!v.length)
                     return;
@@ -4175,33 +4173,61 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
                     toAdd.push(className);
                 }
                 else {
-                    toRemove.push(className);
+                    if (className === "*")
+                        removeAll = true;
+                    else
+                        toRemove.push(className);
                 }
             });
-            if (toRemove.length > 0) {
-                this._$el.removeClass(toRemove.join(" "));
+            var el = this._$el[0], clst = el.classList;
+            if (removeAll) {
+                el.className = "";
+                toRemove = [];
             }
-            if (toAdd.length > 0) {
-                this._$el.addClass(toAdd.join(" "));
+            if (!clst) {
+                if (toRemove.length > 0) {
+                    this._$el.removeClass(toRemove.join(" "));
+                }
+                if (toAdd.length > 0) {
+                    this._$el.addClass(toAdd.join(" "));
+                }
             }
-            this._className = val;
+            else {
+                for (var i = 0; i < toRemove.length; i += 1) {
+                    clst.remove(toRemove[i]);
+                }
+                for (var i = 0; i < toAdd.length; i += 1) {
+                    clst.add(toAdd[i]);
+                }
+            }
         };
         CSSBag.prototype.getProp = function (name) {
-            if (name == "className")
+            if (name === "className")
                 return undefined;
             return this._$el.hasClass(name);
         };
         CSSBag.prototype.setProp = function (name, val) {
-            if (name == "className" && ("" + val) !== this._className) {
-                this._setClass("" + val);
-                this.raisePropertyChanged(name);
+            if (name === "className") {
+                if (checks.isArray(val)) {
+                    this._setClasses(val);
+                }
+                else if (checks.isString(val)) {
+                    this._setClasses(val.split(" "));
+                }
                 return;
             }
+            var el = this._$el[0], clst = el.classList;
             if (!val) {
-                this._$el.removeClass(name);
+                if (!clst)
+                    this._$el.removeClass(name);
+                else
+                    clst.remove(name);
             }
             else {
-                this._$el.addClass(name);
+                if (!clst)
+                    this._$el.addClass(name);
+                else
+                    clst.add(name);
             }
             this.raisePropertyChanged(name);
         };
