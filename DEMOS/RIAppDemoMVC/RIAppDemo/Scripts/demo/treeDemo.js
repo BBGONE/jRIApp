@@ -291,7 +291,6 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
                 self.errorVM.error = data.error;
                 self.errorVM.showDialog();
             });
-            this._fbrowserVM.loadRootFolder();
             _super.prototype.onStartUp.call(this);
         };
         DemoApplication.prototype.destroy = function () {

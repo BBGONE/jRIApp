@@ -15,7 +15,7 @@ export class RowSelectorColumn extends BaseColumn {
         super(grid, options);
         let self = this;
         this._val = false;
-        this.$col.addClass(css.rowSelector);
+        utils.dom.setClass(this.$col, css.rowSelector);
         let $chk = $('<input type="checkbox"/>');
         this.$col.append($chk);
         this._$chk = $chk;

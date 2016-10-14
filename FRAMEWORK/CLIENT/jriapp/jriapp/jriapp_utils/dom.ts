@@ -1,11 +1,10 @@
 ﻿/// <reference path="../jriapp_core/../../thirdparty/jquery.d.ts" />
 /** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { ERRS } from "../jriapp_core/lang";
+import { IIndexer } from "../jriapp_core/shared";
 
 if (!(<any>window).jQuery)
     throw new Error(ERRS.ERR_APP_NEED_JQUERY);
-
-let _hasClassList: boolean = undefined;
 
 export class DomUtils {
     static isContained(oNode: any, oCont: any) {
@@ -36,6 +35,27 @@ export class DomUtils {
     }
     static window: Window = window;
     static document: Document = window.document;
+    static getClassMap(el: Element): IIndexer<number>  {
+        let res: IIndexer<number> = {};
+        if (!el)
+            return res;
+        let className = el.className;
+        if (!className)
+            return res;
+        let arr: string[] = className.split(" ");
+        for (let i = 0; i < arr.length; i += 1)
+        {
+            let v = arr[i];
+            if (!!v) {
+                v = v.trim();
+                if (!!v)
+                {
+                    res[v] = i;
+                }
+            }
+        }
+        return res;
+    }
     /**
        set all classes, where param classes is array of classnames: ["+clasName1", "-className2", "-className3"]
        + means to add the class name, and - means to remove the class name
@@ -44,9 +64,6 @@ export class DomUtils {
     static setClasses($el: JQuery, classes: string[]): void {
         if (!$el.length || !classes.length)
             return;
-        if (_hasClassList === undefined) {
-            _hasClassList = !!$el[0].classList;
-        }
 
         let toAdd: string[] = [], toRemove: string[] = [], removeAll = false;
         classes.forEach((v: string) => {
@@ -58,16 +75,25 @@ export class DomUtils {
                 return;
             let op = v.charAt(0);
             if (op == "+" || op == "-") {
-                name = v.substr(1);
+                name = v.substr(1).trim();
             }
-            if (op != "-") {
-                toAdd.push(name);
-            }
-            else {
-                if (name === "*")
-                    removeAll = true;
-                else
-                    toRemove.push(name);
+
+            let arr: string[] = name.split(" ");
+            for (let i = 0; i < arr.length; i += 1) {
+                let v2 = arr[i];
+                if (!!v2) {
+                    v2 = arr[i].trim();
+                }
+
+                if (op != "-") {
+                    toAdd.push(v2);
+                }
+                else {
+                    if (name === "*")
+                        removeAll = true;
+                    else
+                        toRemove.push(v2);
+                }
             }
         });
 
@@ -75,34 +101,20 @@ export class DomUtils {
             toRemove = [];
         }
 
-        if (!_hasClassList) {
-            $el.each((index, el) => {
-                if (removeAll) {
-                    el.className = "";
-                }
-            });
-
-            if (toRemove.length > 0) {
-                $el.removeClass(toRemove.join(" "));
+        $el.each((index, el) => {
+            let map = DomUtils.getClassMap(el);
+            if (removeAll) {
+                map = {};
             }
-            if (toAdd.length > 0) {
-                $el.addClass(toAdd.join(" "));
+            for (let i = 0; i < toRemove.length; i += 1) {
+                delete map[toRemove[i]];
             }
-        }
-        else {
-            $el.each((index, el) => {
-                if (removeAll) {
-                    el.className = "";
-                }
-
-                for (let i = 0; i < toRemove.length; i += 1) {
-                    el.classList.remove(toRemove[i]);
-                }
-                for (let i = 0; i < toAdd.length; i += 1) {
-                    el.classList.add(toAdd[i]);
-                }
-            });
-        }
+            for (let i = 0; i < toAdd.length; i += 1) {
+                map[toAdd[i]] = i + 1000;
+            }
+            let keys = Object.keys(map);
+            el.className = keys.join(" ").trim();
+        });
     }
     static setClass($el: JQuery, css: string, remove: boolean = false): void {
         if (!$el.length)
@@ -114,39 +126,29 @@ export class DomUtils {
             });
             return;
         }
-
-        if (_hasClassList === undefined) {
-            _hasClassList = !!$el[0].classList;
-        }
-
-        if (!_hasClassList) {
-            if (remove) {
-                $el.removeClass(css);
-            }
-            else {
-                $el.addClass(css);
-            }
+        if (!css)
             return;
+
+        let arr: string[] = css.split(" ");
+        for (let i = 0; i < arr.length; i += 1) {
+            let v = arr[i];
+            if (!!v) {
+                arr[i] = v.trim();
+            }
         }
-
-        let classes: string[] = [];
-        css.split(" ").forEach((v: string) => {
-            if (!v)
-                return;
-
-            let name = v.trim();
-            if (!name)
-                return;
-            classes.push(name);
-        });
 
         $el.each((index, el) => {
-            for (let i = 0; i < classes.length; i += 1) {
-                if (remove)
-                    el.classList.remove(classes[i]);
-                else
-                    el.classList.add(classes[i]);
+            let map = DomUtils.getClassMap(el);
+            for (let i = 0; i < arr.length; i += 1) {
+                if (!!arr[i]) {
+                    if (remove)
+                        delete map[arr[i]];
+                    else
+                        map[arr[i]] = i + 1000;
+                }
             }
+            let keys = Object.keys(map);
+            el.className = keys.join(" ").trim();
         });
     }
     static addClass($el: JQuery, css: string): void {

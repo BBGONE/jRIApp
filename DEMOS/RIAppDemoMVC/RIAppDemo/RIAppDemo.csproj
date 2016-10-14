@@ -177,8 +177,6 @@
     <Content Include="Scripts\dynatree\skin\vline-rtl.gif" />
     <Content Include="Scripts\dynatree\skin\vline.gif" />
     <Content Include="Scripts\jquery\AUTHORS.txt" />
-    <Content Include="Scripts\jquery\external\jquery\jquery-3.1.1.js" />
-    <Content Include="Scripts\jquery\external\jquery\jquery-3.1.1.min.js" />
     <Content Include="Scripts\jquery\external\jquery\jquery.js" />
     <Content Include="Scripts\jquery\images\ui-bg_glass_75_d0e5f5_1x400.png" />
     <Content Include="Scripts\jquery\images\ui-bg_glass_85_dfeffc_1x400.png" />

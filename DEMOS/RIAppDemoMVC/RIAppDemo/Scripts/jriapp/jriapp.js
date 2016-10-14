@@ -1877,7 +1877,6 @@ define("jriapp_utils/dom", ["require", "exports", "jriapp_core/lang"], function 
     "use strict";
     if (!window.jQuery)
         throw new Error(lang_3.ERRS.ERR_APP_NEED_JQUERY);
-    var _hasClassList = undefined;
     var DomUtils = (function () {
         function DomUtils() {
         }
@@ -1909,12 +1908,28 @@ define("jriapp_utils/dom", ["require", "exports", "jriapp_core/lang"], function 
                 $el[name]("destroy");
             }
         };
+        DomUtils.getClassMap = function (el) {
+            var res = {};
+            if (!el)
+                return res;
+            var className = el.className;
+            if (!className)
+                return res;
+            var arr = className.split(" ");
+            for (var i = 0; i < arr.length; i += 1) {
+                var v = arr[i];
+                if (!!v) {
+                    v = v.trim();
+                    if (!!v) {
+                        res[v] = i;
+                    }
+                }
+            }
+            return res;
+        };
         DomUtils.setClasses = function ($el, classes) {
             if (!$el.length || !classes.length)
                 return;
-            if (_hasClassList === undefined) {
-                _hasClassList = !!$el[0].classList;
-            }
             var toAdd = [], toRemove = [], removeAll = false;
             classes.forEach(function (v) {
                 if (!v)
@@ -1924,47 +1939,42 @@ define("jriapp_utils/dom", ["require", "exports", "jriapp_core/lang"], function 
                     return;
                 var op = v.charAt(0);
                 if (op == "+" || op == "-") {
-                    name = v.substr(1);
+                    name = v.substr(1).trim();
                 }
-                if (op != "-") {
-                    toAdd.push(name);
-                }
-                else {
-                    if (name === "*")
-                        removeAll = true;
-                    else
-                        toRemove.push(name);
+                var arr = name.split(" ");
+                for (var i = 0; i < arr.length; i += 1) {
+                    var v2 = arr[i];
+                    if (!!v2) {
+                        v2 = arr[i].trim();
+                    }
+                    if (op != "-") {
+                        toAdd.push(v2);
+                    }
+                    else {
+                        if (name === "*")
+                            removeAll = true;
+                        else
+                            toRemove.push(v2);
+                    }
                 }
             });
             if (removeAll) {
                 toRemove = [];
             }
-            if (!_hasClassList) {
-                $el.each(function (index, el) {
-                    if (removeAll) {
-                        el.className = "";
-                    }
-                });
-                if (toRemove.length > 0) {
-                    $el.removeClass(toRemove.join(" "));
+            $el.each(function (index, el) {
+                var map = DomUtils.getClassMap(el);
+                if (removeAll) {
+                    map = {};
                 }
-                if (toAdd.length > 0) {
-                    $el.addClass(toAdd.join(" "));
+                for (var i = 0; i < toRemove.length; i += 1) {
+                    delete map[toRemove[i]];
                 }
-            }
-            else {
-                $el.each(function (index, el) {
-                    if (removeAll) {
-                        el.className = "";
-                    }
-                    for (var i = 0; i < toRemove.length; i += 1) {
-                        el.classList.remove(toRemove[i]);
-                    }
-                    for (var i = 0; i < toAdd.length; i += 1) {
-                        el.classList.add(toAdd[i]);
-                    }
-                });
-            }
+                for (var i = 0; i < toAdd.length; i += 1) {
+                    map[toAdd[i]] = i + 1000;
+                }
+                var keys = Object.keys(map);
+                el.className = keys.join(" ").trim();
+            });
         };
         DomUtils.setClass = function ($el, css, remove) {
             if (remove === void 0) { remove = false; }
@@ -1976,34 +1986,27 @@ define("jriapp_utils/dom", ["require", "exports", "jriapp_core/lang"], function 
                 });
                 return;
             }
-            if (_hasClassList === undefined) {
-                _hasClassList = !!$el[0].classList;
-            }
-            if (!_hasClassList) {
-                if (remove) {
-                    $el.removeClass(css);
-                }
-                else {
-                    $el.addClass(css);
-                }
+            if (!css)
                 return;
-            }
-            var classes = [];
-            css.split(" ").forEach(function (v) {
-                if (!v)
-                    return;
-                var name = v.trim();
-                if (!name)
-                    return;
-                classes.push(name);
-            });
-            $el.each(function (index, el) {
-                for (var i = 0; i < classes.length; i += 1) {
-                    if (remove)
-                        el.classList.remove(classes[i]);
-                    else
-                        el.classList.add(classes[i]);
+            var arr = css.split(" ");
+            for (var i = 0; i < arr.length; i += 1) {
+                var v = arr[i];
+                if (!!v) {
+                    arr[i] = v.trim();
                 }
+            }
+            $el.each(function (index, el) {
+                var map = DomUtils.getClassMap(el);
+                for (var i = 0; i < arr.length; i += 1) {
+                    if (!!arr[i]) {
+                        if (remove)
+                            delete map[arr[i]];
+                        else
+                            map[arr[i]] = i + 1000;
+                    }
+                }
+                var keys = Object.keys(map);
+                el.className = keys.join(" ").trim();
             });
         };
         DomUtils.addClass = function ($el, css) {
@@ -4439,6 +4442,8 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
                 if (v !== this.isVisible) {
                     if (!v) {
                         this._display = this.$el.css("display");
+                        if (this._display === "none")
+                            this._display = null;
                         this.$el.css("display", "none");
                     }
                     else {
@@ -4529,13 +4534,14 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
         Object.defineProperty(BaseElView.prototype, "css", {
             get: function () { return this._css; },
             set: function (v) {
-                var $el = this._$el;
+                var arr = [];
                 if (this._css !== v) {
                     if (!!this._css)
-                        dom.setClass($el, this._css, true);
+                        arr.push("-" + this._css);
                     this._css = v;
                     if (!!this._css)
-                        dom.setClass($el, this._css, false);
+                        arr.push("+" + this._css);
+                    utils_3.Utils.dom.setClasses(this._$el, arr);
                     this.raisePropertyChanged(exports.PROP_NAME.css);
                 }
             },
@@ -10858,6 +10864,6 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.COLL_CHANGE_REASON = collection_1.COLL_CHANGE_REASON;
     exports.COLL_CHANGE_TYPE = collection_1.COLL_CHANGE_TYPE;
     exports.Application = app_1.Application;
-    exports.VERSION = "0.9.70";
+    exports.VERSION = "0.9.71";
     bootstrap_25.Bootstrap._initFramework();
 });

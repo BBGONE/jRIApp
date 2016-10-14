@@ -49,7 +49,7 @@ export class BaseCell<TColumn extends BaseColumn> extends BaseObject {
         }
         */
         if (!!this._column.options.rowCellCss) {
-            $td.addClass(this._column.options.rowCellCss);
+            utils.dom.setClass($td, this._column.options.rowCellCss);
         }
         this._click = new DblClick();
         this._row.tr.appendChild(this._td);

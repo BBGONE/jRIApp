@@ -34,11 +34,11 @@ export class DetailsRow extends BaseObject {
         this._objId = "drw" + coreUtils.getNewID();
         this._createCell(options.details_id);
         this._$tr = $(this._tr);
-        this._$tr.addClass(css.rowDetails);
+        utils.dom.setClass(this._$tr, css.rowDetails);
         this._grid.addOnRowExpanded((sender, args) => {
             if (!args.isExpanded && !!args.collapsedRow)
                 self._setParentRow(null);
-        }, this._objId, this);
+        }, this._objId);
     }
     private _createCell(details_id: string) {
         let td: HTMLTableCellElement = <HTMLTableCellElement>document.createElement("td");

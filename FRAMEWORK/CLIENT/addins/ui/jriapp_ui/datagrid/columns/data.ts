@@ -18,11 +18,12 @@ export class DataColumn extends BaseColumn {
         //the DataCell caches here listbox (for the LookupContent)
         //so not to create it for every cell - it is only one per column!
         this._objCache = {};
-        this.$col.addClass(css.dataColumn);
+        let colClass = css.dataColumn;
         this._sortOrder = null;
         if (this.isSortable) {
-            this.$col.addClass(css.colSortable);
+            colClass += (" " + css.colSortable);
         }
+        utils.dom.setClass(this.$col, colClass);
     }
     protected _onColumnClicked() {
         if (this.isSortable && !!this.sortMemberName) {
@@ -76,13 +77,12 @@ export class DataColumn extends BaseColumn {
     get sortMemberName() { return this.options.sortMemberName; }
     get sortOrder() { return this._sortOrder; }
     set sortOrder(v) {
-        this.$col.removeClass([css.colSortAsc, css.colSortDesc].join(" "));
         switch (v) {
             case SORT_ORDER.ASC:
-                this.$col.addClass(css.colSortAsc);
+                utils.dom.setClasses(this.$col, ["-" + css.colSortDesc  ,"+"+css.colSortAsc]);
                 break;
             case SORT_ORDER.DESC:
-                this.$col.addClass(css.colSortDesc);
+                utils.dom.setClasses(this.$col, ["+" + css.colSortDesc, "-" + css.colSortAsc]);
                 break;
         }
         this._sortOrder = v;

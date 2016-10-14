@@ -22,7 +22,7 @@ export class FillSpaceRow extends BaseObject {
         this._cell = null;
         this._createCell();
         this._$tr = $(this._tr);
-        this._$tr.addClass(css.fillVSpace);
+        utils.dom.setClass(this._$tr, css.fillVSpace);
     }
     private _createCell() {
         let td: HTMLTableCellElement = <HTMLTableCellElement>document.createElement("td");

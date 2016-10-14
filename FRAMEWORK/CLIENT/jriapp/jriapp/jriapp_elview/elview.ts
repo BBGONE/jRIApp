@@ -293,6 +293,9 @@ export class BaseElView extends BaseObject implements IElView {
         if (v !== this.isVisible) {
             if (!v) {
                 this._display = this.$el.css("display");
+                //if saved display is none, then don't store it
+                if (this._display === "none")
+                    this._display = null;
                 this.$el.css("display", "none");
             }
             else {
@@ -354,13 +357,15 @@ export class BaseElView extends BaseObject implements IElView {
     }
     get css() { return this._css; }
     set css(v: string) {
-        let $el = this._$el;
+        let arr: string[] = [];
         if (this._css !== v) {
             if (!!this._css)
-                dom.setClass($el, this._css, true);
+                arr.push("-" + this._css);
             this._css = v;
             if (!!this._css)
-                dom.setClass($el, this._css, false);
+                arr.push("+" + this._css);
+
+            utils.dom.setClasses(this._$el, arr);
             this.raisePropertyChanged(PROP_NAME.css);
         }
     }

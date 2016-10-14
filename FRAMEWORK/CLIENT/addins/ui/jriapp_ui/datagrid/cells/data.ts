@@ -27,8 +27,7 @@ export class DataCell extends BaseCell<DataColumn> {
             });
 
         let $el = $(this._td);
-        $el.addClass(css.dataCell);
-
+        utils.dom.setClass($el, css.dataCell);
         this._initContent();
     }
     //init cell's content
@@ -77,12 +76,13 @@ export class DataCell extends BaseCell<DataColumn> {
     }
     _setState(css: string): void {
         if (this._stateCss !== css) {
-            let $el = $(this._td);
+            let arr: string[] = [];
             if (!!this._stateCss)
-                $el.removeClass(this._stateCss);
+                arr.push("-" + this._stateCss);
             this._stateCss = css;
             if (!!this._stateCss)
-                $el.addClass(this._stateCss);
+                arr.push("+" + this._stateCss);
+            utils.dom.setClasses($(this._td), arr);
         }
     }
     destroy() {

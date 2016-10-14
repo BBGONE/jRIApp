@@ -296,7 +296,6 @@ export class DemoApplication extends RIAPP.Application {
             self.errorVM.error = data.error;
             self.errorVM.showDialog();
         });
-        this._fbrowserVM.loadRootFolder();
         super.onStartUp();
     }
     //really, the destroy method is redundant here because application lives till the page lives

@@ -10,7 +10,7 @@ import { css, actionsSelector, txtMap, editSelector, deleteSelector  } from "../
 import { BaseCell, ICellOptions } from "./base";
 import { ActionsColumn } from "../columns/actions";
 
-const $ = utils.dom.$, strUtils = utils.str;
+const dom = utils.dom, $ = dom.$, strUtils = utils.str;
 
 const _editImages = '<span data-role="row-action" data-name="img_ok" class="{0}"></span><span data-role="row-action" data-name="img_cancel" class="{1}"></span>';
 const _viewImages = '<span data-role="row-action" data-name="img_edit" class="{0}"></span><span data-role="row-action" data-name="img_delete" class="{1}"></span>';
@@ -20,7 +20,7 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
     constructor(options: ICellOptions) {
         super(options);
         let $el = $(this._td);
-        $el.addClass([css.rowActions, css.nobr].join(" "));
+        dom.setClass($el, [css.rowActions, css.nobr].join(" "));
         this._createButtons(this._row.isEditing);
     }
     destroy() {

@@ -172,11 +172,13 @@ export class Row extends BaseObject {
         //TODO: add implementation to show explanation of error
         let hasErrors = this._item._aspect.getIsHasErrors();
         let $el = $(this._tr);
+        
         if (hasErrors) {
-            $el.addClass(css.rowError);
+            utils.dom.setClass($el, css.rowError, false);
         }
-        else
-            $el.removeClass(css.rowError);
+        else {
+            utils.dom.setClass($el, css.rowError, true);
+        }
     }
     scrollIntoView(animate?: boolean, pos?: ROW_POSITION) {
         this.grid.scrollToRow({ row: this, animate: animate, pos: pos });
