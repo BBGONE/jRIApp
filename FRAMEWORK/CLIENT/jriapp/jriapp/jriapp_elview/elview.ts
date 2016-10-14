@@ -11,7 +11,7 @@ import { IEventStore, EventStore, EVENT_CHANGE_TYPE, IEventChangedArgs } from ".
 
 export { IEventChangedArgs, IEventStore, EVENT_CHANGE_TYPE };
 
-const coreUtils = utils.core, $ = utils.dom.$, checks = utils.check;
+const coreUtils = utils.core, dom = utils.dom, $ = dom.$, checks = utils.check;
 
 SysChecks._isElView = function (obj: any): boolean {
     return !!obj && obj instanceof BaseElView;
@@ -109,97 +109,31 @@ class CSSBag extends BaseObject implements IPropertyBag {
     _isHasProp(prop: string) {
         return true;
     }
-    private _setClasses(classes: string[]): void {
-        let toAdd: string[] = [], toRemove: string[] = [], removeAll = false;
-        classes.forEach((v: string) => {
-            if (!v.length)
-                return;
-
-            let className = v.trim();
-            if (!className)
-                return;
-            let op = v.charAt(0);
-            if (op == "+" || op == "-") {
-                className = v.substr(1);
-            }
-            if (op != "-") {
-                toAdd.push(className);
-            }
-            else {
-                if (className === "*")
-                    removeAll = true;
-                else
-                    toRemove.push(className);
-            }
-        });
-
-        let el = this._$el[0];
-        if (removeAll) {
-            el.className = "";
-            toRemove = [];
-        }
-
-        let clst = el.classList;
-        //if classlist not supported
-        if (!clst) {
-            if (toRemove.length > 0) {
-                this._$el.removeClass(toRemove.join(" "));
-            }
-            if (toAdd.length > 0) {
-                this._$el.addClass(toAdd.join(" "));
-            }
-        }
-        else {
-            //use classlist
-            for (let i = 0; i < toRemove.length; i += 1) {
-                clst.remove(toRemove[i]);
-            }
-            for (let i = 0; i < toAdd.length; i += 1) {
-                clst.add(toAdd[i]);
-            }
-        }
-    }
-    //implement IPropertyBag
+   //implement IPropertyBag
     getProp(name: string): any {
-        if (name === "*")
-            return undefined;
-
-        return this._$el.hasClass(name);
+        return undefined;
     }
     setProp(name: string, val: any): void {
+        if (val === undefined)
+            return;
+
         if (name === "*") {
-            //set all classes, where val is "+clasName1 -className2 -className3"
-            //+ means to add the class name, and - means to remove the class name
-            //-* means to remove all classes
             if (!val) {
                 //remove all classes
-                this._setClasses(["-*"]);
+                dom.setClass(this._$el, null, true);
             }
             else if (checks.isArray(val))
             {
-                this._setClasses(<string[]>val);
+                dom.setClasses(this._$el, <string[]>val);
             }
             else if (checks.isString(val)) {
-                this._setClasses(val.split(" "));
+                dom.setClasses(this._$el, val.split(" "));
             }
             return;
         }
 
-        let el = this._$el[0], clst = el.classList;
         //set individual classes
-        if (!val) {
-            if (!clst)
-                this._$el.removeClass(name);
-            else
-                clst.remove(name);
-        }
-        else {
-            if (!clst)
-                this._$el.addClass(name);
-            else
-                clst.add(name);
-        }
-
+        dom.setClass(this._$el, name, !val);
         this.raisePropertyChanged(name);
     }
     toString() {
@@ -237,7 +171,7 @@ export class BaseElView extends BaseObject implements IElView {
         this._objId = "elv" + coreUtils.getNewID();
         this._errors = null;
         if (!!this._css) {
-            this.$el.addClass(this._css);
+            dom.setClass(this._$el, this._css, false);
         }
         this._applyToolTip();
         this._app.elViewFactory.store.setElView(el, this);
@@ -423,10 +357,10 @@ export class BaseElView extends BaseObject implements IElView {
         let $el = this._$el;
         if (this._css !== v) {
             if (!!this._css)
-                $el.removeClass(this._css);
+                dom.setClass($el, this._css, true);
             this._css = v;
             if (!!this._css)
-                $el.addClass(this._css);
+                dom.setClass($el, this._css, false);
             this.raisePropertyChanged(PROP_NAME.css);
         }
     }

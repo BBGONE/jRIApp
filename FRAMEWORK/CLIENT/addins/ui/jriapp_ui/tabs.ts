@@ -18,7 +18,7 @@ export interface ITabs {
     tabIndex: number;
     isVisible: boolean;
     dataName: string;
-    readonly css: IPropertyBag;
+    css: string;
 }
 
 export interface ITabsEvents {

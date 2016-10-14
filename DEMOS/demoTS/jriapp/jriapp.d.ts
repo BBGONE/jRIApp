@@ -1002,6 +1002,10 @@ declare module "jriapp_utils/dom" {
         static destroyJQueryPlugin($el: JQuery, name: string): void;
         static window: Window;
         static document: Document;
+        static setClasses($el: JQuery, classes: string[]): void;
+        static setClass($el: JQuery, css: string, remove?: boolean): void;
+        static addClass($el: JQuery, css: string): void;
+        static removeClass($el: JQuery, css: string): void;
     }
 }
 declare module "jriapp_utils/deferred" {

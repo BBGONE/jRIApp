@@ -325,15 +325,15 @@ RIAPP.bootstrap.addOnError(function (sender, args) {
     alert(args.error.message);
 });
 
-export function start(mainOptions: IMainOptions) {
+export function start(mainOptions: IMainOptions): RIAPP.IPromise<DemoApplication> {
     mainOptions.modulesInits = {
         "COMMON": COMMON.initModule
     };
     //an example  how to load styles dynamically
-    //we could load  them statically but it is an example.
+    //we could load  them statically but it is for example.
     bootstrap.stylesLoader.loadStyles(mainOptions.styles);
     //create and start application here
-    bootstrap.startApp(() => {
+    return bootstrap.startApp(() => {
         return new DemoApplication(mainOptions);
     }, (thisApp) => { });
 }

@@ -344,7 +344,7 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
             "COMMON": COMMON.initModule
         };
         bootstrap.stylesLoader.loadStyles(mainOptions.styles);
-        bootstrap.startApp(function () {
+        return bootstrap.startApp(function () {
             return new DemoApplication(mainOptions);
         }, function (thisApp) { });
     }

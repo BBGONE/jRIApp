@@ -1108,7 +1108,7 @@ declare module "jriapp_ui/stackpanel" {
     }
 }
 declare module "jriapp_ui/tabs" {
-    import { IViewOptions, IPropertyBag } from "jriapp_core/shared";
+    import { IViewOptions } from "jriapp_core/shared";
     import { BaseElView } from "jriapp_elview/elview";
     export interface ITabs {
         readonly uniqueID: string;
@@ -1117,7 +1117,7 @@ declare module "jriapp_ui/tabs" {
         tabIndex: number;
         isVisible: boolean;
         dataName: string;
-        readonly css: IPropertyBag;
+        css: string;
     }
     export interface ITabsEvents {
         addTabs(tabs: ITabs): void;

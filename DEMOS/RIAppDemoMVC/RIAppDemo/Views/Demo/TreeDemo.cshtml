@@ -46,13 +46,15 @@
                 ops.permissionInfo = @Html.Action("PermissionsInfo", "FolderBrowserService");
             })(mainOptions);
 
-            DEMO.start(mainOptions);
+            DEMO.start(mainOptions).then(function(app){
+                $("#main").css("visibility","visible");
+            });
         });
 </script>
 
 <h2 class="ex8">@ViewBag.Title</h2>
 
-<ul class="dynatree-container" data-bind="{this.dataSource,to=rootView,source=fbrowserVM}" data-view="options:{templateID:ItemListTemplate}"></ul>
+<ul id="main" style="visibility:hidden;" class="dynatree-container" data-bind="{this.dataSource,to=rootView,source=fbrowserVM}" data-view="options:{templateID:ItemListTemplate}"></ul>
 
 <a class="btn btn-info btn-small" style="margin: 15px 5px 5px 0px;" data-bind="{this.command,to=collapseCommand,source=fbrowserVM}">Collapse Tree</a>&nbsp;
 <a class="btn btn-info btn-small" style="margin: 15px 5px 5px 0px;" data-bind="{this.command,to=reloadCommand,source=fbrowserVM}">Reload Tree</a>
