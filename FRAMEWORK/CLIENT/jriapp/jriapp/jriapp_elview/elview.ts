@@ -133,12 +133,13 @@ class CSSBag extends BaseObject implements IPropertyBag {
             }
         });
 
-        let el = this._$el[0], clst = el.classList;
+        let el = this._$el[0];
         if (removeAll) {
             el.className = "";
             toRemove = [];
         }
 
+        let clst = el.classList;
         //if classlist not supported
         if (!clst) {
             if (toRemove.length > 0) {
@@ -160,17 +161,21 @@ class CSSBag extends BaseObject implements IPropertyBag {
     }
     //implement IPropertyBag
     getProp(name: string): any {
-        if (name === "className")
+        if (name === "*")
             return undefined;
 
         return this._$el.hasClass(name);
     }
     setProp(name: string, val: any): void {
-        if (name === "className") {
+        if (name === "*") {
             //set all classes, where val is "+clasName1 -className2 -className3"
             //+ means to add the class name, and - means to remove the class name
             //-* means to remove all classes
-            if (checks.isArray(val))
+            if (!val) {
+                //remove all classes
+                this._setClasses(["-*"]);
+            }
+            else if (checks.isArray(val))
             {
                 this._setClasses(<string[]>val);
             }
@@ -210,7 +215,10 @@ export class BaseElView extends BaseObject implements IElView {
     protected _app: IApplication;
     private _eventStore: EventStore;
     private _props: IPropertyBag;
-    private _css: IPropertyBag;
+    private _classes: IPropertyBag;
+    //saves old display before making display: none
+    private _display: string;
+    private _css: string;
 
     constructor(options: IViewOptions) {
         super();
@@ -222,12 +230,14 @@ export class BaseElView extends BaseObject implements IElView {
         //lazily initialized
         this._eventStore = null;
         this._props = null;
-        this._css = null;
+        this._classes = null;
+        this._display = null;
+        this._css = options.css;
 
         this._objId = "elv" + coreUtils.getNewID();
         this._errors = null;
-        if (!!options.css) {
-            this.$el.addClass(options.css);
+        if (!!this._css) {
+            this.$el.addClass(this._css);
         }
         this._applyToolTip();
         this._app.elViewFactory.store.setElView(el, this);
@@ -315,10 +325,12 @@ export class BaseElView extends BaseObject implements IElView {
             this._props.destroy();
             this._props = null;
         }
-        if (!!this._css) {
-            this._css.destroy();
-            this._css = null;
+        if (!!this._classes) {
+            this._classes.destroy();
+            this._classes = null;
         }
+        this._display = null;
+        this._css = null;
         super.destroy();
     }
     public handleError(error: any, source: any): boolean {
@@ -338,17 +350,22 @@ export class BaseElView extends BaseObject implements IElView {
         return this._$el[0];
     }
     get uniqueID(): string { return this._objId; }
-    get isVisible(): boolean {
-        return !!this.$el.is(':visible');
+    get isVisible() {
+        let v = this.$el.css("display");
+        return !(v === "none");
     }
-    set isVisible(v: boolean) {
-        let bv = !!v;
-        if (bv !== this.isVisible) {
+    set isVisible(v) {
+        v = !!v;
+        if (v !== this.isVisible) {
             if (!v) {
-                this.$el.hide();
+                this._display = this.$el.css("display");
+                this.$el.css("display", "none");
             }
             else {
-                this.$el.show();
+                if (!!this._display)
+                    this.$el.css("display", this._display);
+                else
+                    this.$el.css("display", "");
             }
             this.raisePropertyChanged(PROP_NAME.isVisible);
         }
@@ -387,19 +404,31 @@ export class BaseElView extends BaseObject implements IElView {
     get props(): IPropertyBag {
         if (!this._props) {
             if (this.getIsDestroyCalled())
-                return null;
+                return undefined;
             this._props = new PropertyBag(this.$el);
         }
         return this._props;
     }
     //exposes All CSS Classes for data binding directly to them
-    get css(): IPropertyBag {
-        if (!this._css) {
+    get classes(): IPropertyBag {
+        if (!this._classes) {
             if (this.getIsDestroyCalled())
-                return null;
-            this._css = new CSSBag(this.$el);
+                return undefined;
+            this._classes = new CSSBag(this.$el);
         }
-        return this._css;
+        return this._classes;
+    }
+    get css() { return this._css; }
+    set css(v: string) {
+        let $el = this._$el;
+        if (this._css !== v) {
+            if (!!this._css)
+                $el.removeClass(this._css);
+            this._css = v;
+            if (!!this._css)
+                $el.addClass(this._css);
+            this.raisePropertyChanged(PROP_NAME.css);
+        }
     }
 }
 

@@ -3457,23 +3457,23 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
         Bootstrap.prototype._bindGlobalEvents = function () {
             var self = this;
             var $win = $(window), $doc = $(document);
-            $doc.on("click.global", function (e) {
+            $doc.on("click.jriapp", function (e) {
                 e.stopPropagation();
                 self.currentSelectable = null;
             });
-            $doc.on("keydown.global", function (e) {
+            $doc.on("keydown.jriapp", function (e) {
                 e.stopPropagation();
                 if (!!self._currentSelectable) {
                     self._currentSelectable.getISelectable().onKeyDown(e.which, e);
                 }
             });
-            $doc.on("keyup.global", function (e) {
+            $doc.on("keyup.jriapp", function (e) {
                 e.stopPropagation();
                 if (!!self._currentSelectable) {
                     self._currentSelectable.getISelectable().onKeyUp(e.which, e);
                 }
             });
-            $win.unload(function () {
+            $win.on("beforeunload.jriapp", function () {
                 self.raiseEvent(GLOB_EVENTS.unload, {});
             });
             dom_6.DomUtils.window.onerror = function (msg, url, linenumber) {
@@ -3709,8 +3709,9 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             self._elViewRegister.destroy();
             self._elViewRegister = null;
             self._moduleInits = [];
-            $(dom_6.DomUtils.document).off(".global");
-            dom_6.DomUtils.window.onerror = null;
+            $(document).off(".jriapp");
+            window.onerror = null;
+            $(window).off(".jriapp");
             _super.prototype.destroy.call(this);
         };
         Bootstrap.prototype.registerSvc = function (name, obj) {
@@ -4179,11 +4180,12 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
                         toRemove.push(className);
                 }
             });
-            var el = this._$el[0], clst = el.classList;
+            var el = this._$el[0];
             if (removeAll) {
                 el.className = "";
                 toRemove = [];
             }
+            var clst = el.classList;
             if (!clst) {
                 if (toRemove.length > 0) {
                     this._$el.removeClass(toRemove.join(" "));
@@ -4202,13 +4204,16 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             }
         };
         CSSBag.prototype.getProp = function (name) {
-            if (name === "className")
+            if (name === "*")
                 return undefined;
             return this._$el.hasClass(name);
         };
         CSSBag.prototype.setProp = function (name, val) {
-            if (name === "className") {
-                if (checks.isArray(val)) {
+            if (name === "*") {
+                if (!val) {
+                    this._setClasses(["-*"]);
+                }
+                else if (checks.isArray(val)) {
                     this._setClasses(val);
                 }
                 else if (checks.isString(val)) {
@@ -4246,11 +4251,13 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             this._toolTip = options.tip;
             this._eventStore = null;
             this._props = null;
-            this._css = null;
+            this._classes = null;
+            this._display = null;
+            this._css = options.css;
             this._objId = "elv" + coreUtils.getNewID();
             this._errors = null;
-            if (!!options.css) {
-                this.$el.addClass(options.css);
+            if (!!this._css) {
+                this.$el.addClass(this._css);
             }
             this._applyToolTip();
             this._app.elViewFactory.store.setElView(el, this);
@@ -4338,10 +4345,12 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
                 this._props.destroy();
                 this._props = null;
             }
-            if (!!this._css) {
-                this._css.destroy();
-                this._css = null;
+            if (!!this._classes) {
+                this._classes.destroy();
+                this._classes = null;
             }
+            this._display = null;
+            this._css = null;
             _super.prototype.destroy.call(this);
         };
         BaseElView.prototype.handleError = function (error, source) {
@@ -4375,16 +4384,21 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
         });
         Object.defineProperty(BaseElView.prototype, "isVisible", {
             get: function () {
-                return !!this.$el.is(':visible');
+                var v = this.$el.css("display");
+                return !(v === "none");
             },
             set: function (v) {
-                var bv = !!v;
-                if (bv !== this.isVisible) {
+                v = !!v;
+                if (v !== this.isVisible) {
                     if (!v) {
-                        this.$el.hide();
+                        this._display = this.$el.css("display");
+                        this.$el.css("display", "none");
                     }
                     else {
-                        this.$el.show();
+                        if (!!this._display)
+                            this.$el.css("display", this._display);
+                        else
+                            this.$el.css("display", "");
                     }
                     this.raisePropertyChanged(exports.PROP_NAME.isVisible);
                 }
@@ -4445,7 +4459,7 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             get: function () {
                 if (!this._props) {
                     if (this.getIsDestroyCalled())
-                        return null;
+                        return undefined;
                     this._props = new PropertyBag(this.$el);
                 }
                 return this._props;
@@ -4453,14 +4467,30 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(BaseElView.prototype, "css", {
+        Object.defineProperty(BaseElView.prototype, "classes", {
             get: function () {
-                if (!this._css) {
+                if (!this._classes) {
                     if (this.getIsDestroyCalled())
-                        return null;
-                    this._css = new CSSBag(this.$el);
+                        return undefined;
+                    this._classes = new CSSBag(this.$el);
                 }
-                return this._css;
+                return this._classes;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BaseElView.prototype, "css", {
+            get: function () { return this._css; },
+            set: function (v) {
+                var $el = this._$el;
+                if (this._css !== v) {
+                    if (!!this._css)
+                        $el.removeClass(this._css);
+                    this._css = v;
+                    if (!!this._css)
+                        $el.addClass(this._css);
+                    this.raisePropertyChanged(exports.PROP_NAME.css);
+                }
             },
             enumerable: true,
             configurable: true
@@ -10781,6 +10811,6 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.COLL_CHANGE_REASON = collection_1.COLL_CHANGE_REASON;
     exports.COLL_CHANGE_TYPE = collection_1.COLL_CHANGE_TYPE;
     exports.Application = app_1.Application;
-    exports.VERSION = "0.9.68";
+    exports.VERSION = "0.9.69";
     bootstrap_25.Bootstrap._initFramework();
 });

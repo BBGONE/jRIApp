@@ -1482,6 +1482,8 @@ declare module "jriapp_elview/elview" {
         protected _app: IApplication;
         private _eventStore;
         private _props;
+        private _classes;
+        private _display;
         private _css;
         constructor(options: IViewOptions);
         protected _onEventChanged(args: IEventChangedArgs): void;
@@ -1505,7 +1507,8 @@ declare module "jriapp_elview/elview" {
         readonly app: IApplication;
         readonly events: IEventStore;
         readonly props: IPropertyBag;
-        readonly css: IPropertyBag;
+        readonly classes: IPropertyBag;
+        css: string;
     }
 }
 declare module "jriapp_core/binding" {

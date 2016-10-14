@@ -20,16 +20,19 @@ export class SizeConverter extends RIAPP.BaseConverter {
     }
     convertToTarget(val: any, param: any, dataContext: any): any {
         let size = "" + val;
+        let res: string[] = ["-*"];
         switch (size) {
             case "L":
-                return ["+lsize", "-*"];
+                res.push("+lsize");
+                break;
             case "M":
-                return ["+msize", "-*"];
+                res.push("+msize");
+                break;
             case "S":
-                return ["+ssize", "-*"];
-            default:
-                return ["-*"];
+                res.push("+ssize");
+                break;
         }
+        return res;
     }
 }
 

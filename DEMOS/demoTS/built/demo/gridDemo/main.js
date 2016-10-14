@@ -2833,16 +2833,19 @@ define("gridDemo/main", ["require", "exports", "jriapp", "common", "gridDemo/app
         };
         SizeConverter.prototype.convertToTarget = function (val, param, dataContext) {
             var size = "" + val;
+            var res = ["-*"];
             switch (size) {
                 case "L":
-                    return ["+lsize", "-*"];
+                    res.push("+lsize");
+                    break;
                 case "M":
-                    return ["+msize", "-*"];
+                    res.push("+msize");
+                    break;
                 case "S":
-                    return ["+ssize", "-*"];
-                default:
-                    return ["-*"];
+                    res.push("+ssize");
+                    break;
             }
+            return res;
         };
         return SizeConverter;
     }(RIAPP.BaseConverter));

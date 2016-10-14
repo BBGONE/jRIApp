@@ -29,13 +29,11 @@ input[type="tel"], input[type="color"], .uneditable-input {
 .btn {
     border-radius: 4px !important;
     font-size: 10pt !important;
-    padding: 4px 10px !important;
 }
 
 .btn-small {
     border-radius: 4px;
     font-size: 10pt;
-    padding: 4px 10px;
 }
 
 img { border: none; }

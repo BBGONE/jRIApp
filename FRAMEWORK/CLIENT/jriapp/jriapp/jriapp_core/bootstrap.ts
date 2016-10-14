@@ -125,23 +125,23 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         let $win = $(window), $doc = $(document);
 
         //when clicked outside any Selectable set _currentSelectable = null
-        $doc.on("click.global", function (e) {
+        $doc.on("click.jriapp", function (e) {
             e.stopPropagation();
             self.currentSelectable = null;
         });
-        $doc.on("keydown.global", function (e) {
+        $doc.on("keydown.jriapp", function (e) {
             e.stopPropagation();
             if (!!self._currentSelectable) {
                 self._currentSelectable.getISelectable().onKeyDown(e.which, e);
             }
         });
-        $doc.on("keyup.global", function (e) {
+        $doc.on("keyup.jriapp", function (e) {
             e.stopPropagation();
             if (!!self._currentSelectable) {
                 self._currentSelectable.getISelectable().onKeyUp(e.which, e);
             }
         });
-        $win.unload(function () {
+        $win.on("beforeunload.jriapp", function () {
             self.raiseEvent(GLOB_EVENTS.unload, {});
         });
 
@@ -399,8 +399,9 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         self._elViewRegister.destroy();
         self._elViewRegister = null;
         self._moduleInits = [];
-        $(dom.document).off(".global");
-        dom.window.onerror = null;
+        $(document).off(".jriapp");
+        window.onerror = null;
+        $(window).off(".jriapp");
         super.destroy();
     }
     registerSvc(name: string, obj: any) {
