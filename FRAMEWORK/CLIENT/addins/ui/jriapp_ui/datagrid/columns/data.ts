@@ -23,7 +23,7 @@ export class DataColumn extends BaseColumn {
         if (this.isSortable) {
             colClass += (" " + css.colSortable);
         }
-        utils.dom.setClass(this.$col, colClass);
+        utils.dom.addClass(this.$col, colClass);
     }
     protected _onColumnClicked() {
         if (this.isSortable && !!this.sortMemberName) {
@@ -77,15 +77,18 @@ export class DataColumn extends BaseColumn {
     get sortMemberName() { return this.options.sortMemberName; }
     get sortOrder() { return this._sortOrder; }
     set sortOrder(v) {
+        let arr: string[] = [];
+
         switch (v) {
             case SORT_ORDER.ASC:
-                utils.dom.setClasses(this.$col, ["-" + css.colSortDesc  ,"+"+css.colSortAsc]);
+                arr = ["-" + css.colSortDesc, "+" + css.colSortAsc];
                 break;
             case SORT_ORDER.DESC:
-                utils.dom.setClasses(this.$col, ["+" + css.colSortDesc, "-" + css.colSortAsc]);
+                arr = ["+" + css.colSortDesc, "-" + css.colSortAsc];
                 break;
         }
         this._sortOrder = v;
+        utils.dom.setClasses(this.$col.toArray(), arr);
         this.raisePropertyChanged(PROP_NAME.sortOrder);
     }
 }

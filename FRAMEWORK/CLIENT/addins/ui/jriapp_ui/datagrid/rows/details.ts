@@ -34,7 +34,7 @@ export class DetailsRow extends BaseObject {
         this._objId = "drw" + coreUtils.getNewID();
         this._createCell(options.details_id);
         this._$tr = $(this._tr);
-        utils.dom.setClass(this._$tr, css.rowDetails);
+        utils.dom.addClass(this._$tr, css.rowDetails);
         this._grid.addOnRowExpanded((sender, args) => {
             if (!args.isExpanded && !!args.collapsedRow)
                 self._setParentRow(null);

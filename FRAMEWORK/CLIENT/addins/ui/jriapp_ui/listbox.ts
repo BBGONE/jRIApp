@@ -807,7 +807,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         let spanView = new SpanElView({ app: this.app, el: el });
         if (!!displayInfo) {
             if (!!displayInfo.displayCss) {
-                utils.dom.setClass(spanView.$el, displayInfo.displayCss);
+                utils.dom.addClass(spanView.$el, displayInfo.displayCss);
             }
         }
         this._spanView = spanView;

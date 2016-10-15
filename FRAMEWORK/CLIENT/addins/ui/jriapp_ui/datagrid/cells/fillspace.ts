@@ -20,7 +20,7 @@ export class FillSpaceCell extends BaseObject {
         this._td.colSpan = this.grid.columns.length;
         this._row.tr.appendChild(this._td);
         this._$div = $("<div></div>");
-        utils.dom.setClass(this._$div, css.fillVSpace);
+        utils.dom.addClass(this._$div, css.fillVSpace);
         this._$div.appendTo(this._td);
     }
     destroy() {

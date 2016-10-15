@@ -2,8 +2,8 @@
 import { DATA_ATTR } from "../jriapp_core/const";
 import { ITemplate, ILifeTimeScope, ITemplateEvents, IApplication, IPromise, IVoidPromise, IElView, IViewOptions } from "../jriapp_core/shared";
 import { SysChecks, CoreUtils as coreUtils, Checks as checks, StringUtils as strUtils, ERROR } from "../jriapp_utils/coreutils";
-import { DomUtils as dom } from "../jriapp_utils/dom";
-import { AsyncUtils as defer } from "../jriapp_utils/async";
+import { DomUtils } from "../jriapp_utils/dom";
+import { AsyncUtils } from "../jriapp_utils/async";
 import { ERRS } from "../jriapp_core/lang";
 import { BaseObject }  from "../jriapp_core/object";
 import { bootstrap } from "../jriapp_core/bootstrap";
@@ -11,7 +11,7 @@ import { BaseElView } from "../jriapp_elview/elview";
 import { CommandElView } from "../jriapp_elview/command";
 import { Binding } from "binding";
 
-const $ = dom.$, document = dom.document;
+const defer = AsyncUtils, dom = DomUtils, $ = dom.$, doc = dom.document;
 
 export const css = {
     templateContainer: "ria-template-container",
@@ -54,7 +54,7 @@ class Template extends BaseObject implements ITemplate {
         this._lfTime = null;
         this._templateID = null;
         this._templElView = undefined;
-        this._el = document.createElement("div");
+        this._el = doc.createElement("div");
         this._el.className = css.templateContainer;
     }
     private _getBindings(): Binding[] {
@@ -108,7 +108,7 @@ class Template extends BaseObject implements ITemplate {
         let self = this, fn_loader = this.app.getTemplateLoader(name), promise: IPromise<string>;
         if (checks.isFunc(fn_loader) && checks.isThenable(promise = fn_loader())) {
             return promise.then((html: string) => {
-                let tmpDiv: HTMLElement = document.createElement("div");
+                let tmpDiv: HTMLElement = doc.createElement("div");
                 tmpDiv.innerHTML = html;
                 tmpDiv = <HTMLElement>tmpDiv.firstElementChild;
                 return tmpDiv;
@@ -169,8 +169,7 @@ class Template extends BaseObject implements ITemplate {
         if (!!self._loadedElem) {
             self._unloadTemplate();
         }
-
-        $(templateEl).removeClass(css.templateError);
+        dom.setClass([templateEl], css.templateError, true);
         self._loadedElem = loadedEl;
         self._onLoading();
         templateEl.appendChild(loadedEl);
@@ -194,7 +193,7 @@ class Template extends BaseObject implements ITemplate {
         if (ERROR.checkIsAbort(err)) {
             return;
         }
-        $(templateEl).addClass(css.templateError);
+        dom.setClass([templateEl], css.templateError, false);
         let ex: any;
         if (!!err) {
             if (!!err.message)

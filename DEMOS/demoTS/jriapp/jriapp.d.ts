@@ -994,7 +994,6 @@ declare module "jriapp_core/parser" {
     export const parser: Parser;
 }
 declare module "jriapp_utils/dom" {
-    import { IIndexer } from "jriapp_core/shared";
     export class DomUtils {
         static isContained(oNode: any, oCont: any): boolean;
         static removeNode(node: Node): void;
@@ -1003,9 +1002,9 @@ declare module "jriapp_utils/dom" {
         static destroyJQueryPlugin($el: JQuery, name: string): void;
         static window: Window;
         static document: Document;
-        static getClassMap(el: Element): IIndexer<number>;
-        static setClasses($el: JQuery, classes: string[]): void;
-        static setClass($el: JQuery, css: string, remove?: boolean): void;
+        private static getClassMap(el);
+        static setClasses(elems: Element[], classes: string[]): void;
+        static setClass(elems: Element[], css: string, remove?: boolean): void;
         static addClass($el: JQuery, css: string): void;
         static removeClass($el: JQuery, css: string): void;
     }

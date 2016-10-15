@@ -52,7 +52,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
 
         let colDiv = document.createElement("div");
         this._$col = $(colDiv);
-        utils.dom.setClass(this._$col, css.column);
+        utils.dom.addClass(this._$col, css.column);
         this._$col.click(function (e) {
             e.stopPropagation();
             bootstrap.currentSelectable = grid;
@@ -92,7 +92,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         }
 
         if (!!this._options.colCellCss) {
-            utils.dom.setClass(this._$col, this._options.colCellCss);
+            utils.dom.addClass(this._$col, this._options.colCellCss);
         }
     }
     destroy() {
@@ -148,13 +148,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
     set isSelected(v) {
         if (this._isSelected !== v) {
             this._isSelected = v;
-            if (this._isSelected) {
-                utils.dom.setClass(this._$col, css.columnSelected, false);
-            }
-            else
-            {
-                utils.dom.setClass(this._$col, css.columnSelected, true);
-            }
+            utils.dom.setClass(this._$col.toArray(), css.columnSelected, !this._isSelected);
         }
     }
 }

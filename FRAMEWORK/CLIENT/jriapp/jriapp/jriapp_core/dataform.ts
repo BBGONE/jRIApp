@@ -151,7 +151,7 @@ export class DataForm extends BaseObject {
         this._$el = $(this._el);
         this._objId = "frm" + coreUtils.getNewID();
         this._dataContext = null;
-        this._$el.addClass(css.dataform);
+        dom.addClass(this._$el, css.dataform);
         this._isEditing = false;
         this._content = [];
         this._lfTime = null;

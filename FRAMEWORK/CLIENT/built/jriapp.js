@@ -1917,18 +1917,15 @@ define("jriapp_utils/dom", ["require", "exports", "jriapp_core/lang"], function 
                 return res;
             var arr = className.split(" ");
             for (var i = 0; i < arr.length; i += 1) {
-                var v = arr[i];
-                if (!!v) {
-                    v = v.trim();
-                    if (!!v) {
-                        res[v] = i;
-                    }
+                arr[i] = arr[i].trim();
+                if (!!arr[i]) {
+                    res[arr[i]] = i;
                 }
             }
             return res;
         };
-        DomUtils.setClasses = function ($el, classes) {
-            if (!$el.length || !classes.length)
+        DomUtils.setClasses = function (elems, classes) {
+            if (!elems.length || !classes.length)
                 return;
             var toAdd = [], toRemove = [], removeAll = false;
             classes.forEach(function (v) {
@@ -1941,27 +1938,29 @@ define("jriapp_utils/dom", ["require", "exports", "jriapp_core/lang"], function 
                 if (op == "+" || op == "-") {
                     name = v.substr(1).trim();
                 }
+                if (!name)
+                    return;
                 var arr = name.split(" ");
                 for (var i = 0; i < arr.length; i += 1) {
-                    var v2 = arr[i];
+                    var v2 = arr[i].trim();
                     if (!!v2) {
-                        v2 = arr[i].trim();
-                    }
-                    if (op != "-") {
-                        toAdd.push(v2);
-                    }
-                    else {
-                        if (name === "*")
-                            removeAll = true;
-                        else
-                            toRemove.push(v2);
+                        if (op != "-") {
+                            toAdd.push(v2);
+                        }
+                        else {
+                            if (name === "*")
+                                removeAll = true;
+                            else
+                                toRemove.push(v2);
+                        }
                     }
                 }
             });
             if (removeAll) {
                 toRemove = [];
             }
-            $el.each(function (index, el) {
+            for (var j = 0; j < elems.length; j += 1) {
+                var el = elems[j];
                 var map = DomUtils.getClassMap(el);
                 if (removeAll) {
                     map = {};
@@ -1974,28 +1973,26 @@ define("jriapp_utils/dom", ["require", "exports", "jriapp_core/lang"], function 
                 }
                 var keys = Object.keys(map);
                 el.className = keys.join(" ").trim();
-            });
+            }
         };
-        DomUtils.setClass = function ($el, css, remove) {
+        DomUtils.setClass = function (elems, css, remove) {
             if (remove === void 0) { remove = false; }
-            if (!$el.length)
+            if (!elems.length)
                 return;
             if (remove && !css) {
-                $el.each(function (index, el) {
-                    el.className = "";
-                });
+                for (var j = 0; j < elems.length; j += 1) {
+                    elems[j].className = "";
+                }
                 return;
             }
             if (!css)
                 return;
             var arr = css.split(" ");
             for (var i = 0; i < arr.length; i += 1) {
-                var v = arr[i];
-                if (!!v) {
-                    arr[i] = v.trim();
-                }
+                arr[i] = arr[i].trim();
             }
-            $el.each(function (index, el) {
+            for (var j = 0; j < elems.length; j += 1) {
+                var el = elems[j];
                 var map = DomUtils.getClassMap(el);
                 for (var i = 0; i < arr.length; i += 1) {
                     if (!!arr[i]) {
@@ -2007,13 +2004,13 @@ define("jriapp_utils/dom", ["require", "exports", "jriapp_core/lang"], function 
                 }
                 var keys = Object.keys(map);
                 el.className = keys.join(" ").trim();
-            });
+            }
         };
         DomUtils.addClass = function ($el, css) {
-            DomUtils.setClass($el, css, false);
+            DomUtils.setClass($el.toArray(), css, false);
         };
         DomUtils.removeClass = function ($el, css) {
-            DomUtils.setClass($el, css, true);
+            DomUtils.setClass($el.toArray(), css, true);
         };
         DomUtils.$ = jQuery;
         DomUtils.window = window;
@@ -4273,18 +4270,17 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
                 return;
             if (name === "*") {
                 if (!val) {
-                    dom.setClass(this._$el, null, true);
+                    dom.removeClass(this._$el, null);
                 }
                 else if (checks.isArray(val)) {
-                    dom.setClasses(this._$el, val);
+                    dom.setClasses(this._$el.toArray(), val);
                 }
                 else if (checks.isString(val)) {
-                    dom.setClasses(this._$el, val.split(" "));
+                    dom.setClasses(this._$el.toArray(), val.split(" "));
                 }
                 return;
             }
-            dom.setClass(this._$el, name, !val);
-            this.raisePropertyChanged(name);
+            dom.setClass(this._$el.toArray(), name, !val);
         };
         CSSBag.prototype.toString = function () {
             return "IPropertyBag";
@@ -4307,7 +4303,7 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             this._objId = "elv" + coreUtils.getNewID();
             this._errors = null;
             if (!!this._css) {
-                dom.setClass(this._$el, this._css, false);
+                dom.addClass(this._$el, this._css);
             }
             this._applyToolTip();
             this._app.elViewFactory.store.setElView(el, this);
@@ -4541,7 +4537,7 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
                     this._css = v;
                     if (!!this._css)
                         arr.push("+" + this._css);
-                    utils_3.Utils.dom.setClasses(this._$el, arr);
+                    utils_3.Utils.dom.setClasses(this._$el.toArray(), arr);
                     this.raisePropertyChanged(exports.PROP_NAME.css);
                 }
             },
@@ -6375,7 +6371,7 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
             this._$el = $(this._el);
             this._objId = "frm" + coreutils_17.CoreUtils.getNewID();
             this._dataContext = null;
-            this._$el.addClass(exports.css.dataform);
+            dom_7.DomUtils.addClass(this._$el, exports.css.dataform);
             this._isEditing = false;
             this._content = [];
             this._lfTime = null;
@@ -6879,7 +6875,7 @@ define("jriapp_elview/command", ["require", "exports", "jriapp_utils/coreutils",
 });
 define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jriapp_utils/coreutils", "jriapp_utils/dom", "jriapp_utils/async", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_elview/command"], function (require, exports, const_6, coreutils_19, dom_8, async_7, lang_16, object_15, bootstrap_12, command_1) {
     "use strict";
-    var $ = dom_8.DomUtils.$, document = dom_8.DomUtils.document;
+    var defer = async_7.AsyncUtils, dom = dom_8.DomUtils, $ = dom.$, doc = dom.document;
     exports.css = {
         templateContainer: "ria-template-container",
         templateError: "ria-template-error"
@@ -6906,7 +6902,7 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
             this._lfTime = null;
             this._templateID = null;
             this._templElView = undefined;
-            this._el = document.createElement("div");
+            this._el = doc.createElement("div");
             this._el.className = exports.css.templateContainer;
         }
         Template.prototype._getBindings = function () {
@@ -6959,7 +6955,7 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
             var self = this, fn_loader = this.app.getTemplateLoader(name), promise;
             if (coreutils_19.Checks.isFunc(fn_loader) && coreutils_19.Checks.isThenable(promise = fn_loader())) {
                 return promise.then(function (html) {
-                    var tmpDiv = document.createElement("div");
+                    var tmpDiv = doc.createElement("div");
                     tmpDiv.innerHTML = html;
                     tmpDiv = tmpDiv.firstElementChild;
                     return tmpDiv;
@@ -6971,7 +6967,7 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
                 });
             }
             else {
-                var deferred = async_7.AsyncUtils.createDeferred();
+                var deferred = defer.createDeferred();
                 return deferred.reject(new Error(coreutils_19.StringUtils.format(lang_16.ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID)));
             }
         };
@@ -7018,7 +7014,7 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
             if (!!self._loadedElem) {
                 self._unloadTemplate();
             }
-            $(templateEl).removeClass(exports.css.templateError);
+            dom.setClass([templateEl], exports.css.templateError, true);
             self._loadedElem = loadedEl;
             self._onLoading();
             templateEl.appendChild(loadedEl);
@@ -7042,7 +7038,7 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
             if (coreutils_19.ERROR.checkIsAbort(err)) {
                 return;
             }
-            $(templateEl).addClass(exports.css.templateError);
+            dom.setClass([templateEl], exports.css.templateError, false);
             var ex;
             if (!!err) {
                 if (!!err.message)
@@ -10864,6 +10860,6 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.COLL_CHANGE_REASON = collection_1.COLL_CHANGE_REASON;
     exports.COLL_CHANGE_TYPE = collection_1.COLL_CHANGE_TYPE;
     exports.Application = app_1.Application;
-    exports.VERSION = "0.9.71";
+    exports.VERSION = "0.9.72";
     bootstrap_25.Bootstrap._initFramework();
 });

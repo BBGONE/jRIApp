@@ -120,21 +120,20 @@ class CSSBag extends BaseObject implements IPropertyBag {
         if (name === "*") {
             if (!val) {
                 //remove all classes
-                dom.setClass(this._$el, null, true);
+                dom.removeClass(this._$el, null);
             }
             else if (checks.isArray(val))
             {
-                dom.setClasses(this._$el, <string[]>val);
+                dom.setClasses(this._$el.toArray(), <string[]>val);
             }
             else if (checks.isString(val)) {
-                dom.setClasses(this._$el, val.split(" "));
+                dom.setClasses(this._$el.toArray(), val.split(" "));
             }
             return;
         }
 
         //set individual classes
-        dom.setClass(this._$el, name, !val);
-        this.raisePropertyChanged(name);
+        dom.setClass(this._$el.toArray(), name, !val);
     }
     toString() {
         return "IPropertyBag";
@@ -171,7 +170,7 @@ export class BaseElView extends BaseObject implements IElView {
         this._objId = "elv" + coreUtils.getNewID();
         this._errors = null;
         if (!!this._css) {
-            dom.setClass(this._$el, this._css, false);
+            dom.addClass(this._$el, this._css);
         }
         this._applyToolTip();
         this._app.elViewFactory.store.setElView(el, this);
@@ -365,7 +364,7 @@ export class BaseElView extends BaseObject implements IElView {
             if (!!this._css)
                 arr.push("+" + this._css);
 
-            utils.dom.setClasses(this._$el, arr);
+            utils.dom.setClasses(this._$el.toArray(), arr);
             this.raisePropertyChanged(PROP_NAME.css);
         }
     }
