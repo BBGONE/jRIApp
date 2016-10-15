@@ -443,7 +443,7 @@ define("jriapp_utils/syschecks", ["require", "exports"], function (require, expo
         SysChecks._isElView = function (obj) { return false; };
         SysChecks._isBinding = function (obj) { return false; };
         SysChecks._isPropBag = function (obj) {
-            return SysChecks._isBaseObj(obj) && obj.toString() == "IPropertyBag";
+            return SysChecks._isBaseObj(obj) && obj.toString() === "IPBag";
         };
         SysChecks._isEventStore = function (obj) { return false; };
         SysChecks._isCollection = function (obj) { return false; };
@@ -1622,11 +1622,30 @@ define("jriapp_utils/eventstore", ["require", "exports", "jriapp_core/object", "
 define("jriapp_core/parser", ["require", "exports", "jriapp_core/lang", "jriapp_utils/syschecks", "jriapp_utils/coreutils"], function (require, exports, lang_2, syschecks_4, coreutils_4) {
     "use strict";
     var checks = coreutils_4.Checks, syschecks = syschecks_4.SysChecks, strUtils = coreutils_4.StringUtils, coreUtils = coreutils_4.CoreUtils;
+    var __trimOuterBracesRX = /^([{]){0,1}|([}]){0,1}$/g;
+    var __trimQuotsRX = /^(['"])+|(['"])+$/g;
+    var __trimBracketsRX = /^(\[)+|(\])+$/g;
+    var __indexedPropRX = /(^\w+)\s*\[\s*['"]?\s*([^'"]+)\s*['",]?\s*\]/i;
+    var __valueDelimeter1 = ":";
+    var __valueDelimeter2 = "=";
+    var __keyValDelimeter = ",";
+    function trimOuterBraces(val) {
+        return strUtils.trim(val.replace(__trimOuterBracesRX, ""));
+    }
+    function trimQuotes(val) {
+        return strUtils.trim(val.replace(__trimQuotsRX, ""));
+    }
+    function trimBrackets(val) {
+        return strUtils.trim(val.replace(__trimBracketsRX, ""));
+    }
+    function isInsideBraces(str) {
+        return (strUtils.startsWith(str, "{") && strUtils.endsWith(str, "}"));
+    }
     var Parser = (function () {
         function Parser() {
         }
         Parser.prototype._getKeyVals = function (val) {
-            var i, ch, literal, parts = [], kv = { key: "", val: "" }, isKey = true, vd1 = Parser.__valueDelimeter1, vd2 = Parser.__valueDelimeter2, kvd = Parser.__keyValDelimeter;
+            var i, ch, literal, parts = [], kv = { key: "", val: "" }, isKey = true, vd1 = __valueDelimeter1, vd2 = __valueDelimeter2, kvd = __keyValDelimeter;
             var addNewKeyValPair = function (kv) {
                 if (kv.val) {
                     if (checks.isNumeric(kv.val)) {
@@ -1700,7 +1719,7 @@ define("jriapp_core/parser", ["require", "exports", "jriapp_core/lang", "jriapp_
             var self = this, parts = (!path) ? [] : path.split("."), parts2 = [];
             parts.forEach(function (part) {
                 var matches, obj, index;
-                matches = part.match(Parser.__indexedPropRX);
+                matches = part.match(__indexedPropRX);
                 if (!!matches) {
                     obj = matches[1];
                     index = matches[2];
@@ -1716,7 +1735,7 @@ define("jriapp_core/parser", ["require", "exports", "jriapp_core/lang", "jriapp_
             if (!prop)
                 return obj;
             if (strUtils.startsWith(prop, "[")) {
-                prop = this.trimQuotes(this.trimBrackets(prop));
+                prop = trimQuotes(trimBrackets(prop));
                 if (syschecks._isCollection(obj)) {
                     return syschecks._getItemByProp(obj, prop);
                 }
@@ -1741,7 +1760,7 @@ define("jriapp_core/parser", ["require", "exports", "jriapp_core/lang", "jriapp_
         };
         Parser.prototype.setPropertyValue = function (obj, prop, val) {
             if (strUtils.startsWith(prop, "[")) {
-                prop = this.trimQuotes(this.trimBrackets(prop));
+                prop = trimQuotes(trimBrackets(prop));
                 if (checks.isArray(obj)) {
                     obj[parseInt(prop, 10)] = val;
                 }
@@ -1815,31 +1834,19 @@ define("jriapp_core/parser", ["require", "exports", "jriapp_core/lang", "jriapp_
             }
             return parts;
         };
-        Parser.prototype.trimOuterBraces = function (val) {
-            return strUtils.trim(val.replace(Parser.__trimOuterBracesRX, ""));
-        };
-        Parser.prototype.trimQuotes = function (val) {
-            return strUtils.trim(val.replace(Parser.__trimQuotsRX, ""));
-        };
-        Parser.prototype.trimBrackets = function (val) {
-            return strUtils.trim(val.replace(Parser.__trimBracketsRX, ""));
-        };
-        Parser.prototype.isWithOuterBraces = function (str) {
-            return (strUtils.startsWith(str, "{") && strUtils.endsWith(str, "}"));
-        };
         Parser.prototype.parseOption = function (part) {
             var res = {}, self = this;
             part = strUtils.trim(part);
-            if (self.isWithOuterBraces(part))
-                part = self.trimOuterBraces(part);
+            if (isInsideBraces(part))
+                part = trimOuterBraces(part);
             var kvals = self._getKeyVals(part);
             kvals.forEach(function (kv) {
                 var isString = checks.isString(kv.val);
-                if (isString && self.isWithOuterBraces(kv.val))
+                if (isString && isInsideBraces(kv.val))
                     res[kv.key] = self.parseOption(kv.val);
                 else {
                     if (isString)
-                        res[kv.key] = self.trimQuotes(kv.val);
+                        res[kv.key] = trimQuotes(kv.val);
                     else
                         res[kv.key] = kv.val;
                 }
@@ -1850,7 +1857,7 @@ define("jriapp_core/parser", ["require", "exports", "jriapp_core/lang", "jriapp_
             var res = [], self = this;
             str = strUtils.trim(str);
             var parts = [str];
-            if (self.isWithOuterBraces(str)) {
+            if (isInsideBraces(str)) {
                 parts = self.getBraceParts(str, false);
             }
             parts.forEach(function (part) {
@@ -1861,13 +1868,6 @@ define("jriapp_core/parser", ["require", "exports", "jriapp_core/lang", "jriapp_
         Parser.prototype.toString = function () {
             return "Parser";
         };
-        Parser.__trimOuterBracesRX = /^([{]){0,1}|([}]){0,1}$/g;
-        Parser.__trimQuotsRX = /^(['"])+|(['"])+$/g;
-        Parser.__trimBracketsRX = /^(\[)+|(\])+$/g;
-        Parser.__indexedPropRX = /(^\w+)\s*\[\s*['"]?\s*([^'"]+)\s*['",]?\s*\]/i;
-        Parser.__valueDelimeter1 = ":";
-        Parser.__valueDelimeter2 = "=";
-        Parser.__keyValDelimeter = ",";
         return Parser;
     }());
     exports.Parser = Parser;
@@ -1972,7 +1972,7 @@ define("jriapp_utils/dom", ["require", "exports", "jriapp_core/lang"], function 
                     map[toAdd[i]] = i + 1000;
                 }
                 var keys = Object.keys(map);
-                el.className = keys.join(" ").trim();
+                el.className = keys.join(" ");
             }
         };
         DomUtils.setClass = function (elems, css, remove) {
@@ -1993,17 +1993,25 @@ define("jriapp_utils/dom", ["require", "exports", "jriapp_core/lang"], function 
             }
             for (var j = 0; j < elems.length; j += 1) {
                 var el = elems[j];
-                var map = DomUtils.getClassMap(el);
-                for (var i = 0; i < arr.length; i += 1) {
-                    if (!!arr[i]) {
-                        if (remove)
-                            delete map[arr[i]];
-                        else
-                            map[arr[i]] = i + 1000;
-                    }
+                if (arr.length === 1 && !!arr[0] && !!el.classList) {
+                    if (remove)
+                        el.classList.remove(arr[0]);
+                    else
+                        el.classList.add(arr[0]);
                 }
-                var keys = Object.keys(map);
-                el.className = keys.join(" ").trim();
+                else {
+                    var map = DomUtils.getClassMap(el);
+                    for (var i = 0; i < arr.length; i += 1) {
+                        if (!!arr[i]) {
+                            if (remove)
+                                delete map[arr[i]];
+                            else
+                                map[arr[i]] = i + 1000;
+                        }
+                    }
+                    var keys = Object.keys(map);
+                    el.className = keys.join(" ");
+                }
             }
         };
         DomUtils.addClass = function ($el, css) {
@@ -4249,7 +4257,7 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             }
         };
         PropertyBag.prototype.toString = function () {
-            return "IPropertyBag";
+            return "IPBag";
         };
         return PropertyBag;
     }(object_9.BaseObject));
@@ -4283,7 +4291,7 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             dom.setClass(this._$el.toArray(), name, !val);
         };
         CSSBag.prototype.toString = function () {
-            return "IPropertyBag";
+            return "IPBag";
         };
         return CSSBag;
     }(object_9.BaseObject));

@@ -93,7 +93,7 @@ class PropertyBag extends BaseObject implements IPropertyBag {
         }
     }
     toString() {
-        return "IPropertyBag";
+        return "IPBag";
     }
 }
 
@@ -136,7 +136,7 @@ class CSSBag extends BaseObject implements IPropertyBag {
         dom.setClass(this._$el.toArray(), name, !val);
     }
     toString() {
-        return "IPropertyBag";
+        return "IPBag";
     }
 }
 

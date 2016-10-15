@@ -7,7 +7,7 @@ export class SysChecks {
     static _isElView: (obj: any) => boolean = (obj) => { return false; };
     static _isBinding: (obj: any) => boolean = (obj) => { return false; };
     static _isPropBag: (obj: any) => boolean = (obj) => {
-        return SysChecks._isBaseObj(obj) && obj.toString() == "IPropertyBag";
+        return SysChecks._isBaseObj(obj) && obj.toString() === "IPBag";
     };
     static _isEventStore: (obj: any) => boolean = (obj) => { return false; };
     

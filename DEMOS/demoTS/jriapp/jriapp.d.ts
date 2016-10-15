@@ -966,13 +966,6 @@ declare module "jriapp_utils/eventstore" {
 }
 declare module "jriapp_core/parser" {
     export class Parser {
-        static __trimOuterBracesRX: RegExp;
-        static __trimQuotsRX: RegExp;
-        static __trimBracketsRX: RegExp;
-        static __indexedPropRX: RegExp;
-        static __valueDelimeter1: string;
-        static __valueDelimeter2: string;
-        static __keyValDelimeter: string;
         protected _getKeyVals(val: string): {
             key: string;
             val: any;
@@ -983,10 +976,6 @@ declare module "jriapp_core/parser" {
         resolveBindingSource(root: any, srcParts: string[]): any;
         resolvePath(obj: any, path: string): any;
         private getBraceParts(val, firstOnly);
-        trimOuterBraces(val: string): string;
-        trimQuotes(val: string): string;
-        trimBrackets(val: string): string;
-        isWithOuterBraces(str: string): boolean;
         parseOption(part: string): any;
         parseOptions(str: string): any[];
         toString(): string;

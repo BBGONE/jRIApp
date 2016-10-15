@@ -82,15 +82,29 @@
 
     .white-bgc { background-color: #FFFFFF; }
 
-    .lsize{
+    span.inactive{
+        color: gray;
+    }
+
+    span.active{
+        color: darkolivegreen;
+        font-weight: bold;
+    }
+
+    span.bold{
+        font-weight: bold;
+        font-size: larger;
+    }
+
+    .bold.lsize{
         color: red;
     }
 
-    .msize{
+    .bold.msize{
         color: green;
     }
 
-    .ssize{
+    .bold.ssize{
         color: blue;
     }
 </style>
@@ -258,11 +272,16 @@
     </div>
 </div>
 
-<!--template for the size grid's cell - it is picked automatically by the engine-->
+<!--
+    template for the size grid's cell - it is picked automatically by the engine
+    it also shows how to bind to elementview's "classes" property
+-->
 <script id="sizeDisplayTemplate" type="text/html" data-role="template">
     <span>
-        <span style="color: maroon;">Size:</span>
-        <span style="margin-left: 5px;" data-bind-1="{this.value,to=Size}"  data-bind-2="{this.classes.*,to=Size,converter=sizeConverter}"></span>
+        <span class="inactive" data-bind-1="{this.classes.active,to=IsActive}">Size:</span>
+        <span style="margin-left: 5px;" data-bind-1="{this.value,to=Size}"  
+              data-bind-2="{this.classes.*,to=Size,converter=sizeConverter}"
+              data-bind-3="{this.classes.bold,to=IsActive}"></span>
     </span>
 </script>
 

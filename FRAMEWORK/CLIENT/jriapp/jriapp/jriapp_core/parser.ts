@@ -8,21 +8,35 @@ import { Checks, StringUtils, CoreUtils } from "../jriapp_utils/coreutils";
 
 const checks = Checks, syschecks = SysChecks, strUtils = StringUtils, coreUtils = CoreUtils;
 
-export class Parser {
-    static __trimOuterBracesRX = /^([{]){0,1}|([}]){0,1}$/g;
-    static __trimQuotsRX = /^(['"])+|(['"])+$/g;
-    static __trimBracketsRX = /^(\[)+|(\])+$/g;
-    //regex expression to extract parts from obj[index] strings
-    static __indexedPropRX = /(^\w+)\s*\[\s*['"]?\s*([^'"]+)\s*['",]?\s*\]/i;
-    static __valueDelimeter1 = ":";
-    static __valueDelimeter2 = "=";
-    static __keyValDelimeter = ",";
+const __trimOuterBracesRX = /^([{]){0,1}|([}]){0,1}$/g;
+const __trimQuotsRX = /^(['"])+|(['"])+$/g;
+const __trimBracketsRX = /^(\[)+|(\])+$/g;
+//regex expression to extract parts from obj[index] strings
+const __indexedPropRX = /(^\w+)\s*\[\s*['"]?\s*([^'"]+)\s*['",]?\s*\]/i;
+const __valueDelimeter1 = ":";
+const __valueDelimeter2 = "=";
+const __keyValDelimeter = ",";
 
+function trimOuterBraces(val: string) {
+    return strUtils.trim(val.replace(__trimOuterBracesRX, ""));
+}
+function trimQuotes(val: string) {
+    return strUtils.trim(val.replace(__trimQuotsRX, ""));
+}
+function trimBrackets(val: string) {
+    return strUtils.trim(val.replace(__trimBracketsRX, ""));
+}
+function isInsideBraces(str: string) {
+    return (strUtils.startsWith(str, "{") && strUtils.endsWith(str, "}"));
+}
+
+
+export class Parser {
     //extract key - value pairs
     protected _getKeyVals(val: string) {
         let i: number, ch: string, literal: string, parts: { key: string; val: any; }[] = [],
             kv: { key: string; val: any; } = { key: "", val: "" }, isKey = true,
-            vd1 = Parser.__valueDelimeter1, vd2 = Parser.__valueDelimeter2, kvd = Parser.__keyValDelimeter;
+            vd1 = __valueDelimeter1, vd2 = __valueDelimeter2, kvd = __keyValDelimeter;
 
         let addNewKeyValPair = function (kv: { key: string; val: any; }) {
             if (kv.val) {
@@ -107,7 +121,7 @@ export class Parser {
         let self = this, parts: string[] = (!path) ? [] : path.split("."), parts2: string[] = [];
         parts.forEach(function (part) {
             let matches: string[], obj: string, index: string;
-            matches = part.match(Parser.__indexedPropRX);
+            matches = part.match(__indexedPropRX);
             if (!!matches) {
                 obj = matches[1];
                 index = matches[2];
@@ -126,7 +140,7 @@ export class Parser {
 
         if (strUtils.startsWith(prop, "[")) {
             //it is an indexed property, obj must be of collection type or Array or a simple Indexer
-            prop = this.trimQuotes(this.trimBrackets(prop));
+            prop = trimQuotes(trimBrackets(prop));
 
             if (syschecks._isCollection(obj)) {
                 return syschecks._getItemByProp(obj, prop);
@@ -154,7 +168,7 @@ export class Parser {
         //it is an indexed property, obj must be an Array or ComandStore or a simple indexer
         if (strUtils.startsWith(prop, "[")) {
             //remove brakets from a string like: [index]
-            prop = this.trimQuotes(this.trimBrackets(prop));
+            prop = trimQuotes(trimBrackets(prop));
 
             if (checks.isArray(obj)) {
                 obj[parseInt(prop, 10)] = val;
@@ -237,31 +251,19 @@ export class Parser {
 
         return parts;
     }
-    trimOuterBraces(val: string) {
-        return strUtils.trim(val.replace(Parser.__trimOuterBracesRX, ""));
-    }
-    trimQuotes(val: string) {
-        return strUtils.trim(val.replace(Parser.__trimQuotsRX, ""));
-    }
-    trimBrackets(val: string) {
-        return strUtils.trim(val.replace(Parser.__trimBracketsRX, ""));
-    }
-    isWithOuterBraces(str: string) {
-        return (strUtils.startsWith(str, "{") && strUtils.endsWith(str, "}"));
-    }
     parseOption(part: string) {
         let res: any = {}, self = this;
         part = strUtils.trim(part);
-        if (self.isWithOuterBraces(part))
-            part = self.trimOuterBraces(part);
+        if (isInsideBraces(part))
+            part = trimOuterBraces(part);
         let kvals = self._getKeyVals(part);
         kvals.forEach(function (kv) {
             let isString = checks.isString(kv.val);
-            if (isString && self.isWithOuterBraces(kv.val))
+            if (isString && isInsideBraces(kv.val))
                 res[kv.key] = self.parseOption(kv.val);
             else {
                 if (isString)
-                    res[kv.key] = self.trimQuotes(kv.val);
+                    res[kv.key] = trimQuotes(kv.val);
                 else
                     res[kv.key] = kv.val;
             }
@@ -274,7 +276,7 @@ export class Parser {
 
         str = strUtils.trim(str);
         let parts = [str];
-        if (self.isWithOuterBraces(str)) {
+        if (isInsideBraces(str)) {
             parts = self.getBraceParts(str, false);
         }
         parts.forEach(function (part) {

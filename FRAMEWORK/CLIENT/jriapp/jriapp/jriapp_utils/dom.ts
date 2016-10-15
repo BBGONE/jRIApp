@@ -111,7 +111,7 @@ export class DomUtils {
                 map[toAdd[i]] = i + 1000;
             }
             let keys = Object.keys(map);
-            el.className = keys.join(" ").trim();
+            el.className = keys.join(" ");
         }
     }
     static setClass(elems: Element[], css: string, remove: boolean = false): void {
@@ -135,17 +135,26 @@ export class DomUtils {
 
         for (let j = 0; j < elems.length; j += 1) {
             let el = elems[j];
-            let map = DomUtils.getClassMap(el);
-            for (let i = 0; i < arr.length; i += 1) {
-                if (!!arr[i]) {
-                    if (remove)
-                        delete map[arr[i]];
-                    else
-                        map[arr[i]] = i + 1000;
-                }
+           //if only one class to add or remove and classList is available
+            if (arr.length === 1 && !!arr[0] && !!el.classList) {
+                if (remove)
+                    el.classList.remove(arr[0]);
+                else
+                    el.classList.add(arr[0]);
             }
-            let keys = Object.keys(map);
-            el.className = keys.join(" ").trim();
+            else {
+                let map = DomUtils.getClassMap(el);
+                for (let i = 0; i < arr.length; i += 1) {
+                    if (!!arr[i]) {
+                        if (remove)
+                            delete map[arr[i]];
+                        else
+                            map[arr[i]] = i + 1000;
+                    }
+                }
+                let keys = Object.keys(map);
+                el.className = keys.join(" ");
+            }
         }
     }
     static addClass($el: JQuery, css: string): void {

@@ -2,3 +2,10 @@
   text-shadow: 0 1px 0 #999, 0 2px 0 #888, 0 3px 0 #777, 0 4px 0 #666;
   color:blue;
 }
+
+[data-name=test2]::after {
+    content: "this style was loaded on demand";
+    color: red;
+    margin-left: 10px;
+    overflow: visible;
+}

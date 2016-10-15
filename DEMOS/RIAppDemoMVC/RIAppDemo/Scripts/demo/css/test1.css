@@ -3,3 +3,10 @@
     border: 1px solid silver;
     border-radius: 4px;
 }
+
+[data-name=test1]::after {
+    content: "this style was loaded on demand";
+    color: red;
+    margin-left: 10px;
+    overflow: visible;
+}
