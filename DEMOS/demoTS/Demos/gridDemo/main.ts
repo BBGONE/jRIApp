@@ -36,6 +36,7 @@ export class SizeConverter extends RIAPP.BaseConverter {
         res = styles.map((style) => {
             //only check if not found (for optimization)
             if (!found && !!firstLetter && utils.str.startsWith(style, firstLetter)) {
+                found = true;
                 //adds this style to the classes
                 return "+" + style;
             }

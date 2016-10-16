@@ -2843,6 +2843,7 @@ define("gridDemo/main", ["require", "exports", "jriapp", "common", "gridDemo/app
             }
             res = styles.map(function (style) {
                 if (!found && !!firstLetter && utils.str.startsWith(style, firstLetter)) {
+                    found = true;
                     return "+" + style;
                 }
                 else {
