@@ -2,7 +2,6 @@
 import { IPropertyBag } from "shared";
 import { ERRS } from "./lang";
 import { BaseObject }  from "object";
-import { IEventStore } from "../jriapp_utils/eventstore";
 import { SysChecks } from "../jriapp_utils/syschecks";
 import { Checks, StringUtils, CoreUtils } from "../jriapp_utils/coreutils";
 
@@ -148,9 +147,6 @@ export class Parser {
         else if (checks.isArray(obj)) {
             return obj[parseInt(prop, 10)];
         }
-        else if (syschecks._isEventStore(obj)) {
-            return (<IEventStore>obj).getCommand(prop);
-        }
         else if (syschecks._isPropBag(obj)) {
             return (<IPropertyBag>obj).getProp(prop);
         }
@@ -170,9 +166,6 @@ export class Parser {
 
         if (checks.isArray(obj)) {
             obj[parseInt(prop, 10)] = val;
-        }
-        else if (syschecks._isEventStore(obj)) {
-            return (<IEventStore>obj).setCommand(prop, val);
         }
         else if (syschecks._isPropBag(obj)) {
             (<IPropertyBag>obj).setProp(prop, val);

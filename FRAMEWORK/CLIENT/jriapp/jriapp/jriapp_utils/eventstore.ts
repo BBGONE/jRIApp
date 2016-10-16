@@ -1,14 +1,11 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IIndexer } from "../jriapp_core/shared";
+import { IIndexer, IPropertyBag } from "../jriapp_core/shared";
 import { ICommand } from "../jriapp_core/mvvm";
 import { BaseObject }  from "../jriapp_core/object";
 import { SysChecks } from "./syschecks";
 
+const PROP_BAG = SysChecks._PROP_BAG_NAME();
 export const enum EVENT_CHANGE_TYPE { None = 0, Added = 1, Deleted = 2, Updated = 3 }
-
-SysChecks._isEventStore = function (obj: any): boolean {
-    return !!obj && obj instanceof EventStore;
-}
 
 export interface IEventChangedArgs {
     name: string;
@@ -17,12 +14,8 @@ export interface IEventChangedArgs {
     newVal: ICommand;
 }
 
-export interface IEventStore {
-    getCommand(name: string): ICommand;
-    setCommand(name: string, command: ICommand): void;
-}
-//dispatches events through commands that can be attached by data binding
-export class EventStore extends BaseObject implements IEventStore {
+//dispatches events through commands that can be attached by the data binding
+export class EventStore extends BaseObject implements IPropertyBag {
     private _dic: IIndexer<ICommand>;
     private _onChange: (sender: EventStore, args: IEventChangedArgs) => void;
 
@@ -35,7 +28,8 @@ export class EventStore extends BaseObject implements IEventStore {
     _isHasProp(prop: string) {
         return true;
     }
-    getCommand(name: string): ICommand {
+    //implement IPropertyBag
+    getProp(name: string): ICommand {
         if (!this._dic)
             return null;
         let cmd = this._dic[name];
@@ -43,7 +37,7 @@ export class EventStore extends BaseObject implements IEventStore {
             return null;
         return cmd;
     }
-    setCommand(name: string, command: ICommand) {
+    setProp(name: string, command: ICommand): void {
         if (!this._dic && !!command)
             this._dic = {};
         if (!this._dic)
@@ -96,7 +90,7 @@ export class EventStore extends BaseObject implements IEventStore {
             command.execute(this, args);
     }
     toString() {
-        return "IEventStore";
+        return PROP_BAG;
     }
     destroy() {
         if (!!this._dic) {

@@ -436,16 +436,17 @@ define("jriapp_utils/strutils", ["require", "exports"], function (require, expor
 });
 define("jriapp_utils/syschecks", ["require", "exports"], function (require, exports) {
     "use strict";
+    var PROP_BAG = "IPBag";
     var SysChecks = (function () {
         function SysChecks() {
         }
+        SysChecks._PROP_BAG_NAME = function () { return PROP_BAG; };
         SysChecks._isBaseObj = function (obj) { return false; };
         SysChecks._isElView = function (obj) { return false; };
         SysChecks._isBinding = function (obj) { return false; };
         SysChecks._isPropBag = function (obj) {
-            return SysChecks._isBaseObj(obj) && obj.toString() === "IPBag";
+            return SysChecks._isBaseObj(obj) && obj.toString() === PROP_BAG;
         };
-        SysChecks._isEventStore = function (obj) { return false; };
         SysChecks._isCollection = function (obj) { return false; };
         SysChecks._getItemByProp = function (obj, prop) { return null; };
         SysChecks._isValidationError = function (obj) { return false; };
@@ -1398,230 +1399,9 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
     }());
     exports.BaseObject = BaseObject;
 });
-define("jriapp_core/mvvm", ["require", "exports", "jriapp_core/object", "jriapp_utils/coreutils"], function (require, exports, object_1, coreutils_3) {
+define("jriapp_core/parser", ["require", "exports", "jriapp_core/lang", "jriapp_utils/syschecks", "jriapp_utils/coreutils"], function (require, exports, lang_2, syschecks_3, coreutils_3) {
     "use strict";
-    var CMD_EVENTS = {
-        can_execute_changed: "canExecute_changed"
-    };
-    var TCommand = (function (_super) {
-        __extends(TCommand, _super);
-        function TCommand(fn_action, thisObj, fn_canExecute) {
-            _super.call(this);
-            this._objId = "cmd" + coreutils_3.CoreUtils.getNewID();
-            this._action = fn_action;
-            this._thisObj = !thisObj ? null : thisObj;
-            this._predicate = !fn_canExecute ? null : fn_canExecute;
-        }
-        TCommand.prototype._getEventNames = function () {
-            var base_events = _super.prototype._getEventNames.call(this);
-            return [CMD_EVENTS.can_execute_changed].concat(base_events);
-        };
-        TCommand.prototype._canExecute = function (sender, param, context) {
-            if (!this._predicate)
-                return true;
-            return this._predicate.apply(context, [sender, param, this._thisObj]);
-        };
-        TCommand.prototype._execute = function (sender, param, context) {
-            if (!!this._action) {
-                this._action.apply(context, [sender, param, this._thisObj]);
-            }
-        };
-        TCommand.prototype.addOnCanExecuteChanged = function (fn, nmspace, context) {
-            this._addHandler(CMD_EVENTS.can_execute_changed, fn, nmspace, context);
-        };
-        TCommand.prototype.removeOnCanExecuteChanged = function (nmspace) {
-            this._removeHandler(CMD_EVENTS.can_execute_changed, nmspace);
-        };
-        TCommand.prototype.canExecute = function (sender, param) {
-            return this._canExecute(sender, param, this._thisObj || this);
-        };
-        TCommand.prototype.execute = function (sender, param) {
-            this._execute(sender, param, this._thisObj || this);
-        };
-        TCommand.prototype.destroy = function () {
-            if (this._isDestroyed)
-                return;
-            this._isDestroyCalled = true;
-            this._action = null;
-            this._thisObj = null;
-            this._predicate = null;
-            _super.prototype.destroy.call(this);
-        };
-        TCommand.prototype.raiseCanExecuteChanged = function () {
-            this.raiseEvent(CMD_EVENTS.can_execute_changed, {});
-        };
-        TCommand.prototype.toString = function () {
-            return "Command";
-        };
-        Object.defineProperty(TCommand.prototype, "uniqueID", {
-            get: function () {
-                return this._objId;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TCommand.prototype, "thisObj", {
-            get: function () {
-                return this._thisObj;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return TCommand;
-    }(object_1.BaseObject));
-    exports.TCommand = TCommand;
-    var BaseCommand = (function (_super) {
-        __extends(BaseCommand, _super);
-        function BaseCommand(thisObj) {
-            _super.call(this, null, thisObj, null);
-            this._action = this.Action;
-            this._predicate = this.getIsCanExecute;
-        }
-        BaseCommand.prototype.canExecute = function (sender, param) {
-            return this._canExecute(sender, param, this);
-        };
-        BaseCommand.prototype.execute = function (sender, param) {
-            this._execute(sender, param, this);
-        };
-        return BaseCommand;
-    }(TCommand));
-    exports.BaseCommand = BaseCommand;
-    exports.Command = TCommand;
-    exports.TemplateCommand = TCommand;
-    var ViewModel = (function (_super) {
-        __extends(ViewModel, _super);
-        function ViewModel(app) {
-            _super.call(this);
-            this._app = app;
-            this._objId = "vm" + coreutils_3.CoreUtils.getNewID();
-        }
-        ViewModel.prototype.handleError = function (error, source) {
-            var isHandled = _super.prototype.handleError.call(this, error, source);
-            if (!isHandled) {
-                return this._app.handleError(error, source);
-            }
-            return isHandled;
-        };
-        ViewModel.prototype.toString = function () {
-            return "ViewModel";
-        };
-        ViewModel.prototype.destroy = function () {
-            this._app = null;
-            _super.prototype.destroy.call(this);
-        };
-        Object.defineProperty(ViewModel.prototype, "uniqueID", {
-            get: function () {
-                return this._objId;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ViewModel.prototype, "app", {
-            get: function () { return this._app; },
-            enumerable: true,
-            configurable: true
-        });
-        return ViewModel;
-    }(object_1.BaseObject));
-    exports.ViewModel = ViewModel;
-});
-define("jriapp_utils/eventstore", ["require", "exports", "jriapp_core/object", "jriapp_utils/syschecks"], function (require, exports, object_2, syschecks_3) {
-    "use strict";
-    (function (EVENT_CHANGE_TYPE) {
-        EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["None"] = 0] = "None";
-        EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["Added"] = 1] = "Added";
-        EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["Deleted"] = 2] = "Deleted";
-        EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["Updated"] = 3] = "Updated";
-    })(exports.EVENT_CHANGE_TYPE || (exports.EVENT_CHANGE_TYPE = {}));
-    var EVENT_CHANGE_TYPE = exports.EVENT_CHANGE_TYPE;
-    syschecks_3.SysChecks._isEventStore = function (obj) {
-        return !!obj && obj instanceof EventStore;
-    };
-    var EventStore = (function (_super) {
-        __extends(EventStore, _super);
-        function EventStore(onChange) {
-            _super.call(this);
-            this._dic = null;
-            this._onChange = onChange;
-        }
-        EventStore.prototype._isHasProp = function (prop) {
-            return true;
-        };
-        EventStore.prototype.getCommand = function (name) {
-            if (!this._dic)
-                return null;
-            var cmd = this._dic[name];
-            if (!cmd)
-                return null;
-            return cmd;
-        };
-        EventStore.prototype.setCommand = function (name, command) {
-            if (!this._dic && !!command)
-                this._dic = {};
-            if (!this._dic)
-                return;
-            var old = this._dic[name];
-            if (!command && !!old) {
-                delete this._dic[name];
-                if (!!this._onChange) {
-                    this._onChange(this, {
-                        name: name,
-                        changeType: 2,
-                        oldVal: old,
-                        newVal: null
-                    });
-                    this.raisePropertyChanged(name);
-                }
-                return;
-            }
-            this._dic[name] = command;
-            if (!!this._onChange) {
-                if (!old) {
-                    this._onChange(this, {
-                        name: name,
-                        changeType: 1,
-                        oldVal: null,
-                        newVal: command
-                    });
-                }
-                else {
-                    this._onChange(this, {
-                        name: name,
-                        changeType: 3,
-                        oldVal: old,
-                        newVal: command
-                    });
-                }
-                this.raisePropertyChanged(name);
-            }
-        };
-        EventStore.prototype.trigger = function (name, args) {
-            if (!this._dic)
-                return;
-            var command = this._dic[name];
-            if (!command)
-                return;
-            args = args || {};
-            if (command.canExecute(this, args))
-                command.execute(this, args);
-        };
-        EventStore.prototype.toString = function () {
-            return "IEventStore";
-        };
-        EventStore.prototype.destroy = function () {
-            if (!!this._dic) {
-                this._dic = null;
-            }
-            this._onChange = null;
-            _super.prototype.destroy.call(this);
-        };
-        return EventStore;
-    }(object_2.BaseObject));
-    exports.EventStore = EventStore;
-});
-define("jriapp_core/parser", ["require", "exports", "jriapp_core/lang", "jriapp_utils/syschecks", "jriapp_utils/coreutils"], function (require, exports, lang_2, syschecks_4, coreutils_4) {
-    "use strict";
-    var checks = coreutils_4.Checks, syschecks = syschecks_4.SysChecks, strUtils = coreutils_4.StringUtils, coreUtils = coreutils_4.CoreUtils;
+    var checks = coreutils_3.Checks, syschecks = syschecks_3.SysChecks, strUtils = coreutils_3.StringUtils, coreUtils = coreutils_3.CoreUtils;
     var __trimOuterBracesRX = /^([{]){0,1}|([}]){0,1}$/g;
     var __trimQuotsRX = /^(['"])+|(['"])+$/g;
     var __trimBracketsRX = /^(\[)+|(\])+$/g;
@@ -1743,9 +1523,6 @@ define("jriapp_core/parser", ["require", "exports", "jriapp_core/lang", "jriapp_
             else if (checks.isArray(obj)) {
                 return obj[parseInt(prop, 10)];
             }
-            else if (syschecks._isEventStore(obj)) {
-                return obj.getCommand(prop);
-            }
             else if (syschecks._isPropBag(obj)) {
                 return obj.getProp(prop);
             }
@@ -1761,9 +1538,6 @@ define("jriapp_core/parser", ["require", "exports", "jriapp_core/lang", "jriapp_
             }
             if (checks.isArray(obj)) {
                 obj[parseInt(prop, 10)] = val;
-            }
-            else if (syschecks._isEventStore(obj)) {
-                return obj.setCommand(prop, val);
             }
             else if (syschecks._isPropBag(obj)) {
                 obj.setProp(prop, val);
@@ -2336,14 +2110,14 @@ define("jriapp_utils/async", ["require", "exports", "jriapp_utils/deferred", "jr
     }());
     exports.AsyncUtils = AsyncUtils;
 });
-define("jriapp_utils/http", ["require", "exports", "jriapp_core/shared", "jriapp_utils/coreutils", "jriapp_utils/async"], function (require, exports, shared_2, coreutils_5, async_1) {
+define("jriapp_utils/http", ["require", "exports", "jriapp_core/shared", "jriapp_utils/coreutils", "jriapp_utils/async"], function (require, exports, shared_2, coreutils_4, async_1) {
     "use strict";
     var HttpUtils = (function () {
         function HttpUtils() {
         }
         HttpUtils.isStatusOK = function (status) {
             var chk = "" + status;
-            return chk.length === 3 && coreutils_5.StringUtils.startsWith(chk, "2");
+            return chk.length === 3 && coreutils_4.StringUtils.startsWith(chk, "2");
         };
         HttpUtils._getXMLRequest = function (url, method, deferred, headers) {
             var req = new XMLHttpRequest();
@@ -2357,30 +2131,30 @@ define("jriapp_utils/http", ["require", "exports", "jriapp_core/shared", "jriapp
                 }
                 else {
                     if (HttpUtils.isStatusOK(status))
-                        deferred.reject(new shared_2.DummyError(new Error(coreutils_5.StringUtils.format('Status: "{0}" loading from URL: "{1}"', status, url))));
+                        deferred.reject(new shared_2.DummyError(new Error(coreutils_4.StringUtils.format('Status: "{0}" loading from URL: "{1}"', status, url))));
                     else
-                        deferred.reject(new Error(coreutils_5.StringUtils.format('Error: "{0}" to load from URL: "{1}"', status, url)));
+                        deferred.reject(new Error(coreutils_4.StringUtils.format('Error: "{0}" to load from URL: "{1}"', status, url)));
                 }
             };
             req.onerror = function (e) {
-                deferred.reject(new Error(coreutils_5.StringUtils.format('Error: "{0}" to load from URL: "{1}"', this.status, url)));
+                deferred.reject(new Error(coreutils_4.StringUtils.format('Error: "{0}" to load from URL: "{1}"', this.status, url)));
             };
             req.ontimeout = function () {
-                deferred.reject(new Error(coreutils_5.StringUtils.format('Error: "Request Timeout" to load from URL: "{0}"', url)));
+                deferred.reject(new Error(coreutils_4.StringUtils.format('Error: "Request Timeout" to load from URL: "{0}"', url)));
             };
             req.onabort = function (e) {
-                deferred.reject(new Error(coreutils_5.StringUtils.format('HTTP Request Operation Aborted for URL: "{0}"', url)));
+                deferred.reject(new Error(coreutils_4.StringUtils.format('HTTP Request Operation Aborted for URL: "{0}"', url)));
             };
             req.timeout = HttpUtils.ajaxTimeOut * 1000;
-            var _headers = coreutils_5.CoreUtils.merge(HttpUtils.defaultHeaders);
-            _headers = coreutils_5.CoreUtils.merge(headers, _headers);
-            coreutils_5.CoreUtils.iterateIndexer(_headers, function (name, val) {
+            var _headers = coreutils_4.CoreUtils.merge(HttpUtils.defaultHeaders);
+            _headers = coreutils_4.CoreUtils.merge(headers, _headers);
+            coreutils_4.CoreUtils.iterateIndexer(_headers, function (name, val) {
                 req.setRequestHeader(name, val);
             });
             return req;
         };
         HttpUtils.postAjax = function (url, postData, headers) {
-            var _headers = coreutils_5.CoreUtils.merge(headers, { "Content-Type": "application/json; charset=utf-8" });
+            var _headers = coreutils_4.CoreUtils.merge(headers, { "Content-Type": "application/json; charset=utf-8" });
             var deferred = async_1.AsyncUtils.createDeferred(), req = HttpUtils._getXMLRequest(url, "POST", deferred, _headers);
             req.send(postData);
             return new async_1.AbortablePromise(deferred, req);
@@ -2396,7 +2170,7 @@ define("jriapp_utils/http", ["require", "exports", "jriapp_core/shared", "jriapp
     }());
     exports.HttpUtils = HttpUtils;
 });
-define("jriapp_utils/lifetime", ["require", "exports", "jriapp_core/object", "jriapp_utils/arrhelper"], function (require, exports, object_3, arrhelper_3) {
+define("jriapp_utils/lifetime", ["require", "exports", "jriapp_core/object", "jriapp_utils/arrhelper"], function (require, exports, object_1, arrhelper_3) {
     "use strict";
     var LifeTimeScope = (function (_super) {
         __extends(LifeTimeScope, _super);
@@ -2432,16 +2206,16 @@ define("jriapp_utils/lifetime", ["require", "exports", "jriapp_core/object", "jr
             return "LifeTimeScope";
         };
         return LifeTimeScope;
-    }(object_3.BaseObject));
+    }(object_1.BaseObject));
     exports.LifeTimeScope = LifeTimeScope;
 });
-define("jriapp_utils/propwatcher", ["require", "exports", "jriapp_core/object", "jriapp_utils/coreutils"], function (require, exports, object_4, coreutils_6) {
+define("jriapp_utils/propwatcher", ["require", "exports", "jriapp_core/object", "jriapp_utils/coreutils"], function (require, exports, object_2, coreutils_5) {
     "use strict";
     var PropWatcher = (function (_super) {
         __extends(PropWatcher, _super);
         function PropWatcher() {
             _super.call(this);
-            this._objId = "prw" + coreutils_6.CoreUtils.getNewID();
+            this._objId = "prw" + coreutils_5.CoreUtils.getNewID();
             this._objs = [];
         }
         PropWatcher.create = function () {
@@ -2490,16 +2264,16 @@ define("jriapp_utils/propwatcher", ["require", "exports", "jriapp_core/object", 
             configurable: true
         });
         return PropWatcher;
-    }(object_4.BaseObject));
+    }(object_2.BaseObject));
     exports.PropWatcher = PropWatcher;
 });
-define("jriapp_utils/waitqueue", ["require", "exports", "jriapp_core/object", "jriapp_utils/coreutils"], function (require, exports, object_5, coreutils_7) {
+define("jriapp_utils/waitqueue", ["require", "exports", "jriapp_core/object", "jriapp_utils/coreutils"], function (require, exports, object_3, coreutils_6) {
     "use strict";
     var WaitQueue = (function (_super) {
         __extends(WaitQueue, _super);
         function WaitQueue(owner) {
             _super.call(this);
-            this._objId = "wq" + coreutils_7.CoreUtils.getNewID();
+            this._objId = "wq" + coreutils_6.CoreUtils.getNewID();
             this._owner = owner;
             this._queue = {};
         }
@@ -2575,7 +2349,7 @@ define("jriapp_utils/waitqueue", ["require", "exports", "jriapp_core/object", "j
             }
         };
         WaitQueue.prototype.enQueue = function (item) {
-            var opts = coreutils_7.CoreUtils.extend({
+            var opts = coreutils_6.CoreUtils.extend({
                 prop: "",
                 groupName: null,
                 predicate: null,
@@ -2640,10 +2414,10 @@ define("jriapp_utils/waitqueue", ["require", "exports", "jriapp_core/object", "j
             configurable: true
         });
         return WaitQueue;
-    }(object_5.BaseObject));
+    }(object_3.BaseObject));
     exports.WaitQueue = WaitQueue;
 });
-define("jriapp_utils/utils", ["require", "exports", "jriapp_utils/coreutils", "jriapp_utils/dom", "jriapp_utils/async", "jriapp_utils/http", "jriapp_utils/strutils", "jriapp_utils/checks", "jriapp_utils/arrhelper", "jriapp_utils/dom", "jriapp_utils/async", "jriapp_utils/http", "jriapp_utils/lifetime", "jriapp_utils/propwatcher", "jriapp_utils/waitqueue", "jriapp_utils/coreutils"], function (require, exports, coreutils_8, dom_1, async_2, http_1, strutils_3, checks_4, arrhelper_4, dom_2, async_3, http_2, lifetime_1, propwatcher_1, waitqueue_1, coreutils_9) {
+define("jriapp_utils/utils", ["require", "exports", "jriapp_utils/coreutils", "jriapp_utils/dom", "jriapp_utils/async", "jriapp_utils/http", "jriapp_utils/strutils", "jriapp_utils/checks", "jriapp_utils/arrhelper", "jriapp_utils/dom", "jriapp_utils/async", "jriapp_utils/http", "jriapp_utils/lifetime", "jriapp_utils/propwatcher", "jriapp_utils/waitqueue", "jriapp_utils/coreutils"], function (require, exports, coreutils_7, dom_1, async_2, http_1, strutils_3, checks_4, arrhelper_4, dom_2, async_3, http_2, lifetime_1, propwatcher_1, waitqueue_1, coreutils_8) {
     "use strict";
     exports.DomUtils = dom_2.DomUtils;
     exports.AsyncUtils = async_3.AsyncUtils;
@@ -2651,11 +2425,11 @@ define("jriapp_utils/utils", ["require", "exports", "jriapp_utils/coreutils", "j
     exports.LifeTimeScope = lifetime_1.LifeTimeScope;
     exports.PropWatcher = propwatcher_1.PropWatcher;
     exports.WaitQueue = waitqueue_1.WaitQueue;
-    exports.Debounce = coreutils_9.Debounce;
-    exports.DblClick = coreutils_9.DblClick;
-    exports.DEBUG = coreutils_9.DEBUG;
-    exports.ERROR = coreutils_9.ERROR;
-    exports.SysChecks = coreutils_9.SysChecks;
+    exports.Debounce = coreutils_8.Debounce;
+    exports.DblClick = coreutils_8.DblClick;
+    exports.DEBUG = coreutils_8.DEBUG;
+    exports.ERROR = coreutils_8.ERROR;
+    exports.SysChecks = coreutils_8.SysChecks;
     var Utils = (function () {
         function Utils() {
         }
@@ -2715,13 +2489,13 @@ define("jriapp_utils/utils", ["require", "exports", "jriapp_utils/coreutils", "j
         Utils.arr = arrhelper_4.ArrayHelper;
         Utils.dom = dom_1.DomUtils;
         Utils.http = http_1.HttpUtils;
-        Utils.core = coreutils_8.CoreUtils;
+        Utils.core = coreutils_7.CoreUtils;
         Utils.defer = async_2.AsyncUtils;
         return Utils;
     }());
     exports.Utils = Utils;
 });
-define("jriapp_elview/factory", ["require", "exports", "jriapp_core/const", "jriapp_core/bootstrap", "jriapp_core/lang", "jriapp_core/parser", "jriapp_utils/coreutils", "jriapp_utils/utils"], function (require, exports, const_2, bootstrap_1, lang_4, parser_1, coreutils_10, utils_1) {
+define("jriapp_elview/factory", ["require", "exports", "jriapp_core/const", "jriapp_core/bootstrap", "jriapp_core/lang", "jriapp_core/parser", "jriapp_utils/coreutils", "jriapp_utils/utils"], function (require, exports, const_2, bootstrap_1, lang_4, parser_1, coreutils_9, utils_1) {
     "use strict";
     var $ = utils_1.Utils.dom.$;
     function createFactory(app, num, register) {
@@ -2793,7 +2567,7 @@ define("jriapp_elview/factory", ["require", "exports", "jriapp_core/const", "jri
             this._app = null;
         };
         ElViewFactory.prototype.handleError = function (error, source) {
-            if (coreutils_10.ERROR.checkIsDummy(error)) {
+            if (coreutils_9.ERROR.checkIsDummy(error)) {
                 return true;
             }
             return this._app.handleError(error, source);
@@ -2872,7 +2646,7 @@ define("jriapp_elview/factory", ["require", "exports", "jriapp_core/const", "jri
         return ElViewFactory;
     }());
 });
-define("jriapp_core/defaults", ["require", "exports", "jriapp_core/shared", "jriapp_core/object", "jriapp_utils/coreutils"], function (require, exports, coreMOD, object_6, coreUtilsMOD) {
+define("jriapp_core/defaults", ["require", "exports", "jriapp_core/shared", "jriapp_core/object", "jriapp_utils/coreutils"], function (require, exports, coreMOD, object_4, coreUtilsMOD) {
     "use strict";
     var checks = coreUtilsMOD.Checks, strUtils = coreUtilsMOD.StringUtils;
     var PROP_NAME = {
@@ -2997,10 +2771,10 @@ define("jriapp_core/defaults", ["require", "exports", "jriapp_core/shared", "jri
             configurable: true
         });
         return Defaults;
-    }(object_6.BaseObject));
+    }(object_4.BaseObject));
     exports.Defaults = Defaults;
 });
-define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/coreutils", "jriapp_utils/async", "jriapp_utils/http", "jriapp_utils/waitqueue"], function (require, exports, lang_5, object_7, coreutils_11, async_4, http_3, waitqueue_2) {
+define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/coreutils", "jriapp_utils/async", "jriapp_utils/http", "jriapp_utils/waitqueue"], function (require, exports, lang_5, object_5, coreutils_10, async_4, http_3, waitqueue_2) {
     "use strict";
     var PROP_NAME = {
         isLoading: "isLoading"
@@ -3054,13 +2828,13 @@ define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriap
             this.raiseEvent("loaded", { html: html, app: app });
         };
         TemplateLoader.prototype._getTemplateGroup = function (name) {
-            return coreutils_11.CoreUtils.getValue(this._templateGroups, name);
+            return coreutils_10.CoreUtils.getValue(this._templateGroups, name);
         };
         TemplateLoader.prototype._registerTemplateLoaderCore = function (name, loader) {
-            coreutils_11.CoreUtils.setValue(this._templateLoaders, name, loader, false);
+            coreutils_10.CoreUtils.setValue(this._templateLoaders, name, loader, false);
         };
         TemplateLoader.prototype._getTemplateLoaderCore = function (name) {
-            return coreutils_11.CoreUtils.getValue(this._templateLoaders, name);
+            return coreutils_10.CoreUtils.getValue(this._templateLoaders, name);
         };
         TemplateLoader.prototype.loadTemplatesAsync = function (fn_loader, app) {
             var self = this, promise = fn_loader(), old = self.isLoading;
@@ -3071,33 +2845,33 @@ define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriap
                 self._onLoaded(html, app);
             });
             res.always(function () {
-                coreutils_11.CoreUtils.arr.remove(self._promises, promise);
+                coreutils_10.CoreUtils.arr.remove(self._promises, promise);
                 if (!self.isLoading)
                     self.raisePropertyChanged(PROP_NAME.isLoading);
             });
             return res;
         };
         TemplateLoader.prototype.unRegisterTemplateLoader = function (name) {
-            coreutils_11.CoreUtils.removeValue(this._templateLoaders, name);
+            coreutils_10.CoreUtils.removeValue(this._templateLoaders, name);
         };
         TemplateLoader.prototype.unRegisterTemplateGroup = function (name) {
-            coreutils_11.CoreUtils.removeValue(this._templateGroups, name);
+            coreutils_10.CoreUtils.removeValue(this._templateGroups, name);
         };
         TemplateLoader.prototype.registerTemplateLoader = function (name, loader) {
             var self = this;
-            loader = coreutils_11.CoreUtils.extend({
+            loader = coreutils_10.CoreUtils.extend({
                 fn_loader: null,
                 groupName: null
             }, loader);
-            if (!loader.groupName && !coreutils_11.Checks.isFunc(loader.fn_loader)) {
-                throw new Error(coreutils_11.StringUtils.format(lang_5.ERRS.ERR_ASSERTION_FAILED, "fn_loader is Function"));
+            if (!loader.groupName && !coreutils_10.Checks.isFunc(loader.fn_loader)) {
+                throw new Error(coreutils_10.StringUtils.format(lang_5.ERRS.ERR_ASSERTION_FAILED, "fn_loader is Function"));
             }
             var prevLoader = self._getTemplateLoaderCore(name);
             if (!!prevLoader) {
                 if ((!prevLoader.fn_loader && !!prevLoader.groupName) && (!loader.groupName && !!loader.fn_loader)) {
                     return self._registerTemplateLoaderCore(name, loader);
                 }
-                throw new Error(coreutils_11.StringUtils.format(lang_5.ERRS.ERR_TEMPLATE_ALREADY_REGISTERED, name));
+                throw new Error(coreutils_10.StringUtils.format(lang_5.ERRS.ERR_TEMPLATE_ALREADY_REGISTERED, name));
             }
             return self._registerTemplateLoaderCore(name, loader);
         };
@@ -3108,7 +2882,7 @@ define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriap
             if (!loader.fn_loader && !!loader.groupName) {
                 var group_1 = self._getTemplateGroup(loader.groupName);
                 if (!group_1) {
-                    throw new Error(coreutils_11.StringUtils.format(lang_5.ERRS.ERR_TEMPLATE_GROUP_NOTREGISTERED, loader.groupName));
+                    throw new Error(coreutils_10.StringUtils.format(lang_5.ERRS.ERR_TEMPLATE_GROUP_NOTREGISTERED, loader.groupName));
                 }
                 return function () {
                     if (!group_1.promise) {
@@ -3123,17 +2897,17 @@ define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriap
                             }
                             var loader = self._getTemplateLoaderCore(name);
                             if (!loader || !loader.fn_loader) {
-                                var error = coreutils_11.StringUtils.format(lang_5.ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
-                                if (coreutils_11.DEBUG.isDebugging())
-                                    coreutils_11.LOG.error(error);
+                                var error = coreutils_10.StringUtils.format(lang_5.ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
+                                if (coreutils_10.DEBUG.isDebugging())
+                                    coreutils_10.LOG.error(error);
                                 throw new Error(error);
                             }
                         });
                         var loader = self._getTemplateLoaderCore(name);
                         if (!loader || !loader.fn_loader) {
-                            var error = coreutils_11.StringUtils.format(lang_5.ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
-                            if (coreutils_11.DEBUG.isDebugging())
-                                coreutils_11.LOG.error(error);
+                            var error = coreutils_10.StringUtils.format(lang_5.ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
+                            if (coreutils_10.DEBUG.isDebugging())
+                                coreutils_10.LOG.error(error);
                             throw new Error(error);
                         }
                         delete self._templateGroups[loader.groupName];
@@ -3154,7 +2928,7 @@ define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriap
                 return loader.fn_loader;
         };
         TemplateLoader.prototype.registerTemplateGroup = function (groupName, group) {
-            var self = this, group2 = coreutils_11.CoreUtils.extend({
+            var self = this, group2 = coreutils_10.CoreUtils.extend({
                 fn_loader: null,
                 url: null,
                 names: null,
@@ -3166,7 +2940,7 @@ define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriap
                     return http_3.HttpUtils.getAjax(group2.url);
                 };
             }
-            coreutils_11.CoreUtils.setValue(self._templateGroups, groupName, group2, true);
+            coreutils_10.CoreUtils.setValue(self._templateGroups, groupName, group2, true);
             group2.names.forEach(function (name) {
                 if (!!group2.app) {
                     name = group2.app.appName + "." + name;
@@ -3191,7 +2965,7 @@ define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriap
             configurable: true
         });
         return TemplateLoader;
-    }(object_7.BaseObject));
+    }(object_5.BaseObject));
     exports.TemplateLoader = TemplateLoader;
 });
 define("jriapp_utils/path", ["require", "exports", "jriapp_core/shared", "jriapp_utils/dom", "jriapp_utils/arrhelper", "jriapp_utils/strutils"], function (require, exports, shared_3, dom_3, arrhelper_5, strutils_4) {
@@ -3474,7 +3248,7 @@ define("jriapp_utils/tooltip", ["require", "exports", "jriapp_utils/dom"], funct
         return tooltipService;
     }());
 });
-define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jriapp_elview/factory", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/defaults", "jriapp_utils/coreutils", "jriapp_utils/tloader", "jriapp_utils/sloader", "jriapp_utils/path", "jriapp_utils/tooltip", "jriapp_utils/dom", "jriapp_utils/async"], function (require, exports, const_3, factory_1, lang_6, object_8, defaults_1, coreutils_12, tloader_1, sloader_1, path_2, tooltip_1, dom_6, async_6) {
+define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jriapp_elview/factory", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/defaults", "jriapp_utils/coreutils", "jriapp_utils/tloader", "jriapp_utils/sloader", "jriapp_utils/path", "jriapp_utils/tooltip", "jriapp_utils/dom", "jriapp_utils/async"], function (require, exports, const_3, factory_1, lang_6, object_6, defaults_1, coreutils_11, tloader_1, sloader_1, path_2, tooltip_1, dom_6, async_6) {
     "use strict";
     var $ = dom_6.DomUtils.$, document = dom_6.DomUtils.document, window = dom_6.DomUtils.window;
     var _TEMPLATE_SELECTOR = 'script[type="text/html"]';
@@ -3590,12 +3364,12 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
         };
         Bootstrap.prototype._onTemplateLoaded = function (html, app) {
             var tmpDiv = document.createElement("div");
-            tmpDiv.innerHTML = coreutils_12.StringUtils.fastTrim(html);
+            tmpDiv.innerHTML = coreutils_11.StringUtils.fastTrim(html);
             this._processTemplates(tmpDiv, app);
         };
         Bootstrap.prototype._processTemplates = function (root, app) {
             if (app === void 0) { app = null; }
-            var self = this, templates = coreutils_12.CoreUtils.arr.fromList(root.querySelectorAll(_TEMPLATE_SELECTOR));
+            var self = this, templates = coreutils_11.CoreUtils.arr.fromList(root.querySelectorAll(_TEMPLATE_SELECTOR));
             templates.forEach(function (el) {
                 var html, name = el.getAttribute("id");
                 if (!name)
@@ -3610,7 +3384,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
         };
         Bootstrap.prototype._processTemplate = function (name, html, app) {
             var self = this, deferred = async_6.AsyncUtils.createSyncDeferred();
-            var res = coreutils_12.StringUtils.fastTrim(html);
+            var res = coreutils_11.StringUtils.fastTrim(html);
             var fn = function () {
                 return deferred.promise();
             };
@@ -3706,24 +3480,24 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
         };
         Bootstrap.prototype._destroyApps = function () {
             var self = this;
-            coreutils_12.CoreUtils.forEachProp(this._appInst, function (id) {
+            coreutils_11.CoreUtils.forEachProp(this._appInst, function (id) {
                 self._appInst[id].destroy();
             });
         };
         Bootstrap.prototype._registerObject = function (root, name, obj) {
-            coreutils_12.CoreUtils.setValue(root.getExports(), name, obj, true);
+            coreutils_11.CoreUtils.setValue(root.getExports(), name, obj, true);
         };
         Bootstrap.prototype._unregisterObject = function (root, name) {
-            return coreutils_12.CoreUtils.removeValue(root.getExports(), name);
+            return coreutils_11.CoreUtils.removeValue(root.getExports(), name);
         };
         Bootstrap.prototype._getObject = function (root, name) {
-            return coreutils_12.CoreUtils.getValue(root.getExports(), name);
+            return coreutils_11.CoreUtils.getValue(root.getExports(), name);
         };
         Bootstrap.prototype._getConverter = function (name) {
             var name2 = const_3.STORE_KEY.CONVERTER + name;
             var res = this._getObject(this, name2);
             if (!res)
-                throw new Error(coreutils_12.StringUtils.format(lang_6.ERRS.ERR_CONVERTER_NOTREGISTERED, name));
+                throw new Error(coreutils_11.StringUtils.format(lang_6.ERRS.ERR_CONVERTER_NOTREGISTERED, name));
             return res;
         };
         Bootstrap.prototype._waitLoaded = function (onLoad) {
@@ -3836,7 +3610,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
                 this._registerObject(this, name2, obj);
             }
             else
-                throw new Error(coreutils_12.StringUtils.format(lang_6.ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
+                throw new Error(coreutils_11.StringUtils.format(lang_6.ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
         };
         Bootstrap.prototype.registerElView = function (name, elViewType) {
             this._elViewRegister.registerElView(name, elViewType);
@@ -3894,11 +3668,11 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             configurable: true
         });
         return Bootstrap;
-    }(object_8.BaseObject));
+    }(object_6.BaseObject));
     exports.Bootstrap = Bootstrap;
     exports.bootstrap = new Bootstrap();
 });
-define("jriapp_core/converter", ["require", "exports", "jriapp_core/lang", "jriapp_utils/coreutils", "jriapp_core/bootstrap"], function (require, exports, lang_7, coreutils_13, bootstrap_2) {
+define("jriapp_core/converter", ["require", "exports", "jriapp_core/lang", "jriapp_utils/coreutils", "jriapp_core/bootstrap"], function (require, exports, lang_7, coreutils_12, bootstrap_2) {
     "use strict";
     exports.NUM_CONV = { None: 0, Integer: 1, Decimal: 2, Float: 3, SmallInt: 4 };
     var BaseConverter = (function () {
@@ -3908,7 +3682,7 @@ define("jriapp_core/converter", ["require", "exports", "jriapp_core/lang", "jria
             return val;
         };
         BaseConverter.prototype.convertToTarget = function (val, param, dataContext) {
-            if (coreutils_13.Checks.isNt(val))
+            if (coreutils_12.Checks.isNt(val))
                 return null;
             return val;
         };
@@ -3930,7 +3704,7 @@ define("jriapp_core/converter", ["require", "exports", "jriapp_core/lang", "jria
                 return dateTimeConverter.convertToSource(val, defaults.dateFormat, dataContext);
         };
         DateConverter.prototype.convertToTarget = function (val, param, dataContext) {
-            if (coreutils_13.Checks.isNt(val))
+            if (coreutils_12.Checks.isNt(val))
                 return "";
             var defaults = bootstrap_2.bootstrap.defaults, datepicker = defaults.datepicker;
             if (!!datepicker)
@@ -3954,12 +3728,12 @@ define("jriapp_core/converter", ["require", "exports", "jriapp_core/lang", "jria
                 return null;
             var m = moment(val, param);
             if (!m.isValid()) {
-                throw new Error(coreutils_13.StringUtils.format(lang_7.ERRS.ERR_CONV_INVALID_DATE, val));
+                throw new Error(coreutils_12.StringUtils.format(lang_7.ERRS.ERR_CONV_INVALID_DATE, val));
             }
             return m.toDate();
         };
         DateTimeConverter.prototype.convertToTarget = function (val, param, dataContext) {
-            if (coreutils_13.Checks.isNt(val)) {
+            if (coreutils_12.Checks.isNt(val)) {
                 return "";
             }
             var m = moment(val);
@@ -3977,12 +3751,12 @@ define("jriapp_core/converter", ["require", "exports", "jriapp_core/lang", "jria
         function NumberConverter() {
         }
         NumberConverter.prototype.convertToSource = function (val, param, dataContext) {
-            if (coreutils_13.Checks.isNt(val))
+            if (coreutils_12.Checks.isNt(val))
                 return null;
             var defaults = bootstrap_2.bootstrap.defaults, dp = defaults.decimalPoint, thousand_sep = defaults.thousandSep, prec = 4;
             var value = val.replace(thousand_sep, "");
             value = value.replace(dp, ".");
-            value = coreutils_13.StringUtils.stripNonNumeric(value);
+            value = coreutils_12.StringUtils.stripNonNumeric(value);
             if (value === "") {
                 return null;
             }
@@ -3996,7 +3770,7 @@ define("jriapp_core/converter", ["require", "exports", "jriapp_core/lang", "jria
                     break;
                 case exports.NUM_CONV.Decimal:
                     prec = defaults.decPrecision;
-                    num = coreutils_13.CoreUtils.round(parseFloat(value), prec);
+                    num = coreutils_12.CoreUtils.round(parseFloat(value), prec);
                     break;
                 case exports.NUM_CONV.Float:
                     num = parseFloat(value);
@@ -4005,30 +3779,30 @@ define("jriapp_core/converter", ["require", "exports", "jriapp_core/lang", "jria
                     num = Number(value);
                     break;
             }
-            if (!coreutils_13.Checks.isNumber(num)) {
-                throw new Error(coreutils_13.StringUtils.format(lang_7.ERRS.ERR_CONV_INVALID_NUM, val));
+            if (!coreutils_12.Checks.isNumber(num)) {
+                throw new Error(coreutils_12.StringUtils.format(lang_7.ERRS.ERR_CONV_INVALID_NUM, val));
             }
             return num;
         };
         NumberConverter.prototype.convertToTarget = function (val, param, dataContext) {
-            if (coreutils_13.Checks.isNt(val)) {
+            if (coreutils_12.Checks.isNt(val)) {
                 return "";
             }
             var defaults = bootstrap_2.bootstrap.defaults, dp = defaults.decimalPoint, thousand_sep = defaults.thousandSep, prec;
             switch (param) {
                 case exports.NUM_CONV.Integer:
                     prec = 0;
-                    return coreutils_13.StringUtils.formatNumber(val, prec, dp, thousand_sep);
+                    return coreutils_12.StringUtils.formatNumber(val, prec, dp, thousand_sep);
                 case exports.NUM_CONV.Decimal:
                     prec = defaults.decPrecision;
-                    return coreutils_13.StringUtils.formatNumber(val, prec, dp, thousand_sep);
+                    return coreutils_12.StringUtils.formatNumber(val, prec, dp, thousand_sep);
                 case exports.NUM_CONV.SmallInt:
                     prec = 0;
-                    return coreutils_13.StringUtils.formatNumber(val, prec, dp, "");
+                    return coreutils_12.StringUtils.formatNumber(val, prec, dp, "");
                 case exports.NUM_CONV.Float:
-                    return coreutils_13.StringUtils.formatNumber(val, null, dp, thousand_sep);
+                    return coreutils_12.StringUtils.formatNumber(val, null, dp, thousand_sep);
                 default:
-                    return coreutils_13.StringUtils.formatNumber(val, null, dp, thousand_sep);
+                    return coreutils_12.StringUtils.formatNumber(val, null, dp, thousand_sep);
             }
         };
         NumberConverter.prototype.toString = function () {
@@ -4174,10 +3948,230 @@ define("jriapp_content/int", ["require", "exports", "jriapp_utils/utils", "jriap
     }
     exports.parseContentAttr = parseContentAttr;
 });
+define("jriapp_core/mvvm", ["require", "exports", "jriapp_core/object", "jriapp_utils/coreutils"], function (require, exports, object_7, coreutils_13) {
+    "use strict";
+    var CMD_EVENTS = {
+        can_execute_changed: "canExecute_changed"
+    };
+    var TCommand = (function (_super) {
+        __extends(TCommand, _super);
+        function TCommand(fn_action, thisObj, fn_canExecute) {
+            _super.call(this);
+            this._objId = "cmd" + coreutils_13.CoreUtils.getNewID();
+            this._action = fn_action;
+            this._thisObj = !thisObj ? null : thisObj;
+            this._predicate = !fn_canExecute ? null : fn_canExecute;
+        }
+        TCommand.prototype._getEventNames = function () {
+            var base_events = _super.prototype._getEventNames.call(this);
+            return [CMD_EVENTS.can_execute_changed].concat(base_events);
+        };
+        TCommand.prototype._canExecute = function (sender, param, context) {
+            if (!this._predicate)
+                return true;
+            return this._predicate.apply(context, [sender, param, this._thisObj]);
+        };
+        TCommand.prototype._execute = function (sender, param, context) {
+            if (!!this._action) {
+                this._action.apply(context, [sender, param, this._thisObj]);
+            }
+        };
+        TCommand.prototype.addOnCanExecuteChanged = function (fn, nmspace, context) {
+            this._addHandler(CMD_EVENTS.can_execute_changed, fn, nmspace, context);
+        };
+        TCommand.prototype.removeOnCanExecuteChanged = function (nmspace) {
+            this._removeHandler(CMD_EVENTS.can_execute_changed, nmspace);
+        };
+        TCommand.prototype.canExecute = function (sender, param) {
+            return this._canExecute(sender, param, this._thisObj || this);
+        };
+        TCommand.prototype.execute = function (sender, param) {
+            this._execute(sender, param, this._thisObj || this);
+        };
+        TCommand.prototype.destroy = function () {
+            if (this._isDestroyed)
+                return;
+            this._isDestroyCalled = true;
+            this._action = null;
+            this._thisObj = null;
+            this._predicate = null;
+            _super.prototype.destroy.call(this);
+        };
+        TCommand.prototype.raiseCanExecuteChanged = function () {
+            this.raiseEvent(CMD_EVENTS.can_execute_changed, {});
+        };
+        TCommand.prototype.toString = function () {
+            return "Command";
+        };
+        Object.defineProperty(TCommand.prototype, "uniqueID", {
+            get: function () {
+                return this._objId;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TCommand.prototype, "thisObj", {
+            get: function () {
+                return this._thisObj;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return TCommand;
+    }(object_7.BaseObject));
+    exports.TCommand = TCommand;
+    var BaseCommand = (function (_super) {
+        __extends(BaseCommand, _super);
+        function BaseCommand(thisObj) {
+            _super.call(this, null, thisObj, null);
+            this._action = this.Action;
+            this._predicate = this.getIsCanExecute;
+        }
+        BaseCommand.prototype.canExecute = function (sender, param) {
+            return this._canExecute(sender, param, this);
+        };
+        BaseCommand.prototype.execute = function (sender, param) {
+            this._execute(sender, param, this);
+        };
+        return BaseCommand;
+    }(TCommand));
+    exports.BaseCommand = BaseCommand;
+    exports.Command = TCommand;
+    exports.TemplateCommand = TCommand;
+    var ViewModel = (function (_super) {
+        __extends(ViewModel, _super);
+        function ViewModel(app) {
+            _super.call(this);
+            this._app = app;
+            this._objId = "vm" + coreutils_13.CoreUtils.getNewID();
+        }
+        ViewModel.prototype.handleError = function (error, source) {
+            var isHandled = _super.prototype.handleError.call(this, error, source);
+            if (!isHandled) {
+                return this._app.handleError(error, source);
+            }
+            return isHandled;
+        };
+        ViewModel.prototype.toString = function () {
+            return "ViewModel";
+        };
+        ViewModel.prototype.destroy = function () {
+            this._app = null;
+            _super.prototype.destroy.call(this);
+        };
+        Object.defineProperty(ViewModel.prototype, "uniqueID", {
+            get: function () {
+                return this._objId;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ViewModel.prototype, "app", {
+            get: function () { return this._app; },
+            enumerable: true,
+            configurable: true
+        });
+        return ViewModel;
+    }(object_7.BaseObject));
+    exports.ViewModel = ViewModel;
+});
+define("jriapp_utils/eventstore", ["require", "exports", "jriapp_core/object", "jriapp_utils/syschecks"], function (require, exports, object_8, syschecks_4) {
+    "use strict";
+    var PROP_BAG = syschecks_4.SysChecks._PROP_BAG_NAME();
+    (function (EVENT_CHANGE_TYPE) {
+        EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["None"] = 0] = "None";
+        EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["Added"] = 1] = "Added";
+        EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["Deleted"] = 2] = "Deleted";
+        EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["Updated"] = 3] = "Updated";
+    })(exports.EVENT_CHANGE_TYPE || (exports.EVENT_CHANGE_TYPE = {}));
+    var EVENT_CHANGE_TYPE = exports.EVENT_CHANGE_TYPE;
+    var EventStore = (function (_super) {
+        __extends(EventStore, _super);
+        function EventStore(onChange) {
+            _super.call(this);
+            this._dic = null;
+            this._onChange = onChange;
+        }
+        EventStore.prototype._isHasProp = function (prop) {
+            return true;
+        };
+        EventStore.prototype.getProp = function (name) {
+            if (!this._dic)
+                return null;
+            var cmd = this._dic[name];
+            if (!cmd)
+                return null;
+            return cmd;
+        };
+        EventStore.prototype.setProp = function (name, command) {
+            if (!this._dic && !!command)
+                this._dic = {};
+            if (!this._dic)
+                return;
+            var old = this._dic[name];
+            if (!command && !!old) {
+                delete this._dic[name];
+                if (!!this._onChange) {
+                    this._onChange(this, {
+                        name: name,
+                        changeType: 2,
+                        oldVal: old,
+                        newVal: null
+                    });
+                    this.raisePropertyChanged(name);
+                }
+                return;
+            }
+            this._dic[name] = command;
+            if (!!this._onChange) {
+                if (!old) {
+                    this._onChange(this, {
+                        name: name,
+                        changeType: 1,
+                        oldVal: null,
+                        newVal: command
+                    });
+                }
+                else {
+                    this._onChange(this, {
+                        name: name,
+                        changeType: 3,
+                        oldVal: old,
+                        newVal: command
+                    });
+                }
+                this.raisePropertyChanged(name);
+            }
+        };
+        EventStore.prototype.trigger = function (name, args) {
+            if (!this._dic)
+                return;
+            var command = this._dic[name];
+            if (!command)
+                return;
+            args = args || {};
+            if (command.canExecute(this, args))
+                command.execute(this, args);
+        };
+        EventStore.prototype.toString = function () {
+            return PROP_BAG;
+        };
+        EventStore.prototype.destroy = function () {
+            if (!!this._dic) {
+                this._dic = null;
+            }
+            this._onChange = null;
+            _super.prototype.destroy.call(this);
+        };
+        return EventStore;
+    }(object_8.BaseObject));
+    exports.EventStore = EventStore;
+});
 define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/syschecks", "jriapp_core/bootstrap", "jriapp_utils/utils", "jriapp_core/mvvm", "jriapp_utils/eventstore"], function (require, exports, const_4, lang_8, object_9, syschecks_5, bootstrap_3, utils_3, mvvm_1, eventstore_1) {
     "use strict";
     exports.EVENT_CHANGE_TYPE = eventstore_1.EVENT_CHANGE_TYPE;
     var coreUtils = utils_3.Utils.core, dom = utils_3.Utils.dom, $ = dom.$, checks = utils_3.Utils.check;
+    var PROP_BAG = syschecks_5.SysChecks._PROP_BAG_NAME();
     syschecks_5.SysChecks._isElView = function (obj) {
         return !!obj && obj instanceof BaseElView;
     };
@@ -4249,7 +4243,7 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             }
         };
         PropertyBag.prototype.toString = function () {
-            return "IPBag";
+            return PROP_BAG;
         };
         return PropertyBag;
     }(object_9.BaseObject));
@@ -4283,7 +4277,7 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             dom.setClass(this._$el.toArray(), name, !val);
         };
         CSSBag.prototype.toString = function () {
-            return "IPBag";
+            return PROP_BAG;
         };
         return CSSBag;
     }(object_9.BaseObject));
@@ -10860,6 +10854,6 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.COLL_CHANGE_REASON = collection_1.COLL_CHANGE_REASON;
     exports.COLL_CHANGE_TYPE = collection_1.COLL_CHANGE_TYPE;
     exports.Application = app_1.Application;
-    exports.VERSION = "0.9.73";
+    exports.VERSION = "0.9.74";
     bootstrap_25.Bootstrap._initFramework();
 });

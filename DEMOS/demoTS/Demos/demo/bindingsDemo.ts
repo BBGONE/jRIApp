@@ -22,6 +22,15 @@ export class UppercaseConverter extends RIAPP.BaseConverter {
     }
 }
 
+export class NotConverter extends RIAPP.BaseConverter {
+    convertToSource(val: any, param: any, dataContext: any): any {
+            return !val;
+    }
+    convertToTarget(val: any, param: any, dataContext: any): any {
+            return !val;
+    }
+}
+
 export class TestObject extends RIAPP.BaseObject {
     private _testProperty1: string;
     private _testProperty2: string;
@@ -44,7 +53,7 @@ export class TestObject extends RIAPP.BaseObject {
         }, self,
             function (sender, args) {
                 //if this function return false, then the command is disabled
-                return utils.check.isString(self.testProperty1) && self.testProperty1.length > 3;
+                return self.isEnabled;
             });
 
         this._month = new Date().getMonth() + 1;
@@ -61,40 +70,45 @@ export class TestObject extends RIAPP.BaseObject {
     _onTestCommandExecuted() {
         alert(utils.str.format("testProperty1:{0}, format:{1}, month: {2}", this.testProperty1, this.format, this.month));
     }
-    get testProperty1() { return this._testProperty1; }
-    set testProperty1(v) {
+    get testProperty1(): string { return this._testProperty1; }
+    set testProperty1(v: string) {
         if (this._testProperty1 != v) {
             this._testProperty1 = v;
             this.raisePropertyChanged('testProperty1');
+            this.raisePropertyChanged('isEnabled');
+
             //let the command to evaluate its availability
             this._testCommand.raiseCanExecuteChanged();
         }
     }
-    get testProperty2() { return this._testProperty2; }
-    set testProperty2(v) {
+    get testProperty2(): string { return this._testProperty2; }
+    set testProperty2(v: string) {
         if (this._testProperty2 != v) {
             this._testProperty2 = v;
             this.raisePropertyChanged('testProperty2');
         }
     }
-    get testProperty3() { return this._testProperty3; }
-    set testProperty3(v) {
+    get testProperty3(): string { return this._testProperty3; }
+    set testProperty3(v: string) {
         if (this._testProperty3 != v) {
             this._testProperty3 = v;
             this.raisePropertyChanged('testProperty3');
         }
     }
     get testCommand(): RIAPP.ICommand { return this._testCommand; }
-    get testToolTip() {
+    get testToolTip(): string {
         return "Click the button to execute the command.<br/>" +
-            "P.S. <b>command is active when the testProperty length > 3</b>";
+            "P.S. <b>command is active when the testProperty1 length > 3</b>";
     }
-    get format() { return this._format; }
-    set format(v) {
+    get format(): string { return this._format; }
+    set format(v: string) {
         if (this._format !== v) {
             this._format = v;
             this.raisePropertyChanged('format');
         }
+    }
+    get isEnabled(): boolean {
+        return utils.check.isString(this.testProperty1) && this.testProperty1.length > 3;
     }
     get formats() { return this._formats; }
     get month() { return this._month; }
@@ -108,12 +122,11 @@ export class TestObject extends RIAPP.BaseObject {
 }
 
 export class DemoApplication extends RIAPP.Application {
-    _errorVM: COMMON.ErrorViewModel;
-    _testObject: TestObject;
+    private _errorVM: COMMON.ErrorViewModel;
+    private _testObject: TestObject;
 
     constructor(options: RIAPP.IAppOptions) {
         super(options);
-        var self = this;
         this._errorVM = null;
         this._testObject = null;
     }
@@ -159,6 +172,7 @@ bootstrap.addOnError(function (sender, args) {
 function initModule(app: RIAPP.Application) {
     console.log("INIT Module");
     app.registerConverter('uppercaseConverter', new UppercaseConverter());
+    app.registerConverter('notConverter', new NotConverter());
 };
 
 

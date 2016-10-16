@@ -26,6 +26,20 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
         return UppercaseConverter;
     }(RIAPP.BaseConverter));
     exports.UppercaseConverter = UppercaseConverter;
+    var NotConverter = (function (_super) {
+        __extends(NotConverter, _super);
+        function NotConverter() {
+            _super.apply(this, arguments);
+        }
+        NotConverter.prototype.convertToSource = function (val, param, dataContext) {
+            return !val;
+        };
+        NotConverter.prototype.convertToTarget = function (val, param, dataContext) {
+            return !val;
+        };
+        return NotConverter;
+    }(RIAPP.BaseConverter));
+    exports.NotConverter = NotConverter;
     var TestObject = (function (_super) {
         __extends(TestObject, _super);
         function TestObject(initPropValue) {
@@ -37,7 +51,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             this._testCommand = new RIAPP.Command(function (sender, args) {
                 self._onTestCommandExecuted();
             }, self, function (sender, args) {
-                return utils.check.isString(self.testProperty1) && self.testProperty1.length > 3;
+                return self.isEnabled;
             });
             this._month = new Date().getMonth() + 1;
             this._months = new DEMODB.KeyValDictionary();
@@ -58,6 +72,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
                 if (this._testProperty1 != v) {
                     this._testProperty1 = v;
                     this.raisePropertyChanged('testProperty1');
+                    this.raisePropertyChanged('isEnabled');
                     this._testCommand.raiseCanExecuteChanged();
                 }
             },
@@ -94,7 +109,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
         Object.defineProperty(TestObject.prototype, "testToolTip", {
             get: function () {
                 return "Click the button to execute the command.<br/>" +
-                    "P.S. <b>command is active when the testProperty length > 3</b>";
+                    "P.S. <b>command is active when the testProperty1 length > 3</b>";
             },
             enumerable: true,
             configurable: true
@@ -106,6 +121,13 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
                     this._format = v;
                     this.raisePropertyChanged('format');
                 }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TestObject.prototype, "isEnabled", {
+            get: function () {
+                return utils.check.isString(this.testProperty1) && this.testProperty1.length > 3;
             },
             enumerable: true,
             configurable: true
@@ -138,7 +160,6 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
         __extends(DemoApplication, _super);
         function DemoApplication(options) {
             _super.call(this, options);
-            var self = this;
             this._errorVM = null;
             this._testObject = null;
         }
@@ -194,6 +215,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
     function initModule(app) {
         console.log("INIT Module");
         app.registerConverter('uppercaseConverter', new UppercaseConverter());
+        app.registerConverter('notConverter', new NotConverter());
     }
     ;
     exports.appOptions = {

@@ -7,11 +7,12 @@ import { SysChecks } from "../jriapp_utils/syschecks";
 import { bootstrap } from "../jriapp_core/bootstrap";
 import { Utils as utils } from "../jriapp_utils/utils";
 import { TAction, TCommand, ICommand, Command, TPredicate } from "../jriapp_core/mvvm";
-import { IEventStore, EventStore, EVENT_CHANGE_TYPE, IEventChangedArgs } from "../jriapp_utils/eventstore";
+import { EventStore, EVENT_CHANGE_TYPE, IEventChangedArgs } from "../jriapp_utils/eventstore";
 
-export { IEventChangedArgs, IEventStore, EVENT_CHANGE_TYPE };
+export { IEventChangedArgs, EVENT_CHANGE_TYPE };
 
 const coreUtils = utils.core, dom = utils.dom, $ = dom.$, checks = utils.check;
+const PROP_BAG = SysChecks._PROP_BAG_NAME();
 
 SysChecks._isElView = function (obj: any): boolean {
     return !!obj && obj instanceof BaseElView;
@@ -93,7 +94,7 @@ class PropertyBag extends BaseObject implements IPropertyBag {
         }
     }
     toString() {
-        return "IPBag";
+        return PROP_BAG;
     }
 }
 
@@ -136,7 +137,7 @@ class CSSBag extends BaseObject implements IPropertyBag {
         dom.setClass(this._$el.toArray(), name, !val);
     }
     toString() {
-        return "IPBag";
+        return PROP_BAG;
     }
 }
 
@@ -325,7 +326,7 @@ export class BaseElView extends BaseObject implements IElView {
     }
     get app(): IApplication { return this._app; }
     //stores commands for data binding to the HtmlElement's events
-    get events(): IEventStore {
+    get events(): IPropertyBag {
         if (!this._eventStore) {
             if (this.getIsDestroyCalled())
                 return null;

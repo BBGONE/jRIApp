@@ -1,15 +1,16 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import * as coreMOD from "../jriapp_core/shared";
 
+const PROP_BAG: string = "IPBag";
+
 export class SysChecks {
     //DUMMY implementations
     static _isBaseObj: (obj: any) => boolean = (obj) => { return false; };
     static _isElView: (obj: any) => boolean = (obj) => { return false; };
     static _isBinding: (obj: any) => boolean = (obj) => { return false; };
     static _isPropBag: (obj: any) => boolean = (obj) => {
-        return SysChecks._isBaseObj(obj) && obj.toString() === "IPBag";
+        return SysChecks._isBaseObj(obj) && obj.toString() === PROP_BAG;
     };
-    static _isEventStore: (obj: any) => boolean = (obj) => { return false; };
     
     //DUMMY implementations collection
     static _isCollection: (obj: any) => boolean = (obj) => { return false; };
@@ -25,4 +26,6 @@ export class SysChecks {
     static _isInsideDataForm: (el: HTMLElement) => boolean = (el) => { return false; };
     static _isInNestedForm: (root: any, forms: HTMLElement[], el: HTMLElement) => boolean = (root: any, forms: HTMLElement[], el: HTMLElement) => { return false; };
     static _getParentDataForm: (rootForm: HTMLElement, el: HTMLElement) => HTMLElement = (rootForm: HTMLElement, el: HTMLElement) => { return null; };
+
+    static _PROP_BAG_NAME() { return PROP_BAG; }
 }

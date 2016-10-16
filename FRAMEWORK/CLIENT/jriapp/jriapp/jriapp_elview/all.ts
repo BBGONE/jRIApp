@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-export { BaseElView, fn_addToolTip, PropChangedCommand, IEventStore, IEventChangedArgs, EVENT_CHANGE_TYPE } from "./elview";
+export { BaseElView, fn_addToolTip, PropChangedCommand, IEventChangedArgs, EVENT_CHANGE_TYPE } from "./elview";
 export { AnchorElView, IAncorOptions } from "./anchor";
 export { BlockElView } from "./block";
 export { BusyElView, IBusyViewOptions } from "./busy";

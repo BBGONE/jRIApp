@@ -586,7 +586,6 @@ declare module "jriapp_utils/syschecks" {
         static _isElView: (obj: any) => boolean;
         static _isBinding: (obj: any) => boolean;
         static _isPropBag: (obj: any) => boolean;
-        static _isEventStore: (obj: any) => boolean;
         static _isCollection: (obj: any) => boolean;
         static _getItemByProp: (obj: any, prop: string) => any;
         static _isValidationError: (obj: any) => boolean;
@@ -596,6 +595,7 @@ declare module "jriapp_utils/syschecks" {
         static _isInsideDataForm: (el: HTMLElement) => boolean;
         static _isInNestedForm: (root: any, forms: HTMLElement[], el: HTMLElement) => boolean;
         static _getParentDataForm: (rootForm: HTMLElement, el: HTMLElement) => HTMLElement;
+        static _PROP_BAG_NAME(): string;
     }
 }
 declare module "jriapp_utils/checks" {
@@ -868,99 +868,6 @@ declare module "jriapp_core/object" {
         removeOnPropertyChange(prop?: string, nmspace?: string): void;
         getIsDestroyed(): boolean;
         getIsDestroyCalled(): boolean;
-        destroy(): void;
-    }
-}
-declare module "jriapp_core/mvvm" {
-    import { IBaseObject, ITemplate, IErrorHandler } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
-    export interface ICommand {
-        canExecute: (sender: any, param: any) => boolean;
-        execute: (sender: any, param: any) => void;
-        raiseCanExecuteChanged: () => void;
-        addOnCanExecuteChanged(fn: (sender: ICommand, args: {}) => void, nmspace?: string, context?: IBaseObject): void;
-        removeOnCanExecuteChanged(nmspace?: string): void;
-    }
-    export type TAction<TParam, TThis> = (sender: any, param: TParam, thisObj: TThis) => void;
-    export type TPredicate<TParam, TThis> = (sender: any, param: TParam, thisObj: TThis) => boolean;
-    export class TCommand<TParam, TThis> extends BaseObject implements ICommand {
-        protected _action: TAction<TParam, TThis>;
-        protected _thisObj: TThis;
-        protected _predicate: TPredicate<TParam, TThis>;
-        private _objId;
-        constructor(fn_action: TAction<TParam, TThis>, thisObj?: TThis, fn_canExecute?: TPredicate<TParam, TThis>);
-        protected _getEventNames(): string[];
-        protected _canExecute(sender: any, param: TParam, context: any): boolean;
-        protected _execute(sender: any, param: TParam, context: any): void;
-        addOnCanExecuteChanged(fn: (sender: ICommand, args: any) => void, nmspace?: string, context?: IBaseObject): void;
-        removeOnCanExecuteChanged(nmspace?: string): void;
-        canExecute(sender: any, param: TParam): boolean;
-        execute(sender: any, param: TParam): void;
-        destroy(): void;
-        raiseCanExecuteChanged(): void;
-        toString(): string;
-        readonly uniqueID: string;
-        readonly thisObj: TThis;
-    }
-    export abstract class BaseCommand<TParam, TThis> extends TCommand<TParam, TThis> {
-        constructor(thisObj: TThis);
-        canExecute(sender: any, param: TParam): boolean;
-        execute(sender: any, param: TParam): void;
-        protected abstract Action(sender: any, param: TParam): void;
-        protected abstract getIsCanExecute(sender: any, param: TParam): boolean;
-    }
-    export type Command = TCommand<any, any>;
-    export const Command: new (fn_action: TAction<any, any>, thisObj?: any, fn_canExecute?: TPredicate<any, any>) => Command;
-    export type TemplateCommand = TCommand<{
-        template: ITemplate;
-        isLoaded: boolean;
-    }, any>;
-    export const TemplateCommand: new (fn_action: TAction<{
-        template: ITemplate;
-        isLoaded: boolean;
-    }, any>, thisObj?: any, fn_canExecute?: TPredicate<{
-        template: ITemplate;
-        isLoaded: boolean;
-    }, any>) => TemplateCommand;
-    export class ViewModel<TApp extends IErrorHandler> extends BaseObject {
-        private _objId;
-        private _app;
-        constructor(app: TApp);
-        handleError(error: any, source: any): boolean;
-        toString(): string;
-        destroy(): void;
-        readonly uniqueID: string;
-        readonly app: TApp;
-    }
-}
-declare module "jriapp_utils/eventstore" {
-    import { ICommand } from "jriapp_core/mvvm";
-    import { BaseObject } from "jriapp_core/object";
-    export const enum EVENT_CHANGE_TYPE {
-        None = 0,
-        Added = 1,
-        Deleted = 2,
-        Updated = 3,
-    }
-    export interface IEventChangedArgs {
-        name: string;
-        changeType: EVENT_CHANGE_TYPE;
-        oldVal: ICommand;
-        newVal: ICommand;
-    }
-    export interface IEventStore {
-        getCommand(name: string): ICommand;
-        setCommand(name: string, command: ICommand): void;
-    }
-    export class EventStore extends BaseObject implements IEventStore {
-        private _dic;
-        private _onChange;
-        constructor(onChange: (sender: EventStore, args: IEventChangedArgs) => void);
-        _isHasProp(prop: string): boolean;
-        getCommand(name: string): ICommand;
-        setCommand(name: string, command: ICommand): void;
-        trigger(name: string, args?: any): void;
-        toString(): string;
         destroy(): void;
     }
 }
@@ -1416,12 +1323,102 @@ declare module "jriapp_content/int" {
     }
     export function parseContentAttr(content_attr: string): IContentOptions;
 }
+declare module "jriapp_core/mvvm" {
+    import { IBaseObject, ITemplate, IErrorHandler } from "jriapp_core/shared";
+    import { BaseObject } from "jriapp_core/object";
+    export interface ICommand {
+        canExecute: (sender: any, param: any) => boolean;
+        execute: (sender: any, param: any) => void;
+        raiseCanExecuteChanged: () => void;
+        addOnCanExecuteChanged(fn: (sender: ICommand, args: {}) => void, nmspace?: string, context?: IBaseObject): void;
+        removeOnCanExecuteChanged(nmspace?: string): void;
+    }
+    export type TAction<TParam, TThis> = (sender: any, param: TParam, thisObj: TThis) => void;
+    export type TPredicate<TParam, TThis> = (sender: any, param: TParam, thisObj: TThis) => boolean;
+    export class TCommand<TParam, TThis> extends BaseObject implements ICommand {
+        protected _action: TAction<TParam, TThis>;
+        protected _thisObj: TThis;
+        protected _predicate: TPredicate<TParam, TThis>;
+        private _objId;
+        constructor(fn_action: TAction<TParam, TThis>, thisObj?: TThis, fn_canExecute?: TPredicate<TParam, TThis>);
+        protected _getEventNames(): string[];
+        protected _canExecute(sender: any, param: TParam, context: any): boolean;
+        protected _execute(sender: any, param: TParam, context: any): void;
+        addOnCanExecuteChanged(fn: (sender: ICommand, args: any) => void, nmspace?: string, context?: IBaseObject): void;
+        removeOnCanExecuteChanged(nmspace?: string): void;
+        canExecute(sender: any, param: TParam): boolean;
+        execute(sender: any, param: TParam): void;
+        destroy(): void;
+        raiseCanExecuteChanged(): void;
+        toString(): string;
+        readonly uniqueID: string;
+        readonly thisObj: TThis;
+    }
+    export abstract class BaseCommand<TParam, TThis> extends TCommand<TParam, TThis> {
+        constructor(thisObj: TThis);
+        canExecute(sender: any, param: TParam): boolean;
+        execute(sender: any, param: TParam): void;
+        protected abstract Action(sender: any, param: TParam): void;
+        protected abstract getIsCanExecute(sender: any, param: TParam): boolean;
+    }
+    export type Command = TCommand<any, any>;
+    export const Command: new (fn_action: TAction<any, any>, thisObj?: any, fn_canExecute?: TPredicate<any, any>) => Command;
+    export type TemplateCommand = TCommand<{
+        template: ITemplate;
+        isLoaded: boolean;
+    }, any>;
+    export const TemplateCommand: new (fn_action: TAction<{
+        template: ITemplate;
+        isLoaded: boolean;
+    }, any>, thisObj?: any, fn_canExecute?: TPredicate<{
+        template: ITemplate;
+        isLoaded: boolean;
+    }, any>) => TemplateCommand;
+    export class ViewModel<TApp extends IErrorHandler> extends BaseObject {
+        private _objId;
+        private _app;
+        constructor(app: TApp);
+        handleError(error: any, source: any): boolean;
+        toString(): string;
+        destroy(): void;
+        readonly uniqueID: string;
+        readonly app: TApp;
+    }
+}
+declare module "jriapp_utils/eventstore" {
+    import { IPropertyBag } from "jriapp_core/shared";
+    import { ICommand } from "jriapp_core/mvvm";
+    import { BaseObject } from "jriapp_core/object";
+    export const enum EVENT_CHANGE_TYPE {
+        None = 0,
+        Added = 1,
+        Deleted = 2,
+        Updated = 3,
+    }
+    export interface IEventChangedArgs {
+        name: string;
+        changeType: EVENT_CHANGE_TYPE;
+        oldVal: ICommand;
+        newVal: ICommand;
+    }
+    export class EventStore extends BaseObject implements IPropertyBag {
+        private _dic;
+        private _onChange;
+        constructor(onChange: (sender: EventStore, args: IEventChangedArgs) => void);
+        _isHasProp(prop: string): boolean;
+        getProp(name: string): ICommand;
+        setProp(name: string, command: ICommand): void;
+        trigger(name: string, args?: any): void;
+        toString(): string;
+        destroy(): void;
+    }
+}
 declare module "jriapp_elview/elview" {
     import { IElView, IValidationInfo, IApplication, IViewOptions, IPropertyBag } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
     import { TAction, TCommand, ICommand, TPredicate } from "jriapp_core/mvvm";
-    import { IEventStore, EVENT_CHANGE_TYPE, IEventChangedArgs } from "jriapp_utils/eventstore";
-    export { IEventChangedArgs, IEventStore, EVENT_CHANGE_TYPE };
+    import { EVENT_CHANGE_TYPE, IEventChangedArgs } from "jriapp_utils/eventstore";
+    export { IEventChangedArgs, EVENT_CHANGE_TYPE };
     export function fn_addToolTip($el: JQuery, tip: string, isError?: boolean, pos?: string): void;
     export type PropChangedCommand = TCommand<{
         property: string;
@@ -1499,7 +1496,7 @@ declare module "jriapp_elview/elview" {
         readonly dataName: string;
         toolTip: string;
         readonly app: IApplication;
-        readonly events: IEventStore;
+        readonly events: IPropertyBag;
         readonly props: IPropertyBag;
         readonly classes: IPropertyBag;
         css: string;
@@ -2071,7 +2068,7 @@ declare module "jriapp_elview/radio" {
     }
 }
 declare module "jriapp_elview/all" {
-    export { BaseElView, fn_addToolTip, PropChangedCommand, IEventStore, IEventChangedArgs, EVENT_CHANGE_TYPE } from "jriapp_elview/elview";
+    export { BaseElView, fn_addToolTip, PropChangedCommand, IEventChangedArgs, EVENT_CHANGE_TYPE } from "jriapp_elview/elview";
     export { AnchorElView, IAncorOptions } from "jriapp_elview/anchor";
     export { BlockElView } from "jriapp_elview/block";
     export { BusyElView, IBusyViewOptions } from "jriapp_elview/busy";
