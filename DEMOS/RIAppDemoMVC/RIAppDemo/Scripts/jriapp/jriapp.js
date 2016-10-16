@@ -1736,48 +1736,40 @@ define("jriapp_core/parser", ["require", "exports", "jriapp_core/lang", "jriapp_
                 return obj;
             if (strUtils.startsWith(prop, "[")) {
                 prop = trimQuotes(trimBrackets(prop));
-                if (syschecks._isCollection(obj)) {
-                    return syschecks._getItemByProp(obj, prop);
-                }
-                else if (checks.isArray(obj)) {
-                    return obj[parseInt(prop, 10)];
-                }
-                else {
-                    return obj[prop];
-                }
+            }
+            if (syschecks._isCollection(obj)) {
+                return syschecks._getItemByProp(obj, prop);
+            }
+            else if (checks.isArray(obj)) {
+                return obj[parseInt(prop, 10)];
+            }
+            else if (syschecks._isEventStore(obj)) {
+                return obj.getCommand(prop);
+            }
+            else if (syschecks._isPropBag(obj)) {
+                return obj.getProp(prop);
             }
             else {
-                if (syschecks._isEventStore(obj)) {
-                    return obj.getCommand(prop);
-                }
-                else if (syschecks._isPropBag(obj)) {
-                    return obj.getProp(prop);
-                }
-                else {
-                    return obj[prop];
-                }
+                return obj[prop];
             }
         };
         Parser.prototype.setPropertyValue = function (obj, prop, val) {
+            if (!prop)
+                throw new Error("Invalid operation: Empty Property name");
             if (strUtils.startsWith(prop, "[")) {
                 prop = trimQuotes(trimBrackets(prop));
-                if (checks.isArray(obj)) {
-                    obj[parseInt(prop, 10)] = val;
-                }
-                else {
-                    obj[prop] = val;
-                }
+            }
+            if (checks.isArray(obj)) {
+                obj[parseInt(prop, 10)] = val;
+            }
+            else if (syschecks._isEventStore(obj)) {
+                return obj.setCommand(prop, val);
+            }
+            else if (syschecks._isPropBag(obj)) {
+                obj.setProp(prop, val);
             }
             else {
-                if (syschecks._isEventStore(obj)) {
-                    return obj.setCommand(prop, val);
-                }
-                else if (syschecks._isPropBag(obj)) {
-                    obj.setProp(prop, val);
-                }
-                else {
-                    obj[prop] = val;
-                }
+                obj[prop] = val;
             }
         };
         Parser.prototype.resolveBindingSource = function (root, srcParts) {
@@ -10868,6 +10860,6 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.COLL_CHANGE_REASON = collection_1.COLL_CHANGE_REASON;
     exports.COLL_CHANGE_TYPE = collection_1.COLL_CHANGE_TYPE;
     exports.Application = app_1.Application;
-    exports.VERSION = "0.9.72";
+    exports.VERSION = "0.9.73";
     bootstrap_25.Bootstrap._initFramework();
 });

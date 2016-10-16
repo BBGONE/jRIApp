@@ -2823,6 +2823,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
 define("gridDemo/main", ["require", "exports", "jriapp", "common", "gridDemo/app", "gridDemo/resizableGrid"], function (require, exports, RIAPP, COMMON, app_1, ResizableGrid) {
     "use strict";
     var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = utils.dom.$;
+    var styles = ["lsize", 'msize', 'ssize', 'nsize'];
     var SizeConverter = (function (_super) {
         __extends(SizeConverter, _super);
         function SizeConverter() {
@@ -2832,19 +2833,22 @@ define("gridDemo/main", ["require", "exports", "jriapp", "common", "gridDemo/app
             return undefined;
         };
         SizeConverter.prototype.convertToTarget = function (val, param, dataContext) {
-            var size = "" + val;
-            var res = ["-*"];
-            switch (size) {
-                case "L":
-                    res.push("+lsize");
-                    break;
-                case "M":
-                    res.push("+msize");
-                    break;
-                case "S":
-                    res.push("+ssize");
-                    break;
+            var size = "" + val, firstLetter;
+            var res = undefined, found = false;
+            if (!!val) {
+                if (utils.check.isNumeric(size))
+                    firstLetter = 'n';
+                else
+                    firstLetter = size.charAt(0).toLowerCase();
             }
+            res = styles.map(function (style) {
+                if (!found && !!firstLetter && utils.str.startsWith(style, firstLetter)) {
+                    return "+" + style;
+                }
+                else {
+                    return "-" + style;
+                }
+            });
             return res;
         };
         return SizeConverter;

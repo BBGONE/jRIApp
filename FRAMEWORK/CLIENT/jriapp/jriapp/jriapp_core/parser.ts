@@ -30,7 +30,6 @@ function isInsideBraces(str: string) {
     return (strUtils.startsWith(str, "{") && strUtils.endsWith(str, "}"));
 }
 
-
 export class Parser {
     //extract key - value pairs
     protected _getKeyVals(val: string) {
@@ -139,54 +138,47 @@ export class Parser {
             return obj;
 
         if (strUtils.startsWith(prop, "[")) {
-            //it is an indexed property, obj must be of collection type or Array or a simple Indexer
+            //it is an indexed property like ['someProp']
             prop = trimQuotes(trimBrackets(prop));
+        }
 
-            if (syschecks._isCollection(obj)) {
-                return syschecks._getItemByProp(obj, prop);
-            }
-            else if (checks.isArray(obj)) {
-                return obj[parseInt(prop, 10)];
-            }
-            else {
-                return obj[prop];
-            }
+        if (syschecks._isCollection(obj)) {
+            return syschecks._getItemByProp(obj, prop);
+        }
+        else if (checks.isArray(obj)) {
+            return obj[parseInt(prop, 10)];
+        }
+        else if (syschecks._isEventStore(obj)) {
+            return (<IEventStore>obj).getCommand(prop);
+        }
+        else if (syschecks._isPropBag(obj)) {
+            return (<IPropertyBag>obj).getProp(prop);
         }
         else {
-            if (syschecks._isEventStore(obj)) {
-                return (<IEventStore>obj).getCommand(prop);
-            }
-            else if (syschecks._isPropBag(obj)) {
-                return (<IPropertyBag>obj).getProp(prop);
-            }
-            else {
-                return obj[prop];
-            }
+            return obj[prop];
         }
     }
     setPropertyValue(obj: any, prop: string, val: any) {
+        if (!prop)
+            throw new Error("Invalid operation: Empty Property name");
+
         //it is an indexed property, obj must be an Array or ComandStore or a simple indexer
         if (strUtils.startsWith(prop, "[")) {
             //remove brakets from a string like: [index]
             prop = trimQuotes(trimBrackets(prop));
+        }
 
-            if (checks.isArray(obj)) {
-                obj[parseInt(prop, 10)] = val;
-            }
-            else {
-                obj[prop] = val;
-            }
+        if (checks.isArray(obj)) {
+            obj[parseInt(prop, 10)] = val;
+        }
+        else if (syschecks._isEventStore(obj)) {
+            return (<IEventStore>obj).setCommand(prop, val);
+        }
+        else if (syschecks._isPropBag(obj)) {
+            (<IPropertyBag>obj).setProp(prop, val);
         }
         else {
-            if (syschecks._isEventStore(obj)) {
-                return (<IEventStore>obj).setCommand(prop, val);
-            }
-            else if (syschecks._isPropBag(obj)) {
-                (<IPropertyBag>obj).setProp(prop, val);
-            }
-            else {
-                obj[prop] = val;
-            }
+            obj[prop] = val;
         }
     }
     resolveBindingSource(root: any, srcParts: string[]): any {

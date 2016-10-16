@@ -13,25 +13,43 @@ import { IMainOptions, DemoApplication } from "./app";
 import * as  ResizableGrid from "./resizableGrid";
 
 var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = utils.dom.$;
+const styles = ["lsize", 'msize', 'ssize', 'nsize'];
 
+/*
+ an example converter, which depending on the size returns
+ an array of css classes to add or to remove to the HTML element
+*/
 export class SizeConverter extends RIAPP.BaseConverter {
     convertToSource(val: any, param: any, dataContext: any): any {
         return undefined;
     }
     convertToTarget(val: any, param: any, dataContext: any): any {
-        let size = "" + val;
-        let res: string[] = ["-*"];
-        switch (size) {
-            case "L":
-                res.push("+lsize");
-                break;
-            case "M":
-                res.push("+msize");
-                break;
-            case "S":
-                res.push("+ssize");
-                break;
+        let size = "" + val, firstLetter: string;
+        let res: string[] = undefined, found = false;
+        if (!!val) {
+            if (utils.check.isNumeric(size))
+                firstLetter = 'n';
+            else
+                firstLetter = size.charAt(0).toLowerCase();
         }
+
+        res = styles.map((style) => {
+            //only check if not found (for optimization)
+            if (!found && !!firstLetter && utils.str.startsWith(style, firstLetter)) {
+                //adds this style to the classes
+                return "+" + style;
+            }
+            else {
+                //removes this style from the classes
+                return "-" + style;
+            }
+        });
+
+        /*
+         if we return ['-*'] , it will remove all classes from the HTML element
+          but here it is undesirable, because we would remove classes which were set elsewhere
+        */
+
         return res;
     }
 }
