@@ -976,8 +976,9 @@ define("jriapp_ui/datagrid/columns/data", ["require", "exports", "jriapp_utils/u
                 else if (sortOrd === 1) {
                     this.sortOrder = 0;
                 }
-                else
+                else {
                     this.sortOrder = 0;
+                }
                 this.grid.sortByColumn(this);
             }
         };
@@ -1026,17 +1027,9 @@ define("jriapp_ui/datagrid/columns/data", ["require", "exports", "jriapp_utils/u
         Object.defineProperty(DataColumn.prototype, "sortOrder", {
             get: function () { return this._sortOrder; },
             set: function (v) {
-                var arr = [];
-                switch (v) {
-                    case 0:
-                        arr = ["-" + const_5.css.colSortDesc, "+" + const_5.css.colSortAsc];
-                        break;
-                    case 1:
-                        arr = ["+" + const_5.css.colSortDesc, "-" + const_5.css.colSortAsc];
-                        break;
-                }
                 this._sortOrder = v;
-                utils_5.Utils.dom.setClasses(this.$col.toArray(), arr);
+                var styles = [(v === 0 ? "+" : "-") + const_5.css.colSortAsc, (v === 1 ? "+" : "-") + const_5.css.colSortDesc];
+                utils_5.Utils.dom.setClasses(this.$col.toArray(), styles);
                 this.raisePropertyChanged(const_5.PROP_NAME.sortOrder);
             },
             enumerable: true,

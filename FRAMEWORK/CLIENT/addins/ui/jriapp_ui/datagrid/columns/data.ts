@@ -36,8 +36,10 @@ export class DataColumn extends BaseColumn {
             else if (sortOrd === SORT_ORDER.DESC) {
                 this.sortOrder = SORT_ORDER.ASC;
             }
-            else
+            else {
                 this.sortOrder = SORT_ORDER.ASC;
+            }
+
             this.grid.sortByColumn(this);
         }
     }
@@ -77,18 +79,9 @@ export class DataColumn extends BaseColumn {
     get sortMemberName() { return this.options.sortMemberName; }
     get sortOrder() { return this._sortOrder; }
     set sortOrder(v) {
-        let arr: string[] = [];
-
-        switch (v) {
-            case SORT_ORDER.ASC:
-                arr = ["-" + css.colSortDesc, "+" + css.colSortAsc];
-                break;
-            case SORT_ORDER.DESC:
-                arr = ["+" + css.colSortDesc, "-" + css.colSortAsc];
-                break;
-        }
         this._sortOrder = v;
-        utils.dom.setClasses(this.$col.toArray(), arr);
+        let styles = [(v === SORT_ORDER.ASC ? "+" : "-") + css.colSortAsc, (v === SORT_ORDER.DESC ? "+" : "-") + css.colSortDesc];
+        utils.dom.setClasses(this.$col.toArray(), styles);
         this.raisePropertyChanged(PROP_NAME.sortOrder);
     }
 }
