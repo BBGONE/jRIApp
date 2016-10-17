@@ -1027,10 +1027,12 @@ define("jriapp_ui/datagrid/columns/data", ["require", "exports", "jriapp_utils/u
         Object.defineProperty(DataColumn.prototype, "sortOrder", {
             get: function () { return this._sortOrder; },
             set: function (v) {
-                this._sortOrder = v;
-                var styles = [(v === 0 ? "+" : "-") + const_5.css.colSortAsc, (v === 1 ? "+" : "-") + const_5.css.colSortDesc];
-                utils_5.Utils.dom.setClasses(this.$col.toArray(), styles);
-                this.raisePropertyChanged(const_5.PROP_NAME.sortOrder);
+                if (this._sortOrder !== v) {
+                    this._sortOrder = v;
+                    var styles = [(v === 0 ? "+" : "-") + const_5.css.colSortAsc, (v === 1 ? "+" : "-") + const_5.css.colSortDesc];
+                    utils_5.Utils.dom.setClasses(this.$col.toArray(), styles);
+                    this.raisePropertyChanged(const_5.PROP_NAME.sortOrder);
+                }
             },
             enumerable: true,
             configurable: true

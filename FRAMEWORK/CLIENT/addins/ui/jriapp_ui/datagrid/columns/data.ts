@@ -79,9 +79,11 @@ export class DataColumn extends BaseColumn {
     get sortMemberName() { return this.options.sortMemberName; }
     get sortOrder() { return this._sortOrder; }
     set sortOrder(v) {
-        this._sortOrder = v;
-        let styles = [(v === SORT_ORDER.ASC ? "+" : "-") + css.colSortAsc, (v === SORT_ORDER.DESC ? "+" : "-") + css.colSortDesc];
-        utils.dom.setClasses(this.$col.toArray(), styles);
-        this.raisePropertyChanged(PROP_NAME.sortOrder);
+        if (this._sortOrder !== v) {
+            this._sortOrder = v;
+            let styles = [(v === SORT_ORDER.ASC ? "+" : "-") + css.colSortAsc, (v === SORT_ORDER.DESC ? "+" : "-") + css.colSortDesc];
+            utils.dom.setClasses(this.$col.toArray(), styles);
+            this.raisePropertyChanged(PROP_NAME.sortOrder);
+        }
     }
 }
