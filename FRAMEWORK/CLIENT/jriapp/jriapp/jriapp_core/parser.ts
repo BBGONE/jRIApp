@@ -139,15 +139,16 @@ export class Parser {
         if (strUtils.startsWith(prop, "[")) {
             //it is an indexed property like ['someProp']
             prop = trimQuotes(trimBrackets(prop));
+
+            if (syschecks._isCollection(obj)) {
+                return syschecks._getItemByProp(obj, prop);
+            }
+            else if (checks.isArray(obj)) {
+                return obj[parseInt(prop, 10)];
+            }
         }
 
-        if (syschecks._isCollection(obj)) {
-            return syschecks._getItemByProp(obj, prop);
-        }
-        else if (checks.isArray(obj)) {
-            return obj[parseInt(prop, 10)];
-        }
-        else if (syschecks._isPropBag(obj)) {
+        if (syschecks._isPropBag(obj)) {
             return (<IPropertyBag>obj).getProp(prop);
         }
         else {
@@ -162,12 +163,14 @@ export class Parser {
         if (strUtils.startsWith(prop, "[")) {
             //remove brakets from a string like: [index]
             prop = trimQuotes(trimBrackets(prop));
+
+            if (checks.isArray(obj)) {
+                obj[parseInt(prop, 10)] = val;
+                return;
+            }
         }
 
-        if (checks.isArray(obj)) {
-            obj[parseInt(prop, 10)] = val;
-        }
-        else if (syschecks._isPropBag(obj)) {
+        if (syschecks._isPropBag(obj)) {
             (<IPropertyBag>obj).setProp(prop, val);
         }
         else {

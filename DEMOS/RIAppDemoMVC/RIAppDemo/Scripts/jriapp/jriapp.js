@@ -1516,14 +1516,14 @@ define("jriapp_core/parser", ["require", "exports", "jriapp_core/lang", "jriapp_
                 return obj;
             if (strUtils.startsWith(prop, "[")) {
                 prop = trimQuotes(trimBrackets(prop));
+                if (syschecks._isCollection(obj)) {
+                    return syschecks._getItemByProp(obj, prop);
+                }
+                else if (checks.isArray(obj)) {
+                    return obj[parseInt(prop, 10)];
+                }
             }
-            if (syschecks._isCollection(obj)) {
-                return syschecks._getItemByProp(obj, prop);
-            }
-            else if (checks.isArray(obj)) {
-                return obj[parseInt(prop, 10)];
-            }
-            else if (syschecks._isPropBag(obj)) {
+            if (syschecks._isPropBag(obj)) {
                 return obj.getProp(prop);
             }
             else {
@@ -1535,11 +1535,12 @@ define("jriapp_core/parser", ["require", "exports", "jriapp_core/lang", "jriapp_
                 throw new Error("Invalid operation: Empty Property name");
             if (strUtils.startsWith(prop, "[")) {
                 prop = trimQuotes(trimBrackets(prop));
+                if (checks.isArray(obj)) {
+                    obj[parseInt(prop, 10)] = val;
+                    return;
+                }
             }
-            if (checks.isArray(obj)) {
-                obj[parseInt(prop, 10)] = val;
-            }
-            else if (syschecks._isPropBag(obj)) {
+            if (syschecks._isPropBag(obj)) {
                 obj.setProp(prop, val);
             }
             else {
@@ -10638,21 +10639,31 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
             var fn_startApp = function () {
                 try {
                     self._initAppModules();
-                    self.onStartUp();
-                    self.raiseEvent(APP_EVENTS.startup, {});
-                    var onStartupRes = (!!onStartUp) ? onStartUp.apply(self, [self]) : null;
-                    var setupPromise = void 0;
-                    if (utils_35.Utils.check.isThenable(onStartupRes)) {
-                        setupPromise = onStartupRes.then(function () {
-                            return self._dataBindingService.setUpBindings();
-                        }, function (err) {
-                            deferred.reject(err);
-                        });
+                    var onStartupRes1 = self.onStartUp();
+                    var setupPromise1 = void 0;
+                    if (utils_35.Utils.check.isThenable(onStartupRes1)) {
+                        setupPromise1 = onStartupRes1;
                     }
                     else {
-                        setupPromise = self._dataBindingService.setUpBindings();
+                        setupPromise1 = utils_35.Utils.defer.createDeferred().resolve();
                     }
-                    setupPromise.then(function () {
+                    var promise_1 = setupPromise1.then(function () {
+                        self.raiseEvent(APP_EVENTS.startup, {});
+                        var onStartupRes2 = (!!onStartUp) ? onStartUp.apply(self, [self]) : null;
+                        var setupPromise2;
+                        if (utils_35.Utils.check.isThenable(onStartupRes2)) {
+                            setupPromise2 = onStartupRes2.then(function () {
+                                return self._dataBindingService.setUpBindings();
+                            }, function (err) {
+                                deferred.reject(err);
+                            });
+                        }
+                        else {
+                            setupPromise2 = self._dataBindingService.setUpBindings();
+                        }
+                        return setupPromise2;
+                    });
+                    promise_1.then(function () {
                         deferred.resolve(self);
                     }, function (err) {
                         deferred.reject(err);
@@ -10854,6 +10865,6 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.COLL_CHANGE_REASON = collection_1.COLL_CHANGE_REASON;
     exports.COLL_CHANGE_TYPE = collection_1.COLL_CHANGE_TYPE;
     exports.Application = app_1.Application;
-    exports.VERSION = "0.9.74";
+    exports.VERSION = "0.9.75";
     bootstrap_25.Bootstrap._initFramework();
 });

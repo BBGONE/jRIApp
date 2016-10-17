@@ -115,8 +115,11 @@ export class Application extends BaseObject implements IApplication {
         let base_events = super._getEventNames();
         return [APP_EVENTS.startup].concat(base_events);
     }
-    //can override this method in derived classes
-    protected onStartUp(): void {
+    /**
+    can be overriden in derived classes
+    it can return a promise when it's needed
+    */
+    protected onStartUp(): any {
     }
     _getInternal(): IInternalAppMethods {
         return this._internal;
@@ -167,8 +170,10 @@ export class Application extends BaseObject implements IApplication {
     registerElView(name: string, vw_type: IViewType): void {
         this._elViewRegister.registerElView(name, vw_type);
     }
-    //registers instances of objects, so they can be retrieved later anywhere in the application's code
-    //very similar to the dependency injection container - you can later obtain the registerd object with the getObject function
+    /**
+    registers instances of objects, so they can be retrieved later anywhere in the application's code
+    very similar to the dependency injection container - you can later obtain the registerd object with the getObject function
+    */
     registerObject(name: string, obj: any): void {
         let self = this, name2 = STORE_KEY.OBJECT + name;
         if (utils.check.isBaseObject(obj)) {
@@ -187,8 +192,10 @@ export class Application extends BaseObject implements IApplication {
         let res = bootstrap._getInternal().getObject(this, name2);
         return res;
     }
-    //set up application - use onStartUp callback to setUp handlers on objects, create viewModels and etc.
-    //all  that we need to do before setting up databindings
+    /**
+    set up application - use onStartUp callback to setUp handlers on objects, create viewModels and etc.
+    all  that we need to do before setting up databindings
+    */
     startUp(onStartUp?: (app: Application) => any): IPromise<Application> {
         let self = this, deferred = utils.defer.createDeferred<Application>();
 
@@ -199,25 +206,38 @@ export class Application extends BaseObject implements IApplication {
         let fn_startApp = () => {
             try {
                 self._initAppModules();
-                self.onStartUp();
-                self.raiseEvent(APP_EVENTS.startup, {});
-
-                let onStartupRes: any = (!!onStartUp) ? onStartUp.apply(self, [self]) : null;
-                let setupPromise: IThenable<void>;
-
-                if (utils.check.isThenable(onStartupRes)) {
-                    setupPromise = (<IThenable<any>>onStartupRes).then(() => {
-                        return self._dataBindingService.setUpBindings();
-                    }, (err) => {
-                        deferred.reject(err);
-                    });
+                let onStartupRes1: any = self.onStartUp();
+                let setupPromise1: IThenable<void>;
+                if (utils.check.isThenable(onStartupRes1)) {
+                    setupPromise1 = (<IThenable<any>>onStartupRes1)
                 }
                 else {
-                    setupPromise = self._dataBindingService.setUpBindings();
+                    setupPromise1 = utils.defer.createDeferred<void>().resolve();
                 }
 
+                let promise = setupPromise1.then(() => {
+                    self.raiseEvent(APP_EVENTS.startup, {});
+                    let onStartupRes2: any = (!!onStartUp) ? onStartUp.apply(self, [self]) : null;
+                    let setupPromise2: IThenable<void>;
+
+                    if (utils.check.isThenable(onStartupRes2)) {
+                        setupPromise2 = (<IThenable<any>>onStartupRes2).then(() => {
+                            return self._dataBindingService.setUpBindings();
+                        }, (err) => {
+                            deferred.reject(err);
+                        });
+                    }
+                    else {
+                        setupPromise2 = self._dataBindingService.setUpBindings();
+                    }
+
+                    return setupPromise2;
+                });
+
+
+
                 //resolved with an application instance
-                setupPromise.then(() => {
+                promise.then(() => {
                     deferred.resolve(self);
                 }, (err) => {
                     deferred.reject(err);

@@ -2015,7 +2015,6 @@ define("mastDetDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "commo
             ;
             this.addOnError(handleError);
             this._dbContext.addOnError(handleError);
-            _super.prototype.onStartUp.call(this);
         };
         DemoApplication.prototype._handleError = function (sender, data) {
             debugger;
@@ -2248,10 +2247,10 @@ define("mastDetDemo/main", ["require", "exports", "jriapp", "common", "autocompl
             "AUTOCOMPLETE": AUTOCOMPLETE.initModule,
             "PRODAUTOCOMPLETE": PRODAUTOCOMPLETE.initModule
         };
-        bootstrap.startApp(function () {
+        return bootstrap.startApp(function () {
             return new app_1.DemoApplication(options);
         }).then(function (app) {
-            app.customerVM.load();
+            return app.customerVM.load();
         });
     }
     exports.start = start;

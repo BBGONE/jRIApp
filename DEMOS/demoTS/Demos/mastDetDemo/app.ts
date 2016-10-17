@@ -49,7 +49,15 @@ export class DemoApplication extends RIAPP.Application {
         this.addOnError(handleError);
         this._dbContext.addOnError(handleError);
 
-        super.onStartUp();
+        //testing returning  a promise from this method
+        /*
+        let deferred = RIAPP.Utils.defer.createDeferred();
+        setTimeout(() => {
+            deferred.resolve();
+            //deferred.reject(new Error("TEST ERROR"));
+        }, 10000);
+        return deferred.promise();
+        */
     }
     private _handleError(sender: any, data: any) {
         debugger;

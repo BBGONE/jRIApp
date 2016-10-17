@@ -28,9 +28,9 @@ export function start(options: IMainOptions) {
     };
 
     //create and start application here
-    bootstrap.startApp(() => {
+    return bootstrap.startApp(() => {
         return new DemoApplication(options);
     }).then((app) => {
-        app.customerVM.load();
+        return app.customerVM.load();
     });
 }

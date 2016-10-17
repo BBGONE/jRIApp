@@ -2167,10 +2167,10 @@ define("manToManDemo/main", ["require", "exports", "jriapp", "common", "autocomp
             "COMMON": COMMON.initModule,
             "AUTOCOMPLETE": AUTOCOMPLETE.initModule
         };
-        bootstrap.startApp(function () {
+        return bootstrap.startApp(function () {
             return new app_1.DemoApplication(mainOptions);
         }).then(function (app) {
-            app.customerVM.load();
+            return app.customerVM.load();
         });
     }
     exports.start = start;

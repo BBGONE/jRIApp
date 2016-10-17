@@ -2872,7 +2872,7 @@ define("gridDemo/main", ["require", "exports", "jriapp", "common", "gridDemo/app
             ButtonsCSS.OK = 'icon icon-ok';
             ButtonsCSS.Cancel = 'icon icon-remove';
         });
-        bootstrap.startApp(function () {
+        return bootstrap.startApp(function () {
             return new app_1.DemoApplication(options);
         }, function (app) {
             app.registerConverter('sizeConverter', new SizeConverter());

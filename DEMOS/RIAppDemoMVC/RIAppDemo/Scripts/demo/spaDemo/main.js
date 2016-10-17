@@ -3206,7 +3206,7 @@ define("main", ["require", "exports", "jriapp", "app", "common", "autocomplete",
             "GRIDELVIEW": GRIDELVIEW.initModule,
             "PRODAUTOCOMPLETE": PRODAUTOCOMPLETE.initModule
         };
-        RIAPP.bootstrap.startApp(function () {
+        return RIAPP.bootstrap.startApp(function () {
             return new app_1.DemoApplication(options);
         }, function (app) {
             app.registerTemplateGroup('custGroup', {
@@ -3224,7 +3224,7 @@ define("main", ["require", "exports", "jriapp", "app", "common", "autocomplete",
                 names: ["customerAddr", "addressTemplate", "addAddressTemplate", "linkAdrTemplate", "newAdrTemplate"]
             });
         }).then(function (app) {
-            app.customerVM.load();
+            return app.customerVM.load();
         });
     }
     exports.start = start;

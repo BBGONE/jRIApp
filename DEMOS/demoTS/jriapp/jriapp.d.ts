@@ -509,7 +509,7 @@ declare module "jriapp_core/shared" {
             names: string[];
         }): void;
         bind(opts: IBindingOptions): IBinding;
-        startUp<TApp extends IApplication>(onStartUp?: (app: TApp) => void): IPromise<TApp>;
+        startUp<TApp extends IApplication>(onStartUp?: (app: TApp) => any): IPromise<TApp>;
         uniqueID: string;
         appName: string;
         appRoot: Document | HTMLElement;
@@ -2676,7 +2676,7 @@ declare module "jriapp_core/app" {
         private _initAppModules();
         handleError(error: any, source: any): boolean;
         protected _getEventNames(): string[];
-        protected onStartUp(): void;
+        protected onStartUp(): any;
         _getInternal(): IInternalAppMethods;
         addOnStartUp(fn: TEventHandler<IApplication, any>, nmspace?: string, context?: IBaseObject): void;
         removeOnStartUp(nmspace?: string): void;

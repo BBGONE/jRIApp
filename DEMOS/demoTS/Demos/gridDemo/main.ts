@@ -79,7 +79,7 @@ export function start(options: IMainOptions) {
     });
 
     //create and start application here
-    bootstrap.startApp(() => {
+    return bootstrap.startApp(() => {
         return new DemoApplication(options);
     }, (app) => {
         app.registerConverter('sizeConverter', new SizeConverter());

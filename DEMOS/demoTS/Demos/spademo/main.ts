@@ -28,7 +28,7 @@ export function start(options: IMainOptions) {
     };
 
     //create and start application here
-    RIAPP.bootstrap.startApp(() => {
+    return RIAPP.bootstrap.startApp(() => {
         return new DemoApplication(options);
     }, (app) => {
         app.registerTemplateGroup('custGroup',
@@ -51,6 +51,6 @@ export function start(options: IMainOptions) {
                 names: ["customerAddr", "addressTemplate", "addAddressTemplate", "linkAdrTemplate", "newAdrTemplate"]
             });
         }).then((app) => {
-            app.customerVM.load();
+            return app.customerVM.load();
         });
 }
