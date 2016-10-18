@@ -233,6 +233,9 @@
     <Content Include="Scripts\qtip\jquery.qtip.min.js" />
     <Content Include="Scripts\require.js" />
     <Content Include="Scripts\require.min.js" />
+    <Content Include="Scripts\toastr\toastr.css" />
+    <Content Include="Scripts\toastr\toastr.min.css" />
+    <Content Include="Scripts\toastr\toastr.min.js" />
     <Content Include="Templates\productEditTemplate.html" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
@@ -319,6 +322,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Scripts\qtip\jquery.qtip.min.map" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Scripts\toastr\toastr.js.map" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Shared\_WaitLoad.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

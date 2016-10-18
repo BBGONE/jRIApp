@@ -2182,7 +2182,7 @@ define("jriapp_db/error", ["require", "exports", "jriapp_core/shared", "jriapp_u
 });
 define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_utils/utils", "jriapp_collection/collection", "jriapp_db/const", "jriapp_db/association", "jriapp_db/error"], function (require, exports, shared_2, langMOD, object_5, bootstrap_2, utils_7, collection_3, const_5, association_1, error_1) {
     "use strict";
-    var checks = utils_7.Utils.check, strUtils = utils_7.Utils.str, coreUtils = utils_7.Utils.core;
+    var utils = utils_7.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
     var DATA_SVC_METH = {
         Invoke: "invoke",
         Query: "query",
@@ -2409,7 +2409,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
                 var req_promise = utils_7.HttpUtils.postAjax(invokeUrl, postData, self.requestHeaders);
                 self._addRequestPromise(req_promise, operType);
                 req_promise.then(function (res) {
-                    return utils_7.Utils.parseJSON(res);
+                    return utils.parseJSON(res);
                 }).then(function (res) {
                     fn_onComplete(res);
                 }, function (err) {
@@ -2628,7 +2628,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
             var req_promise = utils_7.HttpUtils.postAjax(self._getUrl(DATA_SVC_METH.Query), JSON.stringify(requestInfo), self.requestHeaders);
             self._addRequestPromise(req_promise, 2, requestInfo.dbSetName);
             req_promise.then(function (res) {
-                return utils_7.Utils.parseJSON(res);
+                return utils.parseJSON(res);
             }).then(function (response) {
                 return self._onLoaded(response, context.query, context.reason);
             }).then(function (loadRes) {
@@ -2675,7 +2675,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
                 var url = self._getUrl(DATA_SVC_METH.Refresh), req_promise = utils_7.HttpUtils.postAjax(url, JSON.stringify(request), self.requestHeaders);
                 self._addRequestPromise(req_promise, operType);
                 req_promise.then(function (res) {
-                    return utils_7.Utils.parseJSON(res);
+                    return utils.parseJSON(res);
                 }).then(function (res) {
                     if (self.getIsDestroyCalled())
                         return;
@@ -2807,7 +2807,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
             var req_promise = utils_7.HttpUtils.postAjax(self._getUrl(DATA_SVC_METH.Submit), JSON.stringify(changeSet), self.requestHeaders);
             self._addRequestPromise(req_promise, 1);
             req_promise.then(function (res) {
-                return utils_7.Utils.parseJSON(res);
+                return utils.parseJSON(res);
             }).then(function (res) {
                 if (self.getIsDestroyCalled())
                     return;
@@ -2827,8 +2827,10 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
         };
         DbContext.prototype.initialize = function (options) {
             var _this = this;
-            if (this._isInitialized)
-                return;
+            var deferred = utils.defer.createDeferred();
+            if (this._isInitialized) {
+                return deferred.resolve();
+            }
             var self = this, opts = coreUtils.merge(options, {
                 serviceUrl: null,
                 permissions: null
@@ -2843,13 +2845,13 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
                     self._updatePermissions(opts.permissions);
                     self._isInitialized = true;
                     self.raisePropertyChanged(const_5.PROP_NAME.isInitialized);
-                    return;
+                    return deferred.resolve();
                 }
                 loadUrl = this._getUrl(DATA_SVC_METH.Permissions);
             }
             catch (ex) {
                 this.handleError(ex, this);
-                utils_7.ERROR.throwDummy(ex);
+                return deferred.reject(ex);
             }
             var req_promise = utils_7.HttpUtils.getAjax(loadUrl, self.requestHeaders);
             req_promise.then(function (permissions) {
@@ -2863,7 +2865,9 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
                     return;
                 _this._onDataOperError(err, operType);
             });
+            deferred.resolve(req_promise);
             this._addRequestPromise(req_promise, operType);
+            return deferred.promise();
         };
         DbContext.prototype.addOnSubmitError = function (fn, nmspace, context) {
             this._addHandler(DBCTX_EVENTS.submit_err, fn, nmspace, context);

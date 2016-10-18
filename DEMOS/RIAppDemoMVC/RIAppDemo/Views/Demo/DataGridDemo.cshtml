@@ -121,7 +121,9 @@
 
 <script type="text/javascript">
     require(["gridDemo/main", "jriapp_ui", "jriapp_ru"],
-        function(DEMO, UI, LANG) {
+        function (DEMO, UI, LANG) {
+            $("#loading").fadeIn();
+
             var mainOptions = {
                 service_url: null,
                 permissionInfo: null,
@@ -159,6 +161,7 @@
 
             DEMO.start(mainOptions).then(function () {
                 $("#demoContent").animate({ opacity: 1 }, 1000);
+                $("#loading").fadeOut(1000);
             });
         });
 </script>
@@ -301,3 +304,4 @@
         </div>
     </div>
 </script>
+@Html.Partial("_WaitLoad")

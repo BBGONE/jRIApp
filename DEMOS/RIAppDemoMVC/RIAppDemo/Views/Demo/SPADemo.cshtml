@@ -90,11 +90,22 @@
     }
 </style>
 
+@section CssImport
+{
+    <link href="@Url.Content("~/Scripts/toastr/toastr.min.css", true)" rel="stylesheet" type="text/css" />
+}
+@section JSImport
+{
+    <script src="@Url.Content("~/Scripts/toastr/toastr.min.js", true)" type="text/javascript"></script>
+}
+
 <script src="@Url.Content("~/Scripts/demo/spaDemo/main.js", true)" type="text/javascript"></script>
 
 <script type="text/javascript">
     require(["main", "jriapp_ui", "jriapp_ru"],
         function(DEMO, UI, LANG) {
+            $("#loading").fadeIn();
+
             var mainOptions = {};
             mainOptions.service_url = '@Url.RouteUrl("Default", new {controller = "RIAppDemoServiceEF", action = ""})';
             mainOptions.permissionInfo = @Html.Action("PermissionsInfo", "RIAppDemoServiceEF");
@@ -104,6 +115,7 @@
 
             DEMO.start(mainOptions).then(function(){
                 $("#demoContent").animate({opacity: 1}, 1000);
+                $("#loading").fadeOut(1000);
             });
         });
 </script>
@@ -115,3 +127,4 @@
          data-bind-2="{this.dataContext,source=customerVM}"
          data-bind-3="{this.animation,to=animation,source=customerVM.uiMainRoute}" data-view="name=dynacontent"></div>
 </div>
+@Html.Partial("_WaitLoad")

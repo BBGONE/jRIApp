@@ -4,7 +4,7 @@
 }
 
 [data-name=test2]::after {
-    content: "this style was loaded on demand";
+    content: "test2.css was loaded on demand";
     color: red;
     margin-left: 10px;
     overflow: visible;
