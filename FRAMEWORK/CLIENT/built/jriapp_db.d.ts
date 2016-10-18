@@ -491,7 +491,7 @@ declare module "jriapp_db/dbcontext" {
         initialize(options: {
             serviceUrl: string;
             permissions?: IPermissionsInfo;
-        }): void;
+        }): IVoidPromise;
         addOnSubmitError(fn: TEventHandler<DbContext, {
             error: any;
             isHandled: boolean;
