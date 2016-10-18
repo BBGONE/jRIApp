@@ -176,31 +176,32 @@
     <Content Include="Scripts\dynatree\skin\ui.dynatree.css" />
     <Content Include="Scripts\dynatree\skin\vline-rtl.gif" />
     <Content Include="Scripts\dynatree\skin\vline.gif" />
-    <Content Include="Scripts\jquery\AUTHORS.txt" />
-    <Content Include="Scripts\jquery\external\jquery\jquery.js" />
-    <Content Include="Scripts\jquery\images\ui-bg_glass_75_d0e5f5_1x400.png" />
-    <Content Include="Scripts\jquery\images\ui-bg_glass_85_dfeffc_1x400.png" />
-    <Content Include="Scripts\jquery\images\ui-bg_glass_95_fef1ec_1x400.png" />
-    <Content Include="Scripts\jquery\images\ui-bg_gloss-wave_55_5c9ccc_500x100.png" />
-    <Content Include="Scripts\jquery\images\ui-bg_inset-hard_100_f5f8f9_1x100.png" />
-    <Content Include="Scripts\jquery\images\ui-bg_inset-hard_100_fcfdfd_1x100.png" />
-    <Content Include="Scripts\jquery\images\ui-icons_217bc0_256x240.png" />
-    <Content Include="Scripts\jquery\images\ui-icons_2e83ff_256x240.png" />
-    <Content Include="Scripts\jquery\images\ui-icons_469bdd_256x240.png" />
-    <Content Include="Scripts\jquery\images\ui-icons_6da8d5_256x240.png" />
-    <Content Include="Scripts\jquery\images\ui-icons_cd0a0a_256x240.png" />
-    <Content Include="Scripts\jquery\images\ui-icons_d8e7f3_256x240.png" />
-    <Content Include="Scripts\jquery\images\ui-icons_f9bd01_256x240.png" />
-    <Content Include="Scripts\jquery\index.html" />
-    <Content Include="Scripts\jquery\jquery-ui.css" />
-    <Content Include="Scripts\jquery\jquery-ui.js" />
-    <Content Include="Scripts\jquery\jquery-ui.min.css" />
-    <Content Include="Scripts\jquery\jquery-ui.min.js" />
-    <Content Include="Scripts\jquery\jquery-ui.structure.css" />
-    <Content Include="Scripts\jquery\jquery-ui.structure.min.css" />
-    <Content Include="Scripts\jquery\jquery-ui.theme.css" />
-    <Content Include="Scripts\jquery\jquery-ui.theme.min.css" />
-    <Content Include="Scripts\jquery\jquery.cookie.js" />
+    <Content Include="Scripts\jquery\external\jquery.cookie.js" />
+    <Content Include="Scripts\jquery\jquery-3.1.1.js" />
+    <Content Include="Scripts\jquery\jquery-3.1.1.min.js" />
+    <Content Include="Scripts\jquery\ui\AUTHORS.txt" />
+    <Content Include="Scripts\jquery\ui\images\ui-bg_glass_75_d0e5f5_1x400.png" />
+    <Content Include="Scripts\jquery\ui\images\ui-bg_glass_85_dfeffc_1x400.png" />
+    <Content Include="Scripts\jquery\ui\images\ui-bg_glass_95_fef1ec_1x400.png" />
+    <Content Include="Scripts\jquery\ui\images\ui-bg_gloss-wave_55_5c9ccc_500x100.png" />
+    <Content Include="Scripts\jquery\ui\images\ui-bg_inset-hard_100_f5f8f9_1x100.png" />
+    <Content Include="Scripts\jquery\ui\images\ui-bg_inset-hard_100_fcfdfd_1x100.png" />
+    <Content Include="Scripts\jquery\ui\images\ui-icons_217bc0_256x240.png" />
+    <Content Include="Scripts\jquery\ui\images\ui-icons_2e83ff_256x240.png" />
+    <Content Include="Scripts\jquery\ui\images\ui-icons_469bdd_256x240.png" />
+    <Content Include="Scripts\jquery\ui\images\ui-icons_6da8d5_256x240.png" />
+    <Content Include="Scripts\jquery\ui\images\ui-icons_cd0a0a_256x240.png" />
+    <Content Include="Scripts\jquery\ui\images\ui-icons_d8e7f3_256x240.png" />
+    <Content Include="Scripts\jquery\ui\images\ui-icons_f9bd01_256x240.png" />
+    <Content Include="Scripts\jquery\ui\index.html" />
+    <Content Include="Scripts\jquery\ui\jquery-ui.css" />
+    <Content Include="Scripts\jquery\ui\jquery-ui.js" />
+    <Content Include="Scripts\jquery\ui\jquery-ui.min.css" />
+    <Content Include="Scripts\jquery\ui\jquery-ui.min.js" />
+    <Content Include="Scripts\jquery\ui\jquery-ui.structure.css" />
+    <Content Include="Scripts\jquery\ui\jquery-ui.structure.min.css" />
+    <Content Include="Scripts\jquery\ui\jquery-ui.theme.css" />
+    <Content Include="Scripts\jquery\ui\jquery-ui.theme.min.css" />
     <Content Include="Scripts\jriapp\img\warning.png" />
     <Content Include="Scripts\jriapp\jriapp.js" />
     <Content Include="Scripts\jriapp\jriapp_db.js" />
@@ -224,8 +225,8 @@
     <Content Include="Scripts\jriapp\img\plus.png" />
     <Content Include="Scripts\jriapp\css\jriapp.css" />
     <Content Include="Scripts\jriapp\css\jriapp_ui.css" />
+    <Content Include="Scripts\moment\moment.js" />
     <Content Include="Scripts\moment\moment.min.js" />
-    <Content Include="Scripts\qtip\imagesloaded.pkg.min.js" />
     <Content Include="Scripts\qtip\jquery.qtip.css" />
     <Content Include="Scripts\qtip\jquery.qtip.js" />
     <Content Include="Scripts\qtip\jquery.qtip.min.css" />
@@ -314,10 +315,10 @@
     <Content Include="Views\Templates\SPADemoTemplate3.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Scripts\qtip\jquery.qtip.min.map" />
+    <Content Include="Views\Demo\TreeDemo.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Views\Demo\TreeDemo.cshtml" />
+    <Content Include="Scripts\qtip\jquery.qtip.min.map" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

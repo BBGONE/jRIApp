@@ -95,7 +95,7 @@
 </script>
 <script type="text/javascript">
     var jriapp_config = {
-        bust: "bust=v12"
+        bust: "bust=v13"
     };
     var config = {
         baseUrl: "@Model.siteBase/scripts/demo/",
@@ -134,7 +134,7 @@
 <h2 style="display:inline-block;">@Model.Title</h2>
 
 <header id="title">
-    <a href="#" id="expander" data-bind="{this.command,to=expanderCommand,mode=OneWay,source=headerVM}" data-view="name=expander"></a>
+    <a id="expander" data-bind="{this.command,to=expanderCommand,mode=OneWay,source=headerVM}" data-view="name=expander"></a>
     <span style="margin-left:5px;">Filter</span>
 </header>
 
