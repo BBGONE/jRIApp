@@ -5,8 +5,13 @@ import { IIndexer } from "../jriapp_core/shared";
 
 if (!(<any>window).jQuery)
     throw new Error(ERRS.ERR_APP_NEED_JQUERY);
-
+/**
+ * mostly pure javascript methods for the DOM manipulation
+ */
 export class DomUtils {
+    static window: Window = window;
+    static document: Document = window.document;
+
     static isContained(oNode: any, oCont: any) {
         if (!oNode) return false;
         while (!!(oNode = oNode.parentNode)) if (oNode === oCont) return true;
@@ -19,23 +24,29 @@ export class DomUtils {
         if (!!pnd)
             pnd.removeChild(node);
     }
-    static insertAfter(referenceNode: Node, newNode: Node) {
-        let parent = referenceNode.parentNode;
-        if (parent.lastChild === referenceNode)
-            parent.appendChild(newNode);
+    static insertAfter(node: Node, refNode: Node) {
+        let parent = refNode.parentNode;
+        if (parent.lastChild === refNode)
+            parent.appendChild(node);
         else
-            parent.insertBefore(newNode, referenceNode.nextSibling);
+            parent.insertBefore(node, refNode.nextSibling);
     }
-    static $: JQueryStatic = jQuery;
-    static destroyJQueryPlugin($el: JQuery, name: string): void {
-        let plugin = $el.data(name);
-        if (!!plugin) {
-            $el[name]("destroy");
-        }
+    static insertBefore(node: Node, refNode: Node) {
+        let parent = refNode.parentNode;
+        parent.insertBefore(node, refNode);
     }
-    static window: Window = window;
-    static document: Document = window.document;
-    private static getClassMap(el: Element): IIndexer<number>  {
+    static wrap(node: Node, wrapper: Node) {
+        let parent = node.parentNode, nsibling = node.nextSibling;
+        wrapper.appendChild(node);
+        (!nsibling) ? parent.appendChild(wrapper) : parent.insertBefore(wrapper, nsibling);
+    }
+    static unwrap(node: Node) {
+        let wrapper = node.parentNode, parent = wrapper.parentNode, nsibling = wrapper.nextSibling;
+        parent.removeChild(wrapper);
+        (!nsibling) ? parent.appendChild(node) : parent.insertBefore(node, nsibling);
+    }
+
+    private static getClassMap(el: Element): IIndexer<number> {
         let res: IIndexer<number> = {};
         if (!el)
             return res;
@@ -43,8 +54,7 @@ export class DomUtils {
         if (!className)
             return res;
         let arr: string[] = className.split(" ");
-        for (let i = 0; i < arr.length; i += 1)
-        {
+        for (let i = 0; i < arr.length; i += 1) {
             arr[i] = arr[i].trim();
             if (!!arr[i]) {
                 res[arr[i]] = i;
@@ -97,8 +107,7 @@ export class DomUtils {
             toRemove = [];
         }
 
-        for (let j = 0; j < elems.length; j += 1)
-        {
+        for (let j = 0; j < elems.length; j += 1) {
             let el = elems[j];
             let map = DomUtils.getClassMap(el);
             if (removeAll) {
@@ -135,7 +144,7 @@ export class DomUtils {
 
         for (let j = 0; j < elems.length; j += 1) {
             let el = elems[j];
-           //if only one class to add or remove and classList is available
+            //if only one class to add or remove and classList is available
             if (arr.length === 1 && !!arr[0] && !!el.classList) {
                 if (remove)
                     el.classList.remove(arr[0]);
@@ -157,10 +166,18 @@ export class DomUtils {
             }
         }
     }
-    static addClass($el: JQuery, css: string): void {
-        DomUtils.setClass($el.toArray(), css, false);
+    static addClass(elems: Element[], css: string): void {
+        DomUtils.setClass(elems || [], css, false);
     }
-    static removeClass($el: JQuery, css: string): void {
-        DomUtils.setClass($el.toArray(), css, true);
+    static removeClass(elems: Element[], css: string): void {
+        DomUtils.setClass(elems || [], css, true);
+    }
+    //JQuery related
+    static $: JQueryStatic = jQuery;
+    static destroyJQueryPlugin($el: JQuery, name: string): void {
+        let plugin = $el.data(name);
+        if (!!plugin) {
+            $el[name]("destroy");
+        }
     }
 }

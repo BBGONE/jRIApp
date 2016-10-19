@@ -5,7 +5,7 @@ import { css, PROP_NAME } from "../const";
 import { BaseColumn, ICellInfo } from "./base";
 import { DataGrid } from "../datagrid";
 
-const $ = utils.dom.$;
+const dom = utils.dom, $ = dom.$;
 
 export class RowSelectorColumn extends BaseColumn {
     private _val: boolean;
@@ -15,7 +15,7 @@ export class RowSelectorColumn extends BaseColumn {
         super(grid, options);
         let self = this;
         this._val = false;
-        utils.dom.addClass(this.$col, css.rowSelector);
+        dom.addClass(this.$col.toArray(), css.rowSelector);
         let $chk = $('<input type="checkbox"/>');
         this.$col.append($chk);
         this._$chk = $chk;

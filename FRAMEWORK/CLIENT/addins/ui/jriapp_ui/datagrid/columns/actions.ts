@@ -20,7 +20,7 @@ export class ActionsColumn extends BaseColumn {
 
         let self = this, opts: IActionsColumnInfo = this.options;
         this._event_act_scope = ["span[", DATA_ATTR.DATA_EVENT_SCOPE, '="', this.uniqueID, '"]'].join("");
-        utils.dom.addClass(this.$col, css.rowActions);
+        utils.dom.addClass(this.$col.toArray(), css.rowActions);
         let $table = this.grid.$table;
         $table.on("click", this._event_act_scope, function (e) {
             e.stopPropagation();

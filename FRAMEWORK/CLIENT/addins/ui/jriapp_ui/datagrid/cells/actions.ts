@@ -19,8 +19,7 @@ let editImages: string = undefined, viewImages: string = undefined;
 export class ActionsCell extends BaseCell<ActionsColumn> {
     constructor(options: ICellOptions) {
         super(options);
-        let $el = $(this._td);
-        dom.addClass($el, [css.rowActions, css.nobr].join(" "));
+        dom.addClass([this._td], [css.rowActions, css.nobr].join(" "));
         this._createButtons(this._row.isEditing);
     }
     destroy() {

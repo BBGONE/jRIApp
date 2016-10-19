@@ -27,14 +27,14 @@ export class DetailsRow extends BaseObject {
         let self = this;
         this._grid = options.grid;
         this._tr = options.tr;
+        this._$tr = $(this._tr);
         this._item = null;
         this._cell = null;
         this._parentRow = null;
         this._isFirstShow = true;
         this._objId = "drw" + coreUtils.getNewID();
         this._createCell(options.details_id);
-        this._$tr = $(this._tr);
-        utils.dom.addClass(this._$tr, css.rowDetails);
+        utils.dom.addClass([this._tr], css.rowDetails);
         this._grid.addOnRowExpanded((sender, args) => {
             if (!args.isExpanded && !!args.collapsedRow)
                 self._setParentRow(null);
@@ -59,7 +59,7 @@ export class DetailsRow extends BaseObject {
         this._cell.item = this._item;
         if (this._isFirstShow)
             this._initShow();
-        dom.insertAfter(row.tr, this._tr);
+        dom.insertAfter(this._tr, row.tr);
         this._show(() => {
             let row = self._parentRow;
             if (!row || row.getIsDestroyCalled())

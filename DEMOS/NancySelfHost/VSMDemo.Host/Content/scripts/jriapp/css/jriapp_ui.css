@@ -8,7 +8,7 @@
     vertical-align: top;
     height: 100%;
     font-size: 12px;
-    box-sizing: border-box;
+    box-sizing: border-box !important;
 }
 
 /*wraps table element to display vertical scrolling*/
@@ -20,7 +20,7 @@
     background-color: transparent;
     position: relative;
     border: none;
-    box-sizing: border-box;
+    box-sizing: border-box !important;
 }
 
 /*placeholder to put new table column headers as div elements*/
@@ -42,7 +42,7 @@
     display:table;
     table-layout: fixed;
     border-collapse: collapse;
-    box-sizing: border-box;
+    box-sizing: border-box !important;
 }
 
     /*new table column header*/
@@ -56,7 +56,7 @@
         display: table-cell;
         vertical-align: middle;
         height: 100%;
-        box-sizing: border-box;
+        box-sizing: border-box !important;
     }
 
 .ria-data-table {
@@ -66,8 +66,13 @@
     border-right: 1px solid dimgray;
     border-bottom: 1px solid dimgray;
     table-layout: fixed;
-    box-sizing: border-box;
+    box-sizing: border-box !important;
 }
+
+    .ria-data-table tr {
+        background-color: white;
+        box-sizing: border-box !important;
+    }
 
     .ria-data-table td {
         vertical-align: middle;
@@ -75,23 +80,22 @@
         border: 1px ridge dimgray;
         padding: 3px 5px;
         overflow: hidden;
-        box-sizing: border-box;
+        box-sizing: border-box !important;
     }
 
-    .ria-data-table tr.ria-fill-vspace {
+    tr.ria-fill-vspace {
         background-color: transparent;
         border: none;
-        box-sizing: border-box;
     }
 
-        .ria-data-table tr.ria-fill-vspace td {
+    tr.ria-fill-vspace td {
             background-color: transparent;
             border: none;
             border-bottom: 1px ridge dimgray;
-            box-sizing: border-box;
+            padding: 0;
         }
 
-        .ria-data-table div.ria-fill-vspace {
+    div.ria-fill-vspace {
             visibility: hidden;
             background-color: transparent;
             width: 1px;
@@ -189,11 +193,6 @@ td.ria-row-selector input[type="checkbox"] {
     margin: 0px;
 }
 
-.ria-data-table tr {
-    background-color: White;
-    box-sizing: border-box;
-}
-
     .ria-data-table tr.ria-row-highlight {
         background-color: gainsboro !important;
     }
@@ -212,7 +211,7 @@ td.ria-row-selector input[type="checkbox"] {
         border: none;
         margin: 0;
         padding: 0;
-        box-sizing: border-box;
+        box-sizing: border-box !important;
     }
 
      /* it hides the real table header */
@@ -225,7 +224,7 @@ td.ria-row-selector input[type="checkbox"] {
         height: 0;
         overflow: hidden;
         border-bottom: 1px solid dimgray;
-        box-sizing: border-box;
+        box-sizing: border-box !important;
     }
 
     .ria-data-table tr.ria-row-details > td {
@@ -235,7 +234,7 @@ td.ria-row-selector input[type="checkbox"] {
         text-align: left;
         vertical-align: middle;
         background-color: transparent;
-        box-sizing: border-box;
+        box-sizing: border-box !important;
     }
 
 

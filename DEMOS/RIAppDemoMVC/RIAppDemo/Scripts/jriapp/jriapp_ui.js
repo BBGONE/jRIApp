@@ -762,7 +762,7 @@ define("jriapp_ui/datagrid/animation", ["require", "exports", "jriapp_core/objec
 });
 define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_core/const", "jriapp_core/object", "jriapp_utils/utils", "jriapp_elview/elview", "jriapp_core/bootstrap", "jriapp_ui/datagrid/const"], function (require, exports, const_1, object_3, utils_3, elview_2, bootstrap_3, const_2) {
     "use strict";
-    var $ = utils_3.Utils.dom.$;
+    var dom = utils_3.Utils.dom, $ = dom.$;
     var BaseColumn = (function (_super) {
         __extends(BaseColumn, _super);
         function BaseColumn(grid, options) {
@@ -774,9 +774,12 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_core/co
             this._isSelected = false;
             this._objId = "col" + utils_3.Utils.core.getNewID();
             this._event_scope = ["td[", const_1.DATA_ATTR.DATA_EVENT_SCOPE, '="', this._objId, '"]'].join("");
-            var colDiv = document.createElement("div");
+            var colDiv = dom.document.createElement("div");
             this._$col = $(colDiv);
-            utils_3.Utils.dom.addClass(this._$col, const_2.css.column);
+            utils_3.Utils.dom.addClass([colDiv], const_2.css.column);
+            if (!!this._options.colCellCss) {
+                utils_3.Utils.dom.addClass([colDiv], this._options.colCellCss);
+            }
             this._$col.click(function (e) {
                 e.stopPropagation();
                 bootstrap_3.bootstrap.currentSelectable = grid;
@@ -809,9 +812,6 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_core/co
             if (!!this._options.tip) {
                 elview_2.fn_addToolTip(this._$col, this._options.tip, false, "bottom center");
             }
-            if (!!this._options.colCellCss) {
-                utils_3.Utils.dom.addClass(this._$col, this._options.colCellCss);
-            }
         }
         BaseColumn.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -841,10 +841,9 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_core/co
         BaseColumn.prototype.templateUnLoading = function (template) {
         };
         BaseColumn.prototype.scrollIntoView = function (isUp) {
-            if (!this._$col)
+            if (this.getIsDestroyCalled())
                 return;
-            var div = this._$col.get(0);
-            div.scrollIntoView(!!isUp);
+            this._$col[0].scrollIntoView(!!isUp);
         };
         BaseColumn.prototype._onColumnClicked = function () {
         };
@@ -953,7 +952,7 @@ define("jriapp_ui/datagrid/cells/expander", ["require", "exports", "jriapp_utils
 });
 define("jriapp_ui/datagrid/columns/data", ["require", "exports", "jriapp_utils/utils", "jriapp_ui/datagrid/const", "jriapp_ui/datagrid/columns/base"], function (require, exports, utils_5, const_5, base_3) {
     "use strict";
-    var $ = utils_5.Utils.dom.$;
+    var dom = utils_5.Utils.dom, $ = dom.$;
     var DataColumn = (function (_super) {
         __extends(DataColumn, _super);
         function DataColumn(grid, options) {
@@ -964,21 +963,13 @@ define("jriapp_ui/datagrid/columns/data", ["require", "exports", "jriapp_utils/u
             if (this.isSortable) {
                 colClass += (" " + const_5.css.colSortable);
             }
-            utils_5.Utils.dom.addClass(this.$col, colClass);
+            dom.addClass(this.$col.toArray(), colClass);
         }
         DataColumn.prototype._onColumnClicked = function () {
             if (this.isSortable && !!this.sortMemberName) {
                 var sortOrd = this._sortOrder;
                 this.grid._getInternal().resetColumnsSort();
-                if (sortOrd === 0) {
-                    this.sortOrder = 1;
-                }
-                else if (sortOrd === 1) {
-                    this.sortOrder = 0;
-                }
-                else {
-                    this.sortOrder = 0;
-                }
+                this.sortOrder = (sortOrd === 0) ? 1 : 0;
                 this.grid.sortByColumn(this);
             }
         };
@@ -1137,7 +1128,7 @@ define("jriapp_ui/datagrid/columns/actions", ["require", "exports", "jriapp_core
             _super.call(this, grid, options);
             var self = this, opts = this.options;
             this._event_act_scope = ["span[", const_7.DATA_ATTR.DATA_EVENT_SCOPE, '="', this.uniqueID, '"]'].join("");
-            utils_7.Utils.dom.addClass(this.$col, const_8.css.rowActions);
+            utils_7.Utils.dom.addClass(this.$col.toArray(), const_8.css.rowActions);
             var $table = this.grid.$table;
             $table.on("click", this._event_act_scope, function (e) {
                 e.stopPropagation();
@@ -1225,8 +1216,7 @@ define("jriapp_ui/datagrid/cells/actions", ["require", "exports", "jriapp_core/c
         __extends(ActionsCell, _super);
         function ActionsCell(options) {
             _super.call(this, options);
-            var $el = $(this._td);
-            dom.addClass($el, [const_10.css.rowActions, const_10.css.nobr].join(" "));
+            dom.addClass([this._td], [const_10.css.rowActions, const_10.css.nobr].join(" "));
             this._createButtons(this._row.isEditing);
         }
         ActionsCell.prototype.destroy = function () {
@@ -1318,14 +1308,14 @@ define("jriapp_ui/datagrid/cells/actions", ["require", "exports", "jriapp_core/c
 });
 define("jriapp_ui/datagrid/columns/rowselector", ["require", "exports", "jriapp_utils/utils", "jriapp_ui/datagrid/const", "jriapp_ui/datagrid/columns/base"], function (require, exports, utils_9, const_11, base_7) {
     "use strict";
-    var $ = utils_9.Utils.dom.$;
+    var dom = utils_9.Utils.dom, $ = dom.$;
     var RowSelectorColumn = (function (_super) {
         __extends(RowSelectorColumn, _super);
         function RowSelectorColumn(grid, options) {
             _super.call(this, grid, options);
             var self = this;
             this._val = false;
-            utils_9.Utils.dom.addClass(this.$col, const_11.css.rowSelector);
+            dom.addClass(this.$col.toArray(), const_11.css.rowSelector);
             var $chk = $('<input type="checkbox"/>');
             this.$col.append($chk);
             this._$chk = $chk;
@@ -1746,11 +1736,10 @@ define("jriapp_ui/datagrid/cells/base", ["require", "exports", "jriapp_core/cons
             this._td = options.td;
             this._column = options.column;
             this._num = options.num;
-            var $td = $(this._td);
-            $td.attr(const_14.DATA_ATTR.DATA_EVENT_SCOPE, this._column.uniqueID);
-            $td.data("cell", this);
+            this._td.setAttribute(const_14.DATA_ATTR.DATA_EVENT_SCOPE, this._column.uniqueID);
+            $(this._td).data("cell", this);
             if (!!this._column.options.rowCellCss) {
-                utils_12.Utils.dom.addClass($td, this._column.options.rowCellCss);
+                utils_12.Utils.dom.addClass([this._td], this._column.options.rowCellCss);
             }
             this._click = new utils_12.DblClick();
             this._row.tr.appendChild(this._td);
@@ -1844,14 +1833,14 @@ define("jriapp_ui/datagrid/rows/details", ["require", "exports", "jriapp_core/ob
             var self = this;
             this._grid = options.grid;
             this._tr = options.tr;
+            this._$tr = $(this._tr);
             this._item = null;
             this._cell = null;
             this._parentRow = null;
             this._isFirstShow = true;
             this._objId = "drw" + coreUtils.getNewID();
             this._createCell(options.details_id);
-            this._$tr = $(this._tr);
-            utils_13.Utils.dom.addClass(this._$tr, const_15.css.rowDetails);
+            utils_13.Utils.dom.addClass([this._tr], const_15.css.rowDetails);
             this._grid.addOnRowExpanded(function (sender, args) {
                 if (!args.isExpanded && !!args.collapsedRow)
                     self._setParentRow(null);
@@ -1875,7 +1864,7 @@ define("jriapp_ui/datagrid/rows/details", ["require", "exports", "jriapp_core/ob
             this._cell.item = this._item;
             if (this._isFirstShow)
                 this._initShow();
-            utils_13.DomUtils.insertAfter(row.tr, this._tr);
+            utils_13.DomUtils.insertAfter(this._tr, row.tr);
             this._show(function () {
                 var row = self._parentRow;
                 if (!row || row.getIsDestroyCalled())
@@ -2068,8 +2057,8 @@ define("jriapp_ui/datagrid/rows/fillspace", ["require", "exports", "jriapp_core/
             this._tr = options.tr;
             this._cell = null;
             this._createCell();
+            utils_14.Utils.dom.addClass([this._tr], const_16.css.fillVSpace);
             this._$tr = $(this._tr);
-            utils_14.Utils.dom.addClass(this._$tr, const_16.css.fillVSpace);
         }
         FillSpaceRow.prototype._createCell = function () {
             var td = document.createElement("td");
@@ -2130,7 +2119,7 @@ define("jriapp_ui/datagrid/rows/fillspace", ["require", "exports", "jriapp_core/
 });
 define("jriapp_ui/datagrid/cells/fillspace", ["require", "exports", "jriapp_core/object", "jriapp_utils/utils", "jriapp_ui/datagrid/const"], function (require, exports, object_9, utils_15, const_17) {
     "use strict";
-    var $ = utils_15.Utils.dom.$;
+    var dom = utils_15.Utils.dom;
     var FillSpaceCell = (function (_super) {
         __extends(FillSpaceCell, _super);
         function FillSpaceCell(options) {
@@ -2139,9 +2128,9 @@ define("jriapp_ui/datagrid/cells/fillspace", ["require", "exports", "jriapp_core
             this._td = options.td;
             this._td.colSpan = this.grid.columns.length;
             this._row.tr.appendChild(this._td);
-            this._$div = $("<div></div>");
-            utils_15.Utils.dom.addClass(this._$div, const_17.css.fillVSpace);
-            this._$div.appendTo(this._td);
+            this._div = dom.document.createElement("div");
+            utils_15.Utils.dom.addClass([this._div], const_17.css.fillVSpace);
+            this._td.appendChild(this._div);
         }
         FillSpaceCell.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -2149,6 +2138,7 @@ define("jriapp_ui/datagrid/cells/fillspace", ["require", "exports", "jriapp_core
             this._isDestroyCalled = true;
             this._row = null;
             this._td = null;
+            this._div = null;
             _super.prototype.destroy.call(this);
         };
         FillSpaceCell.prototype.toString = function () {
@@ -2169,14 +2159,14 @@ define("jriapp_ui/datagrid/cells/fillspace", ["require", "exports", "jriapp_core
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(FillSpaceCell.prototype, "$div", {
-            get: function () { return this._$div; },
+        Object.defineProperty(FillSpaceCell.prototype, "div", {
+            get: function () { return this._div; },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(FillSpaceCell.prototype, "height", {
-            get: function () { return this._$div.height(); },
-            set: function (v) { this._$div.height(v); },
+            get: function () { return this._div.offsetHeight; },
+            set: function (v) { this._div.style.height = (!v ? 0 : v) + "px"; },
             enumerable: true,
             configurable: true
         });
@@ -2193,7 +2183,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
     exports.ROW_ACTION = const_20.ROW_ACTION;
     exports.DefaultAnimation = animation_2.DefaultAnimation;
     var checks = utils_16.Utils.check, strUtils = utils_16.Utils.str, coreUtils = utils_16.Utils.core;
-    var $ = utils_16.Utils.dom.$, document = utils_16.Utils.dom.document;
+    var dom = utils_16.Utils.dom, $ = dom.$, doc = dom.document;
     var _columnWidthInterval, _gridsCount = 0;
     var _created_grids = {};
     function getDataGrids() {
@@ -2277,7 +2267,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             this._table = this._options.el;
             var $t = $(this._table);
             this._$table = $t;
-            utils_16.Utils.dom.addClass(this.$table, const_19.css.dataTable);
+            utils_16.Utils.dom.addClass([this._table], const_19.css.dataTable);
             this._name = $t.attr(const_18.DATA_ATTR.DATA_NAME);
             this._objId = "grd" + coreUtils.getNewID();
             this._rowMap = {};
@@ -2795,7 +2785,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             if (this._rows.length === 0)
                 return;
             this.collapseDetails();
-            var self = this, tbody = self._tBodyEl, newTbody = document.createElement("tbody");
+            var self = this, tbody = self._tBodyEl, newTbody = doc.createElement("tbody");
             this._table.replaceChild(newTbody, tbody);
             var rows = this._rows;
             this._rows = [];
@@ -2807,35 +2797,36 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             this._currentRow = null;
         };
         DataGrid.prototype._wrapTable = function () {
-            var $table = this._$table, $headerDiv, $wrapDiv, $container, self = this, doc = utils_16.Utils.dom.document;
-            $table.wrap($("<div></div>").addClass(const_19.css.wrapDiv));
-            $wrapDiv = $table.parent();
-            $wrapDiv.wrap($("<div></div>").addClass(const_19.css.container));
-            $container = $wrapDiv.parent();
-            $headerDiv = $("<div></div>").addClass(const_19.css.headerDiv).insertBefore($wrapDiv);
-            $(this._tHeadRow).addClass(const_19.css.columnInfo);
-            this._$wrapper = $wrapDiv;
-            this._$header = $headerDiv;
-            this._$contaner = $container;
-            if (this._options.containerCss) {
-                $container.addClass(this._options.containerCss);
+            var self = this, options = this._options;
+            var wrapper = doc.createElement("div"), container = doc.createElement("div"), header = doc.createElement("div");
+            dom.addClass([wrapper], const_19.css.wrapDiv);
+            dom.addClass([container], const_19.css.container);
+            dom.addClass([header], const_19.css.headerDiv);
+            if (options.wrapCss) {
+                dom.addClass([wrapper], options.wrapCss);
             }
-            if (this._options.wrapCss) {
-                $wrapDiv.addClass(this._options.wrapCss);
+            if (options.containerCss) {
+                dom.addClass([container], options.containerCss);
             }
-            if (this._options.headerCss) {
-                $headerDiv.addClass(this._options.headerCss);
+            if (options.headerCss) {
+                dom.addClass([header], options.headerCss);
             }
+            dom.wrap(this._table, wrapper);
+            dom.wrap(wrapper, container);
+            dom.insertBefore(header, wrapper);
+            dom.addClass([this._tHeadRow], const_19.css.columnInfo);
+            this._$wrapper = $(wrapper);
+            this._$header = $(header);
+            this._$contaner = $(container);
         };
         DataGrid.prototype._unWrapTable = function () {
-            var $table = this._$table;
             if (!this._$header)
                 return;
             this._$header.remove();
             this._$header = null;
-            $table.unwrap();
+            dom.unwrap(this._table);
+            dom.unwrap(this._table);
             this._$wrapper = null;
-            $table.unwrap();
             this._$contaner = null;
         };
         DataGrid.prototype._createColumns = function () {
@@ -2904,7 +2895,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             self._clearGrid();
             if (!ds)
                 return;
-            var docFr = document.createDocumentFragment(), oldTbody = this._tBodyEl, newTbody = document.createElement("tbody");
+            var docFr = doc.createDocumentFragment(), oldTbody = this._tBodyEl, newTbody = doc.createElement("tbody");
             ds.items.forEach(function (item, index) {
                 self._createRowForItem(docFr, item, false);
             });
@@ -2925,7 +2916,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             });
         };
         DataGrid.prototype._createRowForItem = function (parent, item, prepend) {
-            var self = this, tr = document.createElement("tr");
+            var self = this, tr = doc.createElement("tr");
             var gridRow = new row_1.Row(self, { tr: tr, item: item });
             self._rowMap[item._key] = gridRow;
             self._rows.push(gridRow);
@@ -2942,11 +2933,11 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
         };
         DataGrid.prototype._createDetails = function () {
             var details_id = this._options.details.templateID;
-            var tr = document.createElement("tr");
+            var tr = doc.createElement("tr");
             return new details_2.DetailsRow({ grid: this, tr: tr, details_id: details_id });
         };
         DataGrid.prototype._createFillSpace = function () {
-            var tr = document.createElement("tr");
+            var tr = doc.createElement("tr");
             return new fillspace_2.FillSpaceRow({ grid: this, tr: tr });
         };
         DataGrid.prototype._getInternal = function () {
@@ -4703,12 +4694,10 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_core/lang", "jriapp_c
                 return this._spanView;
             }
             var el = document.createElement("span"), displayInfo = this._options.displayInfo;
-            var spanView = new span_1.SpanElView({ app: this.app, el: el });
-            if (!!displayInfo) {
-                if (!!displayInfo.displayCss) {
-                    utils_18.Utils.dom.addClass(spanView.$el, displayInfo.displayCss);
-                }
+            if (!!displayInfo && !!displayInfo.displayCss) {
+                utils_18.Utils.dom.addClass([el], displayInfo.displayCss);
             }
+            var spanView = new span_1.SpanElView({ app: this.app, el: el });
             this._spanView = spanView;
             return this._spanView;
         };

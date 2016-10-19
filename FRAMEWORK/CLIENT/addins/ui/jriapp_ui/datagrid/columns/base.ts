@@ -10,7 +10,7 @@ import { css } from "../const";
 import { BaseCell } from "../cells/base";
 import { DataGrid } from "../datagrid";
 
-const $ = utils.dom.$;
+const dom = utils.dom, $ = dom.$;
 
 export interface IColumnInfo {
     "type"?: string;
@@ -50,9 +50,14 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         this._objId = "col" + utils.core.getNewID();
         this._event_scope = ["td[", DATA_ATTR.DATA_EVENT_SCOPE, '="', this._objId, '"]'].join("");
 
-        let colDiv = document.createElement("div");
+        let colDiv = dom.document.createElement("div");
         this._$col = $(colDiv);
-        utils.dom.addClass(this._$col, css.column);
+
+        utils.dom.addClass([colDiv], css.column);
+        if (!!this._options.colCellCss) {
+            utils.dom.addClass([colDiv], this._options.colCellCss);
+        }
+
         this._$col.click(function (e) {
             e.stopPropagation();
             bootstrap.currentSelectable = grid;
@@ -90,10 +95,6 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         if (!!this._options.tip) {
             fn_addToolTip(this._$col, this._options.tip, false, "bottom center");
         }
-
-        if (!!this._options.colCellCss) {
-            utils.dom.addClass(this._$col, this._options.colCellCss);
-        }
     }
     destroy() {
         if (this._isDestroyed)
@@ -128,10 +129,9 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         //noop
     }
     scrollIntoView(isUp: boolean) {
-        if (!this._$col)
+        if (this.getIsDestroyCalled())
             return;
-        let div = this._$col.get(0);
-        div.scrollIntoView(!!isUp);
+        this._$col[0].scrollIntoView(!!isUp);
     }
     protected _onColumnClicked() {
     }

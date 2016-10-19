@@ -891,18 +891,21 @@ declare module "jriapp_core/parser" {
 }
 declare module "jriapp_utils/dom" {
     export class DomUtils {
-        static isContained(oNode: any, oCont: any): boolean;
-        static removeNode(node: Node): void;
-        static insertAfter(referenceNode: Node, newNode: Node): void;
-        static $: JQueryStatic;
-        static destroyJQueryPlugin($el: JQuery, name: string): void;
         static window: Window;
         static document: Document;
+        static isContained(oNode: any, oCont: any): boolean;
+        static removeNode(node: Node): void;
+        static insertAfter(node: Node, refNode: Node): void;
+        static insertBefore(node: Node, refNode: Node): void;
+        static wrap(node: Node, wrapper: Node): void;
+        static unwrap(node: Node): void;
         private static getClassMap(el);
         static setClasses(elems: Element[], classes: string[]): void;
         static setClass(elems: Element[], css: string, remove?: boolean): void;
-        static addClass($el: JQuery, css: string): void;
-        static removeClass($el: JQuery, css: string): void;
+        static addClass(elems: Element[], css: string): void;
+        static removeClass(elems: Element[], css: string): void;
+        static $: JQueryStatic;
+        static destroyJQueryPlugin($el: JQuery, name: string): void;
     }
 }
 declare module "jriapp_utils/deferred" {

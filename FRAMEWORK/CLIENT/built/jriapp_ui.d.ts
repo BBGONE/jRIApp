@@ -571,7 +571,7 @@ declare module "jriapp_ui/datagrid/cells/fillspace" {
     export class FillSpaceCell extends BaseObject {
         private _row;
         private _td;
-        private _$div;
+        private _div;
         constructor(options: {
             row: FillSpaceRow;
             td: HTMLTableCellElement;
@@ -581,7 +581,7 @@ declare module "jriapp_ui/datagrid/cells/fillspace" {
         readonly td: HTMLTableCellElement;
         readonly row: FillSpaceRow;
         readonly grid: DataGrid;
-        readonly $div: JQuery;
+        readonly div: HTMLElement;
         height: number;
     }
 }

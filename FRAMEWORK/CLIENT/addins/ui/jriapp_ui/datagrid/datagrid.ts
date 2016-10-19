@@ -41,7 +41,7 @@ export { ROW_POSITION, COLUMN_TYPE, ROW_ACTION } from "./const";
 export { IDataGridAnimation, DefaultAnimation } from "./animation";
 
 const checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
-const $ = utils.dom.$, document = utils.dom.document;
+const dom = utils.dom, $ = dom.$, doc = dom.document;
 
 let _columnWidthInterval: any, _gridsCount: number = 0;
 let _created_grids: IIndexer<DataGrid> = { };
@@ -206,7 +206,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._table = this._options.el;
         let $t = $(this._table);
         this._$table = $t;
-        utils.dom.addClass(this.$table, css.dataTable);
+        utils.dom.addClass([this._table], css.dataTable);
         this._name = $t.attr(DATA_ATTR.DATA_NAME);
         this._objId = "grd" + coreUtils.getNewID();
         this._rowMap = {};
@@ -730,7 +730,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         if (this._rows.length === 0)
             return;
         this.collapseDetails();
-        let self = this, tbody = self._tBodyEl, newTbody = document.createElement("tbody");
+        let self = this, tbody = self._tBodyEl, newTbody = doc.createElement("tbody");
         this._table.replaceChild(newTbody, tbody);
         let rows = this._rows;
         this._rows = [];
@@ -742,43 +742,41 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._currentRow = null;
     }
     protected _wrapTable() {
-        let $table = this._$table, $headerDiv: JQuery, $wrapDiv: JQuery, $container: JQuery, self = this,
-            doc = utils.dom.document;
-
-        $table.wrap($("<div></div>").addClass(css.wrapDiv));
-        $wrapDiv = $table.parent();
-        $wrapDiv.wrap($("<div></div>").addClass(css.container));
-        $container = $wrapDiv.parent();
-
-        $headerDiv = $("<div></div>").addClass(css.headerDiv).insertBefore($wrapDiv);
-        $(this._tHeadRow).addClass(css.columnInfo);
-
-        this._$wrapper = $wrapDiv;
-        this._$header = $headerDiv;
-        this._$contaner = $container;
-
-        if (this._options.containerCss) {
-            $container.addClass(this._options.containerCss);
+        let self = this, options = this._options;
+        let wrapper = doc.createElement("div"), container = doc.createElement("div"),
+            header = doc.createElement("div");
+        dom.addClass([wrapper], css.wrapDiv);
+        dom.addClass([container], css.container);
+        dom.addClass([header], css.headerDiv);
+        if (options.wrapCss) {
+            dom.addClass([wrapper], options.wrapCss);
+        }
+        if (options.containerCss) {
+            dom.addClass([container], options.containerCss);
+        }
+        if (options.headerCss) {
+            dom.addClass([header], options.headerCss);
         }
 
-        if (this._options.wrapCss) {
-            $wrapDiv.addClass(this._options.wrapCss);
-        }
-        if (this._options.headerCss) {
-            $headerDiv.addClass(this._options.headerCss);
-        }
+        dom.wrap(this._table, wrapper);
+        dom.wrap(wrapper, container);
+        dom.insertBefore(header, wrapper);
+        dom.addClass([this._tHeadRow], css.columnInfo);
+
+        this._$wrapper = $(wrapper);
+        this._$header = $(header);
+        this._$contaner = $(container);
     }
     protected _unWrapTable() {
-        let $table = this._$table;
         if (!this._$header)
             return;
         this._$header.remove();
         this._$header = null;
         //remove wrapDiv
-        $table.unwrap();
-        this._$wrapper = null;
+        dom.unwrap(this._table);
         //remove container
-        $table.unwrap();
+        dom.unwrap(this._table);
+        this._$wrapper = null;
         this._$contaner = null;
     }
     protected _createColumns() {
@@ -847,7 +845,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             return;
         self._clearGrid();
         if (!ds) return;
-        let docFr = document.createDocumentFragment(), oldTbody = this._tBodyEl, newTbody = document.createElement("tbody");
+        let docFr = doc.createDocumentFragment(), oldTbody = this._tBodyEl, newTbody = doc.createElement("tbody");
         ds.items.forEach(function (item, index) {
             self._createRowForItem(docFr, item, false);
         });
@@ -868,7 +866,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         });
     }
     protected _createRowForItem(parent: Node, item: ICollectionItem, prepend?: boolean) {
-        let self = this, tr = document.createElement("tr");
+        let self = this, tr = doc.createElement("tr");
         let gridRow = new Row(self, { tr: tr, item: item });
         self._rowMap[item._key] = gridRow;
         self._rows.push(gridRow);
@@ -886,11 +884,11 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     }
     protected _createDetails() {
         let details_id = this._options.details.templateID;
-        let tr: HTMLTableRowElement = <HTMLTableRowElement>document.createElement("tr");
+        let tr: HTMLTableRowElement = <HTMLTableRowElement>doc.createElement("tr");
         return new DetailsRow({ grid: this, tr: tr, details_id: details_id });
     }
     protected _createFillSpace() {
-        let tr: HTMLTableRowElement = <HTMLTableRowElement>document.createElement("tr");
+        let tr: HTMLTableRowElement = <HTMLTableRowElement>doc.createElement("tr");
         return new FillSpaceRow({ grid: this, tr: tr });
     }
     _getInternal(): IInternalDataGridMethods {

@@ -100,11 +100,11 @@ class PropertyBag extends BaseObject implements IPropertyBag {
 
 // wraps HTMLElement to add or remove classNames using data binding
 class CSSBag extends BaseObject implements IPropertyBag {
-    private _$el: JQuery;
+    private _el: Element;
 
-    constructor($el: JQuery) {
+    constructor(el: Element) {
         super();
-        this._$el = $el;
+        this._el = el;
     }
     //override
     _isHasProp(prop: string) {
@@ -121,20 +121,20 @@ class CSSBag extends BaseObject implements IPropertyBag {
         if (name === "*") {
             if (!val) {
                 //remove all classes
-                dom.removeClass(this._$el, null);
+                dom.removeClass([this._el], null);
             }
             else if (checks.isArray(val))
             {
-                dom.setClasses(this._$el.toArray(), <string[]>val);
+                dom.setClasses([this._el], <string[]>val);
             }
             else if (checks.isString(val)) {
-                dom.setClasses(this._$el.toArray(), val.split(" "));
+                dom.setClasses([this._el], val.split(" "));
             }
             return;
         }
 
         //set individual classes
-        dom.setClass(this._$el.toArray(), name, !val);
+        dom.setClass([this._el], name, !val);
     }
     toString() {
         return PROP_BAG;
@@ -171,7 +171,7 @@ export class BaseElView extends BaseObject implements IElView {
         this._objId = "elv" + coreUtils.getNewID();
         this._errors = null;
         if (!!this._css) {
-            dom.addClass(this._$el, this._css);
+            dom.addClass([el], this._css);
         }
         this._applyToolTip();
         this._app.elViewFactory.store.setElView(el, this);
@@ -351,7 +351,7 @@ export class BaseElView extends BaseObject implements IElView {
         if (!this._classes) {
             if (this.getIsDestroyCalled())
                 return undefined;
-            this._classes = new CSSBag(this.$el);
+            this._classes = new CSSBag(this.el);
         }
         return this._classes;
     }

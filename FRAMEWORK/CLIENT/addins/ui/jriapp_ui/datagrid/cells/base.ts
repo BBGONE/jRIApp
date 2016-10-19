@@ -40,16 +40,10 @@ export class BaseCell<TColumn extends BaseColumn> extends BaseObject {
         this._td = options.td;
         this._column = <TColumn>options.column;
         this._num = options.num;
-        let $td = $(this._td);
-        $td.attr(DATA_ATTR.DATA_EVENT_SCOPE, this._column.uniqueID);
-        $td.data("cell", this);
-        /*
-        if (!!this._column.options.width) {
-            $td.css("width", this._column.options.width);
-        }
-        */
+        this._td.setAttribute(DATA_ATTR.DATA_EVENT_SCOPE, this._column.uniqueID);
+        $(this._td).data("cell", this);
         if (!!this._column.options.rowCellCss) {
-            utils.dom.addClass($td, this._column.options.rowCellCss);
+            utils.dom.addClass([this._td], this._column.options.rowCellCss);
         }
         this._click = new DblClick();
         this._row.tr.appendChild(this._td);

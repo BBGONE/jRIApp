@@ -7,7 +7,7 @@ import { css, PROP_NAME } from "../const";
 import { BaseColumn, IColumnInfo, ICellInfo } from "./base";
 import { DataGrid } from "../datagrid";
 
-const $ = utils.dom.$;
+const dom = utils.dom, $ = dom.$;
 
 export class DataColumn extends BaseColumn {
     private _sortOrder: SORT_ORDER;
@@ -23,23 +23,14 @@ export class DataColumn extends BaseColumn {
         if (this.isSortable) {
             colClass += (" " + css.colSortable);
         }
-        utils.dom.addClass(this.$col, colClass);
+        dom.addClass(this.$col.toArray(), colClass);
     }
     protected _onColumnClicked() {
         if (this.isSortable && !!this.sortMemberName) {
             let sortOrd = this._sortOrder;
             this.grid._getInternal().resetColumnsSort();
 
-            if (sortOrd === SORT_ORDER.ASC) {
-                this.sortOrder = SORT_ORDER.DESC;
-            }
-            else if (sortOrd === SORT_ORDER.DESC) {
-                this.sortOrder = SORT_ORDER.ASC;
-            }
-            else {
-                this.sortOrder = SORT_ORDER.ASC;
-            }
-
+            this.sortOrder = (sortOrd === SORT_ORDER.ASC) ? SORT_ORDER.DESC : SORT_ORDER.ASC; 
             this.grid.sortByColumn(this);
         }
     }

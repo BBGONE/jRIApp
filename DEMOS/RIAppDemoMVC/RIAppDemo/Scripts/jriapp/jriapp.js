@@ -1662,18 +1662,26 @@ define("jriapp_utils/dom", ["require", "exports", "jriapp_core/lang"], function 
             if (!!pnd)
                 pnd.removeChild(node);
         };
-        DomUtils.insertAfter = function (referenceNode, newNode) {
-            var parent = referenceNode.parentNode;
-            if (parent.lastChild === referenceNode)
-                parent.appendChild(newNode);
+        DomUtils.insertAfter = function (node, refNode) {
+            var parent = refNode.parentNode;
+            if (parent.lastChild === refNode)
+                parent.appendChild(node);
             else
-                parent.insertBefore(newNode, referenceNode.nextSibling);
+                parent.insertBefore(node, refNode.nextSibling);
         };
-        DomUtils.destroyJQueryPlugin = function ($el, name) {
-            var plugin = $el.data(name);
-            if (!!plugin) {
-                $el[name]("destroy");
-            }
+        DomUtils.insertBefore = function (node, refNode) {
+            var parent = refNode.parentNode;
+            parent.insertBefore(node, refNode);
+        };
+        DomUtils.wrap = function (node, wrapper) {
+            var parent = node.parentNode, nsibling = node.nextSibling;
+            wrapper.appendChild(node);
+            (!nsibling) ? parent.appendChild(wrapper) : parent.insertBefore(wrapper, nsibling);
+        };
+        DomUtils.unwrap = function (node) {
+            var wrapper = node.parentNode, parent = wrapper.parentNode, nsibling = wrapper.nextSibling;
+            parent.removeChild(wrapper);
+            (!nsibling) ? parent.appendChild(node) : parent.insertBefore(node, nsibling);
         };
         DomUtils.getClassMap = function (el) {
             var res = {};
@@ -1781,15 +1789,21 @@ define("jriapp_utils/dom", ["require", "exports", "jriapp_core/lang"], function 
                 }
             }
         };
-        DomUtils.addClass = function ($el, css) {
-            DomUtils.setClass($el.toArray(), css, false);
+        DomUtils.addClass = function (elems, css) {
+            DomUtils.setClass(elems || [], css, false);
         };
-        DomUtils.removeClass = function ($el, css) {
-            DomUtils.setClass($el.toArray(), css, true);
+        DomUtils.removeClass = function (elems, css) {
+            DomUtils.setClass(elems || [], css, true);
         };
-        DomUtils.$ = jQuery;
+        DomUtils.destroyJQueryPlugin = function ($el, name) {
+            var plugin = $el.data(name);
+            if (!!plugin) {
+                $el[name]("destroy");
+            }
+        };
         DomUtils.window = window;
         DomUtils.document = window.document;
+        DomUtils.$ = jQuery;
         return DomUtils;
     }());
     exports.DomUtils = DomUtils;
@@ -4250,9 +4264,9 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
     }(object_9.BaseObject));
     var CSSBag = (function (_super) {
         __extends(CSSBag, _super);
-        function CSSBag($el) {
+        function CSSBag(el) {
             _super.call(this);
-            this._$el = $el;
+            this._el = el;
         }
         CSSBag.prototype._isHasProp = function (prop) {
             return true;
@@ -4265,17 +4279,17 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
                 return;
             if (name === "*") {
                 if (!val) {
-                    dom.removeClass(this._$el, null);
+                    dom.removeClass([this._el], null);
                 }
                 else if (checks.isArray(val)) {
-                    dom.setClasses(this._$el.toArray(), val);
+                    dom.setClasses([this._el], val);
                 }
                 else if (checks.isString(val)) {
-                    dom.setClasses(this._$el.toArray(), val.split(" "));
+                    dom.setClasses([this._el], val.split(" "));
                 }
                 return;
             }
-            dom.setClass(this._$el.toArray(), name, !val);
+            dom.setClass([this._el], name, !val);
         };
         CSSBag.prototype.toString = function () {
             return PROP_BAG;
@@ -4298,7 +4312,7 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             this._objId = "elv" + coreUtils.getNewID();
             this._errors = null;
             if (!!this._css) {
-                dom.addClass(this._$el, this._css);
+                dom.addClass([el], this._css);
             }
             this._applyToolTip();
             this._app.elViewFactory.store.setElView(el, this);
@@ -4515,7 +4529,7 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
                 if (!this._classes) {
                     if (this.getIsDestroyCalled())
                         return undefined;
-                    this._classes = new CSSBag(this.$el);
+                    this._classes = new CSSBag(this.el);
                 }
                 return this._classes;
             },
@@ -6366,7 +6380,7 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
             this._$el = $(this._el);
             this._objId = "frm" + coreutils_17.CoreUtils.getNewID();
             this._dataContext = null;
-            dom_7.DomUtils.addClass(this._$el, exports.css.dataform);
+            dom_7.DomUtils.addClass([this._el], exports.css.dataform);
             this._isEditing = false;
             this._content = [];
             this._lfTime = null;
@@ -10865,6 +10879,6 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.COLL_CHANGE_REASON = collection_1.COLL_CHANGE_REASON;
     exports.COLL_CHANGE_TYPE = collection_1.COLL_CHANGE_TYPE;
     exports.Application = app_1.Application;
-    exports.VERSION = "0.9.75";
+    exports.VERSION = "0.9.76";
     bootstrap_25.Bootstrap._initFramework();
 });
