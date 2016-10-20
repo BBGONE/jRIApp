@@ -1,16 +1,16 @@
 // Type definitions for qtip2 v2.2.1
 // Project: http://qtip2.com/
 // Definitions by: Nathan Pitman <https://github.com/Seltzer>
-// Definitions: https://github.com/borisyankov/DefinitelyTyped
+// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 // Notes:
 //   - Type bindings for the QTip2 API and options are included. Bindings for global settings aren't required.
 //   - Deprecated functionality is not supported.
 //   - Where possible, things are strongly typed and 'any' is avoided.
 //   - QTip2 includes a lot of shorthand notation for various expressions. These bindings support it all.
 
-/// <reference path="jquery.d.ts" />
+/// <reference path="./jquery.d.ts" />
 
-declare module QTip2 {
+declare namespace QTip2 {
 	type EventApiFunc = (event: Event, api: Api) => void;
 
 
