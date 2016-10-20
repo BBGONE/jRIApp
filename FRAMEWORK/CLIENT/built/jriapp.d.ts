@@ -897,8 +897,8 @@ declare module "jriapp_utils/dom" {
         static removeNode(node: Node): void;
         static insertAfter(node: Node, refNode: Node): void;
         static insertBefore(node: Node, refNode: Node): void;
-        static wrap(node: Node, wrapper: Node): void;
-        static unwrap(node: Node): void;
+        static wrap(elem: Element, wrapper: Element): void;
+        static unwrap(elem: Element): void;
         private static getClassMap(el);
         static setClasses(elems: Element[], classes: string[]): void;
         static setClass(elems: Element[], css: string, remove?: boolean): void;
@@ -1434,6 +1434,7 @@ declare module "jriapp_elview/elview" {
     export const css: {
         fieldError: string;
         commandLink: string;
+        checkedNull: string;
         disabled: string;
         opacity: string;
         color: string;
@@ -1708,9 +1709,10 @@ declare module "jriapp_elview/checkbox" {
     import { IViewOptions } from "jriapp_core/shared";
     import { InputElView } from "jriapp_elview/input";
     export class CheckBoxElView extends InputElView {
-        private _val;
+        private _checked;
         constructor(options: IViewOptions);
-        protected _setFieldError(isError: boolean): void;
+        protected _onChange(checked: boolean): void;
+        protected _updateState(): void;
         toString(): string;
         checked: boolean;
     }
@@ -1881,10 +1883,17 @@ declare module "jriapp_elview/command" {
     import { IViewOptions } from "jriapp_core/shared";
     import { ICommand } from "jriapp_core/mvvm";
     import { BaseElView } from "jriapp_elview/elview";
+    export interface ICommandViewOptions extends IViewOptions {
+        preventDefault?: boolean;
+        stopPropagation?: boolean;
+    }
     export class CommandElView extends BaseElView {
         private _command;
         private _commandParam;
-        constructor(options: IViewOptions);
+        private _preventDefault;
+        private _stopPropagation;
+        private _disabled;
+        constructor(options: ICommandViewOptions);
         private _onCanExecuteChanged(cmd, args);
         protected _onCommandChanged(): void;
         protected invokeCommand(args: any, isAsync: boolean): void;
@@ -1893,6 +1902,8 @@ declare module "jriapp_elview/command" {
         isEnabled: boolean;
         command: ICommand;
         commandParam: any;
+        readonly preventDefault: boolean;
+        readonly stopPropagation: boolean;
     }
 }
 declare module "jriapp_core/template" {
@@ -1920,29 +1931,10 @@ declare module "jriapp_core/template" {
         readonly template: ITemplate;
     }
 }
-declare module "jriapp_elview/button" {
+declare module "jriapp_elview/anchor" {
     import { IViewOptions } from "jriapp_core/shared";
     import { CommandElView } from "jriapp_elview/command";
-    export interface IButtonOptions extends IViewOptions {
-        preventDefault?: boolean;
-        stopPropagation?: boolean;
-    }
-    export class ButtonElView extends CommandElView {
-        private _preventDefault;
-        private _stopPropagation;
-        constructor(options: IButtonOptions);
-        protected _onClick(e: Event): void;
-        toString(): string;
-        value: string;
-        text: string;
-        html: string;
-        preventDefault: boolean;
-    }
-}
-declare module "jriapp_elview/anchor" {
-    import { CommandElView } from "jriapp_elview/command";
-    import { IButtonOptions } from "jriapp_elview/button";
-    export interface IAncorOptions extends IButtonOptions {
+    export interface IAncorOptions extends IViewOptions {
         imageSrc?: string;
         glyph?: string;
     }
@@ -1951,8 +1943,6 @@ declare module "jriapp_elview/anchor" {
         private _glyph;
         private _image;
         private _span;
-        private _preventDefault;
-        private _stopPropagation;
         constructor(options: IAncorOptions);
         protected _onClick(e: Event): void;
         protected _updateImage(src: string): void;
@@ -1964,7 +1954,6 @@ declare module "jriapp_elview/anchor" {
         html: string;
         text: string;
         href: string;
-        preventDefault: boolean;
     }
 }
 declare module "jriapp_elview/span" {
@@ -2006,14 +1995,25 @@ declare module "jriapp_elview/busy" {
         delay: number;
     }
 }
+declare module "jriapp_elview/button" {
+    import { IViewOptions } from "jriapp_core/shared";
+    import { CommandElView } from "jriapp_elview/command";
+    export class ButtonElView extends CommandElView {
+        constructor(options: IViewOptions);
+        protected _onClick(e: Event): void;
+        toString(): string;
+        value: string;
+        text: string;
+        html: string;
+    }
+}
 declare module "jriapp_elview/checkbox3" {
     import { IViewOptions } from "jriapp_core/shared";
     import { InputElView } from "jriapp_elview/input";
     export class CheckBoxThreeStateElView extends InputElView {
+        private _checked;
         private _val;
-        private _cbxVal;
         constructor(options: IViewOptions);
-        protected _setFieldError(isError: boolean): void;
         toString(): string;
         checked: boolean;
     }
@@ -2057,15 +2057,11 @@ declare module "jriapp_elview/img" {
     }
 }
 declare module "jriapp_elview/radio" {
-    import { IViewOptions } from "jriapp_core/shared";
-    import { InputElView } from "jriapp_elview/input";
-    export class RadioElView extends InputElView {
-        private _val;
-        constructor(options: IViewOptions);
+    import { CheckBoxElView } from "jriapp_elview/checkbox";
+    export class RadioElView extends CheckBoxElView {
+        protected _onChange(checked: boolean): void;
         protected _updateGroup(): void;
-        protected _setFieldError(isError: boolean): void;
         toString(): string;
-        checked: boolean;
         value: string;
         readonly name: string;
     }
@@ -2075,7 +2071,7 @@ declare module "jriapp_elview/all" {
     export { AnchorElView, IAncorOptions } from "jriapp_elview/anchor";
     export { BlockElView } from "jriapp_elview/block";
     export { BusyElView, IBusyViewOptions } from "jriapp_elview/busy";
-    export { ButtonElView, IButtonOptions } from "jriapp_elview/button";
+    export { ButtonElView } from "jriapp_elview/button";
     export { CheckBoxElView } from "jriapp_elview/checkbox";
     export { CheckBoxThreeStateElView } from "jriapp_elview/checkbox3";
     export { CommandElView } from "jriapp_elview/command";

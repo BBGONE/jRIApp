@@ -114,7 +114,10 @@
             <label for="months">Months: </label><select size="1" style="width: 150px" data-bind="{this.dataSource,to=months,source=testObject}{this.selectedValue,to=month,mode=TwoWay,source=testObject}" data-view="options:{valuePath=key,textPath=val}"></select>
         </div>
         <div class="leftOffset">
-            <label for="sends">Formats: </label><select size="1" style="width: 220px" data-bind="{this.dataSource,to=formats,source=testObject}{this.selectedValue,to=format,mode=TwoWay,source=testObject}" data-view="options:{valuePath=key,textPath=val}"></select>
+            <label>Formats: </label><select size="1" style="width: 220px" data-bind="{this.dataSource,to=formats,source=testObject}{this.selectedValue,to=format,mode=TwoWay,source=testObject}" data-view="options:{valuePath=key,textPath=val}"></select>
+        </div>
+        <div class="leftOffset">
+            <label>boolProperty: </label><input type="checkbox" data-bind="{this.checked,to=boolProperty,mode=TwoWay,source=testObject}"/>
         </div>
     </fieldset>
     <div>

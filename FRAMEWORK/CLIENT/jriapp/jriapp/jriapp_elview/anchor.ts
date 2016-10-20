@@ -4,12 +4,11 @@ import { Utils as utils } from "../jriapp_utils/utils";
 import { bootstrap } from "../jriapp_core/bootstrap";
 import { css, PROP_NAME, IEventChangedArgs, EVENT_CHANGE_TYPE } from "./elview";
 import { CommandElView } from "./command";
-import { IButtonOptions } from "./button";
 import { ICommand } from "../jriapp_core/mvvm";
 
-const $ = utils.dom.$;
+const dom = utils.dom, $ = dom.$;
 
-export interface IAncorOptions extends IButtonOptions {
+export interface IAncorOptions extends IViewOptions {
     imageSrc?: string;
     glyph?: string;
 }
@@ -19,49 +18,41 @@ export class AnchorElView extends CommandElView {
     private _glyph: string;
     private _image: HTMLImageElement;
     private _span: HTMLSpanElement;
-    private _preventDefault: boolean;
-    private _stopPropagation: boolean;
 
     constructor(options: IAncorOptions) {
         super(options);
-        let self = this, $el = this.$el;
+        let self = this;
         this._imageSrc = null;
         this._image = null;
         this._span = null;
         this._glyph = null;
-        this._preventDefault = false;
-        this._stopPropagation = false;
 
         if (!!options.imageSrc)
             this.imageSrc = options.imageSrc;
+
         if (!!options.glyph)
             this.glyph = options.glyph;
 
-        if (!!options.preventDefault)
-            this._preventDefault = true;
-        if (!!options.stopPropagation)
-            this._stopPropagation = true;
-
-        $el.addClass(css.commandLink);
-        $el.on("click." + this.uniqueID, function (e) {
+        dom.addClass([this.el], css.commandLink);
+        this.$el.on("click." + this.uniqueID, function (e) {
             self._onClick(e);
         });
     }
     protected _onClick(e: Event) {
-        if (this._stopPropagation)
+        if (this.stopPropagation)
             e.stopPropagation();
-        if (this._preventDefault)
+        if (this.preventDefault)
             e.preventDefault();
         this.invokeCommand(null, true);
     }
     protected _updateImage(src: string) {
-        let $a = this.$el, $img: JQuery, self = this;
+        let $a = this.$el, self = this;
         if (this._imageSrc === src)
             return;
         this._imageSrc = src;
 
         if (!!this._image && !src) {
-            $(this._image).remove();
+            dom.removeNode(this._image);
             this._image = null;
             return;
         }
@@ -69,25 +60,15 @@ export class AnchorElView extends CommandElView {
         if (!!src) {
             if (!this._image) {
                 $a.empty();
-                $img = $(new Image()).mouseenter(
-                    function (e) {
-                        if (self.isEnabled)
-                            $(this).css("opacity", 0.5);
-                    }).mouseout(
-                    function (e) {
-                        if (self.isEnabled)
-                            $(this).css("opacity", 1.0);
-                    });
-
-                $img.appendTo($a);
-                this._image = <HTMLImageElement>$img.get(0);
+                this._image = new Image();
+                $a[0].appendChild(this._image);
             }
 
             this._image.src = src;
         }
     }
     protected _updateGlyph(glyph: string) {
-        let $a = this.$el, $span: JQuery;
+        let $a = this.$el;
 
         if (this._glyph === glyph)
             return;
@@ -95,24 +76,21 @@ export class AnchorElView extends CommandElView {
         this._glyph = glyph;
 
         if (!!oldGlyph && !glyph) {
-            $(this._span).remove();
+            dom.removeNode(this._span);
             return;
         }
 
         if (!!glyph) {
             if (!this._span) {
                 $a.empty();
-                this._span = utils.dom.document.createElement("span");
-                $span = $(this._span);
-                $span.appendTo($a);
+                this._span = dom.document.createElement("span");
+                $a[0].appendChild(this._span);
             }
-            else
-                $span = $(this._span);
-
+        
             if (!!oldGlyph) {
-                $span.removeClass(oldGlyph);
+                dom.removeClass([this._span], oldGlyph);
             }
-            $span.addClass(glyph);
+            dom.addClass([this._span], glyph);
         }
     }
     destroy() {
@@ -183,15 +161,6 @@ export class AnchorElView extends CommandElView {
         if (x !== v) {
             this.$el.prop("href", v);
             this.raisePropertyChanged(PROP_NAME.href);
-        }
-    }
-    get preventDefault() {
-        return this._preventDefault;
-    }
-    set preventDefault(v: boolean) {
-        if (this._preventDefault !== v) {
-            this._preventDefault = v;
-            this.raisePropertyChanged(PROP_NAME.preventDefault);
         }
     }
 }

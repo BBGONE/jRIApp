@@ -131,6 +131,7 @@
     <TypeScriptCompile Include="jriapp\jriapp_utils\propwatcher.ts" />
     <TypeScriptCompile Include="jriapp\jriapp_utils\lifetime.ts" />
     <TypeScriptCompile Include="thirdparty\jquery.d.ts" />
+    <TypeScriptCompile Include="thirdparty\jqueryui.d.ts" />
     <TypeScriptCompile Include="thirdparty\moment.d.ts" />
     <TypeScriptCompile Include="thirdparty\qtip2.d.ts" />
     <TypeScriptCompile Include="thirdparty\require.d.ts" />

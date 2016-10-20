@@ -1069,7 +1069,6 @@ declare module "jriapp_ui/stackpanel" {
         protected _appendItem(item: ICollectionItem): void;
         protected _bindDS(): void;
         protected _unbindDS(): void;
-        protected _createElement(tag: string): JQuery;
         protected _onItemClicked(div: HTMLElement, item: ICollectionItem): void;
         protected _clearContent(): void;
         protected _removeItemByKey(key: string): void;

@@ -5,18 +5,28 @@ import { ICommand } from "../jriapp_core/mvvm";
 import { Utils as utils } from "../jriapp_utils/utils";
 import { BaseElView, PROP_NAME, css } from "./elview";
 
+const dom = utils.dom;
+
+export interface ICommandViewOptions extends IViewOptions {
+    preventDefault?: boolean;
+    stopPropagation?: boolean;
+}
+
 export class CommandElView extends BaseElView {
     private _command: ICommand;
     private _commandParam: any;
+    private _preventDefault: boolean;
+    private _stopPropagation: boolean;
+    private _disabled: boolean;
 
-    constructor(options: IViewOptions) {
+    constructor(options: ICommandViewOptions) {
         super(options);
         this._command = null;
         this._commandParam = null;
-
-        if (!this.isEnabled) {
-            this.$el.addClass("disabled");
-        }
+        this._preventDefault = !!options.preventDefault;
+        this._stopPropagation = !!options.stopPropagation;
+        this._disabled = ("disabled" in this.el) ? undefined : false;
+        dom.setClass(this.$el.toArray(), css.disabled, this.isEnabled);
     }
     private _onCanExecuteChanged(cmd: ICommand, args: any) {
         this.isEnabled = cmd.canExecute(this, this._commandParam);
@@ -61,14 +71,22 @@ export class CommandElView extends BaseElView {
     toString() {
         return "CommandElView";
     }
-    get isEnabled() { return !(this.$el.prop(PROP_NAME.disabled)); }
+    get isEnabled() {
+        let el: any = this.el;
+        if (this._disabled === undefined)
+            return !el.disabled;
+        else
+            return !this._disabled;
+    }
     set isEnabled(v: boolean) {
+        let el: any = this.el;
         if (v !== this.isEnabled) {
-            this.$el.prop(PROP_NAME.disabled, !v);
-            if (!v)
-                this.$el.addClass(css.disabled);
+            if (this._disabled === undefined)
+                el.disabled = !v;
             else
-                this.$el.removeClass(css.disabled);
+                this._disabled = !v;
+
+            dom.setClass(this.$el.toArray(), css.disabled, !!v);
             this.raisePropertyChanged(PROP_NAME.isEnabled);
         }
     }
@@ -96,5 +114,11 @@ export class CommandElView extends BaseElView {
             this._commandParam = v;
             this.raisePropertyChanged(PROP_NAME.commandParam);
         }
+    }
+    get preventDefault() {
+        return this._preventDefault;
+    }
+    get stopPropagation() {
+        return this._stopPropagation;
     }
 }

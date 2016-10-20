@@ -31,6 +31,6 @@ ITEM_STATUS, CollectionItem, ItemAspect, ListItemAspect, IPermissions, Validatio
 COLL_CHANGE_REASON, COLL_CHANGE_TYPE } from "./jriapp_collection/collection";
 export { Application } from "./jriapp_core/app";
 
-export const VERSION = "0.9.76";
+export const VERSION = "0.9.77";
 
 Bootstrap._initFramework();

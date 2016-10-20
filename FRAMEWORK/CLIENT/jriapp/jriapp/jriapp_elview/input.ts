@@ -6,11 +6,14 @@ export class InputElView extends BaseElView {
     toString() {
         return "InputElView";
     }
-    get isEnabled() { return !this.$el.prop("disabled"); }
+    get isEnabled() {
+        let el = <HTMLInputElement>this.el;
+        return !el.disabled;
+    }
     set isEnabled(v: boolean) {
-        v = !!v;
+        let el = <HTMLInputElement>this.el;
         if (v !== this.isEnabled) {
-            this.$el.prop("disabled", !v);
+            el.disabled = !v;
             this.raisePropertyChanged(PROP_NAME.isEnabled);
         }
     }

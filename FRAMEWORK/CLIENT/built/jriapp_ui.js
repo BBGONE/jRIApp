@@ -4843,7 +4843,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_core/lang", "jriapp_c
 });
 define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview"], function (require, exports, const_21, lang_6, object_13, utils_19, bootstrap_7, elview_7) {
     "use strict";
-    var $ = utils_19.Utils.dom.$, document = utils_19.Utils.dom.document, checks = utils_19.Utils.check, strUtils = utils_19.Utils.str, coreUtils = utils_19.Utils.core;
+    var dom = utils_19.Utils.dom, $ = dom.$, doc = dom.document, checks = utils_19.Utils.check, strUtils = utils_19.Utils.str, coreUtils = utils_19.Utils.core;
     var css = {
         stackpanel: "ria-stackpanel",
         item: "ria-stackpanel-item",
@@ -5068,9 +5068,9 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_core/const", "jria
         StackPanel.prototype._appendItem = function (item) {
             if (!item._key)
                 return;
-            var self = this, $item_el = self._createElement(this._item_tag), item_el = $item_el.get(0);
-            $item_el.addClass(css.item);
-            $item_el.attr(const_21.DATA_ATTR.DATA_EVENT_SCOPE, this.uniqueID);
+            var self = this, item_el = doc.createElement(this._item_tag), $item_el = $(item_el);
+            dom.addClass([item_el], css.item);
+            item_el.setAttribute(const_21.DATA_ATTR.DATA_EVENT_SCOPE, this.uniqueID);
             self._$el.append($item_el);
             var mappedItem = { el: item_el, template: null, item: item };
             $item_el.data("data", mappedItem);
@@ -5094,9 +5094,6 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_core/const", "jria
             if (!ds)
                 return;
             ds.removeNSHandlers(self._objId);
-        };
-        StackPanel.prototype._createElement = function (tag) {
-            return $(document.createElement(tag));
         };
         StackPanel.prototype._onItemClicked = function (div, item) {
             this._updateCurrent(item, false);

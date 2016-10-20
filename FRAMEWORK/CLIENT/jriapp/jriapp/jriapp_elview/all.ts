@@ -3,7 +3,7 @@ export { BaseElView, fn_addToolTip, PropChangedCommand, IEventChangedArgs, EVENT
 export { AnchorElView, IAncorOptions } from "./anchor";
 export { BlockElView } from "./block";
 export { BusyElView, IBusyViewOptions } from "./busy";
-export { ButtonElView, IButtonOptions } from "./button";
+export { ButtonElView } from "./button";
 export { CheckBoxElView } from "./checkbox";
 export { CheckBoxThreeStateElView } from "./checkbox3";
 export { CommandElView } from "./command";

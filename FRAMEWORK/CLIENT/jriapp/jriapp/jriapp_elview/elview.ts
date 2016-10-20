@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { TOOLTIP_SVC, DATA_ATTR } from "../jriapp_core/const";
-import { ITooltipService, IElView, IValidationInfo, IApplication, IViewOptions, IPropertyBag } from "../jriapp_core/shared";
+import { ITooltipService, IElView, IValidationInfo, IApplication, IViewOptions, IPropertyBag, IIndexer } from "../jriapp_core/shared";
 import { ERRS, STRS } from "../jriapp_core/lang";
 import { BaseObject }  from "../jriapp_core/object";
 import { SysChecks } from "../jriapp_utils/syschecks";
@@ -29,6 +29,7 @@ export const PropChangedCommand: new (fn_action: TAction<{ property: string; }, 
 export const css = {
     fieldError: "ria-field-error",
     commandLink: "ria-command-link",
+    checkedNull: "ria-checked-null",
     disabled: "disabled",
     opacity: "opacity",
     color: "color",
@@ -67,29 +68,24 @@ export const PROP_NAME = {
 
 // wraps HTMLElement to get or change property using data binding
 class PropertyBag extends BaseObject implements IPropertyBag {
-    private _$el: JQuery;
+    private _el: IIndexer<any>;
 
-    constructor($el: JQuery) {
+    constructor(el: HTMLElement) {
         super();
-        this._$el = $el;
+        this._el = el;
     }
     //override
     _isHasProp(prop: string) {
-        let res = false;
-        if (this._$el.length > 0) {
-            let el = this._$el.get(0);
-            res = checks.isHasProp(el, prop);
-        }
-        return res;
+        return checks.isHasProp(this._el, prop);
     }
     //implement IPropertyBag
     getProp(name: string): any {
-        return this._$el.prop(name);
+        return this._el[name];
     }
     setProp(name: string, val: any): void {
-        let old = this._$el.prop(name);
+        let old = this._el[name];
         if (old !== val) {
-            this._$el.prop(name, val);
+            this._el[name] = val;
             this.raisePropertyChanged(name);
         }
     }
@@ -257,11 +253,11 @@ export class BaseElView extends BaseObject implements IElView {
         }
         if (!!this._props) {
             this._props.destroy();
-            this._props = null;
+            this._props = undefined;
         }
         if (!!this._classes) {
             this._classes.destroy();
-            this._classes = null;
+            this._classes = undefined;
         }
         this._display = null;
         this._css = null;
@@ -342,7 +338,7 @@ export class BaseElView extends BaseObject implements IElView {
         if (!this._props) {
             if (this.getIsDestroyCalled())
                 return undefined;
-            this._props = new PropertyBag(this.$el);
+            this._props = new PropertyBag(this.el);
         }
         return this._props;
     }

@@ -35,15 +35,22 @@ export class DomUtils {
         let parent = refNode.parentNode;
         parent.insertBefore(node, refNode);
     }
-    static wrap(node: Node, wrapper: Node) {
-        let parent = node.parentNode, nsibling = node.nextSibling;
-        wrapper.appendChild(node);
+    static wrap(elem: Element, wrapper: Element) {
+        let parent = elem.parentElement, nsibling = elem.nextSibling;
+        if (!parent)
+            return;
+        wrapper.appendChild(elem);
         (!nsibling) ? parent.appendChild(wrapper) : parent.insertBefore(wrapper, nsibling);
     }
-    static unwrap(node: Node) {
-        let wrapper = node.parentNode, parent = wrapper.parentNode, nsibling = wrapper.nextSibling;
+    static unwrap(elem: Element) {
+        let wrapper = elem.parentElement;
+        if (!wrapper)
+            return;
+        let parent = wrapper.parentElement, nsibling = wrapper.nextSibling;
+        if (!parent)
+            return;
         parent.removeChild(wrapper);
-        (!nsibling) ? parent.appendChild(node) : parent.insertBefore(node, nsibling);
+        (!nsibling) ? parent.appendChild(elem) : parent.insertBefore(elem, nsibling);
     }
 
     private static getClassMap(el: Element): IIndexer<number> {

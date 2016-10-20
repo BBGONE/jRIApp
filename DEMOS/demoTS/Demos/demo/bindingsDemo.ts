@@ -40,6 +40,7 @@ export class TestObject extends RIAPP.BaseObject {
     private _months: DEMODB.KeyValDictionary;
     private _format: string;
     private _formats: DEMODB.StrKeyValDictionary;
+    private _boolProperty: boolean;
 
     constructor(initPropValue: string) {
         super();
@@ -47,6 +48,7 @@ export class TestObject extends RIAPP.BaseObject {
         this._testProperty1 = initPropValue;
         this._testProperty2 = null;
         this._testProperty3 = null;
+        this._boolProperty = null;
 
         this._testCommand = new RIAPP.Command(function (sender, args) {
             self._onTestCommandExecuted();
@@ -68,7 +70,7 @@ export class TestObject extends RIAPP.BaseObject {
         this._formats.fillItems([{ key: 'PDF', val: 'Acrobat Reader PDF' }, { key: 'WORD', val: 'MS Word DOC' }, { key: 'EXCEL', val: 'MS Excel XLS' }], true);
     }
     _onTestCommandExecuted() {
-        alert(utils.str.format("testProperty1:{0}, format:{1}, month: {2}", this.testProperty1, this.format, this.month));
+        alert(utils.str.format("testProperty1:{0}, format:{1}, month: {2}, boolProperty: {3}", this.testProperty1, this.format, this.month, this.boolProperty));
     }
     get testProperty1(): string { return this._testProperty1; }
     set testProperty1(v: string) {
@@ -93,6 +95,13 @@ export class TestObject extends RIAPP.BaseObject {
         if (this._testProperty3 != v) {
             this._testProperty3 = v;
             this.raisePropertyChanged('testProperty3');
+        }
+    }
+    get boolProperty(): boolean { return this._boolProperty; }
+    set boolProperty(v: boolean) {
+        if (this._boolProperty != v) {
+            this._boolProperty = v;
+            this.raisePropertyChanged('boolProperty');
         }
     }
     get testCommand(): RIAPP.ICommand { return this._testCommand; }

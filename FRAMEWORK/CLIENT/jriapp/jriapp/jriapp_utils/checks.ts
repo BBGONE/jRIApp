@@ -7,17 +7,7 @@ export class Checks {
     static isHasProp(obj: any, prop: string): boolean {
         if (!obj)
             return false;
-        let res = obj.hasOwnProperty(prop);
-        if (res)
-            return true;
-        else {
-            if (Object === obj)
-                return false;
-            else {
-                let pr = Object.getPrototypeOf(obj);
-                return Checks.isHasProp(pr, prop);
-            }
-        }
+        return prop in obj;
     }
     static isNull(a: any): a is void {
         return a === null;

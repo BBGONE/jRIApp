@@ -468,17 +468,7 @@ define("jriapp_utils/checks", ["require", "exports", "jriapp_utils/syschecks"], 
         Checks.isHasProp = function (obj, prop) {
             if (!obj)
                 return false;
-            var res = obj.hasOwnProperty(prop);
-            if (res)
-                return true;
-            else {
-                if (Object === obj)
-                    return false;
-                else {
-                    var pr = Object.getPrototypeOf(obj);
-                    return Checks.isHasProp(pr, prop);
-                }
-            }
+            return prop in obj;
         };
         Checks.isNull = function (a) {
             return a === null;
@@ -1673,15 +1663,22 @@ define("jriapp_utils/dom", ["require", "exports", "jriapp_core/lang"], function 
             var parent = refNode.parentNode;
             parent.insertBefore(node, refNode);
         };
-        DomUtils.wrap = function (node, wrapper) {
-            var parent = node.parentNode, nsibling = node.nextSibling;
-            wrapper.appendChild(node);
+        DomUtils.wrap = function (elem, wrapper) {
+            var parent = elem.parentElement, nsibling = elem.nextSibling;
+            if (!parent)
+                return;
+            wrapper.appendChild(elem);
             (!nsibling) ? parent.appendChild(wrapper) : parent.insertBefore(wrapper, nsibling);
         };
-        DomUtils.unwrap = function (node) {
-            var wrapper = node.parentNode, parent = wrapper.parentNode, nsibling = wrapper.nextSibling;
+        DomUtils.unwrap = function (elem) {
+            var wrapper = elem.parentElement;
+            if (!wrapper)
+                return;
+            var parent = wrapper.parentElement, nsibling = wrapper.nextSibling;
+            if (!parent)
+                return;
             parent.removeChild(wrapper);
-            (!nsibling) ? parent.appendChild(node) : parent.insertBefore(node, nsibling);
+            (!nsibling) ? parent.appendChild(elem) : parent.insertBefore(elem, nsibling);
         };
         DomUtils.getClassMap = function (el) {
             var res = {};
@@ -4199,6 +4196,7 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
     exports.css = {
         fieldError: "ria-field-error",
         commandLink: "ria-command-link",
+        checkedNull: "ria-checked-null",
         disabled: "disabled",
         opacity: "opacity",
         color: "color",
@@ -4235,25 +4233,20 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
     };
     var PropertyBag = (function (_super) {
         __extends(PropertyBag, _super);
-        function PropertyBag($el) {
+        function PropertyBag(el) {
             _super.call(this);
-            this._$el = $el;
+            this._el = el;
         }
         PropertyBag.prototype._isHasProp = function (prop) {
-            var res = false;
-            if (this._$el.length > 0) {
-                var el = this._$el.get(0);
-                res = checks.isHasProp(el, prop);
-            }
-            return res;
+            return checks.isHasProp(this._el, prop);
         };
         PropertyBag.prototype.getProp = function (name) {
-            return this._$el.prop(name);
+            return this._el[name];
         };
         PropertyBag.prototype.setProp = function (name, val) {
-            var old = this._$el.prop(name);
+            var old = this._el[name];
             if (old !== val) {
-                this._$el.prop(name, val);
+                this._el[name] = val;
                 this.raisePropertyChanged(name);
             }
         };
@@ -4398,11 +4391,11 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             }
             if (!!this._props) {
                 this._props.destroy();
-                this._props = null;
+                this._props = undefined;
             }
             if (!!this._classes) {
                 this._classes.destroy();
-                this._classes = null;
+                this._classes = undefined;
             }
             this._display = null;
             this._css = null;
@@ -4517,7 +4510,7 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
                 if (!this._props) {
                     if (this.getIsDestroyCalled())
                         return undefined;
-                    this._props = new PropertyBag(this.$el);
+                    this._props = new PropertyBag(this.el);
                 }
                 return this._props;
             },
@@ -5524,11 +5517,14 @@ define("jriapp_elview/input", ["require", "exports", "jriapp_elview/elview"], fu
             return "InputElView";
         };
         Object.defineProperty(InputElView.prototype, "isEnabled", {
-            get: function () { return !this.$el.prop("disabled"); },
+            get: function () {
+                var el = this.el;
+                return !el.disabled;
+            },
             set: function (v) {
-                v = !!v;
+                var el = this.el;
                 if (v !== this.isEnabled) {
-                    this.$el.prop("disabled", !v);
+                    el.disabled = !v;
                     this.raisePropertyChanged(elview_1.PROP_NAME.isEnabled);
                 }
             },
@@ -5810,45 +5806,38 @@ define("jriapp_content/multyline", ["require", "exports", "jriapp_core/lang", "j
 });
 define("jriapp_elview/checkbox", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/input"], function (require, exports, utils_10, bootstrap_7, elview_4, input_2) {
     "use strict";
-    var $ = utils_10.Utils.dom.$;
+    var dom = utils_10.Utils.dom, $ = dom.$;
     var CheckBoxElView = (function (_super) {
         __extends(CheckBoxElView, _super);
         function CheckBoxElView(options) {
             _super.call(this, options);
-            var self = this;
-            this._val = this.$el.prop("checked");
+            var self = this, el = this.el;
+            this._checked = el.checked;
             this.$el.on("change." + this.uniqueID, function (e) {
                 e.stopPropagation();
-                self.checked = this.checked;
+                self._onChange(this.checked);
             });
+            this._updateState();
         }
-        CheckBoxElView.prototype._setFieldError = function (isError) {
-            var $el = this.$el;
-            if (isError) {
-                var span = $("<div></div>").addClass(elview_4.css.fieldError);
-                $el.wrap(span);
-            }
-            else {
-                if ($el.parent("." + elview_4.css.fieldError).length > 0)
-                    $el.unwrap();
-            }
+        CheckBoxElView.prototype._onChange = function (checked) {
+            this.checked = checked;
+        };
+        CheckBoxElView.prototype._updateState = function () {
+            dom.setClass(this.$el.toArray(), elview_4.css.checkedNull, !utils_10.Utils.check.isNt(this.checked));
         };
         CheckBoxElView.prototype.toString = function () {
             return "CheckBoxElView";
         };
         Object.defineProperty(CheckBoxElView.prototype, "checked", {
-            get: function () { return this._val; },
+            get: function () { return this._checked; },
             set: function (v) {
+                var el = this.el;
                 if (v !== null)
                     v = !!v;
-                if (v !== this._val) {
-                    this._val = v;
-                    this.$el.prop("checked", !!this._val);
-                    if (utils_10.Utils.core.check.isNt(this._val)) {
-                        this.$el.css(elview_4.css.opacity, 0.33);
-                    }
-                    else
-                        this.$el.css(elview_4.css.opacity, 1.0);
+                if (v !== this._checked) {
+                    this._checked = v;
+                    el.checked = !!this._checked;
+                    this._updateState();
                     this.raisePropertyChanged(elview_4.PROP_NAME.checked);
                 }
             },
@@ -6776,17 +6765,19 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
     exports.DataFormElView = DataFormElView;
     bootstrap_11.bootstrap.registerElView(const_5.ELVIEW_NM.DataForm, DataFormElView);
 });
-define("jriapp_elview/command", ["require", "exports", "jriapp_utils/coreutils", "jriapp_elview/elview"], function (require, exports, coreutils_18, elview_6) {
+define("jriapp_elview/command", ["require", "exports", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_elview/elview"], function (require, exports, coreutils_18, utils_16, elview_6) {
     "use strict";
+    var dom = utils_16.Utils.dom;
     var CommandElView = (function (_super) {
         __extends(CommandElView, _super);
         function CommandElView(options) {
             _super.call(this, options);
             this._command = null;
             this._commandParam = null;
-            if (!this.isEnabled) {
-                this.$el.addClass("disabled");
-            }
+            this._preventDefault = !!options.preventDefault;
+            this._stopPropagation = !!options.stopPropagation;
+            this._disabled = ("disabled" in this.el) ? undefined : false;
+            dom.setClass(this.$el.toArray(), elview_6.css.disabled, this.isEnabled);
         }
         CommandElView.prototype._onCanExecuteChanged = function (cmd, args) {
             this.isEnabled = cmd.canExecute(this, this._commandParam);
@@ -6831,14 +6822,21 @@ define("jriapp_elview/command", ["require", "exports", "jriapp_utils/coreutils",
             return "CommandElView";
         };
         Object.defineProperty(CommandElView.prototype, "isEnabled", {
-            get: function () { return !(this.$el.prop(elview_6.PROP_NAME.disabled)); },
+            get: function () {
+                var el = this.el;
+                if (this._disabled === undefined)
+                    return !el.disabled;
+                else
+                    return !this._disabled;
+            },
             set: function (v) {
+                var el = this.el;
                 if (v !== this.isEnabled) {
-                    this.$el.prop(elview_6.PROP_NAME.disabled, !v);
-                    if (!v)
-                        this.$el.addClass(elview_6.css.disabled);
+                    if (this._disabled === undefined)
+                        el.disabled = !v;
                     else
-                        this.$el.removeClass(elview_6.css.disabled);
+                        this._disabled = !v;
+                    dom.setClass(this.$el.toArray(), elview_6.css.disabled, !!v);
                     this.raisePropertyChanged(elview_6.PROP_NAME.isEnabled);
                 }
             },
@@ -6874,6 +6872,20 @@ define("jriapp_elview/command", ["require", "exports", "jriapp_utils/coreutils",
                     this._commandParam = v;
                     this.raisePropertyChanged(elview_6.PROP_NAME.commandParam);
                 }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CommandElView.prototype, "preventDefault", {
+            get: function () {
+                return this._preventDefault;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CommandElView.prototype, "stopPropagation", {
+            get: function () {
+                return this._stopPropagation;
             },
             enumerable: true,
             configurable: true
@@ -7238,198 +7250,80 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
     ;
     bootstrap_12.bootstrap.registerElView("template", TemplateElView);
 });
-define("jriapp_elview/button", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/command"], function (require, exports, utils_16, bootstrap_13, elview_7, command_2) {
+define("jriapp_elview/anchor", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/command"], function (require, exports, utils_17, bootstrap_13, elview_7, command_2) {
     "use strict";
-    var $ = utils_16.Utils.dom.$;
-    var ButtonElView = (function (_super) {
-        __extends(ButtonElView, _super);
-        function ButtonElView(options) {
-            _super.call(this, options);
-            this._preventDefault = false;
-            this._stopPropagation = false;
-            var self = this, $el = this.$el;
-            if (!!options.preventDefault)
-                this._preventDefault = true;
-            if (!!options.stopPropagation)
-                this._stopPropagation = true;
-            $el.on("click." + this.uniqueID, function (e) {
-                self._onClick(e);
-            });
-        }
-        ButtonElView.prototype._onClick = function (e) {
-            if (this._stopPropagation)
-                e.stopPropagation();
-            if (this._preventDefault)
-                e.preventDefault();
-            this.invokeCommand(null, true);
-        };
-        ButtonElView.prototype.toString = function () {
-            return "ButtonElView";
-        };
-        Object.defineProperty(ButtonElView.prototype, "value", {
-            get: function () {
-                return this.$el.val();
-            },
-            set: function (v) {
-                var x = this.$el.val();
-                if (v === null)
-                    v = "";
-                else
-                    v = "" + v;
-                if (x !== v) {
-                    this.$el.val(v);
-                    this.raisePropertyChanged(elview_7.PROP_NAME.value);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ButtonElView.prototype, "text", {
-            get: function () {
-                return this.$el.text();
-            },
-            set: function (v) {
-                var x = this.$el.text();
-                if (v === null)
-                    v = "";
-                else
-                    v = "" + v;
-                if (x !== v) {
-                    this.$el.text(v);
-                    this.raisePropertyChanged(elview_7.PROP_NAME.text);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ButtonElView.prototype, "html", {
-            get: function () {
-                return this.$el.html();
-            },
-            set: function (v) {
-                var x = this.$el.html();
-                if (v === null)
-                    v = "";
-                else
-                    v = "" + v;
-                if (x !== v) {
-                    this.$el.html(v);
-                    this.raisePropertyChanged(elview_7.PROP_NAME.html);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ButtonElView.prototype, "preventDefault", {
-            get: function () {
-                return this._preventDefault;
-            },
-            set: function (v) {
-                if (this._preventDefault !== v) {
-                    this._preventDefault = v;
-                    this.raisePropertyChanged(elview_7.PROP_NAME.preventDefault);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return ButtonElView;
-    }(command_2.CommandElView));
-    exports.ButtonElView = ButtonElView;
-    bootstrap_13.bootstrap.registerElView("input:button", ButtonElView);
-    bootstrap_13.bootstrap.registerElView("input:submit", ButtonElView);
-    bootstrap_13.bootstrap.registerElView("button", ButtonElView);
-});
-define("jriapp_elview/anchor", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/command"], function (require, exports, utils_17, bootstrap_14, elview_8, command_3) {
-    "use strict";
-    var $ = utils_17.Utils.dom.$;
+    var dom = utils_17.Utils.dom, $ = dom.$;
     var AnchorElView = (function (_super) {
         __extends(AnchorElView, _super);
         function AnchorElView(options) {
             _super.call(this, options);
-            var self = this, $el = this.$el;
+            var self = this;
             this._imageSrc = null;
             this._image = null;
             this._span = null;
             this._glyph = null;
-            this._preventDefault = false;
-            this._stopPropagation = false;
             if (!!options.imageSrc)
                 this.imageSrc = options.imageSrc;
             if (!!options.glyph)
                 this.glyph = options.glyph;
-            if (!!options.preventDefault)
-                this._preventDefault = true;
-            if (!!options.stopPropagation)
-                this._stopPropagation = true;
-            $el.addClass(elview_8.css.commandLink);
-            $el.on("click." + this.uniqueID, function (e) {
+            dom.addClass([this.el], elview_7.css.commandLink);
+            this.$el.on("click." + this.uniqueID, function (e) {
                 self._onClick(e);
             });
         }
         AnchorElView.prototype._onClick = function (e) {
-            if (this._stopPropagation)
+            if (this.stopPropagation)
                 e.stopPropagation();
-            if (this._preventDefault)
+            if (this.preventDefault)
                 e.preventDefault();
             this.invokeCommand(null, true);
         };
         AnchorElView.prototype._updateImage = function (src) {
-            var $a = this.$el, $img, self = this;
+            var $a = this.$el, self = this;
             if (this._imageSrc === src)
                 return;
             this._imageSrc = src;
             if (!!this._image && !src) {
-                $(this._image).remove();
+                dom.removeNode(this._image);
                 this._image = null;
                 return;
             }
             if (!!src) {
                 if (!this._image) {
                     $a.empty();
-                    $img = $(new Image()).mouseenter(function (e) {
-                        if (self.isEnabled)
-                            $(this).css("opacity", 0.5);
-                    }).mouseout(function (e) {
-                        if (self.isEnabled)
-                            $(this).css("opacity", 1.0);
-                    });
-                    $img.appendTo($a);
-                    this._image = $img.get(0);
+                    this._image = new Image();
+                    $a[0].appendChild(this._image);
                 }
                 this._image.src = src;
             }
         };
         AnchorElView.prototype._updateGlyph = function (glyph) {
-            var $a = this.$el, $span;
+            var $a = this.$el;
             if (this._glyph === glyph)
                 return;
             var oldGlyph = this._glyph;
             this._glyph = glyph;
             if (!!oldGlyph && !glyph) {
-                $(this._span).remove();
+                dom.removeNode(this._span);
                 return;
             }
             if (!!glyph) {
                 if (!this._span) {
                     $a.empty();
-                    this._span = utils_17.Utils.dom.document.createElement("span");
-                    $span = $(this._span);
-                    $span.appendTo($a);
+                    this._span = dom.document.createElement("span");
+                    $a[0].appendChild(this._span);
                 }
-                else
-                    $span = $(this._span);
                 if (!!oldGlyph) {
-                    $span.removeClass(oldGlyph);
+                    dom.removeClass([this._span], oldGlyph);
                 }
-                $span.addClass(glyph);
+                dom.addClass([this._span], glyph);
             }
         };
         AnchorElView.prototype.destroy = function () {
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
-            this.$el.removeClass(elview_8.css.commandLink);
+            this.$el.removeClass(elview_7.css.commandLink);
             this.imageSrc = null;
             this.glyph = null;
             _super.prototype.destroy.call(this);
@@ -7443,7 +7337,7 @@ define("jriapp_elview/anchor", ["require", "exports", "jriapp_utils/utils", "jri
                 var x = this._imageSrc;
                 if (x !== v) {
                     this._updateImage(v);
-                    this.raisePropertyChanged(elview_8.PROP_NAME.imageSrc);
+                    this.raisePropertyChanged(elview_7.PROP_NAME.imageSrc);
                 }
             },
             enumerable: true,
@@ -7455,7 +7349,7 @@ define("jriapp_elview/anchor", ["require", "exports", "jriapp_utils/utils", "jri
                 var x = this._glyph;
                 if (x !== v) {
                     this._updateGlyph(v);
-                    this.raisePropertyChanged(elview_8.PROP_NAME.glyph);
+                    this.raisePropertyChanged(elview_7.PROP_NAME.glyph);
                 }
             },
             enumerable: true,
@@ -7473,7 +7367,7 @@ define("jriapp_elview/anchor", ["require", "exports", "jriapp_utils/utils", "jri
                     v = "" + v;
                 if (x !== v) {
                     this.$el.html(v);
-                    this.raisePropertyChanged(elview_8.PROP_NAME.html);
+                    this.raisePropertyChanged(elview_7.PROP_NAME.html);
                 }
             },
             enumerable: true,
@@ -7491,7 +7385,7 @@ define("jriapp_elview/anchor", ["require", "exports", "jriapp_utils/utils", "jri
                     v = "" + v;
                 if (x !== v) {
                     this.$el.text(v);
-                    this.raisePropertyChanged(elview_8.PROP_NAME.text);
+                    this.raisePropertyChanged(elview_7.PROP_NAME.text);
                 }
             },
             enumerable: true,
@@ -7509,32 +7403,19 @@ define("jriapp_elview/anchor", ["require", "exports", "jriapp_utils/utils", "jri
                     v = "" + v;
                 if (x !== v) {
                     this.$el.prop("href", v);
-                    this.raisePropertyChanged(elview_8.PROP_NAME.href);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(AnchorElView.prototype, "preventDefault", {
-            get: function () {
-                return this._preventDefault;
-            },
-            set: function (v) {
-                if (this._preventDefault !== v) {
-                    this._preventDefault = v;
-                    this.raisePropertyChanged(elview_8.PROP_NAME.preventDefault);
+                    this.raisePropertyChanged(elview_7.PROP_NAME.href);
                 }
             },
             enumerable: true,
             configurable: true
         });
         return AnchorElView;
-    }(command_3.CommandElView));
+    }(command_2.CommandElView));
     exports.AnchorElView = AnchorElView;
-    bootstrap_14.bootstrap.registerElView("a", AnchorElView);
-    bootstrap_14.bootstrap.registerElView("abutton", AnchorElView);
+    bootstrap_13.bootstrap.registerElView("a", AnchorElView);
+    bootstrap_13.bootstrap.registerElView("abutton", AnchorElView);
 });
-define("jriapp_elview/span", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview"], function (require, exports, utils_18, bootstrap_15, elview_9) {
+define("jriapp_elview/span", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview"], function (require, exports, utils_18, bootstrap_14, elview_8) {
     "use strict";
     var $ = utils_18.Utils.dom.$;
     var SpanElView = (function (_super) {
@@ -7553,8 +7434,8 @@ define("jriapp_elview/span", ["require", "exports", "jriapp_utils/utils", "jriap
                 v = v === null ? "" : str;
                 if (x !== v) {
                     $el.text(v);
-                    this.raisePropertyChanged(elview_9.PROP_NAME.text);
-                    this.raisePropertyChanged(elview_9.PROP_NAME.value);
+                    this.raisePropertyChanged(elview_8.PROP_NAME.text);
+                    this.raisePropertyChanged(elview_8.PROP_NAME.value);
                 }
             },
             enumerable: true,
@@ -7574,7 +7455,7 @@ define("jriapp_elview/span", ["require", "exports", "jriapp_utils/utils", "jriap
                 v = v === null ? "" : str;
                 if (x !== v) {
                     this.$el.html(v);
-                    this.raisePropertyChanged(elview_9.PROP_NAME.html);
+                    this.raisePropertyChanged(elview_8.PROP_NAME.html);
                 }
             },
             enumerable: true,
@@ -7583,14 +7464,14 @@ define("jriapp_elview/span", ["require", "exports", "jriapp_utils/utils", "jriap
         Object.defineProperty(SpanElView.prototype, "color", {
             get: function () {
                 var $el = this.$el;
-                return $el.css(elview_9.css.color);
+                return $el.css(elview_8.css.color);
             },
             set: function (v) {
                 var $el = this.$el;
-                var x = $el.css(elview_9.css.color);
+                var x = $el.css(elview_8.css.color);
                 if (v !== x) {
-                    $el.css(elview_9.css.color, v);
-                    this.raisePropertyChanged(elview_9.PROP_NAME.color);
+                    $el.css(elview_8.css.color, v);
+                    this.raisePropertyChanged(elview_8.PROP_NAME.color);
                 }
             },
             enumerable: true,
@@ -7599,25 +7480,25 @@ define("jriapp_elview/span", ["require", "exports", "jriapp_utils/utils", "jriap
         Object.defineProperty(SpanElView.prototype, "fontSize", {
             get: function () {
                 var $el = this.$el;
-                return $el.css(elview_9.css.fontSize);
+                return $el.css(elview_8.css.fontSize);
             },
             set: function (v) {
                 var $el = this.$el;
-                var x = $el.css(elview_9.css.fontSize);
+                var x = $el.css(elview_8.css.fontSize);
                 if (v !== x) {
-                    $el.css(elview_9.css.fontSize, v);
-                    this.raisePropertyChanged(elview_9.PROP_NAME.fontSize);
+                    $el.css(elview_8.css.fontSize, v);
+                    this.raisePropertyChanged(elview_8.PROP_NAME.fontSize);
                 }
             },
             enumerable: true,
             configurable: true
         });
         return SpanElView;
-    }(elview_9.BaseElView));
+    }(elview_8.BaseElView));
     exports.SpanElView = SpanElView;
-    bootstrap_15.bootstrap.registerElView("span", SpanElView);
+    bootstrap_14.bootstrap.registerElView("span", SpanElView);
 });
-define("jriapp_elview/block", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/span"], function (require, exports, utils_19, bootstrap_16, elview_10, span_1) {
+define("jriapp_elview/block", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/span"], function (require, exports, utils_19, bootstrap_15, elview_9, span_1) {
     "use strict";
     var $ = utils_19.Utils.dom.$;
     var BlockElView = (function (_super) {
@@ -7638,7 +7519,7 @@ define("jriapp_elview/block", ["require", "exports", "jriapp_utils/utils", "jria
                 var x = $el.width();
                 if (v !== x) {
                     $el.width(v);
-                    this.raisePropertyChanged(elview_10.PROP_NAME.width);
+                    this.raisePropertyChanged(elview_9.PROP_NAME.width);
                 }
             },
             enumerable: true,
@@ -7654,7 +7535,7 @@ define("jriapp_elview/block", ["require", "exports", "jriapp_utils/utils", "jria
                 var x = $el.height();
                 if (v !== x) {
                     $el.height(v);
-                    this.raisePropertyChanged(elview_10.PROP_NAME.height);
+                    this.raisePropertyChanged(elview_9.PROP_NAME.height);
                 }
             },
             enumerable: true,
@@ -7663,11 +7544,11 @@ define("jriapp_elview/block", ["require", "exports", "jriapp_utils/utils", "jria
         return BlockElView;
     }(span_1.SpanElView));
     exports.BlockElView = BlockElView;
-    bootstrap_16.bootstrap.registerElView("block", BlockElView);
-    bootstrap_16.bootstrap.registerElView("div", BlockElView);
-    bootstrap_16.bootstrap.registerElView("section", BlockElView);
+    bootstrap_15.bootstrap.registerElView("block", BlockElView);
+    bootstrap_15.bootstrap.registerElView("div", BlockElView);
+    bootstrap_15.bootstrap.registerElView("section", BlockElView);
 });
-define("jriapp_elview/busy", ["require", "exports", "jriapp_core/const", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview"], function (require, exports, const_7, coreutils_20, utils_20, bootstrap_17, elview_11) {
+define("jriapp_elview/busy", ["require", "exports", "jriapp_core/const", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview"], function (require, exports, const_7, coreutils_20, utils_20, bootstrap_16, elview_10) {
     "use strict";
     var $ = utils_20.Utils.dom.$;
     var BusyElView = (function (_super) {
@@ -7683,7 +7564,7 @@ define("jriapp_elview/busy", ["require", "exports", "jriapp_core/const", "jriapp
             this._timeOut = null;
             if (!coreutils_20.Checks.isNt(options.delay))
                 this._delay = parseInt("" + options.delay);
-            this._loaderPath = bootstrap_17.bootstrap.getImagePath(img);
+            this._loaderPath = bootstrap_16.bootstrap.getImagePath(img);
             this._$loader = $(new Image());
             this._$loader.css({ position: "absolute", display: "none", zIndex: "10000" });
             this._$loader.prop("src", this._loaderPath);
@@ -7736,7 +7617,7 @@ define("jriapp_elview/busy", ["require", "exports", "jriapp_core/const", "jriapp
                         else
                             self._$loader.hide();
                     }
-                    self.raisePropertyChanged(elview_11.PROP_NAME.isBusy);
+                    self.raisePropertyChanged(elview_10.PROP_NAME.isBusy);
                 }
             },
             enumerable: true,
@@ -7747,79 +7628,150 @@ define("jriapp_elview/busy", ["require", "exports", "jriapp_core/const", "jriapp
             set: function (v) {
                 if (v !== this._delay) {
                     this._delay = v;
-                    this.raisePropertyChanged(elview_11.PROP_NAME.delay);
+                    this.raisePropertyChanged(elview_10.PROP_NAME.delay);
                 }
             },
             enumerable: true,
             configurable: true
         });
         return BusyElView;
-    }(elview_11.BaseElView));
+    }(elview_10.BaseElView));
     exports.BusyElView = BusyElView;
-    bootstrap_17.bootstrap.registerElView("busy", BusyElView);
-    bootstrap_17.bootstrap.registerElView("busy_indicator", BusyElView);
+    bootstrap_16.bootstrap.registerElView("busy", BusyElView);
+    bootstrap_16.bootstrap.registerElView("busy_indicator", BusyElView);
 });
-define("jriapp_elview/checkbox3", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/input"], function (require, exports, utils_21, bootstrap_18, elview_12, input_3) {
+define("jriapp_elview/button", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/command"], function (require, exports, utils_21, bootstrap_17, elview_11, command_3) {
     "use strict";
     var $ = utils_21.Utils.dom.$;
+    var ButtonElView = (function (_super) {
+        __extends(ButtonElView, _super);
+        function ButtonElView(options) {
+            _super.call(this, options);
+            var self = this;
+            this.$el.on("click." + this.uniqueID, function (e) {
+                self._onClick(e);
+            });
+        }
+        ButtonElView.prototype._onClick = function (e) {
+            if (this.stopPropagation)
+                e.stopPropagation();
+            if (this.preventDefault)
+                e.preventDefault();
+            this.invokeCommand(null, true);
+        };
+        ButtonElView.prototype.toString = function () {
+            return "ButtonElView";
+        };
+        Object.defineProperty(ButtonElView.prototype, "value", {
+            get: function () {
+                return this.$el.val();
+            },
+            set: function (v) {
+                var x = this.$el.val();
+                if (v === null)
+                    v = "";
+                else
+                    v = "" + v;
+                if (x !== v) {
+                    this.$el.val(v);
+                    this.raisePropertyChanged(elview_11.PROP_NAME.value);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ButtonElView.prototype, "text", {
+            get: function () {
+                return this.$el.text();
+            },
+            set: function (v) {
+                var x = this.$el.text();
+                if (v === null)
+                    v = "";
+                else
+                    v = "" + v;
+                if (x !== v) {
+                    this.$el.text(v);
+                    this.raisePropertyChanged(elview_11.PROP_NAME.text);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ButtonElView.prototype, "html", {
+            get: function () {
+                return this.$el.html();
+            },
+            set: function (v) {
+                var x = this.$el.html();
+                if (v === null)
+                    v = "";
+                else
+                    v = "" + v;
+                if (x !== v) {
+                    this.$el.html(v);
+                    this.raisePropertyChanged(elview_11.PROP_NAME.html);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return ButtonElView;
+    }(command_3.CommandElView));
+    exports.ButtonElView = ButtonElView;
+    bootstrap_17.bootstrap.registerElView("input:button", ButtonElView);
+    bootstrap_17.bootstrap.registerElView("input:submit", ButtonElView);
+    bootstrap_17.bootstrap.registerElView("button", ButtonElView);
+});
+define("jriapp_elview/checkbox3", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/input"], function (require, exports, utils_22, bootstrap_18, elview_12, input_3) {
+    "use strict";
+    var dom = utils_22.Utils.dom, $ = dom.$;
     var CheckBoxThreeStateElView = (function (_super) {
         __extends(CheckBoxThreeStateElView, _super);
         function CheckBoxThreeStateElView(options) {
             _super.call(this, options);
-            var self = this;
-            this._val = this.$el.prop("checked");
-            this._cbxVal = this._val === null ? 1 : (!!this._val ? 2 : 0);
-            var $el = this.$el;
-            $el.on("change." + this.uniqueID, function (e) {
+            var self = this, el = this.el;
+            this._checked = el.checked;
+            this._val = this._checked === null ? 1 : (!!this._checked ? 2 : 0);
+            this.$el.on("change." + this.uniqueID, function (e) {
                 e.stopPropagation();
-                switch (self._cbxVal) {
+                switch (self._val) {
                     case 0:
-                        self._cbxVal = 1;
+                        self._val = 1;
                         break;
                     case 1:
-                        self._cbxVal = 2;
+                        self._val = 2;
                         break;
                     default:
-                        self._cbxVal = 0;
+                        self._val = 0;
                         break;
                 }
-                self.checked = (self._cbxVal === 1) ? null : ((self._cbxVal === 2) ? true : false);
+                self.checked = (self._val === 1) ? null : ((self._val === 2) ? true : false);
             });
         }
-        CheckBoxThreeStateElView.prototype._setFieldError = function (isError) {
-            var $el = this.$el;
-            if (isError) {
-                var div = $("<div></div>").addClass(elview_12.css.fieldError);
-                $el.wrap(div);
-            }
-            else {
-                if ($el.parent("." + elview_12.css.fieldError).length > 0)
-                    $el.unwrap();
-            }
-        };
         CheckBoxThreeStateElView.prototype.toString = function () {
             return "CheckBoxThreeStateElView";
         };
         Object.defineProperty(CheckBoxThreeStateElView.prototype, "checked", {
-            get: function () { return this._val; },
+            get: function () { return this._checked; },
             set: function (v) {
-                var $el = this.$el;
-                if (v !== this._val) {
-                    this._val = v;
-                    switch (this._val) {
+                var el = this.el;
+                if (v !== this._checked) {
+                    this._checked = v;
+                    switch (this._checked) {
                         case null:
-                            $el.prop("indeterminate", true);
-                            this._cbxVal = 1;
+                            el.indeterminate = true;
+                            this._val = 1;
                             break;
                         case true:
-                            $el.prop("indeterminate", false);
-                            $el.prop("checked", true);
-                            this._cbxVal = 2;
+                            el.indeterminate = false;
+                            el.checked = true;
+                            this._val = 2;
                             break;
                         default:
-                            $el.prop("indeterminate", false);
-                            $el.prop("checked", false);
-                            this._cbxVal = 0;
+                            el.indeterminate = false;
+                            el.checked = false;
+                            this._val = 0;
                             break;
                     }
                     this.raisePropertyChanged(elview_12.PROP_NAME.checked);
@@ -7834,9 +7786,9 @@ define("jriapp_elview/checkbox3", ["require", "exports", "jriapp_utils/utils", "
     bootstrap_18.bootstrap.registerElView("threeState", CheckBoxThreeStateElView);
     bootstrap_18.bootstrap.registerElView("checkbox", CheckBoxThreeStateElView);
 });
-define("jriapp_elview/expander", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/anchor"], function (require, exports, utils_22, bootstrap_19, anchor_1) {
+define("jriapp_elview/expander", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/anchor"], function (require, exports, utils_23, bootstrap_19, anchor_1) {
     "use strict";
-    var $ = utils_22.Utils.dom.$;
+    var $ = utils_23.Utils.dom.$;
     exports.PROP_NAME = {
         isExpanded: "isExpanded"
     };
@@ -7933,21 +7885,18 @@ define("jriapp_elview/img", ["require", "exports", "jriapp_core/bootstrap", "jri
     exports.ImgElView = ImgElView;
     bootstrap_21.bootstrap.registerElView("img", ImgElView);
 });
-define("jriapp_elview/radio", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/input"], function (require, exports, utils_23, bootstrap_22, elview_14, input_5) {
+define("jriapp_elview/radio", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/checkbox"], function (require, exports, utils_24, bootstrap_22, elview_14, checkbox_2) {
     "use strict";
-    var $ = utils_23.Utils.dom.$;
+    var dom = utils_24.Utils.dom, $ = dom.$;
     var RadioElView = (function (_super) {
         __extends(RadioElView, _super);
-        function RadioElView(options) {
-            _super.call(this, options);
-            var self = this;
-            this._val = this.$el.prop("checked");
-            this.$el.on("change." + this.uniqueID, function (e) {
-                e.stopPropagation();
-                self.checked = this.checked;
-                self._updateGroup();
-            });
+        function RadioElView() {
+            _super.apply(this, arguments);
         }
+        RadioElView.prototype._onChange = function (checked) {
+            this.checked = checked;
+            this._updateGroup();
+        };
         RadioElView.prototype._updateGroup = function () {
             var groupName = this.name, self = this;
             if (!groupName)
@@ -7965,46 +7914,13 @@ define("jriapp_elview/radio", ["require", "exports", "jriapp_utils/utils", "jria
                 }
             });
         };
-        RadioElView.prototype._setFieldError = function (isError) {
-            var $el = this.$el;
-            if (isError) {
-                var span = $("<div></div>").addClass(elview_14.css.fieldError);
-                $el.wrap(span);
-            }
-            else {
-                if ($el.parent("." + elview_14.css.fieldError).length > 0)
-                    $el.unwrap();
-            }
-        };
         RadioElView.prototype.toString = function () {
             return "RadioElView";
         };
-        Object.defineProperty(RadioElView.prototype, "checked", {
-            get: function () { return this._val; },
-            set: function (v) {
-                var el = this.el;
-                if (v !== null)
-                    v = !!v;
-                if (v !== this._val) {
-                    this._val = v;
-                    this.$el.prop("checked", !!this._val);
-                    if (utils_23.Utils.core.check.isNt(this._val)) {
-                        this.$el.css("opacity", 0.33);
-                    }
-                    else
-                        this.$el.css(elview_14.css.opacity, 1.0);
-                    this.raisePropertyChanged(elview_14.PROP_NAME.checked);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(RadioElView.prototype, "value", {
             get: function () { return this.$el.val(); },
             set: function (v) {
-                var strv = "" + v;
-                if (utils_23.Utils.core.check.isNt(v))
-                    strv = "";
+                var strv = utils_24.Utils.core.check.isNt(v) ? "" : ("" + v);
                 if (strv !== this.$el.val()) {
                     this.$el.val(strv);
                     this.raisePropertyChanged(elview_14.PROP_NAME.value);
@@ -8019,11 +7935,11 @@ define("jriapp_elview/radio", ["require", "exports", "jriapp_utils/utils", "jria
             configurable: true
         });
         return RadioElView;
-    }(input_5.InputElView));
+    }(checkbox_2.CheckBoxElView));
     exports.RadioElView = RadioElView;
     bootstrap_22.bootstrap.registerElView("input:radio", RadioElView);
 });
-define("jriapp_elview/all", ["require", "exports", "jriapp_elview/elview", "jriapp_elview/anchor", "jriapp_elview/block", "jriapp_elview/busy", "jriapp_elview/button", "jriapp_elview/checkbox", "jriapp_elview/checkbox3", "jriapp_elview/command", "jriapp_elview/expander", "jriapp_elview/hidden", "jriapp_elview/img", "jriapp_elview/input", "jriapp_elview/radio", "jriapp_elview/span", "jriapp_elview/textarea", "jriapp_elview/textbox"], function (require, exports, elview_15, anchor_2, block_1, busy_1, button_1, checkbox_2, checkbox3_1, command_4, expander_1, hidden_1, img_1, input_6, radio_1, span_2, textarea_2, textbox_4) {
+define("jriapp_elview/all", ["require", "exports", "jriapp_elview/elview", "jriapp_elview/anchor", "jriapp_elview/block", "jriapp_elview/busy", "jriapp_elview/button", "jriapp_elview/checkbox", "jriapp_elview/checkbox3", "jriapp_elview/command", "jriapp_elview/expander", "jriapp_elview/hidden", "jriapp_elview/img", "jriapp_elview/input", "jriapp_elview/radio", "jriapp_elview/span", "jriapp_elview/textarea", "jriapp_elview/textbox"], function (require, exports, elview_15, anchor_2, block_1, busy_1, button_1, checkbox_3, checkbox3_1, command_4, expander_1, hidden_1, img_1, input_5, radio_1, span_2, textarea_2, textbox_4) {
     "use strict";
     exports.BaseElView = elview_15.BaseElView;
     exports.fn_addToolTip = elview_15.fn_addToolTip;
@@ -8033,13 +7949,13 @@ define("jriapp_elview/all", ["require", "exports", "jriapp_elview/elview", "jria
     exports.BlockElView = block_1.BlockElView;
     exports.BusyElView = busy_1.BusyElView;
     exports.ButtonElView = button_1.ButtonElView;
-    exports.CheckBoxElView = checkbox_2.CheckBoxElView;
+    exports.CheckBoxElView = checkbox_3.CheckBoxElView;
     exports.CheckBoxThreeStateElView = checkbox3_1.CheckBoxThreeStateElView;
     exports.CommandElView = command_4.CommandElView;
     exports.ExpanderElView = expander_1.ExpanderElView;
     exports.HiddenElView = hidden_1.HiddenElView;
     exports.ImgElView = img_1.ImgElView;
-    exports.InputElView = input_6.InputElView;
+    exports.InputElView = input_5.InputElView;
     exports.RadioElView = radio_1.RadioElView;
     exports.SpanElView = span_2.SpanElView;
     exports.TextAreaElView = textarea_2.TextAreaElView;
@@ -8092,9 +8008,9 @@ define("jriapp_collection/int", ["require", "exports"], function (require, expor
         destroyed: "destroyed"
     };
 });
-define("jriapp_collection/utils", ["require", "exports", "jriapp_utils/utils", "jriapp_core/lang"], function (require, exports, utils_24, lang_17) {
+define("jriapp_collection/utils", ["require", "exports", "jriapp_utils/utils", "jriapp_core/lang"], function (require, exports, utils_25, lang_17) {
     "use strict";
-    var coreUtils = utils_24.Utils.core, strUtils = utils_24.Utils.str, checks = utils_24.Utils.check;
+    var coreUtils = utils_25.Utils.core, strUtils = utils_25.Utils.str, checks = utils_25.Utils.check;
     function pad(num) {
         if (num < 10) {
             return "0" + num;
@@ -8379,9 +8295,9 @@ define("jriapp_collection/validation", ["require", "exports", "jriapp_core/share
     }());
     exports.Validations = Validations;
 });
-define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "jriapp_core/lang", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_core/parser", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/validation"], function (require, exports, object_16, lang_19, coreutils_22, utils_25, bootstrap_23, parser_5, int_5, utils_26, validation_1) {
+define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "jriapp_core/lang", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_core/parser", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/validation"], function (require, exports, object_16, lang_19, coreutils_22, utils_26, bootstrap_23, parser_5, int_5, utils_27, validation_1) {
     "use strict";
-    var coreUtils = utils_25.Utils.core, strUtils = utils_25.Utils.str, checks = utils_25.Utils.check;
+    var coreUtils = utils_26.Utils.core, strUtils = utils_26.Utils.str, checks = utils_26.Utils.check;
     var COLL_EVENTS = {
         begin_edit: "begin_edit",
         end_edit: "end_edit",
@@ -8422,7 +8338,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
             this._errors = {};
             this._ignoreChangeErrors = false;
             this._pkInfo = null;
-            this._waitQueue = new utils_25.WaitQueue(this);
+            this._waitQueue = new utils_26.WaitQueue(this);
             this._internal = {
                 getEditingItem: function () {
                     return self._getEditingItem();
@@ -8688,7 +8604,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
             }
             else {
                 pos = itemPos;
-                utils_25.Utils.arr.insert(this._items, item, pos);
+                utils_26.Utils.arr.insert(this._items, item, pos);
             }
             this._itemsByKey[item._key] = item;
             this._onCollectionChanged({ changeType: 1, reason: 0, oper: 2, items: [item], pos: [pos] });
@@ -8769,7 +8685,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
         };
         BaseCollection.prototype._getStrValue = function (val, fieldInfo) {
             var dcnv = fieldInfo.dateConversion, stz = coreUtils.get_timeZoneOffset();
-            return utils_26.valueUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
+            return utils_27.valueUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
         };
         BaseCollection.prototype._onBeforeEditing = function (item, isBegin, isCanceled) {
             if (this._isUpdating)
@@ -8905,7 +8821,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
             }
             if (fld.fieldType === 5) {
                 for (var i = 1; i < parts.length; i += 1) {
-                    fld = utils_26.fn_getPropertyByName(parts[i], fld.nested);
+                    fld = utils_27.fn_getPropertyByName(parts[i], fld.nested);
                 }
                 return fld;
             }
@@ -9087,7 +9003,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
             }
             if (!this._itemsByKey[item._key])
                 return;
-            var oldPos = utils_25.Utils.arr.remove(this._items, item);
+            var oldPos = utils_26.Utils.arr.remove(this._items, item);
             if (oldPos < 0) {
                 throw new Error(lang_19.ERRS.ERR_ITEM_IS_NOTFOUND);
             }
@@ -9141,7 +9057,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
             return self.sortLocalByFunc(fn_sort);
         };
         BaseCollection.prototype.sortLocalByFunc = function (fn) {
-            var self = this, deferred = utils_25.Utils.defer.createDeferred();
+            var self = this, deferred = utils_26.Utils.defer.createDeferred();
             this.waitForNotLoading(function () {
                 var cur = self.currentItem;
                 self._set_isLoading(true);
@@ -9303,9 +9219,9 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
     }(object_16.BaseObject));
     exports.BaseCollection = BaseCollection;
 });
-define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/validation"], function (require, exports, object_17, coreutils_23, utils_27, lang_20, int_6, utils_28, validation_2) {
+define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/validation"], function (require, exports, object_17, coreutils_23, utils_28, lang_20, int_6, utils_29, validation_2) {
     "use strict";
-    var coreUtils = utils_27.Utils.core, strUtils = utils_27.Utils.str, checks = utils_27.Utils.check;
+    var coreUtils = utils_28.Utils.core, strUtils = utils_28.Utils.str, checks = utils_28.Utils.check;
     var ItemAspect = (function (_super) {
         __extends(ItemAspect, _super);
         function ItemAspect(collection) {
@@ -9437,7 +9353,7 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
         };
         ItemAspect.prototype._validateAll = function () {
             var self = this, fieldInfos = this.collection.getFieldInfos(), errs = [];
-            utils_28.fn_traverseFields(fieldInfos, function (fld, fullName) {
+            utils_29.fn_traverseFields(fieldInfos, function (fld, fullName) {
                 if (fld.fieldType !== 5) {
                     var res_1 = self._validateField(fullName);
                     if (!!res_1) {
@@ -9543,7 +9459,7 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             return res.join("|");
         };
         ItemAspect.prototype.submitChanges = function () {
-            var deferred = utils_27.Utils.defer.createDeferred();
+            var deferred = utils_28.Utils.defer.createDeferred();
             deferred.reject();
             return deferred.promise();
         };
@@ -9675,7 +9591,7 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             this._isDetached = true;
             this._collection = null;
             if (!!this._valueBag) {
-                utils_27.Utils.core.forEachProp(this._valueBag, function (name) {
+                utils_28.Utils.core.forEachProp(this._valueBag, function (name) {
                     _this.setCustomVal(name, null);
                 });
                 this._valueBag = null;
@@ -9802,14 +9718,14 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
     }(object_17.BaseObject));
     exports.ItemAspect = ItemAspect;
 });
-define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/base", "jriapp_collection/aspect", "jriapp_collection/validation"], function (require, exports, coreutils_24, utils_29, lang_21, int_7, utils_30, base_1, aspect_1, validation_3) {
+define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/base", "jriapp_collection/aspect", "jriapp_collection/validation"], function (require, exports, coreutils_24, utils_30, lang_21, int_7, utils_31, base_1, aspect_1, validation_3) {
     "use strict";
-    var coreUtils = utils_29.Utils.core, strUtils = utils_29.Utils.str, checks = utils_29.Utils.check;
+    var coreUtils = utils_30.Utils.core, strUtils = utils_30.Utils.str, checks = utils_30.Utils.check;
     function fn_initVals(coll, obj) {
         var vals = obj || {};
         if (!!obj) {
             var fieldInfos = coll.getFieldInfos();
-            utils_30.fn_traverseFields(fieldInfos, function (fld, fullName) {
+            utils_31.fn_traverseFields(fieldInfos, function (fld, fullName) {
                 if (fld.fieldType === 5)
                     coreUtils.setValue(vals, fullName, {}, false);
                 else
@@ -9905,7 +9821,7 @@ define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils"
                 fldInfo.dataType = prop.dtype;
                 self._fieldMap[prop.name] = fldInfo;
                 self._fieldInfos.push(fldInfo);
-                utils_30.fn_traverseField(fldInfo, function (fld, fullName) {
+                utils_31.fn_traverseField(fldInfo, function (fld, fullName) {
                     fld.dependents = null;
                     fld.fullName = fullName;
                 });
@@ -10005,9 +9921,9 @@ define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils"
     }(base_1.BaseCollection));
     exports.BaseList = BaseList;
 });
-define("jriapp_collection/dictionary", ["require", "exports", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_collection/list"], function (require, exports, utils_31, lang_22, list_1) {
+define("jriapp_collection/dictionary", ["require", "exports", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_collection/list"], function (require, exports, utils_32, lang_22, list_1) {
     "use strict";
-    var strUtils = utils_31.Utils.str, checks = utils_31.Utils.check;
+    var strUtils = utils_32.Utils.str, checks = utils_32.Utils.check;
     var BaseDictionary = (function (_super) {
         __extends(BaseDictionary, _super);
         function BaseDictionary(itemType, keyName, props) {
@@ -10118,7 +10034,7 @@ define("jriapp_collection/item", ["require", "exports", "jriapp_core/object", "j
     }(object_18.BaseObject));
     exports.CollectionItem = CollectionItem;
 });
-define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/syschecks", "jriapp_collection/base", "jriapp_collection/dictionary", "jriapp_collection/validation", "jriapp_collection/int", "jriapp_collection/base", "jriapp_collection/item", "jriapp_collection/aspect", "jriapp_collection/list", "jriapp_collection/dictionary", "jriapp_collection/validation", "jriapp_collection/utils"], function (require, exports, syschecks_7, base_2, dictionary_1, validation_4, int_9, base_3, item_1, aspect_2, list_2, dictionary_2, validation_5, utils_32) {
+define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/syschecks", "jriapp_collection/base", "jriapp_collection/dictionary", "jriapp_collection/validation", "jriapp_collection/int", "jriapp_collection/base", "jriapp_collection/item", "jriapp_collection/aspect", "jriapp_collection/list", "jriapp_collection/dictionary", "jriapp_collection/validation", "jriapp_collection/utils"], function (require, exports, syschecks_7, base_2, dictionary_1, validation_4, int_9, base_3, item_1, aspect_2, list_2, dictionary_2, validation_5, utils_33) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -10130,7 +10046,7 @@ define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/sysc
     __export(list_2);
     __export(dictionary_2);
     __export(validation_5);
-    __export(utils_32);
+    __export(utils_33);
     syschecks_7.SysChecks._isCollection = function (obj) { return (!!obj && obj instanceof base_2.BaseCollection); };
     syschecks_7.SysChecks._getItemByProp = function (obj, prop) {
         if (obj instanceof dictionary_1.BaseDictionary) {
@@ -10146,9 +10062,9 @@ define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/sysc
         return (!!obj && obj instanceof validation_4.ValidationError);
     };
 });
-define("jriapp_utils/mloader", ["require", "exports", "jriapp_utils/utils", "jriapp_utils/sloader"], function (require, exports, utils_33, sloader_2) {
+define("jriapp_utils/mloader", ["require", "exports", "jriapp_utils/utils", "jriapp_utils/sloader"], function (require, exports, utils_34, sloader_2) {
     "use strict";
-    var coreUtils = utils_33.Utils.core, strUtils = utils_33.Utils.str, defer = utils_33.Utils.defer, arr = utils_33.Utils.arr, resolvedPromise = defer.createSyncDeferred().resolve(), CSSPrefix = "css!";
+    var coreUtils = utils_34.Utils.core, strUtils = utils_34.Utils.str, defer = utils_34.Utils.defer, arr = utils_34.Utils.arr, resolvedPromise = defer.createSyncDeferred().resolve(), CSSPrefix = "css!";
     var _moduleLoader = null;
     function create() {
         if (!_moduleLoader)
@@ -10217,7 +10133,7 @@ define("jriapp_utils/mloader", ["require", "exports", "jriapp_utils/utils", "jri
                         var load = self._loads[name];
                         load.state = 2;
                         load.err = err;
-                        load.defered.reject(utils_33.Utils.str.format("Error loading modules: {0}", err));
+                        load.defered.reject(utils_34.Utils.str.format("Error loading modules: {0}", err));
                     });
                 });
             }
@@ -10280,9 +10196,9 @@ define("jriapp_utils/mloader", ["require", "exports", "jriapp_utils/utils", "jri
         return ModuleLoader;
     }());
 });
-define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "jriapp_core/shared", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/syschecks", "jriapp_utils/utils", "jriapp_utils/mloader", "jriapp_core/binding", "jriapp_core/parser"], function (require, exports, const_8, shared_5, lang_23, object_19, syschecks_8, utils_34, mloader_1, binding_2, parser_6) {
+define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "jriapp_core/shared", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/syschecks", "jriapp_utils/utils", "jriapp_utils/mloader", "jriapp_core/binding", "jriapp_core/parser"], function (require, exports, const_8, shared_5, lang_23, object_19, syschecks_8, utils_35, mloader_1, binding_2, parser_6) {
     "use strict";
-    var $ = utils_34.Utils.dom.$, document = utils_34.Utils.dom.document, strUtils = utils_34.Utils.str, syschecks = syschecks_8.SysChecks;
+    var $ = utils_35.Utils.dom.$, document = utils_35.Utils.dom.document, strUtils = utils_35.Utils.str, syschecks = syschecks_8.SysChecks;
     function create(app, root, elViewFactory) {
         return new DataBindingService(app, root, elViewFactory);
     }
@@ -10327,7 +10243,7 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
                 return null;
         };
         DataBindingService.prototype._getBindableElements = function (scope) {
-            var self = this, result = [], allElems = utils_34.Utils.arr.fromList(scope.querySelectorAll("*"));
+            var self = this, result = [], allElems = utils_35.Utils.arr.fromList(scope.querySelectorAll("*"));
             allElems.forEach(function (el) {
                 var res = self._toBindableElement(el);
                 if (!!res)
@@ -10387,9 +10303,9 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
             }
         };
         DataBindingService.prototype._bindTemplateElements = function (templateEl) {
-            var self = this, defer = utils_34.Utils.defer.createSyncDeferred();
+            var self = this, defer = utils_35.Utils.defer.createSyncDeferred();
             try {
-                var rootBindEl = self._toBindableElement(templateEl), bindElems = void 0, lftm_1 = new utils_34.LifeTimeScope();
+                var rootBindEl = self._toBindableElement(templateEl), bindElems = void 0, lftm_1 = new utils_35.LifeTimeScope();
                 if (!!rootBindEl && !!rootBindEl.dataForm) {
                     bindElems = [rootBindEl];
                 }
@@ -10436,10 +10352,10 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
             return res;
         };
         DataBindingService.prototype.bindElements = function (scope, defaultDataContext, isDataFormBind, isInsideTemplate) {
-            var self = this, defer = utils_34.Utils.defer.createSyncDeferred();
+            var self = this, defer = utils_35.Utils.defer.createSyncDeferred();
             scope = scope || document;
             try {
-                var bindElems = self._getBindableElements(scope), lftm_2 = new utils_34.LifeTimeScope();
+                var bindElems = self._getBindableElements(scope), lftm_2 = new utils_35.LifeTimeScope();
                 if (!isDataFormBind) {
                     self._updDataFormAttr(bindElems);
                 }
@@ -10492,9 +10408,9 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
         return DataBindingService;
     }(object_19.BaseObject));
 });
-define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_elview/factory", "jriapp_core/databindsvc", "jriapp_core/template"], function (require, exports, const_9, lang_24, object_20, bootstrap_24, coreutils_25, utils_35, factory_3, databindsvc_1, template_3) {
+define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_elview/factory", "jriapp_core/databindsvc", "jriapp_core/template"], function (require, exports, const_9, lang_24, object_20, bootstrap_24, coreutils_25, utils_36, factory_3, databindsvc_1, template_3) {
     "use strict";
-    var $ = utils_35.Utils.dom.$, document = utils_35.Utils.dom.document;
+    var $ = utils_36.Utils.dom.$, document = utils_36.Utils.dom.document;
     var APP_EVENTS = {
         startup: "startup"
     };
@@ -10520,9 +10436,9 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
                     moduleInits = options.modulesInits;
             }
             if (!!bootstrap_24.bootstrap.findApp(app_name))
-                throw new Error(utils_35.Utils.str.format(lang_24.ERRS.ERR_APP_NAME_NOT_UNIQUE, app_name));
+                throw new Error(utils_36.Utils.str.format(lang_24.ERRS.ERR_APP_NAME_NOT_UNIQUE, app_name));
             this._app_name = app_name;
-            this._objId = "app:" + utils_35.Utils.core.getNewID();
+            this._objId = "app:" + utils_36.Utils.core.getNewID();
             this._app_state = 0;
             this._moduleInits = moduleInits;
             this._elViewRegister = factory_3.createRegister(bootstrap_24.bootstrap.elViewRegister);
@@ -10545,7 +10461,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
         Application.prototype._cleanUpObjMaps = function () {
             var self = this;
             this._objMaps.forEach(function (objMap) {
-                utils_35.Utils.core.forEachProp(objMap, function (name) {
+                utils_36.Utils.core.forEachProp(objMap, function (name) {
                     var obj = objMap[name];
                     if (obj instanceof object_20.BaseObject) {
                         if (!obj.getIsDestroyed()) {
@@ -10601,7 +10517,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
                 bootstrap_24.bootstrap._getInternal().registerObject(this, name2, obj);
             }
             else
-                throw new Error(utils_35.Utils.str.format(lang_24.ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
+                throw new Error(utils_36.Utils.str.format(lang_24.ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
         };
         Application.prototype.getConverter = function (name) {
             var name2 = const_9.STORE_KEY.CONVERTER + name;
@@ -10610,7 +10526,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
                 res = bootstrap_24.bootstrap._getInternal().getObject(bootstrap_24.bootstrap, name2);
             }
             if (!res)
-                throw new Error(utils_35.Utils.str.format(lang_24.ERRS.ERR_CONVERTER_NOTREGISTERED, name));
+                throw new Error(utils_36.Utils.str.format(lang_24.ERRS.ERR_CONVERTER_NOTREGISTERED, name));
             return res;
         };
         Application.prototype.registerSvc = function (name, obj) {
@@ -10630,7 +10546,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
         };
         Application.prototype.registerObject = function (name, obj) {
             var self = this, name2 = const_9.STORE_KEY.OBJECT + name;
-            if (utils_35.Utils.check.isBaseObject(obj)) {
+            if (utils_36.Utils.check.isBaseObject(obj)) {
                 obj.addOnDestroyed(function (s, a) {
                     bootstrap_24.bootstrap._getInternal().unregisterObject(self, name2);
                 }, self.uniqueID);
@@ -10646,7 +10562,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
             return res;
         };
         Application.prototype.startUp = function (onStartUp) {
-            var self = this, deferred = utils_35.Utils.defer.createDeferred();
+            var self = this, deferred = utils_36.Utils.defer.createDeferred();
             if (this._app_state !== 0) {
                 return deferred.reject(new Error("Application can not be started when state != AppState.None"));
             }
@@ -10655,17 +10571,17 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
                     self._initAppModules();
                     var onStartupRes1 = self.onStartUp();
                     var setupPromise1 = void 0;
-                    if (utils_35.Utils.check.isThenable(onStartupRes1)) {
+                    if (utils_36.Utils.check.isThenable(onStartupRes1)) {
                         setupPromise1 = onStartupRes1;
                     }
                     else {
-                        setupPromise1 = utils_35.Utils.defer.createDeferred().resolve();
+                        setupPromise1 = utils_36.Utils.defer.createDeferred().resolve();
                     }
                     var promise_1 = setupPromise1.then(function () {
                         self.raiseEvent(APP_EVENTS.startup, {});
                         var onStartupRes2 = (!!onStartUp) ? onStartUp.apply(self, [self]) : null;
                         var setupPromise2;
-                        if (utils_35.Utils.check.isThenable(onStartupRes2)) {
+                        if (utils_36.Utils.check.isThenable(onStartupRes2)) {
                             setupPromise2 = onStartupRes2.then(function () {
                                 return self._dataBindingService.setUpBindings();
                             }, function (err) {
@@ -10696,7 +10612,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
                 throw err;
             });
             try {
-                if (!!onStartUp && !utils_35.Utils.check.isFunc(onStartUp))
+                if (!!onStartUp && !utils_36.Utils.check.isFunc(onStartUp))
                     throw new Error(lang_24.ERRS.ERR_APP_SETUP_INVALID);
                 bootstrap_24.bootstrap.templateLoader.waitForNotLoading(fn_startApp, null);
             }
@@ -10715,7 +10631,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
         };
         Application.prototype.loadTemplates = function (url) {
             return this.loadTemplatesAsync(function () {
-                return utils_35.Utils.http.getAjax(url);
+                return utils_36.Utils.http.getAjax(url);
             });
         };
         Application.prototype.loadTemplatesAsync = function (fn_loader) {
@@ -10727,8 +10643,8 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
             });
         };
         Application.prototype.registerTemplateById = function (name, templateId) {
-            this.registerTemplateLoader(name, utils_35.Utils.core.memoize(function () {
-                var deferred = utils_35.Utils.defer.createSyncDeferred();
+            this.registerTemplateLoader(name, utils_36.Utils.core.memoize(function () {
+                var deferred = utils_36.Utils.defer.createSyncDeferred();
                 var str = $("#" + templateId).html();
                 deferred.resolve(str);
                 return deferred.promise();
@@ -10739,12 +10655,12 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
             if (!res) {
                 res = bootstrap_24.bootstrap.templateLoader.getTemplateLoader(name);
                 if (!res)
-                    return function () { return utils_35.Utils.defer.createDeferred().reject(new Error(utils_35.Utils.str.format(lang_24.ERRS.ERR_TEMPLATE_NOTREGISTERED, name))); };
+                    return function () { return utils_36.Utils.defer.createDeferred().reject(new Error(utils_36.Utils.str.format(lang_24.ERRS.ERR_TEMPLATE_NOTREGISTERED, name))); };
             }
             return res;
         };
         Application.prototype.registerTemplateGroup = function (name, group) {
-            var group2 = utils_35.Utils.core.extend({
+            var group2 = utils_36.Utils.core.extend({
                 fn_loader: null,
                 url: null,
                 names: null,
@@ -10830,7 +10746,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
     }(object_20.BaseObject));
     exports.Application = Application;
 });
-define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/const", "jriapp_core/shared", "jriapp_utils/syschecks", "jriapp_core/lang", "jriapp_core/converter", "jriapp_core/object", "jriapp_utils/coreutils", "jriapp_core/bootstrap", "jriapp_content/factory", "jriapp_core/binding", "jriapp_core/datepicker", "jriapp_core/dataform", "jriapp_core/template", "jriapp_elview/all", "jriapp_utils/utils", "jriapp_core/mvvm", "jriapp_collection/collection", "jriapp_core/app"], function (require, exports, bootstrap_25, const_10, shared_6, syschecks_9, lang_25, converter_2, object_21, coreutils_26, bootstrap_26, factory_4, binding_3, datepicker_1, dataform_1, template_4, all_1, utils_36, mvvm_2, collection_1, app_1) {
+define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/const", "jriapp_core/shared", "jriapp_utils/syschecks", "jriapp_core/lang", "jriapp_core/converter", "jriapp_core/object", "jriapp_utils/coreutils", "jriapp_core/bootstrap", "jriapp_content/factory", "jriapp_core/binding", "jriapp_core/datepicker", "jriapp_core/dataform", "jriapp_core/template", "jriapp_elview/all", "jriapp_utils/utils", "jriapp_core/mvvm", "jriapp_collection/collection", "jriapp_core/app"], function (require, exports, bootstrap_25, const_10, shared_6, syschecks_9, lang_25, converter_2, object_21, coreutils_26, bootstrap_26, factory_4, binding_3, datepicker_1, dataform_1, template_4, all_1, utils_37, mvvm_2, collection_1, app_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -10863,9 +10779,9 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.createTemplate = template_4.create;
     exports.TemplateElView = template_4.TemplateElView;
     __export(all_1);
-    exports.Utils = utils_36.Utils;
-    exports.PropWatcher = utils_36.PropWatcher;
-    exports.WaitQueue = utils_36.WaitQueue;
+    exports.Utils = utils_37.Utils;
+    exports.PropWatcher = utils_37.PropWatcher;
+    exports.WaitQueue = utils_37.WaitQueue;
     __export(mvvm_2);
     exports.BaseCollection = collection_1.BaseCollection;
     exports.BaseDictionary = collection_1.BaseDictionary;
@@ -10879,6 +10795,6 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.COLL_CHANGE_REASON = collection_1.COLL_CHANGE_REASON;
     exports.COLL_CHANGE_TYPE = collection_1.COLL_CHANGE_TYPE;
     exports.Application = app_1.Application;
-    exports.VERSION = "0.9.76";
+    exports.VERSION = "0.9.77";
     bootstrap_25.Bootstrap._initFramework();
 });

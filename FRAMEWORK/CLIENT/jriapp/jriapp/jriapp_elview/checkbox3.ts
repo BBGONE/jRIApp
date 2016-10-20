@@ -5,71 +5,59 @@ import { bootstrap } from "../jriapp_core/bootstrap";
 import { css, PROP_NAME } from "./elview";
 import { InputElView } from "./input";
 
-const $ = utils.dom.$;
+const dom = utils.dom, $ = dom.$;
 
 export class CheckBoxThreeStateElView extends InputElView {
-    private _val: boolean;
-    private _cbxVal: number;
+    private _checked: boolean;
+    private _val: number;
 
     constructor(options: IViewOptions) {
         super(options);
-        let self = this;
-        this._val = this.$el.prop("checked");
-        this._cbxVal = this._val === null ? 1 : (!!this._val ? 2 : 0);
-        let $el = this.$el;
-        $el.on("change." + this.uniqueID, function (e) {
+        let self = this, el: any = this.el;
+        this._checked = el.checked;
+        this._val = this._checked === null ? 1 : (!!this._checked ? 2 : 0);
+        this.$el.on("change." + this.uniqueID, function (e) {
             e.stopPropagation();
-            switch (self._cbxVal) {
+            switch (self._val) {
                 // unchecked, going indeterminate
                 case 0:
-                    self._cbxVal = 1;
+                    self._val = 1;
                     break;
                 // indeterminate, going checked
                 case 1:
-                    self._cbxVal = 2;
+                    self._val = 2;
                     break;
                 // checked, going unchecked
                 default:
-                    self._cbxVal = 0;
+                    self._val = 0;
                     break;
 
             }
-            self.checked = (self._cbxVal === 1) ? null : ((self._cbxVal === 2) ? true : false);
+            self.checked = (self._val === 1) ? null : ((self._val === 2) ? true : false);
         });
-    }
-    protected _setFieldError(isError: boolean) {
-        let $el = this.$el;
-        if (isError) {
-            let div = $("<div></div>").addClass(css.fieldError);
-            $el.wrap(div);
-        }
-        else {
-            if ($el.parent("." + css.fieldError).length > 0)
-                $el.unwrap();
-        }
     }
     toString() {
         return "CheckBoxThreeStateElView";
     }
-    get checked() { return this._val; }
+    get checked() { return this._checked; }
     set checked(v) {
-        let $el = this.$el;
-        if (v !== this._val) {
-            this._val = v;
-            switch (this._val) {
+        let el: any = this.el;
+        if (v !== this._checked) {
+            this._checked = v;
+            switch (this._checked) {
                 case null:
-                    $el.prop("indeterminate", true);
-                    this._cbxVal = 1;
+                    el.indeterminate = true;
+                    this._val = 1;
                     break;
                 case true:
-                    $el.prop("indeterminate", false);
-                    $el.prop("checked", true);
-                    this._cbxVal = 2;
+                    el.indeterminate = false;
+                    el.checked = true;
+                    this._val = 2;
                     break;
                 default:
-                    $el.prop("indeterminate", false);
-                    $el.prop("checked", false);
-                    this._cbxVal = 0;
+                    el.indeterminate = false;
+                    el.checked = false;
+                    this._val = 0;
                     break;
             }
             this.raisePropertyChanged(PROP_NAME.checked);

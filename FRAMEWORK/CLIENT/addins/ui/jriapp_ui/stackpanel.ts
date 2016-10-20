@@ -9,7 +9,7 @@ import { bootstrap } from "jriapp_core/bootstrap";
 import { ICollection, ICollectionItem, ICollChangedArgs, COLL_CHANGE_TYPE, COLL_CHANGE_REASON, ITEM_STATUS } from "jriapp_collection/collection";
 import { BaseElView } from "jriapp_elview/elview";
 
-const $ = utils.dom.$, document = utils.dom.document, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+const dom = utils.dom, $ = dom.$, doc = dom.document, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
 
 const css = {
     stackpanel: "ria-stackpanel",
@@ -272,10 +272,10 @@ export class StackPanel extends BaseObject implements ISelectableProvider, ITemp
     protected _appendItem(item: ICollectionItem) {
         if (!item._key)
             return;
-        let self = this, $item_el = self._createElement(this._item_tag), item_el = <HTMLDivElement>$item_el.get(0);
+        let self = this, item_el = doc.createElement(this._item_tag), $item_el = $(item_el);
 
-        $item_el.addClass(css.item);
-        $item_el.attr(DATA_ATTR.DATA_EVENT_SCOPE, this.uniqueID);
+        dom.addClass([item_el], css.item);
+        item_el.setAttribute(DATA_ATTR.DATA_EVENT_SCOPE, this.uniqueID);
         self._$el.append($item_el);
         let mappedItem: IMappedItem = { el: item_el, template: null, item: item };
         $item_el.data("data", mappedItem);
@@ -297,9 +297,6 @@ export class StackPanel extends BaseObject implements ISelectableProvider, ITemp
         let self = this, ds = this.dataSource;
         if (!ds) return;
         ds.removeNSHandlers(self._objId);
-    }
-    protected _createElement(tag: string) {
-        return $(document.createElement(tag));
     }
     protected _onItemClicked(div: HTMLElement, item: ICollectionItem) {
         this._updateCurrent(item, false);

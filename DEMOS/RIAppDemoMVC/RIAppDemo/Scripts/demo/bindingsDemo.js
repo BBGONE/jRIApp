@@ -48,6 +48,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             this._testProperty1 = initPropValue;
             this._testProperty2 = null;
             this._testProperty3 = null;
+            this._boolProperty = null;
             this._testCommand = new RIAPP.Command(function (sender, args) {
                 self._onTestCommandExecuted();
             }, self, function (sender, args) {
@@ -64,7 +65,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             this._formats.fillItems([{ key: 'PDF', val: 'Acrobat Reader PDF' }, { key: 'WORD', val: 'MS Word DOC' }, { key: 'EXCEL', val: 'MS Excel XLS' }], true);
         }
         TestObject.prototype._onTestCommandExecuted = function () {
-            alert(utils.str.format("testProperty1:{0}, format:{1}, month: {2}", this.testProperty1, this.format, this.month));
+            alert(utils.str.format("testProperty1:{0}, format:{1}, month: {2}, boolProperty: {3}", this.testProperty1, this.format, this.month, this.boolProperty));
         };
         Object.defineProperty(TestObject.prototype, "testProperty1", {
             get: function () { return this._testProperty1; },
@@ -96,6 +97,17 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
                 if (this._testProperty3 != v) {
                     this._testProperty3 = v;
                     this.raisePropertyChanged('testProperty3');
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TestObject.prototype, "boolProperty", {
+            get: function () { return this._boolProperty; },
+            set: function (v) {
+                if (this._boolProperty != v) {
+                    this._boolProperty = v;
+                    this.raisePropertyChanged('boolProperty');
                 }
             },
             enumerable: true,
