@@ -330,7 +330,7 @@ class Deferred<T> implements IDeferred<T> {
         return this._promise;
     }
 
-    state() {
+    state(): PromiseState {
         return this._state;
     }
 }
@@ -385,7 +385,7 @@ class Promise<T> implements IPromise<T> {
         return this._deferred._then(errorCB, errorCB);
     }
 
-    state() {
+    state(): PromiseState {
         return this._deferred.state();
     }
 }

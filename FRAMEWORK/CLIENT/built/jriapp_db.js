@@ -2216,7 +2216,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
         function DbContext() {
             _super.call(this);
             var self = this;
-            this._isInitialized = false;
+            this._initState = null;
             this._requestHeaders = {};
             this._requests = [];
             this._dbSets = null;
@@ -2254,7 +2254,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
             return [DBCTX_EVENTS.submit_err].concat(base_events);
         };
         DbContext.prototype._initDbSets = function () {
-            if (this._isInitialized)
+            if (this.isInitialized)
                 throw new Error(langMOD.ERRS.ERR_DOMAIN_CONTEXT_INITIALIZED);
         };
         DbContext.prototype._initAssociations = function (associations) {
@@ -2310,7 +2310,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
         DbContext.prototype._initMethod = function (methodInfo) {
             var self = this;
             this._svcMethods[methodInfo.methodName] = function (args) {
-                var deferred = utils_7.AsyncUtils.createDeferred();
+                var deferred = utils.defer.createDeferred();
                 var callback = function (res) {
                     if (!res.error) {
                         deferred.resolve(res.result);
@@ -2426,7 +2426,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
             }
         };
         DbContext.prototype._loadFromCache = function (query, reason) {
-            var self = this, defer = utils_7.AsyncUtils.createDeferred();
+            var self = this, defer = utils.defer.createDeferred();
             setTimeout(function () {
                 if (self.getIsDestroyCalled()) {
                     defer.reject(new shared_2.AbortError());
@@ -2453,7 +2453,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
             });
         };
         DbContext.prototype._onLoaded = function (res, query, reason) {
-            var self = this, defer = utils_7.AsyncUtils.createDeferred();
+            var self = this, defer = utils.defer.createDeferred();
             setTimeout(function () {
                 if (self.getIsDestroyCalled()) {
                     defer.reject(new shared_2.AbortError());
@@ -2691,7 +2691,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
             }
         };
         DbContext.prototype._refreshItem = function (item) {
-            var self = this, deferred = utils_7.AsyncUtils.createDeferred();
+            var self = this, deferred = utils.defer.createDeferred();
             var context = {
                 item: item,
                 dbSet: item._aspect.dbSet,
@@ -2751,7 +2751,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
             if (!query) {
                 throw new Error(langMOD.ERRS.ERR_DB_LOAD_NO_QUERY);
             }
-            var self = this, deferred = utils_7.AsyncUtils.createDeferred();
+            var self = this, deferred = utils.defer.createDeferred();
             var context = {
                 query: query,
                 reason: reason,
@@ -2826,15 +2826,24 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
             return this._internal;
         };
         DbContext.prototype.initialize = function (options) {
-            var _this = this;
-            var deferred = utils.defer.createDeferred();
-            if (this._isInitialized) {
-                return deferred.resolve();
+            if (!!this._initState) {
+                return this._initState;
             }
-            var self = this, opts = coreUtils.merge(options, {
+            var self = this, operType = 5, deferred = utils.defer.createDeferred();
+            this._initState = deferred.promise();
+            this._initState.then(function () {
+                if (self.getIsDestroyCalled())
+                    return;
+                self.raisePropertyChanged(const_5.PROP_NAME.isInitialized);
+            }, function (err) {
+                if (self.getIsDestroyCalled())
+                    return;
+                self._onDataOperError(err, operType);
+            });
+            var opts = coreUtils.merge(options, {
                 serviceUrl: null,
                 permissions: null
-            }), loadUrl, operType = 5;
+            }), loadUrl;
             try {
                 if (!checks.isString(opts.serviceUrl)) {
                     throw new Error(strUtils.format(langMOD.ERRS.ERR_PARAM_INVALID, "serviceUrl", opts.serviceUrl));
@@ -2843,31 +2852,23 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
                 this._initDbSets();
                 if (!!opts.permissions) {
                     self._updatePermissions(opts.permissions);
-                    self._isInitialized = true;
-                    self.raisePropertyChanged(const_5.PROP_NAME.isInitialized);
-                    return deferred.resolve();
+                    deferred.resolve();
+                    return this._initState;
                 }
                 loadUrl = this._getUrl(DATA_SVC_METH.Permissions);
             }
             catch (ex) {
-                this.handleError(ex, this);
                 return deferred.reject(ex);
             }
-            var req_promise = utils_7.HttpUtils.getAjax(loadUrl, self.requestHeaders);
-            req_promise.then(function (permissions) {
+            var ajax_promise = utils_7.HttpUtils.getAjax(loadUrl, self.requestHeaders);
+            var res_promise = ajax_promise.then(function (permissions) {
                 if (self.getIsDestroyCalled())
                     return;
                 self._updatePermissions(JSON.parse(permissions));
-                self._isInitialized = true;
-                self.raisePropertyChanged(const_5.PROP_NAME.isInitialized);
-            }).fail(function (err) {
-                if (self.getIsDestroyCalled())
-                    return;
-                _this._onDataOperError(err, operType);
             });
-            deferred.resolve(req_promise);
-            this._addRequestPromise(req_promise, operType);
-            return deferred.promise();
+            deferred.resolve(res_promise);
+            this._addRequestPromise(ajax_promise, operType);
+            return this._initState;
         };
         DbContext.prototype.addOnSubmitError = function (fn, nmspace, context) {
             this._addHandler(DBCTX_EVENTS.submit_err, fn, nmspace, context);
@@ -2890,7 +2891,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
             if (!!this._pendingSubmit) {
                 return this._pendingSubmit.promise;
             }
-            var deferred = utils_7.AsyncUtils.createDeferred(), submitState = { promise: deferred.promise() };
+            var deferred = utils.defer.createDeferred(), submitState = { promise: deferred.promise() };
             this._pendingSubmit = submitState;
             var context = {
                 fn_onStart: function () {
@@ -2975,7 +2976,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
             this._svcMethods = {};
             this._queryInf = {};
             this._serviceUrl = null;
-            this._isInitialized = false;
+            this._initState = null;
             this._isSubmiting = false;
             this._isHasChanges = false;
             _super.prototype.destroy.call(this);
@@ -2986,7 +2987,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
             configurable: true
         });
         Object.defineProperty(DbContext.prototype, "isInitialized", {
-            get: function () { return this._isInitialized; },
+            get: function () { return !!this._initState && this._initState.state() === 2; },
             enumerable: true,
             configurable: true
         });

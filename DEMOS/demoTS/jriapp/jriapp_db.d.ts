@@ -395,8 +395,9 @@ declare module "jriapp_db/error" {
     }
 }
 declare module "jriapp_db/dbcontext" {
-    import { IPromise, IAbortablePromise, IIndexer, IVoidPromise, IBaseObject, TEventHandler } from "jriapp_core/shared";
+    import { IIndexer, IVoidPromise, IBaseObject, TEventHandler } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
+    import { IPromise, IAbortablePromise } from "jriapp_utils/async";
     import { COLL_CHANGE_REASON } from "jriapp_collection/collection";
     import { IEntityItem, IRefreshRowInfo, IQueryResult, IQueryInfo, IAssociationInfo, IPermissionsInfo, IInvokeRequest, IQueryResponse, IChangeSet } from "jriapp_db/int";
     import { DATA_OPER } from "jriapp_db/const";
@@ -414,7 +415,7 @@ declare module "jriapp_db/dbcontext" {
     export class DbContext extends BaseObject {
         private _requestHeaders;
         private _requests;
-        protected _isInitialized: boolean;
+        protected _initState: IPromise<any>;
         protected _dbSets: DbSets;
         protected _svcMethods: any;
         protected _assoc: any;

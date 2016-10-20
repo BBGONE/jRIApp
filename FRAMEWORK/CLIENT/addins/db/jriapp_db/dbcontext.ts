@@ -1,10 +1,11 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { FIELD_TYPE, DATE_CONVERSION, DATA_TYPE, SORT_ORDER } from "jriapp_core/const";
-import { IPromise, IAbortablePromise, IIndexer, IVoidPromise, AbortError, IBaseObject, TEventHandler } from "jriapp_core/shared";
+import { IIndexer, IVoidPromise, AbortError, IBaseObject, TEventHandler } from "jriapp_core/shared";
 import * as langMOD from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
 import { bootstrap } from "jriapp_core/bootstrap";
-import { AsyncUtils as _async, HttpUtils as http, Utils, ERROR, WaitQueue } from "jriapp_utils/utils";
+import { HttpUtils as http, Utils, ERROR, WaitQueue } from "jriapp_utils/utils";
+import { IPromiseState, IPromise, IAbortablePromise, PromiseState, IDeferred } from "jriapp_utils/async";
 import { COLL_CHANGE_REASON, valueUtils } from "jriapp_collection/collection";
 import {
     IEntityItem, IRefreshRowInfo, IQueryResult, IQueryInfo, IAssociationInfo, IAssocConstructorOptions,
@@ -71,7 +72,7 @@ const DBCTX_EVENTS = {
 export class DbContext extends BaseObject {
     private _requestHeaders: IIndexer<string>;
     private _requests: IRequestPromise[];
-    protected _isInitialized: boolean;
+    protected _initState: IPromise<any>;
     protected _dbSets: DbSets;
     //_svcMethods: { [methodName: string]: (args: { [paramName: string]: any; }) => IPromise<any>; };
     protected _svcMethods: any;
@@ -90,7 +91,7 @@ export class DbContext extends BaseObject {
     constructor() {
         super();
         let self = this;
-        this._isInitialized = false;
+        this._initState = null;
         this._requestHeaders = {};
         this._requests = [];
         this._dbSets = null;
@@ -129,7 +130,7 @@ export class DbContext extends BaseObject {
         return [DBCTX_EVENTS.submit_err].concat(base_events);
     }
     protected _initDbSets() {
-        if (this._isInitialized)
+        if (this.isInitialized)
             throw new Error(langMOD.ERRS.ERR_DOMAIN_CONTEXT_INITIALIZED);
     }
     protected _initAssociations(associations: IAssociationInfo[]) {
@@ -190,7 +191,7 @@ export class DbContext extends BaseObject {
         let self = this;
         //function expects method parameters
         this._svcMethods[methodInfo.methodName] = function (args: { [paramName: string]: any; }) {
-            let deferred = _async.createDeferred<any>();
+            let deferred = utils.defer.createDeferred<any>();
             let callback = function (res: { result: any; error: any; }) {
                 if (!res.error) {
                     deferred.resolve(res.result);
@@ -315,7 +316,7 @@ export class DbContext extends BaseObject {
         }
     }
     protected _loadFromCache(query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IPromise<IQueryResult<IEntityItem>> {
-        let self = this, defer = _async.createDeferred<IQueryResult<IEntityItem>>();
+        let self = this, defer = utils.defer.createDeferred<IQueryResult<IEntityItem>>();
         setTimeout(() => {
             if (self.getIsDestroyCalled()) {
                 defer.reject(new AbortError());
@@ -341,7 +342,7 @@ export class DbContext extends BaseObject {
         });
     }
     protected _onLoaded(res: IQueryResponse, query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IPromise<IQueryResult<IEntityItem>> {
-        let self = this, defer = _async.createDeferred<IQueryResult<IEntityItem>>();
+        let self = this, defer = utils.defer.createDeferred<IQueryResult<IEntityItem>>();
         setTimeout(() => {
             if (self.getIsDestroyCalled()) {
                 defer.reject(new AbortError());
@@ -619,7 +620,7 @@ export class DbContext extends BaseObject {
         }
     }
     protected _refreshItem(item: IEntityItem): IPromise<IEntityItem> {
-        const self = this, deferred = _async.createDeferred<IEntityItem>();
+        const self = this, deferred = utils.defer.createDeferred<IEntityItem>();
         const context = {
             item: item,
             dbSet: item._aspect.dbSet,
@@ -681,7 +682,7 @@ export class DbContext extends BaseObject {
             throw new Error(langMOD.ERRS.ERR_DB_LOAD_NO_QUERY);
         }
 
-        const self = this, deferred = _async.createDeferred<IQueryResult<IEntityItem>>();
+        const self = this, deferred = utils.defer.createDeferred<IQueryResult<IEntityItem>>();
 
         const context = {
             query: query,
@@ -767,14 +768,26 @@ export class DbContext extends BaseObject {
         return this._internal;
     }
     initialize(options: { serviceUrl: string; permissions?: IPermissionsInfo; }): IVoidPromise {
-        let deferred = utils.defer.createDeferred<any>();
-        if (this._isInitialized) {
-            return deferred.resolve();
+        if (!!this._initState) {
+            return this._initState;
         }
-        let self = this, opts = coreUtils.merge(options, {
+        let self = this, operType = DATA_OPER.Init, deferred = utils.defer.createDeferred<any>();
+
+        this._initState = deferred.promise();
+        this._initState.then(() => {
+            if (self.getIsDestroyCalled())
+                return;
+            self.raisePropertyChanged(PROP_NAME.isInitialized);
+        }, (err) => {
+            if (self.getIsDestroyCalled())
+                return;
+            self._onDataOperError(err, operType);
+        });
+
+        let opts = coreUtils.merge(options, {
             serviceUrl: <string>null,
             permissions: <IPermissionsInfo>null
-        }), loadUrl: string, operType = DATA_OPER.Init;
+        }), loadUrl: string;
 
         try {
             if (!checks.isString(opts.serviceUrl)) {
@@ -785,35 +798,27 @@ export class DbContext extends BaseObject {
 
             if (!!opts.permissions) {
                 self._updatePermissions(opts.permissions);
-                self._isInitialized = true;
-                self.raisePropertyChanged(PROP_NAME.isInitialized);
-                return deferred.resolve();
+                deferred.resolve();
+                return this._initState;
             }
 
             //initialize by obtaining metadata from the data service by ajax call
             loadUrl = this._getUrl(DATA_SVC_METH.Permissions);
         }
         catch (ex) {
-            this.handleError(ex, this);
             return deferred.reject(ex);
         }
 
-        let req_promise = http.getAjax(loadUrl, self.requestHeaders);
-        req_promise.then((permissions: string) => {
+        let ajax_promise = http.getAjax(loadUrl, self.requestHeaders);
+        let res_promise = ajax_promise.then((permissions: string) => {
             if (self.getIsDestroyCalled())
                 return;
             self._updatePermissions(JSON.parse(permissions));
-            self._isInitialized = true;
-            self.raisePropertyChanged(PROP_NAME.isInitialized);
-        }).fail((err) => {
-            if (self.getIsDestroyCalled())
-                return;
-            this._onDataOperError(err, operType);
         });
 
-        deferred.resolve(req_promise);
-        this._addRequestPromise(req_promise, operType);
-        return deferred.promise();
+        deferred.resolve(res_promise);
+        this._addRequestPromise(ajax_promise, operType);
+        return this._initState;
     }
     addOnSubmitError(fn: TEventHandler<DbContext, { error: any; isHandled: boolean; }>, nmspace?: string, context?: IBaseObject): void {
         this._addHandler(DBCTX_EVENTS.submit_err, fn, nmspace, context);
@@ -839,7 +844,7 @@ export class DbContext extends BaseObject {
             return this._pendingSubmit.promise;
         }
 
-        const deferred = _async.createDeferred<void>(), submitState = { promise: deferred.promise() };
+        const deferred = utils.defer.createDeferred<void>(), submitState = { promise: deferred.promise() };
         this._pendingSubmit = submitState;
 
         const context = {
@@ -930,13 +935,13 @@ export class DbContext extends BaseObject {
         this._svcMethods = {};
         this._queryInf = {};
         this._serviceUrl = null;
-        this._isInitialized = false;
+        this._initState = null;
         this._isSubmiting = false;
         this._isHasChanges = false;
         super.destroy();
     }
     get serviceUrl() { return this._serviceUrl; }
-    get isInitialized() { return this._isInitialized; }
+    get isInitialized() { return !!this._initState && this._initState.state() === PromiseState.Resolved; }
     get isBusy() { return (this.requestCount > 0) || this.isSubmiting; }
     get isSubmiting() { return this._isSubmiting; }
     get serverTimezone() { return this._serverTimezone; }
