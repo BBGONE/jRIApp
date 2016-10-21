@@ -211,11 +211,13 @@ table th {
 /* hide the original checkbox (old browsers don't support :checked and :not(checked) )*/
 .checkbox:not(checked) {
   position: absolute;
-  opacity: 0;
+  opacity: 0 !important;
+  outline: none !important;
 }
 .checkbox:checked {
   position: absolute;
-  opacity: 0;
+  opacity: 0 !important;
+  outline: none !important;
 }
 
 .checkbox:not(checked) + span {
@@ -280,11 +282,13 @@ table th {
 /* hide original */
 .radio:not(checked) {
   position: absolute;
-  opacity: 0;
+  opacity: 0 !important;
+  outline: none !important;
 }
 .radio:checked {
   position: absolute;
-  opacity: 0;
+  opacity: 0 !important;
+  outline: none !important;
 }
 
 .radio:not(checked) + span {
