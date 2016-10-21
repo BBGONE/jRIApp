@@ -129,7 +129,8 @@ span.ria-required-field::after {
     outline: 2px solid red;
 }
 
-input[type=checkbox].ria-checked-null, input[type=radio].ria-checked-null {
+
+ria-checked-null, .ria-checked-null {
   opacity: 0.4;
   outline: 2px inset silver;
 }

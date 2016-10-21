@@ -193,3 +193,131 @@ table th {
         overflow: visible;
         vertical-align: top;
     }
+
+
+/* Checkbox styles */
+
+.checkbox {
+  vertical-align: top;
+  margin: 0 3px 0 0;
+  width: 17px;
+  height: 17px;
+}
+
+.checkbox + span {
+  cursor: pointer;
+}
+
+/* hide the original checkbox (old browsers don't support :checked and :not(checked) )*/
+.checkbox:not(checked) {
+  position: absolute;
+  opacity: 0;
+}
+.checkbox:checked {
+  position: absolute;
+  opacity: 0;
+}
+
+.checkbox:not(checked) + span {
+  position: relative; /* making span relative for positioning :before and :after */
+  padding: 0 0 0 60px; /* leave a little space for checkbox (at the left) */
+}
+/* Checkbox background when the value is FALSE */
+.checkbox:not(checked) + span:before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 0;
+  width: 50px;
+  height: 26px;
+  border-radius: 13px;
+  background: #CDD1DA;
+  box-shadow: inset 0 2px 3px rgba(0,0,0,.2);
+}
+/* Checkbox background when the value is NULL */
+.ria-checked-null.checkbox:not(checked) + span:before {
+  background: white;
+  box-shadow: inset 0 2px 3px rgba(0,0,0,.5);
+}
+
+/* Checkbox button when the value is FALSE */
+.checkbox:not(checked) + span:after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 2px;
+  width: 22px;
+  height: 22px;
+  border-radius: 10px;
+  background: #FFF;
+  box-shadow: 0 2px 5px rgba(0,0,0,.3);
+  transition: all .2s; /* анимация, чтобы чекбокс переключался плавно */
+}
+/* Checkbox background when the value is TRUE */
+.checkbox:checked + span:before {
+  background: #9FD468;
+}
+/* Checkbox button when the value is TRUE */
+.checkbox:checked + span:after {
+  left: 26px;
+}
+/* Shadow around the checkbox when focused  */
+.checkbox:focus + span:before {
+  box-shadow: 0 0 0 3px rgba(255,255,0,.5);
+}
+
+/* Radio styles */
+
+.radio {
+  vertical-align: top;
+  width: 17px;
+  height: 17px;
+  margin: 0 3px 0 0;
+}
+.radio + span {
+  cursor: pointer;
+}
+/* hide original */
+.radio:not(checked) {
+  position: absolute;
+  opacity: 0;
+}
+.radio:checked {
+  position: absolute;
+  opacity: 0;
+}
+
+.radio:not(checked) + span {
+  position: relative;
+  padding: 0 0 0 35px;
+}
+.radio:not(checked) + span:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 22px;
+  height: 22px;
+  border: 1px solid #CDD1DA;
+  border-radius: 50%;
+  background: #FFF;
+}
+.radio:not(checked) + span:after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #3b60a3;
+  box-shadow: inset 0 1px 1px rgba(0,0,0,.5);
+  opacity: 0;
+  transition: all .2s;
+}
+.radio:checked + span:after {
+  opacity: 1;
+}
+.radio:focus + span:before {
+  box-shadow: 0 0 0 3px rgba(255,255,0,.5);
+}

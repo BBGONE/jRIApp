@@ -104,22 +104,22 @@
 <div id="demoContent" data-bind="{this.dataContext,source=demoVM}" data-view="name=dataform">
     <fieldset>
         <legend>Radios elements data binding example (using Dictionary in View Models)</legend>
-        <div class="radioItem">
-            <input type="radio" name="radioItem" data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue1}"/>
+        <label class="radioItem">
+            <input type="radio" class="radio" name="radioItem" data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue1}"/>
             <span data-bind1="{this.value,to=radioValues['radioValue1'].value}" data-bind2="{this.toolTip,to=radioValues['radioValue1'].comment}"></span>
-        </div>
-        <div class="radioItem">
-            <input type="radio" name="radioItem" data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue2}"/>
+        </label>
+        <label class="radioItem">
+            <input type="radio" class="radio" name="radioItem" data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue2}"/>
             <span data-bind1="{this.value,to=radioValues['radioValue2'].value}" data-bind2="{this.toolTip,to=radioValues['radioValue2'].comment}"></span>
-        </div>
-        <div class="radioItem">
-            <input type="radio" name="radioItem" data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue3}"/>
+        </label>
+        <label class="radioItem">
+            <input type="radio" class="radio" name="radioItem" data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue3}"/>
             <span data-bind1="{this.value,to=radioValues['radioValue3'].value}" data-bind2="{this.toolTip,to=radioValues['radioValue3'].comment}"></span>
-        </div>
-        <div class="radioItem">
-            <input type="radio" name="radioItem" data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue4}"/>
+        </label>
+        <label class="radioItem">
+            <input type="radio" class="radio" name="radioItem" data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue4}"/>
             <span data-bind1="{this.value,to=radioValues['radioValue4'].value}" data-bind2="{this.toolTip,to=radioValues['radioValue4'].comment}"></span>
-        </div>
+        </label>
     </fieldset>
     <h3>
         Demo of using Vertical and Horizontal StackPanels &nbsp;(count:&nbsp;<span data-bind="{this.value,to=historyList.count}"></span>)

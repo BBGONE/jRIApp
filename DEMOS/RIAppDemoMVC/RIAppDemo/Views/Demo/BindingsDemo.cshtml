@@ -116,9 +116,11 @@
         <div class="leftOffset">
             <label>Formats: </label><select size="1" style="width: 220px" data-bind="{this.dataSource,to=formats,source=testObject}{this.selectedValue,to=format,mode=TwoWay,source=testObject}" data-view="options:{valuePath=key,textPath=val}"></select>
         </div>
-        <div class="leftOffset">
-            <label>boolProperty: </label><input type="checkbox" data-bind="{this.checked,to=boolProperty,mode=TwoWay,source=testObject}"/>
-        </div>
+        <label class="leftOffset">
+            <label>boolProperty:</label>
+            <input type="checkbox" class="checkbox" id="boolProperty" data-bind="{this.checked,to=boolProperty,mode=TwoWay,source=testObject}"/>
+            <span></span>
+        </label>
     </fieldset>
     <div>
         <h4 style="color:blue;margin-top:2em;">The button uses a default <b>AnchorElView</b>!</h4>
