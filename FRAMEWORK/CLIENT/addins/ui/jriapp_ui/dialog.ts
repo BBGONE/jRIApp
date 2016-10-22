@@ -1,6 +1,8 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { ITemplate, ITemplateEvents, IApplication, IVoidPromise, IEditable, IBaseObject,
-    TEventHandler, ISelectableProvider, IDeferred } from "jriapp_core/shared";
+import {
+    ITemplate, ITemplateEvents, IApplication, IVoidPromise, IEditable, IBaseObject,
+    TEventHandler, ISelectableProvider, IDeferred, IPromise
+} from "jriapp_core/shared";
 import * as langMOD from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
 import { Utils as utils, ERROR } from "jriapp_utils/utils";
@@ -362,20 +364,26 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         if (!!this._fn_OnShow) {
             this._fn_OnShow(this);
        }
-   }
-    show() {
+    }
+    show(): IPromise<DataEditDialog> {
         let self = this;
+        if (self.getIsDestroyCalled())
+            return utils.defer.createDeferred<DataEditDialog>().reject();
         self._result = null;
-        (<any>self._$dlgEl).dialog("option", "buttons", this._getButtons());
-        this._templateDeferred.promise().then((template) => {
+        return this._templateDeferred.promise().then((template) => {
+            (<any>self._$dlgEl).dialog("option", "buttons", self._getButtons());
             template.dataContext = self._dataContext;
             self._onShow();
             (<any>self._$dlgEl).dialog("open");
-       });
+        }).then(() => {
+            return self;
+        }, (err) => {
+            self.handleError(err, self);
+        });
    }
     hide() {
         let self = this;
-        if (!self._$dlgEl)
+        if (!this._$dlgEl)
             return;
         (<any>self._$dlgEl).dialog("close");
    }
@@ -399,7 +407,6 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         this._dataContext = null;
         this._fn_submitOnOK = null;
         this._isEditable = null;
-        this._app = null;
         super.destroy();
    }
     get app() { return this._app; }
@@ -471,7 +478,7 @@ export class DialogVM extends ViewModel<IApplication> {
         this._factories = {};
         this._dialogs = {};
    }
-    createDialog(name: string, options: IDialogConstructorOptions) {
+    createDialog(name: string, options: IDialogConstructorOptions): () => DataEditDialog {
         let self = this;
         //the map stores functions those create dialogs (aka factories)
         this._factories[name] = function () {
@@ -483,16 +490,19 @@ export class DialogVM extends ViewModel<IApplication> {
             return dialog;
        };
         return this._factories[name];
-   }
-    showDialog(name: string, dataContext: any) {
+    }
+    showDialog(name: string, dataContext: any): DataEditDialog {
         let dlg = this.getDialog(name);
         if (!dlg)
-            throw new Error(strUtils.format("Invalid Dialog name:  {0}", name));
+            throw new Error(strUtils.format("Invalid DataEditDialog name:  {0}", name));
         dlg.dataContext = dataContext;
-        dlg.show();
+        //timeout helps to set dialog properties on returned DataEditDialog before its showing
+        setTimeout(() => {
+              dlg.show();
+        }, 0);
         return dlg;
-   }
-    getDialog(name: string) {
+    }
+    getDialog(name: string): DataEditDialog {
         let factory = this._factories[name];
         if (!factory)
             return null;

@@ -118,9 +118,14 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
         }, self.uniqueID);
 
         //add new or existing address
-        this._addNewCommand = new RIAPP.Command(function (sender, param) {
+        this._addNewCommand = new RIAPP.Command(function (sender: any, param: { width?: number; height?: number; }) {
             try {
-                self._dialogVM.showDialog('addressDialog', self);
+                //can override default width and height
+                //we pass the width and height in the command parameter(it is not needed - only for example)
+                let opts = utils.core.merge(param, { width: 950, height: 600 });
+                let dialog = self._dialogVM.showDialog('addressDialog', self);
+                dialog.width = opts.width;
+                dialog.height = opts.height;
             } catch (ex) {
                 self.handleError(ex, this);
             }

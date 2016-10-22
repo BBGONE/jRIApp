@@ -1,6 +1,6 @@
 /// <reference path="jriapp.d.ts" />
 declare module "jriapp_ui/dialog" {
-    import { ITemplate, ITemplateEvents, IApplication, IBaseObject, TEventHandler } from "jriapp_core/shared";
+    import { ITemplate, ITemplateEvents, IApplication, IBaseObject, TEventHandler, IPromise } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
     import { ViewModel } from "jriapp_core/mvvm";
     export const enum DIALOG_ACTION {
@@ -78,7 +78,7 @@ declare module "jriapp_ui/dialog" {
         protected _onRefresh(): void;
         protected _onClose(): void;
         protected _onShow(): void;
-        show(): void;
+        show(): IPromise<DataEditDialog>;
         hide(): void;
         getOption(name: string): any;
         setOption(name: string, value: any): void;

@@ -2777,7 +2777,10 @@ define("addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"
             }, self.uniqueID);
             this._addNewCommand = new RIAPP.Command(function (sender, param) {
                 try {
-                    self._dialogVM.showDialog('addressDialog', self);
+                    var opts = utils.core.merge(param, { width: 950, height: 600 });
+                    var dialog = self._dialogVM.showDialog('addressDialog', self);
+                    dialog.width = opts.width;
+                    dialog.height = opts.height;
                 }
                 catch (ex) {
                     self.handleError(ex, this);

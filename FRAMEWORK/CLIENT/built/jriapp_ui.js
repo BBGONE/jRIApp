@@ -302,17 +302,23 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_core/lang", "jriapp_co
         };
         DataEditDialog.prototype.show = function () {
             var self = this;
+            if (self.getIsDestroyCalled())
+                return utils_1.Utils.defer.createDeferred().reject();
             self._result = null;
-            self._$dlgEl.dialog("option", "buttons", this._getButtons());
-            this._templateDeferred.promise().then(function (template) {
+            return this._templateDeferred.promise().then(function (template) {
+                self._$dlgEl.dialog("option", "buttons", self._getButtons());
                 template.dataContext = self._dataContext;
                 self._onShow();
                 self._$dlgEl.dialog("open");
+            }).then(function () {
+                return self;
+            }, function (err) {
+                self.handleError(err, self);
             });
         };
         DataEditDialog.prototype.hide = function () {
             var self = this;
-            if (!self._$dlgEl)
+            if (!this._$dlgEl)
                 return;
             self._$dlgEl.dialog("close");
         };
@@ -336,7 +342,6 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_core/lang", "jriapp_co
             this._dataContext = null;
             this._fn_submitOnOK = null;
             this._isEditable = null;
-            this._app = null;
             _super.prototype.destroy.call(this);
         };
         Object.defineProperty(DataEditDialog.prototype, "app", {
@@ -462,9 +467,11 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_core/lang", "jriapp_co
         DialogVM.prototype.showDialog = function (name, dataContext) {
             var dlg = this.getDialog(name);
             if (!dlg)
-                throw new Error(strUtils.format("Invalid Dialog name:  {0}", name));
+                throw new Error(strUtils.format("Invalid DataEditDialog name:  {0}", name));
             dlg.dataContext = dataContext;
-            dlg.show();
+            setTimeout(function () {
+                dlg.show();
+            }, 0);
             return dlg;
         };
         DialogVM.prototype.getDialog = function (name) {

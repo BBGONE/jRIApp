@@ -36,7 +36,10 @@
                 </thead>
                 <tbody></tbody>
             </table>
-            <button class="btn btn-info btn-small" style="float: right; margin: 5px;" data-bind="{this.command,to=customerAddressVM.addAddressVM.addNewCommand}">Manage Addresses</button>
+            <button class="btn btn-info btn-small" style="float: right; margin: 5px;" 
+                    data-bind-1="{this.command,to=customerAddressVM.addAddressVM.addNewCommand}"
+                    @* just to show how to pass parameters to the command using inline object *@
+                    data-bind-2="{this.commandParam,source={width:880, height:580}}">Manage Addresses</button>
         </fieldset>
     </div>
 </script>
@@ -110,7 +113,7 @@
 
 <script id="linkAdrTemplate" type="text/html" data-role="template">
     <div data-name="search">
-        <div style="margin: 5px 0px 5px 0px; width: 100%;">
+        <div style="margin: 5px 0px 5px 0px;">
             <span class="addressLabel">Search existing Address:</span>
             <input type="text" class="span2"
                    data-bind-1="{this.value,to=searchString,mode=TwoWay}"
@@ -119,7 +122,7 @@
                 <i class="icon-search"></i>
             </a>
         </div>
-        <div style="height: 400px; width: 100%;">
+        <div style="height:380px;">
             <table style="border: none; border-collapse: collapse; table-layout: fixed;">
                 <tr>
                     <!--left section - already linked to customer addresses -->

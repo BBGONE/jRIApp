@@ -54,12 +54,12 @@ textarea { min-height: 75px; }
 ----------------------------------------------------------*/
 
 table {
-    border: solid 1px #e8eef4;
+    border: none;
     border-collapse: collapse;
 }
 
 table td {
-    border: solid 1px #e8eef4;
+    border: none;
     padding: 5px;
 }
 
