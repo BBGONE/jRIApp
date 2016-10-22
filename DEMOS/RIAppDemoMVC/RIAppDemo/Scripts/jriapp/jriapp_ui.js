@@ -306,6 +306,8 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_core/lang", "jriapp_co
                 return utils_1.Utils.defer.createDeferred().reject();
             self._result = null;
             return this._templateDeferred.promise().then(function (template) {
+                if (!self._$dlgEl)
+                    utils_1.ERROR.throwDummy("abort");
                 self._$dlgEl.dialog("option", "buttons", self._getButtons());
                 template.dataContext = self._dataContext;
                 self._onShow();
@@ -314,6 +316,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_core/lang", "jriapp_co
                 return self;
             }, function (err) {
                 self.handleError(err, self);
+                utils_1.ERROR.throwDummy("abort");
             });
         };
         DataEditDialog.prototype.hide = function () {

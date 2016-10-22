@@ -371,6 +371,8 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             return utils.defer.createDeferred<DataEditDialog>().reject();
         self._result = null;
         return this._templateDeferred.promise().then((template) => {
+            if (!self._$dlgEl)
+                ERROR.throwDummy("abort");
             (<any>self._$dlgEl).dialog("option", "buttons", self._getButtons());
             template.dataContext = self._dataContext;
             self._onShow();
@@ -379,6 +381,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             return self;
         }, (err) => {
             self.handleError(err, self);
+            ERROR.throwDummy("abort");
         });
    }
     hide() {
