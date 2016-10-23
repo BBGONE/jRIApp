@@ -11,8 +11,9 @@ const dom = utils.dom, $ = dom.$;
 export class ExpanderCell extends BaseCell<ExpanderColumn> {
     constructor(options: ICellOptions) {
         super(options);
+        let self = this;
         this._click.add(() => {
-            this._onCellClicked(this.row);
+            self._onCellClicked(self.row);
         });
         dom.addClass([this.td], css.rowCollapsed);
         dom.addClass([this.td], css.rowExpander);

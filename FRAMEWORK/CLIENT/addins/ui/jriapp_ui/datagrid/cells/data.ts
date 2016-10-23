@@ -18,12 +18,12 @@ export class DataCell extends BaseCell<DataColumn> {
         super(options);
         this._content = null;
         this._stateCss = null;
-
+        let self = this;
         this._click.interval = 350;
         this._click.add(() => {
-            this._onCellClicked(this.row);
+            self._onCellClicked(self.row);
         }, () => {
-            this._onDblClicked(this.row);
+            self._onDblClicked(self.row);
         });
         //adds the class
         dom.addClass([this.td], css.dataCell);

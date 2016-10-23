@@ -1,12 +1,17 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+import { Utils as utils } from "jriapp_utils/utils";
+
 import { css } from "../const";
 import { BaseColumn, ICellInfo } from "./base";
 import { DataGrid } from "../datagrid";
 
+const dom = utils.dom, $ = dom.$;
+
 export class ExpanderColumn extends BaseColumn {
     constructor(grid: DataGrid, options: ICellInfo) {
         super(grid, options);
-        this.$col.addClass(css.rowExpander);
+
+        dom.addClass(this.$col.toArray(), css.rowExpander);
     }
     toString() {
         return "ExpanderColumn";
