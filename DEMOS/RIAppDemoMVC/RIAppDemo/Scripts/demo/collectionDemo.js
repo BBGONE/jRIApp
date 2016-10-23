@@ -25,7 +25,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
         function RadioDemoVM(app) {
             _super.call(this, app);
             var self = this;
-            this._radioValue = 'radioValue1';
+            this._radioValue = null;
             this._radioValues = new DEMODB.RadioValDictionary();
             this._radioValues.fillItems([{ key: 'radioValue1', value: 'This is some text value #1', comment: 'This is some comment for value #1' },
                 { key: 'radioValue2', value: 'This is some text value #2', comment: 'This is some comment for value #2' },
@@ -82,6 +82,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
                 self._clearListCommand.raiseCanExecuteChanged();
             }, this.uniqueID);
             this._clearListCommand = new RIAPP.Command(function (sender, param) {
+                self.radioValue = null;
                 self.clearList();
             }, self, function (sender, param) {
                 return self._historyList.count > 0;

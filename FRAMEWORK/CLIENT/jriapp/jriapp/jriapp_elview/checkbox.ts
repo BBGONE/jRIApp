@@ -12,16 +12,17 @@ export class CheckBoxElView extends InputElView {
 
     constructor(options: IViewOptions) {
         super(options);
-        let self = this, el: any = this.el;
-        this._checked = el.checked;
+        let self = this;
+        let chk = <HTMLInputElement>this.el;
+        this._checked = null;
+        chk.checked = false;
+
         this.$el.on("change." + this.uniqueID, function (e) {
             e.stopPropagation();
-            self._onChange(this.checked);
+            if (self.checked !== this.checked)
+                self.checked = this.checked;
         });
         this._updateState();
-    }
-    protected _onChange(checked: boolean) {
-        this.checked = checked;
     }
     protected _updateState() {
         dom.setClass(this.$el.toArray(), css.checkedNull, !utils.check.isNt(this.checked));
@@ -29,14 +30,14 @@ export class CheckBoxElView extends InputElView {
     toString() {
         return "CheckBoxElView";
     }
-    get checked() { return this._checked; }
-    set checked(v) {
-        let el: any = this.el;
-        if (v !== null)
-            v = !!v;
-        if (v !== this._checked) {
+    get checked(): boolean {
+        return this._checked;
+    }
+    set checked(v: boolean) {
+        if (this._checked !== v) {
             this._checked = v;
-            el.checked = !!this._checked;
+            let chk = <HTMLInputElement>this.el;
+            chk.checked = !!v;
             this._updateState();
             this.raisePropertyChanged(PROP_NAME.checked);
         }
@@ -44,3 +45,4 @@ export class CheckBoxElView extends InputElView {
 }
 
 bootstrap.registerElView("input:checkbox", CheckBoxElView);
+bootstrap.registerElView("checkbox", CheckBoxElView);

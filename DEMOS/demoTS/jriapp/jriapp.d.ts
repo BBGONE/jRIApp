@@ -1312,6 +1312,7 @@ declare module "jriapp_content/int" {
     export const css: {
         content: string;
         required: string;
+        checkbox: string;
     };
     export interface IDataContentAttr {
         fieldName?: string;
@@ -1711,7 +1712,6 @@ declare module "jriapp_elview/checkbox" {
     export class CheckBoxElView extends InputElView {
         private _checked;
         constructor(options: IViewOptions);
-        protected _onChange(checked: boolean): void;
         protected _updateState(): void;
         toString(): string;
         checked: boolean;
@@ -2012,8 +2012,8 @@ declare module "jriapp_elview/checkbox3" {
     import { InputElView } from "jriapp_elview/input";
     export class CheckBoxThreeStateElView extends InputElView {
         private _checked;
-        private _val;
         constructor(options: IViewOptions);
+        protected _updateState(): void;
         toString(): string;
         checked: boolean;
     }
@@ -2059,8 +2059,6 @@ declare module "jriapp_elview/img" {
 declare module "jriapp_elview/radio" {
     import { CheckBoxElView } from "jriapp_elview/checkbox";
     export class RadioElView extends CheckBoxElView {
-        protected _onChange(checked: boolean): void;
-        protected _updateGroup(): void;
         toString(): string;
         value: string;
         readonly name: string;

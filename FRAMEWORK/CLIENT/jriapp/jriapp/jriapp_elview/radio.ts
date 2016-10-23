@@ -8,27 +8,6 @@ import { CheckBoxElView } from "./checkbox";
 const dom = utils.dom, $ = dom.$;
 
 export class RadioElView extends CheckBoxElView {
-    protected _onChange(checked: boolean) {
-        this.checked = checked;
-        this._updateGroup();
-    }
-    protected _updateGroup() {
-        let groupName = this.name, self = this;
-        if (!groupName)
-            return;
-        let parent = this.el.parentElement;
-        if (!parent)
-            return;
-        let selfEl = self.el;
-        $('input[type="radio"][name="' + groupName + '"]', parent).each(function (index, el) {
-            if (selfEl !== this) {
-                let vw = <RadioElView>self.app.elViewFactory.store.getElView(<HTMLElement>this);
-                if (!!vw) {
-                    vw.checked = this.checked;
-                }
-            }
-        });
-    }
     toString() {
         return "RadioElView";
     }

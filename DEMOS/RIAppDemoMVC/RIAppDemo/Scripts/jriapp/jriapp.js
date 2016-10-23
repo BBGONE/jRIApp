@@ -697,10 +697,10 @@ define("jriapp_utils/coreutils", ["require", "exports", "jriapp_core/const", "jr
         function ERROR() {
         }
         ERROR.throwDummy = function (err) {
-            if (!!err && !err.isDummy) {
+            if (ERROR.checkIsDummy(err))
+                throw err;
+            else
                 throw new shared_1.DummyError(err);
-            }
-            throw err;
         };
         ERROR.checkIsDummy = function (error) {
             return !!error && !!error.isDummy;
@@ -709,10 +709,10 @@ define("jriapp_utils/coreutils", ["require", "exports", "jriapp_core/const", "jr
             return !!error && (error instanceof shared_1.AbortError);
         };
         ERROR.reThrow = function (ex, isHandled) {
-            if (!!isHandled)
-                ERROR.throwDummy(ex);
-            else
+            if (!isHandled)
                 throw ex;
+            else
+                ERROR.throwDummy(ex);
         };
         ERROR.abort = function (reason) {
             throw new shared_1.AbortError(reason);
@@ -3920,7 +3920,8 @@ define("jriapp_content/int", ["require", "exports", "jriapp_utils/utils", "jriap
     var coreUtils = utils_2.Utils.core;
     exports.css = {
         content: "ria-content-field",
-        required: "ria-required-field"
+        required: "ria-required-field",
+        checkbox: "ria-checkbox"
     };
     function parseContentAttr(content_attr) {
         var contentOptions = {
@@ -5811,17 +5812,17 @@ define("jriapp_elview/checkbox", ["require", "exports", "jriapp_utils/utils", "j
         __extends(CheckBoxElView, _super);
         function CheckBoxElView(options) {
             _super.call(this, options);
-            var self = this, el = this.el;
-            this._checked = el.checked;
+            var self = this;
+            var chk = this.el;
+            this._checked = null;
+            chk.checked = false;
             this.$el.on("change." + this.uniqueID, function (e) {
                 e.stopPropagation();
-                self._onChange(this.checked);
+                if (self.checked !== this.checked)
+                    self.checked = this.checked;
             });
             this._updateState();
         }
-        CheckBoxElView.prototype._onChange = function (checked) {
-            this.checked = checked;
-        };
         CheckBoxElView.prototype._updateState = function () {
             dom.setClass(this.$el.toArray(), elview_4.css.checkedNull, !utils_10.Utils.check.isNt(this.checked));
         };
@@ -5829,14 +5830,14 @@ define("jriapp_elview/checkbox", ["require", "exports", "jriapp_utils/utils", "j
             return "CheckBoxElView";
         };
         Object.defineProperty(CheckBoxElView.prototype, "checked", {
-            get: function () { return this._checked; },
+            get: function () {
+                return this._checked;
+            },
             set: function (v) {
-                var el = this.el;
-                if (v !== null)
-                    v = !!v;
-                if (v !== this._checked) {
+                if (this._checked !== v) {
                     this._checked = v;
-                    el.checked = !!this._checked;
+                    var chk = this.el;
+                    chk.checked = !!v;
                     this._updateState();
                     this.raisePropertyChanged(elview_4.PROP_NAME.checked);
                 }
@@ -5848,9 +5849,11 @@ define("jriapp_elview/checkbox", ["require", "exports", "jriapp_utils/utils", "j
     }(input_2.InputElView));
     exports.CheckBoxElView = CheckBoxElView;
     bootstrap_7.bootstrap.registerElView("input:checkbox", CheckBoxElView);
+    bootstrap_7.bootstrap.registerElView("checkbox", CheckBoxElView);
 });
-define("jriapp_content/bool", ["require", "exports", "jriapp_utils/utils", "jriapp_elview/checkbox", "jriapp_content/basic"], function (require, exports, utils_11, checkbox_1, basic_3) {
+define("jriapp_content/bool", ["require", "exports", "jriapp_utils/utils", "jriapp_elview/checkbox", "jriapp_content/int", "jriapp_content/basic"], function (require, exports, utils_11, checkbox_1, int_3, basic_3) {
     "use strict";
+    var dom = utils_11.Utils.dom, doc = dom.document;
     var BoolContent = (function (_super) {
         __extends(BoolContent, _super);
         function BoolContent() {
@@ -5870,9 +5873,10 @@ define("jriapp_content/bool", ["require", "exports", "jriapp_utils/utils", "jria
         BoolContent.prototype.cleanUp = function () {
         };
         BoolContent.prototype.createCheckBoxView = function () {
-            var el = document.createElement("input");
-            el.setAttribute("type", "checkbox");
-            var chbxView = new checkbox_1.CheckBoxElView({ app: this.app, el: el });
+            var chk = document.createElement("input");
+            chk.setAttribute("type", "checkbox");
+            dom.addClass([chk], int_3.css.checkbox);
+            var chbxView = new checkbox_1.CheckBoxElView({ app: this.app, el: chk });
             return chbxView;
         };
         BoolContent.prototype.createTargetElement = function () {
@@ -5881,19 +5885,20 @@ define("jriapp_content/bool", ["require", "exports", "jriapp_utils/utils", "jria
                 tgt = this.createCheckBoxView();
                 this._el = tgt.el;
             }
-            this._parentEl.appendChild(this._el);
+            var label = doc.createElement("label");
+            label.appendChild(this._el);
+            label.appendChild(doc.createElement("span"));
+            this._parentEl.appendChild(label);
             return tgt;
         };
         BoolContent.prototype.updateCss = function () {
             _super.prototype.updateCss.call(this);
             var el = this._el;
             if (this.isEditing && this.getIsCanBeEdited()) {
-                if (el.disabled)
-                    el.disabled = false;
+                el.disabled = false;
             }
             else {
-                if (!el.disabled)
-                    el.disabled = true;
+                el.disabled = true;
             }
         };
         BoolContent.prototype.destroy = function () {
@@ -6063,9 +6068,9 @@ define("jriapp_content/datetime", ["require", "exports", "jriapp_core/bootstrap"
     }(basic_6.BasicContent));
     exports.DateTimeContent = DateTimeContent;
 });
-define("jriapp_content/factory", ["require", "exports", "jriapp_core/lang", "jriapp_utils/utils", "jriapp_content/basic", "jriapp_content/template", "jriapp_content/string", "jriapp_content/multyline", "jriapp_content/bool", "jriapp_content/number", "jriapp_content/date", "jriapp_content/datetime", "jriapp_content/int", "jriapp_content/basic", "jriapp_content/template", "jriapp_content/string", "jriapp_content/multyline", "jriapp_content/bool", "jriapp_content/number", "jriapp_content/date", "jriapp_content/datetime"], function (require, exports, lang_13, utils_13, basic_7, template_1, string_1, multyline_1, bool_1, number_1, date_1, datetime_1, int_3, basic_8, template_2, string_2, multyline_2, bool_2, number_2, date_2, datetime_2) {
+define("jriapp_content/factory", ["require", "exports", "jriapp_core/lang", "jriapp_utils/utils", "jriapp_content/basic", "jriapp_content/template", "jriapp_content/string", "jriapp_content/multyline", "jriapp_content/bool", "jriapp_content/number", "jriapp_content/date", "jriapp_content/datetime", "jriapp_content/int", "jriapp_content/basic", "jriapp_content/template", "jriapp_content/string", "jriapp_content/multyline", "jriapp_content/bool", "jriapp_content/number", "jriapp_content/date", "jriapp_content/datetime"], function (require, exports, lang_13, utils_13, basic_7, template_1, string_1, multyline_1, bool_1, number_1, date_1, datetime_1, int_4, basic_8, template_2, string_2, multyline_2, bool_2, number_2, date_2, datetime_2) {
     "use strict";
-    exports.contentCSS = int_3.css;
+    exports.contentCSS = int_4.css;
     exports.BasicContent = basic_8.BasicContent;
     exports.TemplateContent = template_2.TemplateContent;
     exports.StringContent = string_2.StringContent;
@@ -6270,7 +6275,7 @@ define("jriapp_core/datepicker", ["require", "exports", "jriapp_core/lang", "jri
     bootstrap_10.bootstrap.registerSvc("IDatepicker", new Datepicker());
     bootstrap_10.bootstrap.registerElView("datepicker", DatePickerElView);
 });
-define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_content/factory", "jriapp_core/parser", "jriapp_utils/coreutils", "jriapp_utils/dom", "jriapp_utils/utils", "jriapp_elview/elview", "jriapp_content/int"], function (require, exports, const_5, lang_15, object_14, bootstrap_11, factory_2, parser_4, coreutils_17, dom_7, utils_15, elview_5, int_4) {
+define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_content/factory", "jriapp_core/parser", "jriapp_utils/coreutils", "jriapp_utils/dom", "jriapp_utils/utils", "jriapp_elview/elview", "jriapp_content/int"], function (require, exports, const_5, lang_15, object_14, bootstrap_11, factory_2, parser_4, coreutils_17, dom_7, utils_15, elview_5, int_5) {
     "use strict";
     var $ = dom_7.DomUtils.$, document = dom_7.DomUtils.document;
     exports.css = {
@@ -6425,7 +6430,7 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
             contentElements.forEach(function (el) {
                 if (coreutils_17.SysChecks._isInNestedForm(self._el, forms, el))
                     return;
-                var attr = el.getAttribute(const_5.DATA_ATTR.DATA_CONTENT), op = int_4.parseContentAttr(attr);
+                var attr = el.getAttribute(const_5.DATA_ATTR.DATA_CONTENT), op = int_5.parseContentAttr(attr);
                 if (!!op.fieldName && !op.fieldInfo) {
                     op.fieldInfo = getFieldInfo(dctx, op.fieldName);
                     if (!op.fieldInfo) {
@@ -7730,50 +7735,37 @@ define("jriapp_elview/checkbox3", ["require", "exports", "jriapp_utils/utils", "
         __extends(CheckBoxThreeStateElView, _super);
         function CheckBoxThreeStateElView(options) {
             _super.call(this, options);
-            var self = this, el = this.el;
-            this._checked = el.checked;
-            this._val = this._checked === null ? 1 : (!!this._checked ? 2 : 0);
-            this.$el.on("change." + this.uniqueID, function (e) {
+            var self = this;
+            var chk = this.el;
+            this._checked = null;
+            chk.checked = false;
+            chk.indeterminate = this._checked === null;
+            this.$el.on("click." + this.uniqueID, function (e) {
                 e.stopPropagation();
-                switch (self._val) {
-                    case 0:
-                        self._val = 1;
-                        break;
-                    case 1:
-                        self._val = 2;
-                        break;
-                    default:
-                        self._val = 0;
-                        break;
-                }
-                self.checked = (self._val === 1) ? null : ((self._val === 2) ? true : false);
+                if (self.checked === null)
+                    self.checked = true;
+                else
+                    self.checked = !self.checked ? null : false;
             });
+            this._updateState();
         }
+        CheckBoxThreeStateElView.prototype._updateState = function () {
+            dom.setClass(this.$el.toArray(), elview_12.css.checkedNull, !utils_22.Utils.check.isNt(this.checked));
+        };
         CheckBoxThreeStateElView.prototype.toString = function () {
             return "CheckBoxThreeStateElView";
         };
         Object.defineProperty(CheckBoxThreeStateElView.prototype, "checked", {
-            get: function () { return this._checked; },
+            get: function () {
+                return this._checked;
+            },
             set: function (v) {
-                var el = this.el;
-                if (v !== this._checked) {
+                if (this._checked !== v) {
                     this._checked = v;
-                    switch (this._checked) {
-                        case null:
-                            el.indeterminate = true;
-                            this._val = 1;
-                            break;
-                        case true:
-                            el.indeterminate = false;
-                            el.checked = true;
-                            this._val = 2;
-                            break;
-                        default:
-                            el.indeterminate = false;
-                            el.checked = false;
-                            this._val = 0;
-                            break;
-                    }
+                    var chk = this.el;
+                    chk.checked = !!v;
+                    chk.indeterminate = this._checked === null;
+                    this._updateState();
                     this.raisePropertyChanged(elview_12.PROP_NAME.checked);
                 }
             },
@@ -7784,7 +7776,7 @@ define("jriapp_elview/checkbox3", ["require", "exports", "jriapp_utils/utils", "
     }(input_3.InputElView));
     exports.CheckBoxThreeStateElView = CheckBoxThreeStateElView;
     bootstrap_18.bootstrap.registerElView("threeState", CheckBoxThreeStateElView);
-    bootstrap_18.bootstrap.registerElView("checkbox", CheckBoxThreeStateElView);
+    bootstrap_18.bootstrap.registerElView("checkbox3", CheckBoxThreeStateElView);
 });
 define("jriapp_elview/expander", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/anchor"], function (require, exports, utils_23, bootstrap_19, anchor_1) {
     "use strict";
@@ -7893,27 +7885,6 @@ define("jriapp_elview/radio", ["require", "exports", "jriapp_utils/utils", "jria
         function RadioElView() {
             _super.apply(this, arguments);
         }
-        RadioElView.prototype._onChange = function (checked) {
-            this.checked = checked;
-            this._updateGroup();
-        };
-        RadioElView.prototype._updateGroup = function () {
-            var groupName = this.name, self = this;
-            if (!groupName)
-                return;
-            var parent = this.el.parentElement;
-            if (!parent)
-                return;
-            var selfEl = self.el;
-            $('input[type="radio"][name="' + groupName + '"]', parent).each(function (index, el) {
-                if (selfEl !== this) {
-                    var vw = self.app.elViewFactory.store.getElView(this);
-                    if (!!vw) {
-                        vw.checked = this.checked;
-                    }
-                }
-            });
-        };
         RadioElView.prototype.toString = function () {
             return "RadioElView";
         };
@@ -8295,7 +8266,7 @@ define("jriapp_collection/validation", ["require", "exports", "jriapp_core/share
     }());
     exports.Validations = Validations;
 });
-define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "jriapp_core/lang", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_core/parser", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/validation"], function (require, exports, object_16, lang_19, coreutils_22, utils_26, bootstrap_23, parser_5, int_5, utils_27, validation_1) {
+define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "jriapp_core/lang", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_core/parser", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/validation"], function (require, exports, object_16, lang_19, coreutils_22, utils_26, bootstrap_23, parser_5, int_6, utils_27, validation_1) {
     "use strict";
     var coreUtils = utils_26.Utils.core, strUtils = utils_26.Utils.str, checks = utils_26.Utils.check;
     var COLL_EVENTS = {
@@ -8520,16 +8491,16 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
             this._removeHandler(COLL_EVENTS.status_changed, nmspace);
         };
         BaseCollection.prototype.addOnPageIndexChanged = function (handler, nmspace, context) {
-            this.addOnPropertyChange(int_5.PROP_NAME.pageIndex, handler, nmspace, context);
+            this.addOnPropertyChange(int_6.PROP_NAME.pageIndex, handler, nmspace, context);
         };
         BaseCollection.prototype.addOnPageSizeChanged = function (handler, nmspace, context) {
-            this.addOnPropertyChange(int_5.PROP_NAME.pageSize, handler, nmspace, context);
+            this.addOnPropertyChange(int_6.PROP_NAME.pageSize, handler, nmspace, context);
         };
         BaseCollection.prototype.addOnTotalCountChanged = function (handler, nmspace, context) {
-            this.addOnPropertyChange(int_5.PROP_NAME.totalCount, handler, nmspace, context);
+            this.addOnPropertyChange(int_6.PROP_NAME.totalCount, handler, nmspace, context);
         };
         BaseCollection.prototype.addOnCurrentChanged = function (handler, nmspace, context) {
-            this.addOnPropertyChange(int_5.PROP_NAME.currentItem, handler, nmspace, context);
+            this.addOnPropertyChange(int_6.PROP_NAME.currentItem, handler, nmspace, context);
         };
         BaseCollection.prototype._getPKFieldInfos = function () {
             if (!!this._pkInfo)
@@ -8556,13 +8527,13 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
             this.raiseEvent(COLL_EVENTS.current_changing, { newCurrent: newCurrent });
         };
         BaseCollection.prototype._onCurrentChanged = function () {
-            this.raisePropertyChanged(int_5.PROP_NAME.currentItem);
+            this.raisePropertyChanged(int_6.PROP_NAME.currentItem);
         };
         BaseCollection.prototype._onCountChanged = function () {
-            this.raisePropertyChanged(int_5.PROP_NAME.count);
+            this.raisePropertyChanged(int_6.PROP_NAME.count);
         };
         BaseCollection.prototype._onEditingChanged = function () {
-            this.raisePropertyChanged(int_5.PROP_NAME.isEditing);
+            this.raisePropertyChanged(int_6.PROP_NAME.isEditing);
         };
         BaseCollection.prototype._onItemStatusChanged = function (item, oldStatus) {
             this.raiseEvent(COLL_EVENTS.status_changed, { item: item, oldStatus: oldStatus, key: item._key });
@@ -8609,7 +8580,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
             this._itemsByKey[item._key] = item;
             this._onCollectionChanged({ changeType: 1, reason: 0, oper: 2, items: [item], pos: [pos] });
             item._aspect._onAttach();
-            this.raisePropertyChanged(int_5.PROP_NAME.count);
+            this.raisePropertyChanged(int_6.PROP_NAME.count);
             this._onCurrentChanging(item);
             this._currentPos = pos;
             this._onCurrentChanged();
@@ -8620,7 +8591,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
                 this._onCollectionChanged({ changeType: 0, reason: 0, oper: 3, items: [item], pos: [pos] });
             }
             finally {
-                this.raisePropertyChanged(int_5.PROP_NAME.count);
+                this.raisePropertyChanged(int_6.PROP_NAME.count);
             }
         };
         BaseCollection.prototype._onPageSizeChanged = function () {
@@ -8808,7 +8779,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
         BaseCollection.prototype._set_isLoading = function (v) {
             if (this._isLoading !== v) {
                 this._isLoading = v;
-                this.raisePropertyChanged(int_5.PROP_NAME.isLoading);
+                this.raisePropertyChanged(int_6.PROP_NAME.isLoading);
             }
         };
         BaseCollection.prototype._getInternal = function () {
@@ -9091,7 +9062,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
         };
         BaseCollection.prototype.waitForNotLoading = function (callback, groupName) {
             this._waitQueue.enQueue({
-                prop: int_5.PROP_NAME.isLoading,
+                prop: int_6.PROP_NAME.isLoading,
                 groupName: groupName,
                 predicate: function (val) {
                     return !val;
@@ -9130,8 +9101,8 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
             set: function (v) {
                 if (v !== this._totalCount) {
                     this._totalCount = v;
-                    this.raisePropertyChanged(int_5.PROP_NAME.totalCount);
-                    this.raisePropertyChanged(int_5.PROP_NAME.pageCount);
+                    this.raisePropertyChanged(int_6.PROP_NAME.totalCount);
+                    this.raisePropertyChanged(int_6.PROP_NAME.pageCount);
                 }
             },
             enumerable: true,
@@ -9142,7 +9113,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
             set: function (v) {
                 if (this._options.pageSize !== v) {
                     this._options.pageSize = v;
-                    this.raisePropertyChanged(int_5.PROP_NAME.pageSize);
+                    this.raisePropertyChanged(int_6.PROP_NAME.pageSize);
                     this._onPageSizeChanged();
                 }
             },
@@ -9160,7 +9131,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
                     }
                     this._pageIndex = v;
                     this._onPageChanged();
-                    this.raisePropertyChanged(int_5.PROP_NAME.pageIndex);
+                    this.raisePropertyChanged(int_6.PROP_NAME.pageIndex);
                 }
             },
             enumerable: true,
@@ -9204,7 +9175,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
             set: function (v) {
                 if (this._isUpdating !== v) {
                     this._isUpdating = v;
-                    this.raisePropertyChanged(int_5.PROP_NAME.isUpdating);
+                    this.raisePropertyChanged(int_6.PROP_NAME.isUpdating);
                 }
             },
             enumerable: true,
@@ -9219,7 +9190,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
     }(object_16.BaseObject));
     exports.BaseCollection = BaseCollection;
 });
-define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/validation"], function (require, exports, object_17, coreutils_23, utils_28, lang_20, int_6, utils_29, validation_2) {
+define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/validation"], function (require, exports, object_17, coreutils_23, utils_28, lang_20, int_7, utils_29, validation_2) {
     "use strict";
     var coreUtils = utils_28.Utils.core, strUtils = utils_28.Utils.str, checks = utils_28.Utils.check;
     var ItemAspect = (function (_super) {
@@ -9240,15 +9211,15 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
         ItemAspect.prototype._setIsEditing = function (v) {
             if (this._isEditing !== v) {
                 this._isEditing = v;
-                this.raisePropertyChanged(int_6.PROP_NAME.isEditing);
+                this.raisePropertyChanged(int_7.PROP_NAME.isEditing);
             }
         };
         ItemAspect.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
-            return [int_6.ITEM_EVENTS.errors_changed].concat(base_events);
+            return [int_7.ITEM_EVENTS.errors_changed].concat(base_events);
         };
         ItemAspect.prototype._onErrorsChanged = function (args) {
-            this.raiseEvent(int_6.ITEM_EVENTS.errors_changed, args);
+            this.raiseEvent(int_7.ITEM_EVENTS.errors_changed, args);
         };
         ItemAspect.prototype.handleError = function (error, source) {
             var isHandled = _super.prototype.handleError.call(this, error, source);
@@ -9530,10 +9501,10 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             return !!itemErrors;
         };
         ItemAspect.prototype.addOnErrorsChanged = function (fn, nmspace, context) {
-            this._addHandler(int_6.ITEM_EVENTS.errors_changed, fn, nmspace, context);
+            this._addHandler(int_7.ITEM_EVENTS.errors_changed, fn, nmspace, context);
         };
         ItemAspect.prototype.removeOnErrorsChanged = function (nmspace) {
-            this._removeHandler(int_6.ITEM_EVENTS.errors_changed, nmspace);
+            this._removeHandler(int_7.ITEM_EVENTS.errors_changed, nmspace);
         };
         ItemAspect.prototype.getFieldErrors = function (fieldName) {
             var itemErrors = this.collection._getInternal().getErrors(this.item);
@@ -9718,7 +9689,7 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
     }(object_17.BaseObject));
     exports.ItemAspect = ItemAspect;
 });
-define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/base", "jriapp_collection/aspect", "jriapp_collection/validation"], function (require, exports, coreutils_24, utils_30, lang_21, int_7, utils_31, base_1, aspect_1, validation_3) {
+define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/base", "jriapp_collection/aspect", "jriapp_collection/validation"], function (require, exports, coreutils_24, utils_30, lang_21, int_8, utils_31, base_1, aspect_1, validation_3) {
     "use strict";
     var coreUtils = utils_30.Utils.core, strUtils = utils_30.Utils.str, checks = utils_30.Utils.check;
     function fn_initVals(coll, obj) {
@@ -9880,7 +9851,7 @@ define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils"
                     }
                 });
                 if (newItems.length > 0) {
-                    this.raisePropertyChanged(int_7.PROP_NAME.count);
+                    this.raisePropertyChanged(int_8.PROP_NAME.count);
                 }
             }
             finally {
@@ -9985,7 +9956,7 @@ define("jriapp_collection/dictionary", ["require", "exports", "jriapp_utils/util
     }(list_1.BaseList));
     exports.BaseDictionary = BaseDictionary;
 });
-define("jriapp_collection/item", ["require", "exports", "jriapp_core/object", "jriapp_collection/int"], function (require, exports, object_18, int_8) {
+define("jriapp_collection/item", ["require", "exports", "jriapp_core/object", "jriapp_collection/int"], function (require, exports, object_18, int_9) {
     "use strict";
     var CollectionItem = (function (_super) {
         __extends(CollectionItem, _super);
@@ -9994,7 +9965,7 @@ define("jriapp_collection/item", ["require", "exports", "jriapp_core/object", "j
             this.__aspect = aspect;
         }
         CollectionItem.prototype._fakeDestroy = function () {
-            this.raiseEvent(int_8.ITEM_EVENTS.destroyed, {});
+            this.raiseEvent(int_9.ITEM_EVENTS.destroyed, {});
             this.removeNSHandlers();
         };
         Object.defineProperty(CollectionItem.prototype, "_aspect", {
@@ -10034,12 +10005,12 @@ define("jriapp_collection/item", ["require", "exports", "jriapp_core/object", "j
     }(object_18.BaseObject));
     exports.CollectionItem = CollectionItem;
 });
-define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/syschecks", "jriapp_collection/base", "jriapp_collection/dictionary", "jriapp_collection/validation", "jriapp_collection/int", "jriapp_collection/base", "jriapp_collection/item", "jriapp_collection/aspect", "jriapp_collection/list", "jriapp_collection/dictionary", "jriapp_collection/validation", "jriapp_collection/utils"], function (require, exports, syschecks_7, base_2, dictionary_1, validation_4, int_9, base_3, item_1, aspect_2, list_2, dictionary_2, validation_5, utils_33) {
+define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/syschecks", "jriapp_collection/base", "jriapp_collection/dictionary", "jriapp_collection/validation", "jriapp_collection/int", "jriapp_collection/base", "jriapp_collection/item", "jriapp_collection/aspect", "jriapp_collection/list", "jriapp_collection/dictionary", "jriapp_collection/validation", "jriapp_collection/utils"], function (require, exports, syschecks_7, base_2, dictionary_1, validation_4, int_10, base_3, item_1, aspect_2, list_2, dictionary_2, validation_5, utils_33) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
     }
-    __export(int_9);
+    __export(int_10);
     __export(base_3);
     __export(item_1);
     __export(aspect_2);
@@ -10795,6 +10766,6 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.COLL_CHANGE_REASON = collection_1.COLL_CHANGE_REASON;
     exports.COLL_CHANGE_TYPE = collection_1.COLL_CHANGE_TYPE;
     exports.Application = app_1.Application;
-    exports.VERSION = "0.9.78";
+    exports.VERSION = "0.9.79";
     bootstrap_25.Bootstrap._initFramework();
 });

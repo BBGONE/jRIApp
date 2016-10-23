@@ -9,61 +9,44 @@ const dom = utils.dom, $ = dom.$;
 
 export class CheckBoxThreeStateElView extends InputElView {
     private _checked: boolean;
-    private _val: number;
 
     constructor(options: IViewOptions) {
         super(options);
-        let self = this, el: any = this.el;
-        this._checked = el.checked;
-        this._val = this._checked === null ? 1 : (!!this._checked ? 2 : 0);
-        this.$el.on("change." + this.uniqueID, function (e) {
-            e.stopPropagation();
-            switch (self._val) {
-                // unchecked, going indeterminate
-                case 0:
-                    self._val = 1;
-                    break;
-                // indeterminate, going checked
-                case 1:
-                    self._val = 2;
-                    break;
-                // checked, going unchecked
-                default:
-                    self._val = 0;
-                    break;
+        let self = this;
+        let chk = <HTMLInputElement>this.el;
+        this._checked = null;
+        chk.checked = false;
+        chk.indeterminate = this._checked === null;
 
-            }
-            self.checked = (self._val === 1) ? null : ((self._val === 2) ? true : false);
+        this.$el.on("click." + this.uniqueID, function (e) {
+            e.stopPropagation();
+            if (self.checked === null)
+                self.checked = true;
+            else
+                self.checked = !self.checked ? null : false;
         });
+        this._updateState();
+    }
+    protected _updateState() {
+        dom.setClass(this.$el.toArray(), css.checkedNull, !utils.check.isNt(this.checked));
     }
     toString() {
         return "CheckBoxThreeStateElView";
     }
-    get checked() { return this._checked; }
-    set checked(v) {
-        let el: any = this.el;
-        if (v !== this._checked) {
+    get checked(): boolean {
+        return this._checked;
+    }
+    set checked(v: boolean) {
+        if (this._checked !== v) {
             this._checked = v;
-            switch (this._checked) {
-                case null:
-                    el.indeterminate = true;
-                    this._val = 1;
-                    break;
-                case true:
-                    el.indeterminate = false;
-                    el.checked = true;
-                    this._val = 2;
-                    break;
-                default:
-                    el.indeterminate = false;
-                    el.checked = false;
-                    this._val = 0;
-                    break;
-            }
+            let chk = <HTMLInputElement>this.el;
+            chk.checked = !!v;
+            chk.indeterminate = this._checked === null;
+            this._updateState();
             this.raisePropertyChanged(PROP_NAME.checked);
         }
     }
 }
 
 bootstrap.registerElView("threeState", CheckBoxThreeStateElView);
-bootstrap.registerElView("checkbox", CheckBoxThreeStateElView);
+bootstrap.registerElView("checkbox3", CheckBoxThreeStateElView);

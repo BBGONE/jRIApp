@@ -129,16 +129,18 @@ span.ria-required-field::after {
     outline: 2px solid red;
 }
 
-input[type=checkbox].ria-checked-null, input[type=radio].ria-checked-null {
+
+input.ria-checked-null {
   opacity: 0.4;
   outline: 2px inset silver;
 }
 
+/* more specific */
 input[type=checkbox].ria-field-error, input[type=radio].ria-field-error {
-  outline: 2px outset red !important;
+  outline: 2px outset red;
 }
 
-/*Dataform styles*/
+/* Dataform styles */
 .ria-dataform {
     padding: 5px;
     position: relative;

@@ -78,6 +78,8 @@
                         converter: app.getConverter('uppercaseConverter'),
                         converterParam: null
                     });
+                }).then(function () {
+                    $("#demoContent").animate({ opacity: 1 }, 1000);
                 });
         });
 
@@ -95,7 +97,7 @@
 <h2 class="ex8">@ViewBag.Title</h2>
 
 <!--using dataform is convenient because it set datacontext scope for all its content-->
-<div id="demoContent">
+<div id="demoContent" style="opacity:0;">
     <fieldset>
         <legend>HTML elements values are binded to the TestObject properties</legend>
         <div class="leftOffset">
@@ -117,8 +119,13 @@
             <label>Formats: </label><select size="1" style="width: 220px" data-bind="{this.dataSource,to=formats,source=testObject}{this.selectedValue,to=format,mode=TwoWay,source=testObject}" data-view="options:{valuePath=key,textPath=val}"></select>
         </div>
         <label class="leftOffset">
-            <label>boolProperty:</label>
-            <input type="checkbox" class="checkbox" id="boolProperty" data-bind="{this.checked,to=boolProperty,mode=TwoWay,source=testObject}"/>
+            <label>boolProperty:&nbsp;<span  style="color:black;" data-bind="{this.value,to=boolProperty,source=testObject}"></span></label>
+            <input type="checkbox" class="checkbox" data-bind="{this.checked,to=boolProperty,mode=TwoWay,source=testObject}"/>
+            <span></span>
+        </label>
+        <label class="leftOffset">
+            <label>boolProperty ThreeState:</label>
+            <input type="checkbox" class="checkbox" data-bind="{this.checked,to=boolProperty,mode=TwoWay,source=testObject}" data-view="name=threeState"/>
             <span></span>
         </label>
     </fieldset>

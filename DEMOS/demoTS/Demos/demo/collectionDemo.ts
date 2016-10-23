@@ -17,14 +17,14 @@ export class RadioValueConverter extends RIAPP.BaseConverter {
 }
 
 export class RadioDemoVM extends RIAPP.ViewModel<DemoApplication> {
-    _radioValue: string;
-    _radioValues: DEMODB.RadioValDictionary;
-    _testDict: DEMODB.TestDictionary;
+    private _radioValue: string;
+    private _radioValues: DEMODB.RadioValDictionary;
+    private _testDict: DEMODB.TestDictionary;
 
     constructor(app: DemoApplication) {
         super(app);
         var self = this;
-        this._radioValue = 'radioValue1';
+        this._radioValue = null;
         //one property in a dictionary  must be unique and used as key (its name does not matter )
         this._radioValues = new DEMODB.RadioValDictionary();
         this._radioValues.fillItems([{ key: 'radioValue1', value: 'This is some text value #1', comment: 'This is some comment for value #1' },
@@ -62,8 +62,8 @@ export class RadioDemoVM extends RIAPP.ViewModel<DemoApplication> {
 
 //an example of extending base class and appending extra logic
 export class RadioDemo2VM extends RadioDemoVM {
-    _historyList: DEMODB.HistoryList;
-    _clearListCommand: RIAPP.ICommand;
+    private _historyList: DEMODB.HistoryList;
+    private _clearListCommand: RIAPP.ICommand;
 
     constructor(app: DemoApplication, currentValue?: string) {
         super(app);
@@ -75,6 +75,7 @@ export class RadioDemo2VM extends RadioDemoVM {
             self._clearListCommand.raiseCanExecuteChanged();
         }, this.uniqueID);
         this._clearListCommand = new RIAPP.Command(function (sender, param) {
+            self.radioValue = null;
             self.clearList();
         }, self, function (sender, param) {
             return self._historyList.count > 0;

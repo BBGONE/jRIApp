@@ -7,7 +7,8 @@ const coreUtils = utils.core;
 
 export const css = {
     content: "ria-content-field",
-    required: "ria-required-field"
+    required: "ria-required-field",
+    checkbox: "ria-checkbox"
 };
 
 //the result of parsing of the data-content attribute
