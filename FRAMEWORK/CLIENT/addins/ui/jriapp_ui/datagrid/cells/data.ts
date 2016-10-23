@@ -8,7 +8,7 @@ import { css } from "../const";
 import { BaseCell, ICellOptions } from "./base";
 import { DataColumn } from "../columns/data";
 
-const $ = utils.dom.$;
+const dom = utils.dom, $ = dom.$;
 
 export class DataCell extends BaseCell<DataColumn> {
     private _content: IContent;
@@ -21,12 +21,12 @@ export class DataCell extends BaseCell<DataColumn> {
 
         this._click.interval = 350;
         this._click.add(() => {
-            this._onCellClicked(this._row);
+            this._onCellClicked(this.row);
         }, () => {
-            this._onDblClicked(this._row);
-            });
+            this._onDblClicked(this.row);
+        });
         //adds the class
-        utils.dom.setClass([this._td], css.dataCell, false);
+        dom.addClass([this.td], css.dataCell);
         this._initContent();
     }
     //init cell's content
@@ -52,7 +52,7 @@ export class DataCell extends BaseCell<DataColumn> {
             }
 
             this._content = new contentType({
-                parentEl: this._td,
+                parentEl: this.td,
                 contentOptions: contentOptions,
                 dataContext: this.item,
                 isEditing: this.item._aspect.isEditing,
@@ -81,7 +81,7 @@ export class DataCell extends BaseCell<DataColumn> {
             this._stateCss = css;
             if (!!this._stateCss)
                 arr.push("+" + this._stateCss);
-            utils.dom.setClasses([this._td], arr);
+            utils.dom.setClasses([this.td], arr);
         }
     }
     destroy() {

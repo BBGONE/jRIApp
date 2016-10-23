@@ -12,11 +12,12 @@
         width: 100%;
     }
 
-    .productTableContainer { 
+    .productTableContainer {
         overflow: auto !important;
     }
 
-    .productTableHeader { }
+    .productTableHeader {
+    }
 
     .orderDetailTableWrap {
         max-height: 180px;
@@ -28,7 +29,7 @@
         font-weight: bold;
     }
 
-    table.ria-data-table td.number-edit input[type="text"] { 
+    table.ria-data-table td.number-edit input[type="text"] {
         color: black;
     }
 
@@ -37,29 +38,31 @@
         font-weight: bold;
     }
 
-    .name-edit input[type="text"] { color: black; }
-
-    .name-edit textarea { color: black; }
-
-    .listbox-edit select { width: 75%; }
-
-    .ria-data-table td.weightCell
-    {
-        text-align:right;
+    .name-edit input[type="text"] {
+        color: black;
     }
 
-    .ria-data-table td.dateCell
-    {
-        text-align:right;
+    .name-edit textarea {
+        color: black;
     }
 
-    .ria-data-table td.activeCell
-    {
-       text-align:center;
+    .listbox-edit select {
+        width: 75%;
     }
 
-    .weightCol
-    {
+    .ria-data-table td.weightCell {
+        text-align: right;
+    }
+
+    .ria-data-table td.dateCell {
+        text-align: right;
+    }
+
+    .ria-data-table td.activeCell {
+        text-align: center;
+    }
+
+    .weightCol {
         font-weight: bolder;
     }
 
@@ -68,30 +71,38 @@
         text-decoration: line-through;
     }
 
-    table.ria-data-table tr:nth-child(even) { background-color: #ECF2F6; }
+    table.ria-data-table tr:nth-child(even) {
+        background-color: #ECF2F6;
+    }
 
     .ui-datepicker select.ui-datepicker-month,
-    .ui-datepicker select.ui-datepicker-year { min-height: 28px; }
+    .ui-datepicker select.ui-datepicker-year {
+        min-height: 28px;
+    }
 
     .ui-datepicker select.ui-datepicker-month {
         margin-right: 3px;
         width: 80px;
     }
 
-    .gray-bgc { background-color: #ECF2F6; }
+    .gray-bgc {
+        background-color: #ECF2F6;
+    }
 
-    .white-bgc { background-color: #FFFFFF; }
+    .white-bgc {
+        background-color: #FFFFFF;
+    }
 
-   .leftOffset {
+    .leftOffset {
         margin-left: 5px;
     }
 
-   
-    div.someClass{
+
+    div.someClass {
         color: gray;
     }
 
-    div.bold span{
+    div.bold span {
         font-weight: bold;
         font-size: larger;
     }
@@ -100,21 +111,92 @@
         color: black;
     }
 
-    div.bold.lsize {
-        color: red;
+        div.bold.lsize {
+            color: red;
+        }
+
+        div.bold.msize {
+            color: green;
+        }
+
+        div.bold.ssize {
+            color: blue;
+        }
+
+        div.bold.nsize {
+            color: darkgoldenrod;
+        }
+
+/* Checkbox styles for testing that it works */
+/*
+    .ria-row-selector > label {
+        margin-left: 10px;
     }
 
-    div.bold.msize{
-        color: green;
+    input.ria-row-selector + span {
+        cursor: pointer;
     }
 
-    div.bold.ssize{
-        color: blue;
+    input.ria-row-selector:not(checked) {
+        position: absolute;
+        opacity: 0 !important;
+        outline: none !important;
     }
 
-    div.bold.nsize{
-        color: darkgoldenrod;
+    input.ria-row-selector:checked {
+        position: absolute;
+        opacity: 0 !important;
+        outline: none !important;
     }
+
+    input.ria-row-selector:not(checked) + span {
+        position: relative;
+        padding: 0 0 0 60px;
+    }
+
+        input.ria-row-selector:not(checked) + span:before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: 0;
+            width: 50px;
+            height: 26px;
+            border-radius: 13px;
+            background: #b5bdc8;
+            background: -moz-radial-gradient(center, ellipse cover, #b5bdc8 0%, #828c95 36%, #28343b 100%);
+            background: -webkit-radial-gradient(center, ellipse cover, #b5bdc8 0%,#828c95 36%,#28343b 100%);
+            background: radial-gradient(ellipse at center, #b5bdc8 0%,#828c95 36%,#28343b 100%);
+            box-shadow: inset 0 2px 3px rgba(0,0,0,.2);
+        }
+
+        input.ria-row-selector:not(checked) + span:after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: 2px;
+            width: 22px;
+            height: 22px;
+            border-radius: 10px;
+            background: #FFF;
+            box-shadow: 0 2px 5px rgba(0,0,0,.3);
+            transition: all .2s;
+        }
+
+    input.ria-row-selector:checked + span:before {
+        background: #1e5799;
+        background: -moz-radial-gradient(center, ellipse cover, #1e5799 0%, #2989d8 50%, #207cca 51%, #7db9e8 100%);
+        background: -webkit-radial-gradient(center, ellipse cover, #1e5799 0%,#2989d8 50%,#207cca 51%,#7db9e8 100%);
+        background: radial-gradient(ellipse at center, #1e5799 0%,#2989d8 50%,#207cca 51%,#7db9e8 100%);
+    }
+
+    input.ria-row-selector:checked + span:after {
+        left: 26px;
+    }
+
+    input.ria-row-selector:focus + span:before {
+        box-shadow: 0 0 0 3px rgba(255,255,125,.5);
+    }
+*/
 </style>
 
 <script src="@Url.Content("~/Scripts/demo/gridDemo/main.js", true)" type="text/javascript"></script>

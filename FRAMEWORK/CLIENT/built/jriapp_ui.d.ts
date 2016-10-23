@@ -50,7 +50,7 @@ declare module "jriapp_ui/dialog" {
         private _fn_submitOnOK;
         private _app;
         private _currentSelectable;
-        private _templateDeferred;
+        private _deferred;
         constructor(app: IApplication, options: IDialogConstructorOptions);
         handleError(error: any, source: any): boolean;
         addOnClose(fn: TEventHandler<DataEditDialog, any>, nmspace?: string, context?: IBaseObject): void;
@@ -354,10 +354,9 @@ declare module "jriapp_ui/datagrid/columns/rowselector" {
     import { BaseColumn, ICellInfo } from "jriapp_ui/datagrid/columns/base";
     import { DataGrid } from "jriapp_ui/datagrid/datagrid";
     export class RowSelectorColumn extends BaseColumn {
-        private _val;
         private _$chk;
+        private _event_chk_scope;
         constructor(grid: DataGrid, options: ICellInfo);
-        protected _onCheckBoxClicked(isChecked: boolean): void;
         toString(): string;
         checked: boolean;
         destroy(): void;
@@ -367,9 +366,9 @@ declare module "jriapp_ui/datagrid/cells/rowselector" {
     import { BaseCell, ICellOptions } from "jriapp_ui/datagrid/cells/base";
     import { RowSelectorColumn } from "jriapp_ui/datagrid/columns/rowselector";
     export class RowSelectorCell extends BaseCell<RowSelectorColumn> {
-        private _content;
+        private _$chk;
         constructor(options: ICellOptions);
-        protected _init(): void;
+        checked: boolean;
         destroy(): void;
         toString(): string;
     }
@@ -448,9 +447,9 @@ declare module "jriapp_ui/datagrid/cells/base" {
         num: number;
     }
     export class BaseCell<TColumn extends BaseColumn> extends BaseObject {
-        protected _row: Row;
-        protected _td: HTMLTableCellElement;
-        protected _column: TColumn;
+        private _row;
+        private _td;
+        private _column;
         protected _click: DblClick;
         protected _isEditing: boolean;
         private _num;

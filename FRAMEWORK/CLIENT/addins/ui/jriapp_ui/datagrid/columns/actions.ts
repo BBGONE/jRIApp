@@ -7,7 +7,7 @@ import { IColumnInfo, BaseColumn, ICellInfo } from "./base";
 import { ActionsCell } from "../cells/actions";
 import { DataGrid } from "../datagrid";
 
-const $ = utils.dom.$;
+const dom = utils.dom, $ = dom.$;
 
 export interface IActionsColumnInfo extends IColumnInfo {
 }
@@ -20,7 +20,7 @@ export class ActionsColumn extends BaseColumn {
 
         let self = this, opts: IActionsColumnInfo = this.options;
         this._event_act_scope = ["span[", DATA_ATTR.DATA_EVENT_SCOPE, '="', this.uniqueID, '"]'].join("");
-        utils.dom.addClass(this.$col.toArray(), css.rowActions);
+        dom.addClass(this.$col.toArray(), css.rowActions);
         let $table = this.grid.$table;
         $table.on("click", this._event_act_scope, function (e) {
             e.stopPropagation();

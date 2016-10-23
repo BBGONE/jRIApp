@@ -1,4 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+import { DATA_ATTR } from "jriapp_core/const";
 import { IContent, IBindingInfo, IContentOptions } from "jriapp_core/shared";
 import { BoolContent } from "jriapp_content/bool";
 import { Utils as utils } from "jriapp_utils/utils";
@@ -7,55 +8,48 @@ import { css, PROP_NAME } from "../const";
 import { BaseCell, ICellOptions } from "./base";
 import { RowSelectorColumn } from "../columns/rowselector";
 
-const $ = utils.dom.$;
-
-class RowSelectContent extends BoolContent {
-    getIsCanBeEdited() {
-        return true;
-    }
-    toString() {
-        return "RowSelectContent";
-    }
-}
+const dom = utils.dom, $ = dom.$, doc = dom.document;
 
 export class RowSelectorCell extends BaseCell<RowSelectorColumn> {
-    private _content: IContent;
+    private _$chk: JQuery;
 
     constructor(options: ICellOptions) {
         super(options);
-        this._content = null;
-        let $el = $(this._td);
-        $el.addClass(css.rowSelector);
-        this._init();
+        dom.addClass([this.td], css.rowSelector);
+        let label = doc.createElement("label");
+        let chk = doc.createElement("input");
+        chk.type = "checkbox";
+        chk.checked = false;
+        dom.addClass([chk], css.rowSelector);
+        chk.setAttribute(DATA_ATTR.DATA_EVENT_SCOPE, this.column.uniqueID);
+        label.appendChild(chk);
+        label.appendChild(doc.createElement("span"));
+        this.td.appendChild(label);
+        this._$chk = $(chk);
+        this._$chk.data("cell", this);
     }
-    protected _init() {
-        let bindInfo: IBindingInfo = {
-            target: null, source: null,
-            targetPath: null, sourcePath: PROP_NAME.isSelected,
-            mode: "TwoWay",
-            converter: null, converterParam: null
-        };
-        let contentOpts: IContentOptions = {
-            fieldName: PROP_NAME.isSelected,
-            bindingInfo: bindInfo,
-            displayInfo: null
-        };
-        this._content = new RowSelectContent({
-            parentEl: this._td,
-            contentOptions: contentOpts,
-            dataContext: this.row,
-            isEditing: true,
-            app: this.grid.app
-        });
+    get checked() {
+        if (!!this._$chk && !!this._$chk.length) {
+            let chk = <HTMLInputElement>this._$chk[0];
+            return chk.checked;
+        }
+        return undefined;
+    }
+    set checked(v) {
+        let bv = !!v;
+        if (!!this._$chk && !!this._$chk.length) {
+            let chk = <HTMLInputElement>this._$chk[0];
+            if (bv !== chk.checked) {
+                chk.checked = bv;
+            }
+        }
     }
     destroy() {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        if (!!this._content) {
-            this._content.destroy();
-            this._content = null;
-        }
+        this._$chk.removeData();
+        this._$chk = null;
         super.destroy();
     }
     toString() {

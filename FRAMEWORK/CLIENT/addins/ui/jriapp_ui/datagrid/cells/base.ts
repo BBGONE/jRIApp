@@ -9,7 +9,7 @@ import { Row } from "../rows/row";
 import { BaseColumn } from "../columns/base";
 import { DataGrid } from "../datagrid"
 
-const $ = utils.dom.$;
+const dom = utils.dom, $ = dom.$;
 
 export interface ICellOptions {
     row: Row;
@@ -19,9 +19,9 @@ export interface ICellOptions {
 }
 
 export class BaseCell<TColumn extends BaseColumn> extends BaseObject {
-    protected _row: Row;
-    protected _td: HTMLTableCellElement;
-    protected _column: TColumn;
+    private _row: Row;
+    private _td: HTMLTableCellElement;
+    private _column: TColumn;
     protected _click: DblClick;
     protected _isEditing: boolean;
     private _num: number;
@@ -43,7 +43,7 @@ export class BaseCell<TColumn extends BaseColumn> extends BaseObject {
         this._td.setAttribute(DATA_ATTR.DATA_EVENT_SCOPE, this._column.uniqueID);
         $(this._td).data("cell", this);
         if (!!this._column.options.rowCellCss) {
-            utils.dom.addClass([this._td], this._column.options.rowCellCss);
+            dom.addClass([this._td], this._column.options.rowCellCss);
         }
         this._click = new DblClick();
         this._row.tr.appendChild(this._td);

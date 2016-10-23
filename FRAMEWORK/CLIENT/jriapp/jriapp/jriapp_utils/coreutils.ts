@@ -25,10 +25,10 @@ export class DEBUG {
 
 export class ERROR {
     static throwDummy(err: any): void {
-        if (!!err && !err.isDummy) {
+        if (ERROR.checkIsDummy(err)) 
+            throw err;
+        else
             throw new DummyError(err);
-        }
-        throw err;
     }
     static checkIsDummy(error: any): boolean {
         return !!error && !!error.isDummy;
@@ -37,10 +37,10 @@ export class ERROR {
         return !!error && (error instanceof AbortError);
     }
     static reThrow(ex: any, isHandled: boolean) {
-        if (!!isHandled)
-            ERROR.throwDummy(ex);
-        else
+        if (!isHandled)
             throw ex;
+        else
+            ERROR.throwDummy(ex);
     }
     static abort(reason?: string) {
         throw new AbortError(reason);

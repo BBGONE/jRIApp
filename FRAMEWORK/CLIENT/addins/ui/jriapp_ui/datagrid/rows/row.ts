@@ -211,6 +211,8 @@ export class Row extends BaseObject {
     set isSelected(v) {
         if (this._isSelected !== v) {
             this._isSelected = v;
+            if (!!this._rowSelectorCell)
+                this._rowSelectorCell.checked = this._isSelected;
             this.raisePropertyChanged(PROP_NAME.isSelected);
             this.grid._getInternal().onRowSelectionChanged(this);
         }

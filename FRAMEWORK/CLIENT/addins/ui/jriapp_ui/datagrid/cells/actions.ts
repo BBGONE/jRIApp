@@ -19,15 +19,15 @@ let editImages: string = undefined, viewImages: string = undefined;
 export class ActionsCell extends BaseCell<ActionsColumn> {
     constructor(options: ICellOptions) {
         super(options);
-        dom.addClass([this._td], [css.rowActions, css.nobr].join(" "));
-        this._createButtons(this._row.isEditing);
+        dom.addClass([this.td], [css.rowActions, css.nobr].join(" "));
+        this._createButtons(this.row.isEditing);
     }
     destroy() {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        let $el = $(this._td);
-        let $imgs = $el.find(actionsSelector);
+        let $td = $(this.td);
+        let $imgs = $td.find(actionsSelector);
         $imgs.each(function (index, img) {
             let $img = $(img);
             $img.removeData();
@@ -41,7 +41,7 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
             $img.data("cell", self);
             let name = $img.attr(DATA_ATTR.DATA_NAME);
             fn_addToolTip($img, STRS.TEXT[txtMap[name]]);
-            $img.attr(DATA_ATTR.DATA_EVENT_SCOPE, self._column.uniqueID);
+            $img.attr(DATA_ATTR.DATA_EVENT_SCOPE, self.column.uniqueID);
         });
     }
     protected get editImages() {
@@ -55,12 +55,12 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
         return viewImages;
     }
     protected _createButtons(isEditing: boolean) {
-        if (!this._td)
+        if (!this.td)
             return;
 
-        let self = this, $el = $(this._td), $newElems: JQuery;
+        let self = this, $td = $(this.td), $newElems: JQuery;
 
-        $el.empty();
+        $td.empty();
         if (isEditing) {
             self._isEditing = true;
             $newElems = $(self.editImages);
@@ -77,13 +77,13 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
             }
             self._setupImages($newElems.filter(actionsSelector));
         }
-        $el.append($newElems);
+        $td.append($newElems);
     }
     update() {
-        if (!this._row)
+        if (!this.row)
             return;
-        if (this._isEditing !== this._row.isEditing) {
-            this._createButtons(this._row.isEditing);
+        if (this._isEditing !== this.row.isEditing) {
+            this._createButtons(this.row.isEditing);
         }
     }
     toString() {
