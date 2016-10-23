@@ -1332,6 +1332,7 @@ define("jriapp_ui/datagrid/columns/rowselector", ["require", "exports", "jriapp_
             chk.type = "checkbox";
             chk.checked = false;
             dom.addClass([chk], const_12.css.rowSelector);
+            dom.addClass([label], const_12.css.rowSelector);
             label.appendChild(chk);
             label.appendChild(doc.createElement("span"));
             this.$col.append(label);
@@ -1400,6 +1401,7 @@ define("jriapp_ui/datagrid/cells/rowselector", ["require", "exports", "jriapp_co
             chk.type = "checkbox";
             chk.checked = false;
             dom.addClass([chk], const_14.css.rowSelector);
+            dom.addClass([label], const_14.css.rowSelector);
             chk.setAttribute(const_13.DATA_ATTR.DATA_EVENT_SCOPE, this.column.uniqueID);
             label.appendChild(chk);
             label.appendChild(doc.createElement("span"));

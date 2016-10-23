@@ -149,3 +149,20 @@ input[type=checkbox].ria-field-error, input[type=radio].ria-field-error {
 .ria-dataform.ria-field-error {
     outline: 2px solid red;
 }
+
+label.ria-row-selector
+{
+    margin: 0;
+}
+
+label.ria-checkbox
+{
+    display: inline-block;
+    margin: 0;
+}
+
+input[type="checkbox"].ria-checkbox
+{
+    margin: 0;
+    margin-bottom: 5px;
+}

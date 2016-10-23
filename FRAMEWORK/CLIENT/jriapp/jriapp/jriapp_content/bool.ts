@@ -39,6 +39,7 @@ export class BoolContent extends BasicContent {
             this._el = tgt.el;
         }
         let label = doc.createElement("label");
+        dom.addClass([label], css.checkbox);
         label.appendChild(this._el);
         label.appendChild(doc.createElement("span"));
         this._parentEl.appendChild(label);

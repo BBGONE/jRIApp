@@ -21,6 +21,7 @@ export class RowSelectorCell extends BaseCell<RowSelectorColumn> {
         chk.type = "checkbox";
         chk.checked = false;
         dom.addClass([chk], css.rowSelector);
+        dom.addClass([label], css.rowSelector);
         chk.setAttribute(DATA_ATTR.DATA_EVENT_SCOPE, this.column.uniqueID);
         label.appendChild(chk);
         label.appendChild(doc.createElement("span"));

@@ -23,6 +23,7 @@ export class RowSelectorColumn extends BaseColumn {
         chk.type = "checkbox";
         chk.checked = false;
         dom.addClass([chk], css.rowSelector);
+        dom.addClass([label], css.rowSelector);
         label.appendChild(chk);
         label.appendChild(doc.createElement("span"));
         this.$col.append(label);

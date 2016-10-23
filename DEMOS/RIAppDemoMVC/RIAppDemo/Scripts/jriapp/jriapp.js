@@ -5886,6 +5886,7 @@ define("jriapp_content/bool", ["require", "exports", "jriapp_utils/utils", "jria
                 this._el = tgt.el;
             }
             var label = doc.createElement("label");
+            dom.addClass([label], int_3.css.checkbox);
             label.appendChild(this._el);
             label.appendChild(doc.createElement("span"));
             this._parentEl.appendChild(label);
