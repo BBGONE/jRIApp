@@ -82,18 +82,20 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
                 self._clearListCommand.raiseCanExecuteChanged();
             }, this.uniqueID);
             this._clearListCommand = new RIAPP.Command(function (sender, param) {
-                self.radioValue = null;
                 self.clearList();
+                self.radioValue = null;
             }, self, function (sender, param) {
                 return self._historyList.count > 0;
             });
         }
         RadioDemo2VM.prototype._onRadioValueChanged = function () {
             _super.prototype._onRadioValueChanged.call(this);
-            var item = this._historyList.addNew();
-            item.radioValue = this.radioValue;
-            item.time = new Date();
-            item._aspect.endEdit();
+            if (!!this.radioValue) {
+                var item = this._historyList.addNew();
+                item.radioValue = this.radioValue;
+                item.time = new Date();
+                item._aspect.endEdit();
+            }
         };
         RadioDemo2VM.prototype.clearList = function () {
             this._historyList.clear();

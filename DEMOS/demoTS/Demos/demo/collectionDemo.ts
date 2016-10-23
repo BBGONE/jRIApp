@@ -75,8 +75,8 @@ export class RadioDemo2VM extends RadioDemoVM {
             self._clearListCommand.raiseCanExecuteChanged();
         }, this.uniqueID);
         this._clearListCommand = new RIAPP.Command(function (sender, param) {
-            self.radioValue = null;
             self.clearList();
+            self.radioValue = null;
         }, self, function (sender, param) {
             return self._historyList.count > 0;
         });
@@ -84,11 +84,12 @@ export class RadioDemo2VM extends RadioDemoVM {
     //override the base method
     _onRadioValueChanged() {
         super._onRadioValueChanged();
-        //casting will be solved with generics soon
-        var item = this._historyList.addNew();
-        item.radioValue = this.radioValue;
-        item.time = new Date();
-        item._aspect.endEdit();
+        if (!!this.radioValue) {
+            var item = this._historyList.addNew();
+            item.radioValue = this.radioValue;
+            item.time = new Date();
+            item._aspect.endEdit();
+        }
     }
     clearList() {
         this._historyList.clear();
