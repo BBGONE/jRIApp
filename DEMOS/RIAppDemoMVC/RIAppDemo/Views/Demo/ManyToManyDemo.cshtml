@@ -147,6 +147,7 @@
 <script type="text/javascript">
     require(["manToManDemo/main", "jriapp_ui", "jriapp_ru"],
         function(DEMO, UI, LANG) {
+            $("#loading").fadeIn();
             var mainOptions = {
                 service_url: null,
                 permissionInfo: null
@@ -157,8 +158,9 @@
                 ops.permissionInfo = @Html.Action("PermissionsInfo", "RIAppDemoServiceEF");
             })(mainOptions);
 
-            DEMO.start(mainOptions).then(function(){
+            DEMO.start(mainOptions).always(function(){
                 $("#demoContent").animate({opacity: 1}, 1000);
+                $("#loading").fadeOut(1000);
             });
         });
 </script>
@@ -284,6 +286,8 @@
         <div style="float: left; padding-left: 10px; padding-top: 10px;"><span>Total:</span>&nbsp;<span data-bind="{this.value,to=totalCount,source=customerVM.dbSet}"></span></div>
     </div>
 </div>
+
+@Html.Partial("_WaitLoad")
 
 <script id="customerEditTemplate" type="text/html" data-role="template">
     <div style="margin: 0px; width: 100%;">

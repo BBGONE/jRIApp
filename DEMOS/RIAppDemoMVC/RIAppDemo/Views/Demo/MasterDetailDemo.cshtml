@@ -77,6 +77,7 @@
 <script type="text/javascript">
     require(["mastDetDemo/main", "jriapp_ui", "jriapp_ru"],
         function(DEMO, UI, LANG) {
+            $("#loading").fadeIn();
             var mainOptions = {
                 service_url: null,
                 permissionInfo: null
@@ -87,8 +88,9 @@
                 ops.permissionInfo = @Html.Action("PermissionsInfo", "RIAppDemoServiceEF");
             })(mainOptions);
 
-            DEMO.start(mainOptions).then(function(){
+            DEMO.start(mainOptions).always(function(){
                 $("#demoContent").animate({opacity: 1}, 1000);
+                $("#loading").fadeOut(1000);
             });
         });
 </script>
@@ -126,6 +128,8 @@
         </div>
     </div>
 </div>
+
+@Html.Partial("_WaitLoad")
 
 <script id="customerEditTemplate" type="text/html" data-role="template">
     <div style="margin: 0px; width: 100%;">

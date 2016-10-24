@@ -241,7 +241,7 @@
 
             })(mainOptions);
 
-            DEMO.start(mainOptions).then(function () {
+            DEMO.start(mainOptions).always(function () {
                 $("#demoContent").animate({ opacity: 1 }, 1000);
                 $("#loading").fadeOut(1000);
             });
