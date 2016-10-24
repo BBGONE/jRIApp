@@ -372,7 +372,7 @@ export class DataForm extends BaseObject {
     get dataContext() { return this._dataContext; }
     set dataContext(v) {
         try {
-            if (v === this._dataContext)
+           if (v === this._dataContext)
                 return;
             if (!!v && !SysChecks._isBaseObj(v)) {
                 throw new Error(ERRS.ERR_DATAFRM_DCTX_INVALID);

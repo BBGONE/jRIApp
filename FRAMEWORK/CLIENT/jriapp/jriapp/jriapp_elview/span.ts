@@ -20,8 +20,12 @@ export class SpanElView extends BaseElView {
             this.raisePropertyChanged(PROP_NAME.value);
         }
     }
-    get value() { return this.text; }
-    set value(v) { this.text = v; }
+    get value() {
+        return this.text;
+    }
+    set value(v) {
+        this.text = v;
+    }
     get html() { return this.$el.html(); }
     set html(v) {
         let x = this.$el.html();

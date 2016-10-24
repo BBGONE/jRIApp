@@ -1672,9 +1672,9 @@ define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jria
             fkey = self.getParentFKey(item);
             if (fkey !== savedKey) {
                 if (!!savedKey) {
-                    delete self._parentMap[savedKey];
                     self._notifyChildrenChanged([savedKey]);
                     self._notifyParentChanged([savedKey]);
+                    delete self._parentMap[savedKey];
                 }
                 if (!!fkey) {
                     self._mapParentItems([item]);
@@ -1769,32 +1769,35 @@ define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jria
             var self = this;
             if (changed_pkeys.length > 0 || changed_ckeys.length > 0) {
                 changed_pkeys.forEach(function (key) {
-                    var res = self._changed[key];
-                    if (!res)
-                        res = 1;
-                    else
-                        res = res | 1;
+                    var res = self._changed[key] || { children: {}, parent: null };
+                    var arr = self._childMap[key];
+                    if (!!arr) {
+                        for (var i = 0; i < arr.length; i += 1) {
+                            res.children[arr[i]._key] = arr[i];
+                        }
+                    }
                     self._changed[key] = res;
                 });
                 changed_ckeys.forEach(function (key) {
-                    var res = self._changed[key];
-                    if (!res)
-                        res = 2;
-                    else
-                        res = res | 2;
-                    self._changed[key] = res;
+                    var res = self._changed[key] || { children: {}, parent: {} };
+                    var item = self._parentMap[key];
+                    if (!!item) {
+                        res.parent = item;
+                    }
                 });
                 this._changedDebounce.enqueue(function () {
                     var changed = self._changed;
                     self._changed = {};
-                    var keys = Object.keys(changed);
-                    keys.forEach(function (fkey) {
-                        var res = changed[fkey];
-                        if ((res & 1) === 1) {
-                            self._onParentChanged(fkey);
+                    utils_5.Utils.core.iterateIndexer(changed, function (fkey, obj) {
+                        var items = [];
+                        var keys = Object.keys(obj.children);
+                        for (var k = 0; k < keys.length; k += 1) {
+                            items.push(obj.children[keys[k]]);
                         }
-                        if ((res & 2) === 2) {
-                            self._onChildrenChanged(fkey);
+                        if (items.length > 0)
+                            self._onParentChanged(fkey, items);
+                        if (!!obj.parent) {
+                            self._onChildrenChanged(fkey, obj.parent);
                         }
                     });
                 });
@@ -1849,13 +1852,13 @@ define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jria
             fkey = self.getChildFKey(item);
             if (fkey !== savedKey) {
                 if (!!savedKey) {
+                    self._notifyParentChanged([savedKey]);
+                    self._notifyChildrenChanged([savedKey]);
                     arr = self._childMap[savedKey];
                     ArrayHelper.remove(arr, item);
                     if (arr.length === 0) {
                         delete self._childMap[savedKey];
                     }
-                    self._notifyParentChanged([savedKey]);
-                    self._notifyChildrenChanged([savedKey]);
                 }
                 if (!!fkey) {
                     self._mapChildren([item]);
@@ -1938,23 +1941,17 @@ define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jria
             }
             return Object.keys(chngedKeys);
         };
-        Association.prototype._onChildrenChanged = function (fkey) {
-            if (!!fkey && !!this._parentToChildrenName) {
-                var obj = this._parentMap[fkey];
-                if (!!obj) {
-                    obj.raisePropertyChanged(this._parentToChildrenName);
-                }
+        Association.prototype._onChildrenChanged = function (fkey, item) {
+            if (!!fkey && !!this._parentToChildrenName && !!item) {
+                item.raisePropertyChanged(this._parentToChildrenName);
             }
         };
-        Association.prototype._onParentChanged = function (fkey) {
-            var self = this, arr;
-            if (!!fkey && !!this._childToParentName) {
-                arr = this._childMap[fkey];
-                if (!!arr) {
-                    arr.forEach(function (item) {
-                        item.raisePropertyChanged(self._childToParentName);
-                    });
-                }
+        Association.prototype._onParentChanged = function (fkey, items) {
+            var self = this;
+            if (!!fkey && !!this._childToParentName && !!items) {
+                items.forEach(function (item) {
+                    item.raisePropertyChanged(self._childToParentName);
+                });
             }
         };
         Association.prototype._mapChildren = function (items) {
