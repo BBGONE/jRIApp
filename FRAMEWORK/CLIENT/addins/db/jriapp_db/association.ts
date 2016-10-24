@@ -80,7 +80,7 @@ export class Association extends BaseObject {
     public handleError(error: any, source: any): boolean {
         let isHandled = super.handleError(error, source);
         if (!isHandled) {
-            return bootstrap.handleError(error, source);
+            return this._dbContext.handleError(error, source);
         }
         return isHandled;
     }
@@ -304,6 +304,7 @@ export class Association extends BaseObject {
     protected _notifyChanged(changed_pkeys: string[], changed_ckeys: string[]) {
         let self = this;
         if (changed_pkeys.length > 0 || changed_ckeys.length > 0) {
+            //parentToChildren
             changed_pkeys.forEach(function (key) {
                 let res = self._changed[key] || { children: {}, parent: null };
                 let arr = self._childMap[key];
@@ -314,30 +315,40 @@ export class Association extends BaseObject {
                 }
                 self._changed[key] = res;
             });
+            //childrenToParent
             changed_ckeys.forEach(function (key) {
-                let res = self._changed[key] || { children: {}, parent: {} };
+                let res = self._changed[key] || { children: {}, parent: null };
                 let item = self._parentMap[key];
                 if (!!item) {
                     res.parent = item;
                 }
+                self._changed[key] = res;
             });
 
             this._changedDebounce.enqueue(() => {
                 let changed = self._changed;
                 self._changed = {};
-                utils.core.iterateIndexer(changed, (fkey, obj) => {
-                    let items: IEntityItem[] = [];
-                    let keys = Object.keys(obj.children);
-                    for (let k = 0; k < keys.length; k += 1) {
-                        items.push(obj.children[keys[k]]);
-                    }
-                    if (items.length > 0)
-                        self._onParentChanged(fkey, items);
+                try {
+                    coreUtils.iterateIndexer(changed, (fkey, obj) => {
+                        let items: IEntityItem[] = [], children: IIndexer<IEntityItem> = obj.children;
+                        let keys = Object.keys(children);
+                        for (let k = 0; k < keys.length; k += 1) {
+                            items.push(children[keys[k]]);
+                        }
 
-                    if (!!obj.parent) {
-                        self._onChildrenChanged(fkey, obj.parent);
-                    }
-                });
+                        if (items.length > 0) {
+                            self._onParentChanged(fkey, items);
+                        }
+
+                        if (!!obj.parent) {
+                            self._onChildrenChanged(fkey, obj.parent);
+                        }
+                    });
+                }
+                catch (err)
+                {
+                    self.handleError(err, self);
+                }
             });
         }
     }
@@ -483,16 +494,17 @@ export class Association extends BaseObject {
         }
         return Object.keys(chngedKeys);
     }
-    protected _onChildrenChanged(fkey: string, item: IEntityItem) {
-        if (!!fkey && !!this._parentToChildrenName && !!item) {
-            item.raisePropertyChanged(this._parentToChildrenName);
+    protected _onChildrenChanged(fkey: string, parent: IEntityItem) {
+        if (!!fkey && !!this._parentToChildrenName && !parent.getIsDestroyCalled()) {
+            parent.raisePropertyChanged(this._parentToChildrenName);
         }
     }
-    protected _onParentChanged(fkey: string, items: IEntityItem[]) {
+    protected _onParentChanged(fkey: string, children: IEntityItem[]) {
         let self = this;
-        if (!!fkey && !!this._childToParentName && !!items) {
-            items.forEach(function (item) {
-                item.raisePropertyChanged(self._childToParentName);
+        if (!!fkey && !!this._childToParentName) {
+            children.forEach(function (item) {
+                if (!item.getIsDestroyCalled())
+                    item.raisePropertyChanged(self._childToParentName);
             });
         }
     }

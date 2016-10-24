@@ -1498,7 +1498,7 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_core/lang", "jriapp_co
     }(object_3.BaseObject));
     exports.DbSets = DbSets;
 });
-define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_utils/utils"], function (require, exports, lang_2, object_4, bootstrap_1, utils_5) {
+define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/utils"], function (require, exports, lang_2, object_4, utils_5) {
     "use strict";
     var checks = utils_5.Utils.check, strUtils = utils_5.Utils.str, coreUtils = utils_5.Utils.core, ArrayHelper = utils_5.Utils.arr;
     var Association = (function (_super) {
@@ -1547,7 +1547,7 @@ define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jria
         Association.prototype.handleError = function (error, source) {
             var isHandled = _super.prototype.handleError.call(this, error, source);
             if (!isHandled) {
-                return bootstrap_1.bootstrap.handleError(error, source);
+                return this._dbContext.handleError(error, source);
             }
             return isHandled;
         };
@@ -1779,27 +1779,34 @@ define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jria
                     self._changed[key] = res;
                 });
                 changed_ckeys.forEach(function (key) {
-                    var res = self._changed[key] || { children: {}, parent: {} };
+                    var res = self._changed[key] || { children: {}, parent: null };
                     var item = self._parentMap[key];
                     if (!!item) {
                         res.parent = item;
                     }
+                    self._changed[key] = res;
                 });
                 this._changedDebounce.enqueue(function () {
                     var changed = self._changed;
                     self._changed = {};
-                    utils_5.Utils.core.iterateIndexer(changed, function (fkey, obj) {
-                        var items = [];
-                        var keys = Object.keys(obj.children);
-                        for (var k = 0; k < keys.length; k += 1) {
-                            items.push(obj.children[keys[k]]);
-                        }
-                        if (items.length > 0)
-                            self._onParentChanged(fkey, items);
-                        if (!!obj.parent) {
-                            self._onChildrenChanged(fkey, obj.parent);
-                        }
-                    });
+                    try {
+                        coreUtils.iterateIndexer(changed, function (fkey, obj) {
+                            var items = [], children = obj.children;
+                            var keys = Object.keys(children);
+                            for (var k = 0; k < keys.length; k += 1) {
+                                items.push(children[keys[k]]);
+                            }
+                            if (items.length > 0) {
+                                self._onParentChanged(fkey, items);
+                            }
+                            if (!!obj.parent) {
+                                self._onChildrenChanged(fkey, obj.parent);
+                            }
+                        });
+                    }
+                    catch (err) {
+                        self.handleError(err, self);
+                    }
                 });
             }
         };
@@ -1941,16 +1948,17 @@ define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jria
             }
             return Object.keys(chngedKeys);
         };
-        Association.prototype._onChildrenChanged = function (fkey, item) {
-            if (!!fkey && !!this._parentToChildrenName && !!item) {
-                item.raisePropertyChanged(this._parentToChildrenName);
+        Association.prototype._onChildrenChanged = function (fkey, parent) {
+            if (!!fkey && !!this._parentToChildrenName && !parent.getIsDestroyCalled()) {
+                parent.raisePropertyChanged(this._parentToChildrenName);
             }
         };
-        Association.prototype._onParentChanged = function (fkey, items) {
+        Association.prototype._onParentChanged = function (fkey, children) {
             var self = this;
-            if (!!fkey && !!this._childToParentName && !!items) {
-                items.forEach(function (item) {
-                    item.raisePropertyChanged(self._childToParentName);
+            if (!!fkey && !!this._childToParentName) {
+                children.forEach(function (item) {
+                    if (!item.getIsDestroyCalled())
+                        item.raisePropertyChanged(self._childToParentName);
                 });
             }
         };
@@ -2177,7 +2185,7 @@ define("jriapp_db/error", ["require", "exports", "jriapp_core/shared", "jriapp_u
     }(DataOperationError));
     exports.SubmitError = SubmitError;
 });
-define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_utils/utils", "jriapp_collection/collection", "jriapp_db/const", "jriapp_db/association", "jriapp_db/error"], function (require, exports, shared_2, langMOD, object_5, bootstrap_2, utils_7, collection_3, const_5, association_1, error_1) {
+define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_utils/utils", "jriapp_collection/collection", "jriapp_db/const", "jriapp_db/association", "jriapp_db/error"], function (require, exports, shared_2, langMOD, object_5, bootstrap_1, utils_7, collection_3, const_5, association_1, error_1) {
     "use strict";
     var utils = utils_7.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
     var DATA_SVC_METH = {
@@ -2539,7 +2547,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
         DbContext.prototype.handleError = function (error, source) {
             var isHandled = _super.prototype.handleError.call(this, error, source);
             if (!isHandled) {
-                return bootstrap_2.bootstrap.handleError(error, source);
+                return bootstrap_1.bootstrap.handleError(error, source);
             }
             return isHandled;
         };

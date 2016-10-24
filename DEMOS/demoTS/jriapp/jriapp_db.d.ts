@@ -346,8 +346,8 @@ declare module "jriapp_db/association" {
         protected _unMapChildItem(item: IEntityItem): string;
         protected _unMapParentItem(item: IEntityItem): string;
         protected _mapParentItems(items: IEntityItem[]): string[];
-        protected _onChildrenChanged(fkey: string, item: IEntityItem): void;
-        protected _onParentChanged(fkey: string, items: IEntityItem[]): void;
+        protected _onChildrenChanged(fkey: string, parent: IEntityItem): void;
+        protected _onParentChanged(fkey: string, children: IEntityItem[]): void;
         protected _mapChildren(items: IEntityItem[]): string[];
         protected _unbindParentDS(): void;
         protected _unbindChildDS(): void;
