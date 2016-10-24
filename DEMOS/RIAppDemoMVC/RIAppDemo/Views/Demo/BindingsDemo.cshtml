@@ -118,15 +118,17 @@
         <div class="leftOffset">
             <label>Formats: </label><select size="1" style="width: 220px" data-bind="{this.dataSource,to=formats,source=testObject}{this.selectedValue,to=format,mode=TwoWay,source=testObject}" data-view="options:{valuePath=key,textPath=val}"></select>
         </div>
-        <label class="leftOffset">
-            <label>boolProperty:&nbsp;<span  style="color:black;" data-bind="{this.value,to=boolProperty,source=testObject}"></span></label>
-            <input type="checkbox" class="checkbox" data-bind="{this.checked,to=boolProperty,mode=TwoWay,source=testObject}"/>
-            <span></span>
+        <label class="leftOffset">boolProperty: <span style="color:black;" data-bind="{this.value,to=boolProperty,source=testObject}"></span>
+            <label style="display:block;" class="ria-checkbox">
+                <input type="checkbox" class="checkbox" data-bind="{this.checked,to=boolProperty,mode=TwoWay,source=testObject}" />
+                <span></span>
+            </label>
         </label>
-        <label class="leftOffset">
-            <label>boolProperty ThreeState:</label>
-            <input type="checkbox" class="checkbox" data-bind="{this.checked,to=boolProperty,mode=TwoWay,source=testObject}" data-view="name=threeState"/>
-            <span></span>
+        <label class="leftOffset"> boolProperty ThreeState:
+            <label style="display:block;" class="ria-checkbox">
+                <input type="checkbox" class="checkbox" data-bind="{this.checked,to=boolProperty,mode=TwoWay,source=testObject}" data-view="name=threeState" />
+                <span></span>
+            </label>
         </label>
     </fieldset>
     <div>

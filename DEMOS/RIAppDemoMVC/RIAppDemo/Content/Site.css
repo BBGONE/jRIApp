@@ -1,4 +1,4 @@
-html {
+п»їhtml {
   box-sizing: border-box;
 }
 *, *:before, *:after {
@@ -195,81 +195,9 @@ table th {
     }
 
 
-/* Checkbox styles */
-
-.checkbox + span {
-  cursor: pointer;
-}
-
-/* hide the original checkbox (old browsers don't support :checked and :not(checked) )*/
-.checkbox:not(checked) {
-  position: absolute;
-  opacity: 0 !important;
-  outline: none !important;
-}
-.checkbox:checked {
-  position: absolute;
-  opacity: 0 !important;
-  outline: none !important;
-}
-
-.checkbox:not(checked) + span {
-  position: relative; /* making span relative for positioning :before and :after */
-  padding: 0 0 0 60px; /* leave a little space for checkbox (at the left) */
-}
-/* Checkbox background when the value is FALSE */
-.checkbox:not(checked) + span:before {
-  content: '';
-  position: absolute;
-  top: -4px;
-  left: 0;
-  width: 50px;
-  height: 26px;
-  border-radius: 13px;
-  background: #b5bdc8; /* Old browsers */
-  background: -moz-radial-gradient(center, ellipse cover, #b5bdc8 0%, #828c95 36%, #28343b 100%); /* FF3.6-15 */
-  background: -webkit-radial-gradient(center, ellipse cover, #b5bdc8 0%,#828c95 36%,#28343b 100%); /* Chrome10-25,Safari5.1-6 */
-  background: radial-gradient(ellipse at center, #b5bdc8 0%,#828c95 36%,#28343b 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-  box-shadow: inset 0 2px 3px rgba(0,0,0,.2);
-}
-/* Checkbox background when the value is NULL */
-.ria-checked-null.checkbox:not(checked) + span:before {
-  background: white;
-  box-shadow: inset 0 2px 3px rgba(0,0,0,.5);
-}
-
-/* Checkbox button when the value is FALSE */
-.checkbox:not(checked) + span:after {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: 2px;
-  width: 22px;
-  height: 22px;
-  border-radius: 10px;
-  background: #FFF;
-  box-shadow: 0 2px 5px rgba(0,0,0,.3);
-  transition: all .2s; /* анимация, чтобы чекбокс переключался плавно */
-}
-/* Checkbox background when the value is TRUE */
-.checkbox:checked + span:before {
-  background: #1e5799; /* Old browsers */
-  background: -moz-radial-gradient(center, ellipse cover, #1e5799 0%, #2989d8 50%, #207cca 51%, #7db9e8 100%); /* FF3.6-15 */
-  background: -webkit-radial-gradient(center, ellipse cover, #1e5799 0%,#2989d8 50%,#207cca 51%,#7db9e8 100%); /* Chrome10-25,Safari5.1-6 */
-  background: radial-gradient(ellipse at center, #1e5799 0%,#2989d8 50%,#207cca 51%,#7db9e8 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-}
-/* Checkbox button when the value is TRUE */
-.checkbox:checked + span:after {
-  left: 26px;
-}
-/* Shadow around the checkbox when focused  */
-.checkbox:focus + span:before {
-  box-shadow: 0 0 0 3px rgba(255,255,125,.5);
-}
-
-/* Radio styles */
+/* CUSTOM RADIO STYLES */
 .radio {
-     vertical-align:middle;
+   vertical-align:middle;
 }
 
 .radio + span {
@@ -324,4 +252,126 @@ table th {
 }
 .radio:focus + span:before {
   box-shadow: 0 0 0 3px rgba(255,255,125,.5);
+}
+
+/* CUSTOM CHECKBOX STYLE */
+label.ria-row-selector, label.ria-row-selector > span, 
+label.ria-checkbox, label.ria-checkbox > span {
+    display: inline-block;
+    vertical-align: middle;
+}
+ 
+/* hide original checkbox */
+label.ria-row-selector > input[type="checkbox"]:not(:checked),
+label.ria-row-selector > input[type="checkbox"]:checked,
+label.ria-checkbox > input[type="checkbox"]:not(:checked),
+label.ria-checkbox > input[type="checkbox"]:checked {
+  position: absolute;
+  left: -9999px;
+}
+
+label.ria-row-selector > input[type="checkbox"]:not(:checked) + span,
+label.ria-row-selector > input[type="checkbox"]:checked + span,
+label.ria-checkbox > input[type="checkbox"]:not(:checked) + span,
+label.ria-checkbox > input[type="checkbox"]:checked + span {
+  position: relative;
+  padding-left: 25px;
+  cursor: pointer;
+}
+
+/* checkbox aspect */
+label.ria-row-selector > input[type="checkbox"]:not(:checked) + span:before,
+label.ria-row-selector > input[type="checkbox"]:checked + span:before,
+label.ria-checkbox > input[type="checkbox"]:not(:checked) + span:before,
+label.ria-checkbox > input[type="checkbox"]:checked + span:before {
+  content: '';
+  position: absolute;
+  left:0; 
+  top: -10px;
+  width: 17px; 
+  height: 17px;
+  border: 1px solid #aaa;
+  background: #f8f8f8;
+  border-radius: 3px;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,.3)
+}
+
+/* checked mark aspect */
+label.ria-row-selector > input[type="checkbox"]:not(:checked) + span:after,
+label.ria-row-selector > input[type="checkbox"]:checked + span:after,
+label.ria-checkbox > input[type="checkbox"]:not(:checked) + span:after,
+label.ria-checkbox > input[type="checkbox"]:checked + span:after {
+  content: 'вњ”';
+  position: absolute;
+  top: -9px; 
+  left: 2px;
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 0.8;
+  color: #09ad7e;
+  transition: all .2s;
+}
+
+/* checked mark aspect changes */
+label.ria-row-selector > input[type="checkbox"]:not(:checked) + span:after,
+label.ria-checkbox > input[type="checkbox"]:not(:checked) + span:after {
+  opacity: 0;
+  transform: scale(0);
+}
+
+label.ria-row-selector > input[type="checkbox"]:checked + span:after,
+label.ria-checkbox > input[type="checkbox"]:checked + span:after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* disabled checkbox */
+label.ria-row-selector > input[type="checkbox"]:disabled:not(:checked) + span,
+label.ria-row-selector > input[type="checkbox"]:disabled:checked + span,
+label.ria-checkbox > input[type="checkbox"]:disabled:not(:checked) + span,
+label.ria-checkbox > input[type="checkbox"]:disabled:checked + span {
+  cursor: not-allowed;
+  pointer-events: all !important;
+}
+
+label.ria-row-selector > input[type="checkbox"]:disabled:not(:checked) + span:before,
+label.ria-row-selector > input[type="checkbox"]:disabled:checked + span:before,
+label.ria-checkbox > input[type="checkbox"]:disabled:not(:checked) + span:before,
+label.ria-checkbox > input[type="checkbox"]:disabled:checked + span:before {
+  box-shadow: none;
+  border-color: #bbb;
+  background-color: #ddd;
+}
+label.ria-row-selector > input[type="checkbox"]:disabled:checked + span:after,
+label.ria-checkbox > input[type="checkbox"]:disabled:checked + span:after {
+  color: #999;
+}
+label.ria-row-selector > input[type="checkbox"]:disabled + span,
+label.ria-checkbox > input[type="checkbox"]:disabled + span {
+  color: #aaa;
+}
+
+/* NULL value checkbox (for three state) */
+label.ria-row-selector > input[type="checkbox"].ria-checked-null:not(:checked) + span:after,
+label.ria-checkbox > input[type="checkbox"].ria-checked-null:not(:checked) + span:after {
+  content: '?';
+  opacity: 1;
+  transform: scale(1);
+  color: rgba(0,0,0,0.2);
+  left: 3px;
+  top: -9px;
+}
+
+/* accessibility */
+label.ria-row-selector > input[type="checkbox"]:checked:focus + span:before,
+label.ria-row-selector > input[type="checkbox"]:not(:checked):focus + span:before,
+label.ria-checkbox > input[type="checkbox"]:checked:focus + span:before,
+label.ria-checkbox > input[type="checkbox"]:not(:checked):focus + span:before {
+  border: 1px dotted blue;
+}
+
+/* hover style just for information */
+label.ria-row-selector > span:hover:before,
+label.ria-checkbox > span:hover:before {
+  border: 1px solid #4778d9!important;
 }
