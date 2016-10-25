@@ -223,16 +223,13 @@ export class Binding extends BaseObject implements IBinding {
             this._onSrcErrorsChanged(err_notif);
     }
     private _update(): void {
-        const updateSrc = this._mode === BINDING_MODE.BackWay, umask = this._umask;
+        const umask = this._umask;
         let flag = 0;
         this._umask = 0;
 
-        if (updateSrc) {
+        if (this._mode === BINDING_MODE.BackWay) {
             if (!!(umask & 1)) {
                 flag = 1;
-            }
-            else if (!!(umask & 2)) {
-                flag = 2;
             }
         }
         else {
@@ -313,10 +310,12 @@ export class Binding extends BaseObject implements IBinding {
         }
 
         if (self._mode === BINDING_MODE.BackWay) {
-            self._umask |= 1;
+            if (!!self._sourceObj)
+                self._umask |= 1;
         }
         else {
-            self._umask |= 2;
+            if (!!self._targetObj)
+                self._umask |= 2;
         }
     }
     private _parseSrcPath2(obj: any, path: string[], lvl: number) {
@@ -379,11 +378,13 @@ export class Binding extends BaseObject implements IBinding {
         }
 
         if (self._mode === BINDING_MODE.BackWay) {
-            this._umask |= 1;
+            if (!!self._sourceObj)
+                this._umask |= 1;
         }
         else {
             //if new target then update the target (not the source!)
-            this._umask |= 2;
+            if (!!self._targetObj)
+                this._umask |= 2;
         }
     }
     private _parseTgtPath2(obj: any, path: string[], lvl: number) {
@@ -528,8 +529,9 @@ export class Binding extends BaseObject implements IBinding {
             this._state.target = value;
             return;
         }
+
         if (this._target !== value) {
-            if (!!this._targetObj) {
+            if (!!this._targetObj && !(this._mode === BINDING_MODE.BackWay)) {
                 this._cntUtgt += 1;
                 try {
                     this.targetValue = null;
@@ -555,7 +557,20 @@ export class Binding extends BaseObject implements IBinding {
             this._state.source = value;
             return;
         }
+
         if (this._source !== value) {
+            if (!!this._sourceObj && (this._mode === BINDING_MODE.BackWay)) {
+                this._cntUSrc += 1;
+                try {
+                    this.sourceValue = null;
+                }
+                finally {
+                    this._cntUSrc -= 1;
+                    //sanity check
+                    if (this._cntUSrc < 0)
+                        throw new Error("Invalid operation: this._cntUSrc = " + this._cntUSrc);
+                }
+            }
             this._setPathItem(null, BindTo.Source, 0, this._srcPath);
             this._source = value;
             this._parseSrcPath(this._source, this._srcPath, 0);
@@ -584,6 +599,7 @@ export class Binding extends BaseObject implements IBinding {
         this._targetObj = null;
         this._source = null;
         this._target = null;
+        this._umask = 0;
         super.destroy();
     }
     toString() {

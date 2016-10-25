@@ -4718,15 +4718,12 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                 this._onSrcErrorsChanged(err_notif);
         }
         Binding.prototype._update = function () {
-            var updateSrc = this._mode === 3, umask = this._umask;
+            var umask = this._umask;
             var flag = 0;
             this._umask = 0;
-            if (updateSrc) {
+            if (this._mode === 3) {
                 if (!!(umask & 1)) {
                     flag = 1;
-                }
-                else if (!!(umask & 2)) {
-                    flag = 2;
                 }
             }
             else {
@@ -4802,10 +4799,12 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                 self._parseSrcPath2(obj, path, lvl);
             }
             if (self._mode === 3) {
-                self._umask |= 1;
+                if (!!self._sourceObj)
+                    self._umask |= 1;
             }
             else {
-                self._umask |= 2;
+                if (!!self._targetObj)
+                    self._umask |= 2;
             }
         };
         Binding.prototype._parseSrcPath2 = function (obj, path, lvl) {
@@ -4862,10 +4861,12 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                 self._parseTgtPath2(obj, path, lvl);
             }
             if (self._mode === 3) {
-                this._umask |= 1;
+                if (!!self._sourceObj)
+                    this._umask |= 1;
             }
             else {
-                this._umask |= 2;
+                if (!!self._targetObj)
+                    this._umask |= 2;
             }
         };
         Binding.prototype._parseTgtPath2 = function (obj, path, lvl) {
@@ -4999,7 +5000,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                 return;
             }
             if (this._target !== value) {
-                if (!!this._targetObj) {
+                if (!!this._targetObj && !(this._mode === 3)) {
                     this._cntUtgt += 1;
                     try {
                         this.targetValue = null;
@@ -5025,6 +5026,17 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                 return;
             }
             if (this._source !== value) {
+                if (!!this._sourceObj && (this._mode === 3)) {
+                    this._cntUSrc += 1;
+                    try {
+                        this.sourceValue = null;
+                    }
+                    finally {
+                        this._cntUSrc -= 1;
+                        if (this._cntUSrc < 0)
+                            throw new Error("Invalid operation: this._cntUSrc = " + this._cntUSrc);
+                    }
+                }
                 this._setPathItem(null, 0, 0, this._srcPath);
                 this._source = value;
                 this._parseSrcPath(this._source, this._srcPath, 0);
@@ -5053,6 +5065,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             this._targetObj = null;
             this._source = null;
             this._target = null;
+            this._umask = 0;
             _super.prototype.destroy.call(this);
         };
         Binding.prototype.toString = function () {
