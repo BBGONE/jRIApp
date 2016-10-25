@@ -91,7 +91,7 @@ export class Association extends BaseObject {
             self._onParentCollChanged(args);
         }, self._objId, null, true);
         ds.addOnBeginEdit(function (sender, args) {
-            self._onParentEdit(args.item, true, undefined);
+            self._onParentEdit(args.item, true, false);
         }, self._objId, null, true);
         ds.addOnEndEdit(function (sender, args) {
             self._onParentEdit(args.item, false, args.isCanceled);
@@ -112,7 +112,7 @@ export class Association extends BaseObject {
             self._onChildCollChanged(args);
         }, self._objId, null, true);
         ds.addOnBeginEdit(function (sender, args) {
-            self._onChildEdit(args.item, true, undefined);
+            self._onChildEdit(args.item, true, false);
         }, self._objId, null, true);
         ds.addOnEndEdit(function (sender, args) {
             self._onChildEdit(args.item, false, args.isCanceled);

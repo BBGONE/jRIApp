@@ -7,7 +7,7 @@ import { BaseColumn, ICellInfo } from "./base";
 import { DataGrid } from "../datagrid";
 import { RowSelectorCell } from "../cells/rowselector";
 
-const dom = utils.dom, $ = dom.$, doc = dom.document;
+const dom = utils.dom, $ = dom.$, doc = dom.document, checks = utils.check;
 
 export class RowSelectorColumn extends BaseColumn {
     private _$chk: JQuery;
@@ -51,7 +51,7 @@ export class RowSelectorColumn extends BaseColumn {
             let chk = <HTMLInputElement>this._$chk[0];
             return chk.checked;
         }
-        return undefined;
+        return checks.undefined;
     }
     set checked(v) {
         let bv = !!v;

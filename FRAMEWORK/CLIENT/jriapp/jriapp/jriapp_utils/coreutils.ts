@@ -100,7 +100,7 @@ export class CoreUtils {
         }
         //the last part is the name itself
         let n = parts[parts.length - 1];
-        if (!!checkOverwrite && (parent[n] !== undefined)) {
+        if (!!checkOverwrite && (parent[n] !== Checks.undefined)) {
             throw new Error(StringUtils.format(CoreUtils.ERR_OBJ_ALREADY_REGISTERED, namePath));
         }
         parent[n] = val;
@@ -113,7 +113,7 @@ export class CoreUtils {
 
         for (i = 0; i < parts.length; i += 1) {
             res = parent[parts[i]];
-            if (res === undefined) {
+            if (res === Checks.undefined) {
                 return null;
             }
             parent = res;
@@ -134,7 +134,7 @@ export class CoreUtils {
         //the last part is the object name itself
         let n = parts[parts.length - 1];
         val = parent[n];
-        if (val !== undefined) {
+        if (val !== Checks.undefined) {
             delete parent[n];
         }
 
@@ -149,8 +149,8 @@ export class CoreUtils {
         res = obj;
         for (i = 0; i < len - 1; i += 1) {
             res = res[parts[i]];
-            if (res === undefined)
-                return undefined;
+            if (res === Checks.undefined)
+                return Checks.undefined;
             if (res === null)
                 return null;
         }
@@ -252,7 +252,7 @@ export class CoreUtils {
         return function () {
             if (!!callback) {
                 value = callback();
-                callback = undefined;
+                callback = Checks.undefined;
             }
             return value;
         };

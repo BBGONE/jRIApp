@@ -209,8 +209,8 @@ class Deferred<T> implements IDeferred<T> {
 
     constructor(dispatcher: IDispatcher) {
         this._dispatcher = dispatcher;
-        this._value = undefined;
-        this._error = undefined;
+        this._value = checks.undefined;
+        this._error = checks.undefined;
         this._state = PromiseState.Pending;
         this._stack = [];
         this._promise = new Promise<T>(this);
@@ -374,7 +374,7 @@ class Promise<T> implements IPromise<T> {
     fail(errorCB?: coreMOD.IVoidErrorCB): IPromise<void>;
 
     fail(errorCB: any): any {
-        return this._deferred._then(undefined, errorCB);
+        return this._deferred._then(checks.undefined, errorCB);
     }
 
     always<TP>(errorCB?: coreMOD.IDeferredErrorCB<TP>): IPromise<TP>;

@@ -358,7 +358,7 @@ declare module "jriapp_ui/datagrid/columns/rowselector" {
         private _event_chk_scope;
         constructor(grid: DataGrid, options: ICellInfo);
         toString(): string;
-        checked: boolean;
+        checked: any;
         destroy(): void;
     }
 }
@@ -368,7 +368,7 @@ declare module "jriapp_ui/datagrid/cells/rowselector" {
     export class RowSelectorCell extends BaseCell<RowSelectorColumn> {
         private _$chk;
         constructor(options: ICellOptions);
-        checked: boolean;
+        checked: any;
         destroy(): void;
         toString(): string;
     }
@@ -787,10 +787,10 @@ declare module "jriapp_ui/datagrid/datagrid" {
         destroy(): void;
         private _createGrid();
         private _bindGridEvents();
-        dataSource: ICollection<ICollectionItem>;
+        dataSource: any;
         readonly grid: DataGrid;
         stateProvider: IRowStateProvider;
-        animation: IDataGridAnimation;
+        animation: any;
     }
 }
 declare module "jriapp_ui/pager" {
@@ -866,7 +866,7 @@ declare module "jriapp_ui/pager" {
         constructor(options: IPagerViewOptions);
         destroy(): void;
         toString(): string;
-        dataSource: ICollection<ICollectionItem>;
+        dataSource: any;
         readonly pager: Pager;
     }
 }
@@ -959,7 +959,7 @@ declare module "jriapp_ui/listbox" {
         destroy(): void;
         toString(): string;
         isEnabled: boolean;
-        dataSource: ICollection<ICollectionItem>;
+        dataSource: any;
         selectedValue: any;
         selectedItem: ICollectionItem;
         valuePath: string;
@@ -1100,7 +1100,7 @@ declare module "jriapp_ui/stackpanel" {
         private _createPanel(opts);
         destroy(): void;
         toString(): string;
-        dataSource: ICollection<ICollectionItem>;
+        dataSource: any;
         panelEvents: IPanelEvents;
         readonly panel: StackPanel;
     }

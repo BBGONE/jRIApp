@@ -1559,7 +1559,7 @@ define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jria
                 self._onParentCollChanged(args);
             }, self._objId, null, true);
             ds.addOnBeginEdit(function (sender, args) {
-                self._onParentEdit(args.item, true, undefined);
+                self._onParentEdit(args.item, true, false);
             }, self._objId, null, true);
             ds.addOnEndEdit(function (sender, args) {
                 self._onParentEdit(args.item, false, args.isCanceled);
@@ -1581,7 +1581,7 @@ define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jria
                 self._onChildCollChanged(args);
             }, self._objId, null, true);
             ds.addOnBeginEdit(function (sender, args) {
-                self._onChildEdit(args.item, true, undefined);
+                self._onChildEdit(args.item, true, false);
             }, self._objId, null, true);
             ds.addOnEndEdit(function (sender, args) {
                 self._onChildEdit(args.item, false, args.isCanceled);
@@ -2393,7 +2393,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
                     return;
                 try {
                     if (!res)
-                        throw new Error(strUtils.format(langMOD.ERRS.ERR_UNEXPECTED_SVC_ERROR, "operation result is undefined"));
+                        throw new Error(strUtils.format(langMOD.ERRS.ERR_UNEXPECTED_SVC_ERROR, "operation result is empty"));
                     __checkError(res.error, operType);
                     callback({ result: res.result, error: null });
                 }
@@ -3281,7 +3281,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
                             oldValOrig = coreUtils.getValue(self._origVals, fullName);
                             coreUtils.setValue(self._origVals, fullName, newVal, false);
                         }
-                        if (oldValOrig === undefined || collection_4.valueUtils.compareVals(oldValOrig, oldVal, dataType)) {
+                        if (oldValOrig === checks.undefined || collection_4.valueUtils.compareVals(oldValOrig, oldVal, dataType)) {
                             if (!collection_4.valueUtils.compareVals(newVal, oldVal, dataType)) {
                                 coreUtils.setValue(self._vals, fullName, newVal, false);
                                 self._onFieldChanged(fullName, fld);

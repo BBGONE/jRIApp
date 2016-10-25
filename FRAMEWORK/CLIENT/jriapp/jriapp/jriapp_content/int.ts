@@ -3,7 +3,7 @@ import { IContentOptions, ITemplateInfo, IBindingInfo }  from "../jriapp_core/sh
 import { Utils as utils } from "../jriapp_utils/utils";
 import { parser } from "../jriapp_core/parser";
 
-const coreUtils = utils.core;
+const coreUtils = utils.core, checks = utils.check;
 
 export const css = {
     content: "ria-content-field",
@@ -51,7 +51,7 @@ export function parseContentAttr(content_attr: string): IContentOptions {
             contentOptions.name = attr.name;
         if (!!attr.options)
             contentOptions.options = attr.options;
-        if (attr.readOnly !== undefined)
+        if (attr.readOnly !== checks.undefined)
             contentOptions.readOnly = coreUtils.parseBool(attr.readOnly);
     }
     else if (!!attr.template) {

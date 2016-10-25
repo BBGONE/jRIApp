@@ -280,7 +280,7 @@ export class DbContext extends BaseObject {
                 return;
             try {
                 if (!res)
-                    throw new Error(strUtils.format(langMOD.ERRS.ERR_UNEXPECTED_SVC_ERROR, "operation result is undefined"));
+                    throw new Error(strUtils.format(langMOD.ERRS.ERR_UNEXPECTED_SVC_ERROR, "operation result is empty"));
                 __checkError(res.error, operType);
                 callback({ result: res.result, error: null });
             } catch (ex) {

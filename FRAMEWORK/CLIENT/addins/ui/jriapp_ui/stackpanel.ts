@@ -471,7 +471,7 @@ export class StackPanelElView extends BaseElView {
     }
     get dataSource() {
         if (this.getIsDestroyCalled() || !this._panel)
-            return undefined;
+            return checks.undefined;
         return this._panel.dataSource;
     }
     set dataSource(v) {

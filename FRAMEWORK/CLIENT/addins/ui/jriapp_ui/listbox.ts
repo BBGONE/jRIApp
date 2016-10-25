@@ -102,8 +102,8 @@ export class ListBox extends BaseObject {
         this._prevSelected = null;
         this._keyMap = {};
         this._valMap = {};
-        this._savedValue = undefined;
-        this._tempValue = undefined;
+        this._savedValue = checks.undefined;
+        this._tempValue = checks.undefined;
         let ds = this._options.dataSource;
         this._options.dataSource = null;
         this.dataSource = ds;
@@ -124,7 +124,7 @@ export class ListBox extends BaseObject {
         this._$el.off("." + this._objId);
         this._clear(true);
         this._$el = null;
-        this._tempValue = undefined;
+        this._tempValue = checks.undefined;
         this._selectedItem = null;
         this._prevSelected = null;
         this._savedValue = null;
@@ -172,7 +172,7 @@ export class ListBox extends BaseObject {
             return parser.resolvePath(item, this._options.valuePath);
         }
         else
-            return undefined;
+            return checks.undefined;
     }
     protected _getText(item: ICollectionItem, index: number): string {
         let res = "";
@@ -233,7 +233,7 @@ export class ListBox extends BaseObject {
         }
         else {
             oldVal = this._savedValue;
-            this._savedValue = undefined;
+            this._savedValue = checks.undefined;
             if (!isCanceled) {
                 key = item._key;
                 data = self._keyMap[key];
@@ -279,7 +279,7 @@ export class ListBox extends BaseObject {
         }
         else {
             oldVal = this._savedValue;
-            this._savedValue = undefined;
+            this._savedValue = checks.undefined;
 
             if (isRejected && status === ITEM_STATUS.Deleted) {
                 this._addOption(item, true);
@@ -310,7 +310,7 @@ export class ListBox extends BaseObject {
         if (!ds) return;
         ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self);
         ds.addOnBeginEdit(function (sender, args) {
-            self._onEdit(args.item, true, undefined);
+            self._onEdit(args.item, true, false);
         }, self._objId);
         ds.addOnEndEdit(function (sender, args) {
             self._onEdit(args.item, false, args.isCanceled);
@@ -439,7 +439,7 @@ export class ListBox extends BaseObject {
                     if (!oldItem)
                         self._tempValue = tmp;
                     else
-                        self._tempValue = undefined;
+                        self._tempValue = checks.undefined;
                 }
             }
 
@@ -501,7 +501,7 @@ export class ListBox extends BaseObject {
             }
             this._refresh();
             if (!!this.dataSource)
-                this._tempValue = undefined;
+                this._tempValue = checks.undefined;
             this.raisePropertyChanged(PROP_NAME.dataSource);
             this.raisePropertyChanged(PROP_NAME.selectedItem);
             this.raisePropertyChanged(PROP_NAME.selectedValue);
@@ -511,7 +511,7 @@ export class ListBox extends BaseObject {
         if (!!this.dataSource)
             return this._getValue(this.selectedItem);
         else
-            return undefined;
+            return checks.undefined;
     }
     set selectedValue(v) {
         let self = this;
@@ -522,7 +522,7 @@ export class ListBox extends BaseObject {
                 if (!checks.isUndefined(v) && !item)
                     self._tempValue = v;
                 else
-                    self._tempValue = undefined;
+                    self._tempValue = checks.undefined;
             }
         }
         else {
@@ -538,7 +538,7 @@ export class ListBox extends BaseObject {
         if (!!this.dataSource)
             return this._selectedItem;
         else
-            return undefined;
+            return checks.undefined;
     }
     set selectedItem(v: ICollectionItem) {
         if (this._selectedItem !== v) {
@@ -644,8 +644,8 @@ export class ListBoxElView extends BaseElView {
         }
     }
     get dataSource() {
-        if (this._isDestroyCalled)
-            return undefined;
+        if (this.getIsDestroyCalled())
+            return checks.undefined;
         return this._listBox.dataSource;
     }
     set dataSource(v) {
@@ -656,7 +656,7 @@ export class ListBoxElView extends BaseElView {
     }
     get selectedValue() {
         if (this.getIsDestroyCalled())
-            return undefined;
+            return checks.undefined;
         return this._listBox.selectedValue;
     }
     set selectedValue(v) {
@@ -666,7 +666,7 @@ export class ListBoxElView extends BaseElView {
     }
     get selectedItem() {
         if (this.getIsDestroyCalled())
-            return undefined;
+            return checks.undefined;
         return this._listBox.selectedItem;
     }
     set selectedItem(v: ICollectionItem) {

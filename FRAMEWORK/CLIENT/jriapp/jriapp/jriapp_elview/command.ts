@@ -25,7 +25,7 @@ export class CommandElView extends BaseElView {
         this._commandParam = null;
         this._preventDefault = !!options.preventDefault;
         this._stopPropagation = !!options.stopPropagation;
-        this._disabled = ("disabled" in this.el) ? undefined : false;
+        this._disabled = ("disabled" in this.el) ? checks.undefined : false;
         dom.setClass(this.$el.toArray(), css.disabled, this.isEnabled);
     }
     private _onCanExecuteChanged(cmd: ICommand, args: any) {
@@ -73,7 +73,7 @@ export class CommandElView extends BaseElView {
     }
     get isEnabled() {
         let el: any = this.el;
-        if (this._disabled === undefined)
+        if (this._disabled === checks.undefined)
             return !el.disabled;
         else
             return !this._disabled;
@@ -81,7 +81,7 @@ export class CommandElView extends BaseElView {
     set isEnabled(v: boolean) {
         let el: any = this.el;
         if (v !== this.isEnabled) {
-            if (this._disabled === undefined)
+            if (this._disabled === checks.undefined)
                 el.disabled = !v;
             else
                 this._disabled = !v;

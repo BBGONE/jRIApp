@@ -332,7 +332,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_core/lang", "jriapp_co
         };
         DataEditDialog.prototype.getOption = function (name) {
             if (!this._$dlgEl)
-                return undefined;
+                return checks.undefined;
             return this._$dlgEl.dialog("option", name);
         };
         DataEditDialog.prototype.setOption = function (name, value) {
@@ -1220,10 +1220,10 @@ define("jriapp_ui/datagrid/columns/actions", ["require", "exports", "jriapp_core
 });
 define("jriapp_ui/datagrid/cells/actions", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/shared", "jriapp_elview/elview", "jriapp_utils/utils", "jriapp_ui/datagrid/const", "jriapp_ui/datagrid/cells/base"], function (require, exports, const_9, lang_2, shared_1, elview_3, utils_9, const_10, base_6) {
     "use strict";
-    var dom = utils_9.Utils.dom, $ = dom.$, strUtils = utils_9.Utils.str;
+    var dom = utils_9.Utils.dom, $ = dom.$, strUtils = utils_9.Utils.str, checks = utils_9.Utils.check;
     var _editImages = '<span data-role="row-action" data-name="img_ok" class="{0}"></span><span data-role="row-action" data-name="img_cancel" class="{1}"></span>';
     var _viewImages = '<span data-role="row-action" data-name="img_edit" class="{0}"></span><span data-role="row-action" data-name="img_delete" class="{1}"></span>';
-    var editImages = undefined, viewImages = undefined;
+    var editImages = checks.undefined, viewImages = checks.undefined;
     var ActionsCell = (function (_super) {
         __extends(ActionsCell, _super);
         function ActionsCell(options) {
@@ -1320,7 +1320,7 @@ define("jriapp_ui/datagrid/cells/actions", ["require", "exports", "jriapp_core/c
 });
 define("jriapp_ui/datagrid/columns/rowselector", ["require", "exports", "jriapp_core/const", "jriapp_utils/utils", "jriapp_ui/datagrid/const", "jriapp_ui/datagrid/columns/base"], function (require, exports, const_11, utils_10, const_12, base_7) {
     "use strict";
-    var dom = utils_10.Utils.dom, $ = dom.$, doc = dom.document;
+    var dom = utils_10.Utils.dom, $ = dom.$, doc = dom.document, checks = utils_10.Utils.check;
     var RowSelectorColumn = (function (_super) {
         __extends(RowSelectorColumn, _super);
         function RowSelectorColumn(grid, options) {
@@ -1360,7 +1360,7 @@ define("jriapp_ui/datagrid/columns/rowselector", ["require", "exports", "jriapp_
                     var chk = this._$chk[0];
                     return chk.checked;
                 }
-                return undefined;
+                return checks.undefined;
             },
             set: function (v) {
                 var bv = !!v;
@@ -1391,7 +1391,7 @@ define("jriapp_ui/datagrid/columns/rowselector", ["require", "exports", "jriapp_
 });
 define("jriapp_ui/datagrid/cells/rowselector", ["require", "exports", "jriapp_core/const", "jriapp_utils/utils", "jriapp_ui/datagrid/const", "jriapp_ui/datagrid/cells/base"], function (require, exports, const_13, utils_11, const_14, base_8) {
     "use strict";
-    var dom = utils_11.Utils.dom, $ = dom.$, doc = dom.document;
+    var dom = utils_11.Utils.dom, $ = dom.$, doc = dom.document, checks = utils_11.Utils.check;
     var RowSelectorCell = (function (_super) {
         __extends(RowSelectorCell, _super);
         function RowSelectorCell(options) {
@@ -1416,7 +1416,7 @@ define("jriapp_ui/datagrid/cells/rowselector", ["require", "exports", "jriapp_co
                     var chk = this._$chk[0];
                     return chk.checked;
                 }
-                return undefined;
+                return checks.undefined;
             },
             set: function (v) {
                 var bv = !!v;
@@ -3366,12 +3366,12 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
         };
         Object.defineProperty(DataGridElView.prototype, "dataSource", {
             get: function () {
-                if (this._isDestroyCalled)
-                    return undefined;
+                if (this.getIsDestroyCalled())
+                    return checks.undefined;
                 return this.grid.dataSource;
             },
             set: function (v) {
-                if (this._isDestroyCalled)
+                if (this.getIsDestroyCalled())
                     return;
                 if (this.dataSource !== v) {
                     this.grid.dataSource = v;
@@ -3399,8 +3399,8 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
         });
         Object.defineProperty(DataGridElView.prototype, "animation", {
             get: function () {
-                if (this._isDestroyCalled)
-                    return undefined;
+                if (this.getIsDestroyCalled())
+                    return checks.undefined;
                 return this._grid.options.animation;
             },
             set: function (v) {
@@ -3890,12 +3890,12 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_core/lang", "jriapp_cor
         };
         Object.defineProperty(PagerElView.prototype, "dataSource", {
             get: function () {
-                if (this._isDestroyCalled)
-                    return undefined;
+                if (this.getIsDestroyCalled())
+                    return checks.undefined;
                 return this._pager.dataSource;
             },
             set: function (v) {
-                if (this._isDestroyCalled)
+                if (this.getIsDestroyCalled())
                     return;
                 if (this.dataSource !== v) {
                     this._pager.dataSource = v;
@@ -3965,8 +3965,8 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_core/lang", "jriapp_c
             this._prevSelected = null;
             this._keyMap = {};
             this._valMap = {};
-            this._savedValue = undefined;
-            this._tempValue = undefined;
+            this._savedValue = checks.undefined;
+            this._tempValue = checks.undefined;
             var ds = this._options.dataSource;
             this._options.dataSource = null;
             this.dataSource = ds;
@@ -3987,7 +3987,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_core/lang", "jriapp_c
             this._$el.off("." + this._objId);
             this._clear(true);
             this._$el = null;
-            this._tempValue = undefined;
+            this._tempValue = checks.undefined;
             this._selectedItem = null;
             this._prevSelected = null;
             this._savedValue = null;
@@ -4034,7 +4034,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_core/lang", "jriapp_c
                 return parser_2.parser.resolvePath(item, this._options.valuePath);
             }
             else
-                return undefined;
+                return checks.undefined;
         };
         ListBox.prototype._getText = function (item, index) {
             var res = "";
@@ -4093,7 +4093,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_core/lang", "jriapp_c
             }
             else {
                 oldVal = this._savedValue;
-                this._savedValue = undefined;
+                this._savedValue = checks.undefined;
                 if (!isCanceled) {
                     key = item._key;
                     data = self._keyMap[key];
@@ -4138,7 +4138,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_core/lang", "jriapp_c
             }
             else {
                 oldVal = this._savedValue;
-                this._savedValue = undefined;
+                this._savedValue = checks.undefined;
                 if (isRejected && status === 3) {
                     this._addOption(item, true);
                     return;
@@ -4169,7 +4169,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_core/lang", "jriapp_c
                 return;
             ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self);
             ds.addOnBeginEdit(function (sender, args) {
-                self._onEdit(args.item, true, undefined);
+                self._onEdit(args.item, true, false);
             }, self._objId);
             ds.addOnEndEdit(function (sender, args) {
                 self._onEdit(args.item, false, args.isCanceled);
@@ -4299,7 +4299,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_core/lang", "jriapp_c
                         if (!oldItem)
                             self._tempValue = tmp;
                         else
-                            self._tempValue = undefined;
+                            self._tempValue = checks.undefined;
                     }
                 }
             }
@@ -4362,7 +4362,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_core/lang", "jriapp_c
                     }
                     this._refresh();
                     if (!!this.dataSource)
-                        this._tempValue = undefined;
+                        this._tempValue = checks.undefined;
                     this.raisePropertyChanged(PROP_NAME.dataSource);
                     this.raisePropertyChanged(PROP_NAME.selectedItem);
                     this.raisePropertyChanged(PROP_NAME.selectedValue);
@@ -4376,7 +4376,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_core/lang", "jriapp_c
                 if (!!this.dataSource)
                     return this._getValue(this.selectedItem);
                 else
-                    return undefined;
+                    return checks.undefined;
             },
             set: function (v) {
                 var self = this;
@@ -4387,7 +4387,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_core/lang", "jriapp_c
                         if (!checks.isUndefined(v) && !item)
                             self._tempValue = v;
                         else
-                            self._tempValue = undefined;
+                            self._tempValue = checks.undefined;
                     }
                 }
                 else {
@@ -4407,7 +4407,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_core/lang", "jriapp_c
                 if (!!this.dataSource)
                     return this._selectedItem;
                 else
-                    return undefined;
+                    return checks.undefined;
             },
             set: function (v) {
                 if (this._selectedItem !== v) {
@@ -4546,8 +4546,8 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_core/lang", "jriapp_c
         });
         Object.defineProperty(ListBoxElView.prototype, "dataSource", {
             get: function () {
-                if (this._isDestroyCalled)
-                    return undefined;
+                if (this.getIsDestroyCalled())
+                    return checks.undefined;
                 return this._listBox.dataSource;
             },
             set: function (v) {
@@ -4562,7 +4562,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_core/lang", "jriapp_c
         Object.defineProperty(ListBoxElView.prototype, "selectedValue", {
             get: function () {
                 if (this.getIsDestroyCalled())
-                    return undefined;
+                    return checks.undefined;
                 return this._listBox.selectedValue;
             },
             set: function (v) {
@@ -4576,7 +4576,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_core/lang", "jriapp_c
         Object.defineProperty(ListBoxElView.prototype, "selectedItem", {
             get: function () {
                 if (this.getIsDestroyCalled())
-                    return undefined;
+                    return checks.undefined;
                 return this._listBox.selectedItem;
             },
             set: function (v) {
@@ -5296,7 +5296,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_core/const", "jria
         Object.defineProperty(StackPanelElView.prototype, "dataSource", {
             get: function () {
                 if (this.getIsDestroyCalled() || !this._panel)
-                    return undefined;
+                    return checks.undefined;
                 return this._panel.dataSource;
             },
             set: function (v) {

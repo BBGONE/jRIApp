@@ -476,12 +476,12 @@ export class PagerElView extends BaseElView {
         return "PagerElView";
    }
     get dataSource() {
-        if (this._isDestroyCalled)
-            return undefined;
+        if (this.getIsDestroyCalled())
+            return checks.undefined;
         return this._pager.dataSource;
    }
     set dataSource(v) {
-        if (this._isDestroyCalled)
+        if (this.getIsDestroyCalled())
             return;
         if (this.dataSource !== v) {
             this._pager.dataSource = v;

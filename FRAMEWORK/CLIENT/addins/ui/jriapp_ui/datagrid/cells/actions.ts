@@ -10,11 +10,11 @@ import { css, actionsSelector, txtMap, editSelector, deleteSelector  } from "../
 import { BaseCell, ICellOptions } from "./base";
 import { ActionsColumn } from "../columns/actions";
 
-const dom = utils.dom, $ = dom.$, strUtils = utils.str;
+const dom = utils.dom, $ = dom.$, strUtils = utils.str, checks = utils.check;
 
 const _editImages = '<span data-role="row-action" data-name="img_ok" class="{0}"></span><span data-role="row-action" data-name="img_cancel" class="{1}"></span>';
 const _viewImages = '<span data-role="row-action" data-name="img_edit" class="{0}"></span><span data-role="row-action" data-name="img_delete" class="{1}"></span>';
-let editImages: string = undefined, viewImages: string = undefined;
+let editImages: string = checks.undefined, viewImages: string = checks.undefined;
 
 export class ActionsCell extends BaseCell<ActionsColumn> {
     constructor(options: ICellOptions) {

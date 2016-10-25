@@ -601,6 +601,7 @@ declare module "jriapp_utils/syschecks" {
 declare module "jriapp_utils/checks" {
     import { IBaseObject, IEditable, ISubmittable, IErrorNotification, IThenable } from "jriapp_core/shared";
     export class Checks {
+        static undefined: any;
         static isHasProp(obj: any, prop: string): boolean;
         static isNull(a: any): a is void;
         static isUndefined(a: any): a is void;

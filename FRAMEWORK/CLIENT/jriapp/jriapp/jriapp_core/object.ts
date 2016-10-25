@@ -98,7 +98,7 @@ export class BaseObject implements IBaseObject {
         let self = this, ev = self._events;
         if (ev === null)
             return;
-        if (ev === undefined) {
+        if (ev === checks.undefined) {
             throw new Error("The object's constructor has not been called!");
         }
 

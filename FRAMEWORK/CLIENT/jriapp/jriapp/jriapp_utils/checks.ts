@@ -4,6 +4,8 @@ import { IBaseObject, IEditable, ISubmittable, IErrorNotification, IThenable, IP
 import { SysChecks } from "./syschecks";
 
 export class Checks {
+    static undefined: any = (<any>{})["nonexistent"];
+
     static isHasProp(obj: any, prop: string): boolean {
         if (!obj)
             return false;
@@ -13,10 +15,10 @@ export class Checks {
         return a === null;
     }
     static isUndefined(a: any): a is void {
-        return a === undefined;
+        return a === Checks.undefined;
     }
     static isNt(a: any): a is void {
-        return (a === null || a === undefined);
+        return (a === null || a === Checks.undefined);
     }
     static isObject(a: any): boolean {
         if (Checks.isNt(a)) return false;

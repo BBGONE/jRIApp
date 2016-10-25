@@ -296,6 +296,7 @@ define("jriapp_utils/arrhelper", ["require", "exports"], function (require, expo
 });
 define("jriapp_utils/strutils", ["require", "exports"], function (require, exports) {
     "use strict";
+    var undefined = {}["nonexistent"];
     var StringUtils = (function () {
         function StringUtils() {
         }
@@ -474,10 +475,10 @@ define("jriapp_utils/checks", ["require", "exports", "jriapp_utils/syschecks"], 
             return a === null;
         };
         Checks.isUndefined = function (a) {
-            return a === undefined;
+            return a === Checks.undefined;
         };
         Checks.isNt = function (a) {
-            return (a === null || a === undefined);
+            return (a === null || a === Checks.undefined);
         };
         Checks.isObject = function (a) {
             if (Checks.isNt(a))
@@ -553,6 +554,7 @@ define("jriapp_utils/checks", ["require", "exports", "jriapp_utils/syschecks"], 
                 return false;
             return ((typeof (a) === "object") && Checks.isFunc(a.then));
         };
+        Checks.undefined = {}["nonexistent"];
         return Checks;
     }());
     exports.Checks = Checks;
@@ -752,7 +754,7 @@ define("jriapp_utils/coreutils", ["require", "exports", "jriapp_core/const", "jr
                 parent = parent[parts[i]];
             }
             var n = parts[parts.length - 1];
-            if (!!checkOverwrite && (parent[n] !== undefined)) {
+            if (!!checkOverwrite && (parent[n] !== checks_1.Checks.undefined)) {
                 throw new Error(strutils_1.StringUtils.format(CoreUtils.ERR_OBJ_ALREADY_REGISTERED, namePath));
             }
             parent[n] = val;
@@ -762,7 +764,7 @@ define("jriapp_utils/coreutils", ["require", "exports", "jriapp_core/const", "jr
             var parts = namePath.split("."), parent = root, i;
             for (i = 0; i < parts.length; i += 1) {
                 res = parent[parts[i]];
-                if (res === undefined) {
+                if (res === checks_1.Checks.undefined) {
                     return null;
                 }
                 parent = res;
@@ -779,7 +781,7 @@ define("jriapp_utils/coreutils", ["require", "exports", "jriapp_core/const", "jr
             }
             var n = parts[parts.length - 1];
             val = parent[n];
-            if (val !== undefined) {
+            if (val !== checks_1.Checks.undefined) {
                 delete parent[n];
             }
             return val;
@@ -791,8 +793,8 @@ define("jriapp_utils/coreutils", ["require", "exports", "jriapp_core/const", "jr
             res = obj;
             for (i = 0; i < len - 1; i += 1) {
                 res = res[parts[i]];
-                if (res === undefined)
-                    return undefined;
+                if (res === checks_1.Checks.undefined)
+                    return checks_1.Checks.undefined;
                 if (res === null)
                     return null;
             }
@@ -887,7 +889,7 @@ define("jriapp_utils/coreutils", ["require", "exports", "jriapp_core/const", "jr
             return function () {
                 if (!!callback) {
                     value = callback();
-                    callback = undefined;
+                    callback = checks_1.Checks.undefined;
                 }
                 return value;
             };
@@ -1227,7 +1229,7 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
             var self = this, ev = self._events;
             if (ev === null)
                 return;
-            if (ev === undefined) {
+            if (ev === coreutils_2.Checks.undefined) {
                 throw new Error("The object's constructor has not been called!");
             }
             if (!!name) {
@@ -1539,7 +1541,7 @@ define("jriapp_core/parser", ["require", "exports", "jriapp_core/lang", "jriapp_
         };
         Parser.prototype.resolveBindingSource = function (root, srcParts) {
             if (!root)
-                return undefined;
+                return checks.undefined;
             if (srcParts.length === 0) {
                 return root;
             }
@@ -1555,7 +1557,7 @@ define("jriapp_core/parser", ["require", "exports", "jriapp_core/lang", "jriapp_
             for (var i = 0; i < len; i += 1) {
                 res = this.resolveProp(res, parts[i]);
                 if (!res)
-                    return undefined;
+                    return checks.undefined;
             }
             return this.resolveProp(res, parts[len]);
         };
@@ -1948,8 +1950,8 @@ define("jriapp_utils/deferred", ["require", "exports", "jriapp_core/shared", "jr
     var Deferred = (function () {
         function Deferred(dispatcher) {
             this._dispatcher = dispatcher;
-            this._value = undefined;
-            this._error = undefined;
+            this._value = checks_3.Checks.undefined;
+            this._error = checks_3.Checks.undefined;
             this._state = 0;
             this._stack = [];
             this._promise = new Promise(this);
@@ -2057,7 +2059,7 @@ define("jriapp_utils/deferred", ["require", "exports", "jriapp_core/shared", "jr
             return this._deferred._then(successCB, errorCB);
         };
         Promise.prototype.fail = function (errorCB) {
-            return this._deferred._then(undefined, errorCB);
+            return this._deferred._then(checks_3.Checks.undefined, errorCB);
         };
         Promise.prototype.always = function (errorCB) {
             return this._deferred._then(errorCB, errorCB);
@@ -3917,7 +3919,7 @@ define("jriapp_core/converter", ["require", "exports", "jriapp_core/lang", "jria
 });
 define("jriapp_content/int", ["require", "exports", "jriapp_utils/utils", "jriapp_core/parser"], function (require, exports, utils_2, parser_2) {
     "use strict";
-    var coreUtils = utils_2.Utils.core;
+    var coreUtils = utils_2.Utils.core, checks = utils_2.Utils.check;
     exports.css = {
         content: "ria-content-field",
         required: "ria-required-field",
@@ -3950,7 +3952,7 @@ define("jriapp_content/int", ["require", "exports", "jriapp_utils/utils", "jriap
                 contentOptions.name = attr.name;
             if (!!attr.options)
                 contentOptions.options = attr.options;
-            if (attr.readOnly !== undefined)
+            if (attr.readOnly !== checks.undefined)
                 contentOptions.readOnly = coreUtils.parseBool(attr.readOnly);
         }
         else if (!!attr.template) {
@@ -4266,10 +4268,10 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             return true;
         };
         CSSBag.prototype.getProp = function (name) {
-            return undefined;
+            return checks.undefined;
         };
         CSSBag.prototype.setProp = function (name, val) {
-            if (val === undefined)
+            if (val === checks.undefined)
                 return;
             if (name === "*") {
                 if (!val) {
@@ -4392,11 +4394,11 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             }
             if (!!this._props) {
                 this._props.destroy();
-                this._props = undefined;
+                this._props = checks.undefined;
             }
             if (!!this._classes) {
                 this._classes.destroy();
-                this._classes = undefined;
+                this._classes = checks.undefined;
             }
             this._display = null;
             this._css = null;
@@ -4510,7 +4512,7 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             get: function () {
                 if (!this._props) {
                     if (this.getIsDestroyCalled())
-                        return undefined;
+                        return checks.undefined;
                     this._props = new PropertyBag(this.el);
                 }
                 return this._props;
@@ -4522,7 +4524,7 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             get: function () {
                 if (!this._classes) {
                     if (this.getIsDestroyCalled())
-                        return undefined;
+                        return checks.undefined;
                     this._classes = new CSSBag(this.el);
                 }
                 return this._classes;
@@ -5084,13 +5086,13 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                 if (!!this._sourceObj) {
                     var prop = this._srcPath[this._srcPath.length - 1];
                     res = parser_3.parser.resolveProp(this._sourceObj, prop);
-                    if (res === undefined)
+                    if (res === checks.undefined)
                         res = null;
                 }
                 return res;
             },
             set: function (v) {
-                if (this._srcPath.length === 0 || !this._sourceObj || v === undefined)
+                if (this._srcPath.length === 0 || !this._sourceObj || v === checks.undefined)
                     return;
                 if (Binding._isDestroyed(this._sourceObj))
                     return;
@@ -5106,13 +5108,13 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                 if (!!this._targetObj) {
                     var prop = this._tgtPath[this._tgtPath.length - 1];
                     res = parser_3.parser.resolveProp(this._targetObj, prop);
-                    if (res === undefined)
+                    if (res === checks.undefined)
                         res = null;
                 }
                 return res;
             },
             set: function (v) {
-                if (this._tgtPath.length === 0 || !this._targetObj || v === undefined)
+                if (this._tgtPath.length === 0 || !this._targetObj || v === checks.undefined)
                     return;
                 if (Binding._isDestroyed(this._targetObj))
                     return;
@@ -6813,7 +6815,7 @@ define("jriapp_elview/command", ["require", "exports", "jriapp_utils/coreutils",
             this._commandParam = null;
             this._preventDefault = !!options.preventDefault;
             this._stopPropagation = !!options.stopPropagation;
-            this._disabled = ("disabled" in this.el) ? undefined : false;
+            this._disabled = ("disabled" in this.el) ? coreutils_18.Checks.undefined : false;
             dom.setClass(this.$el.toArray(), elview_6.css.disabled, this.isEnabled);
         }
         CommandElView.prototype._onCanExecuteChanged = function (cmd, args) {
@@ -6861,7 +6863,7 @@ define("jriapp_elview/command", ["require", "exports", "jriapp_utils/coreutils",
         Object.defineProperty(CommandElView.prototype, "isEnabled", {
             get: function () {
                 var el = this.el;
-                if (this._disabled === undefined)
+                if (this._disabled === coreutils_18.Checks.undefined)
                     return !el.disabled;
                 else
                     return !this._disabled;
@@ -6869,7 +6871,7 @@ define("jriapp_elview/command", ["require", "exports", "jriapp_utils/coreutils",
             set: function (v) {
                 var el = this.el;
                 if (v !== this.isEnabled) {
-                    if (this._disabled === undefined)
+                    if (this._disabled === coreutils_18.Checks.undefined)
                         el.disabled = !v;
                     else
                         this._disabled = !v;
@@ -6959,7 +6961,7 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
             this._loadedElem = null;
             this._lfTime = null;
             this._templateID = null;
-            this._templElView = undefined;
+            this._templElView = coreutils_19.Checks.undefined;
             this._el = doc.createElement("div");
             this._el.className = exports.css.templateContainer;
         }
@@ -8156,7 +8158,7 @@ define("jriapp_collection/utils", ["require", "exports", "jriapp_utils/utils", "
         },
         parseValue: function (v, dataType, dtcnv, serverTZ) {
             var res = null;
-            if (v === undefined || v === null)
+            if (v === checks.undefined || v === null)
                 return res;
             switch (dataType) {
                 case 0:

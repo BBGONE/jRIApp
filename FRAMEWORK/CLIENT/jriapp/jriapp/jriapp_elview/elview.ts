@@ -108,10 +108,10 @@ class CSSBag extends BaseObject implements IPropertyBag {
     }
    //implement IPropertyBag
     getProp(name: string): any {
-        return undefined;
+        return checks.undefined;
     }
     setProp(name: string, val: any): void {
-        if (val === undefined)
+        if (val === checks.undefined)
             return;
 
         if (name === "*") {
@@ -253,11 +253,11 @@ export class BaseElView extends BaseObject implements IElView {
         }
         if (!!this._props) {
             this._props.destroy();
-            this._props = undefined;
+            this._props = checks.undefined;
         }
         if (!!this._classes) {
             this._classes.destroy();
-            this._classes = undefined;
+            this._classes = checks.undefined;
         }
         this._display = null;
         this._css = null;
@@ -337,7 +337,7 @@ export class BaseElView extends BaseObject implements IElView {
     get props(): IPropertyBag {
         if (!this._props) {
             if (this.getIsDestroyCalled())
-                return undefined;
+                return checks.undefined;
             this._props = new PropertyBag(this.el);
         }
         return this._props;
@@ -346,7 +346,7 @@ export class BaseElView extends BaseObject implements IElView {
     get classes(): IPropertyBag {
         if (!this._classes) {
             if (this.getIsDestroyCalled())
-                return undefined;
+                return checks.undefined;
             this._classes = new CSSBag(this.el);
         }
         return this._classes;

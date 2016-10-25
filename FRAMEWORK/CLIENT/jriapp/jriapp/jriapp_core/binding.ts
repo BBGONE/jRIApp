@@ -592,13 +592,13 @@ export class Binding extends BaseObject implements IBinding {
         if (!!this._sourceObj) {
             let prop = this._srcPath[this._srcPath.length - 1];
             res = parser.resolveProp(this._sourceObj, prop);
-            if (res === undefined)
+            if (res === checks.undefined)
                 res = null;
         }
         return res;
     }
     set sourceValue(v) {
-        if (this._srcPath.length === 0 || !this._sourceObj || v === undefined)
+        if (this._srcPath.length === 0 || !this._sourceObj || v === checks.undefined)
             return;
         if (Binding._isDestroyed(this._sourceObj))
             return;
@@ -610,13 +610,13 @@ export class Binding extends BaseObject implements IBinding {
         if (!!this._targetObj) {
             let prop = this._tgtPath[this._tgtPath.length - 1];
             res = parser.resolveProp(this._targetObj, prop);
-            if (res === undefined)
+            if (res === checks.undefined)
                 res = null;
         }
         return res;
     }
     set targetValue(v) {
-        if (this._tgtPath.length === 0 || !this._targetObj || v === undefined)
+        if (this._tgtPath.length === 0 || !this._targetObj || v === checks.undefined)
             return;
         if (Binding._isDestroyed(this._targetObj))
             return;

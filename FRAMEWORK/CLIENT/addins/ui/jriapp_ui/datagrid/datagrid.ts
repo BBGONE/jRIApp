@@ -1241,12 +1241,12 @@ export class DataGridElView extends BaseElView {
 
     }
     get dataSource() {
-        if (this._isDestroyCalled)
-            return undefined;
+        if (this.getIsDestroyCalled())
+            return checks.undefined;
         return this.grid.dataSource;
     }
     set dataSource(v) {
-        if (this._isDestroyCalled)
+        if (this.getIsDestroyCalled())
             return;
         if (this.dataSource !== v) {
             this.grid.dataSource = v;
@@ -1262,8 +1262,8 @@ export class DataGridElView extends BaseElView {
         }
     }
     get animation() {
-        if (this._isDestroyCalled)
-            return undefined;
+        if (this.getIsDestroyCalled())
+            return checks.undefined;
         return this._grid.options.animation;
     }
     set animation(v) {

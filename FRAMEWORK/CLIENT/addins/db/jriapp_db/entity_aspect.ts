@@ -275,7 +275,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
                         oldValOrig = coreUtils.getValue(self._origVals, fullName);
                         coreUtils.setValue(self._origVals, fullName, newVal, false);
                     }
-                    if (oldValOrig === undefined || valueUtils.compareVals(oldValOrig, oldVal, dataType)) {
+                    if (oldValOrig === checks.undefined || valueUtils.compareVals(oldValOrig, oldVal, dataType)) {
                         //unmodified
                         if (!valueUtils.compareVals(newVal, oldVal, dataType)) {
                             coreUtils.setValue(self._vals, fullName, newVal, false);

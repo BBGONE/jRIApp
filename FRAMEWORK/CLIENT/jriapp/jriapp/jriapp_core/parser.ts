@@ -179,7 +179,7 @@ export class Parser {
     }
     resolveBindingSource(root: any, srcParts: string[]): any {
         if (!root)
-            return undefined;
+            return checks.undefined;
 
         if (srcParts.length === 0) {
             return root;
@@ -198,7 +198,7 @@ export class Parser {
         for (let i = 0; i < len; i += 1) {
             res = this.resolveProp(res, parts[i]);
             if (!res)
-                return undefined;
+                return checks.undefined;
         }
         return this.resolveProp(res, parts[len]);
     }

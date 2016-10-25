@@ -397,7 +397,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     }
     getOption(name: string) {
         if (!this._$dlgEl)
-            return undefined;
+            return checks.undefined;
         return (<any>this._$dlgEl).dialog("option", name);
     }
     setOption(name: string, value: any) {

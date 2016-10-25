@@ -156,7 +156,7 @@ export let valueUtils: IValueUtils = {
     parseValue: function (v: string, dataType: DATA_TYPE, dtcnv: DATE_CONVERSION, serverTZ: number) {
         let res: any = null;
 
-        if (v === undefined || v === null)
+        if (v === checks.undefined || v === null)
             return res;
         switch (dataType) {
             case DATA_TYPE.None:

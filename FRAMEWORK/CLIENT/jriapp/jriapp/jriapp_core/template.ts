@@ -53,7 +53,7 @@ class Template extends BaseObject implements ITemplate {
         this._loadedElem = null;
         this._lfTime = null;
         this._templateID = null;
-        this._templElView = undefined;
+        this._templElView = checks.undefined;
         this._el = doc.createElement("div");
         this._el.className = css.templateContainer;
     }

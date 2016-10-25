@@ -8,7 +8,7 @@ import { css, PROP_NAME } from "../const";
 import { BaseCell, ICellOptions } from "./base";
 import { RowSelectorColumn } from "../columns/rowselector";
 
-const dom = utils.dom, $ = dom.$, doc = dom.document;
+const dom = utils.dom, $ = dom.$, doc = dom.document, checks = utils.check;
 
 export class RowSelectorCell extends BaseCell<RowSelectorColumn> {
     private _$chk: JQuery;
@@ -34,7 +34,7 @@ export class RowSelectorCell extends BaseCell<RowSelectorColumn> {
             let chk = <HTMLInputElement>this._$chk[0];
             return chk.checked;
         }
-        return undefined;
+        return checks.undefined;
     }
     set checked(v) {
         let bv = !!v;
