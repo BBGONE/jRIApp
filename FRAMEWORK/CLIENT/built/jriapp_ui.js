@@ -3704,7 +3704,9 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_core/lang", "jriapp_cor
             configurable: true
         });
         Object.defineProperty(Pager.prototype, "dataSource", {
-            get: function () { return this._options.dataSource; },
+            get: function () {
+                return this._options.dataSource;
+            },
             set: function (v) {
                 if (v === this.dataSource)
                     return;
@@ -4546,8 +4548,6 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_core/lang", "jriapp_c
         });
         Object.defineProperty(ListBoxElView.prototype, "dataSource", {
             get: function () {
-                if (this.getIsDestroyCalled())
-                    return checks.undefined;
                 return this._listBox.dataSource;
             },
             set: function (v) {
@@ -5300,8 +5300,6 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_core/const", "jria
                 return this._panel.dataSource;
             },
             set: function (v) {
-                if (this._isDestroyCalled)
-                    return;
                 if (this.dataSource !== v) {
                     this._panel.dataSource = v;
                     this.raisePropertyChanged(PROP_NAME.dataSource);

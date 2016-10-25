@@ -643,12 +643,10 @@ export class ListBoxElView extends BaseElView {
             this.raisePropertyChanged(PROP_NAME.isEnabled);
         }
     }
-    get dataSource() {
-        if (this.getIsDestroyCalled())
-            return checks.undefined;
+    get dataSource(): ICollection<ICollectionItem> {
         return this._listBox.dataSource;
     }
-    set dataSource(v) {
+    set dataSource(v: ICollection<ICollectionItem>) {
         let self = this;
         if (self.dataSource !== v) {
             self._listBox.dataSource = v;

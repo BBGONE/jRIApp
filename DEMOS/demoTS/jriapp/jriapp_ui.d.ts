@@ -959,7 +959,7 @@ declare module "jriapp_ui/listbox" {
         destroy(): void;
         toString(): string;
         isEnabled: boolean;
-        dataSource: any;
+        dataSource: ICollection<ICollectionItem>;
         selectedValue: any;
         selectedItem: ICollectionItem;
         valuePath: string;
@@ -1100,7 +1100,7 @@ declare module "jriapp_ui/stackpanel" {
         private _createPanel(opts);
         destroy(): void;
         toString(): string;
-        dataSource: any;
+        dataSource: ICollection<ICollectionItem>;
         panelEvents: IPanelEvents;
         readonly panel: StackPanel;
     }

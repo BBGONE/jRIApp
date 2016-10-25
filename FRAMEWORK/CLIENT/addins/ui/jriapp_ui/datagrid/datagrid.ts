@@ -1115,8 +1115,8 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     }
     get uniqueID() { return this._objId; }
     get name() { return this._name; }
-    get dataSource() { return this._options.dataSource; }
-    set dataSource(v) {
+    get dataSource(): ICollection<ICollectionItem> { return this._options.dataSource; }
+    set dataSource(v: ICollection<ICollectionItem>) {
         if (v === this.dataSource)
             return;
         if (!!this.dataSource) {
@@ -1175,7 +1175,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     }
     get isUseScrollInto() { return this._options.isUseScrollInto; }
     set isUseScrollInto(v) { this._options.isUseScrollInto = v; }
-    get animation() {
+    get animation(): IDataGridAnimation {
         if (!this.options.animation) {
             this.options.animation = new DefaultAnimation();
         }

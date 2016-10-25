@@ -336,8 +336,10 @@ export class Pager extends BaseObject {
    }
     get app() { return this._options.app; }
     get el() { return this._options.el; }
-    get dataSource() { return this._options.dataSource; }
-    set dataSource(v) {
+    get dataSource(): ICollection<ICollectionItem> {
+        return this._options.dataSource;
+    }
+    set dataSource(v: ICollection<ICollectionItem>) {
         if (v === this.dataSource)
             return;
         if (!!this.dataSource) {

@@ -469,14 +469,12 @@ export class StackPanelElView extends BaseElView {
     toString() {
         return "StackPanelElView";
     }
-    get dataSource() {
+    get dataSource(): ICollection<ICollectionItem> {
         if (this.getIsDestroyCalled() || !this._panel)
             return checks.undefined;
         return this._panel.dataSource;
     }
-    set dataSource(v) {
-        if (this._isDestroyCalled)
-            return;
+    set dataSource(v: ICollection<ICollectionItem>) {
         if (this.dataSource !== v) {
             this._panel.dataSource = v;
             this.raisePropertyChanged(PROP_NAME.dataSource);
