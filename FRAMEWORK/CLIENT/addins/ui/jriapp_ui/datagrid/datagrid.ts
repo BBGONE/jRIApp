@@ -844,7 +844,8 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         if (self.getIsDestroyCalled())
             return;
         self._clearGrid();
-        if (!ds) return;
+        if (!ds)
+            return;
         let docFr = doc.createDocumentFragment(), oldTbody = this._tBodyEl, newTbody = doc.createElement("tbody");
         ds.items.forEach(function (item, index) {
             self._createRowForItem(docFr, item, false);

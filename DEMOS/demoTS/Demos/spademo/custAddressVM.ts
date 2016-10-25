@@ -112,6 +112,7 @@ export class CustomerAddressVM extends RIAPP.ViewModel<DemoApplication> {
     }
     _addNewCustAddress(address: DEMODB.Address) {
         var cust = this.currentCustomer;
+        //console.log("ADDED: "+ address.CountryRegion);
         //to add item here, use the TDataView, not TDbSet
         var ca = this.custAdressView.addNew();
         ca.CustomerID = cust.CustomerID;

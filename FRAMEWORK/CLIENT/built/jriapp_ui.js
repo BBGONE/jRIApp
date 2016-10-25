@@ -1447,7 +1447,7 @@ define("jriapp_ui/datagrid/cells/rowselector", ["require", "exports", "jriapp_co
 });
 define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_core/object", "jriapp_utils/utils", "jriapp_ui/datagrid/const", "jriapp_ui/datagrid/cells/expander", "jriapp_ui/datagrid/cells/data", "jriapp_ui/datagrid/cells/actions", "jriapp_ui/datagrid/cells/rowselector", "jriapp_ui/datagrid/columns/expander", "jriapp_ui/datagrid/columns/actions", "jriapp_ui/datagrid/columns/rowselector"], function (require, exports, object_4, utils_12, const_15, expander_1, data_1, actions_1, rowselector_1, expander_2, actions_2, rowselector_2) {
     "use strict";
-    var $ = utils_12.Utils.dom.$, document = utils_12.Utils.dom.document;
+    var dom = utils_12.Utils.dom, $ = dom.$, document = utils_12.Utils.dom.document;
     var Row = (function (_super) {
         __extends(Row, _super);
         function Row(grid, options) {
@@ -1468,6 +1468,8 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_core/object
             this._isDetached = false;
             this._createCells();
             this._isDeleted = this._item._aspect.isDeleted;
+            if (this._isDeleted)
+                dom.addClass([this._tr], const_15.css.rowDeleted);
             var fn_state = function () {
                 var css = self._grid._getInternal().onRowStateChanged(self, self._item[self._grid.options.rowStateField]);
                 self._setState(css);
@@ -1707,10 +1709,8 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_core/object
                     this._isDeleted = v;
                     if (this._isDeleted) {
                         this.isExpanded = false;
-                        $(this._tr).addClass(const_15.css.rowDeleted);
                     }
-                    else
-                        $(this._tr).removeClass(const_15.css.rowDeleted);
+                    dom.setClass([this._tr], const_15.css.rowDeleted, !this._isDeleted);
                 }
             },
             enumerable: true,

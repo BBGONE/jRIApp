@@ -19,7 +19,7 @@ import { RowSelectorColumn } from "../columns/rowselector";
 
 import { DataGrid } from "../datagrid"
 
-const $ = utils.dom.$, document = utils.dom.document;
+const dom = utils.dom, $ = dom.$, document = utils.dom.document;
 
 export class Row extends BaseObject {
     private _grid: DataGrid;
@@ -54,6 +54,8 @@ export class Row extends BaseObject {
         this._isDetached = false;
         this._createCells();
         this._isDeleted = this._item._aspect.isDeleted;
+        if (this._isDeleted)
+            dom.addClass([this._tr], css.rowDeleted);
         let fn_state = () => {
             let css = self._grid._getInternal().onRowStateChanged(self, (<any>self._item)[self._grid.options.rowStateField]);
             self._setState(css);
@@ -242,10 +244,8 @@ export class Row extends BaseObject {
             this._isDeleted = v;
             if (this._isDeleted) {
                 this.isExpanded = false;
-                $(this._tr).addClass(css.rowDeleted);
             }
-            else
-                $(this._tr).removeClass(css.rowDeleted);
+            dom.setClass([this._tr], css.rowDeleted, !this._isDeleted);
         }
     }
     get isDetached() {

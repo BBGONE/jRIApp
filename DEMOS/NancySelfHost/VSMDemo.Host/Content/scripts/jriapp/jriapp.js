@@ -4592,7 +4592,13 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
         _newID += 1;
         return id;
     }
-    ;
+    function fnIsDestroyed(obj) {
+        var res = false;
+        if (syschecks._isBaseObj(obj)) {
+            res = obj.getIsDestroyCalled();
+        }
+        return res;
+    }
     var bindModeMap = {
         OneTime: 0,
         OneWay: 1,
@@ -4697,13 +4703,13 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             this._isSourceFixed = (!!opts.isSourceFixed);
             this._pathItems = {};
             this._objId = getNewID();
-            this._ignoreSrcChange = false;
-            this._ignoreTgtChange = false;
             this._sourceObj = null;
             this._targetObj = null;
             this._source = null;
             this._target = null;
             this._umask = 0;
+            this._cntUtgt = 0;
+            this._cntUSrc = 0;
             this._setTarget(opts.target);
             this._setSource(opts.source);
             this._update();
@@ -4712,31 +4718,47 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                 this._onSrcErrorsChanged(err_notif);
         }
         Binding.prototype._update = function () {
-            var firstSrc = this._mode === 3;
-            try {
-                if (firstSrc) {
-                    if ((this._umask & 1) === 1)
-                        this._updateSource();
-                    else if ((this._umask & 2) === 2)
-                        this._updateTarget();
+            var updateSrc = this._mode === 3, umask = this._umask;
+            var flag = 0;
+            this._umask = 0;
+            if (updateSrc) {
+                if (!!(umask & 1)) {
+                    flag = 1;
                 }
-                else {
-                    if ((this._umask & 2) === 2)
-                        this._updateTarget();
-                    else if ((this._umask & 1) === 1)
-                        this._updateSource();
+                else if (!!(umask & 2)) {
+                    flag = 2;
                 }
             }
-            finally {
-                this._umask = 0;
+            else {
+                if (!!(umask & 2)) {
+                    flag = 2;
+                }
+                else if (!!(umask & 1)) {
+                    flag = 1;
+                }
             }
-        };
-        Binding._isDestroyed = function (obj) {
-            var res = false;
-            if (syschecks._isBaseObj(obj)) {
-                res = obj.getIsDestroyCalled();
+            if (flag === 1 && this._cntUtgt === 0 && this._cntUSrc < 5) {
+                this._cntUSrc += 1;
+                try {
+                    this._updateSource();
+                }
+                finally {
+                    this._cntUSrc -= 1;
+                    if (this._cntUSrc < 0)
+                        throw new Error("Invalid operation: this._cntUSrc = " + this._cntUSrc);
+                }
             }
-            return res;
+            else if (flag === 2 && this._cntUSrc === 0 && this._cntUtgt < 5) {
+                this._cntUtgt += 1;
+                try {
+                    this._updateTarget();
+                }
+                finally {
+                    this._cntUtgt -= 1;
+                    if (this._cntUtgt < 0)
+                        throw new Error("Invalid operation: this._cntUtgt = " + this._cntUtgt);
+                }
+            }
         };
         Binding.prototype._onSrcErrorsChanged = function (err_notif, args) {
             var errors = [], tgt = this._targetObj, src = this._sourceObj, srcPath = this._srcPath;
@@ -4780,10 +4802,10 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                 self._parseSrcPath2(obj, path, lvl);
             }
             if (self._mode === 3) {
-                this._umask = this._umask | 1;
+                self._umask |= 1;
             }
             else {
-                this._umask = this._umask | 2;
+                self._umask |= 2;
             }
         };
         Binding.prototype._parseSrcPath2 = function (obj, path, lvl) {
@@ -4814,7 +4836,10 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                 if (isValidProp) {
                     var updateOnChange = isBaseObj && (self._mode === 1 || self._mode === 2);
                     if (updateOnChange) {
-                        obj.addOnPropertyChange(path[0], self._updateTarget, self._objId, self);
+                        obj.addOnPropertyChange(path[0], function () {
+                            self._umask |= 2;
+                            self._update();
+                        }, self._objId);
                     }
                     var err_notif = utils.getErrorNotification(obj);
                     if (!!err_notif) {
@@ -4833,13 +4858,14 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             if (path.length === 0) {
                 self._targetObj = obj;
             }
-            else
+            else {
                 self._parseTgtPath2(obj, path, lvl);
+            }
             if (self._mode === 3) {
-                this._umask = this._umask | 1;
+                this._umask |= 1;
             }
             else {
-                this._umask = this._umask | 2;
+                this._umask |= 2;
             }
         };
         Binding.prototype._parseTgtPath2 = function (obj, path, lvl) {
@@ -4871,7 +4897,10 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                 if (isValidProp) {
                     var updateOnChange = isBaseObj && (self._mode === 2 || self._mode === 3);
                     if (updateOnChange) {
-                        obj.addOnPropertyChange(path[0], self._updateSource, self._objId, self);
+                        obj.addOnPropertyChange(path[0], function () {
+                            self._umask |= 1;
+                            self._update();
+                        }, self._objId);
                     }
                     self._targetObj = obj;
                 }
@@ -4937,9 +4966,8 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             }
         };
         Binding.prototype._updateTarget = function (sender, args) {
-            if (this._ignoreSrcChange || this.getIsDestroyCalled())
+            if (this.getIsDestroyCalled())
                 return;
-            this._ignoreTgtChange = true;
             try {
                 if (!this._converter)
                     this.targetValue = this.sourceValue;
@@ -4947,19 +4975,12 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                     this.targetValue = this._converter.convertToTarget(this.sourceValue, this._converterParam, this._sourceObj);
             }
             catch (ex) {
-                if (this._mode === 3) {
-                    this._updateSource();
-                }
                 coreutils_14.ERROR.reThrow(ex, this.handleError(ex, this));
-            }
-            finally {
-                this._ignoreTgtChange = false;
             }
         };
         Binding.prototype._updateSource = function (sender, args) {
-            if (this._ignoreTgtChange || this.getIsDestroyCalled())
+            if (this.getIsDestroyCalled())
                 return;
-            this._ignoreSrcChange = true;
             try {
                 if (!this._converter)
                     this.sourceValue = this.targetValue;
@@ -4968,16 +4989,8 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             }
             catch (ex) {
                 if (!syschecks._isValidationError(ex) || !syschecks._isElView(this._targetObj)) {
-                    this._ignoreSrcChange = false;
-                    if (this._mode !== 3) {
-                        this._updateTarget();
-                    }
-                    if (!this.handleError(ex, this))
-                        throw ex;
+                    coreutils_14.ERROR.reThrow(ex, this.handleError(ex, this));
                 }
-            }
-            finally {
-                this._ignoreSrcChange = false;
             }
         };
         Binding.prototype._setTarget = function (value) {
@@ -4987,12 +5000,14 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             }
             if (this._target !== value) {
                 if (!!this._targetObj) {
-                    this._ignoreTgtChange = true;
+                    this._cntUtgt += 1;
                     try {
                         this.targetValue = null;
                     }
                     finally {
-                        this._ignoreTgtChange = false;
+                        this._cntUtgt -= 1;
+                        if (this._cntUtgt < 0)
+                            throw new Error("Invalid operation: this._cntUtgt = " + this._cntUtgt);
                     }
                 }
                 this._setPathItem(null, 1, 0, this._tgtPath);
@@ -5094,7 +5109,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             set: function (v) {
                 if (this._srcPath.length === 0 || !this._sourceObj || v === checks.undefined)
                     return;
-                if (Binding._isDestroyed(this._sourceObj))
+                if (fnIsDestroyed(this._sourceObj))
                     return;
                 var prop = this._srcPath[this._srcPath.length - 1];
                 parser_3.parser.setPropertyValue(this._sourceObj, prop, v);
@@ -5116,7 +5131,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             set: function (v) {
                 if (this._tgtPath.length === 0 || !this._targetObj || v === checks.undefined)
                     return;
-                if (Binding._isDestroyed(this._targetObj))
+                if (fnIsDestroyed(this._targetObj))
                     return;
                 var prop = this._tgtPath[this._tgtPath.length - 1];
                 parser_3.parser.setPropertyValue(this._targetObj, prop, v);
@@ -10804,6 +10819,6 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.COLL_CHANGE_REASON = collection_1.COLL_CHANGE_REASON;
     exports.COLL_CHANGE_TYPE = collection_1.COLL_CHANGE_TYPE;
     exports.Application = app_1.Application;
-    exports.VERSION = "0.9.81";
+    exports.VERSION = "0.9.82";
     bootstrap_25.Bootstrap._initFramework();
 });
