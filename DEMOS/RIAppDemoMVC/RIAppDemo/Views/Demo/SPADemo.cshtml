@@ -113,8 +113,10 @@
             mainOptions.spa_template2_url = '@Url.Action("SPADemoTemplate2", "Templates")';
             mainOptions.spa_template3_url = '@Url.Action("SPADemoTemplate3", "Templates")';
 
-            DEMO.start(mainOptions).always(function(){
-                $("#demoContent").animate({opacity: 1}, 1000);
+            DEMO.start(mainOptions).then(function () {
+                $("#demoContent").animate({ opacity: 1 }, 1000);
+                $("#loading").fadeOut(1000);
+            }, function (err) {
                 $("#loading").fadeOut(1000);
             });
         });

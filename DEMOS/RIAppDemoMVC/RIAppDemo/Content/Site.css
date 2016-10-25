@@ -196,31 +196,31 @@ table th {
 
 
 /* CUSTOM RADIO STYLES */
-.radio {
+.ria-radio {
    vertical-align:middle;
 }
 
-.radio + span {
+.ria-radio + span {
   cursor: pointer;
   vertical-align:middle;
 }
 /* hide original */
-.radio:not(checked) {
+.ria-radio:not(checked) {
   position: absolute;
   opacity: 0 !important;
   outline: none !important;
 }
-.radio:checked {
+.ria-radio:checked {
   position: absolute;
   opacity: 0 !important;
   outline: none !important;
 }
 
-.radio:not(checked) + span {
+.ria-radio:not(checked) + span {
   position: relative;
   padding: 0 0 0 35px;
 }
-.radio:not(checked) + span:before {
+.ria-radio:not(checked) + span:before {
   content: '';
   position: absolute;
   top: -3px;
@@ -231,7 +231,7 @@ table th {
   border-radius: 50%;
   background: #FFF;
 }
-.radio:not(checked) + span:after {
+.ria-radio:not(checked) + span:after {
   content: '';
   position: absolute;
   top: 0;
@@ -247,10 +247,10 @@ table th {
   opacity: 0;
   transition: all .2s;
 }
-.radio:checked + span:after {
+.ria-radio:checked + span:after {
   opacity: 1;
 }
-.radio:focus + span:before {
+.ria-radio:focus + span:before {
   box-shadow: 0 0 0 3px rgba(255,255,125,.5);
 }
 

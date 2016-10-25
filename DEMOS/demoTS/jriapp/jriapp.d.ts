@@ -1531,7 +1531,9 @@ declare module "jriapp_core/binding" {
         private _source;
         private _target;
         private _appName;
+        private _umask;
         constructor(options: IBindingOptions, appName?: string);
+        private _update();
         private static _isDestroyed(obj);
         private _onSrcErrorsChanged(err_notif, args?);
         private _getTgtChangedFn(self, obj, prop, restPath, lvl);
@@ -1544,8 +1546,6 @@ declare module "jriapp_core/binding" {
         private _cleanUpObj(oldObj);
         private _onTgtDestroyed(sender, args);
         private _onSrcDestroyed(sender, args);
-        private _bindToSource();
-        private _bindToTarget();
         private _updateTarget(sender?, args?);
         private _updateSource(sender?, args?);
         protected _setTarget(value: any): void;

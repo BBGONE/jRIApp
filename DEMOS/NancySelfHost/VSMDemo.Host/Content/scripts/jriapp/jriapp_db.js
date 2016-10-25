@@ -1790,19 +1790,14 @@ define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jria
                     var changed = self._changed;
                     self._changed = {};
                     try {
-                        coreUtils.iterateIndexer(changed, function (fkey, obj) {
-                            var items = [], children = obj.children;
-                            var keys = Object.keys(children);
-                            for (var k = 0; k < keys.length; k += 1) {
-                                items.push(children[keys[k]]);
+                        var fkeys = Object.keys(changed);
+                        for (var k = 0; k < fkeys.length; k += 1) {
+                            var fkey = fkeys[k], map = changed[fkey];
+                            self._onParentChanged(fkey, map.children);
+                            if (!!map.parent) {
+                                self._onChildrenChanged(fkey, map.parent);
                             }
-                            if (items.length > 0) {
-                                self._onParentChanged(fkey, items);
-                            }
-                            if (!!obj.parent) {
-                                self._onChildrenChanged(fkey, obj.parent);
-                            }
-                        });
+                        }
                     }
                     catch (err) {
                         self.handleError(err, self);
@@ -1953,13 +1948,15 @@ define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jria
                 parent.raisePropertyChanged(this._parentToChildrenName);
             }
         };
-        Association.prototype._onParentChanged = function (fkey, children) {
-            var self = this;
+        Association.prototype._onParentChanged = function (fkey, map) {
+            var self = this, item;
             if (!!fkey && !!this._childToParentName) {
-                children.forEach(function (item) {
+                var keys = Object.keys(map);
+                for (var k = 0; k < keys.length; k += 1) {
+                    item = map[keys[k]];
                     if (!item.getIsDestroyCalled())
                         item.raisePropertyChanged(self._childToParentName);
-                });
+                }
             }
         };
         Association.prototype._mapChildren = function (items) {

@@ -158,8 +158,10 @@
                 ops.permissionInfo = @Html.Action("PermissionsInfo", "RIAppDemoServiceEF");
             })(mainOptions);
 
-            DEMO.start(mainOptions).always(function(){
-                $("#demoContent").animate({opacity: 1}, 1000);
+            DEMO.start(mainOptions).then(function () {
+                $("#demoContent").animate({ opacity: 1 }, 1000);
+                $("#loading").fadeOut(1000);
+            }, function (err) {
                 $("#loading").fadeOut(1000);
             });
         });

@@ -49,7 +49,7 @@
             DEMO.start(mainOptions).then(function(app){
                 //returns promise
                 return app.fbrowserVM.loadRootFolder();
-            }).always(function(){
+            }).then(function(){
                 $("#main").animate({opacity: 1}, 1000);
             });
         });

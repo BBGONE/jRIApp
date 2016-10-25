@@ -91,6 +91,7 @@
                 });
 
             promise.then(function () {
+                $("#demoContent").animate({ opacity: 1 }, 1000);
                 console.log('application started successfuly');
             }, function (err) {
                 console.log('application failed to start');
@@ -101,23 +102,23 @@
 <h2 class="ex8">@ViewBag.Title</h2>
 
 <!--using dataform is convenient because it sets a datacontext scope for all its content-->
-<div id="demoContent" data-bind="{this.dataContext,source=demoVM}" data-view="name=dataform">
+<div id="demoContent" style="opacity:0;" data-bind="{this.dataContext,source=demoVM}" data-view="name=dataform">
     <fieldset>
         <legend>Radios elements data binding example (using Dictionary in View Models)</legend>
         <label class="radioItem">
-            <input type="radio" class="radio" name="radioItem" data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue1}"/>
+            <input type="radio" class="ria-radio" name="radioItem" data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue1}"/>
             <span data-bind1="{this.value,to=radioValues['radioValue1'].value}" data-bind2="{this.toolTip,to=radioValues['radioValue1'].comment}"></span>
         </label>
         <label class="radioItem">
-            <input type="radio" class="radio" name="radioItem" data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue2}"/>
+            <input type="radio" class="ria-radio" name="radioItem" data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue2}"/>
             <span data-bind1="{this.value,to=radioValues['radioValue2'].value}" data-bind2="{this.toolTip,to=radioValues['radioValue2'].comment}"></span>
         </label>
         <label class="radioItem">
-            <input type="radio" class="radio" name="radioItem" data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue3}"/>
+            <input type="radio" class="ria-radio" name="radioItem" data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue3}"/>
             <span data-bind1="{this.value,to=radioValues['radioValue3'].value}" data-bind2="{this.toolTip,to=radioValues['radioValue3'].comment}"></span>
         </label>
         <label class="radioItem">
-            <input type="radio" class="radio" name="radioItem" data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue4}"/>
+            <input type="radio" class="ria-radio" name="radioItem" data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue4}"/>
             <span data-bind1="{this.value,to=radioValues['radioValue4'].value}" data-bind2="{this.toolTip,to=radioValues['radioValue4'].comment}"></span>
         </label>
     </fieldset>

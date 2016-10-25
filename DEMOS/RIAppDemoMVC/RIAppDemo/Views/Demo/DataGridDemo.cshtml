@@ -241,8 +241,10 @@
 
             })(mainOptions);
 
-            DEMO.start(mainOptions).always(function () {
+            DEMO.start(mainOptions).then(function () {
                 $("#demoContent").animate({ opacity: 1 }, 1000);
+                $("#loading").fadeOut(1000);
+            }, function (err) {
                 $("#loading").fadeOut(1000);
             });
         });
