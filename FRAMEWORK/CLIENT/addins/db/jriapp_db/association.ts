@@ -329,21 +329,15 @@ export class Association extends BaseObject {
                 let changed = self._changed;
                 self._changed = {};
                 try {
-                    coreUtils.iterateIndexer(changed, (fkey, obj) => {
-                        let items: IEntityItem[] = [], children: IIndexer<IEntityItem> = obj.children;
-                        let keys = Object.keys(children);
-                        for (let k = 0; k < keys.length; k += 1) {
-                            items.push(children[keys[k]]);
+                    //for loop is more performant than forEach
+                    let fkeys = Object.keys(changed);
+                    for (let k = 0; k < fkeys.length; k += 1) {
+                        let fkey = fkeys[k], map = changed[fkey];
+                        self._onParentChanged(fkey, map.children);
+                        if (!!map.parent) {
+                            self._onChildrenChanged(fkey, map.parent);
                         }
-
-                        if (items.length > 0) {
-                            self._onParentChanged(fkey, items);
-                        }
-
-                        if (!!obj.parent) {
-                            self._onChildrenChanged(fkey, obj.parent);
-                        }
-                    });
+                    }
                 }
                 catch (err)
                 {
@@ -499,13 +493,16 @@ export class Association extends BaseObject {
             parent.raisePropertyChanged(this._parentToChildrenName);
         }
     }
-    protected _onParentChanged(fkey: string, children: IEntityItem[]) {
-        let self = this;
+    protected _onParentChanged(fkey: string, map: IIndexer<IEntityItem>) {
+        let self = this, item: IEntityItem;
+
         if (!!fkey && !!this._childToParentName) {
-            children.forEach(function (item) {
+            let keys = Object.keys(map);
+            for (let k = 0; k < keys.length; k += 1) {
+                item = map[keys[k]];
                 if (!item.getIsDestroyCalled())
                     item.raisePropertyChanged(self._childToParentName);
-            });
+            }
         }
     }
     protected _mapChildren(items: IEntityItem[]) {

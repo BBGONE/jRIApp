@@ -297,7 +297,7 @@ declare module "jriapp_db/dbsets" {
     }
 }
 declare module "jriapp_db/association" {
-    import { IFieldInfo } from "jriapp_core/shared";
+    import { IFieldInfo, IIndexer } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
     import { ICollChangedArgs, ITEM_STATUS } from "jriapp_collection/collection";
     import { DELETE_ACTION } from "jriapp_db/const";
@@ -347,7 +347,7 @@ declare module "jriapp_db/association" {
         protected _unMapParentItem(item: IEntityItem): string;
         protected _mapParentItems(items: IEntityItem[]): string[];
         protected _onChildrenChanged(fkey: string, parent: IEntityItem): void;
-        protected _onParentChanged(fkey: string, children: IEntityItem[]): void;
+        protected _onParentChanged(fkey: string, map: IIndexer<IEntityItem>): void;
         protected _mapChildren(items: IEntityItem[]): string[];
         protected _unbindParentDS(): void;
         protected _unbindChildDS(): void;
