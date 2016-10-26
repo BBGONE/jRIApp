@@ -17,12 +17,15 @@ syschecks._isBinding = (obj: any) => {
     return (!!obj && obj instanceof Binding);
 };
 
-function fn_onUnResolvedBinding(bindTo: BindTo, root: any, path: string, propName: string): void {
+/**
+ * Unresolved binding - property path is invalid or source is empty
+ */
+function fn_reportUnResolved(bindTo: BindTo, root: any, path: string, propName: string): void {
     if (!DEBUG.isDebugging()) {
         return;
     }
     DEBUG.checkStartDebugger();
-    let msg = "UnResolved data binding for ";
+    let msg = "Unresolved data binding for ";
     if (bindTo == BindTo.Source) {
         msg += " Source: "
     }
@@ -34,7 +37,31 @@ function fn_onUnResolvedBinding(bindTo: BindTo, root: any, path: string, propNam
     msg += ", binding path: '" + path + "'";
 
     LOG.error(msg);
-};
+}
+
+/**
+ * Maximum recursion exceeded
+ */
+function fn_reportMaxRec(bindTo: BindTo, src: any, tgt: any, spath: string, tpath: string): void {
+    if (!DEBUG.isDebugging()) {
+        return;
+    }
+    DEBUG.checkStartDebugger();
+    let msg = "Maximum recursion exceeded for ";
+    if (bindTo == BindTo.Source) {
+        msg += "Updating Source value: "
+    }
+    else {
+        msg += "Updating Target value: "
+    }
+    msg += " source:'" + src + "'";
+    msg += ", target:'" + tgt + "'";
+    msg += ", source path: '" + spath + "'";
+    msg += ", target path: '" + tpath + "'";
+
+    LOG.error(msg);
+}
+
 
 function fn_handleError(appName: string, error: any, source: any): boolean {
     if (!!appName) {
@@ -42,21 +69,13 @@ function fn_handleError(appName: string, error: any, source: any): boolean {
     }
     else
         return bootstrap.handleError(error, source);
-};
+}
 
 let _newID = 0;
 function getNewID(): string {
     let id = "bnd" + _newID;
     _newID += 1;
     return id;
-}
-
-function fnIsDestroyed(obj: any): boolean {
-    let res = false;
-    if (syschecks._isBaseObj(obj)) {
-        res = (<IBaseObject>obj).getIsDestroyCalled();
-    }
-    return res;
 }
 
 const bindModeMap: IIndexer<BINDING_MODE> = {
@@ -245,24 +264,34 @@ export class Binding extends BaseObject implements IBinding {
 
         switch (flag) {
             case 1:
-                if (this._cntUtgt === 0 && this._cntUSrc < MAX_REC) {
-                    this._cntUSrc += 1;
-                    try {
-                        this._updateSource();
+                if (this._cntUtgt === 0) {
+                    if (this._cntUSrc < MAX_REC) {
+                        this._cntUSrc += 1;
+                        try {
+                            this._updateSource();
+                        }
+                        finally {
+                            this._cntUSrc -= 1;
+                        }
                     }
-                    finally {
-                        this._cntUSrc -= 1;
+                    else {
+                        fn_reportMaxRec(BindTo.Source, this._source, this._target, this._srcPath.join("."), this._tgtPath.join("."))
                     }
                 }
                 break;
             case 2:
-                if (this._cntUSrc === 0 && this._cntUtgt < MAX_REC) {
-                    this._cntUtgt += 1;
-                    try {
-                        this._updateTarget();
+                if (this._cntUSrc === 0) {
+                    if (this._cntUtgt < MAX_REC) {
+                        this._cntUtgt += 1;
+                        try {
+                            this._updateTarget();
+                        }
+                        finally {
+                            this._cntUtgt -= 1;
+                        }
                     }
-                    finally {
-                        this._cntUtgt -= 1;
+                    else {
+                        fn_reportMaxRec(BindTo.Target, this._source, this._target, this._srcPath.join("."), this._tgtPath.join("."))
                     }
                 }
                 break;
@@ -341,7 +370,7 @@ export class Binding extends BaseObject implements IBinding {
                     self._parseSrc2(nextObj, path.slice(1), lvl + 1);
                 }
                 else if (checks.isUndefined(nextObj)) {
-                    fn_onUnResolvedBinding(BindTo.Source, self.source, self._srcPath.join("."), path[0]);
+                    fn_reportUnResolved(BindTo.Source, self.source, self._srcPath.join("."), path[0]);
                 }
             }
             return;
@@ -369,7 +398,7 @@ export class Binding extends BaseObject implements IBinding {
                 self._srcEnd = obj;
             }
             else {
-                fn_onUnResolvedBinding(BindTo.Source, self.source, self._srcPath.join("."), path[0]);
+                fn_reportUnResolved(BindTo.Source, self.source, self._srcPath.join("."), path[0]);
             }
         }
     }
@@ -413,7 +442,7 @@ export class Binding extends BaseObject implements IBinding {
                     self._parseTgt2(nextObj, path.slice(1), lvl + 1);
                 }
                 else if (checks.isUndefined(nextObj)) {
-                    fn_onUnResolvedBinding(BindTo.Target, self.target, self._tgtPath.join("."), path[0]);
+                    fn_reportUnResolved(BindTo.Target, self.target, self._tgtPath.join("."), path[0]);
                 }
             }
             return;
@@ -438,7 +467,7 @@ export class Binding extends BaseObject implements IBinding {
                 self._tgtEnd = obj;
             }
             else {
-                fn_onUnResolvedBinding(BindTo.Target, self.target, self._tgtPath.join("."), path[0]);
+                fn_reportUnResolved(BindTo.Target, self.target, self._tgtPath.join("."), path[0]);
             }
         }
     }
@@ -638,15 +667,11 @@ export class Binding extends BaseObject implements IBinding {
         if (!!this._srcEnd) {
             let prop = this._srcPath[this._srcPath.length - 1];
             res = parser.resolveProp(this._srcEnd, prop);
-            if (res === checks.undefined)
-                res = null;
         }
         return res;
     }
     set sourceValue(v) {
         if (this._srcPath.length === 0 || !this._srcEnd || v === checks.undefined)
-            return;
-        if (fnIsDestroyed(this._srcEnd))
             return;
         let prop = this._srcPath[this._srcPath.length - 1];
         parser.setPropertyValue(this._srcEnd, prop, v);
@@ -656,15 +681,11 @@ export class Binding extends BaseObject implements IBinding {
         if (!!this._tgtEnd) {
             let prop = this._tgtPath[this._tgtPath.length - 1];
             res = parser.resolveProp(this._tgtEnd, prop);
-            if (res === checks.undefined)
-                res = null;
         }
         return res;
     }
     set targetValue(v) {
         if (this._tgtPath.length === 0 || !this._tgtEnd || v === checks.undefined)
-            return;
-        if (fnIsDestroyed(this._tgtEnd))
             return;
         let prop = this._tgtPath[this._tgtPath.length - 1];
         parser.setPropertyValue(this._tgtEnd, prop, v);

@@ -136,6 +136,9 @@ export class Parser {
         if (!prop)
             return obj;
 
+        if (checks.isBaseObject(obj) && obj.getIsDestroyCalled())
+            return checks.undefined;
+
         if (strUtils.startsWith(prop, "[")) {
             //it is an indexed property like ['someProp']
             prop = trimQuotes(trimBrackets(prop));
@@ -158,6 +161,8 @@ export class Parser {
     setPropertyValue(obj: any, prop: string, val: any) {
         if (!prop)
             throw new Error("Invalid operation: Empty Property name");
+        if (checks.isBaseObject(obj) && obj.getIsDestroyCalled())
+            return;
 
         //it is an indexed property, obj must be an Array or ComandStore or a simple indexer
         if (strUtils.startsWith(prop, "[")) {

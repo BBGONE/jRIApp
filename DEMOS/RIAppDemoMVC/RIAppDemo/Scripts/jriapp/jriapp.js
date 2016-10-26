@@ -1506,6 +1506,8 @@ define("jriapp_core/parser", ["require", "exports", "jriapp_core/lang", "jriapp_
         Parser.prototype.resolveProp = function (obj, prop) {
             if (!prop)
                 return obj;
+            if (checks.isBaseObject(obj) && obj.getIsDestroyCalled())
+                return checks.undefined;
             if (strUtils.startsWith(prop, "[")) {
                 prop = trimQuotes(trimBrackets(prop));
                 if (syschecks._isCollection(obj)) {
@@ -1525,6 +1527,8 @@ define("jriapp_core/parser", ["require", "exports", "jriapp_core/lang", "jriapp_
         Parser.prototype.setPropertyValue = function (obj, prop, val) {
             if (!prop)
                 throw new Error("Invalid operation: Empty Property name");
+            if (checks.isBaseObject(obj) && obj.getIsDestroyCalled())
+                return;
             if (strUtils.startsWith(prop, "[")) {
                 prop = trimQuotes(trimBrackets(prop));
                 if (checks.isArray(obj)) {
@@ -4572,12 +4576,12 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
     syschecks._isBinding = function (obj) {
         return (!!obj && obj instanceof Binding);
     };
-    function fn_onUnResolvedBinding(bindTo, root, path, propName) {
+    function fn_reportUnResolved(bindTo, root, path, propName) {
         if (!coreutils_14.DEBUG.isDebugging()) {
             return;
         }
         coreutils_14.DEBUG.checkStartDebugger();
-        var msg = "UnResolved data binding for ";
+        var msg = "Unresolved data binding for ";
         if (bindTo == 0) {
             msg += " Source: ";
         }
@@ -4589,7 +4593,24 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
         msg += ", binding path: '" + path + "'";
         coreutils_14.LOG.error(msg);
     }
-    ;
+    function fn_reportMaxRec(bindTo, src, tgt, spath, tpath) {
+        if (!coreutils_14.DEBUG.isDebugging()) {
+            return;
+        }
+        coreutils_14.DEBUG.checkStartDebugger();
+        var msg = "Maximum recursion exceeded for ";
+        if (bindTo == 0) {
+            msg += "Updating Source value: ";
+        }
+        else {
+            msg += "Updating Target value: ";
+        }
+        msg += " source:'" + src + "'";
+        msg += ", target:'" + tgt + "'";
+        msg += ", source path: '" + spath + "'";
+        msg += ", target path: '" + tpath + "'";
+        coreutils_14.LOG.error(msg);
+    }
     function fn_handleError(appName, error, source) {
         if (!!appName) {
             return bootstrap_4.bootstrap.findApp(appName).handleError(error, source);
@@ -4597,19 +4618,11 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
         else
             return bootstrap_4.bootstrap.handleError(error, source);
     }
-    ;
     var _newID = 0;
     function getNewID() {
         var id = "bnd" + _newID;
         _newID += 1;
         return id;
-    }
-    function fnIsDestroyed(obj) {
-        var res = false;
-        if (syschecks._isBaseObj(obj)) {
-            res = obj.getIsDestroyCalled();
-        }
-        return res;
     }
     var bindModeMap = {
         OneTime: 0,
@@ -4748,24 +4761,34 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             }
             switch (flag) {
                 case 1:
-                    if (this._cntUtgt === 0 && this._cntUSrc < MAX_REC) {
-                        this._cntUSrc += 1;
-                        try {
-                            this._updateSource();
+                    if (this._cntUtgt === 0) {
+                        if (this._cntUSrc < MAX_REC) {
+                            this._cntUSrc += 1;
+                            try {
+                                this._updateSource();
+                            }
+                            finally {
+                                this._cntUSrc -= 1;
+                            }
                         }
-                        finally {
-                            this._cntUSrc -= 1;
+                        else {
+                            fn_reportMaxRec(0, this._source, this._target, this._srcPath.join("."), this._tgtPath.join("."));
                         }
                     }
                     break;
                 case 2:
-                    if (this._cntUSrc === 0 && this._cntUtgt < MAX_REC) {
-                        this._cntUtgt += 1;
-                        try {
-                            this._updateTarget();
+                    if (this._cntUSrc === 0) {
+                        if (this._cntUtgt < MAX_REC) {
+                            this._cntUtgt += 1;
+                            try {
+                                this._updateTarget();
+                            }
+                            finally {
+                                this._cntUtgt -= 1;
+                            }
                         }
-                        finally {
-                            this._cntUtgt -= 1;
+                        else {
+                            fn_reportMaxRec(1, this._source, this._target, this._srcPath.join("."), this._tgtPath.join("."));
                         }
                     }
                     break;
@@ -4837,7 +4860,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                         self._parseSrc2(nextObj, path.slice(1), lvl + 1);
                     }
                     else if (checks.isUndefined(nextObj)) {
-                        fn_onUnResolvedBinding(0, self.source, self._srcPath.join("."), path[0]);
+                        fn_reportUnResolved(0, self.source, self._srcPath.join("."), path[0]);
                     }
                 }
                 return;
@@ -4863,7 +4886,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                     self._srcEnd = obj;
                 }
                 else {
-                    fn_onUnResolvedBinding(0, self.source, self._srcPath.join("."), path[0]);
+                    fn_reportUnResolved(0, self.source, self._srcPath.join("."), path[0]);
                 }
             }
         };
@@ -4901,7 +4924,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                         self._parseTgt2(nextObj, path.slice(1), lvl + 1);
                     }
                     else if (checks.isUndefined(nextObj)) {
-                        fn_onUnResolvedBinding(1, self.target, self._tgtPath.join("."), path[0]);
+                        fn_reportUnResolved(1, self.target, self._tgtPath.join("."), path[0]);
                     }
                 }
                 return;
@@ -4924,7 +4947,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                     self._tgtEnd = obj;
                 }
                 else {
-                    fn_onUnResolvedBinding(1, self.target, self._tgtPath.join("."), path[0]);
+                    fn_reportUnResolved(1, self.target, self._tgtPath.join("."), path[0]);
                 }
             }
         };
@@ -5132,15 +5155,11 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                 if (!!this._srcEnd) {
                     var prop = this._srcPath[this._srcPath.length - 1];
                     res = parser_3.parser.resolveProp(this._srcEnd, prop);
-                    if (res === checks.undefined)
-                        res = null;
                 }
                 return res;
             },
             set: function (v) {
                 if (this._srcPath.length === 0 || !this._srcEnd || v === checks.undefined)
-                    return;
-                if (fnIsDestroyed(this._srcEnd))
                     return;
                 var prop = this._srcPath[this._srcPath.length - 1];
                 parser_3.parser.setPropertyValue(this._srcEnd, prop, v);
@@ -5154,15 +5173,11 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                 if (!!this._tgtEnd) {
                     var prop = this._tgtPath[this._tgtPath.length - 1];
                     res = parser_3.parser.resolveProp(this._tgtEnd, prop);
-                    if (res === checks.undefined)
-                        res = null;
                 }
                 return res;
             },
             set: function (v) {
                 if (this._tgtPath.length === 0 || !this._tgtEnd || v === checks.undefined)
-                    return;
-                if (fnIsDestroyed(this._tgtEnd))
                     return;
                 var prop = this._tgtPath[this._tgtPath.length - 1];
                 parser_3.parser.setPropertyValue(this._tgtEnd, prop, v);
