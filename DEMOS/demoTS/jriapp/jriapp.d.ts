@@ -976,6 +976,7 @@ declare module "jriapp_utils/async" {
         static createSyncDeferred<T>(): IDeferred<T>;
         static whenAll<T>(args: Array<T | IThenable<T>>): IPromise<T[]>;
         static getTaskQueue(): ITaskQueue;
+        static delay(func: () => any, time?: number): IPromise<any>;
     }
 }
 declare module "jriapp_utils/http" {
@@ -1525,8 +1526,8 @@ declare module "jriapp_core/binding" {
         private _isSourceFixed;
         private _pathItems;
         private _objId;
-        private _sourceObj;
-        private _targetObj;
+        private _srcEnd;
+        private _tgtEnd;
         private _source;
         private _target;
         private _appName;
@@ -1535,15 +1536,15 @@ declare module "jriapp_core/binding" {
         private _cntUSrc;
         constructor(options: IBindingOptions, appName?: string);
         private _update();
-        private _onSrcErrorsChanged(err_notif, args?);
+        private _onSrcErrChanged(err_notif, args?);
         private _getTgtChangedFn(self, obj, prop, restPath, lvl);
         private _getSrcChangedFn(self, obj, prop, restPath, lvl);
-        private _parseSrcPath(obj, path, lvl);
-        private _parseSrcPath2(obj, path, lvl);
-        private _parseTgtPath(obj, path, lvl);
-        private _parseTgtPath2(obj, path, lvl);
+        private _parseSrc(obj, path, lvl);
+        private _parseSrc2(obj, path, lvl);
+        private _parseTgt(obj, path, lvl);
+        private _parseTgt2(obj, path, lvl);
         private _setPathItem(newObj, bindingTo, lvl, path);
-        private _cleanUpObj(oldObj);
+        private _cleanUp(obj);
         private _onTgtDestroyed(sender, args);
         private _onSrcDestroyed(sender, args);
         private _updateTarget(sender?, args?);
@@ -1553,7 +1554,7 @@ declare module "jriapp_core/binding" {
         handleError(error: any, source: any): boolean;
         destroy(): void;
         toString(): string;
-        readonly bindingID: string;
+        readonly uniqueID: string;
         target: IBaseObject;
         source: any;
         readonly targetPath: string[];

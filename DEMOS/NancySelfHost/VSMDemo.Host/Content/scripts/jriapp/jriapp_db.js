@@ -1539,8 +1539,9 @@ define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jria
             var changed2 = this._mapChildren(this._childDS.items);
             this._saveParentFKey = null;
             this._saveChildFKey = null;
-            this._changedDebounce = new utils_5.Debounce(50);
+            this._debounce = new utils_5.Debounce();
             this._changed = {};
+            this._notifyBound = self._notify.bind(self);
             self._notifyParentChanged(changed1);
             self._notifyChildrenChanged(changed2);
         }
@@ -1786,23 +1787,24 @@ define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jria
                     }
                     self._changed[key] = res;
                 });
-                this._changedDebounce.enqueue(function () {
-                    var changed = self._changed;
-                    self._changed = {};
-                    try {
-                        var fkeys = Object.keys(changed);
-                        for (var k = 0; k < fkeys.length; k += 1) {
-                            var fkey = fkeys[k], map = changed[fkey];
-                            self._onParentChanged(fkey, map.children);
-                            if (!!map.parent) {
-                                self._onChildrenChanged(fkey, map.parent);
-                            }
-                        }
+                this._debounce.enqueue(this._notifyBound);
+            }
+        };
+        Association.prototype._notify = function () {
+            var self = this, changed = self._changed;
+            self._changed = {};
+            try {
+                var fkeys = Object.keys(changed);
+                for (var k = 0; k < fkeys.length; k += 1) {
+                    var fkey = fkeys[k], map = changed[fkey];
+                    self._onParentChanged(fkey, map.children);
+                    if (!!map.parent) {
+                        self._onChildrenChanged(fkey, map.parent);
                     }
-                    catch (err) {
-                        self.handleError(err, self);
-                    }
-                });
+                }
+            }
+            catch (err) {
+                self.handleError(err, self);
             }
         };
         Association.prototype._onChildEdit = function (item, isBegin, isCanceled) {
@@ -2038,8 +2040,8 @@ define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jria
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
-            this._changedDebounce.destroy();
-            this._changedDebounce = null;
+            this._debounce.destroy();
+            this._debounce = null;
             this._changed = {};
             this._unbindParentDS();
             this._unbindChildDS();

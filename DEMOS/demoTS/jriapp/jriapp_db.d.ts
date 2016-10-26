@@ -319,7 +319,8 @@ declare module "jriapp_db/association" {
         private _childMap;
         private _saveParentFKey;
         private _saveChildFKey;
-        private _changedDebounce;
+        private _debounce;
+        private _notifyBound;
         private _changed;
         constructor(options: IAssocConstructorOptions);
         handleError(error: any, source: any): boolean;
@@ -335,6 +336,7 @@ declare module "jriapp_db/association" {
         protected _notifyChildrenChanged(changed: string[]): void;
         protected _notifyParentChanged(changed: string[]): void;
         protected _notifyChanged(changed_pkeys: string[], changed_ckeys: string[]): void;
+        private _notify();
         protected _onChildEdit(item: IEntityItem, isBegin: boolean, isCanceled: boolean): void;
         protected _onChildCommitChanges(item: IEntityItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS): void;
         protected _storeChildFKey(item: IEntityItem): void;

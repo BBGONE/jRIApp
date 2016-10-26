@@ -102,6 +102,13 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
             }
         }, self.uniqueID);
 
+        this._dbSet.addOnFill(function (sender, args) {
+            if (args.reason === RIAPP.COLL_CHANGE_REASON.Sorting)
+                setTimeout(() => {
+                    self._updateSelection();
+                }, 0);
+        }, self.uniqueID);
+
         //auto submit changes when an entity is deleted
         this._dbSet.isSubmitOnDelete = true;
 

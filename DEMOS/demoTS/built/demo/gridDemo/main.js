@@ -1749,6 +1749,10 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
                     self._testInvokeCommand.raiseCanExecuteChanged();
                 }
             }, self.uniqueID);
+            this._dbSet.addOnFill(function (sender, args) {
+                if (args.reason === 2)
+                    self._updateSelection();
+            }, self.uniqueID);
             this._dbSet.isSubmitOnDelete = true;
             this._dbSet.addOnValidate(function (sender, args) {
                 var item = args.item;
