@@ -976,7 +976,7 @@ declare module "jriapp_utils/async" {
         static createSyncDeferred<T>(): IDeferred<T>;
         static whenAll<T>(args: Array<T | IThenable<T>>): IPromise<T[]>;
         static getTaskQueue(): ITaskQueue;
-        static delay(func: () => any, time?: number): IPromise<any>;
+        static delay<T>(func: () => T, time?: number): IPromise<T>;
     }
 }
 declare module "jriapp_utils/http" {

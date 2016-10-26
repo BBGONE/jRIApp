@@ -19,8 +19,8 @@ export class AsyncUtils {
     static getTaskQueue(): ITaskQueue {
         return getTaskQueue();
     }
-    static delay(func: () => any, time?: number): IPromise<any> {
-        let deferred = createDefer<any>();
+    static delay<T>(func: () => T, time?: number): IPromise<T> {
+        let deferred = createDefer<T>();
         setTimeout(() => {
             try {
                 deferred.resolve(func());
