@@ -19,4 +19,17 @@ export class AsyncUtils {
     static getTaskQueue(): ITaskQueue {
         return getTaskQueue();
     }
+    static delay(func: () => any, time?: number): IPromise<any> {
+        let deferred = createDefer<any>();
+        setTimeout(() => {
+            try {
+                deferred.resolve(func());
+            }
+            catch (err) {
+                deferred.reject(err);
+            }
+        }, !time ? 0 : time);
+
+        return deferred.promise();
+    }
 }

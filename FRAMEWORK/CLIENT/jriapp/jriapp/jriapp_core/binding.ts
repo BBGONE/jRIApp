@@ -152,10 +152,12 @@ export class Binding extends BaseObject implements IBinding {
     private _srcPath: string[];
     private _tgtPath: string[];
     private _isSourceFixed: boolean;
-    private _pathItems: { [key: string]: IBaseObject; };
+    private _pathItems: IIndexer<IBaseObject>;
     private _objId: string;
-    private _sourceObj: any;
-    private _targetObj: any;
+    //the last object in the source path
+    private _srcEnd: any;
+    //the last object in the target path
+    private _tgtEnd: any;
     private _source: any;
     private _target: IBaseObject;
     private _appName: string;
@@ -206,8 +208,8 @@ export class Binding extends BaseObject implements IBinding {
         this._isSourceFixed = (!!opts.isSourceFixed);
         this._pathItems = {};
         this._objId = getNewID();
-        this._sourceObj = null;
-        this._targetObj = null;
+        this._srcEnd = null;
+        this._tgtEnd = null;
         this._source = null;
         this._target = null;
         //a mask indicating to update update the target or the source or both
@@ -218,12 +220,12 @@ export class Binding extends BaseObject implements IBinding {
         this._setSource(opts.source);
         this._update();
 
-        let err_notif = utils.getErrorNotification(this._sourceObj);
+        let err_notif = utils.getErrorNotification(this._srcEnd);
         if (!!err_notif && err_notif.getIsHasErrors())
-            this._onSrcErrorsChanged(err_notif);
+            this._onSrcErrChanged(err_notif);
     }
     private _update(): void {
-        const umask = this._umask;
+        const umask = this._umask, MAX_REC= 3;
         let flag = 0;
         this._umask = 0;
 
@@ -236,38 +238,38 @@ export class Binding extends BaseObject implements IBinding {
             if (!!(umask & 2)) {
                 flag = 2;
             }
-            else if (!!(umask & 1)) {
+            else if (!!(umask & 1) && (this._mode === BINDING_MODE.TwoWay)) {
                 flag = 1;
             }
         }
 
-        if (flag === 1 && this._cntUtgt === 0 && this._cntUSrc < 5) {
-            this._cntUSrc += 1;
-            try {
-                this._updateSource();
-            }
-            finally {
-                this._cntUSrc -= 1;
-                //sanity check
-                if (this._cntUSrc < 0)
-                    throw new Error("Invalid operation: this._cntUSrc = " + this._cntUSrc);
-            }
-        }
-        else if (flag === 2 && this._cntUSrc === 0 && this._cntUtgt < 5) {
-            this._cntUtgt += 1;
-            try {
-                this._updateTarget();
-            }
-            finally {
-                this._cntUtgt -= 1;
-                //sanity check
-                if (this._cntUtgt < 0)
-                    throw new Error("Invalid operation: this._cntUtgt = " + this._cntUtgt);
-            }
+        switch (flag) {
+            case 1:
+                if (this._cntUtgt === 0 && this._cntUSrc < MAX_REC) {
+                    this._cntUSrc += 1;
+                    try {
+                        this._updateSource();
+                    }
+                    finally {
+                        this._cntUSrc -= 1;
+                    }
+                }
+                break;
+            case 2:
+                if (this._cntUSrc === 0 && this._cntUtgt < MAX_REC) {
+                    this._cntUtgt += 1;
+                    try {
+                        this._updateTarget();
+                    }
+                    finally {
+                        this._cntUtgt -= 1;
+                    }
+                }
+                break;
         }
     }
-    private _onSrcErrorsChanged(err_notif: IErrorNotification, args?: any) {
-        let errors: IValidationInfo[] = [], tgt = this._targetObj, src = this._sourceObj, srcPath = this._srcPath;
+    private _onSrcErrChanged(err_notif: IErrorNotification, args?: any) {
+        let errors: IValidationInfo[] = [], tgt = this._tgtEnd, src = this._srcEnd, srcPath = this._srcPath;
         if (!!tgt && syschecks._isElView(tgt)) {
             if (!!src && srcPath.length > 0) {
                 let prop = srcPath[srcPath.length - 1];
@@ -283,7 +285,7 @@ export class Binding extends BaseObject implements IBinding {
                 self._setPathItem(null, BindTo.Target, lvl, restPath);
             }
             //bind and trigger target update
-            self._parseTgtPath(val, restPath, lvl);
+            self._parseTgt(val, restPath, lvl);
             self._update();
         };
         return fn;
@@ -294,31 +296,31 @@ export class Binding extends BaseObject implements IBinding {
             if (restPath.length > 0) {
                 self._setPathItem(null, BindTo.Source, lvl, restPath);
             }
-            self._parseSrcPath(val, restPath, lvl);
+            self._parseSrc(val, restPath, lvl);
             self._update();
         };
         return fn;
     }
-    private _parseSrcPath(obj: any, path: string[], lvl: number) {
+    private _parseSrc(obj: any, path: string[], lvl: number) {
         let self = this;
-        self._sourceObj = null;
+        self._srcEnd = null;
         if (path.length === 0) {
-            self._sourceObj = obj;
+            self._srcEnd = obj;
         }
         else {
-            self._parseSrcPath2(obj, path, lvl);
+            self._parseSrc2(obj, path, lvl);
         }
 
         if (self._mode === BINDING_MODE.BackWay) {
-            if (!!self._sourceObj)
+            if (!!self._srcEnd)
                 self._umask |= 1;
         }
         else {
-            if (!!self._targetObj)
+            if (!!self._tgtEnd)
                 self._umask |= 2;
         }
     }
-    private _parseSrcPath2(obj: any, path: string[], lvl: number) {
+    private _parseSrc2(obj: any, path: string[], lvl: number) {
         let self = this, nextObj: any, isBaseObj = (!!obj && syschecks._isBaseObj(obj)), isValidProp: boolean;
 
         if (isBaseObj) {
@@ -328,13 +330,15 @@ export class Binding extends BaseObject implements IBinding {
 
         if (path.length > 1) {
             if (isBaseObj) {
-                (<IBaseObject>obj).addOnPropertyChange(path[0], self._getSrcChangedFn(self, obj, path[0], path.slice(1), lvl + 1), self._objId);
+                (<IBaseObject>obj).addOnPropertyChange(path[0],
+                    self._getSrcChangedFn(self, obj, path[0], path.slice(1), lvl + 1),
+                    self._objId);
             }
 
             if (!!obj) {
                 nextObj = parser.resolveProp(obj, path[0]);
                 if (!!nextObj) {
-                    self._parseSrcPath2(nextObj, path.slice(1), lvl + 1);
+                    self._parseSrc2(nextObj, path.slice(1), lvl + 1);
                 }
                 else if (checks.isUndefined(nextObj)) {
                     fn_onUnResolvedBinding(BindTo.Source, self.source, self._srcPath.join("."), path[0]);
@@ -352,42 +356,44 @@ export class Binding extends BaseObject implements IBinding {
                 let updateOnChange = isBaseObj && (self._mode === BINDING_MODE.OneWay || self._mode === BINDING_MODE.TwoWay);
                 if (updateOnChange) {
                     (<IBaseObject>obj).addOnPropertyChange(path[0], () => {
-                        self._umask |= 2;
-                        self._update();
+                        if (!!self._tgtEnd) {
+                            self._umask |= 2;
+                            self._update();
+                        }
                     }, self._objId);
                 }
                 let err_notif = utils.getErrorNotification(obj);
                 if (!!err_notif) {
-                    err_notif.addOnErrorsChanged(self._onSrcErrorsChanged, self._objId, self);
+                    err_notif.addOnErrorsChanged(self._onSrcErrChanged, self._objId, self);
                 }
-                self._sourceObj = obj;
+                self._srcEnd = obj;
             }
             else {
                 fn_onUnResolvedBinding(BindTo.Source, self.source, self._srcPath.join("."), path[0]);
             }
         }
     }
-    private _parseTgtPath(obj: any, path: string[], lvl: number) {
+    private _parseTgt(obj: any, path: string[], lvl: number) {
         let self = this;
-        self._targetObj = null;
+        self._tgtEnd = null;
         if (path.length === 0) {
-            self._targetObj = obj;
+            self._tgtEnd = obj;
         }
         else {
-            self._parseTgtPath2(obj, path, lvl);
+            self._parseTgt2(obj, path, lvl);
         }
 
         if (self._mode === BINDING_MODE.BackWay) {
-            if (!!self._sourceObj)
+            if (!!self._srcEnd)
                 this._umask |= 1;
         }
         else {
             //if new target then update the target (not the source!)
-            if (!!self._targetObj)
+            if (!!self._tgtEnd)
                 this._umask |= 2;
         }
     }
-    private _parseTgtPath2(obj: any, path: string[], lvl: number) {
+    private _parseTgt2(obj: any, path: string[], lvl: number) {
         let self = this, nextObj: any, isBaseObj = syschecks._isBaseObj(obj), isValidProp = false;
 
         if (isBaseObj) {
@@ -397,12 +403,14 @@ export class Binding extends BaseObject implements IBinding {
 
         if (path.length > 1) {
             if (isBaseObj) {
-                (<IBaseObject>obj).addOnPropertyChange(path[0], self._getTgtChangedFn(self, obj, path[0], path.slice(1), lvl + 1), self._objId, self);
+                (<IBaseObject>obj).addOnPropertyChange(path[0],
+                    self._getTgtChangedFn(self, obj, path[0], path.slice(1), lvl + 1),
+                    self._objId);
             }
             if (!!obj) {
                 nextObj = parser.resolveProp(obj, path[0]);
                 if (!!nextObj) {
-                    self._parseTgtPath2(nextObj, path.slice(1), lvl + 1);
+                    self._parseTgt2(nextObj, path.slice(1), lvl + 1);
                 }
                 else if (checks.isUndefined(nextObj)) {
                     fn_onUnResolvedBinding(BindTo.Target, self.target, self._tgtPath.join("."), path[0]);
@@ -421,11 +429,13 @@ export class Binding extends BaseObject implements IBinding {
                 let updateOnChange = isBaseObj && (self._mode === BINDING_MODE.TwoWay || self._mode === BINDING_MODE.BackWay);
                 if (updateOnChange) {
                     (<IBaseObject>obj).addOnPropertyChange(path[0], () => {
-                        self._umask |= 1;
-                        self._update();
+                        if (!!self._srcEnd) {
+                            self._umask |= 1;
+                            self._update();
+                        }
                     }, self._objId);
                 }
-                self._targetObj = obj;
+                self._tgtEnd = obj;
             }
             else {
                 fn_onUnResolvedBinding(BindTo.Target, self.target, self._tgtPath.join("."), path[0]);
@@ -448,7 +458,7 @@ export class Binding extends BaseObject implements IBinding {
 
             oldObj = this._pathItems[key];
             if (!!oldObj) {
-                this._cleanUpObj(oldObj);
+                this._cleanUp(oldObj);
                 delete this._pathItems[key];
             }
 
@@ -457,10 +467,10 @@ export class Binding extends BaseObject implements IBinding {
             }
         }
     }
-    private _cleanUpObj(oldObj: IBaseObject) {
-        if (!!oldObj) {
-            oldObj.removeNSHandlers(this._objId);
-            let err_notif = utils.getErrorNotification(oldObj);
+    private _cleanUp(obj: IBaseObject) {
+        if (!!obj) {
+            obj.removeNSHandlers(this._objId);
+            let err_notif = utils.getErrorNotification(obj);
             if (!!err_notif) {
                 err_notif.removeOnErrorsChanged(this._objId);
             }
@@ -487,7 +497,7 @@ export class Binding extends BaseObject implements IBinding {
                 if (self.getIsDestroyCalled())
                     return;
                 //rebind after the source is destroyed
-                self._parseSrcPath(self.source, self._srcPath, 0);
+                self._parseSrc(self.source, self._srcPath, 0);
                 self._update();
             }, 0);
         }
@@ -499,7 +509,7 @@ export class Binding extends BaseObject implements IBinding {
             if (!this._converter)
                 this.targetValue = this.sourceValue;
             else
-                this.targetValue = this._converter.convertToTarget(this.sourceValue, this._converterParam, this._sourceObj);
+                this.targetValue = this._converter.convertToTarget(this.sourceValue, this._converterParam, this._srcEnd);
         }
         catch (ex) {
             ERROR.reThrow(ex, this.handleError(ex, this));
@@ -512,10 +522,10 @@ export class Binding extends BaseObject implements IBinding {
             if (!this._converter)
                 this.sourceValue = this.targetValue;
             else
-                this.sourceValue = this._converter.convertToSource(this.targetValue, this._converterParam, this._sourceObj);
+                this.sourceValue = this._converter.convertToSource(this.targetValue, this._converterParam, this._srcEnd);
         }
         catch (ex) {
-            if (!syschecks._isValidationError(ex) || !syschecks._isElView(this._targetObj)) {
+            if (!syschecks._isValidationError(ex) || !syschecks._isElView(this._tgtEnd)) {
                 //BaseElView is notified about errors in _onSrcErrorsChanged event handler
                 //we only need to invoke _onError in other cases
                 //1) when target is not BaseElView
@@ -531,7 +541,7 @@ export class Binding extends BaseObject implements IBinding {
         }
 
         if (this._target !== value) {
-            if (!!this._targetObj && !(this._mode === BINDING_MODE.BackWay)) {
+            if (!!this._tgtEnd && !(this._mode === BINDING_MODE.BackWay)) {
                 this._cntUtgt += 1;
                 try {
                     this.targetValue = null;
@@ -547,8 +557,8 @@ export class Binding extends BaseObject implements IBinding {
             if (!!value && !syschecks._isBaseObj(value))
                 throw new Error(ERRS.ERR_BIND_TARGET_INVALID);
             this._target = value;
-            this._parseTgtPath(this._target, this._tgtPath, 0);
-            if (!!this._target && !this._targetObj)
+            this._parseTgt(this._target, this._tgtPath, 0);
+            if (!!this._target && !this._tgtEnd)
                 throw new Error(strUtils.format(ERRS.ERR_BIND_TGTPATH_INVALID, this._tgtPath.join(".")));
         }
     }
@@ -559,7 +569,7 @@ export class Binding extends BaseObject implements IBinding {
         }
 
         if (this._source !== value) {
-            if (!!this._sourceObj && (this._mode === BINDING_MODE.BackWay)) {
+            if (!!this._srcEnd && (this._mode === BINDING_MODE.BackWay)) {
                 this._cntUSrc += 1;
                 try {
                     this.sourceValue = null;
@@ -573,7 +583,7 @@ export class Binding extends BaseObject implements IBinding {
             }
             this._setPathItem(null, BindTo.Source, 0, this._srcPath);
             this._source = value;
-            this._parseSrcPath(this._source, this._srcPath, 0);
+            this._parseSrc(this._source, this._srcPath, 0);
         }
     }
     handleError(error: any, source: any): boolean {
@@ -585,7 +595,7 @@ export class Binding extends BaseObject implements IBinding {
         this._isDestroyCalled = true;
         let self = this;
         coreUtils.iterateIndexer(this._pathItems, function (key, old) {
-            self._cleanUpObj(old);
+            self._cleanUp(old);
         });
         this._pathItems = {};
         this._setSource(null);
@@ -595,8 +605,8 @@ export class Binding extends BaseObject implements IBinding {
         this._converterParam = null;
         this._srcPath = null;
         this._tgtPath = null;
-        this._sourceObj = null;
-        this._targetObj = null;
+        this._srcEnd = null;
+        this._tgtEnd = null;
         this._source = null;
         this._target = null;
         this._umask = 0;
@@ -606,7 +616,7 @@ export class Binding extends BaseObject implements IBinding {
         return "Binding";
     }
 
-    get bindingID() {
+    get uniqueID() {
         return this._objId;
     }
     get target() { return this._target; }
@@ -624,40 +634,40 @@ export class Binding extends BaseObject implements IBinding {
     get sourceValue() {
         let res: any = null;
         if (this._srcPath.length === 0)
-            res = this._sourceObj;
-        if (!!this._sourceObj) {
+            res = this._srcEnd;
+        if (!!this._srcEnd) {
             let prop = this._srcPath[this._srcPath.length - 1];
-            res = parser.resolveProp(this._sourceObj, prop);
+            res = parser.resolveProp(this._srcEnd, prop);
             if (res === checks.undefined)
                 res = null;
         }
         return res;
     }
     set sourceValue(v) {
-        if (this._srcPath.length === 0 || !this._sourceObj || v === checks.undefined)
+        if (this._srcPath.length === 0 || !this._srcEnd || v === checks.undefined)
             return;
-        if (fnIsDestroyed(this._sourceObj))
+        if (fnIsDestroyed(this._srcEnd))
             return;
         let prop = this._srcPath[this._srcPath.length - 1];
-        parser.setPropertyValue(this._sourceObj, prop, v);
+        parser.setPropertyValue(this._srcEnd, prop, v);
     }
     get targetValue() {
         let res: any = null;
-        if (!!this._targetObj) {
+        if (!!this._tgtEnd) {
             let prop = this._tgtPath[this._tgtPath.length - 1];
-            res = parser.resolveProp(this._targetObj, prop);
+            res = parser.resolveProp(this._tgtEnd, prop);
             if (res === checks.undefined)
                 res = null;
         }
         return res;
     }
     set targetValue(v) {
-        if (this._tgtPath.length === 0 || !this._targetObj || v === checks.undefined)
+        if (this._tgtPath.length === 0 || !this._tgtEnd || v === checks.undefined)
             return;
-        if (fnIsDestroyed(this._targetObj))
+        if (fnIsDestroyed(this._tgtEnd))
             return;
         let prop = this._tgtPath[this._tgtPath.length - 1];
-        parser.setPropertyValue(this._targetObj, prop, v);
+        parser.setPropertyValue(this._tgtEnd, prop, v);
     }
     get mode() { return this._mode; }
     get converter() { return this._converter; }

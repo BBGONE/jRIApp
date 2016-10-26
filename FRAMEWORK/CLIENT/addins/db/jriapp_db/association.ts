@@ -27,7 +27,8 @@ export class Association extends BaseObject {
     private _childMap: { [key: string]: IEntityItem[]; };
     private _saveParentFKey: string;
     private _saveChildFKey: string;
-    private _changedDebounce: Debounce;
+    private _debounce: Debounce;
+    private _notifyBound: () => void;
     private _changed: {
         [key: string]: {
             children: IIndexer<IEntityItem>;
@@ -72,8 +73,9 @@ export class Association extends BaseObject {
         let changed2 = this._mapChildren(this._childDS.items);
         this._saveParentFKey = null;
         this._saveChildFKey = null;
-        this._changedDebounce = new Debounce(50);
+        this._debounce = new Debounce();
         this._changed = {};
+        this._notifyBound = self._notify.bind(self);
         self._notifyParentChanged(changed1);
         self._notifyChildrenChanged(changed2);
     }
@@ -325,25 +327,25 @@ export class Association extends BaseObject {
                 self._changed[key] = res;
             });
 
-            this._changedDebounce.enqueue(() => {
-                let changed = self._changed;
-                self._changed = {};
-                try {
-                    //for loop is more performant than forEach
-                    let fkeys = Object.keys(changed);
-                    for (let k = 0; k < fkeys.length; k += 1) {
-                        let fkey = fkeys[k], map = changed[fkey];
-                        self._onParentChanged(fkey, map.children);
-                        if (!!map.parent) {
-                            self._onChildrenChanged(fkey, map.parent);
-                        }
-                    }
+            this._debounce.enqueue(this._notifyBound);
+        }
+    }
+    private _notify() {
+        let self= this, changed = self._changed;
+        self._changed = {};
+        try {
+            //for loop is more performant than forEach
+            let fkeys = Object.keys(changed);
+            for (let k = 0; k < fkeys.length; k += 1) {
+                let fkey = fkeys[k], map = changed[fkey];
+                self._onParentChanged(fkey, map.children);
+                if (!!map.parent) {
+                    self._onChildrenChanged(fkey, map.parent);
                 }
-                catch (err)
-                {
-                    self.handleError(err, self);
-                }
-            });
+            }
+        }
+        catch (err) {
+            self.handleError(err, self);
         }
     }
     protected _onChildEdit(item: IEntityItem, isBegin: boolean, isCanceled: boolean): void {
@@ -587,8 +589,8 @@ export class Association extends BaseObject {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        this._changedDebounce.destroy();
-        this._changedDebounce = null;
+        this._debounce.destroy();
+        this._debounce = null;
         this._changed = {};
         this._unbindParentDS();
         this._unbindChildDS();

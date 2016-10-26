@@ -41,7 +41,6 @@ export class RowSelectorColumn extends BaseColumn {
                 cell.row.isSelected = cell.checked;
             }
         });
-
     }
     toString() {
         return "RowSelectorColumn";
