@@ -373,8 +373,14 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         return valueUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
     }
     protected _getCalcFieldVal(fieldName: string, item: TItem): any {
-        let val: ICalcFieldImpl<TItem> = coreUtils.getValue(this._calcfldMap, fieldName);
-        return val.getFunc.call(item, item);
+        try {
+            let val: ICalcFieldImpl<TItem> = coreUtils.getValue(this._calcfldMap, fieldName);
+            return val.getFunc.call(item, item);
+        }
+        catch (err)
+        {
+            ERROR.reThrow(err, this.handleError(err, this));
+        }
     }
     protected _getNavFieldVal(fieldName: string, item: TItem): any {
         let val: INavFieldImpl<TItem> = coreUtils.getValue(this._navfldMap, fieldName);

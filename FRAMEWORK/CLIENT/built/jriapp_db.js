@@ -838,8 +838,13 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_core/lang", "jriapp_uti
             return collection_2.valueUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
         };
         DbSet.prototype._getCalcFieldVal = function (fieldName, item) {
-            var val = coreUtils.getValue(this._calcfldMap, fieldName);
-            return val.getFunc.call(item, item);
+            try {
+                var val = coreUtils.getValue(this._calcfldMap, fieldName);
+                return val.getFunc.call(item, item);
+            }
+            catch (err) {
+                utils_3.ERROR.reThrow(err, this.handleError(err, this));
+            }
         };
         DbSet.prototype._getNavFieldVal = function (fieldName, item) {
             var val = coreUtils.getValue(this._navfldMap, fieldName);
