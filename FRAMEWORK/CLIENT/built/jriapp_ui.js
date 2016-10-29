@@ -1643,14 +1643,8 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_core/object
             set: function (v) {
                 var curr = this._isCurrent;
                 if (v !== curr) {
-                    var $el = $(this._tr);
                     this._isCurrent = v;
-                    if (v) {
-                        $el.addClass(const_15.css.rowHighlight);
-                    }
-                    else {
-                        $el.removeClass(const_15.css.rowHighlight);
-                    }
+                    dom.setClass([this._tr], const_15.css.rowHighlight, !v);
                     this.raisePropertyChanged(const_15.PROP_NAME.isCurrent);
                 }
             },
@@ -3130,8 +3124,8 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             }
             this.dataSource = null;
             this._unWrapTable();
-            this._$table.removeClass(const_21.css.dataTable);
-            $(this._tHeadRow).removeClass(const_21.css.columnInfo);
+            dom.removeClass([this._table], const_21.css.dataTable);
+            dom.removeClass([this._tHeadRow], const_21.css.columnInfo);
             this._table = null;
             this._$table = null;
             this._options.app = null;
@@ -3423,7 +3417,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
 });
 define("jriapp_ui/pager", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview"], function (require, exports, lang_4, object_11, utils_18, bootstrap_5, elview_5) {
     "use strict";
-    var $ = utils_18.Utils.dom.$, document = utils_18.Utils.dom.document, checks = utils_18.Utils.check, strUtils = utils_18.Utils.str, coreUtils = utils_18.Utils.core;
+    var dom = utils_18.Utils.dom, $ = dom.$, document = utils_18.Utils.dom.document, checks = utils_18.Utils.check, strUtils = utils_18.Utils.str, coreUtils = utils_18.Utils.core;
     var _STRS = lang_4.STRS.PAGER;
     var css = {
         pager: "ria-pager",
@@ -3458,11 +3452,11 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_core/lang", "jriapp_cor
                 throw new Error(lang_4.ERRS.ERR_PAGER_DATASRC_INVALID);
             this._options = options;
             this._$el = $(options.el);
+            dom.addClass([options.el], css.pager);
             this._objId = "pgr" + coreUtils.getNewID();
             this._rowsPerPage = 0;
             this._rowCount = 0;
             this._currentPage = 1;
-            this._$el.addClass(css.pager);
             this._renderDebounce = new utils_18.Debounce(50);
             if (!!this._options.dataSource) {
                 this._bindDS();
@@ -3494,7 +3488,9 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_core/lang", "jriapp_cor
                 if (this.showInfo) {
                     var $span = this._createElement("span");
                     var info = strUtils.format(_STRS.pageInfo, currentPage, pageCount);
-                    $span.addClass(css.info).text(info).appendTo($el);
+                    dom.addClass($span.toArray(), css.info);
+                    $span.text(info);
+                    $span.appendTo($el);
                 }
                 if (this.showFirstAndLast && (currentPage !== 1)) {
                     $el.append(this._createFirst());
@@ -3563,7 +3559,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_core/lang", "jriapp_cor
             this._renderDebounce = null;
             this._unbindDS();
             this._clearContent();
-            this._$el.removeClass(css.pager);
+            dom.removeClass([this.el], css.pager);
             this._$el = null;
             this._options = {};
             _super.prototype.destroy.call(this);
@@ -3612,73 +3608,77 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_core/lang", "jriapp_cor
             this.render();
         };
         Pager.prototype._createLink = function (page, text, tip) {
-            var a = this._createElement("a"), self = this;
-            a.text("" + text);
-            a.attr("href", "javascript:void(0)");
+            var $a = this._createElement("a"), self = this;
+            $a.text("" + text);
+            $a.attr("href", "javascript:void(0)");
             if (!!tip) {
-                elview_5.fn_addToolTip(a, tip);
+                elview_5.fn_addToolTip($a, tip);
             }
-            a.click(function (e) {
+            $a.click(function (e) {
                 e.preventDefault();
                 self._setDSPageIndex(page);
                 self.currentPage = page;
             });
-            return a;
+            return $a;
         };
         Pager.prototype._createFirst = function () {
-            var $span = this._createElement("span"), tip, a;
+            var $span = this._createElement("span"), tip, $a;
             if (this.showTip) {
                 tip = _STRS.firstPageTip;
             }
-            a = this._createLink(1, _STRS.firstText, tip);
-            $span.addClass(css.otherPage).append(a);
+            $a = this._createLink(1, _STRS.firstText, tip);
+            dom.addClass($span.toArray(), css.otherPage);
+            $span.append($a);
             return $span;
         };
         Pager.prototype._createPrevious = function () {
-            var span = this._createElement("span"), previousPage = this.currentPage - 1, tip, a;
+            var $span = this._createElement("span"), previousPage = this.currentPage - 1, tip, $a;
             if (this.showTip) {
                 tip = strUtils.format(_STRS.prevPageTip, previousPage);
             }
-            a = this._createLink(previousPage, _STRS.previousText, tip);
-            span.addClass(css.otherPage).append(a);
-            return span;
+            $a = this._createLink(previousPage, _STRS.previousText, tip);
+            dom.addClass($span.toArray(), css.otherPage);
+            $span.append($a);
+            return $span;
         };
         Pager.prototype._createCurrent = function () {
-            var span = this._createElement("span"), currentPage = this.currentPage;
-            span.text("" + currentPage);
+            var $span = this._createElement("span"), currentPage = this.currentPage;
+            $span.text("" + currentPage);
             if (this.showTip) {
-                elview_5.fn_addToolTip(span, this._buildTip(currentPage));
+                elview_5.fn_addToolTip($span, this._buildTip(currentPage));
             }
-            span.addClass(css.currentPage);
-            return span;
+            dom.addClass($span.toArray(), css.currentPage);
+            return $span;
         };
         Pager.prototype._createOther = function (page) {
-            var span = this._createElement("span"), tip, a;
+            var $span = this._createElement("span"), tip, $a;
             if (this.showTip) {
                 tip = this._buildTip(page);
             }
-            a = this._createLink(page, "" + page, tip);
-            span.addClass(css.otherPage);
-            span.append(a);
-            return span;
+            $a = this._createLink(page, "" + page, tip);
+            dom.addClass($span.toArray(), css.otherPage);
+            $span.append($a);
+            return $span;
         };
         Pager.prototype._createNext = function () {
-            var span = this._createElement("span"), nextPage = this.currentPage + 1, tip, a;
+            var $span = this._createElement("span"), nextPage = this.currentPage + 1, tip, $a;
             if (this.showTip) {
                 tip = strUtils.format(_STRS.nextPageTip, nextPage);
             }
-            a = this._createLink(nextPage, _STRS.nextText, tip);
-            span.addClass(css.otherPage).append(a);
-            return span;
+            $a = this._createLink(nextPage, _STRS.nextText, tip);
+            dom.addClass($span.toArray(), css.otherPage);
+            $span.append($a);
+            return $span;
         };
         Pager.prototype._createLast = function () {
-            var span = this._createElement("span"), tip, a;
+            var $span = this._createElement("span"), tip, a;
             if (this.showTip) {
                 tip = _STRS.lastPageTip;
             }
             a = this._createLink(this.pageCount, _STRS.lastText, tip);
-            span.addClass(css.otherPage).append(a);
-            return span;
+            dom.addClass($span.toArray(), css.otherPage);
+            $span.append(a);
+            return $span;
         };
         Pager.prototype._buildTip = function (page) {
             var rowsPerPage = this.rowsPerPage, rowCount = this.rowCount, start = (((page - 1) * rowsPerPage) + 1), end = (page === this.pageCount) ? rowCount : (page * rowsPerPage), tip = "";
@@ -4900,19 +4900,19 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_core/const", "jria
                 throw new Error(lang_6.ERRS.ERR_STACKPNL_TEMPLATE_INVALID);
             this._options = options;
             this._$el = $(options.el);
+            dom.addClass([options.el], css.stackpanel);
             var eltag = options.el.tagName.toLowerCase();
             if (eltag === "ul" || eltag === "ol")
                 this._item_tag = "li";
             else
                 this._item_tag = "div";
             if (this.orientation === HORIZONTAL) {
-                this._$el.addClass(css.horizontal);
+                dom.addClass([options.el], css.horizontal);
             }
             this._objId = "pnl" + coreUtils.getNewID();
             this._isKeyNavigation = false;
             this._event_scope = [this._item_tag, "[", const_23.DATA_ATTR.DATA_EVENT_SCOPE, '="', this._objId, '"]'].join("");
             this._currentItem = null;
-            this._$el.addClass(css.stackpanel);
             this._itemMap = {};
             this._selectable = {
                 getContainerEl: function () {
@@ -5007,13 +5007,13 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_core/const", "jria
                 if (!!old) {
                     mappedItem = self._itemMap[old._key];
                     if (!!mappedItem) {
-                        $(mappedItem.el).removeClass(css.currentItem);
+                        dom.removeClass([mappedItem.el], css.currentItem);
                     }
                 }
                 if (!!item) {
                     mappedItem = self._itemMap[item._key];
                     if (!!mappedItem) {
-                        $(mappedItem.el).addClass(css.currentItem);
+                        dom.addClass([mappedItem.el], css.currentItem);
                         if (withScroll && !this._isKeyNavigation)
                             this.scrollToCurrent(false);
                     }
@@ -5158,10 +5158,11 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_core/const", "jria
             bootstrap_7.bootstrap._getInternal().untrackSelectable(this);
             this._unbindDS();
             this._clearContent();
+            dom.removeClass([this.el], css.stackpanel);
+            if (this.orientation === HORIZONTAL) {
+                dom.removeClass([this.el], css.horizontal);
+            }
             this._$el.off("click", this._event_scope);
-            this._$el.removeClass(css.stackpanel);
-            if (this.orientation === HORIZONTAL)
-                this._$el.removeClass(css.horizontal);
             this._$el = null;
             this._currentItem = null;
             this._itemMap = {};

@@ -1083,8 +1083,8 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         }
         this.dataSource = null;
         this._unWrapTable();
-        this._$table.removeClass(css.dataTable);
-        $(this._tHeadRow).removeClass(css.columnInfo);
+        dom.removeClass([this._table], css.dataTable);
+        dom.removeClass([this._tHeadRow], css.columnInfo);
         this._table = null;
         this._$table = null;
         this._options.app = null;

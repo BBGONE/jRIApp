@@ -353,12 +353,13 @@ declare module "jriapp_db/association" {
         protected _mapChildren(items: IEntityItem[]): string[];
         protected _unbindParentDS(): void;
         protected _unbindChildDS(): void;
-        getParentFKey(item: IEntityItem): string;
-        getChildFKey(item: IEntityItem): string;
+        protected getParentFKey(item: IEntityItem): string;
+        protected getChildFKey(item: IEntityItem): string;
+        protected refreshParentMap(): string[];
+        protected refreshChildMap(): string[];
+        isParentChild(parent: IEntityItem, child: IEntityItem): boolean;
         getChildItems(item: IEntityItem): IEntityItem[];
         getParentItem(item: IEntityItem): IEntityItem;
-        refreshParentMap(): string[];
-        refreshChildMap(): string[];
         destroy(): void;
         toString(): string;
         readonly name: string;

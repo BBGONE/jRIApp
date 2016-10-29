@@ -1503,9 +1503,9 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_core/lang", "jriapp_co
     }(object_3.BaseObject));
     exports.DbSets = DbSets;
 });
-define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/utils"], function (require, exports, lang_2, object_4, utils_5) {
+define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_utils/utils"], function (require, exports, lang_2, object_4, bootstrap_1, utils_5) {
     "use strict";
-    var checks = utils_5.Utils.check, strUtils = utils_5.Utils.str, coreUtils = utils_5.Utils.core, ArrayHelper = utils_5.Utils.arr;
+    var utils = utils_5.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr;
     var Association = (function (_super) {
         __extends(Association, _super);
         function Association(options) {
@@ -1553,7 +1553,10 @@ define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jria
         Association.prototype.handleError = function (error, source) {
             var isHandled = _super.prototype.handleError.call(this, error, source);
             if (!isHandled) {
-                return this._dbContext.handleError(error, source);
+                if (!!this._dbContext)
+                    return this._dbContext.handleError(error, source);
+                else
+                    return bootstrap_1.bootstrap.handleError(error, source);
             }
             return isHandled;
         };
@@ -1864,7 +1867,7 @@ define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jria
                     self._notifyParentChanged([savedKey]);
                     self._notifyChildrenChanged([savedKey]);
                     arr = self._childMap[savedKey];
-                    ArrayHelper.remove(arr, item);
+                    arrHelper.remove(arr, item);
                     if (arr.length === 0) {
                         delete self._childMap[savedKey];
                     }
@@ -1913,7 +1916,7 @@ define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jria
             if (!!fkey) {
                 arr = this._childMap[fkey];
                 if (!!arr) {
-                    idx = ArrayHelper.remove(arr, item);
+                    idx = arrHelper.remove(arr, item);
                     if (idx > -1) {
                         if (arr.length === 0)
                             delete this._childMap[fkey];
@@ -2015,24 +2018,6 @@ define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jria
             }
             return this._getItemKey(this._childFldInfos, this._childDS, item);
         };
-        Association.prototype.getChildItems = function (item) {
-            if (!item)
-                return [];
-            var fkey = this.getParentFKey(item), arr = this._childMap[fkey];
-            if (!arr)
-                return [];
-            return arr;
-        };
-        Association.prototype.getParentItem = function (item) {
-            if (!item)
-                return null;
-            var fkey = this.getChildFKey(item);
-            var obj = this._parentMap[fkey];
-            if (!!obj)
-                return obj;
-            else
-                return null;
-        };
         Association.prototype.refreshParentMap = function () {
             this._resetParentMap();
             return this._mapParentItems(this._parentDS.items);
@@ -2040,6 +2025,45 @@ define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jria
         Association.prototype.refreshChildMap = function () {
             this._resetChildMap();
             return this._mapChildren(this._childDS.items);
+        };
+        Association.prototype.isParentChild = function (parent, child) {
+            if (!parent || !child)
+                return false;
+            var fkey1 = this.getParentFKey(parent);
+            if (!fkey1)
+                return false;
+            var fkey2 = this.getChildFKey(child);
+            if (!fkey2)
+                return false;
+            return fkey1 === fkey2;
+        };
+        Association.prototype.getChildItems = function (item) {
+            if (!item)
+                return [];
+            try {
+                var fkey = this.getParentFKey(item), arr = this._childMap[fkey];
+                if (!arr)
+                    return [];
+                return arr;
+            }
+            catch (err) {
+                utils_5.ERROR.reThrow(err, this.handleError(err, this));
+            }
+        };
+        Association.prototype.getParentItem = function (item) {
+            if (!item)
+                return null;
+            try {
+                var fkey = this.getChildFKey(item);
+                var obj = this._parentMap[fkey];
+                if (!!obj)
+                    return obj;
+                else
+                    return null;
+            }
+            catch (err) {
+                utils_5.ERROR.reThrow(err, this.handleError(err, this));
+            }
         };
         Association.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -2189,7 +2213,7 @@ define("jriapp_db/error", ["require", "exports", "jriapp_core/shared", "jriapp_u
     }(DataOperationError));
     exports.SubmitError = SubmitError;
 });
-define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_utils/utils", "jriapp_collection/collection", "jriapp_db/const", "jriapp_db/association", "jriapp_db/error"], function (require, exports, shared_2, langMOD, object_5, bootstrap_1, utils_7, collection_3, const_5, association_1, error_1) {
+define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_utils/utils", "jriapp_collection/collection", "jriapp_db/const", "jriapp_db/association", "jriapp_db/error"], function (require, exports, shared_2, langMOD, object_5, bootstrap_2, utils_7, collection_3, const_5, association_1, error_1) {
     "use strict";
     var utils = utils_7.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
     var DATA_SVC_METH = {
@@ -2551,7 +2575,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
         DbContext.prototype.handleError = function (error, source) {
             var isHandled = _super.prototype.handleError.call(this, error, source);
             if (!isHandled) {
-                return bootstrap_1.bootstrap.handleError(error, source);
+                return bootstrap_2.bootstrap.handleError(error, source);
             }
             return isHandled;
         };
@@ -4037,7 +4061,7 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_utils/utils", 
     var ChildDataView = (function (_super) {
         __extends(ChildDataView, _super);
         function ChildDataView(options) {
-            var save_fn_filter = options.fn_filter, ds = options.association.childDS, opts = coreUtils.extend({
+            var prev_filter = options.fn_filter, ds = options.association.childDS, opts = coreUtils.extend({
                 dataSource: ds,
                 fn_filter: function (item) { return true; },
                 fn_sort: null,
@@ -4051,18 +4075,8 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_utils/utils", 
             this._fn_filter = function (item) {
                 if (!self._parentItem)
                     return false;
-                var fkey1 = assoc.getParentFKey(self._parentItem);
-                if (!fkey1)
-                    return false;
-                var fkey2 = assoc.getChildFKey(item);
-                if (!fkey2)
-                    return false;
-                if (fkey1 !== fkey2)
-                    return false;
-                if (!save_fn_filter)
-                    return true;
-                else
-                    return save_fn_filter(item);
+                var ok = assoc.isParentChild(self._parentItem, item);
+                return ok && (!prev_filter || prev_filter(item));
             };
         }
         ChildDataView.prototype._refresh = function (reason) {

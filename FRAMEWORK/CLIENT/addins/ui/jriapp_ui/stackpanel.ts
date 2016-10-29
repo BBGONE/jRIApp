@@ -74,6 +74,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider, ITemp
             throw new Error(ERRS.ERR_STACKPNL_TEMPLATE_INVALID);
         this._options = options;
         this._$el = $(options.el);
+        dom.addClass([options.el], css.stackpanel);
         let eltag = options.el.tagName.toLowerCase();
         if (eltag === "ul" || eltag === "ol")
             this._item_tag = "li";
@@ -81,14 +82,13 @@ export class StackPanel extends BaseObject implements ISelectableProvider, ITemp
             this._item_tag = "div";
 
         if (this.orientation === HORIZONTAL) {
-            this._$el.addClass(css.horizontal);
+            dom.addClass([options.el], css.horizontal);
         }
 
         this._objId = "pnl" + coreUtils.getNewID();
         this._isKeyNavigation = false;
         this._event_scope = [this._item_tag, "[", DATA_ATTR.DATA_EVENT_SCOPE, '="', this._objId, '"]'].join("");
         this._currentItem = null;
-        this._$el.addClass(css.stackpanel);
         this._itemMap = {};
         this._selectable = {
             getContainerEl: () => {
@@ -188,13 +188,13 @@ export class StackPanel extends BaseObject implements ISelectableProvider, ITemp
             if (!!old) {
                 mappedItem = self._itemMap[old._key];
                 if (!!mappedItem) {
-                    $(mappedItem.el).removeClass(css.currentItem);
+                    dom.removeClass([mappedItem.el], css.currentItem);
                 }
             }
             if (!!item) {
                 mappedItem = self._itemMap[item._key];
                 if (!!mappedItem) {
-                    $(mappedItem.el).addClass(css.currentItem);
+                    dom.addClass([mappedItem.el], css.currentItem);
                     if (withScroll && !this._isKeyNavigation)
                         this.scrollToCurrent(false);
                 }
@@ -339,10 +339,11 @@ export class StackPanel extends BaseObject implements ISelectableProvider, ITemp
         bootstrap._getInternal().untrackSelectable(this);
         this._unbindDS();
         this._clearContent();
+        dom.removeClass([this.el], css.stackpanel);
+        if (this.orientation === HORIZONTAL) {
+            dom.removeClass([this.el], css.horizontal);
+        }
         this._$el.off("click", this._event_scope);
-        this._$el.removeClass(css.stackpanel);
-        if (this.orientation === HORIZONTAL)
-            this._$el.removeClass(css.horizontal);
         this._$el = null;
         this._currentItem = null;
         this._itemMap = {};

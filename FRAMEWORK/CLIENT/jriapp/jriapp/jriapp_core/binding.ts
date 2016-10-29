@@ -170,7 +170,7 @@ export class Binding extends BaseObject implements IBinding {
     private _converterParam: any;
     private _srcPath: string[];
     private _tgtPath: string[];
-    private _isSourceFixed: boolean;
+    private _srcFixed: boolean;
     private _pathItems: IIndexer<IBaseObject>;
     private _objId: string;
     //the last object in the source path
@@ -224,7 +224,7 @@ export class Binding extends BaseObject implements IBinding {
         this._tgtPath = parser.getPathParts(opts.targetPath);
         if (this._tgtPath.length < 1)
             throw new Error(strUtils.format(ERRS.ERR_BIND_TGTPATH_INVALID, opts.targetPath));
-        this._isSourceFixed = (!!opts.isSourceFixed);
+        this._srcFixed = (!!opts.isSourceFixed);
         this._pathItems = {};
         this._objId = getNewID();
         this._srcEnd = null;
@@ -695,7 +695,7 @@ export class Binding extends BaseObject implements IBinding {
     set converter(v: IConverter) { this._converter = v; }
     get converterParam() { return this._converterParam; }
     set converterParam(v) { this._converterParam = v; }
-    get isSourceFixed() { return this._isSourceFixed; }
+    get isSourceFixed() { return this._srcFixed; }
     get isDisabled() { return !!this._state; }
     set isDisabled(v) {
         let s: IBindingState;

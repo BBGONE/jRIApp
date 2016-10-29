@@ -97,7 +97,7 @@ export class AnchorElView extends CommandElView {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        this.$el.removeClass(css.commandLink);
+        dom.removeClass([this.el], css.commandLink);
         this.imageSrc = null;
         this.glyph = null;
         super.destroy();

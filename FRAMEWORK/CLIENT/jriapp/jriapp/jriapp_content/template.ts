@@ -7,7 +7,7 @@ import { Utils as utils } from "../jriapp_utils/utils";
 
 import { css } from "./int";
 
-const coreUtils = utils.core, $ = utils.dom.$;
+const coreUtils = utils.core, dom = utils.dom, $ = dom.$;
 
 export class TemplateContent extends BaseObject implements IContent, ITemplateEvents {
     private _parentEl: HTMLElement;
@@ -36,8 +36,7 @@ export class TemplateContent extends BaseObject implements IContent, ITemplateEv
         this._dataContext = options.dataContext;
         this._templateInfo = options.contentOptions.templateInfo;
         this._template = null;
-        let $p = $(this._parentEl);
-        $p.addClass(css.content);
+        dom.addClass([this._parentEl], css.content);
         this.render();
     }
     handleError(error: any, source: any): boolean {
@@ -102,7 +101,7 @@ export class TemplateContent extends BaseObject implements IContent, ITemplateEv
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        $(this._parentEl).removeClass(css.content);
+        dom.removeClass([this._parentEl], css.content);
         this.cleanUp();
         this._parentEl = null;
         this._dataContext = null;

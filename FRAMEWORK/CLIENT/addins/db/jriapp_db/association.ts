@@ -3,14 +3,14 @@ import { IFieldInfo, IIndexer } from "jriapp_core/shared";
 import { ERRS } from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
 import { bootstrap } from "jriapp_core/bootstrap";
-import { Utils as utils, Debounce } from "jriapp_utils/utils";
+import { Utils, Debounce, ERROR } from "jriapp_utils/utils";
 import { COLL_CHANGE_TYPE, ICollChangedArgs, ITEM_STATUS } from "jriapp_collection/collection";
 import { DELETE_ACTION } from "const";
 import { IAssocConstructorOptions, IEntityItem } from "int";
 import { DbContext } from "dbcontext";
 import { DbSet } from "dbset";
 
-const checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ArrayHelper = utils.arr;
+const  utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr;
 
 export class Association extends BaseObject {
     private _objId: string;
@@ -82,7 +82,10 @@ export class Association extends BaseObject {
     public handleError(error: any, source: any): boolean {
         let isHandled = super.handleError(error, source);
         if (!isHandled) {
-            return this._dbContext.handleError(error, source);
+            if (!!this._dbContext)
+                return this._dbContext.handleError(error, source);
+            else
+                return bootstrap.handleError(error, source);
         }
         return isHandled;
     }
@@ -403,7 +406,7 @@ export class Association extends BaseObject {
                 self._notifyChildrenChanged([savedKey]);
                 //then delete mapping
                 arr = self._childMap[savedKey];
-                ArrayHelper.remove(arr, item);
+                arrHelper.remove(arr, item);
                 if (arr.length === 0) {
                     delete self._childMap[savedKey];
                 }
@@ -452,7 +455,7 @@ export class Association extends BaseObject {
         if (!!fkey) {
             arr = this._childMap[fkey];
             if (!!arr) {
-                idx = ArrayHelper.remove(arr, item);
+                idx = arrHelper.remove(arr, item);
                 if (idx > -1) {
                     if (arr.length === 0)
                         delete this._childMap[fkey];
@@ -540,12 +543,12 @@ export class Association extends BaseObject {
         if (!ds) return;
         ds.removeNSHandlers(self._objId);
     }
-    getParentFKey(item: IEntityItem): string {
+    protected getParentFKey(item: IEntityItem): string {
         if (!!item && item._aspect.isNew)
             return item._key;
         return this._getItemKey(this._parentFldInfos, this._parentDS, item);
     }
-    getChildFKey(item: IEntityItem): string {
+    protected getChildFKey(item: IEntityItem): string {
         if (!!item && !!this._childToParentName) {
             //_getFieldVal for childToParentName can store temporary parent's key (which is generated on the client)
             // we first check if it returns it
@@ -557,33 +560,54 @@ export class Association extends BaseObject {
         //if keys are permanent (stored to the server), then return normal foreign keys
         return this._getItemKey(this._childFldInfos, this._childDS, item);
     }
+    protected refreshParentMap() {
+        this._resetParentMap();
+        return this._mapParentItems(this._parentDS.items);
+    }
+    protected refreshChildMap() {
+        this._resetChildMap();
+        return this._mapChildren(this._childDS.items);
+    }
+    isParentChild(parent: IEntityItem, child: IEntityItem): boolean {
+        if (!parent || !child)
+            return false;
+        let fkey1 = this.getParentFKey(parent);
+        if (!fkey1)
+            return false;
+        let fkey2 = this.getChildFKey(child);
+        if (!fkey2)
+            return false;
+        return fkey1 === fkey2;
+    }
     //get all childrens for parent item
     getChildItems(item: IEntityItem): IEntityItem[] {
         if (!item)
             return [];
-        let fkey = this.getParentFKey(item), arr = this._childMap[fkey];
-        if (!arr)
-            return [];
-        return arr;
+        try {
+            let fkey = this.getParentFKey(item), arr = this._childMap[fkey];
+            if (!arr)
+                return [];
+            return arr;
+        }
+        catch (err) {
+            ERROR.reThrow(err, this.handleError(err, this));
+        }
     }
     //get the parent for child item
     getParentItem(item: IEntityItem): IEntityItem {
         if (!item)
             return null;
-        let fkey = this.getChildFKey(item);
-        let obj = this._parentMap[fkey];
-        if (!!obj)
-            return obj;
-        else
-            return null;
-    }
-    refreshParentMap() {
-        this._resetParentMap();
-        return this._mapParentItems(this._parentDS.items);
-    }
-    refreshChildMap() {
-        this._resetChildMap();
-        return this._mapChildren(this._childDS.items);
+        try {
+            let fkey = this.getChildFKey(item);
+            let obj = this._parentMap[fkey];
+            if (!!obj)
+                return obj;
+            else
+                return null;
+        }
+        catch (err) {
+            ERROR.reThrow(err, this.handleError(err, this));
+        }
     }
     destroy() {
         if (this._isDestroyed)

@@ -9,7 +9,7 @@ import { Utils as utils, LifeTimeScope } from "../jriapp_utils/utils";
 
 import { css } from "./int";
 
-const $ = utils.dom.$, document = utils.dom.document, coreUtils = utils.core;
+const dom = utils.dom, $ = dom.$, doc = utils.dom.document, coreUtils = utils.core;
 
 export class BasicContent extends BaseObject implements IContent {
     protected _parentEl: HTMLElement;
@@ -42,8 +42,7 @@ export class BasicContent extends BaseObject implements IContent {
         this._isReadOnly = !!this._options.readOnly;
         this._lfScope = null;
         this._target = null;
-        let $p = $(this._parentEl);
-        $p.addClass(css.content);
+        dom.addClass([this._parentEl], css.content);
         this.init();
         this.render();
     }
@@ -56,31 +55,31 @@ export class BasicContent extends BaseObject implements IContent {
     }
     protected init() { }
     protected updateCss() {
-        let displayInfo = this._options.displayInfo, $p = $(this._parentEl), fieldInfo = this.getFieldInfo();
+        let displayInfo = this._options.displayInfo, el = this._parentEl, fieldInfo = this.getFieldInfo();
         if (this._isEditing && this.getIsCanBeEdited()) {
             if (!!displayInfo) {
                 if (!!displayInfo.editCss) {
-                    $p.addClass(displayInfo.editCss);
+                    dom.addClass([el], displayInfo.editCss);
                 }
                 if (!!displayInfo.displayCss) {
-                    $p.removeClass(displayInfo.displayCss);
+                    dom.removeClass([el], displayInfo.displayCss);
                 }
             }
             if (!!fieldInfo && !fieldInfo.isNullable) {
-                $p.addClass(css.required);
+                dom.addClass([el], css.required);
             }
         }
         else {
             if (!!displayInfo) {
                 if (!!displayInfo.displayCss) {
-                    $p.addClass(displayInfo.displayCss);
+                    dom.addClass([el], displayInfo.displayCss);
                 }
                 if (!!displayInfo.editCss) {
-                    $p.removeClass(displayInfo.editCss);
+                    dom.removeClass([el], displayInfo.editCss);
                 }
             }
             if (!!fieldInfo && !fieldInfo.isNullable) {
-                $p.removeClass(css.required);
+                dom.removeClass([el], css.required);
             }
         }
     }
@@ -96,12 +95,12 @@ export class BasicContent extends BaseObject implements IContent {
     protected createTargetElement(): IElView {
         let el: HTMLElement, info: { name: string; options: any; } = { name: null, options: null };
         if (this._isEditing && this.getIsCanBeEdited()) {
-            el = document.createElement("input");
+            el = doc.createElement("input");
             el.setAttribute("type", "text");
             info.options = this._options.options;
         }
         else {
-            el = document.createElement("span");
+            el = doc.createElement("span");
         }
         this.updateCss();
         this._el = el;
@@ -178,14 +177,14 @@ export class BasicContent extends BaseObject implements IContent {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        let displayInfo = this._options.displayInfo, $p = $(this._parentEl);
-        $p.removeClass(css.content);
-        $p.removeClass(css.required);
+        let displayInfo = this._options.displayInfo;
+        dom.removeClass([this._parentEl], css.content);
+        dom.removeClass([this._parentEl], css.required);
         if (!!displayInfo && !!displayInfo.displayCss) {
-            $p.removeClass(displayInfo.displayCss);
+            dom.removeClass([this._parentEl], displayInfo.displayCss);
         }
         if (!!displayInfo && !!displayInfo.editCss) {
-            $p.removeClass(displayInfo.editCss);
+            dom.removeClass([this._parentEl], displayInfo.editCss);
         }
         this.cleanUp();
         this._parentEl = null;

@@ -4370,13 +4370,7 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             return tip.join("");
         };
         BaseElView.prototype._setFieldError = function (isError) {
-            var $el = this.$el;
-            if (isError) {
-                $el.addClass(exports.css.fieldError);
-            }
-            else {
-                $el.removeClass(exports.css.fieldError);
-            }
+            dom.setClass([this.el], exports.css.fieldError, !isError);
         };
         BaseElView.prototype._updateErrorUI = function (el, errors) {
             if (!el) {
@@ -4725,7 +4719,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             this._tgtPath = parser_3.parser.getPathParts(opts.targetPath);
             if (this._tgtPath.length < 1)
                 throw new Error(strUtils.format(lang_9.ERRS.ERR_BIND_TGTPATH_INVALID, opts.targetPath));
-            this._isSourceFixed = (!!opts.isSourceFixed);
+            this._srcFixed = (!!opts.isSourceFixed);
             this._pathItems = {};
             this._objId = getNewID();
             this._srcEnd = null;
@@ -5203,7 +5197,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             configurable: true
         });
         Object.defineProperty(Binding.prototype, "isSourceFixed", {
-            get: function () { return this._isSourceFixed; },
+            get: function () { return this._srcFixed; },
             enumerable: true,
             configurable: true
         });
@@ -5246,7 +5240,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
 });
 define("jriapp_content/basic", ["require", "exports", "jriapp_core/object", "jriapp_core/binding", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_content/int"], function (require, exports, object_11, binding_1, coreutils_15, utils_5, int_1) {
     "use strict";
-    var $ = utils_5.Utils.dom.$, document = utils_5.Utils.dom.document, coreUtils = utils_5.Utils.core;
+    var dom = utils_5.Utils.dom, $ = dom.$, doc = utils_5.Utils.dom.document, coreUtils = utils_5.Utils.core;
     var BasicContent = (function (_super) {
         __extends(BasicContent, _super);
         function BasicContent(options) {
@@ -5267,8 +5261,7 @@ define("jriapp_content/basic", ["require", "exports", "jriapp_core/object", "jri
             this._isReadOnly = !!this._options.readOnly;
             this._lfScope = null;
             this._target = null;
-            var $p = $(this._parentEl);
-            $p.addClass(int_1.css.content);
+            dom.addClass([this._parentEl], int_1.css.content);
             this.init();
             this.render();
         }
@@ -5281,31 +5274,31 @@ define("jriapp_content/basic", ["require", "exports", "jriapp_core/object", "jri
         };
         BasicContent.prototype.init = function () { };
         BasicContent.prototype.updateCss = function () {
-            var displayInfo = this._options.displayInfo, $p = $(this._parentEl), fieldInfo = this.getFieldInfo();
+            var displayInfo = this._options.displayInfo, el = this._parentEl, fieldInfo = this.getFieldInfo();
             if (this._isEditing && this.getIsCanBeEdited()) {
                 if (!!displayInfo) {
                     if (!!displayInfo.editCss) {
-                        $p.addClass(displayInfo.editCss);
+                        dom.addClass([el], displayInfo.editCss);
                     }
                     if (!!displayInfo.displayCss) {
-                        $p.removeClass(displayInfo.displayCss);
+                        dom.removeClass([el], displayInfo.displayCss);
                     }
                 }
                 if (!!fieldInfo && !fieldInfo.isNullable) {
-                    $p.addClass(int_1.css.required);
+                    dom.addClass([el], int_1.css.required);
                 }
             }
             else {
                 if (!!displayInfo) {
                     if (!!displayInfo.displayCss) {
-                        $p.addClass(displayInfo.displayCss);
+                        dom.addClass([el], displayInfo.displayCss);
                     }
                     if (!!displayInfo.editCss) {
-                        $p.removeClass(displayInfo.editCss);
+                        dom.removeClass([el], displayInfo.editCss);
                     }
                 }
                 if (!!fieldInfo && !fieldInfo.isNullable) {
-                    $p.removeClass(int_1.css.required);
+                    dom.removeClass([el], int_1.css.required);
                 }
             }
         };
@@ -5321,12 +5314,12 @@ define("jriapp_content/basic", ["require", "exports", "jriapp_core/object", "jri
         BasicContent.prototype.createTargetElement = function () {
             var el, info = { name: null, options: null };
             if (this._isEditing && this.getIsCanBeEdited()) {
-                el = document.createElement("input");
+                el = doc.createElement("input");
                 el.setAttribute("type", "text");
                 info.options = this._options.options;
             }
             else {
-                el = document.createElement("span");
+                el = doc.createElement("span");
             }
             this.updateCss();
             this._el = el;
@@ -5403,14 +5396,14 @@ define("jriapp_content/basic", ["require", "exports", "jriapp_core/object", "jri
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
-            var displayInfo = this._options.displayInfo, $p = $(this._parentEl);
-            $p.removeClass(int_1.css.content);
-            $p.removeClass(int_1.css.required);
+            var displayInfo = this._options.displayInfo;
+            dom.removeClass([this._parentEl], int_1.css.content);
+            dom.removeClass([this._parentEl], int_1.css.required);
             if (!!displayInfo && !!displayInfo.displayCss) {
-                $p.removeClass(displayInfo.displayCss);
+                dom.removeClass([this._parentEl], displayInfo.displayCss);
             }
             if (!!displayInfo && !!displayInfo.editCss) {
-                $p.removeClass(displayInfo.editCss);
+                dom.removeClass([this._parentEl], displayInfo.editCss);
             }
             this.cleanUp();
             this._parentEl = null;
@@ -5465,7 +5458,7 @@ define("jriapp_content/basic", ["require", "exports", "jriapp_core/object", "jri
 });
 define("jriapp_content/template", ["require", "exports", "jriapp_core/object", "jriapp_core/lang", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_content/int"], function (require, exports, object_12, lang_10, coreutils_16, utils_6, int_2) {
     "use strict";
-    var coreUtils = utils_6.Utils.core, $ = utils_6.Utils.dom.$;
+    var coreUtils = utils_6.Utils.core, dom = utils_6.Utils.dom, $ = dom.$;
     var TemplateContent = (function (_super) {
         __extends(TemplateContent, _super);
         function TemplateContent(options) {
@@ -5484,8 +5477,7 @@ define("jriapp_content/template", ["require", "exports", "jriapp_core/object", "
             this._dataContext = options.dataContext;
             this._templateInfo = options.contentOptions.templateInfo;
             this._template = null;
-            var $p = $(this._parentEl);
-            $p.addClass(int_2.css.content);
+            dom.addClass([this._parentEl], int_2.css.content);
             this.render();
         }
         TemplateContent.prototype.handleError = function (error, source) {
@@ -5547,7 +5539,7 @@ define("jriapp_content/template", ["require", "exports", "jriapp_core/object", "
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
-            $(this._parentEl).removeClass(int_2.css.content);
+            dom.removeClass([this._parentEl], int_2.css.content);
             this.cleanUp();
             this._parentEl = null;
             this._dataContext = null;
@@ -6651,7 +6643,7 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
                 return;
             this._isDestroyCalled = true;
             this._clearContent();
-            this._$el.removeClass(exports.css.dataform);
+            dom_7.DomUtils.removeClass([this.el], exports.css.dataform);
             this._el = null;
             this._$el = null;
             this._unbindDS();
@@ -7423,7 +7415,7 @@ define("jriapp_elview/anchor", ["require", "exports", "jriapp_utils/utils", "jri
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
-            this.$el.removeClass(elview_7.css.commandLink);
+            dom.removeClass([this.el], elview_7.css.commandLink);
             this.imageSrc = null;
             this.glyph = null;
             _super.prototype.destroy.call(this);

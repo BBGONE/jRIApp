@@ -2,11 +2,11 @@
 import * as langMOD from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
 import { Utils as utils, Debounce, ERROR } from "jriapp_utils/utils";
-import { COLL_CHANGE_REASON } from "jriapp_collection/collection";
+import { COLL_CHANGE_REASON, ICollection } from "jriapp_collection/collection";
 import { PROP_NAME } from "const";
 import { IEntityItem } from "int";
 import { Association } from "association";
-import { DataView } from "dataview";
+import { DataView, IDataViewOptions } from "dataview";
 
 const checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
 
@@ -22,12 +22,13 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
     protected _parentDebounce: Debounce;
 
     constructor(options: IChildDataViewOptions<TItem>) {
-        let save_fn_filter = options.fn_filter, ds = options.association.childDS, opts: any = coreUtils.extend({
-            dataSource: ds,
-            fn_filter: (item: TItem): boolean => { return true },
-            fn_sort: null,
-            fn_itemsProvider: null
-        }, options);
+        let prev_filter = options.fn_filter, ds = <ICollection<TItem>><any>options.association.childDS,
+            opts = <IDataViewOptions<TItem>>coreUtils.extend({
+                dataSource: ds,
+                fn_filter: (item: TItem): boolean => { return true },
+                fn_sort: null,
+                fn_itemsProvider: null
+            }, options);
         super(opts);
         this._parentItem = null;
         this._parentDebounce = new Debounce(350);
@@ -36,18 +37,8 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
         this._fn_filter = function (item) {
             if (!self._parentItem)
                 return false;
-            let fkey1 = assoc.getParentFKey(self._parentItem);
-            if (!fkey1)
-                return false;
-            let fkey2 = assoc.getChildFKey(item);
-            if (!fkey2)
-                return false;
-            if (fkey1 !== fkey2)
-                return false;
-            if (!save_fn_filter)
-                return true;
-            else
-                return save_fn_filter(item);
+            let ok = assoc.isParentChild(self._parentItem, item);
+            return ok && (!prev_filter || prev_filter(item));
         };
     }
     protected _refresh(reason: COLL_CHANGE_REASON): void {

@@ -1523,7 +1523,7 @@ declare module "jriapp_core/binding" {
         private _converterParam;
         private _srcPath;
         private _tgtPath;
-        private _isSourceFixed;
+        private _srcFixed;
         private _pathItems;
         private _objId;
         private _srcEnd;

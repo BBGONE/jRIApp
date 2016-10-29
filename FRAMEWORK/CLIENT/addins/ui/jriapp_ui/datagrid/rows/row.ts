@@ -198,14 +198,8 @@ export class Row extends BaseObject {
     set isCurrent(v) {
         let curr = this._isCurrent;
         if (v !== curr) {
-            let $el = $(this._tr);
             this._isCurrent = v;
-            if (v) {
-                $el.addClass(css.rowHighlight);
-            }
-            else {
-                $el.removeClass(css.rowHighlight);
-            }
+            dom.setClass([this._tr], css.rowHighlight, !v);
             this.raisePropertyChanged(PROP_NAME.isCurrent);
         }
     }

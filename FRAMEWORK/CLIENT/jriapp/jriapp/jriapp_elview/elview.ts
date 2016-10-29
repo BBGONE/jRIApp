@@ -213,13 +213,7 @@ export class BaseElView extends BaseObject implements IElView {
         return tip.join("");
     }
     protected _setFieldError(isError: boolean) {
-        let $el = this.$el;
-        if (isError) {
-            $el.addClass(css.fieldError);
-        }
-        else {
-            $el.removeClass(css.fieldError);
-        }
+        dom.setClass([this.el], css.fieldError, !isError);
     }
     protected _updateErrorUI(el: HTMLElement, errors: IValidationInfo[]) {
         if (!el) {
