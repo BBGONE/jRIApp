@@ -2037,11 +2037,11 @@ define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jria
                 return false;
             return fkey1 === fkey2;
         };
-        Association.prototype.getChildItems = function (item) {
-            if (!item)
+        Association.prototype.getChildItems = function (parent) {
+            if (!parent)
                 return [];
             try {
-                var fkey = this.getParentFKey(item), arr = this._childMap[fkey];
+                var fkey = this.getParentFKey(parent), arr = this._childMap[fkey];
                 if (!arr)
                     return [];
                 return arr;
@@ -3616,14 +3616,14 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_core/lang", "jriapp_
                 fn_sort: null,
                 fn_itemsProvider: null
             }, options);
-            if (!opts.dataSource || !(opts.dataSource instanceof collection_5.BaseCollection))
+            if (!checks.isCollection(opts.dataSource))
                 throw new Error(lang_4.ERRS.ERR_DATAVIEW_DATASRC_INVALID);
-            if (!opts.fn_filter || !checks.isFunc(opts.fn_filter))
+            if (!!opts.fn_filter && !checks.isFunc(opts.fn_filter))
                 throw new Error(lang_4.ERRS.ERR_DATAVIEW_FILTER_INVALID);
             this._refreshDebounce = new utils_9.Debounce();
             this._objId = "dvw" + coreUtils.getNewID();
             this._dataSource = opts.dataSource;
-            this._fn_filter = opts.fn_filter;
+            this._fn_filter = !opts.fn_filter ? null : opts.fn_filter;
             this._fn_sort = opts.fn_sort;
             this._fn_itemsProvider = opts.fn_itemsProvider;
             this._isAddingNew = false;
@@ -3678,8 +3678,9 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_core/lang", "jriapp_
                 if (!!this._fn_itemsProvider) {
                     items = this._fn_itemsProvider(ds);
                 }
-                else
+                else {
                     items = ds.items;
+                }
                 if (!!this._fn_filter) {
                     items = items.filter(this._fn_filter);
                 }
@@ -4061,56 +4062,48 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_utils/utils", 
     var ChildDataView = (function (_super) {
         __extends(ChildDataView, _super);
         function ChildDataView(options) {
-            var prev_filter = options.fn_filter, ds = options.association.childDS, opts = coreUtils.extend({
-                dataSource: ds,
-                fn_filter: function (item) { return true; },
-                fn_sort: null,
-                fn_itemsProvider: null
-            }, options);
-            _super.call(this, opts);
-            this._parentItem = null;
-            this._parentDebounce = new utils_10.Debounce(350);
-            this._association = options.association;
-            var self = this, assoc = this._association;
-            this._fn_filter = function (item) {
-                if (!self._parentItem)
-                    return false;
-                var ok = assoc.isParentChild(self._parentItem, item);
-                return ok && (!prev_filter || prev_filter(item));
+            var parentItem = null, assoc = options.association, opts = coreUtils.extend({}, options), oldFilter = opts.fn_filter;
+            opts.dataSource = assoc.childDS;
+            opts.fn_itemsProvider = function (ds) {
+                if (!parentItem) {
+                    return [];
+                }
+                var items = assoc.getChildItems(parentItem);
+                return items;
             };
-        }
-        ChildDataView.prototype._refresh = function (reason) {
+            opts.fn_filter = function (item) {
+                return assoc.isParentChild(parentItem, item);
+            };
+            _super.call(this, opts);
             var self = this;
-            var ds = self.dataSource;
-            if (!ds || ds.getIsDestroyCalled()) {
-                this.clear();
-                this._onViewRefreshed({});
-                return;
-            }
-            try {
-                if (!!self._parentItem) {
-                    var items = self._association.getChildItems(self._parentItem);
-                    if (!!self.fn_filter) {
-                        items = items.filter(self.fn_filter);
-                    }
-                    if (!!self.fn_sort) {
-                        items = items.sort(self.fn_sort);
-                    }
-                    self._fillItems({ items: items, reason: reason, clear: true, isAppend: false });
+            this._getParent = function () {
+                if (self.getIsDestroyCalled())
+                    return null;
+                return parentItem;
+            };
+            this._setParent = function (v) {
+                if (parentItem !== v) {
+                    parentItem = v;
+                    self.raisePropertyChanged(const_8.PROP_NAME.parentItem);
                 }
-                else {
-                    this.clear();
+                if (self.getIsDestroyCalled())
+                    return;
+                if (self.items.length > 0) {
+                    self.clear();
+                    self._onViewRefreshed({});
                 }
-                self._onViewRefreshed({});
-            }
-            catch (ex) {
-                utils_10.ERROR.reThrow(ex, self.handleError(ex, this));
-            }
-        };
+                self._parentDebounce.enqueue(function () {
+                    self._refresh(0);
+                });
+            };
+            this._parentDebounce = new utils_10.Debounce(350);
+            this._association = assoc;
+        }
         ChildDataView.prototype.destroy = function () {
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
+            this._setParent(null);
             this._parentDebounce.destroy();
             this._parentDebounce = null;
             this._association = null;
@@ -4122,20 +4115,11 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_utils/utils", 
             return "ChildDataView";
         };
         Object.defineProperty(ChildDataView.prototype, "parentItem", {
-            get: function () { return this._parentItem; },
+            get: function () {
+                return this._getParent();
+            },
             set: function (v) {
-                var _this = this;
-                if (this._parentItem !== v) {
-                    this._parentItem = v;
-                    this.raisePropertyChanged(const_8.PROP_NAME.parentItem);
-                }
-                if (this.items.length > 0) {
-                    this.clear();
-                    this._onViewRefreshed({});
-                }
-                this._parentDebounce.enqueue(function () {
-                    _this._refresh(0);
-                });
+                this._setParent(v);
             },
             enumerable: true,
             configurable: true

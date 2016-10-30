@@ -194,8 +194,12 @@ export class Row extends BaseObject {
             return null;
         return this._item._key;
     }
-    get isCurrent() { return this._isCurrent; }
+    get isCurrent() {
+        return this._isCurrent;
+    }
     set isCurrent(v) {
+        if (this.getIsDestroyCalled())
+            return;
         let curr = this._isCurrent;
         if (v !== curr) {
             this._isCurrent = v;
@@ -205,16 +209,21 @@ export class Row extends BaseObject {
     }
     get isSelected() { return this._isSelected; }
     set isSelected(v) {
+        if (this.getIsDestroyCalled())
+            return;
         if (this._isSelected !== v) {
             this._isSelected = v;
-            if (!!this._rowSelectorCell)
+            if (!!this._rowSelectorCell) {
                 this._rowSelectorCell.checked = this._isSelected;
+            }
             this.raisePropertyChanged(PROP_NAME.isSelected);
             this.grid._getInternal().onRowSelectionChanged(this);
         }
     }
     get isExpanded() { return this.grid._getInternal().isRowExpanded(this); }
     set isExpanded(v) {
+        if (this.getIsDestroyCalled())
+            return;
         if (v !== this.isExpanded) {
             if (!v && this.isExpanded) {
                 this.grid._getInternal().expandDetails(this, false);

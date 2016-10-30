@@ -383,6 +383,7 @@ namespace RIAppDemo.BLL.DataServices
         [Insert]
         public void InsertSalesOrderHeader(SalesOrderHeader salesorderheader)
         {
+            salesorderheader.SalesOrderNumber = DateTime.Now.Ticks.ToString();
             salesorderheader.ModifiedDate = DateTime.Now;
             salesorderheader.rowguid = Guid.NewGuid();
             DB.SalesOrderHeaders.Add(salesorderheader);

@@ -358,7 +358,7 @@ declare module "jriapp_db/association" {
         protected refreshParentMap(): string[];
         protected refreshChildMap(): string[];
         isParentChild(parent: IEntityItem, child: IEntityItem): boolean;
-        getChildItems(item: IEntityItem): IEntityItem[];
+        getChildItems(parent: IEntityItem): IEntityItem[];
         getParentItem(item: IEntityItem): IEntityItem;
         destroy(): void;
         toString(): string;
@@ -805,7 +805,7 @@ declare module "jriapp_db/dataview" {
     }
     export class DataView<TItem extends ICollectionItem> extends BaseCollection<TItem> {
         private _dataSource;
-        protected _fn_filter: (item: TItem) => boolean;
+        private _fn_filter;
         private _fn_sort;
         private _fn_itemsProvider;
         private _isAddingNew;
@@ -854,7 +854,6 @@ declare module "jriapp_db/dataview" {
 }
 declare module "jriapp_db/child_dataview" {
     import { Debounce } from "jriapp_utils/utils";
-    import { COLL_CHANGE_REASON } from "jriapp_collection/collection";
     import { IEntityItem } from "jriapp_db/int";
     import { Association } from "jriapp_db/association";
     import { DataView } from "jriapp_db/dataview";
@@ -864,11 +863,11 @@ declare module "jriapp_db/child_dataview" {
         fn_sort?: (item1: TItem, item2: TItem) => number;
     }
     export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
-        private _parentItem;
+        private _setParent;
+        private _getParent;
         private _association;
         protected _parentDebounce: Debounce;
         constructor(options: IChildDataViewOptions<TItem>);
-        protected _refresh(reason: COLL_CHANGE_REASON): void;
         destroy(): void;
         toString(): string;
         parentItem: IEntityItem;

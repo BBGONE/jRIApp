@@ -580,11 +580,11 @@ export class Association extends BaseObject {
         return fkey1 === fkey2;
     }
     //get all childrens for parent item
-    getChildItems(item: IEntityItem): IEntityItem[] {
-        if (!item)
+    getChildItems(parent: IEntityItem): IEntityItem[] {
+        if (!parent)
             return [];
         try {
-            let fkey = this.getParentFKey(item), arr = this._childMap[fkey];
+            let fkey = this.getParentFKey(parent), arr = this._childMap[fkey];
             if (!arr)
                 return [];
             return arr;

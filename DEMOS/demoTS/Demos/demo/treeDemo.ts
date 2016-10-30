@@ -92,12 +92,12 @@ export class ExProps extends RIAPP.BaseObject {
     }
     createChildView() {
         var self = this;
-        var res = new dbMOD.ChildDataView<FOLDERBROWSER_SVC.FileSystemObject>(
+        var dvw = new dbMOD.ChildDataView<FOLDERBROWSER_SVC.FileSystemObject>(
             {
                 association: self._dbContext.associations.getChildToParent()
             });
-        res.parentItem = self._item;
-        return res;
+        dvw.parentItem = self._item;
+        return dvw;
     }
     loadChildren() {
         var self = this, query = self._dbSet.createReadChildrenQuery({ parentKey: self.item.Key, level: self.item.Level + 1, path: self.item.fullPath, includeFiles: false, infoType: infoType });

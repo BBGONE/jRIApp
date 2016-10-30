@@ -24,7 +24,7 @@ export interface IDataViewOptions<TItem extends ICollectionItem> {
 
 export class DataView<TItem extends ICollectionItem> extends BaseCollection<TItem> {
     private _dataSource: ICollection<TItem>;
-    protected _fn_filter: (item: TItem) => boolean;
+    private _fn_filter: (item: TItem) => boolean;
     private _fn_sort: (item1: TItem, item2: TItem) => number;
     private _fn_itemsProvider: (ds: ICollection<TItem>) => TItem[];
     private _isAddingNew: boolean;
@@ -40,14 +40,14 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
             fn_itemsProvider: null
         }, options);
 
-        if (!opts.dataSource || !(opts.dataSource instanceof BaseCollection))
+        if (!checks.isCollection(opts.dataSource))
             throw new Error(ERRS.ERR_DATAVIEW_DATASRC_INVALID);
-        if (!opts.fn_filter || !checks.isFunc(opts.fn_filter))
+        if (!!opts.fn_filter && !checks.isFunc(opts.fn_filter))
             throw new Error(ERRS.ERR_DATAVIEW_FILTER_INVALID);
         this._refreshDebounce = new Debounce();
         this._objId = "dvw" + coreUtils.getNewID();
         this._dataSource = opts.dataSource;
-        this._fn_filter = opts.fn_filter;
+        this._fn_filter = !opts.fn_filter ? null : opts.fn_filter;
         this._fn_sort = opts.fn_sort;
         this._fn_itemsProvider = opts.fn_itemsProvider;
         this._isAddingNew = false;
@@ -104,8 +104,9 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
             if (!!this._fn_itemsProvider) {
                 items = this._fn_itemsProvider(ds);
             }
-            else
+            else {
                 items = ds.items;
+            }
 
             if (!!this._fn_filter) {
                 items = items.filter(this._fn_filter);

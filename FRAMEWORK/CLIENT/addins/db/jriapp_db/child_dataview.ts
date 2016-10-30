@@ -17,64 +17,60 @@ export interface IChildDataViewOptions<TItem extends IEntityItem> {
 }
 
 export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
-    private _parentItem: IEntityItem;
+    private _setParent: (parent: IEntityItem) => void;
+    private _getParent: () => IEntityItem;
     private _association: Association;
     protected _parentDebounce: Debounce;
 
     constructor(options: IChildDataViewOptions<TItem>) {
-        let prev_filter = options.fn_filter, ds = <ICollection<TItem>><any>options.association.childDS,
-            opts = <IDataViewOptions<TItem>>coreUtils.extend({
-                dataSource: ds,
-                fn_filter: (item: TItem): boolean => { return true },
-                fn_sort: null,
-                fn_itemsProvider: null
-            }, options);
-        super(opts);
-        this._parentItem = null;
-        this._parentDebounce = new Debounce(350);
-        this._association = options.association;
-        let self = this, assoc = this._association;
-        this._fn_filter = function (item) {
-            if (!self._parentItem)
-                return false;
-            let ok = assoc.isParentChild(self._parentItem, item);
-            return ok && (!prev_filter || prev_filter(item));
+        let parentItem: IEntityItem = null,
+            assoc = options.association,
+            opts = <IDataViewOptions<TItem>>coreUtils.extend({}, options),
+            oldFilter = opts.fn_filter;
+
+        opts.dataSource = <ICollection<TItem>><any>assoc.childDS;
+        opts.fn_itemsProvider = function (ds) {
+            if (!parentItem) {
+                return [];
+            }
+            let items = <TItem[]>assoc.getChildItems(parentItem);
+            return items;
         };
-    }
-    protected _refresh(reason: COLL_CHANGE_REASON): void {
+        opts.fn_filter = function (item) {
+            return assoc.isParentChild(parentItem, item);
+        };
+        super(opts);
         let self = this;
-        let ds = self.dataSource;
-        if (!ds || ds.getIsDestroyCalled()) {
-            this.clear();
-            this._onViewRefreshed({});
-            return;
-        }
 
-        try {
-            if (!!self._parentItem) {
-                let items = <TItem[]>self._association.getChildItems(self._parentItem);
-                if (!!self.fn_filter) {
-                    items = items.filter(self.fn_filter);
-                }
-                if (!!self.fn_sort) {
-                    items = items.sort(self.fn_sort);
-                }
-                self._fillItems({ items: items, reason: reason, clear: true, isAppend: false });
+        this._getParent = function () {
+            if (self.getIsDestroyCalled())
+                return null;
+            return parentItem;
+        };
+        this._setParent = function (v: IEntityItem) {
+            if (parentItem !== v) {
+                parentItem = v;
+                self.raisePropertyChanged(PROP_NAME.parentItem);
             }
-            else {
-                this.clear();
+            if (self.getIsDestroyCalled())
+                return;
+            if (self.items.length > 0) {
+                self.clear();
+                self._onViewRefreshed({});
             }
 
-            self._onViewRefreshed({});
-        }
-        catch (ex) {
-            ERROR.reThrow(ex, self.handleError(ex, this));
-        }
+            self._parentDebounce.enqueue(() => {
+                self._refresh(COLL_CHANGE_REASON.None);
+            });
+        };
+        this._parentDebounce = new Debounce(350);
+        this._association = assoc;
     }
     destroy() {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
+        this._setParent(null);
         this._parentDebounce.destroy();
         this._parentDebounce = null;
         this._association = null;
@@ -85,20 +81,11 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
             return "ChildDataView for " + this._association.toString();
         return "ChildDataView";
     }
-    get parentItem() { return this._parentItem; }
+    get parentItem() {
+        return this._getParent();
+    }
     set parentItem(v: IEntityItem) {
-        if (this._parentItem !== v) {
-            this._parentItem = v;
-            this.raisePropertyChanged(PROP_NAME.parentItem);
-        }
-        if (this.items.length > 0) {
-            this.clear();
-            this._onViewRefreshed({});
-        }
-
-        this._parentDebounce.enqueue(() => {
-            this._refresh(COLL_CHANGE_REASON.None);
-        });
+        this._setParent(v);
     }
     get association() { return this._association; }
 }

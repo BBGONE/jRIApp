@@ -1639,8 +1639,12 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_core/object
             configurable: true
         });
         Object.defineProperty(Row.prototype, "isCurrent", {
-            get: function () { return this._isCurrent; },
+            get: function () {
+                return this._isCurrent;
+            },
             set: function (v) {
+                if (this.getIsDestroyCalled())
+                    return;
                 var curr = this._isCurrent;
                 if (v !== curr) {
                     this._isCurrent = v;
@@ -1654,10 +1658,13 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_core/object
         Object.defineProperty(Row.prototype, "isSelected", {
             get: function () { return this._isSelected; },
             set: function (v) {
+                if (this.getIsDestroyCalled())
+                    return;
                 if (this._isSelected !== v) {
                     this._isSelected = v;
-                    if (!!this._rowSelectorCell)
+                    if (!!this._rowSelectorCell) {
                         this._rowSelectorCell.checked = this._isSelected;
+                    }
                     this.raisePropertyChanged(const_15.PROP_NAME.isSelected);
                     this.grid._getInternal().onRowSelectionChanged(this);
                 }
@@ -1668,6 +1675,8 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_core/object
         Object.defineProperty(Row.prototype, "isExpanded", {
             get: function () { return this.grid._getInternal().isRowExpanded(this); },
             set: function (v) {
+                if (this.getIsDestroyCalled())
+                    return;
                 if (v !== this.isExpanded) {
                     if (!v && this.isExpanded) {
                         this.grid._getInternal().expandDetails(this, false);
