@@ -391,29 +391,9 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         }
     }
     sortLocal(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any> {
-        let mult = 1, deferred = _async.createDeferred<void>();
-        if (sortOrder === SORT_ORDER.DESC)
-            mult = -1;
-        let fn_sort = function (a: any, b: any): number {
-            let res = 0, i: number, len: number, af: any, bf: any, fieldName: string;
-            for (i = 0, len = fieldNames.length; i < len; i += 1) {
-                fieldName = fieldNames[i];
-                af = parser.resolvePath(a, fieldName);
-                bf = parser.resolvePath(b, fieldName);
-                if (af < bf)
-                    res = -1 * mult;
-                else if (af > bf)
-                    res = mult;
-                else
-                    res = 0;
-
-                if (res !== 0)
-                    return res;
-            }
-            return res;
-        };
+        let deferred = _async.createDeferred<void>();
         try {
-            this.fn_sort = fn_sort;
+            this.fn_sort = this._getSortFn(fieldNames, sortOrder);
             deferred.resolve();
         } catch (ex) {
             deferred.reject(ex);

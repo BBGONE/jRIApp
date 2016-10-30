@@ -3600,7 +3600,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
 define("jriapp_db/int", ["require", "exports"], function (require, exports) {
     "use strict";
 });
-define("jriapp_db/dataview", ["require", "exports", "jriapp_core/lang", "jriapp_core/parser", "jriapp_utils/utils", "jriapp_collection/collection", "jriapp_db/const"], function (require, exports, lang_4, parser_1, utils_9, collection_5, const_7) {
+define("jriapp_db/dataview", ["require", "exports", "jriapp_core/lang", "jriapp_utils/utils", "jriapp_collection/collection", "jriapp_db/const"], function (require, exports, lang_4, utils_9, collection_5, const_7) {
     "use strict";
     var checks = utils_9.Utils.check, strUtils = utils_9.Utils.str, coreUtils = utils_9.Utils.core, ArrayHelper = utils_9.Utils.arr;
     var VIEW_EVENTS = {
@@ -3949,28 +3949,9 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_core/lang", "jriapp_
             }
         };
         DataView.prototype.sortLocal = function (fieldNames, sortOrder) {
-            var mult = 1, deferred = utils_9.AsyncUtils.createDeferred();
-            if (sortOrder === 1)
-                mult = -1;
-            var fn_sort = function (a, b) {
-                var res = 0, i, len, af, bf, fieldName;
-                for (i = 0, len = fieldNames.length; i < len; i += 1) {
-                    fieldName = fieldNames[i];
-                    af = parser_1.parser.resolvePath(a, fieldName);
-                    bf = parser_1.parser.resolvePath(b, fieldName);
-                    if (af < bf)
-                        res = -1 * mult;
-                    else if (af > bf)
-                        res = mult;
-                    else
-                        res = 0;
-                    if (res !== 0)
-                        return res;
-                }
-                return res;
-            };
+            var deferred = utils_9.AsyncUtils.createDeferred();
             try {
-                this.fn_sort = fn_sort;
+                this.fn_sort = this._getSortFn(fieldNames, sortOrder);
                 deferred.resolve();
             }
             catch (ex) {

@@ -2459,6 +2459,7 @@ declare module "jriapp_collection/base" {
         protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER): void;
         _set_isLoading(v: boolean): void;
         _getInternal(): IInternalCollMethods<TItem>;
+        _getSortFn(fieldNames: string[], sortOrder: SORT_ORDER): (a: any, b: any) => number;
         getFieldInfo(fieldName: string): IFieldInfo;
         getFieldNames(): string[];
         getFieldInfos(): IFieldInfo[];

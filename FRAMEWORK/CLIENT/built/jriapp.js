@@ -8876,6 +8876,37 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
         BaseCollection.prototype._getInternal = function () {
             return this._internal;
         };
+        BaseCollection.prototype._getSortFn = function (fieldNames, sortOrder) {
+            var self = this, mult = 1;
+            if (sortOrder === 1)
+                mult = -1;
+            var fn_sort = function (a, b) {
+                var res = 0, i, len, af, bf, fieldName;
+                for (i = 0, len = fieldNames.length; i < len; i += 1) {
+                    fieldName = fieldNames[i];
+                    af = parser_5.parser.resolvePath(a, fieldName);
+                    bf = parser_5.parser.resolvePath(b, fieldName);
+                    if (af === checks.undefined)
+                        af = null;
+                    if (bf === checks.undefined)
+                        bf = null;
+                    if (af === null && bf !== null)
+                        res = -1 * mult;
+                    else if (af !== null && bf === null)
+                        res = mult;
+                    else if (af < bf)
+                        res = -1 * mult;
+                    else if (af > bf)
+                        res = mult;
+                    else
+                        res = 0;
+                    if (res !== 0)
+                        return res;
+                }
+                return res;
+            };
+            return fn_sort;
+        };
         BaseCollection.prototype.getFieldInfo = function (fieldName) {
             var parts = fieldName.split("."), fld = this._fieldMap[parts[0]];
             if (parts.length === 1) {
@@ -9095,28 +9126,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
             return this.sortLocal(fieldNames, sortOrder);
         };
         BaseCollection.prototype.sortLocal = function (fieldNames, sortOrder) {
-            var self = this;
-            var mult = 1;
-            if (sortOrder === 1)
-                mult = -1;
-            var fn_sort = function (a, b) {
-                var res = 0, i, len, af, bf, fieldName;
-                for (i = 0, len = fieldNames.length; i < len; i += 1) {
-                    fieldName = fieldNames[i];
-                    af = a[fieldName];
-                    bf = b[fieldName];
-                    if (af < bf)
-                        res = -1 * mult;
-                    else if (af > bf)
-                        res = mult;
-                    else
-                        res = 0;
-                    if (res !== 0)
-                        return res;
-                }
-                return res;
-            };
-            return self.sortLocalByFunc(fn_sort);
+            return this.sortLocalByFunc(this._getSortFn(fieldNames, sortOrder));
         };
         BaseCollection.prototype.sortLocalByFunc = function (fn) {
             var self = this, deferred = utils_26.Utils.defer.createDeferred();

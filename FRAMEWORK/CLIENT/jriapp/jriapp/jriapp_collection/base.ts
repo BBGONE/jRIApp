@@ -556,6 +556,39 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     _getInternal(): IInternalCollMethods<TItem> {
         return this._internal;
     }
+    _getSortFn(fieldNames: string[], sortOrder: SORT_ORDER): (a: any, b: any) => number {
+        let self = this, mult = 1;
+        if (sortOrder === SORT_ORDER.DESC)
+            mult = -1;
+        let fn_sort = function (a: any, b: any): number {
+            let res = 0, i: number, len: number, af: any, bf: any, fieldName: string;
+            for (i = 0, len = fieldNames.length; i < len; i += 1) {
+                fieldName = fieldNames[i];
+                af = parser.resolvePath(a, fieldName);
+                bf = parser.resolvePath(b, fieldName);
+                if (af === checks.undefined)
+                    af = null;
+                if (bf === checks.undefined)
+                    bf = null;
+
+                if (af === null && bf !== null)
+                    res = -1 * mult;
+                else if (af !== null && bf === null)
+                    res = mult;
+                else if (af < bf)
+                    res = -1 * mult;
+                else if (af > bf)
+                    res = mult;
+                else
+                    res = 0;
+
+                if (res !== 0)
+                    return res;
+            }
+            return res;
+        };
+        return fn_sort;
+    }
     getFieldInfo(fieldName: string): IFieldInfo {
         let parts = fieldName.split("."), fld = this._fieldMap[parts[0]];
         if (parts.length === 1) {
@@ -775,29 +808,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         return this.sortLocal(fieldNames, sortOrder);
     }
     sortLocal(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any> {
-        let self = this;
-        let mult = 1;
-        if (sortOrder === SORT_ORDER.DESC)
-            mult = -1;
-        let fn_sort = function (a: any, b: any): number {
-            let res = 0, i: number, len: number, af: any, bf: any, fieldName: string;
-            for (i = 0, len = fieldNames.length; i < len; i += 1) {
-                fieldName = fieldNames[i];
-                af = a[fieldName];
-                bf = b[fieldName];
-                if (af < bf)
-                    res = -1 * mult;
-                else if (af > bf)
-                    res = mult;
-                else
-                    res = 0;
-
-                if (res !== 0)
-                    return res;
-            }
-            return res;
-        };
-        return self.sortLocalByFunc(fn_sort);
+        return this.sortLocalByFunc(this._getSortFn(fieldNames, sortOrder));
     }
     sortLocalByFunc(fn: (a: any, b: any) => number): IPromise<any> {
         let self = this, deferred = utils.defer.createDeferred<void>();
