@@ -137,14 +137,16 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         let self = this, arr: TItem[], newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];
         let isClearAll = !!data.clear;
 
-        if (!!isClearAll)
+        if (!!isClearAll) {
             this._clear(data.reason, COLL_CHANGE_OPER.Fill);
+        }
 
         if (this.isPagingEnabled && !data.isAppend) {
             arr = this._filterForPaging(data.items);
         }
-        else
+        else {
             arr = data.items;
+        }
 
         arr.forEach(function (item) {
             let oldItem = self._itemsByKey[item._key];
@@ -164,10 +166,12 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
             this._onCountChanged();
         }
 
-        if (isClearAll)
+        if (isClearAll) {
             this.totalCount = data.items.length;
-        else
+        }
+        else {
             this.totalCount = this.totalCount + newItems.length;
+        }
 
         this._onCollectionChanged({
             changeType: COLL_CHANGE_TYPE.Reset,
@@ -182,8 +186,9 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
             reason: data.reason
         });
 
-        if (isClearAll)
+        if (isClearAll) {
             this.moveFirst();
+        }
 
         return newItems;
     }
@@ -199,7 +204,9 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
                         if (!!self._fn_filter) {
                             items = items.filter(self._fn_filter);
                         }
-                        self.appendItems(items);
+                        if (items.length > 0) {
+                            self.appendItems(items);
+                        }
                     }
                 }
                 break;

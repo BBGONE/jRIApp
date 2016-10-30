@@ -3703,13 +3703,15 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_core/lang", "jriapp_
             }, data);
             var self = this, arr, newItems = [], positions = [], items = [];
             var isClearAll = !!data.clear;
-            if (!!isClearAll)
+            if (!!isClearAll) {
                 this._clear(data.reason, 1);
+            }
             if (this.isPagingEnabled && !data.isAppend) {
                 arr = this._filterForPaging(data.items);
             }
-            else
+            else {
                 arr = data.items;
+            }
             arr.forEach(function (item) {
                 var oldItem = self._itemsByKey[item._key];
                 if (!oldItem) {
@@ -3726,10 +3728,12 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_core/lang", "jriapp_
             if (newItems.length > 0) {
                 this._onCountChanged();
             }
-            if (isClearAll)
+            if (isClearAll) {
                 this.totalCount = data.items.length;
-            else
+            }
+            else {
                 this.totalCount = this.totalCount + newItems.length;
+            }
             this._onCollectionChanged({
                 changeType: 2,
                 reason: data.reason,
@@ -3742,8 +3746,9 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_core/lang", "jriapp_
                 newItems: newItems,
                 reason: data.reason
             });
-            if (isClearAll)
+            if (isClearAll) {
                 this.moveFirst();
+            }
             return newItems;
         };
         DataView.prototype._onDSCollectionChanged = function (sender, args) {
@@ -3758,7 +3763,9 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_core/lang", "jriapp_
                             if (!!self._fn_filter) {
                                 items = items.filter(self._fn_filter);
                             }
-                            self.appendItems(items);
+                            if (items.length > 0) {
+                                self.appendItems(items);
+                            }
                         }
                     }
                     break;
