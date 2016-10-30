@@ -8359,7 +8359,7 @@ define("jriapp_collection/validation", ["require", "exports", "jriapp_core/share
 });
 define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "jriapp_core/lang", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_core/parser", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/validation"], function (require, exports, object_16, lang_19, coreutils_22, utils_26, bootstrap_23, parser_5, int_6, utils_27, validation_1) {
     "use strict";
-    var coreUtils = utils_26.Utils.core, strUtils = utils_26.Utils.str, checks = utils_26.Utils.check;
+    var coreUtils = utils_26.Utils.core, strUtils = utils_26.Utils.str, checks = utils_26.Utils.check, parse = parser_5.parser;
     var COLL_EVENTS = {
         begin_edit: "begin_edit",
         end_edit: "end_edit",
@@ -8737,7 +8737,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
         };
         BaseCollection.prototype._isHasProp = function (prop) {
             if (strUtils.startsWith(prop, "[")) {
-                var res = parser_5.parser.resolveProp(this, prop);
+                var res = parse.resolveProp(this, prop);
                 return !checks.isUndefined(res);
             }
             return _super.prototype._isHasProp.call(this, prop);
@@ -8884,8 +8884,8 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
                 var res = 0, i, len, af, bf, fieldName;
                 for (i = 0, len = fieldNames.length; i < len; i += 1) {
                     fieldName = fieldNames[i];
-                    af = parser_5.parser.resolvePath(a, fieldName);
-                    bf = parser_5.parser.resolvePath(b, fieldName);
+                    af = parse.resolvePath(a, fieldName);
+                    bf = parse.resolvePath(b, fieldName);
                     if (af === checks.undefined)
                         af = null;
                     if (bf === checks.undefined)

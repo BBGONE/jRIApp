@@ -341,6 +341,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         let ds = this.dataSource, self = this;
         if (!ds)
             return;
+        const currentRow = this._currentRow;
         switch (key) {
             case KEYS.up:
                 event.preventDefault();
@@ -368,19 +369,19 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 ds.pageIndex = ds.pageIndex + 1;
                 break;
             case KEYS.enter:
-                if (!!this._currentRow && !!this._actionsCol) {
+                if (!!currentRow && !!this._actionsCol) {
                     event.preventDefault();
                 }
                 break;
             case KEYS.esc:
-                if (!!this._currentRow && !!this._actionsCol) {
-                    if (this._currentRow.isEditing) {
+                if (!!currentRow && !!this._actionsCol) {
+                    if (currentRow.isEditing) {
                         event.preventDefault();
                     }
                 }
                 break;
             case KEYS.space:
-                if (!!this._rowSelectorCol && !!this._currentRow && (!this._currentRow.isExpanded && !this._currentRow.isEditing))
+                if (!!this._rowSelectorCol && !!currentRow && (!currentRow.isExpanded && !currentRow.isEditing))
                     event.preventDefault();
                 break;
         }
@@ -389,30 +390,31 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         let ds = this.dataSource;
         if (!ds)
             return;
+        const currentRow = this._currentRow;
         switch (key) {
             case KEYS.enter:
-                if (!!this._currentRow && !!this._actionsCol) {
+                if (!!currentRow && !!this._actionsCol) {
                     event.preventDefault();
-                    if (this._currentRow.isEditing) {
-                        this.raiseEvent(GRID_EVENTS.row_action, { row: this._currentRow, action: ROW_ACTION.OK });
+                    if (currentRow.isEditing) {
+                        this.raiseEvent(GRID_EVENTS.row_action, { row: currentRow, action: ROW_ACTION.OK });
                     }
                     else {
-                        this.raiseEvent(GRID_EVENTS.row_action, { row: this._currentRow, action: ROW_ACTION.EDIT });
+                        this.raiseEvent(GRID_EVENTS.row_action, { row: currentRow, action: ROW_ACTION.EDIT });
                     }
                 }
                 break;
             case KEYS.esc:
-                if (!!this._currentRow && !!this._actionsCol) {
-                    if (this._currentRow.isEditing) {
+                if (!!currentRow && !!this._actionsCol) {
+                    if (currentRow.isEditing) {
                         event.preventDefault();
-                        this.raiseEvent(GRID_EVENTS.row_action, { row: this._currentRow, action: ROW_ACTION.CANCEL });
+                        this.raiseEvent(GRID_EVENTS.row_action, { row: currentRow, action: ROW_ACTION.CANCEL });
                     }
                 }
                 break;
             case KEYS.space:
-                if (!!this._rowSelectorCol && !!this._currentRow && (!this._currentRow.isExpanded && !this._currentRow.isEditing)) {
+                if (!!this._rowSelectorCol && !!currentRow && (!currentRow.isExpanded && !currentRow.isEditing)) {
                     event.preventDefault();
-                    this._currentRow.isSelected = !this._currentRow.isSelected;
+                    currentRow.isSelected = !currentRow.isSelected;
                 }
                 break;
         }

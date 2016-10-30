@@ -15,7 +15,7 @@ import { ICollectionItem, ICollection, ICollectionOptions, IPermissions, IIntern
 import { valueUtils, fn_getPropertyByName } from "utils";
 import { ValidationError } from "validation";
 
-const coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
+const coreUtils = utils.core, strUtils = utils.str, checks = utils.check, parse = parser;
 
 const COLL_EVENTS = {
     begin_edit: "begin_edit",
@@ -417,7 +417,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     _isHasProp(prop: string) {
         //first check for indexed property name
         if (strUtils.startsWith(prop, "[")) {
-            let res = parser.resolveProp(this, prop);
+            let res = parse.resolveProp(this, prop);
             return !checks.isUndefined(res);
         }
         return super._isHasProp(prop);
@@ -564,8 +564,8 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
             let res = 0, i: number, len: number, af: any, bf: any, fieldName: string;
             for (i = 0, len = fieldNames.length; i < len; i += 1) {
                 fieldName = fieldNames[i];
-                af = parser.resolvePath(a, fieldName);
-                bf = parser.resolvePath(b, fieldName);
+                af = parse.resolvePath(a, fieldName);
+                bf = parse.resolvePath(b, fieldName);
                 if (af === checks.undefined)
                     af = null;
                 if (bf === checks.undefined)

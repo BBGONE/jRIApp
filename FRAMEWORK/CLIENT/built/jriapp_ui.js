@@ -2420,6 +2420,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             var ds = this.dataSource, self = this;
             if (!ds)
                 return;
+            var currentRow = this._currentRow;
             switch (key) {
                 case 38:
                     event.preventDefault();
@@ -2447,19 +2448,19 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
                     ds.pageIndex = ds.pageIndex + 1;
                     break;
                 case 13:
-                    if (!!this._currentRow && !!this._actionsCol) {
+                    if (!!currentRow && !!this._actionsCol) {
                         event.preventDefault();
                     }
                     break;
                 case 27:
-                    if (!!this._currentRow && !!this._actionsCol) {
-                        if (this._currentRow.isEditing) {
+                    if (!!currentRow && !!this._actionsCol) {
+                        if (currentRow.isEditing) {
                             event.preventDefault();
                         }
                     }
                     break;
                 case 32:
-                    if (!!this._rowSelectorCol && !!this._currentRow && (!this._currentRow.isExpanded && !this._currentRow.isEditing))
+                    if (!!this._rowSelectorCol && !!currentRow && (!currentRow.isExpanded && !currentRow.isEditing))
                         event.preventDefault();
                     break;
             }
@@ -2468,30 +2469,31 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             var ds = this.dataSource;
             if (!ds)
                 return;
+            var currentRow = this._currentRow;
             switch (key) {
                 case 13:
-                    if (!!this._currentRow && !!this._actionsCol) {
+                    if (!!currentRow && !!this._actionsCol) {
                         event.preventDefault();
-                        if (this._currentRow.isEditing) {
-                            this.raiseEvent(GRID_EVENTS.row_action, { row: this._currentRow, action: 0 });
+                        if (currentRow.isEditing) {
+                            this.raiseEvent(GRID_EVENTS.row_action, { row: currentRow, action: 0 });
                         }
                         else {
-                            this.raiseEvent(GRID_EVENTS.row_action, { row: this._currentRow, action: 1 });
+                            this.raiseEvent(GRID_EVENTS.row_action, { row: currentRow, action: 1 });
                         }
                     }
                     break;
                 case 27:
-                    if (!!this._currentRow && !!this._actionsCol) {
-                        if (this._currentRow.isEditing) {
+                    if (!!currentRow && !!this._actionsCol) {
+                        if (currentRow.isEditing) {
                             event.preventDefault();
-                            this.raiseEvent(GRID_EVENTS.row_action, { row: this._currentRow, action: 2 });
+                            this.raiseEvent(GRID_EVENTS.row_action, { row: currentRow, action: 2 });
                         }
                     }
                     break;
                 case 32:
-                    if (!!this._rowSelectorCol && !!this._currentRow && (!this._currentRow.isExpanded && !this._currentRow.isEditing)) {
+                    if (!!this._rowSelectorCol && !!currentRow && (!currentRow.isExpanded && !currentRow.isEditing)) {
                         event.preventDefault();
-                        this._currentRow.isSelected = !this._currentRow.isSelected;
+                        currentRow.isSelected = !currentRow.isSelected;
                     }
                     break;
             }
