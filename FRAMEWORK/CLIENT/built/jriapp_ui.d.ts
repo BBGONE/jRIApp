@@ -736,6 +736,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         protected _createRowForItem(parent: Node, item: ICollectionItem, prepend?: boolean): Row;
         protected _createDetails(): DetailsRow;
         protected _createFillSpace(): FillSpaceRow;
+        protected _setCurrent(row: Row): void;
         _getInternal(): IInternalDataGridMethods;
         updateColumnsSize(): void;
         getISelectable(): ISelectable;

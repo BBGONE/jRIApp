@@ -2548,11 +2548,12 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             try {
                 if (i > -1) {
                     oldRow = row;
-                    if (this.currentRow === row) {
-                        this.currentRow = null;
+                    if (this.currentRow === oldRow) {
+                        this._setCurrent(null);
                     }
-                    if (!oldRow.getIsDestroyCalled())
+                    if (!oldRow.getIsDestroyCalled()) {
                         oldRow.destroy();
+                    }
                 }
             }
             finally {
@@ -2649,7 +2650,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             return row;
         };
         DataGrid.prototype._updateCurrent = function (row, withScroll) {
-            this.currentRow = row;
+            this._setCurrent(row);
             if (withScroll && !!row && !row.isDeleted)
                 this.scrollToCurrent();
         };
@@ -2662,10 +2663,12 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
         };
         DataGrid.prototype._onDSCurrentChanged = function (sender, args) {
             var ds = this.dataSource, cur;
-            if (!!ds)
+            if (!!ds) {
                 cur = ds.currentItem;
-            if (!cur)
+            }
+            if (!cur) {
                 this._updateCurrent(null, false);
+            }
             else {
                 this._updateCurrent(this._rowMap[cur._key], false);
             }
@@ -2807,7 +2810,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             if (this._rows.length === 0)
                 return;
             this.collapseDetails();
-            this.currentRow = null;
+            this._setCurrent(null);
             var self = this, tbody = self._tBodyEl, newTbody = doc.createElement("tbody");
             this._table.replaceChild(newTbody, tbody);
             var rows = this._rows;
@@ -2961,6 +2964,22 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
         DataGrid.prototype._createFillSpace = function () {
             var tr = doc.createElement("tr");
             return new fillspace_2.FillSpaceRow({ grid: this, tr: tr });
+        };
+        DataGrid.prototype._setCurrent = function (row) {
+            var old = this._currentRow, isChanged = false;
+            if (old !== row) {
+                this._currentRow = row;
+                if (!!old) {
+                    old.isCurrent = false;
+                }
+                if (!!row) {
+                    row.isCurrent = true;
+                }
+                isChanged = true;
+            }
+            if (isChanged) {
+                this.raisePropertyChanged(const_21.PROP_NAME.currentRow);
+            }
         };
         DataGrid.prototype._getInternal = function () {
             return this._internal;
@@ -3233,27 +3252,17 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
         Object.defineProperty(DataGrid.prototype, "currentRow", {
             get: function () { return this._currentRow; },
             set: function (row) {
-                var ds = this.dataSource, old = this._currentRow, isChanged = false;
+                var ds = this.dataSource;
                 if (!ds)
                     return;
-                if (old !== row) {
-                    this._currentRow = row;
-                    if (!!old) {
-                        old.isCurrent = false;
-                    }
-                    if (!!row)
-                        row.isCurrent = true;
-                    isChanged = true;
-                }
-                if (!!row) {
-                    if (row.item !== ds.currentItem)
+                if (!!row && !row.getIsDestroyCalled()) {
+                    if (row.item !== ds.currentItem) {
                         ds.currentItem = row.item;
+                    }
                 }
                 else {
                     ds.currentItem = null;
                 }
-                if (isChanged)
-                    this.raisePropertyChanged(const_21.PROP_NAME.currentRow);
             },
             enumerable: true,
             configurable: true
