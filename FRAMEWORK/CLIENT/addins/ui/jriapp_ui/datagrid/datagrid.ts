@@ -469,6 +469,9 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         try {
             if (i > -1) {
                 oldRow = row;
+                if (this.currentRow === row) {
+                    this.currentRow = null;
+                }
                 if (!oldRow.getIsDestroyCalled())
                     oldRow.destroy();
             }
@@ -730,6 +733,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         if (this._rows.length === 0)
             return;
         this.collapseDetails();
+        this.currentRow = null;
         let self = this, tbody = self._tBodyEl, newTbody = doc.createElement("tbody");
         this._table.replaceChild(newTbody, tbody);
         let rows = this._rows;
@@ -739,7 +743,6 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             row.isDetached = true;
             row.destroy();
         });
-        this._currentRow = null;
     }
     protected _wrapTable() {
         let self = this, options = this._options;
@@ -1149,8 +1152,9 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             if (row.item !== ds.currentItem)
                 ds.currentItem = row.item;
         }
-        else
+        else {
             ds.currentItem = null;
+        }
         if (isChanged)
             this.raisePropertyChanged(PROP_NAME.currentRow);
     }

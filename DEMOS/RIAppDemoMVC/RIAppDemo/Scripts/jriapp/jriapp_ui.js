@@ -1643,8 +1643,6 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_core/object
                 return this._isCurrent;
             },
             set: function (v) {
-                if (this.getIsDestroyCalled())
-                    return;
                 var curr = this._isCurrent;
                 if (v !== curr) {
                     this._isCurrent = v;
@@ -1658,8 +1656,6 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_core/object
         Object.defineProperty(Row.prototype, "isSelected", {
             get: function () { return this._isSelected; },
             set: function (v) {
-                if (this.getIsDestroyCalled())
-                    return;
                 if (this._isSelected !== v) {
                     this._isSelected = v;
                     if (!!this._rowSelectorCell) {
@@ -1675,8 +1671,6 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_core/object
         Object.defineProperty(Row.prototype, "isExpanded", {
             get: function () { return this.grid._getInternal().isRowExpanded(this); },
             set: function (v) {
-                if (this.getIsDestroyCalled())
-                    return;
                 if (v !== this.isExpanded) {
                     if (!v && this.isExpanded) {
                         this.grid._getInternal().expandDetails(this, false);
@@ -2554,6 +2548,9 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             try {
                 if (i > -1) {
                     oldRow = row;
+                    if (this.currentRow === row) {
+                        this.currentRow = null;
+                    }
                     if (!oldRow.getIsDestroyCalled())
                         oldRow.destroy();
                 }
@@ -2810,6 +2807,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             if (this._rows.length === 0)
                 return;
             this.collapseDetails();
+            this.currentRow = null;
             var self = this, tbody = self._tBodyEl, newTbody = doc.createElement("tbody");
             this._table.replaceChild(newTbody, tbody);
             var rows = this._rows;
@@ -2819,7 +2817,6 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
                 row.isDetached = true;
                 row.destroy();
             });
-            this._currentRow = null;
         };
         DataGrid.prototype._wrapTable = function () {
             var self = this, options = this._options;
@@ -3252,8 +3249,9 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
                     if (row.item !== ds.currentItem)
                         ds.currentItem = row.item;
                 }
-                else
+                else {
                     ds.currentItem = null;
+                }
                 if (isChanged)
                     this.raisePropertyChanged(const_21.PROP_NAME.currentRow);
             },

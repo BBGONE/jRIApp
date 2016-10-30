@@ -795,7 +795,6 @@ declare module "jriapp_db/int" {
 declare module "jriapp_db/dataview" {
     import { SORT_ORDER } from "jriapp_core/const";
     import { IPromise, IFieldInfo, TEventHandler } from "jriapp_core/shared";
-    import { Debounce } from "jriapp_utils/utils";
     import { ICollection, ICollectionItem, BaseCollection, COLL_CHANGE_REASON, COLL_CHANGE_OPER, ICollChangedArgs, ICollItemStatusArgs, IErrors, IPermissions } from "jriapp_collection/collection";
     export interface IDataViewOptions<TItem extends ICollectionItem> {
         dataSource: ICollection<TItem>;
@@ -810,7 +809,7 @@ declare module "jriapp_db/dataview" {
         private _fn_itemsProvider;
         private _isAddingNew;
         private _objId;
-        protected _refreshDebounce: Debounce;
+        private _refreshDebounce;
         constructor(options: IDataViewOptions<TItem>);
         protected _getEventNames(): string[];
         protected _destroyItems(): void;

@@ -29,7 +29,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
     private _fn_itemsProvider: (ds: ICollection<TItem>) => TItem[];
     private _isAddingNew: boolean;
     private _objId: string;
-    protected _refreshDebounce: Debounce;
+    private _refreshDebounce: Debounce;
 
     constructor(options: IDataViewOptions<TItem>) {
         super();
