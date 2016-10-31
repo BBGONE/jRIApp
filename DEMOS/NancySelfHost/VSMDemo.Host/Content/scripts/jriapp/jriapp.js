@@ -8608,13 +8608,16 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
             this._pkInfo = pk;
             return this._pkInfo;
         };
-        BaseCollection.prototype._onCurrentChanging = function (newCurrent) {
+        BaseCollection.prototype._checkCurrentChanging = function (newCurrent) {
             try {
                 this.endEdit();
             }
             catch (ex) {
                 coreutils_22.ERROR.reThrow(ex, this.handleError(ex, this));
             }
+        };
+        BaseCollection.prototype._onCurrentChanging = function (newCurrent) {
+            this._checkCurrentChanging(newCurrent);
             this.raiseEvent(COLL_EVENTS.current_changing, { newCurrent: newCurrent });
         };
         BaseCollection.prototype._onCurrentChanged = function () {
@@ -8867,7 +8870,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
             this.raiseEvent(COLL_EVENTS.cleared, { reason: reason });
             this._onCountChanged();
         };
-        BaseCollection.prototype._set_isLoading = function (v) {
+        BaseCollection.prototype._setIsLoading = function (v) {
             if (this._isLoading !== v) {
                 this._isLoading = v;
                 this.raisePropertyChanged(int_6.PROP_NAME.isLoading);
@@ -9126,19 +9129,17 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
             return this.sortLocal(fieldNames, sortOrder);
         };
         BaseCollection.prototype.sortLocal = function (fieldNames, sortOrder) {
-            return this.sortLocalByFunc(this._getSortFn(fieldNames, sortOrder));
-        };
-        BaseCollection.prototype.sortLocalByFunc = function (fn) {
+            var sortFn = this._getSortFn(fieldNames, sortOrder);
             var self = this, deferred = utils_26.Utils.defer.createDeferred();
             this.waitForNotLoading(function () {
                 var cur = self.currentItem;
-                self._set_isLoading(true);
+                self._setIsLoading(true);
                 try {
-                    self._items.sort(fn);
+                    self._items.sort(sortFn);
                     self._onCollectionChanged({ changeType: 2, reason: 2, oper: 5, items: [], pos: [] });
                 }
                 finally {
-                    self._set_isLoading(false);
+                    self._setIsLoading(false);
                     deferred.resolve();
                 }
                 self.currentItem = null;

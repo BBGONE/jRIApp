@@ -4,12 +4,12 @@ import { IPromise, IFieldInfo, TEventHandler } from "jriapp_core/shared";
 import { ERRS } from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
 import { parser } from "jriapp_core/parser";
-import { Utils as utils, AsyncUtils as _async, Debounce, ERROR } from "jriapp_utils/utils";
+import { Utils as utils, AsyncUtils, Debounce, ERROR } from "jriapp_utils/utils";
 import { ICollection, ICollectionItem, BaseCollection, COLL_CHANGE_REASON, COLL_CHANGE_OPER,
     ICollChangedArgs, COLL_CHANGE_TYPE, ICollItemStatusArgs, IErrors, IPermissions } from "jriapp_collection/collection";
 import { PROP_NAME } from "const";
 
-const checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ArrayHelper = utils.arr;
+const _async = AsyncUtils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr;
 
 const VIEW_EVENTS = {
     refreshed: "view_refreshed"
@@ -258,7 +258,8 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
     }
     protected _bindDS() {
         let self = this, ds = this._dataSource;
-        if (!ds) return;
+        if (!ds)
+            return;
         ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self, true);
         ds.addOnBeginEdit(function (sender, args) {
             if (!!self._itemsByKey[args.item._key]) {
@@ -317,7 +318,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         if (!ds) return;
         ds.removeNSHandlers(self._objId);
     }
-    protected _onCurrentChanging(newCurrent: TItem) {
+    protected _checkCurrentChanging(newCurrent: TItem) {
         let ds = this._dataSource, item: TItem;
         try {
             item = (<BaseCollection<TItem>>ds)._getInternal().getEditingItem();
@@ -368,7 +369,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         }
         if (!this._itemsByKey[item._key])
             return;
-        let oldPos = ArrayHelper.remove(this._items, item);
+        let oldPos = arrHelper.remove(this._items, item);
         if (oldPos < 0) {
             throw new Error(ERRS.ERR_ITEM_IS_NOTFOUND);
         }
@@ -391,15 +392,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         }
     }
     sortLocal(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any> {
-        let deferred = _async.createDeferred<void>();
-        try {
-            this.fn_sort = this._getSortFn(fieldNames, sortOrder);
-            deferred.resolve();
-        } catch (ex) {
-            deferred.reject(ex);
-            this.handleError(ex, this);
-        }
-        return deferred.promise();
+        return _async.delay(() => { this.fn_sort = this._getSortFn(fieldNames, sortOrder); });
     }
     getIsHasErrors() {
         return this._dataSource.getIsHasErrors();

@@ -2004,6 +2004,14 @@ define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jria
                 return;
             ds.removeNSHandlers(self._objId);
         };
+        Association.prototype.refreshParentMap = function () {
+            this._resetParentMap();
+            return this._mapParentItems(this._parentDS.items);
+        };
+        Association.prototype.refreshChildMap = function () {
+            this._resetChildMap();
+            return this._mapChildren(this._childDS.items);
+        };
         Association.prototype.getParentFKey = function (item) {
             if (!!item && item._aspect.isNew)
                 return item._key;
@@ -2017,14 +2025,6 @@ define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jria
                 }
             }
             return this._getItemKey(this._childFldInfos, this._childDS, item);
-        };
-        Association.prototype.refreshParentMap = function () {
-            this._resetParentMap();
-            return this._mapParentItems(this._parentDS.items);
-        };
-        Association.prototype.refreshChildMap = function () {
-            this._resetChildMap();
-            return this._mapChildren(this._childDS.items);
         };
         Association.prototype.isParentChild = function (parent, child) {
             if (!parent || !child)
@@ -2730,10 +2730,10 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
                 dbSet: item._aspect.dbSet,
                 fn_onStart: function () {
                     context.item._aspect.isRefreshing = true;
-                    context.dbSet._set_isLoading(true);
+                    context.dbSet._setIsLoading(true);
                 },
                 fn_onEnd: function () {
-                    context.dbSet._set_isLoading(false);
+                    context.dbSet._setIsLoading(false);
                     context.item._aspect.isRefreshing = false;
                 },
                 fn_onErr: function (ex) {
@@ -2794,10 +2794,10 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
                 dbSetName: query.dbSetName,
                 dbSet: self.getDbSet(query.dbSetName),
                 fn_onStart: function () {
-                    context.dbSet._set_isLoading(true);
+                    context.dbSet._setIsLoading(true);
                 },
                 fn_onEnd: function () {
-                    context.dbSet._set_isLoading(false);
+                    context.dbSet._setIsLoading(false);
                 },
                 fn_onOK: function (res) {
                     try {
@@ -3602,7 +3602,7 @@ define("jriapp_db/int", ["require", "exports"], function (require, exports) {
 });
 define("jriapp_db/dataview", ["require", "exports", "jriapp_core/lang", "jriapp_utils/utils", "jriapp_collection/collection", "jriapp_db/const"], function (require, exports, lang_4, utils_9, collection_5, const_7) {
     "use strict";
-    var checks = utils_9.Utils.check, strUtils = utils_9.Utils.str, coreUtils = utils_9.Utils.core, ArrayHelper = utils_9.Utils.arr;
+    var _async = utils_9.AsyncUtils, checks = utils_9.Utils.check, strUtils = utils_9.Utils.str, coreUtils = utils_9.Utils.core, arrHelper = utils_9.Utils.arr;
     var VIEW_EVENTS = {
         refreshed: "view_refreshed"
     };
@@ -3876,7 +3876,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_core/lang", "jriapp_
                 return;
             ds.removeNSHandlers(self._objId);
         };
-        DataView.prototype._onCurrentChanging = function (newCurrent) {
+        DataView.prototype._checkCurrentChanging = function (newCurrent) {
             var ds = this._dataSource, item;
             try {
                 item = ds._getInternal().getEditingItem();
@@ -3928,7 +3928,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_core/lang", "jriapp_
             }
             if (!this._itemsByKey[item._key])
                 return;
-            var oldPos = ArrayHelper.remove(this._items, item);
+            var oldPos = arrHelper.remove(this._items, item);
             if (oldPos < 0) {
                 throw new Error(lang_4.ERRS.ERR_ITEM_IS_NOTFOUND);
             }
@@ -3949,16 +3949,8 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_core/lang", "jriapp_
             }
         };
         DataView.prototype.sortLocal = function (fieldNames, sortOrder) {
-            var deferred = utils_9.AsyncUtils.createDeferred();
-            try {
-                this.fn_sort = this._getSortFn(fieldNames, sortOrder);
-                deferred.resolve();
-            }
-            catch (ex) {
-                deferred.reject(ex);
-                this.handleError(ex, this);
-            }
-            return deferred.promise();
+            var _this = this;
+            return _async.delay(function () { _this.fn_sort = _this._getSortFn(fieldNames, sortOrder); });
         };
         DataView.prototype.getIsHasErrors = function () {
             return this._dataSource.getIsHasErrors();

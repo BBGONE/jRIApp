@@ -286,12 +286,15 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         this._pkInfo = pk;
         return this._pkInfo;
     }
-    protected _onCurrentChanging(newCurrent: TItem) {
+    protected _checkCurrentChanging(newCurrent: TItem) {
         try {
             this.endEdit();
         } catch (ex) {
             ERROR.reThrow(ex, this.handleError(ex, this));
         }
+    }
+    protected _onCurrentChanging(newCurrent: TItem) {
+        this._checkCurrentChanging(newCurrent);
         this.raiseEvent(COLL_EVENTS.current_changing, <ICurrentChangingArgs<TItem>>{ newCurrent: newCurrent });
     }
     protected _onCurrentChanged() {
@@ -547,7 +550,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         this.raiseEvent(COLL_EVENTS.cleared, { reason: reason });
         this._onCountChanged();
     }
-    _set_isLoading(v: boolean) {
+    _setIsLoading(v: boolean) {
         if (this._isLoading !== v) {
             this._isLoading = v;
             this.raisePropertyChanged(PROP_NAME.isLoading);
@@ -808,18 +811,16 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         return this.sortLocal(fieldNames, sortOrder);
     }
     sortLocal(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any> {
-        return this.sortLocalByFunc(this._getSortFn(fieldNames, sortOrder));
-    }
-    sortLocalByFunc(fn: (a: any, b: any) => number): IPromise<any> {
+        let sortFn = this._getSortFn(fieldNames, sortOrder);
         let self = this, deferred = utils.defer.createDeferred<void>();
         this.waitForNotLoading(() => {
             let cur = self.currentItem;
-            self._set_isLoading(true);
+            self._setIsLoading(true);
             try {
-                self._items.sort(fn);
+                self._items.sort(sortFn);
                 self._onCollectionChanged({ changeType: COLL_CHANGE_TYPE.Reset, reason: COLL_CHANGE_REASON.Sorting, oper: COLL_CHANGE_OPER.Sort, items: [], pos: [] });
             } finally {
-                self._set_isLoading(false);
+                self._setIsLoading(false);
                 deferred.resolve();
             }
             self.currentItem = null;

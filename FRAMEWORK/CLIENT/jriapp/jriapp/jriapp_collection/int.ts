@@ -154,7 +154,6 @@ export interface ISimpleCollection<TItem extends ICollectionItem> extends IBaseO
     forEach(callback: (item: TItem) => void, thisObj?: any): void;
     sort(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any>;
     sortLocal(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any>;
-    sortLocalByFunc(fn: (a: any, b: any) => number): IPromise<any>;
     clear(): void;
     items: TItem[];
     currentItem: TItem;

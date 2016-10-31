@@ -2279,7 +2279,6 @@ declare module "jriapp_collection/int" {
         forEach(callback: (item: TItem) => void, thisObj?: any): void;
         sort(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any>;
         sortLocal(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any>;
-        sortLocalByFunc(fn: (a: any, b: any) => number): IPromise<any>;
         clear(): void;
         items: TItem[];
         currentItem: TItem;
@@ -2424,6 +2423,7 @@ declare module "jriapp_collection/base" {
         addOnTotalCountChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void;
         addOnCurrentChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void;
         protected _getPKFieldInfos(): IFieldInfo[];
+        protected _checkCurrentChanging(newCurrent: TItem): void;
         protected _onCurrentChanging(newCurrent: TItem): void;
         protected _onCurrentChanged(): void;
         protected _onCountChanged(): void;
@@ -2457,7 +2457,7 @@ declare module "jriapp_collection/base" {
         protected _onErrorsChanged(item: TItem): void;
         protected _onItemDeleting(args: ICancellableArgs<TItem>): boolean;
         protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER): void;
-        _set_isLoading(v: boolean): void;
+        _setIsLoading(v: boolean): void;
         _getInternal(): IInternalCollMethods<TItem>;
         _getSortFn(fieldNames: string[], sortOrder: SORT_ORDER): (a: any, b: any) => number;
         getFieldInfo(fieldName: string): IFieldInfo;
@@ -2480,7 +2480,6 @@ declare module "jriapp_collection/base" {
         getIsHasErrors(): boolean;
         sort(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any>;
         sortLocal(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any>;
-        sortLocalByFunc(fn: (a: any, b: any) => number): IPromise<any>;
         clear(): void;
         destroy(): void;
         waitForNotLoading(callback: () => void, groupName: string): void;

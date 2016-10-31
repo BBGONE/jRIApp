@@ -353,10 +353,10 @@ declare module "jriapp_db/association" {
         protected _mapChildren(items: IEntityItem[]): string[];
         protected _unbindParentDS(): void;
         protected _unbindChildDS(): void;
-        protected getParentFKey(item: IEntityItem): string;
-        protected getChildFKey(item: IEntityItem): string;
         protected refreshParentMap(): string[];
         protected refreshChildMap(): string[];
+        getParentFKey(item: IEntityItem): string;
+        getChildFKey(item: IEntityItem): string;
         isParentChild(parent: IEntityItem, child: IEntityItem): boolean;
         getChildItems(parent: IEntityItem): IEntityItem[];
         getParentItem(item: IEntityItem): IEntityItem;
@@ -828,7 +828,7 @@ declare module "jriapp_db/dataview" {
         protected _onDSStatusChanged(sender: any, args: ICollItemStatusArgs<TItem>): void;
         protected _bindDS(): void;
         protected _unbindDS(): void;
-        protected _onCurrentChanging(newCurrent: TItem): void;
+        protected _checkCurrentChanging(newCurrent: TItem): void;
         protected _onPageChanged(): void;
         protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER): void;
         _getStrValue(val: any, fieldInfo: IFieldInfo): string;

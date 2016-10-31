@@ -543,12 +543,20 @@ export class Association extends BaseObject {
         if (!ds) return;
         ds.removeNSHandlers(self._objId);
     }
-    protected getParentFKey(item: IEntityItem): string {
+    protected refreshParentMap() {
+        this._resetParentMap();
+        return this._mapParentItems(this._parentDS.items);
+    }
+    protected refreshChildMap() {
+        this._resetChildMap();
+        return this._mapChildren(this._childDS.items);
+    }
+    getParentFKey(item: IEntityItem): string {
         if (!!item && item._aspect.isNew)
             return item._key;
         return this._getItemKey(this._parentFldInfos, this._parentDS, item);
     }
-    protected getChildFKey(item: IEntityItem): string {
+    getChildFKey(item: IEntityItem): string {
         if (!!item && !!this._childToParentName) {
             //_getFieldVal for childToParentName can store temporary parent's key (which is generated on the client)
             // we first check if it returns it
@@ -559,14 +567,6 @@ export class Association extends BaseObject {
         }
         //if keys are permanent (stored to the server), then return normal foreign keys
         return this._getItemKey(this._childFldInfos, this._childDS, item);
-    }
-    protected refreshParentMap() {
-        this._resetParentMap();
-        return this._mapParentItems(this._parentDS.items);
-    }
-    protected refreshChildMap() {
-        this._resetChildMap();
-        return this._mapChildren(this._childDS.items);
     }
     isParentChild(parent: IEntityItem, child: IEntityItem): boolean {
         if (!parent || !child)
