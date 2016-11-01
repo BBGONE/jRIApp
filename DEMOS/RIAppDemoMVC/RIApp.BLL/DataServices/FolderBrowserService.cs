@@ -11,6 +11,7 @@ using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.DomainService.Security;
 using RIAPP.DataService.DomainService.Types;
 using RIAPP.DataService.Utils.CodeGen;
+using System.Collections.Generic;
 
 namespace RIAppDemo.BLL.DataServices
 {
@@ -99,6 +100,44 @@ namespace RIAppDemo.BLL.DataServices
                             IsFolder = d is DirectoryInfo
                         }).OrderByDescending(d => d.IsFolder).ThenBy(d => d.Name);
             return new QueryResult<FolderItem>(res2);
+        }
+
+
+        [Authorize]
+        [Query]
+        public QueryResult<FolderItem> ReadAll(bool includeFiles, string infoType)
+        {
+            return new QueryResult<FolderItem>(_ReadAll(includeFiles, infoType));
+        }
+
+
+        private IEnumerable<FolderItem> _ReadAll(bool includeFiles, string infoType)
+        {
+            var root = ReadRoot(includeFiles, infoType);
+            foreach (var item in root.Result.Cast<FolderItem>())
+            {
+                yield return item;
+                if (item.IsFolder)
+                {
+                    foreach (var subitem in _ReadChildren(item.Key, 1, item.Name, includeFiles, infoType))
+                        yield return subitem;
+                }
+            }
+        }
+
+        private IEnumerable<FolderItem> _ReadChildren(string parentKey, int level, string path, bool includeFiles,
+            string infoType)
+        {
+            var parent = ReadChildren(parentKey, level, path, includeFiles, infoType);
+            foreach (var item in parent.Result.Cast<FolderItem>())
+            {
+                yield return item;
+                if (item.IsFolder)
+                {
+                    foreach (var subitem in _ReadChildren(item.Key, level + 1, string.Format("{0}\\{1}", path, item.Name), includeFiles, infoType))
+                        yield return subitem;
+                }
+            }
         }
 
         public void DeleteFileSystemObject(FolderItem dummy)
