@@ -3428,7 +3428,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
             if (oldStatus !== 0) {
                 internal.onCommitChanges(this.item, true, false, oldStatus);
                 if (oldStatus === 3) {
-                    dbSet.removeItem(this.item);
+                    this.destroy();
                     return;
                 }
                 this._origVals = null;
@@ -3479,7 +3479,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
             if (oldStatus !== 0) {
                 internal.onCommitChanges(self.item, true, true, oldStatus);
                 if (oldStatus === 1) {
-                    dbSet.removeItem(this.item);
+                    this.destroy();
                     return;
                 }
                 var changes = self._getValueChanges(true);

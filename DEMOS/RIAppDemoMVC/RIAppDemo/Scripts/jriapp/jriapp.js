@@ -9623,9 +9623,9 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             return this;
         };
         ItemAspect.prototype.destroy = function () {
-            var _this = this;
             if (this._isDestroyed)
                 return;
+            var self = this;
             this._isDestroyCalled = true;
             this._setIsEditing(false);
             var coll = this._collection;
@@ -9647,7 +9647,13 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             this._collection = null;
             if (!!this._valueBag) {
                 utils_28.Utils.core.forEachProp(this._valueBag, function (name) {
-                    _this.setCustomVal(name, null);
+                    var old = self._valueBag[name];
+                    if (!!old && old.isOwnIt) {
+                        if (checks.isEditable(old.val) && old.val.isEditing)
+                            old.val.cancelEdit();
+                        if (checks.isBaseObject(old.val))
+                            old.val.destroy();
+                    }
                 });
                 this._valueBag = null;
             }

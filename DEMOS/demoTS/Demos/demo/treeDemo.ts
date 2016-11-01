@@ -41,12 +41,13 @@ export class ExProps extends RIAPP.BaseObject {
         this._childView = null;
         if (item.HasSubDirs)
             this._childView = this.createChildView();
+
         this._dbSet = <FOLDERBROWSER_SVC.FileSystemObjectDb>item._aspect.dbSet;
         self._toggleCommand = new RIAPP.Command(function (s, a) {
             if (!self.childView)
                 return;
             if (self.childView.count <= 0) {
-                self.loadChildren().then((res) => { self.refreshCss(); }, null);
+                self.loadChildren();
             }
             else {
                 self.childView.items.forEach((item) => {
@@ -97,6 +98,9 @@ export class ExProps extends RIAPP.BaseObject {
                 association: self._dbContext.associations.getChildToParent()
             });
         dvw.parentItem = self._item;
+        dvw.addOnFill((s, a) => {
+                self.refreshCss();
+        });
         return dvw;
     }
     loadChildren() {
@@ -137,6 +141,10 @@ export class ExProps extends RIAPP.BaseObject {
             css = 'dynatree-node dynatree-exp dynatree-ico-cf'; //dynatree-active
         else
             css = this._childView.count > 0 ? 'dynatree-node dynatree-exp-e dynatree-ico-ef' : 'dynatree-node dynatree-exp dynatree-ico-cf';
+        /*
+        if (!!this._childView)
+            console.log(this._item.Name+ "   " + this._childView.count);
+        */
         css += children_css;
         css += folder_css;
         return css;
@@ -165,7 +173,7 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
             });
 
         self._reloadCommand = new RIAPP.Command(function (s, a) {
-            self.loadRootFolder();
+            self.loadAll();
         }, self,
             function (s, a) {
                 return true;
@@ -251,6 +259,12 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
         promise.then(function (res) {
             //self._rootView.refresh();
         });
+        return promise;
+    }
+    loadAll() {
+        var self = this, query = self._dbSet.createReadAllQuery({ includeFiles: false, infoType: infoType });
+        query.isClearPrevData = true;
+        var promise = query.load();
         return promise;
     }
     destroy() {

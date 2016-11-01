@@ -21,7 +21,7 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
                 if (!self.childView)
                     return;
                 if (self.childView.count <= 0) {
-                    self.loadChildren().then(function (res) { self.refreshCss(); }, null);
+                    self.loadChildren();
                 }
                 else {
                     self.childView.items.forEach(function (item) {
@@ -69,6 +69,9 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
                 association: self._dbContext.associations.getChildToParent()
             });
             dvw.parentItem = self._item;
+            dvw.addOnFill(function (s, a) {
+                self.refreshCss();
+            });
             return dvw;
         };
         ExProps.prototype.loadChildren = function () {
@@ -155,7 +158,7 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
                 return true;
             });
             self._reloadCommand = new RIAPP.Command(function (s, a) {
-                self.loadRootFolder();
+                self.loadAll();
             }, self, function (s, a) {
                 return true;
             });
@@ -231,6 +234,12 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
             var promise = query.load();
             promise.then(function (res) {
             });
+            return promise;
+        };
+        FolderBrowser.prototype.loadAll = function () {
+            var self = this, query = self._dbSet.createReadAllQuery({ includeFiles: false, infoType: infoType });
+            query.isClearPrevData = true;
+            var promise = query.load();
             return promise;
         };
         FolderBrowser.prototype.destroy = function () {

@@ -1,6 +1,6 @@
 ﻿/// <reference path="../../jriapp/jriapp.d.ts" />
 /*
-	Generated from: /FolderBrowserService/code?lang=ts on 2016-09-21 at 14:42
+	Generated from: /FolderBrowserService/code?lang=ts on 2016-11-01 at 20:59
 	Don't make manual changes here, because they will be lost when this db interface will be regenerated!
 */
 
@@ -66,6 +66,14 @@ export class FileSystemObjectDb extends dbMOD.DbSet<FileSystemObject, DbContext>
     toString(): string {
         return 'FileSystemObjectDb';
     }
+    createReadAllQuery(args?: {
+        includeFiles: boolean;
+        infoType: string;
+    }): dbMOD.DataQuery<FileSystemObject> {
+        var query = this.createQuery('ReadAll');
+        query.params = args;
+        return query;
+    }
     createReadChildrenQuery(args?: {
         parentKey: string;
         level: number;
@@ -108,7 +116,7 @@ export class DbContext extends dbMOD.DbContext {
         this._dbSets = new DbSets(this);
         var associations = [{ "name": "ChildToParent", "parentDbSetName": "FileSystemObject", "childDbSetName": "FileSystemObject", "childToParentName": "Parent", "parentToChildrenName": "Children", "onDeleteAction": 1, "fieldRels": [{ "parentField": "Key", "childField": "ParentKey" }] }];
         this._initAssociations(associations);
-        var methods = [{ "methodName": "ReadChildren", "parameters": [{ "name": "parentKey", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 0 }, { "name": "level", "dataType": 3, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 1 }, { "name": "path", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 2 }, { "name": "includeFiles", "dataType": 2, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 3 }, { "name": "infoType", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 4 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadRoot", "parameters": [{ "name": "includeFiles", "dataType": 2, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 0 }, { "name": "infoType", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 1 }], "methodResult": true, "isQuery": true }];
+        var methods = [{ "methodName": "ReadAll", "parameters": [{ "name": "includeFiles", "dataType": 2, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 0 }, { "name": "infoType", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 1 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadChildren", "parameters": [{ "name": "parentKey", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 0 }, { "name": "level", "dataType": 3, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 1 }, { "name": "path", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 2 }, { "name": "includeFiles", "dataType": 2, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 3 }, { "name": "infoType", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 4 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadRoot", "parameters": [{ "name": "includeFiles", "dataType": 2, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 0 }, { "name": "infoType", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 1 }], "methodResult": true, "isQuery": true }];
         this._initMethods(methods);
     }
     get associations() { return <IAssocs>this._assoc; }
