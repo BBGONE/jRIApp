@@ -382,6 +382,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     destroy() {
         if (this._isDestroyed)
             return;
+        const self = this;
         this._isDestroyCalled = true;
         this._setIsEditing(false);
         let coll = this._collection;
@@ -403,8 +404,17 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         this._collection = null;
         if (!!this._valueBag) {
             utils.core.forEachProp(this._valueBag, (name) => {
-                this.setCustomVal(name, null);
+                let old = self._valueBag[name];
+
+                if (!!old && old.isOwnIt) {
+                    if (checks.isEditable(old.val) && old.val.isEditing)
+                        old.val.cancelEdit();
+
+                    if (checks.isBaseObject(old.val))
+                        old.val.destroy();
+                }
             });
+
             this._valueBag = null;
         }
         super.destroy(); 

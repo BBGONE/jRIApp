@@ -393,7 +393,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         if (oldStatus !== ITEM_STATUS.None) {
             internal.onCommitChanges(this.item, true, false, oldStatus);
             if (oldStatus === ITEM_STATUS.Deleted) {
-                dbSet.removeItem(this.item);
+                this.destroy();
                 return;
             }
             this._origVals = null;
@@ -444,7 +444,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         if (oldStatus !== ITEM_STATUS.None) {
             internal.onCommitChanges(self.item, true, true, oldStatus);
             if (oldStatus === ITEM_STATUS.Added) {
-                dbSet.removeItem(this.item);
+                this.destroy();
                 return;
             }
 
