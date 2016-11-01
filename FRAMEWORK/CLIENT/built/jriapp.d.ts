@@ -1609,9 +1609,9 @@ declare module "jriapp_content/basic" {
     }
 }
 declare module "jriapp_content/template" {
-    import { IContent, ITemplateEvents, IApplication, ITemplate, IConstructorContentOptions } from "jriapp_core/shared";
+    import { IContent, IApplication, ITemplate, IConstructorContentOptions } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
-    export class TemplateContent extends BaseObject implements IContent, ITemplateEvents {
+    export class TemplateContent extends BaseObject implements IContent {
         private _parentEl;
         private _template;
         private _templateInfo;
@@ -1622,9 +1622,6 @@ declare module "jriapp_content/template" {
         private _templateID;
         constructor(options: IConstructorContentOptions);
         handleError(error: any, source: any): boolean;
-        templateLoading(template: ITemplate): void;
-        templateLoaded(template: ITemplate, error?: any): void;
-        templateUnLoading(template: ITemplate): void;
         private getTemplateID();
         private createTemplate();
         protected render(): void;

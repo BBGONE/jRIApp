@@ -7,7 +7,7 @@ import { ICollectionItem } from "jriapp_collection/collection";
 import { DetailsRow } from "../rows/details";
 import { DataGrid } from "../datagrid"
 
-export class DetailsCell extends BaseObject implements ITemplateEvents {
+export class DetailsCell extends BaseObject {
     private _row: DetailsRow;
     private _td: HTMLTableCellElement;
     private _template: ITemplate;
@@ -24,25 +24,15 @@ export class DetailsCell extends BaseObject implements ITemplateEvents {
             return;
         this._td.colSpan = this.grid.columns.length;
         this._row.tr.appendChild(this._td);
-        this._template = this.grid.app.createTemplate(null, this);
+        this._template = this.grid.app.createTemplate(null, null);
         this._template.templateID = details_id;
         this._td.appendChild(this._template.el);
-    }
-    templateLoading(template: ITemplate): void {
-        //noop
-    }
-    templateLoaded(template: ITemplate, error?: any): void {
-        //noop
-    }
-    templateUnLoading(template: ITemplate): void {
-        //noop
     }
     destroy() {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
         if (!!this._template) {
-            this._td.removeChild(this._template.el);
             this._template.destroy();
             this._template = null;
         }

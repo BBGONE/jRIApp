@@ -188,9 +188,9 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         //noop
     }
     templateLoaded(template: ITemplate, error?: any): void {
-        if (this.getIsDestroyCalled()) {
+        if (this.getIsDestroyCalled() || !!error) {
             if (!!this._deferred)
-                this._deferred.reject();
+                this._deferred.reject(error);
             return;
         }
         if (!!this._fn_OnTemplateCreated) {
@@ -204,7 +204,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         }
     }
     protected _createTemplate(): ITemplate {
-        let template = this.app.createTemplate(null, this);
+        const template = this.app.createTemplate(null, this);
         template.templateID = this._templateID;
         return template;
     }

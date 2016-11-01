@@ -127,9 +127,9 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_core/lang", "jriapp_co
         DataEditDialog.prototype.templateLoading = function (template) {
         };
         DataEditDialog.prototype.templateLoaded = function (template, error) {
-            if (this.getIsDestroyCalled()) {
+            if (this.getIsDestroyCalled() || !!error) {
                 if (!!this._deferred)
-                    this._deferred.reject();
+                    this._deferred.reject(error);
                 return;
             }
             if (!!this._fn_OnTemplateCreated) {
@@ -2008,22 +2008,15 @@ define("jriapp_ui/datagrid/cells/details", ["require", "exports", "jriapp_core/o
                 return;
             this._td.colSpan = this.grid.columns.length;
             this._row.tr.appendChild(this._td);
-            this._template = this.grid.app.createTemplate(null, this);
+            this._template = this.grid.app.createTemplate(null, null);
             this._template.templateID = details_id;
             this._td.appendChild(this._template.el);
-        };
-        DetailsCell.prototype.templateLoading = function (template) {
-        };
-        DetailsCell.prototype.templateLoaded = function (template, error) {
-        };
-        DetailsCell.prototype.templateUnLoading = function (template) {
         };
         DetailsCell.prototype.destroy = function () {
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
             if (!!this._template) {
-                this._td.removeChild(this._template.el);
                 this._template.destroy();
                 this._template = null;
             }
@@ -4961,12 +4954,6 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_core/const", "jria
             var base_events = _super.prototype._getEventNames.call(this);
             return [PNL_EVENTS.item_clicked].concat(base_events);
         };
-        StackPanel.prototype.templateLoading = function (template) {
-        };
-        StackPanel.prototype.templateLoaded = function (template) {
-        };
-        StackPanel.prototype.templateUnLoading = function (template) {
-        };
         StackPanel.prototype.addOnItemClicked = function (fn, nmspace, context) {
             this._addHandler(PNL_EVENTS.item_clicked, fn, nmspace, context);
         };
@@ -5091,7 +5078,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_core/const", "jria
             }
         };
         StackPanel.prototype._createTemplate = function (item) {
-            var template = this.app.createTemplate(item, this);
+            var template = this.app.createTemplate(item, null);
             template.templateID = this.templateID;
             return template;
         };
@@ -5154,8 +5141,6 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_core/const", "jria
             delete self._itemMap[key];
             mappedItem.template.destroy();
             mappedItem.template = null;
-            $(mappedItem.el).removeData("data");
-            $(mappedItem.el).remove();
         };
         StackPanel.prototype._removeItem = function (item) {
             this._removeItemByKey(item._key);

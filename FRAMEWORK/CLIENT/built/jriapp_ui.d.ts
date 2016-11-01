@@ -508,12 +508,12 @@ declare module "jriapp_ui/datagrid/rows/details" {
     }
 }
 declare module "jriapp_ui/datagrid/cells/details" {
-    import { ITemplateEvents, ITemplate } from "jriapp_core/shared";
+    import { ITemplate } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
     import { ICollectionItem } from "jriapp_collection/collection";
     import { DetailsRow } from "jriapp_ui/datagrid/rows/details";
     import { DataGrid } from "jriapp_ui/datagrid/datagrid";
-    export class DetailsCell extends BaseObject implements ITemplateEvents {
+    export class DetailsCell extends BaseObject {
         private _row;
         private _td;
         private _template;
@@ -526,9 +526,6 @@ declare module "jriapp_ui/datagrid/cells/details" {
             td: HTMLTableCellElement;
             details_id: string;
         }): void;
-        templateLoading(template: ITemplate): void;
-        templateLoaded(template: ITemplate, error?: any): void;
-        templateUnLoading(template: ITemplate): void;
         destroy(): void;
         toString(): string;
         readonly td: HTMLTableCellElement;
@@ -1025,7 +1022,7 @@ declare module "jriapp_ui/listbox" {
     }
 }
 declare module "jriapp_ui/stackpanel" {
-    import { IApplication, ITemplate, ITemplateEvents, ISelectable, IViewOptions, TEventHandler, ISelectableProvider, IBaseObject } from "jriapp_core/shared";
+    import { IApplication, ITemplate, ISelectable, IViewOptions, TEventHandler, ISelectableProvider, IBaseObject } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
     import { ICollection, ICollectionItem, ICollChangedArgs, ITEM_STATUS } from "jriapp_collection/collection";
     import { BaseElView } from "jriapp_elview/elview";
@@ -1038,7 +1035,7 @@ declare module "jriapp_ui/stackpanel" {
         el: HTMLElement;
         dataSource: ICollection<ICollectionItem>;
     }
-    export class StackPanel extends BaseObject implements ISelectableProvider, ITemplateEvents {
+    export class StackPanel extends BaseObject implements ISelectableProvider {
         private _$el;
         private _objId;
         private _currentItem;
@@ -1050,9 +1047,6 @@ declare module "jriapp_ui/stackpanel" {
         private _isKeyNavigation;
         constructor(options: IStackPanelConstructorOptions);
         protected _getEventNames(): string[];
-        templateLoading(template: ITemplate): void;
-        templateLoaded(template: ITemplate): void;
-        templateUnLoading(template: ITemplate): void;
         addOnItemClicked(fn: TEventHandler<StackPanel, {
             item: ICollectionItem;
         }>, nmspace?: string, context?: IBaseObject): void;

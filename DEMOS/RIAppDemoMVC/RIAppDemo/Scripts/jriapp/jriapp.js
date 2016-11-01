@@ -5487,13 +5487,6 @@ define("jriapp_content/template", ["require", "exports", "jriapp_core/object", "
             }
             return isHandled;
         };
-        TemplateContent.prototype.templateLoading = function (template) {
-        };
-        TemplateContent.prototype.templateLoaded = function (template, error) {
-        };
-        TemplateContent.prototype.templateUnLoading = function (template) {
-            this._parentEl.removeChild(template.el);
-        };
         TemplateContent.prototype.getTemplateID = function () {
             if (!this._templateInfo) {
                 throw new Error(lang_10.ERRS.ERR_TEMPLATE_ID_INVALID);
@@ -5510,7 +5503,7 @@ define("jriapp_content/template", ["require", "exports", "jriapp_core/object", "
             return id;
         };
         TemplateContent.prototype.createTemplate = function () {
-            var template = this.app.createTemplate(this._dataContext, this);
+            var template = this.app.createTemplate(this._dataContext);
             template.templateID = this._templateID;
             return template;
         };
@@ -6988,7 +6981,7 @@ define("jriapp_elview/command", ["require", "exports", "jriapp_utils/coreutils",
 });
 define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jriapp_utils/coreutils", "jriapp_utils/dom", "jriapp_utils/async", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_elview/command"], function (require, exports, const_6, coreutils_19, dom_8, async_7, lang_16, object_15, bootstrap_12, command_1) {
     "use strict";
-    var defer = async_7.AsyncUtils, dom = dom_8.DomUtils, $ = dom.$, doc = dom.document;
+    var defer = async_7.AsyncUtils, dom = dom_8.DomUtils, $ = dom.$, doc = dom.document, coreUtils = coreutils_19.CoreUtils, checks = coreutils_19.Checks, strUtils = coreutils_19.StringUtils, arrHelper = coreutils_19.ArrayHelper, syschecks = coreutils_19.SysChecks;
     exports.css = {
         templateContainer: "ria-template-container",
         templateError: "ria-template-error"
@@ -7010,11 +7003,13 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
         __extends(Template, _super);
         function Template(options) {
             _super.call(this);
-            this._options = options;
+            this._dataContext = options.dataContext;
+            this._app = options.app;
+            this._templEvents = options.templEvents;
             this._loadedElem = null;
             this._lfTime = null;
             this._templateID = null;
-            this._templElView = coreutils_19.Checks.undefined;
+            this._templElView = null;
             this._el = doc.createElement("div");
             this._el.className = exports.css.templateContainer;
         }
@@ -7023,7 +7018,7 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
                 return [];
             var arr = this._lfTime.getObjs(), res = [];
             for (var i = 0, len = arr.length; i < len; i += 1) {
-                if (coreutils_19.SysChecks._isBinding(arr[i]))
+                if (syschecks._isBinding(arr[i]))
                     res.push(arr[i]);
             }
             return res;
@@ -7033,40 +7028,25 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
                 return [];
             var arr = this._lfTime.getObjs(), res = [];
             for (var i = 0, len = arr.length; i < len; i += 1) {
-                if (coreutils_19.SysChecks._isElView(arr[i]))
+                if (syschecks._isElView(arr[i]))
                     res.push(arr[i]);
             }
             return res;
         };
         Template.prototype._getTemplateElView = function () {
-            if (!this._lfTime || this._templElView === null)
+            if (!this._lfTime)
                 return null;
-            if (!!this._templElView)
-                return this._templElView;
-            var res = null, arr = this._getElViews();
+            var arr = this._getElViews();
             for (var i = 0, j = arr.length; i < j; i += 1) {
                 if (coreutils_19.SysChecks._isTemplateElView(arr[i])) {
-                    res = arr[i];
-                    break;
+                    return arr[i];
                 }
             }
-            this._templElView = res;
-            return res;
+            return null;
         };
-        Template.prototype._getTemplateEvents = function () {
-            var tel_vw = this._getTemplateElView(), ev = this._options.templEvents;
-            if (!!tel_vw && !!ev)
-                return [tel_vw, ev];
-            else if (!!tel_vw)
-                return [tel_vw];
-            else if (!!ev)
-                return [ev];
-            else
-                return [];
-        };
-        Template.prototype._loadTemplateElAsync = function (name) {
+        Template.prototype._loadAsync = function (name) {
             var self = this, fn_loader = this.app.getTemplateLoader(name), promise;
-            if (coreutils_19.Checks.isFunc(fn_loader) && coreutils_19.Checks.isThenable(promise = fn_loader())) {
+            if (checks.isFunc(fn_loader) && checks.isThenable(promise = fn_loader())) {
                 return promise.then(function (html) {
                     var tmpDiv = doc.createElement("div");
                     tmpDiv.innerHTML = html;
@@ -7076,12 +7056,12 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
                     if (!!err && !!err.message)
                         throw err;
                     else
-                        throw new Error(coreutils_19.StringUtils.format(lang_16.ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
+                        throw new Error(strUtils.format(lang_16.ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
                 });
             }
             else {
                 var deferred = defer.createDeferred();
-                return deferred.reject(new Error(coreutils_19.StringUtils.format(lang_16.ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID)));
+                return deferred.reject(new Error(strUtils.format(lang_16.ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID)));
             }
         };
         Template.prototype._loadTemplate = function () {
@@ -7090,7 +7070,7 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
                 if (!!self._loadedElem)
                     self._unloadTemplate();
                 if (!!id) {
-                    var loadPromise = self._loadTemplateElAsync(id), bindPromise = loadPromise.then(function (loadedEl) {
+                    var loadPromise = self._loadAsync(id), bindPromise = loadPromise.then(function (loadedEl) {
                         return self._dataBind(templateEl, loadedEl);
                     });
                     bindPromise.fail(function (err) {
@@ -7105,17 +7085,30 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
             }
         };
         Template.prototype._onLoading = function () {
-            var tevents = this._getTemplateEvents();
-            var len = tevents.length;
-            for (var i = 0; i < len; i += 1) {
-                tevents[i].templateLoading(this);
+            if (!!this._templEvents) {
+                this._templEvents.templateLoading(this);
             }
         };
         Template.prototype._onLoaded = function (error) {
-            var tevents = this._getTemplateEvents();
-            var len = tevents.length;
-            for (var i = 0; i < len; i += 1) {
-                tevents[i].templateLoaded(this, error);
+            this._templElView = this._getTemplateElView();
+            if (!!this._templEvents) {
+                this._templEvents.templateLoaded(this, error);
+            }
+            if (!!this._templElView) {
+                this._templElView.templateLoaded(this, error);
+            }
+        };
+        Template.prototype._unloadTemplate = function () {
+            try {
+                if (!!this._templEvents) {
+                    this._templEvents.templateUnLoading(this);
+                }
+                if (!!this._templElView) {
+                    this._templElView.templateUnLoading(this);
+                }
+            }
+            finally {
+                this._cleanUp();
             }
         };
         Template.prototype._dataBind = function (templateEl, loadedEl) {
@@ -7123,7 +7116,7 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
             if (self.getIsDestroyCalled())
                 coreutils_19.ERROR.abort();
             if (!loadedEl)
-                throw new Error(coreutils_19.StringUtils.format(lang_16.ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
+                throw new Error(strUtils.format(lang_16.ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
             if (!!self._loadedElem) {
                 self._unloadTemplate();
             }
@@ -7131,7 +7124,7 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
             self._loadedElem = loadedEl;
             self._onLoading();
             templateEl.appendChild(loadedEl);
-            var promise = self.app._getInternal().bindTemplateElements(loadedEl);
+            var promise = self._app._getInternal().bindTemplateElements(loadedEl);
             return promise.then(function (lftm) {
                 if (self.getIsDestroyCalled()) {
                     lftm.destroy();
@@ -7154,8 +7147,9 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
             dom.setClass([templateEl], exports.css.templateError, false);
             var ex;
             if (!!err) {
-                if (!!err.message)
+                if (!!err.message) {
                     ex = err;
+                }
                 else if (!!err.statusText) {
                     ex = new Error(err.statusText);
                 }
@@ -7164,7 +7158,7 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
                 }
             }
             if (!ex)
-                ex = new Error(coreutils_19.StringUtils.format(lang_16.ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
+                ex = new Error(strUtils.format(lang_16.ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
             self.handleError(ex, self);
         };
         Template.prototype._updateBindingSource = function () {
@@ -7175,19 +7169,6 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
                     binding.source = this.dataContext;
             }
         };
-        Template.prototype._unloadTemplate = function () {
-            var i, tevents = this._getTemplateEvents(), len = tevents.length;
-            try {
-                if (!!this._el) {
-                    for (i = 0; i < len; i += 1) {
-                        tevents[i].templateUnLoading(this);
-                    }
-                }
-            }
-            finally {
-                this._cleanUp();
-            }
-        };
         Template.prototype._cleanUp = function () {
             if (!!this._lfTime) {
                 this._lfTime.destroy();
@@ -7196,11 +7177,7 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
             this._templElView = null;
             if (!!this._loadedElem) {
                 $(this._loadedElem).remove();
-            }
-            this._loadedElem = null;
-            if (this._isDestroyCalled && !!this._el) {
-                $(this._el).remove();
-                this._el = null;
+                this._loadedElem = null;
             }
         };
         Template.prototype.handleError = function (error, source) {
@@ -7215,12 +7192,17 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
                 return;
             this._isDestroyCalled = true;
             this._unloadTemplate();
-            this._options = {};
+            if (!!this._el) {
+                $(this._el).remove();
+                this._el = null;
+            }
+            this._dataContext = null;
+            this._templEvents = null;
+            this._app = null;
             _super.prototype.destroy.call(this);
         };
         Template.prototype.findElByDataName = function (name) {
-            var $foundEl = $(this._el).find(["*[", const_6.DATA_ATTR.DATA_NAME, '="', name, '"]'].join(""));
-            return $foundEl.toArray();
+            return arrHelper.fromList(this._el.querySelectorAll(["*[", const_6.DATA_ATTR.DATA_NAME, '="', name, '"]'].join("")));
         };
         Template.prototype.findElViewsByDataName = function (name) {
             var self = this, els = this.findElByDataName(name), res = [], viewStore = self.app.elViewFactory.store;
@@ -7242,12 +7224,12 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
             configurable: true
         });
         Object.defineProperty(Template.prototype, "dataContext", {
-            get: function () { return this._options.dataContext; },
+            get: function () { return this._dataContext; },
             set: function (v) {
-                if (this.dataContext !== v) {
-                    this._options.dataContext = v;
-                    this.raisePropertyChanged(PROP_NAME.dataContext);
+                if (this._dataContext !== v) {
+                    this._dataContext = v;
                     this._updateBindingSource();
+                    this.raisePropertyChanged(PROP_NAME.dataContext);
                 }
             },
             enumerable: true,
@@ -7258,8 +7240,8 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
             set: function (v) {
                 if (this._templateID !== v) {
                     this._templateID = v;
-                    this.raisePropertyChanged(PROP_NAME.templateID);
                     this._loadTemplate();
+                    this.raisePropertyChanged(PROP_NAME.templateID);
                 }
             },
             enumerable: true,
@@ -7271,7 +7253,7 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
             configurable: true
         });
         Object.defineProperty(Template.prototype, "app", {
-            get: function () { return this._options.app; },
+            get: function () { return this._app; },
             enumerable: true,
             configurable: true
         });

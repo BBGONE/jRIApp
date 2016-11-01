@@ -58,7 +58,7 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
             this.el.appendChild(template.el);
         }
 
-        let isFirstShow = !this._prevTemplateID,
+        const isFirstShow = !this._prevTemplateID,
             canShow = !!this._animation && (this._animation.isAnimateFirstShow || (!this._animation.isAnimateFirstShow && !isFirstShow));
         if (canShow) {
             this._animation.show(template, isFirstShow);

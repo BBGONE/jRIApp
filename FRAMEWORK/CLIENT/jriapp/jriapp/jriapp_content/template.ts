@@ -9,7 +9,7 @@ import { css } from "./int";
 
 const coreUtils = utils.core, dom = utils.dom, $ = dom.$;
 
-export class TemplateContent extends BaseObject implements IContent, ITemplateEvents {
+export class TemplateContent extends BaseObject implements IContent {
     private _parentEl: HTMLElement;
     private _template: ITemplate;
     private _templateInfo: ITemplateInfo;
@@ -46,15 +46,6 @@ export class TemplateContent extends BaseObject implements IContent, ITemplateEv
         }
         return isHandled;
     }
-    templateLoading(template: ITemplate): void {
-        //noop
-    }
-    templateLoaded(template: ITemplate, error?: any): void {
-        //noop
-    }
-    templateUnLoading(template: ITemplate): void {
-        this._parentEl.removeChild(template.el);
-    }
     private getTemplateID() {
         if (!this._templateInfo) {
             throw new Error(ERRS.ERR_TEMPLATE_ID_INVALID);
@@ -73,7 +64,7 @@ export class TemplateContent extends BaseObject implements IContent, ITemplateEv
         return id;
     }
     private createTemplate(): ITemplate {
-        let template = this.app.createTemplate(this._dataContext, this);
+        let template = this.app.createTemplate(this._dataContext);
         template.templateID = this._templateID;
         return template;
     }

@@ -45,7 +45,7 @@ const PNL_EVENTS = {
     item_clicked: "item_clicked"
 };
 
-export class StackPanel extends BaseObject implements ISelectableProvider, ITemplateEvents {
+export class StackPanel extends BaseObject implements ISelectableProvider {
     private _$el: JQuery;
     private _objId: string;
     private _currentItem: ICollectionItem;
@@ -120,15 +120,6 @@ export class StackPanel extends BaseObject implements ISelectableProvider, ITemp
     protected _getEventNames() {
         let base_events = super._getEventNames();
         return [PNL_EVENTS.item_clicked].concat(base_events);
-    }
-    templateLoading(template: ITemplate): void {
-        //noop
-    }
-    templateLoaded(template: ITemplate): void {
-        //noop
-    }
-    templateUnLoading(template: ITemplate): void {
-        //noop
     }
     addOnItemClicked(fn: TEventHandler<StackPanel, { item: ICollectionItem; }>, nmspace?: string, context?: IBaseObject) {
         this._addHandler(PNL_EVENTS.item_clicked, fn, nmspace, context);
@@ -254,7 +245,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider, ITemp
         }
     }
     protected _createTemplate(item: ICollectionItem) {
-        let template = this.app.createTemplate(item, this);
+        let template = this.app.createTemplate(item, null);
         template.templateID = this.templateID;
         return template;
     }
@@ -311,14 +302,12 @@ export class StackPanel extends BaseObject implements ISelectableProvider, ITemp
         });
     }
     protected _removeItemByKey(key: string) {
-        let self = this, mappedItem = self._itemMap[key];
+        const self = this, mappedItem = self._itemMap[key];
         if (!mappedItem)
             return;
         delete self._itemMap[key];
         mappedItem.template.destroy();
         mappedItem.template = null;
-        $(mappedItem.el).removeData("data");
-        $(mappedItem.el).remove();
     }
     protected _removeItem(item: ICollectionItem) {
         this._removeItemByKey(item._key);
