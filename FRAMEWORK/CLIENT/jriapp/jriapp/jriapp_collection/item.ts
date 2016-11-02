@@ -14,7 +14,6 @@ export class CollectionItem<TAspect extends ItemAspect<ICollectionItem>> extends
     protected _fakeDestroy() {
         this.raiseEvent(ITEM_EVENTS.destroyed, {});
         this.removeNSHandlers();
-        this.__aspect.removeNSHandlers();
     }
     get _aspect() { return this.__aspect; }
     get _key(): string { return !!this.__aspect ? this.__aspect.key : null; }

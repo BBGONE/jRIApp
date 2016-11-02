@@ -10070,7 +10070,6 @@ define("jriapp_collection/item", ["require", "exports", "jriapp_core/object", "j
         CollectionItem.prototype._fakeDestroy = function () {
             this.raiseEvent(int_9.ITEM_EVENTS.destroyed, {});
             this.removeNSHandlers();
-            this.__aspect.removeNSHandlers();
         };
         Object.defineProperty(CollectionItem.prototype, "_aspect", {
             get: function () { return this.__aspect; },
