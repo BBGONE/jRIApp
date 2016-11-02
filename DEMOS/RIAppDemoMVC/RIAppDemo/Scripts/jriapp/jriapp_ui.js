@@ -5141,6 +5141,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_core/const", "jria
             delete self._itemMap[key];
             mappedItem.template.destroy();
             mappedItem.template = null;
+            $(mappedItem.el).remove();
         };
         StackPanel.prototype._removeItem = function (item) {
             this._removeItemByKey(item._key);

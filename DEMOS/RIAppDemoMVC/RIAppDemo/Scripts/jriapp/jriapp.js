@@ -9076,30 +9076,34 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
             this._items.forEach(callback, thisObj);
         };
         BaseCollection.prototype.removeItem = function (item) {
-            if (!item._key) {
-                throw new Error(lang_19.ERRS.ERR_ITEM_IS_DETACHED);
-            }
-            if (!this._itemsByKey[item._key])
+            if (item._aspect.isDetached || !this._itemsByKey[item._key]) {
                 return;
-            var oldPos = utils.arr.remove(this._items, item);
-            if (oldPos < 0) {
-                throw new Error(lang_19.ERRS.ERR_ITEM_IS_NOTFOUND);
             }
-            delete this._itemsByKey[item._key];
-            delete this._errors[item._key];
-            this._onRemoved(item, oldPos);
-            item._key = null;
-            item._aspect.removeNSHandlers(null);
-            var test = this.getItemByPos(oldPos), curPos = this._currentPos;
-            if (curPos === oldPos) {
-                if (!test) {
-                    this._currentPos = curPos - 1;
+            try {
+                var oldPos = utils.arr.remove(this._items, item), key = item._key;
+                if (oldPos < 0) {
+                    throw new Error(lang_19.ERRS.ERR_ITEM_IS_NOTFOUND);
                 }
-                this._onCurrentChanged();
+                this._onRemoved(item, oldPos);
+                delete this._itemsByKey[key];
+                delete this._errors[key];
+                item._aspect.isDetached = true;
+                var test = this.getItemByPos(oldPos), curPos = this._currentPos;
+                if (curPos === oldPos) {
+                    if (!test) {
+                        this._currentPos = curPos - 1;
+                    }
+                    this._onCurrentChanged();
+                }
+                if (curPos > oldPos) {
+                    this._currentPos = curPos - 1;
+                    this._onCurrentChanged();
+                }
             }
-            if (curPos > oldPos) {
-                this._currentPos = curPos - 1;
-                this._onCurrentChanged();
+            finally {
+                if (!item.getIsDestroyCalled()) {
+                    item.destroy();
+                }
             }
         };
         BaseCollection.prototype.getIsHasErrors = function () {
@@ -9313,7 +9317,8 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             return isHandled;
         };
         ItemAspect.prototype._beginEdit = function () {
-            var coll = this.collection, isHandled;
+            var coll = this.collection;
+            var isHandled = false;
             if (coll.isEditing) {
                 var item = coll._getInternal().getEditingItem();
                 if (item._aspect === this)
@@ -9331,7 +9336,7 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
                     coreutils_23.ERROR.reThrow(ex, isHandled);
                 }
             }
-            if (!this.key)
+            if (this.isDetached)
                 return false;
             this._setIsEditing(true);
             this._saveVals = coreUtils.clone(this._vals);
@@ -9360,8 +9365,7 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
         ItemAspect.prototype._cancelEdit = function () {
             if (!this.isEditing)
                 return false;
-            var coll = this.collection, isNew = this.isNew, self = this;
-            var changes = this._saveVals;
+            var coll = this.collection, self = this, changes = this._saveVals;
             this._vals = this._saveVals;
             this._saveVals = null;
             coll._getInternal().removeAllErrors(this.item);
@@ -9370,8 +9374,6 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
                     self.raisePropertyChanged(name);
             });
             this._setIsEditing(false);
-            if (isNew && this._notEdited)
-                this.destroy();
             return true;
         };
         ItemAspect.prototype._validate = function () {
@@ -9490,6 +9492,10 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
         };
         ItemAspect.prototype._resetIsNew = function () {
         };
+        ItemAspect.prototype._fakeDestroy = function () {
+            this.raiseEvent(int_7.ITEM_EVENTS.destroyed, {});
+            this.removeNSHandlers();
+        };
         ItemAspect.prototype._onAttaching = function () {
         };
         ItemAspect.prototype._onAttach = function () {
@@ -9521,12 +9527,13 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
         ItemAspect.prototype.rejectChanges = function () {
         };
         ItemAspect.prototype.beginEdit = function () {
-            var coll = this.collection, internal = coll._getInternal();
-            if (!this.isEditing)
-                internal.onBeforeEditing(this.item, true, false);
+            if (this.isEditing)
+                return false;
+            var coll = this.collection, internal = coll._getInternal(), item = this.item;
+            internal.onBeforeEditing(item, true, false);
             if (!this._beginEdit())
                 return false;
-            internal.onEditing(this.item, true, false);
+            internal.onEditing(item, true, false);
             if (!!this._valueBag && this.isEditing) {
                 coreUtils.iterateIndexer(this._valueBag, function (name, obj) {
                     if (!!obj && checks.isEditable(obj.val))
@@ -9536,36 +9543,38 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             return true;
         };
         ItemAspect.prototype.endEdit = function () {
-            var coll = this.collection, internal = coll._getInternal();
-            if (this.isEditing) {
-                internal.onBeforeEditing(this.item, false, false);
-                if (!!this._valueBag) {
-                    coreUtils.iterateIndexer(this._valueBag, function (name, obj) {
-                        if (!!obj && checks.isEditable(obj.val))
-                            obj.val.endEdit();
-                    });
-                }
+            if (!this.isEditing)
+                return false;
+            var coll = this.collection, internal = coll._getInternal(), item = this.item;
+            internal.onBeforeEditing(item, false, false);
+            if (!!this._valueBag) {
+                coreUtils.iterateIndexer(this._valueBag, function (name, obj) {
+                    if (!!obj && checks.isEditable(obj.val))
+                        obj.val.endEdit();
+                });
             }
             if (!this._endEdit())
                 return false;
-            internal.onEditing(this.item, false, false);
+            internal.onEditing(item, false, false);
             this._notEdited = false;
             return true;
         };
         ItemAspect.prototype.cancelEdit = function () {
-            var coll = this.collection, internal = coll._getInternal();
-            if (this.isEditing) {
-                internal.onBeforeEditing(this.item, false, true);
-                if (!!this._valueBag) {
-                    coreUtils.iterateIndexer(this._valueBag, function (name, obj) {
-                        if (!!obj && checks.isEditable(obj.val))
-                            obj.val.cancelEdit();
-                    });
-                }
+            if (!this.isEditing)
+                return false;
+            var coll = this.collection, internal = coll._getInternal(), item = this.item, isNew = this.isNew;
+            internal.onBeforeEditing(item, false, true);
+            if (!!this._valueBag) {
+                coreUtils.iterateIndexer(this._valueBag, function (name, obj) {
+                    if (!!obj && checks.isEditable(obj.val))
+                        obj.val.cancelEdit();
+                });
             }
             if (!this._cancelEdit())
                 return false;
-            internal.onEditing(this.item, false, true);
+            internal.onEditing(item, false, true);
+            if (isNew && this._notEdited && !this.getIsDestroyCalled())
+                this.destroy();
             return true;
         };
         ItemAspect.prototype.deleteItem = function () {
@@ -9627,17 +9636,22 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
                 return;
             var self = this;
             this._isDestroyCalled = true;
-            this._setIsEditing(false);
             var coll = this._collection;
             var item = this._item;
+            this.cancelEdit();
+            if (this._isCached) {
+                try {
+                    this._fakeDestroy();
+                }
+                finally {
+                    this._isDestroyCalled = false;
+                }
+                return;
+            }
             if (!!item) {
-                if (!!item._aspect && !item._aspect.isDetached && !!item._key) {
+                if (!item._aspect.isDetached) {
                     coll.removeItem(item);
                 }
-                if (!item.getIsDestroyCalled()) {
-                    item.destroy();
-                }
-                this._item = null;
             }
             this._key = null;
             this._saveVals = null;
@@ -10056,6 +10070,7 @@ define("jriapp_collection/item", ["require", "exports", "jriapp_core/object", "j
         CollectionItem.prototype._fakeDestroy = function () {
             this.raiseEvent(int_9.ITEM_EVENTS.destroyed, {});
             this.removeNSHandlers();
+            this.__aspect.removeNSHandlers();
         };
         Object.defineProperty(CollectionItem.prototype, "_aspect", {
             get: function () { return this.__aspect; },
@@ -10073,19 +10088,23 @@ define("jriapp_collection/item", ["require", "exports", "jriapp_core/object", "j
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
-            if (!!this.__aspect && this.__aspect.isCached) {
-                try {
-                    if (!this.__aspect.getIsDestroyCalled()) {
-                        this.__aspect.destroy();
+            var aspect = this.__aspect;
+            if (!!aspect) {
+                if (!aspect.getIsDestroyCalled()) {
+                    aspect.destroy();
+                }
+                if (aspect.isCached) {
+                    try {
+                        this._fakeDestroy();
                     }
-                    this._fakeDestroy();
+                    finally {
+                        this._isDestroyCalled = false;
+                    }
                 }
-                finally {
-                    this._isDestroyCalled = false;
+                else {
+                    _super.prototype.destroy.call(this);
                 }
-                return;
             }
-            _super.prototype.destroy.call(this);
         };
         CollectionItem.prototype.toString = function () {
             return "CollectionItem";
@@ -10855,6 +10874,6 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.COLL_CHANGE_REASON = collection_1.COLL_CHANGE_REASON;
     exports.COLL_CHANGE_TYPE = collection_1.COLL_CHANGE_TYPE;
     exports.Application = app_1.Application;
-    exports.VERSION = "0.9.84";
+    exports.VERSION = "0.9.85";
     bootstrap_25.Bootstrap._initFramework();
 });

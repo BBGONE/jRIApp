@@ -657,7 +657,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this.raiseEvent(GRID_EVENTS.page_changed, {});
     }
     protected _onItemEdit(item: ICollectionItem, isBegin: boolean, isCanceled: boolean) {
-        let row = this._rowMap[item._key];
+        const row = this._rowMap[item._key];
         if (!row)
             return;
         if (isBegin) {

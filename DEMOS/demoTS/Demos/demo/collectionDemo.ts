@@ -92,6 +92,15 @@ export class RadioDemo2VM extends RadioDemoVM {
         }
     }
     clearList() {
+        /*
+        let t: any = null;
+        t = setInterval(() => {
+            if (this._historyList.currentItem)
+                this._historyList.removeItem(this._historyList.currentItem);
+            else
+                clearTimeout(t);
+        }, 1000);
+        */
         this._historyList.clear();
     }
     get historyList() { return this._historyList; }

@@ -68,7 +68,8 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         return isHandled;
     }
     protected _beginEdit(): boolean {
-        let coll = this.collection, isHandled: boolean;
+        const coll = this.collection;
+        let isHandled: boolean = false;
         if (coll.isEditing) {
             let item = coll._getInternal().getEditingItem();
             if (item._aspect === this)
@@ -85,7 +86,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
                 ERROR.reThrow(ex, isHandled);
             }
         }
-        if (!this.key) //detached item
+        if (this.isDetached)
             return false;
         this._setIsEditing(true);
         this._saveVals = coreUtils.clone(this._vals);
@@ -95,7 +96,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     protected _endEdit(): boolean {
         if (!this.isEditing)
             return false;
-        let coll = this.collection, self = this, internal = coll._getInternal();
+        const coll = this.collection, self = this, internal = coll._getInternal();
         if (this.getIsHasErrors()) {
             return false;
         }
@@ -115,8 +116,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     protected _cancelEdit(): boolean {
         if (!this.isEditing)
             return false;
-        let coll = this.collection, isNew = this.isNew, self = this;
-        let changes = this._saveVals;
+        const coll = this.collection, self = this, changes = this._saveVals;
         this._vals = this._saveVals;
         this._saveVals = null;
         coll._getInternal().removeAllErrors(this.item);
@@ -126,8 +126,6 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
                 self.raisePropertyChanged(name);
         });
         this._setIsEditing(false);
-        if (isNew && this._notEdited)
-            this.destroy();
         return true;
     }
     protected _validate(): IValidationInfo {
@@ -254,6 +252,10 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         //can reset isNew on all items in the collection
         //the list descendant does it
     }
+    protected _fakeDestroy() {
+        this.raiseEvent(ITEM_EVENTS.destroyed, {});
+        this.removeNSHandlers();
+    }
     _onAttaching(): void {
     }
     _onAttach(): void {
@@ -285,12 +287,13 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     rejectChanges(): void {
     }
     beginEdit(): boolean {
-        let coll = this.collection, internal = coll._getInternal();
-        if (!this.isEditing)
-            internal.onBeforeEditing(this.item, true, false);
+        if (this.isEditing)
+            return false;
+        const coll = this.collection, internal = coll._getInternal(), item = this.item;
+        internal.onBeforeEditing(item, true, false);
         if (!this._beginEdit())
             return false;
-        internal.onEditing(this.item, true, false);
+        internal.onEditing(item, true, false);
         if (!!this._valueBag && this.isEditing) {
             coreUtils.iterateIndexer(this._valueBag, (name, obj) => {
                 if (!!obj && checks.isEditable(obj.val))
@@ -300,36 +303,38 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         return true;
     }
     endEdit(): boolean {
-        let coll = this.collection, internal = coll._getInternal();
-        if (this.isEditing) {
-            internal.onBeforeEditing(this.item, false, false);
-            if (!!this._valueBag) {
-                coreUtils.iterateIndexer(this._valueBag, (name, obj) => {
-                    if (!!obj && checks.isEditable(obj.val))
-                        obj.val.endEdit();
-                });
-            }
+        if (!this.isEditing)
+            return false;
+        const coll = this.collection, internal = coll._getInternal(), item = this.item;
+        internal.onBeforeEditing(item, false, false);
+        if (!!this._valueBag) {
+            coreUtils.iterateIndexer(this._valueBag, (name, obj) => {
+                if (!!obj && checks.isEditable(obj.val))
+                    obj.val.endEdit();
+            });
         }
         if (!this._endEdit())
             return false;
-        internal.onEditing(this.item, false, false);
+        internal.onEditing(item, false, false);
         this._notEdited = false;
         return true;
     }
     cancelEdit(): boolean {
-        let coll = this.collection, internal = coll._getInternal();
-        if (this.isEditing) {
-            internal.onBeforeEditing(this.item, false, true);
-            if (!!this._valueBag) {
-                coreUtils.iterateIndexer(this._valueBag, (name, obj) => {
-                    if (!!obj && checks.isEditable(obj.val))
-                        obj.val.cancelEdit();
-                });
-            }
+        if (!this.isEditing)
+            return false;
+        const coll = this.collection, internal = coll._getInternal(), item = this.item, isNew = this.isNew;
+        internal.onBeforeEditing(item, false, true);
+        if (!!this._valueBag) {
+            coreUtils.iterateIndexer(this._valueBag, (name, obj) => {
+                if (!!obj && checks.isEditable(obj.val))
+                    obj.val.cancelEdit();
+            });
         }
         if (!this._cancelEdit())
             return false;
-        internal.onEditing(this.item, false, true);
+        internal.onEditing(item, false, true);
+        if (isNew && this._notEdited && !this.getIsDestroyCalled())
+            this.destroy();
         return true;
     }
     deleteItem(): boolean {
@@ -391,17 +396,23 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
             return;
         const self = this;
         this._isDestroyCalled = true;
-        this._setIsEditing(false);
         let coll = this._collection;
         let item = this._item;
+        this.cancelEdit();
+        if (this._isCached) {
+            try {
+                this._fakeDestroy();
+            }
+            finally {
+                this._isDestroyCalled = false;
+            }
+            return;
+        }
+
         if (!!item) {
-            if (!!item._aspect && !item._aspect.isDetached && !!item._key) {
+            if (!item._aspect.isDetached) {
                 coll.removeItem(item);
             }
-            if (!item.getIsDestroyCalled()) {
-                item.destroy();
-            }
-            this._item = null;
         }
         this._key = null;
         this._saveVals = null;

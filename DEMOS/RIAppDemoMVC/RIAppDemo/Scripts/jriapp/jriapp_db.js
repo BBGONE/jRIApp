@@ -3116,10 +3116,6 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
             });
             this._initRowInfo(row, names);
         }
-        EntityAspect.prototype._fakeDestroy = function () {
-            this.raiseEvent(ENTITYASPECT_EVENTS.destroyed, {});
-            this.removeNSHandlers();
-        };
         EntityAspect.prototype._initRowInfo = function (row, names) {
             if (!row)
                 return;
@@ -3247,7 +3243,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
                 self._onFieldChanged(v.fieldName, fld);
             });
             this._setIsEditing(false);
-            if (isNew && this._notEdited) {
+            if (isNew && this._notEdited && !this.getIsDestroyCalled()) {
                 dbSet.removeItem(this.item);
             }
             return true;
@@ -3357,14 +3353,9 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
             return res;
         };
         EntityAspect.prototype._getCalcFieldVal = function (fieldName) {
-            if (this._isDestroyCalled)
-                return null;
             return this.dbSet._getInternal().getCalcFieldVal(fieldName, this.item);
         };
         EntityAspect.prototype._getNavFieldVal = function (fieldName) {
-            if (this._isDestroyCalled) {
-                return null;
-            }
             return this.dbSet._getInternal().getNavFieldVal(fieldName, this.item);
         };
         EntityAspect.prototype._setNavFieldVal = function (fieldName, value) {
@@ -3473,12 +3464,14 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
             this._acceptChanges(null);
         };
         EntityAspect.prototype.rejectChanges = function () {
+            if (this.getIsDestroyed())
+                return;
             var self = this, oldStatus = self.status, dbSet = self.dbSet, internal = dbSet._getInternal();
             if (!self.key)
                 return;
             if (oldStatus !== 0) {
                 internal.onCommitChanges(self.item, true, true, oldStatus);
-                if (oldStatus === 1) {
+                if (oldStatus === 1 && !this.getIsDestroyCalled()) {
                     this.destroy();
                     return;
                 }
@@ -3521,31 +3514,18 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
             var dbxt = this.dbSet.dbContext;
             return dbxt._getInternal().refreshItem(this.item);
         };
-        EntityAspect.prototype.toString = function () {
-            return this.dbSetName + "EntityAspect";
-        };
         EntityAspect.prototype.destroy = function () {
             if (this._isDestroyed)
                 return;
+            var self = this;
             this._isDestroyCalled = true;
-            var item = this.item;
-            if (!!item && this.isCached) {
-                try {
-                    if (!item.getIsDestroyCalled())
-                        item.destroy();
-                    this._fakeDestroy();
-                }
-                finally {
-                    this._isDestroyCalled = false;
-                }
-                return;
-            }
-            this.dbSet._getInternal().removeFromChanged(this.key);
-            this._srvKey = null;
-            this._origVals = null;
-            this._savedStatus = null;
-            this._isRefreshing = false;
+            this.cancelEdit();
+            if (!this.isCached)
+                this.rejectChanges();
             _super.prototype.destroy.call(this);
+        };
+        EntityAspect.prototype.toString = function () {
+            return this.dbSetName + "EntityAspect";
         };
         Object.defineProperty(EntityAspect.prototype, "entityType", {
             get: function () { return this.dbSet.entityType; },
@@ -3818,7 +3798,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_core/lang", "jriapp_
             var self = this, ds = this._dataSource;
             if (!ds)
                 return;
-            ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self, true);
+            ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self);
             ds.addOnBeginEdit(function (sender, args) {
                 if (!!self._itemsByKey[args.item._key]) {
                     self._onEditing(args.item, true, false);

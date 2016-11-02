@@ -69,10 +69,6 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
 
         this._initRowInfo(row, names);
     }
-    protected _fakeDestroy() {
-        this.raiseEvent(ENTITYASPECT_EVENTS.destroyed, {});
-        this.removeNSHandlers();
-    }
     protected _initRowInfo(row: IRowData, names: IFieldName[]) {
         if (!row)
             return;
@@ -210,7 +206,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
             self._onFieldChanged(v.fieldName, fld);
         });
         this._setIsEditing(false);
-        if (isNew && this._notEdited) {
+        if (isNew && this._notEdited && !this.getIsDestroyCalled()) {
             dbSet.removeItem(this.item);
         }
         return true;
@@ -220,7 +216,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
     }
     protected setStatus(v: ITEM_STATUS) {
         if (this._status !== v) {
-            let oldStatus = this._status;
+            const oldStatus = this._status;
             this._status = v;
             if (v !== ITEM_STATUS.None)
                 this.dbSet._getInternal().addToChanged(this.item);
@@ -322,14 +318,9 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         return res;
     }
     _getCalcFieldVal(fieldName: string) {
-        if (this._isDestroyCalled)
-            return null;
         return this.dbSet._getInternal().getCalcFieldVal(fieldName, this.item);
     }
     _getNavFieldVal(fieldName: string) {
-        if (this._isDestroyCalled) {
-            return null;
-        }
         return this.dbSet._getInternal().getNavFieldVal(fieldName, this.item);
     }
     _setNavFieldVal(fieldName: string, value: any) {
@@ -438,12 +429,14 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         this._acceptChanges(null);
     }
     rejectChanges(): void {
-        let self = this, oldStatus = self.status, dbSet = self.dbSet, internal = dbSet._getInternal();
+        if (this.getIsDestroyed())
+            return;
+        const self = this, oldStatus = self.status, dbSet = self.dbSet, internal = dbSet._getInternal();
         if (!self.key)
             return;
         if (oldStatus !== ITEM_STATUS.None) {
             internal.onCommitChanges(self.item, true, true, oldStatus);
-            if (oldStatus === ITEM_STATUS.Added) {
+            if (oldStatus === ITEM_STATUS.Added && !this.getIsDestroyCalled()) {
                 this.destroy();
                 return;
             }
@@ -489,31 +482,18 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         let dbxt = this.dbSet.dbContext;
         return dbxt._getInternal().refreshItem(this.item);
     }
-    toString() {
-        return this.dbSetName + "EntityAspect";
-    }
     destroy() {
         if (this._isDestroyed)
             return;
+        const self = this;
         this._isDestroyCalled = true;
-        let item = this.item;
-        if (!!item && this.isCached) {
-            try {
-                if (!item.getIsDestroyCalled())
-                    item.destroy();
-                this._fakeDestroy();
-            }
-            finally {
-                this._isDestroyCalled = false;
-            }
-            return;
-        }
-        this.dbSet._getInternal().removeFromChanged(this.key);
-        this._srvKey = null;
-        this._origVals = null;
-        this._savedStatus = null;
-        this._isRefreshing = false;
+        this.cancelEdit();
+        if (!this.isCached)
+            this.rejectChanges();
         super.destroy();
+    }
+    toString() {
+        return this.dbSetName + "EntityAspect";
     }
     get entityType() { return this.dbSet.entityType; }
     get isCanSubmit(): boolean { return true; }

@@ -260,7 +260,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         let self = this, ds = this._dataSource;
         if (!ds)
             return;
-        ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self, true);
+        ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self);
         ds.addOnBeginEdit(function (sender, args) {
             if (!!self._itemsByKey[args.item._key]) {
                 self._onEditing(args.item, true, false);

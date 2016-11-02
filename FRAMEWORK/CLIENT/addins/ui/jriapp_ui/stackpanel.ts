@@ -308,6 +308,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         delete self._itemMap[key];
         mappedItem.template.destroy();
         mappedItem.template = null;
+        $(mappedItem.el).remove();
     }
     protected _removeItem(item: ICollectionItem) {
         this._removeItemByKey(item._key);

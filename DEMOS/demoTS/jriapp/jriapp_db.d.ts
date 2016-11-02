@@ -537,7 +537,6 @@ declare module "jriapp_db/entity_aspect" {
         private _origVals;
         private _savedStatus;
         constructor(dbSet: DbSet<TItem, TDbContext>, row: IRowData, names: IFieldName[]);
-        protected _fakeDestroy(): void;
         protected _initRowInfo(row: IRowData, names: IFieldName[]): void;
         protected _processValues(path: string, values: any[], names: IFieldName[]): void;
         protected _onFieldChanged(fieldName: string, fieldInfo: IFieldInfo): void;
@@ -571,8 +570,8 @@ declare module "jriapp_db/entity_aspect" {
         rejectChanges(): void;
         submitChanges(): IVoidPromise;
         refresh(): IPromise<TItem>;
-        toString(): string;
         destroy(): void;
+        toString(): string;
         readonly entityType: IEntityConstructor<TItem>;
         readonly isCanSubmit: boolean;
         readonly isNew: boolean;

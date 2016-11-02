@@ -2527,6 +2527,7 @@ declare module "jriapp_collection/aspect" {
         protected _validateAll(): IValidationInfo[];
         protected _checkVal(fieldInfo: IFieldInfo, val: any): any;
         protected _resetIsNew(): void;
+        protected _fakeDestroy(): void;
         _onAttaching(): void;
         _onAttach(): void;
         raiseErrorsChanged(args: any): void;

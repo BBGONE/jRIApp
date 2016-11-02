@@ -773,33 +773,39 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         this._items.forEach(callback, thisObj);
     }
     removeItem(item: TItem) {
-        if (!item._key) {
-            throw new Error(ERRS.ERR_ITEM_IS_DETACHED);
-        }
-        if (!this._itemsByKey[item._key])
+        if (item._aspect.isDetached || !this._itemsByKey[item._key]) {
             return;
-        const oldPos = utils.arr.remove(this._items, item);
-        if (oldPos < 0) {
-            throw new Error(ERRS.ERR_ITEM_IS_NOTFOUND);
         }
-        delete this._itemsByKey[item._key];
-        delete this._errors[item._key];
-        this._onRemoved(item, oldPos);
-        item._key = null;
-        item._aspect.removeNSHandlers(null);
-        const test = this.getItemByPos(oldPos), curPos = this._currentPos;
-
-        //if detached item was current item
-        if (curPos === oldPos) {
-            if (!test) { //it was the last item
-                this._currentPos = curPos - 1;
+        try {
+            const oldPos = utils.arr.remove(this._items, item), key = item._key;
+            if (oldPos < 0) {
+                throw new Error(ERRS.ERR_ITEM_IS_NOTFOUND);
             }
-            this._onCurrentChanged();
-        }
+            this._onRemoved(item, oldPos);
+            delete this._itemsByKey[key];
+            delete this._errors[key];
+            item._aspect.isDetached = true;
 
-        if (curPos > oldPos) {
-            this._currentPos = curPos - 1;
-            this._onCurrentChanged();
+            const test = this.getItemByPos(oldPos), curPos = this._currentPos;
+
+            //if detached item was current item
+            if (curPos === oldPos) {
+                if (!test) { //it was the last item
+                    this._currentPos = curPos - 1;
+                }
+                this._onCurrentChanged();
+            }
+
+            if (curPos > oldPos) {
+                this._currentPos = curPos - 1;
+                this._onCurrentChanged();
+            }
+
+        }
+        finally {
+            if (!item.getIsDestroyCalled()) {
+                item.destroy();
+            }
         }
     }
     getIsHasErrors(): boolean {
