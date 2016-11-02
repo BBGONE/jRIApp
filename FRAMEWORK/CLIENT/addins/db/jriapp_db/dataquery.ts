@@ -3,7 +3,7 @@ import { FIELD_TYPE, FILTER_TYPE, SORT_ORDER } from "jriapp_core/const";
 import { IPromise, IFieldInfo } from "jriapp_core/shared";
 import * as langMOD from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
-import { Utils as utils } from "jriapp_utils/utils";
+import { Utils } from "jriapp_utils/utils";
 import { valueUtils } from "jriapp_collection/collection";
 import { PROP_NAME } from "const";
 import { IEntityItem, IQueryInfo, IFilterInfo, ISortInfo, IQueryResult, IEntityConstructor } from "int";
@@ -11,7 +11,7 @@ import { DataCache } from "datacache";
 import { DbSet } from "dbset";
 import { DbContext } from "dbcontext";
 
-const checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ArrayHelper = utils.arr;
+const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ArrayHelper = utils.arr;
 
 export interface IInternalQueryMethods<TItem extends IEntityItem> {
     clearCache(): void;

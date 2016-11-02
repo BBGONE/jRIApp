@@ -2,7 +2,7 @@
 import { FIELD_TYPE, DATE_CONVERSION, DATA_TYPE, SORT_ORDER } from "jriapp_core/const";
 import { IFieldInfo, IIndexer, IValidationInfo, IVoidPromise, IPromise } from "jriapp_core/shared";
 import { ERRS } from "jriapp_core/lang";
-import { Utils as utils, SysChecks } from "jriapp_utils/utils";
+import { Utils, SysChecks } from "jriapp_utils/utils";
 import { valueUtils, ItemAspect, ITEM_STATUS, fn_traverseFields, ValidationError, ICancellableArgs } from "jriapp_collection/collection";
 import { FLAGS, REFRESH_MODE, PROP_NAME } from "const";
 import { DbContext } from "dbcontext";
@@ -10,7 +10,7 @@ import { IEntityItem, IEntityConstructor, IRowData, IFieldName, IValueChange, IR
 import { DbSet } from "dbset";
 import { SubmitError } from "error";
 
-const checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
 
 const ENTITYASPECT_EVENTS = {
     destroyed: "destroyed"

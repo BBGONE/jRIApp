@@ -2546,6 +2546,7 @@ declare module "jriapp_collection/aspect" {
         getAllErrors(): IValidationInfo[];
         getIErrorNotification(): IErrorNotification;
         destroy(): void;
+        private _delCustomVal(old);
         toString(): string;
         item: TItem;
         readonly isCanSubmit: boolean;

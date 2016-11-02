@@ -3,7 +3,7 @@ import { FIELD_TYPE, DATA_TYPE } from "../jriapp_core/const";
 import { IIndexer, IValidationInfo, IFieldInfo, IVoidPromise, TEventHandler, IErrorNotification, IBaseObject } from "../jriapp_core/shared";
 import { BaseObject }  from "../jriapp_core/object";
 import { ERROR } from "../jriapp_utils/coreutils";
-import { Utils as utils } from "../jriapp_utils/utils";
+import { Utils } from "../jriapp_utils/utils";
 import { ERRS } from "../jriapp_core/lang";
 
 import { ICollectionItem, IItemAspect, ICancellableArgs, ITEM_STATUS, PROP_NAME, ITEM_EVENTS } from "int";
@@ -11,7 +11,14 @@ import { BaseCollection } from "base";
 import { fn_traverseFields } from "utils";
 import { ValidationError, Validations } from "validation";
 
-const coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
+const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
+
+interface ICustomVal
+{
+    val: any;
+    isOwnIt: boolean;
+}
+
 
 export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implements IItemAspect<TItem> {
     private _key: string;
@@ -24,7 +31,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     protected _notEdited: boolean;
     private _isCached: boolean;
     private _isDetached: boolean;
-    private _valueBag: IIndexer<{ val: any; isOwnIt: boolean; }>;
+    private _valueBag: IIndexer<ICustomVal>;
 
     protected _setIsEditing(v: boolean) {
         if (this._isEditing !== v) {
@@ -120,7 +127,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         });
         this._setIsEditing(false);
         if (isNew && this._notEdited)
-            coll.removeItem(this.item);
+            this.destroy();
         return true;
     }
     protected _validate(): IValidationInfo {
@@ -334,7 +341,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         if (args.isCancel) {
             return false;
         }
-        coll.removeItem(this.item);
+        this.destroy();
         return true;
     }
     getIsHasErrors() {
@@ -404,20 +411,21 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         this._collection = null;
         if (!!this._valueBag) {
             utils.core.forEachProp(this._valueBag, (name) => {
-                let old = self._valueBag[name];
-
-                if (!!old && old.isOwnIt) {
-                    if (checks.isEditable(old.val) && old.val.isEditing)
-                        old.val.cancelEdit();
-
-                    if (checks.isBaseObject(old.val))
-                        old.val.destroy();
-                }
+                self._delCustomVal(self._valueBag[name]);
             });
 
             this._valueBag = null;
         }
         super.destroy(); 
+    }
+    private _delCustomVal(old: ICustomVal) {
+        if (!!old) {
+            if (checks.isEditable(old.val) && old.val.isEditing)
+                old.val.cancelEdit();
+
+            if (old.isOwnIt && checks.isBaseObject(old.val))
+                old.val.destroy();
+        }
     }
     toString() {
         return "ItemAspect";
@@ -466,12 +474,8 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
 
         let old = this._valueBag[name];
 
-        if (!!old && old.isOwnIt && old.val !== val) {
-            if (checks.isEditable(old.val) && old.val.isEditing)
-                old.val.cancelEdit();
-
-            if (checks.isBaseObject(old.val))
-                old.val.destroy();
+        if (!!old && old.val !== val) {
+            this._delCustomVal(old);
         }
 
         if (checks.isNt(val))

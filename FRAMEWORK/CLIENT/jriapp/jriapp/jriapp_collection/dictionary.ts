@@ -1,12 +1,12 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { Utils as utils } from "../jriapp_utils/utils";
+import { Utils } from "../jriapp_utils/utils";
 import { ERRS } from "../jriapp_core/lang";
 
 import { COLL_CHANGE_TYPE, COLL_CHANGE_REASON, COLL_CHANGE_OPER } from "int";
 import { IPropInfo } from "int";
 import { BaseList, IListItem, IListItemConstructor } from "list";
 
-const strUtils = utils.str, checks = utils.check;
+const utils = Utils, strUtils = utils.str, checks = utils.check;
 
 export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TItem, TObj>{
     private _keyName: string;

@@ -95,9 +95,9 @@ export class ExProps extends RIAPP.BaseObject {
         var self = this;
         var dvw = new dbMOD.ChildDataView<FOLDERBROWSER_SVC.FileSystemObject>(
             {
-                association: self._dbContext.associations.getChildToParent()
+                association: self._dbContext.associations.getChildToParent(),
+                parentItem: self._item
             });
-        dvw.parentItem = self._item;
         dvw.addOnFill((s, a) => {
                 self.refreshCss();
         });

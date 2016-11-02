@@ -66,9 +66,9 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
         ExProps.prototype.createChildView = function () {
             var self = this;
             var dvw = new dbMOD.ChildDataView({
-                association: self._dbContext.associations.getChildToParent()
+                association: self._dbContext.associations.getChildToParent(),
+                parentItem: self._item
             });
-            dvw.parentItem = self._item;
             dvw.addOnFill(function (s, a) {
                 self.refreshCss();
             });

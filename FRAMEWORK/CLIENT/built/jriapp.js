@@ -8054,7 +8054,7 @@ define("jriapp_collection/int", ["require", "exports"], function (require, expor
 });
 define("jriapp_collection/utils", ["require", "exports", "jriapp_utils/utils", "jriapp_core/lang"], function (require, exports, utils_25, lang_17) {
     "use strict";
-    var coreUtils = utils_25.Utils.core, strUtils = utils_25.Utils.str, checks = utils_25.Utils.check;
+    var utils = utils_25.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
     function pad(num) {
         if (num < 10) {
             return "0" + num;
@@ -8341,7 +8341,7 @@ define("jriapp_collection/validation", ["require", "exports", "jriapp_core/share
 });
 define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "jriapp_core/lang", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_core/parser", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/validation"], function (require, exports, object_16, lang_19, coreutils_22, utils_26, bootstrap_23, parser_5, int_6, utils_27, validation_1) {
     "use strict";
-    var coreUtils = utils_26.Utils.core, strUtils = utils_26.Utils.str, checks = utils_26.Utils.check, parse = parser_5.parser;
+    var utils = utils_26.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, parse = parser_5.parser;
     var COLL_EVENTS = {
         begin_edit: "begin_edit",
         end_edit: "end_edit",
@@ -8651,7 +8651,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
             }
             else {
                 pos = itemPos;
-                utils_26.Utils.arr.insert(this._items, item, pos);
+                utils.arr.insert(this._items, item, pos);
             }
             this._itemsByKey[item._key] = item;
             this._onCollectionChanged({ changeType: 1, reason: 0, oper: 2, items: [item], pos: [pos] });
@@ -9081,7 +9081,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
             }
             if (!this._itemsByKey[item._key])
                 return;
-            var oldPos = utils_26.Utils.arr.remove(this._items, item);
+            var oldPos = utils.arr.remove(this._items, item);
             if (oldPos < 0) {
                 throw new Error(lang_19.ERRS.ERR_ITEM_IS_NOTFOUND);
             }
@@ -9112,7 +9112,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
         };
         BaseCollection.prototype.sortLocal = function (fieldNames, sortOrder) {
             var sortFn = this._getSortFn(fieldNames, sortOrder);
-            var self = this, deferred = utils_26.Utils.defer.createDeferred();
+            var self = this, deferred = utils.defer.createDeferred();
             this.waitForNotLoading(function () {
                 var cur = self.currentItem;
                 self._setIsLoading(true);
@@ -9276,7 +9276,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
 });
 define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/validation"], function (require, exports, object_17, coreutils_23, utils_28, lang_20, int_7, utils_29, validation_2) {
     "use strict";
-    var coreUtils = utils_28.Utils.core, strUtils = utils_28.Utils.str, checks = utils_28.Utils.check;
+    var utils = utils_28.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
     var ItemAspect = (function (_super) {
         __extends(ItemAspect, _super);
         function ItemAspect(collection) {
@@ -9371,7 +9371,7 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             });
             this._setIsEditing(false);
             if (isNew && this._notEdited)
-                coll.removeItem(this.item);
+                this.destroy();
             return true;
         };
         ItemAspect.prototype._validate = function () {
@@ -9514,7 +9514,7 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             return res.join("|");
         };
         ItemAspect.prototype.submitChanges = function () {
-            var deferred = utils_28.Utils.defer.createDeferred();
+            var deferred = utils.defer.createDeferred();
             deferred.reject();
             return deferred.promise();
         };
@@ -9577,7 +9577,7 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             if (args.isCancel) {
                 return false;
             }
-            coll.removeItem(this.item);
+            this.destroy();
             return true;
         };
         ItemAspect.prototype.getIsHasErrors = function () {
@@ -9646,18 +9646,20 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             this._isDetached = true;
             this._collection = null;
             if (!!this._valueBag) {
-                utils_28.Utils.core.forEachProp(this._valueBag, function (name) {
-                    var old = self._valueBag[name];
-                    if (!!old && old.isOwnIt) {
-                        if (checks.isEditable(old.val) && old.val.isEditing)
-                            old.val.cancelEdit();
-                        if (checks.isBaseObject(old.val))
-                            old.val.destroy();
-                    }
+                utils.core.forEachProp(this._valueBag, function (name) {
+                    self._delCustomVal(self._valueBag[name]);
                 });
                 this._valueBag = null;
             }
             _super.prototype.destroy.call(this);
+        };
+        ItemAspect.prototype._delCustomVal = function (old) {
+            if (!!old) {
+                if (checks.isEditable(old.val) && old.val.isEditing)
+                    old.val.cancelEdit();
+                if (old.isOwnIt && checks.isBaseObject(old.val))
+                    old.val.destroy();
+            }
         };
         ItemAspect.prototype.toString = function () {
             return "ItemAspect";
@@ -9751,11 +9753,8 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
                 this._valueBag = {};
             }
             var old = this._valueBag[name];
-            if (!!old && old.isOwnIt && old.val !== val) {
-                if (checks.isEditable(old.val) && old.val.isEditing)
-                    old.val.cancelEdit();
-                if (checks.isBaseObject(old.val))
-                    old.val.destroy();
+            if (!!old && old.val !== val) {
+                this._delCustomVal(old);
             }
             if (checks.isNt(val)) {
                 delete this._valueBag[name];
@@ -9781,7 +9780,7 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
 });
 define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/base", "jriapp_collection/aspect", "jriapp_collection/validation"], function (require, exports, coreutils_24, utils_30, lang_21, int_8, utils_31, base_1, aspect_1, validation_3) {
     "use strict";
-    var coreUtils = utils_30.Utils.core, strUtils = utils_30.Utils.str, checks = utils_30.Utils.check;
+    var utils = utils_30.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
     function fn_initVals(coll, obj) {
         var vals = obj || {};
         if (!!obj) {
@@ -9984,7 +9983,7 @@ define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils"
 });
 define("jriapp_collection/dictionary", ["require", "exports", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_collection/list"], function (require, exports, utils_32, lang_22, list_1) {
     "use strict";
-    var strUtils = utils_32.Utils.str, checks = utils_32.Utils.check;
+    var utils = utils_32.Utils, strUtils = utils.str, checks = utils.check;
     var BaseDictionary = (function (_super) {
         __extends(BaseDictionary, _super);
         function BaseDictionary(itemType, keyName, props) {
@@ -10856,6 +10855,6 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.COLL_CHANGE_REASON = collection_1.COLL_CHANGE_REASON;
     exports.COLL_CHANGE_TYPE = collection_1.COLL_CHANGE_TYPE;
     exports.Application = app_1.Application;
-    exports.VERSION = "0.9.83";
+    exports.VERSION = "0.9.84";
     bootstrap_25.Bootstrap._initFramework();
 });

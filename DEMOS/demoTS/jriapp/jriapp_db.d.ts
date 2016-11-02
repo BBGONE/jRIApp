@@ -860,6 +860,7 @@ declare module "jriapp_db/child_dataview" {
         association: Association;
         fn_filter?: (item: TItem) => boolean;
         fn_sort?: (item1: TItem, item2: TItem) => number;
+        parentItem?: IEntityItem;
     }
     export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
         private _setParent;

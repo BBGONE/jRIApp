@@ -4,12 +4,12 @@ import { IPromise, IFieldInfo, TEventHandler } from "jriapp_core/shared";
 import { ERRS } from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
 import { parser } from "jriapp_core/parser";
-import { Utils as utils, AsyncUtils, Debounce, ERROR } from "jriapp_utils/utils";
+import { Utils, AsyncUtils, Debounce, ERROR } from "jriapp_utils/utils";
 import { ICollection, ICollectionItem, BaseCollection, COLL_CHANGE_REASON, COLL_CHANGE_OPER,
     ICollChangedArgs, COLL_CHANGE_TYPE, ICollItemStatusArgs, IErrors, IPermissions } from "jriapp_collection/collection";
 import { PROP_NAME } from "const";
 
-const _async = AsyncUtils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr;
+const utils = Utils, _async = AsyncUtils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr;
 
 const VIEW_EVENTS = {
     refreshed: "view_refreshed"

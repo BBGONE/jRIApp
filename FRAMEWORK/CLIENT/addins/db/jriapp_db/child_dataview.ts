@@ -1,19 +1,20 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import * as langMOD from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
-import { Utils as utils, Debounce, ERROR } from "jriapp_utils/utils";
+import { Utils, Debounce, ERROR } from "jriapp_utils/utils";
 import { COLL_CHANGE_REASON, ICollection } from "jriapp_collection/collection";
 import { PROP_NAME } from "const";
 import { IEntityItem } from "int";
 import { Association } from "association";
 import { DataView, IDataViewOptions } from "dataview";
 
-const checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
 
 export interface IChildDataViewOptions<TItem extends IEntityItem> {
     association: Association;
     fn_filter?: (item: TItem) => boolean;
     fn_sort?: (item1: TItem, item2: TItem) => number;
+    parentItem?: IEntityItem;
 }
 
 export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
@@ -23,7 +24,7 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
     protected _parentDebounce: Debounce;
 
     constructor(options: IChildDataViewOptions<TItem>) {
-        let parentItem: IEntityItem = null,
+        let parentItem: IEntityItem = !options.parentItem ? null : options.parentItem,
             assoc = options.association,
             opts = <IDataViewOptions<TItem>>coreUtils.extend({}, options),
             oldFilter = opts.fn_filter;
@@ -65,6 +66,12 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
         };
         this._parentDebounce = new Debounce(350);
         this._association = assoc;
+        if (!!parentItem) {
+            const queue = utils.defer.getTaskQueue();
+            queue.enque(() => {
+                self._refresh(COLL_CHANGE_REASON.None);
+            });
+        }
     }
     destroy() {
         if (this._isDestroyed)

@@ -52,7 +52,7 @@ define("jriapp_db/const", ["require", "exports"], function (require, exports) {
 });
 define("jriapp_db/dataquery", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/utils", "jriapp_collection/collection", "jriapp_db/const", "jriapp_db/datacache"], function (require, exports, langMOD, object_1, utils_1, collection_1, const_1, datacache_1) {
     "use strict";
-    var checks = utils_1.Utils.check, strUtils = utils_1.Utils.str, coreUtils = utils_1.Utils.core, ArrayHelper = utils_1.Utils.arr;
+    var utils = utils_1.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ArrayHelper = utils.arr;
     var DataQuery = (function (_super) {
         __extends(DataQuery, _super);
         function DataQuery(dbSet, queryInfo) {
@@ -342,7 +342,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_core/lang", "jriapp
 });
 define("jriapp_db/datacache", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/utils", "jriapp_db/const"], function (require, exports, langMOD, object_2, utils_2, const_2) {
     "use strict";
-    var checks = utils_2.Utils.check, strUtils = utils_2.Utils.str;
+    var utils = utils_2.Utils, checks = utils.check, strUtils = utils.str;
     var DataCache = (function (_super) {
         __extends(DataCache, _super);
         function DataCache(query) {
@@ -559,7 +559,7 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_core/lang", "jriapp
 });
 define("jriapp_db/dbset", ["require", "exports", "jriapp_core/lang", "jriapp_utils/utils", "jriapp_collection/collection", "jriapp_db/const", "jriapp_db/dataquery", "jriapp_db/entity_aspect"], function (require, exports, lang_1, utils_3, collection_2, const_3, dataquery_1, entity_aspect_1) {
     "use strict";
-    var checks = utils_3.Utils.check, strUtils = utils_3.Utils.str, coreUtils = utils_3.Utils.core;
+    var utils = utils_3.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
     var DBSET_EVENTS = {
         loaded: "loaded"
     };
@@ -1437,7 +1437,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_core/lang", "jriapp_uti
 });
 define("jriapp_db/dbsets", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/utils", "jriapp_db/const"], function (require, exports, langMOD, object_3, utils_4, const_4) {
     "use strict";
-    var strUtils = utils_4.Utils.str;
+    var utils = utils_4.Utils, strUtils = utils.str;
     var DbSets = (function (_super) {
         __extends(DbSets, _super);
         function DbSets(dbContext) {
@@ -1456,7 +1456,7 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_core/lang", "jriapp_co
         DbSets.prototype._createDbSet = function (name, dbSetType) {
             var self = this, dbContext = this._dbContext;
             if (!!self._dbSets[name])
-                throw new Error(utils_4.Utils.str.format("DbSet: {0} is already exists", name));
+                throw new Error(utils.str.format("DbSet: {0} is already exists", name));
             self._dbSets[name] = function () {
                 var t = new dbSetType(dbContext);
                 var f = function () {
@@ -3071,7 +3071,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
 });
 define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jriapp_utils/utils", "jriapp_collection/collection", "jriapp_db/const", "jriapp_db/error"], function (require, exports, lang_3, utils_8, collection_4, const_6, error_2) {
     "use strict";
-    var checks = utils_8.Utils.check, strUtils = utils_8.Utils.str, coreUtils = utils_8.Utils.core;
+    var utils = utils_8.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
     var ENTITYASPECT_EVENTS = {
         destroyed: "destroyed"
     };
@@ -3602,7 +3602,7 @@ define("jriapp_db/int", ["require", "exports"], function (require, exports) {
 });
 define("jriapp_db/dataview", ["require", "exports", "jriapp_core/lang", "jriapp_utils/utils", "jriapp_collection/collection", "jriapp_db/const"], function (require, exports, lang_4, utils_9, collection_5, const_7) {
     "use strict";
-    var _async = utils_9.AsyncUtils, checks = utils_9.Utils.check, strUtils = utils_9.Utils.str, coreUtils = utils_9.Utils.core, arrHelper = utils_9.Utils.arr;
+    var utils = utils_9.Utils, _async = utils_9.AsyncUtils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr;
     var VIEW_EVENTS = {
         refreshed: "view_refreshed"
     };
@@ -4038,11 +4038,11 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_core/lang", "jriapp_
 });
 define("jriapp_db/child_dataview", ["require", "exports", "jriapp_utils/utils", "jriapp_db/const", "jriapp_db/dataview"], function (require, exports, utils_10, const_8, dataview_1) {
     "use strict";
-    var checks = utils_10.Utils.check, strUtils = utils_10.Utils.str, coreUtils = utils_10.Utils.core;
+    var utils = utils_10.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
     var ChildDataView = (function (_super) {
         __extends(ChildDataView, _super);
         function ChildDataView(options) {
-            var parentItem = null, assoc = options.association, opts = coreUtils.extend({}, options), oldFilter = opts.fn_filter;
+            var parentItem = !options.parentItem ? null : options.parentItem, assoc = options.association, opts = coreUtils.extend({}, options), oldFilter = opts.fn_filter;
             opts.dataSource = assoc.childDS;
             opts.fn_itemsProvider = function (ds) {
                 if (!parentItem) {
@@ -4078,6 +4078,12 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_utils/utils", 
             };
             this._parentDebounce = new utils_10.Debounce(350);
             this._association = assoc;
+            if (!!parentItem) {
+                var queue = utils.defer.getTaskQueue();
+                queue.enque(function () {
+                    self._refresh(0);
+                });
+            }
         }
         ChildDataView.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -4115,7 +4121,7 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_utils/utils", 
 });
 define("jriapp_db/complexprop", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/utils"], function (require, exports, langMOD, object_6, utils_11) {
     "use strict";
-    var checks = utils_11.Utils.check, strUtils = utils_11.Utils.str;
+    var utils = utils_11.Utils, checks = utils.check, strUtils = utils.str;
     var BaseComplexProperty = (function (_super) {
         __extends(BaseComplexProperty, _super);
         function BaseComplexProperty(name) {

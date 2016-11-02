@@ -3,13 +3,13 @@ import { FIELD_TYPE, DATE_CONVERSION, DATA_TYPE, SORT_ORDER } from "jriapp_core/
 import { IIndexer, IFieldInfo, IValidationInfo, TEventHandler, IBaseObject, IPromise } from "jriapp_core/shared";
 import { ERRS } from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
-import { Utils as utils, Debounce, ERROR } from "jriapp_utils/utils";
+import { Utils, Debounce, ERROR } from "jriapp_utils/utils";
 import {
     valueUtils, COLL_CHANGE_REASON, ITEM_STATUS, IInternalCollMethods, BaseCollection,
     fn_traverseField, fn_traverseFields, fn_getPropertyByName, COLL_CHANGE_TYPE, COLL_CHANGE_OPER
 } from "jriapp_collection/collection";
 
-const checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
 
 import {
     IFieldName, IEntityItem, IEntityConstructor, IValueChange, IRowInfo, ITrackAssoc, IQueryResponse, IPermissions, IDbSetConstuctorOptions, IDbSetOptions,

@@ -2,7 +2,7 @@
 import { FIELD_TYPE } from "../jriapp_core/const";
 import { IValidationInfo, IIndexer } from "../jriapp_core/shared";
 import { ERROR } from "../jriapp_utils/coreutils";
-import { Utils as utils } from "../jriapp_utils/utils";
+import { Utils } from "../jriapp_utils/utils";
 import { ERRS } from "../jriapp_core/lang";
 
 import { ICollectionItem, IPropInfo, COLL_CHANGE_TYPE, COLL_CHANGE_REASON, COLL_CHANGE_OPER, PROP_NAME } from "int";
@@ -11,7 +11,7 @@ import { BaseCollection } from "base";
 import { ItemAspect } from "aspect";
 import { ValidationError } from "validation";
 
-const coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
+const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
 
 export interface IListItem extends ICollectionItem {
     readonly _aspect: ListItemAspect<IListItem, any>;

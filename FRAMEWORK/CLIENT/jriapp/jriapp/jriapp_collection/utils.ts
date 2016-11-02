@@ -1,12 +1,12 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { FIELD_TYPE, DATE_CONVERSION, DATA_TYPE } from "../jriapp_core/const";
 import { IFieldInfo } from "../jriapp_core/shared";
-import { Utils as utils } from "../jriapp_utils/utils";
+import { Utils } from "../jriapp_utils/utils";
 import { ERRS } from "../jriapp_core/lang";
 
 import { IValueUtils } from "int";
 
-const coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
+const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
 
 function pad(num: number): string {
     if (num < 10) {

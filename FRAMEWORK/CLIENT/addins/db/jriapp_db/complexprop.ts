@@ -2,12 +2,12 @@
 import { IErrorNotification, IFieldInfo, IValidationInfo, TEventHandler } from "jriapp_core/shared";
 import * as langMOD from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
-import { Utils as utils } from "jriapp_utils/utils";
+import { Utils } from "jriapp_utils/utils";
 import { IEntityItem } from "int";
 import { EntityAspect } from "entity_aspect";
 import { DbContext } from "dbcontext";
 
-const checks = utils.check, strUtils = utils.str;
+const utils = Utils, checks = utils.check, strUtils = utils.str;
 
 export class BaseComplexProperty extends BaseObject implements IErrorNotification {
     private _name: string;

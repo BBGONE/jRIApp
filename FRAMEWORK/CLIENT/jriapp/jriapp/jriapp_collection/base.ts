@@ -4,7 +4,7 @@ import { IFieldInfo, IIndexer, IValidationInfo, TEventHandler, TPropChangedHandl
 import { BaseObject }  from "../jriapp_core/object";
 import { ERRS } from "../jriapp_core/lang";
 import { ERROR } from "../jriapp_utils/coreutils";
-import { WaitQueue, Utils as utils } from "../jriapp_utils/utils";
+import { WaitQueue, Utils } from "../jriapp_utils/utils";
 import { bootstrap } from "../jriapp_core/bootstrap";
 import { parser } from "../jriapp_core/parser";
 
@@ -15,7 +15,7 @@ import { ICollectionItem, ICollection, ICollectionOptions, IPermissions, IIntern
 import { valueUtils, fn_getPropertyByName } from "utils";
 import { ValidationError } from "validation";
 
-const coreUtils = utils.core, strUtils = utils.str, checks = utils.check, parse = parser;
+const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, parse = parser;
 
 const COLL_EVENTS = {
     begin_edit: "begin_edit",
@@ -778,7 +778,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         }
         if (!this._itemsByKey[item._key])
             return;
-        let oldPos = utils.arr.remove(this._items, item);
+        const oldPos = utils.arr.remove(this._items, item);
         if (oldPos < 0) {
             throw new Error(ERRS.ERR_ITEM_IS_NOTFOUND);
         }
@@ -787,7 +787,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         this._onRemoved(item, oldPos);
         item._key = null;
         item._aspect.removeNSHandlers(null);
-        let test = this.getItemByPos(oldPos), curPos = this._currentPos;
+        const test = this.getItemByPos(oldPos), curPos = this._currentPos;
 
         //if detached item was current item
         if (curPos === oldPos) {
