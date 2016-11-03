@@ -5,12 +5,12 @@ import {
 } from "jriapp_core/shared";
 import * as langMOD from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
-import { Utils as utils, ERROR } from "jriapp_utils/utils";
+import { Utils, ERROR } from "jriapp_utils/utils";
 import { bootstrap } from "jriapp_core/bootstrap";
 import { ViewModel } from "jriapp_core/mvvm";
 
-const checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
-const $ = utils.dom.$, document = utils.dom.document;
+const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+const $ = utils.dom.$, doc = utils.dom.document;
 
 export const enum DIALOG_ACTION { Default = 0, StayOpen = 1 };
 
@@ -78,7 +78,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     private _isEditable: IEditable;
     private _template: ITemplate;
     private _$dlgEl: JQuery;
-    private _result: string;
+    private _result: "ok" | "cancel";
     private _options: IDialogOptions;
     private _fn_submitOnOK: () => IVoidPromise;
     private _app: IApplication;
@@ -173,7 +173,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         try {
             this._template = this._createTemplate();
             this._$dlgEl = $(this._template.el);
-            document.body.appendChild(this._template.el);
+            doc.body.appendChild(this._template.el);
             (<any>this._$dlgEl).dialog(this._options);
         }
         catch (ex) {
@@ -344,11 +344,6 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             if (this._result !== "ok" && !!this._dataContext) {
                 if (!!this._isEditable) {
                     this._isEditable.cancelEdit();
-                }
-                if (this._submitOnOK) {
-                    let subm = utils.getSubmittable(this._dataContext);
-                    if (!!subm)
-                        subm.rejectChanges();
                 }
             }
             if (!!this._fn_OnClose)

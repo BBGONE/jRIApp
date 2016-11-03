@@ -237,7 +237,6 @@ declare module "jriapp_core/shared" {
     }
     export interface ISubmittable {
         submitChanges(): IVoidPromise;
-        rejectChanges(): void;
         readonly isCanSubmit: boolean;
     }
     export interface IValidationInfo {
@@ -2140,6 +2139,8 @@ declare module "jriapp_collection/int" {
         deleteItem(): boolean;
         _onAttaching(): void;
         _onAttach(): void;
+        _setIsDetached(v: boolean): void;
+        _setIsCached(v: boolean): void;
         raiseErrorsChanged(args: any): void;
         readonly isCanSubmit: boolean;
         readonly status: ITEM_STATUS;
@@ -2149,8 +2150,8 @@ declare module "jriapp_collection/int" {
         readonly isUpdating: boolean;
         readonly isHasChanges: boolean;
         readonly isEditing: boolean;
-        isCached: boolean;
-        isDetached: boolean;
+        readonly isDetached: boolean;
+        readonly isCached: boolean;
         key: string;
         item: TItem;
     }
@@ -2514,6 +2515,8 @@ declare module "jriapp_collection/aspect" {
         private _isDetached;
         private _valueBag;
         protected _setIsEditing(v: boolean): void;
+        _setIsDetached(v: boolean): void;
+        _setIsCached(v: boolean): void;
         constructor(collection: BaseCollection<TItem>);
         protected _getEventNames(): string[];
         protected _onErrorsChanged(args: any): void;
@@ -2559,8 +2562,8 @@ declare module "jriapp_collection/aspect" {
         readonly isUpdating: boolean;
         readonly isEditing: boolean;
         readonly isHasChanges: boolean;
-        isCached: boolean;
-        isDetached: boolean;
+        readonly isCached: boolean;
+        readonly isDetached: boolean;
         setCustomVal(name: string, val: any, isOwnVal?: boolean): void;
         getCustomVal(name: string): any;
     }

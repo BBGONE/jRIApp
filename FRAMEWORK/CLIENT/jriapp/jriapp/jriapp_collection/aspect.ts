@@ -39,7 +39,12 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
             this.raisePropertyChanged(PROP_NAME.isEditing);
         }
     }
-
+    _setIsDetached(v: boolean) {
+        this._isDetached = v;
+    }
+    _setIsCached(v: boolean) {
+        this._isCached = v;
+    }
     constructor(collection: BaseCollection<TItem>) {
         super();
         this._key = null;
@@ -398,18 +403,19 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         this._isDestroyCalled = true;
         let coll = this._collection;
         let item = this._item;
-        this.cancelEdit();
-        if (this._isCached) {
-            try {
-                this._fakeDestroy();
-            }
-            finally {
-                this._isDestroyCalled = false;
-            }
-            return;
-        }
-
         if (!!item) {
+            this.cancelEdit();
+            if (this._isCached) {
+                try {
+                    this._fakeDestroy();
+                }
+                finally {
+                    this._isDestroyCalled = false;
+                }
+                return;
+            }
+
+
             if (!item._aspect.isDetached) {
                 coll.removeItem(item);
             }
@@ -469,9 +475,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     get isEditing(): boolean { return this._isEditing; }
     get isHasChanges(): boolean { return this._status !== ITEM_STATUS.None; }
     get isCached(): boolean { return this._isCached; }
-    set isCached(v: boolean) { this._isCached = v; }
     get isDetached(): boolean { return this._isDetached; }
-    set isDetached(v: boolean) { this._isDetached = v; }
     // can be used to store any user object
     setCustomVal(name: string, val: any, isOwnVal: boolean = true): void {
         if (this.getIsDestroyCalled())

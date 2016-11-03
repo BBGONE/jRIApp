@@ -539,7 +539,7 @@ define("jriapp_utils/checks", ["require", "exports", "jriapp_utils/syschecks"], 
             return isBO && Checks.isFunc(obj.beginEdit) && !!obj.endEdit && !!obj.cancelEdit && Checks.isHasProp(obj, "isEditing");
         };
         Checks.isSubmittable = function (obj) {
-            return !!obj && Checks.isFunc(obj.submitChanges) && !!obj.rejectChanges && Checks.isHasProp(obj, "isCanSubmit");
+            return !!obj && Checks.isFunc(obj.submitChanges) && Checks.isHasProp(obj, "isCanSubmit");
         };
         Checks.isErrorNotification = function (obj) {
             if (!obj)
@@ -8716,7 +8716,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
         };
         BaseCollection.prototype._destroyItems = function () {
             this._items.forEach(function (item) {
-                item._aspect.isDetached = true;
+                item._aspect._setIsDetached(true);
                 item.destroy();
             });
         };
@@ -9087,7 +9087,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
                 this._onRemoved(item, oldPos);
                 delete this._itemsByKey[key];
                 delete this._errors[key];
-                item._aspect.isDetached = true;
+                item._aspect._setIsDetached(true);
                 var test = this.getItemByPos(oldPos), curPos = this._currentPos;
                 if (curPos === oldPos) {
                     if (!test) {
@@ -9301,6 +9301,12 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
                 this._isEditing = v;
                 this.raisePropertyChanged(int_7.PROP_NAME.isEditing);
             }
+        };
+        ItemAspect.prototype._setIsDetached = function (v) {
+            this._isDetached = v;
+        };
+        ItemAspect.prototype._setIsCached = function (v) {
+            this._isCached = v;
         };
         ItemAspect.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
@@ -9638,17 +9644,17 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             this._isDestroyCalled = true;
             var coll = this._collection;
             var item = this._item;
-            this.cancelEdit();
-            if (this._isCached) {
-                try {
-                    this._fakeDestroy();
-                }
-                finally {
-                    this._isDestroyCalled = false;
-                }
-                return;
-            }
             if (!!item) {
+                this.cancelEdit();
+                if (this._isCached) {
+                    try {
+                        this._fakeDestroy();
+                    }
+                    finally {
+                        this._isDestroyCalled = false;
+                    }
+                    return;
+                }
                 if (!item._aspect.isDetached) {
                     coll.removeItem(item);
                 }
@@ -9747,13 +9753,11 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
         });
         Object.defineProperty(ItemAspect.prototype, "isCached", {
             get: function () { return this._isCached; },
-            set: function (v) { this._isCached = v; },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(ItemAspect.prototype, "isDetached", {
             get: function () { return this._isDetached; },
-            set: function (v) { this._isDetached = v; },
             enumerable: true,
             configurable: true
         });
@@ -10873,6 +10877,6 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.COLL_CHANGE_REASON = collection_1.COLL_CHANGE_REASON;
     exports.COLL_CHANGE_TYPE = collection_1.COLL_CHANGE_TYPE;
     exports.Application = app_1.Application;
-    exports.VERSION = "0.9.85";
+    exports.VERSION = "0.9.86";
     bootstrap_25.Bootstrap._initFramework();
 });

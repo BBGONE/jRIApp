@@ -433,7 +433,7 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_core/lang", "jriapp
                         }
                         page.items.push(item);
                         keyMap[item._key] = item;
-                        item._aspect.isCached = true;
+                        item._aspect._setIsCached(true);
                     }
                     else {
                         return;
@@ -448,7 +448,7 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_core/lang", "jriapp
                 for (j = 0; j < items.length; j += 1) {
                     item = items[j];
                     if (!!item) {
-                        item._aspect.isCached = false;
+                        item._aspect._setIsCached(false);
                         if (!!item._key && !dbSet.getItemByKey(item._key))
                             item.destroy();
                     }
@@ -466,7 +466,7 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_core/lang", "jriapp
             for (j = 0; j < items.length; j += 1) {
                 item = items[j];
                 if (!!item) {
-                    item._aspect.isCached = false;
+                    item._aspect._setIsCached(false);
                     if (!!item._key) {
                         delete this._itemsByKey[item._key];
                         if (!dbSet.getItemByKey(item._key))
@@ -3413,13 +3413,15 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
             return res;
         };
         EntityAspect.prototype._acceptChanges = function (rowInfo) {
-            var oldStatus = this.status, dbSet = this.dbSet, internal = dbSet._getInternal();
-            if (this.key === null)
+            if (this.getIsDestroyed())
                 return;
+            this.endEdit();
+            var oldStatus = this.status, dbSet = this.dbSet, internal = dbSet._getInternal();
             if (oldStatus !== 0) {
                 internal.onCommitChanges(this.item, true, false, oldStatus);
                 if (oldStatus === 3) {
-                    this.destroy();
+                    if (!this.getIsDestroyCalled())
+                        this.destroy();
                     return;
                 }
                 this._origVals = null;
@@ -3427,8 +3429,9 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
                     this._saveVals = coreUtils.clone(this._vals);
                 this.setStatus(0);
                 internal.removeAllErrors(this.item);
-                if (!!rowInfo)
+                if (!!rowInfo) {
                     this._refreshValues(rowInfo, 3);
+                }
                 internal.onCommitChanges(this.item, false, false, oldStatus);
             }
         };
@@ -3446,18 +3449,20 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
             return this.deleteOnSubmit();
         };
         EntityAspect.prototype.deleteOnSubmit = function () {
-            var oldStatus = this.status, dbSet = this.dbSet, args = { item: this.item, isCancel: false };
+            if (this.getIsDestroyCalled())
+                return false;
+            var oldStatus = this.status, dbSet = this.dbSet;
+            var args = { item: this.item, isCancel: false };
             dbSet._getInternal().onItemDeleting(args);
             if (args.isCancel) {
                 return false;
             }
-            if (this.key === null)
-                return false;
             if (oldStatus === 1) {
                 dbSet.removeItem(this.item);
-                return true;
             }
-            this.setStatus(3);
+            else {
+                this.setStatus(3);
+            }
             return true;
         };
         EntityAspect.prototype.acceptChanges = function () {
@@ -3467,21 +3472,18 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
             if (this.getIsDestroyed())
                 return;
             var self = this, oldStatus = self.status, dbSet = self.dbSet, internal = dbSet._getInternal();
-            if (!self.key)
-                return;
+            this.cancelEdit();
             if (oldStatus !== 0) {
                 internal.onCommitChanges(self.item, true, true, oldStatus);
-                if (oldStatus === 1 && !this.getIsDestroyCalled()) {
-                    this.destroy();
+                if (oldStatus === 1) {
+                    if (!this.getIsDestroyCalled())
+                        this.destroy();
                     return;
                 }
                 var changes = self._getValueChanges(true);
                 if (!!self._origVals) {
                     self._vals = coreUtils.clone(self._origVals);
                     self._origVals = null;
-                    if (!!self._saveVals) {
-                        self._saveVals = coreUtils.clone(self._vals);
-                    }
                 }
                 self.setStatus(0);
                 internal.removeAllErrors(this.item);
@@ -3519,9 +3521,9 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
                 return;
             var self = this;
             this._isDestroyCalled = true;
-            this.cancelEdit();
-            if (!this.isCached)
+            if (!this.isCached) {
                 this.rejectChanges();
+            }
             _super.prototype.destroy.call(this);
         };
         EntityAspect.prototype.toString = function () {

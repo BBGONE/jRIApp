@@ -85,7 +85,7 @@ declare module "jriapp_ui/dialog" {
         destroy(): void;
         readonly app: IApplication;
         dataContext: any;
-        readonly result: string;
+        readonly result: "ok" | "cancel";
         readonly template: ITemplate;
         isSubmitOnOK: boolean;
         width: any;

@@ -412,7 +412,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     }
     protected _destroyItems() {
         this._items.forEach(function (item) {
-            item._aspect.isDetached = true;
+            item._aspect._setIsDetached(true);
             item.destroy();
         });
     }
@@ -784,7 +784,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
             this._onRemoved(item, oldPos);
             delete this._itemsByKey[key];
             delete this._errors[key];
-            item._aspect.isDetached = true;
+            item._aspect._setIsDetached(true);
 
             const test = this.getItemByPos(oldPos), curPos = this._currentPos;
 

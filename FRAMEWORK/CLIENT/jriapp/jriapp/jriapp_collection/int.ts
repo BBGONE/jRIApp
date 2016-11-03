@@ -43,6 +43,8 @@ export interface IItemAspect<TItem extends ICollectionItem> extends IBaseObject,
     deleteItem(): boolean;
     _onAttaching(): void;
     _onAttach(): void;
+    _setIsDetached(v: boolean): void;
+    _setIsCached(v: boolean): void;
     raiseErrorsChanged(args: any): void;
     readonly isCanSubmit: boolean;
     readonly status: ITEM_STATUS;
@@ -52,8 +54,8 @@ export interface IItemAspect<TItem extends ICollectionItem> extends IBaseObject,
     readonly isUpdating: boolean;
     readonly isHasChanges: boolean;
     readonly isEditing: boolean;
-    isCached: boolean;
-    isDetached: boolean;
+    readonly isDetached: boolean;
+    readonly isCached: boolean;
     key: string;
     item: TItem;
 }

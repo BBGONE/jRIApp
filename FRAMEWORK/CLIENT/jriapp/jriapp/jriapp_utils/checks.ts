@@ -70,7 +70,7 @@ export class Checks {
         return isBO && Checks.isFunc(obj.beginEdit) && !!obj.endEdit && !!obj.cancelEdit && Checks.isHasProp(obj, "isEditing");
     }
     static isSubmittable(obj: any): obj is ISubmittable {
-        return !!obj && Checks.isFunc(obj.submitChanges) && !!obj.rejectChanges && Checks.isHasProp(obj, "isCanSubmit");
+        return !!obj && Checks.isFunc(obj.submitChanges) && Checks.isHasProp(obj, "isCanSubmit");
     }
     static isErrorNotification(obj: any): obj is IErrorNotification {
         if (!obj) return false;

@@ -378,13 +378,16 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         return res;
     }
     _acceptChanges(rowInfo?: IRowInfo): void {
-        let oldStatus = this.status, dbSet = this.dbSet, internal = dbSet._getInternal();
-        if (this.key === null)
+        if (this.getIsDestroyed())
             return;
+        //make sure it is not editing
+        this.endEdit();
+        const oldStatus = this.status, dbSet = this.dbSet, internal = dbSet._getInternal();
         if (oldStatus !== ITEM_STATUS.None) {
             internal.onCommitChanges(this.item, true, false, oldStatus);
             if (oldStatus === ITEM_STATUS.Deleted) {
-                this.destroy();
+                if (!this.getIsDestroyCalled())
+                    this.destroy();
                 return;
             }
             this._origVals = null;
@@ -392,8 +395,9 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
                 this._saveVals = coreUtils.clone(this._vals);
             this.setStatus(ITEM_STATUS.None);
             internal.removeAllErrors(this.item);
-            if (!!rowInfo)
+            if (!!rowInfo) {
                 this._refreshValues(rowInfo, REFRESH_MODE.CommitChanges);
+            }
             internal.onCommitChanges(this.item, false, false, oldStatus);
         }
     }
@@ -411,18 +415,20 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         return this.deleteOnSubmit();
     }
     deleteOnSubmit(): boolean {
-        let oldStatus = this.status, dbSet = this.dbSet, args: ICancellableArgs<TItem> = { item: this.item, isCancel: false };
+        if (this.getIsDestroyCalled())
+            return false;
+        const oldStatus = this.status, dbSet = this.dbSet;
+        let args: ICancellableArgs<TItem> = { item: this.item, isCancel: false };
         dbSet._getInternal().onItemDeleting(args);
         if (args.isCancel) {
             return false;
         }
-        if (this.key === null)
-            return false;
         if (oldStatus === ITEM_STATUS.Added) {
             dbSet.removeItem(this.item);
-            return true;
         }
-        this.setStatus(ITEM_STATUS.Deleted);
+        else {
+            this.setStatus(ITEM_STATUS.Deleted);
+        }
         return true;
     }
     acceptChanges(): void {
@@ -432,12 +438,14 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         if (this.getIsDestroyed())
             return;
         const self = this, oldStatus = self.status, dbSet = self.dbSet, internal = dbSet._getInternal();
-        if (!self.key)
-            return;
+        //make sure it is not editing
+        this.cancelEdit();
         if (oldStatus !== ITEM_STATUS.None) {
             internal.onCommitChanges(self.item, true, true, oldStatus);
-            if (oldStatus === ITEM_STATUS.Added && !this.getIsDestroyCalled()) {
-                this.destroy();
+            if (oldStatus === ITEM_STATUS.Added) {
+                if (!this.getIsDestroyCalled())
+                    this.destroy();
+
                 return;
             }
 
@@ -445,9 +453,6 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
             if (!!self._origVals) {
                 self._vals = coreUtils.clone(self._origVals);
                 self._origVals = null;
-                if (!!self._saveVals) {
-                    self._saveVals = coreUtils.clone(self._vals);
-                }
             }
             self.setStatus(ITEM_STATUS.None);
             internal.removeAllErrors(this.item);
@@ -487,9 +492,9 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
             return;
         const self = this;
         this._isDestroyCalled = true;
-        this.cancelEdit();
-        if (!this.isCached)
+        if (!this.isCached) {
             this.rejectChanges();
+        }
         super.destroy();
     }
     toString() {

@@ -108,7 +108,7 @@ export class DataCache extends BaseObject {
                    }
                     page.items.push(item);
                     keyMap[item._key] = item;
-                    item._aspect.isCached = true;
+                    item._aspect._setIsCached(true);
                }
                 else {
                     return;
@@ -123,7 +123,7 @@ export class DataCache extends BaseObject {
             for (j = 0; j < items.length; j += 1) {
                 item = items[j];
                 if (!!item) {
-                    item._aspect.isCached = false;
+                    item._aspect._setIsCached(false);
                     if (!!item._key && !dbSet.getItemByKey(item._key))
                         item.destroy();
                }
@@ -141,7 +141,7 @@ export class DataCache extends BaseObject {
         for (j = 0; j < items.length; j += 1) {
             item = items[j];
             if (!!item) {
-                item._aspect.isCached = false;
+                item._aspect._setIsCached(false);
                 if (!!item._key) {
                     delete this._itemsByKey[item._key];
                     if (!dbSet.getItemByKey(item._key))

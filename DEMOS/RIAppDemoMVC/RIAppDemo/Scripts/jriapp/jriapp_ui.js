@@ -5,8 +5,8 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 define("jriapp_ui/dialog", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_core/mvvm"], function (require, exports, langMOD, object_1, utils_1, bootstrap_1, mvvm_1) {
     "use strict";
-    var checks = utils_1.Utils.check, strUtils = utils_1.Utils.str, coreUtils = utils_1.Utils.core;
-    var $ = utils_1.Utils.dom.$, document = utils_1.Utils.dom.document;
+    var utils = utils_1.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+    var $ = utils.dom.$, doc = utils.dom.document;
     (function (DIALOG_ACTION) {
         DIALOG_ACTION[DIALOG_ACTION["Default"] = 0] = "Default";
         DIALOG_ACTION[DIALOG_ACTION["StayOpen"] = 1] = "StayOpen";
@@ -66,9 +66,9 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_core/lang", "jriapp_co
             this._result = null;
             this._currentSelectable = null;
             this._fn_submitOnOK = function () {
-                var iSubmittable = utils_1.Utils.getSubmittable(self._dataContext);
+                var iSubmittable = utils.getSubmittable(self._dataContext);
                 if (!iSubmittable || !iSubmittable.isCanSubmit) {
-                    return utils_1.Utils.defer.createDeferred().resolve();
+                    return utils.defer.createDeferred().resolve();
                 }
                 return iSubmittable.submitChanges();
             };
@@ -84,7 +84,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_core/lang", "jriapp_co
                 },
                 buttons: self._getButtons()
             };
-            this._deferred = utils_1.Utils.defer.createDeferred();
+            this._deferred = utils.defer.createDeferred();
             this._createDialog();
         }
         DataEditDialog.prototype.handleError = function (error, source) {
@@ -107,13 +107,13 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_core/lang", "jriapp_co
             this._removeHandler(DLG_EVENTS.refresh, nmspace);
         };
         DataEditDialog.prototype._updateIsEditable = function () {
-            this._isEditable = utils_1.Utils.getEditable(this._dataContext);
+            this._isEditable = utils.getEditable(this._dataContext);
         };
         DataEditDialog.prototype._createDialog = function () {
             try {
                 this._template = this._createTemplate();
                 this._$dlgEl = $(this._template.el);
-                document.body.appendChild(this._template.el);
+                doc.body.appendChild(this._template.el);
                 this._$dlgEl.dialog(this._options);
             }
             catch (ex) {
@@ -280,11 +280,6 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_core/lang", "jriapp_co
                     if (!!this._isEditable) {
                         this._isEditable.cancelEdit();
                     }
-                    if (this._submitOnOK) {
-                        var subm = utils_1.Utils.getSubmittable(this._dataContext);
-                        if (!!subm)
-                            subm.rejectChanges();
-                    }
                 }
                 if (!!this._fn_OnClose)
                     this._fn_OnClose(this);
@@ -306,7 +301,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_core/lang", "jriapp_co
         DataEditDialog.prototype.show = function () {
             var self = this;
             if (self.getIsDestroyCalled())
-                return utils_1.Utils.defer.createDeferred().reject();
+                return utils.defer.createDeferred().reject();
             self._result = null;
             return this._deferred.promise().then(function (template) {
                 if (self.getIsDestroyCalled() || !self._$dlgEl) {
