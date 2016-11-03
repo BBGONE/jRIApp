@@ -1,7 +1,12 @@
 ﻿/// <reference path="../jriapp_core/../../thirdparty/jquery.d.ts" />
 /** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IBaseObject, IEditable, ISubmittable, IErrorNotification, IThenable, IPropertyBag } from "../jriapp_core/shared";
+import {
+    IBaseObject, IEditable, ISubmittable, IErrorNotification,
+    IThenable, IPropertyBag
+} from "../jriapp_core/shared";
 import { SysChecks } from "./syschecks";
+
+const syschecks = SysChecks;
 
 export class Checks {
     static undefined: any = void (0);
@@ -60,13 +65,13 @@ export class Checks {
         return Array.isArray(a);
     }
     static isBaseObject(a: any): a is IBaseObject {
-        return SysChecks._isBaseObj(a);
+        return syschecks._isBaseObj(a);
     }
     static isCollection(a: any): boolean {
-        return SysChecks._isCollection(a);
+        return syschecks._isCollection(a);
     }
     static isEditable(obj: any): obj is IEditable {
-        let isBO = Checks.isBaseObject(obj);
+        const isBO = Checks.isBaseObject(obj);
         return isBO && Checks.isFunc(obj.beginEdit) && !!obj.endEdit && !!obj.cancelEdit && Checks.isHasProp(obj, "isEditing");
     }
     static isSubmittable(obj: any): obj is ISubmittable {
@@ -76,7 +81,7 @@ export class Checks {
         if (!obj) return false;
         if (!Checks.isFunc(obj.getIErrorNotification))
             return false;
-        let tmp = obj.getIErrorNotification();
+        const tmp = obj.getIErrorNotification();
         return !!tmp && Checks.isFunc(tmp.getIErrorNotification);
     }
     static isThenable(a: any): a is IThenable<any> {

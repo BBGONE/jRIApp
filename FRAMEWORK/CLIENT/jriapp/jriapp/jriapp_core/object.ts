@@ -5,8 +5,7 @@ import {
 } from "shared";
 import { ERRS } from "lang";
 import {
-    SysChecks, Checks as checks, StringUtils as strUtils, CoreUtils as coreUtils,
-    ERROR, DEBUG
+    SysChecks, Checks, StringUtils, CoreUtils, ERROR, DEBUG
 } from "../jriapp_utils/coreutils";
 import { ListHelper } from "../jriapp_utils/listhelper";
 
@@ -15,10 +14,11 @@ const OBJ_EVENTS = {
     destroyed: "destroyed"
 };
 
+const checks = Checks, strUtils = StringUtils, coreUtils = CoreUtils,  listHelper = ListHelper;
 
 SysChecks._isBaseObj = function (obj: any): boolean {
     return (!!obj && obj instanceof BaseObject);
-}
+};
 
 const enum ObjState { None = 0, DestroyCalled = 1, Destroyed = 2 }
 
@@ -37,7 +37,7 @@ export class BaseObject implements IBaseObject {
             key = keys[i];
             list = ev[key];
             if (!!list) {
-                ListHelper.removeNodes(list, ns);
+                listHelper.removeNodes(list, ns);
             }
         }
     }
@@ -62,13 +62,13 @@ export class BaseObject implements IBaseObject {
         if (!!nmspace)
             ns = "" + nmspace;
 
-        let list = ev[n], node: IListNode = ListHelper.CreateNode(handler, ns, context);
+        let list = ev[n], node: IListNode = listHelper.CreateNode(handler, ns, context);
 
         if (!list) {
-            ev[n] = list = ListHelper.CreateList();
+            ev[n] = list = listHelper.CreateList();
         }
 
-        ListHelper.appendNode(list, node, ns, priority);
+        listHelper.appendNode(list, node, ns, priority);
     }
     protected _removeHandler(name?: string, nmspace?: string): void {
         let self = this, ev = self._events, ns = "*";
@@ -85,11 +85,11 @@ export class BaseObject implements IBaseObject {
             if (!list)
                 return;
             if (ns === "*") {
-                ListHelper.removeNodes(list, ns);
+                listHelper.removeNodes(list, ns);
                 ev[name] = null;
             }
             else {
-                ListHelper.removeNodes(list, ns);
+                listHelper.removeNodes(list, ns);
             }
             return;
         }
@@ -119,7 +119,7 @@ export class BaseObject implements IBaseObject {
                 this._raiseEvent("0*", args);
             }
 
-            let events = ListHelper.toArray(ev[name]), cur: IListNode;
+            let events = listHelper.toArray(ev[name]), cur: IListNode;
             for (let i = 0; i < events.length; i++) {
                 cur = events[i];
                 cur.fn.apply(cur.context, [self, args]);

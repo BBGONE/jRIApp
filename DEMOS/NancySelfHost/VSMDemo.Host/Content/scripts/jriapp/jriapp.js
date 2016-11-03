@@ -463,6 +463,7 @@ define("jriapp_utils/syschecks", ["require", "exports"], function (require, expo
 });
 define("jriapp_utils/checks", ["require", "exports", "jriapp_utils/syschecks"], function (require, exports, syschecks_1) {
     "use strict";
+    var syschecks = syschecks_1.SysChecks;
     var Checks = (function () {
         function Checks() {
         }
@@ -529,10 +530,10 @@ define("jriapp_utils/checks", ["require", "exports", "jriapp_utils/syschecks"], 
             return Array.isArray(a);
         };
         Checks.isBaseObject = function (a) {
-            return syschecks_1.SysChecks._isBaseObj(a);
+            return syschecks._isBaseObj(a);
         };
         Checks.isCollection = function (a) {
-            return syschecks_1.SysChecks._isCollection(a);
+            return syschecks._isCollection(a);
         };
         Checks.isEditable = function (obj) {
             var isBO = Checks.isBaseObject(obj);
@@ -1147,6 +1148,7 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
         error: "error",
         destroyed: "destroyed"
     };
+    var checks = coreutils_2.Checks, strUtils = coreutils_2.StringUtils, coreUtils = coreutils_2.CoreUtils, listHelper = listhelper_1.ListHelper;
     coreutils_2.SysChecks._isBaseObj = function (obj) {
         return (!!obj && obj instanceof BaseObject);
     };
@@ -1167,7 +1169,7 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
                 key = keys[i];
                 list = ev[key];
                 if (!!list) {
-                    listhelper_1.ListHelper.removeNodes(list, ns);
+                    listHelper.removeNodes(list, ns);
                 }
             }
         };
@@ -1177,21 +1179,21 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
         BaseObject.prototype._addHandler = function (name, handler, nmspace, context, priority) {
             if (this._isDestroyed)
                 return;
-            if (!coreutils_2.Checks.isFunc(handler)) {
+            if (!checks.isFunc(handler)) {
                 throw new Error(lang_1.ERRS.ERR_EVENT_INVALID_FUNC);
             }
             if (!name)
-                throw new Error(coreutils_2.StringUtils.format(lang_1.ERRS.ERR_EVENT_INVALID, name));
+                throw new Error(strUtils.format(lang_1.ERRS.ERR_EVENT_INVALID, name));
             if (this._events === null)
                 this._events = {};
             var self = this, ev = self._events, n = name, ns = "*";
             if (!!nmspace)
                 ns = "" + nmspace;
-            var list = ev[n], node = listhelper_1.ListHelper.CreateNode(handler, ns, context);
+            var list = ev[n], node = listHelper.CreateNode(handler, ns, context);
             if (!list) {
-                ev[n] = list = listhelper_1.ListHelper.CreateList();
+                ev[n] = list = listHelper.CreateList();
             }
-            listhelper_1.ListHelper.appendNode(list, node, ns, priority);
+            listHelper.appendNode(list, node, ns, priority);
         };
         BaseObject.prototype._removeHandler = function (name, nmspace) {
             var self = this, ev = self._events, ns = "*";
@@ -1205,11 +1207,11 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
                 if (!list)
                     return;
                 if (ns === "*") {
-                    listhelper_1.ListHelper.removeNodes(list, ns);
+                    listHelper.removeNodes(list, ns);
                     ev[name] = null;
                 }
                 else {
-                    listhelper_1.ListHelper.removeNodes(list, ns);
+                    listHelper.removeNodes(list, ns);
                 }
                 return;
             }
@@ -1222,7 +1224,7 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
             var self = this, ev = self._events;
             if (ev === null)
                 return;
-            if (ev === coreutils_2.Checks.undefined) {
+            if (ev === checks.undefined) {
                 throw new Error("The object's constructor has not been called!");
             }
             if (!!name) {
@@ -1230,7 +1232,7 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
                 if (isPropChange && !isAllProp) {
                     this._raiseEvent("0*", args);
                 }
-                var events = listhelper_1.ListHelper.toArray(ev[name]), cur = void 0;
+                var events = listHelper.toArray(ev[name]), cur = void 0;
                 for (var i = 0; i < events.length; i++) {
                     cur = events[i];
                     cur.fn.apply(cur.context, [self, args]);
@@ -1251,7 +1253,7 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
                 map = proto.__evMap;
             if (!map[name]) {
                 coreutils_2.DEBUG.checkStartDebugger();
-                var err = new Error(coreutils_2.StringUtils.format(lang_1.ERRS.ERR_EVENT_INVALID, name));
+                var err = new Error(strUtils.format(lang_1.ERRS.ERR_EVENT_INVALID, name));
                 this.handleError(err, this);
                 throw err;
             }
@@ -1269,7 +1271,7 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
             },
             set: function (v) {
                 if (this._obj_state === 2) {
-                    throw new Error(coreutils_2.StringUtils.format(lang_1.ERRS.ERR_ASSERTION_FAILED, "this._obj_state !== ObjState.Destroyed"));
+                    throw new Error(strUtils.format(lang_1.ERRS.ERR_ASSERTION_FAILED, "this._obj_state !== ObjState.Destroyed"));
                 }
                 this._obj_state = !v ? 0 : 1;
             },
@@ -1277,7 +1279,7 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
             configurable: true
         });
         BaseObject.prototype._isHasProp = function (prop) {
-            return coreutils_2.Checks.isHasProp(this, prop);
+            return checks.isHasProp(this, prop);
         };
         BaseObject.prototype.handleError = function (error, source) {
             if (coreutils_2.ERROR.checkIsDummy(error)) {
@@ -1294,10 +1296,10 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
             var data = { property: name };
             var parts = name.split("."), lastPropName = parts[parts.length - 1];
             if (parts.length > 1) {
-                var obj = coreutils_2.CoreUtils.resolveOwner(this, name);
-                if (coreutils_2.DEBUG.isDebugging() && coreutils_2.Checks.isUndefined(obj)) {
+                var obj = coreUtils.resolveOwner(this, name);
+                if (coreutils_2.DEBUG.isDebugging() && checks.isUndefined(obj)) {
                     coreutils_2.DEBUG.checkStartDebugger();
-                    throw new Error(coreutils_2.StringUtils.format(lang_1.ERRS.ERR_PROP_NAME_INVALID, name));
+                    throw new Error(strUtils.format(lang_1.ERRS.ERR_PROP_NAME_INVALID, name));
                 }
                 if (obj instanceof BaseObject) {
                     obj.raiseEvent("0" + lastPropName, data);
@@ -1306,7 +1308,7 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
             else {
                 if (coreutils_2.DEBUG.isDebugging() && !this._isHasProp(lastPropName)) {
                     coreutils_2.DEBUG.checkStartDebugger();
-                    throw new Error(coreutils_2.StringUtils.format(lang_1.ERRS.ERR_PROP_NAME_INVALID, lastPropName));
+                    throw new Error(strUtils.format(lang_1.ERRS.ERR_PROP_NAME_INVALID, lastPropName));
                 }
                 this.raiseEvent("0" + lastPropName, data);
             }
@@ -1348,7 +1350,7 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
                 throw new Error(lang_1.ERRS.ERR_PROP_NAME_EMPTY);
             if (coreutils_2.DEBUG.isDebugging() && prop !== "*" && !this._isHasProp(prop)) {
                 coreutils_2.DEBUG.checkStartDebugger();
-                throw new Error(coreutils_2.StringUtils.format(lang_1.ERRS.ERR_PROP_NAME_INVALID, prop));
+                throw new Error(strUtils.format(lang_1.ERRS.ERR_PROP_NAME_INVALID, prop));
             }
             prop = "0" + prop;
             this._addHandler(prop, handler, nmspace, context, priority);
@@ -1357,7 +1359,7 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
             if (!!prop) {
                 if (coreutils_2.DEBUG.isDebugging() && prop !== "*" && !this._isHasProp(prop)) {
                     coreutils_2.DEBUG.checkStartDebugger();
-                    throw new Error(coreutils_2.StringUtils.format(lang_1.ERRS.ERR_PROP_NAME_INVALID, prop));
+                    throw new Error(strUtils.format(lang_1.ERRS.ERR_PROP_NAME_INVALID, prop));
                 }
                 prop = "0" + prop;
             }
