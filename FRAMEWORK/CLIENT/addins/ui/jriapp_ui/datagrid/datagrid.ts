@@ -1,6 +1,9 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { DATA_ATTR, KEYS } from "jriapp_core/const";
-import { IApplication, ISelectableProvider, TEventHandler, IIndexer, ISelectable, IViewOptions } from "jriapp_core/shared";
+import {
+    IApplication, ISelectableProvider, TEventHandler, IIndexer, ISelectable,
+    IViewOptions, TPriority
+} from "jriapp_core/shared";
 import { ERRS, STRS } from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
 import { Utils as utils, Debounce, DblClick, ERROR } from "jriapp_utils/utils";

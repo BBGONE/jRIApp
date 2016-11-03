@@ -141,19 +141,18 @@ declare module "jriapp_core/shared" {
     export interface IErrorHandler {
         handleError(error: any, source: any): boolean;
     }
+    export type TPriority = "0" | "1" | "2";
     export interface IListNode {
         context: any;
         fn: TEventHandler<any, any>;
         next: IListNode;
     }
     export type IListBucket = IListNode[];
+    export interface INamespaceMap {
+        [ns: string]: IListBucket;
+    }
     export interface IList {
-        one: {
-            [ns: string]: IListBucket;
-        };
-        two: {
-            [ns: string]: IListBucket;
-        };
+        [priority: string]: INamespaceMap;
     }
     export interface ITaskQueue {
         enque(task: () => void): void;
@@ -161,14 +160,14 @@ declare module "jriapp_core/shared" {
     export interface IBaseObject extends IErrorHandler, IDisposable {
         _isHasProp(prop: string): boolean;
         raisePropertyChanged(name: string): void;
-        addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeHandler(name?: string, nmspace?: string): void;
-        addOnPropertyChange(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void;
+        addOnPropertyChange(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnPropertyChange(prop?: string, nmspace?: string): void;
         removeNSHandlers(nmspace?: string): void;
-        addOnError(handler: TErrorHandler, nmspace?: string, context?: IBaseObject): void;
+        addOnError(handler: TErrorHandler, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnError(nmspace?: string): void;
-        addOnDestroyed(handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject): void;
+        addOnDestroyed(handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnDestroyed(nmspace?: string): void;
         raiseEvent(name: string, args: any): void;
     }
@@ -834,20 +833,20 @@ declare module "jriapp_utils/listhelper" {
         static CreateList(): coreMOD.IList;
         static CreateNode(handler: coreMOD.TErrorHandler, ns: string, context?: any): coreMOD.IListNode;
         static countNodes(list: coreMOD.IList): number;
-        static appendNode(list: coreMOD.IList, node: coreMOD.IListNode, ns: string, highPrior: boolean): void;
+        static appendNode(list: coreMOD.IList, node: coreMOD.IListNode, ns: string, priority?: coreMOD.TPriority): void;
         static removeNodes(list: coreMOD.IList, ns: string): void;
         static toArray(list: coreMOD.IList): coreMOD.IListNode[];
     }
 }
 declare module "jriapp_core/object" {
-    import { IBaseObject, TEventHandler, TErrorHandler, TPropChangedHandler } from "jriapp_core/shared";
+    import { IBaseObject, TPriority, TEventHandler, TErrorHandler, TPropChangedHandler } from "jriapp_core/shared";
     export class BaseObject implements IBaseObject {
         private _obj_state;
         private _events;
         constructor();
         private _removeNsHandler(ev, ns);
         protected _getEventNames(): string[];
-        protected _addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        protected _addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         protected _removeHandler(name?: string, nmspace?: string): void;
         protected _raiseEvent(name: string, args: any): void;
         protected _checkEventName(name: string): void;
@@ -856,15 +855,15 @@ declare module "jriapp_core/object" {
         _isHasProp(prop: string): boolean;
         handleError(error: any, source: any): boolean;
         raisePropertyChanged(name: string): void;
-        addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeHandler(name?: string, nmspace?: string): void;
-        addOnDestroyed(handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject): void;
+        addOnDestroyed(handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnDestroyed(nmspace?: string): void;
-        addOnError(handler: TErrorHandler, nmspace?: string, context?: IBaseObject): void;
+        addOnError(handler: TErrorHandler, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnError(nmspace?: string): void;
         removeNSHandlers(nmspace?: string): void;
         raiseEvent(name: string, args: any): void;
-        addOnPropertyChange(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void;
+        addOnPropertyChange(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnPropertyChange(prop?: string, nmspace?: string): void;
         getIsDestroyed(): boolean;
         getIsDestroyCalled(): boolean;
@@ -1180,7 +1179,7 @@ declare module "jriapp_utils/tooltip" {
     export function create(): ITooltipService;
 }
 declare module "jriapp_core/bootstrap" {
-    import { IApplication, ISelectableProvider, IExports, IConverter, ISvcStore, IIndexer, IBaseObject, IPromise, TEventHandler, IStylesLoader, IElViewRegister } from "jriapp_core/shared";
+    import { IApplication, ISelectableProvider, IExports, IConverter, ISvcStore, IIndexer, IBaseObject, IPromise, TEventHandler, IStylesLoader, IElViewRegister, TPriority } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
     import { Defaults } from "jriapp_core/defaults";
     import { TemplateLoader } from "jriapp_utils/tloader";
@@ -1214,7 +1213,7 @@ declare module "jriapp_core/bootstrap" {
         private _processHTMLTemplates();
         private _processTemplate(name, html, app);
         protected _getEventNames(): string[];
-        protected _addHandler(name: string, fn: (sender: any, args: any) => void, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        protected _addHandler(name: string, fn: (sender: any, args: any) => void, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         private _init();
         private _initialize();
         private _trackSelectable(selectable);
@@ -2081,7 +2080,7 @@ declare module "jriapp_elview/all" {
 }
 declare module "jriapp_collection/int" {
     import { DATE_CONVERSION, DATA_TYPE, SORT_ORDER } from "jriapp_core/const";
-    import { IBaseObject, IErrorNotification, IEditable, ISubmittable, TEventHandler, IFieldInfo, TPropChangedHandler, IPromise, IValidationInfo } from "jriapp_core/shared";
+    import { IBaseObject, IErrorNotification, IEditable, ISubmittable, TEventHandler, IFieldInfo, TPropChangedHandler, IPromise, IValidationInfo, TPriority } from "jriapp_core/shared";
     export const enum COLL_CHANGE_TYPE {
         Remove = 0,
         Add = 1,
@@ -2216,35 +2215,35 @@ declare module "jriapp_collection/int" {
         newCurrent: TItem;
     }
     export interface ICollectionEvents<TItem extends ICollectionItem> {
-        addOnClearing(fn: TEventHandler<ICollection<TItem>, any>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnClearing(fn: TEventHandler<ICollection<TItem>, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnClearing(nmspace?: string): void;
-        addOnCleared(fn: TEventHandler<ICollection<TItem>, any>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnCleared(fn: TEventHandler<ICollection<TItem>, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnCleared(nmspace?: string): void;
-        addOnCollChanged(fn: TEventHandler<ICollection<TItem>, ICollChangedArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnCollChanged(fn: TEventHandler<ICollection<TItem>, ICollChangedArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnCollChanged(nmspace?: string): void;
-        addOnFill(fn: TEventHandler<ICollection<TItem>, ICollFillArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnFill(fn: TEventHandler<ICollection<TItem>, ICollFillArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnFill(nmspace?: string): void;
-        addOnValidate(fn: TEventHandler<ICollection<TItem>, ICollValidateArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnValidate(fn: TEventHandler<ICollection<TItem>, ICollValidateArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnValidate(nmspace?: string): void;
-        addOnItemDeleting(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnItemDeleting(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnItemDeleting(nmspace?: string): void;
-        addOnItemAdding(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnItemAdding(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnItemAdding(nmspace?: string): void;
-        addOnItemAdded(fn: TEventHandler<ICollection<TItem>, IItemAddedArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnItemAdded(fn: TEventHandler<ICollection<TItem>, IItemAddedArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnItemAdded(nmspace?: string): void;
-        addOnCurrentChanging(fn: TEventHandler<ICollection<TItem>, ICurrentChangingArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnCurrentChanging(fn: TEventHandler<ICollection<TItem>, ICurrentChangingArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnCurrentChanging(nmspace?: string): void;
-        addOnPageChanging(fn: TEventHandler<ICollection<TItem>, IPageChangingArgs>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnPageChanging(fn: TEventHandler<ICollection<TItem>, IPageChangingArgs>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnPageChanging(nmspace?: string): void;
-        addOnErrorsChanged(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnErrorsChanged(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnErrorsChanged(nmspace?: string): void;
-        addOnBeginEdit(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnBeginEdit(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnBeginEdit(nmspace?: string): void;
-        addOnEndEdit(fn: TEventHandler<ICollection<TItem>, ICollEndEditArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnEndEdit(fn: TEventHandler<ICollection<TItem>, ICollEndEditArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnEndEdit(nmspace?: string): void;
-        addOnCommitChanges(fn: TEventHandler<ICollection<TItem>, ICommitChangesArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnCommitChanges(fn: TEventHandler<ICollection<TItem>, ICommitChangesArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnCommitChanges(nmspace?: string): void;
-        addOnStatusChanged(fn: TEventHandler<ICollection<TItem>, ICollItemStatusArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnStatusChanged(fn: TEventHandler<ICollection<TItem>, ICollItemStatusArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnStatusChanged(nmspace?: string): void;
         addOnPageIndexChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void;
         addOnPageSizeChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void;
@@ -2351,7 +2350,7 @@ declare module "jriapp_collection/validation" {
 }
 declare module "jriapp_collection/base" {
     import { SORT_ORDER } from "jriapp_core/const";
-    import { IFieldInfo, IIndexer, IValidationInfo, TEventHandler, TPropChangedHandler, IBaseObject, IPromise } from "jriapp_core/shared";
+    import { IFieldInfo, IIndexer, IValidationInfo, TEventHandler, TPropChangedHandler, IBaseObject, IPromise, TPriority } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
     import { WaitQueue } from "jriapp_utils/utils";
     import { ICollectionItem, ICollection, ICollectionOptions, IPermissions, IInternalCollMethods, ICollChangedArgs, ICancellableArgs, ICollFillArgs, ICollEndEditArgs, ICollItemArgs, ICollItemStatusArgs, ICollValidateArgs, ICurrentChangingArgs, ICommitChangesArgs, IItemAddedArgs, IPageChangingArgs, IErrorsList, IErrors, ITEM_STATUS, COLL_CHANGE_REASON, COLL_CHANGE_OPER } from "jriapp_collection/int";
@@ -2380,41 +2379,41 @@ declare module "jriapp_collection/base" {
         handleError(error: any, source: any): boolean;
         addOnClearing(fn: TEventHandler<ICollection<TItem>, {
             reason: COLL_CHANGE_REASON;
-        }>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        }>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnClearing(nmspace?: string): void;
         addOnCleared(fn: TEventHandler<ICollection<TItem>, {
             reason: COLL_CHANGE_REASON;
-        }>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        }>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnCleared(nmspace?: string): void;
-        addOnCollChanged(fn: TEventHandler<ICollection<TItem>, ICollChangedArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnCollChanged(fn: TEventHandler<ICollection<TItem>, ICollChangedArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnCollChanged(nmspace?: string): void;
-        addOnFill(fn: TEventHandler<ICollection<TItem>, ICollFillArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnFill(fn: TEventHandler<ICollection<TItem>, ICollFillArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnFill(nmspace?: string): void;
-        addOnValidate(fn: TEventHandler<ICollection<TItem>, ICollValidateArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnValidate(fn: TEventHandler<ICollection<TItem>, ICollValidateArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnValidate(nmspace?: string): void;
-        addOnItemDeleting(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnItemDeleting(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnItemDeleting(nmspace?: string): void;
-        addOnItemAdding(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnItemAdding(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnItemAdding(nmspace?: string): void;
-        addOnItemAdded(fn: TEventHandler<ICollection<TItem>, IItemAddedArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnItemAdded(fn: TEventHandler<ICollection<TItem>, IItemAddedArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnItemAdded(nmspace?: string): void;
-        addOnCurrentChanging(fn: TEventHandler<ICollection<TItem>, ICurrentChangingArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnCurrentChanging(fn: TEventHandler<ICollection<TItem>, ICurrentChangingArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnCurrentChanging(nmspace?: string): void;
-        addOnPageChanging(fn: TEventHandler<ICollection<TItem>, IPageChangingArgs>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnPageChanging(fn: TEventHandler<ICollection<TItem>, IPageChangingArgs>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnPageChanging(nmspace?: string): void;
-        addOnErrorsChanged(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnErrorsChanged(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnErrorsChanged(nmspace?: string): void;
-        addOnBeginEdit(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnBeginEdit(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnBeginEdit(nmspace?: string): void;
-        addOnEndEdit(fn: TEventHandler<ICollection<TItem>, ICollEndEditArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnEndEdit(fn: TEventHandler<ICollection<TItem>, ICollEndEditArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnEndEdit(nmspace?: string): void;
-        addOnBeforeBeginEdit(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnBeforeBeginEdit(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnBeforeBeginEdit(nmspace?: string): void;
-        addOnBeforeEndEdit(fn: TEventHandler<ICollection<TItem>, ICollEndEditArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnBeforeEndEdit(fn: TEventHandler<ICollection<TItem>, ICollEndEditArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeBeforeOnEndEdit(nmspace?: string): void;
-        addOnCommitChanges(fn: TEventHandler<ICollection<TItem>, ICommitChangesArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnCommitChanges(fn: TEventHandler<ICollection<TItem>, ICommitChangesArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnCommitChanges(nmspace?: string): void;
-        addOnStatusChanged(fn: TEventHandler<ICollection<TItem>, ICollItemStatusArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+        addOnStatusChanged(fn: TEventHandler<ICollection<TItem>, ICollItemStatusArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnStatusChanged(nmspace?: string): void;
         addOnPageIndexChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void;
         addOnPageSizeChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void;

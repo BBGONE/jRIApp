@@ -2,7 +2,8 @@
 import { BindTo, DUMY_ERROR, TOOLTIP_SVC, STORE_KEY } from "const";
 import { IApplication, ISelectable, ISelectableProvider, IExports, IConverter, ISvcStore, IIndexer, IBaseObject, IPromise,
     TEventHandler, IUnResolvedBindingArgs, IStylesLoader, IContentFactory, IContentFactoryList, TFactoryGetter,
-    IContentConstructor, IContentOptions, IElViewRegister } from "shared";
+    IContentConstructor, IContentOptions, IElViewRegister, TPriority
+} from "shared";
 import { createRegister as createElViewRegister } from "../jriapp_elview/factory";
 import { ERRS } from "lang";
 import { BaseObject }  from "object";
@@ -195,7 +196,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         let events = Object.keys(GLOB_EVENTS).map((key, i, arr) => { return <string>(<any>GLOB_EVENTS)[key]; });
         return events.concat(base_events);
     }
-    protected _addHandler(name: string, fn: (sender: any, args: any) => void, nmspace?: string, context?: IBaseObject, prepend?: boolean) {
+    protected _addHandler(name: string, fn: (sender: any, args: any) => void, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
         let self = this, isReady = self._bootState === BootstrapState.Ready;
         let isIntialized = (self._bootState === BootstrapState.Initialized || self._bootState === BootstrapState.Ready);
 
@@ -204,7 +205,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             setTimeout(function () { fn.apply(self, [self, {}]); }, 0);
             return;
         }
-        super._addHandler(name, fn, nmspace, context, prepend);
+        super._addHandler(name, fn, nmspace, context, priority);
     }
     private _init(): IPromise<void> {
         let self = this, deferred = defer.createDeferred<void>(), invalidOpErr = new Error("Invalid operation");
@@ -325,13 +326,13 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         return this._internal;
     }
     addOnLoad(fn: TEventHandler<Bootstrap, any>, nmspace?: string, context?: IBaseObject) {
-        this._addHandler(GLOB_EVENTS.load, fn, nmspace, context, false);
+        this._addHandler(GLOB_EVENTS.load, fn, nmspace, context);
     }
     addOnUnLoad(fn: TEventHandler<Bootstrap, any>, nmspace?: string, context?: IBaseObject) {
-        this._addHandler(GLOB_EVENTS.unload, fn, nmspace, context, false);
+        this._addHandler(GLOB_EVENTS.unload, fn, nmspace, context);
     }
     addOnInitialize(fn: TEventHandler<Bootstrap, any>, nmspace?: string, context?: IBaseObject) {
-        this._addHandler(GLOB_EVENTS.initialized, fn, nmspace, context, false);
+        this._addHandler(GLOB_EVENTS.initialized, fn, nmspace, context);
     }
     addModuleInit(fn: (app: IApplication) => void): boolean {
         if (this._moduleInits.filter((val) => { return val === fn; }).length === 0) {

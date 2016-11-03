@@ -1,6 +1,9 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { DATE_CONVERSION, DATA_TYPE, FIELD_TYPE, SORT_ORDER  } from "../jriapp_core/const";
-import { IFieldInfo, IIndexer, IValidationInfo, TEventHandler, TPropChangedHandler, IBaseObject, IPromise } from "../jriapp_core/shared";
+import {
+    IFieldInfo, IIndexer, IValidationInfo, TEventHandler, TPropChangedHandler, IBaseObject,
+    IPromise, TPriority
+} from "../jriapp_core/shared";
 import { BaseObject }  from "../jriapp_core/object";
 import { ERRS } from "../jriapp_core/lang";
 import { ERROR } from "../jriapp_utils/coreutils";
@@ -157,104 +160,104 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         }
         return isHandled;
     }
-    addOnClearing(fn: TEventHandler<ICollection<TItem>, { reason: COLL_CHANGE_REASON; }>, nmspace?: string, context?: IBaseObject, prepend?: boolean) {
-        this._addHandler(COLL_EVENTS.clearing, fn, nmspace, context, prepend);
+    addOnClearing(fn: TEventHandler<ICollection<TItem>, { reason: COLL_CHANGE_REASON; }>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this._addHandler(COLL_EVENTS.clearing, fn, nmspace, context, priority);
     }
     removeOnClearing(nmspace?: string) {
         this._removeHandler(COLL_EVENTS.clearing, nmspace);
     }
-    addOnCleared(fn: TEventHandler<ICollection<TItem>, { reason: COLL_CHANGE_REASON; }>, nmspace?: string, context?: IBaseObject, prepend?: boolean) {
-        this._addHandler(COLL_EVENTS.cleared, fn, nmspace, context, prepend);
+    addOnCleared(fn: TEventHandler<ICollection<TItem>, { reason: COLL_CHANGE_REASON; }>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this._addHandler(COLL_EVENTS.cleared, fn, nmspace, context, priority);
     }
     removeOnCleared(nmspace?: string) {
         this._removeHandler(COLL_EVENTS.cleared, nmspace);
     }
-    addOnCollChanged(fn: TEventHandler<ICollection<TItem>, ICollChangedArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean) {
-        this._addHandler(COLL_EVENTS.collection_changed, fn, nmspace, context, prepend);
+    addOnCollChanged(fn: TEventHandler<ICollection<TItem>, ICollChangedArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this._addHandler(COLL_EVENTS.collection_changed, fn, nmspace, context, priority);
     }
     removeOnCollChanged(nmspace?: string) {
         this._removeHandler(COLL_EVENTS.collection_changed, nmspace);
     }
-    addOnFill(fn: TEventHandler<ICollection<TItem>, ICollFillArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean) {
-        this._addHandler(COLL_EVENTS.fill, fn, nmspace, context, prepend);
+    addOnFill(fn: TEventHandler<ICollection<TItem>, ICollFillArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this._addHandler(COLL_EVENTS.fill, fn, nmspace, context, priority);
     }
     removeOnFill(nmspace?: string) {
         this._removeHandler(COLL_EVENTS.fill, nmspace);
     }
-    addOnValidate(fn: TEventHandler<ICollection<TItem>, ICollValidateArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean) {
-        this._addHandler(COLL_EVENTS.validate, fn, nmspace, context, prepend);
+    addOnValidate(fn: TEventHandler<ICollection<TItem>, ICollValidateArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this._addHandler(COLL_EVENTS.validate, fn, nmspace, context, priority);
     }
     removeOnValidate(nmspace?: string) {
         this._removeHandler(COLL_EVENTS.validate, nmspace);
     }
-    addOnItemDeleting(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean) {
-        this._addHandler(COLL_EVENTS.item_deleting, fn, nmspace, context, prepend);
+    addOnItemDeleting(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this._addHandler(COLL_EVENTS.item_deleting, fn, nmspace, context, priority);
     }
     removeOnItemDeleting(nmspace?: string) {
         this._removeHandler(COLL_EVENTS.item_deleting, nmspace);
     }
-    addOnItemAdding(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean) {
-        this._addHandler(COLL_EVENTS.item_adding, fn, nmspace, context, prepend);
+    addOnItemAdding(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this._addHandler(COLL_EVENTS.item_adding, fn, nmspace, context, priority);
     }
     removeOnItemAdding(nmspace?: string) {
         this._removeHandler(COLL_EVENTS.item_adding, nmspace);
     }
-    addOnItemAdded(fn: TEventHandler<ICollection<TItem>, IItemAddedArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean) {
-        this._addHandler(COLL_EVENTS.item_added, fn, nmspace, context, prepend);
+    addOnItemAdded(fn: TEventHandler<ICollection<TItem>, IItemAddedArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this._addHandler(COLL_EVENTS.item_added, fn, nmspace, context, priority);
     }
     removeOnItemAdded(nmspace?: string) {
         this._removeHandler(COLL_EVENTS.item_added, nmspace);
     }
-    addOnCurrentChanging(fn: TEventHandler<ICollection<TItem>, ICurrentChangingArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean) {
-        this._addHandler(COLL_EVENTS.current_changing, fn, nmspace, context, prepend);
+    addOnCurrentChanging(fn: TEventHandler<ICollection<TItem>, ICurrentChangingArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this._addHandler(COLL_EVENTS.current_changing, fn, nmspace, context, priority);
     }
     removeOnCurrentChanging(nmspace?: string) {
         this._removeHandler(COLL_EVENTS.current_changing, nmspace);
     }
-    addOnPageChanging(fn: TEventHandler<ICollection<TItem>, IPageChangingArgs>, nmspace?: string, context?: IBaseObject, prepend?: boolean) {
-        this._addHandler(COLL_EVENTS.page_changing, fn, nmspace, context, prepend);
+    addOnPageChanging(fn: TEventHandler<ICollection<TItem>, IPageChangingArgs>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this._addHandler(COLL_EVENTS.page_changing, fn, nmspace, context, priority);
     }
     removeOnPageChanging(nmspace?: string) {
         this._removeHandler(COLL_EVENTS.page_changing, nmspace);
     }
-    addOnErrorsChanged(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean) {
-        this._addHandler(COLL_EVENTS.errors_changed, fn, nmspace, context, prepend);
+    addOnErrorsChanged(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this._addHandler(COLL_EVENTS.errors_changed, fn, nmspace, context, priority);
     }
     removeOnErrorsChanged(nmspace?: string) {
         this._removeHandler(COLL_EVENTS.errors_changed, nmspace);
     }
-    addOnBeginEdit(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean) {
-        this._addHandler(COLL_EVENTS.begin_edit, fn, nmspace, context, prepend);
+    addOnBeginEdit(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this._addHandler(COLL_EVENTS.begin_edit, fn, nmspace, context, priority);
     }
     removeOnBeginEdit(nmspace?: string) {
         this._removeHandler(COLL_EVENTS.begin_edit, nmspace);
     }
-    addOnEndEdit(fn: TEventHandler<ICollection<TItem>, ICollEndEditArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean) {
-        this._addHandler(COLL_EVENTS.end_edit, fn, nmspace, context, prepend);
+    addOnEndEdit(fn: TEventHandler<ICollection<TItem>, ICollEndEditArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this._addHandler(COLL_EVENTS.end_edit, fn, nmspace, context, priority);
     }
     removeOnEndEdit(nmspace?: string) {
         this._removeHandler(COLL_EVENTS.end_edit, nmspace);
     }
-    addOnBeforeBeginEdit(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean) {
-        this._addHandler(COLL_EVENTS.before_begin_edit, fn, nmspace, context, prepend);
+    addOnBeforeBeginEdit(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this._addHandler(COLL_EVENTS.before_begin_edit, fn, nmspace, context, priority);
     }
     removeOnBeforeBeginEdit(nmspace?: string) {
         this._removeHandler(COLL_EVENTS.before_begin_edit, nmspace);
     }
-    addOnBeforeEndEdit(fn: TEventHandler<ICollection<TItem>, ICollEndEditArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean) {
-        this._addHandler(COLL_EVENTS.before_end_edit, fn, nmspace, context, prepend);
+    addOnBeforeEndEdit(fn: TEventHandler<ICollection<TItem>, ICollEndEditArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this._addHandler(COLL_EVENTS.before_end_edit, fn, nmspace, context, priority);
     }
     removeBeforeOnEndEdit(nmspace?: string) {
         this._removeHandler(COLL_EVENTS.before_end_edit, nmspace);
     }
-    addOnCommitChanges(fn: TEventHandler<ICollection<TItem>, ICommitChangesArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean) {
-        this._addHandler(COLL_EVENTS.commit_changes, fn, nmspace, context, prepend);
+    addOnCommitChanges(fn: TEventHandler<ICollection<TItem>, ICommitChangesArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this._addHandler(COLL_EVENTS.commit_changes, fn, nmspace, context, priority);
     }
     removeOnCommitChanges(nmspace?: string) {
         this._removeHandler(COLL_EVENTS.commit_changes, nmspace);
     }
-    addOnStatusChanged(fn: TEventHandler<ICollection<TItem>, ICollItemStatusArgs<TItem>>, nmspace?: string, context?: IBaseObject, prepend?: boolean) {
-        this._addHandler(COLL_EVENTS.status_changed, fn, nmspace, context, prepend);
+    addOnStatusChanged(fn: TEventHandler<ICollection<TItem>, ICollItemStatusArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this._addHandler(COLL_EVENTS.status_changed, fn, nmspace, context, priority);
     }
     removeOnStatusChanged(nmspace?: string) {
         this._removeHandler(COLL_EVENTS.status_changed, nmspace);

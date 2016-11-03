@@ -296,7 +296,7 @@ define("jriapp_utils/arrhelper", ["require", "exports"], function (require, expo
 });
 define("jriapp_utils/strutils", ["require", "exports"], function (require, exports) {
     "use strict";
-    var undefined = {}["nonexistent"];
+    var undefined = void (0);
     var StringUtils = (function () {
         function StringUtils() {
         }
@@ -554,7 +554,7 @@ define("jriapp_utils/checks", ["require", "exports", "jriapp_utils/syschecks"], 
                 return false;
             return ((typeof (a) === "object") && Checks.isFunc(a.then));
         };
-        Checks.undefined = {}["nonexistent"];
+        Checks.undefined = void (0);
         return Checks;
     }());
     exports.Checks = Checks;
@@ -1063,59 +1063,52 @@ define("jriapp_utils/listhelper", ["require", "exports"], function (require, exp
         function ListHelper() {
         }
         ListHelper.CreateList = function () {
-            return { one: null, two: null };
+            return {};
         };
         ListHelper.CreateNode = function (handler, ns, context) {
-            var node = { fn: handler, next: null, context: !context ? null : context };
-            return node;
+            return { fn: handler, next: null, context: !context ? null : context };
         };
         ListHelper.countNodes = function (list) {
-            var ns_keys, cnt, i, j, obj;
-            cnt = 0;
             if (!list)
-                return cnt;
-            for (j = 0; j < 2; ++j) {
-                obj = j === 0 ? list.one : list.two;
+                return 0;
+            var ns_keys, cnt = 0, obj;
+            for (var j = 0; j < 3; ++j) {
+                obj = list[j];
                 if (!!obj) {
                     ns_keys = Object.keys(obj);
-                    for (i = 0; i < ns_keys.length; ++i) {
+                    for (var i = 0; i < ns_keys.length; ++i) {
                         cnt += obj[ns_keys[i]].length;
                     }
                 }
             }
             return cnt;
         };
-        ListHelper.appendNode = function (list, node, ns, highPrior) {
-            var bucket, obj;
+        ListHelper.appendNode = function (list, node, ns, priority) {
+            if (priority === void 0) { priority = "0"; }
+            var obj;
             if (!ns)
                 ns = "*";
-            if (!highPrior) {
-                obj = list.two;
-                if (!obj)
-                    list.two = obj = {};
+            obj = list[priority];
+            if (!obj) {
+                list[priority] = obj = {};
             }
-            else {
-                obj = list.one;
-                if (!obj)
-                    list.one = obj = {};
-            }
-            bucket = obj[ns];
+            var bucket = obj[ns];
             if (!bucket)
                 obj[ns] = bucket = [];
             bucket.push(node);
         };
         ListHelper.removeNodes = function (list, ns) {
-            var ns_key, ns_keys, i, j, obj;
             if (!list)
                 return;
+            var ns_key, ns_keys, obj;
             if (!ns)
                 ns = "*";
-            for (j = 0; j < 2; ++j) {
-                obj = j === 0 ? list.one : list.two;
+            for (var j = 0; j < 3; ++j) {
+                obj = list[j];
                 if (!!obj) {
                     if (ns === "*") {
                         ns_keys = Object.keys(obj);
-                        for (i = 0; i < ns_keys.length; ++i) {
+                        for (var i = 0; i < ns_keys.length; ++i) {
                             ns_key = ns_keys[i];
                             delete obj[ns_key];
                         }
@@ -1127,16 +1120,16 @@ define("jriapp_utils/listhelper", ["require", "exports"], function (require, exp
             }
         };
         ListHelper.toArray = function (list) {
-            var res = [], i, j, bucket, cur, k, obj;
             if (!list)
-                return res;
-            for (k = 0; k < 2; ++k) {
-                obj = k === 0 ? list.one : list.two;
+                return [];
+            var res = [], bucket, cur, obj;
+            for (var k = 2; k >= 0; k -= 1) {
+                obj = list[k];
                 if (!!obj) {
                     var ns_keys = Object.keys(obj);
-                    for (i = 0; i < ns_keys.length; ++i) {
+                    for (var i = 0; i < ns_keys.length; ++i) {
                         bucket = obj[ns_keys[i]];
-                        for (j = 0; j < bucket.length; ++j) {
+                        for (var j = 0; j < bucket.length; ++j) {
                             res.push(bucket[j]);
                         }
                     }
@@ -1181,7 +1174,7 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
         BaseObject.prototype._getEventNames = function () {
             return [OBJ_EVENTS.error, OBJ_EVENTS.destroyed];
         };
-        BaseObject.prototype._addHandler = function (name, handler, nmspace, context, prepend) {
+        BaseObject.prototype._addHandler = function (name, handler, nmspace, context, priority) {
             if (this._isDestroyed)
                 return;
             if (!coreutils_2.Checks.isFunc(handler)) {
@@ -1198,7 +1191,7 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
             if (!list) {
                 ev[n] = list = listhelper_1.ListHelper.CreateList();
             }
-            listhelper_1.ListHelper.appendNode(list, node, ns, prepend);
+            listhelper_1.ListHelper.appendNode(list, node, ns, priority);
         };
         BaseObject.prototype._removeHandler = function (name, nmspace) {
             var self = this, ev = self._events, ns = "*";
@@ -1318,9 +1311,9 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
                 this.raiseEvent("0" + lastPropName, data);
             }
         };
-        BaseObject.prototype.addHandler = function (name, handler, nmspace, context, prepend) {
+        BaseObject.prototype.addHandler = function (name, handler, nmspace, context, priority) {
             this._checkEventName(name);
-            this._addHandler(name, handler, nmspace, context, prepend);
+            this._addHandler(name, handler, nmspace, context, priority);
         };
         BaseObject.prototype.removeHandler = function (name, nmspace) {
             if (!!name) {
@@ -1328,14 +1321,14 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
             }
             this._removeHandler(name, nmspace);
         };
-        BaseObject.prototype.addOnDestroyed = function (handler, nmspace, context) {
-            this._addHandler(OBJ_EVENTS.destroyed, handler, nmspace, context, false);
+        BaseObject.prototype.addOnDestroyed = function (handler, nmspace, context, priority) {
+            this._addHandler(OBJ_EVENTS.destroyed, handler, nmspace, context, priority);
         };
         BaseObject.prototype.removeOnDestroyed = function (nmspace) {
             this._removeHandler(OBJ_EVENTS.destroyed, nmspace);
         };
-        BaseObject.prototype.addOnError = function (handler, nmspace, context) {
-            this._addHandler(OBJ_EVENTS.error, handler, nmspace, context, false);
+        BaseObject.prototype.addOnError = function (handler, nmspace, context, priority) {
+            this._addHandler(OBJ_EVENTS.error, handler, nmspace, context, priority);
         };
         BaseObject.prototype.removeOnError = function (nmspace) {
             this._removeHandler(OBJ_EVENTS.error, nmspace);
@@ -1350,7 +1343,7 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
                 this._checkEventName(name);
             this._raiseEvent(name, args);
         };
-        BaseObject.prototype.addOnPropertyChange = function (prop, handler, nmspace, context) {
+        BaseObject.prototype.addOnPropertyChange = function (prop, handler, nmspace, context, priority) {
             if (!prop)
                 throw new Error(lang_1.ERRS.ERR_PROP_NAME_EMPTY);
             if (coreutils_2.DEBUG.isDebugging() && prop !== "*" && !this._isHasProp(prop)) {
@@ -1358,7 +1351,7 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
                 throw new Error(coreutils_2.StringUtils.format(lang_1.ERRS.ERR_PROP_NAME_INVALID, prop));
             }
             prop = "0" + prop;
-            this._addHandler(prop, handler, nmspace, context, false);
+            this._addHandler(prop, handler, nmspace, context, priority);
         };
         BaseObject.prototype.removeOnPropertyChange = function (prop, nmspace) {
             if (!!prop) {
@@ -3431,14 +3424,14 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             var events = Object.keys(GLOB_EVENTS).map(function (key, i, arr) { return GLOB_EVENTS[key]; });
             return events.concat(base_events);
         };
-        Bootstrap.prototype._addHandler = function (name, fn, nmspace, context, prepend) {
+        Bootstrap.prototype._addHandler = function (name, fn, nmspace, context, priority) {
             var self = this, isReady = self._bootState === 3;
             var isIntialized = (self._bootState === 2 || self._bootState === 3);
             if ((name === GLOB_EVENTS.load && isReady) || (name === GLOB_EVENTS.initialized && isIntialized)) {
                 setTimeout(function () { fn.apply(self, [self, {}]); }, 0);
                 return;
             }
-            _super.prototype._addHandler.call(this, name, fn, nmspace, context, prepend);
+            _super.prototype._addHandler.call(this, name, fn, nmspace, context, priority);
         };
         Bootstrap.prototype._init = function () {
             var self = this, deferred = async_6.AsyncUtils.createDeferred(), invalidOpErr = new Error("Invalid operation");
@@ -3550,13 +3543,13 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             return this._internal;
         };
         Bootstrap.prototype.addOnLoad = function (fn, nmspace, context) {
-            this._addHandler(GLOB_EVENTS.load, fn, nmspace, context, false);
+            this._addHandler(GLOB_EVENTS.load, fn, nmspace, context);
         };
         Bootstrap.prototype.addOnUnLoad = function (fn, nmspace, context) {
-            this._addHandler(GLOB_EVENTS.unload, fn, nmspace, context, false);
+            this._addHandler(GLOB_EVENTS.unload, fn, nmspace, context);
         };
         Bootstrap.prototype.addOnInitialize = function (fn, nmspace, context) {
-            this._addHandler(GLOB_EVENTS.initialized, fn, nmspace, context, false);
+            this._addHandler(GLOB_EVENTS.initialized, fn, nmspace, context);
         };
         Bootstrap.prototype.addModuleInit = function (fn) {
             if (this._moduleInits.filter(function (val) { return val === fn; }).length === 0) {
@@ -8461,104 +8454,104 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
             }
             return isHandled;
         };
-        BaseCollection.prototype.addOnClearing = function (fn, nmspace, context, prepend) {
-            this._addHandler(COLL_EVENTS.clearing, fn, nmspace, context, prepend);
+        BaseCollection.prototype.addOnClearing = function (fn, nmspace, context, priority) {
+            this._addHandler(COLL_EVENTS.clearing, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnClearing = function (nmspace) {
             this._removeHandler(COLL_EVENTS.clearing, nmspace);
         };
-        BaseCollection.prototype.addOnCleared = function (fn, nmspace, context, prepend) {
-            this._addHandler(COLL_EVENTS.cleared, fn, nmspace, context, prepend);
+        BaseCollection.prototype.addOnCleared = function (fn, nmspace, context, priority) {
+            this._addHandler(COLL_EVENTS.cleared, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnCleared = function (nmspace) {
             this._removeHandler(COLL_EVENTS.cleared, nmspace);
         };
-        BaseCollection.prototype.addOnCollChanged = function (fn, nmspace, context, prepend) {
-            this._addHandler(COLL_EVENTS.collection_changed, fn, nmspace, context, prepend);
+        BaseCollection.prototype.addOnCollChanged = function (fn, nmspace, context, priority) {
+            this._addHandler(COLL_EVENTS.collection_changed, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnCollChanged = function (nmspace) {
             this._removeHandler(COLL_EVENTS.collection_changed, nmspace);
         };
-        BaseCollection.prototype.addOnFill = function (fn, nmspace, context, prepend) {
-            this._addHandler(COLL_EVENTS.fill, fn, nmspace, context, prepend);
+        BaseCollection.prototype.addOnFill = function (fn, nmspace, context, priority) {
+            this._addHandler(COLL_EVENTS.fill, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnFill = function (nmspace) {
             this._removeHandler(COLL_EVENTS.fill, nmspace);
         };
-        BaseCollection.prototype.addOnValidate = function (fn, nmspace, context, prepend) {
-            this._addHandler(COLL_EVENTS.validate, fn, nmspace, context, prepend);
+        BaseCollection.prototype.addOnValidate = function (fn, nmspace, context, priority) {
+            this._addHandler(COLL_EVENTS.validate, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnValidate = function (nmspace) {
             this._removeHandler(COLL_EVENTS.validate, nmspace);
         };
-        BaseCollection.prototype.addOnItemDeleting = function (fn, nmspace, context, prepend) {
-            this._addHandler(COLL_EVENTS.item_deleting, fn, nmspace, context, prepend);
+        BaseCollection.prototype.addOnItemDeleting = function (fn, nmspace, context, priority) {
+            this._addHandler(COLL_EVENTS.item_deleting, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnItemDeleting = function (nmspace) {
             this._removeHandler(COLL_EVENTS.item_deleting, nmspace);
         };
-        BaseCollection.prototype.addOnItemAdding = function (fn, nmspace, context, prepend) {
-            this._addHandler(COLL_EVENTS.item_adding, fn, nmspace, context, prepend);
+        BaseCollection.prototype.addOnItemAdding = function (fn, nmspace, context, priority) {
+            this._addHandler(COLL_EVENTS.item_adding, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnItemAdding = function (nmspace) {
             this._removeHandler(COLL_EVENTS.item_adding, nmspace);
         };
-        BaseCollection.prototype.addOnItemAdded = function (fn, nmspace, context, prepend) {
-            this._addHandler(COLL_EVENTS.item_added, fn, nmspace, context, prepend);
+        BaseCollection.prototype.addOnItemAdded = function (fn, nmspace, context, priority) {
+            this._addHandler(COLL_EVENTS.item_added, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnItemAdded = function (nmspace) {
             this._removeHandler(COLL_EVENTS.item_added, nmspace);
         };
-        BaseCollection.prototype.addOnCurrentChanging = function (fn, nmspace, context, prepend) {
-            this._addHandler(COLL_EVENTS.current_changing, fn, nmspace, context, prepend);
+        BaseCollection.prototype.addOnCurrentChanging = function (fn, nmspace, context, priority) {
+            this._addHandler(COLL_EVENTS.current_changing, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnCurrentChanging = function (nmspace) {
             this._removeHandler(COLL_EVENTS.current_changing, nmspace);
         };
-        BaseCollection.prototype.addOnPageChanging = function (fn, nmspace, context, prepend) {
-            this._addHandler(COLL_EVENTS.page_changing, fn, nmspace, context, prepend);
+        BaseCollection.prototype.addOnPageChanging = function (fn, nmspace, context, priority) {
+            this._addHandler(COLL_EVENTS.page_changing, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnPageChanging = function (nmspace) {
             this._removeHandler(COLL_EVENTS.page_changing, nmspace);
         };
-        BaseCollection.prototype.addOnErrorsChanged = function (fn, nmspace, context, prepend) {
-            this._addHandler(COLL_EVENTS.errors_changed, fn, nmspace, context, prepend);
+        BaseCollection.prototype.addOnErrorsChanged = function (fn, nmspace, context, priority) {
+            this._addHandler(COLL_EVENTS.errors_changed, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnErrorsChanged = function (nmspace) {
             this._removeHandler(COLL_EVENTS.errors_changed, nmspace);
         };
-        BaseCollection.prototype.addOnBeginEdit = function (fn, nmspace, context, prepend) {
-            this._addHandler(COLL_EVENTS.begin_edit, fn, nmspace, context, prepend);
+        BaseCollection.prototype.addOnBeginEdit = function (fn, nmspace, context, priority) {
+            this._addHandler(COLL_EVENTS.begin_edit, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnBeginEdit = function (nmspace) {
             this._removeHandler(COLL_EVENTS.begin_edit, nmspace);
         };
-        BaseCollection.prototype.addOnEndEdit = function (fn, nmspace, context, prepend) {
-            this._addHandler(COLL_EVENTS.end_edit, fn, nmspace, context, prepend);
+        BaseCollection.prototype.addOnEndEdit = function (fn, nmspace, context, priority) {
+            this._addHandler(COLL_EVENTS.end_edit, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnEndEdit = function (nmspace) {
             this._removeHandler(COLL_EVENTS.end_edit, nmspace);
         };
-        BaseCollection.prototype.addOnBeforeBeginEdit = function (fn, nmspace, context, prepend) {
-            this._addHandler(COLL_EVENTS.before_begin_edit, fn, nmspace, context, prepend);
+        BaseCollection.prototype.addOnBeforeBeginEdit = function (fn, nmspace, context, priority) {
+            this._addHandler(COLL_EVENTS.before_begin_edit, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnBeforeBeginEdit = function (nmspace) {
             this._removeHandler(COLL_EVENTS.before_begin_edit, nmspace);
         };
-        BaseCollection.prototype.addOnBeforeEndEdit = function (fn, nmspace, context, prepend) {
-            this._addHandler(COLL_EVENTS.before_end_edit, fn, nmspace, context, prepend);
+        BaseCollection.prototype.addOnBeforeEndEdit = function (fn, nmspace, context, priority) {
+            this._addHandler(COLL_EVENTS.before_end_edit, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeBeforeOnEndEdit = function (nmspace) {
             this._removeHandler(COLL_EVENTS.before_end_edit, nmspace);
         };
-        BaseCollection.prototype.addOnCommitChanges = function (fn, nmspace, context, prepend) {
-            this._addHandler(COLL_EVENTS.commit_changes, fn, nmspace, context, prepend);
+        BaseCollection.prototype.addOnCommitChanges = function (fn, nmspace, context, priority) {
+            this._addHandler(COLL_EVENTS.commit_changes, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnCommitChanges = function (nmspace) {
             this._removeHandler(COLL_EVENTS.commit_changes, nmspace);
         };
-        BaseCollection.prototype.addOnStatusChanged = function (fn, nmspace, context, prepend) {
-            this._addHandler(COLL_EVENTS.status_changed, fn, nmspace, context, prepend);
+        BaseCollection.prototype.addOnStatusChanged = function (fn, nmspace, context, priority) {
+            this._addHandler(COLL_EVENTS.status_changed, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnStatusChanged = function (nmspace) {
             this._removeHandler(COLL_EVENTS.status_changed, nmspace);
@@ -10877,6 +10870,6 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.COLL_CHANGE_REASON = collection_1.COLL_CHANGE_REASON;
     exports.COLL_CHANGE_TYPE = collection_1.COLL_CHANGE_TYPE;
     exports.Application = app_1.Application;
-    exports.VERSION = "0.9.86";
+    exports.VERSION = "0.9.87";
     bootstrap_25.Bootstrap._initFramework();
 });

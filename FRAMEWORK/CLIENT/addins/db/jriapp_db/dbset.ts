@@ -1,6 +1,9 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { FIELD_TYPE, DATE_CONVERSION, DATA_TYPE, SORT_ORDER } from "jriapp_core/const";
-import { IIndexer, IFieldInfo, IValidationInfo, TEventHandler, IBaseObject, IPromise } from "jriapp_core/shared";
+import {
+    IIndexer, IFieldInfo, IValidationInfo, TEventHandler, IBaseObject,
+    IPromise, TPriority
+} from "jriapp_core/shared";
 import { ERRS } from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
 import { Utils, Debounce, ERROR } from "jriapp_utils/utils";
@@ -738,8 +741,8 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
     _getInternal(): IInternalDbSetMethods<TItem> {
         return <IInternalDbSetMethods<TItem>>this._internal;
     }
-    addOnLoaded(fn: TEventHandler<DbSet<TItem, TDbContext>, IDbSetLoadedArgs<TItem>>, nmspace?: string, context?: IBaseObject) {
-        this._addHandler(DBSET_EVENTS.loaded, fn, nmspace, context, false);
+    addOnLoaded(fn: TEventHandler<DbSet<TItem, TDbContext>, IDbSetLoadedArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this._addHandler(DBSET_EVENTS.loaded, fn, nmspace, context, priority);
     }
     removeOnLoaded(nmspace?: string) {
         this._removeHandler(DBSET_EVENTS.loaded, nmspace);

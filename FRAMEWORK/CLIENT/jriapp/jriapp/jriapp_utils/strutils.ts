@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import * as coreMOD from "../jriapp_core/shared";
 
-let undefined: any = (<any>{})["nonexistent"];
+const undefined: any = void (0);
 
 export class StringUtils {
     private static ERR_STRING_FORMAT_INVALID = "String format has invalid expression value: ";

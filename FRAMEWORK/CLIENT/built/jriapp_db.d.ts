@@ -151,7 +151,7 @@ declare module "jriapp_db/datacache" {
 }
 declare module "jriapp_db/dbset" {
     import { SORT_ORDER } from "jriapp_core/const";
-    import { IFieldInfo, TEventHandler, IBaseObject, IPromise } from "jriapp_core/shared";
+    import { IFieldInfo, TEventHandler, IBaseObject, IPromise, TPriority } from "jriapp_core/shared";
     import { COLL_CHANGE_REASON, ITEM_STATUS, IInternalCollMethods, BaseCollection } from "jriapp_collection/collection";
     import { IFieldName, IEntityItem, IEntityConstructor, IRowInfo, ITrackAssoc, IQueryResponse, IPermissions, IDbSetConstuctorOptions, IDbSetOptions, ICalcFieldImpl, INavFieldImpl, IQueryResult, IRowData, IDbSetLoadedArgs } from "jriapp_db/int";
     import { REFRESH_MODE } from "jriapp_db/const";
@@ -249,7 +249,7 @@ declare module "jriapp_db/dbset" {
         protected _getNames(): IFieldName[];
         protected createEntity(row: IRowData, fieldNames: IFieldName[]): TItem;
         _getInternal(): IInternalDbSetMethods<TItem>;
-        addOnLoaded(fn: TEventHandler<DbSet<TItem, TDbContext>, IDbSetLoadedArgs<TItem>>, nmspace?: string, context?: IBaseObject): void;
+        addOnLoaded(fn: TEventHandler<DbSet<TItem, TDbContext>, IDbSetLoadedArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnLoaded(nmspace?: string): void;
         waitForNotBusy(callback: () => void, groupName: string): void;
         getFieldInfo(fieldName: string): IFieldInfo;

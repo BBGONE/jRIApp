@@ -39,6 +39,8 @@ export interface IErrorHandler {
     handleError(error: any, source: any): boolean;
 }
 
+export type TPriority = "0" | "1" | "2";
+
 export interface IListNode {
     context: any
     fn: TEventHandler<any, any>;
@@ -46,10 +48,12 @@ export interface IListNode {
 }
 export type IListBucket = IListNode[];
 
+export interface INamespaceMap {
+    [ns: string]: IListBucket;
+}
+
 export interface IList {
-    //two lists : one - for high priority events, two - ordinary events
-    one: { [ns: string]: IListBucket; };
-    two: { [ns: string]: IListBucket; };
+    [priority: string]: INamespaceMap;
 }
 
 export interface ITaskQueue {
@@ -59,14 +63,14 @@ export interface ITaskQueue {
 export interface IBaseObject extends IErrorHandler, IDisposable {
     _isHasProp(prop: string): boolean;
     raisePropertyChanged(name: string): void;
-    addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void;
+    addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
     removeHandler(name?: string, nmspace?: string): void;
-    addOnPropertyChange(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void;
+    addOnPropertyChange(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
     removeOnPropertyChange(prop?: string, nmspace?: string): void;
     removeNSHandlers(nmspace?: string): void;
-    addOnError(handler: TErrorHandler, nmspace?: string, context?: IBaseObject): void;
+    addOnError(handler: TErrorHandler, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
     removeOnError(nmspace?: string): void;
-    addOnDestroyed(handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject): void;
+    addOnDestroyed(handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
     removeOnDestroyed(nmspace?: string): void;
     raiseEvent(name: string, args: any): void;
 }

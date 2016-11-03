@@ -1,13 +1,20 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IBaseObject, IIndexer, IList, IListNode, TEventHandler, TErrorHandler, TErrorArgs, TPropChangedHandler } from "shared";
+import {
+    IBaseObject, IIndexer, TPriority, IList, IListNode, TEventHandler, TErrorHandler,
+    TErrorArgs, TPropChangedHandler
+} from "shared";
 import { ERRS } from "lang";
-import { SysChecks, Checks as checks, StringUtils as strUtils, CoreUtils as coreUtils, ERROR, DEBUG } from "../jriapp_utils/coreutils";
+import {
+    SysChecks, Checks as checks, StringUtils as strUtils, CoreUtils as coreUtils,
+    ERROR, DEBUG
+} from "../jriapp_utils/coreutils";
 import { ListHelper } from "../jriapp_utils/listhelper";
 
 const OBJ_EVENTS = {
     error: "error",
     destroyed: "destroyed"
 };
+
 
 SysChecks._isBaseObj = function (obj: any): boolean {
     return (!!obj && obj instanceof BaseObject);
@@ -37,7 +44,7 @@ export class BaseObject implements IBaseObject {
     protected _getEventNames(): string[] {
         return [OBJ_EVENTS.error, OBJ_EVENTS.destroyed];
     }
-    protected _addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void {
+    protected _addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void {
         if (this._isDestroyed)
             return;
 
@@ -61,7 +68,7 @@ export class BaseObject implements IBaseObject {
             ev[n] = list = ListHelper.CreateList();
         }
 
-        ListHelper.appendNode(list, node, ns, prepend);
+        ListHelper.appendNode(list, node, ns, priority);
     }
     protected _removeHandler(name?: string, nmspace?: string): void {
         let self = this, ev = self._events, ns = "*";
@@ -187,9 +194,9 @@ export class BaseObject implements IBaseObject {
             this.raiseEvent("0" + lastPropName, data);
         }
     }
-    addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, prepend?: boolean): void {
+    addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void {
         this._checkEventName(name);
-        this._addHandler(name, handler, nmspace, context, prepend);
+        this._addHandler(name, handler, nmspace, context, priority);
     }
     removeHandler(name?: string, nmspace?: string): void {
         if (!!name) {
@@ -197,14 +204,14 @@ export class BaseObject implements IBaseObject {
         }
         this._removeHandler(name, nmspace);
     }
-    addOnDestroyed(handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject): void {
-        this._addHandler(OBJ_EVENTS.destroyed, handler, nmspace, context, false);
+    addOnDestroyed(handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void {
+        this._addHandler(OBJ_EVENTS.destroyed, handler, nmspace, context, priority);
     }
     removeOnDestroyed(nmspace?: string): void {
         this._removeHandler(OBJ_EVENTS.destroyed, nmspace);
     }
-    addOnError(handler: TErrorHandler, nmspace?: string, context?: IBaseObject): void {
-        this._addHandler(OBJ_EVENTS.error, handler, nmspace, context, false);
+    addOnError(handler: TErrorHandler, nmspace?: string, context?: IBaseObject, priority?: TPriority): void {
+        this._addHandler(OBJ_EVENTS.error, handler, nmspace, context, priority);
     }
     removeOnError(nmspace?: string): void {
         this._removeHandler(OBJ_EVENTS.error, nmspace);
@@ -221,7 +228,7 @@ export class BaseObject implements IBaseObject {
         this._raiseEvent(name, args);
     }
     //to subscribe fortthe changes on all properties, pass in the prop parameter: '*'
-    addOnPropertyChange(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void {
+    addOnPropertyChange(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject, priority?: TPriority): void {
         if (!prop)
             throw new Error(ERRS.ERR_PROP_NAME_EMPTY);
         if (DEBUG.isDebugging() && prop !== "*" && !this._isHasProp(prop)) {
@@ -229,7 +236,7 @@ export class BaseObject implements IBaseObject {
             throw new Error(strUtils.format(ERRS.ERR_PROP_NAME_INVALID, prop));
         }
         prop = "0" + prop;
-        this._addHandler(prop, handler, nmspace, context, false);
+        this._addHandler(prop, handler, nmspace, context, priority);
     }
     removeOnPropertyChange(prop?: string, nmspace?: string): void {
         if (!!prop) {
