@@ -1380,6 +1380,9 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
                 }
                 evHelper.remove(this._events, "0" + prop, nmspace);
             }
+            else {
+                evHelper.removeNs(this._events, nmspace);
+            }
         };
         BaseObject.prototype.getIsDestroyed = function () {
             return this._obj_state === 2;

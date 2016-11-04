@@ -150,6 +150,9 @@ export class BaseObject implements IBaseObject {
             }
             evHelper.remove(this._events, "0" + prop, nmspace);
         }
+        else {
+            evHelper.removeNs(this._events, nmspace);
+        }
     }
     getIsDestroyed(): boolean {
         return this._obj_state === ObjState.Destroyed;
