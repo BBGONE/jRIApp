@@ -6,9 +6,9 @@ import { bootstrap } from "../jriapp_core/bootstrap";
 import { ERRS } from "../jriapp_core/lang";
 import { parser } from "../jriapp_core/parser";
 import { SysChecks, ERROR } from "../jriapp_utils/coreutils";
-import { LifeTimeScope, Utils as utils } from "../jriapp_utils/utils";
+import { LifeTimeScope, Utils } from "../jriapp_utils/utils";
 
-let $ = utils.dom.$;
+const utils = Utils, $ = utils.dom.$;
 
 export function createFactory(app: IApplication, num: number, register: IElViewRegister): IElViewFactory {
     return new ElViewFactory(app, num, register);

@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { FIELD_TYPE, DATE_CONVERSION, DATA_TYPE, SORT_ORDER } from "jriapp_core/const";
-import { IPromise, IFieldInfo, TEventHandler } from "jriapp_core/shared";
+import { IPromise, IFieldInfo, TEventHandler, TPriority } from "jriapp_core/shared";
 import { ERRS } from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
 import { parser } from "jriapp_core/parser";
@@ -257,15 +257,15 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         }
     }
     protected _bindDS() {
-        let self = this, ds = this._dataSource;
+        const self = this, ds = this._dataSource;
         if (!ds)
             return;
-        ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self, "1");
+        ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self, TPriority.AboveNormal);
         ds.addOnBeginEdit(function (sender, args) {
             if (!!self._itemsByKey[args.item._key]) {
                 self._onEditing(args.item, true, false);
             }
-        }, self._objId, null, "1");
+        }, self._objId, null, TPriority.AboveNormal);
         ds.addOnEndEdit(function (sender, args) {
             let isOk: boolean, item = args.item, canFilter = !!self._fn_filter;
             if (!!self._itemsByKey[item._key]) {
@@ -284,19 +284,19 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
                     }
                 }
             }
-        }, self._objId, null, "1");
+        }, self._objId, null, TPriority.AboveNormal);
         ds.addOnErrorsChanged(function (sender, args) {
             if (!!self._itemsByKey[args.item._key]) {
                 self._onErrorsChanged(args.item);
             }
-        }, self._objId, null, "1");
-        ds.addOnStatusChanged(self._onDSStatusChanged, self._objId, self, "1");
+        }, self._objId, null, TPriority.AboveNormal);
+        ds.addOnStatusChanged(self._onDSStatusChanged, self._objId, self, TPriority.AboveNormal);
 
         ds.addOnItemDeleting(function (sender, args) {
             if (!!self._itemsByKey[args.item._key]) {
                 self._onItemDeleting(args);
             }
-        }, self._objId, null, "1");
+        }, self._objId, null, TPriority.AboveNormal);
         ds.addOnItemAdded(function (sender, args) {
             if (self._isAddingNew) {
                 if (!self._itemsByKey[args.item._key]) {
@@ -306,15 +306,15 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
                 self._onEditing(args.item, true, false);
                 self._onItemAdded(args.item);
             }
-        }, self._objId, null, "1");
+        }, self._objId, null, TPriority.AboveNormal);
         ds.addOnItemAdding(function (sender, args) {
             if (self._isAddingNew) {
                 self._onItemAdding(args.item);
             }
-        }, self._objId, null, "1");
+        }, self._objId, null, TPriority.AboveNormal);
     }
     protected _unbindDS() {
-        let self = this, ds = this._dataSource;
+        const self = this, ds = this._dataSource;
         if (!ds) return;
         ds.removeNSHandlers(self._objId);
     }

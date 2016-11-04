@@ -3,7 +3,7 @@ import { DATA_TYPE } from "../jriapp_core/const";
 import { IApplication, IContentFactory, IContentFactoryList, IContentOptions, IContentConstructor,
     IConstructorContentOptions, TFactoryGetter, IContent }  from "../jriapp_core/shared";
 import { ERRS } from "../jriapp_core/lang";
-import { Utils as utils } from "../jriapp_utils/utils";
+import { Utils } from "../jriapp_utils/utils";
 import { bootstrap } from "../jriapp_core/bootstrap";
 
 import { css } from "./int";
@@ -26,7 +26,7 @@ export { NumberContent } from "./number";
 export { DateContent } from "./date";
 export { DateTimeContent } from "./datetime";
 
-const strUtils = utils.str;
+const utils = Utils, strUtils = utils.str;
 
 //the base content factory
 //It is always the last in the chain of factories

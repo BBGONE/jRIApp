@@ -1,18 +1,17 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import * as constsMOD from "../jriapp_core/const";
-import * as coreMOD from "../jriapp_core/shared";
+import { IEventNode, IEventNodeArray, IEventList, INamespaceMap, TErrorHandler, TPriority } from "../jriapp_core/shared";
 
-export class ListHelper {
-    static CreateList(): coreMOD.IList {
+export class EventHelper {
+    static CreateList(): IEventList {
         return {};
     }
-    static CreateNode(handler: coreMOD.TErrorHandler, ns: string, context?: any): coreMOD.IListNode {
+    static CreateNode(handler: TErrorHandler, ns: string, context?: any): IEventNode {
         return { fn: handler, next: null, context: !context ? null : context };
     }
-    static countNodes(list: coreMOD.IList): number {
+    static countNodes(list: IEventList): number {
         if (!list)
             return 0;
-        let ns_keys: string[], cnt: number = 0, obj: { [ns: string]: coreMOD.IListBucket; };
+        let ns_keys: string[], cnt: number = 0, obj: INamespaceMap;
         for (let j = 0; j < 3; ++j) {
             obj = list[j];
             if (!!obj) {
@@ -24,24 +23,23 @@ export class ListHelper {
         }
         return cnt;
     }
-    static appendNode(list: coreMOD.IList, node: coreMOD.IListNode, ns: string, priority: coreMOD.TPriority = "0"): void {
-        let obj: { [ns: string]: coreMOD.IListBucket; };
+    static appendNode(list: IEventList, node: IEventNode, ns: string, priority: TPriority = TPriority.Normal): void {
         if (!ns)
             ns = "*";
-        obj = list[priority];
+        let obj = list[priority];
         if (!obj) {
             list[priority] = obj = {};
         }
       
-        let bucket = obj[ns];
-        if (!bucket)
-            obj[ns] = bucket = [];
-        bucket.push(node);
+        let arr = obj[ns];
+        if (!arr)
+            obj[ns] = arr = [];
+        arr.push(node);
     }
-    static removeNodes(list: coreMOD.IList, ns: string): void {
+    static removeNodes(list: IEventList, ns: string): void {
         if (!list)
             return;
-        let ns_key: string, ns_keys: string[], obj: coreMOD.INamespaceMap;
+        let ns_key: string, ns_keys: string[], obj: INamespaceMap;
         if (!ns)
             ns = "*";
         for (let j = 0; j < 3; ++j) {
@@ -60,20 +58,21 @@ export class ListHelper {
             }
         }
     }
-    static toArray(list: coreMOD.IList): coreMOD.IListNode[] {
+    static toArray(list: IEventList): IEventNode[] {
         if (!list)
             return [];
-        let res: coreMOD.IListNode[] = [], bucket: coreMOD.IListBucket, cur: coreMOD.IListNode,
-            obj: { [ns: string]: coreMOD.IListBucket; };
+        let res: IEventNodeArray = [], arr: IEventNodeArray, cur: IEventNode,
+            obj: INamespaceMap;
+
         // from highest priority to the lowest
         for (let k = 2; k >= 0 ; k -= 1) {
             obj = list[k];
             if (!!obj) {
                 let ns_keys = Object.keys(obj);
                 for (let i = 0; i < ns_keys.length; ++i) {
-                    bucket = obj[ns_keys[i]];
-                    for (let j = 0; j < bucket.length; ++j) {
-                        res.push(bucket[j]);
+                    arr = obj[ns_keys[i]];
+                    for (let j = 0; j < arr.length; ++j) {
+                        res.push(arr[j]);
                     }
                 }
             }

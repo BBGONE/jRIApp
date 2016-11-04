@@ -124,7 +124,7 @@
     <TypeScriptCompile Include="jriapp\jriapp_utils\async.ts" />
     <TypeScriptCompile Include="jriapp\jriapp_utils\dom.ts" />
     <TypeScriptCompile Include="jriapp\jriapp_utils\strutils.ts" />
-    <TypeScriptCompile Include="jriapp\jriapp_utils\listhelper.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_utils\eventhelper.ts" />
     <TypeScriptCompile Include="jriapp\jriapp_utils\debounce.ts" />
     <TypeScriptCompile Include="jriapp\jriapp_utils\arrhelper.ts" />
     <TypeScriptCompile Include="jriapp\jriapp_utils\waitqueue.ts" />

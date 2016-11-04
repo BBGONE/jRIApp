@@ -141,18 +141,22 @@ declare module "jriapp_core/shared" {
     export interface IErrorHandler {
         handleError(error: any, source: any): boolean;
     }
-    export type TPriority = "0" | "1" | "2";
-    export interface IListNode {
+    export const enum TPriority {
+        Normal = 0,
+        AboveNormal = 1,
+        High = 2,
+    }
+    export interface IEventNode {
         context: any;
         fn: TEventHandler<any, any>;
-        next: IListNode;
+        next: IEventNode;
     }
-    export type IListBucket = IListNode[];
+    export type IEventNodeArray = IEventNode[];
     export interface INamespaceMap {
-        [ns: string]: IListBucket;
+        [ns: string]: IEventNodeArray;
     }
-    export interface IList {
-        [priority: string]: INamespaceMap;
+    export interface IEventList {
+        [priority: number]: INamespaceMap;
     }
     export interface ITaskQueue {
         enque(task: () => void): void;
@@ -827,15 +831,15 @@ declare module "jriapp_core/lang" {
     export let ERRS: IErrors;
     export let STRS: ILocaleText;
 }
-declare module "jriapp_utils/listhelper" {
-    import * as coreMOD from "jriapp_core/shared";
-    export class ListHelper {
-        static CreateList(): coreMOD.IList;
-        static CreateNode(handler: coreMOD.TErrorHandler, ns: string, context?: any): coreMOD.IListNode;
-        static countNodes(list: coreMOD.IList): number;
-        static appendNode(list: coreMOD.IList, node: coreMOD.IListNode, ns: string, priority?: coreMOD.TPriority): void;
-        static removeNodes(list: coreMOD.IList, ns: string): void;
-        static toArray(list: coreMOD.IList): coreMOD.IListNode[];
+declare module "jriapp_utils/eventhelper" {
+    import { IEventNode, IEventList, TErrorHandler, TPriority } from "jriapp_core/shared";
+    export class EventHelper {
+        static CreateList(): IEventList;
+        static CreateNode(handler: TErrorHandler, ns: string, context?: any): IEventNode;
+        static countNodes(list: IEventList): number;
+        static appendNode(list: IEventList, node: IEventNode, ns: string, priority?: TPriority): void;
+        static removeNodes(list: IEventList, ns: string): void;
+        static toArray(list: IEventList): IEventNode[];
     }
 }
 declare module "jriapp_core/object" {

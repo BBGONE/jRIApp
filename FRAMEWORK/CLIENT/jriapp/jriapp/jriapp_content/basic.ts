@@ -5,11 +5,11 @@ import { IApplication, IContent, IContentOptions, IConstructorContentOptions, IL
 import { BaseObject }  from "../jriapp_core/object";
 import { Binding, getBindingOptions } from "../jriapp_core/binding";
 import { SysChecks, ERROR } from "../jriapp_utils/coreutils";
-import { Utils as utils, LifeTimeScope } from "../jriapp_utils/utils";
+import { Utils, LifeTimeScope } from "../jriapp_utils/utils";
 
 import { css } from "./int";
 
-const dom = utils.dom, $ = dom.$, doc = utils.dom.document, coreUtils = utils.core;
+const utils = Utils, dom = utils.dom, $ = dom.$, doc = utils.dom.document, coreUtils = utils.core;
 
 export class BasicContent extends BaseObject implements IContent {
     protected _parentEl: HTMLElement;

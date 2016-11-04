@@ -11,12 +11,12 @@ import { contentFactories } from "../jriapp_content/factory";
 import { parser } from "../jriapp_core/parser";
 import { SysChecks, CoreUtils as coreUtils, Checks as checks, StringUtils as strUtils, ERROR } from "../jriapp_utils/coreutils";
 import { DomUtils as dom } from "../jriapp_utils/dom";
-import { Utils as utils } from "../jriapp_utils/utils";
+import { Utils } from "../jriapp_utils/utils";
 import { BaseElView, fn_addToolTip } from "../jriapp_elview/elview";
 import { Binding } from "binding";
 import { parseContentAttr } from "../jriapp_content/int";
 
-const $ = dom.$, document = dom.document;
+const utils = Utils, $ = dom.$, doc = dom.document;
 
 export const css = {
     dataform: "ria-dataform",

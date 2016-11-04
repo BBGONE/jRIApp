@@ -1,10 +1,10 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 /// <reference path="../jriapp_core/../../thirdparty/require.d.ts" />
 import { IIndexer, IViewType, IApplication, IPromise, IDeferred, IModuleLoader } from "../jriapp_core/shared";
-import { Utils as utils } from "./utils";
+import { Utils } from "./utils";
 import { create as createCSSLoader } from "./sloader";
 
-const coreUtils = utils.core, strUtils = utils.str, defer = utils.defer, arr = utils.arr,
+const utils = Utils, coreUtils = utils.core, strUtils = utils.str, defer = utils.defer, arr = utils.arr,
     resolvedPromise = defer.createSyncDeferred<void>().resolve(),
     CSSPrefix = "css!";
 

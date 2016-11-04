@@ -1,11 +1,11 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { ITemplate, IVoidPromise, ITemplateEvents, IBaseObject, IViewOptions } from "jriapp_core/shared";
 import { BaseObject } from "jriapp_core/object";
-import { Utils as utils, ERROR } from "jriapp_utils/utils";
+import { Utils, ERROR } from "jriapp_utils/utils";
 import { bootstrap } from "jriapp_core/bootstrap";
 import { BaseElView } from "jriapp_elview/elview";
 
-const checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
 
 export interface IDynaContentAnimation {
     beforeShow(template: ITemplate, isFirstShow: boolean): void;

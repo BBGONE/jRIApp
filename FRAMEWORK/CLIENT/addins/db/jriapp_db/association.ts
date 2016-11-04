@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IFieldInfo, IIndexer } from "jriapp_core/shared";
+import { IFieldInfo, IIndexer, TPriority } from "jriapp_core/shared";
 import { ERRS } from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
 import { bootstrap } from "jriapp_core/bootstrap";
@@ -95,21 +95,21 @@ export class Association extends BaseObject {
             return;
         ds.addOnCollChanged(function (sender, args) {
             self._onParentCollChanged(args);
-        }, self._objId, null, "2");
+        }, self._objId, null, TPriority.High);
         ds.addOnBeginEdit(function (sender, args) {
             self._onParentEdit(args.item, true, false);
-        }, self._objId, null, "2");
+        }, self._objId, null, TPriority.High);
         ds.addOnEndEdit(function (sender, args) {
             self._onParentEdit(args.item, false, args.isCanceled);
-        }, self._objId, null, "2");
+        }, self._objId, null, TPriority.High);
         ds.addOnItemDeleting(function (sender, args) {
-        }, self._objId, null, "2");
+        }, self._objId, null, TPriority.High);
         ds.addOnStatusChanged(function (sender, args) {
             self._onParentStatusChanged(args.item, args.oldStatus);
-        }, self._objId, null, "2");
+        }, self._objId, null, TPriority.High);
         ds.addOnCommitChanges(function (sender, args) {
             self._onParentCommitChanges(args.item, args.isBegin, args.isRejected, args.status);
-        }, self._objId, null, "2");
+        }, self._objId, null, TPriority.High);
     }
     protected _bindChildDS() {
         const self = this, ds = this._childDS;
@@ -117,19 +117,19 @@ export class Association extends BaseObject {
             return;
         ds.addOnCollChanged(function (sender, args) {
             self._onChildCollChanged(args);
-        }, self._objId, null, "2");
+        }, self._objId, null, TPriority.High);
         ds.addOnBeginEdit(function (sender, args) {
             self._onChildEdit(args.item, true, false);
-        }, self._objId, null, "2");
+        }, self._objId, null, TPriority.High);
         ds.addOnEndEdit(function (sender, args) {
             self._onChildEdit(args.item, false, args.isCanceled);
-        }, self._objId, null, "2");
+        }, self._objId, null, TPriority.High);
         ds.addOnStatusChanged(function (sender, args) {
             self._onChildStatusChanged(args.item, args.oldStatus);
-        }, self._objId, null, "2");
+        }, self._objId, null, TPriority.High);
         ds.addOnCommitChanges(function (sender, args) {
             self._onChildCommitChanges(args.item, args.isBegin, args.isRejected, args.status);
-        }, self._objId, null, "2");
+        }, self._objId, null, TPriority.High);
     }
     protected _onParentCollChanged(args: ICollChangedArgs<IEntityItem>) {
         let self = this, item: IEntityItem, changed: string[] = [], changedKeys: any = {};

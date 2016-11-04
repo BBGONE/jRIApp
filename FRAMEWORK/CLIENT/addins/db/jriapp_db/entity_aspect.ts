@@ -380,8 +380,6 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
     _acceptChanges(rowInfo?: IRowInfo): void {
         if (this.getIsDestroyed())
             return;
-        //make sure it is not editing
-        this.endEdit();
         const oldStatus = this.status, dbSet = this.dbSet, internal = dbSet._getInternal();
         if (oldStatus !== ITEM_STATUS.None) {
             internal.onCommitChanges(this.item, true, false, oldStatus);
@@ -438,21 +436,21 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         if (this.getIsDestroyed())
             return;
         const self = this, oldStatus = self.status, dbSet = self.dbSet, internal = dbSet._getInternal();
-        //make sure it is not editing
-        this.cancelEdit();
         if (oldStatus !== ITEM_STATUS.None) {
             internal.onCommitChanges(self.item, true, true, oldStatus);
             if (oldStatus === ITEM_STATUS.Added) {
                 if (!this.getIsDestroyCalled())
                     this.destroy();
-
                 return;
             }
 
-            let changes = self._getValueChanges(true);
+            const changes = self._getValueChanges(true);
             if (!!self._origVals) {
                 self._vals = coreUtils.clone(self._origVals);
                 self._origVals = null;
+                if (!!self._saveVals) {
+                    self._saveVals = coreUtils.clone(self._vals);
+                }
             }
             self.setStatus(ITEM_STATUS.None);
             internal.removeAllErrors(this.item);
@@ -490,8 +488,8 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
     destroy() {
         if (this._isDestroyed)
             return;
-        const self = this;
         this._isDestroyCalled = true;
+        this.cancelEdit();
         if (!this.isCached) {
             this.rejectChanges();
         }

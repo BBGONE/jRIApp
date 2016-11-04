@@ -5,13 +5,13 @@ import { ERRS, STRS } from "../jriapp_core/lang";
 import { BaseObject }  from "../jriapp_core/object";
 import { SysChecks } from "../jriapp_utils/syschecks";
 import { bootstrap } from "../jriapp_core/bootstrap";
-import { Utils as utils } from "../jriapp_utils/utils";
+import { Utils } from "../jriapp_utils/utils";
 import { TAction, TCommand, ICommand, Command, TPredicate } from "../jriapp_core/mvvm";
 import { EventStore, EVENT_CHANGE_TYPE, IEventChangedArgs } from "../jriapp_utils/eventstore";
 
 export { IEventChangedArgs, EVENT_CHANGE_TYPE };
 
-const coreUtils = utils.core, dom = utils.dom, $ = dom.$, checks = utils.check;
+const utils = Utils, coreUtils = utils.core, dom = utils.dom, $ = dom.$, checks = utils.check;
 const PROP_BAG = SysChecks._PROP_BAG_NAME();
 
 SysChecks._isElView = function (obj: any): boolean {

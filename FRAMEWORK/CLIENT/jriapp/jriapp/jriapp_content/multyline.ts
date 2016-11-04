@@ -2,13 +2,13 @@
 import { KEYS } from "../jriapp_core/const";
 import { ERRS } from "../jriapp_core/lang";
 import { IApplication, IElView, IConstructorContentOptions, IFieldInfo }  from "../jriapp_core/shared";
-import { Utils as utils } from "../jriapp_utils/utils";
+import { Utils } from "../jriapp_utils/utils";
 import { TextAreaElView } from "../jriapp_elview/textarea";
 
 import { css } from "./int";
 import { BasicContent } from "./basic";
 
-const NAME = "multyline", strUtils = utils.str, document = utils.dom.document;
+const utils = Utils, NAME = "multyline", strUtils = utils.str, document = utils.dom.document;
 
 export class MultyLineContent extends BasicContent {
     static __allowedKeys: number[] = null;

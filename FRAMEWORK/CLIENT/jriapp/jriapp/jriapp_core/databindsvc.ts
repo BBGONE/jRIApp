@@ -7,12 +7,12 @@ import { BaseObject }  from "./object";
 import { bootstrap } from "./bootstrap";
 import { SysChecks } from "../jriapp_utils/syschecks";
 import { ERROR, LOG } from "../jriapp_utils/coreutils";
-import { LifeTimeScope, Utils as utils } from "../jriapp_utils/utils";
+import { LifeTimeScope, Utils } from "../jriapp_utils/utils";
 import { create as createModulesLoader } from "../jriapp_utils/mloader";
 import { getBindingOptions, Binding } from "./binding";
 import { parser } from "./parser";
 
-const $ = utils.dom.$, document = utils.dom.document, strUtils = utils.str, syschecks = SysChecks;
+const utils = Utils, $ = utils.dom.$, doc = utils.dom.document, strUtils = utils.str, syschecks = SysChecks;
 
 export function create(app: IApplication, root: Document | HTMLElement, elViewFactory: IElViewFactory): IDataBindingService {
     return new DataBindingService(app, root, elViewFactory);
@@ -192,7 +192,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
     }
     bindElements(scope: Document | HTMLElement, defaultDataContext: any, isDataFormBind: boolean, isInsideTemplate: boolean): IPromise<ILifeTimeScope> {
         let self = this, defer = utils.defer.createSyncDeferred<ILifeTimeScope>();
-        scope = scope || document;
+        scope = scope || doc;
         try {
             let bindElems = self._getBindableElements(scope), lftm = new LifeTimeScope();
 

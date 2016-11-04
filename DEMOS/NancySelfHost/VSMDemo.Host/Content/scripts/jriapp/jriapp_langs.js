@@ -1,5 +1,6 @@
 define("jriapp_ru", ["require", "exports", "jriapp_core/lang", "jriapp_core/bootstrap", "jriapp_utils/utils"], function (require, exports, langMOD, bootstrap_1, utils_1) {
     "use strict";
+    var utils = utils_1.Utils;
     var PAGER = {
         firstText: "<<",
         lastText: ">>",
@@ -33,7 +34,7 @@ define("jriapp_ru", ["require", "exports", "jriapp_core/lang", "jriapp_core/boot
     var _STRS = { PAGER: PAGER, VALIDATE: VALIDATE, TEXT: TEXT };
     langMOD.assign(langMOD.STRS, _STRS);
     bootstrap_1.bootstrap.addOnInitialize(function (bootstrap, args) {
-        utils_1.Utils.dom.$.datepicker.regional["ru"] = {
+        utils.dom.$.datepicker.regional["ru"] = {
             closeText: "Закрыть",
             prevText: "&#x3c;Пред",
             nextText: "След&#x3e;",

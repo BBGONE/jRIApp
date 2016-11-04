@@ -6,7 +6,7 @@ import { ERRS } from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
 import { bootstrap } from "jriapp_core/bootstrap";
 import { parser } from "jriapp_core/parser";
-import { Utils as utils, ERROR } from "jriapp_utils/utils";
+import { Utils, ERROR } from "jriapp_utils/utils";
 import { ICollection, ICollectionItem, ICollChangedArgs, COLL_CHANGE_TYPE,
     COLL_CHANGE_REASON, ITEM_STATUS } from "jriapp_collection/collection";
 import { BaseElView } from "jriapp_elview/elview";
@@ -14,7 +14,7 @@ import { SpanElView } from "jriapp_elview/span";
 import { BasicContent } from "jriapp_content/basic";
 import { contentFactories } from "jriapp_content/factory";
 
-const $ = utils.dom.$, document = utils.dom.document, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+const utils = Utils, $ = utils.dom.$, doc = utils.dom.document, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
 
 export interface IOptionStateProvider {
     getCSS(item: ICollectionItem, itemIndex: number, val: any): string;
@@ -340,7 +340,7 @@ export class ListBox extends BaseObject {
         let selEl = this.el;
         text = this._getText(item, selEl.options.length);
         val = this._getStringValue(item);
-        oOption = document.createElement("option");
+        oOption = doc.createElement("option");
         oOption.text = text;
         oOption.value = key;
         let data: IMappedItem = { item: item, op: oOption };
@@ -782,7 +782,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
             textPath: lookUpOptions.textPath,
             statePath: (!lookUpOptions.statePath) ? null : lookUpOptions.statePath,
             app: this.app,
-            el: document.createElement("select")
+            el: doc.createElement("select")
         }, el = options.el, dataSource = parser.resolvePath(this.app, lookUpOptions.dataSource);
         el.setAttribute("size", "1");
         let elView = new ListBoxElView(options);
@@ -801,7 +801,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         if (!!this._spanView) {
             return this._spanView;
         }
-        let el = document.createElement("span"), displayInfo = this._options.displayInfo;
+        let el = doc.createElement("span"), displayInfo = this._options.displayInfo;
         if (!!displayInfo && !!displayInfo.displayCss) {
             utils.dom.addClass([el], displayInfo.displayCss);
         }

@@ -1,9 +1,9 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { IContentOptions, ITemplateInfo, IBindingInfo }  from "../jriapp_core/shared";
-import { Utils as utils } from "../jriapp_utils/utils";
+import { Utils } from "../jriapp_utils/utils";
 import { parser } from "../jriapp_core/parser";
 
-const coreUtils = utils.core, checks = utils.check;
+const utils = Utils, coreUtils = utils.core, checks = utils.check;
 
 export const css = {
     content: "ria-content-field",

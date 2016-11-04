@@ -2,12 +2,12 @@
 import { IApplication, IViewOptions } from "jriapp_core/shared";
 import { ERRS, STRS } from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
-import { Utils as utils, ERROR, Debounce } from "jriapp_utils/utils";
+import { Utils, ERROR, Debounce } from "jriapp_utils/utils";
 import { bootstrap } from "jriapp_core/bootstrap";
 import { ICollection, ICollectionItem, COLL_CHANGE_TYPE, COLL_CHANGE_REASON } from "jriapp_collection/collection";
 import { BaseElView, fn_addToolTip } from "jriapp_elview/elview";
 
-const dom = utils.dom, $ = dom.$, document = utils.dom.document, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+const utils = Utils, dom = utils.dom, $ = dom.$, doc = utils.dom.document, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
 let _STRS = STRS.PAGER;
 
 const css = {
@@ -81,7 +81,7 @@ export class Pager extends BaseObject {
         }
     }
     protected _createElement(tag: string) {
-        return $(document.createElement(tag));
+        return $(doc.createElement(tag));
     }
     protected _render() {
         let $el = this._$el, rowCount: number, currentPage: number, pageCount: number;

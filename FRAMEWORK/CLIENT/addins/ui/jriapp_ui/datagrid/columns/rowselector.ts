@@ -1,13 +1,13 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { DATA_ATTR } from "jriapp_core/const";
-import { Utils as utils } from "jriapp_utils/utils";
+import { Utils } from "jriapp_utils/utils";
 
 import { css, PROP_NAME } from "../const";
 import { BaseColumn, ICellInfo } from "./base";
 import { DataGrid } from "../datagrid";
 import { RowSelectorCell } from "../cells/rowselector";
 
-const dom = utils.dom, $ = dom.$, doc = dom.document, checks = utils.check;
+const utils = Utils, dom = utils.dom, $ = dom.$, doc = dom.document, checks = utils.check;
 
 export class RowSelectorColumn extends BaseColumn {
     private _$chk: JQuery;
@@ -22,8 +22,8 @@ export class RowSelectorColumn extends BaseColumn {
         let chk = doc.createElement("input");
         chk.type = "checkbox";
         chk.checked = false;
-        dom.addClass([chk], css.rowSelector);
-        dom.addClass([label], css.rowSelector);
+        chk.className = css.rowSelector;
+        label.className = css.rowSelector;
         label.appendChild(chk);
         label.appendChild(doc.createElement("span"));
         this.$col.append(label);

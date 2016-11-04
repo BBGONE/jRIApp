@@ -4,12 +4,12 @@ import { IApplication, ITemplate, ITemplateEvents, ISelectable, IViewOptions, TE
     ISelectableProvider, IBaseObject } from "jriapp_core/shared";
 import { ERRS } from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
-import { Utils as utils, ERROR } from "jriapp_utils/utils";
+import { Utils, ERROR } from "jriapp_utils/utils";
 import { bootstrap } from "jriapp_core/bootstrap";
 import { ICollection, ICollectionItem, ICollChangedArgs, COLL_CHANGE_TYPE, COLL_CHANGE_REASON, ITEM_STATUS } from "jriapp_collection/collection";
 import { BaseElView } from "jriapp_elview/elview";
 
-const dom = utils.dom, $ = dom.$, doc = dom.document, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+const utils = Utils, dom = utils.dom, $ = dom.$, doc = dom.document, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
 
 const css = {
     stackpanel: "ria-stackpanel",

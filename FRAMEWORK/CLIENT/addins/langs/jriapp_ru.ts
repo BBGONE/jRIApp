@@ -2,7 +2,9 @@
 /** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import * as langMOD from "jriapp_core/lang";
 import { bootstrap } from "jriapp_core/bootstrap";
-import { Utils as utils } from "jriapp_utils/utils";
+import { Utils } from "jriapp_utils/utils";
+
+const utils = Utils;
 
 let PAGER: langMOD.IPagerText = {
     firstText: "<<",

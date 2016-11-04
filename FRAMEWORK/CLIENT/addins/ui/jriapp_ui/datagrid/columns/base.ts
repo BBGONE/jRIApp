@@ -2,7 +2,7 @@
 import { DATA_ATTR } from "jriapp_core/const";
 import { IContentOptions, ITemplateEvents, ITemplate } from "jriapp_core/shared";
 import { BaseObject } from "jriapp_core/object";
-import { Utils as utils } from "jriapp_utils/utils";
+import { Utils } from "jriapp_utils/utils";
 import { fn_addToolTip } from "jriapp_elview/elview";
 import { bootstrap } from "jriapp_core/bootstrap";
 
@@ -10,7 +10,7 @@ import { css } from "../const";
 import { BaseCell } from "../cells/base";
 import { DataGrid } from "../datagrid";
 
-const dom = utils.dom, $ = dom.$;
+const utils = Utils, dom = utils.dom, $ = dom.$;
 
 export interface IColumnInfo {
     "type"?: string;

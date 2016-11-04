@@ -2,13 +2,13 @@
 import { DATA_ATTR } from "jriapp_core/const";
 import { IContent, IBindingInfo, IContentOptions } from "jriapp_core/shared";
 import { BoolContent } from "jriapp_content/bool";
-import { Utils as utils } from "jriapp_utils/utils";
+import { Utils } from "jriapp_utils/utils";
 
 import { css, PROP_NAME } from "../const";
 import { BaseCell, ICellOptions } from "./base";
 import { RowSelectorColumn } from "../columns/rowselector";
 
-const dom = utils.dom, $ = dom.$, doc = dom.document, checks = utils.check;
+const utils = Utils, dom = utils.dom, $ = dom.$, doc = dom.document, checks = utils.check;
 
 export class RowSelectorCell extends BaseCell<RowSelectorColumn> {
     private _$chk: JQuery;
@@ -20,8 +20,8 @@ export class RowSelectorCell extends BaseCell<RowSelectorColumn> {
         let chk = doc.createElement("input");
         chk.type = "checkbox";
         chk.checked = false;
-        dom.addClass([chk], css.rowSelector);
-        dom.addClass([label], css.rowSelector);
+        chk.className = css.rowSelector;
+        label.className = css.rowSelector;
         chk.setAttribute(DATA_ATTR.DATA_EVENT_SCOPE, this.column.uniqueID);
         label.appendChild(chk);
         label.appendChild(doc.createElement("span"));

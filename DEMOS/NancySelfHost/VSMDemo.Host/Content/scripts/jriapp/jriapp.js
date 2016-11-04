@@ -124,6 +124,12 @@ define("jriapp_core/shared", ["require", "exports", "jriapp_core/const"], functi
         return ButtonCss;
     }());
     exports.ButtonCss = ButtonCss;
+    (function (TPriority) {
+        TPriority[TPriority["Normal"] = 0] = "Normal";
+        TPriority[TPriority["AboveNormal"] = 1] = "AboveNormal";
+        TPriority[TPriority["High"] = 2] = "High";
+    })(exports.TPriority || (exports.TPriority = {}));
+    var TPriority = exports.TPriority;
     var BaseError = (function () {
         function BaseError(message) {
             this._message = message || "Error";
@@ -1058,18 +1064,18 @@ define("jriapp_core/lang", ["require", "exports", "jriapp_utils/coreutils"], fun
     exports.ERRS = _ERRS;
     exports.STRS = _STRS;
 });
-define("jriapp_utils/listhelper", ["require", "exports"], function (require, exports) {
+define("jriapp_utils/eventhelper", ["require", "exports"], function (require, exports) {
     "use strict";
-    var ListHelper = (function () {
-        function ListHelper() {
+    var EventHelper = (function () {
+        function EventHelper() {
         }
-        ListHelper.CreateList = function () {
+        EventHelper.CreateList = function () {
             return {};
         };
-        ListHelper.CreateNode = function (handler, ns, context) {
+        EventHelper.CreateNode = function (handler, ns, context) {
             return { fn: handler, next: null, context: !context ? null : context };
         };
-        ListHelper.countNodes = function (list) {
+        EventHelper.countNodes = function (list) {
             if (!list)
                 return 0;
             var ns_keys, cnt = 0, obj;
@@ -1084,21 +1090,20 @@ define("jriapp_utils/listhelper", ["require", "exports"], function (require, exp
             }
             return cnt;
         };
-        ListHelper.appendNode = function (list, node, ns, priority) {
-            if (priority === void 0) { priority = "0"; }
-            var obj;
+        EventHelper.appendNode = function (list, node, ns, priority) {
+            if (priority === void 0) { priority = 0; }
             if (!ns)
                 ns = "*";
-            obj = list[priority];
+            var obj = list[priority];
             if (!obj) {
                 list[priority] = obj = {};
             }
-            var bucket = obj[ns];
-            if (!bucket)
-                obj[ns] = bucket = [];
-            bucket.push(node);
+            var arr = obj[ns];
+            if (!arr)
+                obj[ns] = arr = [];
+            arr.push(node);
         };
-        ListHelper.removeNodes = function (list, ns) {
+        EventHelper.removeNodes = function (list, ns) {
             if (!list)
                 return;
             var ns_key, ns_keys, obj;
@@ -1120,35 +1125,35 @@ define("jriapp_utils/listhelper", ["require", "exports"], function (require, exp
                 }
             }
         };
-        ListHelper.toArray = function (list) {
+        EventHelper.toArray = function (list) {
             if (!list)
                 return [];
-            var res = [], bucket, cur, obj;
+            var res = [], arr, cur, obj;
             for (var k = 2; k >= 0; k -= 1) {
                 obj = list[k];
                 if (!!obj) {
                     var ns_keys = Object.keys(obj);
                     for (var i = 0; i < ns_keys.length; ++i) {
-                        bucket = obj[ns_keys[i]];
-                        for (var j = 0; j < bucket.length; ++j) {
-                            res.push(bucket[j]);
+                        arr = obj[ns_keys[i]];
+                        for (var j = 0; j < arr.length; ++j) {
+                            res.push(arr[j]);
                         }
                     }
                 }
             }
             return res;
         };
-        return ListHelper;
+        return EventHelper;
     }());
-    exports.ListHelper = ListHelper;
+    exports.EventHelper = EventHelper;
 });
-define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_utils/coreutils", "jriapp_utils/listhelper"], function (require, exports, lang_1, coreutils_2, listhelper_1) {
+define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_utils/coreutils", "jriapp_utils/eventhelper"], function (require, exports, lang_1, coreutils_2, eventhelper_1) {
     "use strict";
     var OBJ_EVENTS = {
         error: "error",
         destroyed: "destroyed"
     };
-    var checks = coreutils_2.Checks, strUtils = coreutils_2.StringUtils, coreUtils = coreutils_2.CoreUtils, listHelper = listhelper_1.ListHelper;
+    var checks = coreutils_2.Checks, strUtils = coreutils_2.StringUtils, coreUtils = coreutils_2.CoreUtils, eventHelper = eventhelper_1.EventHelper;
     coreutils_2.SysChecks._isBaseObj = function (obj) {
         return (!!obj && obj instanceof BaseObject);
     };
@@ -1169,7 +1174,7 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
                 key = keys[i];
                 list = ev[key];
                 if (!!list) {
-                    listHelper.removeNodes(list, ns);
+                    eventHelper.removeNodes(list, ns);
                 }
             }
         };
@@ -1189,11 +1194,11 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
             var self = this, ev = self._events, n = name, ns = "*";
             if (!!nmspace)
                 ns = "" + nmspace;
-            var list = ev[n], node = listHelper.CreateNode(handler, ns, context);
+            var list = ev[n], node = eventHelper.CreateNode(handler, ns, context);
             if (!list) {
-                ev[n] = list = listHelper.CreateList();
+                ev[n] = list = eventHelper.CreateList();
             }
-            listHelper.appendNode(list, node, ns, priority);
+            eventHelper.appendNode(list, node, ns, priority);
         };
         BaseObject.prototype._removeHandler = function (name, nmspace) {
             var self = this, ev = self._events, ns = "*";
@@ -1207,11 +1212,11 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
                 if (!list)
                     return;
                 if (ns === "*") {
-                    listHelper.removeNodes(list, ns);
+                    eventHelper.removeNodes(list, ns);
                     ev[name] = null;
                 }
                 else {
-                    listHelper.removeNodes(list, ns);
+                    eventHelper.removeNodes(list, ns);
                 }
                 return;
             }
@@ -1225,14 +1230,14 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
             if (ev === null)
                 return;
             if (ev === checks.undefined) {
-                throw new Error("The object's constructor has not been called!");
+                throw new Error("The object is not initialized!");
             }
             if (!!name) {
                 var isPropChange = name.charAt(0) === "0", isAllProp = name === "0*";
                 if (isPropChange && !isAllProp) {
                     this._raiseEvent("0*", args);
                 }
-                var events = listHelper.toArray(ev[name]), cur = void 0;
+                var events = eventHelper.toArray(ev[name]), cur = void 0;
                 for (var i = 0; i < events.length; i++) {
                     cur = events[i];
                     cur.fn.apply(cur.context, [self, args]);
@@ -1240,7 +1245,8 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
             }
         };
         BaseObject.prototype._checkEventName = function (name) {
-            var proto = Object.getPrototypeOf(this), map;
+            var proto = Object.getPrototypeOf(this);
+            var map;
             if (!proto.hasOwnProperty("__evMap")) {
                 var evn = this._getEventNames();
                 map = {};
@@ -1249,8 +1255,9 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
                 }
                 proto.__evMap = map;
             }
-            else
+            else {
                 map = proto.__evMap;
+            }
             if (!map[name]) {
                 coreutils_2.DEBUG.checkStartDebugger();
                 var err = new Error(strUtils.format(lang_1.ERRS.ERR_EVENT_INVALID, name));
@@ -2522,7 +2529,7 @@ define("jriapp_utils/utils", ["require", "exports", "jriapp_utils/coreutils", "j
 });
 define("jriapp_elview/factory", ["require", "exports", "jriapp_core/const", "jriapp_core/bootstrap", "jriapp_core/lang", "jriapp_core/parser", "jriapp_utils/coreutils", "jriapp_utils/utils"], function (require, exports, const_2, bootstrap_1, lang_4, parser_1, coreutils_9, utils_1) {
     "use strict";
-    var $ = utils_1.Utils.dom.$;
+    var utils = utils_1.Utils, $ = utils.dom.$;
     function createFactory(app, num, register) {
         return new ElViewFactory(app, num, register);
     }
@@ -2541,7 +2548,7 @@ define("jriapp_elview/factory", ["require", "exports", "jriapp_core/const", "jri
                 bootstrap_1.bootstrap._getInternal().registerObject(this, name, vw_type);
             }
             else
-                throw new Error(utils_1.Utils.str.format(lang_4.ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
+                throw new Error(utils.str.format(lang_4.ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
         };
         ElViewRegister.prototype.getElViewType = function (name) {
             var res = bootstrap_1.bootstrap._getInternal().getObject(this, name);
@@ -2603,7 +2610,7 @@ define("jriapp_elview/factory", ["require", "exports", "jriapp_core/const", "jri
             if (!!view_info.name) {
                 viewType = this._register.getElViewType(view_info.name);
                 if (!viewType)
-                    throw new Error(utils_1.Utils.str.format(lang_4.ERRS.ERR_ELVIEW_NOT_REGISTERED, view_info.name));
+                    throw new Error(utils.str.format(lang_4.ERRS.ERR_ELVIEW_NOT_REGISTERED, view_info.name));
             }
             if (!viewType) {
                 var nodeNm = el.nodeName.toLowerCase(), attrType = void 0;
@@ -2620,7 +2627,7 @@ define("jriapp_elview/factory", ["require", "exports", "jriapp_core/const", "jri
                         break;
                 }
                 if (!viewType)
-                    throw new Error(utils_1.Utils.str.format(lang_4.ERRS.ERR_ELVIEW_NOT_CREATED, nodeNm));
+                    throw new Error(utils.str.format(lang_4.ERRS.ERR_ELVIEW_NOT_CREATED, nodeNm));
             }
             try {
                 elView = new viewType(options);
@@ -2651,7 +2658,7 @@ define("jriapp_elview/factory", ["require", "exports", "jriapp_core/const", "jri
                     vw_options = data_view_op.options;
                 }
             }
-            var options = utils_1.Utils.core.merge({ app: this._app, el: el }, vw_options);
+            var options = utils.core.merge({ app: this._app, el: el }, vw_options);
             return { name: view_name, options: options };
         };
         Object.defineProperty(ElViewFactory.prototype, "store", {
@@ -3930,7 +3937,7 @@ define("jriapp_core/converter", ["require", "exports", "jriapp_core/lang", "jria
 });
 define("jriapp_content/int", ["require", "exports", "jriapp_utils/utils", "jriapp_core/parser"], function (require, exports, utils_2, parser_2) {
     "use strict";
-    var coreUtils = utils_2.Utils.core, checks = utils_2.Utils.check;
+    var utils = utils_2.Utils, coreUtils = utils.core, checks = utils.check;
     exports.css = {
         content: "ria-content-field",
         required: "ria-required-field",
@@ -4196,7 +4203,7 @@ define("jriapp_utils/eventstore", ["require", "exports", "jriapp_core/object", "
 define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/syschecks", "jriapp_core/bootstrap", "jriapp_utils/utils", "jriapp_core/mvvm", "jriapp_utils/eventstore"], function (require, exports, const_4, lang_8, object_9, syschecks_5, bootstrap_3, utils_3, mvvm_1, eventstore_1) {
     "use strict";
     exports.EVENT_CHANGE_TYPE = eventstore_1.EVENT_CHANGE_TYPE;
-    var coreUtils = utils_3.Utils.core, dom = utils_3.Utils.dom, $ = dom.$, checks = utils_3.Utils.check;
+    var utils = utils_3.Utils, coreUtils = utils.core, dom = utils.dom, $ = dom.$, checks = utils.check;
     var PROP_BAG = syschecks_5.SysChecks._PROP_BAG_NAME();
     syschecks_5.SysChecks._isElView = function (obj) {
         return !!obj && obj instanceof BaseElView;
@@ -4547,7 +4554,7 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
                     this._css = v;
                     if (!!this._css)
                         arr.push("+" + this._css);
-                    utils_3.Utils.dom.setClasses(this._$el.toArray(), arr);
+                    utils.dom.setClasses(this._$el.toArray(), arr);
                     this.raisePropertyChanged(exports.PROP_NAME.css);
                 }
             },
@@ -5235,7 +5242,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
 });
 define("jriapp_content/basic", ["require", "exports", "jriapp_core/object", "jriapp_core/binding", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_content/int"], function (require, exports, object_11, binding_1, coreutils_15, utils_5, int_1) {
     "use strict";
-    var dom = utils_5.Utils.dom, $ = dom.$, doc = utils_5.Utils.dom.document, coreUtils = utils_5.Utils.core;
+    var utils = utils_5.Utils, dom = utils.dom, $ = dom.$, doc = utils.dom.document, coreUtils = utils.core;
     var BasicContent = (function (_super) {
         __extends(BasicContent, _super);
         function BasicContent(options) {
@@ -5303,7 +5310,7 @@ define("jriapp_content/basic", ["require", "exports", "jriapp_core/object", "jri
             var finf = this.getFieldInfo();
             if (!finf)
                 return false;
-            var editable = utils_5.Utils.getEditable(this._dataContext);
+            var editable = utils.getEditable(this._dataContext);
             return !!editable && !finf.isReadOnly && finf.fieldType !== 2;
         };
         BasicContent.prototype.createTargetElement = function () {
@@ -5354,7 +5361,7 @@ define("jriapp_content/basic", ["require", "exports", "jriapp_core/object", "jri
                 this._lfScope = null;
             }
             if (!!this._el) {
-                utils_5.Utils.dom.removeNode(this._el);
+                utils.dom.removeNode(this._el);
                 this._el = null;
             }
             this._target = null;
@@ -5453,7 +5460,7 @@ define("jriapp_content/basic", ["require", "exports", "jriapp_core/object", "jri
 });
 define("jriapp_content/template", ["require", "exports", "jriapp_core/object", "jriapp_core/lang", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_content/int"], function (require, exports, object_12, lang_10, coreutils_16, utils_6, int_2) {
     "use strict";
-    var coreUtils = utils_6.Utils.core, dom = utils_6.Utils.dom, $ = dom.$;
+    var utils = utils_6.Utils, coreUtils = utils.core, dom = utils.dom, $ = dom.$;
     var TemplateContent = (function (_super) {
         __extends(TemplateContent, _super);
         function TemplateContent(options) {
@@ -5628,7 +5635,7 @@ define("jriapp_elview/input", ["require", "exports", "jriapp_elview/elview"], fu
 });
 define("jriapp_elview/textbox", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/input"], function (require, exports, utils_7, bootstrap_5, elview_2, input_1) {
     "use strict";
-    var $ = utils_7.Utils.dom.$;
+    var utils = utils_7.Utils, $ = utils.dom.$;
     var TXTBOX_EVENTS = {
         keypress: "keypress"
     };
@@ -5731,7 +5738,7 @@ define("jriapp_content/string", ["require", "exports", "jriapp_elview/textbox", 
 });
 define("jriapp_elview/textarea", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview"], function (require, exports, utils_8, bootstrap_6, elview_3) {
     "use strict";
-    var $ = utils_8.Utils.dom.$;
+    var utils = utils_8.Utils, $ = utils.dom.$;
     var TXTAREA_EVENTS = {
         keypress: "keypress"
     };
@@ -5824,7 +5831,7 @@ define("jriapp_elview/textarea", ["require", "exports", "jriapp_utils/utils", "j
 });
 define("jriapp_content/multyline", ["require", "exports", "jriapp_core/lang", "jriapp_utils/utils", "jriapp_elview/textarea", "jriapp_content/basic"], function (require, exports, lang_11, utils_9, textarea_1, basic_2) {
     "use strict";
-    var NAME = "multyline", strUtils = utils_9.Utils.str, document = utils_9.Utils.dom.document;
+    var utils = utils_9.Utils, NAME = "multyline", strUtils = utils.str, document = utils.dom.document;
     var MultyLineContent = (function (_super) {
         __extends(MultyLineContent, _super);
         function MultyLineContent(options) {
@@ -5881,7 +5888,7 @@ define("jriapp_content/multyline", ["require", "exports", "jriapp_core/lang", "j
 });
 define("jriapp_elview/checkbox", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/input"], function (require, exports, utils_10, bootstrap_7, elview_4, input_2) {
     "use strict";
-    var dom = utils_10.Utils.dom, $ = dom.$;
+    var utils = utils_10.Utils, dom = utils.dom, $ = dom.$;
     var CheckBoxElView = (function (_super) {
         __extends(CheckBoxElView, _super);
         function CheckBoxElView(options) {
@@ -5898,7 +5905,7 @@ define("jriapp_elview/checkbox", ["require", "exports", "jriapp_utils/utils", "j
             this._updateState();
         }
         CheckBoxElView.prototype._updateState = function () {
-            dom.setClass(this.$el.toArray(), elview_4.css.checkedNull, !utils_10.Utils.check.isNt(this.checked));
+            dom.setClass(this.$el.toArray(), elview_4.css.checkedNull, !utils.check.isNt(this.checked));
         };
         CheckBoxElView.prototype.toString = function () {
             return "CheckBoxElView";
@@ -6072,7 +6079,7 @@ define("jriapp_content/number", ["require", "exports", "jriapp_core/bootstrap", 
 });
 define("jriapp_content/date", ["require", "exports", "jriapp_core/lang", "jriapp_utils/utils", "jriapp_content/basic"], function (require, exports, lang_12, utils_12, basic_5) {
     "use strict";
-    var strUtils = utils_12.Utils.str, document = utils_12.Utils.dom.document;
+    var utils = utils_12.Utils, strUtils = utils.str, doc = utils.dom.document;
     var NAME = "datepicker";
     var DateContent = (function (_super) {
         __extends(DateContent, _super);
@@ -6090,13 +6097,13 @@ define("jriapp_content/date", ["require", "exports", "jriapp_core/lang", "jriapp
         DateContent.prototype.createTargetElement = function () {
             var el, info = { name: null, options: null };
             if (this.isEditing && this.getIsCanBeEdited()) {
-                el = document.createElement("input");
+                el = doc.createElement("input");
                 el.setAttribute("type", "text");
                 info.options = this._options.options;
                 info.name = NAME;
             }
             else {
-                el = document.createElement("span");
+                el = doc.createElement("span");
             }
             this.updateCss();
             this._el = el;
@@ -6154,7 +6161,7 @@ define("jriapp_content/factory", ["require", "exports", "jriapp_core/lang", "jri
     exports.NumberContent = number_2.NumberContent;
     exports.DateContent = date_2.DateContent;
     exports.DateTimeContent = datetime_2.DateTimeContent;
-    var strUtils = utils_13.Utils.str;
+    var utils = utils_13.Utils, strUtils = utils.str;
     var ContentFactory = (function () {
         function ContentFactory() {
         }
@@ -6352,7 +6359,7 @@ define("jriapp_core/datepicker", ["require", "exports", "jriapp_core/lang", "jri
 });
 define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_content/factory", "jriapp_core/parser", "jriapp_utils/coreutils", "jriapp_utils/dom", "jriapp_utils/utils", "jriapp_elview/elview", "jriapp_content/int"], function (require, exports, const_5, lang_15, object_14, bootstrap_11, factory_2, parser_4, coreutils_17, dom_7, utils_15, elview_5, int_5) {
     "use strict";
-    var $ = dom_7.DomUtils.$, document = dom_7.DomUtils.document;
+    var utils = utils_15.Utils, $ = dom_7.DomUtils.$, doc = dom_7.DomUtils.document;
     exports.css = {
         dataform: "ria-dataform",
         error: "ria-form-error"
@@ -6587,8 +6594,8 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
             if (!dataContext)
                 return;
             if (!!dataContext) {
-                this._editable = utils_15.Utils.getEditable(dataContext);
-                this._errNotification = utils_15.Utils.getErrorNotification(dataContext);
+                this._editable = utils.getEditable(dataContext);
+                this._errNotification = utils.getErrorNotification(dataContext);
             }
             dataContext.addOnDestroyed(function (s, a) {
                 self.dataContext = null;
@@ -6845,9 +6852,9 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
     exports.DataFormElView = DataFormElView;
     bootstrap_11.bootstrap.registerElView(const_5.ELVIEW_NM.DataForm, DataFormElView);
 });
-define("jriapp_elview/command", ["require", "exports", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_elview/elview"], function (require, exports, coreutils_18, utils_16, elview_6) {
+define("jriapp_elview/command", ["require", "exports", "jriapp_utils/utils", "jriapp_elview/elview"], function (require, exports, utils_16, elview_6) {
     "use strict";
-    var dom = utils_16.Utils.dom;
+    var utils = utils_16.Utils, dom = utils.dom, checks = utils.check;
     var CommandElView = (function (_super) {
         __extends(CommandElView, _super);
         function CommandElView(options) {
@@ -6856,7 +6863,7 @@ define("jriapp_elview/command", ["require", "exports", "jriapp_utils/coreutils",
             this._commandParam = null;
             this._preventDefault = !!options.preventDefault;
             this._stopPropagation = !!options.stopPropagation;
-            this._disabled = ("disabled" in this.el) ? coreutils_18.Checks.undefined : false;
+            this._disabled = ("disabled" in this.el) ? checks.undefined : false;
             dom.setClass(this.$el.toArray(), elview_6.css.disabled, this.isEnabled);
         }
         CommandElView.prototype._onCanExecuteChanged = function (cmd, args) {
@@ -6891,7 +6898,7 @@ define("jriapp_elview/command", ["require", "exports", "jriapp_utils/coreutils",
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
-            if (coreutils_18.Checks.isBaseObject(this._command)) {
+            if (checks.isBaseObject(this._command)) {
                 this._command.removeNSHandlers(this.uniqueID);
             }
             this.command = null;
@@ -6904,7 +6911,7 @@ define("jriapp_elview/command", ["require", "exports", "jriapp_utils/coreutils",
         Object.defineProperty(CommandElView.prototype, "isEnabled", {
             get: function () {
                 var el = this.el;
-                if (this._disabled === coreutils_18.Checks.undefined)
+                if (this._disabled === checks.undefined)
                     return !el.disabled;
                 else
                     return !this._disabled;
@@ -6912,7 +6919,7 @@ define("jriapp_elview/command", ["require", "exports", "jriapp_utils/coreutils",
             set: function (v) {
                 var el = this.el;
                 if (v !== this.isEnabled) {
-                    if (this._disabled === coreutils_18.Checks.undefined)
+                    if (this._disabled === checks.undefined)
                         el.disabled = !v;
                     else
                         this._disabled = !v;
@@ -6928,7 +6935,7 @@ define("jriapp_elview/command", ["require", "exports", "jriapp_utils/coreutils",
             set: function (v) {
                 var self = this;
                 if (v !== this._command) {
-                    if (coreutils_18.Checks.isBaseObject(this._command)) {
+                    if (checks.isBaseObject(this._command)) {
                         this._command.removeNSHandlers(this.uniqueID);
                     }
                     this._command = v;
@@ -6974,14 +6981,14 @@ define("jriapp_elview/command", ["require", "exports", "jriapp_utils/coreutils",
     }(elview_6.BaseElView));
     exports.CommandElView = CommandElView;
 });
-define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jriapp_utils/coreutils", "jriapp_utils/dom", "jriapp_utils/async", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_elview/command"], function (require, exports, const_6, coreutils_19, dom_8, async_7, lang_16, object_15, bootstrap_12, command_1) {
+define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jriapp_utils/coreutils", "jriapp_utils/dom", "jriapp_utils/async", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_elview/command"], function (require, exports, const_6, coreutils_18, dom_8, async_7, lang_16, object_15, bootstrap_12, command_1) {
     "use strict";
-    var defer = async_7.AsyncUtils, dom = dom_8.DomUtils, $ = dom.$, doc = dom.document, coreUtils = coreutils_19.CoreUtils, checks = coreutils_19.Checks, strUtils = coreutils_19.StringUtils, arrHelper = coreutils_19.ArrayHelper, syschecks = coreutils_19.SysChecks;
+    var defer = async_7.AsyncUtils, dom = dom_8.DomUtils, $ = dom.$, doc = dom.document, coreUtils = coreutils_18.CoreUtils, checks = coreutils_18.Checks, strUtils = coreutils_18.StringUtils, arrHelper = coreutils_18.ArrayHelper, syschecks = coreutils_18.SysChecks;
     exports.css = {
         templateContainer: "ria-template-container",
         templateError: "ria-template-error"
     };
-    coreutils_19.SysChecks._isTemplateElView = function (obj) {
+    coreutils_18.SysChecks._isTemplateElView = function (obj) {
         return !!obj && obj instanceof TemplateElView;
     };
     var PROP_NAME = {
@@ -7033,7 +7040,7 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
                 return null;
             var arr = this._getElViews();
             for (var i = 0, j = arr.length; i < j; i += 1) {
-                if (coreutils_19.SysChecks._isTemplateElView(arr[i])) {
+                if (coreutils_18.SysChecks._isTemplateElView(arr[i])) {
                     return arr[i];
                 }
             }
@@ -7109,7 +7116,7 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
         Template.prototype._dataBind = function (templateEl, loadedEl) {
             var self = this;
             if (self.getIsDestroyCalled())
-                coreutils_19.ERROR.abort();
+                coreutils_18.ERROR.abort();
             if (!loadedEl)
                 throw new Error(strUtils.format(lang_16.ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
             if (!!self._loadedElem) {
@@ -7123,7 +7130,7 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
             return promise.then(function (lftm) {
                 if (self.getIsDestroyCalled()) {
                     lftm.destroy();
-                    coreutils_19.ERROR.abort();
+                    coreutils_18.ERROR.abort();
                 }
                 self._lfTime = lftm;
                 self._updateBindingSource();
@@ -7136,7 +7143,7 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
             if (self.getIsDestroyCalled())
                 return;
             self._onLoaded(err);
-            if (coreutils_19.ERROR.checkIsAbort(err)) {
+            if (coreutils_18.ERROR.checkIsAbort(err)) {
                 return;
             }
             dom.setClass([templateEl], exports.css.templateError, false);
@@ -7275,7 +7282,7 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
             }
             catch (ex) {
                 this.handleError(ex, this);
-                coreutils_19.ERROR.throwDummy(ex);
+                coreutils_18.ERROR.throwDummy(ex);
             }
         };
         TemplateElView.prototype.templateUnLoading = function (template) {
@@ -7321,7 +7328,7 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
 });
 define("jriapp_elview/anchor", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/command"], function (require, exports, utils_17, bootstrap_13, elview_7, command_2) {
     "use strict";
-    var dom = utils_17.Utils.dom, $ = dom.$;
+    var utils = utils_17.Utils, dom = utils.dom, $ = dom.$;
     var AnchorElView = (function (_super) {
         __extends(AnchorElView, _super);
         function AnchorElView(options) {
@@ -7486,7 +7493,7 @@ define("jriapp_elview/anchor", ["require", "exports", "jriapp_utils/utils", "jri
 });
 define("jriapp_elview/span", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview"], function (require, exports, utils_18, bootstrap_14, elview_8) {
     "use strict";
-    var $ = utils_18.Utils.dom.$;
+    var utils = utils_18.Utils, $ = utils.dom.$;
     var SpanElView = (function (_super) {
         __extends(SpanElView, _super);
         function SpanElView() {
@@ -7573,7 +7580,7 @@ define("jriapp_elview/span", ["require", "exports", "jriapp_utils/utils", "jriap
 });
 define("jriapp_elview/block", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/span"], function (require, exports, utils_19, bootstrap_15, elview_9, span_1) {
     "use strict";
-    var $ = utils_19.Utils.dom.$;
+    var utils = utils_19.Utils, $ = utils.dom.$;
     var BlockElView = (function (_super) {
         __extends(BlockElView, _super);
         function BlockElView() {
@@ -7621,9 +7628,9 @@ define("jriapp_elview/block", ["require", "exports", "jriapp_utils/utils", "jria
     bootstrap_15.bootstrap.registerElView("div", BlockElView);
     bootstrap_15.bootstrap.registerElView("section", BlockElView);
 });
-define("jriapp_elview/busy", ["require", "exports", "jriapp_core/const", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview"], function (require, exports, const_7, coreutils_20, utils_20, bootstrap_16, elview_10) {
+define("jriapp_elview/busy", ["require", "exports", "jriapp_core/const", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview"], function (require, exports, const_7, utils_20, bootstrap_16, elview_10) {
     "use strict";
-    var $ = utils_20.Utils.dom.$;
+    var utils = utils_20.Utils, $ = utils.dom.$, checks = utils.check;
     var BusyElView = (function (_super) {
         __extends(BusyElView, _super);
         function BusyElView(options) {
@@ -7635,7 +7642,7 @@ define("jriapp_elview/busy", ["require", "exports", "jriapp_core/const", "jriapp
                 img = const_7.LOADER_GIF.Default;
             this._delay = 400;
             this._timeOut = null;
-            if (!coreutils_20.Checks.isNt(options.delay))
+            if (!checks.isNt(options.delay))
                 this._delay = parseInt("" + options.delay);
             this._loaderPath = bootstrap_16.bootstrap.getImagePath(img);
             this._$loader = $(new Image());
@@ -7715,7 +7722,7 @@ define("jriapp_elview/busy", ["require", "exports", "jriapp_core/const", "jriapp
 });
 define("jriapp_elview/button", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/command"], function (require, exports, utils_21, bootstrap_17, elview_11, command_3) {
     "use strict";
-    var $ = utils_21.Utils.dom.$;
+    var utils = utils_21.Utils, $ = utils.dom.$;
     var ButtonElView = (function (_super) {
         __extends(ButtonElView, _super);
         function ButtonElView(options) {
@@ -7798,7 +7805,7 @@ define("jriapp_elview/button", ["require", "exports", "jriapp_utils/utils", "jri
 });
 define("jriapp_elview/checkbox3", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/input"], function (require, exports, utils_22, bootstrap_18, elview_12, input_3) {
     "use strict";
-    var dom = utils_22.Utils.dom, $ = dom.$;
+    var utils = utils_22.Utils, dom = utils.dom, $ = dom.$;
     var CheckBoxThreeStateElView = (function (_super) {
         __extends(CheckBoxThreeStateElView, _super);
         function CheckBoxThreeStateElView(options) {
@@ -7818,7 +7825,7 @@ define("jriapp_elview/checkbox3", ["require", "exports", "jriapp_utils/utils", "
             this._updateState();
         }
         CheckBoxThreeStateElView.prototype._updateState = function () {
-            dom.setClass(this.$el.toArray(), elview_12.css.checkedNull, !utils_22.Utils.check.isNt(this.checked));
+            dom.setClass(this.$el.toArray(), elview_12.css.checkedNull, !utils.check.isNt(this.checked));
         };
         CheckBoxThreeStateElView.prototype.toString = function () {
             return "CheckBoxThreeStateElView";
@@ -7848,7 +7855,7 @@ define("jriapp_elview/checkbox3", ["require", "exports", "jriapp_utils/utils", "
 });
 define("jriapp_elview/expander", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/anchor"], function (require, exports, utils_23, bootstrap_19, anchor_1) {
     "use strict";
-    var $ = utils_23.Utils.dom.$;
+    var utils = utils_23.Utils, $ = utils.dom.$;
     exports.PROP_NAME = {
         isExpanded: "isExpanded"
     };
@@ -7947,7 +7954,7 @@ define("jriapp_elview/img", ["require", "exports", "jriapp_core/bootstrap", "jri
 });
 define("jriapp_elview/radio", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/checkbox"], function (require, exports, utils_24, bootstrap_22, elview_14, checkbox_2) {
     "use strict";
-    var dom = utils_24.Utils.dom, $ = dom.$;
+    var utils = utils_24.Utils, dom = utils.dom, $ = dom.$;
     var RadioElView = (function (_super) {
         __extends(RadioElView, _super);
         function RadioElView() {
@@ -7959,7 +7966,7 @@ define("jriapp_elview/radio", ["require", "exports", "jriapp_utils/utils", "jria
         Object.defineProperty(RadioElView.prototype, "value", {
             get: function () { return this.$el.val(); },
             set: function (v) {
-                var strv = utils_24.Utils.core.check.isNt(v) ? "" : ("" + v);
+                var strv = utils.core.check.isNt(v) ? "" : ("" + v);
                 if (strv !== this.$el.val()) {
                     this.$el.val(strv);
                     this.raisePropertyChanged(elview_14.PROP_NAME.value);
@@ -8260,7 +8267,7 @@ define("jriapp_collection/utils", ["require", "exports", "jriapp_utils/utils", "
     }
     exports.fn_traverseFields = fn_traverseFields;
 });
-define("jriapp_collection/validation", ["require", "exports", "jriapp_core/shared", "jriapp_core/lang", "jriapp_utils/coreutils"], function (require, exports, shared_4, lang_18, coreutils_21) {
+define("jriapp_collection/validation", ["require", "exports", "jriapp_core/shared", "jriapp_core/lang", "jriapp_utils/coreutils"], function (require, exports, shared_4, lang_18, coreutils_19) {
     "use strict";
     var ValidationError = (function (_super) {
         __extends(ValidationError, _super);
@@ -8308,12 +8315,12 @@ define("jriapp_collection/validation", ["require", "exports", "jriapp_core/share
             var rangeParts = range.split(",");
             if (!!rangeParts[0]) {
                 if (num < parseFloat(rangeParts[0])) {
-                    throw new Error(coreutils_21.StringUtils.format(lang_18.ERRS.ERR_FIELD_RANGE, num, range));
+                    throw new Error(coreutils_19.StringUtils.format(lang_18.ERRS.ERR_FIELD_RANGE, num, range));
                 }
             }
             if (!!rangeParts[1]) {
                 if (num > parseFloat(rangeParts[1])) {
-                    throw new Error(coreutils_21.StringUtils.format(lang_18.ERRS.ERR_FIELD_RANGE, num, range));
+                    throw new Error(coreutils_19.StringUtils.format(lang_18.ERRS.ERR_FIELD_RANGE, num, range));
                 }
             }
         };
@@ -8321,12 +8328,12 @@ define("jriapp_collection/validation", ["require", "exports", "jriapp_core/share
             var rangeParts = range.split(",");
             if (!!rangeParts[0]) {
                 if (dt < Validations._dtRangeToDate(rangeParts[0])) {
-                    throw new Error(coreutils_21.StringUtils.format(lang_18.ERRS.ERR_FIELD_RANGE, dt, range));
+                    throw new Error(coreutils_19.StringUtils.format(lang_18.ERRS.ERR_FIELD_RANGE, dt, range));
                 }
             }
             if (!!rangeParts[1]) {
                 if (dt > Validations._dtRangeToDate(rangeParts[1])) {
-                    throw new Error(coreutils_21.StringUtils.format(lang_18.ERRS.ERR_FIELD_RANGE, dt, range));
+                    throw new Error(coreutils_19.StringUtils.format(lang_18.ERRS.ERR_FIELD_RANGE, dt, range));
                 }
             }
         };
@@ -8334,7 +8341,7 @@ define("jriapp_collection/validation", ["require", "exports", "jriapp_core/share
     }());
     exports.Validations = Validations;
 });
-define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "jriapp_core/lang", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_core/parser", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/validation"], function (require, exports, object_16, lang_19, coreutils_22, utils_26, bootstrap_23, parser_5, int_6, utils_27, validation_1) {
+define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "jriapp_core/lang", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_core/parser", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/validation"], function (require, exports, object_16, lang_19, coreutils_20, utils_26, bootstrap_23, parser_5, int_6, utils_27, validation_1) {
     "use strict";
     var utils = utils_26.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, parse = parser_5.parser;
     var COLL_EVENTS = {
@@ -8590,7 +8597,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
                 this.endEdit();
             }
             catch (ex) {
-                coreutils_22.ERROR.reThrow(ex, this.handleError(ex, this));
+                coreutils_20.ERROR.reThrow(ex, this.handleError(ex, this));
             }
         };
         BaseCollection.prototype._onCurrentChanging = function (newCurrent) {
@@ -8619,7 +8626,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
             var args = { item: item, isCancel: false };
             this.raiseEvent(COLL_EVENTS.item_adding, args);
             if (args.isCancel)
-                coreutils_22.ERROR.throwDummy(new Error("operation canceled"));
+                coreutils_20.ERROR.throwDummy(new Error("operation canceled"));
         };
         BaseCollection.prototype._onItemAdded = function (item) {
             var args = { item: item, isAddNewHandled: false };
@@ -8636,7 +8643,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
                 this.endEdit();
             }
             catch (ex) {
-                coreutils_22.ERROR.reThrow(ex, this.handleError(ex, this));
+                coreutils_20.ERROR.reThrow(ex, this.handleError(ex, this));
             }
             var pos;
             item._aspect._onAttaching();
@@ -8675,7 +8682,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
                     this.endEdit();
                 }
                 catch (ex) {
-                    coreutils_22.ERROR.reThrow(ex, this.handleError(ex, this));
+                    coreutils_20.ERROR.reThrow(ex, this.handleError(ex, this));
                 }
             }
             return !args.isCancel;
@@ -8943,7 +8950,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
             catch (ex) {
                 isHandled = this.handleError(ex, this);
                 item._aspect.cancelEdit();
-                coreutils_22.ERROR.reThrow(ex, isHandled);
+                coreutils_20.ERROR.reThrow(ex, isHandled);
             }
             return item;
         };
@@ -9273,7 +9280,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
     }(object_16.BaseObject));
     exports.BaseCollection = BaseCollection;
 });
-define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/validation"], function (require, exports, object_17, coreutils_23, utils_28, lang_20, int_7, utils_29, validation_2) {
+define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/validation"], function (require, exports, object_17, coreutils_21, utils_28, lang_20, int_7, utils_29, validation_2) {
     "use strict";
     var utils = utils_28.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
     var ItemAspect = (function (_super) {
@@ -9334,7 +9341,7 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
                 catch (ex) {
                     isHandled = this.handleError(ex, item);
                     item._aspect.cancelEdit();
-                    coreutils_23.ERROR.reThrow(ex, isHandled);
+                    coreutils_21.ERROR.reThrow(ex, isHandled);
                 }
             }
             if (this.isDetached)
@@ -9791,7 +9798,7 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
     }(object_17.BaseObject));
     exports.ItemAspect = ItemAspect;
 });
-define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/base", "jriapp_collection/aspect", "jriapp_collection/validation"], function (require, exports, coreutils_24, utils_30, lang_21, int_8, utils_31, base_1, aspect_1, validation_3) {
+define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/base", "jriapp_collection/aspect", "jriapp_collection/validation"], function (require, exports, coreutils_22, utils_30, lang_21, int_8, utils_31, base_1, aspect_1, validation_3) {
     "use strict";
     var utils = utils_30.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
     function fn_initVals(coll, obj) {
@@ -9905,7 +9912,7 @@ define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils"
                 this.endEdit();
             }
             catch (ex) {
-                coreutils_24.ERROR.reThrow(ex, this.handleError(ex, this));
+                coreutils_22.ERROR.reThrow(ex, this.handleError(ex, this));
             }
             return _super.prototype._attach.call(this, item);
         };
@@ -10141,7 +10148,7 @@ define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/sysc
 });
 define("jriapp_utils/mloader", ["require", "exports", "jriapp_utils/utils", "jriapp_utils/sloader"], function (require, exports, utils_34, sloader_2) {
     "use strict";
-    var coreUtils = utils_34.Utils.core, strUtils = utils_34.Utils.str, defer = utils_34.Utils.defer, arr = utils_34.Utils.arr, resolvedPromise = defer.createSyncDeferred().resolve(), CSSPrefix = "css!";
+    var utils = utils_34.Utils, coreUtils = utils.core, strUtils = utils.str, defer = utils.defer, arr = utils.arr, resolvedPromise = defer.createSyncDeferred().resolve(), CSSPrefix = "css!";
     var _moduleLoader = null;
     function create() {
         if (!_moduleLoader)
@@ -10210,7 +10217,7 @@ define("jriapp_utils/mloader", ["require", "exports", "jriapp_utils/utils", "jri
                         var load = self._loads[name];
                         load.state = 2;
                         load.err = err;
-                        load.defered.reject(utils_34.Utils.str.format("Error loading modules: {0}", err));
+                        load.defered.reject(utils.str.format("Error loading modules: {0}", err));
                     });
                 });
             }
@@ -10275,7 +10282,7 @@ define("jriapp_utils/mloader", ["require", "exports", "jriapp_utils/utils", "jri
 });
 define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "jriapp_core/shared", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/syschecks", "jriapp_utils/utils", "jriapp_utils/mloader", "jriapp_core/binding", "jriapp_core/parser"], function (require, exports, const_8, shared_5, lang_23, object_19, syschecks_8, utils_35, mloader_1, binding_2, parser_6) {
     "use strict";
-    var $ = utils_35.Utils.dom.$, document = utils_35.Utils.dom.document, strUtils = utils_35.Utils.str, syschecks = syschecks_8.SysChecks;
+    var utils = utils_35.Utils, $ = utils.dom.$, doc = utils.dom.document, strUtils = utils.str, syschecks = syschecks_8.SysChecks;
     function create(app, root, elViewFactory) {
         return new DataBindingService(app, root, elViewFactory);
     }
@@ -10320,7 +10327,7 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
                 return null;
         };
         DataBindingService.prototype._getBindableElements = function (scope) {
-            var self = this, result = [], allElems = utils_35.Utils.arr.fromList(scope.querySelectorAll("*"));
+            var self = this, result = [], allElems = utils.arr.fromList(scope.querySelectorAll("*"));
             allElems.forEach(function (el) {
                 var res = self._toBindableElement(el);
                 if (!!res)
@@ -10380,7 +10387,7 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
             }
         };
         DataBindingService.prototype._bindTemplateElements = function (templateEl) {
-            var self = this, defer = utils_35.Utils.defer.createSyncDeferred();
+            var self = this, defer = utils.defer.createSyncDeferred();
             try {
                 var rootBindEl = self._toBindableElement(templateEl), bindElems = void 0, lftm_1 = new utils_35.LifeTimeScope();
                 if (!!rootBindEl && !!rootBindEl.dataForm) {
@@ -10429,8 +10436,8 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
             return res;
         };
         DataBindingService.prototype.bindElements = function (scope, defaultDataContext, isDataFormBind, isInsideTemplate) {
-            var self = this, defer = utils_35.Utils.defer.createSyncDeferred();
-            scope = scope || document;
+            var self = this, defer = utils.defer.createSyncDeferred();
+            scope = scope || doc;
             try {
                 var bindElems = self._getBindableElements(scope), lftm_2 = new utils_35.LifeTimeScope();
                 if (!isDataFormBind) {
@@ -10485,9 +10492,9 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
         return DataBindingService;
     }(object_19.BaseObject));
 });
-define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_elview/factory", "jriapp_core/databindsvc", "jriapp_core/template"], function (require, exports, const_9, lang_24, object_20, bootstrap_24, coreutils_25, utils_36, factory_3, databindsvc_1, template_3) {
+define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_elview/factory", "jriapp_core/databindsvc", "jriapp_core/template"], function (require, exports, const_9, lang_24, object_20, bootstrap_24, coreutils_23, utils_36, factory_3, databindsvc_1, template_3) {
     "use strict";
-    var $ = utils_36.Utils.dom.$, document = utils_36.Utils.dom.document;
+    var utils = utils_36.Utils, $ = utils.dom.$, doc = utils.dom.document;
     var APP_EVENTS = {
         startup: "startup"
     };
@@ -10513,9 +10520,9 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
                     moduleInits = options.modulesInits;
             }
             if (!!bootstrap_24.bootstrap.findApp(app_name))
-                throw new Error(utils_36.Utils.str.format(lang_24.ERRS.ERR_APP_NAME_NOT_UNIQUE, app_name));
+                throw new Error(utils.str.format(lang_24.ERRS.ERR_APP_NAME_NOT_UNIQUE, app_name));
             this._app_name = app_name;
-            this._objId = "app:" + utils_36.Utils.core.getNewID();
+            this._objId = "app:" + utils.core.getNewID();
             this._app_state = 0;
             this._moduleInits = moduleInits;
             this._elViewRegister = factory_3.createRegister(bootstrap_24.bootstrap.elViewRegister);
@@ -10538,7 +10545,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
         Application.prototype._cleanUpObjMaps = function () {
             var self = this;
             this._objMaps.forEach(function (objMap) {
-                utils_36.Utils.core.forEachProp(objMap, function (name) {
+                utils.core.forEachProp(objMap, function (name) {
                     var obj = objMap[name];
                     if (obj instanceof object_20.BaseObject) {
                         if (!obj.getIsDestroyed()) {
@@ -10558,7 +10565,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
             });
         };
         Application.prototype.handleError = function (error, source) {
-            if (coreutils_25.ERROR.checkIsDummy(error)) {
+            if (coreutils_23.ERROR.checkIsDummy(error)) {
                 return true;
             }
             var isHandled = _super.prototype.handleError.call(this, error, source);
@@ -10594,7 +10601,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
                 bootstrap_24.bootstrap._getInternal().registerObject(this, name2, obj);
             }
             else
-                throw new Error(utils_36.Utils.str.format(lang_24.ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
+                throw new Error(utils.str.format(lang_24.ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
         };
         Application.prototype.getConverter = function (name) {
             var name2 = const_9.STORE_KEY.CONVERTER + name;
@@ -10603,7 +10610,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
                 res = bootstrap_24.bootstrap._getInternal().getObject(bootstrap_24.bootstrap, name2);
             }
             if (!res)
-                throw new Error(utils_36.Utils.str.format(lang_24.ERRS.ERR_CONVERTER_NOTREGISTERED, name));
+                throw new Error(utils.str.format(lang_24.ERRS.ERR_CONVERTER_NOTREGISTERED, name));
             return res;
         };
         Application.prototype.registerSvc = function (name, obj) {
@@ -10623,7 +10630,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
         };
         Application.prototype.registerObject = function (name, obj) {
             var self = this, name2 = const_9.STORE_KEY.OBJECT + name;
-            if (utils_36.Utils.check.isBaseObject(obj)) {
+            if (utils.check.isBaseObject(obj)) {
                 obj.addOnDestroyed(function (s, a) {
                     bootstrap_24.bootstrap._getInternal().unregisterObject(self, name2);
                 }, self.uniqueID);
@@ -10639,7 +10646,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
             return res;
         };
         Application.prototype.startUp = function (onStartUp) {
-            var self = this, deferred = utils_36.Utils.defer.createDeferred();
+            var self = this, deferred = utils.defer.createDeferred();
             if (this._app_state !== 0) {
                 return deferred.reject(new Error("Application can not be started when state != AppState.None"));
             }
@@ -10648,17 +10655,17 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
                     self._initAppModules();
                     var onStartupRes1 = self.onStartUp();
                     var setupPromise1 = void 0;
-                    if (utils_36.Utils.check.isThenable(onStartupRes1)) {
+                    if (utils.check.isThenable(onStartupRes1)) {
                         setupPromise1 = onStartupRes1;
                     }
                     else {
-                        setupPromise1 = utils_36.Utils.defer.createDeferred().resolve();
+                        setupPromise1 = utils.defer.createDeferred().resolve();
                     }
                     var promise_1 = setupPromise1.then(function () {
                         self.raiseEvent(APP_EVENTS.startup, {});
                         var onStartupRes2 = (!!onStartUp) ? onStartUp.apply(self, [self]) : null;
                         var setupPromise2;
-                        if (utils_36.Utils.check.isThenable(onStartupRes2)) {
+                        if (utils.check.isThenable(onStartupRes2)) {
                             setupPromise2 = onStartupRes2.then(function () {
                                 return self._dataBindingService.setUpBindings();
                             }, function (err) {
@@ -10689,7 +10696,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
                 throw err;
             });
             try {
-                if (!!onStartUp && !utils_36.Utils.check.isFunc(onStartUp))
+                if (!!onStartUp && !utils.check.isFunc(onStartUp))
                     throw new Error(lang_24.ERRS.ERR_APP_SETUP_INVALID);
                 bootstrap_24.bootstrap.templateLoader.waitForNotLoading(fn_startApp, null);
             }
@@ -10708,7 +10715,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
         };
         Application.prototype.loadTemplates = function (url) {
             return this.loadTemplatesAsync(function () {
-                return utils_36.Utils.http.getAjax(url);
+                return utils.http.getAjax(url);
             });
         };
         Application.prototype.loadTemplatesAsync = function (fn_loader) {
@@ -10720,8 +10727,8 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
             });
         };
         Application.prototype.registerTemplateById = function (name, templateId) {
-            this.registerTemplateLoader(name, utils_36.Utils.core.memoize(function () {
-                var deferred = utils_36.Utils.defer.createSyncDeferred();
+            this.registerTemplateLoader(name, utils.core.memoize(function () {
+                var deferred = utils.defer.createSyncDeferred();
                 var str = $("#" + templateId).html();
                 deferred.resolve(str);
                 return deferred.promise();
@@ -10732,12 +10739,12 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
             if (!res) {
                 res = bootstrap_24.bootstrap.templateLoader.getTemplateLoader(name);
                 if (!res)
-                    return function () { return utils_36.Utils.defer.createDeferred().reject(new Error(utils_36.Utils.str.format(lang_24.ERRS.ERR_TEMPLATE_NOTREGISTERED, name))); };
+                    return function () { return utils.defer.createDeferred().reject(new Error(utils.str.format(lang_24.ERRS.ERR_TEMPLATE_NOTREGISTERED, name))); };
             }
             return res;
         };
         Application.prototype.registerTemplateGroup = function (name, group) {
-            var group2 = utils_36.Utils.core.extend({
+            var group2 = utils.core.extend({
                 fn_loader: null,
                 url: null,
                 names: null,
@@ -10801,7 +10808,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
         Object.defineProperty(Application.prototype, "appRoot", {
             get: function () {
                 if (!this._options || !this._options.appRoot)
-                    return document;
+                    return doc;
                 else
                     return this._options.appRoot;
             },
@@ -10823,7 +10830,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
     }(object_20.BaseObject));
     exports.Application = Application;
 });
-define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/const", "jriapp_core/shared", "jriapp_utils/syschecks", "jriapp_core/lang", "jriapp_core/converter", "jriapp_core/object", "jriapp_utils/coreutils", "jriapp_core/bootstrap", "jriapp_content/factory", "jriapp_core/binding", "jriapp_core/datepicker", "jriapp_core/dataform", "jriapp_core/template", "jriapp_elview/all", "jriapp_utils/utils", "jriapp_core/mvvm", "jriapp_collection/collection", "jriapp_core/app"], function (require, exports, bootstrap_25, const_10, shared_6, syschecks_9, lang_25, converter_1, object_21, coreutils_26, bootstrap_26, factory_4, binding_3, datepicker_1, dataform_1, template_4, all_1, utils_37, mvvm_2, collection_1, app_1) {
+define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/const", "jriapp_core/shared", "jriapp_utils/syschecks", "jriapp_core/lang", "jriapp_core/converter", "jriapp_core/object", "jriapp_utils/coreutils", "jriapp_core/bootstrap", "jriapp_content/factory", "jriapp_core/binding", "jriapp_core/datepicker", "jriapp_core/dataform", "jriapp_core/template", "jriapp_elview/all", "jriapp_utils/utils", "jriapp_core/mvvm", "jriapp_collection/collection", "jriapp_core/app"], function (require, exports, bootstrap_25, const_10, shared_6, syschecks_9, lang_25, converter_1, object_21, coreutils_24, bootstrap_26, factory_4, binding_3, datepicker_1, dataform_1, template_4, all_1, utils_37, mvvm_2, collection_1, app_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -10843,10 +10850,10 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.LocaleERRS = lang_25.ERRS;
     exports.BaseConverter = converter_1.BaseConverter;
     exports.BaseObject = object_21.BaseObject;
-    exports.Debounce = coreutils_26.Debounce;
-    exports.DblClick = coreutils_26.DblClick;
-    exports.DEBUG = coreutils_26.DEBUG;
-    exports.ERROR = coreutils_26.ERROR;
+    exports.Debounce = coreutils_24.Debounce;
+    exports.DblClick = coreutils_24.DblClick;
+    exports.DEBUG = coreutils_24.DEBUG;
+    exports.ERROR = coreutils_24.ERROR;
     exports.bootstrap = bootstrap_26.bootstrap;
     exports.contentFactories = factory_4.contentFactories;
     exports.Binding = binding_3.Binding;
@@ -10872,6 +10879,6 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.COLL_CHANGE_REASON = collection_1.COLL_CHANGE_REASON;
     exports.COLL_CHANGE_TYPE = collection_1.COLL_CHANGE_TYPE;
     exports.Application = app_1.Application;
-    exports.VERSION = "0.9.87";
+    exports.VERSION = "0.9.88";
     bootstrap_25.Bootstrap._initFramework();
 });

@@ -1,12 +1,12 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { IApplication, IConstructorContentOptions, IBindingInfo, IBindingOptions, IElView, IBaseObject }  from "../jriapp_core/shared";
 import { ERRS } from "../jriapp_core/lang";
-import { Utils as utils } from "../jriapp_utils/utils";
+import { Utils } from "../jriapp_utils/utils";
 
 import { css } from "./int";
 import { BasicContent } from "./basic";
 
-const strUtils = utils.str, document = utils.dom.document;
+const utils = Utils, strUtils = utils.str, doc = utils.dom.document;
 
 const NAME = "datepicker";
 
@@ -25,13 +25,13 @@ export class DateContent extends BasicContent {
     protected createTargetElement(): IElView {
         let el: HTMLElement, info: { name: string; options: any; } = { name: null, options: null };
         if (this.isEditing && this.getIsCanBeEdited()) {
-            el = document.createElement("input");
+            el = doc.createElement("input");
             el.setAttribute("type", "text");
             info.options = this._options.options;
             info.name = NAME;
         }
         else {
-            el = document.createElement("span");
+            el = doc.createElement("span");
         }
         this.updateCss();
         this._el = el;

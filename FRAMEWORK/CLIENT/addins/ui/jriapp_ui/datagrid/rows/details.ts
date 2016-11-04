@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { BaseObject } from "jriapp_core/object";
-import { Utils as utils, Debounce, DblClick, ERROR, DomUtils as dom } from "jriapp_utils/utils";
+import { Utils, Debounce, DblClick, ERROR, DomUtils as dom } from "jriapp_utils/utils";
 import { ICollection, ICollectionItem, ICollChangedArgs, COLL_CHANGE_TYPE, COLL_CHANGE_REASON, ITEM_STATUS,
     ICollItemArgs, ICollItemAddedArgs } from "jriapp_collection/collection";
 
@@ -9,7 +9,7 @@ import { Row } from "./row";
 import { DetailsCell } from "../cells/details";
 import { DataGrid } from "../datagrid"
 
-const checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ArrayHelper = utils.arr;
+const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr;
 const $ = dom.$, document = dom.document;
 
 export class DetailsRow extends BaseObject {

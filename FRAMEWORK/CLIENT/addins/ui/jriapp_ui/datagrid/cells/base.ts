@@ -2,14 +2,14 @@
 import { DATA_ATTR } from "jriapp_core/const";
 import { BaseObject } from "jriapp_core/object";
 import { ICollectionItem } from "jriapp_collection/collection";
-import { Utils as utils, DblClick } from "jriapp_utils/utils";
+import { Utils, DblClick } from "jriapp_utils/utils";
 
 import { css } from "../const";
 import { Row } from "../rows/row";
 import { BaseColumn } from "../columns/base";
 import { DataGrid } from "../datagrid"
 
-const dom = utils.dom, $ = dom.$;
+const utils = Utils, dom = utils.dom, $ = dom.$;
 
 export interface ICellOptions {
     row: Row;

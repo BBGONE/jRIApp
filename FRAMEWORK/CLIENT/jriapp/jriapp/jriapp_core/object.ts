@@ -1,20 +1,20 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    IBaseObject, IIndexer, TPriority, IList, IListNode, TEventHandler, TErrorHandler,
+    IBaseObject, IIndexer, TPriority, IEventList, IEventNode, TEventHandler, TErrorHandler,
     TErrorArgs, TPropChangedHandler
 } from "shared";
 import { ERRS } from "lang";
 import {
     SysChecks, Checks, StringUtils, CoreUtils, ERROR, DEBUG
 } from "../jriapp_utils/coreutils";
-import { ListHelper } from "../jriapp_utils/listhelper";
+import { EventHelper } from "../jriapp_utils/eventhelper";
 
 const OBJ_EVENTS = {
     error: "error",
     destroyed: "destroyed"
 };
 
-const checks = Checks, strUtils = StringUtils, coreUtils = CoreUtils,  listHelper = ListHelper;
+const checks = Checks, strUtils = StringUtils, coreUtils = CoreUtils,  eventHelper = EventHelper;
 
 SysChecks._isBaseObj = function (obj: any): boolean {
     return (!!obj && obj instanceof BaseObject);
@@ -24,20 +24,20 @@ const enum ObjState { None = 0, DestroyCalled = 1, Destroyed = 2 }
 
 export class BaseObject implements IBaseObject {
     private _obj_state: ObjState;
-    private _events: IIndexer<IList>;
+    private _events: IIndexer<IEventList>;
 
     constructor() {
         this._obj_state = ObjState.None;
         this._events = null;
     }
 
-    private _removeNsHandler(ev: IIndexer<IList>, ns: string) {
-        let keys = Object.keys(ev), key: string, list: IList;
+    private _removeNsHandler(ev: IIndexer<IEventList>, ns: string) {
+        let keys = Object.keys(ev), key: string, list: IEventList;
         for (let i = 0, k = keys.length; i < k; ++i) {
             key = keys[i];
             list = ev[key];
             if (!!list) {
-                listHelper.removeNodes(list, ns);
+                eventHelper.removeNodes(list, ns);
             }
         }
     }
@@ -62,13 +62,13 @@ export class BaseObject implements IBaseObject {
         if (!!nmspace)
             ns = "" + nmspace;
 
-        let list = ev[n], node: IListNode = listHelper.CreateNode(handler, ns, context);
+        let list = ev[n], node: IEventNode = eventHelper.CreateNode(handler, ns, context);
 
         if (!list) {
-            ev[n] = list = listHelper.CreateList();
+            ev[n] = list = eventHelper.CreateList();
         }
 
-        listHelper.appendNode(list, node, ns, priority);
+        eventHelper.appendNode(list, node, ns, priority);
     }
     protected _removeHandler(name?: string, nmspace?: string): void {
         let self = this, ev = self._events, ns = "*";
@@ -77,7 +77,7 @@ export class BaseObject implements IBaseObject {
 
         if (!!nmspace)
             ns = "" + nmspace;
-        let list: IList;
+        let list: IEventList;
 
         //arguments supplied is name (and optionally nmspace)
         if (!!name) {
@@ -85,11 +85,11 @@ export class BaseObject implements IBaseObject {
             if (!list)
                 return;
             if (ns === "*") {
-                listHelper.removeNodes(list, ns);
+                eventHelper.removeNodes(list, ns);
                 ev[name] = null;
             }
             else {
-                listHelper.removeNodes(list, ns);
+                eventHelper.removeNodes(list, ns);
             }
             return;
         }
@@ -106,7 +106,7 @@ export class BaseObject implements IBaseObject {
         if (ev === null)
             return;
         if (ev === checks.undefined) {
-            throw new Error("The object's constructor has not been called!");
+            throw new Error("The object is not initialized!");
         }
 
         if (!!name) {
@@ -119,7 +119,7 @@ export class BaseObject implements IBaseObject {
                 this._raiseEvent("0*", args);
             }
 
-            let events = listHelper.toArray(ev[name]), cur: IListNode;
+            let events = eventHelper.toArray(ev[name]), cur: IEventNode;
             for (let i = 0; i < events.length; i++) {
                 cur = events[i];
                 cur.fn.apply(cur.context, [self, args]);
@@ -127,18 +127,20 @@ export class BaseObject implements IBaseObject {
         }
     }
     protected _checkEventName(name: string): void {
-        let proto = Object.getPrototypeOf(this), map: IIndexer<boolean>;
+        const proto = Object.getPrototypeOf(this);
+        let map: IIndexer<boolean>;
         //cache events' names in object's prototype
         if (!proto.hasOwnProperty("__evMap")) {
-            let evn = this._getEventNames();
+            const evn = this._getEventNames();
             map = {};
             for (let i = 0; i < evn.length; i++) {
                 map[evn[i]] = true;
             }
             proto.__evMap = map;
         }
-        else
+        else {
             map = proto.__evMap;
+        }
 
         if (!map[name]) {
             DEBUG.checkStartDebugger();

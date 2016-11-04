@@ -6,7 +6,7 @@ import {
 } from "jriapp_core/shared";
 import { ERRS, STRS } from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
-import { Utils as utils, Debounce, DblClick, ERROR } from "jriapp_utils/utils";
+import { Utils, Debounce, DblClick, ERROR } from "jriapp_utils/utils";
 import { bootstrap } from "jriapp_core/bootstrap";
 import { parser } from "jriapp_core/parser";
 import { COLL_CHANGE_TYPE, ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollection, ICollItemAddedArgs,
@@ -43,7 +43,7 @@ export { BaseColumn as DataGridColumn } from "./columns/base";
 export { ROW_POSITION, COLUMN_TYPE, ROW_ACTION } from "./const";
 export { IDataGridAnimation, DefaultAnimation } from "./animation";
 
-const checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
 const dom = utils.dom, $ = dom.$, doc = dom.document;
 
 let _columnWidthInterval: any, _gridsCount: number = 0;

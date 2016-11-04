@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { BaseObject } from "jriapp_core/object";
-import { Utils as utils, Debounce, DblClick, ERROR } from "jriapp_utils/utils";
+import { Utils, Debounce, DblClick, ERROR } from "jriapp_utils/utils";
 import { ICollection, ICollectionItem, ICollChangedArgs, COLL_CHANGE_TYPE, COLL_CHANGE_REASON, ITEM_STATUS,
     ICollItemArgs, ICollItemAddedArgs } from "jriapp_collection/collection";
 
@@ -19,7 +19,7 @@ import { RowSelectorColumn } from "../columns/rowselector";
 
 import { DataGrid } from "../datagrid"
 
-const dom = utils.dom, $ = dom.$, document = utils.dom.document;
+const utils = Utils, dom = utils.dom, $ = dom.$, doc = dom.document;
 
 export class Row extends BaseObject {
     private _grid: DataGrid;
@@ -83,7 +83,7 @@ export class Row extends BaseObject {
         });
     }
     private _createCell(col: BaseColumn, num: number) {
-        let self = this, td: HTMLTableCellElement = <HTMLTableCellElement>document.createElement("td"), cell: BaseCell<BaseColumn>;
+        let self = this, td: HTMLTableCellElement = <HTMLTableCellElement>doc.createElement("td"), cell: BaseCell<BaseColumn>;
 
         if (col instanceof ExpanderColumn) {
             this._expanderCell = new ExpanderCell({ row: self, td: td, column: col, num: num });

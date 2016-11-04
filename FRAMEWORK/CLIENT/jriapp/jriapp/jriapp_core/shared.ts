@@ -39,21 +39,24 @@ export interface IErrorHandler {
     handleError(error: any, source: any): boolean;
 }
 
-export type TPriority = "0" | "1" | "2";
+export const enum TPriority {
+    Normal = 0, AboveNormal = 1, High = 2
+}
 
-export interface IListNode {
+export interface IEventNode {
     context: any
     fn: TEventHandler<any, any>;
-    next: IListNode;
+    next: IEventNode;
 }
-export type IListBucket = IListNode[];
+
+export type IEventNodeArray = IEventNode[];
 
 export interface INamespaceMap {
-    [ns: string]: IListBucket;
+    [ns: string]: IEventNodeArray;
 }
 
-export interface IList {
-    [priority: string]: INamespaceMap;
+export interface IEventList {
+    [priority: number]: INamespaceMap;
 }
 
 export interface ITaskQueue {

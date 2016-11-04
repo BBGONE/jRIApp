@@ -11,13 +11,13 @@ import { ERRS } from "./lang";
 import { BaseObject }  from "./object";
 import { bootstrap } from "./bootstrap";
 import { SysChecks, ERROR } from "../jriapp_utils/coreutils";
-import { LifeTimeScope, Utils as utils } from "../jriapp_utils/utils";
+import { LifeTimeScope, Utils } from "../jriapp_utils/utils";
 import { createFactory as createElViewFactory, createRegister as createElViewRegister } from "../jriapp_elview/factory";
 import { create as createDataBindSvc } from "./databindsvc";
 import { ITemplateOptions, create as createTemplate } from "./template";
 import { parser } from "./parser";
 
-const $ = utils.dom.$, document = utils.dom.document;
+const utils = Utils, $ = utils.dom.$, doc = utils.dom.document;
 
 const APP_EVENTS = {
     startup: "startup"
@@ -356,7 +356,7 @@ export class Application extends BaseObject implements IApplication {
     get appName() { return this._app_name; }
     get appRoot(): Document | HTMLElement {
         if (!this._options || !this._options.appRoot)
-            return document;
+            return doc;
         else
             return this._options.appRoot;
     }

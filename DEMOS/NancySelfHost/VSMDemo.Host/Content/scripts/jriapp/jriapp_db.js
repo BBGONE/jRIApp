@@ -1566,21 +1566,21 @@ define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jria
                 return;
             ds.addOnCollChanged(function (sender, args) {
                 self._onParentCollChanged(args);
-            }, self._objId, null, "2");
+            }, self._objId, null, 2);
             ds.addOnBeginEdit(function (sender, args) {
                 self._onParentEdit(args.item, true, false);
-            }, self._objId, null, "2");
+            }, self._objId, null, 2);
             ds.addOnEndEdit(function (sender, args) {
                 self._onParentEdit(args.item, false, args.isCanceled);
-            }, self._objId, null, "2");
+            }, self._objId, null, 2);
             ds.addOnItemDeleting(function (sender, args) {
-            }, self._objId, null, "2");
+            }, self._objId, null, 2);
             ds.addOnStatusChanged(function (sender, args) {
                 self._onParentStatusChanged(args.item, args.oldStatus);
-            }, self._objId, null, "2");
+            }, self._objId, null, 2);
             ds.addOnCommitChanges(function (sender, args) {
                 self._onParentCommitChanges(args.item, args.isBegin, args.isRejected, args.status);
-            }, self._objId, null, "2");
+            }, self._objId, null, 2);
         };
         Association.prototype._bindChildDS = function () {
             var self = this, ds = this._childDS;
@@ -1588,19 +1588,19 @@ define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jria
                 return;
             ds.addOnCollChanged(function (sender, args) {
                 self._onChildCollChanged(args);
-            }, self._objId, null, "2");
+            }, self._objId, null, 2);
             ds.addOnBeginEdit(function (sender, args) {
                 self._onChildEdit(args.item, true, false);
-            }, self._objId, null, "2");
+            }, self._objId, null, 2);
             ds.addOnEndEdit(function (sender, args) {
                 self._onChildEdit(args.item, false, args.isCanceled);
-            }, self._objId, null, "2");
+            }, self._objId, null, 2);
             ds.addOnStatusChanged(function (sender, args) {
                 self._onChildStatusChanged(args.item, args.oldStatus);
-            }, self._objId, null, "2");
+            }, self._objId, null, 2);
             ds.addOnCommitChanges(function (sender, args) {
                 self._onChildCommitChanges(args.item, args.isBegin, args.isRejected, args.status);
-            }, self._objId, null, "2");
+            }, self._objId, null, 2);
         };
         Association.prototype._onParentCollChanged = function (args) {
             var self = this, item, changed = [], changedKeys = {};
@@ -2215,7 +2215,7 @@ define("jriapp_db/error", ["require", "exports", "jriapp_core/shared", "jriapp_u
 });
 define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_utils/utils", "jriapp_collection/collection", "jriapp_db/const", "jriapp_db/association", "jriapp_db/error"], function (require, exports, shared_2, langMOD, object_5, bootstrap_2, utils_7, collection_3, const_5, association_1, error_1) {
     "use strict";
-    var utils = utils_7.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+    var http = utils_7.HttpUtils, utils = utils_7.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
     var DATA_SVC_METH = {
         Invoke: "invoke",
         Query: "query",
@@ -2439,7 +2439,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
             try {
                 postData = JSON.stringify(data);
                 invokeUrl = this._getUrl(DATA_SVC_METH.Invoke);
-                var req_promise = utils_7.HttpUtils.postAjax(invokeUrl, postData, self.requestHeaders);
+                var req_promise = http.postAjax(invokeUrl, postData, self.requestHeaders);
                 self._addRequestPromise(req_promise, operType);
                 req_promise.then(function (res) {
                     return utils.parseJSON(res);
@@ -2658,7 +2658,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
                 paramInfo: self._getMethodParams(context.query._getInternal().getQueryInfo(), context.query.params).paramInfo,
                 queryName: context.query.queryName
             };
-            var req_promise = utils_7.HttpUtils.postAjax(self._getUrl(DATA_SVC_METH.Query), JSON.stringify(requestInfo), self.requestHeaders);
+            var req_promise = http.postAjax(self._getUrl(DATA_SVC_METH.Query), JSON.stringify(requestInfo), self.requestHeaders);
             self._addRequestPromise(req_promise, 2, requestInfo.dbSetName);
             req_promise.then(function (res) {
                 return utils.parseJSON(res);
@@ -2705,7 +2705,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
                     error: null
                 };
                 args.item._aspect._checkCanRefresh();
-                var url = self._getUrl(DATA_SVC_METH.Refresh), req_promise = utils_7.HttpUtils.postAjax(url, JSON.stringify(request), self.requestHeaders);
+                var url = self._getUrl(DATA_SVC_METH.Refresh), req_promise = http.postAjax(url, JSON.stringify(request), self.requestHeaders);
                 self._addRequestPromise(req_promise, operType);
                 req_promise.then(function (res) {
                     return utils.parseJSON(res);
@@ -2837,7 +2837,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
                 args.fn_onOk();
                 return;
             }
-            var req_promise = utils_7.HttpUtils.postAjax(self._getUrl(DATA_SVC_METH.Submit), JSON.stringify(changeSet), self.requestHeaders);
+            var req_promise = http.postAjax(self._getUrl(DATA_SVC_METH.Submit), JSON.stringify(changeSet), self.requestHeaders);
             self._addRequestPromise(req_promise, 1);
             req_promise.then(function (res) {
                 return utils.parseJSON(res);
@@ -2893,7 +2893,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
             catch (ex) {
                 return deferred.reject(ex);
             }
-            var ajax_promise = utils_7.HttpUtils.getAjax(loadUrl, self.requestHeaders);
+            var ajax_promise = http.getAjax(loadUrl, self.requestHeaders);
             var res_promise = ajax_promise.then(function (permissions) {
                 if (self.getIsDestroyCalled())
                     return;
@@ -3415,7 +3415,6 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
         EntityAspect.prototype._acceptChanges = function (rowInfo) {
             if (this.getIsDestroyed())
                 return;
-            this.endEdit();
             var oldStatus = this.status, dbSet = this.dbSet, internal = dbSet._getInternal();
             if (oldStatus !== 0) {
                 internal.onCommitChanges(this.item, true, false, oldStatus);
@@ -3472,7 +3471,6 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
             if (this.getIsDestroyed())
                 return;
             var self = this, oldStatus = self.status, dbSet = self.dbSet, internal = dbSet._getInternal();
-            this.cancelEdit();
             if (oldStatus !== 0) {
                 internal.onCommitChanges(self.item, true, true, oldStatus);
                 if (oldStatus === 1) {
@@ -3484,6 +3482,9 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
                 if (!!self._origVals) {
                     self._vals = coreUtils.clone(self._origVals);
                     self._origVals = null;
+                    if (!!self._saveVals) {
+                        self._saveVals = coreUtils.clone(self._vals);
+                    }
                 }
                 self.setStatus(0);
                 internal.removeAllErrors(this.item);
@@ -3519,8 +3520,8 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
         EntityAspect.prototype.destroy = function () {
             if (this._isDestroyed)
                 return;
-            var self = this;
             this._isDestroyCalled = true;
+            this.cancelEdit();
             if (!this.isCached) {
                 this.rejectChanges();
             }
@@ -3800,12 +3801,12 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_core/lang", "jriapp_
             var self = this, ds = this._dataSource;
             if (!ds)
                 return;
-            ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self, "1");
+            ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self, 1);
             ds.addOnBeginEdit(function (sender, args) {
                 if (!!self._itemsByKey[args.item._key]) {
                     self._onEditing(args.item, true, false);
                 }
-            }, self._objId, null, "1");
+            }, self._objId, null, 1);
             ds.addOnEndEdit(function (sender, args) {
                 var isOk, item = args.item, canFilter = !!self._fn_filter;
                 if (!!self._itemsByKey[item._key]) {
@@ -3824,18 +3825,18 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_core/lang", "jriapp_
                         }
                     }
                 }
-            }, self._objId, null, "1");
+            }, self._objId, null, 1);
             ds.addOnErrorsChanged(function (sender, args) {
                 if (!!self._itemsByKey[args.item._key]) {
                     self._onErrorsChanged(args.item);
                 }
-            }, self._objId, null, "1");
-            ds.addOnStatusChanged(self._onDSStatusChanged, self._objId, self, "1");
+            }, self._objId, null, 1);
+            ds.addOnStatusChanged(self._onDSStatusChanged, self._objId, self, 1);
             ds.addOnItemDeleting(function (sender, args) {
                 if (!!self._itemsByKey[args.item._key]) {
                     self._onItemDeleting(args);
                 }
-            }, self._objId, null, "1");
+            }, self._objId, null, 1);
             ds.addOnItemAdded(function (sender, args) {
                 if (self._isAddingNew) {
                     if (!self._itemsByKey[args.item._key]) {
@@ -3845,12 +3846,12 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_core/lang", "jriapp_
                     self._onEditing(args.item, true, false);
                     self._onItemAdded(args.item);
                 }
-            }, self._objId, null, "1");
+            }, self._objId, null, 1);
             ds.addOnItemAdding(function (sender, args) {
                 if (self._isAddingNew) {
                     self._onItemAdding(args.item);
                 }
-            }, self._objId, null, "1");
+            }, self._objId, null, 1);
         };
         DataView.prototype._unbindDS = function () {
             var self = this, ds = this._dataSource;

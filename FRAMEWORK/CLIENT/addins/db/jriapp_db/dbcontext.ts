@@ -4,7 +4,7 @@ import { IIndexer, IVoidPromise, AbortError, IBaseObject, TEventHandler } from "
 import * as langMOD from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
 import { bootstrap } from "jriapp_core/bootstrap";
-import { HttpUtils as http, Utils, ERROR, WaitQueue } from "jriapp_utils/utils";
+import { HttpUtils, Utils, ERROR, WaitQueue } from "jriapp_utils/utils";
 import { IPromiseState, IPromise, IAbortablePromise, PromiseState, IDeferred } from "jriapp_utils/async";
 import { COLL_CHANGE_REASON, valueUtils } from "jriapp_collection/collection";
 import {
@@ -19,7 +19,7 @@ import { Association } from "association";
 import { DataQuery, TDataQuery } from "dataquery";
 import { AccessDeniedError, ConcurrencyError, SvcValidationError, DataOperationError, SubmitError } from "error";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+const http = HttpUtils, utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
 
 const DATA_SVC_METH = {
     Invoke: "invoke",
