@@ -196,6 +196,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         let events = Object.keys(GLOB_EVENTS).map((key, i, arr) => { return <string>(<any>GLOB_EVENTS)[key]; });
         return events.concat(base_events);
     }
+    //override
     protected _addHandler(name: string, fn: (sender: any, args: any) => void, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
         let self = this, isReady = self._bootState === BootstrapState.Ready;
         let isIntialized = (self._bootState === BootstrapState.Initialized || self._bootState === BootstrapState.Ready);

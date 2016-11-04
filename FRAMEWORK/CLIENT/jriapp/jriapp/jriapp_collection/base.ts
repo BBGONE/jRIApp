@@ -374,7 +374,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     }
     protected _onPageChanging() {
         let args: IPageChangingArgs = { page: this.pageIndex, isCancel: false };
-        this._raiseEvent(COLL_EVENTS.page_changing, args);
+        this.raiseEvent(COLL_EVENTS.page_changing, args);
         if (!args.isCancel) {
             try {
                 this.endEdit();

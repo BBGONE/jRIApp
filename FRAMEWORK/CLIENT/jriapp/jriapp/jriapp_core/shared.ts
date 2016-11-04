@@ -43,22 +43,6 @@ export const enum TPriority {
     Normal = 0, AboveNormal = 1, High = 2
 }
 
-export interface IEventNode {
-    context: any
-    fn: TEventHandler<any, any>;
-    next: IEventNode;
-}
-
-export type IEventNodeArray = IEventNode[];
-
-export interface INamespaceMap {
-    [ns: string]: IEventNodeArray;
-}
-
-export interface IEventList {
-    [priority: number]: INamespaceMap;
-}
-
 export interface ITaskQueue {
     enque(task: () => void): void;
 }

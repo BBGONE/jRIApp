@@ -146,18 +146,6 @@ declare module "jriapp_core/shared" {
         AboveNormal = 1,
         High = 2,
     }
-    export interface IEventNode {
-        context: any;
-        fn: TEventHandler<any, any>;
-        next: IEventNode;
-    }
-    export type IEventNodeArray = IEventNode[];
-    export interface INamespaceMap {
-        [ns: string]: IEventNodeArray;
-    }
-    export interface IEventList {
-        [priority: number]: INamespaceMap;
-    }
     export interface ITaskQueue {
         enque(task: () => void): void;
     }
@@ -832,14 +820,25 @@ declare module "jriapp_core/lang" {
     export let STRS: ILocaleText;
 }
 declare module "jriapp_utils/eventhelper" {
-    import { IEventNode, IEventList, TErrorHandler, TPriority } from "jriapp_core/shared";
+    import { TPriority, IIndexer, IBaseObject, TEventHandler } from "jriapp_core/shared";
+    export interface IEventNode {
+        context: any;
+        fn: TEventHandler<any, any>;
+        next: IEventNode;
+    }
+    export type IEventNodeArray = IEventNode[];
+    export interface INamespaceMap {
+        [ns: string]: IEventNodeArray;
+    }
+    export interface IEventList {
+        [priority: number]: INamespaceMap;
+    }
     export class EventHelper {
-        static CreateList(): IEventList;
-        static CreateNode(handler: TErrorHandler, ns: string, context?: any): IEventNode;
-        static countNodes(list: IEventList): number;
-        static appendNode(list: IEventList, node: IEventNode, ns: string, priority?: TPriority): void;
-        static removeNodes(list: IEventList, ns: string): void;
-        static toArray(list: IEventList): IEventNode[];
+        static removeNs(ev: IIndexer<IEventList>, ns: string): void;
+        static add(ev: IIndexer<IEventList>, name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
+        static remove(ev: IIndexer<IEventList>, name?: string, nmspace?: string): void;
+        static raise(self: any, ev: IIndexer<IEventList>, name: string, args: any): void;
+        static raiseProp(self: any, ev: IIndexer<IEventList>, prop: string, args: any): void;
     }
 }
 declare module "jriapp_core/object" {
@@ -848,17 +847,13 @@ declare module "jriapp_core/object" {
         private _obj_state;
         private _events;
         constructor();
-        private _removeNsHandler(ev, ns);
         protected _getEventNames(): string[];
         protected _addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         protected _removeHandler(name?: string, nmspace?: string): void;
-        protected _raiseEvent(name: string, args: any): void;
-        protected _checkEventName(name: string): void;
         protected readonly _isDestroyed: boolean;
         protected _isDestroyCalled: boolean;
         _isHasProp(prop: string): boolean;
         handleError(error: any, source: any): boolean;
-        raisePropertyChanged(name: string): void;
         addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeHandler(name?: string, nmspace?: string): void;
         addOnDestroyed(handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
@@ -867,6 +862,7 @@ declare module "jriapp_core/object" {
         removeOnError(nmspace?: string): void;
         removeNSHandlers(nmspace?: string): void;
         raiseEvent(name: string, args: any): void;
+        raisePropertyChanged(name: string): void;
         addOnPropertyChange(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnPropertyChange(prop?: string, nmspace?: string): void;
         getIsDestroyed(): boolean;

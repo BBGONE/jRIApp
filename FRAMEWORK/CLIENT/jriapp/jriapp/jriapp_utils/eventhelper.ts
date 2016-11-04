@@ -1,7 +1,32 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IEventNode, IEventNodeArray, IEventList, INamespaceMap, TErrorHandler, TPriority } from "../jriapp_core/shared";
+import {
+    TErrorHandler, TPriority, IIndexer, IBaseObject, TEventHandler
+} from "../jriapp_core/shared";
+import {
+    Checks, StringUtils, DEBUG
+} from "coreutils";
+import { ERRS } from "../jriapp_core/lang";
 
-export class EventHelper {
+const checks = Checks, strUtils = StringUtils, debug = DEBUG;
+
+
+export interface IEventNode {
+    context: any
+    fn: TEventHandler<any, any>;
+    next: IEventNode;
+}
+
+export type IEventNodeArray = IEventNode[];
+
+export interface INamespaceMap {
+    [ns: string]: IEventNodeArray;
+}
+
+export interface IEventList {
+    [priority: number]: INamespaceMap;
+}
+
+class EventList {
     static CreateList(): IEventList {
         return {};
     }
@@ -12,7 +37,7 @@ export class EventHelper {
         if (!list)
             return 0;
         let ns_keys: string[], cnt: number = 0, obj: INamespaceMap;
-        for (let j = 0; j < 3; ++j) {
+        for (let j = TPriority.Normal; j <= TPriority.High; ++j) {
             obj = list[j];
             if (!!obj) {
                 ns_keys = Object.keys(obj);
@@ -42,7 +67,7 @@ export class EventHelper {
         let ns_key: string, ns_keys: string[], obj: INamespaceMap;
         if (!ns)
             ns = "*";
-        for (let j = 0; j < 3; ++j) {
+        for (let j = TPriority.Normal; j <= TPriority.High; ++j) {
             obj = list[j];
             if (!!obj) {
                 if (ns === "*") {
@@ -65,7 +90,7 @@ export class EventHelper {
             obj: INamespaceMap;
 
         // from highest priority to the lowest
-        for (let k = 2; k >= 0 ; k -= 1) {
+        for (let k = TPriority.High; k >= TPriority.Normal; k -= 1) {
             obj = list[k];
             if (!!obj) {
                 let ns_keys = Object.keys(obj);
@@ -78,5 +103,99 @@ export class EventHelper {
             }
         }
         return res;
+    }
+}
+
+const evList = EventList;
+
+export class EventHelper
+{
+    static removeNs(ev: IIndexer<IEventList>, ns: string): void {
+        if (!ev)
+            return;
+        if (ns === "*") {
+            for (let key in ev)
+                delete ev[key];
+        }
+        else {
+            let list: IEventList;
+            for (let key in ev) {
+                list = ev[key];
+                if (!!list) {
+                    evList.removeNodes(list, ns);
+                }
+            }
+        }
+    }
+    static add(ev: IIndexer<IEventList>, name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void {
+        if (!ev) {
+            debug.checkStartDebugger();
+            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "ev is a valid object"));
+        }
+        if (!checks.isFunc(handler)) {
+            throw new Error(ERRS.ERR_EVENT_INVALID_FUNC);
+        }
+
+        if (!name)
+            throw new Error(strUtils.format(ERRS.ERR_EVENT_INVALID, "[Empty]"));
+
+        const self = this, n = name, ns = !nmspace ? "*" : "" + nmspace;
+
+        let list = ev[n], node: IEventNode = evList.CreateNode(handler, ns, context);
+
+        if (!list) {
+            ev[n] = list = evList.CreateList();
+        }
+
+        evList.appendNode(list, node, ns, priority);
+    }
+    static remove(ev: IIndexer<IEventList>, name?: string, nmspace?: string): void {
+        if (!ev)
+            return null;
+        const self = this, ns = !nmspace ? "*" : "" + nmspace;
+        let list: IEventList;
+
+        if (!name) {
+            EventHelper.removeNs(ev, ns);
+        }
+        else {
+            //arguments supplied is name (and optionally nmspace)
+            list = ev[name];
+            if (!list)
+                return;
+            if (ns === "*") {
+                evList.removeNodes(list, ns);
+                delete ev[name];
+            }
+            else {
+                evList.removeNodes(list, ns);
+            }
+        }
+    }
+    static raise(self: any, ev: IIndexer<IEventList>, name: string, args: any): void {
+        if (!ev)
+            return;
+        if (!!name) {
+            const events = evList.toArray(ev[name]);
+            let evNode: IEventNode;
+            for (let i = 0; i < events.length; i++) {
+                evNode = events[i];
+                evNode.fn.apply(evNode.context, [self, args]);
+            }
+        }
+    }
+    static raiseProp(self: any, ev: IIndexer<IEventList>, prop: string, args: any): void {
+        if (!ev)
+            return;
+        if (!!prop) {
+            const isAllProp = prop === "*";
+
+            if (!isAllProp) {
+                //notify clients who subscribed for all properties changes
+                EventHelper.raise(self, ev, "0*", args);
+            }
+
+            EventHelper.raise(self, ev, "0" + prop, args);
+        }
     }
 }
