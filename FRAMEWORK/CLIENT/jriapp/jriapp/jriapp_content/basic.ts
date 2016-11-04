@@ -140,7 +140,7 @@ export class BasicContent extends BaseObject implements IContent {
             this._lfScope = null;
         }
         if (!!this._el) {
-            utils.dom.removeNode(this._el);
+            dom.removeNode(this._el);
             this._el = null;
         }
         this._target = null;

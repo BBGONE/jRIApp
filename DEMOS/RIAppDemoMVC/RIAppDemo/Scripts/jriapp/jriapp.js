@@ -398,8 +398,9 @@ define("jriapp_utils/strutils", ["require", "exports"], function (require, expor
                 s = ("" + n).split(".");
                 prec = 2;
             }
-            else
+            else {
                 s = (prec ? toFixedFix(n, prec) : "" + Math.round(n)).split(".");
+            }
             var i, s0 = "", len = s[0].length;
             if (len > 3) {
                 for (i = 0; i < len; i += 1) {
@@ -4554,7 +4555,7 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
                     this._css = v;
                     if (!!this._css)
                         arr.push("+" + this._css);
-                    utils.dom.setClasses(this._$el.toArray(), arr);
+                    dom.setClasses(this._$el.toArray(), arr);
                     this.raisePropertyChanged(exports.PROP_NAME.css);
                 }
             },
@@ -5361,7 +5362,7 @@ define("jriapp_content/basic", ["require", "exports", "jriapp_core/object", "jri
                 this._lfScope = null;
             }
             if (!!this._el) {
-                utils.dom.removeNode(this._el);
+                dom.removeNode(this._el);
                 this._el = null;
             }
             this._target = null;
@@ -6359,17 +6360,17 @@ define("jriapp_core/datepicker", ["require", "exports", "jriapp_core/lang", "jri
 });
 define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_content/factory", "jriapp_core/parser", "jriapp_utils/coreutils", "jriapp_utils/dom", "jriapp_utils/utils", "jriapp_elview/elview", "jriapp_content/int"], function (require, exports, const_5, lang_15, object_14, bootstrap_11, factory_2, parser_4, coreutils_17, dom_7, utils_15, elview_5, int_5) {
     "use strict";
-    var utils = utils_15.Utils, $ = dom_7.DomUtils.$, doc = dom_7.DomUtils.document;
+    var utils = utils_15.Utils, $ = dom_7.DomUtils.$, doc = dom_7.DomUtils.document, checks = coreutils_17.Checks, coreUtils = coreutils_17.CoreUtils, strUtils = coreutils_17.StringUtils, syschecks = coreutils_17.SysChecks;
     exports.css = {
         dataform: "ria-dataform",
         error: "ria-form-error"
     };
-    coreutils_17.SysChecks._setIsInsideTemplate = function (elView) {
+    syschecks._setIsInsideTemplate = function (elView) {
         if (!!elView && elView instanceof DataFormElView) {
             elView.form.isInsideTemplate = true;
         }
     };
-    coreutils_17.SysChecks._isDataForm = function (el) {
+    syschecks._isDataForm = function (el) {
         if (!el)
             return false;
         if (el.hasAttribute(const_5.DATA_ATTR.DATA_FORM))
@@ -6381,20 +6382,20 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
         var opts = parser_4.parser.parseOptions(attr);
         return (opts.length > 0 && opts[0].name === const_5.ELVIEW_NM.DataForm);
     };
-    coreutils_17.SysChecks._isInsideDataForm = function (el) {
+    syschecks._isInsideDataForm = function (el) {
         if (!el)
             return false;
         var parent = el.parentElement;
         if (!!parent) {
-            if (!coreutils_17.SysChecks._isDataForm(parent)) {
-                return coreutils_17.SysChecks._isInsideDataForm(parent);
+            if (!syschecks._isDataForm(parent)) {
+                return syschecks._isInsideDataForm(parent);
             }
             else
                 return true;
         }
         return false;
     };
-    coreutils_17.SysChecks._isInNestedForm = function (root, forms, el) {
+    syschecks._isInNestedForm = function (root, forms, el) {
         var i, oNode, len = forms.length;
         if (len === 0) {
             return false;
@@ -6413,28 +6414,28 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
         }
         return false;
     };
-    coreutils_17.SysChecks._getParentDataForm = function (rootForm, el) {
+    syschecks._getParentDataForm = function (rootForm, el) {
         if (!el)
             return null;
         var parent = el.parentElement, attr, opts;
         if (!!parent) {
             if (parent === rootForm)
                 return rootForm;
-            if (coreutils_17.SysChecks._isDataForm(parent)) {
+            if (syschecks._isDataForm(parent)) {
                 return parent;
             }
             else
-                return coreutils_17.SysChecks._getParentDataForm(rootForm, parent);
+                return syschecks._getParentDataForm(rootForm, parent);
         }
         return null;
     };
     function getFieldInfo(obj, fieldName) {
         if (!obj)
             return null;
-        if (!!obj._aspect && coreutils_17.Checks.isFunc(obj._aspect.getFieldInfo)) {
+        if (!!obj._aspect && checks.isFunc(obj._aspect.getFieldInfo)) {
             return obj._aspect.getFieldInfo(fieldName);
         }
-        else if (coreutils_17.Checks.isFunc(obj.getFieldInfo)) {
+        else if (checks.isFunc(obj.getFieldInfo)) {
             return obj.getFieldInfo(fieldName);
         }
         else
@@ -6454,7 +6455,7 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
             this._app = options.app;
             this._el = options.el;
             this._$el = $(this._el);
-            this._objId = "frm" + coreutils_17.CoreUtils.getNewID();
+            this._objId = "frm" + coreUtils.getNewID();
             this._dataContext = null;
             dom_7.DomUtils.addClass([this._el], exports.css.dataform);
             this._isEditing = false;
@@ -6466,7 +6467,7 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
             this._parentDataForm = null;
             this._errors = null;
             this._contentPromise = null;
-            parent = coreutils_17.SysChecks._getParentDataForm(null, this._el);
+            parent = syschecks._getParentDataForm(null, this._el);
             if (!!parent) {
                 self._parentDataForm = this._app.elViewFactory.getOrCreateElView(parent);
                 self._parentDataForm.addOnDestroyed(function (sender, args) {
@@ -6487,7 +6488,7 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
                 return [];
             var arr = this._lfTime.getObjs(), res = [];
             for (var i = 0, len = arr.length; i < len; i += 1) {
-                if (coreutils_17.SysChecks._isBinding(arr[i]))
+                if (syschecks._isBinding(arr[i]))
                     res.push(arr[i]);
             }
             return res;
@@ -6497,7 +6498,7 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
                 return [];
             var arr = this._lfTime.getObjs(), res = [];
             for (var i = 0, len = arr.length; i < len; i += 1) {
-                if (coreutils_17.SysChecks._isElView(arr[i]))
+                if (syschecks._isElView(arr[i]))
                     res.push(arr[i]);
             }
             return res;
@@ -6507,16 +6508,16 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
             if (!dctx) {
                 return;
             }
-            var contentElements = coreutils_17.CoreUtils.arr.fromList(this._el.querySelectorAll(DataForm._DATA_CONTENT_SELECTOR)), isEditing = this.isEditing;
-            var forms = coreutils_17.CoreUtils.arr.fromList(this._el.querySelectorAll(DataForm._DATA_FORM_SELECTOR));
+            var contentElements = coreUtils.arr.fromList(this._el.querySelectorAll(DataForm._DATA_CONTENT_SELECTOR)), isEditing = this.isEditing;
+            var forms = coreUtils.arr.fromList(this._el.querySelectorAll(DataForm._DATA_FORM_SELECTOR));
             contentElements.forEach(function (el) {
-                if (coreutils_17.SysChecks._isInNestedForm(self._el, forms, el))
+                if (syschecks._isInNestedForm(self._el, forms, el))
                     return;
                 var attr = el.getAttribute(const_5.DATA_ATTR.DATA_CONTENT), op = int_5.parseContentAttr(attr);
                 if (!!op.fieldName && !op.fieldInfo) {
                     op.fieldInfo = getFieldInfo(dctx, op.fieldName);
                     if (!op.fieldInfo) {
-                        throw new Error(coreutils_17.StringUtils.format(lang_15.ERRS.ERR_DBSET_INVALID_FIELDNAME, "", op.fieldName));
+                        throw new Error(strUtils.format(lang_15.ERRS.ERR_DBSET_INVALID_FIELDNAME, "", op.fieldName));
                     }
                 }
                 var contentType = factory_2.contentFactories.getContentType(op);
@@ -6672,7 +6673,7 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
                 try {
                     if (v === this._dataContext)
                         return;
-                    if (!!v && !coreutils_17.SysChecks._isBaseObj(v)) {
+                    if (!!v && !syschecks._isBaseObj(v)) {
                         throw new Error(lang_15.ERRS.ERR_DATAFRM_DCTX_INVALID);
                     }
                     this._unbindDS();

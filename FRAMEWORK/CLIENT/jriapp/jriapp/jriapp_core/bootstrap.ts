@@ -153,7 +153,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             }
             alert("Error: " + msg + "\nURL: " + url + "\nLine Number: " + linenumber);
             return false;
-        }
+        };
     }
     private _onTemplateLoaded(html: string, app: IApplication) {
         let tmpDiv = document.createElement("div");

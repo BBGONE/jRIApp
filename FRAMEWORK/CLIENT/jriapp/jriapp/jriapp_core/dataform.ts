@@ -9,26 +9,27 @@ import { BaseObject } from "../jriapp_core/object";
 import { bootstrap } from "../jriapp_core/bootstrap";
 import { contentFactories } from "../jriapp_content/factory";
 import { parser } from "../jriapp_core/parser";
-import { SysChecks, CoreUtils as coreUtils, Checks as checks, StringUtils as strUtils, ERROR } from "../jriapp_utils/coreutils";
+import { SysChecks, CoreUtils, Checks, StringUtils, ERROR } from "../jriapp_utils/coreutils";
 import { DomUtils as dom } from "../jriapp_utils/dom";
 import { Utils } from "../jriapp_utils/utils";
 import { BaseElView, fn_addToolTip } from "../jriapp_elview/elview";
 import { Binding } from "binding";
 import { parseContentAttr } from "../jriapp_content/int";
 
-const utils = Utils, $ = dom.$, doc = dom.document;
+const utils = Utils, $ = dom.$, doc = dom.document, checks = Checks, coreUtils = CoreUtils, strUtils = StringUtils, syschecks = SysChecks;
 
 export const css = {
     dataform: "ria-dataform",
     error: "ria-form-error"
 };
 
-SysChecks._setIsInsideTemplate = function (elView: BaseElView) {
+syschecks._setIsInsideTemplate = function (elView: BaseElView) {
     if (!!elView && elView instanceof DataFormElView) {
         (<DataFormElView>elView).form.isInsideTemplate = true;
     }
-}
-SysChecks._isDataForm = function (el: HTMLElement): boolean {
+};
+
+syschecks._isDataForm = function (el: HTMLElement): boolean {
     if (!el)
         return false;
     if (el.hasAttribute(DATA_ATTR.DATA_FORM))
@@ -39,22 +40,24 @@ SysChecks._isDataForm = function (el: HTMLElement): boolean {
     }
     let opts = parser.parseOptions(attr);
     return (opts.length > 0 && opts[0].name === ELVIEW_NM.DataForm);
-}
-SysChecks._isInsideDataForm = function (el: HTMLElement): boolean {
+};
+
+syschecks._isInsideDataForm = function (el: HTMLElement): boolean {
     if (!el)
         return false;
     let parent = el.parentElement;
     if (!!parent) {
-        if (!SysChecks._isDataForm(parent)) {
-            return SysChecks._isInsideDataForm(parent);
+        if (!syschecks._isDataForm(parent)) {
+            return syschecks._isInsideDataForm(parent);
         }
         else
             return true;
     }
     return false;
-}
+};
+
 //check if the element inside of any dataform in the forms array
-SysChecks._isInNestedForm = function (root: any, forms: HTMLElement[], el: HTMLElement): boolean {
+syschecks._isInNestedForm = function (root: any, forms: HTMLElement[], el: HTMLElement): boolean {
     let i: number, oNode: HTMLElement, len = forms.length;
     if (len === 0) {
         return false;
@@ -79,27 +82,27 @@ SysChecks._isInNestedForm = function (root: any, forms: HTMLElement[], el: HTMLE
     }
 
     return false;
-}
+};
 /*
        in case of dataforms nesting, element's parent dataform can be nested dataform
        this function returns element dataform
 */
-SysChecks._getParentDataForm = function (rootForm: HTMLElement, el: HTMLElement): HTMLElement {
+syschecks._getParentDataForm = function (rootForm: HTMLElement, el: HTMLElement): HTMLElement {
     if (!el)
         return null;
     let parent = el.parentElement, attr: string, opts: any[];
     if (!!parent) {
         if (parent === rootForm)
             return rootForm;
-        if (SysChecks._isDataForm(parent)) {
+        if (syschecks._isDataForm(parent)) {
             return parent;
         }
         else
-            return SysChecks._getParentDataForm(rootForm, parent);
+            return syschecks._getParentDataForm(rootForm, parent);
     }
 
     return null;
-}
+};
 
 export interface IDataFormOptions {
     app: IApplication;
@@ -164,7 +167,7 @@ export class DataForm extends BaseObject {
         this._errors = null;
         this._contentPromise = null;
 
-        parent = SysChecks._getParentDataForm(null, this._el);
+        parent = syschecks._getParentDataForm(null, this._el);
         //if this form is nested inside another dataform
         //subscribe for parent's destroy event
         if (!!parent) {
@@ -188,7 +191,7 @@ export class DataForm extends BaseObject {
             return [];
         let arr: any[] = this._lfTime.getObjs(), res: Binding[] = [];
         for (let i = 0, len = arr.length; i < len; i += 1) {
-            if (SysChecks._isBinding(arr[i]))
+            if (syschecks._isBinding(arr[i]))
                 res.push(arr[i]);
         }
         return res;
@@ -198,7 +201,7 @@ export class DataForm extends BaseObject {
             return [];
         let arr: any[] = this._lfTime.getObjs(), res: BaseElView[] = [];
         for (let i = 0, len = arr.length; i < len; i += 1) {
-            if (SysChecks._isElView(arr[i]))
+            if (syschecks._isElView(arr[i]))
                 res.push(arr[i]);
         }
         return res;
@@ -216,7 +219,7 @@ export class DataForm extends BaseObject {
 
         contentElements.forEach(function (el) {
             //check if the element inside a nested dataform
-            if (SysChecks._isInNestedForm(self._el, forms, el))
+            if (syschecks._isInNestedForm(self._el, forms, el))
                 return;
             let attr = el.getAttribute(DATA_ATTR.DATA_CONTENT),
                 op = parseContentAttr(attr);
@@ -376,7 +379,7 @@ export class DataForm extends BaseObject {
         try {
             if (v === this._dataContext)
                 return;
-            if (!!v && !SysChecks._isBaseObj(v)) {
+            if (!!v && !syschecks._isBaseObj(v)) {
                 throw new Error(ERRS.ERR_DATAFRM_DCTX_INVALID);
             }
             this._unbindDS();

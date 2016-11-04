@@ -263,7 +263,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
                             (<any>entity)[assoc.childFldInfos[i].fieldName] = null;
                         }
                     }
-                }
+                };
             }
         } //if (isChild)
         else {

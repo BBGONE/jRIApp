@@ -104,8 +104,9 @@ export class StringUtils {
             s = ("" + n).split(".");
             prec = 2;
         }
-        else
+        else {
             s = (prec ? toFixedFix(n, prec) : "" + Math.round(n)).split(".");
+        }
 
         let i: number, s0 = "", len = s[0].length;
         if (len > 3) {

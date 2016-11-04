@@ -16,7 +16,7 @@ const PROP_BAG = SysChecks._PROP_BAG_NAME();
 
 SysChecks._isElView = function (obj: any): boolean {
     return !!obj && obj instanceof BaseElView;
-}
+};
 
 export function fn_addToolTip($el: JQuery, tip: string, isError?: boolean, pos?: string) {
     let svc = bootstrap.getSvc<ITooltipService>(TOOLTIP_SVC);
@@ -355,7 +355,7 @@ export class BaseElView extends BaseObject implements IElView {
             if (!!this._css)
                 arr.push("+" + this._css);
 
-            utils.dom.setClasses(this._$el.toArray(), arr);
+            dom.setClasses(this._$el.toArray(), arr);
             this.raisePropertyChanged(PROP_NAME.css);
         }
     }
