@@ -34,11 +34,11 @@ export class BaseObject implements IBaseObject {
         return [OBJ_EVENTS.error, OBJ_EVENTS.destroyed];
     }
     protected _addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void {
-        if (this._obj_state !== ObjState.None)
-            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "this._obj_state !== ObjState.None"));
-        if (!syschecks._isBaseObj(this)) {
+        if (this._obj_state === void 0) {
             throw new Error("Using uninitialized object");
         }
+        if (this._obj_state !== ObjState.None)
+            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "this._obj_state !== ObjState.None"));
         if (debug.isDebugging()) {
             if (!!name && this._getEventNames().indexOf(name) < 0) {
                 debug.checkStartDebugger();

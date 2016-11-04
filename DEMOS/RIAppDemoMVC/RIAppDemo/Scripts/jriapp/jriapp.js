@@ -1071,13 +1071,13 @@ define("jriapp_utils/eventhelper", ["require", "exports", "jriapp_utils/coreutil
     var EventList = (function () {
         function EventList() {
         }
-        EventList.CreateList = function () {
+        EventList.Create = function () {
             return {};
         };
-        EventList.CreateNode = function (handler, ns, context) {
+        EventList.Node = function (handler, ns, context) {
             return { fn: handler, next: null, context: !context ? null : context };
         };
-        EventList.countNodes = function (list) {
+        EventList.count = function (list) {
             if (!list)
                 return 0;
             var ns_keys, cnt = 0, obj;
@@ -1092,7 +1092,7 @@ define("jriapp_utils/eventhelper", ["require", "exports", "jriapp_utils/coreutil
             }
             return cnt;
         };
-        EventList.appendNode = function (list, node, ns, priority) {
+        EventList.append = function (list, node, ns, priority) {
             if (priority === void 0) { priority = 0; }
             if (!ns)
                 ns = "*";
@@ -1105,7 +1105,7 @@ define("jriapp_utils/eventhelper", ["require", "exports", "jriapp_utils/coreutil
                 obj[ns] = arr = [];
             arr.push(node);
         };
-        EventList.removeNodes = function (list, ns) {
+        EventList.remove = function (list, ns) {
             if (!list)
                 return;
             var ns_key, ns_keys, obj;
@@ -1163,7 +1163,7 @@ define("jriapp_utils/eventhelper", ["require", "exports", "jriapp_utils/coreutil
                 for (var key in ev) {
                     list = ev[key];
                     if (!!list) {
-                        evList.removeNodes(list, ns);
+                        evList.remove(list, ns);
                     }
                 }
             }
@@ -1179,11 +1179,11 @@ define("jriapp_utils/eventhelper", ["require", "exports", "jriapp_utils/coreutil
             if (!name)
                 throw new Error(strUtils.format(lang_1.ERRS.ERR_EVENT_INVALID, "[Empty]"));
             var self = this, n = name, ns = !nmspace ? "*" : "" + nmspace;
-            var list = ev[n], node = evList.CreateNode(handler, ns, context);
+            var list = ev[n], node = evList.Node(handler, ns, context);
             if (!list) {
-                ev[n] = list = evList.CreateList();
+                ev[n] = list = evList.Create();
             }
-            evList.appendNode(list, node, ns, priority);
+            evList.append(list, node, ns, priority);
         };
         EventHelper.remove = function (ev, name, nmspace) {
             if (!ev)
@@ -1198,35 +1198,35 @@ define("jriapp_utils/eventhelper", ["require", "exports", "jriapp_utils/coreutil
                 if (!list)
                     return;
                 if (ns === "*") {
-                    evList.removeNodes(list, ns);
+                    evList.remove(list, ns);
                     delete ev[name];
                 }
                 else {
-                    evList.removeNodes(list, ns);
+                    evList.remove(list, ns);
                 }
             }
         };
-        EventHelper.raise = function (self, ev, name, args) {
+        EventHelper.raise = function (sender, ev, name, args) {
             if (!ev)
                 return;
             if (!!name) {
-                var events = evList.toArray(ev[name]);
-                var evNode = void 0;
-                for (var i = 0; i < events.length; i++) {
-                    evNode = events[i];
-                    evNode.fn.apply(evNode.context, [self, args]);
+                var arr = evList.toArray(ev[name]);
+                var node = void 0;
+                for (var i = 0; i < arr.length; i++) {
+                    node = arr[i];
+                    node.fn.apply(node.context, [sender, args]);
                 }
             }
         };
-        EventHelper.raiseProp = function (self, ev, prop, args) {
+        EventHelper.raiseProp = function (sender, ev, prop, args) {
             if (!ev)
                 return;
             if (!!prop) {
                 var isAllProp = prop === "*";
                 if (!isAllProp) {
-                    EventHelper.raise(self, ev, "0*", args);
+                    EventHelper.raise(sender, ev, "0*", args);
                 }
-                EventHelper.raise(self, ev, "0" + prop, args);
+                EventHelper.raise(sender, ev, "0" + prop, args);
             }
         };
         return EventHelper;
@@ -1258,11 +1258,11 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
             return [OBJ_EVENTS.error, OBJ_EVENTS.destroyed];
         };
         BaseObject.prototype._addHandler = function (name, handler, nmspace, context, priority) {
-            if (this._obj_state !== 0)
-                throw new Error(strUtils.format(lang_2.ERRS.ERR_ASSERTION_FAILED, "this._obj_state !== ObjState.None"));
-            if (!syschecks._isBaseObj(this)) {
+            if (this._obj_state === void 0) {
                 throw new Error("Using uninitialized object");
             }
+            if (this._obj_state !== 0)
+                throw new Error(strUtils.format(lang_2.ERRS.ERR_ASSERTION_FAILED, "this._obj_state !== ObjState.None"));
             if (debug.isDebugging()) {
                 if (!!name && this._getEventNames().indexOf(name) < 0) {
                     debug.checkStartDebugger();
@@ -3294,7 +3294,7 @@ define("jriapp_utils/tooltip", ["require", "exports", "jriapp_utils/dom"], funct
 });
 define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jriapp_elview/factory", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/defaults", "jriapp_utils/coreutils", "jriapp_utils/tloader", "jriapp_utils/sloader", "jriapp_utils/path", "jriapp_utils/tooltip", "jriapp_utils/dom", "jriapp_utils/async"], function (require, exports, const_3, factory_1, lang_7, object_6, defaults_1, coreutils_12, tloader_1, sloader_1, path_2, tooltip_1, dom_6, async_6) {
     "use strict";
-    var $ = dom_6.DomUtils.$, document = dom_6.DomUtils.document, window = dom_6.DomUtils.window;
+    var dom = dom_6.DomUtils, $ = dom.$, _async = async_6.AsyncUtils, doc = dom.document, win = dom.window;
     var _TEMPLATE_SELECTOR = 'script[type="text/html"]';
     var stylesLoader = sloader_1.create();
     var GLOB_EVENTS = {
@@ -3372,13 +3372,13 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             stylesLoader.loadOwnStyle();
         }
         Bootstrap._initFramework = function () {
-            $(document).ready(function ($) {
+            $(doc).ready(function ($) {
                 exports.bootstrap._getInternal().initialize();
             });
         };
         Bootstrap.prototype._bindGlobalEvents = function () {
             var self = this;
-            var $win = $(window), $doc = $(document);
+            var $win = $(win), $doc = $(doc);
             $doc.on("click.jriapp", function (e) {
                 e.stopPropagation();
                 self.currentSelectable = null;
@@ -3398,7 +3398,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             $win.on("beforeunload.jriapp", function () {
                 self.raiseEvent(GLOB_EVENTS.unload, {});
             });
-            dom_6.DomUtils.window.onerror = function (msg, url, linenumber) {
+            dom.window.onerror = function (msg, url, linenumber) {
                 if (!!msg && msg.toString().indexOf(const_3.DUMY_ERROR) > -1) {
                     return true;
                 }
@@ -3407,7 +3407,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             };
         };
         Bootstrap.prototype._onTemplateLoaded = function (html, app) {
-            var tmpDiv = document.createElement("div");
+            var tmpDiv = doc.createElement("div");
             tmpDiv.innerHTML = coreutils_12.StringUtils.fastTrim(html);
             this._processTemplates(tmpDiv, app);
         };
@@ -3423,11 +3423,11 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             });
         };
         Bootstrap.prototype._processHTMLTemplates = function () {
-            var self = this, root = dom_6.DomUtils.document;
+            var self = this, root = dom.document;
             self._processTemplates(root);
         };
         Bootstrap.prototype._processTemplate = function (name, html, app) {
-            var self = this, deferred = async_6.AsyncUtils.createSyncDeferred();
+            var self = this, deferred = _async.createSyncDeferred();
             var res = coreutils_12.StringUtils.fastTrim(html);
             var fn = function () {
                 return deferred.promise();
@@ -3455,7 +3455,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             _super.prototype._addHandler.call(this, name, fn, nmspace, context, priority);
         };
         Bootstrap.prototype._init = function () {
-            var self = this, deferred = async_6.AsyncUtils.createDeferred(), invalidOpErr = new Error("Invalid operation");
+            var self = this, deferred = _async.createDeferred(), invalidOpErr = new Error("Invalid operation");
             if (self.getIsDestroyCalled())
                 return deferred.reject(invalidOpErr);
             this._bindGlobalEvents();
@@ -3483,7 +3483,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
         };
         Bootstrap.prototype._initialize = function () {
             var _this = this;
-            var self = this, deferred = async_6.AsyncUtils.createDeferred(), invalidOpErr = new Error("Invalid operation");
+            var self = this, deferred = _async.createDeferred(), invalidOpErr = new Error("Invalid operation");
             if (this._bootState !== 0)
                 return deferred.reject(invalidOpErr);
             this._bootState = 1;
@@ -3501,7 +3501,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             $(el).on("click." + isel.getUniqueID(), function (e) {
                 e.stopPropagation();
                 var target = e.target;
-                if (dom_6.DomUtils.isContained(target, el))
+                if (dom.isContained(target, el))
                     self.currentSelectable = selectable;
             });
         };
@@ -3600,7 +3600,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             });
         };
         Bootstrap.prototype.startApp = function (appFactory, onStartUp) {
-            var self = this, deferred = async_6.AsyncUtils.createDeferred();
+            var self = this, deferred = _async.createDeferred();
             var promise = deferred.promise().fail(function (err) {
                 self.handleError(err, self);
                 throw err;
@@ -3631,9 +3631,9 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             self._elViewRegister.destroy();
             self._elViewRegister = null;
             self._moduleInits = [];
-            $(document).off(".jriapp");
-            window.onerror = null;
-            $(window).off(".jriapp");
+            $(doc).off(".jriapp");
+            win.onerror = null;
+            $(win).off(".jriapp");
             _super.prototype.destroy.call(this);
         };
         Bootstrap.prototype.registerSvc = function (name, obj) {

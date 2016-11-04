@@ -13,10 +13,10 @@ import { TemplateLoader } from "../jriapp_utils/tloader";
 import { create as createCssLoader } from "../jriapp_utils/sloader";
 import { PathHelper } from "../jriapp_utils/path";
 import { create as createToolTipSvc } from "../jriapp_utils/tooltip";
-import { DomUtils as dom } from "../jriapp_utils/dom";
-import { AsyncUtils as defer } from "../jriapp_utils/async";
+import { DomUtils } from "../jriapp_utils/dom";
+import { AsyncUtils } from "../jriapp_utils/async";
 
-const $ = dom.$, document = dom.document, window = dom.window;
+const dom = DomUtils, $ = dom.$, _async = AsyncUtils, doc = dom.document, win = dom.window;
 const _TEMPLATE_SELECTOR = 'script[type="text/html"]';
 const stylesLoader = createCssLoader();
 
@@ -50,7 +50,7 @@ const enum BootstrapState {
 
 export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     public static _initFramework() {
-        $(document).ready(function ($) {
+        $(doc).ready(function ($) {
             bootstrap._getInternal().initialize();
         });
     }
@@ -123,7 +123,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     }
     private _bindGlobalEvents(): void {
         let self = this;
-        let $win = $(window), $doc = $(document);
+        let $win = $(win), $doc = $(doc);
 
         //when clicked outside any Selectable set _currentSelectable = null
         $doc.on("click.jriapp", function (e) {
@@ -156,7 +156,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         };
     }
     private _onTemplateLoaded(html: string, app: IApplication) {
-        let tmpDiv = document.createElement("div");
+        let tmpDiv = doc.createElement("div");
         tmpDiv.innerHTML = strUtils.fastTrim(html);
         this._processTemplates(tmpDiv, app);
     }
@@ -176,7 +176,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         self._processTemplates(root);
     }
     private _processTemplate(name: string, html: string, app: IApplication): void {
-        let self = this, deferred = defer.createSyncDeferred<string>();
+        let self = this, deferred = _async.createSyncDeferred<string>();
         let res = strUtils.fastTrim(html);
         let fn = function () {
             return deferred.promise();
@@ -209,7 +209,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         super._addHandler(name, fn, nmspace, context, priority);
     }
     private _init(): IPromise<void> {
-        let self = this, deferred = defer.createDeferred<void>(), invalidOpErr = new Error("Invalid operation");
+        let self = this, deferred = _async.createDeferred<void>(), invalidOpErr = new Error("Invalid operation");
         if (self.getIsDestroyCalled())
             return deferred.reject(invalidOpErr);
      
@@ -241,7 +241,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         });
     }
     private _initialize(): IPromise<void> {
-        let self = this, deferred = defer.createDeferred<void>(), invalidOpErr = new Error("Invalid operation");
+        let self = this, deferred = _async.createDeferred<void>(), invalidOpErr = new Error("Invalid operation");
 
         if (this._bootState !== BootstrapState.None)
             return deferred.reject(invalidOpErr);
@@ -367,7 +367,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     //all  that we need to do before setting up databindings
     //returns Promise
     startApp<TApp extends IApplication>(appFactory: () => TApp, onStartUp?: (app: TApp) => void): IPromise<TApp> {
-        let self = this, deferred = defer.createDeferred<TApp>();
+        let self = this, deferred = _async.createDeferred<TApp>();
 
         let promise = deferred.promise().fail((err) => {
             self.handleError(err, self);
@@ -401,9 +401,9 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         self._elViewRegister.destroy();
         self._elViewRegister = null;
         self._moduleInits = [];
-        $(document).off(".jriapp");
-        window.onerror = null;
-        $(window).off(".jriapp");
+        $(doc).off(".jriapp");
+        win.onerror = null;
+        $(win).off(".jriapp");
         super.destroy();
     }
     registerSvc(name: string, obj: any) {

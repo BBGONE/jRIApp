@@ -27,13 +27,13 @@ export interface IEventList {
 }
 
 class EventList {
-    static CreateList(): IEventList {
+    static Create(): IEventList {
         return {};
     }
-    static CreateNode(handler: TErrorHandler, ns: string, context?: any): IEventNode {
+    static Node(handler: TErrorHandler, ns: string, context?: any): IEventNode {
         return { fn: handler, next: null, context: !context ? null : context };
     }
-    static countNodes(list: IEventList): number {
+    static count(list: IEventList): number {
         if (!list)
             return 0;
         let ns_keys: string[], cnt: number = 0, obj: INamespaceMap;
@@ -48,7 +48,7 @@ class EventList {
         }
         return cnt;
     }
-    static appendNode(list: IEventList, node: IEventNode, ns: string, priority: TPriority = TPriority.Normal): void {
+    static append(list: IEventList, node: IEventNode, ns: string, priority: TPriority = TPriority.Normal): void {
         if (!ns)
             ns = "*";
         let obj = list[priority];
@@ -61,7 +61,7 @@ class EventList {
             obj[ns] = arr = [];
         arr.push(node);
     }
-    static removeNodes(list: IEventList, ns: string): void {
+    static remove(list: IEventList, ns: string): void {
         if (!list)
             return;
         let ns_key: string, ns_keys: string[], obj: INamespaceMap;
@@ -122,7 +122,7 @@ export class EventHelper
             for (let key in ev) {
                 list = ev[key];
                 if (!!list) {
-                    evList.removeNodes(list, ns);
+                    evList.remove(list, ns);
                 }
             }
         }
@@ -141,13 +141,13 @@ export class EventHelper
 
         const self = this, n = name, ns = !nmspace ? "*" : "" + nmspace;
 
-        let list = ev[n], node: IEventNode = evList.CreateNode(handler, ns, context);
+        let list = ev[n], node: IEventNode = evList.Node(handler, ns, context);
 
         if (!list) {
-            ev[n] = list = evList.CreateList();
+            ev[n] = list = evList.Create();
         }
 
-        evList.appendNode(list, node, ns, priority);
+        evList.append(list, node, ns, priority);
     }
     static remove(ev: IIndexer<IEventList>, name?: string, nmspace?: string): void {
         if (!ev)
@@ -164,27 +164,27 @@ export class EventHelper
             if (!list)
                 return;
             if (ns === "*") {
-                evList.removeNodes(list, ns);
+                evList.remove(list, ns);
                 delete ev[name];
             }
             else {
-                evList.removeNodes(list, ns);
+                evList.remove(list, ns);
             }
         }
     }
-    static raise(self: any, ev: IIndexer<IEventList>, name: string, args: any): void {
+    static raise(sender: any, ev: IIndexer<IEventList>, name: string, args: any): void {
         if (!ev)
             return;
         if (!!name) {
-            const events = evList.toArray(ev[name]);
-            let evNode: IEventNode;
-            for (let i = 0; i < events.length; i++) {
-                evNode = events[i];
-                evNode.fn.apply(evNode.context, [self, args]);
+            const arr = evList.toArray(ev[name]);
+            let node: IEventNode;
+            for (let i = 0; i < arr.length; i++) {
+                node = arr[i];
+                node.fn.apply(node.context, [sender, args]);
             }
         }
     }
-    static raiseProp(self: any, ev: IIndexer<IEventList>, prop: string, args: any): void {
+    static raiseProp(sender: any, ev: IIndexer<IEventList>, prop: string, args: any): void {
         if (!ev)
             return;
         if (!!prop) {
@@ -192,10 +192,10 @@ export class EventHelper
 
             if (!isAllProp) {
                 //notify clients who subscribed for all properties changes
-                EventHelper.raise(self, ev, "0*", args);
+                EventHelper.raise(sender, ev, "0*", args);
             }
 
-            EventHelper.raise(self, ev, "0" + prop, args);
+            EventHelper.raise(sender, ev, "0" + prop, args);
         }
     }
 }

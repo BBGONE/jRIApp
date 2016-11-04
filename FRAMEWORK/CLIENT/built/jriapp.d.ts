@@ -837,8 +837,8 @@ declare module "jriapp_utils/eventhelper" {
         static removeNs(ev: IIndexer<IEventList>, ns: string): void;
         static add(ev: IIndexer<IEventList>, name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         static remove(ev: IIndexer<IEventList>, name?: string, nmspace?: string): void;
-        static raise(self: any, ev: IIndexer<IEventList>, name: string, args: any): void;
-        static raiseProp(self: any, ev: IIndexer<IEventList>, prop: string, args: any): void;
+        static raise(sender: any, ev: IIndexer<IEventList>, name: string, args: any): void;
+        static raiseProp(sender: any, ev: IIndexer<IEventList>, prop: string, args: any): void;
     }
 }
 declare module "jriapp_core/object" {
