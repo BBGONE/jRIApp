@@ -23,7 +23,6 @@ interface ICustomVal
 export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implements IItemAspect<TItem> {
     private _key: string;
     private _item: TItem;
-    private _isEditing: boolean;
     private _collection: BaseCollection<TItem>;
     protected _status: ITEM_STATUS;
     protected _saveVals: IIndexer<any>;
@@ -42,7 +41,6 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         super();
         this._key = null;
         this._item = null;
-        this._isEditing = false;
         this._collection = collection;
         this._status = ITEM_STATUS.None;
         this._saveVals = null;

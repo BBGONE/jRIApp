@@ -2504,7 +2504,6 @@ declare module "jriapp_collection/aspect" {
     export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implements IItemAspect<TItem> {
         private _key;
         private _item;
-        private _isEditing;
         private _collection;
         protected _status: ITEM_STATUS;
         protected _saveVals: IIndexer<any>;

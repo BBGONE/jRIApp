@@ -9302,7 +9302,6 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             _super.call(this);
             this._key = null;
             this._item = null;
-            this._isEditing = false;
             this._collection = collection;
             this._status = 0;
             this._saveVals = null;
