@@ -32,13 +32,6 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     private _isCached: boolean;
     private _isDetached: boolean;
     private _valueBag: IIndexer<ICustomVal>;
-
-    protected _setIsEditing(v: boolean) {
-        if (this._isEditing !== v) {
-            this._isEditing = v;
-            this.raisePropertyChanged(PROP_NAME.isEditing);
-        }
-    }
     _setIsDetached(v: boolean) {
         this._isDetached = v;
     }
@@ -93,7 +86,6 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         }
         if (this.isDetached)
             return false;
-        this._setIsEditing(true);
         this._saveVals = coreUtils.clone(this._vals);
         this.collection.currentItem = this.item;
         return true;
@@ -114,23 +106,22 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         if (this.getIsHasErrors()) {
             return false;
         }
-        this._setIsEditing(false);
         this._saveVals = null;
         return true;
     }
     protected _cancelEdit(): boolean {
         if (!this.isEditing)
             return false;
-        const coll = this.collection, self = this, changes = this._saveVals;
+        const coll = this.collection, self = this, item = self.item, changes = this._saveVals;
         this._vals = this._saveVals;
         this._saveVals = null;
-        coll._getInternal().removeAllErrors(this.item);
+        coll._getInternal().removeAllErrors(item);
         //refresh User interface when values restored
         coll.getFieldNames().forEach(function (name) {
-            if (changes[name] !== self._vals[name])
-                self.raisePropertyChanged(name);
+            if (changes[name] !== self._vals[name]) {
+                item.raisePropertyChanged(name);
+            }
         });
-        this._setIsEditing(false);
         return true;
     }
     protected _validate(): IValidationInfo {
@@ -325,6 +316,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         return true;
     }
     cancelEdit(): boolean {
+        //console.log("cancel " + this._item.toString());
         if (!this.isEditing)
             return false;
         const coll = this.collection, internal = coll._getInternal(), item = this.item, isNew = this.isNew;
@@ -338,8 +330,9 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         if (!this._cancelEdit())
             return false;
         internal.onEditing(item, false, true);
-        if (isNew && this._notEdited && !this.getIsDestroyCalled())
+        if (isNew && this._notEdited && !this.getIsDestroyCalled()) {
             this.destroy();
+        }
         return true;
     }
     deleteItem(): boolean {
@@ -355,7 +348,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         return true;
     }
     getIsHasErrors() {
-        let itemErrors = this.collection._getInternal().getErrors(this.item);
+        const itemErrors = this.collection._getInternal().getErrors(this.item);
         return !!itemErrors;
     }
     addOnErrorsChanged(fn: TEventHandler<ItemAspect<TItem>, any>, nmspace?: string, context?: any) {
@@ -472,7 +465,10 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
             return false;
         return coll.isUpdating;
     }
-    get isEditing(): boolean { return this._isEditing; }
+    get isEditing(): boolean {
+        const coll = this._collection, editingItem = !coll ? <TItem>null : coll._getInternal().getEditingItem();
+        return !!editingItem && editingItem._aspect === this;
+    }
     get isHasChanges(): boolean { return this._status !== ITEM_STATUS.None; }
     get isCached(): boolean { return this._isCached; }
     get isDetached(): boolean { return this._isDetached; }

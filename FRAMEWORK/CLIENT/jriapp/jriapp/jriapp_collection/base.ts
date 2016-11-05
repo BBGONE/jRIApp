@@ -452,11 +452,18 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
             this._EditingItem = item;
             this.raiseEvent(COLL_EVENTS.begin_edit, <ICollItemArgs<TItem>>{ item: item });
             this._onEditingChanged();
+            if (!!item) {
+                item._aspect.raisePropertyChanged(PROP_NAME.isEditing);
+            }
         }
         else {
+            let oldItem = this._EditingItem;
             this._EditingItem = null;
             this.raiseEvent(COLL_EVENTS.end_edit, { item: item, isCanceled: isCanceled });
             this._onEditingChanged();
+            if (!!oldItem) {
+                oldItem._aspect.raisePropertyChanged(PROP_NAME.isEditing);
+            }
         }
     }
     //used by descendants when commiting submits for items
@@ -596,16 +603,19 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         return fn_sort;
     }
     getFieldInfo(fieldName: string): IFieldInfo {
-        let parts = fieldName.split("."), fld = this._fieldMap[parts[0]];
+        const parts = fieldName.split(".");
+        let fld = this._fieldMap[parts[0]];
         if (parts.length === 1) {
             return fld;
         }
+
         if (fld.fieldType === FIELD_TYPE.Object) {
             for (let i = 1; i < parts.length; i += 1) {
                 fld = fn_getPropertyByName(parts[i], fld.nested);
             }
             return fld;
         }
+        
         throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "fieldName", fieldName));
     }
     getFieldNames(): string[] {
@@ -617,8 +627,9 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         return this._fieldInfos;
     }
     cancelEdit() {
-        if (this.isEditing)
+        if (this.isEditing) {
             this._EditingItem._aspect.cancelEdit();
+        }
     }
     endEdit() {
         let EditingItem: TItem;
@@ -803,7 +814,6 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
                 this._currentPos = curPos - 1;
                 this._onCurrentChanged();
             }
-
         }
         finally {
             if (!item.getIsDestroyCalled()) {

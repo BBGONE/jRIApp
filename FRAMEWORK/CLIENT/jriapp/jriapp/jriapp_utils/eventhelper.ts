@@ -109,9 +109,11 @@ const evList = EventList;
 
 export class EventHelper
 {
-    static removeNs(ev: IIndexer<IEventList>, ns: string): void {
+    static removeNs(ev: IIndexer<IEventList>, ns?: string): void {
         if (!ev)
             return;
+        if (!ns)
+            ns = "*";
         const keys = Object.keys(ev);
         for (let i = 0; i < keys.length; i += 1) {
             if (ns === "*") {

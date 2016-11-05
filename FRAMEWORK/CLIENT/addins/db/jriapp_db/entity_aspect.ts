@@ -193,7 +193,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
     protected _cancelEdit() {
         if (!this.isEditing)
             return false;
-        let self = this, changes = this._getValueChanges(true), isNew = this.isNew, dbSet = this.dbSet;
+        const self = this, changes = this._getValueChanges(true), isNew = this.isNew, dbSet = this.dbSet;
         this._vals = this._saveVals;
         this._saveVals = null;
         this.setStatus(this._savedStatus);
@@ -205,10 +205,6 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
                 throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, v.fieldName));
             self._onFieldChanged(v.fieldName, fld);
         });
-        this._setIsEditing(false);
-        if (isNew && this._notEdited && !this.getIsDestroyCalled()) {
-            dbSet.removeItem(this.item);
-        }
         return true;
     }
     protected getDbSet() {
