@@ -9,14 +9,13 @@ import { BaseObject } from "../jriapp_core/object";
 import { bootstrap } from "../jriapp_core/bootstrap";
 import { contentFactories } from "../jriapp_content/factory";
 import { parser } from "../jriapp_core/parser";
-import { SysChecks, CoreUtils, Checks, StringUtils, ERROR } from "../jriapp_utils/coreutils";
-import { DomUtils as dom } from "../jriapp_utils/dom";
+import { SysChecks, ERROR } from "../jriapp_utils/coreutils";
 import { Utils } from "../jriapp_utils/utils";
 import { BaseElView, fn_addToolTip } from "../jriapp_elview/elview";
 import { Binding } from "binding";
 import { parseContentAttr } from "../jriapp_content/int";
 
-const utils = Utils, $ = dom.$, doc = dom.document, checks = Checks, coreUtils = CoreUtils, strUtils = StringUtils, syschecks = SysChecks;
+const utils = Utils, dom = utils.dom, $ = dom.$, doc = dom.document, checks = utils.check, coreUtils = utils.core, strUtils = utils.str, syschecks = SysChecks, parse = parser;
 
 export const css = {
     dataform: "ria-dataform",
@@ -30,29 +29,38 @@ syschecks._setIsInsideTemplate = function (elView: BaseElView) {
 };
 
 syschecks._isDataForm = function (el: HTMLElement): boolean {
-    if (!el)
-        return false;
-    if (el.hasAttribute(DATA_ATTR.DATA_FORM))
-        return true;
-    let attr = el.getAttribute(DATA_ATTR.DATA_VIEW);
-    if (!attr) {
+    if (!el) {
         return false;
     }
-    let opts = parser.parseOptions(attr);
-    return (opts.length > 0 && opts[0].name === ELVIEW_NM.DataForm);
+
+    if (el.hasAttribute(DATA_ATTR.DATA_FORM)) {
+        return true;
+    }
+    else {
+        const attr = el.getAttribute(DATA_ATTR.DATA_VIEW);
+        if (!attr) {
+            return false;
+        }
+        const opts = parse.parseOptions(attr);
+        return (opts.length > 0 && opts[0].name === ELVIEW_NM.DataForm);
+    }
 };
 
 syschecks._isInsideDataForm = function (el: HTMLElement): boolean {
-    if (!el)
+    if (!el) {
         return false;
-    let parent = el.parentElement;
+    }
+
+    const parent = el.parentElement;
     if (!!parent) {
         if (!syschecks._isDataForm(parent)) {
             return syschecks._isInsideDataForm(parent);
         }
-        else
+        else {
             return true;
+        }
     }
+    
     return false;
 };
 

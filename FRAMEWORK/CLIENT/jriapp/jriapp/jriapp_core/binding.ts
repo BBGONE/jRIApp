@@ -11,7 +11,7 @@ import { ERROR, DEBUG, LOG } from "../jriapp_utils/coreutils";
 import { Utils } from "../jriapp_utils/utils";
 import { BaseElView } from "../jriapp_elview/elview";
 
-let utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, syschecks = SysChecks, debug = DEBUG, log = LOG;
+let utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, syschecks = SysChecks, debug = DEBUG, log = LOG, parse = parser;
 
 syschecks._isBinding = (obj: any) => {
     return (!!obj && obj instanceof Binding);
@@ -134,7 +134,7 @@ export function getBindingOptions(app: { getConverter(name: string): IConverter;
                 bindingOpts.target = defaultTarget;
             else {
                 //if no fixed target, then target evaluation starts from this app
-                bindingOpts.target = parser.resolveBindingSource(app, parser.getPathParts(fixedTarget));
+                bindingOpts.target = parse.resolveBindingSource(app, parse.getPathParts(fixedTarget));
             }
         }
         else
@@ -153,7 +153,7 @@ export function getBindingOptions(app: { getConverter(name: string): IConverter;
             }
             else {
                 //source evaluation starts from this app
-                bindingOpts.source = parser.resolveBindingSource(app, parser.getPathParts(fixedSource));
+                bindingOpts.source = parse.resolveBindingSource(app, parse.getPathParts(fixedSource));
             }
         }
         else
@@ -220,8 +220,8 @@ export class Binding extends BaseObject implements IBinding {
         this._mode = opts.mode;
         this._converter = !opts.converter ? null : opts.converter;
         this._converterParam = opts.converterParam;
-        this._srcPath = parser.getPathParts(opts.sourcePath);
-        this._tgtPath = parser.getPathParts(opts.targetPath);
+        this._srcPath = parse.getPathParts(opts.sourcePath);
+        this._tgtPath = parse.getPathParts(opts.targetPath);
         if (this._tgtPath.length < 1)
             throw new Error(strUtils.format(ERRS.ERR_BIND_TGTPATH_INVALID, opts.targetPath));
         this._srcFixed = (!!opts.isSourceFixed);
@@ -309,7 +309,7 @@ export class Binding extends BaseObject implements IBinding {
     }
     private _getTgtChangedFn(self: Binding, obj: any, prop: string, restPath: string[], lvl: number) {
         let fn = function (sender: any, data: any) {
-            let val = parser.resolveProp(obj, prop);
+            let val = parse.resolveProp(obj, prop);
             if (restPath.length > 0) {
                 self._setPathItem(null, BindTo.Target, lvl, restPath);
             }
@@ -321,7 +321,7 @@ export class Binding extends BaseObject implements IBinding {
     }
     private _getSrcChangedFn(self: Binding, obj: any, prop: string, restPath: string[], lvl: number) {
         let fn = function (sender: any, data: any) {
-            let val = parser.resolveProp(obj, prop);
+            let val = parse.resolveProp(obj, prop);
             if (restPath.length > 0) {
                 self._setPathItem(null, BindTo.Source, lvl, restPath);
             }
@@ -365,7 +365,7 @@ export class Binding extends BaseObject implements IBinding {
             }
 
             if (!!obj) {
-                nextObj = parser.resolveProp(obj, path[0]);
+                nextObj = parse.resolveProp(obj, path[0]);
                 if (!!nextObj) {
                     self._parseSrc2(nextObj, path.slice(1), lvl + 1);
                 }
@@ -437,7 +437,7 @@ export class Binding extends BaseObject implements IBinding {
                     self._objId);
             }
             if (!!obj) {
-                nextObj = parser.resolveProp(obj, path[0]);
+                nextObj = parse.resolveProp(obj, path[0]);
                 if (!!nextObj) {
                     self._parseTgt2(nextObj, path.slice(1), lvl + 1);
                 }
@@ -666,29 +666,29 @@ export class Binding extends BaseObject implements IBinding {
             res = this._srcEnd;
         if (!!this._srcEnd) {
             let prop = this._srcPath[this._srcPath.length - 1];
-            res = parser.resolveProp(this._srcEnd, prop);
+            res = parse.resolveProp(this._srcEnd, prop);
         }
         return res;
     }
     set sourceValue(v) {
         if (this._srcPath.length === 0 || !this._srcEnd || v === checks.undefined)
             return;
-        let prop = this._srcPath[this._srcPath.length - 1];
-        parser.setPropertyValue(this._srcEnd, prop, v);
+        const prop = this._srcPath[this._srcPath.length - 1];
+        parse.setPropertyValue(this._srcEnd, prop, v);
     }
     get targetValue() {
         let res: any = null;
         if (!!this._tgtEnd) {
             let prop = this._tgtPath[this._tgtPath.length - 1];
-            res = parser.resolveProp(this._tgtEnd, prop);
+            res = parse.resolveProp(this._tgtEnd, prop);
         }
         return res;
     }
     set targetValue(v) {
         if (this._tgtPath.length === 0 || !this._tgtEnd || v === checks.undefined)
             return;
-        let prop = this._tgtPath[this._tgtPath.length - 1];
-        parser.setPropertyValue(this._tgtEnd, prop, v);
+        const prop = this._tgtPath[this._tgtPath.length - 1];
+        parse.setPropertyValue(this._tgtEnd, prop, v);
     }
     get mode() { return this._mode; }
     get converter() { return this._converter; }

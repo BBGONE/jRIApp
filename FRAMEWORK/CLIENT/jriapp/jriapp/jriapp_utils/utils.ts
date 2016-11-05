@@ -18,65 +18,62 @@ export { PropWatcher } from "./propwatcher";
 export { WaitQueue, IWaitQueueItem } from "./waitqueue";
 export { Debounce, DblClick, DEBUG, ERROR, SysChecks } from "./coreutils";
 
+const checks = Checks, _async = AsyncUtils;
 
 export class Utils {
-    static check = Checks;
+    static check = checks;
     static str = StringUtils;
     static arr = ArrayHelper;
     static dom = DomUtils;
     static http = HttpUtils;
     static core = CoreUtils;
-    static defer = AsyncUtils;
+    static defer = _async;
     static getErrorNotification(obj: any): IErrorNotification {
-        if (!obj)
+        if (!obj) {
             return null;
-        if (!!obj._aspect && Checks.isErrorNotification(obj._aspect))
+        }
+        else if (!!obj._aspect && checks.isErrorNotification(obj._aspect))
             return <IErrorNotification>obj._aspect.getIErrorNotification();
-        else if (Checks.isErrorNotification(obj))
+        else if (checks.isErrorNotification(obj))
             return <IErrorNotification>obj.getIErrorNotification();
-        else
-            return null;
+        
+        return null;
     }
     static getEditable(obj: any): IEditable {
-        if (!obj)
+        if (!obj) {
             return null;
-        if (!!obj._aspect && Checks.isEditable(obj._aspect)) {
+        }
+        else if (!!obj._aspect && checks.isEditable(obj._aspect)) {
             return <IEditable>obj._aspect;
         }
-        else if (Checks.isEditable(obj)) {
+        else if (checks.isEditable(obj)) {
             return <IEditable>obj;
         }
-        else
-            return null;
+
+        return null;
     }
     static getSubmittable(obj: any): ISubmittable {
-        if (!obj)
+        if (!obj) {
             return null;
-        if (!!obj._aspect && Checks.isSubmittable(obj._aspect)) {
+        }
+        else if (!!obj._aspect && checks.isSubmittable(obj._aspect)) {
             return <ISubmittable>obj._aspect;
         }
-        else if (Checks.isSubmittable(obj)) {
+        else if (checks.isSubmittable(obj)) {
             return <ISubmittable>obj;
         }
-        else
-            return null;
+        
+        return null;
     }
     static parseJSON(res: string | any): IPromise<any> {
-        let defer = Utils.defer.createDeferred<any>();
-        setTimeout(() => {
-            try {
-                let parsed: any = null;
-                if (Checks.isString(res))
-                    parsed = JSON.parse(res);
-                else
-                    parsed = res;
-                defer.resolve(parsed);
-            }
-            catch (ex) {
-                defer.reject(ex);
-            }
-        }, 0);
+        return _async.delay(() => {
+            let parsed: any = null;
+            if (checks.isString(res))
+                parsed = JSON.parse(res);
+            else
+                parsed = res;
 
-        return defer.promise();
+            return parsed;
+        });
     }
 }

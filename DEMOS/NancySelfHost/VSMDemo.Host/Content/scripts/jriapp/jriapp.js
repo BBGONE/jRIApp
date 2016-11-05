@@ -2466,67 +2466,61 @@ define("jriapp_utils/utils", ["require", "exports", "jriapp_utils/coreutils", "j
     exports.DEBUG = coreutils_9.DEBUG;
     exports.ERROR = coreutils_9.ERROR;
     exports.SysChecks = coreutils_9.SysChecks;
+    var checks = checks_4.Checks, _async = async_2.AsyncUtils;
     var Utils = (function () {
         function Utils() {
         }
         Utils.getErrorNotification = function (obj) {
-            if (!obj)
+            if (!obj) {
                 return null;
-            if (!!obj._aspect && checks_4.Checks.isErrorNotification(obj._aspect))
+            }
+            else if (!!obj._aspect && checks.isErrorNotification(obj._aspect))
                 return obj._aspect.getIErrorNotification();
-            else if (checks_4.Checks.isErrorNotification(obj))
+            else if (checks.isErrorNotification(obj))
                 return obj.getIErrorNotification();
-            else
-                return null;
+            return null;
         };
         Utils.getEditable = function (obj) {
-            if (!obj)
+            if (!obj) {
                 return null;
-            if (!!obj._aspect && checks_4.Checks.isEditable(obj._aspect)) {
+            }
+            else if (!!obj._aspect && checks.isEditable(obj._aspect)) {
                 return obj._aspect;
             }
-            else if (checks_4.Checks.isEditable(obj)) {
+            else if (checks.isEditable(obj)) {
                 return obj;
             }
-            else
-                return null;
+            return null;
         };
         Utils.getSubmittable = function (obj) {
-            if (!obj)
+            if (!obj) {
                 return null;
-            if (!!obj._aspect && checks_4.Checks.isSubmittable(obj._aspect)) {
+            }
+            else if (!!obj._aspect && checks.isSubmittable(obj._aspect)) {
                 return obj._aspect;
             }
-            else if (checks_4.Checks.isSubmittable(obj)) {
+            else if (checks.isSubmittable(obj)) {
                 return obj;
             }
-            else
-                return null;
+            return null;
         };
         Utils.parseJSON = function (res) {
-            var defer = Utils.defer.createDeferred();
-            setTimeout(function () {
-                try {
-                    var parsed = null;
-                    if (checks_4.Checks.isString(res))
-                        parsed = JSON.parse(res);
-                    else
-                        parsed = res;
-                    defer.resolve(parsed);
-                }
-                catch (ex) {
-                    defer.reject(ex);
-                }
-            }, 0);
-            return defer.promise();
+            return _async.delay(function () {
+                var parsed = null;
+                if (checks.isString(res))
+                    parsed = JSON.parse(res);
+                else
+                    parsed = res;
+                return parsed;
+            });
         };
-        Utils.check = checks_4.Checks;
+        Utils.check = checks;
         Utils.str = strutils_3.StringUtils;
         Utils.arr = arrhelper_4.ArrayHelper;
         Utils.dom = dom_1.DomUtils;
         Utils.http = http_1.HttpUtils;
         Utils.core = coreutils_8.CoreUtils;
-        Utils.defer = async_2.AsyncUtils;
+        Utils.defer = _async;
         return Utils;
     }());
     exports.Utils = Utils;
@@ -4572,7 +4566,7 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
 });
 define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_core/parser", "jriapp_utils/syschecks", "jriapp_utils/coreutils", "jriapp_utils/utils"], function (require, exports, lang_10, object_10, bootstrap_4, parser_3, syschecks_6, coreutils_15, utils_4) {
     "use strict";
-    var utils = utils_4.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, syschecks = syschecks_6.SysChecks, debug = coreutils_15.DEBUG, log = coreutils_15.LOG;
+    var utils = utils_4.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, syschecks = syschecks_6.SysChecks, debug = coreutils_15.DEBUG, log = coreutils_15.LOG, parse = parser_3.parser;
     syschecks._isBinding = function (obj) {
         return (!!obj && obj instanceof Binding);
     };
@@ -4665,7 +4659,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                 if (fixedTarget === "this")
                     bindingOpts.target = defaultTarget;
                 else {
-                    bindingOpts.target = parser_3.parser.resolveBindingSource(app, parser_3.parser.getPathParts(fixedTarget));
+                    bindingOpts.target = parse.resolveBindingSource(app, parse.getPathParts(fixedTarget));
                 }
             }
             else
@@ -4681,7 +4675,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                     bindingOpts.source = defaultTarget;
                 }
                 else {
-                    bindingOpts.source = parser_3.parser.resolveBindingSource(app, parser_3.parser.getPathParts(fixedSource));
+                    bindingOpts.source = parse.resolveBindingSource(app, parse.getPathParts(fixedSource));
                 }
             }
             else
@@ -4721,8 +4715,8 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             this._mode = opts.mode;
             this._converter = !opts.converter ? null : opts.converter;
             this._converterParam = opts.converterParam;
-            this._srcPath = parser_3.parser.getPathParts(opts.sourcePath);
-            this._tgtPath = parser_3.parser.getPathParts(opts.targetPath);
+            this._srcPath = parse.getPathParts(opts.sourcePath);
+            this._tgtPath = parse.getPathParts(opts.targetPath);
             if (this._tgtPath.length < 1)
                 throw new Error(strUtils.format(lang_10.ERRS.ERR_BIND_TGTPATH_INVALID, opts.targetPath));
             this._srcFixed = (!!opts.isSourceFixed);
@@ -4806,7 +4800,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
         };
         Binding.prototype._getTgtChangedFn = function (self, obj, prop, restPath, lvl) {
             var fn = function (sender, data) {
-                var val = parser_3.parser.resolveProp(obj, prop);
+                var val = parse.resolveProp(obj, prop);
                 if (restPath.length > 0) {
                     self._setPathItem(null, 1, lvl, restPath);
                 }
@@ -4817,7 +4811,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
         };
         Binding.prototype._getSrcChangedFn = function (self, obj, prop, restPath, lvl) {
             var fn = function (sender, data) {
-                var val = parser_3.parser.resolveProp(obj, prop);
+                var val = parse.resolveProp(obj, prop);
                 if (restPath.length > 0) {
                     self._setPathItem(null, 0, lvl, restPath);
                 }
@@ -4855,7 +4849,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                     obj.addOnPropertyChange(path[0], self._getSrcChangedFn(self, obj, path[0], path.slice(1), lvl + 1), self._objId);
                 }
                 if (!!obj) {
-                    nextObj = parser_3.parser.resolveProp(obj, path[0]);
+                    nextObj = parse.resolveProp(obj, path[0]);
                     if (!!nextObj) {
                         self._parseSrc2(nextObj, path.slice(1), lvl + 1);
                     }
@@ -4919,7 +4913,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                     obj.addOnPropertyChange(path[0], self._getTgtChangedFn(self, obj, path[0], path.slice(1), lvl + 1), self._objId);
                 }
                 if (!!obj) {
-                    nextObj = parser_3.parser.resolveProp(obj, path[0]);
+                    nextObj = parse.resolveProp(obj, path[0]);
                     if (!!nextObj) {
                         self._parseTgt2(nextObj, path.slice(1), lvl + 1);
                     }
@@ -5154,7 +5148,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                     res = this._srcEnd;
                 if (!!this._srcEnd) {
                     var prop = this._srcPath[this._srcPath.length - 1];
-                    res = parser_3.parser.resolveProp(this._srcEnd, prop);
+                    res = parse.resolveProp(this._srcEnd, prop);
                 }
                 return res;
             },
@@ -5162,7 +5156,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                 if (this._srcPath.length === 0 || !this._srcEnd || v === checks.undefined)
                     return;
                 var prop = this._srcPath[this._srcPath.length - 1];
-                parser_3.parser.setPropertyValue(this._srcEnd, prop, v);
+                parse.setPropertyValue(this._srcEnd, prop, v);
             },
             enumerable: true,
             configurable: true
@@ -5172,7 +5166,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                 var res = null;
                 if (!!this._tgtEnd) {
                     var prop = this._tgtPath[this._tgtPath.length - 1];
-                    res = parser_3.parser.resolveProp(this._tgtEnd, prop);
+                    res = parse.resolveProp(this._tgtEnd, prop);
                 }
                 return res;
             },
@@ -5180,7 +5174,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                 if (this._tgtPath.length === 0 || !this._tgtEnd || v === checks.undefined)
                     return;
                 var prop = this._tgtPath[this._tgtPath.length - 1];
-                parser_3.parser.setPropertyValue(this._tgtEnd, prop, v);
+                parse.setPropertyValue(this._tgtEnd, prop, v);
             },
             enumerable: true,
             configurable: true
@@ -6361,9 +6355,9 @@ define("jriapp_core/datepicker", ["require", "exports", "jriapp_core/lang", "jri
     bootstrap_10.bootstrap.registerSvc("IDatepicker", new Datepicker());
     bootstrap_10.bootstrap.registerElView("datepicker", DatePickerElView);
 });
-define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_content/factory", "jriapp_core/parser", "jriapp_utils/coreutils", "jriapp_utils/dom", "jriapp_utils/utils", "jriapp_elview/elview", "jriapp_content/int"], function (require, exports, const_5, lang_16, object_14, bootstrap_11, factory_2, parser_4, coreutils_18, dom_7, utils_15, elview_5, int_5) {
+define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_content/factory", "jriapp_core/parser", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_elview/elview", "jriapp_content/int"], function (require, exports, const_5, lang_16, object_14, bootstrap_11, factory_2, parser_4, coreutils_18, utils_15, elview_5, int_5) {
     "use strict";
-    var utils = utils_15.Utils, $ = dom_7.DomUtils.$, doc = dom_7.DomUtils.document, checks = coreutils_18.Checks, coreUtils = coreutils_18.CoreUtils, strUtils = coreutils_18.StringUtils, syschecks = coreutils_18.SysChecks;
+    var utils = utils_15.Utils, dom = utils.dom, $ = dom.$, doc = dom.document, checks = utils.check, coreUtils = utils.core, strUtils = utils.str, syschecks = coreutils_18.SysChecks, parse = parser_4.parser;
     exports.css = {
         dataform: "ria-dataform",
         error: "ria-form-error"
@@ -6374,27 +6368,33 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
         }
     };
     syschecks._isDataForm = function (el) {
-        if (!el)
-            return false;
-        if (el.hasAttribute(const_5.DATA_ATTR.DATA_FORM))
-            return true;
-        var attr = el.getAttribute(const_5.DATA_ATTR.DATA_VIEW);
-        if (!attr) {
+        if (!el) {
             return false;
         }
-        var opts = parser_4.parser.parseOptions(attr);
-        return (opts.length > 0 && opts[0].name === const_5.ELVIEW_NM.DataForm);
+        if (el.hasAttribute(const_5.DATA_ATTR.DATA_FORM)) {
+            return true;
+        }
+        else {
+            var attr = el.getAttribute(const_5.DATA_ATTR.DATA_VIEW);
+            if (!attr) {
+                return false;
+            }
+            var opts = parse.parseOptions(attr);
+            return (opts.length > 0 && opts[0].name === const_5.ELVIEW_NM.DataForm);
+        }
     };
     syschecks._isInsideDataForm = function (el) {
-        if (!el)
+        if (!el) {
             return false;
+        }
         var parent = el.parentElement;
         if (!!parent) {
             if (!syschecks._isDataForm(parent)) {
                 return syschecks._isInsideDataForm(parent);
             }
-            else
+            else {
                 return true;
+            }
         }
         return false;
     };
@@ -6460,7 +6460,7 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
             this._$el = $(this._el);
             this._objId = "frm" + coreUtils.getNewID();
             this._dataContext = null;
-            dom_7.DomUtils.addClass([this._el], exports.css.dataform);
+            dom.addClass([this._el], exports.css.dataform);
             this._isEditing = false;
             this._content = [];
             this._lfTime = null;
@@ -6642,7 +6642,7 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
                 return;
             this._isDestroyCalled = true;
             this._clearContent();
-            dom_7.DomUtils.removeClass([this.el], exports.css.dataform);
+            dom.removeClass([this.el], exports.css.dataform);
             this._el = null;
             this._$el = null;
             this._unbindDS();
@@ -6985,9 +6985,9 @@ define("jriapp_elview/command", ["require", "exports", "jriapp_utils/utils", "jr
     }(elview_6.BaseElView));
     exports.CommandElView = CommandElView;
 });
-define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jriapp_utils/coreutils", "jriapp_utils/dom", "jriapp_utils/async", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_elview/command"], function (require, exports, const_6, coreutils_19, dom_8, async_7, lang_17, object_15, bootstrap_12, command_1) {
+define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jriapp_utils/coreutils", "jriapp_utils/dom", "jriapp_utils/async", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_elview/command"], function (require, exports, const_6, coreutils_19, dom_7, async_7, lang_17, object_15, bootstrap_12, command_1) {
     "use strict";
-    var defer = async_7.AsyncUtils, dom = dom_8.DomUtils, $ = dom.$, doc = dom.document, coreUtils = coreutils_19.CoreUtils, checks = coreutils_19.Checks, strUtils = coreutils_19.StringUtils, arrHelper = coreutils_19.ArrayHelper, syschecks = coreutils_19.SysChecks;
+    var defer = async_7.AsyncUtils, dom = dom_7.DomUtils, $ = dom.$, doc = dom.document, coreUtils = coreutils_19.CoreUtils, checks = coreutils_19.Checks, strUtils = coreutils_19.StringUtils, arrHelper = coreutils_19.ArrayHelper, syschecks = coreutils_19.SysChecks;
     exports.css = {
         templateContainer: "ria-template-container",
         templateError: "ria-template-error"

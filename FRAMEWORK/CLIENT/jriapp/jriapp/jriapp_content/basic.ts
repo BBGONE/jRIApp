@@ -89,7 +89,7 @@ export class BasicContent extends BaseObject implements IContent {
         let finf = this.getFieldInfo();
         if (!finf)
             return false;
-        let editable = utils.getEditable(this._dataContext);
+        const editable = utils.getEditable(this._dataContext);
         return !!editable && !finf.isReadOnly && finf.fieldType !== FIELD_TYPE.Calculated;
     }
     protected createTargetElement(): IElView {
