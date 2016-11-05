@@ -73,8 +73,7 @@ class EventList {
                 if (ns === "*") {
                     ns_keys = Object.keys(obj);
                     for (let i = 0; i < ns_keys.length; ++i) {
-                        ns_key = ns_keys[i];
-                        delete obj[ns_key];
+                        delete obj[ns_keys[i]];
                     }
                 }
                 else {
@@ -113,14 +112,13 @@ export class EventHelper
     static removeNs(ev: IIndexer<IEventList>, ns: string): void {
         if (!ev)
             return;
-        if (ns === "*") {
-            for (let key in ev)
-                delete ev[key];
-        }
-        else {
-            let list: IEventList;
-            for (let key in ev) {
-                list = ev[key];
+        const keys = Object.keys(ev);
+        for (let i = 0; i < keys.length; i += 1) {
+            if (ns === "*") {
+                delete ev[keys[i]];
+            }
+            else {
+                let list = ev[keys[i]];
                 if (!!list) {
                     evList.remove(list, ns);
                 }
@@ -153,22 +151,17 @@ export class EventHelper
         if (!ev)
             return null;
         const self = this, ns = !nmspace ? "*" : "" + nmspace;
-        let list: IEventList;
 
         if (!name) {
             EventHelper.removeNs(ev, ns);
         }
         else {
             //arguments supplied is name (and optionally nmspace)
-            list = ev[name];
-            if (!list)
-                return;
             if (ns === "*") {
-                evList.remove(list, ns);
                 delete ev[name];
             }
             else {
-                evList.remove(list, ns);
+                evList.remove(ev[name], ns);
             }
         }
     }

@@ -10,12 +10,11 @@ import { IElViewStore, IElViewFactory, IElView, IViewType, IIndexer, IApplicatio
 import { ERRS } from "./lang";
 import { BaseObject }  from "./object";
 import { bootstrap } from "./bootstrap";
-import { SysChecks, ERROR } from "../jriapp_utils/coreutils";
+import { ERROR } from "../jriapp_utils/coreutils";
 import { LifeTimeScope, Utils } from "../jriapp_utils/utils";
 import { createFactory as createElViewFactory, createRegister as createElViewRegister } from "../jriapp_elview/factory";
 import { create as createDataBindSvc } from "./databindsvc";
 import { ITemplateOptions, create as createTemplate } from "./template";
-import { parser } from "./parser";
 
 const utils = Utils, $ = utils.dom.$, doc = utils.dom.document;
 

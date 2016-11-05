@@ -1117,8 +1117,7 @@ define("jriapp_utils/eventhelper", ["require", "exports", "jriapp_utils/coreutil
                     if (ns === "*") {
                         ns_keys = Object.keys(obj);
                         for (var i = 0; i < ns_keys.length; ++i) {
-                            ns_key = ns_keys[i];
-                            delete obj[ns_key];
+                            delete obj[ns_keys[i]];
                         }
                     }
                     else {
@@ -1154,14 +1153,13 @@ define("jriapp_utils/eventhelper", ["require", "exports", "jriapp_utils/coreutil
         EventHelper.removeNs = function (ev, ns) {
             if (!ev)
                 return;
-            if (ns === "*") {
-                for (var key in ev)
-                    delete ev[key];
-            }
-            else {
-                var list = void 0;
-                for (var key in ev) {
-                    list = ev[key];
+            var keys = Object.keys(ev);
+            for (var i = 0; i < keys.length; i += 1) {
+                if (ns === "*") {
+                    delete ev[keys[i]];
+                }
+                else {
+                    var list = ev[keys[i]];
                     if (!!list) {
                         evList.remove(list, ns);
                     }
@@ -1189,20 +1187,15 @@ define("jriapp_utils/eventhelper", ["require", "exports", "jriapp_utils/coreutil
             if (!ev)
                 return null;
             var self = this, ns = !nmspace ? "*" : "" + nmspace;
-            var list;
             if (!name) {
                 EventHelper.removeNs(ev, ns);
             }
             else {
-                list = ev[name];
-                if (!list)
-                    return;
                 if (ns === "*") {
-                    evList.remove(list, ns);
                     delete ev[name];
                 }
                 else {
-                    evList.remove(list, ns);
+                    evList.remove(ev[name], ns);
                 }
             }
         };
@@ -4580,17 +4573,17 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
 });
 define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_core/parser", "jriapp_utils/syschecks", "jriapp_utils/coreutils", "jriapp_utils/utils"], function (require, exports, lang_10, object_10, bootstrap_4, parser_3, syschecks_6, coreutils_15, utils_4) {
     "use strict";
-    var utils = utils_4.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, syschecks = syschecks_6.SysChecks;
+    var utils = utils_4.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, syschecks = syschecks_6.SysChecks, debug = coreutils_15.DEBUG, log = coreutils_15.LOG;
     syschecks._isBinding = function (obj) {
         return (!!obj && obj instanceof Binding);
     };
     function fn_reportUnResolved(bindTo, root, path, propName) {
-        if (!coreutils_15.DEBUG.isDebugging()) {
+        if (!debug.isDebugging()) {
             return;
         }
-        coreutils_15.DEBUG.checkStartDebugger();
+        debug.checkStartDebugger();
         var msg = "Unresolved data binding for ";
-        if (bindTo == 0) {
+        if (bindTo === 0) {
             msg += " Source: ";
         }
         else {
@@ -4599,15 +4592,15 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
         msg += "'" + root + "'";
         msg += ", property: '" + propName + "'";
         msg += ", binding path: '" + path + "'";
-        coreutils_15.LOG.error(msg);
+        log.error(msg);
     }
     function fn_reportMaxRec(bindTo, src, tgt, spath, tpath) {
-        if (!coreutils_15.DEBUG.isDebugging()) {
+        if (!debug.isDebugging()) {
             return;
         }
-        coreutils_15.DEBUG.checkStartDebugger();
+        debug.checkStartDebugger();
         var msg = "Maximum recursion exceeded for ";
-        if (bindTo == 0) {
+        if (bindTo === 0) {
             msg += "Updating Source value: ";
         }
         else {
@@ -4617,7 +4610,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
         msg += ", target:'" + tgt + "'";
         msg += ", source path: '" + spath + "'";
         msg += ", target path: '" + tpath + "'";
-        coreutils_15.LOG.error(msg);
+        log.error(msg);
     }
     function fn_handleError(appName, error, source) {
         if (!!appName) {
@@ -4711,11 +4704,11 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                 opts.mode = bindModeMap[opts.mode];
             }
             if (!checks.isString(opts.targetPath)) {
-                coreutils_15.DEBUG.checkStartDebugger();
+                debug.checkStartDebugger();
                 throw new Error(strUtils.format(lang_10.ERRS.ERR_BIND_TGTPATH_INVALID, opts.targetPath));
             }
             if (checks.isNt(opts.mode)) {
-                coreutils_15.DEBUG.checkStartDebugger();
+                debug.checkStartDebugger();
                 throw new Error(strUtils.format(lang_10.ERRS.ERR_BIND_MODE_INVALID, opts.mode));
             }
             if (!opts.target) {
@@ -4875,7 +4868,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             }
             if (!!obj && path.length === 1) {
                 isValidProp = true;
-                if (coreutils_15.DEBUG.isDebugging())
+                if (debug.isDebugging())
                     isValidProp = isBaseObj ? obj._isHasProp(path[0]) : checks.isHasProp(obj, path[0]);
                 if (isValidProp) {
                     var updateOnChange = isBaseObj && (self._mode === 1 || self._mode === 2);
@@ -4939,7 +4932,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             }
             if (!!obj && path.length === 1) {
                 isValidProp = true;
-                if (coreutils_15.DEBUG.isDebugging()) {
+                if (debug.isDebugging()) {
                     isValidProp = isBaseObj ? obj._isHasProp(path[0]) : checks.isHasProp(obj, path[0]);
                 }
                 if (isValidProp) {

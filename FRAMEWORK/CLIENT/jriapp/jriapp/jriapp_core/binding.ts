@@ -11,7 +11,7 @@ import { ERROR, DEBUG, LOG } from "../jriapp_utils/coreutils";
 import { Utils } from "../jriapp_utils/utils";
 import { BaseElView } from "../jriapp_elview/elview";
 
-let utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, syschecks = SysChecks;
+let utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, syschecks = SysChecks, debug = DEBUG, log = LOG;
 
 syschecks._isBinding = (obj: any) => {
     return (!!obj && obj instanceof Binding);
@@ -21,12 +21,12 @@ syschecks._isBinding = (obj: any) => {
  * Unresolved binding - property path is invalid or source is empty
  */
 function fn_reportUnResolved(bindTo: BindTo, root: any, path: string, propName: string): void {
-    if (!DEBUG.isDebugging()) {
+    if (!debug.isDebugging()) {
         return;
     }
-    DEBUG.checkStartDebugger();
+    debug.checkStartDebugger();
     let msg = "Unresolved data binding for ";
-    if (bindTo == BindTo.Source) {
+    if (bindTo === BindTo.Source) {
         msg += " Source: "
     }
     else {
@@ -36,19 +36,19 @@ function fn_reportUnResolved(bindTo: BindTo, root: any, path: string, propName: 
     msg += ", property: '" + propName + "'";
     msg += ", binding path: '" + path + "'";
 
-    LOG.error(msg);
+    log.error(msg);
 }
 
 /**
  * Maximum recursion exceeded
  */
 function fn_reportMaxRec(bindTo: BindTo, src: any, tgt: any, spath: string, tpath: string): void {
-    if (!DEBUG.isDebugging()) {
+    if (!debug.isDebugging()) {
         return;
     }
-    DEBUG.checkStartDebugger();
+    debug.checkStartDebugger();
     let msg = "Maximum recursion exceeded for ";
-    if (bindTo == BindTo.Source) {
+    if (bindTo === BindTo.Source) {
         msg += "Updating Source value: "
     }
     else {
@@ -59,7 +59,7 @@ function fn_reportMaxRec(bindTo: BindTo, src: any, tgt: any, spath: string, tpat
     msg += ", source path: '" + spath + "'";
     msg += ", target path: '" + tpath + "'";
 
-    LOG.error(msg);
+    log.error(msg);
 }
 
 
@@ -197,12 +197,12 @@ export class Binding extends BaseObject implements IBinding {
         }
 
         if (!checks.isString(opts.targetPath)) {
-            DEBUG.checkStartDebugger();
+            debug.checkStartDebugger();
             throw new Error(strUtils.format(ERRS.ERR_BIND_TGTPATH_INVALID, opts.targetPath));
         }
 
         if (checks.isNt(opts.mode)) {
-            DEBUG.checkStartDebugger();
+            debug.checkStartDebugger();
             throw new Error(strUtils.format(ERRS.ERR_BIND_MODE_INVALID, opts.mode));
         }
 
@@ -378,7 +378,7 @@ export class Binding extends BaseObject implements IBinding {
 
         if (!!obj && path.length === 1) {
             isValidProp = true;
-            if (DEBUG.isDebugging())
+            if (debug.isDebugging())
                 isValidProp = isBaseObj ? (<IBaseObject>obj)._isHasProp(path[0]) : checks.isHasProp(obj, path[0]);
 
             if (isValidProp) {
@@ -450,7 +450,7 @@ export class Binding extends BaseObject implements IBinding {
 
         if (!!obj && path.length === 1) {
             isValidProp = true;
-            if (DEBUG.isDebugging()) {
+            if (debug.isDebugging()) {
                 isValidProp = isBaseObj ? (<IBaseObject>obj)._isHasProp(path[0]) : checks.isHasProp(obj, path[0]);
             }
 
