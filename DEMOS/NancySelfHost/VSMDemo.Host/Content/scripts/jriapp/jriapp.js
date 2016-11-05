@@ -1108,7 +1108,7 @@ define("jriapp_utils/eventhelper", ["require", "exports", "jriapp_utils/coreutil
         EventList.remove = function (list, ns) {
             if (!list)
                 return;
-            var ns_key, ns_keys, obj;
+            var ns_keys, obj;
             if (!ns)
                 ns = "*";
             for (var j = 0; j <= 2; ++j) {
@@ -1159,10 +1159,7 @@ define("jriapp_utils/eventhelper", ["require", "exports", "jriapp_utils/coreutil
                     delete ev[keys[i]];
                 }
                 else {
-                    var list = ev[keys[i]];
-                    if (!!list) {
-                        evList.remove(list, ns);
-                    }
+                    evList.remove(ev[keys[i]], ns);
                 }
             }
         };

@@ -64,7 +64,7 @@ class EventList {
     static remove(list: IEventList, ns: string): void {
         if (!list)
             return;
-        let ns_key: string, ns_keys: string[], obj: INamespaceMap;
+        let ns_keys: string[], obj: INamespaceMap;
         if (!ns)
             ns = "*";
         for (let j = TPriority.Normal; j <= TPriority.High; ++j) {
@@ -118,10 +118,7 @@ export class EventHelper
                 delete ev[keys[i]];
             }
             else {
-                let list = ev[keys[i]];
-                if (!!list) {
-                    evList.remove(list, ns);
-                }
+                evList.remove(ev[keys[i]], ns);
             }
         }
     }
