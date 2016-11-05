@@ -3242,10 +3242,6 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
                     throw new Error(strUtils.format(lang_3.ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, v.fieldName));
                 self._onFieldChanged(v.fieldName, fld);
             });
-            this._setIsEditing(false);
-            if (isNew && this._notEdited && !this.getIsDestroyCalled()) {
-                dbSet.removeItem(this.item);
-            }
             return true;
         };
         EntityAspect.prototype.getDbSet = function () {

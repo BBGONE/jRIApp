@@ -834,7 +834,7 @@ declare module "jriapp_utils/eventhelper" {
         [priority: number]: INamespaceMap;
     }
     export class EventHelper {
-        static removeNs(ev: IIndexer<IEventList>, ns: string): void;
+        static removeNs(ev: IIndexer<IEventList>, ns?: string): void;
         static add(ev: IIndexer<IEventList>, name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         static remove(ev: IIndexer<IEventList>, name?: string, nmspace?: string): void;
         static raise(sender: any, ev: IIndexer<IEventList>, name: string, args: any): void;
@@ -2513,7 +2513,6 @@ declare module "jriapp_collection/aspect" {
         private _isCached;
         private _isDetached;
         private _valueBag;
-        protected _setIsEditing(v: boolean): void;
         _setIsDetached(v: boolean): void;
         _setIsCached(v: boolean): void;
         constructor(collection: BaseCollection<TItem>);
