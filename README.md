@@ -48,6 +48,8 @@ The data service (<i>the server side</i>) can work with data managers for each e
 This feature allows to separate the CRUD and query methods for each entity into its own class.<br/>
 Databinding uses classic property change tracking pattern like it is done in Silverlight and there's a <i>BaseObject</i> class in the framework which supports change notification and events
 (<i>It is much more useful in practice than to have a central hub for events like EventAggregator, because it is difficult to distinguish which of the multiple objects triggered the event.
+There's also a problem that's it's impractical to add strongly type methods to subscribe to the events to the EventAggregator (because it is global and shared), 
+and it is easier with the global class to  cause memory leaks.
 Although if you need an EventAggregator then just use a separate class inherited from the BaseObject</i>). 
 The Events implemented to allow to provide a namespace when subscribing to them, which helps to unsubscribe from a bunch of them very easily - by just providing the namespace.
 They, also, can have the priority set for them when subscribing.
