@@ -28,25 +28,29 @@ The framework's concept is to be as versatile as it can be, and to have enough f
 <br/>
 <ul>
 <li>It is written in typescript that can be compiled to ES5, ES6 or possibly to any future EcmaScript standards - just recompile it with new settings.</li>
-<li>It can work with (<i>data bind</i>) to any existing HTML Element or Web Component directly and subscribe to its events, declaratively.</li>
-<li>It has built-in ability to work with data stores on the server (<i>no need for a separate third party framework and its adaptation</i>).
-<li>It has very good components like Data Grid and others (<i>and be used declaratively</i>). It's easy to add custom ones.</li>
+<li>It can work with (<i>data bind</i>) to any HTML Element or Web Component and subscribe to its events, declaratively.</li>
+<li>It has built-in ability to work with data stores on the server
+(<i>no need to use a third party framework as breeze.js. What's worse the breeze.js is written javascript and is difficult to maintain and to adapt.
+You need to rework notification of your components about the changes in the data and the entities is not strongly typed.</i>).
+</li>
+<li>It has useful components as Data Grid and others (<i>and be used declaratively</i>). It's easy to add custom ones.</li>
 <li>It can load modules, CSS and HTML templates on demand (<i>a template can load CSS and JavaScript modules</i>)</li>
 <li>It has the ability to wrap any existing UI Control from any framework - like JQuery UI, Bootstrapp, Kendo or anything else.</li>
 <li>It has superb performance because it does not use polling for any property changes and does not use
 intermixed HTML and Scripts inside template (the code is 100% separated from HTML- if you choose to do it).</li>
-<li>And the Javascript code does not know (agnostic) about HTML structure (in the React framework it is built in the code).</li>
-<li>The framework internally is much more simple than major frameworks, it uses HTML5 features implemented now in most of the browsers and
-does not need Polyfills. The code is not bloated.</li>
+<li>And the code does not know (agnostic) about HTML structure.</li>
+<li>The framework uses HTML5 features implemented now in most of the browsers and does not need Polyfills. The code is not overengineered.</li>
 </ul>
-It can be used to work with NOSQL and relational databases because it can work with complex properties of unlimited depth. 
-The entities and DbContext is strongly typed because the clent domain model (entities, lists, dictionaries, dbsets, dbcontext) is generated in typescript language by data service methods
-and there's no need to write them manually or to use untyped ones. 
-The data service (<i>unlike thirdparty counterparts</i>) can work with data managers for each entity (<i>optionally</i>). 
+It can be used to work with NOSQL and relational databases because it can work with complex properties of unlimited depth (<i>For example, look at the TreeDemo, how it gets hierarchical data from the server</i>). 
+The entities and DbContext is strongly typed because the client domain model (entities, lists, dictionaries, dbsets, dbcontext) is generated in typescript language by data service methods
+and there's no need to use not strongly typed ones (<i>in breeze.js, you need to find changes of field names everywhere in your code after changing them on the server side</i>). 
+The data service (<i>the server side</i>) can work with data managers for each entity (<i>optionally, but it is very useful not to have a long sheet of code inside the data service</i>). 
 This feature allows to separate the CRUD and query methods for each entity into its own class.<br/>
-Databinding uses classic property change tracking pattern like it is done in Silverlight and there's a <i>BaseObject</i> class in the framework which supports change notification and events. 
-It is the most performant type of change tracking. 
+Databinding uses classic property change tracking pattern like it is done in Silverlight and there's a <i>BaseObject</i> class in the framework which supports change notification and events
+(<i>It is much more useful in practice than to have a central hub for events like EventAggregator, because it is difficult to distinguish which of the multiple objects triggered the event.
+Although if you need an EventAggregator then just use a separate class inherited from the BaseObject</i>). 
 The Events implemented to allow to provide a namespace when subscribing to them, which helps to unsubscribe from a bunch of them very easily - by just providing the namespace.
+They, also, can have the priority set for them when subscribing.
 <br/><br/>
 The framework is based on (Model-View-ViewModel) MVVM architecture:<br/>
 <p>
@@ -75,10 +79,10 @@ The framework is protected from overposting attacks out of the box because it us
 tabular format to transfer queries data to and from the server.
 Protection from XSRF attacks is handled by allowing to add headers to all requests to the server. This feature can be used to attach
 anti XSRF tokens to the requests.<br/>
-The full framework minified size is 377KB.
+The full framework minified size is 380KB.
 </p>
 <p>
-<b>The framework contains the docs which at present for the old version of the framework, but i will update it later to reflect the new usage of the framework.</b>
+<b>The framework contains the docs which at present for the old version of the framework (it can be used anyway)</b>
 <p/> 
 <b>The Demos include:</b>
 <p>
