@@ -3,45 +3,43 @@
 <br/>
 <p>
 <b>jRIApp</b> – is an application framework for developing rich internet applications - RIA’s. It consists of two parts – 
-the client and the server (<i>optional and has a respective optional db module in the client part</i>) parts. 
-The client part was written in <b>typescript</b> language. The server part was  written in C#  and the demo application was implemented using ASP.NET MVC project.
+the client and the server (<i>optional and has a respective optional db addin for the client side</i>) parts. 
+The client side part was written in <b>typescript</b> language. The server side part was  written in C# (<i>but potentially can be written in any server side language</i>) 
+and the demo application was implemented using ASP.NET MVC project.
 <br/>
 (<i>
 In order to use the Demo you need Microsoft SQL Server (Express edition will suffice) installed and Microsoft's Adventure Works (the Lite version) database is attached
  <a href="https://msdn.microsoft.com/en-us/library/dd410121.aspx" target="_blank"><i>How to attach AdventureWorksLT</i></a>.
 </i>)
 <br/>
-The Server part implements a Data Service which resembles the Microsoft's WCF RIA services. 
-The Client part resembles  Microsoft Silverlight client development, only it is based on HTML, and uses typescript language for coding.
-The framework was designed primarily for creating data centric Line of Business (LOB) applications which will work natively in browsers without the need for plugins.
-(<i>But it can be used for other types of applications too.</i>)
+The framework was designed primarily for creating data centric Line of Business (LOB) applications 
+which will work natively in browsers without the need for plugins. (<i>Although it can be used for other types of applications, too.</i>)
 </p>
 <p>
-I wrote this framework because everything i searched through was not suitable for LOB applications (<i>even now, i can not choose any new framework - Angular2, React, Breeze and Aurelia included</i>).</br>
-They all offer very much what i don't need and very little  of what i need to develop desktoplike applications in HTML5.<br/>
-(<i>P.S. - the framework depends only on JQuery, Moment and QTip.
-The Moment and the QTip are easily replaceable, but JQuery is more widely used in the framework.
+I wrote this framework because everything i searched through was not suitable for serious data centric HTML5 applications.</br>
+The other frameworks offer very much what is not needed and very little of what is needed to develop 
+this kind of applications<br/>
+(<i>P.S. - the framework depends on JQuery, Moment, QTip, Require. The Moment, QTip and Require are easily replaceable, 
+but JQuery is more widely used in the framework (<i>but also can be replaced if needs be</i>).
 </i>
 ).
 </br>
-The framework's concept is to be as versatile as it can be, and to have enough features to implement any kind of applications.
-<br/>
+The framework is based on (Model-View-ViewModel) MVVM architecture:<br/>
 <ul>
 <li>It is written in typescript that can be compiled to ES5, ES6 or possibly to any future EcmaScript standards - just recompile it with new settings.</li>
-<li>It can work with (<i>data bind</i>) to any HTML Element or Web Component and subscribe to its events, declaratively.</li>
-<li>It has built-in ability to work with data stores on the server
-(<i>no need to use a third party framework as breeze.js. What's worse the breeze.js is written javascript and is difficult to maintain and to adapt.
-You need to rework notification of your components about the changes in the data and the entities is not strongly typed.</i>).
-</li>
+<li>It can work with (<i>data bind to</i>) any HTML Element or Web Component and subscribe to its events, declaratively.</li>
+<li>It has built-in ability to work with data stores on the server (<i>Much like Microsoft Entity Framework does</i>)</li>
 <li>It has useful components as Data Grid and others (<i>and be used declaratively</i>). It's easy to add custom ones.</li>
 <li>It can load modules, CSS and HTML templates on demand (<i>a template can load CSS and JavaScript modules</i>)</li>
-<li>It has the ability to wrap any existing UI Control from any framework - like JQuery UI, Bootstrapp, Kendo or anything else.</li>
+<li>It has an ability to wrap any existing UI Control from any framework - like JQuery UI, Bootstrapp, Kendo or anything else.</li>
 <li>It has superb performance because it does not use polling for any property changes and does not use
-intermixed HTML and Scripts inside template (the code is 100% separated from HTML- if you choose to do it).</li>
-<li>And the code does not know (agnostic) about HTML structure.</li>
-<li>The framework uses HTML5 features implemented now in most of the browsers and does not need Polyfills. The code is not overengineered.</li>
+intermixed HTML and Scripts inside template (<i>the code is 100% separated from HTML- if you choose to do it</i>).</li>
+<li>And the code does not know (agnostic) about the structure of HTML page.</li>
+<li>The framework uses HTML5 features implemented in most of the browsers (<i>starting from IE9</i>) and does not need Polyfills 
+and the code is not overengineered.</li>
 </ul>
-It can be used to work with NOSQL and relational databases because it can work with complex properties of unlimited depth (<i>For example, look at the TreeDemo, how it gets hierarchical data from the server</i>). 
+<br/>
+It can be used to work with NOSQL and relational databases because it can work with complex properties of unlimited depth. 
 The entities and DbContext is strongly typed because the client domain model (entities, lists, dictionaries, dbsets, dbcontext) is generated in typescript language by data service methods
 and there's no need to use not strongly typed ones (<i>in breeze.js, you need to find changes of field names everywhere in your code after changing them on the server side</i>). 
 The data service (<i>the server side</i>) can work with data managers for each entity (<i>optionally, but it is very useful not to have a long sheet of code inside the data service</i>). 
@@ -54,16 +52,6 @@ Although if you need an EventAggregator then just use a separate class inherited
 The Events implemented to allow to provide a namespace when subscribing to them, which helps to unsubscribe from a bunch of them very easily - by just providing the namespace.
 They, also, can have the priority set for them when subscribing.
 <br/><br/>
-The framework is based on (Model-View-ViewModel) MVVM architecture:<br/>
-<p>
-<i>
-MVVM is targeted at UI development platforms which support event-driven programming such as HTML5, Windows Presentation Foundation (WPF), Silverlight and the ZK framework. 
-MVVM facilitates a clear separation of the development of the graphical user interface (either as markup language or GUI code) from the development of the business logic or
-back-end logic known as the model (<i>also known as the data model to distinguish it from the view model</i>).<br/>
-The view-model acts as a model for the view. This means, the view-model holds data for the view. This is established through data-binding.<br/>
-The view is completely unaware of the changes made to the data that it is bound to, and the view-model is completely unaware of view structure.
-</i>
-</p>
 I chose not to implement features which can be easily borrowed from third party libs.<br/>
 For example, there's no dependency injection feature because the <a href="https://github.com/inversify/InversifyJS" target="_blank"><i>Inversify.js</i></a> library can be used for that.
 It has no Router implementation because switching the views using the framework is done by changing the property value (the current name of the template displaying inside the dynacontent).
