@@ -20,7 +20,7 @@ export class ActionsColumn extends BaseColumn {
 
         const self = this, opts: IActionsColumnInfo = this.options;
         this._event_act_scope = ["span[", DATA_ATTR.DATA_EVENT_SCOPE, '="', this.uniqueID, '"]'].join("");
-        dom.addClass(this.$col.toArray(), css.rowActions);
+        dom.addClass([this.col], css.rowActions);
         const $table = this.grid.$table;
         $table.on("click", this._event_act_scope, function (e) {
             e.stopPropagation();
@@ -41,17 +41,6 @@ export class ActionsColumn extends BaseColumn {
                     break;
             }
         });
-
-        /*
-        $table.on("mouseenter", actionsSelector, function (e) {
-            e.stopPropagation();
-            $(this).css("opacity", 0.5);
-       });
-        $table.on("mouseout", actionsSelector, function (e) {
-            e.stopPropagation();
-            $(this).css("opacity", 1.0);
-       });
-        */
 
         this.grid.addOnRowAction((sender, args) => {
             switch (args.action) {

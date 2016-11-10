@@ -15,7 +15,6 @@ const $ = dom.$, document = dom.document;
 export class DetailsRow extends BaseObject {
     private _grid: DataGrid;
     private _tr: HTMLTableRowElement;
-    private _$tr: JQuery;
     private _item: ICollectionItem;
     private _cell: DetailsCell;
     private _parentRow: Row;
@@ -27,7 +26,6 @@ export class DetailsRow extends BaseObject {
         let self = this;
         this._grid = options.grid;
         this._tr = options.tr;
-        this._$tr = $(this._tr);
         this._item = null;
         this._cell = null;
         this._parentRow = null;
@@ -41,7 +39,7 @@ export class DetailsRow extends BaseObject {
         }, this._objId);
     }
     private _createCell(details_id: string) {
-        let td: HTMLTableCellElement = <HTMLTableCellElement>document.createElement("td");
+        const td: HTMLTableCellElement = <HTMLTableCellElement>document.createElement("td");
         this._cell = new DetailsCell({ row: this, td: td, details_id: details_id });
     }
     protected _setParentRow(row: Row) {
@@ -92,8 +90,7 @@ export class DetailsRow extends BaseObject {
             this._cell.destroy();
             this._cell = null;
         }
-        this._$tr.remove();
-        this._$tr = null;
+        dom.removeNode(this._tr);
         this._item = null;
         this._tr = null;
         this._grid = null;
@@ -103,7 +100,6 @@ export class DetailsRow extends BaseObject {
         return "DetailsRow";
     }
     get tr() { return this._tr; }
-    get $tr() { return this._$tr; }
     get grid() { return this._grid; }
     get item() { return this._item; }
     set item(v) {

@@ -11,7 +11,7 @@ export class ExpanderColumn extends BaseColumn {
     constructor(grid: DataGrid, options: ICellInfo) {
         super(grid, options);
 
-        dom.addClass(this.$col.toArray(), css.rowExpander);
+        dom.addClass([this.col], css.rowExpander);
     }
     toString() {
         return "ExpanderColumn";

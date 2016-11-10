@@ -21,50 +21,53 @@ import { DataGrid } from "../datagrid"
 
 const utils = Utils, dom = utils.dom, $ = dom.$, doc = dom.document;
 
+const fn_state = (row: Row) => {
+    const val = !row.item ? null : (<any>row.item)[row.grid.options.rowStateField];
+    const css = row.grid._getInternal().onRowStateChanged(row, val);
+    row._setState(css);
+};
+
 export class Row extends BaseObject {
     private _grid: DataGrid;
     private _tr: HTMLTableRowElement;
-    private _$tr: JQuery;
     private _item: ICollectionItem;
     private _cells: BaseCell<BaseColumn>[];
     private _objId: string;
     private _expanderCell: ExpanderCell;
     private _actionsCell: ActionsCell;
     private _rowSelectorCell: RowSelectorCell;
-    private _isCurrent: boolean;
     private _isDeleted: boolean;
     private _isSelected: boolean;
     private _isDetached: boolean;
 
-    constructor(grid: DataGrid, options: { tr: HTMLTableRowElement; item: ICollectionItem; }) {
+    constructor(grid: DataGrid, options: {
+        tr: HTMLTableRowElement;
+        item: ICollectionItem;
+    }) {
         super();
-        let self = this;
+        const self = this, item = options.item;
         this._grid = grid;
         this._tr = options.tr;
-        this._item = options.item;
-        this._$tr = $(this._tr);
-        this._cells = null;
+        this._item = item;
+        this._cells = [];
         this._objId = "rw" + utils.core.getNewID();
         this._expanderCell = null;
         this._actionsCell = null;
         this._rowSelectorCell = null;
-        this._isCurrent = false;
         this._isDeleted = false;
         this._isSelected = false;
         this._isDetached = false;
-        this._createCells();
-        this._isDeleted = this._item._aspect.isDeleted;
-        if (this._isDeleted)
+        this._isDeleted = item._aspect.isDeleted;
+        if (this._isDeleted) {
             dom.addClass([this._tr], css.rowDeleted);
-        let fn_state = () => {
-            let css = self._grid._getInternal().onRowStateChanged(self, (<any>self._item)[self._grid.options.rowStateField]);
-            self._setState(css);
-        };
-        if (!!this.isHasStateField) {
+        }
+
+        this._createCells();
+        if (!!this._item && !!this.isHasStateField) {
             this._item.addOnPropertyChange(this._grid.options.rowStateField, function (s, a) {
-                fn_state();
+                fn_state(self);
             }, this._objId);
-            fn_state();
+            fn_state(self);
         }
     }
     handleError(error: any, source: any): boolean {
@@ -75,12 +78,10 @@ export class Row extends BaseObject {
         return isHandled;
     }
     private _createCells() {
-        let self = this, i = 0;
-        self._cells = new Array(this.columns.length);
-        this.columns.forEach(function (col) {
-            self._cells[i] = self._createCell(col, i);
-            i += 1;
-        });
+        const self = this, cols = self.columns, len = cols.length;
+        for (let i = 0; i < len; i += 1) {
+            self._cells.push(self._createCell(cols[i], i));
+        }
     }
     private _createCell(col: BaseColumn, num: number) {
         let self = this, td: HTMLTableCellElement = <HTMLTableCellElement>doc.createElement("td"), cell: BaseCell<BaseColumn>;
@@ -97,11 +98,12 @@ export class Row extends BaseObject {
             this._rowSelectorCell = new RowSelectorCell({ row: self, td: td, column: col, num: num });
             cell = this._rowSelectorCell;
         }
-        else
+        else {
             cell = new DataCell({ row: self, td: td, column: col, num: num });
+        }
         return cell;
     }
-    protected _setState(css: string) {
+    _setState(css: string) {
         for (let i = 0, len = this._cells.length; i < len; i++) {
             let cell = this._cells[i];
             if (cell instanceof DataCell) {
@@ -142,28 +144,24 @@ export class Row extends BaseObject {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        let grid = this._grid;
+        const grid = this._grid;
         if (!!grid) {
             if (!this._isDetached) {
                 grid._getInternal().removeRow(this);
             }
             if (!!this._tr) {
-                this._$tr.remove();
+                dom.removeNode(this._tr);
             }
-            this._cells.forEach(function (cell) {
-                cell.destroy();
-            });
-            this._cells = null;
+            const cells = this._cells, len = cells.length;
+            for (let i = 0; i < len; i += 1) {
+                cells[i].destroy();
+            }
+            this._cells = [];
         }
-        if (!!this._item && !this._item.getIsDestroyCalled()) {
-            this._item.removeNSHandlers(this._objId);
-            if (this._item._aspect.isEditing)
-                this._item._aspect.cancelEdit();
-        }
+        this._item.removeNSHandlers(this._objId);
         this._item = null;
         this._expanderCell = null;
         this._tr = null;
-        this._$tr = null;
         this._grid = null;
         super.destroy();
     }
@@ -183,7 +181,6 @@ export class Row extends BaseObject {
         return "Row";
     }
     get tr() { return this._tr; }
-    get $tr() { return this._$tr; }
     get grid() { return this._grid; }
     get item() { return this._item; }
     get cells() { return this._cells; }
@@ -195,15 +192,7 @@ export class Row extends BaseObject {
         return this._item._key;
     }
     get isCurrent() {
-        return this._isCurrent;
-    }
-    set isCurrent(v) {
-        let curr = this._isCurrent;
-        if (v !== curr) {
-            this._isCurrent = v;
-            dom.setClass([this._tr], css.rowHighlight, !v);
-            this.raisePropertyChanged(PROP_NAME.isCurrent);
-        }
+        return this.grid.currentItem === this.item;
     }
     get isSelected() { return this._isSelected; }
     set isSelected(v) {

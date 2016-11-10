@@ -36,7 +36,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
     private _options: IColumnInfo;
     private _isSelected: boolean;
     private _objId: string;
-    private _$col: JQuery;
+    private _col: HTMLDivElement;
     private _event_scope: string;
     private _template: ITemplate;
 
@@ -51,14 +51,14 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         this._event_scope = ["td[", DATA_ATTR.DATA_EVENT_SCOPE, '="', this._objId, '"]'].join("");
 
         let colDiv = dom.document.createElement("div");
-        this._$col = $(colDiv);
+        this._col = colDiv;
 
         utils.dom.addClass([colDiv], css.column);
         if (!!this._options.colCellCss) {
             utils.dom.addClass([colDiv], this._options.colCellCss);
         }
 
-        this._$col.click(function (e) {
+        this._col.addEventListener("click", function (e) {
             e.stopPropagation();
             bootstrap.currentSelectable = grid;
             grid._getInternal().setCurrentColumn(self);
@@ -77,22 +77,21 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
             }
         });
 
-        let $th = $(this._th);
         if (!!this._options.width) {
-            $th.css("width", this._options.width);
+            this._th.style.width = this._options.width;
         }
 
         if (!!this._options.templateID) {
             this._template = this.grid.app.createTemplate(this.grid.app, this);
             this._template.templateID = this._options.templateID;
-            this._$col.append(this._template.el);
+            this._col.appendChild(this._template.el);
         }
         else if (!!this._options.title) {
-            this._$col.html(this._options.title);
+            this._col.innerHTML = this._options.title;
         }
 
         if (!!this._options.tip) {
-            fn_addToolTip(this._$col, this._options.tip, false, "bottom center");
+            fn_addToolTip($(this._col), this._options.tip, false, "bottom center");
         }
     }
     destroy() {
@@ -102,16 +101,14 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         this.grid.$table.off("click", this._event_scope);
 
         if (!!this._options.tip) {
-            fn_addToolTip(this._$col, null);
+            fn_addToolTip($(this._col), null);
         }
 
         if (!!this._template) {
-            $(this._template.el).remove();
             this._template.destroy();
             this._template = null;
         }
-        this._$col.empty();
-        this._$col = null;
+        this._col = null;
         this._th = null;
         this._grid = null;
         this._options = null;
@@ -129,7 +126,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
     scrollIntoView(isUp: boolean) {
         if (this.getIsDestroyCalled())
             return;
-        this._$col[0].scrollIntoView(!!isUp);
+        this._col.scrollIntoView(!!isUp);
     }
     protected _onColumnClicked() {
     }
@@ -138,15 +135,15 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
     }
     get uniqueID() { return this._objId; }
     get th() { return this._th; }
-    get $col() { return this._$col; }
+    get col() { return this._col; }
     get grid() { return this._grid; }
     get options() { return this._options; }
     get title() { return this._options.title; }
     get isSelected() { return this._isSelected; }
     set isSelected(v) {
-        if (this._isSelected !== v) {
+        if (!!this._col && this._isSelected !== v) {
             this._isSelected = v;
-            utils.dom.setClass(this._$col.toArray(), css.columnSelected, !this._isSelected);
+            utils.dom.setClass([this._col], css.columnSelected, !this._isSelected);
         }
     }
 }

@@ -243,7 +243,7 @@ declare module "jriapp_ui/datagrid/columns/base" {
         private _options;
         private _isSelected;
         private _objId;
-        private _$col;
+        private _col;
         private _event_scope;
         private _template;
         constructor(grid: DataGrid, options: ICellInfo);
@@ -256,7 +256,7 @@ declare module "jriapp_ui/datagrid/columns/base" {
         toString(): string;
         readonly uniqueID: string;
         readonly th: HTMLTableHeaderCellElement;
-        readonly $col: JQuery;
+        readonly col: HTMLDivElement;
         readonly grid: DataGrid;
         readonly options: IColumnInfo;
         readonly title: string;
@@ -338,6 +338,7 @@ declare module "jriapp_ui/datagrid/cells/actions" {
     import { BaseCell, ICellOptions } from "jriapp_ui/datagrid/cells/base";
     import { ActionsColumn } from "jriapp_ui/datagrid/columns/actions";
     export class ActionsCell extends BaseCell<ActionsColumn> {
+        private _isEditing;
         constructor(options: ICellOptions);
         destroy(): void;
         private _setupImages($images);
@@ -354,8 +355,9 @@ declare module "jriapp_ui/datagrid/columns/rowselector" {
     import { BaseColumn, ICellInfo } from "jriapp_ui/datagrid/columns/base";
     import { DataGrid } from "jriapp_ui/datagrid/datagrid";
     export class RowSelectorColumn extends BaseColumn {
-        private _$chk;
+        private _chk;
         private _event_chk_scope;
+        private _onDespose;
         constructor(grid: DataGrid, options: ICellInfo);
         toString(): string;
         checked: any;
@@ -385,14 +387,12 @@ declare module "jriapp_ui/datagrid/rows/row" {
     export class Row extends BaseObject {
         private _grid;
         private _tr;
-        private _$tr;
         private _item;
         private _cells;
         private _objId;
         private _expanderCell;
         private _actionsCell;
         private _rowSelectorCell;
-        private _isCurrent;
         private _isDeleted;
         private _isSelected;
         private _isDetached;
@@ -403,7 +403,7 @@ declare module "jriapp_ui/datagrid/rows/row" {
         handleError(error: any, source: any): boolean;
         private _createCells();
         private _createCell(col, num);
-        protected _setState(css: string): void;
+        _setState(css: string): void;
         _onBeginEdit(): void;
         _onEndEdit(isCanceled: boolean): void;
         beginEdit(): boolean;
@@ -415,14 +415,13 @@ declare module "jriapp_ui/datagrid/rows/row" {
         scrollIntoView(animate?: boolean, pos?: ROW_POSITION): void;
         toString(): string;
         readonly tr: HTMLTableRowElement;
-        readonly $tr: JQuery;
         readonly grid: DataGrid;
         readonly item: ICollectionItem;
         readonly cells: BaseCell<BaseColumn>[];
         readonly columns: BaseColumn[];
         readonly uniqueID: string;
         readonly itemKey: string;
-        isCurrent: boolean;
+        readonly isCurrent: boolean;
         isSelected: boolean;
         isExpanded: boolean;
         readonly expanderCell: ExpanderCell;
@@ -451,7 +450,6 @@ declare module "jriapp_ui/datagrid/cells/base" {
         private _td;
         private _column;
         protected _click: DblClick;
-        protected _isEditing: boolean;
         private _num;
         constructor(options: ICellOptions);
         protected _onCellClicked(row?: Row): void;
@@ -479,7 +477,6 @@ declare module "jriapp_ui/datagrid/rows/details" {
     export class DetailsRow extends BaseObject {
         private _grid;
         private _tr;
-        private _$tr;
         private _item;
         private _cell;
         private _parentRow;
@@ -498,7 +495,6 @@ declare module "jriapp_ui/datagrid/rows/details" {
         destroy(): void;
         toString(): string;
         readonly tr: HTMLTableRowElement;
-        readonly $tr: JQuery;
         readonly grid: DataGrid;
         item: ICollectionItem;
         readonly cell: DetailsCell;
@@ -522,10 +518,6 @@ declare module "jriapp_ui/datagrid/cells/details" {
             td: HTMLTableCellElement;
             details_id: string;
         });
-        protected _init(options: {
-            td: HTMLTableCellElement;
-            details_id: string;
-        }): void;
         destroy(): void;
         toString(): string;
         readonly td: HTMLTableCellElement;
@@ -652,7 +644,6 @@ declare module "jriapp_ui/datagrid/datagrid" {
         private _rowMap;
         private _rows;
         private _columns;
-        private _currentRow;
         private _expandedRow;
         private _details;
         private _fillSpace;
@@ -711,9 +702,8 @@ declare module "jriapp_ui/datagrid/datagrid" {
         protected _expandDetails(parentRow: Row, expanded: boolean): void;
         protected _parseColumnAttr(column_attr: string, content_attr: string): IColumnInfo;
         protected _findUndeleted(row: Row, isUp: boolean): Row;
-        protected _updateCurrent(row: Row, withScroll: boolean): void;
         handleError(error: any, source: any): boolean;
-        protected _onDSCurrentChanged(sender?: any, args?: any): void;
+        protected _onDSCurrentChanged(prevCurrent: ICollectionItem, newCurrent: ICollectionItem): void;
         protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>): void;
         protected _updateTableDisplay(): void;
         protected _onPageChanged(): void;
@@ -733,7 +723,6 @@ declare module "jriapp_ui/datagrid/datagrid" {
         protected _createRowForItem(parent: Node, item: ICollectionItem, prepend?: boolean): Row;
         protected _createDetails(): DetailsRow;
         protected _createFillSpace(): FillSpaceRow;
-        protected _setCurrent(row: Row): void;
         _getInternal(): IInternalDataGridMethods;
         updateColumnsSize(): void;
         getISelectable(): ISelectable;
@@ -753,6 +742,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         addNew(): void;
         destroy(): void;
         readonly $table: JQuery;
+        readonly table: HTMLTableElement;
         readonly app: IApplication;
         readonly options: IDataGridConstructorOptions;
         readonly _tBodyEl: HTMLTableSectionElement;
@@ -765,6 +755,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         dataSource: ICollection<ICollectionItem>;
         readonly rows: Row[];
         readonly columns: BaseColumn[];
+        currentItem: ICollectionItem;
         currentRow: Row;
         readonly editingRow: Row;
         readonly isHasEditor: string;

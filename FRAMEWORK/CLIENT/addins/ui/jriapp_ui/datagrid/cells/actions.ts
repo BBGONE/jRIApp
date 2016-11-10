@@ -16,8 +16,11 @@ const _viewImages = '<span data-role="row-action" data-name="img_edit" class="{0
 let editImages: string = checks.undefined, viewImages: string = checks.undefined;
 
 export class ActionsCell extends BaseCell<ActionsColumn> {
+    private _isEditing: boolean;
+
     constructor(options: ICellOptions) {
         super(options);
+        this._isEditing = false;
         dom.addClass([this.td], [css.rowActions, css.nobr].join(" "));
         this._createButtons(this.row.isEditing);
     }
@@ -25,8 +28,7 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        let $td = $(this.td);
-        let $imgs = $td.find(actionsSelector);
+        const $td = $(this.td), $imgs = $td.find(actionsSelector);
         $imgs.each(function (index, img) {
             let $img = $(img);
             $img.removeData();
@@ -34,7 +36,7 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
         super.destroy();
     }
     private _setupImages($images: JQuery) {
-        let self = this;
+        const self = this;
         $images.each(function (index: number, img: HTMLElement) {
             let $img = $(img);
             $img.data("cell", self);
@@ -57,7 +59,8 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
         if (!this.td)
             return;
 
-        let self = this, $td = $(this.td), $newElems: JQuery;
+        const self = this, $td = $(this.td);
+        let $newElems: JQuery;
 
         $td.empty();
         if (isEditing) {

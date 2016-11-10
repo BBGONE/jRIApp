@@ -10,14 +10,15 @@ import { RowSelectorCell } from "../cells/rowselector";
 const utils = Utils, dom = utils.dom, $ = dom.$, doc = dom.document, checks = utils.check;
 
 export class RowSelectorColumn extends BaseColumn {
-    private _$chk: JQuery;
+    private _chk: HTMLInputElement;
     private _event_chk_scope: string;
+    private _onDespose: () => void;
 
     constructor(grid: DataGrid, options: ICellInfo) {
         super(grid, options);
         let self = this;
         this._event_chk_scope = ["input[", DATA_ATTR.DATA_EVENT_SCOPE, '="', this.uniqueID, '"]'].join("");
-        dom.addClass(this.$col.toArray(), css.rowSelector);
+        dom.addClass([this.col], css.rowSelector);
         let label = doc.createElement("label");
         let chk = doc.createElement("input");
         chk.type = "checkbox";
@@ -26,17 +27,23 @@ export class RowSelectorColumn extends BaseColumn {
         label.className = css.rowSelector;
         label.appendChild(chk);
         label.appendChild(doc.createElement("span"));
-        this.$col.append(label);
-        this._$chk = $(chk);
-        this._$chk.on("change", function (e) {
+        this.col.appendChild(label);
+        this._chk = chk;
+        let chkHandler = (e: Event) => {
             e.stopPropagation();
             self.raisePropertyChanged(PROP_NAME.checked);
             self.grid.selectRows(this.checked);
-        });
+        };
+        chk.addEventListener("change", chkHandler);
+        this._onDespose = () => {
+            chk.removeEventListener("change", chkHandler);
+            dom.removeNode(label);
+        };
+
         //delegated event from the cells
         this.grid.$table.on("click", this._event_chk_scope, function (e) {
             e.stopPropagation();
-            let chk = <HTMLInputElement>this, $chk = $(chk), cell = <RowSelectorCell>$chk.data("cell");
+            const chk = <HTMLInputElement>this, $chk = $(chk), cell = <RowSelectorCell>$chk.data("cell");
             if (!!cell && !cell.getIsDestroyCalled()) {
                 cell.row.isSelected = cell.checked;
             }
@@ -46,16 +53,14 @@ export class RowSelectorColumn extends BaseColumn {
         return "RowSelectorColumn";
     }
     get checked() {
-        if (!!this._$chk && !!this._$chk.length) {
-            let chk = <HTMLInputElement>this._$chk[0];
-            return chk.checked;
+        if (!!this._chk) {
+            return this._chk.checked;
         }
         return checks.undefined;
     }
     set checked(v) {
-        let bv = !!v;
-        if (!!this._$chk && !!this._$chk.length) {
-            let chk = <HTMLInputElement>this._$chk[0];
+        let bv = !!v, chk = this._chk;
+        if (!!chk) {
             if (bv !== chk.checked) {
                 chk.checked = bv;
                 this.raisePropertyChanged(PROP_NAME.checked);
@@ -67,9 +72,11 @@ export class RowSelectorColumn extends BaseColumn {
             return;
         this._isDestroyCalled = true;
         this.grid.$table.off("click", this._event_chk_scope);
-        this._$chk.off();
-        this._$chk.remove();
-        this._$chk = null;
+        if (!!this._onDespose) {
+            this._onDespose();
+            this._onDespose = null;
+        }
+        this._chk = null;
         super.destroy();
     }
 }

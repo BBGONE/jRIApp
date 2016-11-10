@@ -23,12 +23,10 @@ export class BaseCell<TColumn extends BaseColumn> extends BaseObject {
     private _td: HTMLTableCellElement;
     private _column: TColumn;
     protected _click: DblClick;
-    protected _isEditing: boolean;
     private _num: number;
 
     constructor(options: ICellOptions) {
         super();
-        this._isEditing = false;
         options = utils.core.extend(
             {
                 row: null,

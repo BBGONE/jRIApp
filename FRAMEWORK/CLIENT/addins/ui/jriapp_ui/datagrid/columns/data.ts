@@ -23,7 +23,7 @@ export class DataColumn extends BaseColumn {
         if (this.isSortable) {
             colClass += (" " + css.colSortable);
         }
-        dom.addClass(this.$col.toArray(), colClass);
+        dom.addClass([this.col], colClass);
     }
     protected _onColumnClicked() {
         if (this.isSortable && !!this.sortMemberName) {
@@ -73,7 +73,7 @@ export class DataColumn extends BaseColumn {
         if (this._sortOrder !== v) {
             this._sortOrder = v;
             let styles = [(v === SORT_ORDER.ASC ? "+" : "-") + css.colSortAsc, (v === SORT_ORDER.DESC ? "+" : "-") + css.colSortDesc];
-            utils.dom.setClasses(this.$col.toArray(), styles);
+            utils.dom.setClasses([this.col], styles);
             this.raisePropertyChanged(PROP_NAME.sortOrder);
         }
     }
