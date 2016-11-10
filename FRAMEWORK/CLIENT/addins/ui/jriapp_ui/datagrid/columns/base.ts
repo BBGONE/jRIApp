@@ -10,7 +10,7 @@ import { css } from "../const";
 import { BaseCell } from "../cells/base";
 import { DataGrid } from "../datagrid";
 
-const utils = Utils, dom = utils.dom, $ = dom.$;
+const utils = Utils, dom = utils.dom, $ = dom.$, doc = dom.document;
 
 export interface IColumnInfo {
     "type"?: string;
@@ -50,26 +50,28 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         this._objId = "col" + utils.core.getNewID();
         this._event_scope = ["td[", DATA_ATTR.DATA_EVENT_SCOPE, '="', this._objId, '"]'].join("");
 
-        let colDiv = dom.document.createElement("div");
-        this._col = colDiv;
+        const col = doc.createElement("div");
+        const $col = $(col);
+        this._col = col;
 
-        utils.dom.addClass([colDiv], css.column);
+        utils.dom.addClass([col], css.column);
+
         if (!!this._options.colCellCss) {
-            utils.dom.addClass([colDiv], this._options.colCellCss);
+            utils.dom.addClass([col], this._options.colCellCss);
         }
 
-        this._col.addEventListener("click", function (e) {
+        this._grid._getInternal().get$Header().append(col);
+
+        $col.on("click", function (e) {
             e.stopPropagation();
             bootstrap.currentSelectable = grid;
             grid._getInternal().setCurrentColumn(self);
             self._onColumnClicked();
         });
 
-        this._grid._getInternal().get$Header().append(colDiv);
-
         this.grid.$table.on("click", this._event_scope, function (e) {
             e.stopPropagation();
-            let $td = $(this), cell = <BaseCell<BaseColumn>>$td.data("cell");
+            const $td = $(this), cell = <BaseCell<BaseColumn>>$td.data("cell");
             if (!!cell) {
                 bootstrap.currentSelectable = grid;
                 grid._getInternal().setCurrentColumn(self);
@@ -84,14 +86,14 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         if (!!this._options.templateID) {
             this._template = this.grid.app.createTemplate(this.grid.app, this);
             this._template.templateID = this._options.templateID;
-            this._col.appendChild(this._template.el);
+            $col.append(this._template.el);
         }
         else if (!!this._options.title) {
-            this._col.innerHTML = this._options.title;
+            $col.html(this._options.title);
         }
 
         if (!!this._options.tip) {
-            fn_addToolTip($(this._col), this._options.tip, false, "bottom center");
+            fn_addToolTip($col, this._options.tip, false, "bottom center");
         }
     }
     destroy() {
@@ -108,6 +110,10 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
             this._template.destroy();
             this._template = null;
         }
+
+        const $col = $(this._col);
+        $col.off();
+        $col.empty();
         this._col = null;
         this._th = null;
         this._grid = null;
@@ -128,12 +134,16 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
             return;
         this._col.scrollIntoView(!!isUp);
     }
+    updateWidth() {
+        this._col.style.width = this._th.offsetWidth + "px";
+    }
     protected _onColumnClicked() {
     }
     toString() {
         return "BaseColumn";
     }
     get uniqueID() { return this._objId; }
+    get width() { return this._th.offsetWidth; }
     get th() { return this._th; }
     get col() { return this._col; }
     get grid() { return this._grid; }

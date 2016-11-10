@@ -911,13 +911,13 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             return;
         let width = 0, $header = this._$header;
         this._columns.forEach(function (col) {
-            width += col.th.offsetWidth;
+            width += col.width;
         });
 
         $header.css("width", width);
 
-        this._columns.forEach(function (el) {
-            el.col.style.width = el.th.offsetWidth + "px";
+        this._columns.forEach(function (col) {
+            col.updateWidth();
         });
     }
     getISelectable(): ISelectable {

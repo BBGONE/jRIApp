@@ -2609,7 +2609,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
     };
     var onResize = function () {
         RIAPP.Utils.core.iterateIndexer(_created_grids, function (name, gridView) {
-            gridView.checkResize();
+            gridView.syncGrips();
         });
     };
     var ResizableGrid = (function (_super) {
@@ -2624,7 +2624,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
                 gripInnerHtml: '',
                 liveDrag: false,
                 minWidth: 15,
-                headerOnly: false,
+                headerOnly: true,
                 dragCursor: "e-resize",
                 marginLeft: null,
                 marginRight: null,
@@ -2642,7 +2642,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
                 self.bindDS(grid.dataSource);
                 self._ds = grid.dataSource;
             }, this.uniqueID);
-            self.checkResize();
+            self.syncGrips();
         }
         ResizableGrid.prototype.bindDS = function (ds) {
             if (!ds)
@@ -2778,27 +2778,6 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
             });
             data.w = $table[0].offsetWidth;
             this.grid._getInternal().get$Wrapper().css("width", $table.outerWidth(true) + PX);
-        };
-        ResizableGrid.prototype.checkResize = function () {
-            if (this.getIsDestroyCalled())
-                return;
-            var $table = this.grid.$table;
-            var data = this._resizeInfo;
-            var mw = 0;
-            if (data.fixed) {
-                data.w = $table[0].offsetWidth;
-                for (var i = 0; i < data.len; i++)
-                    mw += data.columns[i].w;
-                for (var i = 0; i < data.len; i++) {
-                    var col = data.columns[i];
-                    col.$column.css("width", Math.round(1000 * col.w / mw) / 10 + "%");
-                    col.locked = true;
-                }
-            }
-            else {
-                this.applyBounds();
-            }
-            this.syncGrips();
         };
         ResizableGrid.prototype.destroy = function () {
             if (this._isDestroyed)

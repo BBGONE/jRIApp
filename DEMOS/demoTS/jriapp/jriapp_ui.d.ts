@@ -252,9 +252,11 @@ declare module "jriapp_ui/datagrid/columns/base" {
         templateLoaded(template: ITemplate, error?: any): void;
         templateUnLoading(template: ITemplate): void;
         scrollIntoView(isUp: boolean): void;
+        updateWidth(): void;
         protected _onColumnClicked(): void;
         toString(): string;
         readonly uniqueID: string;
+        readonly width: number;
         readonly th: HTMLTableHeaderCellElement;
         readonly col: HTMLDivElement;
         readonly grid: DataGrid;
@@ -357,7 +359,6 @@ declare module "jriapp_ui/datagrid/columns/rowselector" {
     export class RowSelectorColumn extends BaseColumn {
         private _chk;
         private _event_chk_scope;
-        private _onDespose;
         constructor(grid: DataGrid, options: ICellInfo);
         toString(): string;
         checked: any;

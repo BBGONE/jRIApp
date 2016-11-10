@@ -231,7 +231,7 @@ let onGripMouseDown = function (e: JQueryEventObject) {
  */
 let onResize = function () {
     RIAPP.Utils.core.iterateIndexer(_created_grids, (name, gridView) => {
-        gridView.checkResize();
+        gridView.syncGrips();
     });
 };
 
@@ -249,7 +249,7 @@ export class ResizableGrid extends uiMOD.DataGridElView {
             gripInnerHtml: '',				//if it is required to use a custom grip it can be done using some custom HTML				
             liveDrag: false,				//enables table-layout updating while dragging	
             minWidth: 15, 					//minimum width value in pixels allowed for a column 
-            headerOnly: false,				//specifies that the size of the the column resizing anchors will be bounded to the size of the first row 
+            headerOnly: true,				//specifies that the size of the the column resizing anchors will be bounded to the size of the first row 
             dragCursor: "e-resize",  		//cursor to be used while dragging
             marginLeft: <string>null,		//in case the table contains any margins, colResizable needs to know the values used, e.grip. "10%", "15em", "5px" ...
             marginRight: <string>null, 		//in case the table contains any margins, colResizable needs to know the values used, e.grip. "10%", "15em", "5px" ...
@@ -272,7 +272,7 @@ export class ResizableGrid extends uiMOD.DataGridElView {
             self._ds = grid.dataSource;
         }, this.uniqueID);
 
-        self.checkResize();
+        self.syncGrips();
     }
     private bindDS(ds: RIAPP.ICollection<RIAPP.ICollectionItem>) {
         if (!ds)
@@ -458,38 +458,6 @@ export class ResizableGrid extends uiMOD.DataGridElView {
         data.w = $table[0].offsetWidth;
 
         this.grid._getInternal().get$Wrapper().css("width", $table.outerWidth(true) + PX);
-    }
-    checkResize() {
-        if (this.getIsDestroyCalled())
-            return;
-
-        const $table: JQuery = this.grid.$table;
-        const data: IResizeInfo = this._resizeInfo;
-        let mw = 0;
-//  firefox doesn't like layout-fixed in some cases
-//  $table.removeClass(SIGNATURE);  
-
-        if (data.fixed) { //in fixed mode
-            data.w = $table[0].offsetWidth;   //its new width is kept
-            for (let i = 0; i < data.len; i++)
-                mw += data.columns[i].w;
-
-            //cell rendering is not as trivial as it might seem, and it is slightly different for
-            //each browser. In the beginning i had a big switch for each browser, but since the code
-            //was extremely ugly now I use a different approach with several re-flows. This works 
-            //pretty well but it's a bit slower. For now, lets keep things simple...   
-            for (let i = 0; i < data.len; i++) {
-                let col = data.columns[i];
-                col.$column.css("width", Math.round(1000 * (<any>col).w / mw) / 10 + "%");
-                //col.locked locks the column, telling us that its c.w is outdated									
-                col.locked = true;
-            }
-        } else { 
-            this.applyBounds();  //apply the new bounds 
-        }
-
-//  $table.addClass(SIGNATURE);
-        this.syncGrips();
     }
     destroy() {
         if (this._isDestroyed)

@@ -772,7 +772,7 @@ define("jriapp_ui/datagrid/animation", ["require", "exports", "jriapp_core/objec
 });
 define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_core/const", "jriapp_core/object", "jriapp_utils/utils", "jriapp_elview/elview", "jriapp_core/bootstrap", "jriapp_ui/datagrid/const"], function (require, exports, const_1, object_3, utils_3, elview_2, bootstrap_3, const_2) {
     "use strict";
-    var utils = utils_3.Utils, dom = utils.dom, $ = dom.$;
+    var utils = utils_3.Utils, dom = utils.dom, $ = dom.$, doc = dom.document;
     var BaseColumn = (function (_super) {
         __extends(BaseColumn, _super);
         function BaseColumn(grid, options) {
@@ -784,19 +784,20 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_core/co
             this._isSelected = false;
             this._objId = "col" + utils.core.getNewID();
             this._event_scope = ["td[", const_1.DATA_ATTR.DATA_EVENT_SCOPE, '="', this._objId, '"]'].join("");
-            var colDiv = dom.document.createElement("div");
-            this._col = colDiv;
-            utils.dom.addClass([colDiv], const_2.css.column);
+            var col = doc.createElement("div");
+            var $col = $(col);
+            this._col = col;
+            utils.dom.addClass([col], const_2.css.column);
             if (!!this._options.colCellCss) {
-                utils.dom.addClass([colDiv], this._options.colCellCss);
+                utils.dom.addClass([col], this._options.colCellCss);
             }
-            this._col.addEventListener("click", function (e) {
+            this._grid._getInternal().get$Header().append(col);
+            $col.on("click", function (e) {
                 e.stopPropagation();
                 bootstrap_3.bootstrap.currentSelectable = grid;
                 grid._getInternal().setCurrentColumn(self);
                 self._onColumnClicked();
             });
-            this._grid._getInternal().get$Header().append(colDiv);
             this.grid.$table.on("click", this._event_scope, function (e) {
                 e.stopPropagation();
                 var $td = $(this), cell = $td.data("cell");
@@ -812,13 +813,13 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_core/co
             if (!!this._options.templateID) {
                 this._template = this.grid.app.createTemplate(this.grid.app, this);
                 this._template.templateID = this._options.templateID;
-                this._col.appendChild(this._template.el);
+                $col.append(this._template.el);
             }
             else if (!!this._options.title) {
-                this._col.innerHTML = this._options.title;
+                $col.html(this._options.title);
             }
             if (!!this._options.tip) {
-                elview_2.fn_addToolTip($(this._col), this._options.tip, false, "bottom center");
+                elview_2.fn_addToolTip($col, this._options.tip, false, "bottom center");
             }
         }
         BaseColumn.prototype.destroy = function () {
@@ -833,6 +834,9 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_core/co
                 this._template.destroy();
                 this._template = null;
             }
+            var $col = $(this._col);
+            $col.off();
+            $col.empty();
             this._col = null;
             this._th = null;
             this._grid = null;
@@ -850,6 +854,9 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_core/co
                 return;
             this._col.scrollIntoView(!!isUp);
         };
+        BaseColumn.prototype.updateWidth = function () {
+            this._col.style.width = this._th.offsetWidth + "px";
+        };
         BaseColumn.prototype._onColumnClicked = function () {
         };
         BaseColumn.prototype.toString = function () {
@@ -857,6 +864,11 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_core/co
         };
         Object.defineProperty(BaseColumn.prototype, "uniqueID", {
             get: function () { return this._objId; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BaseColumn.prototype, "width", {
+            get: function () { return this._th.offsetWidth; },
             enumerable: true,
             configurable: true
         });
@@ -1332,16 +1344,11 @@ define("jriapp_ui/datagrid/columns/rowselector", ["require", "exports", "jriapp_
             label.appendChild(doc.createElement("span"));
             this.col.appendChild(label);
             this._chk = chk;
-            var chkHandler = function (e) {
+            $(chk).on("change", function (e) {
                 e.stopPropagation();
                 self.raisePropertyChanged(const_12.PROP_NAME.checked);
                 self.grid.selectRows(_this.checked);
-            };
-            chk.addEventListener("change", chkHandler);
-            this._onDespose = function () {
-                chk.removeEventListener("change", chkHandler);
-                dom.removeNode(label);
-            };
+            });
             this.grid.$table.on("click", this._event_chk_scope, function (e) {
                 e.stopPropagation();
                 var chk = this, $chk = $(chk), cell = $chk.data("cell");
@@ -1377,10 +1384,7 @@ define("jriapp_ui/datagrid/columns/rowselector", ["require", "exports", "jriapp_
                 return;
             this._isDestroyCalled = true;
             this.grid.$table.off("click", this._event_chk_scope);
-            if (!!this._onDespose) {
-                this._onDespose();
-                this._onDespose = null;
-            }
+            $(this._chk).off();
             this._chk = null;
             _super.prototype.destroy.call(this);
         };
@@ -2940,11 +2944,11 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
                 return;
             var width = 0, $header = this._$header;
             this._columns.forEach(function (col) {
-                width += col.th.offsetWidth;
+                width += col.width;
             });
             $header.css("width", width);
-            this._columns.forEach(function (el) {
-                el.col.style.width = el.th.offsetWidth + "px";
+            this._columns.forEach(function (col) {
+                col.updateWidth();
             });
         };
         DataGrid.prototype.getISelectable = function () {
