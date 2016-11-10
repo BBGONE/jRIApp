@@ -216,7 +216,7 @@ namespace RIAppDemo.BLL.DataServices
         {
             var msg = "";
             if (ex != null)
-                msg = ex.Message;
+                msg = ex.GetFullMessage();
         }
 
         protected override void Dispose(bool isDisposing)
