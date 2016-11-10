@@ -510,7 +510,7 @@ namespace RIAPP.DataService.DomainService
             catch (Exception ex)
             {
                 _OnError(ex);
-                throw new DummyException(ex.Message, ex);
+                throw new DummyException(ex.GetFullMessage(), ex);
             }
         }
 
@@ -528,7 +528,7 @@ namespace RIAPP.DataService.DomainService
             catch (Exception ex)
             {
                 _OnError(ex);
-                throw new DummyException(ex.Message, ex);
+                throw new DummyException(ex.GetFullMessage(), ex);
             }
         }
 
@@ -541,7 +541,7 @@ namespace RIAPP.DataService.DomainService
             }
             catch (Exception ex)
             {
-                if (ex is System.Reflection.TargetInvocationException)
+                if (ex is TargetInvocationException)
                     ex = ex.InnerException;
                 res = new QueryResponse
                 {
@@ -550,7 +550,7 @@ namespace RIAPP.DataService.DomainService
                     rows = new Row[0],
                     dbSetName = queryRequest.dbSetName,
                     totalCount = null,
-                    error = new ErrorInfo(ex.Message, ex.GetType().Name)
+                    error = new ErrorInfo(ex.GetFullMessage(), ex.GetType().Name)
                 };
                 _OnError(ex);
             }
@@ -570,9 +570,9 @@ namespace RIAPP.DataService.DomainService
             }
             catch (Exception ex)
             {
-                if (ex is System.Reflection.TargetInvocationException)
+                if (ex is TargetInvocationException)
                     ex = ex.InnerException;
-                changeSet.error = new ErrorInfo(ex.Message, ex.GetType().Name);
+                changeSet.error = new ErrorInfo(ex.GetFullMessage(), ex.GetType().Name);
                 _OnError(ex);
             }
             return changeSet;
@@ -592,7 +592,7 @@ namespace RIAPP.DataService.DomainService
                 res = new RefreshInfo
                 {
                     dbSetName = refreshInfo.dbSetName,
-                    error = new ErrorInfo(ex.Message, ex.GetType().Name),
+                    error = new ErrorInfo(ex.GetFullMessage(), ex.GetType().Name),
                     rowInfo = null
                 };
                 _OnError(ex);
@@ -609,9 +609,12 @@ namespace RIAPP.DataService.DomainService
             }
             catch (Exception ex)
             {
-                if (ex is System.Reflection.TargetInvocationException)
+                if (ex is TargetInvocationException)
                     ex = ex.InnerException;
-                res = new InvokeResponse {result = null, error = new ErrorInfo(ex.Message, ex.GetType().Name)};
+                res = new InvokeResponse {
+                    result = null,
+                    error = new ErrorInfo(ex.GetFullMessage(), ex.GetType().Name)
+                };
                 _OnError(ex);
             }
             return res;
