@@ -29,7 +29,7 @@ const fn_state = (row: Row) => {
 
 export class Row extends BaseObject {
     private _grid: DataGrid;
-    private _tr: HTMLTableRowElement;
+    private _$tr: JQuery;
     private _item: ICollectionItem;
     private _cells: BaseCell<BaseColumn>[];
     private _objId: string;
@@ -39,15 +39,15 @@ export class Row extends BaseObject {
     private _isDeleted: boolean;
     private _isSelected: boolean;
     private _isDetached: boolean;
-
+    
     constructor(grid: DataGrid, options: {
         tr: HTMLTableRowElement;
         item: ICollectionItem;
     }) {
         super();
-        const self = this, item = options.item;
+        const self = this, item = options.item, tr = options.tr;
         this._grid = grid;
-        this._tr = options.tr;
+        this._$tr = $(tr);
         this._item = item;
         this._cells = [];
         this._objId = "rw" + utils.core.getNewID();
@@ -59,7 +59,7 @@ export class Row extends BaseObject {
         this._isDetached = false;
         this._isDeleted = item._aspect.isDeleted;
         if (this._isDeleted) {
-            dom.addClass([this._tr], css.rowDeleted);
+            dom.addClass([tr], css.rowDeleted);
         }
 
         this._createCells();
@@ -149,9 +149,7 @@ export class Row extends BaseObject {
             if (!this._isDetached) {
                 grid._getInternal().removeRow(this);
             }
-            if (!!this._tr) {
-                dom.removeNode(this._tr);
-            }
+            this._$tr.remove();
             const cells = this._cells, len = cells.length;
             for (let i = 0; i < len; i += 1) {
                 cells[i].destroy();
@@ -161,7 +159,7 @@ export class Row extends BaseObject {
         this._item.removeNSHandlers(this._objId);
         this._item = null;
         this._expanderCell = null;
-        this._tr = null;
+        this._$tr = null;
         this._grid = null;
         super.destroy();
     }
@@ -171,8 +169,7 @@ export class Row extends BaseObject {
     updateErrorState() {
         //TODO: add implementation to show explanation of error
         let hasErrors = this._item._aspect.getIsHasErrors();
-        let $el = $(this._tr);
-        utils.dom.setClass($el.toArray(), css.rowError, !hasErrors);
+        utils.dom.setClass(this._$tr.toArray(), css.rowError, !hasErrors);
     }
     scrollIntoView(animate?: boolean, pos?: ROW_POSITION) {
         this.grid.scrollToRow({ row: this, animate: animate, pos: pos });
@@ -180,7 +177,17 @@ export class Row extends BaseObject {
     toString() {
         return "Row";
     }
-    get tr() { return this._tr; }
+    get offset() {
+        return this.$tr.offset();
+    }
+    get height() {
+        return this.$tr.outerHeight();
+    }
+    get width() {
+        return this.$tr.outerWidth();
+    }
+    get tr() { return this._$tr[0]; }
+    get $tr() { return this._$tr; }
     get grid() { return this._grid; }
     get item() { return this._item; }
     get cells() { return this._cells; }
@@ -219,19 +226,19 @@ export class Row extends BaseObject {
     get expanderCell() { return this._expanderCell; }
     get actionsCell() { return this._actionsCell; }
     get isDeleted() {
-        if (!this._tr)
+        if (this._isDestroyCalled)
             return true;
         return this._isDeleted;
     }
     set isDeleted(v) {
-        if (!this._tr)
+        if (this._isDestroyCalled)
             return;
         if (this._isDeleted !== v) {
             this._isDeleted = v;
             if (this._isDeleted) {
                 this.isExpanded = false;
             }
-            dom.setClass([this._tr], css.rowDeleted, !this._isDeleted);
+            dom.setClass(this._$tr.toArray(), css.rowDeleted, !this._isDeleted);
         }
     }
     get isDetached() {

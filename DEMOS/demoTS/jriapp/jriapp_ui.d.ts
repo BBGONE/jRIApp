@@ -387,7 +387,7 @@ declare module "jriapp_ui/datagrid/rows/row" {
     import { DataGrid } from "jriapp_ui/datagrid/datagrid";
     export class Row extends BaseObject {
         private _grid;
-        private _tr;
+        private _$tr;
         private _item;
         private _cells;
         private _objId;
@@ -415,7 +415,11 @@ declare module "jriapp_ui/datagrid/rows/row" {
         updateErrorState(): void;
         scrollIntoView(animate?: boolean, pos?: ROW_POSITION): void;
         toString(): string;
-        readonly tr: HTMLTableRowElement;
+        readonly offset: JQueryCoordinates;
+        readonly height: number;
+        readonly width: number;
+        readonly tr: HTMLElement;
+        readonly $tr: JQuery;
         readonly grid: DataGrid;
         readonly item: ICollectionItem;
         readonly cells: BaseCell<BaseColumn>[];
@@ -477,7 +481,7 @@ declare module "jriapp_ui/datagrid/rows/details" {
     import { DataGrid } from "jriapp_ui/datagrid/datagrid";
     export class DetailsRow extends BaseObject {
         private _grid;
-        private _tr;
+        private _$tr;
         private _item;
         private _cell;
         private _parentRow;
@@ -495,7 +499,11 @@ declare module "jriapp_ui/datagrid/rows/details" {
         private _hide(onEnd);
         destroy(): void;
         toString(): string;
-        readonly tr: HTMLTableRowElement;
+        readonly offset: JQueryCoordinates;
+        readonly height: number;
+        readonly width: number;
+        readonly tr: HTMLElement;
+        readonly $tr: JQuery;
         readonly grid: DataGrid;
         item: ICollectionItem;
         readonly cell: DetailsCell;
@@ -639,7 +647,6 @@ declare module "jriapp_ui/datagrid/datagrid" {
     export class DataGrid extends BaseObject implements ISelectableProvider {
         private _options;
         private _$table;
-        private _table;
         private _name;
         private _objId;
         private _rowMap;

@@ -157,7 +157,6 @@ export interface IInternalDataGridMethods {
 export class DataGrid extends BaseObject implements ISelectableProvider {
     private _options: IDataGridConstructorOptions;
     private _$table: JQuery;
-    private _table: HTMLTableElement;
     private _name: string;
     private _objId: string;
     private _rowMap: IIndexer<Row>;
@@ -182,7 +181,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
 
     constructor(options: IDataGridConstructorOptions) {
         super();
-        let self = this;
+        const self = this;
         options = coreUtils.merge(options,
             {
                 app: null,
@@ -205,11 +204,10 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         if (!!options.dataSource && !checks.isCollection(options.dataSource))
             throw new Error(ERRS.ERR_GRID_DATASRC_INVALID);
         this._options = options;
-        this._table = this._options.el;
-        let $t = $(this._table);
-        this._$table = $t;
-        utils.dom.addClass([this._table], css.dataTable);
-        this._name = $t.attr(DATA_ATTR.DATA_NAME);
+        const table = this._options.el, $table = $(table);
+        this._$table = $table;
+        utils.dom.addClass([table], css.dataTable);
+        this._name = $table.attr(DATA_ATTR.DATA_NAME);
         this._objId = "grd" + coreUtils.getNewID();
         this._rowMap = {};
         this._rows = [];
@@ -243,7 +241,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 self._onKeyUp(key, event);
             }
         };
-        let tw = this._table.offsetWidth;
+        let tw = table.offsetWidth;
 
         this._internal = {
             isRowExpanded: (row: Row) => {
@@ -285,7 +283,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             columnWidthCheck: () => {
                 if (self.getIsDestroyCalled())
                     return;
-                let tw2 = self._table.offsetWidth;
+                const tw2 = table.offsetWidth;
                 if (tw !== tw2) {
                     tw = tw2;
                     self.updateColumnsSize();
@@ -698,7 +696,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         row.updateErrorState();
     }
     protected _bindDS() {
-        let self = this, ds = this.dataSource;
+        const self = this, ds = this.dataSource;
         if (!ds) {
             this._updateTableDisplay();
             return;
@@ -733,9 +731,10 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         fn_updateCurrent();
     }
     protected _unbindDS() {
-        let self = this, ds = this.dataSource;
+        const self = this, ds = this.dataSource;
         this._updateTableDisplay();
-        if (!ds) return;
+        if (!ds)
+            return;
         ds.removeNSHandlers(self._objId);
     }
     protected _clearGrid() {
@@ -743,7 +742,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             return;
         this.collapseDetails();
         const self = this, tbody = self._tBodyEl, newTbody = doc.createElement("tbody");
-        this._table.replaceChild(newTbody, tbody);
+        this.table.replaceChild(newTbody, tbody);
         let rows = this._rows;
         this._rows = [];
         this._rowMap = {};
@@ -769,7 +768,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             dom.addClass([header], options.headerCss);
         }
 
-        dom.wrap(this._table, wrapper);
+        dom.wrap(this.table, wrapper);
         dom.wrap(wrapper, container);
         dom.insertBefore(header, wrapper);
         dom.addClass([this._tHeadRow], css.columnInfo);
@@ -784,9 +783,9 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._$header.remove();
         this._$header = null;
         //remove wrapDiv
-        dom.unwrap(this._table);
+        dom.unwrap(this.table);
         //remove container
-        dom.unwrap(this._table);
+        dom.unwrap(this.table);
         this._$wrapper = null;
         this._$contaner = null;
     }
@@ -862,7 +861,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             self._createRowForItem(docFr, item, false);
         });
         newTbody.appendChild(docFr);
-        self._table.replaceChild(newTbody, oldTbody);
+        self.table.replaceChild(newTbody, oldTbody);
         if (isPageChanged) {
             self._onPageChanged();
         }
@@ -895,12 +894,11 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         return gridRow;
     }
     protected _createDetails() {
-        let details_id = this._options.details.templateID;
-        let tr: HTMLTableRowElement = <HTMLTableRowElement>doc.createElement("tr");
+        const details_id = this._options.details.templateID, tr = doc.createElement("tr");
         return new DetailsRow({ grid: this, tr: tr, details_id: details_id });
     }
     protected _createFillSpace() {
-        let tr: HTMLTableRowElement = <HTMLTableRowElement>doc.createElement("tr");
+        const tr: HTMLTableRowElement = doc.createElement("tr");
         return new FillSpaceRow({ grid: this, tr: tr });
     }
     _getInternal(): IInternalDataGridMethods {
@@ -985,13 +983,17 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     scrollToRow(args: { row: Row; animate?: boolean; pos?: ROW_POSITION; }) {
         if (!args || !args.row)
             return;
+        const row = args.row;
         if (!!this._fillSpace) {
             //reset fillspace to calculate original table height
             this._fillSpace.height = 0;
         }
-        let $tr = $(args.row.tr), animate = !!args.animate, alignBottom = (args.pos === ROW_POSITION.Bottom),
-            viewPortHeight = this._$wrapper.innerHeight(), rowHeight = $tr.outerHeight(), currentScrollTop = this._$wrapper.scrollTop(),
-            offsetDiff = currentScrollTop + $tr.offset().top - this._$wrapper.offset().top;
+        let animate = !!args.animate,
+            alignBottom = (args.pos === ROW_POSITION.Bottom),
+            viewPortHeight = this._$wrapper.innerHeight(),
+            rowHeight = row.height,
+            currentScrollTop = this._$wrapper.scrollTop(),
+            offsetDiff = currentScrollTop + row.offset.top - this._$wrapper.offset().top;
 
         if (alignBottom) {
             offsetDiff = Math.floor(offsetDiff + 1);
@@ -1002,9 +1004,10 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
 
         //yOffset is needed to align row at  the bottom
         let contentHeight = rowHeight;
-        if (args.row.isExpanded) {
-            contentHeight = contentHeight + $(this._details.tr).outerHeight();
+        if (row.isExpanded) {
+            contentHeight = contentHeight + this._details.height;
         }
+
         contentHeight = Math.min(viewPortHeight, contentHeight);
         //the height of the viewport minus the row height which includes the details if expanded
         let yOffset = viewPortHeight - contentHeight;
@@ -1095,26 +1098,26 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         }
         this.dataSource = null;
         this._unWrapTable();
-        dom.removeClass([this._table], css.dataTable);
+        dom.removeClass(this._$table.toArray(), css.dataTable);
         dom.removeClass([this._tHeadRow], css.columnInfo);
-        this._table = null;
         this._$table = null;
         this._options.app = null;
         this._options = <any>{};
         this._selectable = null;
+        this._internal = null;
         super.destroy();
     }
     get $table(): JQuery {
         return this._$table;
     }
     get table(): HTMLTableElement {
-        return this._table;
+        return <HTMLTableElement>this._$table[0];
     }
     get app() { return this._options.app; }
     get options() { return this._options; }
-    get _tBodyEl() { return this._table.tBodies[0]; }
-    get _tHeadEl() { return this._table.tHead; }
-    get _tFootEl() { return this._table.tFoot; }
+    get _tBodyEl() { return this.table.tBodies[0]; }
+    get _tHeadEl() { return this.table.tHead; }
+    get _tFootEl() { return this.table.tFoot; }
     get _tHeadRow(): HTMLTableRowElement {
         if (!this._tHeadEl)
             return null;

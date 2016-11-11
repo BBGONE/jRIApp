@@ -1460,9 +1460,9 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_core/object
         __extends(Row, _super);
         function Row(grid, options) {
             _super.call(this);
-            var self = this, item = options.item;
+            var self = this, item = options.item, tr = options.tr;
             this._grid = grid;
-            this._tr = options.tr;
+            this._$tr = $(tr);
             this._item = item;
             this._cells = [];
             this._objId = "rw" + utils.core.getNewID();
@@ -1474,7 +1474,7 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_core/object
             this._isDetached = false;
             this._isDeleted = item._aspect.isDeleted;
             if (this._isDeleted) {
-                dom.addClass([this._tr], const_15.css.rowDeleted);
+                dom.addClass([tr], const_15.css.rowDeleted);
             }
             this._createCells();
             if (!!this._item && !!this.isHasStateField) {
@@ -1562,9 +1562,7 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_core/object
                 if (!this._isDetached) {
                     grid._getInternal().removeRow(this);
                 }
-                if (!!this._tr) {
-                    dom.removeNode(this._tr);
-                }
+                this._$tr.remove();
                 var cells = this._cells, len = cells.length;
                 for (var i = 0; i < len; i += 1) {
                     cells[i].destroy();
@@ -1574,7 +1572,7 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_core/object
             this._item.removeNSHandlers(this._objId);
             this._item = null;
             this._expanderCell = null;
-            this._tr = null;
+            this._$tr = null;
             this._grid = null;
             _super.prototype.destroy.call(this);
         };
@@ -1583,8 +1581,7 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_core/object
         };
         Row.prototype.updateErrorState = function () {
             var hasErrors = this._item._aspect.getIsHasErrors();
-            var $el = $(this._tr);
-            utils.dom.setClass($el.toArray(), const_15.css.rowError, !hasErrors);
+            utils.dom.setClass(this._$tr.toArray(), const_15.css.rowError, !hasErrors);
         };
         Row.prototype.scrollIntoView = function (animate, pos) {
             this.grid.scrollToRow({ row: this, animate: animate, pos: pos });
@@ -1592,8 +1589,34 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_core/object
         Row.prototype.toString = function () {
             return "Row";
         };
+        Object.defineProperty(Row.prototype, "offset", {
+            get: function () {
+                return this.$tr.offset();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Row.prototype, "height", {
+            get: function () {
+                return this.$tr.outerHeight();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Row.prototype, "width", {
+            get: function () {
+                return this.$tr.outerWidth();
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Row.prototype, "tr", {
-            get: function () { return this._tr; },
+            get: function () { return this._$tr[0]; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Row.prototype, "$tr", {
+            get: function () { return this._$tr; },
             enumerable: true,
             configurable: true
         });
@@ -1680,19 +1703,19 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_core/object
         });
         Object.defineProperty(Row.prototype, "isDeleted", {
             get: function () {
-                if (!this._tr)
+                if (this._isDestroyCalled)
                     return true;
                 return this._isDeleted;
             },
             set: function (v) {
-                if (!this._tr)
+                if (this._isDestroyCalled)
                     return;
                 if (this._isDeleted !== v) {
                     this._isDeleted = v;
                     if (this._isDeleted) {
                         this.isExpanded = false;
                     }
-                    dom.setClass([this._tr], const_15.css.rowDeleted, !this._isDeleted);
+                    dom.setClass(this._$tr.toArray(), const_15.css.rowDeleted, !this._isDeleted);
                 }
             },
             enumerable: true,
@@ -1833,16 +1856,16 @@ define("jriapp_ui/datagrid/rows/details", ["require", "exports", "jriapp_core/ob
         __extends(DetailsRow, _super);
         function DetailsRow(options) {
             _super.call(this);
-            var self = this;
+            var self = this, tr = options.tr;
             this._grid = options.grid;
-            this._tr = options.tr;
+            this._$tr = $(tr);
             this._item = null;
             this._cell = null;
             this._parentRow = null;
             this._isFirstShow = true;
             this._objId = "drw" + coreUtils.getNewID();
             this._createCell(options.details_id);
-            utils.dom.addClass([this._tr], const_17.css.rowDetails);
+            utils.dom.addClass([tr], const_17.css.rowDetails);
             this._grid.addOnRowExpanded(function (sender, args) {
                 if (!args.isExpanded && !!args.collapsedRow)
                     self._setParentRow(null);
@@ -1856,7 +1879,7 @@ define("jriapp_ui/datagrid/rows/details", ["require", "exports", "jriapp_core/ob
             var self = this;
             this._item = null;
             this._cell.item = null;
-            utils_14.DomUtils.removeNode(this._tr);
+            utils_14.DomUtils.removeNode(this.tr);
             if (!row || row.getIsDestroyCalled()) {
                 this._parentRow = null;
                 return;
@@ -1866,13 +1889,13 @@ define("jriapp_ui/datagrid/rows/details", ["require", "exports", "jriapp_core/ob
             this._cell.item = this._item;
             if (this._isFirstShow)
                 this._initShow();
-            utils_14.DomUtils.insertAfter(this._tr, row.tr);
+            utils_14.DomUtils.insertAfter(this.tr, row.tr);
             this._show(function () {
-                var row = self._parentRow;
-                if (!row || row.getIsDestroyCalled())
+                var parentRow = self._parentRow;
+                if (!parentRow || parentRow.getIsDestroyCalled())
                     return;
                 if (self.grid.options.isUseScrollIntoDetails)
-                    row.scrollIntoView(true, 2);
+                    parentRow.scrollIntoView(true, 2);
             });
         };
         DetailsRow.prototype._initShow = function () {
@@ -1899,17 +1922,43 @@ define("jriapp_ui/datagrid/rows/details", ["require", "exports", "jriapp_core/ob
                 this._cell.destroy();
                 this._cell = null;
             }
-            utils_14.DomUtils.removeNode(this._tr);
+            this._$tr.remove();
             this._item = null;
-            this._tr = null;
+            this._$tr = null;
             this._grid = null;
             _super.prototype.destroy.call(this);
         };
         DetailsRow.prototype.toString = function () {
             return "DetailsRow";
         };
+        Object.defineProperty(DetailsRow.prototype, "offset", {
+            get: function () {
+                return this.$tr.offset();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DetailsRow.prototype, "height", {
+            get: function () {
+                return this.$tr.outerHeight();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DetailsRow.prototype, "width", {
+            get: function () {
+                return this.$tr.outerWidth();
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(DetailsRow.prototype, "tr", {
-            get: function () { return this._tr; },
+            get: function () { return this._$tr[0]; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DetailsRow.prototype, "$tr", {
+            get: function () { return this._$tr; },
             enumerable: true,
             configurable: true
         });
@@ -2253,11 +2302,10 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             if (!!options.dataSource && !checks.isCollection(options.dataSource))
                 throw new Error(lang_3.ERRS.ERR_GRID_DATASRC_INVALID);
             this._options = options;
-            this._table = this._options.el;
-            var $t = $(this._table);
-            this._$table = $t;
-            utils.dom.addClass([this._table], const_21.css.dataTable);
-            this._name = $t.attr(const_20.DATA_ATTR.DATA_NAME);
+            var table = this._options.el, $table = $(table);
+            this._$table = $table;
+            utils.dom.addClass([table], const_21.css.dataTable);
+            this._name = $table.attr(const_20.DATA_ATTR.DATA_NAME);
             this._objId = "grd" + coreUtils.getNewID();
             this._rowMap = {};
             this._rows = [];
@@ -2291,7 +2339,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
                     self._onKeyUp(key, event);
                 }
             };
-            var tw = this._table.offsetWidth;
+            var tw = table.offsetWidth;
             this._internal = {
                 isRowExpanded: function (row) {
                     return self._isRowExpanded(row);
@@ -2332,7 +2380,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
                 columnWidthCheck: function () {
                     if (self.getIsDestroyCalled())
                         return;
-                    var tw2 = self._table.offsetWidth;
+                    var tw2 = table.offsetWidth;
                     if (tw !== tw2) {
                         tw = tw2;
                         self.updateColumnsSize();
@@ -2784,7 +2832,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
                 return;
             this.collapseDetails();
             var self = this, tbody = self._tBodyEl, newTbody = doc.createElement("tbody");
-            this._table.replaceChild(newTbody, tbody);
+            this.table.replaceChild(newTbody, tbody);
             var rows = this._rows;
             this._rows = [];
             this._rowMap = {};
@@ -2808,7 +2856,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             if (options.headerCss) {
                 dom.addClass([header], options.headerCss);
             }
-            dom.wrap(this._table, wrapper);
+            dom.wrap(this.table, wrapper);
             dom.wrap(wrapper, container);
             dom.insertBefore(header, wrapper);
             dom.addClass([this._tHeadRow], const_21.css.columnInfo);
@@ -2821,8 +2869,8 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
                 return;
             this._$header.remove();
             this._$header = null;
-            dom.unwrap(this._table);
-            dom.unwrap(this._table);
+            dom.unwrap(this.table);
+            dom.unwrap(this.table);
             this._$wrapper = null;
             this._$contaner = null;
         };
@@ -2896,7 +2944,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
                 self._createRowForItem(docFr, item, false);
             });
             newTbody.appendChild(docFr);
-            self._table.replaceChild(newTbody, oldTbody);
+            self.table.replaceChild(newTbody, oldTbody);
             if (isPageChanged) {
                 self._onPageChanged();
             }
@@ -2928,8 +2976,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             return gridRow;
         };
         DataGrid.prototype._createDetails = function () {
-            var details_id = this._options.details.templateID;
-            var tr = doc.createElement("tr");
+            var details_id = this._options.details.templateID, tr = doc.createElement("tr");
             return new details_2.DetailsRow({ grid: this, tr: tr, details_id: details_id });
         };
         DataGrid.prototype._createFillSpace = function () {
@@ -3015,10 +3062,11 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
         DataGrid.prototype.scrollToRow = function (args) {
             if (!args || !args.row)
                 return;
+            var row = args.row;
             if (!!this._fillSpace) {
                 this._fillSpace.height = 0;
             }
-            var $tr = $(args.row.tr), animate = !!args.animate, alignBottom = (args.pos === 1), viewPortHeight = this._$wrapper.innerHeight(), rowHeight = $tr.outerHeight(), currentScrollTop = this._$wrapper.scrollTop(), offsetDiff = currentScrollTop + $tr.offset().top - this._$wrapper.offset().top;
+            var animate = !!args.animate, alignBottom = (args.pos === 1), viewPortHeight = this._$wrapper.innerHeight(), rowHeight = row.height, currentScrollTop = this._$wrapper.scrollTop(), offsetDiff = currentScrollTop + row.offset.top - this._$wrapper.offset().top;
             if (alignBottom) {
                 offsetDiff = Math.floor(offsetDiff + 1);
             }
@@ -3026,8 +3074,8 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
                 offsetDiff = Math.floor(offsetDiff - 1);
             }
             var contentHeight = rowHeight;
-            if (args.row.isExpanded) {
-                contentHeight = contentHeight + $(this._details.tr).outerHeight();
+            if (row.isExpanded) {
+                contentHeight = contentHeight + this._details.height;
             }
             contentHeight = Math.min(viewPortHeight, contentHeight);
             var yOffset = viewPortHeight - contentHeight;
@@ -3105,13 +3153,13 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             }
             this.dataSource = null;
             this._unWrapTable();
-            dom.removeClass([this._table], const_21.css.dataTable);
+            dom.removeClass(this._$table.toArray(), const_21.css.dataTable);
             dom.removeClass([this._tHeadRow], const_21.css.columnInfo);
-            this._table = null;
             this._$table = null;
             this._options.app = null;
             this._options = {};
             this._selectable = null;
+            this._internal = null;
             _super.prototype.destroy.call(this);
         };
         Object.defineProperty(DataGrid.prototype, "$table", {
@@ -3123,7 +3171,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
         });
         Object.defineProperty(DataGrid.prototype, "table", {
             get: function () {
-                return this._table;
+                return this._$table[0];
             },
             enumerable: true,
             configurable: true
@@ -3139,17 +3187,17 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             configurable: true
         });
         Object.defineProperty(DataGrid.prototype, "_tBodyEl", {
-            get: function () { return this._table.tBodies[0]; },
+            get: function () { return this.table.tBodies[0]; },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(DataGrid.prototype, "_tHeadEl", {
-            get: function () { return this._table.tHead; },
+            get: function () { return this.table.tHead; },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(DataGrid.prototype, "_tFootEl", {
-            get: function () { return this._table.tFoot; },
+            get: function () { return this.table.tFoot; },
             enumerable: true,
             configurable: true
         });

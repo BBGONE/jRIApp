@@ -14,7 +14,7 @@ const $ = dom.$, document = dom.document;
 
 export class DetailsRow extends BaseObject {
     private _grid: DataGrid;
-    private _tr: HTMLTableRowElement;
+    private _$tr: JQuery;
     private _item: ICollectionItem;
     private _cell: DetailsCell;
     private _parentRow: Row;
@@ -23,16 +23,16 @@ export class DetailsRow extends BaseObject {
 
     constructor(options: { grid: DataGrid; tr: HTMLTableRowElement; details_id: string; }) {
         super();
-        let self = this;
+        const self = this, tr = options.tr;
         this._grid = options.grid;
-        this._tr = options.tr;
+        this._$tr =$(tr);
         this._item = null;
         this._cell = null;
         this._parentRow = null;
         this._isFirstShow = true;
         this._objId = "drw" + coreUtils.getNewID();
         this._createCell(options.details_id);
-        utils.dom.addClass([this._tr], css.rowDetails);
+        utils.dom.addClass([tr], css.rowDetails);
         this._grid.addOnRowExpanded((sender, args) => {
             if (!args.isExpanded && !!args.collapsedRow)
                 self._setParentRow(null);
@@ -43,11 +43,11 @@ export class DetailsRow extends BaseObject {
         this._cell = new DetailsCell({ row: this, td: td, details_id: details_id });
     }
     protected _setParentRow(row: Row) {
-        let self = this;
+        const self = this;
         this._item = null;
         this._cell.item = null;
         //don't use global.$(this._el).remove() here - or it will remove all jQuery plugins!
-        dom.removeNode(this._tr);
+        dom.removeNode(this.tr);
         if (!row || row.getIsDestroyCalled()) {
             this._parentRow = null;
             return;
@@ -57,13 +57,13 @@ export class DetailsRow extends BaseObject {
         this._cell.item = this._item;
         if (this._isFirstShow)
             this._initShow();
-        dom.insertAfter(this._tr, row.tr);
+        dom.insertAfter(this.tr, row.tr);
         this._show(() => {
-            let row = self._parentRow;
-            if (!row || row.getIsDestroyCalled())
+            const parentRow = self._parentRow;
+            if (!parentRow || parentRow.getIsDestroyCalled())
                 return;
             if (self.grid.options.isUseScrollIntoDetails)
-                row.scrollIntoView(true, ROW_POSITION.Details);
+                parentRow.scrollIntoView(true, ROW_POSITION.Details);
         });
     }
     private _initShow() {
@@ -90,16 +90,26 @@ export class DetailsRow extends BaseObject {
             this._cell.destroy();
             this._cell = null;
         }
-        dom.removeNode(this._tr);
+        this._$tr.remove();
         this._item = null;
-        this._tr = null;
+        this._$tr = null;
         this._grid = null;
         super.destroy();
     }
     toString() {
         return "DetailsRow";
     }
-    get tr() { return this._tr; }
+    get offset() {
+        return this.$tr.offset();
+    }
+    get height() {
+        return this.$tr.outerHeight();
+    }
+    get width() {
+        return this.$tr.outerWidth();
+    }
+    get tr() { return this._$tr[0]; }
+    get $tr() { return this._$tr; }
     get grid() { return this._grid; }
     get item() { return this._item; }
     set item(v) {
