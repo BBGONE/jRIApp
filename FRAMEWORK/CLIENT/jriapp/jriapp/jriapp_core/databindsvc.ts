@@ -13,29 +13,24 @@ import { create as createModulesLoader } from "../jriapp_utils/mloader";
 import { getBindingOptions, Binding } from "./binding";
 import { parser } from "./parser";
 
-const utils = Utils, $ = utils.dom.$, doc = utils.dom.document, strUtils = utils.str, syschecks = utils.sys, checks = utils.check;
+const utils = Utils, $ = utils.dom.$, doc = utils.dom.document, strUtils = utils.str, syschecks = utils.sys, checks = utils.check, boot = bootstrap;
 
-export function create(appName: string, root: Document | HTMLElement, elViewFactory: IElViewFactory): IDataBindingService {
-    return new DataBindingService(appName, root, elViewFactory);
+export function createDataBindSvc(root: Document | HTMLElement, elViewFactory: IElViewFactory): IDataBindingService {
+    return new DataBindingService(root, elViewFactory);
 }
 
 class DataBindingService extends BaseObject implements IDataBindingService, IErrorHandler {
     private _root: Document | HTMLElement;
     private _elViewFactory: IElViewFactory;
     private _objLifeTime: ILifeTimeScope;
-    private _appName: string;
     private _mloader: IModuleLoader;
 
-    constructor(appName: string, root: Document | HTMLElement, elViewFactory: IElViewFactory) {
+    constructor(root: Document | HTMLElement, elViewFactory: IElViewFactory) {
         super();
         this._root = root;
         this._elViewFactory = elViewFactory;
         this._objLifeTime = null;
-        this._appName = appName;
         this._mloader = createModulesLoader();
-    }
-    protected _getAppName() {
-        return this._appName;
     }
     private _toBindableElement(el: HTMLElement): IBindableElement {
         let val: string, allAttrs = el.attributes, attr: Attr,
@@ -124,7 +119,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
             temp_opts = parser.parseOptions(bind_attr);
             for (let j = 0, len = temp_opts.length; j < len; j += 1) {
                 info = temp_opts[j];
-                op = getBindingOptions(self._appName, info, elView, defSource);
+                op = getBindingOptions(info, elView, defSource);
                 let binding = self.bind(op);
                 lftm.addObj(binding);
             }
@@ -226,7 +221,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
         return defer.promise();
     }
     setUpBindings(): IVoidPromise {
-        let defScope = this._root, defaultDataContext = this.appName, self = this;
+        const defScope = this._root, defaultDataContext = boot.getApp(), self = this;
         this._cleanUp();
         let promise = this.bindElements(defScope, defaultDataContext, false, false);
         return promise.then((lftm) => {
@@ -238,10 +233,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
         });
     }
     bind(opts: IBindingOptions): Binding {
-        return new Binding(opts, this._appName);
-    }
-    get appName() {
-        return this._appName;
+        return new Binding(opts);
     }
     destroy() {
         this._cleanUp();

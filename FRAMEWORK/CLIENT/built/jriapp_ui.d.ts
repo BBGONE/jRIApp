@@ -48,10 +48,9 @@ declare module "jriapp_ui/dialog" {
         private _result;
         private _options;
         private _fn_submitOnOK;
-        private _appName;
         private _currentSelectable;
         private _deferred;
-        constructor(appName: string, options: IDialogConstructorOptions);
+        constructor(options: IDialogConstructorOptions);
         addOnClose(fn: TEventHandler<DataEditDialog, any>, nmspace?: string, context?: IBaseObject): void;
         removeOnClose(nmspace?: string): void;
         addOnRefresh(fn: TEventHandler<DataEditDialog, {
@@ -61,7 +60,6 @@ declare module "jriapp_ui/dialog" {
         protected _updateIsEditable(): void;
         protected _createDialog(): void;
         protected _getEventNames(): string[];
-        protected _getAppName(): string;
         templateLoading(template: ITemplate): void;
         templateLoaded(template: ITemplate, error?: any): void;
         templateUnLoading(template: ITemplate): void;
@@ -246,7 +244,6 @@ declare module "jriapp_ui/datagrid/columns/base" {
         private _event_scope;
         private _template;
         constructor(grid: DataGrid, options: ICellInfo);
-        protected _getAppName(): string;
         destroy(): void;
         templateLoading(template: ITemplate): void;
         templateLoaded(template: ITemplate, error?: any): void;
@@ -401,7 +398,6 @@ declare module "jriapp_ui/datagrid/rows/row" {
             tr: HTMLTableRowElement;
             item: ICollectionItem;
         });
-        protected _getAppName(): string;
         private _createCells();
         private _createCell(col, num);
         _setState(css: string): void;
@@ -457,7 +453,6 @@ declare module "jriapp_ui/datagrid/cells/base" {
         protected _click: DblClick;
         private _num;
         constructor(options: ICellOptions);
-        protected _getAppName(): string;
         protected _onCellClicked(row?: Row): void;
         protected _onDblClicked(row?: Row): void;
         click(): void;
@@ -492,7 +487,6 @@ declare module "jriapp_ui/datagrid/rows/details" {
             tr: HTMLTableRowElement;
             details_id: string;
         });
-        protected _getAppName(): string;
         private _createCell(details_id);
         protected _setParentRow(row: Row): void;
         private _initShow();
@@ -528,7 +522,6 @@ declare module "jriapp_ui/datagrid/cells/details" {
             td: HTMLTableCellElement;
             details_id: string;
         });
-        protected _getAppName(): string;
         destroy(): void;
         toString(): string;
         readonly td: HTMLTableCellElement;
@@ -550,7 +543,6 @@ declare module "jriapp_ui/datagrid/rows/fillspace" {
             grid: DataGrid;
             tr: HTMLTableRowElement;
         });
-        protected _getAppName(): string;
         private _createCell();
         destroy(): void;
         toString(): string;
@@ -575,7 +567,6 @@ declare module "jriapp_ui/datagrid/cells/fillspace" {
             row: FillSpaceRow;
             td: HTMLTableCellElement;
         });
-        protected _getAppName(): string;
         destroy(): void;
         toString(): string;
         readonly td: HTMLTableCellElement;
@@ -627,7 +618,6 @@ declare module "jriapp_ui/datagrid/datagrid" {
         isPrependAllRows?: boolean;
     }
     export interface IDataGridConstructorOptions extends IDataGridOptions {
-        appName: string;
         el: HTMLTableElement;
         dataSource: ICollection<ICollectionItem>;
         animation: IDataGridAnimation;
@@ -673,7 +663,6 @@ declare module "jriapp_ui/datagrid/datagrid" {
         private _scrollDebounce;
         constructor(options: IDataGridConstructorOptions);
         protected _getEventNames(): string[];
-        protected _getAppName(): string;
         addOnRowExpanded(fn: TEventHandler<DataGrid, {
             collapsedRow: Row;
             expandedRow: Row;
@@ -774,7 +763,6 @@ declare module "jriapp_ui/datagrid/datagrid" {
         readonly isCanAddNew: boolean;
         isUseScrollInto: boolean;
         readonly animation: IDataGridAnimation;
-        readonly appName: string;
     }
     export interface IDataGridViewOptions extends IDataGridOptions, IViewOptions {
     }
@@ -809,7 +797,6 @@ declare module "jriapp_ui/pager" {
         sliderSize?: number;
     }
     export interface IPagerConstructorOptions extends IPagerOptions {
-        appName: string;
         el: HTMLElement;
         dataSource: ICollection<ICollectionItem>;
     }
@@ -822,7 +809,6 @@ declare module "jriapp_ui/pager" {
         private _currentPage;
         private _renderDebounce;
         constructor(options: IPagerConstructorOptions);
-        protected _getAppName(): string;
         protected _createElement(tag: string): JQuery;
         protected _render(): void;
         protected render(): void;
@@ -858,7 +844,6 @@ declare module "jriapp_ui/pager" {
         showFirstAndLast: boolean;
         showPreviousAndNext: boolean;
         showNumbers: boolean;
-        readonly appName: string;
     }
     export interface IPagerViewOptions extends IPagerOptions, IViewOptions {
     }
@@ -890,7 +875,6 @@ declare module "jriapp_ui/listbox" {
         statePath?: string;
     }
     export interface IListBoxConstructorOptions extends IListBoxOptions {
-        appName: string;
         el: HTMLSelectElement;
         dataSource: ICollection<ICollectionItem>;
     }
@@ -915,7 +899,6 @@ declare module "jriapp_ui/listbox" {
         constructor(options: IListBoxConstructorOptions);
         destroy(): void;
         protected _getEventNames(): string[];
-        protected _getAppName(): string;
         addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any): void;
         removeOnRefreshed(nmspace?: string): void;
         protected _onChanged(): void;
@@ -1035,7 +1018,6 @@ declare module "jriapp_ui/stackpanel" {
         orientation?: "vertical" | "horizontal";
     }
     export interface IStackPanelConstructorOptions extends IStackPanelOptions {
-        appName: string;
         el: HTMLElement;
         dataSource: ICollection<ICollectionItem>;
     }
@@ -1051,7 +1033,6 @@ declare module "jriapp_ui/stackpanel" {
         private _isKeyNavigation;
         constructor(options: IStackPanelConstructorOptions);
         protected _getEventNames(): string[];
-        protected _getAppName(): string;
         addOnItemClicked(fn: TEventHandler<StackPanel, {
             item: ICollectionItem;
         }>, nmspace?: string, context?: IBaseObject): void;
@@ -1080,7 +1061,6 @@ declare module "jriapp_ui/stackpanel" {
         focus(): void;
         getDivElementByItem(item: ICollectionItem): HTMLElement;
         toString(): string;
-        readonly app: string;
         readonly el: HTMLElement;
         readonly uniqueID: string;
         readonly orientation: "vertical" | "horizontal";

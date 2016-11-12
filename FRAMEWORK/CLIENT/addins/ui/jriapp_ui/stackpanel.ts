@@ -35,7 +35,6 @@ export interface IStackPanelOptions {
 interface IMappedItem { el: HTMLElement; template: ITemplate; item: ICollectionItem }
 
 export interface IStackPanelConstructorOptions extends IStackPanelOptions {
-    appName: string;
     el: HTMLElement;
     dataSource: ICollection<ICollectionItem>;
 }
@@ -61,7 +60,6 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         const self = this;
         options = <IStackPanelConstructorOptions>coreUtils.extend(
             {
-                appName: null,
                 el: null,
                 dataSource: null,
                 templateID: null,
@@ -120,9 +118,6 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
     protected _getEventNames() {
         let base_events = super._getEventNames();
         return [PNL_EVENTS.item_clicked].concat(base_events);
-    }
-    protected _getAppName() {
-        return this._options.appName;
     }
     addOnItemClicked(fn: TEventHandler<StackPanel, { item: ICollectionItem; }>, nmspace?: string, context?: IBaseObject) {
         this._addHandler(PNL_EVENTS.item_clicked, fn, nmspace, context);
@@ -248,7 +243,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         }
     }
     protected _createTemplate(item: ICollectionItem) {
-        let template = createTemplate(this._getAppName(), item, null);
+        let template = createTemplate(item, null);
         template.templateID = this.templateID;
         return template;
     }
@@ -398,7 +393,6 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
     toString() {
         return "StackPanel";
     }
-    get app() { return this._options.appName; }
     get el() { return this._options.el; }
     get uniqueID() { return this._objId; }
     get orientation() { return this._options.orientation; }

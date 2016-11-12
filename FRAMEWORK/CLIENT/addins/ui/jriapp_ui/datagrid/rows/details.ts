@@ -40,9 +40,6 @@ export class DetailsRow extends BaseObject {
                 self._setParentRow(null);
         }, this._objId);
     }
-    protected _getAppName() {
-        return !this.grid ? "" : this.grid.appName;
-    }
     private _createCell(details_id: string) {
         const td: HTMLTableCellElement = <HTMLTableCellElement>document.createElement("td");
         this._cell = new DetailsCell({ row: this, td: td, details_id: details_id });

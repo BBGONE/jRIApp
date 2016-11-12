@@ -97,7 +97,7 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
 
         try {
             if (!this._template) {
-                this._template = createTemplate(this._appName, this._dataContext, this);
+                this._template = createTemplate(this._dataContext, this);
                 this._template.templateID = newName;
                 self.raisePropertyChanged(PROP_NAME.template);
                 return;

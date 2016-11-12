@@ -8,12 +8,10 @@ import { BaseObject }  from "../jriapp_core/object";
 import { Binding, getBindingOptions } from "../jriapp_core/binding";
 import { LifeTimeScope } from "../jriapp_utils/lifetime";
 import { Utils } from "../jriapp_utils/utils";
-import { getElViewFactory } from "../jriapp_elview/factory";
 
 import { css } from "./int";
 
-const utils = Utils, dom = utils.dom, $ = dom.$, doc = utils.dom.document, coreUtils = utils.core, checks = utils.check, viewFactory = getElViewFactory,
-    boot = bootstrap;
+const utils = Utils, dom = utils.dom, $ = dom.$, doc = utils.dom.document, coreUtils = utils.core, checks = utils.check,  boot = bootstrap;
 
 export class BasicContent extends BaseObject implements IContent {
     protected _parentEl: HTMLElement;
@@ -25,7 +23,6 @@ export class BasicContent extends BaseObject implements IContent {
     protected _lfScope: ILifeTimeScope;
     //the target of the data binding
     protected _target: IElView;
-    private _appName: string;
 
     constructor(options: IConstructorContentOptions) {
         super();
@@ -34,11 +31,9 @@ export class BasicContent extends BaseObject implements IContent {
                 parentEl: null,
                 contentOptions: null,
                 dataContext: null,
-                isEditing: false,
-                appName: null
+                isEditing: false
             }, options);
         this._el = null;
-        this._appName = options.appName;
         this._parentEl = options.parentEl;
         this._isEditing = !!options.isEditing;
         this._dataContext = options.dataContext;
@@ -104,7 +99,7 @@ export class BasicContent extends BaseObject implements IContent {
         return this.getElementView(this._el, info);
     }
     protected getBindingOption(bindingInfo: IBindingInfo, target: IBaseObject, dataContext: any, targetPath: string) {
-        let options = getBindingOptions(this._appName, bindingInfo, target, dataContext);
+        let options = getBindingOptions(bindingInfo, target, dataContext);
 
         if (this.isEditing && this.getIsCanBeEdited())
             options.mode = BINDING_MODE.TwoWay;
@@ -145,10 +140,10 @@ export class BasicContent extends BaseObject implements IContent {
         this._target = null;
     }
     protected getElementView(el: HTMLElement, view_info: { name: string; options: IViewOptions; }): IElView {
-        let factory = viewFactory(this._appName), elView = factory.store.getElView(el);
+        let factory = boot.getApp().viewFactory, elView = factory.store.getElView(el);
         if (!!elView)
             return elView;
-        view_info.options = coreUtils.merge({ appName: this._appName, el: el }, view_info.options);
+        view_info.options = coreUtils.merge({ el: el }, view_info.options);
         return factory.createElView(view_info);
     }
     protected getFieldInfo(): IFieldInfo {
@@ -210,6 +205,7 @@ export class BasicContent extends BaseObject implements IContent {
             this.updateBindingSource();
         }
     }
-    get appName() { return this._appName; }
-    get app() { return boot.findApp(this._appName); }
+    get app() {
+        return boot.getApp();
+    }
 }

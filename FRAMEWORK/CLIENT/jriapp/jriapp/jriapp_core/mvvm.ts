@@ -113,9 +113,6 @@ export class ViewModel<TApp extends IApplication> extends BaseObject {
         this._app = app;
         this._objId = "vm" + coreUtils.getNewID();
     }
-    protected _getAppName() {
-        return !this._app ? "" : this._app.appName;
-    }
     toString() {
         return "ViewModel";
     }

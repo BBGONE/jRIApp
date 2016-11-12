@@ -14,10 +14,9 @@ import { bootstrap } from "../jriapp_core/bootstrap";
 import { BaseElView } from "../jriapp_elview/elview";
 import { CommandElView } from "../jriapp_elview/command";
 import { Binding } from "binding";
-import { getElViewFactory } from "../jriapp_elview/factory";
 
 const defer = AsyncUtils, dom = DomUtils, $ = dom.$, doc = dom.document, coreUtils = CoreUtils,
-    checks = Checks, strUtils = StringUtils, arrHelper = ArrayHelper, syschecks = SysChecks, viewFactory = getElViewFactory, boot = bootstrap;
+    checks = Checks, strUtils = StringUtils, arrHelper = ArrayHelper, syschecks = SysChecks, boot = bootstrap;
 
 export const css = {
     templateContainer: "ria-template-container",
@@ -36,14 +35,12 @@ const PROP_NAME = {
 };
 
 export interface ITemplateOptions {
-    appName: string;
     dataContext?: any;
     templEvents?: ITemplateEvents;
 }
 
-export function createTemplate(appName: string, dataContext ?: any, templEvents?: ITemplateEvents): ITemplate {
+export function createTemplate(dataContext ?: any, templEvents?: ITemplateEvents): ITemplate {
     const options: ITemplateOptions = {
-        appName: appName,
         dataContext: dataContext,
         templEvents: templEvents
     }
@@ -55,7 +52,6 @@ class Template extends BaseObject implements ITemplate {
     private _lfTime: ILifeTimeScope;
     private _templElView: TemplateElView;
     private _loadedElem: HTMLElement;
-    private _appName: string;
     private _dataContext: any;
     private _templEvents?: ITemplateEvents;
     private _templateID: string;
@@ -63,7 +59,6 @@ class Template extends BaseObject implements ITemplate {
     constructor(options: ITemplateOptions) {
         super();
         this._dataContext = options.dataContext;
-        this._appName = options.appName;
         this._templEvents = options.templEvents;
         this._loadedElem = null;
         this._lfTime = null;
@@ -71,9 +66,6 @@ class Template extends BaseObject implements ITemplate {
         this._templElView = null;
         this._el = doc.createElement("div");
         this._el.className = css.templateContainer;
-    }
-    protected _getAppName() {
-        return this._appName;
     }
     private _getBindings(): Binding[] {
         if (!this._lfTime)
@@ -272,8 +264,7 @@ class Template extends BaseObject implements ITemplate {
     }
     findElViewsByDataName(name: string): IElView[] {
         //first return elements with the needed data attributes those are inside template
-        const self = this, els = this.findElByDataName(name), res: IElView[] = [],
-            viewStore = viewFactory(self._appName).store;
+        const self = this, els = this.findElByDataName(name), res: IElView[] = [],  viewStore = boot.getApp().viewFactory.store;
         els.forEach(function (el) {
             let elView = viewStore.getElView(el);
             if (!!elView)
@@ -305,10 +296,7 @@ class Template extends BaseObject implements ITemplate {
     }
     get el() { return this._el; }
     get app(): IApplication {
-        return bootstrap.findApp(this._appName);
-    }
-    get appName(): string {
-        return this._appName;
+        return bootstrap.getApp();
     }
 }
 

@@ -134,7 +134,6 @@ export interface IDataGridOptions {
 
 
 export interface IDataGridConstructorOptions extends IDataGridOptions {
-    appName: string;
     el: HTMLTableElement;
     dataSource: ICollection<ICollectionItem>;
     animation: IDataGridAnimation;
@@ -186,7 +185,6 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         const self = this;
         options = coreUtils.merge(options,
             {
-                appName: null,
                 el: null,
                 dataSource: null,
                 animation: null,
@@ -301,9 +299,6 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         let base_events = super._getEventNames();
         let events = Object.keys(GRID_EVENTS).map((key, i, arr) => { return <string>(<any>GRID_EVENTS)[key]; });
         return events.concat(base_events);
-    }
-    protected _getAppName() {
-        return this._options.appName;
     }
     addOnRowExpanded(fn: TEventHandler<DataGrid, { collapsedRow: Row; expandedRow: Row; isExpanded: boolean; }>, nmspace?: string, context?: any) {
         this._addHandler(GRID_EVENTS.row_expanded, fn, nmspace, context);
@@ -970,7 +965,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 dataContext: item,
                 templateID: null
             }, this._options.editor);
-            this._dialog = new DataEditDialog(this._getAppName(), dialogOptions);
+            this._dialog = new DataEditDialog(dialogOptions);
         }
         else
             this._dialog.dataContext = item;
@@ -1099,7 +1094,6 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         dom.removeClass(this._$table.toArray(), css.dataTable);
         dom.removeClass([this._tHeadRow], css.columnInfo);
         this._$table = null;
-        this._options.appName = null;
         this._options = <any>{};
         this._selectable = null;
         this._internal = null;
@@ -1202,7 +1196,6 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         }
         return this.options.animation;
     }
-    get appName() { return this._getAppName(); }
 }
 
 export interface IDataGridViewOptions extends IDataGridOptions, IViewOptions {
@@ -1237,7 +1230,6 @@ export class DataGridElView extends BaseElView {
     private _createGrid() {
         let options = <IDataGridConstructorOptions>coreUtils.extend(
             {
-                appName: this._getAppName(),
                 el: <HTMLTableElement>this.el,
                 dataSource: null,
                 animation: null

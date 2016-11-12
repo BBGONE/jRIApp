@@ -11,6 +11,7 @@ define("jriapp_core/const", ["require", "exports"], function (require, exports) 
         DEBUG_LEVEL[DEBUG_LEVEL["HIGH"] = 2] = "HIGH";
     })(exports.DEBUG_LEVEL || (exports.DEBUG_LEVEL = {}));
     var DEBUG_LEVEL = exports.DEBUG_LEVEL;
+    exports.APP_NAME = "app_default";
     exports.DUMY_ERROR = "DUMMY_ERROR";
     exports.TOOLTIP_SVC = "tooltipSVC";
     exports.STORE_KEY = {
@@ -592,19 +593,17 @@ define("jriapp_utils/coreutils", ["require", "exports", "jriapp_core/const", "jr
         ERROR.removeHandler = function (name) {
             delete ERROR._handlers[name];
         };
-        ERROR.handleError = function (sender, name, error, source) {
+        ERROR.handleError = function (sender, error, source) {
             if (ERROR.checkIsDummy(error)) {
                 return true;
             }
             var handler, isHandled = false;
-            if (!!name && name !== "*") {
-                handler = ERROR._handlers[name];
-                if (!!handler) {
-                    if (handler === sender)
-                        handler = null;
-                    else {
-                        isHandled = handler.handleError(error, source);
-                    }
+            handler = ERROR._handlers[const_1.APP_NAME];
+            if (!!handler) {
+                if (handler === sender)
+                    handler = null;
+                else {
+                    isHandled = handler.handleError(error, source);
                 }
             }
             if (!isHandled) {
@@ -1181,9 +1180,6 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
         BaseObject.prototype._removeHandler = function (name, nmspace) {
             evHelper.remove(this._events, name, nmspace);
         };
-        BaseObject.prototype._getAppName = function () {
-            return "";
-        };
         Object.defineProperty(BaseObject.prototype, "_isDestroyed", {
             get: function () {
                 return this._obj_state === 2;
@@ -1218,7 +1214,7 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
             evHelper.raise(this, this._events, OBJ_EVENTS.error, args);
             var isHandled = args.isHandled;
             if (!isHandled) {
-                isHandled = coreutils_3.ERROR.handleError(this, this._getAppName(), error, source);
+                isHandled = coreutils_3.ERROR.handleError(this, error, source);
             }
             return isHandled;
         };
@@ -2233,25 +2229,11 @@ define("jriapp_utils/utils", ["require", "exports", "jriapp_utils/coreutils", "j
 });
 define("jriapp_elview/factory", ["require", "exports", "jriapp_core/const", "jriapp_core/bootstrap", "jriapp_core/lang", "jriapp_core/parser", "jriapp_core/object", "jriapp_utils/utils"], function (require, exports, const_2, bootstrap_1, lang_5, parser_1, object_2, utils_1) {
     "use strict";
-    var utils = utils_1.Utils, $ = utils.dom.$, factories = {};
-    function createElViewFactory(appName, num, register) {
-        var factory = new ElViewFactory(appName, num, register);
-        factories[appName] = factory;
-        return factory;
+    var utils = utils_1.Utils, $ = utils.dom.$;
+    function createElViewFactory(register) {
+        return new ElViewFactory(register);
     }
     exports.createElViewFactory = createElViewFactory;
-    function deleteElViewFactory(appName) {
-        var factory = factories[appName];
-        if (!!factory) {
-            delete factories[appName];
-            factory.destroy;
-        }
-    }
-    exports.deleteElViewFactory = deleteElViewFactory;
-    function getElViewFactory(appName) {
-        return factories[appName];
-    }
-    exports.getElViewFactory = getElViewFactory;
     function createElViewRegister(next) {
         return new ElViewRegister(next);
     }
@@ -2284,8 +2266,8 @@ define("jriapp_elview/factory", ["require", "exports", "jriapp_core/const", "jri
         return ElViewRegister;
     }());
     var ElViewStore = (function () {
-        function ElViewStore(instanceNum) {
-            this._ELV_STORE_KEY = const_2.DATA_ATTR.EL_VIEW_KEY + instanceNum;
+        function ElViewStore() {
+            this._ELV_STORE_KEY = const_2.DATA_ATTR.EL_VIEW_KEY;
         }
         ElViewStore.prototype.destroy = function () {
         };
@@ -2304,15 +2286,11 @@ define("jriapp_elview/factory", ["require", "exports", "jriapp_core/const", "jri
     }());
     var ElViewFactory = (function (_super) {
         __extends(ElViewFactory, _super);
-        function ElViewFactory(appName, num, register) {
+        function ElViewFactory(register) {
             _super.call(this);
-            this._appName = appName;
-            this._store = new ElViewStore(num);
+            this._store = new ElViewStore();
             this._register = createElViewRegister(register);
         }
-        ElViewFactory.getFactory = function (ownerName) {
-            return factories[ownerName];
-        };
         ElViewFactory.prototype.destroy = function () {
             if (!this._store)
                 return;
@@ -2321,9 +2299,6 @@ define("jriapp_elview/factory", ["require", "exports", "jriapp_core/const", "jri
             this._store = null;
             this._register = null;
             _super.prototype.destroy.call(this);
-        };
-        ElViewFactory.prototype._getAppName = function () {
-            return this._appName;
         };
         ElViewFactory.prototype.createElView = function (view_info) {
             var viewType, elView, options = view_info.options;
@@ -2379,7 +2354,7 @@ define("jriapp_elview/factory", ["require", "exports", "jriapp_core/const", "jri
                     vw_options = data_view_op.options;
                 }
             }
-            var options = utils.core.merge({ appName: this._appName, el: el }, vw_options);
+            var options = utils.core.merge({ el: el }, vw_options);
             return { name: view_name, options: options };
         };
         Object.defineProperty(ElViewFactory.prototype, "store", {
@@ -3182,7 +3157,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             if (!!exports.bootstrap)
                 throw new Error(lang_7.ERRS.ERR_GLOBAL_SINGLTON);
             this._bootState = 0;
-            this._appInst = {};
+            this._appInst = null;
             this._currentSelectable = null;
             this._exports = {};
             this._moduleInits = [];
@@ -3210,9 +3185,6 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
                 },
                 unregisterApp: function (app) {
                     self._unregisterApp(app);
-                },
-                destroyApps: function () {
-                    self._destroyApps();
                 },
                 registerObject: function (root, name, obj) {
                     self._registerObject(root, name, obj);
@@ -3324,19 +3296,13 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             self._bootState = 2;
             self.raiseEvent(GLOB_EVENTS.initialized, {});
             self.removeHandler(GLOB_EVENTS.initialized, null);
-            setTimeout(function () {
-                try {
-                    if (self.getIsDestroyCalled())
-                        throw invalidOpErr;
-                    self._processHTMLTemplates();
-                    self._bootState = 3;
-                    self.raisePropertyChanged(PROP_NAME.isReady);
-                    deferred.resolve();
-                }
-                catch (err) {
-                    deferred.reject(err);
-                }
-            }, 0);
+            deferred.resolve(_async.delay(function () {
+                if (self.getIsDestroyCalled())
+                    throw invalidOpErr;
+                self._processHTMLTemplates();
+                self._bootState = 3;
+                self.raisePropertyChanged(PROP_NAME.isReady);
+            }));
             return deferred.promise().then(function () {
                 self.raiseEvent(GLOB_EVENTS.load, {});
                 self.removeHandler(GLOB_EVENTS.load, null);
@@ -3373,24 +3339,25 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
                 this.currentSelectable = null;
         };
         Bootstrap.prototype._registerApp = function (app) {
-            if (!this._appInst[app.appName]) {
-                this._appInst[app.appName] = app;
+            if (!this._appInst) {
+                this._appInst = app;
                 coreutils_9.ERROR.addHandler(app.appName, app);
             }
         };
         Bootstrap.prototype._unregisterApp = function (app) {
-            if (!this._appInst[app.appName])
+            if (!this._appInst)
                 return;
             coreutils_9.ERROR.removeHandler(app.appName);
-            delete this._appInst[app.appName];
+            this._appInst = null;
             this.templateLoader.unRegisterTemplateGroup(app.appName);
             this.templateLoader.unRegisterTemplateLoader(app.appName);
         };
-        Bootstrap.prototype._destroyApps = function () {
+        Bootstrap.prototype._destroyApp = function () {
             var self = this;
-            coreUtils.forEachProp(this._appInst, function (id) {
-                self._appInst[id].destroy();
-            });
+            if (!!self._appInst) {
+                self._appInst.destroy();
+                self._appInst = null;
+            }
         };
         Bootstrap.prototype._registerObject = function (root, name, obj) {
             coreUtils.setValue(root.getExports(), name, obj, true);
@@ -3446,8 +3413,8 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
         Bootstrap.prototype.getExports = function () {
             return this._exports;
         };
-        Bootstrap.prototype.findApp = function (name) {
-            return this._appInst[name];
+        Bootstrap.prototype.getApp = function () {
+            return this._appInst;
         };
         Bootstrap.prototype.init = function (onInit) {
             var self = this;
@@ -3486,7 +3453,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             this._isDestroyCalled = true;
             var self = this;
             self._removeHandler();
-            self._destroyApps();
+            self._destroyApp();
             self._exports = {};
             if (self._templateLoader !== null) {
                 self._templateLoader.destroy();
@@ -4070,9 +4037,6 @@ define("jriapp_core/mvvm", ["require", "exports", "jriapp_core/object", "jriapp_
             this._app = app;
             this._objId = "vm" + coreutils_11.CoreUtils.getNewID();
         }
-        ViewModel.prototype._getAppName = function () {
-            return !this._app ? "" : this._app.appName;
-        };
         ViewModel.prototype.toString = function () {
             return "ViewModel";
         };
@@ -4190,11 +4154,11 @@ define("jriapp_utils/eventstore", ["require", "exports", "jriapp_core/object", "
     }(object_8.BaseObject));
     exports.EventStore = EventStore;
 });
-define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/syschecks", "jriapp_core/bootstrap", "jriapp_utils/utils", "jriapp_core/mvvm", "jriapp_utils/eventstore", "jriapp_elview/factory"], function (require, exports, const_4, lang_9, object_9, syschecks_6, bootstrap_3, utils_3, mvvm_1, eventstore_1, factory_2) {
+define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/syschecks", "jriapp_core/bootstrap", "jriapp_utils/utils", "jriapp_core/mvvm", "jriapp_utils/eventstore"], function (require, exports, const_4, lang_9, object_9, syschecks_6, bootstrap_3, utils_3, mvvm_1, eventstore_1) {
     "use strict";
     exports.EVENT_CHANGE_TYPE = eventstore_1.EVENT_CHANGE_TYPE;
     var utils = utils_3.Utils, coreUtils = utils.core, dom = utils.dom, $ = dom.$, checks = utils.check;
-    var PROP_BAG = syschecks_6.SysChecks._PROP_BAG_NAME(), viewFactory = factory_2.getElViewFactory, boot = bootstrap_3.bootstrap;
+    var PROP_BAG = syschecks_6.SysChecks._PROP_BAG_NAME(), boot = bootstrap_3.bootstrap;
     syschecks_6.SysChecks._isElView = function (obj) {
         return !!obj && obj instanceof BaseElView;
     };
@@ -4305,7 +4269,6 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
         function BaseElView(options) {
             _super.call(this);
             var el = options.el;
-            this._appName = options.appName;
             this._$el = $(el);
             this._toolTip = options.tip;
             this._eventStore = null;
@@ -4319,11 +4282,8 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
                 dom.addClass([el], this._css);
             }
             this._applyToolTip();
-            viewFactory(this._appName).store.setElView(el, this);
+            this.app.viewFactory.store.setElView(el, this);
         }
-        BaseElView.prototype._getAppName = function () {
-            return this._appName;
-        };
         BaseElView.prototype._onEventChanged = function (args) {
             switch (args.changeType) {
                 case 1:
@@ -4388,7 +4348,7 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
-            viewFactory(this._appName).store.setElView(this.el, null);
+            this.app.viewFactory.store.setElView(this.el, null);
             this._$el.off("." + this.uniqueID);
             this.validationErrors = null;
             this.toolTip = null;
@@ -4541,16 +4501,9 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(BaseElView.prototype, "appName", {
-            get: function () {
-                return this._appName;
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(BaseElView.prototype, "app", {
             get: function () {
-                return boot.findApp(this._appName);
+                return boot.getApp();
             },
             enumerable: true,
             configurable: true
@@ -4613,7 +4566,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
         TwoWay: 2,
         BackWay: 3
     };
-    function getBindingOptions(appName, bindInfo, defaultTarget, defaultSource) {
+    function getBindingOptions(bindInfo, defaultTarget, defaultSource) {
         var bindingOpts = {
             mode: 1,
             converterParam: null,
@@ -4624,7 +4577,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             source: null,
             isSourceFixed: false
         };
-        var converter, app = boot.findApp(appName);
+        var converter, app = boot.getApp();
         if (checks.isString(bindInfo.converter)) {
             converter = app.getConverter(bindInfo.converter);
         }
@@ -4682,7 +4635,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
     exports.getBindingOptions = getBindingOptions;
     var Binding = (function (_super) {
         __extends(Binding, _super);
-        function Binding(options, appName) {
+        function Binding(options) {
             _super.call(this);
             var opts = coreUtils.extend({
                 target: null, source: null,
@@ -4706,7 +4659,6 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             if (!syschecks._isBaseObj(opts.target)) {
                 throw new Error(lang_10.ERRS.ERR_BIND_TARGET_INVALID);
             }
-            this._appName = appName;
             this._state = null;
             this._mode = opts.mode;
             this._converter = !opts.converter ? null : opts.converter;
@@ -4732,9 +4684,6 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             if (!!err_notif && err_notif.getIsHasErrors())
                 this._onSrcErrChanged(err_notif);
         }
-        Binding.prototype._getAppName = function () {
-            return this._appName;
-        };
         Binding.prototype._update = function () {
             var umask = this._umask, MAX_REC = 3;
             var flag = 0;
@@ -5229,9 +5178,9 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
     }(object_10.BaseObject));
     exports.Binding = Binding;
 });
-define("jriapp_content/basic", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/object", "jriapp_core/binding", "jriapp_utils/lifetime", "jriapp_utils/utils", "jriapp_elview/factory", "jriapp_content/int"], function (require, exports, bootstrap_5, object_11, binding_1, lifetime_1, utils_5, factory_3, int_1) {
+define("jriapp_content/basic", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/object", "jriapp_core/binding", "jriapp_utils/lifetime", "jriapp_utils/utils", "jriapp_content/int"], function (require, exports, bootstrap_5, object_11, binding_1, lifetime_1, utils_5, int_1) {
     "use strict";
-    var utils = utils_5.Utils, dom = utils.dom, $ = dom.$, doc = utils.dom.document, coreUtils = utils.core, checks = utils.check, viewFactory = factory_3.getElViewFactory, boot = bootstrap_5.bootstrap;
+    var utils = utils_5.Utils, dom = utils.dom, $ = dom.$, doc = utils.dom.document, coreUtils = utils.core, checks = utils.check, boot = bootstrap_5.bootstrap;
     var BasicContent = (function (_super) {
         __extends(BasicContent, _super);
         function BasicContent(options) {
@@ -5240,11 +5189,9 @@ define("jriapp_content/basic", ["require", "exports", "jriapp_core/bootstrap", "
                 parentEl: null,
                 contentOptions: null,
                 dataContext: null,
-                isEditing: false,
-                appName: null
+                isEditing: false
             }, options);
             this._el = null;
-            this._appName = options.appName;
             this._parentEl = options.parentEl;
             this._isEditing = !!options.isEditing;
             this._dataContext = options.dataContext;
@@ -5310,7 +5257,7 @@ define("jriapp_content/basic", ["require", "exports", "jriapp_core/bootstrap", "
             return this.getElementView(this._el, info);
         };
         BasicContent.prototype.getBindingOption = function (bindingInfo, target, dataContext, targetPath) {
-            var options = binding_1.getBindingOptions(this._appName, bindingInfo, target, dataContext);
+            var options = binding_1.getBindingOptions(bindingInfo, target, dataContext);
             if (this.isEditing && this.getIsCanBeEdited())
                 options.mode = 2;
             else
@@ -5349,10 +5296,10 @@ define("jriapp_content/basic", ["require", "exports", "jriapp_core/bootstrap", "
             this._target = null;
         };
         BasicContent.prototype.getElementView = function (el, view_info) {
-            var factory = viewFactory(this._appName), elView = factory.store.getElView(el);
+            var factory = boot.getApp().viewFactory, elView = factory.store.getElView(el);
             if (!!elView)
                 return elView;
-            view_info.options = coreUtils.merge({ appName: this._appName, el: el }, view_info.options);
+            view_info.options = coreUtils.merge({ el: el }, view_info.options);
             return factory.createElView(view_info);
         };
         BasicContent.prototype.getFieldInfo = function () {
@@ -5430,13 +5377,10 @@ define("jriapp_content/basic", ["require", "exports", "jriapp_core/bootstrap", "
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(BasicContent.prototype, "appName", {
-            get: function () { return this._appName; },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(BasicContent.prototype, "app", {
-            get: function () { return boot.findApp(this._appName); },
+            get: function () {
+                return boot.getApp();
+            },
             enumerable: true,
             configurable: true
         });
@@ -5573,9 +5517,9 @@ define("jriapp_elview/command", ["require", "exports", "jriapp_utils/utils", "jr
     }(elview_1.BaseElView));
     exports.CommandElView = CommandElView;
 });
-define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jriapp_utils/syschecks", "jriapp_utils/checks", "jriapp_utils/strutils", "jriapp_utils/arrhelper", "jriapp_utils/coreutils", "jriapp_utils/dom", "jriapp_utils/async", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_elview/command", "jriapp_elview/factory"], function (require, exports, const_5, syschecks_7, checks_10, strUtils_7, arrhelper_6, coreutils_12, dom_6, async_6, lang_11, object_12, bootstrap_6, command_1, factory_4) {
+define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jriapp_utils/syschecks", "jriapp_utils/checks", "jriapp_utils/strutils", "jriapp_utils/arrhelper", "jriapp_utils/coreutils", "jriapp_utils/dom", "jriapp_utils/async", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_elview/command"], function (require, exports, const_5, syschecks_7, checks_10, strUtils_7, arrhelper_6, coreutils_12, dom_6, async_6, lang_11, object_12, bootstrap_6, command_1) {
     "use strict";
-    var defer = async_6.AsyncUtils, dom = dom_6.DomUtils, $ = dom.$, doc = dom.document, coreUtils = coreutils_12.CoreUtils, checks = checks_10.Checks, strUtils = strUtils_7.StringUtils, arrHelper = arrhelper_6.ArrayHelper, syschecks = syschecks_7.SysChecks, viewFactory = factory_4.getElViewFactory, boot = bootstrap_6.bootstrap;
+    var defer = async_6.AsyncUtils, dom = dom_6.DomUtils, $ = dom.$, doc = dom.document, coreUtils = coreutils_12.CoreUtils, checks = checks_10.Checks, strUtils = strUtils_7.StringUtils, arrHelper = arrhelper_6.ArrayHelper, syschecks = syschecks_7.SysChecks, boot = bootstrap_6.bootstrap;
     exports.css = {
         templateContainer: "ria-template-container",
         templateError: "ria-template-error"
@@ -5589,9 +5533,8 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
         template: "template",
         isEnabled: "isEnabled"
     };
-    function createTemplate(appName, dataContext, templEvents) {
+    function createTemplate(dataContext, templEvents) {
         var options = {
-            appName: appName,
             dataContext: dataContext,
             templEvents: templEvents
         };
@@ -5603,7 +5546,6 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
         function Template(options) {
             _super.call(this);
             this._dataContext = options.dataContext;
-            this._appName = options.appName;
             this._templEvents = options.templEvents;
             this._loadedElem = null;
             this._lfTime = null;
@@ -5612,9 +5554,6 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
             this._el = doc.createElement("div");
             this._el.className = exports.css.templateContainer;
         }
-        Template.prototype._getAppName = function () {
-            return this._appName;
-        };
         Template.prototype._getBindings = function () {
             if (!this._lfTime)
                 return [];
@@ -5799,7 +5738,7 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
             return arrHelper.fromList(this._el.querySelectorAll(["*[", const_5.DATA_ATTR.DATA_NAME, '="', name, '"]'].join("")));
         };
         Template.prototype.findElViewsByDataName = function (name) {
-            var self = this, els = this.findElByDataName(name), res = [], viewStore = viewFactory(self._appName).store;
+            var self = this, els = this.findElByDataName(name), res = [], viewStore = boot.getApp().viewFactory.store;
             els.forEach(function (el) {
                 var elView = viewStore.getElView(el);
                 if (!!elView)
@@ -5848,14 +5787,7 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
         });
         Object.defineProperty(Template.prototype, "app", {
             get: function () {
-                return bootstrap_6.bootstrap.findApp(this._appName);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Template.prototype, "appName", {
-            get: function () {
-                return this._appName;
+                return bootstrap_6.bootstrap.getApp();
             },
             enumerable: true,
             configurable: true
@@ -5942,7 +5874,6 @@ define("jriapp_content/template", ["require", "exports", "jriapp_core/bootstrap"
                 appName: null
             }, options);
             this._templateID = null;
-            this._appName = options.appName;
             this._parentEl = options.parentEl;
             this._isEditing = options.isEditing;
             this._dataContext = options.dataContext;
@@ -5951,9 +5882,6 @@ define("jriapp_content/template", ["require", "exports", "jriapp_core/bootstrap"
             dom.addClass([this._parentEl], int_2.css.content);
             this.render();
         }
-        TemplateContent.prototype._getAppName = function () {
-            return this._appName;
-        };
         TemplateContent.prototype.getTemplateID = function () {
             if (!this._templateInfo) {
                 throw new Error(lang_12.ERRS.ERR_TEMPLATE_ID_INVALID);
@@ -5970,7 +5898,7 @@ define("jriapp_content/template", ["require", "exports", "jriapp_core/bootstrap"
             return id;
         };
         TemplateContent.prototype.createTemplate = function () {
-            var template = template_1.createTemplate(this._appName, this._dataContext);
+            var template = template_1.createTemplate(this._dataContext);
             template.templateID = this._templateID;
             return template;
         };
@@ -6043,13 +5971,8 @@ define("jriapp_content/template", ["require", "exports", "jriapp_core/bootstrap"
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(TemplateContent.prototype, "appName", {
-            get: function () { return this._appName; },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(TemplateContent.prototype, "app", {
-            get: function () { return boot.findApp(this._appName); },
+            get: function () { return boot.getApp(); },
             enumerable: true,
             configurable: true
         });
@@ -6426,7 +6349,7 @@ define("jriapp_content/bool", ["require", "exports", "jriapp_utils/lifetime", "j
             var chk = document.createElement("input");
             chk.setAttribute("type", "checkbox");
             dom.addClass([chk], int_3.css.checkbox);
-            var chbxView = new checkbox_1.CheckBoxElView({ appName: this.appName, el: chk });
+            var chbxView = new checkbox_1.CheckBoxElView({ el: chk });
             return chbxView;
         };
         BoolContent.prototype.createTargetElement = function () {
@@ -6826,9 +6749,9 @@ define("jriapp_core/datepicker", ["require", "exports", "jriapp_core/lang", "jri
     boot.registerSvc("IDatepicker", new Datepicker());
     boot.registerElView("datepicker", DatePickerElView);
 });
-define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_content/factory", "jriapp_core/parser", "jriapp_utils/utils", "jriapp_elview/elview", "jriapp_elview/factory", "jriapp_content/int"], function (require, exports, const_6, lang_17, object_15, bootstrap_14, factory_5, parser_4, utils_15, elview_6, factory_6, int_5) {
+define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_content/factory", "jriapp_core/parser", "jriapp_utils/utils", "jriapp_elview/elview", "jriapp_content/int"], function (require, exports, const_6, lang_17, object_15, bootstrap_14, factory_2, parser_4, utils_15, elview_6, int_5) {
     "use strict";
-    var utils = utils_15.Utils, dom = utils.dom, $ = dom.$, doc = dom.document, checks = utils.check, coreUtils = utils.core, strUtils = utils.str, syschecks = utils.sys, parse = parser_4.parser, viewFactory = factory_6.getElViewFactory, boot = bootstrap_14.bootstrap;
+    var utils = utils_15.Utils, dom = utils.dom, $ = dom.$, doc = dom.document, checks = utils.check, coreUtils = utils.core, strUtils = utils.str, syschecks = utils.sys, parse = parser_4.parser, boot = bootstrap_14.bootstrap;
     exports.css = {
         dataform: "ria-dataform",
         error: "ria-form-error"
@@ -6926,7 +6849,6 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
         function DataForm(options) {
             _super.call(this);
             var self = this, parent;
-            this._appName = options.appName;
             this._el = options.el;
             this._$el = $(this._el);
             this._objId = "frm" + coreUtils.getNewID();
@@ -6943,16 +6865,13 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
             this._contentPromise = null;
             parent = syschecks._getParentDataForm(null, this._el);
             if (!!parent) {
-                self._parentDataForm = viewFactory(this._appName).getOrCreateElView(parent);
+                self._parentDataForm = boot.getApp().viewFactory.getOrCreateElView(parent);
                 self._parentDataForm.addOnDestroyed(function (sender, args) {
                     if (!self._isDestroyCalled)
                         self.destroy();
                 }, self._objId);
             }
         }
-        DataForm.prototype._getAppName = function () {
-            return this._appName;
-        };
         DataForm.prototype._getBindings = function () {
             if (!this._lfTime)
                 return [];
@@ -6990,8 +6909,8 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
                         throw new Error(strUtils.format(lang_17.ERRS.ERR_DBSET_INVALID_FIELDNAME, "", op.fieldName));
                     }
                 }
-                var contentType = factory_5.contentFactories.getContentType(op);
-                var content = new contentType({ parentEl: el, contentOptions: op, dataContext: dctx, isEditing: isEditing, appName: self.appName });
+                var contentType = factory_2.contentFactories.getContentType(op);
+                var content = new contentType({ parentEl: el, contentOptions: op, dataContext: dctx, isEditing: isEditing });
                 self._content.push(content);
             });
             var promise = self.app._getInternal().bindElements(this._el, dctx, true, this.isInsideTemplate);
@@ -7126,13 +7045,8 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
         DataForm.prototype.toString = function () {
             return "DataForm";
         };
-        Object.defineProperty(DataForm.prototype, "appName", {
-            get: function () { return this._appName; },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(DataForm.prototype, "app", {
-            get: function () { return boot.findApp(this._appName); },
+            get: function () { return boot.getApp(); },
             enumerable: true,
             configurable: true
         });
@@ -10322,26 +10236,22 @@ define("jriapp_utils/mloader", ["require", "exports", "jriapp_utils/utils", "jri
         return ModuleLoader;
     }());
 });
-define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "jriapp_core/shared", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/lifetime", "jriapp_utils/utils", "jriapp_utils/mloader", "jriapp_core/binding", "jriapp_core/parser"], function (require, exports, const_8, shared_5, lang_24, object_20, lifetime_3, utils_34, mloader_1, binding_2, parser_6) {
+define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "jriapp_core/shared", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_utils/lifetime", "jriapp_utils/utils", "jriapp_utils/mloader", "jriapp_core/binding", "jriapp_core/parser"], function (require, exports, const_8, shared_5, lang_24, object_20, bootstrap_25, lifetime_3, utils_34, mloader_1, binding_2, parser_6) {
     "use strict";
-    var utils = utils_34.Utils, $ = utils.dom.$, doc = utils.dom.document, strUtils = utils.str, syschecks = utils.sys, checks = utils.check;
-    function create(appName, root, elViewFactory) {
-        return new DataBindingService(appName, root, elViewFactory);
+    var utils = utils_34.Utils, $ = utils.dom.$, doc = utils.dom.document, strUtils = utils.str, syschecks = utils.sys, checks = utils.check, boot = bootstrap_25.bootstrap;
+    function createDataBindSvc(root, elViewFactory) {
+        return new DataBindingService(root, elViewFactory);
     }
-    exports.create = create;
+    exports.createDataBindSvc = createDataBindSvc;
     var DataBindingService = (function (_super) {
         __extends(DataBindingService, _super);
-        function DataBindingService(appName, root, elViewFactory) {
+        function DataBindingService(root, elViewFactory) {
             _super.call(this);
             this._root = root;
             this._elViewFactory = elViewFactory;
             this._objLifeTime = null;
-            this._appName = appName;
             this._mloader = mloader_1.create();
         }
-        DataBindingService.prototype._getAppName = function () {
-            return this._appName;
-        };
         DataBindingService.prototype._toBindableElement = function (el) {
             var val, allAttrs = el.attributes, attr, res = { el: el, dataView: null, dataForm: null, expressions: [] };
             for (var i = 0, n = allAttrs.length; i < n; i++) {
@@ -10422,7 +10332,7 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
                 temp_opts = parser_6.parser.parseOptions(bind_attr);
                 for (var j = 0, len = temp_opts.length; j < len; j += 1) {
                     info = temp_opts[j];
-                    op = binding_2.getBindingOptions(self._appName, info, elView, defSource);
+                    op = binding_2.getBindingOptions(info, elView, defSource);
                     var binding = self.bind(op);
                     lftm.addObj(binding);
                 }
@@ -10505,7 +10415,7 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
             return defer.promise();
         };
         DataBindingService.prototype.setUpBindings = function () {
-            var defScope = this._root, defaultDataContext = this.appName, self = this;
+            var defScope = this._root, defaultDataContext = boot.getApp(), self = this;
             this._cleanUp();
             var promise = this.bindElements(defScope, defaultDataContext, false, false);
             return promise.then(function (lftm) {
@@ -10517,15 +10427,8 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
             });
         };
         DataBindingService.prototype.bind = function (opts) {
-            return new binding_2.Binding(opts, this._appName);
+            return new binding_2.Binding(opts);
         };
-        Object.defineProperty(DataBindingService.prototype, "appName", {
-            get: function () {
-                return this._appName;
-            },
-            enumerable: true,
-            configurable: true
-        });
         DataBindingService.prototype.destroy = function () {
             this._cleanUp();
             this._elViewFactory = null;
@@ -10535,9 +10438,9 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
         return DataBindingService;
     }(object_20.BaseObject));
 });
-define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_utils/utils", "jriapp_elview/factory", "jriapp_core/databindsvc"], function (require, exports, const_9, lang_25, object_21, bootstrap_25, utils_35, factory_7, databindsvc_1) {
+define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_utils/utils", "jriapp_elview/factory", "jriapp_core/databindsvc"], function (require, exports, const_9, lang_25, object_21, bootstrap_26, utils_35, factory_3, databindsvc_1) {
     "use strict";
-    var utils = utils_35.Utils, $ = utils.dom.$, doc = utils.dom.document, boot = bootstrap_25.bootstrap;
+    var utils = utils_35.Utils, $ = utils.dom.$, doc = utils.dom.document, boot = bootstrap_26.bootstrap;
     var APP_EVENTS = {
         startup: "startup"
     };
@@ -10553,24 +10456,19 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
         __extends(Application, _super);
         function Application(options) {
             _super.call(this);
-            var self = this, app_name = "default", moduleInits = {};
-            this._options = null;
-            if (!!options) {
-                this._options = options;
-                if (!!options.appName)
-                    app_name = options.appName;
-                if (!!options.modulesInits)
-                    moduleInits = options.modulesInits;
+            if (!options) {
+                options = {};
             }
-            if (!!boot.findApp(app_name))
-                throw new Error(utils.str.format(lang_25.ERRS.ERR_APP_NAME_NOT_UNIQUE, app_name));
+            var self = this, moduleInits = options.modulesInits || {}, app_name = const_9.APP_NAME;
             this._appName = app_name;
+            this._options = options;
+            if (!!boot.getApp())
+                throw new Error(utils.str.format(lang_25.ERRS.ERR_APP_NAME_NOT_UNIQUE, app_name));
             this._objId = "app:" + utils.core.getNewID();
             this._app_state = 0;
             this._moduleInits = moduleInits;
-            var factory = factory_7.createElViewFactory(app_name, Application._newInstanceNum, boot.elViewRegister);
-            this._dataBindingService = databindsvc_1.create(app_name, this.appRoot, factory);
-            Application._newInstanceNum += 1;
+            this._viewFactory = factory_3.createElViewFactory(boot.elViewRegister);
+            this._dataBindingService = databindsvc_1.createDataBindSvc(this.appRoot, this._viewFactory);
             this._objMaps = [];
             this._exports = {};
             this._UC = {};
@@ -10658,7 +10556,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
             return res;
         };
         Application.prototype.registerElView = function (name, vw_type) {
-            factory_7.getElViewFactory(this.appName).register.registerElView(name, vw_type);
+            this._viewFactory.register.registerElView(name, vw_type);
         };
         Application.prototype.registerObject = function (name, obj) {
             var self = this, name2 = const_9.STORE_KEY.OBJECT + name;
@@ -10788,11 +10686,12 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
                 self._cleanUpObjMaps();
                 self._dataBindingService.destroy();
                 self._dataBindingService = null;
-                factory_7.deleteElViewFactory(this.appName);
+                self._viewFactory.destroy();
                 self._exports = {};
                 self._moduleInits = {};
                 self._UC = {};
                 self._options = null;
+                self._viewFactory = null;
             }
             finally {
                 _super.prototype.destroy.call(this);
@@ -10826,6 +10725,13 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Application.prototype, "viewFactory", {
+            get: function () {
+                return this._viewFactory;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Application.prototype, "UC", {
             get: function () { return this._UC; },
             enumerable: true,
@@ -10836,12 +10742,11 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
             enumerable: true,
             configurable: true
         });
-        Application._newInstanceNum = 1;
         return Application;
     }(object_21.BaseObject));
     exports.Application = Application;
 });
-define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/const", "jriapp_core/shared", "jriapp_utils/syschecks", "jriapp_core/lang", "jriapp_core/converter", "jriapp_core/object", "jriapp_utils/debounce", "jriapp_utils/dblclick", "jriapp_utils/coreutils", "jriapp_core/bootstrap", "jriapp_content/factory", "jriapp_core/binding", "jriapp_core/datepicker", "jriapp_core/dataform", "jriapp_core/template", "jriapp_elview/all", "jriapp_utils/lifetime", "jriapp_utils/propwatcher", "jriapp_utils/waitqueue", "jriapp_utils/utils", "jriapp_core/mvvm", "jriapp_collection/int", "jriapp_collection/collection", "jriapp_collection/item", "jriapp_collection/aspect", "jriapp_collection/list", "jriapp_collection/dictionary", "jriapp_collection/validation", "jriapp_collection/utils", "jriapp_core/app"], function (require, exports, bootstrap_26, const_10, shared_6, syschecks_11, lang_26, converter_1, object_22, debounce_1, dblclick_1, coreutils_18, bootstrap_27, factory_8, binding_3, datepicker_1, dataform_1, template_4, all_1, lifetime_4, propwatcher_1, waitqueue_3, utils_36, mvvm_2, int_10, collection_3, item_1, aspect_2, list_2, dictionary_1, validation_4, utils_37, app_1) {
+define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/const", "jriapp_core/shared", "jriapp_utils/syschecks", "jriapp_core/lang", "jriapp_core/converter", "jriapp_core/object", "jriapp_utils/debounce", "jriapp_utils/dblclick", "jriapp_utils/coreutils", "jriapp_core/bootstrap", "jriapp_content/factory", "jriapp_core/binding", "jriapp_core/datepicker", "jriapp_core/dataform", "jriapp_core/template", "jriapp_elview/all", "jriapp_utils/lifetime", "jriapp_utils/propwatcher", "jriapp_utils/waitqueue", "jriapp_utils/utils", "jriapp_core/mvvm", "jriapp_collection/int", "jriapp_collection/collection", "jriapp_collection/item", "jriapp_collection/aspect", "jriapp_collection/list", "jriapp_collection/dictionary", "jriapp_collection/validation", "jriapp_collection/utils", "jriapp_core/app"], function (require, exports, bootstrap_27, const_10, shared_6, syschecks_11, lang_26, converter_1, object_22, debounce_1, dblclick_1, coreutils_18, bootstrap_28, factory_4, binding_3, datepicker_1, dataform_1, template_4, all_1, lifetime_4, propwatcher_1, waitqueue_3, utils_36, mvvm_2, int_10, collection_3, item_1, aspect_2, list_2, dictionary_1, validation_4, utils_37, app_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -10865,8 +10770,8 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.DblClick = dblclick_1.DblClick;
     exports.DEBUG = coreutils_18.DEBUG;
     exports.ERROR = coreutils_18.ERROR;
-    exports.bootstrap = bootstrap_27.bootstrap;
-    exports.contentFactories = factory_8.contentFactories;
+    exports.bootstrap = bootstrap_28.bootstrap;
+    exports.contentFactories = factory_4.contentFactories;
     exports.Binding = binding_3.Binding;
     __export(datepicker_1);
     exports.DataForm = dataform_1.DataForm;
@@ -10889,5 +10794,5 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     __export(utils_37);
     exports.Application = app_1.Application;
     exports.VERSION = "0.9.92";
-    bootstrap_26.Bootstrap._initFramework();
+    bootstrap_27.Bootstrap._initFramework();
 });

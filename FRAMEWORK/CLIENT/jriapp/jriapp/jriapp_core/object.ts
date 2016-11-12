@@ -53,9 +53,6 @@ export class BaseObject implements IBaseObject {
     protected _removeHandler(name?: string, nmspace?: string): void {
         evHelper.remove(this._events, name, nmspace);
     }
-    protected _getAppName() {
-        return "";
-    }
     protected get _isDestroyed(): boolean {
         return this._obj_state === ObjState.Destroyed;
     }
@@ -83,7 +80,7 @@ export class BaseObject implements IBaseObject {
         let isHandled = args.isHandled;
 
         if (!isHandled) {
-            isHandled = ERROR.handleError(this, this._getAppName(), error, source);
+            isHandled = ERROR.handleError(this, error, source);
         }
 
         return isHandled;

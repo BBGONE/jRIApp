@@ -28,7 +28,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_core/template", "jriap
     };
     var DataEditDialog = (function (_super) {
         __extends(DataEditDialog, _super);
-        function DataEditDialog(appName, options) {
+        function DataEditDialog(options) {
             _super.call(this);
             var self = this;
             options = coreUtils.extend({
@@ -48,7 +48,6 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_core/template", "jriap
                 fn_OnTemplateDestroy: null
             }, options);
             this._objId = "dlg" + coreUtils.getNewID();
-            this._appName = appName;
             this._dataContext = options.dataContext;
             this._templateID = options.templateID;
             this._submitOnOK = options.submitOnOK;
@@ -117,9 +116,6 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_core/template", "jriap
             var base_events = _super.prototype._getEventNames.call(this);
             return [DLG_EVENTS.close, DLG_EVENTS.refresh].concat(base_events);
         };
-        DataEditDialog.prototype._getAppName = function () {
-            return this._appName;
-        };
         DataEditDialog.prototype.templateLoading = function (template) {
         };
         DataEditDialog.prototype.templateLoaded = function (template, error) {
@@ -139,7 +135,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_core/template", "jriap
             }
         };
         DataEditDialog.prototype._createTemplate = function () {
-            var template = template_1.createTemplate(this._getAppName(), null, this);
+            var template = template_1.createTemplate(null, this);
             template.templateID = this._templateID;
             return template;
         };
@@ -451,7 +447,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_core/template", "jriap
             this._factories[name] = function () {
                 var dialog = self._dialogs[name];
                 if (!dialog) {
-                    dialog = new DataEditDialog(self.app.appName, options);
+                    dialog = new DataEditDialog(options);
                     self._dialogs[name] = dialog;
                 }
                 return dialog;
@@ -558,7 +554,7 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_core/template", "
             }
             try {
                 if (!this._template) {
-                    this._template = template_2.createTemplate(this._appName, this._dataContext, this);
+                    this._template = template_2.createTemplate(this._dataContext, this);
                     this._template.templateID = newName;
                     self.raisePropertyChanged(PROP_NAME.template);
                     return;
@@ -800,7 +796,7 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_core/co
                 this._th.style.width = this._options.width;
             }
             if (!!this._options.templateID) {
-                this._template = template_3.createTemplate(this.grid.appName, null, this);
+                this._template = template_3.createTemplate(null, this);
                 this._template.templateID = this._options.templateID;
                 $col.append(this._template.el);
             }
@@ -811,9 +807,6 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_core/co
                 elview_2.fn_addToolTip($col, this._options.tip, false, "bottom center");
             }
         }
-        BaseColumn.prototype._getAppName = function () {
-            return !this.grid ? "" : this.grid.appName;
-        };
         BaseColumn.prototype.destroy = function () {
             if (this._isDestroyed)
                 return;
@@ -1067,7 +1060,7 @@ define("jriapp_ui/datagrid/cells/data", ["require", "exports", "jriapp_core/lang
                     throw new Error(utils.str.format(lang_1.ERRS.ERR_DBSET_INVALID_FIELDNAME, "", contentOptions.fieldName));
                 }
             }
-            var self = this, appName = this.grid.appName;
+            var self = this;
             contentOptions.initContentFn = null;
             try {
                 var contentType = factory_1.contentFactories.getContentType(contentOptions);
@@ -1081,8 +1074,7 @@ define("jriapp_ui/datagrid/cells/data", ["require", "exports", "jriapp_core/lang
                     parentEl: this.td,
                     contentOptions: contentOptions,
                     dataContext: this.item,
-                    isEditing: this.item._aspect.isEditing,
-                    appName: appName
+                    isEditing: this.item._aspect.isEditing
                 });
             }
             finally {
@@ -1476,9 +1468,6 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_core/object
                 fn_state(self);
             }
         }
-        Row.prototype._getAppName = function () {
-            return !this.grid ? "" : this.grid.appName;
-        };
         Row.prototype._createCells = function () {
             var self = this, cols = self.columns, len = cols.length;
             for (var i = 0; i < len; i += 1) {
@@ -1758,9 +1747,6 @@ define("jriapp_ui/datagrid/cells/base", ["require", "exports", "jriapp_core/cons
             this._click = new dblclick_1.DblClick();
             this._row.tr.appendChild(this._td);
         }
-        BaseCell.prototype._getAppName = function () {
-            return !this.grid ? "" : this.grid.appName;
-        };
         BaseCell.prototype._onCellClicked = function (row) {
         };
         BaseCell.prototype._onDblClicked = function (row) {
@@ -1855,9 +1841,6 @@ define("jriapp_ui/datagrid/rows/details", ["require", "exports", "jriapp_core/ob
                     self._setParentRow(null);
             }, this._objId);
         }
-        DetailsRow.prototype._getAppName = function () {
-            return !this.grid ? "" : this.grid.appName;
-        };
         DetailsRow.prototype._createCell = function (details_id) {
             var td = document.createElement("td");
             this._cell = new details_1.DetailsCell({ row: this, td: td, details_id: details_id });
@@ -2017,13 +2000,10 @@ define("jriapp_ui/datagrid/cells/details", ["require", "exports", "jriapp_core/t
                 return;
             this._td.colSpan = this.grid.columns.length;
             this._row.tr.appendChild(this._td);
-            this._template = template_4.createTemplate(this.grid.appName, null, null);
+            this._template = template_4.createTemplate(null, null);
             this._template.templateID = options.details_id;
             this._td.appendChild(this._template.el);
         }
-        DetailsCell.prototype._getAppName = function () {
-            return !this.grid ? "" : this.grid.appName;
-        };
         DetailsCell.prototype.destroy = function () {
             if (this._isDestroyed)
                 return;
@@ -2087,9 +2067,6 @@ define("jriapp_ui/datagrid/rows/fillspace", ["require", "exports", "jriapp_core/
             this._createCell();
             utils.dom.addClass([tr], const_18.css.fillVSpace);
         }
-        FillSpaceRow.prototype._getAppName = function () {
-            return !this.grid ? "" : this.grid.appName;
-        };
         FillSpaceRow.prototype._createCell = function () {
             var td = document.createElement("td");
             this._cell = new fillspace_1.FillSpaceCell({ row: this, td: td });
@@ -2161,9 +2138,6 @@ define("jriapp_ui/datagrid/cells/fillspace", ["require", "exports", "jriapp_core
             this._div.className = const_19.css.fillVSpace;
             this._td.appendChild(this._div);
         }
-        FillSpaceCell.prototype._getAppName = function () {
-            return !this.grid ? "" : this.grid.appName;
-        };
         FillSpaceCell.prototype.destroy = function () {
             if (this._isDestroyed)
                 return;
@@ -2277,7 +2251,6 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             _super.call(this);
             var self = this;
             options = coreUtils.merge(options, {
-                appName: null,
                 el: null,
                 dataSource: null,
                 animation: null,
@@ -2390,9 +2363,6 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             var base_events = _super.prototype._getEventNames.call(this);
             var events = Object.keys(GRID_EVENTS).map(function (key, i, arr) { return GRID_EVENTS[key]; });
             return events.concat(base_events);
-        };
-        DataGrid.prototype._getAppName = function () {
-            return this._options.appName;
         };
         DataGrid.prototype.addOnRowExpanded = function (fn, nmspace, context) {
             this._addHandler(GRID_EVENTS.row_expanded, fn, nmspace, context);
@@ -3041,7 +3011,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
                     dataContext: item,
                     templateID: null
                 }, this._options.editor);
-                this._dialog = new dialog_1.DataEditDialog(this._getAppName(), dialogOptions);
+                this._dialog = new dialog_1.DataEditDialog(dialogOptions);
             }
             else
                 this._dialog.dataContext = item;
@@ -3146,7 +3116,6 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             dom.removeClass(this._$table.toArray(), const_21.css.dataTable);
             dom.removeClass([this._tHeadRow], const_21.css.columnInfo);
             this._$table = null;
-            this._options.appName = null;
             this._options = {};
             this._selectable = null;
             this._internal = null;
@@ -3337,11 +3306,6 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(DataGrid.prototype, "appName", {
-            get: function () { return this._getAppName(); },
-            enumerable: true,
-            configurable: true
-        });
         return DataGrid;
     }(object_10.BaseObject));
     exports.DataGrid = DataGrid;
@@ -3370,7 +3334,6 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_core/const"
         };
         DataGridElView.prototype._createGrid = function () {
             var options = coreUtils.extend({
-                appName: this._getAppName(),
                 el: this.el,
                 dataSource: null,
                 animation: null
@@ -3471,7 +3434,6 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_core/lang", "jriapp_cor
         function Pager(options) {
             _super.call(this);
             options = coreUtils.extend({
-                appName: null,
                 el: null,
                 dataSource: null,
                 showTip: true,
@@ -3497,9 +3459,6 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_core/lang", "jriapp_cor
                 this._bindDS();
             }
         }
-        Pager.prototype._getAppName = function () {
-            return this._options.appName;
-        };
         Pager.prototype._createElement = function (tag) {
             return $(doc.createElement(tag));
         };
@@ -3895,11 +3854,6 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_core/lang", "jriapp_cor
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Pager.prototype, "appName", {
-            get: function () { return this._getAppName(); },
-            enumerable: true,
-            configurable: true
-        });
         return Pager;
     }(object_11.BaseObject));
     exports.Pager = Pager;
@@ -3980,7 +3934,6 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_core/lang", "jriapp_c
             _super.call(this);
             var self = this;
             options = coreUtils.extend({
-                appName: null,
                 el: null,
                 dataSource: null,
                 valuePath: null,
@@ -4040,9 +3993,6 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_core/lang", "jriapp_c
             var base_events = _super.prototype._getEventNames.call(this);
             var events = Object.keys(LISTBOX_EVENTS).map(function (key, i, arr) { return LISTBOX_EVENTS[key]; });
             return events.concat(base_events);
-        };
-        ListBox.prototype._getAppName = function () {
-            return this._options.appName;
         };
         ListBox.prototype.addOnRefreshed = function (fn, nmspace, context) {
             this._addHandler(LISTBOX_EVENTS.refreshed, fn, nmspace, context);
@@ -4736,7 +4686,6 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_core/lang", "jriapp_c
                 valuePath: lookUpOptions.valuePath,
                 textPath: lookUpOptions.textPath,
                 statePath: (!lookUpOptions.statePath) ? null : lookUpOptions.statePath,
-                appName: this.appName,
                 el: doc.createElement("select")
             }, el = options.el, dataSource = parser_2.parser.resolvePath(this.app, lookUpOptions.dataSource);
             el.setAttribute("size", "1");
@@ -4760,7 +4709,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_core/lang", "jriapp_c
             if (!!displayInfo && !!displayInfo.displayCss) {
                 utils.dom.addClass([el], displayInfo.displayCss);
             }
-            var spanView = new span_1.SpanElView({ appName: this.appName, el: el });
+            var spanView = new span_1.SpanElView({ el: el });
             this._spanView = spanView;
             return this._spanView;
         };
@@ -4929,7 +4878,6 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_core/const", "jria
             _super.call(this);
             var self = this;
             options = coreUtils.extend({
-                appName: null,
                 el: null,
                 dataSource: null,
                 templateID: null,
@@ -4983,9 +4931,6 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_core/const", "jria
         StackPanel.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
             return [PNL_EVENTS.item_clicked].concat(base_events);
-        };
-        StackPanel.prototype._getAppName = function () {
-            return this._options.appName;
         };
         StackPanel.prototype.addOnItemClicked = function (fn, nmspace, context) {
             this._addHandler(PNL_EVENTS.item_clicked, fn, nmspace, context);
@@ -5111,7 +5056,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_core/const", "jria
             }
         };
         StackPanel.prototype._createTemplate = function (item) {
-            var template = template_5.createTemplate(this._getAppName(), item, null);
+            var template = template_5.createTemplate(item, null);
             template.templateID = this.templateID;
             return template;
         };
@@ -5246,11 +5191,6 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_core/const", "jria
         StackPanel.prototype.toString = function () {
             return "StackPanel";
         };
-        Object.defineProperty(StackPanel.prototype, "app", {
-            get: function () { return this._options.appName; },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(StackPanel.prototype, "el", {
             get: function () { return this._options.el; },
             enumerable: true,

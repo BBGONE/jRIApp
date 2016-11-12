@@ -30,7 +30,6 @@ export interface IPagerOptions {
 }
 
 export interface IPagerConstructorOptions extends IPagerOptions {
-    appName: string;
     el: HTMLElement;
     dataSource: ICollection<ICollectionItem>;
 }
@@ -55,7 +54,6 @@ export class Pager extends BaseObject {
         super();
         options = coreUtils.extend(
             {
-                appName: null,
                 el: null,
                 dataSource: null,
                 showTip: true,
@@ -80,9 +78,6 @@ export class Pager extends BaseObject {
         if (!!this._options.dataSource) {
             this._bindDS();
         }
-    }
-    protected _getAppName() {
-        return this._options.appName;
     }
     protected _createElement(tag: string) {
         return $(doc.createElement(tag));
@@ -453,7 +448,6 @@ export class Pager extends BaseObject {
             this.render();
         }
     }
-    get appName() { return this._getAppName(); }
 }
 
 export interface IPagerViewOptions extends IPagerOptions, IViewOptions {

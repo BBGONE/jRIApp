@@ -23,9 +23,6 @@ export class FillSpaceCell extends BaseObject {
         this._div.className = css.fillVSpace;
         this._td.appendChild(this._div);
     }
-    protected _getAppName() {
-        return !this.grid ? "" : this.grid.appName;
-    }
     destroy() {
         if (this._isDestroyed)
             return;

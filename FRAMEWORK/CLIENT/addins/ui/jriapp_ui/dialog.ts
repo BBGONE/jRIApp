@@ -82,12 +82,11 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     private _result: "ok" | "cancel";
     private _options: IDialogOptions;
     private _fn_submitOnOK: () => IVoidPromise;
-    private _appName: string;
     //save the global's currentSelectable  before showing and restore it on dialog's closing
     private _currentSelectable: ISelectableProvider;
     private _deferred: IDeferred<ITemplate>;
 
-    constructor(appName: string, options: IDialogConstructorOptions) {
+    constructor(options: IDialogConstructorOptions) {
         super();
         let self = this;
         options = coreUtils.extend({
@@ -107,7 +106,6 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             fn_OnTemplateDestroy: null
         }, options);
         this._objId = "dlg" + coreUtils.getNewID();
-        this._appName = appName;
         this._dataContext = options.dataContext;
         this._templateID = options.templateID;
         this._submitOnOK = options.submitOnOK;
@@ -178,9 +176,6 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         let base_events = super._getEventNames();
         return [DLG_EVENTS.close, DLG_EVENTS.refresh].concat(base_events);
     }
-    protected _getAppName() {
-        return this._appName;
-    }
     templateLoading(template: ITemplate): void {
         //noop
     }
@@ -201,7 +196,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         }
     }
     protected _createTemplate(): ITemplate {
-        const template = createTemplate(this._getAppName(), null, this);
+        const template = createTemplate(null, this);
         template.templateID = this._templateID;
         return template;
     }
@@ -483,7 +478,7 @@ export class DialogVM extends ViewModel<IApplication> {
         this._factories[name] = function () {
             let dialog = self._dialogs[name];
             if (!dialog) {
-                dialog = new DataEditDialog(self.app.appName, options);
+                dialog = new DataEditDialog(options);
                 self._dialogs[name] = dialog;
             }
             return dialog;

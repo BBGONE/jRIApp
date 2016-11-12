@@ -38,7 +38,6 @@ export interface IInternalBootstrapMethods {
     untrackSelectable(selectable: ISelectableProvider): void;
     registerApp(app: IApplication): void;
     unregisterApp(app: IApplication): void;
-    destroyApps(): void;
     registerObject(root: IExports, name: string, obj: any): void;
     unregisterObject(root: IExports, name: string): void;
     getObject(root: IExports, name: string): any;
@@ -55,7 +54,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             bootstrap._getInternal().initialize();
         });
     }
-    private _appInst: { [name: string]: IApplication; };
+    private _appInst: IApplication; 
     private _currentSelectable: ISelectableProvider;
     private _defaults: Defaults;
     private _templateLoader: TemplateLoader;
@@ -71,7 +70,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         if (!!bootstrap)
             throw new Error(ERRS.ERR_GLOBAL_SINGLTON);
         this._bootState = BootstrapState.None;
-        this._appInst = {};
+        this._appInst = null;
         this._currentSelectable = null;
         //exported types
         this._exports = {};
@@ -100,9 +99,6 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             },
             unregisterApp: (app: IApplication) => {
                 self._unregisterApp(app);
-            },
-            destroyApps: () => {
-                self._destroyApps();
             },
             registerObject: (root: IExports, name: string, obj: any) => {
                 self._registerObject(root, name, obj);
@@ -211,7 +207,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         super._addHandler(name, fn, nmspace, context, priority);
     }
     private _init(): IPromise<void> {
-        let self = this, deferred = _async.createDeferred<void>(), invalidOpErr = new Error("Invalid operation");
+        const self = this, deferred = _async.createDeferred<void>(), invalidOpErr = new Error("Invalid operation");
         if (self.getIsDestroyCalled())
             return deferred.reject(invalidOpErr);
      
@@ -221,21 +217,13 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         self.raiseEvent(GLOB_EVENTS.initialized, {});
         self.removeHandler(GLOB_EVENTS.initialized, null);
 
-
-        setTimeout(() => {
-            try {
-                if (self.getIsDestroyCalled())
-                    throw invalidOpErr;
-                self._processHTMLTemplates();
-                self._bootState = BootstrapState.Ready;
-                self.raisePropertyChanged(PROP_NAME.isReady);
-                deferred.resolve();
-            }
-            catch (err) {
-                deferred.reject(err);
-            }
-        }, 0);
-
+        deferred.resolve(_async.delay(() => {
+            if (self.getIsDestroyCalled())
+                throw invalidOpErr;
+            self._processHTMLTemplates();
+            self._bootState = BootstrapState.Ready;
+            self.raisePropertyChanged(PROP_NAME.isReady);
+        }));
 
         return deferred.promise().then(() => {
             self.raiseEvent(GLOB_EVENTS.load, {});
@@ -243,7 +231,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         });
     }
     private _initialize(): IPromise<void> {
-        let self = this, deferred = _async.createDeferred<void>(), invalidOpErr = new Error("Invalid operation");
+        const self = this, deferred = _async.createDeferred<void>(), invalidOpErr = new Error("Invalid operation");
 
         if (this._bootState !== BootstrapState.None)
             return deferred.reject(invalidOpErr);
@@ -276,24 +264,25 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             this.currentSelectable = null;
     }
     private _registerApp(app: IApplication): void {
-        if (!this._appInst[app.appName]) {
-            this._appInst[app.appName] = app;
+        if (!this._appInst) {
+            this._appInst = app;
             ERROR.addHandler(app.appName, app);
         }
     }
     private _unregisterApp(app: IApplication): void {
-        if (!this._appInst[app.appName])
+        if (!this._appInst)
             return;
         ERROR.removeHandler(app.appName);
-        delete this._appInst[app.appName];
+        this._appInst = null;
         this.templateLoader.unRegisterTemplateGroup(app.appName);
         this.templateLoader.unRegisterTemplateLoader(app.appName);
     }
-    private _destroyApps(): void {
-        let self = this;
-        coreUtils.forEachProp(this._appInst, function (id) {
-            self._appInst[id].destroy();
-        });
+    private _destroyApp(): void {
+        const self = this;
+        if (!!self._appInst) {
+            self._appInst.destroy();
+            self._appInst = null;
+        }
     }
     private _registerObject(root: IExports, name: string, obj: any): void {
         coreUtils.setValue(root.getExports(), name, obj, true);
@@ -350,8 +339,8 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     getExports(): IIndexer<any> {
         return this._exports;
     }
-    findApp(name: string): IApplication {
-        return this._appInst[name];
+    getApp(): IApplication {
+        return this._appInst;
     }
     init(onInit: (bootstrap: Bootstrap) => void): void {
         let self = this;
@@ -397,7 +386,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         this._isDestroyCalled = true;
         const self = this;
         self._removeHandler();
-        self._destroyApps();
+        self._destroyApp();
         self._exports = {};
         if (self._templateLoader !== null) {
             self._templateLoader.destroy();

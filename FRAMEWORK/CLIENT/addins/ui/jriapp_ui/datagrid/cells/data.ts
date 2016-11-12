@@ -38,7 +38,7 @@ export class DataCell extends BaseCell<DataColumn> {
                 throw new Error(utils.str.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, "", contentOptions.fieldName));
             }
         }
-        const self = this, appName = this.grid.appName;
+        const self = this;
         contentOptions.initContentFn = null;
         try {
             let contentType = contentFactories.getContentType(contentOptions);
@@ -55,8 +55,7 @@ export class DataCell extends BaseCell<DataColumn> {
                 parentEl: this.td,
                 contentOptions: contentOptions,
                 dataContext: this.item,
-                isEditing: this.item._aspect.isEditing,
-                appName: appName
+                isEditing: this.item._aspect.isEditing
             });
         }
         finally {

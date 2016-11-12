@@ -81,7 +81,6 @@ interface IBindingState {
 }
 
 export function getBindingOptions(
-    appName: string,
     bindInfo: IBindingInfo,
     defaultTarget: IBaseObject,
     defaultSource: any) {
@@ -96,7 +95,7 @@ export function getBindingOptions(
         isSourceFixed: false
     };
 
-    let converter: IConverter, app = boot.findApp(appName);
+    let converter: IConverter, app = boot.getApp();
 
     if (checks.isString(bindInfo.converter)) {
         converter = app.getConverter(bindInfo.converter);
@@ -179,12 +178,11 @@ export class Binding extends BaseObject implements IBinding {
     private _tgtEnd: any;
     private _source: any;
     private _target: IBaseObject;
-    private _appName: string;
     private _umask: number;
     private _cntUtgt: number;
     private _cntUSrc: number;
 
-    constructor(options: IBindingOptions, appName?: string) {
+    constructor(options: IBindingOptions) {
         super();
         let opts: IBindingOptions = coreUtils.extend({
             target: null, source: null,
@@ -214,7 +212,6 @@ export class Binding extends BaseObject implements IBinding {
             throw new Error(ERRS.ERR_BIND_TARGET_INVALID);
         }
 
-        this._appName = appName;
         //save the state - source and target, when the binding is disabled
         this._state = null; 
         this._mode = opts.mode;
@@ -242,9 +239,6 @@ export class Binding extends BaseObject implements IBinding {
         let err_notif = utils.getErrorNotification(this._srcEnd);
         if (!!err_notif && err_notif.getIsHasErrors())
             this._onSrcErrChanged(err_notif);
-    }
-    protected _getAppName() {
-        return this._appName;
     }
     private _update(): void {
         const umask = this._umask, MAX_REC= 3;

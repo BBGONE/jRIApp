@@ -32,7 +32,6 @@ export interface IListBoxOptions {
 }
 
 export interface IListBoxConstructorOptions extends IListBoxOptions {
-    appName: string;
     el: HTMLSelectElement;
     dataSource: ICollection<ICollectionItem>;
 }
@@ -78,7 +77,6 @@ export class ListBox extends BaseObject {
         let self = this;
         options = coreUtils.extend(
             {
-                appName: null,
                 el: null,
                 dataSource: null,
                 valuePath: null,
@@ -138,9 +136,6 @@ export class ListBox extends BaseObject {
         let base_events = super._getEventNames();
         let events = Object.keys(LISTBOX_EVENTS).map((key, i, arr) => { return <string>(<any>LISTBOX_EVENTS)[key]; });
         return events.concat(base_events);
-    }
-    protected _getAppName() {
-        return this._options.appName;
     }
     addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any) {
         this._addHandler(LISTBOX_EVENTS.refreshed, fn, nmspace, context);
@@ -785,7 +780,6 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
             valuePath: lookUpOptions.valuePath,
             textPath: lookUpOptions.textPath,
             statePath: (!lookUpOptions.statePath) ? null : lookUpOptions.statePath,
-            appName: this.appName,
             el: doc.createElement("select")
         }, el = options.el, dataSource = parser.resolvePath(this.app, lookUpOptions.dataSource);
         el.setAttribute("size", "1");
@@ -809,7 +803,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         if (!!displayInfo && !!displayInfo.displayCss) {
             utils.dom.addClass([el], displayInfo.displayCss);
         }
-        let spanView = new SpanElView({ appName: this.appName, el: el });
+        let spanView = new SpanElView({ el: el });
         this._spanView = spanView;
         return this._spanView;
     }

@@ -8,6 +8,7 @@ declare module "jriapp_core/const" {
         NORMAL = 1,
         HIGH = 2,
     }
+    export const APP_NAME: string;
     export const DUMY_ERROR: string;
     export const TOOLTIP_SVC: string;
     export const STORE_KEY: {
@@ -302,7 +303,7 @@ declare module "jriapp_core/shared" {
         dataContext: any;
         templateID: string;
         el: HTMLElement;
-        appName: string;
+        app: IApplication;
     }
     export interface ITemplateEvents {
         templateLoading(template: ITemplate): void;
@@ -331,7 +332,6 @@ declare module "jriapp_core/shared" {
     export interface IViewOptions {
         css?: string;
         tip?: string;
-        appName: string;
         el: HTMLElement;
     }
     export interface IElViewStore {
@@ -364,7 +364,7 @@ declare module "jriapp_core/shared" {
     export interface IElView extends IBaseObject {
         $el: JQuery;
         el: HTMLElement;
-        appName: string;
+        app: IApplication;
     }
     export interface IDataBindingService extends IDisposable {
         bindTemplateElements(templateEl: HTMLElement): IPromise<ILifeTimeScope>;
@@ -447,7 +447,6 @@ declare module "jriapp_core/shared" {
         contentOptions: IContentOptions;
         dataContext: any;
         isEditing: boolean;
-        appName: string;
     }
     export interface IContentFactory {
         getContentType(options: IContentOptions): IContentConstructor;
@@ -499,12 +498,12 @@ declare module "jriapp_core/shared" {
         }): void;
         bind(opts: IBindingOptions): IBinding;
         startUp<TApp extends IApplication>(onStartUp?: (app: TApp) => any): IPromise<TApp>;
-        uniqueID: string;
-        appName: string;
-        appRoot: Document | HTMLElement;
+        readonly uniqueID: string;
+        readonly appName: string;
+        readonly appRoot: Document | HTMLElement;
+        readonly viewFactory: IElViewFactory;
     }
     export interface IAppOptions {
-        appName?: string;
         modulesInits?: IIndexer<(app: IApplication) => void>;
         appRoot?: Document | HTMLElement;
     }
@@ -625,7 +624,7 @@ declare module "jriapp_utils/coreutils" {
         private static _handlers;
         static addHandler(name: string, handler: IErrorHandler): void;
         static removeHandler(name: string): void;
-        static handleError(sender: any, name: string, error: any, source: any): boolean;
+        static handleError(sender: any, error: any, source: any): boolean;
         static throwDummy(err: any): void;
         static checkIsDummy(error: any): boolean;
         static checkIsAbort(error: any): boolean;
@@ -815,7 +814,6 @@ declare module "jriapp_core/object" {
         protected _getEventNames(): string[];
         protected _addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         protected _removeHandler(name?: string, nmspace?: string): void;
-        protected _getAppName(): string;
         protected readonly _isDestroyed: boolean;
         protected _isDestroyCalled: boolean;
         _isHasProp(prop: string): boolean;
@@ -999,9 +997,7 @@ declare module "jriapp_utils/utils" {
 }
 declare module "jriapp_elview/factory" {
     import { IElViewFactory, IElViewRegister } from "jriapp_core/shared";
-    export function createElViewFactory(appName: string, num: number, register: IElViewRegister): IElViewFactory;
-    export function deleteElViewFactory(appName: string): void;
-    export function getElViewFactory(appName: string): IElViewFactory;
+    export function createElViewFactory(register: IElViewRegister): IElViewFactory;
     export function createElViewRegister(next?: IElViewRegister): IElViewRegister;
 }
 declare module "jriapp_core/defaults" {
@@ -1140,7 +1136,6 @@ declare module "jriapp_core/bootstrap" {
         untrackSelectable(selectable: ISelectableProvider): void;
         registerApp(app: IApplication): void;
         unregisterApp(app: IApplication): void;
-        destroyApps(): void;
         registerObject(root: IExports, name: string, obj: any): void;
         unregisterObject(root: IExports, name: string): void;
         getObject(root: IExports, name: string): any;
@@ -1171,7 +1166,7 @@ declare module "jriapp_core/bootstrap" {
         private _untrackSelectable(selectable);
         private _registerApp(app);
         private _unregisterApp(app);
-        private _destroyApps();
+        private _destroyApp();
         private _registerObject(root, name, obj);
         private _unregisterObject(root, name);
         private _getObject(root, name);
@@ -1183,7 +1178,7 @@ declare module "jriapp_core/bootstrap" {
         addOnInitialize(fn: TEventHandler<Bootstrap, any>, nmspace?: string, context?: IBaseObject): void;
         addModuleInit(fn: (app: IApplication) => void): boolean;
         getExports(): IIndexer<any>;
-        findApp(name: string): IApplication;
+        getApp(): IApplication;
         init(onInit: (bootstrap: Bootstrap) => void): void;
         startApp<TApp extends IApplication>(appFactory: () => TApp, onStartUp?: (app: TApp) => void): IPromise<TApp>;
         destroy(): void;
@@ -1364,7 +1359,6 @@ declare module "jriapp_core/mvvm" {
         private _objId;
         private _app;
         constructor(app: TApp);
-        protected _getAppName(): string;
         toString(): string;
         destroy(): void;
         readonly uniqueID: string;
@@ -1457,14 +1451,12 @@ declare module "jriapp_elview/elview" {
         private _$el;
         protected _errors: IValidationInfo[];
         protected _toolTip: string;
-        protected _appName: string;
         private _eventStore;
         private _props;
         private _classes;
         private _display;
         private _css;
         constructor(options: IViewOptions);
-        protected _getAppName(): string;
         protected _onEventChanged(args: IEventChangedArgs): void;
         protected _onEventAdded(name: string, newVal: ICommand): void;
         protected _onEventDeleted(name: string, oldVal: ICommand): void;
@@ -1486,7 +1478,6 @@ declare module "jriapp_elview/elview" {
         readonly props: IPropertyBag;
         readonly classes: IPropertyBag;
         css: string;
-        readonly appName: string;
         readonly app: IApplication;
     }
 }
@@ -1494,7 +1485,7 @@ declare module "jriapp_core/binding" {
     import { BINDING_MODE } from "jriapp_core/const";
     import { IBaseObject, IBindingInfo, IBindingOptions, IBinding, IConverter } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
-    export function getBindingOptions(appName: string, bindInfo: IBindingInfo, defaultTarget: IBaseObject, defaultSource: any): IBindingOptions;
+    export function getBindingOptions(bindInfo: IBindingInfo, defaultTarget: IBaseObject, defaultSource: any): IBindingOptions;
     export class Binding extends BaseObject implements IBinding {
         private _state;
         private _mode;
@@ -1509,12 +1500,10 @@ declare module "jriapp_core/binding" {
         private _tgtEnd;
         private _source;
         private _target;
-        private _appName;
         private _umask;
         private _cntUtgt;
         private _cntUSrc;
-        constructor(options: IBindingOptions, appName?: string);
-        protected _getAppName(): string;
+        constructor(options: IBindingOptions);
         private _update();
         private _onSrcErrChanged(err_notif, args?);
         private _getTgtChangedFn(self, obj, prop, restPath, lvl);
@@ -1560,7 +1549,6 @@ declare module "jriapp_content/basic" {
         protected _dataContext: any;
         protected _lfScope: ILifeTimeScope;
         protected _target: IElView;
-        private _appName;
         constructor(options: IConstructorContentOptions);
         protected init(): void;
         protected updateCss(): void;
@@ -1582,7 +1570,6 @@ declare module "jriapp_content/basic" {
         readonly target: IElView;
         isEditing: boolean;
         dataContext: any;
-        readonly appName: string;
         readonly app: IApplication;
     }
 }
@@ -1621,11 +1608,10 @@ declare module "jriapp_core/template" {
         templateError: string;
     };
     export interface ITemplateOptions {
-        appName: string;
         dataContext?: any;
         templEvents?: ITemplateEvents;
     }
-    export function createTemplate(appName: string, dataContext?: any, templEvents?: ITemplateEvents): ITemplate;
+    export function createTemplate(dataContext?: any, templEvents?: ITemplateEvents): ITemplate;
     export class TemplateElView extends CommandElView implements ITemplateEvents {
         private _template;
         private _isEnabled;
@@ -1647,11 +1633,9 @@ declare module "jriapp_content/template" {
         private _templateInfo;
         private _isEditing;
         private _dataContext;
-        private _appName;
         private _isDisabled;
         private _templateID;
         constructor(options: IConstructorContentOptions);
-        protected _getAppName(): string;
         private getTemplateID();
         private createTemplate();
         protected render(): void;
@@ -1662,7 +1646,6 @@ declare module "jriapp_content/template" {
         readonly template: ITemplate;
         isEditing: boolean;
         dataContext: any;
-        readonly appName: string;
         readonly app: IApplication;
     }
 }
@@ -1854,10 +1837,6 @@ declare module "jriapp_core/dataform" {
         dataform: string;
         error: string;
     };
-    export interface IDataFormOptions {
-        appName: string;
-        el: HTMLElement;
-    }
     export class DataForm extends BaseObject {
         private static _DATA_FORM_SELECTOR;
         private static _DATA_CONTENT_SELECTOR;
@@ -1873,11 +1852,9 @@ declare module "jriapp_core/dataform" {
         private _errNotification;
         private _parentDataForm;
         private _errors;
-        private _appName;
         private _isInsideTemplate;
         private _contentPromise;
-        constructor(options: IDataFormOptions);
-        protected _getAppName(): string;
+        constructor(options: IViewOptions);
         private _getBindings();
         private _getElViews();
         private _createContent();
@@ -1890,7 +1867,6 @@ declare module "jriapp_core/dataform" {
         private _clearContent();
         destroy(): void;
         toString(): string;
-        readonly appName: string;
         readonly app: IApplication;
         readonly el: HTMLElement;
         dataContext: IBaseObject;
@@ -2635,21 +2611,21 @@ declare module "jriapp_utils/mloader" {
 }
 declare module "jriapp_core/databindsvc" {
     import { IElViewFactory, IDataBindingService } from "jriapp_core/shared";
-    export function create(appName: string, root: Document | HTMLElement, elViewFactory: IElViewFactory): IDataBindingService;
+    export function createDataBindSvc(root: Document | HTMLElement, elViewFactory: IElViewFactory): IDataBindingService;
 }
 declare module "jriapp_core/app" {
-    import { IViewType, IIndexer, IApplication, IPromise, IBindingOptions, IAppOptions, IInternalAppMethods, IBaseObject, TEventHandler, IConverter, ITemplateGroupInfo, IBinding } from "jriapp_core/shared";
+    import { IElViewFactory, IViewType, IIndexer, IApplication, IPromise, IBindingOptions, IAppOptions, IInternalAppMethods, IBaseObject, TEventHandler, IConverter, ITemplateGroupInfo, IBinding } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
     export class Application extends BaseObject implements IApplication {
-        private static _newInstanceNum;
         private _UC;
-        private _appName;
         private _moduleInits;
         private _objId;
         private _objMaps;
+        private _appName;
         private _exports;
         protected _options: IAppOptions;
         private _dataBindingService;
+        private _viewFactory;
         private _internal;
         private _app_state;
         constructor(options?: IAppOptions);
@@ -2682,6 +2658,7 @@ declare module "jriapp_core/app" {
         readonly options: IAppOptions;
         readonly appName: string;
         readonly appRoot: Document | HTMLElement;
+        readonly viewFactory: IElViewFactory;
         readonly UC: any;
         readonly app: this;
     }

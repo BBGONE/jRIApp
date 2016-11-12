@@ -22,9 +22,6 @@ export class FillSpaceRow extends BaseObject {
         this._createCell();
         utils.dom.addClass([tr], css.fillVSpace);
     }
-    protected _getAppName() {
-        return !this.grid ? "" : this.grid.appName;
-    }
     private _createCell() {
         let td: HTMLTableCellElement = <HTMLTableCellElement>document.createElement("td");
         this._cell = new FillSpaceCell({ row: this, td: td });

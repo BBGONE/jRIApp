@@ -761,11 +761,14 @@ export class DbContext extends BaseObject {
     _getInternal(): IInternalDbxtMethods {
         return this._internal;
     }
-    initialize(options: { serviceUrl: string; permissions?: IPermissionsInfo; }): IVoidPromise {
+    initialize(options: {
+        serviceUrl: string;
+        permissions?: IPermissionsInfo;
+    }): IVoidPromise {
         if (!!this._initState) {
             return this._initState;
         }
-        let self = this, operType = DATA_OPER.Init, deferred = utils.defer.createDeferred<any>();
+        const self = this, operType = DATA_OPER.Init, deferred = utils.defer.createDeferred<any>();
 
         this._initState = deferred.promise();
         this._initState.then(() => {

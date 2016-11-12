@@ -72,9 +72,6 @@ export class Row extends BaseObject {
             fn_state(self);
         }
     }
-    protected _getAppName() {
-        return !this.grid ? "" : this.grid.appName;
-    }
     private _createCells() {
         const self = this, cols = self.columns, len = cols.length;
         for (let i = 0; i < len; i += 1) {

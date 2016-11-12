@@ -17,7 +17,6 @@ export class TemplateContent extends BaseObject implements IContent {
     private _templateInfo: ITemplateInfo;
     private _isEditing: boolean;
     private _dataContext: any;
-    private _appName: string;
     private _isDisabled: boolean;
     private _templateID: string;
 
@@ -32,7 +31,6 @@ export class TemplateContent extends BaseObject implements IContent {
                 appName: null
             }, options);
         this._templateID = null;
-        this._appName = options.appName;
         this._parentEl = options.parentEl;
         this._isEditing = options.isEditing;
         this._dataContext = options.dataContext;
@@ -40,9 +38,6 @@ export class TemplateContent extends BaseObject implements IContent {
         this._template = null;
         dom.addClass([this._parentEl], css.content);
         this.render();
-    }
-    protected _getAppName() {
-        return this._appName;
     }
     private getTemplateID() {
         if (!this._templateInfo) {
@@ -62,7 +57,7 @@ export class TemplateContent extends BaseObject implements IContent {
         return id;
     }
     private createTemplate(): ITemplate {
-        let template = createTemplate(this._appName, this._dataContext);
+        let template = createTemplate(this._dataContext);
         template.templateID = this._templateID;
         return template;
     }
@@ -118,6 +113,5 @@ export class TemplateContent extends BaseObject implements IContent {
             }
         }
     }
-    get appName() { return this._appName; }
-    get app(): IApplication { return boot.findApp(this._appName); }
+    get app(): IApplication { return boot.getApp(); }
 }

@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { DATA_ATTR, STORE_KEY } from "./const";
+import { DATA_ATTR, STORE_KEY, APP_NAME } from "./const";
 import { IElViewStore, IElViewFactory, IElView, IViewType, IIndexer, IApplication, IErrorHandler, IExports, ILifeTimeScope, IBindableElement, IPromise, IVoidPromise, DummyError,
     IBindingOptions, IAppOptions, IInternalAppMethods, IBaseObject, TFactoryGetter, TEventHandler, IConverter, IContentOptions, ITemplate, ITemplateEvents,
     ITemplateGroupInfo, ITemplateGroupInfoEx, IContentFactory, IDataBindingService, IBinding, IElViewRegister, IThenable
@@ -9,8 +9,8 @@ import { BaseObject }  from "./object";
 import { bootstrap } from "./bootstrap";
 import { LifeTimeScope } from "../jriapp_utils/lifetime";
 import { Utils } from "../jriapp_utils/utils";
-import { createElViewFactory, deleteElViewFactory, getElViewFactory } from "../jriapp_elview/factory";
-import { create as createDataBindSvc } from "./databindsvc";
+import { createElViewFactory } from "../jriapp_elview/factory";
+import { createDataBindSvc } from "./databindsvc";
 
 const utils = Utils, $ = utils.dom.$, doc = utils.dom.document, boot = bootstrap;
 
@@ -23,39 +23,34 @@ const enum AppState { None, Starting, Started, Destroyed, Error }
 
 
 export class Application extends BaseObject implements IApplication {
-    private static _newInstanceNum = 1;
     private _UC: any;
-    private _appName: string;
     private _moduleInits: IIndexer<(app: IApplication) => void>;
     private _objId: string;
     private _objMaps: any[];
+    private _appName: string;
     private _exports: IIndexer<any>;
     protected _options: IAppOptions;
     private _dataBindingService: IDataBindingService;
+    private _viewFactory: IElViewFactory;
     private _internal: IInternalAppMethods;
     private _app_state: AppState;
 
     constructor(options?: IAppOptions) {
         super();
-        let self = this, app_name = "default", moduleInits = <IIndexer<(app: IApplication) => void>>{};
-        this._options = null;
-        if (!!options) {
-            this._options = options;
-            if (!!options.appName)
-                app_name = options.appName;
-            if (!!options.modulesInits)
-                moduleInits = options.modulesInits;
+        if (!options) {
+            options = {};
         }
-        if (!!boot.findApp(app_name))
-            throw new Error(utils.str.format(ERRS.ERR_APP_NAME_NOT_UNIQUE, app_name));
+        const self = this, moduleInits = options.modulesInits || <IIndexer<(app: IApplication) => void>>{}, app_name = APP_NAME;
         this._appName = app_name;
+        this._options = options;
+        if (!!boot.getApp())
+            throw new Error(utils.str.format(ERRS.ERR_APP_NAME_NOT_UNIQUE, app_name));
         this._objId = "app:" + utils.core.getNewID();
         this._app_state = AppState.None;
         this._moduleInits = moduleInits;
-        const factory = createElViewFactory(app_name, Application._newInstanceNum, boot.elViewRegister);
-        this._dataBindingService = createDataBindSvc(app_name, this.appRoot, factory);
+        this._viewFactory = createElViewFactory(boot.elViewRegister);
+        this._dataBindingService = createDataBindSvc(this.appRoot, this._viewFactory);
 
-        Application._newInstanceNum += 1;
         this._objMaps = [];
         //registered exported types
         this._exports = {};
@@ -150,7 +145,7 @@ export class Application extends BaseObject implements IApplication {
         return res;
     }
     registerElView(name: string, vw_type: IViewType): void {
-        getElViewFactory(this.appName).register.registerElView(name, vw_type);
+        this._viewFactory.register.registerElView(name, vw_type);
     }
     /**
     registers instances of objects, so they can be retrieved later anywhere in the application's code
@@ -308,11 +303,12 @@ export class Application extends BaseObject implements IApplication {
             self._cleanUpObjMaps();
             self._dataBindingService.destroy();
             self._dataBindingService = null;
-            deleteElViewFactory(this.appName);
+            self._viewFactory.destroy();
             self._exports = {};
             self._moduleInits = {};
             self._UC = {};
             self._options = null;
+            self._viewFactory = null;
         } finally {
             super.destroy();
         }
@@ -328,6 +324,9 @@ export class Application extends BaseObject implements IApplication {
             return doc;
         else
             return this._options.appRoot;
+    }
+    get viewFactory(): IElViewFactory {
+        return this._viewFactory;
     }
     //Namespace for attaching custom user code (functions and objects - anything)
     get UC() { return this._UC; }

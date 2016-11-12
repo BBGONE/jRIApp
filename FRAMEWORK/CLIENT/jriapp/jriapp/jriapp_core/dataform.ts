@@ -11,12 +11,11 @@ import { contentFactories } from "../jriapp_content/factory";
 import { parser } from "../jriapp_core/parser";
 import { Utils } from "../jriapp_utils/utils";
 import { BaseElView, fn_addToolTip } from "../jriapp_elview/elview";
-import { getElViewFactory } from "../jriapp_elview/factory";
 import { Binding } from "binding";
 import { parseContentAttr } from "../jriapp_content/int";
 
 const utils = Utils, dom = utils.dom, $ = dom.$, doc = dom.document, checks = utils.check, coreUtils = utils.core, strUtils = utils.str,
-    syschecks = utils.sys, parse = parser, viewFactory = getElViewFactory, boot = bootstrap;
+    syschecks = utils.sys, parse = parser, boot = bootstrap;
 
 export const css = {
     dataform: "ria-dataform",
@@ -113,11 +112,6 @@ syschecks._getParentDataForm = function (rootForm: HTMLElement, el: HTMLElement)
     return null;
 };
 
-export interface IDataFormOptions {
-    appName: string;
-    el: HTMLElement;
-}
-
 function getFieldInfo(obj: any, fieldName: string): IFieldInfo {
     if (!obj)
         return null;
@@ -153,14 +147,12 @@ export class DataForm extends BaseObject {
     private _errNotification: IErrorNotification;
     private _parentDataForm: IElView;
     private _errors: IValidationInfo[];
-    private _appName: string;
     private _isInsideTemplate: boolean;
     private _contentPromise: IVoidPromise;
 
-    constructor(options: IDataFormOptions) {
+    constructor(options: IViewOptions) {
         super();
         let self = this, parent: HTMLElement;
-        this._appName = options.appName;
         this._el = options.el;
         this._$el = $(this._el);
         this._objId = "frm" + coreUtils.getNewID();
@@ -180,16 +172,13 @@ export class DataForm extends BaseObject {
         //if this form is nested inside another dataform
         //subscribe for parent's destroy event
         if (!!parent) {
-            self._parentDataForm = viewFactory(this._appName).getOrCreateElView(parent);
+            self._parentDataForm = boot.getApp().viewFactory.getOrCreateElView(parent);
             self._parentDataForm.addOnDestroyed(function (sender, args) {
                 //destroy itself if parent form is destroyed
                 if (!self._isDestroyCalled)
                     self.destroy();
             }, self._objId);
         }
-    }
-    protected _getAppName() {
-        return this._appName;
     }
     private _getBindings(): Binding[] {
         if (!this._lfTime)
@@ -236,7 +225,7 @@ export class DataForm extends BaseObject {
             }
 
             let contentType = contentFactories.getContentType(op);
-            let content = new contentType({ parentEl: el, contentOptions: op, dataContext: dctx, isEditing: isEditing, appName: self.appName });
+            let content = new contentType({ parentEl: el, contentOptions: op, dataContext: dctx, isEditing: isEditing });
             self._content.push(content);
         });
 
@@ -376,8 +365,7 @@ export class DataForm extends BaseObject {
     toString() {
         return "DataForm";
     }
-    get appName() { return this._appName; }
-    get app() { return boot.findApp(this._appName); }
+    get app() { return boot.getApp(); }
     get el() { return this._el; }
     get dataContext() { return this._dataContext; }
     set dataContext(v) {

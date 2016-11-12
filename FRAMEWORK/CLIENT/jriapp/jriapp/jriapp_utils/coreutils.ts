@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { DEBUG_LEVEL } from "../jriapp_core/const";
+import { DEBUG_LEVEL, APP_NAME } from "../jriapp_core/const";
 import { DebugLevel, IIndexer, DummyError, AbortError, IErrorHandler } from "../jriapp_core/shared";
 import { ArrayHelper } from "./arrhelper";
 import { StringUtils } from "./strutils";
@@ -25,21 +25,19 @@ export class ERROR {
     static removeHandler(name: string): void {
         delete ERROR._handlers[name];
     }
-    static handleError(sender: any, name: string, error: any, source: any): boolean {
+    static handleError(sender: any, error: any, source: any): boolean {
         if (ERROR.checkIsDummy(error)) {
             return true;
         }
 
         let handler: IErrorHandler, isHandled = false;
 
-        if (!!name && name !== "*") {
-            handler = ERROR._handlers[name];
-            if (!!handler) {
-                if (handler === sender)
-                    handler = null;
-                else {
-                    isHandled = handler.handleError(error, source);
-              }
+        handler = ERROR._handlers[APP_NAME];
+        if (!!handler) {
+            if (handler === sender)
+                handler = null;
+            else {
+                isHandled = handler.handleError(error, source);
             }
         }
 

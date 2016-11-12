@@ -47,9 +47,6 @@ export class BaseCell<TColumn extends BaseColumn> extends BaseObject {
         this._click = new DblClick();
         this._row.tr.appendChild(this._td);
     }
-    protected _getAppName() {
-        return !this.grid ? "" : this.grid.appName;
-    }
     protected _onCellClicked(row?: Row) {
     }
     protected _onDblClicked(row?: Row) {

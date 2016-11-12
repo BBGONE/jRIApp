@@ -25,12 +25,9 @@ export class DetailsCell extends BaseObject {
             return;
         this._td.colSpan = this.grid.columns.length;
         this._row.tr.appendChild(this._td);
-        this._template = createTemplate(this.grid.appName, null, null);
+        this._template = createTemplate(null, null);
         this._template.templateID = options.details_id;
         this._td.appendChild(this._template.el);
-    }
-    protected _getAppName() {
-        return !this.grid ? "" : this.grid.appName;
     }
     destroy() {
         if (this._isDestroyed)

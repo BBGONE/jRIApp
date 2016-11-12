@@ -3,6 +3,8 @@ export enum DEBUG_LEVEL {
     NONE = 0, NORMAL = 1, HIGH = 2
 }
 
+export const APP_NAME = "app_default";
+
 export const DUMY_ERROR = "DUMMY_ERROR";
 
 export const TOOLTIP_SVC = "tooltipSVC";

@@ -267,7 +267,7 @@ export interface ITemplate extends IBaseObject {
     dataContext: any;
     templateID: string;
     el: HTMLElement;
-    appName: string;
+    app: IApplication;
 }
 
 export interface ITemplateEvents {
@@ -302,7 +302,6 @@ export interface IFieldInfo {
 export interface IViewOptions {
     css?: string;
     tip?: string;
-    appName: string;
     el: HTMLElement;
 }
 
@@ -335,7 +334,7 @@ export interface IViewType {
 export interface IElView extends IBaseObject {
     $el: JQuery;
     el: HTMLElement;
-    appName: string;
+    app: IApplication;
 }
 
 export interface IDataBindingService extends IDisposable {
@@ -423,7 +422,6 @@ export interface IConstructorContentOptions {
     contentOptions: IContentOptions;
     dataContext: any;
     isEditing: boolean;
-    appName: string;
 }
 
 export interface IContentFactory {
@@ -484,13 +482,13 @@ export interface IApplication extends IErrorHandler, IExports, IDisposable {
    }): void;
     bind(opts: IBindingOptions): IBinding;
     startUp<TApp extends IApplication>(onStartUp?: (app: TApp) => any): IPromise<TApp>;
-    uniqueID: string;
-    appName: string;
-    appRoot: Document | HTMLElement;
+    readonly uniqueID: string;
+    readonly appName: string;
+    readonly appRoot: Document | HTMLElement;
+    readonly viewFactory: IElViewFactory;
 }
 
 export interface IAppOptions {
-    appName?: string;
     modulesInits?: IIndexer<(app: IApplication) => void>;
     appRoot?: Document | HTMLElement;
 }
