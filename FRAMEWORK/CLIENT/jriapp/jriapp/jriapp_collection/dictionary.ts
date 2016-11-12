@@ -1,12 +1,24 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { Utils } from "../jriapp_utils/utils";
 import { ERRS } from "../jriapp_core/lang";
-
-import { COLL_CHANGE_TYPE, COLL_CHANGE_REASON, COLL_CHANGE_OPER } from "int";
-import { IPropInfo } from "int";
-import { BaseList, IListItem, IListItemConstructor } from "list";
+import { SysChecks } from "../jriapp_utils/syschecks";
+import { COLL_CHANGE_TYPE, COLL_CHANGE_REASON, COLL_CHANGE_OPER, IPropInfo, ICollectionItem } from "./int";
+import { BaseCollection } from "./collection";
+import { BaseList, IListItem, IListItemConstructor } from "./list";
 
 const utils = Utils, strUtils = utils.str, checks = utils.check;
+
+SysChecks._getItemByProp = (obj: any, prop: string) => {
+    if (obj instanceof BaseDictionary) {
+        return (<BaseDictionary<IListItem, any>>obj).getItemByKey(prop);
+    }
+    else if (obj instanceof BaseCollection) {
+        (<BaseCollection<ICollectionItem>>obj).getItemByPos(parseInt(prop, 10));
+    }
+    else
+        return null;
+};
+
 
 export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TItem, TObj>{
     private _keyName: string;

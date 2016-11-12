@@ -4,7 +4,7 @@ import { bootstrap } from "../jriapp_core/bootstrap";
 import { BaseElView, css, PROP_NAME } from "./elview";
 import { SpanElView } from "./span";
 
-const utils = Utils, $ = utils.dom.$;
+const utils = Utils, $ = utils.dom.$, boot = bootstrap;
 
 export class BlockElView extends SpanElView {
     toString() {
@@ -36,6 +36,6 @@ export class BlockElView extends SpanElView {
     }
 }
 
-bootstrap.registerElView("block", BlockElView);
-bootstrap.registerElView("div", BlockElView);
-bootstrap.registerElView("section", BlockElView);
+boot.registerElView("block", BlockElView);
+boot.registerElView("div", BlockElView);
+boot.registerElView("section", BlockElView);

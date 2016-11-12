@@ -4,9 +4,10 @@ import { IIndexer, IVoidPromise, AbortError, IBaseObject, TEventHandler } from "
 import * as langMOD from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
 import { bootstrap } from "jriapp_core/bootstrap";
-import { HttpUtils, Utils, ERROR, WaitQueue } from "jriapp_utils/utils";
+import { WaitQueue } from "jriapp_utils/waitqueue";
+import { Utils } from "jriapp_utils/utils";
 import { IPromiseState, IPromise, IAbortablePromise, PromiseState, IDeferred } from "jriapp_utils/async";
-import { COLL_CHANGE_REASON, valueUtils } from "jriapp_collection/collection";
+import { COLL_CHANGE_REASON, valueUtils } from "jriapp";
 import {
     IEntityItem, IRefreshRowInfo, IQueryResult, IQueryInfo, IAssociationInfo, IAssocConstructorOptions,
     IPermissionsInfo, IPermissions, IInvokeRequest, IInvokeResponse, IQueryRequest, IQueryResponse, ITrackAssoc,
@@ -19,7 +20,7 @@ import { Association } from "association";
 import { DataQuery, TDataQuery } from "dataquery";
 import { AccessDeniedError, ConcurrencyError, SvcValidationError, DataOperationError, SubmitError } from "error";
 
-const http = HttpUtils, utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+const utils = Utils, http = utils.http, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err;
 
 const DATA_SVC_METH = {
     Invoke: "invoke",
@@ -434,13 +435,6 @@ export class DbContext extends BaseObject {
             loadUrl = loadUrl + "/";
         loadUrl = loadUrl + [action, ""].join("/");
         return loadUrl;
-    }
-    public handleError(error: any, source: any): boolean {
-        let isHandled = super.handleError(error, source);
-        if (!isHandled) {
-            return bootstrap.handleError(error, source);
-        }
-        return isHandled;
     }
     protected _onDataOperError(ex: any, oper: DATA_OPER): boolean {
         if (ERROR.checkIsDummy(ex))

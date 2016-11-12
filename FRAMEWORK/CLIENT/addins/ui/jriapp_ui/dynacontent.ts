@@ -1,7 +1,8 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { ITemplate, IVoidPromise, ITemplateEvents, IBaseObject, IViewOptions } from "jriapp_core/shared";
+import { createTemplate } from "jriapp_core/template";
 import { BaseObject } from "jriapp_core/object";
-import { Utils, ERROR } from "jriapp_utils/utils";
+import { Utils } from "jriapp_utils/utils";
 import { bootstrap } from "jriapp_core/bootstrap";
 import { BaseElView } from "jriapp_elview/elview";
 
@@ -91,13 +92,12 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
                 return;
             }
         } catch (ex) {
-            this.handleError(ex, this);
-            ERROR.throwDummy(ex);
+            utils.err.reThrow(ex, this.handleError(ex, this));
         }
 
         try {
             if (!this._template) {
-                this._template = this.app.createTemplate(this._dataContext, this);
+                this._template = createTemplate(this._appName, this._dataContext, this);
                 this._template.templateID = newName;
                 self.raisePropertyChanged(PROP_NAME.template);
                 return;
@@ -114,8 +114,7 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
             else
                 self._template.templateID = newName;
         } catch (ex) {
-            this.handleError(ex, this);
-            ERROR.throwDummy(ex);
+            utils.err.reThrow(ex, this.handleError(ex, this));
         }
     }
     destroy() {
@@ -137,7 +136,6 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
         super.destroy();
     }
     get template() { return this._template; }
-
     get templateID() {
         return this._templateID;
     }

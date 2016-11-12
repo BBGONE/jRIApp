@@ -1,15 +1,19 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { FIELD_TYPE, BINDING_MODE } from "../jriapp_core/const";
-import { IApplication, IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IElView, IViewOptions,
-    IBaseObject, IBindingInfo, IBindingOptions, IFieldInfo }  from "../jriapp_core/shared";
+import { bootstrap } from "../jriapp_core/bootstrap";
+import {
+    IApplication, IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IElView, IViewOptions,
+    IBaseObject, IBindingInfo, IBindingOptions, IBinding, IFieldInfo } from "../jriapp_core/shared";
 import { BaseObject }  from "../jriapp_core/object";
 import { Binding, getBindingOptions } from "../jriapp_core/binding";
-import { SysChecks, ERROR } from "../jriapp_utils/coreutils";
-import { Utils, LifeTimeScope } from "../jriapp_utils/utils";
+import { LifeTimeScope } from "../jriapp_utils/lifetime";
+import { Utils } from "../jriapp_utils/utils";
+import { getElViewFactory } from "../jriapp_elview/factory";
 
 import { css } from "./int";
 
-const utils = Utils, dom = utils.dom, $ = dom.$, doc = utils.dom.document, coreUtils = utils.core;
+const utils = Utils, dom = utils.dom, $ = dom.$, doc = utils.dom.document, coreUtils = utils.core, checks = utils.check, viewFactory = getElViewFactory,
+    boot = bootstrap;
 
 export class BasicContent extends BaseObject implements IContent {
     protected _parentEl: HTMLElement;
@@ -21,7 +25,7 @@ export class BasicContent extends BaseObject implements IContent {
     protected _lfScope: ILifeTimeScope;
     //the target of the data binding
     protected _target: IElView;
-    protected _app: IApplication;
+    private _appName: string;
 
     constructor(options: IConstructorContentOptions) {
         super();
@@ -31,10 +35,10 @@ export class BasicContent extends BaseObject implements IContent {
                 contentOptions: null,
                 dataContext: null,
                 isEditing: false,
-                app: null
+                appName: null
             }, options);
         this._el = null;
-        this._app = options.app;
+        this._appName = options.appName;
         this._parentEl = options.parentEl;
         this._isEditing = !!options.isEditing;
         this._dataContext = options.dataContext;
@@ -45,13 +49,6 @@ export class BasicContent extends BaseObject implements IContent {
         dom.addClass([this._parentEl], css.content);
         this.init();
         this.render();
-    }
-    handleError(error: any, source: any): boolean {
-        let isHandled = super.handleError(error, source);
-        if (!isHandled) {
-            return this._app.handleError(error, source);
-        }
-        return isHandled;
     }
     protected init() { }
     protected updateCss() {
@@ -107,11 +104,13 @@ export class BasicContent extends BaseObject implements IContent {
         return this.getElementView(this._el, info);
     }
     protected getBindingOption(bindingInfo: IBindingInfo, target: IBaseObject, dataContext: any, targetPath: string) {
-        let options = getBindingOptions(this.app, bindingInfo, target, dataContext);
+        let options = getBindingOptions(this._appName, bindingInfo, target, dataContext);
+
         if (this.isEditing && this.getIsCanBeEdited())
             options.mode = BINDING_MODE.TwoWay;
         else
             options.mode = BINDING_MODE.OneWay;
+
         if (!!targetPath)
             options.targetPath = targetPath;
         return options;
@@ -121,7 +120,7 @@ export class BasicContent extends BaseObject implements IContent {
             return [];
         let arr = this._lfScope.getObjs(), res: Binding[] = [];
         for (let i = 0, len = arr.length; i < len; i += 1) {
-            if (SysChecks._isBinding(arr[i]))
+            if (utils.sys._isBinding(arr[i]))
                 res.push(<Binding>arr[i]);
         }
         return res;
@@ -146,11 +145,11 @@ export class BasicContent extends BaseObject implements IContent {
         this._target = null;
     }
     protected getElementView(el: HTMLElement, view_info: { name: string; options: IViewOptions; }): IElView {
-        let elView = this.app.elViewFactory.store.getElView(el);
+        let factory = viewFactory(this._appName), elView = factory.store.getElView(el);
         if (!!elView)
             return elView;
-        view_info.options = coreUtils.merge({ app: this._app, el: el }, view_info.options);
-        return this.app.elViewFactory.createElView(view_info);
+        view_info.options = coreUtils.merge({ appName: this._appName, el: el }, view_info.options);
+        return factory.createElView(view_info);
     }
     protected getFieldInfo(): IFieldInfo {
         return this._options.fieldInfo;
@@ -170,7 +169,7 @@ export class BasicContent extends BaseObject implements IContent {
             }
         }
         catch (ex) {
-            ERROR.reThrow(ex, this.handleError(ex, this));
+            utils.err.reThrow(ex, this.handleError(ex, this));
         }
     }
     destroy() {
@@ -190,7 +189,6 @@ export class BasicContent extends BaseObject implements IContent {
         this._parentEl = null;
         this._dataContext = null;
         this._options = null;
-        this._app = null;
         super.destroy();
     }
     toString() {
@@ -212,5 +210,6 @@ export class BasicContent extends BaseObject implements IContent {
             this.updateBindingSource();
         }
     }
-    get app() { return this._app; }
+    get appName() { return this._appName; }
+    get app() { return boot.findApp(this._appName); }
 }

@@ -2,12 +2,12 @@
 import { IDatepicker } from "../jriapp_core/shared";
 import { ERRS } from "../jriapp_core/lang";
 import { BaseObject }  from "../jriapp_core/object";
-import { CoreUtils as coreUtils } from "../jriapp_utils/coreutils";
-import { DomUtils as dom } from "../jriapp_utils/utils";
+import { CoreUtils } from "../jriapp_utils/coreutils";
+import { DomUtils } from "../jriapp_utils/dom";
 import { bootstrap } from "../jriapp_core/bootstrap";
 import { TextBoxElView, ITextBoxOptions } from "../jriapp_elview/textbox";
 
-const $ = dom.$;
+const coreUtils = CoreUtils, dom = DomUtils, $ = dom.$, boot = bootstrap;
 
 const PROP_NAME = {
     dateFormat: "dateFormat",
@@ -93,14 +93,14 @@ export class DatePickerElView extends TextBoxElView {
     constructor(options: IDatePickerOptions) {
         super(options);
         let $el = this.$el;
-        bootstrap.defaults.datepicker.attachTo($el, options.datepicker);
+        boot.defaults.datepicker.attachTo($el, options.datepicker);
     }
     destroy() {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
         let $el = this.$el;
-        bootstrap.defaults.datepicker.detachFrom($el);
+        boot.defaults.datepicker.detachFrom($el);
         super.destroy();
    }
     toString() {
@@ -109,5 +109,5 @@ export class DatePickerElView extends TextBoxElView {
 }
 
 
-bootstrap.registerSvc("IDatepicker", new Datepicker());
-bootstrap.registerElView("datepicker", DatePickerElView);
+boot.registerSvc("IDatepicker", new Datepicker());
+boot.registerElView("datepicker", DatePickerElView);

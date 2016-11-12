@@ -1,7 +1,7 @@
-/// <reference path="../jriapp/thirdparty/jquery.d.ts" />
-/// <reference path="../jriapp/thirdparty/qtip2.d.ts" />
-/// <reference path="../jriapp/thirdparty/moment.d.ts" />
-/// <reference path="../jriapp/thirdparty/require.d.ts" />
+/// <reference path="../thirdparty/jquery.d.ts" />
+/// <reference path="../thirdparty/moment.d.ts" />
+/// <reference path="../thirdparty/qtip2.d.ts" />
+/// <reference path="../thirdparty/require.d.ts" />
 declare module "jriapp_core/const" {
     export enum DEBUG_LEVEL {
         NONE = 0,
@@ -302,7 +302,7 @@ declare module "jriapp_core/shared" {
         dataContext: any;
         templateID: string;
         el: HTMLElement;
-        app: IApplication;
+        appName: string;
     }
     export interface ITemplateEvents {
         templateLoading(template: ITemplate): void;
@@ -331,7 +331,7 @@ declare module "jriapp_core/shared" {
     export interface IViewOptions {
         css?: string;
         tip?: string;
-        app: IApplication;
+        appName: string;
         el: HTMLElement;
     }
     export interface IElViewStore {
@@ -355,6 +355,7 @@ declare module "jriapp_core/shared" {
             options: IViewOptions;
         };
         store: IElViewStore;
+        register: IElViewRegister;
         destroy(): void;
     }
     export interface IViewType {
@@ -363,7 +364,7 @@ declare module "jriapp_core/shared" {
     export interface IElView extends IBaseObject {
         $el: JQuery;
         el: HTMLElement;
-        app: IApplication;
+        appName: string;
     }
     export interface IDataBindingService extends IDisposable {
         bindTemplateElements(templateEl: HTMLElement): IPromise<ILifeTimeScope>;
@@ -404,7 +405,6 @@ declare module "jriapp_core/shared" {
         converterParam: any;
         isSourceFixed: boolean;
         isDisabled: boolean;
-        appName: string;
     }
     export interface IExternallyCachable {
         addOnObjectCreated(fn: (sender: any, args: {
@@ -447,7 +447,7 @@ declare module "jriapp_core/shared" {
         contentOptions: IContentOptions;
         dataContext: any;
         isEditing: boolean;
-        app: IApplication;
+        appName: string;
     }
     export interface IContentFactory {
         getContentType(options: IContentOptions): IContentConstructor;
@@ -488,7 +488,6 @@ declare module "jriapp_core/shared" {
         registerObject(name: string, obj: any): void;
         getObject<T>(name: string): T;
         getObject(name: string): any;
-        createTemplate(dataContext?: any, templEvents?: ITemplateEvents): ITemplate;
         loadTemplates(url: string): IPromise<any>;
         loadTemplatesAsync(fn_loader: () => IPromise<string>): IPromise<any>;
         registerTemplateLoader(name: string, fn_loader: () => IPromise<string>): void;
@@ -503,7 +502,6 @@ declare module "jriapp_core/shared" {
         uniqueID: string;
         appName: string;
         appRoot: Document | HTMLElement;
-        elViewFactory: IElViewFactory;
     }
     export interface IAppOptions {
         appName?: string;
@@ -614,53 +612,20 @@ declare module "jriapp_utils/checks" {
         static isThenable(a: any): a is IThenable<any>;
     }
 }
-declare module "jriapp_utils/debounce" {
-    import * as coreMOD from "jriapp_core/shared";
-    export class Debounce implements coreMOD.IDisposable {
-        private _isDestroyed;
-        private _timer;
-        private _interval;
-        constructor(interval?: number);
-        enqueue(fn: () => any): void;
-        destroy(): void;
-        getIsDestroyed(): boolean;
-        getIsDestroyCalled(): boolean;
-        interval: number;
-    }
-}
-declare module "jriapp_utils/dblclick" {
-    import * as coreMOD from "jriapp_core/shared";
-    export class DblClick implements coreMOD.IDisposable {
-        private _isDestroyed;
-        private _timer;
-        private _interval;
-        private _fn_OnClick;
-        private _fn_OnDblClick;
-        constructor(interval?: number);
-        click(): void;
-        add(fn_OnClick: () => any, fn_OnDblClick?: () => any): void;
-        destroy(): void;
-        getIsDestroyed(): boolean;
-        getIsDestroyCalled(): boolean;
-        interval: number;
-    }
-}
 declare module "jriapp_utils/coreutils" {
-    import { IIndexer } from "jriapp_core/shared";
+    import { IIndexer, IErrorHandler } from "jriapp_core/shared";
     import { ArrayHelper } from "jriapp_utils/arrhelper";
     import { StringUtils } from "jriapp_utils/strutils";
     import { Checks } from "jriapp_utils/checks";
-    export { Debounce } from "jriapp_utils/debounce";
-    export { DblClick } from "jriapp_utils/dblclick";
-    export { ArrayHelper, IArrayLikeList } from "jriapp_utils/arrhelper";
-    export { StringUtils } from "jriapp_utils/strutils";
-    export { Checks } from "jriapp_utils/checks";
-    export { SysChecks } from "jriapp_utils/syschecks";
     export class DEBUG {
         static checkStartDebugger(): void;
         static isDebugging(): boolean;
     }
     export class ERROR {
+        private static _handlers;
+        static addHandler(name: string, handler: IErrorHandler): void;
+        static removeHandler(name: string): void;
+        static handleError(sender: any, name: string, error: any, source: any): boolean;
         static throwDummy(err: any): void;
         static checkIsDummy(error: any): boolean;
         static checkIsAbort(error: any): boolean;
@@ -850,6 +815,7 @@ declare module "jriapp_core/object" {
         protected _getEventNames(): string[];
         protected _addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         protected _removeHandler(name?: string, nmspace?: string): void;
+        protected _getAppName(): string;
         protected readonly _isDestroyed: boolean;
         protected _isDestroyCalled: boolean;
         _isHasProp(prop: string): boolean;
@@ -887,6 +853,20 @@ declare module "jriapp_core/parser" {
         toString(): string;
     }
     export const parser: Parser;
+}
+declare module "jriapp_utils/lifetime" {
+    import { IBaseObject, ILifeTimeScope } from "jriapp_core/shared";
+    import { BaseObject } from "jriapp_core/object";
+    export class LifeTimeScope extends BaseObject implements ILifeTimeScope {
+        private _objs;
+        constructor();
+        static create(): LifeTimeScope;
+        addObj(b: IBaseObject): void;
+        removeObj(b: IBaseObject): void;
+        getObjs(): IBaseObject[];
+        destroy(): void;
+        toString(): string;
+    }
 }
 declare module "jriapp_utils/dom" {
     export class DomUtils {
@@ -989,75 +969,16 @@ declare module "jriapp_utils/http" {
         static ajaxTimeOut: number;
     }
 }
-declare module "jriapp_utils/lifetime" {
-    import { IBaseObject, ILifeTimeScope } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
-    export class LifeTimeScope extends BaseObject implements ILifeTimeScope {
-        private _objs;
-        constructor();
-        static create(): LifeTimeScope;
-        addObj(b: IBaseObject): void;
-        removeObj(b: IBaseObject): void;
-        getObjs(): IBaseObject[];
-        destroy(): void;
-        toString(): string;
-    }
-}
-declare module "jriapp_utils/propwatcher" {
-    import { BaseObject } from "jriapp_core/object";
-    export class PropWatcher extends BaseObject {
-        private _objId;
-        private _objs;
-        constructor();
-        static create(): PropWatcher;
-        addPropWatch(obj: BaseObject, prop: string, fn_onChange: (prop: string) => void): void;
-        addWatch(obj: BaseObject, props: string[], fn_onChange: (prop: string) => void): void;
-        removeWatch(obj: BaseObject): void;
-        destroy(): void;
-        toString(): string;
-        readonly uniqueID: string;
-    }
-}
-declare module "jriapp_utils/waitqueue" {
-    import { IBaseObject } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
-    export interface IWaitQueueItem {
-        prop: string;
-        groupName?: string;
-        predicate: (val: any) => boolean;
-        action: (...args: any[]) => void;
-        actionArgs?: any[];
-        lastWins?: boolean;
-    }
-    export class WaitQueue extends BaseObject {
-        private _objId;
-        private _owner;
-        private _queue;
-        constructor(owner: IBaseObject);
-        protected _checkQueue(prop: string, value: any): void;
-        enQueue(item: IWaitQueueItem): void;
-        destroy(): void;
-        toString(): string;
-        readonly uniqueID: string;
-        readonly owner: IBaseObject;
-    }
-}
 declare module "jriapp_utils/utils" {
     import { ISubmittable, IErrorNotification, IEditable, IPromise } from "jriapp_core/shared";
-    import { CoreUtils } from "jriapp_utils/coreutils";
+    import { CoreUtils, ERROR, DEBUG, LOG } from "jriapp_utils/coreutils";
+    import { SysChecks } from "jriapp_utils/syschecks";
     import { DomUtils } from "jriapp_utils/dom";
     import { AsyncUtils } from "jriapp_utils/async";
     import { HttpUtils } from "jriapp_utils/http";
     import { StringUtils } from "jriapp_utils/strutils";
     import { Checks } from "jriapp_utils/checks";
     import { ArrayHelper } from "jriapp_utils/arrhelper";
-    export { DomUtils } from "jriapp_utils/dom";
-    export { AsyncUtils } from "jriapp_utils/async";
-    export { HttpUtils } from "jriapp_utils/http";
-    export { LifeTimeScope } from "jriapp_utils/lifetime";
-    export { PropWatcher } from "jriapp_utils/propwatcher";
-    export { WaitQueue, IWaitQueueItem } from "jriapp_utils/waitqueue";
-    export { Debounce, DblClick, DEBUG, ERROR, SysChecks } from "jriapp_utils/coreutils";
     export class Utils {
         static check: typeof Checks;
         static str: typeof StringUtils;
@@ -1066,6 +987,10 @@ declare module "jriapp_utils/utils" {
         static http: typeof HttpUtils;
         static core: typeof CoreUtils;
         static defer: typeof AsyncUtils;
+        static err: typeof ERROR;
+        static log: typeof LOG;
+        static debug: typeof DEBUG;
+        static sys: typeof SysChecks;
         static getErrorNotification(obj: any): IErrorNotification;
         static getEditable(obj: any): IEditable;
         static getSubmittable(obj: any): ISubmittable;
@@ -1073,9 +998,11 @@ declare module "jriapp_utils/utils" {
     }
 }
 declare module "jriapp_elview/factory" {
-    import { IApplication, IElViewFactory, IElViewRegister } from "jriapp_core/shared";
-    export function createFactory(app: IApplication, num: number, register: IElViewRegister): IElViewFactory;
-    export function createRegister(next?: IElViewRegister): IElViewRegister;
+    import { IElViewFactory, IElViewRegister } from "jriapp_core/shared";
+    export function createElViewFactory(appName: string, num: number, register: IElViewRegister): IElViewFactory;
+    export function deleteElViewFactory(appName: string): void;
+    export function getElViewFactory(appName: string): IElViewFactory;
+    export function createElViewRegister(next?: IElViewRegister): IElViewRegister;
 }
 declare module "jriapp_core/defaults" {
     import * as coreMOD from "jriapp_core/shared";
@@ -1100,6 +1027,30 @@ declare module "jriapp_core/defaults" {
         thousandSep: string;
         decPrecision: number;
         readonly ButtonsCSS: typeof coreMOD.ButtonCss;
+    }
+}
+declare module "jriapp_utils/waitqueue" {
+    import { IBaseObject } from "jriapp_core/shared";
+    import { BaseObject } from "jriapp_core/object";
+    export interface IWaitQueueItem {
+        prop: string;
+        groupName?: string;
+        predicate: (val: any) => boolean;
+        action: (...args: any[]) => void;
+        actionArgs?: any[];
+        lastWins?: boolean;
+    }
+    export class WaitQueue extends BaseObject {
+        private _objId;
+        private _owner;
+        private _queue;
+        constructor(owner: IBaseObject);
+        protected _checkQueue(prop: string, value: any): void;
+        enQueue(item: IWaitQueueItem): void;
+        destroy(): void;
+        toString(): string;
+        readonly uniqueID: string;
+        readonly owner: IBaseObject;
     }
 }
 declare module "jriapp_utils/tloader" {
@@ -1307,6 +1258,37 @@ declare module "jriapp_core/converter" {
         convertToTarget(val: any, param: any, dataContext: any): boolean;
     }
 }
+declare module "jriapp_utils/debounce" {
+    import * as coreMOD from "jriapp_core/shared";
+    export class Debounce implements coreMOD.IDisposable {
+        private _isDestroyed;
+        private _timer;
+        private _interval;
+        constructor(interval?: number);
+        enqueue(fn: () => any): void;
+        destroy(): void;
+        getIsDestroyed(): boolean;
+        getIsDestroyCalled(): boolean;
+        interval: number;
+    }
+}
+declare module "jriapp_utils/dblclick" {
+    import * as coreMOD from "jriapp_core/shared";
+    export class DblClick implements coreMOD.IDisposable {
+        private _isDestroyed;
+        private _timer;
+        private _interval;
+        private _fn_OnClick;
+        private _fn_OnDblClick;
+        constructor(interval?: number);
+        click(): void;
+        add(fn_OnClick: () => any, fn_OnDblClick?: () => any): void;
+        destroy(): void;
+        getIsDestroyed(): boolean;
+        getIsDestroyCalled(): boolean;
+        interval: number;
+    }
+}
 declare module "jriapp_content/int" {
     import { IContentOptions, ITemplateInfo } from "jriapp_core/shared";
     export const css: {
@@ -1328,7 +1310,7 @@ declare module "jriapp_content/int" {
     export function parseContentAttr(content_attr: string): IContentOptions;
 }
 declare module "jriapp_core/mvvm" {
-    import { IBaseObject, ITemplate, IErrorHandler } from "jriapp_core/shared";
+    import { IBaseObject, ITemplate, IApplication } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
     export interface ICommand {
         canExecute: (sender: any, param: any) => boolean;
@@ -1378,11 +1360,11 @@ declare module "jriapp_core/mvvm" {
         template: ITemplate;
         isLoaded: boolean;
     }, any>) => TemplateCommand;
-    export class ViewModel<TApp extends IErrorHandler> extends BaseObject {
+    export class ViewModel<TApp extends IApplication> extends BaseObject {
         private _objId;
         private _app;
         constructor(app: TApp);
-        handleError(error: any, source: any): boolean;
+        protected _getAppName(): string;
         toString(): string;
         destroy(): void;
         readonly uniqueID: string;
@@ -1475,13 +1457,14 @@ declare module "jriapp_elview/elview" {
         private _$el;
         protected _errors: IValidationInfo[];
         protected _toolTip: string;
-        protected _app: IApplication;
+        protected _appName: string;
         private _eventStore;
         private _props;
         private _classes;
         private _display;
         private _css;
         constructor(options: IViewOptions);
+        protected _getAppName(): string;
         protected _onEventChanged(args: IEventChangedArgs): void;
         protected _onEventAdded(name: string, newVal: ICommand): void;
         protected _onEventDeleted(name: string, oldVal: ICommand): void;
@@ -1491,7 +1474,6 @@ declare module "jriapp_elview/elview" {
         protected _updateErrorUI(el: HTMLElement, errors: IValidationInfo[]): void;
         protected _setToolTip($el: JQuery, tip: string, isError?: boolean): void;
         destroy(): void;
-        handleError(error: any, source: any): boolean;
         toString(): string;
         readonly $el: JQuery;
         readonly el: HTMLElement;
@@ -1500,20 +1482,19 @@ declare module "jriapp_elview/elview" {
         validationErrors: IValidationInfo[];
         readonly dataName: string;
         toolTip: string;
-        readonly app: IApplication;
         readonly events: IPropertyBag;
         readonly props: IPropertyBag;
         readonly classes: IPropertyBag;
         css: string;
+        readonly appName: string;
+        readonly app: IApplication;
     }
 }
 declare module "jriapp_core/binding" {
     import { BINDING_MODE } from "jriapp_core/const";
     import { IBaseObject, IBindingInfo, IBindingOptions, IBinding, IConverter } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
-    export function getBindingOptions(app: {
-        getConverter(name: string): IConverter;
-    }, bindInfo: IBindingInfo, defaultTarget: IBaseObject, defaultSource: any): IBindingOptions;
+    export function getBindingOptions(appName: string, bindInfo: IBindingInfo, defaultTarget: IBaseObject, defaultSource: any): IBindingOptions;
     export class Binding extends BaseObject implements IBinding {
         private _state;
         private _mode;
@@ -1533,6 +1514,7 @@ declare module "jriapp_core/binding" {
         private _cntUtgt;
         private _cntUSrc;
         constructor(options: IBindingOptions, appName?: string);
+        protected _getAppName(): string;
         private _update();
         private _onSrcErrChanged(err_notif, args?);
         private _getTgtChangedFn(self, obj, prop, restPath, lvl);
@@ -1549,7 +1531,6 @@ declare module "jriapp_core/binding" {
         private _updateSource(sender?, args?);
         protected _setTarget(value: any): void;
         protected _setSource(value: any): void;
-        handleError(error: any, source: any): boolean;
         destroy(): void;
         toString(): string;
         readonly uniqueID: string;
@@ -1564,7 +1545,6 @@ declare module "jriapp_core/binding" {
         converterParam: any;
         readonly isSourceFixed: boolean;
         isDisabled: boolean;
-        readonly appName: string;
     }
 }
 declare module "jriapp_content/basic" {
@@ -1580,9 +1560,8 @@ declare module "jriapp_content/basic" {
         protected _dataContext: any;
         protected _lfScope: ILifeTimeScope;
         protected _target: IElView;
-        protected _app: IApplication;
+        private _appName;
         constructor(options: IConstructorContentOptions);
-        handleError(error: any, source: any): boolean;
         protected init(): void;
         protected updateCss(): void;
         protected getIsCanBeEdited(): boolean;
@@ -1603,7 +1582,60 @@ declare module "jriapp_content/basic" {
         readonly target: IElView;
         isEditing: boolean;
         dataContext: any;
+        readonly appName: string;
         readonly app: IApplication;
+    }
+}
+declare module "jriapp_elview/command" {
+    import { IViewOptions } from "jriapp_core/shared";
+    import { ICommand } from "jriapp_core/mvvm";
+    import { BaseElView } from "jriapp_elview/elview";
+    export interface ICommandViewOptions extends IViewOptions {
+        preventDefault?: boolean;
+        stopPropagation?: boolean;
+    }
+    export class CommandElView extends BaseElView {
+        private _command;
+        private _commandParam;
+        private _preventDefault;
+        private _stopPropagation;
+        private _disabled;
+        constructor(options: ICommandViewOptions);
+        private _onCanExecuteChanged(cmd, args);
+        protected _onCommandChanged(): void;
+        protected invokeCommand(args: any, isAsync: boolean): void;
+        destroy(): void;
+        toString(): string;
+        isEnabled: boolean;
+        command: ICommand;
+        commandParam: any;
+        readonly preventDefault: boolean;
+        readonly stopPropagation: boolean;
+    }
+}
+declare module "jriapp_core/template" {
+    import { ITemplate, ITemplateEvents, IViewOptions } from "jriapp_core/shared";
+    import { CommandElView } from "jriapp_elview/command";
+    export const css: {
+        templateContainer: string;
+        templateError: string;
+    };
+    export interface ITemplateOptions {
+        appName: string;
+        dataContext?: any;
+        templEvents?: ITemplateEvents;
+    }
+    export function createTemplate(appName: string, dataContext?: any, templEvents?: ITemplateEvents): ITemplate;
+    export class TemplateElView extends CommandElView implements ITemplateEvents {
+        private _template;
+        private _isEnabled;
+        constructor(options: IViewOptions);
+        templateLoading(template: ITemplate): void;
+        templateLoaded(template: ITemplate, error?: any): void;
+        templateUnLoading(template: ITemplate): void;
+        toString(): string;
+        isEnabled: boolean;
+        readonly template: ITemplate;
     }
 }
 declare module "jriapp_content/template" {
@@ -1615,22 +1647,23 @@ declare module "jriapp_content/template" {
         private _templateInfo;
         private _isEditing;
         private _dataContext;
-        private _app;
+        private _appName;
         private _isDisabled;
         private _templateID;
         constructor(options: IConstructorContentOptions);
-        handleError(error: any, source: any): boolean;
+        protected _getAppName(): string;
         private getTemplateID();
         private createTemplate();
         protected render(): void;
         protected cleanUp(): void;
         destroy(): void;
         toString(): string;
-        readonly app: IApplication;
         readonly parentEl: HTMLElement;
         readonly template: ITemplate;
         isEditing: boolean;
         dataContext: any;
+        readonly appName: string;
+        readonly app: IApplication;
     }
 }
 declare module "jriapp_elview/input" {
@@ -1822,7 +1855,7 @@ declare module "jriapp_core/dataform" {
         error: string;
     };
     export interface IDataFormOptions {
-        app: IApplication;
+        appName: string;
         el: HTMLElement;
     }
     export class DataForm extends BaseObject {
@@ -1840,11 +1873,11 @@ declare module "jriapp_core/dataform" {
         private _errNotification;
         private _parentDataForm;
         private _errors;
-        private _app;
+        private _appName;
         private _isInsideTemplate;
         private _contentPromise;
         constructor(options: IDataFormOptions);
-        handleError(error: any, source: any): boolean;
+        protected _getAppName(): string;
         private _getBindings();
         private _getElViews();
         private _createContent();
@@ -1857,6 +1890,7 @@ declare module "jriapp_core/dataform" {
         private _clearContent();
         destroy(): void;
         toString(): string;
+        readonly appName: string;
         readonly app: IApplication;
         readonly el: HTMLElement;
         dataContext: IBaseObject;
@@ -1873,58 +1907,6 @@ declare module "jriapp_core/dataform" {
         toString(): string;
         dataContext: IBaseObject;
         readonly form: DataForm;
-    }
-}
-declare module "jriapp_elview/command" {
-    import { IViewOptions } from "jriapp_core/shared";
-    import { ICommand } from "jriapp_core/mvvm";
-    import { BaseElView } from "jriapp_elview/elview";
-    export interface ICommandViewOptions extends IViewOptions {
-        preventDefault?: boolean;
-        stopPropagation?: boolean;
-    }
-    export class CommandElView extends BaseElView {
-        private _command;
-        private _commandParam;
-        private _preventDefault;
-        private _stopPropagation;
-        private _disabled;
-        constructor(options: ICommandViewOptions);
-        private _onCanExecuteChanged(cmd, args);
-        protected _onCommandChanged(): void;
-        protected invokeCommand(args: any, isAsync: boolean): void;
-        destroy(): void;
-        toString(): string;
-        isEnabled: boolean;
-        command: ICommand;
-        commandParam: any;
-        readonly preventDefault: boolean;
-        readonly stopPropagation: boolean;
-    }
-}
-declare module "jriapp_core/template" {
-    import { ITemplate, ITemplateEvents, IApplication, IViewOptions } from "jriapp_core/shared";
-    import { CommandElView } from "jriapp_elview/command";
-    export const css: {
-        templateContainer: string;
-        templateError: string;
-    };
-    export interface ITemplateOptions {
-        app: IApplication;
-        dataContext?: any;
-        templEvents?: ITemplateEvents;
-    }
-    export function create(options: ITemplateOptions): ITemplate;
-    export class TemplateElView extends CommandElView implements ITemplateEvents {
-        private _template;
-        private _isEnabled;
-        constructor(options: IViewOptions);
-        templateLoading(template: ITemplate): void;
-        templateLoaded(template: ITemplate, error?: any): void;
-        templateUnLoading(template: ITemplate): void;
-        toString(): string;
-        isEnabled: boolean;
-        readonly template: ITemplate;
     }
 }
 declare module "jriapp_elview/anchor" {
@@ -2077,6 +2059,21 @@ declare module "jriapp_elview/all" {
     export { SpanElView } from "jriapp_elview/span";
     export { TextAreaElView, ITextAreaOptions } from "jriapp_elview/textarea";
     export { TextBoxElView, ITextBoxOptions, TKeyPressArgs } from "jriapp_elview/textbox";
+}
+declare module "jriapp_utils/propwatcher" {
+    import { BaseObject } from "jriapp_core/object";
+    export class PropWatcher extends BaseObject {
+        private _objId;
+        private _objs;
+        constructor();
+        static create(): PropWatcher;
+        addPropWatch(obj: BaseObject, prop: string, fn_onChange: (prop: string) => void): void;
+        addWatch(obj: BaseObject, props: string[], fn_onChange: (prop: string) => void): void;
+        removeWatch(obj: BaseObject): void;
+        destroy(): void;
+        toString(): string;
+        readonly uniqueID: string;
+    }
 }
 declare module "jriapp_collection/int" {
     import { DATE_CONVERSION, DATA_TYPE, SORT_ORDER } from "jriapp_core/const";
@@ -2348,11 +2345,11 @@ declare module "jriapp_collection/validation" {
         static checkDateRange(dt: Date, range: string): void;
     }
 }
-declare module "jriapp_collection/base" {
+declare module "jriapp_collection/collection" {
     import { SORT_ORDER } from "jriapp_core/const";
     import { IFieldInfo, IIndexer, IValidationInfo, TEventHandler, TPropChangedHandler, IBaseObject, IPromise, TPriority } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
-    import { WaitQueue } from "jriapp_utils/utils";
+    import { WaitQueue } from "jriapp_utils/waitqueue";
     import { ICollectionItem, ICollection, ICollectionOptions, IPermissions, IInternalCollMethods, ICollChangedArgs, ICancellableArgs, ICollFillArgs, ICollEndEditArgs, ICollItemArgs, ICollItemStatusArgs, ICollValidateArgs, ICurrentChangingArgs, ICommitChangesArgs, IItemAddedArgs, IPageChangingArgs, IErrorsList, IErrors, ITEM_STATUS, COLL_CHANGE_REASON, COLL_CHANGE_OPER } from "jriapp_collection/int";
     export class BaseCollection<TItem extends ICollectionItem> extends BaseObject implements ICollection<TItem> {
         protected _options: ICollectionOptions;
@@ -2376,7 +2373,6 @@ declare module "jriapp_collection/base" {
         constructor();
         static getEmptyFieldInfo(fieldName: string): IFieldInfo;
         protected _getEventNames(): string[];
-        handleError(error: any, source: any): boolean;
         addOnClearing(fn: TEventHandler<ICollection<TItem>, {
             reason: COLL_CHANGE_REASON;
         }>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
@@ -2500,7 +2496,7 @@ declare module "jriapp_collection/aspect" {
     import { IIndexer, IValidationInfo, IFieldInfo, IVoidPromise, TEventHandler, IErrorNotification } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
     import { ICollectionItem, IItemAspect, ITEM_STATUS } from "jriapp_collection/int";
-    import { BaseCollection } from "jriapp_collection/base";
+    import { BaseCollection } from "jriapp_collection/collection";
     export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implements IItemAspect<TItem> {
         private _key;
         private _item;
@@ -2517,7 +2513,6 @@ declare module "jriapp_collection/aspect" {
         constructor(collection: BaseCollection<TItem>);
         protected _getEventNames(): string[];
         protected _onErrorsChanged(args: any): void;
-        handleError(error: any, source: any): boolean;
         protected _beginEdit(): boolean;
         protected _endEdit(): boolean;
         protected _cancelEdit(): boolean;
@@ -2528,6 +2523,7 @@ declare module "jriapp_collection/aspect" {
         protected _checkVal(fieldInfo: IFieldInfo, val: any): any;
         protected _resetIsNew(): void;
         protected _fakeDestroy(): void;
+        handleError(error: any, source: any): boolean;
         _onAttaching(): void;
         _onAttach(): void;
         raiseErrorsChanged(args: any): void;
@@ -2565,10 +2561,24 @@ declare module "jriapp_collection/aspect" {
         getCustomVal(name: string): any;
     }
 }
+declare module "jriapp_collection/item" {
+    import { BaseObject } from "jriapp_core/object";
+    import { ICollectionItem } from "jriapp_collection/int";
+    import { ItemAspect } from "jriapp_collection/aspect";
+    export class CollectionItem<TAspect extends ItemAspect<ICollectionItem>> extends BaseObject implements ICollectionItem {
+        private __aspect;
+        constructor(aspect: TAspect);
+        protected _fakeDestroy(): void;
+        readonly _aspect: TAspect;
+        _key: string;
+        destroy(): void;
+        toString(): string;
+    }
+}
 declare module "jriapp_collection/list" {
     import { IIndexer } from "jriapp_core/shared";
     import { ICollectionItem, IPropInfo } from "jriapp_collection/int";
-    import { BaseCollection } from "jriapp_collection/base";
+    import { BaseCollection } from "jriapp_collection/collection";
     import { ItemAspect } from "jriapp_collection/aspect";
     export interface IListItem extends ICollectionItem {
         readonly _aspect: ListItemAspect<IListItem, any>;
@@ -2619,59 +2629,32 @@ declare module "jriapp_collection/dictionary" {
         toString(): string;
     }
 }
-declare module "jriapp_collection/item" {
-    import { BaseObject } from "jriapp_core/object";
-    import { ICollectionItem } from "jriapp_collection/int";
-    import { ItemAspect } from "jriapp_collection/aspect";
-    export class CollectionItem<TAspect extends ItemAspect<ICollectionItem>> extends BaseObject implements ICollectionItem {
-        private __aspect;
-        constructor(aspect: TAspect);
-        protected _fakeDestroy(): void;
-        readonly _aspect: TAspect;
-        _key: string;
-        destroy(): void;
-        toString(): string;
-    }
-}
-declare module "jriapp_collection/collection" {
-    export * from "jriapp_collection/int";
-    export * from "jriapp_collection/base";
-    export * from "jriapp_collection/item";
-    export * from "jriapp_collection/aspect";
-    export * from "jriapp_collection/list";
-    export * from "jriapp_collection/dictionary";
-    export * from "jriapp_collection/validation";
-    export * from "jriapp_collection/utils";
-}
 declare module "jriapp_utils/mloader" {
     import { IModuleLoader } from "jriapp_core/shared";
     export function create(): IModuleLoader;
 }
 declare module "jriapp_core/databindsvc" {
-    import { IElViewFactory, IApplication, IDataBindingService } from "jriapp_core/shared";
-    export function create(app: IApplication, root: Document | HTMLElement, elViewFactory: IElViewFactory): IDataBindingService;
+    import { IElViewFactory, IDataBindingService } from "jriapp_core/shared";
+    export function create(appName: string, root: Document | HTMLElement, elViewFactory: IElViewFactory): IDataBindingService;
 }
 declare module "jriapp_core/app" {
-    import { IElViewFactory, IViewType, IIndexer, IApplication, IPromise, IBindingOptions, IAppOptions, IInternalAppMethods, IBaseObject, TEventHandler, IConverter, ITemplate, ITemplateEvents, ITemplateGroupInfo, IBinding, IElViewRegister } from "jriapp_core/shared";
+    import { IViewType, IIndexer, IApplication, IPromise, IBindingOptions, IAppOptions, IInternalAppMethods, IBaseObject, TEventHandler, IConverter, ITemplateGroupInfo, IBinding } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
     export class Application extends BaseObject implements IApplication {
         private static _newInstanceNum;
         private _UC;
-        private _app_name;
+        private _appName;
         private _moduleInits;
         private _objId;
         private _objMaps;
         private _exports;
         protected _options: IAppOptions;
-        private _elViewFactory;
-        private _elViewRegister;
         private _dataBindingService;
         private _internal;
         private _app_state;
         constructor(options?: IAppOptions);
         private _cleanUpObjMaps();
         private _initAppModules();
-        handleError(error: any, source: any): boolean;
         protected _getEventNames(): string[];
         protected onStartUp(): any;
         _getInternal(): IInternalAppMethods;
@@ -2687,7 +2670,6 @@ declare module "jriapp_core/app" {
         registerObject(name: string, obj: any): void;
         getObject(name: string): any;
         startUp(onStartUp?: (app: Application) => any): IPromise<Application>;
-        createTemplate(dataContext?: any, templEvents?: ITemplateEvents): ITemplate;
         loadTemplates(url: string): IPromise<any>;
         loadTemplatesAsync(fn_loader: () => IPromise<string>): IPromise<any>;
         registerTemplateLoader(name: string, fn_loader: () => IPromise<string>): void;
@@ -2696,8 +2678,6 @@ declare module "jriapp_core/app" {
         registerTemplateGroup(name: string, group: ITemplateGroupInfo): void;
         destroy(): void;
         toString(): string;
-        readonly elViewFactory: IElViewFactory;
-        readonly elViewRegister: IElViewRegister;
         readonly uniqueID: string;
         readonly options: IAppOptions;
         readonly appName: string;
@@ -2713,17 +2693,29 @@ declare module "jriapp" {
     export { STRS as LocaleSTRS, ERRS as LocaleERRS } from "jriapp_core/lang";
     export { BaseConverter } from "jriapp_core/converter";
     export { BaseObject } from "jriapp_core/object";
-    export { Debounce, DblClick, DEBUG, ERROR } from "jriapp_utils/coreutils";
+    export { Debounce } from "jriapp_utils/debounce";
+    export { DblClick } from "jriapp_utils/dblclick";
+    export { DEBUG, ERROR } from "jriapp_utils/coreutils";
     export { bootstrap } from "jriapp_core/bootstrap";
     export { contentFactories } from "jriapp_content/factory";
     export { Binding } from "jriapp_core/binding";
     export * from "jriapp_core/datepicker";
     export { DataForm, DataFormElView } from "jriapp_core/dataform";
-    export { create as createTemplate, TemplateElView, ITemplateOptions } from "jriapp_core/template";
+    export { createTemplate, TemplateElView, ITemplateOptions } from "jriapp_core/template";
     export * from "jriapp_elview/all";
-    export { Utils, PropWatcher, WaitQueue, IWaitQueueItem } from "jriapp_utils/utils";
+    export { LifeTimeScope } from "jriapp_utils/lifetime";
+    export { PropWatcher } from "jriapp_utils/propwatcher";
+    export { WaitQueue, IWaitQueueItem } from "jriapp_utils/waitqueue";
+    export { Utils } from "jriapp_utils/utils";
     export * from "jriapp_core/mvvm";
-    export { BaseCollection, BaseDictionary, BaseList, ICollection, ICollectionItem, IItemAspect, IListItem, ITEM_STATUS, CollectionItem, ItemAspect, ListItemAspect, IPermissions, ValidationError, COLL_CHANGE_OPER, COLL_CHANGE_REASON, COLL_CHANGE_TYPE } from "jriapp_collection/collection";
+    export * from "jriapp_collection/int";
+    export * from "jriapp_collection/collection";
+    export * from "jriapp_collection/item";
+    export * from "jriapp_collection/aspect";
+    export * from "jriapp_collection/list";
+    export * from "jriapp_collection/dictionary";
+    export * from "jriapp_collection/validation";
+    export * from "jriapp_collection/utils";
     export { Application } from "jriapp_core/app";
     export const VERSION: string;
 }

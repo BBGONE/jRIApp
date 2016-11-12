@@ -3,14 +3,15 @@ import {
     ITemplate, ITemplateEvents, IApplication, IVoidPromise, IEditable, IBaseObject,
     TEventHandler, ISelectableProvider, IDeferred, IPromise
 } from "jriapp_core/shared";
+import { createTemplate } from "jriapp_core/template";
 import * as langMOD from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
-import { Utils, ERROR } from "jriapp_utils/utils";
+import { Utils } from "jriapp_utils/utils";
 import { bootstrap } from "jriapp_core/bootstrap";
 import { ViewModel } from "jriapp_core/mvvm";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
-const $ = utils.dom.$, doc = utils.dom.document;
+const $ = utils.dom.$, doc = utils.dom.document, ERROR = utils.err, boot = bootstrap;
 
 export const enum DIALOG_ACTION { Default = 0, StayOpen = 1 };
 
@@ -81,12 +82,12 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     private _result: "ok" | "cancel";
     private _options: IDialogOptions;
     private _fn_submitOnOK: () => IVoidPromise;
-    private _app: IApplication;
+    private _appName: string;
     //save the global's currentSelectable  before showing and restore it on dialog's closing
     private _currentSelectable: ISelectableProvider;
     private _deferred: IDeferred<ITemplate>;
 
-    constructor(app: IApplication, options: IDialogConstructorOptions) {
+    constructor(appName: string, options: IDialogConstructorOptions) {
         super();
         let self = this;
         options = coreUtils.extend({
@@ -94,7 +95,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             templateID: null,
             width: 500,
             height: 350,
-            title: "data edit dialog",
+            title: "Data edit dialog",
             submitOnOK: false,
             canRefresh: false,
             canCancel: true,
@@ -106,7 +107,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             fn_OnTemplateDestroy: null
         }, options);
         this._objId = "dlg" + coreUtils.getNewID();
-        this._app = app;
+        this._appName = appName;
         this._dataContext = options.dataContext;
         this._templateID = options.templateID;
         this._submitOnOK = options.submitOnOK;
@@ -147,13 +148,6 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         this._deferred = utils.defer.createDeferred<ITemplate>();
         this._createDialog();
     }
-    handleError(error: any, source: any): boolean {
-        let isHandled = super.handleError(error, source);
-        if (!isHandled) {
-            return this._app.handleError(error, source);
-        }
-        return isHandled;
-    }
     addOnClose(fn: TEventHandler<DataEditDialog, any>, nmspace?: string, context?: IBaseObject) {
         this._addHandler(DLG_EVENTS.close, fn, nmspace, context);
     }
@@ -184,6 +178,9 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         let base_events = super._getEventNames();
         return [DLG_EVENTS.close, DLG_EVENTS.refresh].concat(base_events);
     }
+    protected _getAppName() {
+        return this._appName;
+    }
     templateLoading(template: ITemplate): void {
         //noop
     }
@@ -204,7 +201,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         }
     }
     protected _createTemplate(): ITemplate {
-        const template = this.app.createTemplate(null, this);
+        const template = createTemplate(this._getAppName(), null, this);
         template.templateID = this._templateID;
         return template;
     }
@@ -355,10 +352,10 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         }
         let csel = this._currentSelectable;
         this._currentSelectable = null;
-        setTimeout(function () { bootstrap.currentSelectable = csel; csel = null; }, 0);
+        setTimeout(function () { boot.currentSelectable = csel; csel = null; }, 0);
     }
     protected _onShow() {
-        this._currentSelectable = bootstrap.currentSelectable;
+        this._currentSelectable = boot.currentSelectable;
         if (!!this._fn_OnShow) {
             this._fn_OnShow(this);
         }
@@ -412,7 +409,6 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         this._isEditable = null;
         super.destroy();
     }
-    get app() { return this._app; }
     get dataContext() { return this._dataContext; }
     set dataContext(v) {
         if (v !== this._dataContext) {
@@ -487,7 +483,7 @@ export class DialogVM extends ViewModel<IApplication> {
         this._factories[name] = function () {
             let dialog = self._dialogs[name];
             if (!dialog) {
-                dialog = new DataEditDialog(self.app, options);
+                dialog = new DataEditDialog(self.app.appName, options);
                 self._dialogs[name] = dialog;
             }
             return dialog;

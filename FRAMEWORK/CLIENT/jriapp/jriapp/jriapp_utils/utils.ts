@@ -1,22 +1,14 @@
-﻿/// <reference path="../../thirdparty/jquery.d.ts" />
-/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { ISubmittable, IErrorNotification, IEditable, IPromise } from "../jriapp_core/shared";
-import { BaseObject }  from "../jriapp_core/object";
-import { CoreUtils } from "./coreutils";
+import { BaseObject } from "../jriapp_core/object";
+import { CoreUtils, ERROR, DEBUG, LOG } from "./coreutils";
+import { SysChecks } from "./syschecks";
 import { DomUtils } from "./dom";
 import { AsyncUtils } from "./async";
 import { HttpUtils } from "./http";
 import { StringUtils } from "./strutils";
 import { Checks } from "./checks";
 import { ArrayHelper } from "./arrhelper";
-
-export { DomUtils } from "./dom";
-export { AsyncUtils } from "./async";
-export { HttpUtils } from "./http";
-export { LifeTimeScope } from "./lifetime";
-export { PropWatcher } from "./propwatcher";
-export { WaitQueue, IWaitQueueItem } from "./waitqueue";
-export { Debounce, DblClick, DEBUG, ERROR, SysChecks } from "./coreutils";
 
 const checks = Checks, _async = AsyncUtils;
 
@@ -28,6 +20,10 @@ export class Utils {
     static http = HttpUtils;
     static core = CoreUtils;
     static defer = _async;
+    static err = ERROR;
+    static log = LOG;
+    static debug = DEBUG;
+    static sys = SysChecks;
     static getErrorNotification(obj: any): IErrorNotification {
         if (!obj) {
             return null;

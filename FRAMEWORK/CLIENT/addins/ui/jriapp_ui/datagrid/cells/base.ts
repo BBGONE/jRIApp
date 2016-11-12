@@ -1,8 +1,9 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { DATA_ATTR } from "jriapp_core/const";
 import { BaseObject } from "jriapp_core/object";
-import { ICollectionItem } from "jriapp_collection/collection";
-import { Utils, DblClick } from "jriapp_utils/utils";
+import { ICollectionItem } from "jriapp";
+import { DblClick } from "jriapp_utils/dblclick";
+import { Utils } from "jriapp_utils/utils";
 
 import { css } from "../const";
 import { Row } from "../rows/row";
@@ -46,17 +47,13 @@ export class BaseCell<TColumn extends BaseColumn> extends BaseObject {
         this._click = new DblClick();
         this._row.tr.appendChild(this._td);
     }
+    protected _getAppName() {
+        return !this.grid ? "" : this.grid.appName;
+    }
     protected _onCellClicked(row?: Row) {
     }
     protected _onDblClicked(row?: Row) {
         this.grid._getInternal().onCellDblClicked(this);
-    }
-    handleError(error: any, source: any) {
-        let isHandled = super.handleError(error, source);
-        if (!isHandled) {
-            return this.row.handleError(error, source);
-        }
-        return isHandled;
     }
     click() {
         this.grid.currentRow = this._row;

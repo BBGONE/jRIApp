@@ -1,5 +1,4 @@
-﻿/// <reference path="../jriapp_core/../../thirdparty/jquery.d.ts" />
-/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
     IBaseObject, IEditable, ISubmittable, IErrorNotification,
     IThenable, IPropertyBag

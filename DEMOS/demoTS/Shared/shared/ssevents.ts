@@ -1,5 +1,5 @@
 ﻿/// <reference path="../../jriapp/jriapp.d.ts" />
-/// <reference path="../../jriapp/thirdparty/sse.d.ts"/>
+/// <reference path="../../thirdparty/sse.d.ts"/>
 import * as RIAPP from "jriapp";
 
 //server side events client

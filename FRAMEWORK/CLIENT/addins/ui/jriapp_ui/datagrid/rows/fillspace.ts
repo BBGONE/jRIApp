@@ -10,19 +10,20 @@ const utils = Utils, $ = utils.dom.$;
 
 export class FillSpaceRow extends BaseObject {
     private _grid: DataGrid;
-    private _tr: HTMLTableRowElement;
     private _$tr: JQuery;
     private _cell: FillSpaceCell;
 
     constructor(options: { grid: DataGrid; tr: HTMLTableRowElement; }) {
         super();
-        let self = this;
+        let self = this, tr = options.tr;
         this._grid = options.grid;
-        this._tr = options.tr;
+        this._$tr = $(tr);
         this._cell = null;
         this._createCell();
-        utils.dom.addClass([this._tr], css.fillVSpace);
-        this._$tr = $(this._tr);
+        utils.dom.addClass([tr], css.fillVSpace);
+    }
+    protected _getAppName() {
+        return !this.grid ? "" : this.grid.appName;
     }
     private _createCell() {
         let td: HTMLTableCellElement = <HTMLTableCellElement>document.createElement("td");
@@ -38,7 +39,6 @@ export class FillSpaceRow extends BaseObject {
         }
         this._$tr.remove();
         this._$tr = null;
-        this._tr = null;
         this._grid = null;
         super.destroy();
     }
@@ -46,12 +46,12 @@ export class FillSpaceRow extends BaseObject {
         return "FillSpaceRow";
     }
     attach() {
-        this._grid._tBodyEl.appendChild(this._tr);
+        this._grid._tBodyEl.appendChild(this.tr);
     }
     detach() {
-        utils.dom.removeNode(this._tr);
+        utils.dom.removeNode(this.tr);
     }
-    get tr() { return this._tr; }
+    get tr() { return this._$tr[0]; }
     get $tr() { return this._$tr; }
     get grid() { return this._grid; }
     get cell() { return this._cell; }

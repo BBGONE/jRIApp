@@ -567,128 +567,8 @@ define("jriapp_utils/checks", ["require", "exports", "jriapp_utils/syschecks"], 
     }());
     exports.Checks = Checks;
 });
-define("jriapp_utils/debounce", ["require", "exports"], function (require, exports) {
+define("jriapp_utils/coreutils", ["require", "exports", "jriapp_core/const", "jriapp_core/shared", "jriapp_utils/arrhelper", "jriapp_utils/strutils", "jriapp_utils/checks"], function (require, exports, const_1, shared_1, arrhelper_1, strutils_1, checks_1) {
     "use strict";
-    var Debounce = (function () {
-        function Debounce(interval) {
-            if (interval === void 0) { interval = 0; }
-            this._isDestroyed = false;
-            this._timer = null;
-            this._interval = !interval ? 0 : interval;
-        }
-        Debounce.prototype.enqueue = function (fn) {
-            var _this = this;
-            if (this._isDestroyed)
-                return;
-            clearTimeout(this._timer);
-            this._timer = setTimeout(function () {
-                _this._timer = null;
-                if (_this._isDestroyed)
-                    return;
-                fn();
-            }, this._interval);
-        };
-        Debounce.prototype.destroy = function () {
-            if (this._isDestroyed)
-                return;
-            this._isDestroyed = true;
-            clearTimeout(this._timer);
-            this._timer = null;
-        };
-        Debounce.prototype.getIsDestroyed = function () {
-            return this._isDestroyed;
-        };
-        Debounce.prototype.getIsDestroyCalled = function () {
-            return this._isDestroyed;
-        };
-        Object.defineProperty(Debounce.prototype, "interval", {
-            get: function () {
-                return this._interval;
-            },
-            set: function (v) {
-                this._interval = v;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return Debounce;
-    }());
-    exports.Debounce = Debounce;
-});
-define("jriapp_utils/dblclick", ["require", "exports"], function (require, exports) {
-    "use strict";
-    var DblClick = (function () {
-        function DblClick(interval) {
-            if (interval === void 0) { interval = 0; }
-            this._isDestroyed = false;
-            this._timer = null;
-            this._interval = !interval ? 0 : interval;
-            this._fn_OnClick = null;
-            this._fn_OnDblClick = null;
-        }
-        DblClick.prototype.click = function () {
-            var self = this;
-            if (!!this._timer) {
-                clearTimeout(this._timer);
-                this._timer = null;
-                if (!!this._fn_OnDblClick)
-                    this._fn_OnDblClick();
-                else if (!!this._fn_OnClick)
-                    this._fn_OnClick();
-            }
-            else {
-                if (!!this._fn_OnClick) {
-                    this._timer = setTimeout(function () {
-                        self._timer = null;
-                        if (!!self._fn_OnClick)
-                            self._fn_OnClick();
-                    }, self._interval);
-                }
-            }
-        };
-        DblClick.prototype.add = function (fn_OnClick, fn_OnDblClick) {
-            if (this._isDestroyed)
-                return;
-            this._fn_OnClick = fn_OnClick;
-            this._fn_OnDblClick = fn_OnDblClick;
-        };
-        DblClick.prototype.destroy = function () {
-            if (this._isDestroyed)
-                return;
-            this._isDestroyed = true;
-            clearTimeout(this._timer);
-            this._timer = null;
-            this._fn_OnClick = null;
-            this._fn_OnDblClick = null;
-        };
-        DblClick.prototype.getIsDestroyed = function () {
-            return this._isDestroyed;
-        };
-        DblClick.prototype.getIsDestroyCalled = function () {
-            return this._isDestroyed;
-        };
-        Object.defineProperty(DblClick.prototype, "interval", {
-            get: function () {
-                return this._interval;
-            },
-            set: function (v) {
-                this._interval = v;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return DblClick;
-    }());
-    exports.DblClick = DblClick;
-});
-define("jriapp_utils/coreutils", ["require", "exports", "jriapp_core/const", "jriapp_core/shared", "jriapp_utils/arrhelper", "jriapp_utils/strutils", "jriapp_utils/checks", "jriapp_utils/debounce", "jriapp_utils/dblclick", "jriapp_utils/arrhelper", "jriapp_utils/strutils", "jriapp_utils/checks", "jriapp_utils/syschecks"], function (require, exports, const_1, shared_1, arrhelper_1, strutils_1, checks_1, debounce_1, dblclick_1, arrhelper_2, strutils_2, checks_2, syschecks_2) {
-    "use strict";
-    exports.Debounce = debounce_1.Debounce;
-    exports.DblClick = dblclick_1.DblClick;
-    exports.ArrayHelper = arrhelper_2.ArrayHelper;
-    exports.StringUtils = strutils_2.StringUtils;
-    exports.Checks = checks_2.Checks;
-    exports.SysChecks = syschecks_2.SysChecks;
     var DEBUG = (function () {
         function DEBUG() {
         }
@@ -706,6 +586,38 @@ define("jriapp_utils/coreutils", ["require", "exports", "jriapp_core/const", "jr
     var ERROR = (function () {
         function ERROR() {
         }
+        ERROR.addHandler = function (name, handler) {
+            ERROR._handlers[name] = handler;
+        };
+        ERROR.removeHandler = function (name) {
+            delete ERROR._handlers[name];
+        };
+        ERROR.handleError = function (sender, name, error, source) {
+            if (ERROR.checkIsDummy(error)) {
+                return true;
+            }
+            var handler, isHandled = false;
+            if (!!name && name !== "*") {
+                handler = ERROR._handlers[name];
+                if (!!handler) {
+                    if (handler === sender)
+                        handler = null;
+                    else {
+                        isHandled = handler.handleError(error, source);
+                    }
+                }
+            }
+            if (!isHandled) {
+                handler = ERROR._handlers["*"];
+                if (!!handler) {
+                    if (handler === sender)
+                        handler = null;
+                    else
+                        isHandled = handler.handleError(error, source);
+                }
+            }
+            return isHandled;
+        };
         ERROR.throwDummy = function (err) {
             if (ERROR.checkIsDummy(err))
                 throw err;
@@ -727,6 +639,7 @@ define("jriapp_utils/coreutils", ["require", "exports", "jriapp_core/const", "jr
         ERROR.abort = function (reason) {
             throw new shared_1.AbortError(reason);
         };
+        ERROR._handlers = {};
         return ERROR;
     }());
     exports.ERROR = ERROR;
@@ -1065,9 +978,9 @@ define("jriapp_core/lang", ["require", "exports", "jriapp_utils/coreutils"], fun
     exports.ERRS = _ERRS;
     exports.STRS = _STRS;
 });
-define("jriapp_utils/eventhelper", ["require", "exports", "jriapp_utils/coreutils", "jriapp_core/lang"], function (require, exports, coreutils_2, lang_1) {
+define("jriapp_utils/eventhelper", ["require", "exports", "jriapp_utils/checks", "jriapp_utils/strutils", "jriapp_utils/coreutils", "jriapp_core/lang"], function (require, exports, checks_2, strutils_2, coreutils_2, lang_1) {
     "use strict";
-    var checks = coreutils_2.Checks, strUtils = coreutils_2.StringUtils, debug = coreutils_2.DEBUG;
+    var checks = checks_2.Checks, strUtils = strutils_2.StringUtils, debug = coreutils_2.DEBUG;
     var EventList = (function () {
         function EventList() {
         }
@@ -1225,13 +1138,13 @@ define("jriapp_utils/eventhelper", ["require", "exports", "jriapp_utils/coreutil
     }());
     exports.EventHelper = EventHelper;
 });
-define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_utils/coreutils", "jriapp_utils/eventhelper"], function (require, exports, lang_2, coreutils_3, eventhelper_1) {
+define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_utils/syschecks", "jriapp_utils/checks", "jriapp_utils/strutils", "jriapp_utils/coreutils", "jriapp_utils/eventhelper"], function (require, exports, lang_2, syschecks_2, checks_3, strUtils_1, coreutils_3, eventhelper_1) {
     "use strict";
     var OBJ_EVENTS = {
         error: "error",
         destroyed: "destroyed"
     };
-    var checks = coreutils_3.Checks, strUtils = coreutils_3.StringUtils, coreUtils = coreutils_3.CoreUtils, evHelper = eventhelper_1.EventHelper, debug = coreutils_3.DEBUG, syschecks = coreutils_3.SysChecks;
+    var checks = checks_3.Checks, strUtils = strUtils_1.StringUtils, coreUtils = coreutils_3.CoreUtils, evHelper = eventhelper_1.EventHelper, debug = coreutils_3.DEBUG, syschecks = syschecks_2.SysChecks;
     syschecks._isBaseObj = function (obj) {
         return (!!obj && obj instanceof BaseObject);
     };
@@ -1268,6 +1181,9 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
         BaseObject.prototype._removeHandler = function (name, nmspace) {
             evHelper.remove(this._events, name, nmspace);
         };
+        BaseObject.prototype._getAppName = function () {
+            return "";
+        };
         Object.defineProperty(BaseObject.prototype, "_isDestroyed", {
             get: function () {
                 return this._obj_state === 2;
@@ -1300,7 +1216,11 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
             }
             var args = { error: error, source: source, isHandled: false };
             evHelper.raise(this, this._events, OBJ_EVENTS.error, args);
-            return args.isHandled;
+            var isHandled = args.isHandled;
+            if (!isHandled) {
+                isHandled = coreutils_3.ERROR.handleError(this, this._getAppName(), error, source);
+            }
+            return isHandled;
         };
         BaseObject.prototype.addHandler = function (name, handler, nmspace, context, priority) {
             this._addHandler(name, handler, nmspace, context, priority);
@@ -1397,9 +1317,9 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
     }());
     exports.BaseObject = BaseObject;
 });
-define("jriapp_core/parser", ["require", "exports", "jriapp_core/lang", "jriapp_utils/syschecks", "jriapp_utils/coreutils"], function (require, exports, lang_3, syschecks_3, coreutils_4) {
+define("jriapp_core/parser", ["require", "exports", "jriapp_core/lang", "jriapp_utils/syschecks", "jriapp_utils/checks", "jriapp_utils/strutils", "jriapp_utils/coreutils"], function (require, exports, lang_3, syschecks_3, checks_4, strUtils_2, coreutils_4) {
     "use strict";
-    var checks = coreutils_4.Checks, syschecks = syschecks_3.SysChecks, strUtils = coreutils_4.StringUtils, coreUtils = coreutils_4.CoreUtils;
+    var checks = checks_4.Checks, syschecks = syschecks_3.SysChecks, strUtils = strUtils_2.StringUtils, coreUtils = coreutils_4.CoreUtils;
     var __trimOuterBracesRX = /^([{]){0,1}|([}]){0,1}$/g;
     var __trimQuotsRX = /^(['"])+|(['"])+$/g;
     var __trimBracketsRX = /^(\[)+|(\])+$/g;
@@ -1642,6 +1562,45 @@ define("jriapp_core/parser", ["require", "exports", "jriapp_core/lang", "jriapp_
     exports.Parser = Parser;
     exports.parser = new Parser();
 });
+define("jriapp_utils/lifetime", ["require", "exports", "jriapp_core/object", "jriapp_utils/arrhelper"], function (require, exports, object_1, arrhelper_2) {
+    "use strict";
+    var LifeTimeScope = (function (_super) {
+        __extends(LifeTimeScope, _super);
+        function LifeTimeScope() {
+            _super.call(this);
+            this._objs = [];
+        }
+        LifeTimeScope.create = function () {
+            return new LifeTimeScope();
+        };
+        LifeTimeScope.prototype.addObj = function (b) {
+            if (this._objs.indexOf(b) < 0)
+                this._objs.push(b);
+        };
+        LifeTimeScope.prototype.removeObj = function (b) {
+            arrhelper_2.ArrayHelper.remove(this._objs, b);
+        };
+        LifeTimeScope.prototype.getObjs = function () {
+            return this._objs;
+        };
+        LifeTimeScope.prototype.destroy = function () {
+            if (this._isDestroyed)
+                return;
+            this._isDestroyCalled = true;
+            this._objs.forEach(function (obj) {
+                if (!obj.getIsDestroyCalled())
+                    obj.destroy();
+            });
+            this._objs = [];
+            _super.prototype.destroy.call(this);
+        };
+        LifeTimeScope.prototype.toString = function () {
+            return "LifeTimeScope";
+        };
+        return LifeTimeScope;
+    }(object_1.BaseObject));
+    exports.LifeTimeScope = LifeTimeScope;
+});
 define("jriapp_utils/dom", ["require", "exports", "jriapp_core/lang"], function (require, exports, lang_4) {
     "use strict";
     if (!window.jQuery)
@@ -1817,7 +1776,7 @@ define("jriapp_utils/dom", ["require", "exports", "jriapp_core/lang"], function 
     }());
     exports.DomUtils = DomUtils;
 });
-define("jriapp_utils/deferred", ["require", "exports", "jriapp_core/shared", "jriapp_utils/checks"], function (require, exports, coreMOD, checks_3) {
+define("jriapp_utils/deferred", ["require", "exports", "jriapp_core/shared", "jriapp_utils/checks"], function (require, exports, coreMOD, checks_5) {
     "use strict";
     (function (PromiseState) {
         PromiseState[PromiseState["Pending"] = 0] = "Pending";
@@ -1854,7 +1813,7 @@ define("jriapp_utils/deferred", ["require", "exports", "jriapp_core/shared", "jr
         }
         var _loop_1 = function(i) {
             var value = args[i];
-            if (checks_3.Checks.isThenable(value)) {
+            if (checks_5.Checks.isThenable(value)) {
                 value.then(function (res) {
                     --countAll;
                     result[i] = res;
@@ -1920,7 +1879,7 @@ define("jriapp_utils/deferred", ["require", "exports", "jriapp_core/shared", "jr
         }
         Callback.prototype.resolve = function (value, defer) {
             var _this = this;
-            if (!checks_3.Checks.isFunc(this._successCB)) {
+            if (!checks_5.Checks.isFunc(this._successCB)) {
                 this.deferred.resolve(value);
                 return;
             }
@@ -1933,7 +1892,7 @@ define("jriapp_utils/deferred", ["require", "exports", "jriapp_core/shared", "jr
         };
         Callback.prototype.reject = function (error, defer) {
             var _this = this;
-            if (!checks_3.Checks.isFunc(this._errorCB)) {
+            if (!checks_5.Checks.isFunc(this._errorCB)) {
                 this.deferred.reject(error);
                 return;
             }
@@ -1960,8 +1919,8 @@ define("jriapp_utils/deferred", ["require", "exports", "jriapp_core/shared", "jr
     var Deferred = (function () {
         function Deferred(dispatcher) {
             this._dispatcher = dispatcher;
-            this._value = checks_3.Checks.undefined;
-            this._error = checks_3.Checks.undefined;
+            this._value = checks_5.Checks.undefined;
+            this._error = checks_5.Checks.undefined;
             this._state = 0;
             this._stack = [];
             this._promise = new Promise(this);
@@ -1970,7 +1929,7 @@ define("jriapp_utils/deferred", ["require", "exports", "jriapp_core/shared", "jr
             var _this = this;
             var pending = true;
             try {
-                if (checks_3.Checks.isThenable(value)) {
+                if (checks_5.Checks.isThenable(value)) {
                     if (value === this._promise) {
                         throw new TypeError("recursive resolution");
                     }
@@ -2023,7 +1982,7 @@ define("jriapp_utils/deferred", ["require", "exports", "jriapp_core/shared", "jr
             return this;
         };
         Deferred.prototype._then = function (successCB, errorCB) {
-            if (!checks_3.Checks.isFunc(successCB) && !checks_3.Checks.isFunc(errorCB)) {
+            if (!checks_5.Checks.isFunc(successCB) && !checks_5.Checks.isFunc(errorCB)) {
                 return this._promise;
             }
             var cb = new Callback(this._dispatcher, successCB, errorCB);
@@ -2069,7 +2028,7 @@ define("jriapp_utils/deferred", ["require", "exports", "jriapp_core/shared", "jr
             return this._deferred._then(successCB, errorCB);
         };
         Promise.prototype.fail = function (errorCB) {
-            return this._deferred._then(checks_3.Checks.undefined, errorCB);
+            return this._deferred._then(checks_5.Checks.undefined, errorCB);
         };
         Promise.prototype.always = function (errorCB) {
             return this._deferred._then(errorCB, errorCB);
@@ -2146,14 +2105,15 @@ define("jriapp_utils/async", ["require", "exports", "jriapp_utils/deferred", "jr
     }());
     exports.AsyncUtils = AsyncUtils;
 });
-define("jriapp_utils/http", ["require", "exports", "jriapp_core/shared", "jriapp_utils/coreutils", "jriapp_utils/async"], function (require, exports, shared_2, coreutils_5, async_1) {
+define("jriapp_utils/http", ["require", "exports", "jriapp_core/shared", "jriapp_utils/strutils", "jriapp_utils/coreutils", "jriapp_utils/async"], function (require, exports, shared_2, strUtils_3, coreutils_5, async_1) {
     "use strict";
+    var coreUtils = coreutils_5.CoreUtils, strUtils = strUtils_3.StringUtils, defer = async_1.AsyncUtils;
     var HttpUtils = (function () {
         function HttpUtils() {
         }
         HttpUtils.isStatusOK = function (status) {
             var chk = "" + status;
-            return chk.length === 3 && coreutils_5.StringUtils.startsWith(chk, "2");
+            return chk.length === 3 && strUtils.startsWith(chk, "2");
         };
         HttpUtils._getXMLRequest = function (url, method, deferred, headers) {
             var req = new XMLHttpRequest();
@@ -2167,36 +2127,36 @@ define("jriapp_utils/http", ["require", "exports", "jriapp_core/shared", "jriapp
                 }
                 else {
                     if (HttpUtils.isStatusOK(status))
-                        deferred.reject(new shared_2.DummyError(new Error(coreutils_5.StringUtils.format('Status: "{0}" loading from URL: "{1}"', status, url))));
+                        deferred.reject(new shared_2.DummyError(new Error(strUtils.format('Status: "{0}" loading from URL: "{1}"', status, url))));
                     else
-                        deferred.reject(new Error(coreutils_5.StringUtils.format('Error: "{0}" to load from URL: "{1}"', status, url)));
+                        deferred.reject(new Error(strUtils.format('Error: "{0}" to load from URL: "{1}"', status, url)));
                 }
             };
             req.onerror = function (e) {
-                deferred.reject(new Error(coreutils_5.StringUtils.format('Error: "{0}" to load from URL: "{1}"', this.status, url)));
+                deferred.reject(new Error(strUtils.format('Error: "{0}" to load from URL: "{1}"', this.status, url)));
             };
             req.ontimeout = function () {
-                deferred.reject(new Error(coreutils_5.StringUtils.format('Error: "Request Timeout" to load from URL: "{0}"', url)));
+                deferred.reject(new Error(strUtils.format('Error: "Request Timeout" to load from URL: "{0}"', url)));
             };
             req.onabort = function (e) {
-                deferred.reject(new Error(coreutils_5.StringUtils.format('HTTP Request Operation Aborted for URL: "{0}"', url)));
+                deferred.reject(new Error(strUtils.format('HTTP Request Operation Aborted for URL: "{0}"', url)));
             };
             req.timeout = HttpUtils.ajaxTimeOut * 1000;
-            var _headers = coreutils_5.CoreUtils.merge(HttpUtils.defaultHeaders);
-            _headers = coreutils_5.CoreUtils.merge(headers, _headers);
-            coreutils_5.CoreUtils.iterateIndexer(_headers, function (name, val) {
+            var _headers = coreUtils.merge(HttpUtils.defaultHeaders);
+            _headers = coreUtils.merge(headers, _headers);
+            coreUtils.iterateIndexer(_headers, function (name, val) {
                 req.setRequestHeader(name, val);
             });
             return req;
         };
         HttpUtils.postAjax = function (url, postData, headers) {
-            var _headers = coreutils_5.CoreUtils.merge(headers, { "Content-Type": "application/json; charset=utf-8" });
-            var deferred = async_1.AsyncUtils.createDeferred(), req = HttpUtils._getXMLRequest(url, "POST", deferred, _headers);
+            var _headers = coreUtils.merge(headers, { "Content-Type": "application/json; charset=utf-8" });
+            var deferred = defer.createDeferred(), req = HttpUtils._getXMLRequest(url, "POST", deferred, _headers);
             req.send(postData);
             return new async_1.AbortablePromise(deferred, req);
         };
         HttpUtils.getAjax = function (url, headers) {
-            var deferred = async_1.AsyncUtils.createDeferred(), req = HttpUtils._getXMLRequest(url, "GET", deferred, headers);
+            var deferred = defer.createDeferred(), req = HttpUtils._getXMLRequest(url, "GET", deferred, headers);
             req.send(null);
             return new async_1.AbortablePromise(deferred, req);
         };
@@ -2206,104 +2166,368 @@ define("jriapp_utils/http", ["require", "exports", "jriapp_core/shared", "jriapp
     }());
     exports.HttpUtils = HttpUtils;
 });
-define("jriapp_utils/lifetime", ["require", "exports", "jriapp_core/object", "jriapp_utils/arrhelper"], function (require, exports, object_1, arrhelper_3) {
+define("jriapp_utils/utils", ["require", "exports", "jriapp_utils/coreutils", "jriapp_utils/syschecks", "jriapp_utils/dom", "jriapp_utils/async", "jriapp_utils/http", "jriapp_utils/strutils", "jriapp_utils/checks", "jriapp_utils/arrhelper"], function (require, exports, coreutils_6, syschecks_4, dom_1, async_2, http_1, strutils_3, checks_6, arrhelper_3) {
     "use strict";
-    var LifeTimeScope = (function (_super) {
-        __extends(LifeTimeScope, _super);
-        function LifeTimeScope() {
-            _super.call(this);
-            this._objs = [];
+    var checks = checks_6.Checks, _async = async_2.AsyncUtils;
+    var Utils = (function () {
+        function Utils() {
         }
-        LifeTimeScope.create = function () {
-            return new LifeTimeScope();
+        Utils.getErrorNotification = function (obj) {
+            if (!obj) {
+                return null;
+            }
+            else if (!!obj._aspect && checks.isErrorNotification(obj._aspect))
+                return obj._aspect.getIErrorNotification();
+            else if (checks.isErrorNotification(obj))
+                return obj.getIErrorNotification();
+            return null;
         };
-        LifeTimeScope.prototype.addObj = function (b) {
-            if (this._objs.indexOf(b) < 0)
-                this._objs.push(b);
+        Utils.getEditable = function (obj) {
+            if (!obj) {
+                return null;
+            }
+            else if (!!obj._aspect && checks.isEditable(obj._aspect)) {
+                return obj._aspect;
+            }
+            else if (checks.isEditable(obj)) {
+                return obj;
+            }
+            return null;
         };
-        LifeTimeScope.prototype.removeObj = function (b) {
-            arrhelper_3.ArrayHelper.remove(this._objs, b);
+        Utils.getSubmittable = function (obj) {
+            if (!obj) {
+                return null;
+            }
+            else if (!!obj._aspect && checks.isSubmittable(obj._aspect)) {
+                return obj._aspect;
+            }
+            else if (checks.isSubmittable(obj)) {
+                return obj;
+            }
+            return null;
         };
-        LifeTimeScope.prototype.getObjs = function () {
-            return this._objs;
-        };
-        LifeTimeScope.prototype.destroy = function () {
-            if (this._isDestroyed)
-                return;
-            this._isDestroyCalled = true;
-            this._objs.forEach(function (obj) {
-                if (!obj.getIsDestroyCalled())
-                    obj.destroy();
+        Utils.parseJSON = function (res) {
+            return _async.delay(function () {
+                var parsed = null;
+                if (checks.isString(res))
+                    parsed = JSON.parse(res);
+                else
+                    parsed = res;
+                return parsed;
             });
-            this._objs = [];
-            _super.prototype.destroy.call(this);
         };
-        LifeTimeScope.prototype.toString = function () {
-            return "LifeTimeScope";
-        };
-        return LifeTimeScope;
-    }(object_1.BaseObject));
-    exports.LifeTimeScope = LifeTimeScope;
+        Utils.check = checks;
+        Utils.str = strutils_3.StringUtils;
+        Utils.arr = arrhelper_3.ArrayHelper;
+        Utils.dom = dom_1.DomUtils;
+        Utils.http = http_1.HttpUtils;
+        Utils.core = coreutils_6.CoreUtils;
+        Utils.defer = _async;
+        Utils.err = coreutils_6.ERROR;
+        Utils.log = coreutils_6.LOG;
+        Utils.debug = coreutils_6.DEBUG;
+        Utils.sys = syschecks_4.SysChecks;
+        return Utils;
+    }());
+    exports.Utils = Utils;
 });
-define("jriapp_utils/propwatcher", ["require", "exports", "jriapp_core/object", "jriapp_utils/coreutils"], function (require, exports, object_2, coreutils_6) {
+define("jriapp_elview/factory", ["require", "exports", "jriapp_core/const", "jriapp_core/bootstrap", "jriapp_core/lang", "jriapp_core/parser", "jriapp_core/object", "jriapp_utils/utils"], function (require, exports, const_2, bootstrap_1, lang_5, parser_1, object_2, utils_1) {
     "use strict";
-    var PropWatcher = (function (_super) {
-        __extends(PropWatcher, _super);
-        function PropWatcher() {
-            _super.call(this);
-            this._objId = "prw" + coreutils_6.CoreUtils.getNewID();
-            this._objs = [];
+    var utils = utils_1.Utils, $ = utils.dom.$, factories = {};
+    function createElViewFactory(appName, num, register) {
+        var factory = new ElViewFactory(appName, num, register);
+        factories[appName] = factory;
+        return factory;
+    }
+    exports.createElViewFactory = createElViewFactory;
+    function deleteElViewFactory(appName) {
+        var factory = factories[appName];
+        if (!!factory) {
+            delete factories[appName];
+            factory.destroy;
         }
-        PropWatcher.create = function () {
-            return new PropWatcher();
+    }
+    exports.deleteElViewFactory = deleteElViewFactory;
+    function getElViewFactory(appName) {
+        return factories[appName];
+    }
+    exports.getElViewFactory = getElViewFactory;
+    function createElViewRegister(next) {
+        return new ElViewRegister(next);
+    }
+    exports.createElViewRegister = createElViewRegister;
+    var ElViewRegister = (function () {
+        function ElViewRegister(next) {
+            this._exports = {};
+            this._next = next;
+        }
+        ElViewRegister.prototype.registerElView = function (name, vw_type) {
+            if (!bootstrap_1.bootstrap._getInternal().getObject(this, name)) {
+                bootstrap_1.bootstrap._getInternal().registerObject(this, name, vw_type);
+            }
+            else
+                throw new Error(utils.str.format(lang_5.ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
         };
-        PropWatcher.prototype.addPropWatch = function (obj, prop, fn_onChange) {
-            var self = this;
-            obj.addOnPropertyChange(prop, function (s, a) {
-                fn_onChange(a.property);
-            }, self.uniqueID);
-            if (self._objs.indexOf(obj) < 0)
-                self._objs.push(obj);
+        ElViewRegister.prototype.getElViewType = function (name) {
+            var res = bootstrap_1.bootstrap._getInternal().getObject(this, name);
+            if (!res && !!this._next) {
+                res = this._next.getElViewType(name);
+            }
+            return res;
         };
-        PropWatcher.prototype.addWatch = function (obj, props, fn_onChange) {
-            var self = this;
-            obj.addOnPropertyChange("*", function (s, a) {
-                if (props.indexOf(a.property) > -1) {
-                    fn_onChange(a.property);
-                }
-            }, self.uniqueID);
-            if (self._objs.indexOf(obj) < 0)
-                self._objs.push(obj);
+        ElViewRegister.prototype.destroy = function () {
+            this._exports = {};
         };
-        PropWatcher.prototype.removeWatch = function (obj) {
-            obj.removeNSHandlers(this.uniqueID);
+        ElViewRegister.prototype.getExports = function () {
+            return this._exports;
         };
-        PropWatcher.prototype.destroy = function () {
-            if (this._isDestroyed)
+        return ElViewRegister;
+    }());
+    var ElViewStore = (function () {
+        function ElViewStore(instanceNum) {
+            this._ELV_STORE_KEY = const_2.DATA_ATTR.EL_VIEW_KEY + instanceNum;
+        }
+        ElViewStore.prototype.destroy = function () {
+        };
+        ElViewStore.prototype.getElView = function (el) {
+            return $.data(el, this._ELV_STORE_KEY);
+        };
+        ElViewStore.prototype.setElView = function (el, view) {
+            if (!view) {
+                $.removeData(el, this._ELV_STORE_KEY);
+            }
+            else {
+                $.data(el, this._ELV_STORE_KEY, view);
+            }
+        };
+        return ElViewStore;
+    }());
+    var ElViewFactory = (function (_super) {
+        __extends(ElViewFactory, _super);
+        function ElViewFactory(appName, num, register) {
+            _super.call(this);
+            this._appName = appName;
+            this._store = new ElViewStore(num);
+            this._register = createElViewRegister(register);
+        }
+        ElViewFactory.getFactory = function (ownerName) {
+            return factories[ownerName];
+        };
+        ElViewFactory.prototype.destroy = function () {
+            if (!this._store)
                 return;
-            this._isDestroyCalled = true;
-            var self = this;
-            this._objs.forEach(function (obj) {
-                self.removeWatch(obj);
-            });
-            this._objs = [];
+            this._store.destroy();
+            this._register.destroy();
+            this._store = null;
+            this._register = null;
             _super.prototype.destroy.call(this);
         };
-        PropWatcher.prototype.toString = function () {
-            return "PropWatcher " + this._objId;
+        ElViewFactory.prototype._getAppName = function () {
+            return this._appName;
         };
-        Object.defineProperty(PropWatcher.prototype, "uniqueID", {
+        ElViewFactory.prototype.createElView = function (view_info) {
+            var viewType, elView, options = view_info.options;
+            var el = options.el;
+            if (!!view_info.name) {
+                viewType = this._register.getElViewType(view_info.name);
+                if (!viewType)
+                    throw new Error(utils.str.format(lang_5.ERRS.ERR_ELVIEW_NOT_REGISTERED, view_info.name));
+            }
+            if (!viewType) {
+                var nodeNm = el.nodeName.toLowerCase(), attrType = void 0;
+                switch (nodeNm) {
+                    case "input":
+                        {
+                            attrType = el.getAttribute("type");
+                            nodeNm = nodeNm + ":" + attrType;
+                            viewType = this._register.getElViewType(nodeNm);
+                        }
+                        break;
+                    default:
+                        viewType = this._register.getElViewType(nodeNm);
+                        break;
+                }
+                if (!viewType)
+                    throw new Error(utils.str.format(lang_5.ERRS.ERR_ELVIEW_NOT_CREATED, nodeNm));
+            }
+            try {
+                elView = new viewType(options);
+            }
+            catch (e) {
+                this._store.setElView(el, null);
+                throw e;
+            }
+            return elView;
+        };
+        ElViewFactory.prototype.getOrCreateElView = function (el) {
+            var elView = this.store.getElView(el);
+            if (!!elView)
+                return elView;
+            var info = this.getElementViewInfo(el);
+            return this.createElView(info);
+        };
+        ElViewFactory.prototype.getElementViewInfo = function (el) {
+            var view_name = null, vw_options = null, attr, data_view_op_arr, data_view_op;
+            if (el.hasAttribute(const_2.DATA_ATTR.DATA_VIEW)) {
+                attr = el.getAttribute(const_2.DATA_ATTR.DATA_VIEW);
+                data_view_op_arr = parser_1.parser.parseOptions(attr);
+                if (!!data_view_op_arr && data_view_op_arr.length > 0) {
+                    data_view_op = data_view_op_arr[0];
+                    if (!!data_view_op.name && data_view_op.name !== "default") {
+                        view_name = data_view_op.name;
+                    }
+                    vw_options = data_view_op.options;
+                }
+            }
+            var options = utils.core.merge({ appName: this._appName, el: el }, vw_options);
+            return { name: view_name, options: options };
+        };
+        Object.defineProperty(ElViewFactory.prototype, "store", {
             get: function () {
-                return this._objId;
+                return this._store;
             },
             enumerable: true,
             configurable: true
         });
-        return PropWatcher;
+        Object.defineProperty(ElViewFactory.prototype, "register", {
+            get: function () {
+                return this._register;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return ElViewFactory;
     }(object_2.BaseObject));
-    exports.PropWatcher = PropWatcher;
 });
-define("jriapp_utils/waitqueue", ["require", "exports", "jriapp_core/object", "jriapp_utils/coreutils"], function (require, exports, object_3, coreutils_7) {
+define("jriapp_core/defaults", ["require", "exports", "jriapp_core/shared", "jriapp_core/object", "jriapp_utils/checks", "jriapp_utils/strutils"], function (require, exports, coreMOD, object_3, checks_7, strUtils_4) {
+    "use strict";
+    var checks = checks_7.Checks, strUtils = strUtils_4.StringUtils;
+    var PROP_NAME = {
+        dateFormat: "dateFormat",
+        timeFormat: "timeFormat",
+        dateTimeFormat: "dateTimeFormat",
+        datepicker: "datepicker",
+        imagesPath: "imagesPath",
+        decimalPoint: "decimalPoint",
+        thousandSep: "thousandSep",
+        decPrecision: "decPrecision"
+    };
+    var Defaults = (function (_super) {
+        __extends(Defaults, _super);
+        function Defaults(typeStore) {
+            _super.call(this);
+            this._svcStore = typeStore;
+            this._dateFormat = "DD.MM.YYYY";
+            this._dateTimeFormat = "DD.MM.YYYY HH:mm:ss";
+            this._timeFormat = "HH:mm:ss";
+            this._imagesPath = "";
+            this._decimalPoint = ",";
+            this._thousandSep = " ";
+            this._decPrecision = 2;
+        }
+        Defaults.prototype.toString = function () {
+            return "Defaults";
+        };
+        Object.defineProperty(Defaults.prototype, "dateFormat", {
+            get: function () { return this._dateFormat; },
+            set: function (v) {
+                if (this._dateFormat !== v) {
+                    this._dateFormat = v;
+                    this.raisePropertyChanged(PROP_NAME.dateFormat);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Defaults.prototype, "timeFormat", {
+            get: function () { return this._timeFormat; },
+            set: function (v) {
+                if (this._timeFormat !== v) {
+                    this._timeFormat = v;
+                    this.raisePropertyChanged(PROP_NAME.timeFormat);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Defaults.prototype, "dateTimeFormat", {
+            get: function () { return this._dateTimeFormat; },
+            set: function (v) {
+                if (this._dateTimeFormat !== v) {
+                    this._dateTimeFormat = v;
+                    this.raisePropertyChanged(PROP_NAME.dateTimeFormat);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Defaults.prototype, "datepicker", {
+            get: function () { return this._svcStore.getSvc("IDatepicker"); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Defaults.prototype, "imagesPath", {
+            get: function () { return this._imagesPath; },
+            set: function (v) {
+                if (!v)
+                    v = "";
+                if (this._imagesPath !== v) {
+                    if (!strUtils.endsWith(v, "/")) {
+                        this._imagesPath = v + "/";
+                    }
+                    else
+                        this._imagesPath = v;
+                    this.raisePropertyChanged(PROP_NAME.imagesPath);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Defaults.prototype, "decimalPoint", {
+            get: function () { return this._decimalPoint; },
+            set: function (v) {
+                if (this._decimalPoint !== v) {
+                    this._decimalPoint = v;
+                    this.raisePropertyChanged(PROP_NAME.decimalPoint);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Defaults.prototype, "thousandSep", {
+            get: function () { return this._thousandSep; },
+            set: function (v) {
+                if (this._thousandSep !== v) {
+                    this._thousandSep = v;
+                    this.raisePropertyChanged(PROP_NAME.thousandSep);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Defaults.prototype, "decPrecision", {
+            get: function () { return this._decPrecision; },
+            set: function (v) {
+                if (this._decPrecision !== v) {
+                    this._decPrecision = v;
+                    this.raisePropertyChanged(PROP_NAME.decPrecision);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Defaults.prototype, "ButtonsCSS", {
+            get: function () {
+                return coreMOD.ButtonCss;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return Defaults;
+    }(object_3.BaseObject));
+    exports.Defaults = Defaults;
+});
+define("jriapp_utils/waitqueue", ["require", "exports", "jriapp_core/object", "jriapp_utils/coreutils"], function (require, exports, object_4, coreutils_7) {
     "use strict";
     var WaitQueue = (function (_super) {
         __extends(WaitQueue, _super);
@@ -2450,362 +2674,12 @@ define("jriapp_utils/waitqueue", ["require", "exports", "jriapp_core/object", "j
             configurable: true
         });
         return WaitQueue;
-    }(object_3.BaseObject));
+    }(object_4.BaseObject));
     exports.WaitQueue = WaitQueue;
 });
-define("jriapp_utils/utils", ["require", "exports", "jriapp_utils/coreutils", "jriapp_utils/dom", "jriapp_utils/async", "jriapp_utils/http", "jriapp_utils/strutils", "jriapp_utils/checks", "jriapp_utils/arrhelper", "jriapp_utils/dom", "jriapp_utils/async", "jriapp_utils/http", "jriapp_utils/lifetime", "jriapp_utils/propwatcher", "jriapp_utils/waitqueue", "jriapp_utils/coreutils"], function (require, exports, coreutils_8, dom_1, async_2, http_1, strutils_3, checks_4, arrhelper_4, dom_2, async_3, http_2, lifetime_1, propwatcher_1, waitqueue_1, coreutils_9) {
+define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/strutils", "jriapp_utils/checks", "jriapp_utils/coreutils", "jriapp_utils/async", "jriapp_utils/http", "jriapp_utils/waitqueue"], function (require, exports, lang_6, object_5, strUtils_5, checks_8, coreutils_8, async_3, http_2, waitqueue_1) {
     "use strict";
-    exports.DomUtils = dom_2.DomUtils;
-    exports.AsyncUtils = async_3.AsyncUtils;
-    exports.HttpUtils = http_2.HttpUtils;
-    exports.LifeTimeScope = lifetime_1.LifeTimeScope;
-    exports.PropWatcher = propwatcher_1.PropWatcher;
-    exports.WaitQueue = waitqueue_1.WaitQueue;
-    exports.Debounce = coreutils_9.Debounce;
-    exports.DblClick = coreutils_9.DblClick;
-    exports.DEBUG = coreutils_9.DEBUG;
-    exports.ERROR = coreutils_9.ERROR;
-    exports.SysChecks = coreutils_9.SysChecks;
-    var checks = checks_4.Checks, _async = async_2.AsyncUtils;
-    var Utils = (function () {
-        function Utils() {
-        }
-        Utils.getErrorNotification = function (obj) {
-            if (!obj) {
-                return null;
-            }
-            else if (!!obj._aspect && checks.isErrorNotification(obj._aspect))
-                return obj._aspect.getIErrorNotification();
-            else if (checks.isErrorNotification(obj))
-                return obj.getIErrorNotification();
-            return null;
-        };
-        Utils.getEditable = function (obj) {
-            if (!obj) {
-                return null;
-            }
-            else if (!!obj._aspect && checks.isEditable(obj._aspect)) {
-                return obj._aspect;
-            }
-            else if (checks.isEditable(obj)) {
-                return obj;
-            }
-            return null;
-        };
-        Utils.getSubmittable = function (obj) {
-            if (!obj) {
-                return null;
-            }
-            else if (!!obj._aspect && checks.isSubmittable(obj._aspect)) {
-                return obj._aspect;
-            }
-            else if (checks.isSubmittable(obj)) {
-                return obj;
-            }
-            return null;
-        };
-        Utils.parseJSON = function (res) {
-            return _async.delay(function () {
-                var parsed = null;
-                if (checks.isString(res))
-                    parsed = JSON.parse(res);
-                else
-                    parsed = res;
-                return parsed;
-            });
-        };
-        Utils.check = checks;
-        Utils.str = strutils_3.StringUtils;
-        Utils.arr = arrhelper_4.ArrayHelper;
-        Utils.dom = dom_1.DomUtils;
-        Utils.http = http_1.HttpUtils;
-        Utils.core = coreutils_8.CoreUtils;
-        Utils.defer = _async;
-        return Utils;
-    }());
-    exports.Utils = Utils;
-});
-define("jriapp_elview/factory", ["require", "exports", "jriapp_core/const", "jriapp_core/bootstrap", "jriapp_core/lang", "jriapp_core/parser", "jriapp_utils/coreutils", "jriapp_utils/utils"], function (require, exports, const_2, bootstrap_1, lang_5, parser_1, coreutils_10, utils_1) {
-    "use strict";
-    var utils = utils_1.Utils, $ = utils.dom.$;
-    function createFactory(app, num, register) {
-        return new ElViewFactory(app, num, register);
-    }
-    exports.createFactory = createFactory;
-    function createRegister(next) {
-        return new ElViewRegister(next);
-    }
-    exports.createRegister = createRegister;
-    var ElViewRegister = (function () {
-        function ElViewRegister(next) {
-            this._exports = {};
-            this._next = next;
-        }
-        ElViewRegister.prototype.registerElView = function (name, vw_type) {
-            if (!bootstrap_1.bootstrap._getInternal().getObject(this, name)) {
-                bootstrap_1.bootstrap._getInternal().registerObject(this, name, vw_type);
-            }
-            else
-                throw new Error(utils.str.format(lang_5.ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
-        };
-        ElViewRegister.prototype.getElViewType = function (name) {
-            var res = bootstrap_1.bootstrap._getInternal().getObject(this, name);
-            if (!res && !!this._next) {
-                res = this._next.getElViewType(name);
-            }
-            return res;
-        };
-        ElViewRegister.prototype.destroy = function () {
-            this._exports = {};
-        };
-        ElViewRegister.prototype.getExports = function () {
-            return this._exports;
-        };
-        return ElViewRegister;
-    }());
-    var ElViewStore = (function () {
-        function ElViewStore(instanceNum) {
-            this._ELV_STORE_KEY = const_2.DATA_ATTR.EL_VIEW_KEY + instanceNum;
-        }
-        ElViewStore.prototype.destroy = function () {
-        };
-        ElViewStore.prototype.getElView = function (el) {
-            return $.data(el, this._ELV_STORE_KEY);
-        };
-        ElViewStore.prototype.setElView = function (el, view) {
-            if (!view) {
-                $.removeData(el, this._ELV_STORE_KEY);
-            }
-            else {
-                $.data(el, this._ELV_STORE_KEY, view);
-            }
-        };
-        return ElViewStore;
-    }());
-    var ElViewFactory = (function () {
-        function ElViewFactory(app, num, register) {
-            this._app = app;
-            this._store = new ElViewStore(num);
-            this._register = register;
-        }
-        ElViewFactory.prototype.destroy = function () {
-            if (!this._store)
-                return;
-            this._store.destroy();
-            this._store = null;
-            this._register = null;
-            this._app = null;
-        };
-        ElViewFactory.prototype.handleError = function (error, source) {
-            if (coreutils_10.ERROR.checkIsDummy(error)) {
-                return true;
-            }
-            return this._app.handleError(error, source);
-        };
-        ElViewFactory.prototype.createElView = function (view_info) {
-            var viewType, elView, options = view_info.options;
-            var el = options.el;
-            if (!!view_info.name) {
-                viewType = this._register.getElViewType(view_info.name);
-                if (!viewType)
-                    throw new Error(utils.str.format(lang_5.ERRS.ERR_ELVIEW_NOT_REGISTERED, view_info.name));
-            }
-            if (!viewType) {
-                var nodeNm = el.nodeName.toLowerCase(), attrType = void 0;
-                switch (nodeNm) {
-                    case "input":
-                        {
-                            attrType = el.getAttribute("type");
-                            nodeNm = nodeNm + ":" + attrType;
-                            viewType = this._register.getElViewType(nodeNm);
-                        }
-                        break;
-                    default:
-                        viewType = this._register.getElViewType(nodeNm);
-                        break;
-                }
-                if (!viewType)
-                    throw new Error(utils.str.format(lang_5.ERRS.ERR_ELVIEW_NOT_CREATED, nodeNm));
-            }
-            try {
-                elView = new viewType(options);
-            }
-            catch (e) {
-                this._store.setElView(el, null);
-                throw e;
-            }
-            return elView;
-        };
-        ElViewFactory.prototype.getOrCreateElView = function (el) {
-            var elView = this.store.getElView(el);
-            if (!!elView)
-                return elView;
-            var info = this.getElementViewInfo(el);
-            return this.createElView(info);
-        };
-        ElViewFactory.prototype.getElementViewInfo = function (el) {
-            var view_name = null, vw_options = null, attr, data_view_op_arr, data_view_op;
-            if (el.hasAttribute(const_2.DATA_ATTR.DATA_VIEW)) {
-                attr = el.getAttribute(const_2.DATA_ATTR.DATA_VIEW);
-                data_view_op_arr = parser_1.parser.parseOptions(attr);
-                if (!!data_view_op_arr && data_view_op_arr.length > 0) {
-                    data_view_op = data_view_op_arr[0];
-                    if (!!data_view_op.name && data_view_op.name !== "default") {
-                        view_name = data_view_op.name;
-                    }
-                    vw_options = data_view_op.options;
-                }
-            }
-            var options = utils.core.merge({ app: this._app, el: el }, vw_options);
-            return { name: view_name, options: options };
-        };
-        Object.defineProperty(ElViewFactory.prototype, "store", {
-            get: function () {
-                return this._store;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ElViewFactory.prototype, "app", {
-            get: function () {
-                return this._app;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return ElViewFactory;
-    }());
-});
-define("jriapp_core/defaults", ["require", "exports", "jriapp_core/shared", "jriapp_core/object", "jriapp_utils/coreutils"], function (require, exports, coreMOD, object_4, coreUtilsMOD) {
-    "use strict";
-    var checks = coreUtilsMOD.Checks, strUtils = coreUtilsMOD.StringUtils;
-    var PROP_NAME = {
-        dateFormat: "dateFormat",
-        timeFormat: "timeFormat",
-        dateTimeFormat: "dateTimeFormat",
-        datepicker: "datepicker",
-        imagesPath: "imagesPath",
-        decimalPoint: "decimalPoint",
-        thousandSep: "thousandSep",
-        decPrecision: "decPrecision"
-    };
-    var Defaults = (function (_super) {
-        __extends(Defaults, _super);
-        function Defaults(typeStore) {
-            _super.call(this);
-            this._svcStore = typeStore;
-            this._dateFormat = "DD.MM.YYYY";
-            this._dateTimeFormat = "DD.MM.YYYY HH:mm:ss";
-            this._timeFormat = "HH:mm:ss";
-            this._imagesPath = "";
-            this._decimalPoint = ",";
-            this._thousandSep = " ";
-            this._decPrecision = 2;
-        }
-        Defaults.prototype.toString = function () {
-            return "Defaults";
-        };
-        Object.defineProperty(Defaults.prototype, "dateFormat", {
-            get: function () { return this._dateFormat; },
-            set: function (v) {
-                if (this._dateFormat !== v) {
-                    this._dateFormat = v;
-                    this.raisePropertyChanged(PROP_NAME.dateFormat);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Defaults.prototype, "timeFormat", {
-            get: function () { return this._timeFormat; },
-            set: function (v) {
-                if (this._timeFormat !== v) {
-                    this._timeFormat = v;
-                    this.raisePropertyChanged(PROP_NAME.timeFormat);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Defaults.prototype, "dateTimeFormat", {
-            get: function () { return this._dateTimeFormat; },
-            set: function (v) {
-                if (this._dateTimeFormat !== v) {
-                    this._dateTimeFormat = v;
-                    this.raisePropertyChanged(PROP_NAME.dateTimeFormat);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Defaults.prototype, "datepicker", {
-            get: function () { return this._svcStore.getSvc("IDatepicker"); },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Defaults.prototype, "imagesPath", {
-            get: function () { return this._imagesPath; },
-            set: function (v) {
-                if (!v)
-                    v = "";
-                if (this._imagesPath !== v) {
-                    if (!strUtils.endsWith(v, "/")) {
-                        this._imagesPath = v + "/";
-                    }
-                    else
-                        this._imagesPath = v;
-                    this.raisePropertyChanged(PROP_NAME.imagesPath);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Defaults.prototype, "decimalPoint", {
-            get: function () { return this._decimalPoint; },
-            set: function (v) {
-                if (this._decimalPoint !== v) {
-                    this._decimalPoint = v;
-                    this.raisePropertyChanged(PROP_NAME.decimalPoint);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Defaults.prototype, "thousandSep", {
-            get: function () { return this._thousandSep; },
-            set: function (v) {
-                if (this._thousandSep !== v) {
-                    this._thousandSep = v;
-                    this.raisePropertyChanged(PROP_NAME.thousandSep);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Defaults.prototype, "decPrecision", {
-            get: function () { return this._decPrecision; },
-            set: function (v) {
-                if (this._decPrecision !== v) {
-                    this._decPrecision = v;
-                    this.raisePropertyChanged(PROP_NAME.decPrecision);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Defaults.prototype, "ButtonsCSS", {
-            get: function () {
-                return coreMOD.ButtonCss;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return Defaults;
-    }(object_4.BaseObject));
-    exports.Defaults = Defaults;
-});
-define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/coreutils", "jriapp_utils/async", "jriapp_utils/http", "jriapp_utils/waitqueue"], function (require, exports, lang_6, object_5, coreutils_11, async_4, http_3, waitqueue_2) {
-    "use strict";
+    var checks = checks_8.Checks, coreUtils = coreutils_8.CoreUtils, strUtils = strUtils_5.StringUtils, defer = async_3.AsyncUtils;
     var PROP_NAME = {
         isLoading: "isLoading"
     };
@@ -2817,7 +2691,7 @@ define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriap
             this._templateLoaders = {};
             this._templateGroups = {};
             this._promises = [];
-            this._waitQueue = new waitqueue_2.WaitQueue(self);
+            this._waitQueue = new waitqueue_1.WaitQueue(self);
         }
         TemplateLoader.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -2858,13 +2732,13 @@ define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriap
             this.raiseEvent("loaded", { html: html, app: app });
         };
         TemplateLoader.prototype._getTemplateGroup = function (name) {
-            return coreutils_11.CoreUtils.getValue(this._templateGroups, name);
+            return coreUtils.getValue(this._templateGroups, name);
         };
         TemplateLoader.prototype._registerTemplateLoaderCore = function (name, loader) {
-            coreutils_11.CoreUtils.setValue(this._templateLoaders, name, loader, false);
+            coreUtils.setValue(this._templateLoaders, name, loader, false);
         };
         TemplateLoader.prototype._getTemplateLoaderCore = function (name) {
-            return coreutils_11.CoreUtils.getValue(this._templateLoaders, name);
+            return coreUtils.getValue(this._templateLoaders, name);
         };
         TemplateLoader.prototype.loadTemplatesAsync = function (fn_loader, app) {
             var self = this, promise = fn_loader(), old = self.isLoading;
@@ -2875,33 +2749,33 @@ define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriap
                 self._onLoaded(html, app);
             });
             res.always(function () {
-                coreutils_11.CoreUtils.arr.remove(self._promises, promise);
+                coreUtils.arr.remove(self._promises, promise);
                 if (!self.isLoading)
                     self.raisePropertyChanged(PROP_NAME.isLoading);
             });
             return res;
         };
         TemplateLoader.prototype.unRegisterTemplateLoader = function (name) {
-            coreutils_11.CoreUtils.removeValue(this._templateLoaders, name);
+            coreUtils.removeValue(this._templateLoaders, name);
         };
         TemplateLoader.prototype.unRegisterTemplateGroup = function (name) {
-            coreutils_11.CoreUtils.removeValue(this._templateGroups, name);
+            coreUtils.removeValue(this._templateGroups, name);
         };
         TemplateLoader.prototype.registerTemplateLoader = function (name, loader) {
             var self = this;
-            loader = coreutils_11.CoreUtils.extend({
+            loader = coreUtils.extend({
                 fn_loader: null,
                 groupName: null
             }, loader);
-            if (!loader.groupName && !coreutils_11.Checks.isFunc(loader.fn_loader)) {
-                throw new Error(coreutils_11.StringUtils.format(lang_6.ERRS.ERR_ASSERTION_FAILED, "fn_loader is Function"));
+            if (!loader.groupName && !checks.isFunc(loader.fn_loader)) {
+                throw new Error(strUtils.format(lang_6.ERRS.ERR_ASSERTION_FAILED, "fn_loader is Function"));
             }
             var prevLoader = self._getTemplateLoaderCore(name);
             if (!!prevLoader) {
                 if ((!prevLoader.fn_loader && !!prevLoader.groupName) && (!loader.groupName && !!loader.fn_loader)) {
                     return self._registerTemplateLoaderCore(name, loader);
                 }
-                throw new Error(coreutils_11.StringUtils.format(lang_6.ERRS.ERR_TEMPLATE_ALREADY_REGISTERED, name));
+                throw new Error(strUtils.format(lang_6.ERRS.ERR_TEMPLATE_ALREADY_REGISTERED, name));
             }
             return self._registerTemplateLoaderCore(name, loader);
         };
@@ -2912,13 +2786,13 @@ define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriap
             if (!loader.fn_loader && !!loader.groupName) {
                 var group_1 = self._getTemplateGroup(loader.groupName);
                 if (!group_1) {
-                    throw new Error(coreutils_11.StringUtils.format(lang_6.ERRS.ERR_TEMPLATE_GROUP_NOTREGISTERED, loader.groupName));
+                    throw new Error(strUtils.format(lang_6.ERRS.ERR_TEMPLATE_GROUP_NOTREGISTERED, loader.groupName));
                 }
                 return function () {
                     if (!group_1.promise) {
                         group_1.promise = self.loadTemplatesAsync(group_1.fn_loader, group_1.app);
                     }
-                    var deferred = async_4.AsyncUtils.createSyncDeferred();
+                    var deferred = defer.createSyncDeferred();
                     group_1.promise.then(function () {
                         group_1.promise = null;
                         group_1.names.forEach(function (name) {
@@ -2927,17 +2801,17 @@ define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriap
                             }
                             var loader = self._getTemplateLoaderCore(name);
                             if (!loader || !loader.fn_loader) {
-                                var error = coreutils_11.StringUtils.format(lang_6.ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
-                                if (coreutils_11.DEBUG.isDebugging())
-                                    coreutils_11.LOG.error(error);
+                                var error = strUtils.format(lang_6.ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
+                                if (coreutils_8.DEBUG.isDebugging())
+                                    coreutils_8.LOG.error(error);
                                 throw new Error(error);
                             }
                         });
                         var loader = self._getTemplateLoaderCore(name);
                         if (!loader || !loader.fn_loader) {
-                            var error = coreutils_11.StringUtils.format(lang_6.ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
-                            if (coreutils_11.DEBUG.isDebugging())
-                                coreutils_11.LOG.error(error);
+                            var error = strUtils.format(lang_6.ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
+                            if (coreutils_8.DEBUG.isDebugging())
+                                coreutils_8.LOG.error(error);
                             throw new Error(error);
                         }
                         delete self._templateGroups[loader.groupName];
@@ -2958,7 +2832,7 @@ define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriap
                 return loader.fn_loader;
         };
         TemplateLoader.prototype.registerTemplateGroup = function (groupName, group) {
-            var self = this, group2 = coreutils_11.CoreUtils.extend({
+            var self = this, group2 = coreUtils.extend({
                 fn_loader: null,
                 url: null,
                 names: null,
@@ -2967,10 +2841,10 @@ define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriap
             }, group);
             if (!!group2.url && !group2.fn_loader) {
                 group2.fn_loader = function () {
-                    return http_3.HttpUtils.getAjax(group2.url);
+                    return http_2.HttpUtils.getAjax(group2.url);
                 };
             }
-            coreutils_11.CoreUtils.setValue(self._templateGroups, groupName, group2, true);
+            coreUtils.setValue(self._templateGroups, groupName, group2, true);
             group2.names.forEach(function (name) {
                 if (!!group2.app) {
                     name = group2.app.appName + "." + name;
@@ -2984,7 +2858,7 @@ define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriap
         TemplateLoader.prototype.loadTemplates = function (url) {
             var self = this;
             this.loadTemplatesAsync(function () {
-                return http_3.HttpUtils.getAjax(url);
+                return http_2.HttpUtils.getAjax(url);
             }, null);
         };
         Object.defineProperty(TemplateLoader.prototype, "isLoading", {
@@ -2998,14 +2872,14 @@ define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriap
     }(object_5.BaseObject));
     exports.TemplateLoader = TemplateLoader;
 });
-define("jriapp_utils/path", ["require", "exports", "jriapp_core/shared", "jriapp_utils/dom", "jriapp_utils/arrhelper", "jriapp_utils/strutils"], function (require, exports, shared_3, dom_3, arrhelper_5, strutils_4) {
+define("jriapp_utils/path", ["require", "exports", "jriapp_core/shared", "jriapp_utils/dom", "jriapp_utils/arrhelper", "jriapp_utils/strutils"], function (require, exports, shared_3, dom_2, arrhelper_4, strutils_4) {
     "use strict";
-    var doc = dom_3.DomUtils.document, head = doc.head || doc.getElementsByTagName("head")[0];
+    var doc = dom_2.DomUtils.document, head = doc.head || doc.getElementsByTagName("head")[0];
     exports.frameworkJS = shared_3.Config.frameworkJS || "jriapp.js";
     var stylesDir = "css", imageDir = "img";
     function fn_getFrameworkPath() {
         var name = exports.frameworkJS;
-        var arr = arrhelper_5.ArrayHelper.fromList(doc.scripts);
+        var arr = arrhelper_4.ArrayHelper.fromList(doc.scripts);
         for (var i = 0; i < arr.length; i += 1) {
             var script = arr[i];
             if (!!script.src) {
@@ -3113,10 +2987,10 @@ define("jriapp_utils/path", ["require", "exports", "jriapp_core/shared", "jriapp
     }());
     exports.PathHelper = PathHelper;
 });
-define("jriapp_utils/sloader", ["require", "exports", "jriapp_utils/arrhelper", "jriapp_utils/dom", "jriapp_utils/async", "jriapp_utils/path"], function (require, exports, arrhelper_6, dom_4, async_5, path_1) {
+define("jriapp_utils/sloader", ["require", "exports", "jriapp_utils/arrhelper", "jriapp_utils/dom", "jriapp_utils/async", "jriapp_utils/path"], function (require, exports, arrhelper_5, dom_3, async_4, path_1) {
     "use strict";
-    var resolvedPromise = async_5.AsyncUtils.createSyncDeferred().resolve();
-    var doc = dom_4.DomUtils.document, head = doc.head || doc.getElementsByTagName("head")[0];
+    var resolvedPromise = async_4.AsyncUtils.createSyncDeferred().resolve();
+    var doc = dom_3.DomUtils.document, head = doc.head || doc.getElementsByTagName("head")[0];
     var _stylesLoader = null;
     exports.frameworkCss = "jriapp.css";
     function create() {
@@ -3140,7 +3014,7 @@ define("jriapp_utils/sloader", ["require", "exports", "jriapp_utils/arrhelper", 
             return resolvedPromise;
         }
         else {
-            return async_5.whenAll(promises);
+            return async_4.whenAll(promises);
         }
     }
     function createLink(url) {
@@ -3156,7 +3030,7 @@ define("jriapp_utils/sloader", ["require", "exports", "jriapp_utils/arrhelper", 
         }
         StylesLoader.prototype.isStyleSheetLoaded = function (url) {
             var testUrl = path_1.PathHelper.getUrlParts(url);
-            var arr = arrhelper_6.ArrayHelper.fromList(doc.styleSheets);
+            var arr = arrhelper_5.ArrayHelper.fromList(doc.styleSheets);
             for (var i = 0; i < arr.length; i += 1) {
                 var cssUrl = path_1.PathHelper.getUrlParts(arr[i].href);
                 if (cssUrl.hostname === testUrl.hostname && cssUrl.pathname === testUrl.pathname) {
@@ -3189,7 +3063,7 @@ define("jriapp_utils/sloader", ["require", "exports", "jriapp_utils/arrhelper", 
             if (!!cssPromise) {
                 return cssPromise;
             }
-            var deferred = async_5.AsyncUtils.createSyncDeferred();
+            var deferred = async_4.AsyncUtils.createSyncDeferred();
             cssPromise = deferred.promise();
             if (this.isStyleSheetLoaded(url)) {
                 deferred.resolve(url);
@@ -3227,9 +3101,9 @@ define("jriapp_utils/sloader", ["require", "exports", "jriapp_utils/arrhelper", 
         return StylesLoader;
     }());
 });
-define("jriapp_utils/tooltip", ["require", "exports", "jriapp_utils/dom"], function (require, exports, dom_5) {
+define("jriapp_utils/tooltip", ["require", "exports", "jriapp_utils/dom"], function (require, exports, dom_4) {
     "use strict";
-    var $ = dom_5.DomUtils.$, window = dom_5.DomUtils.window;
+    var dom = dom_4.DomUtils, $ = dom.$, window = dom.window;
     exports.css = {
         toolTip: "qtip",
         toolTipError: "qtip-red"
@@ -3278,9 +3152,9 @@ define("jriapp_utils/tooltip", ["require", "exports", "jriapp_utils/dom"], funct
         return tooltipService;
     }());
 });
-define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jriapp_elview/factory", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/defaults", "jriapp_utils/coreutils", "jriapp_utils/tloader", "jriapp_utils/sloader", "jriapp_utils/path", "jriapp_utils/tooltip", "jriapp_utils/dom", "jriapp_utils/async"], function (require, exports, const_3, factory_1, lang_7, object_6, defaults_1, coreutils_12, tloader_1, sloader_1, path_2, tooltip_1, dom_6, async_6) {
+define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jriapp_elview/factory", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/defaults", "jriapp_utils/strutils", "jriapp_utils/coreutils", "jriapp_utils/tloader", "jriapp_utils/sloader", "jriapp_utils/path", "jriapp_utils/tooltip", "jriapp_utils/dom", "jriapp_utils/async"], function (require, exports, const_3, factory_1, lang_7, object_6, defaults_1, strutils_5, coreutils_9, tloader_1, sloader_1, path_2, tooltip_1, dom_5, async_5) {
     "use strict";
-    var dom = dom_6.DomUtils, $ = dom.$, _async = async_6.AsyncUtils, doc = dom.document, win = dom.window;
+    var dom = dom_5.DomUtils, $ = dom.$, _async = async_5.AsyncUtils, doc = dom.document, win = dom.window, coreUtils = coreutils_9.CoreUtils, strUtils = strutils_5.StringUtils;
     var _TEMPLATE_SELECTOR = 'script[type="text/html"]';
     var stylesLoader = sloader_1.create();
     var GLOB_EVENTS = {
@@ -3320,7 +3194,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             this._templateLoader.addOnError(function (s, a) {
                 return self.handleError(a.error, a.source);
             });
-            this._elViewRegister = factory_1.createRegister(null);
+            this._elViewRegister = factory_1.createElViewRegister(null);
             this._internal = {
                 initialize: function () {
                     return self._initialize();
@@ -3356,6 +3230,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             this._defaults = new defaults_1.Defaults(this);
             this.defaults.imagesPath = path_2.PathHelper.getFrameworkImgPath();
             stylesLoader.loadOwnStyle();
+            coreutils_9.ERROR.addHandler("*", this);
         }
         Bootstrap._initFramework = function () {
             $(doc).ready(function ($) {
@@ -3394,12 +3269,12 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
         };
         Bootstrap.prototype._onTemplateLoaded = function (html, app) {
             var tmpDiv = doc.createElement("div");
-            tmpDiv.innerHTML = coreutils_12.StringUtils.fastTrim(html);
+            tmpDiv.innerHTML = strUtils.fastTrim(html);
             this._processTemplates(tmpDiv, app);
         };
         Bootstrap.prototype._processTemplates = function (root, app) {
             if (app === void 0) { app = null; }
-            var self = this, templates = coreutils_12.CoreUtils.arr.fromList(root.querySelectorAll(_TEMPLATE_SELECTOR));
+            var self = this, templates = coreUtils.arr.fromList(root.querySelectorAll(_TEMPLATE_SELECTOR));
             templates.forEach(function (el) {
                 var html, name = el.getAttribute("id");
                 if (!name)
@@ -3414,7 +3289,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
         };
         Bootstrap.prototype._processTemplate = function (name, html, app) {
             var self = this, deferred = _async.createSyncDeferred();
-            var res = coreutils_12.StringUtils.fastTrim(html);
+            var res = strUtils.fastTrim(html);
             var fn = function () {
                 return deferred.promise();
             };
@@ -3498,36 +3373,39 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
                 this.currentSelectable = null;
         };
         Bootstrap.prototype._registerApp = function (app) {
-            if (!this._appInst[app.appName])
+            if (!this._appInst[app.appName]) {
                 this._appInst[app.appName] = app;
+                coreutils_9.ERROR.addHandler(app.appName, app);
+            }
         };
         Bootstrap.prototype._unregisterApp = function (app) {
             if (!this._appInst[app.appName])
                 return;
+            coreutils_9.ERROR.removeHandler(app.appName);
             delete this._appInst[app.appName];
             this.templateLoader.unRegisterTemplateGroup(app.appName);
             this.templateLoader.unRegisterTemplateLoader(app.appName);
         };
         Bootstrap.prototype._destroyApps = function () {
             var self = this;
-            coreutils_12.CoreUtils.forEachProp(this._appInst, function (id) {
+            coreUtils.forEachProp(this._appInst, function (id) {
                 self._appInst[id].destroy();
             });
         };
         Bootstrap.prototype._registerObject = function (root, name, obj) {
-            coreutils_12.CoreUtils.setValue(root.getExports(), name, obj, true);
+            coreUtils.setValue(root.getExports(), name, obj, true);
         };
         Bootstrap.prototype._unregisterObject = function (root, name) {
-            return coreutils_12.CoreUtils.removeValue(root.getExports(), name);
+            return coreUtils.removeValue(root.getExports(), name);
         };
         Bootstrap.prototype._getObject = function (root, name) {
-            return coreutils_12.CoreUtils.getValue(root.getExports(), name);
+            return coreUtils.getValue(root.getExports(), name);
         };
         Bootstrap.prototype._getConverter = function (name) {
             var name2 = const_3.STORE_KEY.CONVERTER + name;
             var res = this._getObject(this, name2);
             if (!res)
-                throw new Error(coreutils_12.StringUtils.format(lang_7.ERRS.ERR_CONVERTER_NOTREGISTERED, name));
+                throw new Error(strUtils.format(lang_7.ERRS.ERR_CONVERTER_NOTREGISTERED, name));
             return res;
         };
         Bootstrap.prototype._waitLoaded = function (onLoad) {
@@ -3620,6 +3498,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             $(doc).off(".jriapp");
             win.onerror = null;
             $(win).off(".jriapp");
+            coreutils_9.ERROR.removeHandler("*");
             _super.prototype.destroy.call(this);
         };
         Bootstrap.prototype.registerSvc = function (name, obj) {
@@ -3640,7 +3519,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
                 this._registerObject(this, name2, obj);
             }
             else
-                throw new Error(coreutils_12.StringUtils.format(lang_7.ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
+                throw new Error(strUtils.format(lang_7.ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
         };
         Bootstrap.prototype.registerElView = function (name, elViewType) {
             this._elViewRegister.registerElView(name, elViewType);
@@ -3702,8 +3581,9 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
     exports.Bootstrap = Bootstrap;
     exports.bootstrap = new Bootstrap();
 });
-define("jriapp_core/converter", ["require", "exports", "jriapp_core/lang", "jriapp_utils/coreutils", "jriapp_core/bootstrap"], function (require, exports, lang_8, coreutils_13, bootstrap_2) {
+define("jriapp_core/converter", ["require", "exports", "jriapp_core/lang", "jriapp_utils/checks", "jriapp_utils/strutils", "jriapp_utils/coreutils", "jriapp_core/bootstrap"], function (require, exports, lang_8, checks_9, strUtils_6, coreutils_10, bootstrap_2) {
     "use strict";
+    var checks = checks_9.Checks, strUtils = strUtils_6.StringUtils, coreUtils = coreutils_10.CoreUtils, boot = bootstrap_2.bootstrap;
     exports.NUM_CONV = { None: 0, Integer: 1, Decimal: 2, Float: 3, SmallInt: 4 };
     var BaseConverter = (function () {
         function BaseConverter() {
@@ -3712,7 +3592,7 @@ define("jriapp_core/converter", ["require", "exports", "jriapp_core/lang", "jria
             return val;
         };
         BaseConverter.prototype.convertToTarget = function (val, param, dataContext) {
-            if (coreutils_13.Checks.isNt(val))
+            if (checks.isNt(val))
                 return null;
             return val;
         };
@@ -3734,7 +3614,7 @@ define("jriapp_core/converter", ["require", "exports", "jriapp_core/lang", "jria
                 return dateTimeConverter.convertToSource(val, defaults.dateFormat, dataContext);
         };
         DateConverter.prototype.convertToTarget = function (val, param, dataContext) {
-            if (coreutils_13.Checks.isNt(val))
+            if (checks.isNt(val))
                 return "";
             var defaults = bootstrap_2.bootstrap.defaults, datepicker = defaults.datepicker;
             if (!!datepicker)
@@ -3758,12 +3638,12 @@ define("jriapp_core/converter", ["require", "exports", "jriapp_core/lang", "jria
                 return null;
             var m = moment(val, param);
             if (!m.isValid()) {
-                throw new Error(coreutils_13.StringUtils.format(lang_8.ERRS.ERR_CONV_INVALID_DATE, val));
+                throw new Error(strUtils.format(lang_8.ERRS.ERR_CONV_INVALID_DATE, val));
             }
             return m.toDate();
         };
         DateTimeConverter.prototype.convertToTarget = function (val, param, dataContext) {
-            if (coreutils_13.Checks.isNt(val)) {
+            if (checks.isNt(val)) {
                 return "";
             }
             var m = moment(val);
@@ -3781,12 +3661,12 @@ define("jriapp_core/converter", ["require", "exports", "jriapp_core/lang", "jria
         function NumberConverter() {
         }
         NumberConverter.prototype.convertToSource = function (val, param, dataContext) {
-            if (coreutils_13.Checks.isNt(val))
+            if (checks.isNt(val))
                 return null;
             var defaults = bootstrap_2.bootstrap.defaults, dp = defaults.decimalPoint, thousand_sep = defaults.thousandSep, prec = 4;
             var value = val.replace(thousand_sep, "");
             value = value.replace(dp, ".");
-            value = coreutils_13.StringUtils.stripNonNumeric(value);
+            value = strUtils.stripNonNumeric(value);
             if (value === "") {
                 return null;
             }
@@ -3800,7 +3680,7 @@ define("jriapp_core/converter", ["require", "exports", "jriapp_core/lang", "jria
                     break;
                 case exports.NUM_CONV.Decimal:
                     prec = defaults.decPrecision;
-                    num = coreutils_13.CoreUtils.round(parseFloat(value), prec);
+                    num = coreUtils.round(parseFloat(value), prec);
                     break;
                 case exports.NUM_CONV.Float:
                     num = parseFloat(value);
@@ -3809,30 +3689,30 @@ define("jriapp_core/converter", ["require", "exports", "jriapp_core/lang", "jria
                     num = Number(value);
                     break;
             }
-            if (!coreutils_13.Checks.isNumber(num)) {
-                throw new Error(coreutils_13.StringUtils.format(lang_8.ERRS.ERR_CONV_INVALID_NUM, val));
+            if (!checks.isNumber(num)) {
+                throw new Error(strUtils.format(lang_8.ERRS.ERR_CONV_INVALID_NUM, val));
             }
             return num;
         };
         NumberConverter.prototype.convertToTarget = function (val, param, dataContext) {
-            if (coreutils_13.Checks.isNt(val)) {
+            if (checks.isNt(val)) {
                 return "";
             }
             var defaults = bootstrap_2.bootstrap.defaults, dp = defaults.decimalPoint, thousand_sep = defaults.thousandSep, prec;
             switch (param) {
                 case exports.NUM_CONV.Integer:
                     prec = 0;
-                    return coreutils_13.StringUtils.formatNumber(val, prec, dp, thousand_sep);
+                    return strUtils.formatNumber(val, prec, dp, thousand_sep);
                 case exports.NUM_CONV.Decimal:
                     prec = defaults.decPrecision;
-                    return coreutils_13.StringUtils.formatNumber(val, prec, dp, thousand_sep);
+                    return strUtils.formatNumber(val, prec, dp, thousand_sep);
                 case exports.NUM_CONV.SmallInt:
                     prec = 0;
-                    return coreutils_13.StringUtils.formatNumber(val, prec, dp, "");
+                    return strUtils.formatNumber(val, prec, dp, "");
                 case exports.NUM_CONV.Float:
-                    return coreutils_13.StringUtils.formatNumber(val, null, dp, thousand_sep);
+                    return strUtils.formatNumber(val, null, dp, thousand_sep);
                 default:
-                    return coreutils_13.StringUtils.formatNumber(val, null, dp, thousand_sep);
+                    return strUtils.formatNumber(val, null, dp, thousand_sep);
             }
         };
         NumberConverter.prototype.toString = function () {
@@ -3923,15 +3803,129 @@ define("jriapp_core/converter", ["require", "exports", "jriapp_core/lang", "jria
         return NotConverter;
     }());
     exports.NotConverter = NotConverter;
-    bootstrap_2.bootstrap.registerConverter("BaseConverter", exports.baseConverter);
-    bootstrap_2.bootstrap.registerConverter("dateConverter", dateConverter);
-    bootstrap_2.bootstrap.registerConverter("dateTimeConverter", dateTimeConverter);
-    bootstrap_2.bootstrap.registerConverter("numberConverter", numberConverter);
-    bootstrap_2.bootstrap.registerConverter("integerConverter", integerConverter);
-    bootstrap_2.bootstrap.registerConverter("smallIntConverter", smallIntConverter);
-    bootstrap_2.bootstrap.registerConverter("decimalConverter", decimalConverter);
-    bootstrap_2.bootstrap.registerConverter("floatConverter", floatConverter);
-    bootstrap_2.bootstrap.registerConverter("notConverter", new NotConverter());
+    boot.registerConverter("BaseConverter", exports.baseConverter);
+    boot.registerConverter("dateConverter", dateConverter);
+    boot.registerConverter("dateTimeConverter", dateTimeConverter);
+    boot.registerConverter("numberConverter", numberConverter);
+    boot.registerConverter("integerConverter", integerConverter);
+    boot.registerConverter("smallIntConverter", smallIntConverter);
+    boot.registerConverter("decimalConverter", decimalConverter);
+    boot.registerConverter("floatConverter", floatConverter);
+    boot.registerConverter("notConverter", new NotConverter());
+});
+define("jriapp_utils/debounce", ["require", "exports"], function (require, exports) {
+    "use strict";
+    var Debounce = (function () {
+        function Debounce(interval) {
+            if (interval === void 0) { interval = 0; }
+            this._isDestroyed = false;
+            this._timer = null;
+            this._interval = !interval ? 0 : interval;
+        }
+        Debounce.prototype.enqueue = function (fn) {
+            var _this = this;
+            if (this._isDestroyed)
+                return;
+            clearTimeout(this._timer);
+            this._timer = setTimeout(function () {
+                _this._timer = null;
+                if (_this._isDestroyed)
+                    return;
+                fn();
+            }, this._interval);
+        };
+        Debounce.prototype.destroy = function () {
+            if (this._isDestroyed)
+                return;
+            this._isDestroyed = true;
+            clearTimeout(this._timer);
+            this._timer = null;
+        };
+        Debounce.prototype.getIsDestroyed = function () {
+            return this._isDestroyed;
+        };
+        Debounce.prototype.getIsDestroyCalled = function () {
+            return this._isDestroyed;
+        };
+        Object.defineProperty(Debounce.prototype, "interval", {
+            get: function () {
+                return this._interval;
+            },
+            set: function (v) {
+                this._interval = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return Debounce;
+    }());
+    exports.Debounce = Debounce;
+});
+define("jriapp_utils/dblclick", ["require", "exports"], function (require, exports) {
+    "use strict";
+    var DblClick = (function () {
+        function DblClick(interval) {
+            if (interval === void 0) { interval = 0; }
+            this._isDestroyed = false;
+            this._timer = null;
+            this._interval = !interval ? 0 : interval;
+            this._fn_OnClick = null;
+            this._fn_OnDblClick = null;
+        }
+        DblClick.prototype.click = function () {
+            var self = this;
+            if (!!this._timer) {
+                clearTimeout(this._timer);
+                this._timer = null;
+                if (!!this._fn_OnDblClick)
+                    this._fn_OnDblClick();
+                else if (!!this._fn_OnClick)
+                    this._fn_OnClick();
+            }
+            else {
+                if (!!this._fn_OnClick) {
+                    this._timer = setTimeout(function () {
+                        self._timer = null;
+                        if (!!self._fn_OnClick)
+                            self._fn_OnClick();
+                    }, self._interval);
+                }
+            }
+        };
+        DblClick.prototype.add = function (fn_OnClick, fn_OnDblClick) {
+            if (this._isDestroyed)
+                return;
+            this._fn_OnClick = fn_OnClick;
+            this._fn_OnDblClick = fn_OnDblClick;
+        };
+        DblClick.prototype.destroy = function () {
+            if (this._isDestroyed)
+                return;
+            this._isDestroyed = true;
+            clearTimeout(this._timer);
+            this._timer = null;
+            this._fn_OnClick = null;
+            this._fn_OnDblClick = null;
+        };
+        DblClick.prototype.getIsDestroyed = function () {
+            return this._isDestroyed;
+        };
+        DblClick.prototype.getIsDestroyCalled = function () {
+            return this._isDestroyed;
+        };
+        Object.defineProperty(DblClick.prototype, "interval", {
+            get: function () {
+                return this._interval;
+            },
+            set: function (v) {
+                this._interval = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return DblClick;
+    }());
+    exports.DblClick = DblClick;
 });
 define("jriapp_content/int", ["require", "exports", "jriapp_utils/utils", "jriapp_core/parser"], function (require, exports, utils_2, parser_2) {
     "use strict";
@@ -3979,7 +3973,7 @@ define("jriapp_content/int", ["require", "exports", "jriapp_utils/utils", "jriap
     }
     exports.parseContentAttr = parseContentAttr;
 });
-define("jriapp_core/mvvm", ["require", "exports", "jriapp_core/object", "jriapp_utils/coreutils"], function (require, exports, object_7, coreutils_14) {
+define("jriapp_core/mvvm", ["require", "exports", "jriapp_core/object", "jriapp_utils/coreutils"], function (require, exports, object_7, coreutils_11) {
     "use strict";
     var CMD_EVENTS = {
         can_execute_changed: "canExecute_changed"
@@ -3988,7 +3982,7 @@ define("jriapp_core/mvvm", ["require", "exports", "jriapp_core/object", "jriapp_
         __extends(TCommand, _super);
         function TCommand(fn_action, thisObj, fn_canExecute) {
             _super.call(this);
-            this._objId = "cmd" + coreutils_14.CoreUtils.getNewID();
+            this._objId = "cmd" + coreutils_11.CoreUtils.getNewID();
             this._action = fn_action;
             this._thisObj = !thisObj ? null : thisObj;
             this._predicate = !fn_canExecute ? null : fn_canExecute;
@@ -4074,14 +4068,10 @@ define("jriapp_core/mvvm", ["require", "exports", "jriapp_core/object", "jriapp_
         function ViewModel(app) {
             _super.call(this);
             this._app = app;
-            this._objId = "vm" + coreutils_14.CoreUtils.getNewID();
+            this._objId = "vm" + coreutils_11.CoreUtils.getNewID();
         }
-        ViewModel.prototype.handleError = function (error, source) {
-            var isHandled = _super.prototype.handleError.call(this, error, source);
-            if (!isHandled) {
-                return this._app.handleError(error, source);
-            }
-            return isHandled;
+        ViewModel.prototype._getAppName = function () {
+            return !this._app ? "" : this._app.appName;
         };
         ViewModel.prototype.toString = function () {
             return "ViewModel";
@@ -4098,7 +4088,9 @@ define("jriapp_core/mvvm", ["require", "exports", "jriapp_core/object", "jriapp_
             configurable: true
         });
         Object.defineProperty(ViewModel.prototype, "app", {
-            get: function () { return this._app; },
+            get: function () {
+                return this._app;
+            },
             enumerable: true,
             configurable: true
         });
@@ -4106,9 +4098,9 @@ define("jriapp_core/mvvm", ["require", "exports", "jriapp_core/object", "jriapp_
     }(object_7.BaseObject));
     exports.ViewModel = ViewModel;
 });
-define("jriapp_utils/eventstore", ["require", "exports", "jriapp_core/object", "jriapp_utils/syschecks"], function (require, exports, object_8, syschecks_4) {
+define("jriapp_utils/eventstore", ["require", "exports", "jriapp_core/object", "jriapp_utils/syschecks"], function (require, exports, object_8, syschecks_5) {
     "use strict";
-    var PROP_BAG = syschecks_4.SysChecks._PROP_BAG_NAME();
+    var PROP_BAG = syschecks_5.SysChecks._PROP_BAG_NAME();
     (function (EVENT_CHANGE_TYPE) {
         EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["None"] = 0] = "None";
         EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["Added"] = 1] = "Added";
@@ -4198,12 +4190,12 @@ define("jriapp_utils/eventstore", ["require", "exports", "jriapp_core/object", "
     }(object_8.BaseObject));
     exports.EventStore = EventStore;
 });
-define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/syschecks", "jriapp_core/bootstrap", "jriapp_utils/utils", "jriapp_core/mvvm", "jriapp_utils/eventstore"], function (require, exports, const_4, lang_9, object_9, syschecks_5, bootstrap_3, utils_3, mvvm_1, eventstore_1) {
+define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/syschecks", "jriapp_core/bootstrap", "jriapp_utils/utils", "jriapp_core/mvvm", "jriapp_utils/eventstore", "jriapp_elview/factory"], function (require, exports, const_4, lang_9, object_9, syschecks_6, bootstrap_3, utils_3, mvvm_1, eventstore_1, factory_2) {
     "use strict";
     exports.EVENT_CHANGE_TYPE = eventstore_1.EVENT_CHANGE_TYPE;
     var utils = utils_3.Utils, coreUtils = utils.core, dom = utils.dom, $ = dom.$, checks = utils.check;
-    var PROP_BAG = syschecks_5.SysChecks._PROP_BAG_NAME();
-    syschecks_5.SysChecks._isElView = function (obj) {
+    var PROP_BAG = syschecks_6.SysChecks._PROP_BAG_NAME(), viewFactory = factory_2.getElViewFactory, boot = bootstrap_3.bootstrap;
+    syschecks_6.SysChecks._isElView = function (obj) {
         return !!obj && obj instanceof BaseElView;
     };
     function fn_addToolTip($el, tip, isError, pos) {
@@ -4313,7 +4305,7 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
         function BaseElView(options) {
             _super.call(this);
             var el = options.el;
-            this._app = options.app;
+            this._appName = options.appName;
             this._$el = $(el);
             this._toolTip = options.tip;
             this._eventStore = null;
@@ -4327,8 +4319,11 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
                 dom.addClass([el], this._css);
             }
             this._applyToolTip();
-            this._app.elViewFactory.store.setElView(el, this);
+            viewFactory(this._appName).store.setElView(el, this);
         }
+        BaseElView.prototype._getAppName = function () {
+            return this._appName;
+        };
         BaseElView.prototype._onEventChanged = function (args) {
             switch (args.changeType) {
                 case 1:
@@ -4393,9 +4388,8 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
-            this._app.elViewFactory.store.setElView(this.el, null);
-            var $el = this._$el;
-            $el.off("." + this.uniqueID);
+            viewFactory(this._appName).store.setElView(this.el, null);
+            this._$el.off("." + this.uniqueID);
             this.validationErrors = null;
             this.toolTip = null;
             if (!!this._eventStore) {
@@ -4413,13 +4407,6 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             this._display = null;
             this._css = null;
             _super.prototype.destroy.call(this);
-        };
-        BaseElView.prototype.handleError = function (error, source) {
-            var isHandled = _super.prototype.handleError.call(this, error, source);
-            if (!isHandled) {
-                return this._app.handleError(error, source);
-            }
-            return isHandled;
         };
         BaseElView.prototype.toString = function () {
             return "BaseElView";
@@ -4498,11 +4485,6 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(BaseElView.prototype, "app", {
-            get: function () { return this._app; },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(BaseElView.prototype, "events", {
             get: function () {
                 var _this = this;
@@ -4559,14 +4541,28 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(BaseElView.prototype, "appName", {
+            get: function () {
+                return this._appName;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BaseElView.prototype, "app", {
+            get: function () {
+                return boot.findApp(this._appName);
+            },
+            enumerable: true,
+            configurable: true
+        });
         return BaseElView;
     }(object_9.BaseObject));
     exports.BaseElView = BaseElView;
-    bootstrap_3.bootstrap.registerElView("generic", BaseElView);
+    boot.registerElView("generic", BaseElView);
 });
-define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_core/parser", "jriapp_utils/syschecks", "jriapp_utils/coreutils", "jriapp_utils/utils"], function (require, exports, lang_10, object_10, bootstrap_4, parser_3, syschecks_6, coreutils_15, utils_4) {
+define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_core/parser", "jriapp_utils/utils"], function (require, exports, lang_10, object_10, bootstrap_4, parser_3, utils_4) {
     "use strict";
-    var utils = utils_4.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, syschecks = syschecks_6.SysChecks, debug = coreutils_15.DEBUG, log = coreutils_15.LOG, parse = parser_3.parser;
+    var utils = utils_4.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, syschecks = utils.sys, debug = utils.debug, log = utils.log, parse = parser_3.parser, boot = bootstrap_4.bootstrap;
     syschecks._isBinding = function (obj) {
         return (!!obj && obj instanceof Binding);
     };
@@ -4605,16 +4601,9 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
         msg += ", target path: '" + tpath + "'";
         log.error(msg);
     }
-    function fn_handleError(appName, error, source) {
-        if (!!appName) {
-            return bootstrap_4.bootstrap.findApp(appName).handleError(error, source);
-        }
-        else
-            return bootstrap_4.bootstrap.handleError(error, source);
-    }
     var _newID = 0;
     function getNewID() {
-        var id = "bnd" + _newID;
+        var id = "$bnd" + _newID;
         _newID += 1;
         return id;
     }
@@ -4624,7 +4613,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
         TwoWay: 2,
         BackWay: 3
     };
-    function getBindingOptions(app, bindInfo, defaultTarget, defaultSource) {
+    function getBindingOptions(appName, bindInfo, defaultTarget, defaultSource) {
         var bindingOpts = {
             mode: 1,
             converterParam: null,
@@ -4635,6 +4624,13 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             source: null,
             isSourceFixed: false
         };
+        var converter, app = boot.findApp(appName);
+        if (checks.isString(bindInfo.converter)) {
+            converter = app.getConverter(bindInfo.converter);
+        }
+        else {
+            converter = bindInfo.converter;
+        }
         var fixedSource = bindInfo.source, fixedTarget = bindInfo.target;
         if (!bindInfo.sourcePath && !!bindInfo.to)
             bindingOpts.sourcePath = bindInfo.to;
@@ -4646,14 +4642,12 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             bindingOpts.converterParam = bindInfo.converterParam;
         if (!!bindInfo.mode)
             bindingOpts.mode = bindModeMap[bindInfo.mode];
-        if (!!bindInfo.converter) {
-            if (checks.isString(bindInfo.converter))
-                bindingOpts.converter = app.getConverter(bindInfo.converter);
-            else
-                bindingOpts.converter = bindInfo.converter;
+        if (!!converter) {
+            bindingOpts.converter = converter;
         }
-        if (!fixedTarget)
+        if (!fixedTarget) {
             bindingOpts.target = defaultTarget;
+        }
         else {
             if (checks.isString(fixedTarget)) {
                 if (fixedTarget === "this")
@@ -4662,8 +4656,9 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                     bindingOpts.target = parse.resolveBindingSource(app, parse.getPathParts(fixedTarget));
                 }
             }
-            else
+            else {
                 bindingOpts.target = fixedTarget;
+            }
         }
         if (!fixedSource) {
             bindingOpts.source = defaultSource;
@@ -4678,8 +4673,9 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                     bindingOpts.source = parse.resolveBindingSource(app, parse.getPathParts(fixedSource));
                 }
             }
-            else
+            else {
                 bindingOpts.source = fixedSource;
+            }
         }
         return bindingOpts;
     }
@@ -4736,6 +4732,9 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             if (!!err_notif && err_notif.getIsHasErrors())
                 this._onSrcErrChanged(err_notif);
         }
+        Binding.prototype._getAppName = function () {
+            return this._appName;
+        };
         Binding.prototype._update = function () {
             var umask = this._umask, MAX_REC = 3;
             var flag = 0;
@@ -5011,7 +5010,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                     this.targetValue = this._converter.convertToTarget(this.sourceValue, this._converterParam, this._srcEnd);
             }
             catch (ex) {
-                coreutils_15.ERROR.reThrow(ex, this.handleError(ex, this));
+                utils.err.reThrow(ex, this.handleError(ex, this));
             }
         };
         Binding.prototype._updateSource = function (sender, args) {
@@ -5025,7 +5024,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             }
             catch (ex) {
                 if (!syschecks._isValidationError(ex) || !syschecks._isElView(this._tgtEnd)) {
-                    coreutils_15.ERROR.reThrow(ex, this.handleError(ex, this));
+                    utils.err.reThrow(ex, this.handleError(ex, this));
                 }
             }
         };
@@ -5076,9 +5075,6 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                 this._source = value;
                 this._parseSrc(this._source, this._srcPath, 0);
             }
-        };
-        Binding.prototype.handleError = function (error, source) {
-            return fn_handleError(this._appName, error, source);
         };
         Binding.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -5229,18 +5225,13 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Binding.prototype, "appName", {
-            get: function () { return this._appName; },
-            enumerable: true,
-            configurable: true
-        });
         return Binding;
     }(object_10.BaseObject));
     exports.Binding = Binding;
 });
-define("jriapp_content/basic", ["require", "exports", "jriapp_core/object", "jriapp_core/binding", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_content/int"], function (require, exports, object_11, binding_1, coreutils_16, utils_5, int_1) {
+define("jriapp_content/basic", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/object", "jriapp_core/binding", "jriapp_utils/lifetime", "jriapp_utils/utils", "jriapp_elview/factory", "jriapp_content/int"], function (require, exports, bootstrap_5, object_11, binding_1, lifetime_1, utils_5, factory_3, int_1) {
     "use strict";
-    var utils = utils_5.Utils, dom = utils.dom, $ = dom.$, doc = utils.dom.document, coreUtils = utils.core;
+    var utils = utils_5.Utils, dom = utils.dom, $ = dom.$, doc = utils.dom.document, coreUtils = utils.core, checks = utils.check, viewFactory = factory_3.getElViewFactory, boot = bootstrap_5.bootstrap;
     var BasicContent = (function (_super) {
         __extends(BasicContent, _super);
         function BasicContent(options) {
@@ -5250,10 +5241,10 @@ define("jriapp_content/basic", ["require", "exports", "jriapp_core/object", "jri
                 contentOptions: null,
                 dataContext: null,
                 isEditing: false,
-                app: null
+                appName: null
             }, options);
             this._el = null;
-            this._app = options.app;
+            this._appName = options.appName;
             this._parentEl = options.parentEl;
             this._isEditing = !!options.isEditing;
             this._dataContext = options.dataContext;
@@ -5265,13 +5256,6 @@ define("jriapp_content/basic", ["require", "exports", "jriapp_core/object", "jri
             this.init();
             this.render();
         }
-        BasicContent.prototype.handleError = function (error, source) {
-            var isHandled = _super.prototype.handleError.call(this, error, source);
-            if (!isHandled) {
-                return this._app.handleError(error, source);
-            }
-            return isHandled;
-        };
         BasicContent.prototype.init = function () { };
         BasicContent.prototype.updateCss = function () {
             var displayInfo = this._options.displayInfo, el = this._parentEl, fieldInfo = this.getFieldInfo();
@@ -5326,7 +5310,7 @@ define("jriapp_content/basic", ["require", "exports", "jriapp_core/object", "jri
             return this.getElementView(this._el, info);
         };
         BasicContent.prototype.getBindingOption = function (bindingInfo, target, dataContext, targetPath) {
-            var options = binding_1.getBindingOptions(this.app, bindingInfo, target, dataContext);
+            var options = binding_1.getBindingOptions(this._appName, bindingInfo, target, dataContext);
             if (this.isEditing && this.getIsCanBeEdited())
                 options.mode = 2;
             else
@@ -5340,7 +5324,7 @@ define("jriapp_content/basic", ["require", "exports", "jriapp_core/object", "jri
                 return [];
             var arr = this._lfScope.getObjs(), res = [];
             for (var i = 0, len = arr.length; i < len; i += 1) {
-                if (coreutils_16.SysChecks._isBinding(arr[i]))
+                if (utils.sys._isBinding(arr[i]))
                     res.push(arr[i]);
             }
             return res;
@@ -5365,11 +5349,11 @@ define("jriapp_content/basic", ["require", "exports", "jriapp_core/object", "jri
             this._target = null;
         };
         BasicContent.prototype.getElementView = function (el, view_info) {
-            var elView = this.app.elViewFactory.store.getElView(el);
+            var factory = viewFactory(this._appName), elView = factory.store.getElView(el);
             if (!!elView)
                 return elView;
-            view_info.options = coreUtils.merge({ app: this._app, el: el }, view_info.options);
-            return this.app.elViewFactory.createElView(view_info);
+            view_info.options = coreUtils.merge({ appName: this._appName, el: el }, view_info.options);
+            return factory.createElView(view_info);
         };
         BasicContent.prototype.getFieldInfo = function () {
             return this._options.fieldInfo;
@@ -5380,7 +5364,7 @@ define("jriapp_content/basic", ["require", "exports", "jriapp_core/object", "jri
                 var bindingInfo = this._options.bindingInfo;
                 if (!!bindingInfo) {
                     this._target = this.createTargetElement();
-                    this._lfScope = new utils_5.LifeTimeScope();
+                    this._lfScope = new lifetime_1.LifeTimeScope();
                     if (!!this._target)
                         this._lfScope.addObj(this._target);
                     var options = this.getBindingOption(bindingInfo, this._target, this._dataContext, "value");
@@ -5389,7 +5373,7 @@ define("jriapp_content/basic", ["require", "exports", "jriapp_core/object", "jri
                 }
             }
             catch (ex) {
-                coreutils_16.ERROR.reThrow(ex, this.handleError(ex, this));
+                utils.err.reThrow(ex, this.handleError(ex, this));
             }
         };
         BasicContent.prototype.destroy = function () {
@@ -5409,7 +5393,6 @@ define("jriapp_content/basic", ["require", "exports", "jriapp_core/object", "jri
             this._parentEl = null;
             this._dataContext = null;
             this._options = null;
-            this._app = null;
             _super.prototype.destroy.call(this);
         };
         BasicContent.prototype.toString = function () {
@@ -5447,8 +5430,13 @@ define("jriapp_content/basic", ["require", "exports", "jriapp_core/object", "jri
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(BasicContent.prototype, "appName", {
+            get: function () { return this._appName; },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(BasicContent.prototype, "app", {
-            get: function () { return this._app; },
+            get: function () { return boot.findApp(this._appName); },
             enumerable: true,
             configurable: true
         });
@@ -5456,9 +5444,492 @@ define("jriapp_content/basic", ["require", "exports", "jriapp_core/object", "jri
     }(object_11.BaseObject));
     exports.BasicContent = BasicContent;
 });
-define("jriapp_content/template", ["require", "exports", "jriapp_core/object", "jriapp_core/lang", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_content/int"], function (require, exports, object_12, lang_11, coreutils_17, utils_6, int_2) {
+define("jriapp_elview/command", ["require", "exports", "jriapp_utils/utils", "jriapp_elview/elview"], function (require, exports, utils_6, elview_1) {
     "use strict";
-    var utils = utils_6.Utils, coreUtils = utils.core, dom = utils.dom, $ = dom.$;
+    var utils = utils_6.Utils, dom = utils.dom, checks = utils.check;
+    var CommandElView = (function (_super) {
+        __extends(CommandElView, _super);
+        function CommandElView(options) {
+            _super.call(this, options);
+            this._command = null;
+            this._commandParam = null;
+            this._preventDefault = !!options.preventDefault;
+            this._stopPropagation = !!options.stopPropagation;
+            this._disabled = ("disabled" in this.el) ? checks.undefined : false;
+            dom.setClass(this.$el.toArray(), elview_1.css.disabled, this.isEnabled);
+        }
+        CommandElView.prototype._onCanExecuteChanged = function (cmd, args) {
+            this.isEnabled = cmd.canExecute(this, this._commandParam);
+        };
+        CommandElView.prototype._onCommandChanged = function () {
+            this.raisePropertyChanged(elview_1.PROP_NAME.command);
+        };
+        CommandElView.prototype.invokeCommand = function (args, isAsync) {
+            var self = this;
+            args = args || this._commandParam || {};
+            if (!!self.command && self.command.canExecute(self, args)) {
+                if (isAsync) {
+                    setTimeout(function () {
+                        if (self.getIsDestroyCalled())
+                            return;
+                        try {
+                            if (!!self.command && self.command.canExecute(self, args))
+                                self.command.execute(self, args);
+                        }
+                        catch (ex) {
+                            self.handleError(ex, self);
+                        }
+                    }, 0);
+                }
+                else {
+                    self.command.execute(self, args);
+                }
+            }
+        };
+        CommandElView.prototype.destroy = function () {
+            if (this._isDestroyed)
+                return;
+            this._isDestroyCalled = true;
+            if (checks.isBaseObject(this._command)) {
+                this._command.removeNSHandlers(this.uniqueID);
+            }
+            this.command = null;
+            this._commandParam = null;
+            _super.prototype.destroy.call(this);
+        };
+        CommandElView.prototype.toString = function () {
+            return "CommandElView";
+        };
+        Object.defineProperty(CommandElView.prototype, "isEnabled", {
+            get: function () {
+                var el = this.el;
+                if (this._disabled === checks.undefined)
+                    return !el.disabled;
+                else
+                    return !this._disabled;
+            },
+            set: function (v) {
+                var el = this.el;
+                if (v !== this.isEnabled) {
+                    if (this._disabled === checks.undefined)
+                        el.disabled = !v;
+                    else
+                        this._disabled = !v;
+                    dom.setClass(this.$el.toArray(), elview_1.css.disabled, !!v);
+                    this.raisePropertyChanged(elview_1.PROP_NAME.isEnabled);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CommandElView.prototype, "command", {
+            get: function () { return this._command; },
+            set: function (v) {
+                var self = this;
+                if (v !== this._command) {
+                    if (checks.isBaseObject(this._command)) {
+                        this._command.removeNSHandlers(this.uniqueID);
+                    }
+                    this._command = v;
+                    if (!!this._command) {
+                        this._command.addOnCanExecuteChanged(self._onCanExecuteChanged, this.uniqueID, self);
+                        self.isEnabled = this._command.canExecute(self, this.commandParam || {});
+                    }
+                    else {
+                        self.isEnabled = false;
+                    }
+                    this._onCommandChanged();
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CommandElView.prototype, "commandParam", {
+            get: function () { return this._commandParam; },
+            set: function (v) {
+                if (v !== this._commandParam) {
+                    this._commandParam = v;
+                    this.raisePropertyChanged(elview_1.PROP_NAME.commandParam);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CommandElView.prototype, "preventDefault", {
+            get: function () {
+                return this._preventDefault;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CommandElView.prototype, "stopPropagation", {
+            get: function () {
+                return this._stopPropagation;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return CommandElView;
+    }(elview_1.BaseElView));
+    exports.CommandElView = CommandElView;
+});
+define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jriapp_utils/syschecks", "jriapp_utils/checks", "jriapp_utils/strutils", "jriapp_utils/arrhelper", "jriapp_utils/coreutils", "jriapp_utils/dom", "jriapp_utils/async", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_elview/command", "jriapp_elview/factory"], function (require, exports, const_5, syschecks_7, checks_10, strUtils_7, arrhelper_6, coreutils_12, dom_6, async_6, lang_11, object_12, bootstrap_6, command_1, factory_4) {
+    "use strict";
+    var defer = async_6.AsyncUtils, dom = dom_6.DomUtils, $ = dom.$, doc = dom.document, coreUtils = coreutils_12.CoreUtils, checks = checks_10.Checks, strUtils = strUtils_7.StringUtils, arrHelper = arrhelper_6.ArrayHelper, syschecks = syschecks_7.SysChecks, viewFactory = factory_4.getElViewFactory, boot = bootstrap_6.bootstrap;
+    exports.css = {
+        templateContainer: "ria-template-container",
+        templateError: "ria-template-error"
+    };
+    syschecks_7.SysChecks._isTemplateElView = function (obj) {
+        return !!obj && obj instanceof TemplateElView;
+    };
+    var PROP_NAME = {
+        dataContext: "dataContext",
+        templateID: "templateID",
+        template: "template",
+        isEnabled: "isEnabled"
+    };
+    function createTemplate(appName, dataContext, templEvents) {
+        var options = {
+            appName: appName,
+            dataContext: dataContext,
+            templEvents: templEvents
+        };
+        return new Template(options);
+    }
+    exports.createTemplate = createTemplate;
+    var Template = (function (_super) {
+        __extends(Template, _super);
+        function Template(options) {
+            _super.call(this);
+            this._dataContext = options.dataContext;
+            this._appName = options.appName;
+            this._templEvents = options.templEvents;
+            this._loadedElem = null;
+            this._lfTime = null;
+            this._templateID = null;
+            this._templElView = null;
+            this._el = doc.createElement("div");
+            this._el.className = exports.css.templateContainer;
+        }
+        Template.prototype._getAppName = function () {
+            return this._appName;
+        };
+        Template.prototype._getBindings = function () {
+            if (!this._lfTime)
+                return [];
+            var arr = this._lfTime.getObjs(), res = [];
+            for (var i = 0, len = arr.length; i < len; i += 1) {
+                if (syschecks._isBinding(arr[i]))
+                    res.push(arr[i]);
+            }
+            return res;
+        };
+        Template.prototype._getElViews = function () {
+            if (!this._lfTime)
+                return [];
+            var arr = this._lfTime.getObjs(), res = [];
+            for (var i = 0, len = arr.length; i < len; i += 1) {
+                if (syschecks._isElView(arr[i]))
+                    res.push(arr[i]);
+            }
+            return res;
+        };
+        Template.prototype._getTemplateElView = function () {
+            if (!this._lfTime)
+                return null;
+            var arr = this._getElViews();
+            for (var i = 0, j = arr.length; i < j; i += 1) {
+                if (syschecks_7.SysChecks._isTemplateElView(arr[i])) {
+                    return arr[i];
+                }
+            }
+            return null;
+        };
+        Template.prototype._loadAsync = function (name) {
+            var self = this, fn_loader = this.app.getTemplateLoader(name), promise;
+            if (checks.isFunc(fn_loader) && checks.isThenable(promise = fn_loader())) {
+                return promise.then(function (html) {
+                    var tmpDiv = doc.createElement("div");
+                    tmpDiv.innerHTML = html;
+                    tmpDiv = tmpDiv.firstElementChild;
+                    return tmpDiv;
+                }, function (err) {
+                    if (!!err && !!err.message)
+                        throw err;
+                    else
+                        throw new Error(strUtils.format(lang_11.ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
+                });
+            }
+            else {
+                var deferred = defer.createDeferred();
+                return deferred.reject(new Error(strUtils.format(lang_11.ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID)));
+            }
+        };
+        Template.prototype._loadTemplate = function () {
+            var self = this, id = self.templateID, templateEl = self.el;
+            try {
+                if (!!self._loadedElem)
+                    self._unloadTemplate();
+                if (!!id) {
+                    var loadPromise = self._loadAsync(id), bindPromise = loadPromise.then(function (loadedEl) {
+                        return self._dataBind(templateEl, loadedEl);
+                    });
+                    bindPromise.fail(function (err) {
+                        if (self.getIsDestroyCalled())
+                            return;
+                        self._onFail(templateEl, err);
+                    });
+                }
+            }
+            catch (ex) {
+                self._onFail(templateEl, ex);
+            }
+        };
+        Template.prototype._onLoading = function () {
+            if (!!this._templEvents) {
+                this._templEvents.templateLoading(this);
+            }
+        };
+        Template.prototype._onLoaded = function (error) {
+            this._templElView = this._getTemplateElView();
+            if (!!this._templEvents) {
+                this._templEvents.templateLoaded(this, error);
+            }
+            if (!!this._templElView) {
+                this._templElView.templateLoaded(this, error);
+            }
+        };
+        Template.prototype._unloadTemplate = function () {
+            try {
+                if (!!this._templEvents) {
+                    this._templEvents.templateUnLoading(this);
+                }
+                if (!!this._templElView) {
+                    this._templElView.templateUnLoading(this);
+                }
+            }
+            finally {
+                this._cleanUp();
+            }
+        };
+        Template.prototype._dataBind = function (templateEl, loadedEl) {
+            var self = this;
+            if (self.getIsDestroyCalled())
+                coreutils_12.ERROR.abort();
+            if (!loadedEl)
+                throw new Error(strUtils.format(lang_11.ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
+            if (!!self._loadedElem) {
+                self._unloadTemplate();
+            }
+            dom.setClass([templateEl], exports.css.templateError, true);
+            self._loadedElem = loadedEl;
+            self._onLoading();
+            templateEl.appendChild(loadedEl);
+            var promise = self.app._getInternal().bindTemplateElements(loadedEl);
+            return promise.then(function (lftm) {
+                if (self.getIsDestroyCalled()) {
+                    lftm.destroy();
+                    coreutils_12.ERROR.abort();
+                }
+                self._lfTime = lftm;
+                self._updateBindingSource();
+                self._onLoaded(null);
+                return loadedEl;
+            });
+        };
+        Template.prototype._onFail = function (templateEl, err) {
+            var self = this;
+            if (self.getIsDestroyCalled())
+                return;
+            self._onLoaded(err);
+            if (coreutils_12.ERROR.checkIsAbort(err)) {
+                return;
+            }
+            dom.setClass([templateEl], exports.css.templateError, false);
+            var ex;
+            if (!!err) {
+                if (!!err.message) {
+                    ex = err;
+                }
+                else if (!!err.statusText) {
+                    ex = new Error(err.statusText);
+                }
+                else {
+                    ex = new Error('error: ' + err);
+                }
+            }
+            if (!ex)
+                ex = new Error(strUtils.format(lang_11.ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
+            self.handleError(ex, self);
+        };
+        Template.prototype._updateBindingSource = function () {
+            var i, len, binding, bindings = this._getBindings();
+            for (i = 0, len = bindings.length; i < len; i += 1) {
+                binding = bindings[i];
+                if (!binding.isSourceFixed)
+                    binding.source = this.dataContext;
+            }
+        };
+        Template.prototype._cleanUp = function () {
+            if (!!this._lfTime) {
+                this._lfTime.destroy();
+                this._lfTime = null;
+            }
+            this._templElView = null;
+            if (!!this._loadedElem) {
+                $(this._loadedElem).remove();
+                this._loadedElem = null;
+            }
+        };
+        Template.prototype.destroy = function () {
+            if (this._isDestroyed)
+                return;
+            this._isDestroyCalled = true;
+            this._unloadTemplate();
+            if (!!this._el) {
+                $(this._el).remove();
+                this._el = null;
+            }
+            this._dataContext = null;
+            this._templEvents = null;
+            _super.prototype.destroy.call(this);
+        };
+        Template.prototype.findElByDataName = function (name) {
+            return arrHelper.fromList(this._el.querySelectorAll(["*[", const_5.DATA_ATTR.DATA_NAME, '="', name, '"]'].join("")));
+        };
+        Template.prototype.findElViewsByDataName = function (name) {
+            var self = this, els = this.findElByDataName(name), res = [], viewStore = viewFactory(self._appName).store;
+            els.forEach(function (el) {
+                var elView = viewStore.getElView(el);
+                if (!!elView)
+                    res.push(elView);
+            });
+            return res;
+        };
+        Template.prototype.toString = function () {
+            return "ITemplate";
+        };
+        Object.defineProperty(Template.prototype, "loadedElem", {
+            get: function () {
+                return this._loadedElem;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Template.prototype, "dataContext", {
+            get: function () { return this._dataContext; },
+            set: function (v) {
+                if (this._dataContext !== v) {
+                    this._dataContext = v;
+                    this._updateBindingSource();
+                    this.raisePropertyChanged(PROP_NAME.dataContext);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Template.prototype, "templateID", {
+            get: function () { return this._templateID; },
+            set: function (v) {
+                if (this._templateID !== v) {
+                    this._templateID = v;
+                    this._loadTemplate();
+                    this.raisePropertyChanged(PROP_NAME.templateID);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Template.prototype, "el", {
+            get: function () { return this._el; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Template.prototype, "app", {
+            get: function () {
+                return bootstrap_6.bootstrap.findApp(this._appName);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Template.prototype, "appName", {
+            get: function () {
+                return this._appName;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return Template;
+    }(object_12.BaseObject));
+    var TemplateElView = (function (_super) {
+        __extends(TemplateElView, _super);
+        function TemplateElView(options) {
+            _super.call(this, options);
+            this._template = null;
+            this._isEnabled = true;
+        }
+        TemplateElView.prototype.templateLoading = function (template) {
+        };
+        TemplateElView.prototype.templateLoaded = function (template, error) {
+            if (!!error)
+                return;
+            var self = this;
+            try {
+                self._template = template;
+                var args = { template: template, isLoaded: true };
+                self.invokeCommand(args, false);
+                this.raisePropertyChanged(PROP_NAME.template);
+            }
+            catch (ex) {
+                this.handleError(ex, this);
+                coreutils_12.ERROR.throwDummy(ex);
+            }
+        };
+        TemplateElView.prototype.templateUnLoading = function (template) {
+            var self = this;
+            try {
+                var args = { template: template, isLoaded: false };
+                self.invokeCommand(args, false);
+            }
+            catch (ex) {
+                this.handleError(ex, this);
+            }
+            finally {
+                self._template = null;
+            }
+            this.raisePropertyChanged(PROP_NAME.template);
+        };
+        TemplateElView.prototype.toString = function () {
+            return "TemplateElView";
+        };
+        Object.defineProperty(TemplateElView.prototype, "isEnabled", {
+            get: function () { return this._isEnabled; },
+            set: function (v) {
+                if (this._isEnabled !== v) {
+                    this._isEnabled = v;
+                    this.raisePropertyChanged(PROP_NAME.isEnabled);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TemplateElView.prototype, "template", {
+            get: function () {
+                return this._template;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return TemplateElView;
+    }(command_1.CommandElView));
+    exports.TemplateElView = TemplateElView;
+    ;
+    boot.registerElView("template", TemplateElView);
+});
+define("jriapp_content/template", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/object", "jriapp_core/template", "jriapp_core/lang", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_content/int"], function (require, exports, bootstrap_7, object_13, template_1, lang_12, coreutils_13, utils_7, int_2) {
+    "use strict";
+    var utils = utils_7.Utils, coreUtils = utils.core, dom = utils.dom, $ = dom.$, boot = bootstrap_7.bootstrap;
     var TemplateContent = (function (_super) {
         __extends(TemplateContent, _super);
         function TemplateContent(options) {
@@ -5468,10 +5939,10 @@ define("jriapp_content/template", ["require", "exports", "jriapp_core/object", "
                 contentOptions: null,
                 dataContext: null,
                 isEditing: false,
-                app: null
+                appName: null
             }, options);
             this._templateID = null;
-            this._app = options.app;
+            this._appName = options.appName;
             this._parentEl = options.parentEl;
             this._isEditing = options.isEditing;
             this._dataContext = options.dataContext;
@@ -5480,16 +5951,12 @@ define("jriapp_content/template", ["require", "exports", "jriapp_core/object", "
             dom.addClass([this._parentEl], int_2.css.content);
             this.render();
         }
-        TemplateContent.prototype.handleError = function (error, source) {
-            var isHandled = _super.prototype.handleError.call(this, error, source);
-            if (!isHandled) {
-                return this._app.handleError(error, source);
-            }
-            return isHandled;
+        TemplateContent.prototype._getAppName = function () {
+            return this._appName;
         };
         TemplateContent.prototype.getTemplateID = function () {
             if (!this._templateInfo) {
-                throw new Error(lang_11.ERRS.ERR_TEMPLATE_ID_INVALID);
+                throw new Error(lang_12.ERRS.ERR_TEMPLATE_ID_INVALID);
             }
             var info = this._templateInfo, id = info.displayID;
             if (this._isEditing && !!info.editID) {
@@ -5499,11 +5966,11 @@ define("jriapp_content/template", ["require", "exports", "jriapp_core/object", "
                 id = info.editID;
             }
             if (!id)
-                throw new Error(lang_11.ERRS.ERR_TEMPLATE_ID_INVALID);
+                throw new Error(lang_12.ERRS.ERR_TEMPLATE_ID_INVALID);
             return id;
         };
         TemplateContent.prototype.createTemplate = function () {
-            var template = this.app.createTemplate(this._dataContext);
+            var template = template_1.createTemplate(this._appName, this._dataContext);
             template.templateID = this._templateID;
             return template;
         };
@@ -5518,7 +5985,7 @@ define("jriapp_content/template", ["require", "exports", "jriapp_core/object", "
                 }
             }
             catch (ex) {
-                coreutils_17.ERROR.reThrow(ex, this.handleError(ex, this));
+                coreutils_13.ERROR.reThrow(ex, this.handleError(ex, this));
             }
         };
         TemplateContent.prototype.cleanUp = function () {
@@ -5537,17 +6004,11 @@ define("jriapp_content/template", ["require", "exports", "jriapp_core/object", "
             this._parentEl = null;
             this._dataContext = null;
             this._templateInfo = null;
-            this._app = null;
             _super.prototype.destroy.call(this);
         };
         TemplateContent.prototype.toString = function () {
             return "TemplateContent";
         };
-        Object.defineProperty(TemplateContent.prototype, "app", {
-            get: function () { return this._app; },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(TemplateContent.prototype, "parentEl", {
             get: function () { return this._parentEl; },
             enumerable: true,
@@ -5582,11 +6043,21 @@ define("jriapp_content/template", ["require", "exports", "jriapp_core/object", "
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(TemplateContent.prototype, "appName", {
+            get: function () { return this._appName; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TemplateContent.prototype, "app", {
+            get: function () { return boot.findApp(this._appName); },
+            enumerable: true,
+            configurable: true
+        });
         return TemplateContent;
-    }(object_12.BaseObject));
+    }(object_13.BaseObject));
     exports.TemplateContent = TemplateContent;
 });
-define("jriapp_elview/input", ["require", "exports", "jriapp_elview/elview"], function (require, exports, elview_1) {
+define("jriapp_elview/input", ["require", "exports", "jriapp_elview/elview"], function (require, exports, elview_2) {
     "use strict";
     var InputElView = (function (_super) {
         __extends(InputElView, _super);
@@ -5605,7 +6076,7 @@ define("jriapp_elview/input", ["require", "exports", "jriapp_elview/elview"], fu
                 var el = this.el;
                 if (v !== this.isEnabled) {
                     el.disabled = !v;
-                    this.raisePropertyChanged(elview_1.PROP_NAME.isEnabled);
+                    this.raisePropertyChanged(elview_2.PROP_NAME.isEnabled);
                 }
             },
             enumerable: true,
@@ -5621,19 +6092,19 @@ define("jriapp_elview/input", ["require", "exports", "jriapp_elview/elview"], fu
                 v = (v === null) ? "" : str;
                 if (x !== v) {
                     this.$el.val(v);
-                    this.raisePropertyChanged(elview_1.PROP_NAME.value);
+                    this.raisePropertyChanged(elview_2.PROP_NAME.value);
                 }
             },
             enumerable: true,
             configurable: true
         });
         return InputElView;
-    }(elview_1.BaseElView));
+    }(elview_2.BaseElView));
     exports.InputElView = InputElView;
 });
-define("jriapp_elview/textbox", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/input"], function (require, exports, utils_7, bootstrap_5, elview_2, input_1) {
+define("jriapp_elview/textbox", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/input"], function (require, exports, utils_8, bootstrap_8, elview_3, input_1) {
     "use strict";
-    var utils = utils_7.Utils, $ = utils.dom.$;
+    var utils = utils_8.Utils, $ = utils.dom.$;
     var TXTBOX_EVENTS = {
         keypress: "keypress"
     };
@@ -5645,7 +6116,7 @@ define("jriapp_elview/textbox", ["require", "exports", "jriapp_utils/utils", "jr
             var $el = this.$el;
             $el.on("change." + this.uniqueID, function (e) {
                 e.stopPropagation();
-                self.raisePropertyChanged(elview_2.PROP_NAME.value);
+                self.raisePropertyChanged(elview_3.PROP_NAME.value);
             });
             $el.on("keypress." + this.uniqueID, function (e) {
                 e.stopPropagation();
@@ -5657,7 +6128,7 @@ define("jriapp_elview/textbox", ["require", "exports", "jriapp_utils/utils", "jr
             if (!!options.updateOnKeyUp) {
                 $el.on("keyup." + this.uniqueID, function (e) {
                     e.stopPropagation();
-                    self.raisePropertyChanged(elview_2.PROP_NAME.value);
+                    self.raisePropertyChanged(elview_3.PROP_NAME.value);
                 });
             }
         }
@@ -5677,14 +6148,14 @@ define("jriapp_elview/textbox", ["require", "exports", "jriapp_utils/utils", "jr
         Object.defineProperty(TextBoxElView.prototype, "color", {
             get: function () {
                 var $el = this.$el;
-                return $el.css(elview_2.css.color);
+                return $el.css(elview_3.css.color);
             },
             set: function (v) {
                 var $el = this.$el;
-                var x = $el.css(elview_2.css.color);
+                var x = $el.css(elview_3.css.color);
                 if (v !== x) {
-                    $el.css(elview_2.css.color, v);
-                    this.raisePropertyChanged(elview_2.PROP_NAME.color);
+                    $el.css(elview_3.css.color, v);
+                    this.raisePropertyChanged(elview_3.PROP_NAME.color);
                 }
             },
             enumerable: true,
@@ -5693,7 +6164,7 @@ define("jriapp_elview/textbox", ["require", "exports", "jriapp_utils/utils", "jr
         return TextBoxElView;
     }(input_1.InputElView));
     exports.TextBoxElView = TextBoxElView;
-    bootstrap_5.bootstrap.registerElView("input:text", TextBoxElView);
+    bootstrap_8.bootstrap.registerElView("input:text", TextBoxElView);
 });
 define("jriapp_content/string", ["require", "exports", "jriapp_elview/textbox", "jriapp_content/basic"], function (require, exports, textbox_1, basic_1) {
     "use strict";
@@ -5734,9 +6205,9 @@ define("jriapp_content/string", ["require", "exports", "jriapp_elview/textbox", 
     }(basic_1.BasicContent));
     exports.StringContent = StringContent;
 });
-define("jriapp_elview/textarea", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview"], function (require, exports, utils_8, bootstrap_6, elview_3) {
+define("jriapp_elview/textarea", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview"], function (require, exports, utils_9, bootstrap_9, elview_4) {
     "use strict";
-    var utils = utils_8.Utils, $ = utils.dom.$;
+    var utils = utils_9.Utils, $ = utils.dom.$;
     var TXTAREA_EVENTS = {
         keypress: "keypress"
     };
@@ -5751,7 +6222,7 @@ define("jriapp_elview/textarea", ["require", "exports", "jriapp_utils/utils", "j
             var $el = this.$el;
             $el.on("change." + this.uniqueID, function (e) {
                 e.stopPropagation();
-                self.raisePropertyChanged(elview_3.PROP_NAME.value);
+                self.raisePropertyChanged(elview_4.PROP_NAME.value);
             });
             $el.on("keypress." + this.uniqueID, function (e) {
                 e.stopPropagation();
@@ -5763,7 +6234,7 @@ define("jriapp_elview/textarea", ["require", "exports", "jriapp_utils/utils", "j
             if (!!options.updateOnKeyUp) {
                 $el.on("keyup." + this.uniqueID, function (e) {
                     e.stopPropagation();
-                    self.raisePropertyChanged(elview_3.PROP_NAME.value);
+                    self.raisePropertyChanged(elview_4.PROP_NAME.value);
                 });
             }
         }
@@ -5790,7 +6261,7 @@ define("jriapp_elview/textarea", ["require", "exports", "jriapp_utils/utils", "j
                 v = (v === null) ? "" : str;
                 if (x !== v) {
                     this.$el.val(v);
-                    this.raisePropertyChanged(elview_3.PROP_NAME.value);
+                    this.raisePropertyChanged(elview_4.PROP_NAME.value);
                 }
             },
             enumerable: true,
@@ -5802,7 +6273,7 @@ define("jriapp_elview/textarea", ["require", "exports", "jriapp_utils/utils", "j
                 v = !!v;
                 if (v !== this.isEnabled) {
                     this.$el.prop("disabled", !v);
-                    this.raisePropertyChanged(elview_3.PROP_NAME.isEnabled);
+                    this.raisePropertyChanged(elview_4.PROP_NAME.isEnabled);
                 }
             },
             enumerable: true,
@@ -5816,25 +6287,25 @@ define("jriapp_elview/textarea", ["require", "exports", "jriapp_utils/utils", "j
                 var x = this.wrap;
                 if (x !== v) {
                     this.$el.prop("wrap", v);
-                    this.raisePropertyChanged(elview_3.PROP_NAME.wrap);
+                    this.raisePropertyChanged(elview_4.PROP_NAME.wrap);
                 }
             },
             enumerable: true,
             configurable: true
         });
         return TextAreaElView;
-    }(elview_3.BaseElView));
+    }(elview_4.BaseElView));
     exports.TextAreaElView = TextAreaElView;
-    bootstrap_6.bootstrap.registerElView("textarea", TextAreaElView);
+    bootstrap_9.bootstrap.registerElView("textarea", TextAreaElView);
 });
-define("jriapp_content/multyline", ["require", "exports", "jriapp_core/lang", "jriapp_utils/utils", "jriapp_elview/textarea", "jriapp_content/basic"], function (require, exports, lang_12, utils_9, textarea_1, basic_2) {
+define("jriapp_content/multyline", ["require", "exports", "jriapp_core/lang", "jriapp_utils/utils", "jriapp_elview/textarea", "jriapp_content/basic"], function (require, exports, lang_13, utils_10, textarea_1, basic_2) {
     "use strict";
-    var utils = utils_9.Utils, NAME = "multyline", strUtils = utils.str, document = utils.dom.document;
+    var utils = utils_10.Utils, NAME = "multyline", strUtils = utils.str, document = utils.dom.document;
     var MultyLineContent = (function (_super) {
         __extends(MultyLineContent, _super);
         function MultyLineContent(options) {
             if (options.contentOptions.name !== NAME) {
-                throw new Error(strUtils.format(lang_12.ERRS.ERR_ASSERTION_FAILED, strUtils.format("contentOptions.name === '{0}'", NAME)));
+                throw new Error(strUtils.format(lang_13.ERRS.ERR_ASSERTION_FAILED, strUtils.format("contentOptions.name === '{0}'", NAME)));
             }
             _super.call(this, options);
         }
@@ -5884,9 +6355,9 @@ define("jriapp_content/multyline", ["require", "exports", "jriapp_core/lang", "j
     }(basic_2.BasicContent));
     exports.MultyLineContent = MultyLineContent;
 });
-define("jriapp_elview/checkbox", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/input"], function (require, exports, utils_10, bootstrap_7, elview_4, input_2) {
+define("jriapp_elview/checkbox", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/input"], function (require, exports, utils_11, bootstrap_10, elview_5, input_2) {
     "use strict";
-    var utils = utils_10.Utils, dom = utils.dom, $ = dom.$;
+    var utils = utils_11.Utils, dom = utils.dom, $ = dom.$, boot = bootstrap_10.bootstrap;
     var CheckBoxElView = (function (_super) {
         __extends(CheckBoxElView, _super);
         function CheckBoxElView(options) {
@@ -5903,7 +6374,7 @@ define("jriapp_elview/checkbox", ["require", "exports", "jriapp_utils/utils", "j
             this._updateState();
         }
         CheckBoxElView.prototype._updateState = function () {
-            dom.setClass(this.$el.toArray(), elview_4.css.checkedNull, !utils.check.isNt(this.checked));
+            dom.setClass(this.$el.toArray(), elview_5.css.checkedNull, !utils.check.isNt(this.checked));
         };
         CheckBoxElView.prototype.toString = function () {
             return "CheckBoxElView";
@@ -5918,7 +6389,7 @@ define("jriapp_elview/checkbox", ["require", "exports", "jriapp_utils/utils", "j
                     var chk = this.el;
                     chk.checked = !!v;
                     this._updateState();
-                    this.raisePropertyChanged(elview_4.PROP_NAME.checked);
+                    this.raisePropertyChanged(elview_5.PROP_NAME.checked);
                 }
             },
             enumerable: true,
@@ -5927,12 +6398,12 @@ define("jriapp_elview/checkbox", ["require", "exports", "jriapp_utils/utils", "j
         return CheckBoxElView;
     }(input_2.InputElView));
     exports.CheckBoxElView = CheckBoxElView;
-    bootstrap_7.bootstrap.registerElView("input:checkbox", CheckBoxElView);
-    bootstrap_7.bootstrap.registerElView("checkbox", CheckBoxElView);
+    boot.registerElView("input:checkbox", CheckBoxElView);
+    boot.registerElView("checkbox", CheckBoxElView);
 });
-define("jriapp_content/bool", ["require", "exports", "jriapp_utils/utils", "jriapp_elview/checkbox", "jriapp_content/int", "jriapp_content/basic"], function (require, exports, utils_11, checkbox_1, int_3, basic_3) {
+define("jriapp_content/bool", ["require", "exports", "jriapp_utils/lifetime", "jriapp_utils/utils", "jriapp_elview/checkbox", "jriapp_content/int", "jriapp_content/basic"], function (require, exports, lifetime_2, utils_12, checkbox_1, int_3, basic_3) {
     "use strict";
-    var dom = utils_11.Utils.dom, doc = dom.document;
+    var dom = utils_12.Utils.dom, doc = dom.document;
     var BoolContent = (function (_super) {
         __extends(BoolContent, _super);
         function BoolContent() {
@@ -5943,7 +6414,7 @@ define("jriapp_content/bool", ["require", "exports", "jriapp_utils/utils", "jria
             var bindingInfo = this._options.bindingInfo;
             if (!!bindingInfo) {
                 this.updateCss();
-                this._lfScope = new utils_11.LifeTimeScope();
+                this._lfScope = new lifetime_2.LifeTimeScope();
                 var options = this.getBindingOption(bindingInfo, this._target, this._dataContext, "checked");
                 options.mode = 2;
                 this._lfScope.addObj(this.app.bind(options));
@@ -5955,7 +6426,7 @@ define("jriapp_content/bool", ["require", "exports", "jriapp_utils/utils", "jria
             var chk = document.createElement("input");
             chk.setAttribute("type", "checkbox");
             dom.addClass([chk], int_3.css.checkbox);
-            var chbxView = new checkbox_1.CheckBoxElView({ app: this.app, el: chk });
+            var chbxView = new checkbox_1.CheckBoxElView({ appName: this.appName, el: chk });
             return chbxView;
         };
         BoolContent.prototype.createTargetElement = function () {
@@ -6006,7 +6477,7 @@ define("jriapp_content/bool", ["require", "exports", "jriapp_utils/utils", "jria
     }(basic_3.BasicContent));
     exports.BoolContent = BoolContent;
 });
-define("jriapp_content/number", ["require", "exports", "jriapp_core/bootstrap", "jriapp_elview/textbox", "jriapp_content/basic"], function (require, exports, bootstrap_8, textbox_2, basic_4) {
+define("jriapp_content/number", ["require", "exports", "jriapp_core/bootstrap", "jriapp_elview/textbox", "jriapp_content/basic"], function (require, exports, bootstrap_11, textbox_2, basic_4) {
     "use strict";
     var NumberContent = (function (_super) {
         __extends(NumberContent, _super);
@@ -6049,7 +6520,7 @@ define("jriapp_content/number", ["require", "exports", "jriapp_core/bootstrap", 
             }
         };
         NumberContent.prototype.previewKeyPress = function (keyCode, value) {
-            var ch = String.fromCharCode(keyCode), digits = "1234567890", defaults = bootstrap_8.bootstrap.defaults, notAllowedChars = "~@#$%^&*()+=_";
+            var ch = String.fromCharCode(keyCode), digits = "1234567890", defaults = bootstrap_11.bootstrap.defaults, notAllowedChars = "~@#$%^&*()+=_";
             if (notAllowedChars.indexOf(ch) > -1)
                 return false;
             if (this._allowedKeys.indexOf(keyCode) > -1)
@@ -6075,15 +6546,15 @@ define("jriapp_content/number", ["require", "exports", "jriapp_core/bootstrap", 
     }(basic_4.BasicContent));
     exports.NumberContent = NumberContent;
 });
-define("jriapp_content/date", ["require", "exports", "jriapp_core/lang", "jriapp_utils/utils", "jriapp_content/basic"], function (require, exports, lang_13, utils_12, basic_5) {
+define("jriapp_content/date", ["require", "exports", "jriapp_core/lang", "jriapp_utils/utils", "jriapp_content/basic"], function (require, exports, lang_14, utils_13, basic_5) {
     "use strict";
-    var utils = utils_12.Utils, strUtils = utils.str, doc = utils.dom.document;
+    var utils = utils_13.Utils, strUtils = utils.str, doc = utils.dom.document;
     var NAME = "datepicker";
     var DateContent = (function (_super) {
         __extends(DateContent, _super);
         function DateContent(options) {
             if (options.contentOptions.name !== NAME) {
-                throw new Error(strUtils.format(lang_13.ERRS.ERR_ASSERTION_FAILED, strUtils.format("contentOptions.name === '{0}'", NAME)));
+                throw new Error(strUtils.format(lang_14.ERRS.ERR_ASSERTION_FAILED, strUtils.format("contentOptions.name === '{0}'", NAME)));
             }
             _super.call(this, options);
         }
@@ -6114,7 +6585,7 @@ define("jriapp_content/date", ["require", "exports", "jriapp_core/lang", "jriapp
     }(basic_5.BasicContent));
     exports.DateContent = DateContent;
 });
-define("jriapp_content/datetime", ["require", "exports", "jriapp_core/bootstrap", "jriapp_content/basic"], function (require, exports, bootstrap_9, basic_6) {
+define("jriapp_content/datetime", ["require", "exports", "jriapp_core/bootstrap", "jriapp_content/basic"], function (require, exports, bootstrap_12, basic_6) {
     "use strict";
     var DateTimeContent = (function (_super) {
         __extends(DateTimeContent, _super);
@@ -6124,7 +6595,7 @@ define("jriapp_content/datetime", ["require", "exports", "jriapp_core/bootstrap"
         DateTimeContent.prototype.getBindingOption = function (bindingInfo, tgt, dctx, targetPath) {
             var options = _super.prototype.getBindingOption.call(this, bindingInfo, tgt, dctx, targetPath);
             options.converter = this.app.getConverter("dateTimeConverter");
-            var finf = this.getFieldInfo(), defaults = bootstrap_9.bootstrap.defaults;
+            var finf = this.getFieldInfo(), defaults = bootstrap_12.bootstrap.defaults;
             switch (finf.dataType) {
                 case 6:
                     options.converterParam = defaults.dateTimeFormat;
@@ -6148,27 +6619,27 @@ define("jriapp_content/datetime", ["require", "exports", "jriapp_core/bootstrap"
     }(basic_6.BasicContent));
     exports.DateTimeContent = DateTimeContent;
 });
-define("jriapp_content/factory", ["require", "exports", "jriapp_core/lang", "jriapp_utils/utils", "jriapp_content/basic", "jriapp_content/template", "jriapp_content/string", "jriapp_content/multyline", "jriapp_content/bool", "jriapp_content/number", "jriapp_content/date", "jriapp_content/datetime", "jriapp_content/int", "jriapp_content/basic", "jriapp_content/template", "jriapp_content/string", "jriapp_content/multyline", "jriapp_content/bool", "jriapp_content/number", "jriapp_content/date", "jriapp_content/datetime"], function (require, exports, lang_14, utils_13, basic_7, template_1, string_1, multyline_1, bool_1, number_1, date_1, datetime_1, int_4, basic_8, template_2, string_2, multyline_2, bool_2, number_2, date_2, datetime_2) {
+define("jriapp_content/factory", ["require", "exports", "jriapp_core/lang", "jriapp_utils/utils", "jriapp_content/basic", "jriapp_content/template", "jriapp_content/string", "jriapp_content/multyline", "jriapp_content/bool", "jriapp_content/number", "jriapp_content/date", "jriapp_content/datetime", "jriapp_content/int", "jriapp_content/basic", "jriapp_content/template", "jriapp_content/string", "jriapp_content/multyline", "jriapp_content/bool", "jriapp_content/number", "jriapp_content/date", "jriapp_content/datetime"], function (require, exports, lang_15, utils_14, basic_7, template_2, string_1, multyline_1, bool_1, number_1, date_1, datetime_1, int_4, basic_8, template_3, string_2, multyline_2, bool_2, number_2, date_2, datetime_2) {
     "use strict";
     exports.contentCSS = int_4.css;
     exports.BasicContent = basic_8.BasicContent;
-    exports.TemplateContent = template_2.TemplateContent;
+    exports.TemplateContent = template_3.TemplateContent;
     exports.StringContent = string_2.StringContent;
     exports.MultyLineContent = multyline_2.MultyLineContent;
     exports.BoolContent = bool_2.BoolContent;
     exports.NumberContent = number_2.NumberContent;
     exports.DateContent = date_2.DateContent;
     exports.DateTimeContent = datetime_2.DateTimeContent;
-    var utils = utils_13.Utils, strUtils = utils.str;
+    var utils = utils_14.Utils, strUtils = utils.str;
     var ContentFactory = (function () {
         function ContentFactory() {
         }
         ContentFactory.prototype.getContentType = function (options) {
             if (!!options.templateInfo) {
-                return template_1.TemplateContent;
+                return template_2.TemplateContent;
             }
             if (!options.bindingInfo) {
-                throw new Error(strUtils.format(lang_14.ERRS.ERR_PARAM_INVALID, "options", "bindingInfo"));
+                throw new Error(strUtils.format(lang_15.ERRS.ERR_PARAM_INVALID, "options", "bindingInfo"));
             }
             var fieldInfo = options.fieldInfo, res;
             switch (fieldInfo.dataType) {
@@ -6206,10 +6677,10 @@ define("jriapp_content/factory", ["require", "exports", "jriapp_core/lang", "jri
                     res = basic_7.BasicContent;
                     break;
                 default:
-                    throw new Error(strUtils.format(lang_14.ERRS.ERR_FIELD_DATATYPE, fieldInfo.dataType));
+                    throw new Error(strUtils.format(lang_15.ERRS.ERR_FIELD_DATATYPE, fieldInfo.dataType));
             }
             if (!res)
-                throw new Error(lang_14.ERRS.ERR_BINDING_CONTENT_NOT_FOUND);
+                throw new Error(lang_15.ERRS.ERR_BINDING_CONTENT_NOT_FOUND);
             return res;
         };
         ContentFactory.prototype.createContent = function (options) {
@@ -6243,9 +6714,9 @@ define("jriapp_content/factory", ["require", "exports", "jriapp_core/lang", "jri
     exports.FactoryList = FactoryList;
     exports.contentFactories = new FactoryList();
 });
-define("jriapp_core/datepicker", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/textbox"], function (require, exports, lang_15, object_13, utils_14, bootstrap_10, textbox_3) {
+define("jriapp_core/datepicker", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/coreutils", "jriapp_utils/dom", "jriapp_core/bootstrap", "jriapp_elview/textbox"], function (require, exports, lang_16, object_14, coreutils_14, dom_7, bootstrap_13, textbox_3) {
     "use strict";
-    var $ = utils_14.DomUtils.$;
+    var coreUtils = coreutils_14.CoreUtils, dom = dom_7.DomUtils, $ = dom.$, boot = bootstrap_13.bootstrap;
     var PROP_NAME = {
         dateFormat: "dateFormat",
         datepickerRegion: "datepickerRegion"
@@ -6257,7 +6728,7 @@ define("jriapp_core/datepicker", ["require", "exports", "jriapp_core/lang", "jri
             this._dateFormat = null;
             this._datepickerRegion = "";
             if (!$.datepicker) {
-                throw new Error(lang_15.ERRS.ERR_JQUERY_DATEPICKER_NOTFOUND);
+                throw new Error(lang_16.ERRS.ERR_JQUERY_DATEPICKER_NOTFOUND);
             }
             this.dateFormat = "dd.mm.yy";
         }
@@ -6271,7 +6742,7 @@ define("jriapp_core/datepicker", ["require", "exports", "jriapp_core/lang", "jri
                 $el.datepicker();
         };
         Datepicker.prototype.detachFrom = function ($el) {
-            utils_14.DomUtils.destroyJQueryPlugin($el, "datepicker");
+            dom.destroyJQueryPlugin($el, "datepicker");
         };
         Datepicker.prototype.parseDate = function (str) {
             return this.datePickerFn.parseDate(this.dateFormat, str);
@@ -6329,21 +6800,21 @@ define("jriapp_core/datepicker", ["require", "exports", "jriapp_core/lang", "jri
             configurable: true
         });
         return Datepicker;
-    }(object_13.BaseObject));
+    }(object_14.BaseObject));
     exports.Datepicker = Datepicker;
     var DatePickerElView = (function (_super) {
         __extends(DatePickerElView, _super);
         function DatePickerElView(options) {
             _super.call(this, options);
             var $el = this.$el;
-            bootstrap_10.bootstrap.defaults.datepicker.attachTo($el, options.datepicker);
+            boot.defaults.datepicker.attachTo($el, options.datepicker);
         }
         DatePickerElView.prototype.destroy = function () {
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
             var $el = this.$el;
-            bootstrap_10.bootstrap.defaults.datepicker.detachFrom($el);
+            boot.defaults.datepicker.detachFrom($el);
             _super.prototype.destroy.call(this);
         };
         DatePickerElView.prototype.toString = function () {
@@ -6352,12 +6823,12 @@ define("jriapp_core/datepicker", ["require", "exports", "jriapp_core/lang", "jri
         return DatePickerElView;
     }(textbox_3.TextBoxElView));
     exports.DatePickerElView = DatePickerElView;
-    bootstrap_10.bootstrap.registerSvc("IDatepicker", new Datepicker());
-    bootstrap_10.bootstrap.registerElView("datepicker", DatePickerElView);
+    boot.registerSvc("IDatepicker", new Datepicker());
+    boot.registerElView("datepicker", DatePickerElView);
 });
-define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_content/factory", "jriapp_core/parser", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_elview/elview", "jriapp_content/int"], function (require, exports, const_5, lang_16, object_14, bootstrap_11, factory_2, parser_4, coreutils_18, utils_15, elview_5, int_5) {
+define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_content/factory", "jriapp_core/parser", "jriapp_utils/utils", "jriapp_elview/elview", "jriapp_elview/factory", "jriapp_content/int"], function (require, exports, const_6, lang_17, object_15, bootstrap_14, factory_5, parser_4, utils_15, elview_6, factory_6, int_5) {
     "use strict";
-    var utils = utils_15.Utils, dom = utils.dom, $ = dom.$, doc = dom.document, checks = utils.check, coreUtils = utils.core, strUtils = utils.str, syschecks = coreutils_18.SysChecks, parse = parser_4.parser;
+    var utils = utils_15.Utils, dom = utils.dom, $ = dom.$, doc = dom.document, checks = utils.check, coreUtils = utils.core, strUtils = utils.str, syschecks = utils.sys, parse = parser_4.parser, viewFactory = factory_6.getElViewFactory, boot = bootstrap_14.bootstrap;
     exports.css = {
         dataform: "ria-dataform",
         error: "ria-form-error"
@@ -6371,16 +6842,16 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
         if (!el) {
             return false;
         }
-        if (el.hasAttribute(const_5.DATA_ATTR.DATA_FORM)) {
+        if (el.hasAttribute(const_6.DATA_ATTR.DATA_FORM)) {
             return true;
         }
         else {
-            var attr = el.getAttribute(const_5.DATA_ATTR.DATA_VIEW);
+            var attr = el.getAttribute(const_6.DATA_ATTR.DATA_VIEW);
             if (!attr) {
                 return false;
             }
             var opts = parse.parseOptions(attr);
-            return (opts.length > 0 && opts[0].name === const_5.ELVIEW_NM.DataForm);
+            return (opts.length > 0 && opts[0].name === const_6.ELVIEW_NM.DataForm);
         }
     };
     syschecks._isInsideDataForm = function (el) {
@@ -6455,7 +6926,7 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
         function DataForm(options) {
             _super.call(this);
             var self = this, parent;
-            this._app = options.app;
+            this._appName = options.appName;
             this._el = options.el;
             this._$el = $(this._el);
             this._objId = "frm" + coreUtils.getNewID();
@@ -6472,19 +6943,15 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
             this._contentPromise = null;
             parent = syschecks._getParentDataForm(null, this._el);
             if (!!parent) {
-                self._parentDataForm = this._app.elViewFactory.getOrCreateElView(parent);
+                self._parentDataForm = viewFactory(this._appName).getOrCreateElView(parent);
                 self._parentDataForm.addOnDestroyed(function (sender, args) {
                     if (!self._isDestroyCalled)
                         self.destroy();
                 }, self._objId);
             }
         }
-        DataForm.prototype.handleError = function (error, source) {
-            var isHandled = _super.prototype.handleError.call(this, error, source);
-            if (!isHandled) {
-                return this._app.handleError(error, source);
-            }
-            return isHandled;
+        DataForm.prototype._getAppName = function () {
+            return this._appName;
         };
         DataForm.prototype._getBindings = function () {
             if (!this._lfTime)
@@ -6516,15 +6983,15 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
             contentElements.forEach(function (el) {
                 if (syschecks._isInNestedForm(self._el, forms, el))
                     return;
-                var attr = el.getAttribute(const_5.DATA_ATTR.DATA_CONTENT), op = int_5.parseContentAttr(attr);
+                var attr = el.getAttribute(const_6.DATA_ATTR.DATA_CONTENT), op = int_5.parseContentAttr(attr);
                 if (!!op.fieldName && !op.fieldInfo) {
                     op.fieldInfo = getFieldInfo(dctx, op.fieldName);
                     if (!op.fieldInfo) {
-                        throw new Error(strUtils.format(lang_16.ERRS.ERR_DBSET_INVALID_FIELDNAME, "", op.fieldName));
+                        throw new Error(strUtils.format(lang_17.ERRS.ERR_DBSET_INVALID_FIELDNAME, "", op.fieldName));
                     }
                 }
-                var contentType = factory_2.contentFactories.getContentType(op);
-                var content = new contentType({ parentEl: el, contentOptions: op, dataContext: dctx, isEditing: isEditing, app: self.app });
+                var contentType = factory_5.contentFactories.getContentType(op);
+                var content = new contentType({ parentEl: el, contentOptions: op, dataContext: dctx, isEditing: isEditing, appName: self.appName });
                 self._content.push(content);
             });
             var promise = self.app._getInternal().bindElements(this._el, dctx, true, this.isInsideTemplate);
@@ -6556,7 +7023,7 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
                 });
             }
             catch (ex) {
-                coreutils_18.ERROR.reThrow(ex, this.handleError(ex, this));
+                utils.err.reThrow(ex, this.handleError(ex, this));
             }
         };
         DataForm.prototype._updateContent = function () {
@@ -6583,7 +7050,7 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
                 }
             }
             catch (ex) {
-                coreutils_18.ERROR.reThrow(ex, self.handleError(ex, self));
+                utils.err.reThrow(ex, self.handleError(ex, self));
             }
         };
         DataForm.prototype._onDSErrorsChanged = function (sender, args) {
@@ -6654,14 +7121,18 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
             this._dataContext = null;
             this._contentCreated = false;
             this._contentPromise = null;
-            this._app = null;
             _super.prototype.destroy.call(this);
         };
         DataForm.prototype.toString = function () {
             return "DataForm";
         };
+        Object.defineProperty(DataForm.prototype, "appName", {
+            get: function () { return this._appName; },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(DataForm.prototype, "app", {
-            get: function () { return this._app; },
+            get: function () { return boot.findApp(this._appName); },
             enumerable: true,
             configurable: true
         });
@@ -6677,7 +7148,7 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
                     if (v === this._dataContext)
                         return;
                     if (!!v && !syschecks._isBaseObj(v)) {
-                        throw new Error(lang_16.ERRS.ERR_DATAFRM_DCTX_INVALID);
+                        throw new Error(lang_17.ERRS.ERR_DATAFRM_DCTX_INVALID);
                     }
                     this._unbindDS();
                     this._dataContext = v;
@@ -6694,7 +7165,7 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
                     }
                 }
                 catch (ex) {
-                    coreutils_18.ERROR.reThrow(ex, this.handleError(ex, this));
+                    utils.err.reThrow(ex, this.handleError(ex, this));
                 }
             },
             enumerable: true,
@@ -6725,7 +7196,7 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
                         }
                     }
                     catch (ex) {
-                        coreutils_18.ERROR.reThrow(ex, this.handleError(ex, dataContext));
+                        utils.err.reThrow(ex, this.handleError(ex, dataContext));
                     }
                 }
                 if (!!editable && editable.isEditing !== isEditing) {
@@ -6756,10 +7227,10 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
             enumerable: true,
             configurable: true
         });
-        DataForm._DATA_FORM_SELECTOR = ["*[", const_5.DATA_ATTR.DATA_FORM, "]"].join("");
-        DataForm._DATA_CONTENT_SELECTOR = ["*[", const_5.DATA_ATTR.DATA_CONTENT, "]:not([", const_5.DATA_ATTR.DATA_COLUMN, "])"].join("");
+        DataForm._DATA_FORM_SELECTOR = ["*[", const_6.DATA_ATTR.DATA_FORM, "]"].join("");
+        DataForm._DATA_CONTENT_SELECTOR = ["*[", const_6.DATA_ATTR.DATA_CONTENT, "]:not([", const_6.DATA_ATTR.DATA_COLUMN, "])"].join("");
         return DataForm;
-    }(object_14.BaseObject));
+    }(object_15.BaseObject));
     exports.DataForm = DataForm;
     var DataFormElView = (function (_super) {
         __extends(DataFormElView, _super);
@@ -6783,11 +7254,11 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
             }, this.uniqueID);
         }
         DataFormElView.prototype._getErrorTipInfo = function (errors) {
-            var tip = ["<b>", lang_16.STRS.VALIDATE.errorInfo, "</b>", "<ul>"];
+            var tip = ["<b>", lang_17.STRS.VALIDATE.errorInfo, "</b>", "<ul>"];
             errors.forEach(function (info) {
                 var fieldName = info.fieldName, res = "";
                 if (!!fieldName) {
-                    res = lang_16.STRS.VALIDATE.errorField + " " + fieldName;
+                    res = lang_17.STRS.VALIDATE.errorField + " " + fieldName;
                 }
                 info.errors.forEach(function (str) {
                     if (!!res)
@@ -6809,7 +7280,7 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
             if (!!errors && errors.length > 0) {
                 var $img = $("<div data-name=\"error_info\" class=\"" + exports.css.error + "\" />");
                 $el.prepend($img);
-                elview_5.fn_addToolTip($img, this._getErrorTipInfo(errors), true);
+                elview_6.fn_addToolTip($img, this._getErrorTipInfo(errors), true);
                 this._setFieldError(true);
             }
             else {
@@ -6852,487 +7323,13 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
             configurable: true
         });
         return DataFormElView;
-    }(elview_5.BaseElView));
-    exports.DataFormElView = DataFormElView;
-    bootstrap_11.bootstrap.registerElView(const_5.ELVIEW_NM.DataForm, DataFormElView);
-});
-define("jriapp_elview/command", ["require", "exports", "jriapp_utils/utils", "jriapp_elview/elview"], function (require, exports, utils_16, elview_6) {
-    "use strict";
-    var utils = utils_16.Utils, dom = utils.dom, checks = utils.check;
-    var CommandElView = (function (_super) {
-        __extends(CommandElView, _super);
-        function CommandElView(options) {
-            _super.call(this, options);
-            this._command = null;
-            this._commandParam = null;
-            this._preventDefault = !!options.preventDefault;
-            this._stopPropagation = !!options.stopPropagation;
-            this._disabled = ("disabled" in this.el) ? checks.undefined : false;
-            dom.setClass(this.$el.toArray(), elview_6.css.disabled, this.isEnabled);
-        }
-        CommandElView.prototype._onCanExecuteChanged = function (cmd, args) {
-            this.isEnabled = cmd.canExecute(this, this._commandParam);
-        };
-        CommandElView.prototype._onCommandChanged = function () {
-            this.raisePropertyChanged(elview_6.PROP_NAME.command);
-        };
-        CommandElView.prototype.invokeCommand = function (args, isAsync) {
-            var self = this;
-            args = args || this._commandParam || {};
-            if (!!self.command && self.command.canExecute(self, args)) {
-                if (isAsync) {
-                    setTimeout(function () {
-                        if (self.getIsDestroyCalled())
-                            return;
-                        try {
-                            if (!!self.command && self.command.canExecute(self, args))
-                                self.command.execute(self, args);
-                        }
-                        catch (ex) {
-                            self.handleError(ex, self);
-                        }
-                    }, 0);
-                }
-                else {
-                    self.command.execute(self, args);
-                }
-            }
-        };
-        CommandElView.prototype.destroy = function () {
-            if (this._isDestroyed)
-                return;
-            this._isDestroyCalled = true;
-            if (checks.isBaseObject(this._command)) {
-                this._command.removeNSHandlers(this.uniqueID);
-            }
-            this.command = null;
-            this._commandParam = null;
-            _super.prototype.destroy.call(this);
-        };
-        CommandElView.prototype.toString = function () {
-            return "CommandElView";
-        };
-        Object.defineProperty(CommandElView.prototype, "isEnabled", {
-            get: function () {
-                var el = this.el;
-                if (this._disabled === checks.undefined)
-                    return !el.disabled;
-                else
-                    return !this._disabled;
-            },
-            set: function (v) {
-                var el = this.el;
-                if (v !== this.isEnabled) {
-                    if (this._disabled === checks.undefined)
-                        el.disabled = !v;
-                    else
-                        this._disabled = !v;
-                    dom.setClass(this.$el.toArray(), elview_6.css.disabled, !!v);
-                    this.raisePropertyChanged(elview_6.PROP_NAME.isEnabled);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CommandElView.prototype, "command", {
-            get: function () { return this._command; },
-            set: function (v) {
-                var self = this;
-                if (v !== this._command) {
-                    if (checks.isBaseObject(this._command)) {
-                        this._command.removeNSHandlers(this.uniqueID);
-                    }
-                    this._command = v;
-                    if (!!this._command) {
-                        this._command.addOnCanExecuteChanged(self._onCanExecuteChanged, this.uniqueID, self);
-                        self.isEnabled = this._command.canExecute(self, this.commandParam || {});
-                    }
-                    else {
-                        self.isEnabled = false;
-                    }
-                    this._onCommandChanged();
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CommandElView.prototype, "commandParam", {
-            get: function () { return this._commandParam; },
-            set: function (v) {
-                if (v !== this._commandParam) {
-                    this._commandParam = v;
-                    this.raisePropertyChanged(elview_6.PROP_NAME.commandParam);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CommandElView.prototype, "preventDefault", {
-            get: function () {
-                return this._preventDefault;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CommandElView.prototype, "stopPropagation", {
-            get: function () {
-                return this._stopPropagation;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return CommandElView;
     }(elview_6.BaseElView));
-    exports.CommandElView = CommandElView;
+    exports.DataFormElView = DataFormElView;
+    boot.registerElView(const_6.ELVIEW_NM.DataForm, DataFormElView);
 });
-define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jriapp_utils/coreutils", "jriapp_utils/dom", "jriapp_utils/async", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_elview/command"], function (require, exports, const_6, coreutils_19, dom_7, async_7, lang_17, object_15, bootstrap_12, command_1) {
+define("jriapp_elview/anchor", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/command"], function (require, exports, utils_16, bootstrap_15, elview_7, command_2) {
     "use strict";
-    var defer = async_7.AsyncUtils, dom = dom_7.DomUtils, $ = dom.$, doc = dom.document, coreUtils = coreutils_19.CoreUtils, checks = coreutils_19.Checks, strUtils = coreutils_19.StringUtils, arrHelper = coreutils_19.ArrayHelper, syschecks = coreutils_19.SysChecks;
-    exports.css = {
-        templateContainer: "ria-template-container",
-        templateError: "ria-template-error"
-    };
-    coreutils_19.SysChecks._isTemplateElView = function (obj) {
-        return !!obj && obj instanceof TemplateElView;
-    };
-    var PROP_NAME = {
-        dataContext: "dataContext",
-        templateID: "templateID",
-        template: "template",
-        isEnabled: "isEnabled"
-    };
-    function create(options) {
-        return new Template(options);
-    }
-    exports.create = create;
-    var Template = (function (_super) {
-        __extends(Template, _super);
-        function Template(options) {
-            _super.call(this);
-            this._dataContext = options.dataContext;
-            this._app = options.app;
-            this._templEvents = options.templEvents;
-            this._loadedElem = null;
-            this._lfTime = null;
-            this._templateID = null;
-            this._templElView = null;
-            this._el = doc.createElement("div");
-            this._el.className = exports.css.templateContainer;
-        }
-        Template.prototype._getBindings = function () {
-            if (!this._lfTime)
-                return [];
-            var arr = this._lfTime.getObjs(), res = [];
-            for (var i = 0, len = arr.length; i < len; i += 1) {
-                if (syschecks._isBinding(arr[i]))
-                    res.push(arr[i]);
-            }
-            return res;
-        };
-        Template.prototype._getElViews = function () {
-            if (!this._lfTime)
-                return [];
-            var arr = this._lfTime.getObjs(), res = [];
-            for (var i = 0, len = arr.length; i < len; i += 1) {
-                if (syschecks._isElView(arr[i]))
-                    res.push(arr[i]);
-            }
-            return res;
-        };
-        Template.prototype._getTemplateElView = function () {
-            if (!this._lfTime)
-                return null;
-            var arr = this._getElViews();
-            for (var i = 0, j = arr.length; i < j; i += 1) {
-                if (coreutils_19.SysChecks._isTemplateElView(arr[i])) {
-                    return arr[i];
-                }
-            }
-            return null;
-        };
-        Template.prototype._loadAsync = function (name) {
-            var self = this, fn_loader = this.app.getTemplateLoader(name), promise;
-            if (checks.isFunc(fn_loader) && checks.isThenable(promise = fn_loader())) {
-                return promise.then(function (html) {
-                    var tmpDiv = doc.createElement("div");
-                    tmpDiv.innerHTML = html;
-                    tmpDiv = tmpDiv.firstElementChild;
-                    return tmpDiv;
-                }, function (err) {
-                    if (!!err && !!err.message)
-                        throw err;
-                    else
-                        throw new Error(strUtils.format(lang_17.ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
-                });
-            }
-            else {
-                var deferred = defer.createDeferred();
-                return deferred.reject(new Error(strUtils.format(lang_17.ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID)));
-            }
-        };
-        Template.prototype._loadTemplate = function () {
-            var self = this, id = self.templateID, templateEl = self.el;
-            try {
-                if (!!self._loadedElem)
-                    self._unloadTemplate();
-                if (!!id) {
-                    var loadPromise = self._loadAsync(id), bindPromise = loadPromise.then(function (loadedEl) {
-                        return self._dataBind(templateEl, loadedEl);
-                    });
-                    bindPromise.fail(function (err) {
-                        if (self.getIsDestroyCalled())
-                            return;
-                        self._onFail(templateEl, err);
-                    });
-                }
-            }
-            catch (ex) {
-                self._onFail(templateEl, ex);
-            }
-        };
-        Template.prototype._onLoading = function () {
-            if (!!this._templEvents) {
-                this._templEvents.templateLoading(this);
-            }
-        };
-        Template.prototype._onLoaded = function (error) {
-            this._templElView = this._getTemplateElView();
-            if (!!this._templEvents) {
-                this._templEvents.templateLoaded(this, error);
-            }
-            if (!!this._templElView) {
-                this._templElView.templateLoaded(this, error);
-            }
-        };
-        Template.prototype._unloadTemplate = function () {
-            try {
-                if (!!this._templEvents) {
-                    this._templEvents.templateUnLoading(this);
-                }
-                if (!!this._templElView) {
-                    this._templElView.templateUnLoading(this);
-                }
-            }
-            finally {
-                this._cleanUp();
-            }
-        };
-        Template.prototype._dataBind = function (templateEl, loadedEl) {
-            var self = this;
-            if (self.getIsDestroyCalled())
-                coreutils_19.ERROR.abort();
-            if (!loadedEl)
-                throw new Error(strUtils.format(lang_17.ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
-            if (!!self._loadedElem) {
-                self._unloadTemplate();
-            }
-            dom.setClass([templateEl], exports.css.templateError, true);
-            self._loadedElem = loadedEl;
-            self._onLoading();
-            templateEl.appendChild(loadedEl);
-            var promise = self._app._getInternal().bindTemplateElements(loadedEl);
-            return promise.then(function (lftm) {
-                if (self.getIsDestroyCalled()) {
-                    lftm.destroy();
-                    coreutils_19.ERROR.abort();
-                }
-                self._lfTime = lftm;
-                self._updateBindingSource();
-                self._onLoaded(null);
-                return loadedEl;
-            });
-        };
-        Template.prototype._onFail = function (templateEl, err) {
-            var self = this;
-            if (self.getIsDestroyCalled())
-                return;
-            self._onLoaded(err);
-            if (coreutils_19.ERROR.checkIsAbort(err)) {
-                return;
-            }
-            dom.setClass([templateEl], exports.css.templateError, false);
-            var ex;
-            if (!!err) {
-                if (!!err.message) {
-                    ex = err;
-                }
-                else if (!!err.statusText) {
-                    ex = new Error(err.statusText);
-                }
-                else {
-                    ex = new Error('error: ' + err);
-                }
-            }
-            if (!ex)
-                ex = new Error(strUtils.format(lang_17.ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
-            self.handleError(ex, self);
-        };
-        Template.prototype._updateBindingSource = function () {
-            var i, len, binding, bindings = this._getBindings();
-            for (i = 0, len = bindings.length; i < len; i += 1) {
-                binding = bindings[i];
-                if (!binding.isSourceFixed)
-                    binding.source = this.dataContext;
-            }
-        };
-        Template.prototype._cleanUp = function () {
-            if (!!this._lfTime) {
-                this._lfTime.destroy();
-                this._lfTime = null;
-            }
-            this._templElView = null;
-            if (!!this._loadedElem) {
-                $(this._loadedElem).remove();
-                this._loadedElem = null;
-            }
-        };
-        Template.prototype.handleError = function (error, source) {
-            var isHandled = _super.prototype.handleError.call(this, error, source);
-            if (!isHandled) {
-                return this.app.handleError(error, source);
-            }
-            return isHandled;
-        };
-        Template.prototype.destroy = function () {
-            if (this._isDestroyed)
-                return;
-            this._isDestroyCalled = true;
-            this._unloadTemplate();
-            if (!!this._el) {
-                $(this._el).remove();
-                this._el = null;
-            }
-            this._dataContext = null;
-            this._templEvents = null;
-            this._app = null;
-            _super.prototype.destroy.call(this);
-        };
-        Template.prototype.findElByDataName = function (name) {
-            return arrHelper.fromList(this._el.querySelectorAll(["*[", const_6.DATA_ATTR.DATA_NAME, '="', name, '"]'].join("")));
-        };
-        Template.prototype.findElViewsByDataName = function (name) {
-            var self = this, els = this.findElByDataName(name), res = [], viewStore = self.app.elViewFactory.store;
-            els.forEach(function (el) {
-                var elView = viewStore.getElView(el);
-                if (!!elView)
-                    res.push(elView);
-            });
-            return res;
-        };
-        Template.prototype.toString = function () {
-            return "ITemplate";
-        };
-        Object.defineProperty(Template.prototype, "loadedElem", {
-            get: function () {
-                return this._loadedElem;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Template.prototype, "dataContext", {
-            get: function () { return this._dataContext; },
-            set: function (v) {
-                if (this._dataContext !== v) {
-                    this._dataContext = v;
-                    this._updateBindingSource();
-                    this.raisePropertyChanged(PROP_NAME.dataContext);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Template.prototype, "templateID", {
-            get: function () { return this._templateID; },
-            set: function (v) {
-                if (this._templateID !== v) {
-                    this._templateID = v;
-                    this._loadTemplate();
-                    this.raisePropertyChanged(PROP_NAME.templateID);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Template.prototype, "el", {
-            get: function () { return this._el; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Template.prototype, "app", {
-            get: function () { return this._app; },
-            enumerable: true,
-            configurable: true
-        });
-        return Template;
-    }(object_15.BaseObject));
-    var TemplateElView = (function (_super) {
-        __extends(TemplateElView, _super);
-        function TemplateElView(options) {
-            _super.call(this, options);
-            this._template = null;
-            this._isEnabled = true;
-        }
-        TemplateElView.prototype.templateLoading = function (template) {
-        };
-        TemplateElView.prototype.templateLoaded = function (template, error) {
-            if (!!error)
-                return;
-            var self = this;
-            try {
-                self._template = template;
-                var args = { template: template, isLoaded: true };
-                self.invokeCommand(args, false);
-                this.raisePropertyChanged(PROP_NAME.template);
-            }
-            catch (ex) {
-                this.handleError(ex, this);
-                coreutils_19.ERROR.throwDummy(ex);
-            }
-        };
-        TemplateElView.prototype.templateUnLoading = function (template) {
-            var self = this;
-            try {
-                var args = { template: template, isLoaded: false };
-                self.invokeCommand(args, false);
-            }
-            catch (ex) {
-                this.handleError(ex, this);
-            }
-            finally {
-                self._template = null;
-            }
-            this.raisePropertyChanged(PROP_NAME.template);
-        };
-        TemplateElView.prototype.toString = function () {
-            return "TemplateElView";
-        };
-        Object.defineProperty(TemplateElView.prototype, "isEnabled", {
-            get: function () { return this._isEnabled; },
-            set: function (v) {
-                if (this._isEnabled !== v) {
-                    this._isEnabled = v;
-                    this.raisePropertyChanged(PROP_NAME.isEnabled);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TemplateElView.prototype, "template", {
-            get: function () {
-                return this._template;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return TemplateElView;
-    }(command_1.CommandElView));
-    exports.TemplateElView = TemplateElView;
-    ;
-    bootstrap_12.bootstrap.registerElView("template", TemplateElView);
-});
-define("jriapp_elview/anchor", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/command"], function (require, exports, utils_17, bootstrap_13, elview_7, command_2) {
-    "use strict";
-    var utils = utils_17.Utils, dom = utils.dom, $ = dom.$;
+    var utils = utils_16.Utils, dom = utils.dom, $ = dom.$;
     var AnchorElView = (function (_super) {
         __extends(AnchorElView, _super);
         function AnchorElView(options) {
@@ -7492,12 +7489,12 @@ define("jriapp_elview/anchor", ["require", "exports", "jriapp_utils/utils", "jri
         return AnchorElView;
     }(command_2.CommandElView));
     exports.AnchorElView = AnchorElView;
-    bootstrap_13.bootstrap.registerElView("a", AnchorElView);
-    bootstrap_13.bootstrap.registerElView("abutton", AnchorElView);
+    bootstrap_15.bootstrap.registerElView("a", AnchorElView);
+    bootstrap_15.bootstrap.registerElView("abutton", AnchorElView);
 });
-define("jriapp_elview/span", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview"], function (require, exports, utils_18, bootstrap_14, elview_8) {
+define("jriapp_elview/span", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview"], function (require, exports, utils_17, bootstrap_16, elview_8) {
     "use strict";
-    var utils = utils_18.Utils, $ = utils.dom.$;
+    var utils = utils_17.Utils, $ = utils.dom.$;
     var SpanElView = (function (_super) {
         __extends(SpanElView, _super);
         function SpanElView() {
@@ -7580,11 +7577,11 @@ define("jriapp_elview/span", ["require", "exports", "jriapp_utils/utils", "jriap
         return SpanElView;
     }(elview_8.BaseElView));
     exports.SpanElView = SpanElView;
-    bootstrap_14.bootstrap.registerElView("span", SpanElView);
+    bootstrap_16.bootstrap.registerElView("span", SpanElView);
 });
-define("jriapp_elview/block", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/span"], function (require, exports, utils_19, bootstrap_15, elview_9, span_1) {
+define("jriapp_elview/block", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/span"], function (require, exports, utils_18, bootstrap_17, elview_9, span_1) {
     "use strict";
-    var utils = utils_19.Utils, $ = utils.dom.$;
+    var utils = utils_18.Utils, $ = utils.dom.$, boot = bootstrap_17.bootstrap;
     var BlockElView = (function (_super) {
         __extends(BlockElView, _super);
         function BlockElView() {
@@ -7628,13 +7625,13 @@ define("jriapp_elview/block", ["require", "exports", "jriapp_utils/utils", "jria
         return BlockElView;
     }(span_1.SpanElView));
     exports.BlockElView = BlockElView;
-    bootstrap_15.bootstrap.registerElView("block", BlockElView);
-    bootstrap_15.bootstrap.registerElView("div", BlockElView);
-    bootstrap_15.bootstrap.registerElView("section", BlockElView);
+    boot.registerElView("block", BlockElView);
+    boot.registerElView("div", BlockElView);
+    boot.registerElView("section", BlockElView);
 });
-define("jriapp_elview/busy", ["require", "exports", "jriapp_core/const", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview"], function (require, exports, const_7, utils_20, bootstrap_16, elview_10) {
+define("jriapp_elview/busy", ["require", "exports", "jriapp_core/const", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview"], function (require, exports, const_7, utils_19, bootstrap_18, elview_10) {
     "use strict";
-    var utils = utils_20.Utils, $ = utils.dom.$, checks = utils.check;
+    var utils = utils_19.Utils, $ = utils.dom.$, checks = utils.check;
     var BusyElView = (function (_super) {
         __extends(BusyElView, _super);
         function BusyElView(options) {
@@ -7648,7 +7645,7 @@ define("jriapp_elview/busy", ["require", "exports", "jriapp_core/const", "jriapp
             this._timeOut = null;
             if (!checks.isNt(options.delay))
                 this._delay = parseInt("" + options.delay);
-            this._loaderPath = bootstrap_16.bootstrap.getImagePath(img);
+            this._loaderPath = bootstrap_18.bootstrap.getImagePath(img);
             this._$loader = $(new Image());
             this._$loader.css({ position: "absolute", display: "none", zIndex: "10000" });
             this._$loader.prop("src", this._loaderPath);
@@ -7721,12 +7718,12 @@ define("jriapp_elview/busy", ["require", "exports", "jriapp_core/const", "jriapp
         return BusyElView;
     }(elview_10.BaseElView));
     exports.BusyElView = BusyElView;
-    bootstrap_16.bootstrap.registerElView("busy", BusyElView);
-    bootstrap_16.bootstrap.registerElView("busy_indicator", BusyElView);
+    bootstrap_18.bootstrap.registerElView("busy", BusyElView);
+    bootstrap_18.bootstrap.registerElView("busy_indicator", BusyElView);
 });
-define("jriapp_elview/button", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/command"], function (require, exports, utils_21, bootstrap_17, elview_11, command_3) {
+define("jriapp_elview/button", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/command"], function (require, exports, utils_20, bootstrap_19, elview_11, command_3) {
     "use strict";
-    var utils = utils_21.Utils, $ = utils.dom.$;
+    var utils = utils_20.Utils, $ = utils.dom.$, boot = bootstrap_19.bootstrap;
     var ButtonElView = (function (_super) {
         __extends(ButtonElView, _super);
         function ButtonElView(options) {
@@ -7803,13 +7800,13 @@ define("jriapp_elview/button", ["require", "exports", "jriapp_utils/utils", "jri
         return ButtonElView;
     }(command_3.CommandElView));
     exports.ButtonElView = ButtonElView;
-    bootstrap_17.bootstrap.registerElView("input:button", ButtonElView);
-    bootstrap_17.bootstrap.registerElView("input:submit", ButtonElView);
-    bootstrap_17.bootstrap.registerElView("button", ButtonElView);
+    boot.registerElView("input:button", ButtonElView);
+    boot.registerElView("input:submit", ButtonElView);
+    boot.registerElView("button", ButtonElView);
 });
-define("jriapp_elview/checkbox3", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/input"], function (require, exports, utils_22, bootstrap_18, elview_12, input_3) {
+define("jriapp_elview/checkbox3", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/input"], function (require, exports, utils_21, bootstrap_20, elview_12, input_3) {
     "use strict";
-    var utils = utils_22.Utils, dom = utils.dom, $ = dom.$;
+    var utils = utils_21.Utils, dom = utils.dom, $ = dom.$, boot = bootstrap_20.bootstrap;
     var CheckBoxThreeStateElView = (function (_super) {
         __extends(CheckBoxThreeStateElView, _super);
         function CheckBoxThreeStateElView(options) {
@@ -7854,12 +7851,12 @@ define("jriapp_elview/checkbox3", ["require", "exports", "jriapp_utils/utils", "
         return CheckBoxThreeStateElView;
     }(input_3.InputElView));
     exports.CheckBoxThreeStateElView = CheckBoxThreeStateElView;
-    bootstrap_18.bootstrap.registerElView("threeState", CheckBoxThreeStateElView);
-    bootstrap_18.bootstrap.registerElView("checkbox3", CheckBoxThreeStateElView);
+    boot.registerElView("threeState", CheckBoxThreeStateElView);
+    boot.registerElView("checkbox3", CheckBoxThreeStateElView);
 });
-define("jriapp_elview/expander", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/anchor"], function (require, exports, utils_23, bootstrap_19, anchor_1) {
+define("jriapp_elview/expander", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/anchor"], function (require, exports, utils_22, bootstrap_21, anchor_1) {
     "use strict";
-    var utils = utils_23.Utils, $ = utils.dom.$;
+    var utils = utils_22.Utils, $ = utils.dom.$;
     exports.PROP_NAME = {
         isExpanded: "isExpanded"
     };
@@ -7867,8 +7864,8 @@ define("jriapp_elview/expander", ["require", "exports", "jriapp_utils/utils", "j
     var ExpanderElView = (function (_super) {
         __extends(ExpanderElView, _super);
         function ExpanderElView(options) {
-            var expandedsrc = options.expandedsrc || bootstrap_19.bootstrap.getImagePath(COLLAPSE_IMG);
-            var collapsedsrc = options.collapsedsrc || bootstrap_19.bootstrap.getImagePath(EXPAND_IMG);
+            var expandedsrc = options.expandedsrc || bootstrap_21.bootstrap.getImagePath(COLLAPSE_IMG);
+            var collapsedsrc = options.collapsedsrc || bootstrap_21.bootstrap.getImagePath(EXPAND_IMG);
             var isExpanded = !!options.isExpanded;
             options.imageSrc = null;
             _super.call(this, options);
@@ -7912,9 +7909,9 @@ define("jriapp_elview/expander", ["require", "exports", "jriapp_utils/utils", "j
         return ExpanderElView;
     }(anchor_1.AnchorElView));
     exports.ExpanderElView = ExpanderElView;
-    bootstrap_19.bootstrap.registerElView("expander", ExpanderElView);
+    bootstrap_21.bootstrap.registerElView("expander", ExpanderElView);
 });
-define("jriapp_elview/hidden", ["require", "exports", "jriapp_core/bootstrap", "jriapp_elview/input"], function (require, exports, bootstrap_20, input_4) {
+define("jriapp_elview/hidden", ["require", "exports", "jriapp_core/bootstrap", "jriapp_elview/input"], function (require, exports, bootstrap_22, input_4) {
     "use strict";
     var HiddenElView = (function (_super) {
         __extends(HiddenElView, _super);
@@ -7927,9 +7924,9 @@ define("jriapp_elview/hidden", ["require", "exports", "jriapp_core/bootstrap", "
         return HiddenElView;
     }(input_4.InputElView));
     exports.HiddenElView = HiddenElView;
-    bootstrap_20.bootstrap.registerElView("input:hidden", HiddenElView);
+    bootstrap_22.bootstrap.registerElView("input:hidden", HiddenElView);
 });
-define("jriapp_elview/img", ["require", "exports", "jriapp_core/bootstrap", "jriapp_elview/elview"], function (require, exports, bootstrap_21, elview_13) {
+define("jriapp_elview/img", ["require", "exports", "jriapp_core/bootstrap", "jriapp_elview/elview"], function (require, exports, bootstrap_23, elview_13) {
     "use strict";
     var ImgElView = (function (_super) {
         __extends(ImgElView, _super);
@@ -7954,11 +7951,11 @@ define("jriapp_elview/img", ["require", "exports", "jriapp_core/bootstrap", "jri
         return ImgElView;
     }(elview_13.BaseElView));
     exports.ImgElView = ImgElView;
-    bootstrap_21.bootstrap.registerElView("img", ImgElView);
+    bootstrap_23.bootstrap.registerElView("img", ImgElView);
 });
-define("jriapp_elview/radio", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/checkbox"], function (require, exports, utils_24, bootstrap_22, elview_14, checkbox_2) {
+define("jriapp_elview/radio", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/checkbox"], function (require, exports, utils_23, bootstrap_24, elview_14, checkbox_2) {
     "use strict";
-    var utils = utils_24.Utils, dom = utils.dom, $ = dom.$;
+    var utils = utils_23.Utils, dom = utils.dom, $ = dom.$;
     var RadioElView = (function (_super) {
         __extends(RadioElView, _super);
         function RadioElView() {
@@ -7987,7 +7984,7 @@ define("jriapp_elview/radio", ["require", "exports", "jriapp_utils/utils", "jria
         return RadioElView;
     }(checkbox_2.CheckBoxElView));
     exports.RadioElView = RadioElView;
-    bootstrap_22.bootstrap.registerElView("input:radio", RadioElView);
+    bootstrap_24.bootstrap.registerElView("input:radio", RadioElView);
 });
 define("jriapp_elview/all", ["require", "exports", "jriapp_elview/elview", "jriapp_elview/anchor", "jriapp_elview/block", "jriapp_elview/busy", "jriapp_elview/button", "jriapp_elview/checkbox", "jriapp_elview/checkbox3", "jriapp_elview/command", "jriapp_elview/expander", "jriapp_elview/hidden", "jriapp_elview/img", "jriapp_elview/input", "jriapp_elview/radio", "jriapp_elview/span", "jriapp_elview/textarea", "jriapp_elview/textbox"], function (require, exports, elview_15, anchor_2, block_1, busy_1, button_1, checkbox_3, checkbox3_1, command_4, expander_1, hidden_1, img_1, input_5, radio_1, span_2, textarea_2, textbox_4) {
     "use strict";
@@ -8010,6 +8007,64 @@ define("jriapp_elview/all", ["require", "exports", "jriapp_elview/elview", "jria
     exports.SpanElView = span_2.SpanElView;
     exports.TextAreaElView = textarea_2.TextAreaElView;
     exports.TextBoxElView = textbox_4.TextBoxElView;
+});
+define("jriapp_utils/propwatcher", ["require", "exports", "jriapp_core/object", "jriapp_utils/coreutils"], function (require, exports, object_16, coreutils_15) {
+    "use strict";
+    var PropWatcher = (function (_super) {
+        __extends(PropWatcher, _super);
+        function PropWatcher() {
+            _super.call(this);
+            this._objId = "prw" + coreutils_15.CoreUtils.getNewID();
+            this._objs = [];
+        }
+        PropWatcher.create = function () {
+            return new PropWatcher();
+        };
+        PropWatcher.prototype.addPropWatch = function (obj, prop, fn_onChange) {
+            var self = this;
+            obj.addOnPropertyChange(prop, function (s, a) {
+                fn_onChange(a.property);
+            }, self.uniqueID);
+            if (self._objs.indexOf(obj) < 0)
+                self._objs.push(obj);
+        };
+        PropWatcher.prototype.addWatch = function (obj, props, fn_onChange) {
+            var self = this;
+            obj.addOnPropertyChange("*", function (s, a) {
+                if (props.indexOf(a.property) > -1) {
+                    fn_onChange(a.property);
+                }
+            }, self.uniqueID);
+            if (self._objs.indexOf(obj) < 0)
+                self._objs.push(obj);
+        };
+        PropWatcher.prototype.removeWatch = function (obj) {
+            obj.removeNSHandlers(this.uniqueID);
+        };
+        PropWatcher.prototype.destroy = function () {
+            if (this._isDestroyed)
+                return;
+            this._isDestroyCalled = true;
+            var self = this;
+            this._objs.forEach(function (obj) {
+                self.removeWatch(obj);
+            });
+            this._objs = [];
+            _super.prototype.destroy.call(this);
+        };
+        PropWatcher.prototype.toString = function () {
+            return "PropWatcher " + this._objId;
+        };
+        Object.defineProperty(PropWatcher.prototype, "uniqueID", {
+            get: function () {
+                return this._objId;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return PropWatcher;
+    }(object_16.BaseObject));
+    exports.PropWatcher = PropWatcher;
 });
 define("jriapp_collection/int", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -8058,9 +8113,9 @@ define("jriapp_collection/int", ["require", "exports"], function (require, expor
         destroyed: "destroyed"
     };
 });
-define("jriapp_collection/utils", ["require", "exports", "jriapp_utils/utils", "jriapp_core/lang"], function (require, exports, utils_25, lang_18) {
+define("jriapp_collection/utils", ["require", "exports", "jriapp_utils/utils", "jriapp_core/lang"], function (require, exports, utils_24, lang_18) {
     "use strict";
-    var utils = utils_25.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
+    var utils = utils_24.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
     function pad(num) {
         if (num < 10) {
             return "0" + num;
@@ -8271,8 +8326,12 @@ define("jriapp_collection/utils", ["require", "exports", "jriapp_utils/utils", "
     }
     exports.fn_traverseFields = fn_traverseFields;
 });
-define("jriapp_collection/validation", ["require", "exports", "jriapp_core/shared", "jriapp_core/lang", "jriapp_utils/coreutils"], function (require, exports, shared_4, lang_19, coreutils_20) {
+define("jriapp_collection/validation", ["require", "exports", "jriapp_core/shared", "jriapp_core/lang", "jriapp_utils/syschecks", "jriapp_utils/utils"], function (require, exports, shared_4, lang_19, syschecks_8, utils_25) {
     "use strict";
+    var utils = utils_25.Utils;
+    syschecks_8.SysChecks._isValidationError = function (obj) {
+        return (!!obj && obj instanceof ValidationError);
+    };
     var ValidationError = (function (_super) {
         __extends(ValidationError, _super);
         function ValidationError(errorInfo, item) {
@@ -8319,12 +8378,12 @@ define("jriapp_collection/validation", ["require", "exports", "jriapp_core/share
             var rangeParts = range.split(",");
             if (!!rangeParts[0]) {
                 if (num < parseFloat(rangeParts[0])) {
-                    throw new Error(coreutils_20.StringUtils.format(lang_19.ERRS.ERR_FIELD_RANGE, num, range));
+                    throw new Error(utils.str.format(lang_19.ERRS.ERR_FIELD_RANGE, num, range));
                 }
             }
             if (!!rangeParts[1]) {
                 if (num > parseFloat(rangeParts[1])) {
-                    throw new Error(coreutils_20.StringUtils.format(lang_19.ERRS.ERR_FIELD_RANGE, num, range));
+                    throw new Error(utils.str.format(lang_19.ERRS.ERR_FIELD_RANGE, num, range));
                 }
             }
         };
@@ -8332,12 +8391,12 @@ define("jriapp_collection/validation", ["require", "exports", "jriapp_core/share
             var rangeParts = range.split(",");
             if (!!rangeParts[0]) {
                 if (dt < Validations._dtRangeToDate(rangeParts[0])) {
-                    throw new Error(coreutils_20.StringUtils.format(lang_19.ERRS.ERR_FIELD_RANGE, dt, range));
+                    throw new Error(utils.str.format(lang_19.ERRS.ERR_FIELD_RANGE, dt, range));
                 }
             }
             if (!!rangeParts[1]) {
                 if (dt > Validations._dtRangeToDate(rangeParts[1])) {
-                    throw new Error(coreutils_20.StringUtils.format(lang_19.ERRS.ERR_FIELD_RANGE, dt, range));
+                    throw new Error(utils.str.format(lang_19.ERRS.ERR_FIELD_RANGE, dt, range));
                 }
             }
         };
@@ -8345,9 +8404,10 @@ define("jriapp_collection/validation", ["require", "exports", "jriapp_core/share
     }());
     exports.Validations = Validations;
 });
-define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "jriapp_core/lang", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_core/parser", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/validation"], function (require, exports, object_16, lang_20, coreutils_21, utils_26, bootstrap_23, parser_5, int_6, utils_27, validation_1) {
+define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/syschecks", "jriapp_core/object", "jriapp_core/lang", "jriapp_utils/waitqueue", "jriapp_utils/utils", "jriapp_core/parser", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/validation"], function (require, exports, syschecks_9, object_17, lang_20, waitqueue_2, utils_26, parser_5, int_6, utils_27, validation_1) {
     "use strict";
     var utils = utils_26.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, parse = parser_5.parser;
+    syschecks_9.SysChecks._isCollection = function (obj) { return (!!obj && obj instanceof BaseCollection); };
     var COLL_EVENTS = {
         begin_edit: "begin_edit",
         end_edit: "end_edit",
@@ -8388,7 +8448,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
             this._errors = {};
             this._ignoreChangeErrors = false;
             this._pkInfo = null;
-            this._waitQueue = new utils_26.WaitQueue(this);
+            this._waitQueue = new waitqueue_2.WaitQueue(this);
             this._internal = {
                 getEditingItem: function () {
                     return self._getEditingItem();
@@ -8459,13 +8519,6 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
             var base_events = _super.prototype._getEventNames.call(this);
             var events = Object.keys(COLL_EVENTS).map(function (key, i, arr) { return COLL_EVENTS[key]; });
             return events.concat(base_events);
-        };
-        BaseCollection.prototype.handleError = function (error, source) {
-            var isHandled = _super.prototype.handleError.call(this, error, source);
-            if (!isHandled) {
-                return bootstrap_23.bootstrap.handleError(error, source);
-            }
-            return isHandled;
         };
         BaseCollection.prototype.addOnClearing = function (fn, nmspace, context, priority) {
             this._addHandler(COLL_EVENTS.clearing, fn, nmspace, context, priority);
@@ -8601,7 +8654,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
                 this.endEdit();
             }
             catch (ex) {
-                coreutils_21.ERROR.reThrow(ex, this.handleError(ex, this));
+                utils.err.reThrow(ex, this.handleError(ex, this));
             }
         };
         BaseCollection.prototype._onCurrentChanging = function (newCurrent) {
@@ -8630,7 +8683,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
             var args = { item: item, isCancel: false };
             this.raiseEvent(COLL_EVENTS.item_adding, args);
             if (args.isCancel)
-                coreutils_21.ERROR.throwDummy(new Error("operation canceled"));
+                utils.err.throwDummy(new Error("operation canceled"));
         };
         BaseCollection.prototype._onItemAdded = function (item) {
             var args = { item: item, isAddNewHandled: false };
@@ -8647,7 +8700,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
                 this.endEdit();
             }
             catch (ex) {
-                coreutils_21.ERROR.reThrow(ex, this.handleError(ex, this));
+                utils.err.reThrow(ex, this.handleError(ex, this));
             }
             var pos;
             item._aspect._onAttaching();
@@ -8686,7 +8739,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
                     this.endEdit();
                 }
                 catch (ex) {
-                    coreutils_21.ERROR.reThrow(ex, this.handleError(ex, this));
+                    utils.err.reThrow(ex, this.handleError(ex, this));
                 }
             }
             return !args.isCancel;
@@ -8963,7 +9016,7 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
             catch (ex) {
                 isHandled = this.handleError(ex, this);
                 item._aspect.cancelEdit();
-                coreutils_21.ERROR.reThrow(ex, isHandled);
+                utils.err.reThrow(ex, isHandled);
             }
             return item;
         };
@@ -9290,10 +9343,10 @@ define("jriapp_collection/base", ["require", "exports", "jriapp_core/object", "j
             configurable: true
         });
         return BaseCollection;
-    }(object_16.BaseObject));
+    }(object_17.BaseObject));
     exports.BaseCollection = BaseCollection;
 });
-define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/validation"], function (require, exports, object_17, coreutils_22, utils_28, lang_21, int_7, utils_29, validation_2) {
+define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/validation"], function (require, exports, object_18, coreutils_16, utils_28, lang_21, int_7, utils_29, validation_2) {
     "use strict";
     var utils = utils_28.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
     var ItemAspect = (function (_super) {
@@ -9323,13 +9376,6 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
         ItemAspect.prototype._onErrorsChanged = function (args) {
             this.raiseEvent(int_7.ITEM_EVENTS.errors_changed, args);
         };
-        ItemAspect.prototype.handleError = function (error, source) {
-            var isHandled = _super.prototype.handleError.call(this, error, source);
-            if (!isHandled) {
-                return this.collection.handleError(error, source);
-            }
-            return isHandled;
-        };
         ItemAspect.prototype._beginEdit = function () {
             var coll = this.collection;
             var isHandled = false;
@@ -9347,7 +9393,7 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
                 catch (ex) {
                     isHandled = this.handleError(ex, item);
                     item._aspect.cancelEdit();
-                    coreutils_22.ERROR.reThrow(ex, isHandled);
+                    coreutils_16.ERROR.reThrow(ex, isHandled);
                 }
             }
             if (this.isDetached)
@@ -9507,6 +9553,12 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
         ItemAspect.prototype._fakeDestroy = function () {
             this.raiseEvent(int_7.ITEM_EVENTS.destroyed, {});
             this.removeNSHandlers();
+        };
+        ItemAspect.prototype.handleError = function (error, source) {
+            if (!this._collection)
+                return _super.prototype.handleError.call(this, error, source);
+            else
+                return this._collection.handleError(error, source);
         };
         ItemAspect.prototype._onAttaching = function () {
         };
@@ -9803,10 +9855,63 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             return obj.val;
         };
         return ItemAspect;
-    }(object_17.BaseObject));
+    }(object_18.BaseObject));
     exports.ItemAspect = ItemAspect;
 });
-define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/base", "jriapp_collection/aspect", "jriapp_collection/validation"], function (require, exports, coreutils_23, utils_30, lang_22, int_8, utils_31, base_1, aspect_1, validation_3) {
+define("jriapp_collection/item", ["require", "exports", "jriapp_core/object", "jriapp_collection/int"], function (require, exports, object_19, int_8) {
+    "use strict";
+    var CollectionItem = (function (_super) {
+        __extends(CollectionItem, _super);
+        function CollectionItem(aspect) {
+            _super.call(this);
+            this.__aspect = aspect;
+        }
+        CollectionItem.prototype._fakeDestroy = function () {
+            this.raiseEvent(int_8.ITEM_EVENTS.destroyed, {});
+            this.removeNSHandlers();
+        };
+        Object.defineProperty(CollectionItem.prototype, "_aspect", {
+            get: function () { return this.__aspect; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CollectionItem.prototype, "_key", {
+            get: function () { return !!this.__aspect ? this.__aspect.key : null; },
+            set: function (v) { if (!this.__aspect)
+                return; this.__aspect.key = v; },
+            enumerable: true,
+            configurable: true
+        });
+        CollectionItem.prototype.destroy = function () {
+            if (this._isDestroyed)
+                return;
+            this._isDestroyCalled = true;
+            var aspect = this.__aspect;
+            if (!!aspect) {
+                if (!aspect.getIsDestroyCalled()) {
+                    aspect.destroy();
+                }
+                if (aspect.isCached) {
+                    try {
+                        this._fakeDestroy();
+                    }
+                    finally {
+                        this._isDestroyCalled = false;
+                    }
+                }
+                else {
+                    _super.prototype.destroy.call(this);
+                }
+            }
+        };
+        CollectionItem.prototype.toString = function () {
+            return "CollectionItem";
+        };
+        return CollectionItem;
+    }(object_19.BaseObject));
+    exports.CollectionItem = CollectionItem;
+});
+define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/collection", "jriapp_collection/aspect", "jriapp_collection/validation"], function (require, exports, coreutils_17, utils_30, lang_22, int_9, utils_31, collection_1, aspect_1, validation_3) {
     "use strict";
     var utils = utils_30.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
     function fn_initVals(coll, obj) {
@@ -9905,7 +10010,7 @@ define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils"
             self._fieldMap = {};
             self._fieldInfos = [];
             props.forEach(function (prop) {
-                var fldInfo = base_1.BaseCollection.getEmptyFieldInfo(prop.name);
+                var fldInfo = collection_1.BaseCollection.getEmptyFieldInfo(prop.name);
                 fldInfo.dataType = prop.dtype;
                 self._fieldMap[prop.name] = fldInfo;
                 self._fieldInfos.push(fldInfo);
@@ -9920,7 +10025,7 @@ define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils"
                 this.endEdit();
             }
             catch (ex) {
-                coreutils_23.ERROR.reThrow(ex, this.handleError(ex, this));
+                coreutils_17.ERROR.reThrow(ex, this.handleError(ex, this));
             }
             return _super.prototype._attach.call(this, item);
         };
@@ -9968,7 +10073,7 @@ define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils"
                     }
                 });
                 if (newItems.length > 0) {
-                    this.raisePropertyChanged(int_8.PROP_NAME.count);
+                    this.raisePropertyChanged(int_9.PROP_NAME.count);
                 }
             }
             finally {
@@ -10006,12 +10111,22 @@ define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils"
             return "BaseList";
         };
         return BaseList;
-    }(base_1.BaseCollection));
+    }(collection_1.BaseCollection));
     exports.BaseList = BaseList;
 });
-define("jriapp_collection/dictionary", ["require", "exports", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_collection/list"], function (require, exports, utils_32, lang_23, list_1) {
+define("jriapp_collection/dictionary", ["require", "exports", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_utils/syschecks", "jriapp_collection/collection", "jriapp_collection/list"], function (require, exports, utils_32, lang_23, syschecks_10, collection_2, list_1) {
     "use strict";
     var utils = utils_32.Utils, strUtils = utils.str, checks = utils.check;
+    syschecks_10.SysChecks._getItemByProp = function (obj, prop) {
+        if (obj instanceof BaseDictionary) {
+            return obj.getItemByKey(prop);
+        }
+        else if (obj instanceof collection_2.BaseCollection) {
+            obj.getItemByPos(parseInt(prop, 10));
+        }
+        else
+            return null;
+    };
     var BaseDictionary = (function (_super) {
         __extends(BaseDictionary, _super);
         function BaseDictionary(itemType, keyName, props) {
@@ -10073,90 +10188,9 @@ define("jriapp_collection/dictionary", ["require", "exports", "jriapp_utils/util
     }(list_1.BaseList));
     exports.BaseDictionary = BaseDictionary;
 });
-define("jriapp_collection/item", ["require", "exports", "jriapp_core/object", "jriapp_collection/int"], function (require, exports, object_18, int_9) {
+define("jriapp_utils/mloader", ["require", "exports", "jriapp_utils/utils", "jriapp_utils/sloader"], function (require, exports, utils_33, sloader_2) {
     "use strict";
-    var CollectionItem = (function (_super) {
-        __extends(CollectionItem, _super);
-        function CollectionItem(aspect) {
-            _super.call(this);
-            this.__aspect = aspect;
-        }
-        CollectionItem.prototype._fakeDestroy = function () {
-            this.raiseEvent(int_9.ITEM_EVENTS.destroyed, {});
-            this.removeNSHandlers();
-        };
-        Object.defineProperty(CollectionItem.prototype, "_aspect", {
-            get: function () { return this.__aspect; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CollectionItem.prototype, "_key", {
-            get: function () { return !!this.__aspect ? this.__aspect.key : null; },
-            set: function (v) { if (!this.__aspect)
-                return; this.__aspect.key = v; },
-            enumerable: true,
-            configurable: true
-        });
-        CollectionItem.prototype.destroy = function () {
-            if (this._isDestroyed)
-                return;
-            this._isDestroyCalled = true;
-            var aspect = this.__aspect;
-            if (!!aspect) {
-                if (!aspect.getIsDestroyCalled()) {
-                    aspect.destroy();
-                }
-                if (aspect.isCached) {
-                    try {
-                        this._fakeDestroy();
-                    }
-                    finally {
-                        this._isDestroyCalled = false;
-                    }
-                }
-                else {
-                    _super.prototype.destroy.call(this);
-                }
-            }
-        };
-        CollectionItem.prototype.toString = function () {
-            return "CollectionItem";
-        };
-        return CollectionItem;
-    }(object_18.BaseObject));
-    exports.CollectionItem = CollectionItem;
-});
-define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/syschecks", "jriapp_collection/base", "jriapp_collection/dictionary", "jriapp_collection/validation", "jriapp_collection/int", "jriapp_collection/base", "jriapp_collection/item", "jriapp_collection/aspect", "jriapp_collection/list", "jriapp_collection/dictionary", "jriapp_collection/validation", "jriapp_collection/utils"], function (require, exports, syschecks_7, base_2, dictionary_1, validation_4, int_10, base_3, item_1, aspect_2, list_2, dictionary_2, validation_5, utils_33) {
-    "use strict";
-    function __export(m) {
-        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-    }
-    __export(int_10);
-    __export(base_3);
-    __export(item_1);
-    __export(aspect_2);
-    __export(list_2);
-    __export(dictionary_2);
-    __export(validation_5);
-    __export(utils_33);
-    syschecks_7.SysChecks._isCollection = function (obj) { return (!!obj && obj instanceof base_2.BaseCollection); };
-    syschecks_7.SysChecks._getItemByProp = function (obj, prop) {
-        if (obj instanceof dictionary_1.BaseDictionary) {
-            return obj.getItemByKey(prop);
-        }
-        else if (obj instanceof base_2.BaseCollection) {
-            obj.getItemByPos(parseInt(prop, 10));
-        }
-        else
-            return null;
-    };
-    syschecks_7.SysChecks._isValidationError = function (obj) {
-        return (!!obj && obj instanceof validation_4.ValidationError);
-    };
-});
-define("jriapp_utils/mloader", ["require", "exports", "jriapp_utils/utils", "jriapp_utils/sloader"], function (require, exports, utils_34, sloader_2) {
-    "use strict";
-    var utils = utils_34.Utils, coreUtils = utils.core, strUtils = utils.str, defer = utils.defer, arr = utils.arr, resolvedPromise = defer.createSyncDeferred().resolve(), CSSPrefix = "css!";
+    var utils = utils_33.Utils, coreUtils = utils.core, strUtils = utils.str, defer = utils.defer, arr = utils.arr, resolvedPromise = defer.createSyncDeferred().resolve(), CSSPrefix = "css!";
     var _moduleLoader = null;
     function create() {
         if (!_moduleLoader)
@@ -10288,26 +10322,25 @@ define("jriapp_utils/mloader", ["require", "exports", "jriapp_utils/utils", "jri
         return ModuleLoader;
     }());
 });
-define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "jriapp_core/shared", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/syschecks", "jriapp_utils/utils", "jriapp_utils/mloader", "jriapp_core/binding", "jriapp_core/parser"], function (require, exports, const_8, shared_5, lang_24, object_19, syschecks_8, utils_35, mloader_1, binding_2, parser_6) {
+define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "jriapp_core/shared", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/lifetime", "jriapp_utils/utils", "jriapp_utils/mloader", "jriapp_core/binding", "jriapp_core/parser"], function (require, exports, const_8, shared_5, lang_24, object_20, lifetime_3, utils_34, mloader_1, binding_2, parser_6) {
     "use strict";
-    var utils = utils_35.Utils, $ = utils.dom.$, doc = utils.dom.document, strUtils = utils.str, syschecks = syschecks_8.SysChecks;
-    function create(app, root, elViewFactory) {
-        return new DataBindingService(app, root, elViewFactory);
+    var utils = utils_34.Utils, $ = utils.dom.$, doc = utils.dom.document, strUtils = utils.str, syschecks = utils.sys, checks = utils.check;
+    function create(appName, root, elViewFactory) {
+        return new DataBindingService(appName, root, elViewFactory);
     }
     exports.create = create;
     var DataBindingService = (function (_super) {
         __extends(DataBindingService, _super);
-        function DataBindingService(app, root, elViewFactory) {
+        function DataBindingService(appName, root, elViewFactory) {
             _super.call(this);
             this._root = root;
             this._elViewFactory = elViewFactory;
             this._objLifeTime = null;
-            this._app = app;
+            this._appName = appName;
             this._mloader = mloader_1.create();
         }
-        DataBindingService.prototype.handleError = function (error, source) {
-            var app = this._app;
-            return app.handleError(error, source);
+        DataBindingService.prototype._getAppName = function () {
+            return this._appName;
         };
         DataBindingService.prototype._toBindableElement = function (el) {
             var val, allAttrs = el.attributes, attr, res = { el: el, dataView: null, dataForm: null, expressions: [] };
@@ -10380,15 +10413,16 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
             });
         };
         DataBindingService.prototype._bindElView = function (elView, bindElem, lftm, isInsideTemplate, defSource) {
-            var self = this, op, bind_attr, temp_opts, app = self.app;
+            var self = this, op, bind_attr, temp_opts, info;
             lftm.addObj(elView);
             if (isInsideTemplate)
                 syschecks._setIsInsideTemplate(elView);
             bind_attr = bindElem.expressions.join("");
             if (!!bind_attr) {
-                var temp_opts_1 = parser_6.parser.parseOptions(bind_attr);
-                for (var j = 0, len = temp_opts_1.length; j < len; j += 1) {
-                    op = binding_2.getBindingOptions(app, temp_opts_1[j], elView, defSource);
+                temp_opts = parser_6.parser.parseOptions(bind_attr);
+                for (var j = 0, len = temp_opts.length; j < len; j += 1) {
+                    info = temp_opts[j];
+                    op = binding_2.getBindingOptions(self._appName, info, elView, defSource);
                     var binding = self.bind(op);
                     lftm.addObj(binding);
                 }
@@ -10397,7 +10431,7 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
         DataBindingService.prototype._bindTemplateElements = function (templateEl) {
             var self = this, defer = utils.defer.createSyncDeferred();
             try {
-                var rootBindEl = self._toBindableElement(templateEl), bindElems = void 0, lftm_1 = new utils_35.LifeTimeScope();
+                var rootBindEl = self._toBindableElement(templateEl), bindElems = void 0, lftm_1 = new lifetime_3.LifeTimeScope();
                 if (!!rootBindEl && !!rootBindEl.dataForm) {
                     bindElems = [rootBindEl];
                 }
@@ -10434,8 +10468,9 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
                     return self._bindTemplateElements(templateEl);
                 });
             }
-            else
+            else {
                 res = self._bindTemplateElements(templateEl);
+            }
             res.fail(function (err) {
                 setTimeout(function () {
                     self.handleError(err, self);
@@ -10447,7 +10482,7 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
             var self = this, defer = utils.defer.createSyncDeferred();
             scope = scope || doc;
             try {
-                var bindElems = self._getBindableElements(scope), lftm_2 = new utils_35.LifeTimeScope();
+                var bindElems = self._getBindableElements(scope), lftm_2 = new lifetime_3.LifeTimeScope();
                 if (!isDataFormBind) {
                     self._updDataFormAttr(bindElems);
                 }
@@ -10470,7 +10505,7 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
             return defer.promise();
         };
         DataBindingService.prototype.setUpBindings = function () {
-            var defScope = this._root, defaultDataContext = this.app, self = this;
+            var defScope = this._root, defaultDataContext = this.appName, self = this;
             this._cleanUp();
             var promise = this.bindElements(defScope, defaultDataContext, false, false);
             return promise.then(function (lftm) {
@@ -10482,11 +10517,11 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
             });
         };
         DataBindingService.prototype.bind = function (opts) {
-            return new binding_2.Binding(opts, this._app.appName);
+            return new binding_2.Binding(opts, this._appName);
         };
-        Object.defineProperty(DataBindingService.prototype, "app", {
+        Object.defineProperty(DataBindingService.prototype, "appName", {
             get: function () {
-                return this._app;
+                return this._appName;
             },
             enumerable: true,
             configurable: true
@@ -10498,11 +10533,11 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
             _super.prototype.destroy.call(this);
         };
         return DataBindingService;
-    }(object_19.BaseObject));
+    }(object_20.BaseObject));
 });
-define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_elview/factory", "jriapp_core/databindsvc", "jriapp_core/template"], function (require, exports, const_9, lang_25, object_20, bootstrap_24, coreutils_24, utils_36, factory_3, databindsvc_1, template_3) {
+define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_utils/utils", "jriapp_elview/factory", "jriapp_core/databindsvc"], function (require, exports, const_9, lang_25, object_21, bootstrap_25, utils_35, factory_7, databindsvc_1) {
     "use strict";
-    var utils = utils_36.Utils, $ = utils.dom.$, doc = utils.dom.document;
+    var utils = utils_35.Utils, $ = utils.dom.$, doc = utils.dom.document, boot = bootstrap_25.bootstrap;
     var APP_EVENTS = {
         startup: "startup"
     };
@@ -10527,15 +10562,14 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
                 if (!!options.modulesInits)
                     moduleInits = options.modulesInits;
             }
-            if (!!bootstrap_24.bootstrap.findApp(app_name))
+            if (!!boot.findApp(app_name))
                 throw new Error(utils.str.format(lang_25.ERRS.ERR_APP_NAME_NOT_UNIQUE, app_name));
-            this._app_name = app_name;
+            this._appName = app_name;
             this._objId = "app:" + utils.core.getNewID();
             this._app_state = 0;
             this._moduleInits = moduleInits;
-            this._elViewRegister = factory_3.createRegister(bootstrap_24.bootstrap.elViewRegister);
-            this._elViewFactory = factory_3.createFactory(this, Application._newInstanceNum, this._elViewRegister);
-            this._dataBindingService = databindsvc_1.create(this, this.appRoot, this._elViewFactory);
+            var factory = factory_7.createElViewFactory(app_name, Application._newInstanceNum, boot.elViewRegister);
+            this._dataBindingService = databindsvc_1.create(app_name, this.appRoot, factory);
             Application._newInstanceNum += 1;
             this._objMaps = [];
             this._exports = {};
@@ -10548,14 +10582,14 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
                     return self._dataBindingService.bindElements(scope, dctx, isDataFormBind, isInsideTemplate);
                 }
             };
-            bootstrap_24.bootstrap._getInternal().registerApp(this);
+            boot._getInternal().registerApp(this);
         }
         Application.prototype._cleanUpObjMaps = function () {
             var self = this;
             this._objMaps.forEach(function (objMap) {
                 utils.core.forEachProp(objMap, function (name) {
                     var obj = objMap[name];
-                    if (obj instanceof object_20.BaseObject) {
+                    if (obj instanceof object_21.BaseObject) {
                         if (!obj.getIsDestroyed()) {
                             obj.removeNSHandlers(self.uniqueID);
                         }
@@ -10571,16 +10605,6 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
                 var initFn = self._moduleInits[key];
                 initFn(self);
             });
-        };
-        Application.prototype.handleError = function (error, source) {
-            if (coreutils_24.ERROR.checkIsDummy(error)) {
-                return true;
-            }
-            var isHandled = _super.prototype.handleError.call(this, error, source);
-            if (!isHandled) {
-                return bootstrap_24.bootstrap.handleError(error, source);
-            }
-            return isHandled;
         };
         Application.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
@@ -10605,17 +10629,17 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
         };
         Application.prototype.registerConverter = function (name, obj) {
             var name2 = const_9.STORE_KEY.CONVERTER + name;
-            if (!bootstrap_24.bootstrap._getInternal().getObject(this, name2)) {
-                bootstrap_24.bootstrap._getInternal().registerObject(this, name2, obj);
+            if (!boot._getInternal().getObject(this, name2)) {
+                boot._getInternal().registerObject(this, name2, obj);
             }
             else
                 throw new Error(utils.str.format(lang_25.ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
         };
         Application.prototype.getConverter = function (name) {
             var name2 = const_9.STORE_KEY.CONVERTER + name;
-            var res = bootstrap_24.bootstrap._getInternal().getObject(this, name2);
+            var res = boot._getInternal().getObject(this, name2);
             if (!res) {
-                res = bootstrap_24.bootstrap._getInternal().getObject(bootstrap_24.bootstrap, name2);
+                res = boot._getInternal().getObject(boot, name2);
             }
             if (!res)
                 throw new Error(utils.str.format(lang_25.ERRS.ERR_CONVERTER_NOTREGISTERED, name));
@@ -10623,34 +10647,34 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
         };
         Application.prototype.registerSvc = function (name, obj) {
             var name2 = const_9.STORE_KEY.SVC + name;
-            return bootstrap_24.bootstrap._getInternal().registerObject(this, name2, obj);
+            return boot._getInternal().registerObject(this, name2, obj);
         };
         Application.prototype.getSvc = function (name) {
             var name2 = const_9.STORE_KEY.SVC + name;
-            var res = bootstrap_24.bootstrap._getInternal().getObject(this, name2);
+            var res = boot._getInternal().getObject(this, name2);
             if (!res) {
-                res = bootstrap_24.bootstrap._getInternal().getObject(bootstrap_24.bootstrap, name2);
+                res = boot._getInternal().getObject(boot, name2);
             }
             return res;
         };
         Application.prototype.registerElView = function (name, vw_type) {
-            this._elViewRegister.registerElView(name, vw_type);
+            factory_7.getElViewFactory(this.appName).register.registerElView(name, vw_type);
         };
         Application.prototype.registerObject = function (name, obj) {
             var self = this, name2 = const_9.STORE_KEY.OBJECT + name;
             if (utils.check.isBaseObject(obj)) {
                 obj.addOnDestroyed(function (s, a) {
-                    bootstrap_24.bootstrap._getInternal().unregisterObject(self, name2);
+                    boot._getInternal().unregisterObject(self, name2);
                 }, self.uniqueID);
             }
-            var objMap = bootstrap_24.bootstrap._getInternal().registerObject(this, name2, obj);
+            var objMap = boot._getInternal().registerObject(this, name2, obj);
             if (this._objMaps.indexOf(objMap) < 0) {
                 this._objMaps.push(objMap);
             }
         };
         Application.prototype.getObject = function (name) {
             var name2 = const_9.STORE_KEY.OBJECT + name;
-            var res = bootstrap_24.bootstrap._getInternal().getObject(this, name2);
+            var res = boot._getInternal().getObject(this, name2);
             return res;
         };
         Application.prototype.startUp = function (onStartUp) {
@@ -10706,20 +10730,12 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
             try {
                 if (!!onStartUp && !utils.check.isFunc(onStartUp))
                     throw new Error(lang_25.ERRS.ERR_APP_SETUP_INVALID);
-                bootstrap_24.bootstrap.templateLoader.waitForNotLoading(fn_startApp, null);
+                boot.templateLoader.waitForNotLoading(fn_startApp, null);
             }
             catch (ex) {
                 deferred.reject(ex);
             }
             return promise;
-        };
-        Application.prototype.createTemplate = function (dataContext, templEvents) {
-            var options = {
-                app: this,
-                dataContext: dataContext,
-                templEvents: templEvents
-            };
-            return template_3.create(options);
         };
         Application.prototype.loadTemplates = function (url) {
             return this.loadTemplatesAsync(function () {
@@ -10727,10 +10743,10 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
             });
         };
         Application.prototype.loadTemplatesAsync = function (fn_loader) {
-            return bootstrap_24.bootstrap.templateLoader.loadTemplatesAsync(fn_loader, this);
+            return boot.templateLoader.loadTemplatesAsync(fn_loader, this);
         };
         Application.prototype.registerTemplateLoader = function (name, fn_loader) {
-            bootstrap_24.bootstrap.templateLoader.registerTemplateLoader(this.appName + "." + name, {
+            boot.templateLoader.registerTemplateLoader(this.appName + "." + name, {
                 fn_loader: fn_loader
             });
         };
@@ -10743,9 +10759,9 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
             }));
         };
         Application.prototype.getTemplateLoader = function (name) {
-            var res = bootstrap_24.bootstrap.templateLoader.getTemplateLoader(this.appName + "." + name);
+            var res = boot.templateLoader.getTemplateLoader(this.appName + "." + name);
             if (!res) {
-                res = bootstrap_24.bootstrap.templateLoader.getTemplateLoader(name);
+                res = boot.templateLoader.getTemplateLoader(name);
                 if (!res)
                     return function () { return utils.defer.createDeferred().reject(new Error(utils.str.format(lang_25.ERRS.ERR_TEMPLATE_NOTREGISTERED, name))); };
             }
@@ -10759,7 +10775,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
                 promise: null,
                 app: this
             }, group);
-            bootstrap_24.bootstrap.templateLoader.registerTemplateGroup(this.appName + "." + name, group2);
+            boot.templateLoader.registerTemplateGroup(this.appName + "." + name, group2);
         };
         Application.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -10768,14 +10784,11 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
             var self = this;
             try {
                 self._app_state = 3;
-                bootstrap_24.bootstrap._getInternal().unregisterApp(self);
+                boot._getInternal().unregisterApp(self);
                 self._cleanUpObjMaps();
                 self._dataBindingService.destroy();
                 self._dataBindingService = null;
-                self._elViewFactory.destroy();
-                self._elViewFactory = null;
-                this._elViewRegister.destroy();
-                this._elViewRegister = null;
+                factory_7.deleteElViewFactory(this.appName);
                 self._exports = {};
                 self._moduleInits = {};
                 self._UC = {};
@@ -10788,16 +10801,6 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
         Application.prototype.toString = function () {
             return "Application: " + this.appName;
         };
-        Object.defineProperty(Application.prototype, "elViewFactory", {
-            get: function () { return this._elViewFactory; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Application.prototype, "elViewRegister", {
-            get: function () { return this._elViewRegister; },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(Application.prototype, "uniqueID", {
             get: function () { return this._objId; },
             enumerable: true,
@@ -10809,7 +10812,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
             configurable: true
         });
         Object.defineProperty(Application.prototype, "appName", {
-            get: function () { return this._app_name; },
+            get: function () { return this._appName; },
             enumerable: true,
             configurable: true
         });
@@ -10835,10 +10838,10 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
         });
         Application._newInstanceNum = 1;
         return Application;
-    }(object_20.BaseObject));
+    }(object_21.BaseObject));
     exports.Application = Application;
 });
-define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/const", "jriapp_core/shared", "jriapp_utils/syschecks", "jriapp_core/lang", "jriapp_core/converter", "jriapp_core/object", "jriapp_utils/coreutils", "jriapp_core/bootstrap", "jriapp_content/factory", "jriapp_core/binding", "jriapp_core/datepicker", "jriapp_core/dataform", "jriapp_core/template", "jriapp_elview/all", "jriapp_utils/utils", "jriapp_core/mvvm", "jriapp_collection/collection", "jriapp_core/app"], function (require, exports, bootstrap_25, const_10, shared_6, syschecks_9, lang_26, converter_1, object_21, coreutils_25, bootstrap_26, factory_4, binding_3, datepicker_1, dataform_1, template_4, all_1, utils_37, mvvm_2, collection_1, app_1) {
+define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/const", "jriapp_core/shared", "jriapp_utils/syschecks", "jriapp_core/lang", "jriapp_core/converter", "jriapp_core/object", "jriapp_utils/debounce", "jriapp_utils/dblclick", "jriapp_utils/coreutils", "jriapp_core/bootstrap", "jriapp_content/factory", "jriapp_core/binding", "jriapp_core/datepicker", "jriapp_core/dataform", "jriapp_core/template", "jriapp_elview/all", "jriapp_utils/lifetime", "jriapp_utils/propwatcher", "jriapp_utils/waitqueue", "jriapp_utils/utils", "jriapp_core/mvvm", "jriapp_collection/int", "jriapp_collection/collection", "jriapp_collection/item", "jriapp_collection/aspect", "jriapp_collection/list", "jriapp_collection/dictionary", "jriapp_collection/validation", "jriapp_collection/utils", "jriapp_core/app"], function (require, exports, bootstrap_26, const_10, shared_6, syschecks_11, lang_26, converter_1, object_22, debounce_1, dblclick_1, coreutils_18, bootstrap_27, factory_8, binding_3, datepicker_1, dataform_1, template_4, all_1, lifetime_4, propwatcher_1, waitqueue_3, utils_36, mvvm_2, int_10, collection_3, item_1, aspect_2, list_2, dictionary_1, validation_4, utils_37, app_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -10853,40 +10856,38 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.BINDING_MODE = const_10.BINDING_MODE;
     exports.BindTo = const_10.BindTo;
     exports.BaseError = shared_6.BaseError;
-    exports.SysChecks = syschecks_9.SysChecks;
+    exports.SysChecks = syschecks_11.SysChecks;
     exports.LocaleSTRS = lang_26.STRS;
     exports.LocaleERRS = lang_26.ERRS;
     exports.BaseConverter = converter_1.BaseConverter;
-    exports.BaseObject = object_21.BaseObject;
-    exports.Debounce = coreutils_25.Debounce;
-    exports.DblClick = coreutils_25.DblClick;
-    exports.DEBUG = coreutils_25.DEBUG;
-    exports.ERROR = coreutils_25.ERROR;
-    exports.bootstrap = bootstrap_26.bootstrap;
-    exports.contentFactories = factory_4.contentFactories;
+    exports.BaseObject = object_22.BaseObject;
+    exports.Debounce = debounce_1.Debounce;
+    exports.DblClick = dblclick_1.DblClick;
+    exports.DEBUG = coreutils_18.DEBUG;
+    exports.ERROR = coreutils_18.ERROR;
+    exports.bootstrap = bootstrap_27.bootstrap;
+    exports.contentFactories = factory_8.contentFactories;
     exports.Binding = binding_3.Binding;
     __export(datepicker_1);
     exports.DataForm = dataform_1.DataForm;
     exports.DataFormElView = dataform_1.DataFormElView;
-    exports.createTemplate = template_4.create;
+    exports.createTemplate = template_4.createTemplate;
     exports.TemplateElView = template_4.TemplateElView;
     __export(all_1);
-    exports.Utils = utils_37.Utils;
-    exports.PropWatcher = utils_37.PropWatcher;
-    exports.WaitQueue = utils_37.WaitQueue;
+    exports.LifeTimeScope = lifetime_4.LifeTimeScope;
+    exports.PropWatcher = propwatcher_1.PropWatcher;
+    exports.WaitQueue = waitqueue_3.WaitQueue;
+    exports.Utils = utils_36.Utils;
     __export(mvvm_2);
-    exports.BaseCollection = collection_1.BaseCollection;
-    exports.BaseDictionary = collection_1.BaseDictionary;
-    exports.BaseList = collection_1.BaseList;
-    exports.ITEM_STATUS = collection_1.ITEM_STATUS;
-    exports.CollectionItem = collection_1.CollectionItem;
-    exports.ItemAspect = collection_1.ItemAspect;
-    exports.ListItemAspect = collection_1.ListItemAspect;
-    exports.ValidationError = collection_1.ValidationError;
-    exports.COLL_CHANGE_OPER = collection_1.COLL_CHANGE_OPER;
-    exports.COLL_CHANGE_REASON = collection_1.COLL_CHANGE_REASON;
-    exports.COLL_CHANGE_TYPE = collection_1.COLL_CHANGE_TYPE;
+    __export(int_10);
+    __export(collection_3);
+    __export(item_1);
+    __export(aspect_2);
+    __export(list_2);
+    __export(dictionary_1);
+    __export(validation_4);
+    __export(utils_37);
     exports.Application = app_1.Application;
-    exports.VERSION = "0.9.91";
-    bootstrap_25.Bootstrap._initFramework();
+    exports.VERSION = "0.9.92";
+    bootstrap_26.Bootstrap._initFramework();
 });

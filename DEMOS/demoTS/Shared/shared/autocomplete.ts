@@ -158,7 +158,7 @@ export class AutoCompleteElView extends RIAPP.InputElView implements RIAPP.ITemp
         return ['hide', 'show'].concat(base_events);
     }
     protected _createTemplate(): RIAPP.ITemplate {
-        var t = this.app.createTemplate(this, this);
+        var t = RIAPP.createTemplate(this.appName, this, this);
         t.templateID = this._templateId;
         return t;
     }

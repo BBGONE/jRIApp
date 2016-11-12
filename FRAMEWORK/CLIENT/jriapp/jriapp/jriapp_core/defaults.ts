@@ -1,10 +1,12 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import * as constsMOD from "const";
 import * as coreMOD from "shared";
-import { BaseObject }  from "object";
-import * as coreUtilsMOD from "../jriapp_utils/coreutils";
+import { BaseObject } from "object";
+import { Checks } from "../jriapp_utils/checks";
+import { StringUtils } from "../jriapp_utils/strUtils";
 
-const checks = coreUtilsMOD.Checks, strUtils = coreUtilsMOD.StringUtils;
+const checks = Checks, strUtils = StringUtils;
+
 const PROP_NAME = {
     dateFormat: "dateFormat",
     timeFormat: "timeFormat",

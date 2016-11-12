@@ -6,7 +6,7 @@ import { css, PROP_NAME, IEventChangedArgs, EVENT_CHANGE_TYPE } from "./elview";
 import { CommandElView } from "./command";
 import { ICommand } from "../jriapp_core/mvvm";
 
-const utils = Utils, $ = utils.dom.$;
+const utils = Utils, $ = utils.dom.$, boot = bootstrap;
 
 export class ButtonElView extends CommandElView {
     constructor(options: IViewOptions) {
@@ -70,6 +70,6 @@ export class ButtonElView extends CommandElView {
     }
 }
 
-bootstrap.registerElView("input:button", ButtonElView);
-bootstrap.registerElView("input:submit", ButtonElView);
-bootstrap.registerElView("button", ButtonElView);
+boot.registerElView("input:button", ButtonElView);
+boot.registerElView("input:submit", ButtonElView);
+boot.registerElView("button", ButtonElView);

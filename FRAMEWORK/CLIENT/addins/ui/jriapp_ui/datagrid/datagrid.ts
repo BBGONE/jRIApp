@@ -6,11 +6,13 @@ import {
 } from "jriapp_core/shared";
 import { ERRS, STRS } from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
-import { Utils, Debounce, DblClick, ERROR } from "jriapp_utils/utils";
+import { Debounce } from "jriapp_utils/debounce";
+import { DblClick } from "jriapp_utils/dblclick";
+import { Utils } from "jriapp_utils/utils";
 import { bootstrap } from "jriapp_core/bootstrap";
 import { parser } from "jriapp_core/parser";
 import { COLL_CHANGE_TYPE, ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollection, ICollItemAddedArgs,
-    COLL_CHANGE_REASON, ITEM_STATUS } from "jriapp_collection/collection";
+    COLL_CHANGE_REASON, ITEM_STATUS } from "jriapp";
 import { BaseElView } from "jriapp_elview/elview";
 import { parseContentAttr } from "jriapp_content/int";
 import { IDialogConstructorOptions, DataEditDialog } from "dialog";
@@ -43,8 +45,8 @@ export { BaseColumn as DataGridColumn } from "./columns/base";
 export { ROW_POSITION, COLUMN_TYPE, ROW_ACTION } from "./const";
 export { IDataGridAnimation, DefaultAnimation } from "./animation";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
-const dom = utils.dom, $ = dom.$, doc = dom.document;
+const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err;
+const dom = utils.dom, $ = dom.$, doc = dom.document, boot = bootstrap;
 
 let _columnWidthInterval: any, _gridsCount: number = 0;
 let _created_grids: IIndexer<DataGrid> = { };
@@ -132,7 +134,7 @@ export interface IDataGridOptions {
 
 
 export interface IDataGridConstructorOptions extends IDataGridOptions {
-    app: IApplication;
+    appName: string;
     el: HTMLTableElement;
     dataSource: ICollection<ICollectionItem>;
     animation: IDataGridAnimation;
@@ -184,7 +186,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         const self = this;
         options = coreUtils.merge(options,
             {
-                app: null,
+                appName: null,
                 el: null,
                 dataSource: null,
                 animation: null,
@@ -292,13 +294,16 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         };
         this._createColumns();
         this._bindDS();
-        bootstrap._getInternal().trackSelectable(this);
+        boot._getInternal().trackSelectable(this);
         _gridCreated(this);
     }
     protected _getEventNames() {
         let base_events = super._getEventNames();
         let events = Object.keys(GRID_EVENTS).map((key, i, arr) => { return <string>(<any>GRID_EVENTS)[key]; });
         return events.concat(base_events);
+    }
+    protected _getAppName() {
+        return this._options.appName;
     }
     addOnRowExpanded(fn: TEventHandler<DataGrid, { collapsedRow: Row; expandedRow: Row; isExpanded: boolean; }>, nmspace?: string, context?: any) {
         this._addHandler(GRID_EVENTS.row_expanded, fn, nmspace, context);
@@ -571,13 +576,6 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 row = null;
         }
         return row;
-    }
-    public handleError(error: any, source: any): boolean {
-        let isHandled = super.handleError(error, source);
-        if (!isHandled) {
-            return bootstrap.handleError(error, source);
-        }
-        return isHandled;
     }
     protected _onDSCurrentChanged(prevCurrent: ICollectionItem, newCurrent: ICollectionItem) {
         if (prevCurrent !== newCurrent) {
@@ -972,7 +970,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 dataContext: item,
                 templateID: null
             }, this._options.editor);
-            this._dialog = new DataEditDialog(this.app, dialogOptions);
+            this._dialog = new DataEditDialog(this._getAppName(), dialogOptions);
         }
         else
             this._dialog.dataContext = item;
@@ -1060,7 +1058,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     }
     focus() {
         this.scrollToCurrent(ROW_POSITION.Up);
-        bootstrap.currentSelectable = this;
+        boot.currentSelectable = this;
     }
     addNew() {
         let ds = this.dataSource;
@@ -1077,7 +1075,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._isDestroyCalled = true;
         this._clearGrid();
         _gridDestroyed(this);
-        bootstrap._getInternal().untrackSelectable(this);
+        boot._getInternal().untrackSelectable(this);
         this._colSizeDebounce.destroy();
         this._scrollDebounce.destroy();
         if (!!this._details) {
@@ -1101,7 +1099,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         dom.removeClass(this._$table.toArray(), css.dataTable);
         dom.removeClass([this._tHeadRow], css.columnInfo);
         this._$table = null;
-        this._options.app = null;
+        this._options.appName = null;
         this._options = <any>{};
         this._selectable = null;
         this._internal = null;
@@ -1113,7 +1111,6 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     get table(): HTMLTableElement {
         return <HTMLTableElement>this._$table[0];
     }
-    get app() { return this._options.app; }
     get options() { return this._options; }
     get _tBodyEl() { return this.table.tBodies[0]; }
     get _tHeadEl() { return this.table.tHead; }
@@ -1205,6 +1202,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         }
         return this.options.animation;
     }
+    get appName() { return this._getAppName(); }
 }
 
 export interface IDataGridViewOptions extends IDataGridOptions, IViewOptions {
@@ -1239,7 +1237,7 @@ export class DataGridElView extends BaseElView {
     private _createGrid() {
         let options = <IDataGridConstructorOptions>coreUtils.extend(
             {
-                app: this.app,
+                appName: this._getAppName(),
                 el: <HTMLTableElement>this.el,
                 dataSource: null,
                 animation: null
@@ -1300,8 +1298,8 @@ export class DataGridElView extends BaseElView {
     }
 }
 
-bootstrap.registerElView("table", DataGridElView);
-bootstrap.registerElView("datagrid", DataGridElView);
+boot.registerElView("table", DataGridElView);
+boot.registerElView("datagrid", DataGridElView);
 
 //Load Stylesheet for the bundle
-bootstrap.loadOwnStyle("jriapp_ui");
+boot.loadOwnStyle("jriapp_ui");

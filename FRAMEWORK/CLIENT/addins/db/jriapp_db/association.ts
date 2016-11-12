@@ -3,8 +3,9 @@ import { IFieldInfo, IIndexer, TPriority } from "jriapp_core/shared";
 import { ERRS } from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
 import { bootstrap } from "jriapp_core/bootstrap";
-import { Utils, Debounce, ERROR } from "jriapp_utils/utils";
-import { COLL_CHANGE_TYPE, ICollChangedArgs, ITEM_STATUS } from "jriapp_collection/collection";
+import { Debounce } from "jriapp_utils/debounce";
+import { Utils } from "jriapp_utils/utils";
+import { COLL_CHANGE_TYPE, ICollChangedArgs, ITEM_STATUS } from "jriapp";
 import { DELETE_ACTION } from "const";
 import { IAssocConstructorOptions, IEntityItem } from "int";
 import { DbContext } from "dbcontext";
@@ -80,14 +81,10 @@ export class Association extends BaseObject {
         self._notifyChildrenChanged(changed2);
     }
     public handleError(error: any, source: any): boolean {
-        let isHandled = super.handleError(error, source);
-        if (!isHandled) {
-            if (!!this._dbContext)
-                return this._dbContext.handleError(error, source);
-            else
-                return bootstrap.handleError(error, source);
-        }
-        return isHandled;
+        if (!this._dbContext)
+            return super.handleError(error, source);
+        else
+            return this._dbContext.handleError(error, source);
     }
     protected _bindParentDS() {
         const self = this, ds = this._parentDS;
@@ -592,7 +589,7 @@ export class Association extends BaseObject {
             return arr;
         }
         catch (err) {
-            ERROR.reThrow(err, this.handleError(err, this));
+            utils.err.reThrow(err, this.handleError(err, this));
         }
     }
     //get the parent for child item
@@ -608,7 +605,7 @@ export class Association extends BaseObject {
                 return null;
         }
         catch (err) {
-            ERROR.reThrow(err, this.handleError(err, this));
+            utils.err.reThrow(err, this.handleError(err, this));
         }
     }
     destroy() {

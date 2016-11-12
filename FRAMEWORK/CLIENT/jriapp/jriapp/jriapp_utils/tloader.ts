@@ -1,11 +1,15 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { IPromise, IApplication, ITemplateGroupInfo, ITemplateGroupInfoEx, ITemplateLoaderInfo } from "../jriapp_core/shared";
 import { ERRS } from "../jriapp_core/lang";
-import { BaseObject }  from "../jriapp_core/object";
-import { Checks as checks, StringUtils as strUtils, CoreUtils as coreUtils, LOG, DEBUG } from "./coreutils";
-import { AsyncUtils as defer } from "./async";
+import { BaseObject } from "../jriapp_core/object";
+import { StringUtils } from "../jriapp_utils/strUtils";
+import { Checks } from "../jriapp_utils/checks";
+import { CoreUtils, LOG, DEBUG } from "./coreutils";
+import { AsyncUtils} from "./async";
 import { HttpUtils as http } from "./http";
 import { WaitQueue } from "./waitqueue";
+
+const checks = Checks, coreUtils = CoreUtils, strUtils = StringUtils, defer = AsyncUtils;
 
 const PROP_NAME = {
     isLoading: "isLoading"

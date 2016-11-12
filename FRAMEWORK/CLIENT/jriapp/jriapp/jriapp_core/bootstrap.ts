@@ -4,11 +4,12 @@ import { IApplication, ISelectable, ISelectableProvider, IExports, IConverter, I
     TEventHandler, IUnResolvedBindingArgs, IStylesLoader, IContentFactory, IContentFactoryList, TFactoryGetter,
     IContentConstructor, IContentOptions, IElViewRegister, TPriority
 } from "shared";
-import { createRegister as createElViewRegister } from "../jriapp_elview/factory";
+import { createElViewRegister } from "../jriapp_elview/factory";
 import { ERRS } from "lang";
 import { BaseObject }  from "object";
 import { Defaults } from "defaults";
-import { StringUtils as strUtils, CoreUtils as coreUtils, ERROR } from "../jriapp_utils/coreutils";
+import { StringUtils } from "../jriapp_utils/strutils";
+import { CoreUtils, ERROR } from "../jriapp_utils/coreutils";
 import { TemplateLoader } from "../jriapp_utils/tloader";
 import { create as createCssLoader } from "../jriapp_utils/sloader";
 import { PathHelper } from "../jriapp_utils/path";
@@ -16,7 +17,7 @@ import { create as createToolTipSvc } from "../jriapp_utils/tooltip";
 import { DomUtils } from "../jriapp_utils/dom";
 import { AsyncUtils } from "../jriapp_utils/async";
 
-const dom = DomUtils, $ = dom.$, _async = AsyncUtils, doc = dom.document, win = dom.window;
+const dom = DomUtils, $ = dom.$, _async = AsyncUtils, doc = dom.document, win = dom.window, coreUtils = CoreUtils, strUtils = StringUtils;
 const _TEMPLATE_SELECTOR = 'script[type="text/html"]';
 const stylesLoader = createCssLoader();
 
@@ -66,7 +67,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
 
     constructor() {
         super();
-        let self = this;
+        const self = this;
         if (!!bootstrap)
             throw new Error(ERRS.ERR_GLOBAL_SINGLTON);
         this._bootState = BootstrapState.None;
@@ -120,6 +121,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         this.defaults.imagesPath = PathHelper.getFrameworkImgPath();
         //load jriapp.css (it will load only if it is not loaded yet)
         stylesLoader.loadOwnStyle();
+        ERROR.addHandler("*", this);
     }
     private _bindGlobalEvents(): void {
         let self = this;
@@ -274,12 +276,15 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             this.currentSelectable = null;
     }
     private _registerApp(app: IApplication): void {
-        if (!this._appInst[app.appName])
+        if (!this._appInst[app.appName]) {
             this._appInst[app.appName] = app;
+            ERROR.addHandler(app.appName, app);
+        }
     }
     private _unregisterApp(app: IApplication): void {
         if (!this._appInst[app.appName])
             return;
+        ERROR.removeHandler(app.appName);
         delete this._appInst[app.appName];
         this.templateLoader.unRegisterTemplateGroup(app.appName);
         this.templateLoader.unRegisterTemplateLoader(app.appName);
@@ -390,7 +395,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        let self = this;
+        const self = this;
         self._removeHandler();
         self._destroyApps();
         self._exports = {};
@@ -404,6 +409,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         $(doc).off(".jriapp");
         win.onerror = null;
         $(win).off(".jriapp");
+        ERROR.removeHandler("*");
         super.destroy();
     }
     registerSvc(name: string, obj: any) {

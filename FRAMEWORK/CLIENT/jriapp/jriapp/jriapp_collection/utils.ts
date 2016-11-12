@@ -3,8 +3,7 @@ import { FIELD_TYPE, DATE_CONVERSION, DATA_TYPE } from "../jriapp_core/const";
 import { IFieldInfo } from "../jriapp_core/shared";
 import { Utils } from "../jriapp_utils/utils";
 import { ERRS } from "../jriapp_core/lang";
-
-import { IValueUtils } from "int";
+import { IValueUtils } from "./int";
 
 const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
 

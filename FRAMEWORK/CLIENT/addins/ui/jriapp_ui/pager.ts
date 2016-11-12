@@ -2,12 +2,13 @@
 import { IApplication, IViewOptions } from "jriapp_core/shared";
 import { ERRS, STRS } from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
-import { Utils, ERROR, Debounce } from "jriapp_utils/utils";
-import { bootstrap } from "jriapp_core/bootstrap";
-import { ICollection, ICollectionItem, COLL_CHANGE_TYPE, COLL_CHANGE_REASON } from "jriapp_collection/collection";
+import { Debounce } from "jriapp_utils/debounce";
+import { Utils } from "jriapp_utils/utils";
 import { BaseElView, fn_addToolTip } from "jriapp_elview/elview";
+import { ICollection, ICollectionItem, COLL_CHANGE_TYPE, COLL_CHANGE_REASON, bootstrap } from "jriapp";
 
-const utils = Utils, dom = utils.dom, $ = dom.$, doc = utils.dom.document, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+const utils = Utils, dom = utils.dom, $ = dom.$, doc = utils.dom.document, checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
+    ERROR = utils.err, boot = bootstrap;
 let _STRS = STRS.PAGER;
 
 const css = {
@@ -29,7 +30,7 @@ export interface IPagerOptions {
 }
 
 export interface IPagerConstructorOptions extends IPagerOptions {
-    app: IApplication;
+    appName: string;
     el: HTMLElement;
     dataSource: ICollection<ICollectionItem>;
 }
@@ -54,7 +55,7 @@ export class Pager extends BaseObject {
         super();
         options = coreUtils.extend(
             {
-                app: null,
+                appName: null,
                 el: null,
                 dataSource: null,
                 showTip: true,
@@ -79,6 +80,9 @@ export class Pager extends BaseObject {
         if (!!this._options.dataSource) {
             this._bindDS();
         }
+    }
+    protected _getAppName() {
+        return this._options.appName;
     }
     protected _createElement(tag: string) {
         return $(doc.createElement(tag));
@@ -339,7 +343,6 @@ export class Pager extends BaseObject {
     toString() {
         return "Pager";
     }
-    get app() { return this._options.app; }
     get el() { return this._options.el; }
     get dataSource(): ICollection<ICollectionItem> {
         return this._options.dataSource;
@@ -450,6 +453,7 @@ export class Pager extends BaseObject {
             this.render();
         }
     }
+    get appName() { return this._getAppName(); }
 }
 
 export interface IPagerViewOptions extends IPagerOptions, IViewOptions {
@@ -498,7 +502,7 @@ export class PagerElView extends BaseElView {
     get pager() { return this._pager; }
 }
 
-bootstrap.registerElView("pager", PagerElView);
+boot.registerElView("pager", PagerElView);
 
 //Load Stylesheet for the bundle
-bootstrap.loadOwnStyle("jriapp_ui");
+boot.loadOwnStyle("jriapp_ui");

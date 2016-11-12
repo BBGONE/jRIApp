@@ -1,41 +1,41 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { DATA_ATTR } from "./const";
-import { IElViewFactory, IElView, IViewType, IIndexer, IApplication, IErrorHandler, IExports, ILifeTimeScope, IBindableElement,
-    IPromise, IVoidPromise, IBindingOptions, DummyError, IDataBindingService, IModuleLoader } from "./shared";
+import {
+    IElViewFactory, IElView, IViewType, IIndexer, IApplication, IErrorHandler, IExports, ILifeTimeScope, IBindableElement, IConverter,
+    IPromise, IVoidPromise, IBindingOptions, IBindingInfo, DummyError, IDataBindingService, IModuleLoader
+} from "./shared";
 import { ERRS } from "./lang";
 import { BaseObject }  from "./object";
 import { bootstrap } from "./bootstrap";
-import { SysChecks } from "../jriapp_utils/syschecks";
-import { ERROR, LOG } from "../jriapp_utils/coreutils";
-import { LifeTimeScope, Utils } from "../jriapp_utils/utils";
+import { LifeTimeScope } from "../jriapp_utils/lifetime";
+import { Utils } from "../jriapp_utils/utils";
 import { create as createModulesLoader } from "../jriapp_utils/mloader";
 import { getBindingOptions, Binding } from "./binding";
 import { parser } from "./parser";
 
-const utils = Utils, $ = utils.dom.$, doc = utils.dom.document, strUtils = utils.str, syschecks = SysChecks;
+const utils = Utils, $ = utils.dom.$, doc = utils.dom.document, strUtils = utils.str, syschecks = utils.sys, checks = utils.check;
 
-export function create(app: IApplication, root: Document | HTMLElement, elViewFactory: IElViewFactory): IDataBindingService {
-    return new DataBindingService(app, root, elViewFactory);
+export function create(appName: string, root: Document | HTMLElement, elViewFactory: IElViewFactory): IDataBindingService {
+    return new DataBindingService(appName, root, elViewFactory);
 }
 
 class DataBindingService extends BaseObject implements IDataBindingService, IErrorHandler {
     private _root: Document | HTMLElement;
     private _elViewFactory: IElViewFactory;
     private _objLifeTime: ILifeTimeScope;
-    private _app: IApplication;
+    private _appName: string;
     private _mloader: IModuleLoader;
 
-    constructor(app: IApplication, root: Document | HTMLElement, elViewFactory: IElViewFactory) {
+    constructor(appName: string, root: Document | HTMLElement, elViewFactory: IElViewFactory) {
         super();
         this._root = root;
         this._elViewFactory = elViewFactory;
         this._objLifeTime = null;
-        this._app = app;
+        this._appName = appName;
         this._mloader = createModulesLoader();
     }
-    public handleError(error: any, source: any): boolean {
-        let app = this._app;
-        return app.handleError(error, source);
+    protected _getAppName() {
+        return this._appName;
     }
     private _toBindableElement(el: HTMLElement): IBindableElement {
         let val: string, allAttrs = el.attributes, attr: Attr,
@@ -113,8 +113,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
         });
     }
     private _bindElView(elView: IElView, bindElem: IBindableElement, lftm: ILifeTimeScope, isInsideTemplate: boolean, defSource: any) {
-        let self = this, op: IBindingOptions, bind_attr: string, temp_opts: any[], app = self.app;
-
+        let self = this, op: IBindingOptions, bind_attr: string, temp_opts: IBindingInfo[], info: IBindingInfo;
         lftm.addObj(elView);
         if (isInsideTemplate)
             syschecks._setIsInsideTemplate(elView);
@@ -122,9 +121,10 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
         //then create databinding if element has data-bind attribute
         bind_attr = bindElem.expressions.join("");
         if (!!bind_attr) {
-            let temp_opts = parser.parseOptions(bind_attr);
+            temp_opts = parser.parseOptions(bind_attr);
             for (let j = 0, len = temp_opts.length; j < len; j += 1) {
-                op = getBindingOptions(app, temp_opts[j], elView, defSource);
+                info = temp_opts[j];
+                op = getBindingOptions(self._appName, info, elView, defSource);
                 let binding = self.bind(op);
                 lftm.addObj(binding);
             }
@@ -172,15 +172,16 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
         return defer.promise();
     }
     bindTemplateElements(templateEl: HTMLElement): IPromise<ILifeTimeScope> {
-        let self = this;
+        const self = this;
         let requiredModules = self._getRequiredModuleNames(templateEl), res: IPromise<ILifeTimeScope>;
         if (requiredModules.length > 0) {
             res = self._mloader.load(requiredModules).then(() => {
                 return self._bindTemplateElements(templateEl);
             });
         }
-        else
+        else {
             res = self._bindTemplateElements(templateEl);
+        }
 
         res.fail((err) => {
             setTimeout(() => {
@@ -191,10 +192,10 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
         return res;
     }
     bindElements(scope: Document | HTMLElement, defaultDataContext: any, isDataFormBind: boolean, isInsideTemplate: boolean): IPromise<ILifeTimeScope> {
-        let self = this, defer = utils.defer.createSyncDeferred<ILifeTimeScope>();
+        const self = this, defer = utils.defer.createSyncDeferred<ILifeTimeScope>();
         scope = scope || doc;
         try {
-            let bindElems = self._getBindableElements(scope), lftm = new LifeTimeScope();
+            const bindElems = self._getBindableElements(scope), lftm = new LifeTimeScope();
 
             if (!isDataFormBind) {
                 //mark all dataforms for easier checking that the element is a dataform
@@ -202,9 +203,9 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
             }
 
             //select all dataforms inside the scope
-            let forms = self._getOnlyDataFormElems(bindElems);
+            const forms = self._getOnlyDataFormElems(bindElems);
 
-            let needBinding = bindElems.filter((bindElem) => {
+            const needBinding = bindElems.filter((bindElem) => {
                 return !syschecks._isInNestedForm(scope, forms, bindElem.el);
             });
 
@@ -225,7 +226,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
         return defer.promise();
     }
     setUpBindings(): IVoidPromise {
-        let defScope = this._root, defaultDataContext = this.app, self = this;
+        let defScope = this._root, defaultDataContext = this.appName, self = this;
         this._cleanUp();
         let promise = this.bindElements(defScope, defaultDataContext, false, false);
         return promise.then((lftm) => {
@@ -237,10 +238,10 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
         });
     }
     bind(opts: IBindingOptions): Binding {
-        return new Binding(opts, this._app.appName);
+        return new Binding(opts, this._appName);
     }
-    get app() {
-        return this._app;
+    get appName() {
+        return this._appName;
     }
     destroy() {
         this._cleanUp();

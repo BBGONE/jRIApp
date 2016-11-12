@@ -55,7 +55,7 @@
     <TypeScriptSourceMap>false</TypeScriptSourceMap>
   </PropertyGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="jriapp\jriapp_collection\base.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_collection\collection.ts" />
     <TypeScriptCompile Include="jriapp\jriapp_collection\dictionary.ts" />
     <TypeScriptCompile Include="jriapp\jriapp_collection\int.ts" />
     <TypeScriptCompile Include="jriapp\jriapp_collection\item.ts" />
@@ -97,7 +97,6 @@
     <TypeScriptCompile Include="jriapp\jriapp_elview\textbox.ts" />
     <TypeScriptCompile Include="jriapp\jriapp_core\binding.ts" />
     <TypeScriptCompile Include="jriapp\jriapp_core\bootstrap.ts" />
-    <TypeScriptCompile Include="jriapp\jriapp_collection\collection.ts" />
     <TypeScriptCompile Include="jriapp\jriapp_core\const.ts" />
     <TypeScriptCompile Include="jriapp\jriapp_core\converter.ts" />
     <TypeScriptCompile Include="jriapp\jriapp_core\shared.ts" />
@@ -130,11 +129,6 @@
     <TypeScriptCompile Include="jriapp\jriapp_utils\waitqueue.ts" />
     <TypeScriptCompile Include="jriapp\jriapp_utils\propwatcher.ts" />
     <TypeScriptCompile Include="jriapp\jriapp_utils\lifetime.ts" />
-    <TypeScriptCompile Include="thirdparty\jquery.d.ts" />
-    <TypeScriptCompile Include="thirdparty\jqueryui.d.ts" />
-    <TypeScriptCompile Include="thirdparty\moment.d.ts" />
-    <TypeScriptCompile Include="thirdparty\qtip2.d.ts" />
-    <TypeScriptCompile Include="thirdparty\require.d.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="jriapp\tsconfig.json" />

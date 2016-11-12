@@ -5,7 +5,7 @@ import { bootstrap } from "../jriapp_core/bootstrap";
 import { css, PROP_NAME } from "./elview";
 import { InputElView } from "./input";
 
-const utils = Utils, dom = utils.dom, $ = dom.$;
+const utils = Utils, dom = utils.dom, $ = dom.$, boot = bootstrap;
 
 export class CheckBoxElView extends InputElView {
     private _checked: boolean;
@@ -44,5 +44,5 @@ export class CheckBoxElView extends InputElView {
     }
 }
 
-bootstrap.registerElView("input:checkbox", CheckBoxElView);
-bootstrap.registerElView("checkbox", CheckBoxElView);
+boot.registerElView("input:checkbox", CheckBoxElView);
+boot.registerElView("checkbox", CheckBoxElView);

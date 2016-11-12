@@ -267,7 +267,7 @@ export interface ITemplate extends IBaseObject {
     dataContext: any;
     templateID: string;
     el: HTMLElement;
-    app: IApplication;
+    appName: string;
 }
 
 export interface ITemplateEvents {
@@ -302,7 +302,7 @@ export interface IFieldInfo {
 export interface IViewOptions {
     css?: string;
     tip?: string;
-    app: IApplication;
+    appName: string;
     el: HTMLElement;
 }
 
@@ -323,6 +323,7 @@ export interface IElViewFactory {
     getOrCreateElView(el: HTMLElement): IElView;
     getElementViewInfo(el: HTMLElement): { name: string; options: IViewOptions; };
     store: IElViewStore;
+    register: IElViewRegister;
     destroy(): void;
 }
 
@@ -334,7 +335,7 @@ export interface IViewType {
 export interface IElView extends IBaseObject {
     $el: JQuery;
     el: HTMLElement;
-    app: IApplication;
+    appName: string;
 }
 
 export interface IDataBindingService extends IDisposable {
@@ -382,7 +383,6 @@ export interface IBinding extends IBaseObject {
     converterParam: any;
     isSourceFixed: boolean;
     isDisabled: boolean;
-    appName: string;
 }
 
 //--Content interfaces
@@ -423,7 +423,7 @@ export interface IConstructorContentOptions {
     contentOptions: IContentOptions;
     dataContext: any;
     isEditing: boolean;
-    app: IApplication;
+    appName: string;
 }
 
 export interface IContentFactory {
@@ -473,7 +473,6 @@ export interface IApplication extends IErrorHandler, IExports, IDisposable {
     registerObject(name: string, obj: any): void;
     getObject<T>(name: string): T;
     getObject(name: string): any;
-    createTemplate(dataContext?: any, templEvents?: ITemplateEvents): ITemplate;
     loadTemplates(url: string): IPromise<any>;
     loadTemplatesAsync(fn_loader: () => IPromise<string>): IPromise<any>;
     registerTemplateLoader(name: string, fn_loader: () => IPromise<string>): void;
@@ -488,7 +487,6 @@ export interface IApplication extends IErrorHandler, IExports, IDisposable {
     uniqueID: string;
     appName: string;
     appRoot: Document | HTMLElement;
-    elViewFactory: IElViewFactory;
 }
 
 export interface IAppOptions {

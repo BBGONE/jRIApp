@@ -9,13 +9,14 @@ import { BaseObject } from "../jriapp_core/object";
 import { bootstrap } from "../jriapp_core/bootstrap";
 import { contentFactories } from "../jriapp_content/factory";
 import { parser } from "../jriapp_core/parser";
-import { SysChecks, ERROR } from "../jriapp_utils/coreutils";
 import { Utils } from "../jriapp_utils/utils";
 import { BaseElView, fn_addToolTip } from "../jriapp_elview/elview";
+import { getElViewFactory } from "../jriapp_elview/factory";
 import { Binding } from "binding";
 import { parseContentAttr } from "../jriapp_content/int";
 
-const utils = Utils, dom = utils.dom, $ = dom.$, doc = dom.document, checks = utils.check, coreUtils = utils.core, strUtils = utils.str, syschecks = SysChecks, parse = parser;
+const utils = Utils, dom = utils.dom, $ = dom.$, doc = dom.document, checks = utils.check, coreUtils = utils.core, strUtils = utils.str,
+    syschecks = utils.sys, parse = parser, viewFactory = getElViewFactory, boot = bootstrap;
 
 export const css = {
     dataform: "ria-dataform",
@@ -113,7 +114,7 @@ syschecks._getParentDataForm = function (rootForm: HTMLElement, el: HTMLElement)
 };
 
 export interface IDataFormOptions {
-    app: IApplication;
+    appName: string;
     el: HTMLElement;
 }
 
@@ -152,14 +153,14 @@ export class DataForm extends BaseObject {
     private _errNotification: IErrorNotification;
     private _parentDataForm: IElView;
     private _errors: IValidationInfo[];
-    private _app: IApplication;
+    private _appName: string;
     private _isInsideTemplate: boolean;
     private _contentPromise: IVoidPromise;
 
     constructor(options: IDataFormOptions) {
         super();
         let self = this, parent: HTMLElement;
-        this._app = options.app;
+        this._appName = options.appName;
         this._el = options.el;
         this._$el = $(this._el);
         this._objId = "frm" + coreUtils.getNewID();
@@ -179,7 +180,7 @@ export class DataForm extends BaseObject {
         //if this form is nested inside another dataform
         //subscribe for parent's destroy event
         if (!!parent) {
-            self._parentDataForm = this._app.elViewFactory.getOrCreateElView(parent);
+            self._parentDataForm = viewFactory(this._appName).getOrCreateElView(parent);
             self._parentDataForm.addOnDestroyed(function (sender, args) {
                 //destroy itself if parent form is destroyed
                 if (!self._isDestroyCalled)
@@ -187,12 +188,8 @@ export class DataForm extends BaseObject {
             }, self._objId);
         }
     }
-    handleError(error: any, source: any): boolean {
-        let isHandled = super.handleError(error, source);
-        if (!isHandled) {
-            return this._app.handleError(error, source);
-        }
-        return isHandled;
+    protected _getAppName() {
+        return this._appName;
     }
     private _getBindings(): Binding[] {
         if (!this._lfTime)
@@ -239,7 +236,7 @@ export class DataForm extends BaseObject {
             }
 
             let contentType = contentFactories.getContentType(op);
-            let content = new contentType({ parentEl: el, contentOptions: op, dataContext: dctx, isEditing: isEditing, app: self.app });
+            let content = new contentType({ parentEl: el, contentOptions: op, dataContext: dctx, isEditing: isEditing, appName: self.appName });
             self._content.push(content);
         });
 
@@ -273,7 +270,7 @@ export class DataForm extends BaseObject {
             });
         }
         catch (ex) {
-            ERROR.reThrow(ex, this.handleError(ex, this));
+            utils.err.reThrow(ex, this.handleError(ex, this));
         }
     }
     private _updateContent() {
@@ -300,7 +297,7 @@ export class DataForm extends BaseObject {
             }
         }
         catch (ex) {
-            ERROR.reThrow(ex, self.handleError(ex, self));
+            utils.err.reThrow(ex, self.handleError(ex, self));
         }
     }
     private _onDSErrorsChanged(sender?: any, args?: any) {
@@ -374,13 +371,13 @@ export class DataForm extends BaseObject {
         this._dataContext = null;
         this._contentCreated = false;
         this._contentPromise = null;
-        this._app = null;
         super.destroy();
     }
     toString() {
         return "DataForm";
     }
-    get app() { return this._app; }
+    get appName() { return this._appName; }
+    get app() { return boot.findApp(this._appName); }
     get el() { return this._el; }
     get dataContext() { return this._dataContext; }
     set dataContext(v) {
@@ -404,7 +401,7 @@ export class DataForm extends BaseObject {
                 }
             }
         } catch (ex) {
-            ERROR.reThrow(ex, this.handleError(ex, this));
+            utils.err.reThrow(ex, this.handleError(ex, this));
         }
     }
     get isEditing() { return this._isEditing; }
@@ -435,7 +432,7 @@ export class DataForm extends BaseObject {
                 }
             }
             catch (ex) {
-                ERROR.reThrow(ex, this.handleError(ex, dataContext));
+                utils.err.reThrow(ex, this.handleError(ex, dataContext));
             }
         }
 
@@ -543,4 +540,4 @@ export class DataFormElView extends BaseElView {
     get form() { return this._form; }
 }
 
-bootstrap.registerElView(ELVIEW_NM.DataForm, DataFormElView);
+boot.registerElView(ELVIEW_NM.DataForm, DataFormElView);

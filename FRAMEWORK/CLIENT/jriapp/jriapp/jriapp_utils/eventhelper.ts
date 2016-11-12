@@ -2,9 +2,9 @@
 import {
     TErrorHandler, TPriority, IIndexer, IBaseObject, TEventHandler
 } from "../jriapp_core/shared";
-import {
-    Checks, StringUtils, DEBUG
-} from "coreutils";
+import { Checks } from "checks";
+import { StringUtils } from "strutils";
+import { DEBUG } from "coreutils";
 import { ERRS } from "../jriapp_core/lang";
 
 const checks = Checks, strUtils = StringUtils, debug = DEBUG;

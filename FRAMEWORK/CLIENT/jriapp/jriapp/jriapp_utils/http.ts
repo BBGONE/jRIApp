@@ -1,8 +1,10 @@
-﻿/// <reference path="../jriapp_core/../../thirdparty/jquery.d.ts" />
-/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { IDeferred, IIndexer, DummyError } from "../jriapp_core/shared";
-import { CoreUtils as coreUtils, StringUtils as strUtils } from "./coreutils";
-import { AsyncUtils as defer, IAbortablePromise, AbortablePromise } from "./async";
+import { StringUtils } from "../jriapp_utils/strUtils";
+import { CoreUtils } from "./coreutils";
+import { AsyncUtils, IAbortablePromise, AbortablePromise } from "./async";
+
+const coreUtils = CoreUtils, strUtils = StringUtils, defer = AsyncUtils;
 
 export class HttpUtils {
     public static isStatusOK(status: string | number) {

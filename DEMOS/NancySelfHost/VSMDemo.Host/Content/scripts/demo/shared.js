@@ -426,7 +426,7 @@ define("autocomplete", ["require", "exports", "jriapp", "common"], function (req
             return ['hide', 'show'].concat(base_events);
         };
         AutoCompleteElView.prototype._createTemplate = function () {
-            var t = this.app.createTemplate(this, this);
+            var t = RIAPP.createTemplate(this.appName, this, this);
             t.templateID = this._templateId;
             return t;
         };

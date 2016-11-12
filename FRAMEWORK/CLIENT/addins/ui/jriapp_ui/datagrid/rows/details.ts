@@ -1,8 +1,10 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { BaseObject } from "jriapp_core/object";
-import { Utils, Debounce, DblClick, ERROR, DomUtils as dom } from "jriapp_utils/utils";
+import { Debounce } from "jriapp_utils/debounce";
+import { DblClick } from "jriapp_utils/dblclick";
+import { Utils } from "jriapp_utils/utils";
 import { ICollection, ICollectionItem, ICollChangedArgs, COLL_CHANGE_TYPE, COLL_CHANGE_REASON, ITEM_STATUS,
-    ICollItemArgs, ICollItemAddedArgs } from "jriapp_collection/collection";
+    ICollItemArgs, ICollItemAddedArgs } from "jriapp";
 
 import { css, ROW_POSITION } from "../const";
 import { Row } from "./row";
@@ -10,7 +12,7 @@ import { DetailsCell } from "../cells/details";
 import { DataGrid } from "../datagrid"
 
 const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr;
-const $ = dom.$, document = dom.document;
+const dom = utils.dom, $ = dom.$, document = dom.document;
 
 export class DetailsRow extends BaseObject {
     private _grid: DataGrid;
@@ -37,6 +39,9 @@ export class DetailsRow extends BaseObject {
             if (!args.isExpanded && !!args.collapsedRow)
                 self._setParentRow(null);
         }, this._objId);
+    }
+    protected _getAppName() {
+        return !this.grid ? "" : this.grid.appName;
     }
     private _createCell(details_id: string) {
         const td: HTMLTableCellElement = <HTMLTableCellElement>document.createElement("td");

@@ -2,14 +2,14 @@
 import {DATA_ATTR, KEYS } from "jriapp_core/const";
 import { IApplication, ITemplate, ITemplateEvents, ISelectable, IViewOptions, TEventHandler,
     ISelectableProvider, IBaseObject } from "jriapp_core/shared";
+import { createTemplate } from "jriapp_core/template";
 import { ERRS } from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
-import { Utils, ERROR } from "jriapp_utils/utils";
-import { bootstrap } from "jriapp_core/bootstrap";
-import { ICollection, ICollectionItem, ICollChangedArgs, COLL_CHANGE_TYPE, COLL_CHANGE_REASON, ITEM_STATUS } from "jriapp_collection/collection";
+import { Utils } from "jriapp_utils/utils";
 import { BaseElView } from "jriapp_elview/elview";
+import { ICollection, ICollectionItem, ICollChangedArgs, COLL_CHANGE_TYPE, COLL_CHANGE_REASON, ITEM_STATUS, bootstrap } from "jriapp";
 
-const utils = Utils, dom = utils.dom, $ = dom.$, doc = dom.document, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+const utils = Utils, dom = utils.dom, $ = dom.$, doc = dom.document, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, boot = bootstrap;
 
 const css = {
     stackpanel: "ria-stackpanel",
@@ -35,7 +35,7 @@ export interface IStackPanelOptions {
 interface IMappedItem { el: HTMLElement; template: ITemplate; item: ICollectionItem }
 
 export interface IStackPanelConstructorOptions extends IStackPanelOptions {
-    app: IApplication;
+    appName: string;
     el: HTMLElement;
     dataSource: ICollection<ICollectionItem>;
 }
@@ -58,10 +58,10 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
 
     constructor(options: IStackPanelConstructorOptions) {
         super();
-        let self = this;
+        const self = this;
         options = <IStackPanelConstructorOptions>coreUtils.extend(
             {
-                app: null,
+                appName: null,
                 el: null,
                 dataSource: null,
                 templateID: null,
@@ -108,18 +108,21 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         this._$el.on("click", this._event_scope,
             function (e) {
                 e.stopPropagation();
-                bootstrap.currentSelectable = self;
+                boot.currentSelectable = self;
                 let $el = $(this), mappedItem: IMappedItem = <any>$el.data("data");
                 self._onItemClicked(mappedItem.el, mappedItem.item);
             });
         if (!!options.dataSource) {
             this._bindDS();
         }
-        bootstrap._getInternal().trackSelectable(this);
+        boot._getInternal().trackSelectable(this);
     }
     protected _getEventNames() {
         let base_events = super._getEventNames();
         return [PNL_EVENTS.item_clicked].concat(base_events);
+    }
+    protected _getAppName() {
+        return this._options.appName;
     }
     addOnItemClicked(fn: TEventHandler<StackPanel, { item: ICollectionItem; }>, nmspace?: string, context?: IBaseObject) {
         this._addHandler(PNL_EVENTS.item_clicked, fn, nmspace, context);
@@ -245,7 +248,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         }
     }
     protected _createTemplate(item: ICollectionItem) {
-        let template = this.app.createTemplate(item, null);
+        let template = createTemplate(this._getAppName(), item, null);
         template.templateID = this.templateID;
         return template;
     }
@@ -326,7 +329,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        bootstrap._getInternal().untrackSelectable(this);
+        boot._getInternal().untrackSelectable(this);
         this._unbindDS();
         this._clearContent();
         dom.removeClass([this.el], css.stackpanel);
@@ -384,7 +387,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
     }
     focus() {
         this.scrollToCurrent(true);
-        bootstrap.currentSelectable = this;
+        boot.currentSelectable = this;
     }
     getDivElementByItem(item: ICollectionItem) {
         let mappedItem = this._itemMap[item._key];
@@ -395,7 +398,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
     toString() {
         return "StackPanel";
     }
-    get app() { return this._options.app; }
+    get app() { return this._options.appName; }
     get el() { return this._options.el; }
     get uniqueID() { return this._objId; }
     get orientation() { return this._options.orientation; }
@@ -482,9 +485,9 @@ export class StackPanelElView extends BaseElView {
     get panel() { return this._panel; }
 }
 
-bootstrap.registerElView("stackpanel", StackPanelElView);
-bootstrap.registerElView("ul", StackPanelElView);
-bootstrap.registerElView("ol", StackPanelElView);
+boot.registerElView("stackpanel", StackPanelElView);
+boot.registerElView("ul", StackPanelElView);
+boot.registerElView("ol", StackPanelElView);
 
 //Load Stylesheet for the bundle
-bootstrap.loadOwnStyle("jriapp_ui");
+boot.loadOwnStyle("jriapp_ui");

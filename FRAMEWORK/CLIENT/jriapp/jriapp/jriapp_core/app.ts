@@ -1,7 +1,4 @@
-﻿/// <reference path="../../thirdparty/jquery.d.ts" />
-/// <reference path="../../thirdparty/moment.d.ts" />
-/// <reference path="../../thirdparty/qtip2.d.ts" />
-/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { DATA_ATTR, STORE_KEY } from "./const";
 import { IElViewStore, IElViewFactory, IElView, IViewType, IIndexer, IApplication, IErrorHandler, IExports, ILifeTimeScope, IBindableElement, IPromise, IVoidPromise, DummyError,
     IBindingOptions, IAppOptions, IInternalAppMethods, IBaseObject, TFactoryGetter, TEventHandler, IConverter, IContentOptions, ITemplate, ITemplateEvents,
@@ -10,13 +7,12 @@ import { IElViewStore, IElViewFactory, IElView, IViewType, IIndexer, IApplicatio
 import { ERRS } from "./lang";
 import { BaseObject }  from "./object";
 import { bootstrap } from "./bootstrap";
-import { ERROR } from "../jriapp_utils/coreutils";
-import { LifeTimeScope, Utils } from "../jriapp_utils/utils";
-import { createFactory as createElViewFactory, createRegister as createElViewRegister } from "../jriapp_elview/factory";
+import { LifeTimeScope } from "../jriapp_utils/lifetime";
+import { Utils } from "../jriapp_utils/utils";
+import { createElViewFactory, deleteElViewFactory, getElViewFactory } from "../jriapp_elview/factory";
 import { create as createDataBindSvc } from "./databindsvc";
-import { ITemplateOptions, create as createTemplate } from "./template";
 
-const utils = Utils, $ = utils.dom.$, doc = utils.dom.document;
+const utils = Utils, $ = utils.dom.$, doc = utils.dom.document, boot = bootstrap;
 
 const APP_EVENTS = {
     startup: "startup"
@@ -29,14 +25,12 @@ const enum AppState { None, Starting, Started, Destroyed, Error }
 export class Application extends BaseObject implements IApplication {
     private static _newInstanceNum = 1;
     private _UC: any;
-    private _app_name: string;
+    private _appName: string;
     private _moduleInits: IIndexer<(app: IApplication) => void>;
     private _objId: string;
     private _objMaps: any[];
     private _exports: IIndexer<any>;
     protected _options: IAppOptions;
-    private _elViewFactory: IElViewFactory;
-    private _elViewRegister: IElViewRegister;
     private _dataBindingService: IDataBindingService;
     private _internal: IInternalAppMethods;
     private _app_state: AppState;
@@ -52,15 +46,14 @@ export class Application extends BaseObject implements IApplication {
             if (!!options.modulesInits)
                 moduleInits = options.modulesInits;
         }
-        if (!!bootstrap.findApp(app_name))
+        if (!!boot.findApp(app_name))
             throw new Error(utils.str.format(ERRS.ERR_APP_NAME_NOT_UNIQUE, app_name));
-        this._app_name = app_name;
+        this._appName = app_name;
         this._objId = "app:" + utils.core.getNewID();
         this._app_state = AppState.None;
         this._moduleInits = moduleInits;
-        this._elViewRegister = createElViewRegister(bootstrap.elViewRegister);
-        this._elViewFactory = createElViewFactory(this, Application._newInstanceNum, this._elViewRegister);
-        this._dataBindingService = createDataBindSvc(this, this.appRoot, this._elViewFactory);
+        const factory = createElViewFactory(app_name, Application._newInstanceNum, boot.elViewRegister);
+        this._dataBindingService = createDataBindSvc(app_name, this.appRoot, factory);
 
         Application._newInstanceNum += 1;
         this._objMaps = [];
@@ -76,7 +69,7 @@ export class Application extends BaseObject implements IApplication {
             }
         };
 
-        bootstrap._getInternal().registerApp(this);
+        boot._getInternal().registerApp(this);
     }
     private _cleanUpObjMaps() {
         let self = this;
@@ -100,18 +93,8 @@ export class Application extends BaseObject implements IApplication {
             initFn(self);
         });
     }
-    public handleError(error: any, source: any): boolean {
-        if (ERROR.checkIsDummy(error)) {
-            return true;
-        }
-        let isHandled = super.handleError(error, source);
-        if (!isHandled) {
-            return bootstrap.handleError(error, source);
-        }
-        return isHandled;
-    }
     protected _getEventNames() {
-        let base_events = super._getEventNames();
+        const base_events = super._getEventNames();
         return [APP_EVENTS.startup].concat(base_events);
     }
     /**
@@ -137,17 +120,17 @@ export class Application extends BaseObject implements IApplication {
     }
     registerConverter(name: string, obj: IConverter): void {
         let name2 = STORE_KEY.CONVERTER + name;
-        if (!bootstrap._getInternal().getObject(this, name2)) {
-            bootstrap._getInternal().registerObject(this, name2, obj);
+        if (!boot._getInternal().getObject(this, name2)) {
+            boot._getInternal().registerObject(this, name2, obj);
         }
         else
             throw new Error(utils.str.format(ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
     }
     getConverter(name: string): IConverter {
         let name2 = STORE_KEY.CONVERTER + name;
-        let res = bootstrap._getInternal().getObject(this, name2);
+        let res = boot._getInternal().getObject(this, name2);
         if (!res) {
-            res = bootstrap._getInternal().getObject(bootstrap, name2);
+            res = boot._getInternal().getObject(boot, name2);
         }
         if (!res)
             throw new Error(utils.str.format(ERRS.ERR_CONVERTER_NOTREGISTERED, name));
@@ -155,19 +138,19 @@ export class Application extends BaseObject implements IApplication {
     }
     registerSvc(name: string, obj: any): void {
         let name2 = STORE_KEY.SVC + name;
-        return bootstrap._getInternal().registerObject(this, name2, obj);
+        return boot._getInternal().registerObject(this, name2, obj);
     }
     getSvc(name: string): any;
     getSvc<T>(name: string): T {
         let name2 = STORE_KEY.SVC + name;
-        let res = bootstrap._getInternal().getObject(this, name2);
+        let res = boot._getInternal().getObject(this, name2);
         if (!res) {
-            res = bootstrap._getInternal().getObject(bootstrap, name2);
+            res = boot._getInternal().getObject(boot, name2);
         }
         return res;
     }
     registerElView(name: string, vw_type: IViewType): void {
-        this._elViewRegister.registerElView(name, vw_type);
+        getElViewFactory(this.appName).register.registerElView(name, vw_type);
     }
     /**
     registers instances of objects, so they can be retrieved later anywhere in the application's code
@@ -177,10 +160,10 @@ export class Application extends BaseObject implements IApplication {
         let self = this, name2 = STORE_KEY.OBJECT + name;
         if (utils.check.isBaseObject(obj)) {
             (<IBaseObject>obj).addOnDestroyed((s, a) => {
-                bootstrap._getInternal().unregisterObject(self, name2);
+                boot._getInternal().unregisterObject(self, name2);
             }, self.uniqueID);
         }
-        let objMap = bootstrap._getInternal().registerObject(this, name2, obj);
+        let objMap = boot._getInternal().registerObject(this, name2, obj);
         if (this._objMaps.indexOf(objMap) < 0) {
             this._objMaps.push(objMap);
         }
@@ -188,7 +171,7 @@ export class Application extends BaseObject implements IApplication {
     getObject(name: string): any;
     getObject<T>(name: string): T {
         let name2 = STORE_KEY.OBJECT + name;
-        let res = bootstrap._getInternal().getObject(this, name2);
+        let res = boot._getInternal().getObject(this, name2);
         return res;
     }
     /**
@@ -262,21 +245,13 @@ export class Application extends BaseObject implements IApplication {
                 throw new Error(ERRS.ERR_APP_SETUP_INVALID);
 
             //wait until all templates have been loaded (if any)
-            bootstrap.templateLoader.waitForNotLoading(fn_startApp, null);
+            boot.templateLoader.waitForNotLoading(fn_startApp, null);
         }
         catch (ex) {
             deferred.reject(ex);
         }
 
         return promise;
-    }
-    createTemplate(dataContext?: any, templEvents?: ITemplateEvents): ITemplate {
-        let options: ITemplateOptions = {
-            app: this,
-            dataContext: dataContext,
-            templEvents: templEvents
-        }
-        return createTemplate(options);
     }
     //loads a group of templates from the server
     loadTemplates(url: string): IPromise<any> {
@@ -286,11 +261,11 @@ export class Application extends BaseObject implements IApplication {
     }
     //loads a group of templates from the server
     loadTemplatesAsync(fn_loader: () => IPromise<string>): IPromise<any> {
-        return bootstrap.templateLoader.loadTemplatesAsync(fn_loader, this);
+        return boot.templateLoader.loadTemplatesAsync(fn_loader, this);
     }
     //fn_loader must load template and return promise which resolves with the loaded HTML string
     registerTemplateLoader(name: string, fn_loader: () => IPromise<string>): void {
-        bootstrap.templateLoader.registerTemplateLoader(this.appName + "." + name, {
+        boot.templateLoader.registerTemplateLoader(this.appName + "." + name, {
             fn_loader: fn_loader
         });
     }
@@ -304,9 +279,9 @@ export class Application extends BaseObject implements IApplication {
         }));
     }
     getTemplateLoader(name: string): () => IPromise<string> {
-        let res = bootstrap.templateLoader.getTemplateLoader(this.appName + "." + name);
+        let res = boot.templateLoader.getTemplateLoader(this.appName + "." + name);
         if (!res) {
-            res = bootstrap.templateLoader.getTemplateLoader(name);
+            res = boot.templateLoader.getTemplateLoader(name);
             if (!res)
                 return () => { return utils.defer.createDeferred<string>().reject(new Error(utils.str.format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name))) };
         }
@@ -320,23 +295,20 @@ export class Application extends BaseObject implements IApplication {
             promise: <IPromise<string>>null,
             app: this
         }, group);
-        bootstrap.templateLoader.registerTemplateGroup(this.appName + "." + name, group2);
+        boot.templateLoader.registerTemplateGroup(this.appName + "." + name, group2);
     }
     destroy(): void {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        let self = this;
+        const self = this;
         try {
             self._app_state = AppState.Destroyed;
-            bootstrap._getInternal().unregisterApp(self);
+            boot._getInternal().unregisterApp(self);
             self._cleanUpObjMaps();
             self._dataBindingService.destroy();
             self._dataBindingService = null;
-            self._elViewFactory.destroy();
-            self._elViewFactory = null;
-            this._elViewRegister.destroy();
-            this._elViewRegister = null;
+            deleteElViewFactory(this.appName);
             self._exports = {};
             self._moduleInits = {};
             self._UC = {};
@@ -348,11 +320,9 @@ export class Application extends BaseObject implements IApplication {
     toString() {
         return "Application: " + this.appName;
     }
-    get elViewFactory() { return this._elViewFactory; }
-    get elViewRegister() { return this._elViewRegister; }
     get uniqueID() { return this._objId; }
     get options() { return this._options; }
-    get appName() { return this._app_name; }
+    get appName() { return this._appName; }
     get appRoot(): Document | HTMLElement {
         if (!this._options || !this._options.appRoot)
             return doc;

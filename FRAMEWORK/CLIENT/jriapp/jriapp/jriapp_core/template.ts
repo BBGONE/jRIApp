@@ -1,7 +1,11 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { DATA_ATTR } from "../jriapp_core/const";
 import { ITemplate, ILifeTimeScope, ITemplateEvents, IApplication, IPromise, IVoidPromise, IElView, IViewOptions } from "../jriapp_core/shared";
-import { SysChecks, CoreUtils, Checks, StringUtils, ArrayHelper, ERROR } from "../jriapp_utils/coreutils";
+import { SysChecks } from "../jriapp_utils/syschecks";
+import { Checks } from "../jriapp_utils/checks";
+import { StringUtils } from "../jriapp_utils/strUtils";
+import { ArrayHelper } from "../jriapp_utils/arrhelper";
+import { CoreUtils, ERROR } from "../jriapp_utils/coreutils";
 import { DomUtils } from "../jriapp_utils/dom";
 import { AsyncUtils } from "../jriapp_utils/async";
 import { ERRS } from "../jriapp_core/lang";
@@ -10,9 +14,10 @@ import { bootstrap } from "../jriapp_core/bootstrap";
 import { BaseElView } from "../jriapp_elview/elview";
 import { CommandElView } from "../jriapp_elview/command";
 import { Binding } from "binding";
+import { getElViewFactory } from "../jriapp_elview/factory";
 
 const defer = AsyncUtils, dom = DomUtils, $ = dom.$, doc = dom.document, coreUtils = CoreUtils,
-    checks = Checks, strUtils = StringUtils, arrHelper = ArrayHelper, syschecks = SysChecks;
+    checks = Checks, strUtils = StringUtils, arrHelper = ArrayHelper, syschecks = SysChecks, viewFactory = getElViewFactory, boot = bootstrap;
 
 export const css = {
     templateContainer: "ria-template-container",
@@ -31,12 +36,17 @@ const PROP_NAME = {
 };
 
 export interface ITemplateOptions {
-    app: IApplication;
+    appName: string;
     dataContext?: any;
     templEvents?: ITemplateEvents;
 }
 
-export function create(options: ITemplateOptions): ITemplate {
+export function createTemplate(appName: string, dataContext ?: any, templEvents?: ITemplateEvents): ITemplate {
+    const options: ITemplateOptions = {
+        appName: appName,
+        dataContext: dataContext,
+        templEvents: templEvents
+    }
     return new Template(options);
 }
 
@@ -45,7 +55,7 @@ class Template extends BaseObject implements ITemplate {
     private _lfTime: ILifeTimeScope;
     private _templElView: TemplateElView;
     private _loadedElem: HTMLElement;
-    private _app: IApplication;
+    private _appName: string;
     private _dataContext: any;
     private _templEvents?: ITemplateEvents;
     private _templateID: string;
@@ -53,7 +63,7 @@ class Template extends BaseObject implements ITemplate {
     constructor(options: ITemplateOptions) {
         super();
         this._dataContext = options.dataContext;
-        this._app = options.app;
+        this._appName = options.appName;
         this._templEvents = options.templEvents;
         this._loadedElem = null;
         this._lfTime = null;
@@ -61,6 +71,9 @@ class Template extends BaseObject implements ITemplate {
         this._templElView = null;
         this._el = doc.createElement("div");
         this._el.className = css.templateContainer;
+    }
+    protected _getAppName() {
+        return this._appName;
     }
     private _getBindings(): Binding[] {
         if (!this._lfTime)
@@ -178,7 +191,7 @@ class Template extends BaseObject implements ITemplate {
         self._loadedElem = loadedEl;
         self._onLoading();
         templateEl.appendChild(loadedEl);
-        const promise = self._app._getInternal().bindTemplateElements(loadedEl);
+        const promise = self.app._getInternal().bindTemplateElements(loadedEl);
         return promise.then((lftm) => {
             if (self.getIsDestroyCalled()) {
                 lftm.destroy();
@@ -238,13 +251,6 @@ class Template extends BaseObject implements ITemplate {
             this._loadedElem = null;
         }
     }
-    handleError(error: any, source: any): boolean {
-        let isHandled = super.handleError(error, source);
-        if (!isHandled) {
-            return this.app.handleError(error, source);
-        }
-        return isHandled;
-    }
     destroy() {
         if (this._isDestroyed)
             return;
@@ -257,7 +263,6 @@ class Template extends BaseObject implements ITemplate {
         }
         this._dataContext = null;
         this._templEvents = null;
-        this._app = null
         super.destroy();
     }
     //find elements which has specific data-name attribute value
@@ -268,7 +273,7 @@ class Template extends BaseObject implements ITemplate {
     findElViewsByDataName(name: string): IElView[] {
         //first return elements with the needed data attributes those are inside template
         const self = this, els = this.findElByDataName(name), res: IElView[] = [],
-            viewStore = self.app.elViewFactory.store;
+            viewStore = viewFactory(self._appName).store;
         els.forEach(function (el) {
             let elView = viewStore.getElView(el);
             if (!!elView)
@@ -299,7 +304,12 @@ class Template extends BaseObject implements ITemplate {
         }
     }
     get el() { return this._el; }
-    get app() { return this._app; }
+    get app(): IApplication {
+        return bootstrap.findApp(this._appName);
+    }
+    get appName(): string {
+        return this._appName;
+    }
 }
 
 
@@ -359,4 +369,4 @@ export class TemplateElView extends CommandElView implements ITemplateEvents {
     }
 };
 
-bootstrap.registerElView("template", TemplateElView);
+boot.registerElView("template", TemplateElView);

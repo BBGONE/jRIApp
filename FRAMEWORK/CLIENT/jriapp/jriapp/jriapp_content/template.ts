@@ -1,13 +1,15 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IContent, ITemplateEvents, IApplication, ITemplate, ITemplateInfo, IConstructorContentOptions }  from "../jriapp_core/shared";
+import { IContent, ITemplateEvents, IApplication, ITemplate, ITemplateInfo, IConstructorContentOptions } from "../jriapp_core/shared";
+import { bootstrap } from "../jriapp_core/bootstrap";
 import { BaseObject }  from "../jriapp_core/object";
+import { createTemplate } from "../jriapp_core/template";
 import { ERRS } from "../jriapp_core/lang";
 import { ERROR } from "../jriapp_utils/coreutils";
 import { Utils } from "../jriapp_utils/utils";
 
 import { css } from "./int";
 
-const utils = Utils, coreUtils = utils.core, dom = utils.dom, $ = dom.$;
+const utils = Utils, coreUtils = utils.core, dom = utils.dom, $ = dom.$, boot = bootstrap;
 
 export class TemplateContent extends BaseObject implements IContent {
     private _parentEl: HTMLElement;
@@ -15,7 +17,7 @@ export class TemplateContent extends BaseObject implements IContent {
     private _templateInfo: ITemplateInfo;
     private _isEditing: boolean;
     private _dataContext: any;
-    private _app: IApplication;
+    private _appName: string;
     private _isDisabled: boolean;
     private _templateID: string;
 
@@ -27,10 +29,10 @@ export class TemplateContent extends BaseObject implements IContent {
                 contentOptions: null,
                 dataContext: null,
                 isEditing: false,
-                app: null
+                appName: null
             }, options);
         this._templateID = null;
-        this._app = options.app;
+        this._appName = options.appName;
         this._parentEl = options.parentEl;
         this._isEditing = options.isEditing;
         this._dataContext = options.dataContext;
@@ -39,12 +41,8 @@ export class TemplateContent extends BaseObject implements IContent {
         dom.addClass([this._parentEl], css.content);
         this.render();
     }
-    handleError(error: any, source: any): boolean {
-        let isHandled = super.handleError(error, source);
-        if (!isHandled) {
-            return this._app.handleError(error, source);
-        }
-        return isHandled;
+    protected _getAppName() {
+        return this._appName;
     }
     private getTemplateID() {
         if (!this._templateInfo) {
@@ -64,7 +62,7 @@ export class TemplateContent extends BaseObject implements IContent {
         return id;
     }
     private createTemplate(): ITemplate {
-        let template = this.app.createTemplate(this._dataContext);
+        let template = createTemplate(this._appName, this._dataContext);
         template.templateID = this._templateID;
         return template;
     }
@@ -97,13 +95,11 @@ export class TemplateContent extends BaseObject implements IContent {
         this._parentEl = null;
         this._dataContext = null;
         this._templateInfo = null;
-        this._app = null;
         super.destroy();
     }
     toString() {
         return "TemplateContent";
     }
-    get app() { return this._app; }
     get parentEl() { return this._parentEl; }
     get template() { return this._template; }
     get isEditing() { return this._isEditing; }
@@ -122,4 +118,6 @@ export class TemplateContent extends BaseObject implements IContent {
             }
         }
     }
+    get appName() { return this._appName; }
+    get app(): IApplication { return boot.findApp(this._appName); }
 }

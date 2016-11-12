@@ -1,17 +1,16 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { BINDING_MODE, BindTo } from "./const";
-import { IBaseObject, IIndexer, IBindingInfo, IBindingOptions, IBinding, IConverter, IErrorNotification, IValidationInfo } from "./shared";
+import { IBaseObject, IIndexer, IBindingInfo, IBindingOptions, IBinding, IConverter, IErrorNotification, IValidationInfo, IApplication } from "./shared";
 import { ERRS } from "./lang";
 import { BaseObject }  from "./object";
 import { baseConverter } from "./converter";
 import { bootstrap } from "./bootstrap";
 import { parser } from "./parser";
-import { SysChecks } from "../jriapp_utils/syschecks";
-import { ERROR, DEBUG, LOG } from "../jriapp_utils/coreutils";
 import { Utils } from "../jriapp_utils/utils";
 import { BaseElView } from "../jriapp_elview/elview";
 
-let utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, syschecks = SysChecks, debug = DEBUG, log = LOG, parse = parser;
+let utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, syschecks = utils.sys, debug = utils.debug, log = utils.log,
+    parse = parser, boot = bootstrap;
 
 syschecks._isBinding = (obj: any) => {
     return (!!obj && obj instanceof Binding);
@@ -62,18 +61,9 @@ function fn_reportMaxRec(bindTo: BindTo, src: any, tgt: any, spath: string, tpat
     log.error(msg);
 }
 
-
-function fn_handleError(appName: string, error: any, source: any): boolean {
-    if (!!appName) {
-        return bootstrap.findApp(appName).handleError(error, source);
-    }
-    else
-        return bootstrap.handleError(error, source);
-}
-
 let _newID = 0;
 function getNewID(): string {
-    let id = "bnd" + _newID;
+    let id = "$bnd" + _newID;
     _newID += 1;
     return id;
 }
@@ -90,7 +80,8 @@ interface IBindingState {
     target: any;
 }
 
-export function getBindingOptions(app: { getConverter(name: string): IConverter; },
+export function getBindingOptions(
+    appName: string,
     bindInfo: IBindingInfo,
     defaultTarget: IBaseObject,
     defaultSource: any) {
@@ -105,6 +96,15 @@ export function getBindingOptions(app: { getConverter(name: string): IConverter;
         isSourceFixed: false
     };
 
+    let converter: IConverter, app = boot.findApp(appName);
+
+    if (checks.isString(bindInfo.converter)) {
+        converter = app.getConverter(bindInfo.converter);
+    }
+    else {
+        converter = bindInfo.converter;
+    }
+
     let fixedSource = bindInfo.source, fixedTarget = bindInfo.target;
 
     if (!bindInfo.sourcePath && !!bindInfo.to)
@@ -118,16 +118,14 @@ export function getBindingOptions(app: { getConverter(name: string): IConverter;
     if (!!bindInfo.mode)
         bindingOpts.mode = bindModeMap[bindInfo.mode];
 
-    if (!!bindInfo.converter) {
-        if (checks.isString(bindInfo.converter))
-            bindingOpts.converter = app.getConverter(bindInfo.converter);
-        else
-            bindingOpts.converter = bindInfo.converter;
+    if (!!converter) {
+        bindingOpts.converter = converter;
     }
 
-
     if (!fixedTarget)
+    {
         bindingOpts.target = defaultTarget;
+    }
     else {
         if (checks.isString(fixedTarget)) {
             if (fixedTarget === "this")
@@ -137,8 +135,9 @@ export function getBindingOptions(app: { getConverter(name: string): IConverter;
                 bindingOpts.target = parse.resolveBindingSource(app, parse.getPathParts(fixedTarget));
             }
         }
-        else
+        else {
             bindingOpts.target = fixedTarget;
+        }
     }
 
     if (!fixedSource) {
@@ -156,8 +155,9 @@ export function getBindingOptions(app: { getConverter(name: string): IConverter;
                 bindingOpts.source = parse.resolveBindingSource(app, parse.getPathParts(fixedSource));
             }
         }
-        else
+        else {
             bindingOpts.source = fixedSource;
+        }
     }
 
     return bindingOpts;
@@ -242,6 +242,9 @@ export class Binding extends BaseObject implements IBinding {
         let err_notif = utils.getErrorNotification(this._srcEnd);
         if (!!err_notif && err_notif.getIsHasErrors())
             this._onSrcErrChanged(err_notif);
+    }
+    protected _getAppName() {
+        return this._appName;
     }
     private _update(): void {
         const umask = this._umask, MAX_REC= 3;
@@ -541,7 +544,7 @@ export class Binding extends BaseObject implements IBinding {
                 this.targetValue = this._converter.convertToTarget(this.sourceValue, this._converterParam, this._srcEnd);
         }
         catch (ex) {
-            ERROR.reThrow(ex, this.handleError(ex, this));
+            utils.err.reThrow(ex, this.handleError(ex, this));
         }
     }
     private _updateSource(sender?: any, args?: any) {
@@ -559,7 +562,7 @@ export class Binding extends BaseObject implements IBinding {
                 //we only need to invoke _onError in other cases
                 //1) when target is not BaseElView
                 //2) when error is not ValidationError
-                ERROR.reThrow(ex, this.handleError(ex, this));
+                utils.err.reThrow(ex, this.handleError(ex, this));
             }
         }
     }
@@ -614,9 +617,6 @@ export class Binding extends BaseObject implements IBinding {
             this._source = value;
             this._parseSrc(this._source, this._srcPath, 0);
         }
-    }
-    handleError(error: any, source: any): boolean {
-        return fn_handleError(this._appName, error, source);
     }
     destroy() {
         if (this._isDestroyed)
@@ -722,5 +722,4 @@ export class Binding extends BaseObject implements IBinding {
             }
         }
     }
-    get appName() { return this._appName; }
 }

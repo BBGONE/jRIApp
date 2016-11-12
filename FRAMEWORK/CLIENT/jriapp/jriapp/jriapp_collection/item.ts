@@ -1,8 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { BaseObject } from "../jriapp_core/object";
-
-import { ICollectionItem, ITEM_EVENTS } from "int";
-import { ItemAspect } from "aspect";
+import { ICollectionItem, ITEM_EVENTS } from "./int";
+import { ItemAspect } from "./aspect";
 
 export class CollectionItem<TAspect extends ItemAspect<ICollectionItem>> extends BaseObject implements ICollectionItem {
     private __aspect: TAspect;

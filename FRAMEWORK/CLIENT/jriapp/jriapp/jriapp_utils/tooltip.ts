@@ -1,10 +1,9 @@
-﻿/// <reference path="../../thirdparty/qtip2.d.ts" />
-/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import * as constsMOD from "../jriapp_core/const";
 import { ITooltipService } from "../jriapp_core/shared";
-import { DomUtils as dom } from "./dom";
+import { DomUtils } from "./dom";
 
-const $ = dom.$, window = dom.window;
+const dom = DomUtils, $ = dom.$, window = dom.window;
 
 export const css = {
     toolTip: "qtip",

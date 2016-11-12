@@ -48,11 +48,10 @@ declare module "jriapp_ui/dialog" {
         private _result;
         private _options;
         private _fn_submitOnOK;
-        private _app;
+        private _appName;
         private _currentSelectable;
         private _deferred;
-        constructor(app: IApplication, options: IDialogConstructorOptions);
-        handleError(error: any, source: any): boolean;
+        constructor(appName: string, options: IDialogConstructorOptions);
         addOnClose(fn: TEventHandler<DataEditDialog, any>, nmspace?: string, context?: IBaseObject): void;
         removeOnClose(nmspace?: string): void;
         addOnRefresh(fn: TEventHandler<DataEditDialog, {
@@ -62,6 +61,7 @@ declare module "jriapp_ui/dialog" {
         protected _updateIsEditable(): void;
         protected _createDialog(): void;
         protected _getEventNames(): string[];
+        protected _getAppName(): string;
         templateLoading(template: ITemplate): void;
         templateLoaded(template: ITemplate, error?: any): void;
         templateUnLoading(template: ITemplate): void;
@@ -83,7 +83,6 @@ declare module "jriapp_ui/dialog" {
         getOption(name: string): any;
         setOption(name: string, value: any): void;
         destroy(): void;
-        readonly app: IApplication;
         dataContext: any;
         readonly result: "ok" | "cancel";
         readonly template: ITemplate;
@@ -247,6 +246,7 @@ declare module "jriapp_ui/datagrid/columns/base" {
         private _event_scope;
         private _template;
         constructor(grid: DataGrid, options: ICellInfo);
+        protected _getAppName(): string;
         destroy(): void;
         templateLoading(template: ITemplate): void;
         templateLoaded(template: ITemplate, error?: any): void;
@@ -378,7 +378,7 @@ declare module "jriapp_ui/datagrid/cells/rowselector" {
 }
 declare module "jriapp_ui/datagrid/rows/row" {
     import { BaseObject } from "jriapp_core/object";
-    import { ICollectionItem } from "jriapp_collection/collection";
+    import { ICollectionItem } from "jriapp";
     import { ROW_POSITION } from "jriapp_ui/datagrid/const";
     import { BaseCell } from "jriapp_ui/datagrid/cells/base";
     import { ExpanderCell } from "jriapp_ui/datagrid/cells/expander";
@@ -401,7 +401,7 @@ declare module "jriapp_ui/datagrid/rows/row" {
             tr: HTMLTableRowElement;
             item: ICollectionItem;
         });
-        handleError(error: any, source: any): boolean;
+        protected _getAppName(): string;
         private _createCells();
         private _createCell(col, num);
         _setState(css: string): void;
@@ -439,8 +439,8 @@ declare module "jriapp_ui/datagrid/rows/row" {
 }
 declare module "jriapp_ui/datagrid/cells/base" {
     import { BaseObject } from "jriapp_core/object";
-    import { ICollectionItem } from "jriapp_collection/collection";
-    import { DblClick } from "jriapp_utils/utils";
+    import { ICollectionItem } from "jriapp";
+    import { DblClick } from "jriapp_utils/dblclick";
     import { Row } from "jriapp_ui/datagrid/rows/row";
     import { BaseColumn } from "jriapp_ui/datagrid/columns/base";
     import { DataGrid } from "jriapp_ui/datagrid/datagrid";
@@ -457,9 +457,9 @@ declare module "jriapp_ui/datagrid/cells/base" {
         protected _click: DblClick;
         private _num;
         constructor(options: ICellOptions);
+        protected _getAppName(): string;
         protected _onCellClicked(row?: Row): void;
         protected _onDblClicked(row?: Row): void;
-        handleError(error: any, source: any): boolean;
         click(): void;
         scrollIntoView(): void;
         destroy(): void;
@@ -475,7 +475,7 @@ declare module "jriapp_ui/datagrid/cells/base" {
 }
 declare module "jriapp_ui/datagrid/rows/details" {
     import { BaseObject } from "jriapp_core/object";
-    import { ICollectionItem } from "jriapp_collection/collection";
+    import { ICollectionItem } from "jriapp";
     import { Row } from "jriapp_ui/datagrid/rows/row";
     import { DetailsCell } from "jriapp_ui/datagrid/cells/details";
     import { DataGrid } from "jriapp_ui/datagrid/datagrid";
@@ -492,6 +492,7 @@ declare module "jriapp_ui/datagrid/rows/details" {
             tr: HTMLTableRowElement;
             details_id: string;
         });
+        protected _getAppName(): string;
         private _createCell(details_id);
         protected _setParentRow(row: Row): void;
         private _initShow();
@@ -515,7 +516,7 @@ declare module "jriapp_ui/datagrid/rows/details" {
 declare module "jriapp_ui/datagrid/cells/details" {
     import { ITemplate } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
-    import { ICollectionItem } from "jriapp_collection/collection";
+    import { ICollectionItem } from "jriapp";
     import { DetailsRow } from "jriapp_ui/datagrid/rows/details";
     import { DataGrid } from "jriapp_ui/datagrid/datagrid";
     export class DetailsCell extends BaseObject {
@@ -527,6 +528,7 @@ declare module "jriapp_ui/datagrid/cells/details" {
             td: HTMLTableCellElement;
             details_id: string;
         });
+        protected _getAppName(): string;
         destroy(): void;
         toString(): string;
         readonly td: HTMLTableCellElement;
@@ -542,19 +544,19 @@ declare module "jriapp_ui/datagrid/rows/fillspace" {
     import { DataGrid } from "jriapp_ui/datagrid/datagrid";
     export class FillSpaceRow extends BaseObject {
         private _grid;
-        private _tr;
         private _$tr;
         private _cell;
         constructor(options: {
             grid: DataGrid;
             tr: HTMLTableRowElement;
         });
+        protected _getAppName(): string;
         private _createCell();
         destroy(): void;
         toString(): string;
         attach(): void;
         detach(): void;
-        readonly tr: HTMLTableRowElement;
+        readonly tr: HTMLElement;
         readonly $tr: JQuery;
         readonly grid: DataGrid;
         readonly cell: FillSpaceCell;
@@ -573,6 +575,7 @@ declare module "jriapp_ui/datagrid/cells/fillspace" {
             row: FillSpaceRow;
             td: HTMLTableCellElement;
         });
+        protected _getAppName(): string;
         destroy(): void;
         toString(): string;
         readonly td: HTMLTableCellElement;
@@ -583,9 +586,9 @@ declare module "jriapp_ui/datagrid/cells/fillspace" {
     }
 }
 declare module "jriapp_ui/datagrid/datagrid" {
-    import { IApplication, ISelectableProvider, TEventHandler, ISelectable, IViewOptions } from "jriapp_core/shared";
+    import { ISelectableProvider, TEventHandler, ISelectable, IViewOptions } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
-    import { ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollection, ICollItemAddedArgs, ITEM_STATUS } from "jriapp_collection/collection";
+    import { ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollection, ICollItemAddedArgs, ITEM_STATUS } from "jriapp";
     import { BaseElView } from "jriapp_elview/elview";
     import { IDialogConstructorOptions } from "jriapp_ui/dialog";
     import { ROW_POSITION, ROW_ACTION } from "jriapp_ui/datagrid/const";
@@ -624,7 +627,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         isPrependAllRows?: boolean;
     }
     export interface IDataGridConstructorOptions extends IDataGridOptions {
-        app: IApplication;
+        appName: string;
         el: HTMLTableElement;
         dataSource: ICollection<ICollectionItem>;
         animation: IDataGridAnimation;
@@ -670,6 +673,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         private _scrollDebounce;
         constructor(options: IDataGridConstructorOptions);
         protected _getEventNames(): string[];
+        protected _getAppName(): string;
         addOnRowExpanded(fn: TEventHandler<DataGrid, {
             collapsedRow: Row;
             expandedRow: Row;
@@ -710,7 +714,6 @@ declare module "jriapp_ui/datagrid/datagrid" {
         protected _expandDetails(parentRow: Row, expanded: boolean): void;
         protected _parseColumnAttr(column_attr: string, content_attr: string): IColumnInfo;
         protected _findUndeleted(row: Row, isUp: boolean): Row;
-        handleError(error: any, source: any): boolean;
         protected _onDSCurrentChanged(prevCurrent: ICollectionItem, newCurrent: ICollectionItem): void;
         protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>): void;
         protected _updateTableDisplay(): void;
@@ -751,7 +754,6 @@ declare module "jriapp_ui/datagrid/datagrid" {
         destroy(): void;
         readonly $table: JQuery;
         readonly table: HTMLTableElement;
-        readonly app: IApplication;
         readonly options: IDataGridConstructorOptions;
         readonly _tBodyEl: HTMLTableSectionElement;
         readonly _tHeadEl: HTMLTableSectionElement;
@@ -772,6 +774,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         readonly isCanAddNew: boolean;
         isUseScrollInto: boolean;
         readonly animation: IDataGridAnimation;
+        readonly appName: string;
     }
     export interface IDataGridViewOptions extends IDataGridOptions, IViewOptions {
     }
@@ -791,10 +794,10 @@ declare module "jriapp_ui/datagrid/datagrid" {
     }
 }
 declare module "jriapp_ui/pager" {
-    import { IApplication, IViewOptions } from "jriapp_core/shared";
+    import { IViewOptions } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
-    import { ICollection, ICollectionItem } from "jriapp_collection/collection";
     import { BaseElView } from "jriapp_elview/elview";
+    import { ICollection, ICollectionItem } from "jriapp";
     export interface IPagerOptions {
         showTip?: boolean;
         showInfo?: boolean;
@@ -806,7 +809,7 @@ declare module "jriapp_ui/pager" {
         sliderSize?: number;
     }
     export interface IPagerConstructorOptions extends IPagerOptions {
-        app: IApplication;
+        appName: string;
         el: HTMLElement;
         dataSource: ICollection<ICollectionItem>;
     }
@@ -819,6 +822,7 @@ declare module "jriapp_ui/pager" {
         private _currentPage;
         private _renderDebounce;
         constructor(options: IPagerConstructorOptions);
+        protected _getAppName(): string;
         protected _createElement(tag: string): JQuery;
         protected _render(): void;
         protected render(): void;
@@ -840,7 +844,6 @@ declare module "jriapp_ui/pager" {
         protected _createLast(): JQuery;
         protected _buildTip(page: number): string;
         toString(): string;
-        readonly app: IApplication;
         readonly el: HTMLElement;
         dataSource: ICollection<ICollectionItem>;
         readonly pageCount: number;
@@ -855,6 +858,7 @@ declare module "jriapp_ui/pager" {
         showFirstAndLast: boolean;
         showPreviousAndNext: boolean;
         showNumbers: boolean;
+        readonly appName: string;
     }
     export interface IPagerViewOptions extends IPagerOptions, IViewOptions {
     }
@@ -868,9 +872,9 @@ declare module "jriapp_ui/pager" {
     }
 }
 declare module "jriapp_ui/listbox" {
-    import { IBaseObject, TEventHandler, IExternallyCachable, IBinding, IConstructorContentOptions, IContentFactory, IApplication, IContentConstructor, IContent, IContentOptions, IViewOptions } from "jriapp_core/shared";
+    import { IBaseObject, TEventHandler, IExternallyCachable, IBinding, IConstructorContentOptions, IContentFactory, IContentConstructor, IContent, IContentOptions, IViewOptions } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
-    import { ICollection, ICollectionItem, ICollChangedArgs, ITEM_STATUS } from "jriapp_collection/collection";
+    import { ICollection, ICollectionItem, ICollChangedArgs, ITEM_STATUS } from "jriapp";
     import { BaseElView } from "jriapp_elview/elview";
     import { SpanElView } from "jriapp_elview/span";
     import { BasicContent } from "jriapp_content/basic";
@@ -886,7 +890,7 @@ declare module "jriapp_ui/listbox" {
         statePath?: string;
     }
     export interface IListBoxConstructorOptions extends IListBoxOptions {
-        app: IApplication;
+        appName: string;
         el: HTMLSelectElement;
         dataSource: ICollection<ICollectionItem>;
     }
@@ -911,6 +915,7 @@ declare module "jriapp_ui/listbox" {
         constructor(options: IListBoxConstructorOptions);
         destroy(): void;
         protected _getEventNames(): string[];
+        protected _getAppName(): string;
         addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any): void;
         removeOnRefreshed(nmspace?: string): void;
         protected _onChanged(): void;
@@ -1021,16 +1026,16 @@ declare module "jriapp_ui/listbox" {
     }
 }
 declare module "jriapp_ui/stackpanel" {
-    import { IApplication, ITemplate, ISelectable, IViewOptions, TEventHandler, ISelectableProvider, IBaseObject } from "jriapp_core/shared";
+    import { ITemplate, ISelectable, IViewOptions, TEventHandler, ISelectableProvider, IBaseObject } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
-    import { ICollection, ICollectionItem, ICollChangedArgs, ITEM_STATUS } from "jriapp_collection/collection";
     import { BaseElView } from "jriapp_elview/elview";
+    import { ICollection, ICollectionItem, ICollChangedArgs, ITEM_STATUS } from "jriapp";
     export interface IStackPanelOptions {
         templateID: string;
         orientation?: "vertical" | "horizontal";
     }
     export interface IStackPanelConstructorOptions extends IStackPanelOptions {
-        app: IApplication;
+        appName: string;
         el: HTMLElement;
         dataSource: ICollection<ICollectionItem>;
     }
@@ -1046,6 +1051,7 @@ declare module "jriapp_ui/stackpanel" {
         private _isKeyNavigation;
         constructor(options: IStackPanelConstructorOptions);
         protected _getEventNames(): string[];
+        protected _getAppName(): string;
         addOnItemClicked(fn: TEventHandler<StackPanel, {
             item: ICollectionItem;
         }>, nmspace?: string, context?: IBaseObject): void;
@@ -1074,7 +1080,7 @@ declare module "jriapp_ui/stackpanel" {
         focus(): void;
         getDivElementByItem(item: ICollectionItem): HTMLElement;
         toString(): string;
-        readonly app: IApplication;
+        readonly app: string;
         readonly el: HTMLElement;
         readonly uniqueID: string;
         readonly orientation: "vertical" | "horizontal";

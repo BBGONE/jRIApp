@@ -1,16 +1,9 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { DEBUG_LEVEL } from "../jriapp_core/const";
-import { DebugLevel, IIndexer, DummyError, AbortError } from "../jriapp_core/shared";
+import { DebugLevel, IIndexer, DummyError, AbortError, IErrorHandler } from "../jriapp_core/shared";
 import { ArrayHelper } from "./arrhelper";
 import { StringUtils } from "./strutils";
 import { Checks } from "./checks";
-
-export { Debounce } from "./debounce";
-export { DblClick } from "./dblclick";
-export { ArrayHelper, IArrayLikeList } from "./arrhelper";
-export { StringUtils } from "./strutils";
-export { Checks } from "./checks";
-export { SysChecks } from "./syschecks";
 
 export class DEBUG {
     static checkStartDebugger() {
@@ -24,6 +17,44 @@ export class DEBUG {
 }
 
 export class ERROR {
+    private static _handlers: IIndexer<IErrorHandler> = {};
+
+    static addHandler(name: string, handler: IErrorHandler): void {
+        ERROR._handlers[name] = handler;
+    }
+    static removeHandler(name: string): void {
+        delete ERROR._handlers[name];
+    }
+    static handleError(sender: any, name: string, error: any, source: any): boolean {
+        if (ERROR.checkIsDummy(error)) {
+            return true;
+        }
+
+        let handler: IErrorHandler, isHandled = false;
+
+        if (!!name && name !== "*") {
+            handler = ERROR._handlers[name];
+            if (!!handler) {
+                if (handler === sender)
+                    handler = null;
+                else {
+                    isHandled = handler.handleError(error, source);
+              }
+            }
+        }
+
+        if (!isHandled) {
+            handler = ERROR._handlers["*"];
+            if (!!handler) {
+                if (handler === sender)
+                    handler = null;
+                else
+                    isHandled = handler.handleError(error, source);
+            }
+        }
+
+        return isHandled;
+    }
     static throwDummy(err: any): void {
         if (ERROR.checkIsDummy(err)) 
             throw err;
@@ -69,7 +100,7 @@ export class CoreUtils {
     static str = StringUtils;
     static arr = ArrayHelper;
     static getNewID(): number {
-        let id = CoreUtils._newID;
+        const id = CoreUtils._newID;
         CoreUtils._newID += 1;
         return id;
     }

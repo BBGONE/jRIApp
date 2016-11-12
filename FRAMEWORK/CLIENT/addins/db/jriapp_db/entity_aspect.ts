@@ -2,8 +2,8 @@
 import { FIELD_TYPE, DATE_CONVERSION, DATA_TYPE, SORT_ORDER } from "jriapp_core/const";
 import { IFieldInfo, IIndexer, IValidationInfo, IVoidPromise, IPromise } from "jriapp_core/shared";
 import { ERRS } from "jriapp_core/lang";
-import { Utils, SysChecks } from "jriapp_utils/utils";
-import { valueUtils, ItemAspect, ITEM_STATUS, fn_traverseFields, ValidationError, ICancellableArgs } from "jriapp_collection/collection";
+import { Utils } from "jriapp_utils/utils";
+import { valueUtils, ItemAspect, ITEM_STATUS, fn_traverseFields, ValidationError, ICancellableArgs } from "jriapp";
 import { FLAGS, REFRESH_MODE, PROP_NAME } from "const";
 import { DbContext } from "dbcontext";
 import { IEntityItem, IEntityConstructor, IRowData, IFieldName, IValueChange, IRowInfo } from "int";
@@ -360,7 +360,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
                 throw new ValidationError([validation_error], this);
             }
         } catch (ex) {
-            if (SysChecks._isValidationError(ex)) {
+            if (utils.sys._isValidationError(ex)) {
                 error = ex;
             }
             else {

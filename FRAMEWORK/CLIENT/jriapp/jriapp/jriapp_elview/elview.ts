@@ -8,11 +8,12 @@ import { bootstrap } from "../jriapp_core/bootstrap";
 import { Utils } from "../jriapp_utils/utils";
 import { TAction, TCommand, ICommand, Command, TPredicate } from "../jriapp_core/mvvm";
 import { EventStore, EVENT_CHANGE_TYPE, IEventChangedArgs } from "../jriapp_utils/eventstore";
+import { getElViewFactory } from "./factory";
 
 export { IEventChangedArgs, EVENT_CHANGE_TYPE };
 
 const utils = Utils, coreUtils = utils.core, dom = utils.dom, $ = dom.$, checks = utils.check;
-const PROP_BAG = SysChecks._PROP_BAG_NAME();
+const PROP_BAG = SysChecks._PROP_BAG_NAME(), viewFactory = getElViewFactory, boot = bootstrap;
 
 SysChecks._isElView = function (obj: any): boolean {
     return !!obj && obj instanceof BaseElView;
@@ -142,7 +143,7 @@ export class BaseElView extends BaseObject implements IElView {
     private _$el: JQuery;
     protected _errors: IValidationInfo[];
     protected _toolTip: string;
-    protected _app: IApplication;
+    protected _appName: string;
     private _eventStore: EventStore;
     private _props: IPropertyBag;
     private _classes: IPropertyBag;
@@ -153,7 +154,7 @@ export class BaseElView extends BaseObject implements IElView {
     constructor(options: IViewOptions) {
         super();
         let el = options.el;
-        this._app = options.app;
+        this._appName = options.appName;
         this._$el = $(el);
         this._toolTip = options.tip;
 
@@ -170,7 +171,10 @@ export class BaseElView extends BaseObject implements IElView {
             dom.addClass([el], this._css);
         }
         this._applyToolTip();
-        this._app.elViewFactory.store.setElView(el, this);
+        viewFactory(this._appName).store.setElView(el, this);
+    }
+    protected _getAppName() {
+        return this._appName;
     }
     protected _onEventChanged(args: IEventChangedArgs) {
         switch (args.changeType) {
@@ -236,9 +240,8 @@ export class BaseElView extends BaseObject implements IElView {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        this._app.elViewFactory.store.setElView(this.el, null);
-        let $el = this._$el;
-        $el.off("." + this.uniqueID);
+        viewFactory(this._appName).store.setElView(this.el, null);
+        this._$el.off("." + this.uniqueID);
         this.validationErrors = null;
         this.toolTip = null;
         if (!!this._eventStore) {
@@ -256,13 +259,6 @@ export class BaseElView extends BaseObject implements IElView {
         this._display = null;
         this._css = null;
         super.destroy();
-    }
-    public handleError(error: any, source: any): boolean {
-        let isHandled = super.handleError(error, source);
-        if (!isHandled) {
-            return this._app.handleError(error, source);
-        }
-        return isHandled;
     }
     toString() {
         return "BaseElView";
@@ -314,7 +310,6 @@ export class BaseElView extends BaseObject implements IElView {
             this.raisePropertyChanged(PROP_NAME.toolTip);
         }
     }
-    get app(): IApplication { return this._app; }
     //stores commands for data binding to the HtmlElement's events
     get events(): IPropertyBag {
         if (!this._eventStore) {
@@ -359,6 +354,12 @@ export class BaseElView extends BaseObject implements IElView {
             this.raisePropertyChanged(PROP_NAME.css);
         }
     }
+    get appName(): string {
+        return this._appName;
+    }
+    get app(): IApplication {
+        return boot.findApp(this._appName);
+    }
 }
 
-bootstrap.registerElView("generic", BaseElView);
+boot.registerElView("generic", BaseElView);

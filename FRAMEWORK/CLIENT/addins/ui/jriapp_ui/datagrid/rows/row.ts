@@ -1,8 +1,10 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { BaseObject } from "jriapp_core/object";
-import { Utils, Debounce, DblClick, ERROR } from "jriapp_utils/utils";
+import { Debounce } from "jriapp_utils/debounce";
+import { DblClick } from "jriapp_utils/dblclick";
+import { Utils } from "jriapp_utils/utils";
 import { ICollection, ICollectionItem, ICollChangedArgs, COLL_CHANGE_TYPE, COLL_CHANGE_REASON, ITEM_STATUS,
-    ICollItemArgs, ICollItemAddedArgs } from "jriapp_collection/collection";
+    ICollItemArgs, ICollItemAddedArgs } from "jriapp";
 
 import { css, ROW_POSITION, PROP_NAME } from "../const";
 import { BaseCell } from "../cells/base";
@@ -70,12 +72,8 @@ export class Row extends BaseObject {
             fn_state(self);
         }
     }
-    handleError(error: any, source: any): boolean {
-        let isHandled = super.handleError(error, source);
-        if (!isHandled) {
-            return this.grid.handleError(error, source);
-        }
-        return isHandled;
+    protected _getAppName() {
+        return !this.grid ? "" : this.grid.appName;
     }
     private _createCells() {
         const self = this, cols = self.columns, len = cols.length;

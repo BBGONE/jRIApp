@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { IViewOptions, IPropertyBag } from "jriapp_core/shared";
-import { Utils, ERROR } from "jriapp_utils/utils";
+import { Utils } from "jriapp_utils/utils";
 import { bootstrap } from "jriapp_core/bootstrap";
 import { BaseElView } from "jriapp_elview/elview";
 

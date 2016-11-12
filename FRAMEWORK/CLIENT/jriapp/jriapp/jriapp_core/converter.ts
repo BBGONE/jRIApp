@@ -1,10 +1,13 @@
-﻿/// <reference path="../../thirdparty/moment.d.ts" />
-/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { IConverter } from "../jriapp_core/shared";
 import { ERRS } from "../jriapp_core/lang";
-import { BaseObject }  from "../jriapp_core/object";
-import { Checks as checks, StringUtils as strUtils, CoreUtils as coreUtils } from "../jriapp_utils/coreutils";
+import { BaseObject } from "../jriapp_core/object";
+import { Checks } from "../jriapp_utils/checks";
+import { StringUtils } from "../jriapp_utils/strUtils";
+import { CoreUtils } from "../jriapp_utils/coreutils";
 import { bootstrap } from "../jriapp_core/bootstrap";
+
+const checks = Checks, strUtils = StringUtils, coreUtils = CoreUtils, boot = bootstrap;
 
 export const NUM_CONV = { None: 0, Integer: 1, Decimal: 2, Float: 3, SmallInt: 4 };
 
@@ -193,12 +196,12 @@ export class NotConverter implements IConverter {
    }
 }
 
-bootstrap.registerConverter("BaseConverter", baseConverter);
-bootstrap.registerConverter("dateConverter", dateConverter);
-bootstrap.registerConverter("dateTimeConverter", dateTimeConverter);
-bootstrap.registerConverter("numberConverter", numberConverter);
-bootstrap.registerConverter("integerConverter", integerConverter);
-bootstrap.registerConverter("smallIntConverter", smallIntConverter);
-bootstrap.registerConverter("decimalConverter", decimalConverter);
-bootstrap.registerConverter("floatConverter", floatConverter);
-bootstrap.registerConverter("notConverter", new NotConverter());
+boot.registerConverter("BaseConverter", baseConverter);
+boot.registerConverter("dateConverter", dateConverter);
+boot.registerConverter("dateTimeConverter", dateTimeConverter);
+boot.registerConverter("numberConverter", numberConverter);
+boot.registerConverter("integerConverter", integerConverter);
+boot.registerConverter("smallIntConverter", smallIntConverter);
+boot.registerConverter("decimalConverter", decimalConverter);
+boot.registerConverter("floatConverter", floatConverter);
+boot.registerConverter("notConverter", new NotConverter());

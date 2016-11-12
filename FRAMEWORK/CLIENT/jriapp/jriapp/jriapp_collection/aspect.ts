@@ -6,10 +6,10 @@ import { ERROR } from "../jriapp_utils/coreutils";
 import { Utils } from "../jriapp_utils/utils";
 import { ERRS } from "../jriapp_core/lang";
 
-import { ICollectionItem, IItemAspect, ICancellableArgs, ITEM_STATUS, PROP_NAME, ITEM_EVENTS } from "int";
-import { BaseCollection } from "base";
-import { fn_traverseFields } from "utils";
-import { ValidationError, Validations } from "validation";
+import { ICollectionItem, IItemAspect, ICancellableArgs, ITEM_STATUS, PROP_NAME, ITEM_EVENTS } from "./int";
+import { BaseCollection } from "./collection";
+import { fn_traverseFields } from "./utils";
+import { ValidationError, Validations } from "./validation";
 
 const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
 
@@ -55,13 +55,6 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     }
     protected _onErrorsChanged(args: any) {
         this.raiseEvent(ITEM_EVENTS.errors_changed, args);
-    }
-    handleError(error: any, source: any): boolean {
-        let isHandled = super.handleError(error, source);
-        if (!isHandled) {
-            return this.collection.handleError(error, source);
-        }
-        return isHandled;
     }
     protected _beginEdit(): boolean {
         const coll = this.collection;
@@ -249,6 +242,12 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     protected _fakeDestroy() {
         this.raiseEvent(ITEM_EVENTS.destroyed, {});
         this.removeNSHandlers();
+    }
+    public handleError(error: any, source: any): boolean {
+        if (!this._collection)
+            return super.handleError(error, source);
+        else
+            return this._collection.handleError(error, source);
     }
     _onAttaching(): void {
     }

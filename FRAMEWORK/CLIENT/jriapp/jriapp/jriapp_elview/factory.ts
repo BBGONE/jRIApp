@@ -5,15 +5,34 @@ import { IElViewStore, IElView, IIndexer, IViewType, IApplication, IExports, IVi
 import { bootstrap } from "../jriapp_core/bootstrap";
 import { ERRS } from "../jriapp_core/lang";
 import { parser } from "../jriapp_core/parser";
-import { SysChecks, ERROR } from "../jriapp_utils/coreutils";
-import { LifeTimeScope, Utils } from "../jriapp_utils/utils";
+import { BaseObject } from "../jriapp_core/object";
+import { ERROR } from "../jriapp_utils/coreutils";
+import { LifeTimeScope } from "../jriapp_utils/lifetime";
+import { Utils } from "../jriapp_utils/utils";
 
-const utils = Utils, $ = utils.dom.$;
+const utils = Utils, $ = utils.dom.$, factories: IIndexer<IElViewFactory> = {};
 
-export function createFactory(app: IApplication, num: number, register: IElViewRegister): IElViewFactory {
-    return new ElViewFactory(app, num, register);
+
+export function createElViewFactory(appName: string, num: number, register: IElViewRegister): IElViewFactory {
+    let factory = new ElViewFactory(appName, num, register);
+    factories[appName] = factory;
+    return factory;
 }
-export function createRegister(next?: IElViewRegister): IElViewRegister {
+
+export function deleteElViewFactory(appName: string): void {
+    let factory = factories[appName];
+    if (!!factory)
+    {
+        delete factories[appName];
+        factory.destroy;
+    }
+}
+
+export function getElViewFactory(appName: string): IElViewFactory {
+    return factories[appName];
+}
+
+export function createElViewRegister(next?: IElViewRegister): IElViewRegister {
     return new ElViewRegister(next);
 }
 
@@ -71,29 +90,31 @@ class ElViewStore implements IElViewStore {
     }
 }
 
-class ElViewFactory implements IElViewFactory, IErrorHandler {
+class ElViewFactory extends BaseObject implements IElViewFactory {
+    static getFactory(ownerName: string): IElViewFactory {
+        return factories[ownerName];
+    }
     private _store: IElViewStore;
     private _register: IElViewRegister;
-    private _app: IApplication;
+    private _appName: string;
 
-    constructor(app: IApplication, num: number, register: IElViewRegister) {
-        this._app = app;
+    constructor(appName: string, num: number, register: IElViewRegister) {
+        super();
+        this._appName = appName;
         this._store = new ElViewStore(num);
-        this._register = register;
+        this._register = createElViewRegister(register);
     }
     public destroy(): void {
         if (!this._store)
             return;
         this._store.destroy();
+        this._register.destroy();
         this._store = null;
         this._register = null;
-        this._app = null;
+        super.destroy();
     }
-    public handleError(error: any, source: any): boolean {
-        if (ERROR.checkIsDummy(error)) {
-            return true;
-        }
-        return this._app.handleError(error, source);
+    protected _getAppName() {
+        return this._appName;
     }
     createElView(view_info: { name: string; options: IViewOptions; }): IElView {
         let viewType: IViewType, elView: IElView, options = view_info.options;
@@ -156,13 +177,13 @@ class ElViewFactory implements IElViewFactory, IErrorHandler {
                 vw_options = data_view_op.options;
             }
         }
-        let options: IViewOptions = utils.core.merge({ app: this._app, el: el }, vw_options);
+        const options: IViewOptions = utils.core.merge({ appName: this._appName, el: el }, vw_options);
         return { name: view_name, options: options };
     }
     get store() {
         return this._store;
     }
-    get app() {
-        return this._app;
+    get register() {
+        return this._register;
     }
 }

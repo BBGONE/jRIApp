@@ -1,5 +1,4 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-/// <reference path="../jriapp_core/../../thirdparty/require.d.ts" />
 import { IIndexer, IViewType, IApplication, IPromise, IDeferred, IModuleLoader } from "../jriapp_core/shared";
 import { Utils } from "./utils";
 import { create as createCSSLoader } from "./sloader";

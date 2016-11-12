@@ -6,13 +6,14 @@ import {
 } from "jriapp_core/shared";
 import { ERRS } from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
-import { Utils, Debounce, ERROR } from "jriapp_utils/utils";
+import { Debounce } from "jriapp_utils/debounce";
+import { Utils } from "jriapp_utils/utils";
 import {
     valueUtils, COLL_CHANGE_REASON, ITEM_STATUS, IInternalCollMethods, BaseCollection,
     fn_traverseField, fn_traverseFields, fn_getPropertyByName, COLL_CHANGE_TYPE, COLL_CHANGE_OPER
-} from "jriapp_collection/collection";
+} from "jriapp";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err;
 
 import {
     IFieldName, IEntityItem, IEntityConstructor, IValueChange, IRowInfo, ITrackAssoc, IQueryResponse, IPermissions, IDbSetConstuctorOptions, IDbSetOptions,
@@ -182,7 +183,10 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         this.addOnPropertyChange(PROP_NAME.isLoading, (s, a) => { self.raisePropertyChanged(PROP_NAME.isBusy); });
     }
     public handleError(error: any, source: any): boolean {
-        return this.dbContext.handleError(error, source);
+        if (!this._dbContext)
+            return super.handleError(error, source);
+        else
+            return this._dbContext.handleError(error, source);
     }
     protected _getEventNames() {
         let base_events = super._getEventNames();

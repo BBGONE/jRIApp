@@ -1,11 +1,19 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { BaseError, IValidationInfo } from "../jriapp_core/shared";
 import { ERRS, STRS } from "../jriapp_core/lang";
-import { StringUtils as strUtils } from "../jriapp_utils/coreutils";
+import { SysChecks } from "../jriapp_utils/syschecks";
+import { Utils } from "../jriapp_utils/utils";
+
+const utils = Utils;
+
+SysChecks._isValidationError = (obj: any) => {
+    return (!!obj && obj instanceof ValidationError);
+};
 
 export class ValidationError extends BaseError {
     private _errors: IValidationInfo[];
     private _item: any;
+
     constructor(errorInfo: IValidationInfo[], item: any) {
         let message = ERRS.ERR_VALIDATION + "\r\n", i = 0;
         errorInfo.forEach(function (err) {
@@ -39,12 +47,12 @@ export class Validations {
         let rangeParts = range.split(",");
         if (!!rangeParts[0]) {
             if (num < parseFloat(rangeParts[0])) {
-                throw new Error(strUtils.format(ERRS.ERR_FIELD_RANGE, num, range));
+                throw new Error(utils.str.format(ERRS.ERR_FIELD_RANGE, num, range));
             }
         }
         if (!!rangeParts[1]) {
             if (num > parseFloat(rangeParts[1])) {
-                throw new Error(strUtils.format(ERRS.ERR_FIELD_RANGE, num, range));
+                throw new Error(utils.str.format(ERRS.ERR_FIELD_RANGE, num, range));
             }
         }
     }
@@ -52,12 +60,12 @@ export class Validations {
         let rangeParts = range.split(",");
         if (!!rangeParts[0]) {
             if (dt < Validations._dtRangeToDate(rangeParts[0])) {
-                throw new Error(strUtils.format(ERRS.ERR_FIELD_RANGE, dt, range));
+                throw new Error(utils.str.format(ERRS.ERR_FIELD_RANGE, dt, range));
             }
         }
         if (!!rangeParts[1]) {
             if (dt > Validations._dtRangeToDate(rangeParts[1])) {
-                throw new Error(strUtils.format(ERRS.ERR_FIELD_RANGE, dt, range));
+                throw new Error(utils.str.format(ERRS.ERR_FIELD_RANGE, dt, range));
             }
         }
     }

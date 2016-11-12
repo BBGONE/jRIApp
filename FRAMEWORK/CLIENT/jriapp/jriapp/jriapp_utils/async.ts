@@ -1,5 +1,4 @@
-﻿/// <reference path="../jriapp_core/../../thirdparty/jquery.d.ts" />
-/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { IThenable, ITaskQueue } from "../jriapp_core/shared";
 import { IPromise, IDeferred, create as createDefer, createSync as createSyncDefer, whenAll, getTaskQueue } from "./deferred";
 

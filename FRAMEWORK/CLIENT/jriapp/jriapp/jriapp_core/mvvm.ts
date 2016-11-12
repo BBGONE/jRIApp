@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IBaseObject, ITemplate, IErrorHandler } from "../jriapp_core/shared";
+import { IBaseObject, ITemplate, IErrorHandler, IApplication } from "../jriapp_core/shared";
 import { BaseObject } from "../jriapp_core/object";
 import { CoreUtils as coreUtils } from "../jriapp_utils/coreutils";
 
@@ -104,7 +104,7 @@ export const Command: new (fn_action: TAction<any, any>, thisObj?: any, fn_canEx
 export type TemplateCommand = TCommand<{ template: ITemplate; isLoaded: boolean; }, any>;
 export const TemplateCommand: new (fn_action: TAction<{ template: ITemplate; isLoaded: boolean; }, any>, thisObj?: any, fn_canExecute?: TPredicate<{ template: ITemplate; isLoaded: boolean; }, any>) => TemplateCommand = TCommand;
 
-export class ViewModel<TApp extends IErrorHandler> extends BaseObject {
+export class ViewModel<TApp extends IApplication> extends BaseObject {
     private _objId: string;
     private _app: TApp;
 
@@ -113,12 +113,8 @@ export class ViewModel<TApp extends IErrorHandler> extends BaseObject {
         this._app = app;
         this._objId = "vm" + coreUtils.getNewID();
     }
-    handleError(error: any, source: any): boolean {
-        let isHandled = super.handleError(error, source);
-        if (!isHandled) {
-            return this._app.handleError(error, source);
-        }
-        return isHandled;
+    protected _getAppName() {
+        return !this._app ? "" : this._app.appName;
     }
     toString() {
         return "ViewModel";
@@ -130,5 +126,7 @@ export class ViewModel<TApp extends IErrorHandler> extends BaseObject {
     get uniqueID() {
         return this._objId;
     }
-    get app(): TApp { return this._app; }
+    get app(): TApp {
+        return this._app;
+    }
 }

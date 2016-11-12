@@ -4,9 +4,10 @@ import {
     TErrorArgs, TPropChangedHandler
 } from "shared";
 import { ERRS } from "lang";
-import {
-    SysChecks, Checks, StringUtils, CoreUtils, ERROR, DEBUG
-} from "../jriapp_utils/coreutils";
+import { SysChecks } from "../jriapp_utils/syschecks";
+import { Checks } from "../jriapp_utils/checks";
+import { StringUtils } from "../jriapp_utils/strUtils";
+import { CoreUtils, ERROR, DEBUG } from "../jriapp_utils/coreutils";
 import { EventHelper, IEventList } from "../jriapp_utils/eventhelper";
 
 const OBJ_EVENTS = {
@@ -52,6 +53,9 @@ export class BaseObject implements IBaseObject {
     protected _removeHandler(name?: string, nmspace?: string): void {
         evHelper.remove(this._events, name, nmspace);
     }
+    protected _getAppName() {
+        return "";
+    }
     protected get _isDestroyed(): boolean {
         return this._obj_state === ObjState.Destroyed;
     }
@@ -76,7 +80,13 @@ export class BaseObject implements IBaseObject {
         }
         let args: TErrorArgs = { error: error, source: source, isHandled: false };
         evHelper.raise(this, this._events, OBJ_EVENTS.error, args);
-        return args.isHandled;
+        let isHandled = args.isHandled;
+
+        if (!isHandled) {
+            isHandled = ERROR.handleError(this, this._getAppName(), error, source);
+        }
+
+        return isHandled;
     }
     addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void {
         this._addHandler(name, handler, nmspace, context, priority);

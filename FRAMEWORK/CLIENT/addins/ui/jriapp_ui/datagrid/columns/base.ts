@@ -1,6 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { DATA_ATTR } from "jriapp_core/const";
 import { IContentOptions, ITemplateEvents, ITemplate } from "jriapp_core/shared";
+import { createTemplate } from "jriapp_core/template";
 import { BaseObject } from "jriapp_core/object";
 import { Utils } from "jriapp_utils/utils";
 import { fn_addToolTip } from "jriapp_elview/elview";
@@ -84,7 +85,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         }
 
         if (!!this._options.templateID) {
-            this._template = this.grid.app.createTemplate(this.grid.app, this);
+            this._template = createTemplate(this.grid.appName, null, this);
             this._template.templateID = this._options.templateID;
             $col.append(this._template.el);
         }
@@ -95,6 +96,9 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         if (!!this._options.tip) {
             fn_addToolTip($col, this._options.tip, false, "bottom center");
         }
+    }
+    protected _getAppName() {
+        return !this.grid ? "" : this.grid.appName;
     }
     destroy() {
         if (this._isDestroyed)

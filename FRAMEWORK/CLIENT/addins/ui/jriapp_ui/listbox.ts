@@ -6,15 +6,16 @@ import { ERRS } from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
 import { bootstrap } from "jriapp_core/bootstrap";
 import { parser } from "jriapp_core/parser";
-import { Utils, ERROR } from "jriapp_utils/utils";
+import { Utils } from "jriapp_utils/utils";
 import { ICollection, ICollectionItem, ICollChangedArgs, COLL_CHANGE_TYPE,
-    COLL_CHANGE_REASON, ITEM_STATUS } from "jriapp_collection/collection";
+    COLL_CHANGE_REASON, ITEM_STATUS } from "jriapp";
 import { BaseElView } from "jriapp_elview/elview";
 import { SpanElView } from "jriapp_elview/span";
 import { BasicContent } from "jriapp_content/basic";
 import { contentFactories } from "jriapp_content/factory";
 
-const utils = Utils, $ = utils.dom.$, doc = utils.dom.document, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+const utils = Utils, $ = utils.dom.$, doc = utils.dom.document, checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
+    boot = bootstrap;
 
 export interface IOptionStateProvider {
     getCSS(item: ICollectionItem, itemIndex: number, val: any): string;
@@ -31,7 +32,7 @@ export interface IListBoxOptions {
 }
 
 export interface IListBoxConstructorOptions extends IListBoxOptions {
-    app: IApplication;
+    appName: string;
     el: HTMLSelectElement;
     dataSource: ICollection<ICollectionItem>;
 }
@@ -77,7 +78,7 @@ export class ListBox extends BaseObject {
         let self = this;
         options = coreUtils.extend(
             {
-                app: null,
+                appName: null,
                 el: null,
                 dataSource: null,
                 valuePath: null,
@@ -137,6 +138,9 @@ export class ListBox extends BaseObject {
         let base_events = super._getEventNames();
         let events = Object.keys(LISTBOX_EVENTS).map((key, i, arr) => { return <string>(<any>LISTBOX_EVENTS)[key]; });
         return events.concat(base_events);
+    }
+    protected _getAppName() {
+        return this._options.appName;
     }
     addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any) {
         this._addHandler(LISTBOX_EVENTS.refreshed, fn, nmspace, context);
@@ -421,7 +425,7 @@ export class ListBox extends BaseObject {
         else
             this.selectedItem = null;
     }
-    private _refresh() {
+    private _refresh(): void {
         let self = this, ds = this.dataSource, oldItem = this._selectedItem, tmp = self._tempValue;
         this._isRefreshing = true;
         try {
@@ -781,7 +785,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
             valuePath: lookUpOptions.valuePath,
             textPath: lookUpOptions.textPath,
             statePath: (!lookUpOptions.statePath) ? null : lookUpOptions.statePath,
-            app: this.app,
+            appName: this.appName,
             el: doc.createElement("select")
         }, el = options.el, dataSource = parser.resolvePath(this.app, lookUpOptions.dataSource);
         el.setAttribute("size", "1");
@@ -805,7 +809,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         if (!!displayInfo && !!displayInfo.displayCss) {
             utils.dom.addClass([el], displayInfo.displayCss);
         }
-        let spanView = new SpanElView({ app: this.app, el: el });
+        let spanView = new SpanElView({ appName: this.appName, el: el });
         this._spanView = spanView;
         return this._spanView;
     }
@@ -944,4 +948,5 @@ export class ContentFactory implements IContentFactory {
 contentFactories.addFactory((nextFactory?: IContentFactory) => {
     return new ContentFactory(nextFactory);
 });
-bootstrap.registerElView("select", ListBoxElView);
+
+boot.registerElView("select", ListBoxElView);

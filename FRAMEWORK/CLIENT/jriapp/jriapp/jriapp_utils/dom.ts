@@ -1,5 +1,4 @@
-﻿/// <reference path="../jriapp_core/../../thirdparty/jquery.d.ts" />
-/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { ERRS } from "../jriapp_core/lang";
 import { IIndexer } from "../jriapp_core/shared";
 

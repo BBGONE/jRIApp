@@ -5,11 +5,11 @@ import { ERROR } from "../jriapp_utils/coreutils";
 import { Utils } from "../jriapp_utils/utils";
 import { ERRS } from "../jriapp_core/lang";
 
-import { ICollectionItem, IPropInfo, COLL_CHANGE_TYPE, COLL_CHANGE_REASON, COLL_CHANGE_OPER, PROP_NAME } from "int";
-import { fn_traverseFields, fn_traverseField } from "utils";
-import { BaseCollection } from "base";
-import { ItemAspect } from "aspect";
-import { ValidationError } from "validation";
+import { ICollectionItem, IPropInfo, COLL_CHANGE_TYPE, COLL_CHANGE_REASON, COLL_CHANGE_OPER, PROP_NAME } from "./int";
+import { fn_traverseFields, fn_traverseField } from "./utils";
+import { BaseCollection } from "./collection";
+import { ItemAspect } from "./aspect";
+import { ValidationError } from "./validation";
 
 const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
 

@@ -3,7 +3,9 @@ import { IPropertyBag } from "shared";
 import { ERRS } from "./lang";
 import { BaseObject }  from "object";
 import { SysChecks } from "../jriapp_utils/syschecks";
-import { Checks, StringUtils, CoreUtils } from "../jriapp_utils/coreutils";
+import { Checks } from "../jriapp_utils/checks";
+import { StringUtils } from "../jriapp_utils/strUtils";
+import { CoreUtils } from "../jriapp_utils/coreutils";
 
 const checks = Checks, syschecks = SysChecks, strUtils = StringUtils, coreUtils = CoreUtils;
 
