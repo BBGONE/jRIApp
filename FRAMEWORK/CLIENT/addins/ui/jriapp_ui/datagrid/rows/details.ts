@@ -4,7 +4,8 @@ import { Debounce } from "jriapp_utils/debounce";
 import { DblClick } from "jriapp_utils/dblclick";
 import { Utils } from "jriapp_utils/utils";
 import { ICollection, ICollectionItem, ICollChangedArgs, COLL_CHANGE_TYPE, COLL_CHANGE_REASON, ITEM_STATUS,
-    ICollItemArgs, ICollItemAddedArgs } from "jriapp";
+    ICollItemArgs, ICollItemAddedArgs
+} from "jriapp_collection/int";
 
 import { css, ROW_POSITION } from "../const";
 import { Row } from "./row";

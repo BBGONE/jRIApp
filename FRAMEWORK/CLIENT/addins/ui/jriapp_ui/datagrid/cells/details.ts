@@ -4,7 +4,7 @@ import { ITemplateEvents, ITemplate } from "jriapp_core/shared";
 import { createTemplate } from "jriapp_core/template";
 import { bootstrap } from "jriapp_core/bootstrap";
 import { BaseObject } from "jriapp_core/object";
-import { ICollectionItem } from "jriapp";
+import { ICollectionItem } from "jriapp_collection/int";
 
 import { DetailsRow } from "../rows/details";
 import { DataGrid } from "../datagrid"

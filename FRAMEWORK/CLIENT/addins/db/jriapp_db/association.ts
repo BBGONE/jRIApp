@@ -5,11 +5,11 @@ import { BaseObject } from "jriapp_core/object";
 import { bootstrap } from "jriapp_core/bootstrap";
 import { Debounce } from "jriapp_utils/debounce";
 import { Utils } from "jriapp_utils/utils";
-import { COLL_CHANGE_TYPE, ICollChangedArgs, ITEM_STATUS } from "jriapp";
-import { DELETE_ACTION } from "const";
-import { IAssocConstructorOptions, IEntityItem } from "int";
-import { DbContext } from "dbcontext";
-import { DbSet } from "dbset";
+import { ICollChangedArgs, COLL_CHANGE_TYPE, ITEM_STATUS } from "jriapp_collection/int";
+import { DELETE_ACTION } from "./const";
+import { IAssocConstructorOptions, IEntityItem } from "./int";
+import { DbContext } from "./dbcontext";
+import { DbSet } from "./dbset";
 
 const  utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr;
 

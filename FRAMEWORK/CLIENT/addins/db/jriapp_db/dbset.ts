@@ -8,10 +8,9 @@ import { ERRS } from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
 import { Debounce } from "jriapp_utils/debounce";
 import { Utils } from "jriapp_utils/utils";
-import {
-    valueUtils, COLL_CHANGE_REASON, ITEM_STATUS, IInternalCollMethods, BaseCollection,
-    fn_traverseField, fn_traverseFields, fn_getPropertyByName, COLL_CHANGE_TYPE, COLL_CHANGE_OPER
-} from "jriapp";
+import { IInternalCollMethods, COLL_CHANGE_REASON, COLL_CHANGE_TYPE, COLL_CHANGE_OPER, ITEM_STATUS } from "jriapp_collection/int";
+import { BaseCollection } from "jriapp_collection/collection";
+import { valueUtils, fn_traverseField, fn_traverseFields, fn_getPropertyByName } from "jriapp_collection/utils";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err;
 

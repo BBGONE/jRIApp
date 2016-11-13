@@ -5,7 +5,8 @@ import { BaseObject } from "jriapp_core/object";
 import { Debounce } from "jriapp_utils/debounce";
 import { Utils } from "jriapp_utils/utils";
 import { BaseElView, fn_addToolTip } from "jriapp_elview/elview";
-import { ICollection, ICollectionItem, COLL_CHANGE_TYPE, COLL_CHANGE_REASON, bootstrap } from "jriapp";
+import { ICollection, ICollectionItem, COLL_CHANGE_TYPE, COLL_CHANGE_REASON } from "jriapp_collection/int";
+import { bootstrap } from "jriapp";
 
 const utils = Utils, dom = utils.dom, $ = dom.$, doc = utils.dom.document, checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
     ERROR = utils.err, boot = bootstrap;

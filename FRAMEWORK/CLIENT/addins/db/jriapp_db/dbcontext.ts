@@ -7,18 +7,19 @@ import { bootstrap } from "jriapp_core/bootstrap";
 import { WaitQueue } from "jriapp_utils/waitqueue";
 import { Utils } from "jriapp_utils/utils";
 import { IPromiseState, IPromise, IAbortablePromise, PromiseState, IDeferred } from "jriapp_utils/async";
-import { COLL_CHANGE_REASON, valueUtils } from "jriapp";
+import { COLL_CHANGE_REASON } from "jriapp_collection/int";
+import { valueUtils } from "jriapp_collection/utils";
 import {
     IEntityItem, IRefreshRowInfo, IQueryResult, IQueryInfo, IAssociationInfo, IAssocConstructorOptions,
     IPermissionsInfo, IPermissions, IInvokeRequest, IInvokeResponse, IQueryRequest, IQueryResponse, ITrackAssoc,
     IChangeSet, IRowInfo, IQueryParamInfo, IRowData, ISubset
-} from "int";
-import { PROP_NAME, DATA_OPER, REFRESH_MODE } from "const";
-import { DbSet } from "dbset";
-import { DbSets } from "dbsets";
-import { Association } from "association";
-import { DataQuery, TDataQuery } from "dataquery";
-import { AccessDeniedError, ConcurrencyError, SvcValidationError, DataOperationError, SubmitError } from "error";
+} from "./int";
+import { PROP_NAME, DATA_OPER, REFRESH_MODE } from "./const";
+import { DbSet } from "./dbset";
+import { DbSets } from "./dbsets";
+import { Association } from "./association";
+import { DataQuery, TDataQuery } from "./dataquery";
+import { AccessDeniedError, ConcurrencyError, SvcValidationError, DataOperationError, SubmitError } from "./error";
 
 const utils = Utils, http = utils.http, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err;
 

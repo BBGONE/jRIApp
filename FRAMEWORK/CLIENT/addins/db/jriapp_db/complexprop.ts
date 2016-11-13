@@ -3,9 +3,9 @@ import { IErrorNotification, IFieldInfo, IValidationInfo, TEventHandler } from "
 import * as langMOD from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
 import { Utils } from "jriapp_utils/utils";
-import { IEntityItem } from "int";
-import { EntityAspect } from "entity_aspect";
-import { DbContext } from "dbcontext";
+import { IEntityItem } from "./int";
+import { EntityAspect } from "./entity_aspect";
+import { DbContext } from "./dbcontext";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str;
 

@@ -1,6 +1,9 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { TOOLTIP_SVC, DATA_ATTR } from "../jriapp_core/const";
-import { ITooltipService, IElView, IValidationInfo, IApplication, IViewOptions, IPropertyBag, IIndexer } from "../jriapp_core/shared";
+import {
+    ITooltipService, IElView, IElViewStore, IValidationInfo, IApplication, IViewOptions,
+    IPropertyBag, IIndexer
+} from "../jriapp_core/shared";
 import { ERRS, STRS } from "../jriapp_core/lang";
 import { BaseObject }  from "../jriapp_core/object";
 import { SysChecks } from "../jriapp_utils/syschecks";
@@ -168,7 +171,10 @@ export class BaseElView extends BaseObject implements IElView {
             dom.addClass([el], this._css);
         }
         this._applyToolTip();
-        this.app.viewFactory.store.setElView(el, this);
+        this._getStore().setElView(el, this);
+    }
+    private _getStore(): IElViewStore {
+        return boot.getApp().viewFactory.store;
     }
     protected _onEventChanged(args: IEventChangedArgs) {
         switch (args.changeType) {
@@ -234,7 +240,7 @@ export class BaseElView extends BaseObject implements IElView {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        this.app.viewFactory.store.setElView(this.el, null);
+        this._getStore().setElView(this.el, null);
         this._$el.off("." + this.uniqueID);
         this.validationErrors = null;
         this.toolTip = null;

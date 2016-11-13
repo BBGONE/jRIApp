@@ -375,7 +375,7 @@ declare module "jriapp_ui/datagrid/cells/rowselector" {
 }
 declare module "jriapp_ui/datagrid/rows/row" {
     import { BaseObject } from "jriapp_core/object";
-    import { ICollectionItem } from "jriapp";
+    import { ICollectionItem } from "jriapp_collection/int";
     import { ROW_POSITION } from "jriapp_ui/datagrid/const";
     import { BaseCell } from "jriapp_ui/datagrid/cells/base";
     import { ExpanderCell } from "jriapp_ui/datagrid/cells/expander";
@@ -435,7 +435,7 @@ declare module "jriapp_ui/datagrid/rows/row" {
 }
 declare module "jriapp_ui/datagrid/cells/base" {
     import { BaseObject } from "jriapp_core/object";
-    import { ICollectionItem } from "jriapp";
+    import { ICollectionItem } from "jriapp_collection/int";
     import { DblClick } from "jriapp_utils/dblclick";
     import { Row } from "jriapp_ui/datagrid/rows/row";
     import { BaseColumn } from "jriapp_ui/datagrid/columns/base";
@@ -470,7 +470,7 @@ declare module "jriapp_ui/datagrid/cells/base" {
 }
 declare module "jriapp_ui/datagrid/rows/details" {
     import { BaseObject } from "jriapp_core/object";
-    import { ICollectionItem } from "jriapp";
+    import { ICollectionItem } from "jriapp_collection/int";
     import { Row } from "jriapp_ui/datagrid/rows/row";
     import { DetailsCell } from "jriapp_ui/datagrid/cells/details";
     import { DataGrid } from "jriapp_ui/datagrid/datagrid";
@@ -510,7 +510,7 @@ declare module "jriapp_ui/datagrid/rows/details" {
 declare module "jriapp_ui/datagrid/cells/details" {
     import { ITemplate } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
-    import { ICollectionItem } from "jriapp";
+    import { ICollectionItem } from "jriapp_collection/int";
     import { DetailsRow } from "jriapp_ui/datagrid/rows/details";
     import { DataGrid } from "jriapp_ui/datagrid/datagrid";
     export class DetailsCell extends BaseObject {
@@ -579,7 +579,7 @@ declare module "jriapp_ui/datagrid/cells/fillspace" {
 declare module "jriapp_ui/datagrid/datagrid" {
     import { ISelectableProvider, TEventHandler, ISelectable, IViewOptions } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
-    import { ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollection, ICollItemAddedArgs, ITEM_STATUS } from "jriapp";
+    import { ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollection, ICollItemAddedArgs, ITEM_STATUS } from "jriapp_collection/int";
     import { BaseElView } from "jriapp_elview/elview";
     import { IDialogConstructorOptions } from "jriapp_ui/dialog";
     import { ROW_POSITION, ROW_ACTION } from "jriapp_ui/datagrid/const";
@@ -785,7 +785,7 @@ declare module "jriapp_ui/pager" {
     import { IViewOptions } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
     import { BaseElView } from "jriapp_elview/elview";
-    import { ICollection, ICollectionItem } from "jriapp";
+    import { ICollection, ICollectionItem } from "jriapp_collection/int";
     export interface IPagerOptions {
         showTip?: boolean;
         showInfo?: boolean;
@@ -859,7 +859,7 @@ declare module "jriapp_ui/pager" {
 declare module "jriapp_ui/listbox" {
     import { IBaseObject, TEventHandler, IExternallyCachable, IBinding, IConstructorContentOptions, IContentFactory, IContentConstructor, IContent, IContentOptions, IViewOptions } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
-    import { ICollection, ICollectionItem, ICollChangedArgs, ITEM_STATUS } from "jriapp";
+    import { ICollection, ICollectionItem, ICollChangedArgs, ITEM_STATUS } from "jriapp_collection/int";
     import { BaseElView } from "jriapp_elview/elview";
     import { SpanElView } from "jriapp_elview/span";
     import { BasicContent } from "jriapp_content/basic";
@@ -1012,7 +1012,7 @@ declare module "jriapp_ui/stackpanel" {
     import { ITemplate, ISelectable, IViewOptions, TEventHandler, ISelectableProvider, IBaseObject } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
     import { BaseElView } from "jriapp_elview/elview";
-    import { ICollection, ICollectionItem, ICollChangedArgs, ITEM_STATUS } from "jriapp";
+    import { ICollection, ICollectionItem, ICollChangedArgs, ITEM_STATUS } from "jriapp_collection/int";
     export interface IStackPanelOptions {
         templateID: string;
         orientation?: "vertical" | "horizontal";

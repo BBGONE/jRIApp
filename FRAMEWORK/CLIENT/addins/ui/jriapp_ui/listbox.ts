@@ -8,7 +8,8 @@ import { bootstrap } from "jriapp_core/bootstrap";
 import { parser } from "jriapp_core/parser";
 import { Utils } from "jriapp_utils/utils";
 import { ICollection, ICollectionItem, ICollChangedArgs, COLL_CHANGE_TYPE,
-    COLL_CHANGE_REASON, ITEM_STATUS } from "jriapp";
+    COLL_CHANGE_REASON, ITEM_STATUS
+} from "jriapp_collection/int";
 import { BaseElView } from "jriapp_elview/elview";
 import { SpanElView } from "jriapp_elview/span";
 import { BasicContent } from "jriapp_content/basic";

@@ -172,7 +172,7 @@ export class DataForm extends BaseObject {
         //if this form is nested inside another dataform
         //subscribe for parent's destroy event
         if (!!parent) {
-            self._parentDataForm = boot.getApp().viewFactory.getOrCreateElView(parent);
+            self._parentDataForm = this.app.viewFactory.getOrCreateElView(parent);
             self._parentDataForm.addOnDestroyed(function (sender, args) {
                 //destroy itself if parent form is destroyed
                 if (!self._isDestroyCalled)

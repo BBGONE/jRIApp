@@ -50,7 +50,7 @@ define("jriapp_db/const", ["require", "exports"], function (require, exports) {
         isLoading: "isLoading"
     };
 });
-define("jriapp_db/dataquery", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/utils", "jriapp", "jriapp_db/const", "jriapp_db/datacache"], function (require, exports, langMOD, object_1, utils_1, jriapp_1, const_1, datacache_1) {
+define("jriapp_db/dataquery", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/utils", "jriapp_collection/utils", "jriapp_db/const", "jriapp_db/datacache"], function (require, exports, langMOD, object_1, utils_1, utils_2, const_1, datacache_1) {
     "use strict";
     var utils = utils_1.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ArrayHelper = utils.arr;
     var DataQuery = (function (_super) {
@@ -110,7 +110,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_core/lang", "jriapp
                 vals = value;
             var tmpVals = ArrayHelper.clone(vals);
             vals = tmpVals.map(function (v) {
-                return jriapp_1.valueUtils.stringifyValue(v, dcnv, fld.dataType, stz);
+                return utils_2.valueUtils.stringifyValue(v, dcnv, fld.dataType, stz);
             });
             switch (operand) {
                 case 0:
@@ -340,9 +340,9 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_core/lang", "jriapp
     }(object_1.BaseObject));
     exports.DataQuery = DataQuery;
 });
-define("jriapp_db/datacache", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/utils", "jriapp_db/const"], function (require, exports, langMOD, object_2, utils_2, const_2) {
+define("jriapp_db/datacache", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/utils", "jriapp_db/const"], function (require, exports, langMOD, object_2, utils_3, const_2) {
     "use strict";
-    var utils = utils_2.Utils, checks = utils.check, strUtils = utils.str;
+    var utils = utils_3.Utils, checks = utils.check, strUtils = utils.str;
     var DataCache = (function (_super) {
         __extends(DataCache, _super);
         function DataCache(query) {
@@ -557,9 +557,9 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_core/lang", "jriapp
     }(object_2.BaseObject));
     exports.DataCache = DataCache;
 });
-define("jriapp_db/dbset", ["require", "exports", "jriapp_core/lang", "jriapp_utils/debounce", "jriapp_utils/utils", "jriapp", "jriapp_db/const", "jriapp_db/dataquery", "jriapp_db/entity_aspect"], function (require, exports, lang_1, debounce_1, utils_3, jriapp_2, const_3, dataquery_1, entity_aspect_1) {
+define("jriapp_db/dbset", ["require", "exports", "jriapp_core/lang", "jriapp_utils/debounce", "jriapp_utils/utils", "jriapp_collection/collection", "jriapp_collection/utils", "jriapp_db/const", "jriapp_db/dataquery", "jriapp_db/entity_aspect"], function (require, exports, lang_1, debounce_1, utils_4, collection_1, utils_5, const_3, dataquery_1, entity_aspect_1) {
     "use strict";
-    var utils = utils_3.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err;
+    var utils = utils_4.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err;
     var DBSET_EVENTS = {
         loaded: "loaded"
     };
@@ -588,12 +588,12 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_core/lang", "jriapp_uti
             this._ignorePageChanged = false;
             fieldInfos.forEach(function (f) {
                 self._fieldMap[f.fieldName] = f;
-                jriapp_2.fn_traverseField(f, function (fld, fullName) {
+                utils_5.fn_traverseField(f, function (fld, fullName) {
                     fld.dependents = [];
                     fld.fullName = fullName;
                 });
             });
-            jriapp_2.fn_traverseFields(fieldInfos, function (fld, fullName) {
+            utils_5.fn_traverseFields(fieldInfos, function (fld, fullName) {
                 if (fld.fieldType === 3) {
                     coreUtils.setValue(self._navfldMap, fullName, self._doNavigationField(opts, fld), true);
                 }
@@ -838,7 +838,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_core/lang", "jriapp_uti
         };
         DbSet.prototype._getStrValue = function (val, fieldInfo) {
             var dcnv = fieldInfo.dateConversion, stz = this.dbContext.serverTimezone;
-            return jriapp_2.valueUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
+            return utils_5.valueUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
         };
         DbSet.prototype._getCalcFieldVal = function (fieldName, item) {
             try {
@@ -1140,7 +1140,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_core/lang", "jriapp_uti
         };
         DbSet.prototype._getNames = function () {
             var self = this, fieldInfos = this.getFieldInfos(), names = [];
-            jriapp_2.fn_traverseFields(fieldInfos, function (fld, fullName, arr) {
+            utils_5.fn_traverseFields(fieldInfos, function (fld, fullName, arr) {
                 if (fld.fieldType === 5) {
                     var res = [];
                     arr.push({
@@ -1197,7 +1197,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_core/lang", "jriapp_uti
             }
             if (fld.fieldType === 5) {
                 for (var i = 1; i < parts.length; i += 1) {
-                    fld = jriapp_2.fn_getPropertyByName(parts[i], fld.nested);
+                    fld = utils_5.fn_getPropertyByName(parts[i], fld.nested);
                 }
                 return fld;
             }
@@ -1304,7 +1304,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_core/lang", "jriapp_uti
                 var rows = data.map(function (dataItem) {
                     var row = { k: null, v: [] };
                     var keys = new Array(pkFlds.length);
-                    jriapp_2.fn_traverseFields(fieldInfos, function (fld, fullName, arr) {
+                    utils_5.fn_traverseFields(fieldInfos, function (fld, fullName, arr) {
                         if (fld.fieldType === 5) {
                             var res = [];
                             arr.push(res);
@@ -1435,12 +1435,12 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_core/lang", "jriapp_uti
             configurable: true
         });
         return DbSet;
-    }(jriapp_2.BaseCollection));
+    }(collection_1.BaseCollection));
     exports.DbSet = DbSet;
 });
-define("jriapp_db/dbsets", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/utils", "jriapp_db/const"], function (require, exports, langMOD, object_3, utils_4, const_4) {
+define("jriapp_db/dbsets", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/utils", "jriapp_db/const"], function (require, exports, langMOD, object_3, utils_6, const_4) {
     "use strict";
-    var utils = utils_4.Utils, strUtils = utils.str;
+    var utils = utils_6.Utils, strUtils = utils.str;
     var DbSets = (function (_super) {
         __extends(DbSets, _super);
         function DbSets(dbContext) {
@@ -1506,9 +1506,9 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_core/lang", "jriapp_co
     }(object_3.BaseObject));
     exports.DbSets = DbSets;
 });
-define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/debounce", "jriapp_utils/utils"], function (require, exports, lang_2, object_4, debounce_2, utils_5) {
+define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/debounce", "jriapp_utils/utils"], function (require, exports, lang_2, object_4, debounce_2, utils_7) {
     "use strict";
-    var utils = utils_5.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr;
+    var utils = utils_7.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr;
     var Association = (function (_super) {
         __extends(Association, _super);
         function Association(options) {
@@ -2126,9 +2126,9 @@ define("jriapp_db/association", ["require", "exports", "jriapp_core/lang", "jria
     }(object_4.BaseObject));
     exports.Association = Association;
 });
-define("jriapp_db/error", ["require", "exports", "jriapp_core/shared", "jriapp_utils/utils"], function (require, exports, shared_1, utils_6) {
+define("jriapp_db/error", ["require", "exports", "jriapp_core/shared", "jriapp_utils/utils"], function (require, exports, shared_1, utils_8) {
     "use strict";
-    var strUtils = utils_6.Utils.str;
+    var strUtils = utils_8.Utils.str;
     var DataOperationError = (function (_super) {
         __extends(DataOperationError, _super);
         function DataOperationError(originalError, operationName) {
@@ -2212,9 +2212,9 @@ define("jriapp_db/error", ["require", "exports", "jriapp_core/shared", "jriapp_u
     }(DataOperationError));
     exports.SubmitError = SubmitError;
 });
-define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/waitqueue", "jriapp_utils/utils", "jriapp", "jriapp_db/const", "jriapp_db/association", "jriapp_db/error"], function (require, exports, shared_2, langMOD, object_5, waitqueue_1, utils_7, jriapp_3, const_5, association_1, error_1) {
+define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/waitqueue", "jriapp_utils/utils", "jriapp_collection/utils", "jriapp_db/const", "jriapp_db/association", "jriapp_db/error"], function (require, exports, shared_2, langMOD, object_5, waitqueue_1, utils_9, utils_10, const_5, association_1, error_1) {
     "use strict";
-    var utils = utils_7.Utils, http = utils.http, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err;
+    var utils = utils_9.Utils, http = utils.http, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err;
     var DATA_SVC_METH = {
         Invoke: "invoke",
         Query: "query",
@@ -2406,12 +2406,12 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
                 else if (checks.isArray(val)) {
                     var arr = new Array(val.length);
                     for (var k = 0; k < val.length; k += 1) {
-                        arr[k] = jriapp_3.valueUtils.stringifyValue(val[k], pinfo.dateConversion, pinfo.dataType, self.serverTimezone);
+                        arr[k] = utils_10.valueUtils.stringifyValue(val[k], pinfo.dateConversion, pinfo.dataType, self.serverTimezone);
                     }
                     value = JSON.stringify(arr);
                 }
                 else
-                    value = jriapp_3.valueUtils.stringifyValue(val, pinfo.dateConversion, pinfo.dataType, self.serverTimezone);
+                    value = utils_10.valueUtils.stringifyValue(val, pinfo.dateConversion, pinfo.dataType, self.serverTimezone);
                 data.paramInfo.parameters.push({ name: pinfo.name, value: value });
             }
             return data;
@@ -3061,9 +3061,9 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
     }(object_5.BaseObject));
     exports.DbContext = DbContext;
 });
-define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jriapp_utils/utils", "jriapp", "jriapp_db/const", "jriapp_db/error"], function (require, exports, lang_3, utils_8, jriapp_4, const_6, error_2) {
+define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jriapp_utils/utils", "jriapp_collection/utils", "jriapp_collection/validation", "jriapp_collection/aspect", "jriapp_db/const", "jriapp_db/error"], function (require, exports, lang_3, utils_11, utils_12, validation_1, aspect_1, const_6, error_2) {
     "use strict";
-    var utils = utils_8.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+    var utils = utils_11.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
     var ENTITYASPECT_EVENTS = {
         destroyed: "destroyed"
     };
@@ -3100,7 +3100,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
             this._origVals = null;
             this._savedStatus = null;
             var fieldInfos = this.dbSet.getFieldInfos();
-            jriapp_4.fn_traverseFields(fieldInfos, function (fld, fullName) {
+            utils_12.fn_traverseFields(fieldInfos, function (fld, fullName) {
                 if (fld.fieldType === 5)
                     coreUtils.setValue(self._vals, fullName, {}, false);
                 else
@@ -3125,7 +3125,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
                     self._processValues(fieldName + ".", value, name.p);
                 }
                 else {
-                    val = jriapp_4.valueUtils.parseValue(value, fld.dataType, fld.dateConversion, stz);
+                    val = utils_12.valueUtils.parseValue(value, fld.dataType, fld.dateConversion, stz);
                     coreUtils.setValue(self._vals, fieldName, val, false);
                 }
             });
@@ -3265,12 +3265,12 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
             if (!fld)
                 throw new Error(strUtils.format(lang_3.ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fullName));
             var stz = self.serverTimezone, newVal, oldVal, oldValOrig, dataType = fld.dataType, dcnv = fld.dateConversion;
-            newVal = jriapp_4.valueUtils.parseValue(val, dataType, dcnv, stz);
+            newVal = utils_12.valueUtils.parseValue(val, dataType, dcnv, stz);
             oldVal = coreUtils.getValue(self._vals, fullName);
             switch (refreshMode) {
                 case 3:
                     {
-                        if (!jriapp_4.valueUtils.compareVals(newVal, oldVal, dataType)) {
+                        if (!utils_12.valueUtils.compareVals(newVal, oldVal, dataType)) {
                             coreUtils.setValue(self._vals, fullName, newVal, false);
                             self._onFieldChanged(fullName, fld);
                         }
@@ -3284,7 +3284,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
                         if (!!self._saveVals) {
                             coreUtils.setValue(self._saveVals, fullName, newVal, false);
                         }
-                        if (!jriapp_4.valueUtils.compareVals(newVal, oldVal, dataType)) {
+                        if (!utils_12.valueUtils.compareVals(newVal, oldVal, dataType)) {
                             coreUtils.setValue(self._vals, fullName, newVal, false);
                             self._onFieldChanged(fullName, fld);
                         }
@@ -3296,8 +3296,8 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
                             oldValOrig = coreUtils.getValue(self._origVals, fullName);
                             coreUtils.setValue(self._origVals, fullName, newVal, false);
                         }
-                        if (oldValOrig === checks.undefined || jriapp_4.valueUtils.compareVals(oldValOrig, oldVal, dataType)) {
-                            if (!jriapp_4.valueUtils.compareVals(newVal, oldVal, dataType)) {
+                        if (oldValOrig === checks.undefined || utils_12.valueUtils.compareVals(oldValOrig, oldVal, dataType)) {
+                            if (!utils_12.valueUtils.compareVals(newVal, oldVal, dataType)) {
                                 coreUtils.setValue(self._vals, fullName, newVal, false);
                                 self._onFieldChanged(fullName, fld);
                             }
@@ -3383,7 +3383,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
                 dbSet._getInternal().removeError(this.item, fieldName);
                 validation_error = this._validateField(fieldName);
                 if (!!validation_error) {
-                    throw new jriapp_4.ValidationError([validation_error], this);
+                    throw new validation_1.ValidationError([validation_error], this);
                 }
             }
             catch (ex) {
@@ -3391,7 +3391,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
                     error = ex;
                 }
                 else {
-                    error = new jriapp_4.ValidationError([
+                    error = new validation_1.ValidationError([
                         { fieldName: fieldName, errors: [ex.message] }
                     ], this);
                 }
@@ -3565,15 +3565,15 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
             configurable: true
         });
         return EntityAspect;
-    }(jriapp_4.ItemAspect));
+    }(aspect_1.ItemAspect));
     exports.EntityAspect = EntityAspect;
 });
 define("jriapp_db/int", ["require", "exports"], function (require, exports) {
     "use strict";
 });
-define("jriapp_db/dataview", ["require", "exports", "jriapp_core/lang", "jriapp_utils/debounce", "jriapp_utils/utils", "jriapp", "jriapp_db/const"], function (require, exports, lang_4, debounce_3, utils_9, jriapp_5, const_7) {
+define("jriapp_db/dataview", ["require", "exports", "jriapp_core/lang", "jriapp_utils/debounce", "jriapp_utils/utils", "jriapp_collection/collection", "jriapp_db/const"], function (require, exports, lang_4, debounce_3, utils_13, collection_2, const_7) {
     "use strict";
-    var utils = utils_9.Utils, _async = utils.defer, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr, ERROR = utils.err;
+    var utils = utils_13.Utils, _async = utils.defer, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr, ERROR = utils.err;
     var VIEW_EVENTS = {
         refreshed: "view_refreshed"
     };
@@ -4004,12 +4004,12 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_core/lang", "jriapp_
             configurable: true
         });
         return DataView;
-    }(jriapp_5.BaseCollection));
+    }(collection_2.BaseCollection));
     exports.DataView = DataView;
 });
-define("jriapp_db/child_dataview", ["require", "exports", "jriapp_utils/debounce", "jriapp_utils/utils", "jriapp_db/const", "jriapp_db/dataview"], function (require, exports, debounce_4, utils_10, const_8, dataview_1) {
+define("jriapp_db/child_dataview", ["require", "exports", "jriapp_utils/debounce", "jriapp_utils/utils", "jriapp_db/const", "jriapp_db/dataview"], function (require, exports, debounce_4, utils_14, const_8, dataview_1) {
     "use strict";
-    var utils = utils_10.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+    var utils = utils_14.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
     var ChildDataView = (function (_super) {
         __extends(ChildDataView, _super);
         function ChildDataView(options) {
@@ -4090,9 +4090,9 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_utils/debounce
     }(dataview_1.DataView));
     exports.ChildDataView = ChildDataView;
 });
-define("jriapp_db/complexprop", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/utils"], function (require, exports, langMOD, object_6, utils_11) {
+define("jriapp_db/complexprop", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/utils"], function (require, exports, langMOD, object_6, utils_15) {
     "use strict";
-    var utils = utils_11.Utils, checks = utils.check, strUtils = utils.str;
+    var utils = utils_15.Utils, checks = utils.check, strUtils = utils.str;
     var BaseComplexProperty = (function (_super) {
         __extends(BaseComplexProperty, _super);
         function BaseComplexProperty(name) {

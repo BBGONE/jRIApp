@@ -6,9 +6,12 @@ import { BaseObject } from "jriapp_core/object";
 import { parser } from "jriapp_core/parser";
 import { Debounce } from "jriapp_utils/debounce";
 import { Utils } from "jriapp_utils/utils";
-import { ICollection, ICollectionItem, BaseCollection, COLL_CHANGE_REASON, COLL_CHANGE_OPER,
-    ICollChangedArgs, COLL_CHANGE_TYPE, ICollItemStatusArgs, IErrors, IPermissions } from "jriapp";
-import { PROP_NAME } from "const";
+import {
+    ICollection, ICollectionItem, ICollChangedArgs, ICollItemStatusArgs, IErrors, IPermissions,
+    COLL_CHANGE_TYPE, COLL_CHANGE_REASON, COLL_CHANGE_OPER
+} from "jriapp_collection/int";
+import { BaseCollection } from "jriapp_collection/collection";
+import { PROP_NAME } from "./const";
 
 const utils = Utils, _async = utils.defer, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr, ERROR = utils.err;
 

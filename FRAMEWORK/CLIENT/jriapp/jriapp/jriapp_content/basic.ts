@@ -140,7 +140,7 @@ export class BasicContent extends BaseObject implements IContent {
         this._target = null;
     }
     protected getElementView(el: HTMLElement, view_info: { name: string; options: IViewOptions; }): IElView {
-        let factory = boot.getApp().viewFactory, elView = factory.store.getElView(el);
+        const factory = boot.getApp().viewFactory, elView = factory.store.getElView(el);
         if (!!elView)
             return elView;
         view_info.options = coreUtils.merge({ el: el }, view_info.options);

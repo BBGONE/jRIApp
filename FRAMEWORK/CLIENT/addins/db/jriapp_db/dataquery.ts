@@ -4,12 +4,12 @@ import { IPromise, IFieldInfo } from "jriapp_core/shared";
 import * as langMOD from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
 import { Utils } from "jriapp_utils/utils";
-import { valueUtils } from "jriapp";
-import { PROP_NAME } from "const";
-import { IEntityItem, IQueryInfo, IFilterInfo, ISortInfo, IQueryResult, IEntityConstructor } from "int";
-import { DataCache } from "datacache";
-import { DbSet } from "dbset";
-import { DbContext } from "dbcontext";
+import { valueUtils } from "jriapp_collection/utils";
+import { PROP_NAME } from "./const";
+import { IEntityItem, IQueryInfo, IFilterInfo, ISortInfo, IQueryResult, IEntityConstructor } from "./int";
+import { DataCache } from "./datacache";
+import { DbSet } from "./dbset";
+import { DbContext } from "./dbcontext";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ArrayHelper = utils.arr;
 

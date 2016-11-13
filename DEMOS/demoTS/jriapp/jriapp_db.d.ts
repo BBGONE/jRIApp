@@ -152,7 +152,8 @@ declare module "jriapp_db/datacache" {
 declare module "jriapp_db/dbset" {
     import { SORT_ORDER } from "jriapp_core/const";
     import { IFieldInfo, TEventHandler, IBaseObject, IPromise, TPriority } from "jriapp_core/shared";
-    import { COLL_CHANGE_REASON, ITEM_STATUS, IInternalCollMethods, BaseCollection } from "jriapp";
+    import { IInternalCollMethods, COLL_CHANGE_REASON, ITEM_STATUS } from "jriapp_collection/int";
+    import { BaseCollection } from "jriapp_collection/collection";
     import { IFieldName, IEntityItem, IEntityConstructor, IRowInfo, ITrackAssoc, IQueryResponse, IPermissions, IDbSetConstuctorOptions, IDbSetOptions, ICalcFieldImpl, INavFieldImpl, IQueryResult, IRowData, IDbSetLoadedArgs } from "jriapp_db/int";
     import { REFRESH_MODE } from "jriapp_db/const";
     import { DataQuery } from "jriapp_db/dataquery";
@@ -299,7 +300,7 @@ declare module "jriapp_db/dbsets" {
 declare module "jriapp_db/association" {
     import { IFieldInfo, IIndexer } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
-    import { ICollChangedArgs, ITEM_STATUS } from "jriapp";
+    import { ICollChangedArgs, ITEM_STATUS } from "jriapp_collection/int";
     import { DELETE_ACTION } from "jriapp_db/const";
     import { IAssocConstructorOptions, IEntityItem } from "jriapp_db/int";
     import { DbContext } from "jriapp_db/dbcontext";
@@ -401,7 +402,7 @@ declare module "jriapp_db/dbcontext" {
     import { IIndexer, IVoidPromise, IBaseObject, TEventHandler } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
     import { IPromise, IAbortablePromise } from "jriapp_utils/async";
-    import { COLL_CHANGE_REASON } from "jriapp";
+    import { COLL_CHANGE_REASON } from "jriapp_collection/int";
     import { IEntityItem, IRefreshRowInfo, IQueryResult, IQueryInfo, IAssociationInfo, IPermissionsInfo, IInvokeRequest, IQueryResponse, IChangeSet } from "jriapp_db/int";
     import { DATA_OPER } from "jriapp_db/const";
     import { DbSet } from "jriapp_db/dbset";
@@ -522,7 +523,8 @@ declare module "jriapp_db/dbcontext" {
 }
 declare module "jriapp_db/entity_aspect" {
     import { IFieldInfo, IVoidPromise, IPromise } from "jriapp_core/shared";
-    import { ItemAspect, ITEM_STATUS } from "jriapp";
+    import { ITEM_STATUS } from "jriapp_collection/int";
+    import { ItemAspect } from "jriapp_collection/aspect";
     import { REFRESH_MODE } from "jriapp_db/const";
     import { DbContext } from "jriapp_db/dbcontext";
     import { IEntityItem, IEntityConstructor, IRowData, IFieldName, IValueChange, IRowInfo } from "jriapp_db/int";
@@ -584,7 +586,7 @@ declare module "jriapp_db/entity_aspect" {
 declare module "jriapp_db/int" {
     import { DATE_CONVERSION, FILTER_TYPE, DATA_TYPE, SORT_ORDER } from "jriapp_core/const";
     import { IFieldInfo } from "jriapp_core/shared";
-    import { ICollectionItem, IPermissions as ICollPermissions, ICollectionOptions, COLL_CHANGE_REASON } from "jriapp";
+    import { ICollectionItem, IPermissions as ICollPermissions, ICollectionOptions, COLL_CHANGE_REASON } from "jriapp_collection/int";
     import { DELETE_ACTION } from "jriapp_db/const";
     import { EntityAspect } from "jriapp_db/entity_aspect";
     import { DbContext } from "jriapp_db/dbcontext";
@@ -793,7 +795,8 @@ declare module "jriapp_db/int" {
 declare module "jriapp_db/dataview" {
     import { SORT_ORDER } from "jriapp_core/const";
     import { IPromise, IFieldInfo, TEventHandler } from "jriapp_core/shared";
-    import { ICollection, ICollectionItem, BaseCollection, COLL_CHANGE_REASON, COLL_CHANGE_OPER, ICollChangedArgs, ICollItemStatusArgs, IErrors, IPermissions } from "jriapp";
+    import { ICollection, ICollectionItem, ICollChangedArgs, ICollItemStatusArgs, IErrors, IPermissions, COLL_CHANGE_REASON, COLL_CHANGE_OPER } from "jriapp_collection/int";
+    import { BaseCollection } from "jriapp_collection/collection";
     export interface IDataViewOptions<TItem extends ICollectionItem> {
         dataSource: ICollection<TItem>;
         fn_filter?: (item: TItem) => boolean;

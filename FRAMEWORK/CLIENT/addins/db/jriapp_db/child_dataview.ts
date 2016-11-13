@@ -3,11 +3,11 @@ import * as langMOD from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
 import { Debounce } from "jriapp_utils/debounce";
 import { Utils } from "jriapp_utils/utils";
-import { COLL_CHANGE_REASON, ICollection } from "jriapp";
-import { PROP_NAME } from "const";
-import { IEntityItem } from "int";
-import { Association } from "association";
-import { DataView, IDataViewOptions } from "dataview";
+import { COLL_CHANGE_REASON, ICollection } from "jriapp_collection/int";
+import { PROP_NAME } from "./const";
+import { IEntityItem } from "./int";
+import { Association } from "./association";
+import { DataView, IDataViewOptions } from "./dataview";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
 

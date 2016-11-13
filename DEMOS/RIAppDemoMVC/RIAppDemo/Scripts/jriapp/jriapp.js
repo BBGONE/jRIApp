@@ -11,7 +11,7 @@ define("jriapp_core/const", ["require", "exports"], function (require, exports) 
         DEBUG_LEVEL[DEBUG_LEVEL["HIGH"] = 2] = "HIGH";
     })(exports.DEBUG_LEVEL || (exports.DEBUG_LEVEL = {}));
     var DEBUG_LEVEL = exports.DEBUG_LEVEL;
-    exports.APP_NAME = "app_default";
+    exports.APP_NAME = "app";
     exports.DUMY_ERROR = "DUMMY_ERROR";
     exports.TOOLTIP_SVC = "tooltipSVC";
     exports.STORE_KEY = {
@@ -4282,8 +4282,11 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
                 dom.addClass([el], this._css);
             }
             this._applyToolTip();
-            this.app.viewFactory.store.setElView(el, this);
+            this._getStore().setElView(el, this);
         }
+        BaseElView.prototype._getStore = function () {
+            return boot.getApp().viewFactory.store;
+        };
         BaseElView.prototype._onEventChanged = function (args) {
             switch (args.changeType) {
                 case 1:
@@ -4348,7 +4351,7 @@ define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jria
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
-            this.app.viewFactory.store.setElView(this.el, null);
+            this._getStore().setElView(this.el, null);
             this._$el.off("." + this.uniqueID);
             this.validationErrors = null;
             this.toolTip = null;
@@ -6865,7 +6868,7 @@ define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jria
             this._contentPromise = null;
             parent = syschecks._getParentDataForm(null, this._el);
             if (!!parent) {
-                self._parentDataForm = boot.getApp().viewFactory.getOrCreateElView(parent);
+                self._parentDataForm = this.app.viewFactory.getOrCreateElView(parent);
                 self._parentDataForm.addOnDestroyed(function (sender, args) {
                     if (!self._isDestroyCalled)
                         self.destroy();
@@ -10746,7 +10749,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
     }(object_21.BaseObject));
     exports.Application = Application;
 });
-define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/const", "jriapp_core/shared", "jriapp_utils/syschecks", "jriapp_core/lang", "jriapp_core/converter", "jriapp_core/object", "jriapp_utils/debounce", "jriapp_utils/dblclick", "jriapp_utils/coreutils", "jriapp_core/bootstrap", "jriapp_content/factory", "jriapp_core/binding", "jriapp_core/datepicker", "jriapp_core/dataform", "jriapp_core/template", "jriapp_elview/all", "jriapp_utils/lifetime", "jriapp_utils/propwatcher", "jriapp_utils/waitqueue", "jriapp_utils/utils", "jriapp_core/mvvm", "jriapp_collection/int", "jriapp_collection/collection", "jriapp_collection/item", "jriapp_collection/aspect", "jriapp_collection/list", "jriapp_collection/dictionary", "jriapp_collection/validation", "jriapp_collection/utils", "jriapp_core/app"], function (require, exports, bootstrap_27, const_10, shared_6, syschecks_11, lang_26, converter_1, object_22, debounce_1, dblclick_1, coreutils_18, bootstrap_28, factory_4, binding_3, datepicker_1, dataform_1, template_4, all_1, lifetime_4, propwatcher_1, waitqueue_3, utils_36, mvvm_2, int_10, collection_3, item_1, aspect_2, list_2, dictionary_1, validation_4, utils_37, app_1) {
+define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/const", "jriapp_core/shared", "jriapp_utils/syschecks", "jriapp_core/lang", "jriapp_core/converter", "jriapp_core/object", "jriapp_utils/debounce", "jriapp_utils/dblclick", "jriapp_utils/coreutils", "jriapp_core/bootstrap", "jriapp_content/factory", "jriapp_core/binding", "jriapp_core/datepicker", "jriapp_core/dataform", "jriapp_core/template", "jriapp_elview/all", "jriapp_utils/lifetime", "jriapp_utils/propwatcher", "jriapp_utils/waitqueue", "jriapp_utils/utils", "jriapp_core/mvvm", "jriapp_collection/int", "jriapp_collection/collection", "jriapp_collection/item", "jriapp_collection/aspect", "jriapp_collection/list", "jriapp_collection/dictionary", "jriapp_collection/validation", "jriapp_core/app"], function (require, exports, bootstrap_27, const_10, shared_6, syschecks_11, lang_26, converter_1, object_22, debounce_1, dblclick_1, coreutils_18, bootstrap_28, factory_4, binding_3, datepicker_1, dataform_1, template_4, all_1, lifetime_4, propwatcher_1, waitqueue_3, utils_36, mvvm_2, int_10, collection_3, item_1, aspect_2, list_2, dictionary_1, validation_4, app_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -10784,15 +10787,18 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.WaitQueue = waitqueue_3.WaitQueue;
     exports.Utils = utils_36.Utils;
     __export(mvvm_2);
-    __export(int_10);
-    __export(collection_3);
-    __export(item_1);
-    __export(aspect_2);
-    __export(list_2);
-    __export(dictionary_1);
-    __export(validation_4);
-    __export(utils_37);
+    exports.COLL_CHANGE_OPER = int_10.COLL_CHANGE_OPER;
+    exports.COLL_CHANGE_REASON = int_10.COLL_CHANGE_REASON;
+    exports.COLL_CHANGE_TYPE = int_10.COLL_CHANGE_TYPE;
+    exports.ITEM_STATUS = int_10.ITEM_STATUS;
+    exports.BaseCollection = collection_3.BaseCollection;
+    exports.CollectionItem = item_1.CollectionItem;
+    exports.ItemAspect = aspect_2.ItemAspect;
+    exports.ListItemAspect = list_2.ListItemAspect;
+    exports.BaseList = list_2.BaseList;
+    exports.BaseDictionary = dictionary_1.BaseDictionary;
+    exports.ValidationError = validation_4.ValidationError;
     exports.Application = app_1.Application;
-    exports.VERSION = "0.9.92";
+    exports.VERSION = "0.9.93";
     bootstrap_27.Bootstrap._initFramework();
 });

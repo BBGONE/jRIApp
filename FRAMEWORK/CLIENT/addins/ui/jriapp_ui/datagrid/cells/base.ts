@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { DATA_ATTR } from "jriapp_core/const";
 import { BaseObject } from "jriapp_core/object";
-import { ICollectionItem } from "jriapp";
+import { ICollectionItem } from "jriapp_collection/int";
 import { DblClick } from "jriapp_utils/dblclick";
 import { Utils } from "jriapp_utils/utils";
 

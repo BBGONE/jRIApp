@@ -7,7 +7,8 @@ import { ERRS } from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
 import { Utils } from "jriapp_utils/utils";
 import { BaseElView } from "jriapp_elview/elview";
-import { ICollection, ICollectionItem, ICollChangedArgs, COLL_CHANGE_TYPE, COLL_CHANGE_REASON, ITEM_STATUS, bootstrap } from "jriapp";
+import { ICollection, ICollectionItem, ICollChangedArgs, COLL_CHANGE_TYPE, COLL_CHANGE_REASON, ITEM_STATUS } from "jriapp_collection/int";
+import { bootstrap } from "jriapp";
 
 const utils = Utils, dom = utils.dom, $ = dom.$, doc = dom.document, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, boot = bootstrap;
 

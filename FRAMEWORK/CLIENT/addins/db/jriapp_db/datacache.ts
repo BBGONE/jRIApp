@@ -2,9 +2,9 @@
 import * as langMOD from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
 import { Utils } from "jriapp_utils/utils";
-import { PROP_NAME } from "const";
-import { DataQuery } from "dataquery";
-import { IEntityItem } from "int";
+import { PROP_NAME } from "./const";
+import { DataQuery } from "./dataquery";
+import { IEntityItem } from "./int";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str;
 export interface ICachedPage { items: IEntityItem[]; pageIndex: number; }

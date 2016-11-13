@@ -32,16 +32,19 @@ export { PropWatcher } from "./jriapp_utils/propwatcher";
 export { WaitQueue, IWaitQueueItem } from "./jriapp_utils/waitqueue";
 export { Utils } from "./jriapp_utils/utils";
 export * from "./jriapp_core/mvvm";
-export * from "./jriapp_collection/int";
-export * from "./jriapp_collection/collection";
-export * from "./jriapp_collection/item";
-export * from "./jriapp_collection/aspect";
-export * from "./jriapp_collection/list";
-export * from "./jriapp_collection/dictionary";
-export * from "./jriapp_collection/validation";
-export * from "./jriapp_collection/utils";
+
+export {
+    ICollection, ICollectionItem, IValueUtils, IEditableCollection,  IItemAspect, IPermissions, ISimpleCollection,
+    COLL_CHANGE_OPER, COLL_CHANGE_REASON, COLL_CHANGE_TYPE, ITEM_STATUS
+} from "./jriapp_collection/int";
+export { BaseCollection } from "./jriapp_collection/collection";
+export { CollectionItem } from "./jriapp_collection/item";
+export { ItemAspect } from "./jriapp_collection/aspect";
+export { ListItemAspect, IListItem, BaseList, IListItemAspectConstructor, IListItemConstructor } from "./jriapp_collection/list";
+export { BaseDictionary } from "./jriapp_collection/dictionary";
+export { ValidationError } from "./jriapp_collection/validation";
 export { Application } from "./jriapp_core/app";
 
-export const VERSION = "0.9.92";
+export const VERSION = "0.9.93";
 
 Bootstrap._initFramework();

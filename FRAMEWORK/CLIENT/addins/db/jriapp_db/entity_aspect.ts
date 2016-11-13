@@ -3,12 +3,15 @@ import { FIELD_TYPE, DATE_CONVERSION, DATA_TYPE, SORT_ORDER } from "jriapp_core/
 import { IFieldInfo, IIndexer, IValidationInfo, IVoidPromise, IPromise } from "jriapp_core/shared";
 import { ERRS } from "jriapp_core/lang";
 import { Utils } from "jriapp_utils/utils";
-import { valueUtils, ItemAspect, ITEM_STATUS, fn_traverseFields, ValidationError, ICancellableArgs } from "jriapp";
-import { FLAGS, REFRESH_MODE, PROP_NAME } from "const";
-import { DbContext } from "dbcontext";
-import { IEntityItem, IEntityConstructor, IRowData, IFieldName, IValueChange, IRowInfo } from "int";
-import { DbSet } from "dbset";
-import { SubmitError } from "error";
+import { valueUtils, fn_traverseFields } from "jriapp_collection/utils";
+import { ValidationError } from "jriapp_collection/validation";
+import { ICancellableArgs, ITEM_STATUS } from "jriapp_collection/int";
+import { ItemAspect } from "jriapp_collection/aspect";
+import { FLAGS, REFRESH_MODE, PROP_NAME } from "./const";
+import { DbContext } from "./dbcontext";
+import { IEntityItem, IEntityConstructor, IRowData, IFieldName, IValueChange, IRowInfo } from "./int";
+import { DbSet } from "./dbset";
+import { SubmitError } from "./error";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
 

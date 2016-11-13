@@ -12,7 +12,8 @@ import { Utils } from "jriapp_utils/utils";
 import { bootstrap } from "jriapp_core/bootstrap";
 import { parser } from "jriapp_core/parser";
 import { COLL_CHANGE_TYPE, ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollection, ICollItemAddedArgs,
-    COLL_CHANGE_REASON, ITEM_STATUS } from "jriapp";
+    COLL_CHANGE_REASON, ITEM_STATUS
+} from "jriapp_collection/int";
 import { BaseElView } from "jriapp_elview/elview";
 import { parseContentAttr } from "jriapp_content/int";
 import { IDialogConstructorOptions, DataEditDialog } from "dialog";

@@ -2,10 +2,10 @@
 import * as langMOD from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
 import { Utils } from "jriapp_utils/utils";
-import { PROP_NAME } from "const";
-import { IEntityItem } from "int";
-import { DbContext } from "dbcontext";
-import { DbSet, IDbSetConstructor } from "dbset";
+import { PROP_NAME } from "./const";
+import { IEntityItem } from "./int";
+import { DbContext } from "./dbcontext";
+import { DbSet, IDbSetConstructor } from "./dbset";
 
 const utils = Utils, strUtils = utils.str;
 
