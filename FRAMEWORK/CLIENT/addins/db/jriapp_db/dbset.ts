@@ -12,7 +12,8 @@ import { IInternalCollMethods, COLL_CHANGE_REASON, COLL_CHANGE_TYPE, COLL_CHANGE
 import { BaseCollection } from "jriapp_collection/collection";
 import { valueUtils, fn_traverseField, fn_traverseFields, fn_getPropertyByName } from "jriapp_collection/utils";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err;
+const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err,
+    valUtils = valueUtils;
 
 import {
     IFieldName, IEntityItem, IEntityConstructor, IValueChange, IRowInfo, ITrackAssoc, IQueryResponse, IPermissions, IDbSetConstuctorOptions, IDbSetOptions,
@@ -376,7 +377,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
     }
     protected _getStrValue(val: any, fieldInfo: IFieldInfo) {
         let dcnv = fieldInfo.dateConversion, stz = this.dbContext.serverTimezone;
-        return valueUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
+        return valUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
     }
     protected _getCalcFieldVal(fieldName: string, item: TItem): any {
         try {

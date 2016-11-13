@@ -11,7 +11,8 @@ import { DataCache } from "./datacache";
 import { DbSet } from "./dbset";
 import { DbContext } from "./dbcontext";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ArrayHelper = utils.arr;
+const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr,
+    valUtils = valueUtils;
 
 export interface IInternalQueryMethods<TItem extends IEntityItem> {
     clearCache(): void;
@@ -92,9 +93,9 @@ export class DataQuery<TItem extends IEntityItem> extends BaseObject {
             vals = [value];
         else
             vals = value;
-        let tmpVals = ArrayHelper.clone(vals);
+        let tmpVals = arrHelper.clone(vals);
         vals = tmpVals.map(function (v) {
-            return valueUtils.stringifyValue(v, dcnv, fld.dataType, stz);
+            return valUtils.stringifyValue(v, dcnv, fld.dataType, stz);
        });
 
         switch (operand) {

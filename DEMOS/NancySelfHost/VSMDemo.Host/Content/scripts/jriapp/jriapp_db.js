@@ -52,7 +52,7 @@ define("jriapp_db/const", ["require", "exports"], function (require, exports) {
 });
 define("jriapp_db/dataquery", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/utils", "jriapp_collection/utils", "jriapp_db/const", "jriapp_db/datacache"], function (require, exports, langMOD, object_1, utils_1, utils_2, const_1, datacache_1) {
     "use strict";
-    var utils = utils_1.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ArrayHelper = utils.arr;
+    var utils = utils_1.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr, valUtils = utils_2.valueUtils;
     var DataQuery = (function (_super) {
         __extends(DataQuery, _super);
         function DataQuery(dbSet, queryInfo) {
@@ -108,9 +108,9 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_core/lang", "jriapp
                 vals = [value];
             else
                 vals = value;
-            var tmpVals = ArrayHelper.clone(vals);
+            var tmpVals = arrHelper.clone(vals);
             vals = tmpVals.map(function (v) {
-                return utils_2.valueUtils.stringifyValue(v, dcnv, fld.dataType, stz);
+                return valUtils.stringifyValue(v, dcnv, fld.dataType, stz);
             });
             switch (operand) {
                 case 0:
@@ -559,7 +559,7 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_core/lang", "jriapp
 });
 define("jriapp_db/dbset", ["require", "exports", "jriapp_core/lang", "jriapp_utils/debounce", "jriapp_utils/utils", "jriapp_collection/collection", "jriapp_collection/utils", "jriapp_db/const", "jriapp_db/dataquery", "jriapp_db/entity_aspect"], function (require, exports, lang_1, debounce_1, utils_4, collection_1, utils_5, const_3, dataquery_1, entity_aspect_1) {
     "use strict";
-    var utils = utils_4.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err;
+    var utils = utils_4.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err, valUtils = utils_5.valueUtils;
     var DBSET_EVENTS = {
         loaded: "loaded"
     };
@@ -838,7 +838,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_core/lang", "jriapp_uti
         };
         DbSet.prototype._getStrValue = function (val, fieldInfo) {
             var dcnv = fieldInfo.dateConversion, stz = this.dbContext.serverTimezone;
-            return utils_5.valueUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
+            return valUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
         };
         DbSet.prototype._getCalcFieldVal = function (fieldName, item) {
             try {
@@ -2214,7 +2214,7 @@ define("jriapp_db/error", ["require", "exports", "jriapp_core/shared", "jriapp_u
 });
 define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/waitqueue", "jriapp_utils/utils", "jriapp_collection/utils", "jriapp_db/const", "jriapp_db/association", "jriapp_db/error"], function (require, exports, shared_2, langMOD, object_5, waitqueue_1, utils_9, utils_10, const_5, association_1, error_1) {
     "use strict";
-    var utils = utils_9.Utils, http = utils.http, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err;
+    var utils = utils_9.Utils, http = utils.http, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err, valUtils = utils_10.valueUtils;
     var DATA_SVC_METH = {
         Invoke: "invoke",
         Query: "query",
@@ -2406,12 +2406,12 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
                 else if (checks.isArray(val)) {
                     var arr = new Array(val.length);
                     for (var k = 0; k < val.length; k += 1) {
-                        arr[k] = utils_10.valueUtils.stringifyValue(val[k], pinfo.dateConversion, pinfo.dataType, self.serverTimezone);
+                        arr[k] = valUtils.stringifyValue(val[k], pinfo.dateConversion, pinfo.dataType, self.serverTimezone);
                     }
                     value = JSON.stringify(arr);
                 }
                 else
-                    value = utils_10.valueUtils.stringifyValue(val, pinfo.dateConversion, pinfo.dataType, self.serverTimezone);
+                    value = valUtils.stringifyValue(val, pinfo.dateConversion, pinfo.dataType, self.serverTimezone);
                 data.paramInfo.parameters.push({ name: pinfo.name, value: value });
             }
             return data;
@@ -3063,7 +3063,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
 });
 define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jriapp_utils/utils", "jriapp_collection/utils", "jriapp_collection/validation", "jriapp_collection/aspect", "jriapp_db/const", "jriapp_db/error"], function (require, exports, lang_3, utils_11, utils_12, validation_1, aspect_1, const_6, error_2) {
     "use strict";
-    var utils = utils_11.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+    var utils = utils_11.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, valUtils = utils_12.valueUtils;
     var ENTITYASPECT_EVENTS = {
         destroyed: "destroyed"
     };
@@ -3125,7 +3125,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
                     self._processValues(fieldName + ".", value, name.p);
                 }
                 else {
-                    val = utils_12.valueUtils.parseValue(value, fld.dataType, fld.dateConversion, stz);
+                    val = valUtils.parseValue(value, fld.dataType, fld.dateConversion, stz);
                     coreUtils.setValue(self._vals, fieldName, val, false);
                 }
             });
@@ -3265,12 +3265,12 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
             if (!fld)
                 throw new Error(strUtils.format(lang_3.ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fullName));
             var stz = self.serverTimezone, newVal, oldVal, oldValOrig, dataType = fld.dataType, dcnv = fld.dateConversion;
-            newVal = utils_12.valueUtils.parseValue(val, dataType, dcnv, stz);
+            newVal = valUtils.parseValue(val, dataType, dcnv, stz);
             oldVal = coreUtils.getValue(self._vals, fullName);
             switch (refreshMode) {
                 case 3:
                     {
-                        if (!utils_12.valueUtils.compareVals(newVal, oldVal, dataType)) {
+                        if (!valUtils.compareVals(newVal, oldVal, dataType)) {
                             coreUtils.setValue(self._vals, fullName, newVal, false);
                             self._onFieldChanged(fullName, fld);
                         }
@@ -3284,7 +3284,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
                         if (!!self._saveVals) {
                             coreUtils.setValue(self._saveVals, fullName, newVal, false);
                         }
-                        if (!utils_12.valueUtils.compareVals(newVal, oldVal, dataType)) {
+                        if (!valUtils.compareVals(newVal, oldVal, dataType)) {
                             coreUtils.setValue(self._vals, fullName, newVal, false);
                             self._onFieldChanged(fullName, fld);
                         }
@@ -3296,8 +3296,8 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
                             oldValOrig = coreUtils.getValue(self._origVals, fullName);
                             coreUtils.setValue(self._origVals, fullName, newVal, false);
                         }
-                        if (oldValOrig === checks.undefined || utils_12.valueUtils.compareVals(oldValOrig, oldVal, dataType)) {
-                            if (!utils_12.valueUtils.compareVals(newVal, oldVal, dataType)) {
+                        if (oldValOrig === checks.undefined || valUtils.compareVals(oldValOrig, oldVal, dataType)) {
+                            if (!valUtils.compareVals(newVal, oldVal, dataType)) {
                                 coreUtils.setValue(self._vals, fullName, newVal, false);
                                 self._onFieldChanged(fullName, fld);
                             }

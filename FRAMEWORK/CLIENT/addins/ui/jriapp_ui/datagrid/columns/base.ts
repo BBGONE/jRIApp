@@ -11,7 +11,7 @@ import { css } from "../const";
 import { BaseCell } from "../cells/base";
 import { DataGrid } from "../datagrid";
 
-const utils = Utils, dom = utils.dom, $ = dom.$, doc = dom.document;
+const utils = Utils, dom = utils.dom, $ = dom.$, doc = dom.document, boot = bootstrap;
 
 export interface IColumnInfo {
     "type"?: string;
@@ -55,17 +55,17 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         const $col = $(col);
         this._col = col;
 
-        utils.dom.addClass([col], css.column);
+        dom.addClass([col], css.column);
 
         if (!!this._options.colCellCss) {
-            utils.dom.addClass([col], this._options.colCellCss);
+            dom.addClass([col], this._options.colCellCss);
         }
 
         this._grid._getInternal().get$Header().append(col);
 
         $col.on("click", function (e) {
             e.stopPropagation();
-            bootstrap.currentSelectable = grid;
+            boot.currentSelectable = grid;
             grid._getInternal().setCurrentColumn(self);
             self._onColumnClicked();
         });
@@ -74,7 +74,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
             e.stopPropagation();
             const $td = $(this), cell = <BaseCell<BaseColumn>>$td.data("cell");
             if (!!cell) {
-                bootstrap.currentSelectable = grid;
+                boot.currentSelectable = grid;
                 grid._getInternal().setCurrentColumn(self);
                 cell.click();
             }

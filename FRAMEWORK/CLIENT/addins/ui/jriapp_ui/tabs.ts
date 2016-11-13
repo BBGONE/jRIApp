@@ -60,7 +60,7 @@ export class TabsElView extends BaseElView implements ITabs {
    }
     protected _destroyTabs() {
         let $el = this.$el;
-        utils.dom.destroyJQueryPlugin($el, "tabs");
+        utils.dom.destroy$Plugin($el, "tabs");
         this._tabsCreated = false;
         if (!!this._tabsEvents) {
             this._tabsEvents.removeTabs();

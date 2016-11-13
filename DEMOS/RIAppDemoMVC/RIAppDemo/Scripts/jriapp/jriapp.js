@@ -1599,7 +1599,7 @@ define("jriapp_utils/lifetime", ["require", "exports", "jriapp_core/object", "jr
 });
 define("jriapp_utils/dom", ["require", "exports", "jriapp_core/lang"], function (require, exports, lang_4) {
     "use strict";
-    if (!window.jQuery)
+    if (!("jQuery" in window))
         throw new Error(lang_4.ERRS.ERR_APP_NEED_JQUERY);
     var DomUtils = (function () {
         function DomUtils() {
@@ -1759,7 +1759,7 @@ define("jriapp_utils/dom", ["require", "exports", "jriapp_core/lang"], function 
         DomUtils.removeClass = function (elems, css) {
             DomUtils.setClass(elems || [], css, true);
         };
-        DomUtils.destroyJQueryPlugin = function ($el, name) {
+        DomUtils.destroy$Plugin = function ($el, name) {
             var plugin = $el.data(name);
             if (!!plugin) {
                 $el[name]("destroy");
@@ -2968,12 +2968,12 @@ define("jriapp_utils/sloader", ["require", "exports", "jriapp_utils/arrhelper", 
     var doc = dom_3.DomUtils.document, head = doc.head || doc.getElementsByTagName("head")[0];
     var _stylesLoader = null;
     exports.frameworkCss = "jriapp.css";
-    function create() {
+    function createCssLoader() {
         if (!_stylesLoader)
             _stylesLoader = new StylesLoader();
         return _stylesLoader;
     }
-    exports.create = create;
+    exports.createCssLoader = createCssLoader;
     function whenAll(promises) {
         if (!promises)
             return resolvedPromise;
@@ -3083,10 +3083,10 @@ define("jriapp_utils/tooltip", ["require", "exports", "jriapp_utils/dom"], funct
         toolTip: "qtip",
         toolTipError: "qtip-red"
     };
-    function create() {
+    function createToolTipSvc() {
         return new tooltipService();
     }
-    exports.create = create;
+    exports.createToolTipSvc = createToolTipSvc;
     var tooltipService = (function () {
         function tooltipService() {
         }
@@ -3131,7 +3131,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
     "use strict";
     var dom = dom_5.DomUtils, $ = dom.$, _async = async_5.AsyncUtils, doc = dom.document, win = dom.window, coreUtils = coreutils_9.CoreUtils, strUtils = strutils_5.StringUtils;
     var _TEMPLATE_SELECTOR = 'script[type="text/html"]';
-    var stylesLoader = sloader_1.create();
+    var stylesLoader = sloader_1.createCssLoader();
     var GLOB_EVENTS = {
         load: "load",
         unload: "unload",
@@ -3288,31 +3288,33 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             _super.prototype._addHandler.call(this, name, fn, nmspace, context, priority);
         };
         Bootstrap.prototype._init = function () {
-            var self = this, deferred = _async.createDeferred(), invalidOpErr = new Error("Invalid operation");
+            var self = this, deferred = _async.createDeferred(), invalidOperErr = new Error("Invalid operation");
             if (self.getIsDestroyCalled())
-                return deferred.reject(invalidOpErr);
+                return deferred.reject(invalidOperErr);
             this._bindGlobalEvents();
-            self.registerSvc(const_3.TOOLTIP_SVC, tooltip_1.create());
+            self.registerSvc(const_3.TOOLTIP_SVC, tooltip_1.createToolTipSvc());
             self._bootState = 2;
             self.raiseEvent(GLOB_EVENTS.initialized, {});
             self.removeHandler(GLOB_EVENTS.initialized, null);
             deferred.resolve(_async.delay(function () {
                 if (self.getIsDestroyCalled())
-                    throw invalidOpErr;
+                    throw invalidOperErr;
                 self._processHTMLTemplates();
                 self._bootState = 3;
                 self.raisePropertyChanged(PROP_NAME.isReady);
             }));
             return deferred.promise().then(function () {
+                if (self._bootState !== 3)
+                    throw invalidOperErr;
                 self.raiseEvent(GLOB_EVENTS.load, {});
                 self.removeHandler(GLOB_EVENTS.load, null);
             });
         };
         Bootstrap.prototype._initialize = function () {
             var _this = this;
-            var self = this, deferred = _async.createDeferred(), invalidOpErr = new Error("Invalid operation");
+            var self = this, deferred = _async.createDeferred(), invalidOperErr = new Error("Invalid operation");
             if (this._bootState !== 0)
-                return deferred.reject(invalidOpErr);
+                return deferred.reject(invalidOperErr);
             this._bootState = 1;
             var promise = deferred.resolve(this.stylesLoader.whenAllLoaded()).then(function () {
                 return self._init();
@@ -4157,13 +4159,12 @@ define("jriapp_utils/eventstore", ["require", "exports", "jriapp_core/object", "
 define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/syschecks", "jriapp_core/bootstrap", "jriapp_utils/utils", "jriapp_core/mvvm", "jriapp_utils/eventstore"], function (require, exports, const_4, lang_9, object_9, syschecks_6, bootstrap_3, utils_3, mvvm_1, eventstore_1) {
     "use strict";
     exports.EVENT_CHANGE_TYPE = eventstore_1.EVENT_CHANGE_TYPE;
-    var utils = utils_3.Utils, coreUtils = utils.core, dom = utils.dom, $ = dom.$, checks = utils.check;
-    var PROP_BAG = syschecks_6.SysChecks._PROP_BAG_NAME(), boot = bootstrap_3.bootstrap;
+    var utils = utils_3.Utils, coreUtils = utils.core, dom = utils.dom, $ = dom.$, checks = utils.check, PROP_BAG = syschecks_6.SysChecks._PROP_BAG_NAME(), boot = bootstrap_3.bootstrap;
     syschecks_6.SysChecks._isElView = function (obj) {
         return !!obj && obj instanceof BaseElView;
     };
     function fn_addToolTip($el, tip, isError, pos) {
-        var svc = bootstrap_3.bootstrap.getSvc(const_4.TOOLTIP_SVC);
+        var svc = boot.getSvc(const_4.TOOLTIP_SVC);
         svc.addToolTip($el, tip, isError, pos);
     }
     exports.fn_addToolTip = fn_addToolTip;
@@ -6668,7 +6669,7 @@ define("jriapp_core/datepicker", ["require", "exports", "jriapp_core/lang", "jri
                 $el.datepicker();
         };
         Datepicker.prototype.detachFrom = function ($el) {
-            dom.destroyJQueryPlugin($el, "datepicker");
+            dom.destroy$Plugin($el, "datepicker");
         };
         Datepicker.prototype.parseDate = function (str) {
             return this.datePickerFn.parseDate(this.dateFormat, str);
@@ -10198,7 +10199,7 @@ define("jriapp_utils/mloader", ["require", "exports", "jriapp_utils/utils", "jri
             var forLoad = names.filter(function (val) { return !self._cssLoads[val]; });
             var urls = forLoad.map(function (val) { return self.getUrl(val); });
             if (forLoad.length > 0) {
-                var cssLoader = sloader_2.create();
+                var cssLoader = sloader_2.createCssLoader();
                 forLoad.forEach(function (name) {
                     self._cssLoads[name] = {
                         name: name,
@@ -10799,6 +10800,6 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.BaseDictionary = dictionary_1.BaseDictionary;
     exports.ValidationError = validation_4.ValidationError;
     exports.Application = app_1.Application;
-    exports.VERSION = "0.9.93";
+    exports.VERSION = "0.9.93.1";
     bootstrap_27.Bootstrap._initFramework();
 });

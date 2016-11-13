@@ -13,7 +13,8 @@ import { IEntityItem, IEntityConstructor, IRowData, IFieldName, IValueChange, IR
 import { DbSet } from "./dbset";
 import { SubmitError } from "./error";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
+    valUtils = valueUtils;
 
 const ENTITYASPECT_EVENTS = {
     destroyed: "destroyed"
@@ -93,7 +94,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
             }
             else {
                 //for other fields the value is a string, which is parsed to a typed value
-                val = valueUtils.parseValue(value, fld.dataType, fld.dateConversion, stz);
+                val = valUtils.parseValue(value, fld.dataType, fld.dateConversion, stz);
                 coreUtils.setValue(self._vals, fieldName, val, false);
             }
         });
@@ -239,12 +240,12 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         if (!fld)
             throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fullName));
         let stz = self.serverTimezone, newVal: any, oldVal: any, oldValOrig: any, dataType = fld.dataType, dcnv = fld.dateConversion;
-        newVal = valueUtils.parseValue(val, dataType, dcnv, stz);
+        newVal = valUtils.parseValue(val, dataType, dcnv, stz);
         oldVal = coreUtils.getValue(self._vals, fullName);
         switch (refreshMode) {
             case REFRESH_MODE.CommitChanges:
                 {
-                    if (!valueUtils.compareVals(newVal, oldVal, dataType)) {
+                    if (!valUtils.compareVals(newVal, oldVal, dataType)) {
                         coreUtils.setValue(self._vals, fullName, newVal, false);
                         self._onFieldChanged(fullName, fld);
                     }
@@ -258,7 +259,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
                     if (!!self._saveVals) {
                         coreUtils.setValue(self._saveVals, fullName, newVal, false);
                     }
-                    if (!valueUtils.compareVals(newVal, oldVal, dataType)) {
+                    if (!valUtils.compareVals(newVal, oldVal, dataType)) {
                         coreUtils.setValue(self._vals, fullName, newVal, false);
                         self._onFieldChanged(fullName, fld);
                     }
@@ -270,9 +271,9 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
                         oldValOrig = coreUtils.getValue(self._origVals, fullName);
                         coreUtils.setValue(self._origVals, fullName, newVal, false);
                     }
-                    if (oldValOrig === checks.undefined || valueUtils.compareVals(oldValOrig, oldVal, dataType)) {
+                    if (oldValOrig === checks.undefined || valUtils.compareVals(oldValOrig, oldVal, dataType)) {
                         //unmodified
-                        if (!valueUtils.compareVals(newVal, oldVal, dataType)) {
+                        if (!valUtils.compareVals(newVal, oldVal, dataType)) {
                             coreUtils.setValue(self._vals, fullName, newVal, false);
                             self._onFieldChanged(fullName, fld);
                         }

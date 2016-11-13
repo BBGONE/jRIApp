@@ -10,7 +10,7 @@ export const css = {
     toolTipError: "qtip-red"
 };
 
-export function create(): ITooltipService {
+export function createToolTipSvc(): ITooltipService {
     return new tooltipService();
 }
 

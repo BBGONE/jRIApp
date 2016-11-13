@@ -2,8 +2,9 @@
 import { ERRS } from "../jriapp_core/lang";
 import { IIndexer } from "../jriapp_core/shared";
 
-if (!(<any>window).jQuery)
+if (!("jQuery" in window))
     throw new Error(ERRS.ERR_APP_NEED_JQUERY);
+
 /**
  * mostly pure javascript methods for the DOM manipulation
  */
@@ -180,7 +181,7 @@ export class DomUtils {
     }
     //JQuery related
     static $: JQueryStatic = jQuery;
-    static destroyJQueryPlugin($el: JQuery, name: string): void {
+    static destroy$Plugin($el: JQuery, name: string): void {
         let plugin = $el.data(name);
         if (!!plugin) {
             $el[name]("destroy");

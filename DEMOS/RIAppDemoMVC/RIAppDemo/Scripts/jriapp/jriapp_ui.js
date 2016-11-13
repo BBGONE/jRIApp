@@ -757,7 +757,7 @@ define("jriapp_ui/datagrid/animation", ["require", "exports", "jriapp_core/objec
 });
 define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_core/const", "jriapp_core/template", "jriapp_core/object", "jriapp_utils/utils", "jriapp_elview/elview", "jriapp_core/bootstrap", "jriapp_ui/datagrid/const"], function (require, exports, const_1, template_3, object_3, utils_3, elview_2, bootstrap_3, const_2) {
     "use strict";
-    var utils = utils_3.Utils, dom = utils.dom, $ = dom.$, doc = dom.document;
+    var utils = utils_3.Utils, dom = utils.dom, $ = dom.$, doc = dom.document, boot = bootstrap_3.bootstrap;
     var BaseColumn = (function (_super) {
         __extends(BaseColumn, _super);
         function BaseColumn(grid, options) {
@@ -772,14 +772,14 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_core/co
             var col = doc.createElement("div");
             var $col = $(col);
             this._col = col;
-            utils.dom.addClass([col], const_2.css.column);
+            dom.addClass([col], const_2.css.column);
             if (!!this._options.colCellCss) {
-                utils.dom.addClass([col], this._options.colCellCss);
+                dom.addClass([col], this._options.colCellCss);
             }
             this._grid._getInternal().get$Header().append(col);
             $col.on("click", function (e) {
                 e.stopPropagation();
-                bootstrap_3.bootstrap.currentSelectable = grid;
+                boot.currentSelectable = grid;
                 grid._getInternal().setCurrentColumn(self);
                 self._onColumnClicked();
             });
@@ -787,7 +787,7 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_core/co
                 e.stopPropagation();
                 var $td = $(this), cell = $td.data("cell");
                 if (!!cell) {
-                    bootstrap_3.bootstrap.currentSelectable = grid;
+                    boot.currentSelectable = grid;
                     grid._getInternal().setCurrentColumn(self);
                     cell.click();
                 }
@@ -5348,7 +5348,7 @@ define("jriapp_ui/tabs", ["require", "exports", "jriapp_utils/utils", "jriapp_co
         };
         TabsElView.prototype._destroyTabs = function () {
             var $el = this.$el;
-            utils.dom.destroyJQueryPlugin($el, "tabs");
+            utils.dom.destroy$Plugin($el, "tabs");
             this._tabsCreated = false;
             if (!!this._tabsEvents) {
                 this._tabsEvents.removeTabs();

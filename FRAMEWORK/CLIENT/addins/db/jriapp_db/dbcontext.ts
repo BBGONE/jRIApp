@@ -21,7 +21,8 @@ import { Association } from "./association";
 import { DataQuery, TDataQuery } from "./dataquery";
 import { AccessDeniedError, ConcurrencyError, SvcValidationError, DataOperationError, SubmitError } from "./error";
 
-const utils = Utils, http = utils.http, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err;
+const utils = Utils, http = utils.http, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err,
+    valUtils = valueUtils;
 
 const DATA_SVC_METH = {
     Invoke: "invoke",
@@ -263,12 +264,12 @@ export class DbContext extends BaseObject {
                 let arr = new Array(val.length);
                 for (let k = 0; k < val.length; k += 1) {
                     //first convert all values to string
-                    arr[k] = valueUtils.stringifyValue(val[k], pinfo.dateConversion, pinfo.dataType, self.serverTimezone);
+                    arr[k] = valUtils.stringifyValue(val[k], pinfo.dateConversion, pinfo.dataType, self.serverTimezone);
                 }
                 value = JSON.stringify(arr);
             }
             else
-                value = valueUtils.stringifyValue(val, pinfo.dateConversion, pinfo.dataType, self.serverTimezone);
+                value = valUtils.stringifyValue(val, pinfo.dateConversion, pinfo.dataType, self.serverTimezone);
 
             data.paramInfo.parameters.push({ name: pinfo.name, value: value });
         }

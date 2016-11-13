@@ -882,7 +882,7 @@ declare module "jriapp_utils/dom" {
         static addClass(elems: Element[], css: string): void;
         static removeClass(elems: Element[], css: string): void;
         static $: JQueryStatic;
-        static destroyJQueryPlugin($el: JQuery, name: string): void;
+        static destroy$Plugin($el: JQuery, name: string): void;
     }
 }
 declare module "jriapp_utils/deferred" {
@@ -1106,7 +1106,7 @@ declare module "jriapp_utils/path" {
 declare module "jriapp_utils/sloader" {
     import { IStylesLoader } from "jriapp_core/shared";
     export const frameworkCss: string;
-    export function create(): IStylesLoader;
+    export function createCssLoader(): IStylesLoader;
     export interface IUrlParts {
         protocol: string;
         host: string;
@@ -1123,7 +1123,7 @@ declare module "jriapp_utils/tooltip" {
         toolTip: string;
         toolTipError: string;
     };
-    export function create(): ITooltipService;
+    export function createToolTipSvc(): ITooltipService;
 }
 declare module "jriapp_core/bootstrap" {
     import { IApplication, ISelectableProvider, IExports, IConverter, ISvcStore, IIndexer, IBaseObject, IPromise, TEventHandler, IStylesLoader, IElViewRegister, TPriority } from "jriapp_core/shared";

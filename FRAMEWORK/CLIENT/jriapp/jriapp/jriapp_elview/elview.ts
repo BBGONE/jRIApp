@@ -14,15 +14,15 @@ import { EventStore, EVENT_CHANGE_TYPE, IEventChangedArgs } from "../jriapp_util
 
 export { IEventChangedArgs, EVENT_CHANGE_TYPE };
 
-const utils = Utils, coreUtils = utils.core, dom = utils.dom, $ = dom.$, checks = utils.check;
-const PROP_BAG = SysChecks._PROP_BAG_NAME(), boot = bootstrap;
+const utils = Utils, coreUtils = utils.core, dom = utils.dom, $ = dom.$, checks = utils.check,
+    PROP_BAG = SysChecks._PROP_BAG_NAME(), boot = bootstrap;
 
 SysChecks._isElView = function (obj: any): boolean {
     return !!obj && obj instanceof BaseElView;
 };
 
 export function fn_addToolTip($el: JQuery, tip: string, isError?: boolean, pos?: string) {
-    let svc = bootstrap.getSvc<ITooltipService>(TOOLTIP_SVC);
+    let svc = boot.getSvc<ITooltipService>(TOOLTIP_SVC);
     svc.addToolTip($el, tip, isError, pos);
 }
 

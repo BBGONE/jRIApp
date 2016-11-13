@@ -11,9 +11,9 @@ import { Defaults } from "defaults";
 import { StringUtils } from "../jriapp_utils/strutils";
 import { CoreUtils, ERROR } from "../jriapp_utils/coreutils";
 import { TemplateLoader } from "../jriapp_utils/tloader";
-import { create as createCssLoader } from "../jriapp_utils/sloader";
+import { createCssLoader } from "../jriapp_utils/sloader";
 import { PathHelper } from "../jriapp_utils/path";
-import { create as createToolTipSvc } from "../jriapp_utils/tooltip";
+import { createToolTipSvc } from "../jriapp_utils/tooltip";
 import { DomUtils } from "../jriapp_utils/dom";
 import { AsyncUtils } from "../jriapp_utils/async";
 
@@ -207,9 +207,9 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         super._addHandler(name, fn, nmspace, context, priority);
     }
     private _init(): IPromise<void> {
-        const self = this, deferred = _async.createDeferred<void>(), invalidOpErr = new Error("Invalid operation");
+        const self = this, deferred = _async.createDeferred<void>(), invalidOperErr = new Error("Invalid operation");
         if (self.getIsDestroyCalled())
-            return deferred.reject(invalidOpErr);
+            return deferred.reject(invalidOperErr);
      
         this._bindGlobalEvents();
         self.registerSvc(TOOLTIP_SVC, createToolTipSvc());
@@ -219,22 +219,24 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
 
         deferred.resolve(_async.delay(() => {
             if (self.getIsDestroyCalled())
-                throw invalidOpErr;
+                throw invalidOperErr;
             self._processHTMLTemplates();
             self._bootState = BootstrapState.Ready;
             self.raisePropertyChanged(PROP_NAME.isReady);
         }));
 
         return deferred.promise().then(() => {
+            if (self._bootState !== BootstrapState.Ready)
+                throw invalidOperErr;
             self.raiseEvent(GLOB_EVENTS.load, {});
             self.removeHandler(GLOB_EVENTS.load, null);
         });
     }
     private _initialize(): IPromise<void> {
-        const self = this, deferred = _async.createDeferred<void>(), invalidOpErr = new Error("Invalid operation");
+        const self = this, deferred = _async.createDeferred<void>(), invalidOperErr = new Error("Invalid operation");
 
         if (this._bootState !== BootstrapState.None)
-            return deferred.reject(invalidOpErr);
+            return deferred.reject(invalidOperErr);
 
         this._bootState = BootstrapState.Initializing;
 

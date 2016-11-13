@@ -4,7 +4,6 @@ import { IApplication, IContentFactory, IContentFactoryList, IContentOptions, IC
     IConstructorContentOptions, TFactoryGetter, IContent }  from "../jriapp_core/shared";
 import { ERRS } from "../jriapp_core/lang";
 import { Utils } from "../jriapp_utils/utils";
-import { bootstrap } from "../jriapp_core/bootstrap";
 
 import { css } from "./int";
 import { BasicContent } from "./basic";

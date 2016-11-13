@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { IIndexer, IViewType, IApplication, IPromise, IDeferred, IModuleLoader } from "../jriapp_core/shared";
 import { Utils } from "./utils";
-import { create as createCSSLoader } from "./sloader";
+import { createCssLoader as createCSSLoader } from "./sloader";
 
 const utils = Utils, coreUtils = utils.core, strUtils = utils.str, defer = utils.defer, arr = utils.arr,
     resolvedPromise = defer.createSyncDeferred<void>().resolve(),

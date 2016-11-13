@@ -45,6 +45,6 @@ export { BaseDictionary } from "./jriapp_collection/dictionary";
 export { ValidationError } from "./jriapp_collection/validation";
 export { Application } from "./jriapp_core/app";
 
-export const VERSION = "0.9.93";
+export const VERSION = "0.9.93.1";
 
 Bootstrap._initFramework();

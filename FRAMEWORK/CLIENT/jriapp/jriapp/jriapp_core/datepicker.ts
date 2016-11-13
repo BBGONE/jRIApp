@@ -37,7 +37,7 @@ export class Datepicker extends BaseObject implements IDatepicker {
             $el.datepicker();
    }
     detachFrom($el: any) {
-        dom.destroyJQueryPlugin($el, "datepicker");
+        dom.destroy$Plugin($el, "datepicker");
    }
     parseDate(str: string): Date {
         return this.datePickerFn.parseDate(this.dateFormat, str);

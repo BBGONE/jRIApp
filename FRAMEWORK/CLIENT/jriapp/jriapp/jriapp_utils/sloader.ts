@@ -12,7 +12,7 @@ const doc = dom.document, head = doc.head || doc.getElementsByTagName("head")[0]
 let _stylesLoader: IStylesLoader = null;
 export const frameworkCss = "jriapp.css";
 
-export function create(): IStylesLoader {
+export function createCssLoader(): IStylesLoader {
     if (!_stylesLoader)
         _stylesLoader = new StylesLoader();
     return _stylesLoader;

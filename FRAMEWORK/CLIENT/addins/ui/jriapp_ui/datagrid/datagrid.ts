@@ -16,7 +16,7 @@ import { COLL_CHANGE_TYPE, ICollectionItem, ICollChangedArgs, ICollItemArgs, ICo
 } from "jriapp_collection/int";
 import { BaseElView } from "jriapp_elview/elview";
 import { parseContentAttr } from "jriapp_content/int";
-import { IDialogConstructorOptions, DataEditDialog } from "dialog";
+import { IDialogConstructorOptions, DataEditDialog } from "../dialog";
 
 import { css, ROW_POSITION, COLUMN_TYPE, ROW_ACTION, PROP_NAME } from "./const";
 import { IDataGridAnimation, DefaultAnimation } from "./animation";
