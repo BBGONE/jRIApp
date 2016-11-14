@@ -6,7 +6,7 @@ import { createTemplate } from "jriapp_core/template";
 import { ERRS } from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
 import { Utils } from "jriapp_utils/utils";
-import { BaseElView } from "jriapp_elview/elview";
+import { BaseElView } from "./generic";
 import { ICollection, ICollectionItem, ICollChangedArgs, COLL_CHANGE_TYPE, COLL_CHANGE_REASON, ITEM_STATUS } from "jriapp_collection/int";
 import { bootstrap } from "jriapp";
 
@@ -483,6 +483,3 @@ export class StackPanelElView extends BaseElView {
 boot.registerElView("stackpanel", StackPanelElView);
 boot.registerElView("ul", StackPanelElView);
 boot.registerElView("ol", StackPanelElView);
-
-//Load Stylesheet for the bundle
-boot.loadOwnStyle("jriapp_ui");

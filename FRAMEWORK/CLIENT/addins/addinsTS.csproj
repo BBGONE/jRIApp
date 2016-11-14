@@ -70,6 +70,25 @@
     <TypeScriptCompile Include="db\jriapp_db\error.ts" />
     <TypeScriptCompile Include="db\jriapp_db\int.ts" />
     <TypeScriptCompile Include="langs\jriapp_ru.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\anchor.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\block.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\busy.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\button.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\checkbox.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\checkbox3.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\command.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\content\basic.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\content\bool.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\content\date.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\content\datetime.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\content\all.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\content\int.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\content\listbox.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\content\multyline.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\content\number.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\content\string.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\content\template.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\dataform.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\datagrid\cells\actions.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\datagrid\cells\base.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\datagrid\cells\data.ts" />
@@ -88,13 +107,24 @@
     <TypeScriptCompile Include="ui\jriapp_ui\datagrid\rows\fillspace.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\datagrid\rows\row.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\datagrid\animation.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\datepicker.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\dialog.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\dynacontent.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\expander.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\generic.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\hidden.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\img.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\input.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\listbox.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\pager.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\radio.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\span.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\stackpanel.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\tabs.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\template.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\textarea.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\textbox.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="db\tsconfig.json" />
@@ -108,6 +138,7 @@
   <ItemGroup>
     <Content Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <TypeScriptModuleKind>amd</TypeScriptModuleKind>
     <TypeScriptNoImplicitAny>True</TypeScriptNoImplicitAny>

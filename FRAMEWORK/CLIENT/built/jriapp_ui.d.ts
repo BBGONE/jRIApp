@@ -1,4 +1,466 @@
 /// <reference path="jriapp.d.ts" />
+declare module "jriapp_ui/content/int" {
+    import { IContentOptions, ITemplateInfo } from "jriapp_core/shared";
+    export const css: {
+        content: string;
+        required: string;
+        checkbox: string;
+    };
+    export interface IDataContentAttr {
+        fieldName?: string;
+        readOnly?: boolean;
+        css?: {
+            displayCss: string;
+            editCss: string;
+        };
+        template?: ITemplateInfo;
+        name?: string;
+        options?: any;
+    }
+    export function parseContentAttr(content_attr: string): IContentOptions;
+}
+declare module "jriapp_ui/content/basic" {
+    import { IApplication, IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IElView, IViewOptions, IBaseObject, IBindingInfo, IBindingOptions, IFieldInfo } from "jriapp_core/shared";
+    import { BaseObject } from "jriapp_core/object";
+    import { Binding } from "jriapp_core/binding";
+    export class BasicContent extends BaseObject implements IContent {
+        protected _parentEl: HTMLElement;
+        protected _el: HTMLElement;
+        protected _options: IContentOptions;
+        protected _isReadOnly: boolean;
+        private _isEditing;
+        protected _dataContext: any;
+        protected _lfScope: ILifeTimeScope;
+        protected _target: IElView;
+        constructor(options: IConstructorContentOptions);
+        protected init(): void;
+        protected updateCss(): void;
+        protected getIsCanBeEdited(): boolean;
+        protected createTargetElement(): IElView;
+        protected getBindingOption(bindingInfo: IBindingInfo, target: IBaseObject, dataContext: any, targetPath: string): IBindingOptions;
+        protected getBindings(): Binding[];
+        protected updateBindingSource(): void;
+        protected cleanUp(): void;
+        protected getElementView(el: HTMLElement, view_info: {
+            name: string;
+            options: IViewOptions;
+        }): IElView;
+        protected getFieldInfo(): IFieldInfo;
+        protected render(): void;
+        destroy(): void;
+        toString(): string;
+        readonly parentEl: HTMLElement;
+        readonly target: IElView;
+        isEditing: boolean;
+        dataContext: any;
+        readonly app: IApplication;
+    }
+}
+declare module "jriapp_ui/content/template" {
+    import { IContent, IApplication, ITemplate, IConstructorContentOptions } from "jriapp_core/shared";
+    import { BaseObject } from "jriapp_core/object";
+    export class TemplateContent extends BaseObject implements IContent {
+        private _parentEl;
+        private _template;
+        private _templateInfo;
+        private _isEditing;
+        private _dataContext;
+        private _isDisabled;
+        private _templateID;
+        constructor(options: IConstructorContentOptions);
+        private getTemplateID();
+        private createTemplate();
+        protected render(): void;
+        protected cleanUp(): void;
+        destroy(): void;
+        toString(): string;
+        readonly parentEl: HTMLElement;
+        readonly template: ITemplate;
+        isEditing: boolean;
+        dataContext: any;
+        readonly app: IApplication;
+    }
+}
+declare module "jriapp_ui/generic" {
+    import { IElView, IValidationInfo, IApplication, IViewOptions, IPropertyBag } from "jriapp_core/shared";
+    import { BaseObject } from "jriapp_core/object";
+    import { ICommand } from "jriapp_core/mvvm";
+    import { EVENT_CHANGE_TYPE, IEventChangedArgs } from "jriapp_utils/eventstore";
+    export { IEventChangedArgs, EVENT_CHANGE_TYPE };
+    export function fn_addToolTip($el: JQuery, tip: string, isError?: boolean, pos?: string): void;
+    export const css: {
+        fieldError: string;
+        commandLink: string;
+        checkedNull: string;
+        disabled: string;
+        opacity: string;
+        color: string;
+        fontSize: string;
+    };
+    export const PROP_NAME: {
+        isVisible: string;
+        validationErrors: string;
+        toolTip: string;
+        css: string;
+        isEnabled: string;
+        value: string;
+        command: string;
+        disabled: string;
+        commandParam: string;
+        isBusy: string;
+        delay: string;
+        checked: string;
+        color: string;
+        wrap: string;
+        text: string;
+        html: string;
+        preventDefault: string;
+        imageSrc: string;
+        glyph: string;
+        href: string;
+        fontSize: string;
+        borderColor: string;
+        borderStyle: string;
+        width: string;
+        height: string;
+        src: string;
+        click: string;
+    };
+    export class BaseElView extends BaseObject implements IElView {
+        private _objId;
+        private _$el;
+        protected _errors: IValidationInfo[];
+        protected _toolTip: string;
+        private _eventStore;
+        private _props;
+        private _classes;
+        private _display;
+        private _css;
+        constructor(options: IViewOptions);
+        private _getStore();
+        protected _onEventChanged(args: IEventChangedArgs): void;
+        protected _onEventAdded(name: string, newVal: ICommand): void;
+        protected _onEventDeleted(name: string, oldVal: ICommand): void;
+        protected _applyToolTip(): void;
+        protected _getErrorTipInfo(errors: IValidationInfo[]): string;
+        protected _setFieldError(isError: boolean): void;
+        protected _updateErrorUI(el: HTMLElement, errors: IValidationInfo[]): void;
+        protected _setToolTip($el: JQuery, tip: string, isError?: boolean): void;
+        destroy(): void;
+        toString(): string;
+        readonly $el: JQuery;
+        readonly el: HTMLElement;
+        readonly uniqueID: string;
+        isVisible: boolean;
+        validationErrors: IValidationInfo[];
+        readonly dataName: string;
+        toolTip: string;
+        readonly events: IPropertyBag;
+        readonly props: IPropertyBag;
+        readonly classes: IPropertyBag;
+        css: string;
+        readonly app: IApplication;
+    }
+}
+declare module "jriapp_ui/input" {
+    import { BaseElView } from "jriapp_ui/generic";
+    export class InputElView extends BaseElView {
+        toString(): string;
+        isEnabled: boolean;
+        value: string;
+    }
+}
+declare module "jriapp_ui/textbox" {
+    import { IViewOptions } from "jriapp_core/shared";
+    import { InputElView } from "jriapp_ui/input";
+    export interface ITextBoxOptions extends IViewOptions {
+        updateOnKeyUp?: boolean;
+    }
+    export type TKeyPressArgs = {
+        keyCode: number;
+        value: string;
+        isCancel: boolean;
+    };
+    export class TextBoxElView extends InputElView {
+        constructor(options: ITextBoxOptions);
+        protected _getEventNames(): string[];
+        addOnKeyPress(fn: (sender: TextBoxElView, args: TKeyPressArgs) => void, nmspace?: string): void;
+        removeOnKeyPress(nmspace?: string): void;
+        toString(): string;
+        color: string;
+    }
+}
+declare module "jriapp_ui/content/string" {
+    import { IFieldInfo } from "jriapp_core/shared";
+    import { BasicContent } from "jriapp_ui/content/basic";
+    export class StringContent extends BasicContent {
+        static __allowedKeys: number[];
+        private readonly _allowedKeys;
+        protected render(): void;
+        protected previewKeyPress(fieldInfo: IFieldInfo, keyCode: number, value: string): boolean;
+        toString(): string;
+    }
+}
+declare module "jriapp_ui/textarea" {
+    import { ITextBoxOptions, TKeyPressArgs } from "jriapp_ui/textbox";
+    import { BaseElView } from "jriapp_ui/generic";
+    export interface ITextAreaOptions extends ITextBoxOptions {
+        wrap?: string;
+    }
+    export class TextAreaElView extends BaseElView {
+        constructor(options: ITextAreaOptions);
+        protected _getEventNames(): string[];
+        addOnKeyPress(fn: (sender: TextAreaElView, args: TKeyPressArgs) => void, nmspace?: string): void;
+        removeOnKeyPress(nmspace?: string): void;
+        toString(): string;
+        value: string;
+        isEnabled: boolean;
+        wrap: any;
+    }
+}
+declare module "jriapp_ui/content/multyline" {
+    import { IElView, IConstructorContentOptions, IFieldInfo } from "jriapp_core/shared";
+    import { BasicContent } from "jriapp_ui/content/basic";
+    export class MultyLineContent extends BasicContent {
+        static __allowedKeys: number[];
+        private readonly _allowedKeys;
+        constructor(options: IConstructorContentOptions);
+        protected createTargetElement(): IElView;
+        protected render(): void;
+        protected previewKeyPress(fieldInfo: IFieldInfo, keyCode: number, value: string): boolean;
+        toString(): string;
+    }
+}
+declare module "jriapp_ui/checkbox" {
+    import { IViewOptions } from "jriapp_core/shared";
+    import { InputElView } from "jriapp_ui/input";
+    export class CheckBoxElView extends InputElView {
+        private _checked;
+        constructor(options: IViewOptions);
+        protected _updateState(): void;
+        toString(): string;
+        checked: boolean;
+    }
+}
+declare module "jriapp_ui/content/bool" {
+    import { IElView } from "jriapp_core/shared";
+    import { CheckBoxElView } from "jriapp_ui/checkbox";
+    import { BasicContent } from "jriapp_ui/content/basic";
+    export class BoolContent extends BasicContent {
+        protected init(): void;
+        protected cleanUp(): void;
+        protected createCheckBoxView(): CheckBoxElView;
+        protected createTargetElement(): IElView;
+        protected updateCss(): void;
+        destroy(): void;
+        render(): void;
+        toString(): string;
+    }
+}
+declare module "jriapp_ui/content/number" {
+    import { IBindingOptions, IBindingInfo, IBaseObject } from "jriapp_core/shared";
+    import { BasicContent } from "jriapp_ui/content/basic";
+    export class NumberContent extends BasicContent {
+        static __allowedKeys: number[];
+        private readonly _allowedKeys;
+        protected getBindingOption(bindingInfo: IBindingInfo, tgt: IBaseObject, dctx: any, targetPath: string): IBindingOptions;
+        protected render(): void;
+        protected previewKeyPress(keyCode: number, value: string): boolean;
+        toString(): string;
+    }
+}
+declare module "jriapp_ui/content/date" {
+    import { IConstructorContentOptions, IBindingInfo, IBindingOptions, IElView, IBaseObject } from "jriapp_core/shared";
+    import { BasicContent } from "jriapp_ui/content/basic";
+    export class DateContent extends BasicContent {
+        constructor(options: IConstructorContentOptions);
+        protected getBindingOption(bindingInfo: IBindingInfo, tgt: IBaseObject, dctx: any, targetPath: string): IBindingOptions;
+        protected createTargetElement(): IElView;
+        toString(): string;
+    }
+}
+declare module "jriapp_ui/content/datetime" {
+    import { IBindingInfo, IBaseObject, IBindingOptions } from "jriapp_core/shared";
+    import { BasicContent } from "jriapp_ui/content/basic";
+    export class DateTimeContent extends BasicContent {
+        protected getBindingOption(bindingInfo: IBindingInfo, tgt: IBaseObject, dctx: any, targetPath: string): IBindingOptions;
+        toString(): string;
+    }
+}
+declare module "jriapp_ui/listbox" {
+    import { TEventHandler, IViewOptions } from "jriapp_core/shared";
+    import { BaseObject } from "jriapp_core/object";
+    import { ICollection, ICollectionItem, ICollChangedArgs, ITEM_STATUS } from "jriapp_collection/int";
+    import { BaseElView } from "jriapp_ui/generic";
+    export interface IOptionStateProvider {
+        getCSS(item: ICollectionItem, itemIndex: number, val: any): string;
+    }
+    export interface IOptionTextProvider {
+        getText(item: ICollectionItem, itemIndex: number, text: string): string;
+    }
+    export interface IListBoxOptions {
+        valuePath: string;
+        textPath: string;
+        statePath?: string;
+    }
+    export interface IListBoxConstructorOptions extends IListBoxOptions {
+        el: HTMLSelectElement;
+        dataSource: ICollection<ICollectionItem>;
+    }
+    export interface IMappedItem {
+        item: ICollectionItem;
+        op: HTMLOptionElement;
+    }
+    export class ListBox extends BaseObject {
+        private _$el;
+        private _objId;
+        private _isRefreshing;
+        private _selectedItem;
+        private _prevSelected;
+        private _keyMap;
+        private _valMap;
+        private _savedValue;
+        private _tempValue;
+        private _options;
+        private _fn_state;
+        private _textProvider;
+        private _stateProvider;
+        constructor(options: IListBoxConstructorOptions);
+        destroy(): void;
+        protected _getEventNames(): string[];
+        addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any): void;
+        removeOnRefreshed(nmspace?: string): void;
+        protected _onChanged(): void;
+        protected _getStringValue(item: ICollectionItem): string;
+        protected _getValue(item: ICollectionItem): any;
+        protected _getText(item: ICollectionItem, index: number): string;
+        protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>): void;
+        protected _onEdit(item: ICollectionItem, isBegin: boolean, isCanceled: boolean): void;
+        protected _onStatusChanged(item: ICollectionItem, oldStatus: ITEM_STATUS): void;
+        protected _onCommitChanges(item: ICollectionItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS): void;
+        protected _onOptionStateChanged(data: IMappedItem): string;
+        private _bindDS();
+        private _unbindDS();
+        private _addOption(item, first);
+        private _mapByValue();
+        private _resetText();
+        private _removeOption(item);
+        private _clear(isDestroy);
+        private _refresh();
+        private _findItemIndex(item);
+        protected _setIsEnabled(el: HTMLSelectElement, v: boolean): void;
+        protected _getIsEnabled(el: HTMLSelectElement): boolean;
+        clear(): void;
+        findItemByValue(val: any): ICollectionItem;
+        getTextByValue(val: any): string;
+        toString(): string;
+        dataSource: ICollection<ICollectionItem>;
+        selectedValue: any;
+        selectedItem: ICollectionItem;
+        valuePath: string;
+        textPath: string;
+        readonly statePath: string;
+        isEnabled: boolean;
+        textProvider: IOptionTextProvider;
+        stateProvider: IOptionStateProvider;
+        readonly el: HTMLSelectElement;
+    }
+    export interface IListBoxViewOptions extends IListBoxOptions, IViewOptions {
+    }
+    export class ListBoxElView extends BaseElView {
+        private _listBox;
+        constructor(options: IListBoxViewOptions);
+        destroy(): void;
+        toString(): string;
+        isEnabled: boolean;
+        dataSource: ICollection<ICollectionItem>;
+        selectedValue: any;
+        selectedItem: ICollectionItem;
+        valuePath: string;
+        textPath: string;
+        textProvider: IOptionTextProvider;
+        stateProvider: IOptionStateProvider;
+        readonly listBox: ListBox;
+    }
+}
+declare module "jriapp_ui/span" {
+    import { BaseElView } from "jriapp_ui/generic";
+    export class SpanElView extends BaseElView {
+        toString(): string;
+        text: string;
+        value: string;
+        html: string;
+        color: string;
+        fontSize: string;
+    }
+}
+declare module "jriapp_ui/content/listbox" {
+    import { IBaseObject, IExternallyCachable, IBinding, IConstructorContentOptions, IElView } from "jriapp_core/shared";
+    import { ListBoxElView } from "jriapp_ui/listbox";
+    import { SpanElView } from "jriapp_ui/span";
+    import { BasicContent } from "jriapp_ui/content/basic";
+    export interface ILookupOptions {
+        dataSource: string;
+        valuePath: string;
+        textPath: string;
+        statePath?: string;
+    }
+    export type TObjCreatedArgs = {
+        objectKey: string;
+        object: IBaseObject;
+        isCachedExternally: boolean;
+    };
+    export type TObjNeededArgs = {
+        objectKey: string;
+        object: IBaseObject;
+    };
+    export class LookupContent extends BasicContent implements IExternallyCachable {
+        private _spanView;
+        private _valBinding;
+        private _listBinding;
+        private _listBoxElView;
+        private _isListBoxCachedExternally;
+        private _value;
+        private _objId;
+        constructor(options: IConstructorContentOptions);
+        protected init(): void;
+        protected _getEventNames(): string[];
+        addOnObjectCreated(fn: (sender: any, args: TObjCreatedArgs) => void, nmspace?: string): void;
+        removeOnObjectCreated(nmspace?: string): void;
+        addOnObjectNeeded(fn: (sender: any, args: TObjNeededArgs) => void, nmspace?: string): void;
+        removeOnObjectNeeded(nmspace?: string): void;
+        protected getListBoxElView(): ListBoxElView;
+        protected onListRefreshed(): void;
+        protected createListBoxElView(lookUpOptions: ILookupOptions): ListBoxElView;
+        protected updateTextValue(): void;
+        protected getLookupText(): string;
+        protected getSpanView(): SpanElView;
+        protected render(): void;
+        protected createTargetElement(): IElView;
+        protected cleanUp(): void;
+        protected updateBindingSource(): void;
+        protected bindToValue(): IBinding;
+        protected bindToList(selectView: ListBoxElView): IBinding;
+        destroy(): void;
+        toString(): string;
+        value: any;
+        readonly uniqueID: string;
+    }
+    export function initContentFactory(): void;
+}
+declare module "jriapp_ui/content/all" {
+    export { css as contentCSS } from "jriapp_ui/content/int";
+    export { BasicContent } from "jriapp_ui/content/basic";
+    export { TemplateContent } from "jriapp_ui/content/template";
+    export { StringContent } from "jriapp_ui/content/string";
+    export { MultyLineContent } from "jriapp_ui/content/multyline";
+    export { BoolContent } from "jriapp_ui/content/bool";
+    export { NumberContent } from "jriapp_ui/content/number";
+    export { DateContent } from "jriapp_ui/content/date";
+    export { DateTimeContent } from "jriapp_ui/content/datetime";
+    export { LookupContent } from "jriapp_ui/content/listbox";
+    export function initContentFactory(): void;
+}
 declare module "jriapp_ui/dialog" {
     import { ITemplate, ITemplateEvents, IApplication, IBaseObject, TEventHandler, IPromise } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
@@ -103,7 +565,7 @@ declare module "jriapp_ui/dialog" {
 }
 declare module "jriapp_ui/dynacontent" {
     import { ITemplate, IVoidPromise, ITemplateEvents, IViewOptions } from "jriapp_core/shared";
-    import { BaseElView } from "jriapp_elview/elview";
+    import { BaseElView } from "jriapp_ui/generic";
     export interface IDynaContentAnimation {
         beforeShow(template: ITemplate, isFirstShow: boolean): void;
         show(template: ITemplate, isFirstShow: boolean): IVoidPromise;
@@ -580,7 +1042,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
     import { ISelectableProvider, TEventHandler, ISelectable, IViewOptions } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
     import { ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollection, ICollItemAddedArgs, ITEM_STATUS } from "jriapp_collection/int";
-    import { BaseElView } from "jriapp_elview/elview";
+    import { BaseElView } from "jriapp_ui/generic";
     import { IDialogConstructorOptions } from "jriapp_ui/dialog";
     import { ROW_POSITION, ROW_ACTION } from "jriapp_ui/datagrid/const";
     import { IDataGridAnimation } from "jriapp_ui/datagrid/animation";
@@ -784,7 +1246,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
 declare module "jriapp_ui/pager" {
     import { IViewOptions } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
-    import { BaseElView } from "jriapp_elview/elview";
+    import { BaseElView } from "jriapp_ui/generic";
     import { ICollection, ICollectionItem } from "jriapp_collection/int";
     export interface IPagerOptions {
         showTip?: boolean;
@@ -856,162 +1318,10 @@ declare module "jriapp_ui/pager" {
         readonly pager: Pager;
     }
 }
-declare module "jriapp_ui/listbox" {
-    import { IBaseObject, TEventHandler, IExternallyCachable, IBinding, IConstructorContentOptions, IContentFactory, IContentConstructor, IContent, IContentOptions, IViewOptions } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
-    import { ICollection, ICollectionItem, ICollChangedArgs, ITEM_STATUS } from "jriapp_collection/int";
-    import { BaseElView } from "jriapp_elview/elview";
-    import { SpanElView } from "jriapp_elview/span";
-    import { BasicContent } from "jriapp_content/basic";
-    export interface IOptionStateProvider {
-        getCSS(item: ICollectionItem, itemIndex: number, val: any): string;
-    }
-    export interface IOptionTextProvider {
-        getText(item: ICollectionItem, itemIndex: number, text: string): string;
-    }
-    export interface IListBoxOptions {
-        valuePath: string;
-        textPath: string;
-        statePath?: string;
-    }
-    export interface IListBoxConstructorOptions extends IListBoxOptions {
-        el: HTMLSelectElement;
-        dataSource: ICollection<ICollectionItem>;
-    }
-    export interface IMappedItem {
-        item: ICollectionItem;
-        op: HTMLOptionElement;
-    }
-    export class ListBox extends BaseObject {
-        private _$el;
-        private _objId;
-        private _isRefreshing;
-        private _selectedItem;
-        private _prevSelected;
-        private _keyMap;
-        private _valMap;
-        private _savedValue;
-        private _tempValue;
-        private _options;
-        private _fn_state;
-        private _textProvider;
-        private _stateProvider;
-        constructor(options: IListBoxConstructorOptions);
-        destroy(): void;
-        protected _getEventNames(): string[];
-        addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any): void;
-        removeOnRefreshed(nmspace?: string): void;
-        protected _onChanged(): void;
-        protected _getStringValue(item: ICollectionItem): string;
-        protected _getValue(item: ICollectionItem): any;
-        protected _getText(item: ICollectionItem, index: number): string;
-        protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>): void;
-        protected _onEdit(item: ICollectionItem, isBegin: boolean, isCanceled: boolean): void;
-        protected _onStatusChanged(item: ICollectionItem, oldStatus: ITEM_STATUS): void;
-        protected _onCommitChanges(item: ICollectionItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS): void;
-        protected _onOptionStateChanged(data: IMappedItem): string;
-        private _bindDS();
-        private _unbindDS();
-        private _addOption(item, first);
-        private _mapByValue();
-        private _resetText();
-        private _removeOption(item);
-        private _clear(isDestroy);
-        private _refresh();
-        private _findItemIndex(item);
-        protected _setIsEnabled(el: HTMLSelectElement, v: boolean): void;
-        protected _getIsEnabled(el: HTMLSelectElement): boolean;
-        clear(): void;
-        findItemByValue(val: any): ICollectionItem;
-        getTextByValue(val: any): string;
-        toString(): string;
-        dataSource: ICollection<ICollectionItem>;
-        selectedValue: any;
-        selectedItem: ICollectionItem;
-        valuePath: string;
-        textPath: string;
-        readonly statePath: string;
-        isEnabled: boolean;
-        textProvider: IOptionTextProvider;
-        stateProvider: IOptionStateProvider;
-        readonly el: HTMLSelectElement;
-    }
-    export interface IListBoxViewOptions extends IListBoxOptions, IViewOptions {
-    }
-    export class ListBoxElView extends BaseElView {
-        private _listBox;
-        constructor(options: IListBoxViewOptions);
-        destroy(): void;
-        toString(): string;
-        isEnabled: boolean;
-        dataSource: ICollection<ICollectionItem>;
-        selectedValue: any;
-        selectedItem: ICollectionItem;
-        valuePath: string;
-        textPath: string;
-        textProvider: IOptionTextProvider;
-        stateProvider: IOptionStateProvider;
-        readonly listBox: ListBox;
-    }
-    export interface ILookupOptions {
-        dataSource: string;
-        valuePath: string;
-        textPath: string;
-        statePath?: string;
-    }
-    export type TObjCreatedArgs = {
-        objectKey: string;
-        object: IBaseObject;
-        isCachedExternally: boolean;
-    };
-    export type TObjNeededArgs = {
-        objectKey: string;
-        object: IBaseObject;
-    };
-    export class LookupContent extends BasicContent implements IExternallyCachable {
-        private _spanView;
-        private _valBinding;
-        private _listBinding;
-        private _listBoxElView;
-        private _isListBoxCachedExternally;
-        private _value;
-        private _objId;
-        constructor(options: IConstructorContentOptions);
-        protected init(): void;
-        protected _getEventNames(): string[];
-        addOnObjectCreated(fn: (sender: any, args: TObjCreatedArgs) => void, nmspace?: string): void;
-        removeOnObjectCreated(nmspace?: string): void;
-        addOnObjectNeeded(fn: (sender: any, args: TObjNeededArgs) => void, nmspace?: string): void;
-        removeOnObjectNeeded(nmspace?: string): void;
-        protected getListBoxElView(): ListBoxElView;
-        protected onListRefreshed(): void;
-        protected createListBoxElView(lookUpOptions: ILookupOptions): ListBoxElView;
-        protected updateTextValue(): void;
-        protected getLookupText(): string;
-        protected getSpanView(): SpanElView;
-        protected render(): void;
-        protected createTargetElement(): BaseElView;
-        protected cleanUp(): void;
-        protected updateBindingSource(): void;
-        protected bindToValue(): IBinding;
-        protected bindToList(selectView: ListBoxElView): IBinding;
-        destroy(): void;
-        toString(): string;
-        value: any;
-        readonly uniqueID: string;
-    }
-    export class ContentFactory implements IContentFactory {
-        private _nextFactory;
-        constructor(nextFactory?: IContentFactory);
-        getContentType(options: IContentOptions): IContentConstructor;
-        createContent(options: IConstructorContentOptions): IContent;
-        isExternallyCachable(contentType: IContentConstructor): boolean;
-    }
-}
 declare module "jriapp_ui/stackpanel" {
     import { ITemplate, ISelectable, IViewOptions, TEventHandler, ISelectableProvider, IBaseObject } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
-    import { BaseElView } from "jriapp_elview/elview";
+    import { BaseElView } from "jriapp_ui/generic";
     import { ICollection, ICollectionItem, ICollChangedArgs, ITEM_STATUS } from "jriapp_collection/int";
     export interface IStackPanelOptions {
         templateID: string;
@@ -1087,7 +1397,7 @@ declare module "jriapp_ui/stackpanel" {
 }
 declare module "jriapp_ui/tabs" {
     import { IViewOptions } from "jriapp_core/shared";
-    import { BaseElView } from "jriapp_elview/elview";
+    import { BaseElView } from "jriapp_ui/generic";
     export interface ITabs {
         readonly uniqueID: string;
         readonly el: HTMLElement;
@@ -1116,12 +1426,266 @@ declare module "jriapp_ui/tabs" {
         tabIndex: number;
     }
 }
+declare module "jriapp_ui/dataform" {
+    import { IApplication, IBaseObject, IValidationInfo, IViewOptions } from "jriapp_core/shared";
+    import { BaseObject } from "jriapp_core/object";
+    import { BaseElView } from "jriapp_ui/generic";
+    export const css: {
+        dataform: string;
+        error: string;
+    };
+    export class DataForm extends BaseObject {
+        private static _DATA_FORM_SELECTOR;
+        private static _DATA_CONTENT_SELECTOR;
+        private _el;
+        private _$el;
+        private _objId;
+        private _dataContext;
+        private _isEditing;
+        private _content;
+        private _lfTime;
+        private _contentCreated;
+        private _editable;
+        private _errNotification;
+        private _parentDataForm;
+        private _errors;
+        private _isInsideTemplate;
+        private _contentPromise;
+        constructor(options: IViewOptions);
+        private _getBindings();
+        private _getElViews();
+        private _createContent();
+        private _updateCreatedContent();
+        private _updateContent();
+        private _onDSErrorsChanged(sender?, args?);
+        _onIsEditingChanged(sender: any, args: any): void;
+        private _bindDS();
+        private _unbindDS();
+        private _clearContent();
+        destroy(): void;
+        toString(): string;
+        readonly app: IApplication;
+        readonly el: HTMLElement;
+        dataContext: IBaseObject;
+        isEditing: boolean;
+        validationErrors: IValidationInfo[];
+        isInsideTemplate: boolean;
+    }
+    export class DataFormElView extends BaseElView {
+        private _form;
+        constructor(options: IViewOptions);
+        protected _getErrorTipInfo(errors: IValidationInfo[]): string;
+        protected _updateErrorUI(el: HTMLElement, errors: IValidationInfo[]): void;
+        destroy(): void;
+        toString(): string;
+        dataContext: IBaseObject;
+        readonly form: DataForm;
+    }
+}
+declare module "jriapp_ui/datepicker" {
+    import { TextBoxElView, ITextBoxOptions } from "jriapp_ui/textbox";
+    export interface IDatePickerOptions extends ITextBoxOptions {
+        datepicker?: any;
+    }
+    export class DatePickerElView extends TextBoxElView {
+        constructor(options: IDatePickerOptions);
+        destroy(): void;
+        toString(): string;
+    }
+}
+declare module "jriapp_ui/command" {
+    import { IViewOptions } from "jriapp_core/shared";
+    import { ICommand } from "jriapp_core/mvvm";
+    import { BaseElView } from "jriapp_ui/generic";
+    export interface ICommandViewOptions extends IViewOptions {
+        preventDefault?: boolean;
+        stopPropagation?: boolean;
+    }
+    export class CommandElView extends BaseElView {
+        private _command;
+        private _commandParam;
+        private _preventDefault;
+        private _stopPropagation;
+        private _disabled;
+        constructor(options: ICommandViewOptions);
+        private _onCanExecuteChanged(cmd, args);
+        protected _onCommandChanged(): void;
+        protected invokeCommand(args: any, isAsync: boolean): void;
+        destroy(): void;
+        toString(): string;
+        isEnabled: boolean;
+        command: ICommand;
+        commandParam: any;
+        readonly preventDefault: boolean;
+        readonly stopPropagation: boolean;
+    }
+}
+declare module "jriapp_ui/anchor" {
+    import { IViewOptions } from "jriapp_core/shared";
+    import { CommandElView } from "jriapp_ui/command";
+    export interface IAncorOptions extends IViewOptions {
+        imageSrc?: string;
+        glyph?: string;
+    }
+    export class AnchorElView extends CommandElView {
+        private _imageSrc;
+        private _glyph;
+        private _image;
+        private _span;
+        constructor(options: IAncorOptions);
+        protected _onClick(e: Event): void;
+        protected _updateImage(src: string): void;
+        protected _updateGlyph(glyph: string): void;
+        destroy(): void;
+        toString(): string;
+        imageSrc: string;
+        glyph: string;
+        html: string;
+        text: string;
+        href: string;
+    }
+}
+declare module "jriapp_ui/block" {
+    import { SpanElView } from "jriapp_ui/span";
+    export class BlockElView extends SpanElView {
+        toString(): string;
+        width: number;
+        height: number;
+    }
+}
+declare module "jriapp_ui/busy" {
+    import { IViewOptions } from "jriapp_core/shared";
+    import { BaseElView } from "jriapp_ui/generic";
+    export interface IBusyViewOptions extends IViewOptions {
+        img?: string;
+        delay?: number | string;
+    }
+    export class BusyElView extends BaseElView {
+        private _delay;
+        private _timeOut;
+        private _loaderPath;
+        private _$loader;
+        private _isBusy;
+        constructor(options: IBusyViewOptions);
+        destroy(): void;
+        toString(): string;
+        isBusy: boolean;
+        delay: number;
+    }
+}
+declare module "jriapp_ui/button" {
+    import { IViewOptions } from "jriapp_core/shared";
+    import { CommandElView } from "jriapp_ui/command";
+    export class ButtonElView extends CommandElView {
+        constructor(options: IViewOptions);
+        protected _onClick(e: Event): void;
+        toString(): string;
+        value: string;
+        text: string;
+        html: string;
+    }
+}
+declare module "jriapp_ui/checkbox3" {
+    import { IViewOptions } from "jriapp_core/shared";
+    import { InputElView } from "jriapp_ui/input";
+    export class CheckBoxThreeStateElView extends InputElView {
+        private _checked;
+        constructor(options: IViewOptions);
+        protected _updateState(): void;
+        toString(): string;
+        checked: boolean;
+    }
+}
+declare module "jriapp_ui/expander" {
+    import { AnchorElView, IAncorOptions } from "jriapp_ui/anchor";
+    export interface IExpanderOptions extends IAncorOptions {
+        expandedsrc?: string;
+        collapsedsrc?: string;
+        isExpanded?: boolean;
+    }
+    export const PROP_NAME: {
+        isExpanded: string;
+    };
+    export class ExpanderElView extends AnchorElView {
+        private _expandedsrc;
+        private _collapsedsrc;
+        private _isExpanded;
+        constructor(options: IExpanderOptions);
+        protected refresh(): void;
+        protected _onCommandChanged(): void;
+        protected _onClick(e: any): void;
+        invokeCommand(): void;
+        toString(): string;
+        isExpanded: boolean;
+    }
+}
+declare module "jriapp_ui/hidden" {
+    import { InputElView } from "jriapp_ui/input";
+    export class HiddenElView extends InputElView {
+        toString(): string;
+    }
+}
+declare module "jriapp_ui/img" {
+    import { IViewOptions } from "jriapp_core/shared";
+    import { BaseElView } from "jriapp_ui/generic";
+    export class ImgElView extends BaseElView {
+        constructor(options: IViewOptions);
+        toString(): string;
+        src: string;
+    }
+}
+declare module "jriapp_ui/radio" {
+    import { CheckBoxElView } from "jriapp_ui/checkbox";
+    export class RadioElView extends CheckBoxElView {
+        toString(): string;
+        value: string;
+        readonly name: string;
+    }
+}
 declare module "jriapp_ui" {
     export { DIALOG_ACTION, IDialogConstructorOptions, DataEditDialog, DialogVM } from "jriapp_ui/dialog";
     export { DynaContentElView, IDynaContentAnimation, IDynaContentOptions } from "jriapp_ui/dynacontent";
     export { DataGrid, DataGridCell, DataGridColumn, DataGridRow, DataGridElView, IDataGridViewOptions, ROW_POSITION, IRowStateProvider, findDataGrid, getDataGrids } from "jriapp_ui/datagrid/datagrid";
     export * from "jriapp_ui/pager";
-    export { ListBox, ListBoxElView, LookupContent, IListBoxViewOptions, IOptionStateProvider, IOptionTextProvider } from "jriapp_ui/listbox";
+    export { ListBox, ListBoxElView, IListBoxViewOptions, IOptionStateProvider, IOptionTextProvider } from "jriapp_ui/listbox";
     export * from "jriapp_ui/stackpanel";
     export * from "jriapp_ui/tabs";
+    export { BaseElView, fn_addToolTip } from "jriapp_ui/generic";
+    export { DataForm, DataFormElView } from "jriapp_ui/dataform";
+    export { DatePickerElView } from "jriapp_ui/datepicker";
+    export { AnchorElView, IAncorOptions } from "jriapp_ui/anchor";
+    export { BlockElView } from "jriapp_ui/block";
+    export { BusyElView, IBusyViewOptions } from "jriapp_ui/busy";
+    export { ButtonElView } from "jriapp_ui/button";
+    export { CheckBoxElView } from "jriapp_ui/checkbox";
+    export { CheckBoxThreeStateElView } from "jriapp_ui/checkbox3";
+    export { CommandElView } from "jriapp_ui/command";
+    export { ExpanderElView, IExpanderOptions } from "jriapp_ui/expander";
+    export { HiddenElView } from "jriapp_ui/hidden";
+    export { ImgElView } from "jriapp_ui/img";
+    export { InputElView } from "jriapp_ui/input";
+    export { RadioElView } from "jriapp_ui/radio";
+    export { SpanElView } from "jriapp_ui/span";
+    export { TextAreaElView, ITextAreaOptions } from "jriapp_ui/textarea";
+    export { TextBoxElView, ITextBoxOptions, TKeyPressArgs } from "jriapp_ui/textbox";
+    export * from "jriapp_ui/content/all";
+}
+declare module "jriapp_ui/template" {
+    import { ITemplate, ITemplateEvents, IViewOptions } from "jriapp_core/shared";
+    import { CommandElView } from "jriapp_ui/command";
+    export interface ITemplateOptions {
+        dataContext?: any;
+        templEvents?: ITemplateEvents;
+    }
+    export class TemplateElView extends CommandElView implements ITemplateEvents {
+        private _template;
+        private _isEnabled;
+        constructor(options: IViewOptions);
+        templateLoading(template: ITemplate): void;
+        templateLoaded(template: ITemplate, error?: any): void;
+        templateUnLoading(template: ITemplate): void;
+        toString(): string;
+        isEnabled: boolean;
+        readonly template: ITemplate;
+    }
 }

@@ -365,6 +365,7 @@ declare module "jriapp_core/shared" {
         $el: JQuery;
         el: HTMLElement;
         app: IApplication;
+        validationErrors: IValidationInfo[];
     }
     export interface IDataBindingService extends IDisposable {
         bindTemplateElements(templateEl: HTMLElement): IPromise<ILifeTimeScope>;
@@ -995,10 +996,14 @@ declare module "jriapp_utils/utils" {
         static parseJSON(res: string | any): IPromise<any>;
     }
 }
-declare module "jriapp_elview/factory" {
+declare module "jriapp_core/elview" {
     import { IElViewFactory, IElViewRegister } from "jriapp_core/shared";
     export function createElViewFactory(register: IElViewRegister): IElViewFactory;
     export function createElViewRegister(next?: IElViewRegister): IElViewRegister;
+}
+declare module "jriapp_core/content" {
+    import { IContentFactoryList } from "jriapp_core/shared";
+    export function createContentFactoryList(): IContentFactoryList;
 }
 declare module "jriapp_core/defaults" {
     import * as coreMOD from "jriapp_core/shared";
@@ -1126,12 +1131,12 @@ declare module "jriapp_utils/tooltip" {
     export function createToolTipSvc(): ITooltipService;
 }
 declare module "jriapp_core/bootstrap" {
-    import { IApplication, ISelectableProvider, IExports, IConverter, ISvcStore, IIndexer, IBaseObject, IPromise, TEventHandler, IStylesLoader, IElViewRegister, TPriority } from "jriapp_core/shared";
+    import { IApplication, ISelectableProvider, IExports, IConverter, ISvcStore, IIndexer, IBaseObject, IPromise, TEventHandler, IStylesLoader, IContentFactoryList, IElViewRegister, TPriority } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
     import { Defaults } from "jriapp_core/defaults";
     import { TemplateLoader } from "jriapp_utils/tloader";
     export interface IInternalBootstrapMethods {
-        initialize(): IPromise<void>;
+        initialize(): IPromise<Bootstrap>;
         trackSelectable(selectable: ISelectableProvider): void;
         untrackSelectable(selectable: ISelectableProvider): void;
         registerApp(app: IApplication): void;
@@ -1140,6 +1145,14 @@ declare module "jriapp_core/bootstrap" {
         unregisterObject(root: IExports, name: string): void;
         getObject(root: IExports, name: string): any;
         getConverter(name: string): IConverter;
+    }
+    export const enum BootstrapState {
+        None = 0,
+        Initializing = 1,
+        Initialized = 2,
+        Ready = 3,
+        Error = 4,
+        Destroyed = 5,
     }
     export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         static _initFramework(): void;
@@ -1152,6 +1165,7 @@ declare module "jriapp_core/bootstrap" {
         private _internal;
         private _moduleInits;
         private _elViewRegister;
+        private _contentFactory;
         constructor();
         private _bindGlobalEvents();
         private _onTemplateLoaded(html, app);
@@ -1192,10 +1206,12 @@ declare module "jriapp_core/bootstrap" {
         toString(): string;
         readonly stylesLoader: IStylesLoader;
         readonly elViewRegister: IElViewRegister;
+        readonly contentFactory: IContentFactoryList;
         readonly templateLoader: TemplateLoader;
         currentSelectable: ISelectableProvider;
         readonly defaults: Defaults;
         readonly isReady: boolean;
+        readonly state: BootstrapState;
     }
     export const bootstrap: Bootstrap;
 }
@@ -1284,25 +1300,106 @@ declare module "jriapp_utils/dblclick" {
         interval: number;
     }
 }
-declare module "jriapp_content/int" {
-    import { IContentOptions, ITemplateInfo } from "jriapp_core/shared";
-    export const css: {
-        content: string;
-        required: string;
-        checkbox: string;
-    };
-    export interface IDataContentAttr {
-        fieldName?: string;
-        readOnly?: boolean;
-        css?: {
-            displayCss: string;
-            editCss: string;
-        };
-        template?: ITemplateInfo;
-        name?: string;
-        options?: any;
+declare module "jriapp_core/binding" {
+    import { BINDING_MODE } from "jriapp_core/const";
+    import { IBaseObject, IBindingInfo, IBindingOptions, IBinding, IConverter } from "jriapp_core/shared";
+    import { BaseObject } from "jriapp_core/object";
+    export function getBindingOptions(bindInfo: IBindingInfo, defaultTarget: IBaseObject, defaultSource: any): IBindingOptions;
+    export class Binding extends BaseObject implements IBinding {
+        private _state;
+        private _mode;
+        private _converter;
+        private _converterParam;
+        private _srcPath;
+        private _tgtPath;
+        private _srcFixed;
+        private _pathItems;
+        private _objId;
+        private _srcEnd;
+        private _tgtEnd;
+        private _source;
+        private _target;
+        private _umask;
+        private _cntUtgt;
+        private _cntUSrc;
+        constructor(options: IBindingOptions);
+        private _update();
+        private _onSrcErrChanged(err_notif, args?);
+        private _getTgtChangedFn(self, obj, prop, restPath, lvl);
+        private _getSrcChangedFn(self, obj, prop, restPath, lvl);
+        private _parseSrc(obj, path, lvl);
+        private _parseSrc2(obj, path, lvl);
+        private _parseTgt(obj, path, lvl);
+        private _parseTgt2(obj, path, lvl);
+        private _setPathItem(newObj, bindingTo, lvl, path);
+        private _cleanUp(obj);
+        private _onTgtDestroyed(sender, args);
+        private _onSrcDestroyed(sender, args);
+        private _updateTarget(sender?, args?);
+        private _updateSource(sender?, args?);
+        protected _setTarget(value: any): void;
+        protected _setSource(value: any): void;
+        destroy(): void;
+        toString(): string;
+        readonly uniqueID: string;
+        target: IBaseObject;
+        source: any;
+        readonly targetPath: string[];
+        readonly sourcePath: string[];
+        sourceValue: any;
+        targetValue: any;
+        readonly mode: BINDING_MODE;
+        converter: IConverter;
+        converterParam: any;
+        readonly isSourceFixed: boolean;
+        isDisabled: boolean;
     }
-    export function parseContentAttr(content_attr: string): IContentOptions;
+}
+declare module "jriapp_core/datepicker" {
+    import { IDatepicker } from "jriapp_core/shared";
+    import { BaseObject } from "jriapp_core/object";
+    export class Datepicker extends BaseObject implements IDatepicker {
+        private _datepickerRegion;
+        private _dateFormat;
+        constructor();
+        toString(): string;
+        attachTo($el: any, options?: {
+            dateFormat?: string;
+        }): void;
+        detachFrom($el: any): void;
+        parseDate(str: string): Date;
+        formatDate(date: Date): string;
+        dateFormat: string;
+        datepickerRegion: string;
+        readonly datePickerFn: any;
+    }
+}
+declare module "jriapp_core/template" {
+    import { ITemplate, ITemplateEvents } from "jriapp_core/shared";
+    export const css: {
+        templateContainer: string;
+        templateError: string;
+    };
+    export interface ITemplateOptions {
+        dataContext?: any;
+        templEvents?: ITemplateEvents;
+    }
+    export function createTemplate(dataContext?: any, templEvents?: ITemplateEvents): ITemplate;
+}
+declare module "jriapp_utils/propwatcher" {
+    import { BaseObject } from "jriapp_core/object";
+    export class PropWatcher extends BaseObject {
+        private _objId;
+        private _objs;
+        constructor();
+        static create(): PropWatcher;
+        addPropWatch(obj: BaseObject, prop: string, fn_onChange: (prop: string) => void): void;
+        addWatch(obj: BaseObject, props: string[], fn_onChange: (prop: string) => void): void;
+        removeWatch(obj: BaseObject): void;
+        destroy(): void;
+        toString(): string;
+        readonly uniqueID: string;
+    }
 }
 declare module "jriapp_core/mvvm" {
     import { IBaseObject, ITemplate, IApplication } from "jriapp_core/shared";
@@ -1363,693 +1460,6 @@ declare module "jriapp_core/mvvm" {
         destroy(): void;
         readonly uniqueID: string;
         readonly app: TApp;
-    }
-}
-declare module "jriapp_utils/eventstore" {
-    import { IPropertyBag } from "jriapp_core/shared";
-    import { ICommand } from "jriapp_core/mvvm";
-    import { BaseObject } from "jriapp_core/object";
-    export const enum EVENT_CHANGE_TYPE {
-        None = 0,
-        Added = 1,
-        Deleted = 2,
-        Updated = 3,
-    }
-    export interface IEventChangedArgs {
-        name: string;
-        changeType: EVENT_CHANGE_TYPE;
-        oldVal: ICommand;
-        newVal: ICommand;
-    }
-    export class EventStore extends BaseObject implements IPropertyBag {
-        private _dic;
-        private _onChange;
-        constructor(onChange: (sender: EventStore, args: IEventChangedArgs) => void);
-        _isHasProp(prop: string): boolean;
-        getProp(name: string): ICommand;
-        setProp(name: string, command: ICommand): void;
-        trigger(name: string, args?: any): void;
-        toString(): string;
-        destroy(): void;
-    }
-}
-declare module "jriapp_elview/elview" {
-    import { IElView, IValidationInfo, IApplication, IViewOptions, IPropertyBag } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
-    import { TAction, TCommand, ICommand, TPredicate } from "jriapp_core/mvvm";
-    import { EVENT_CHANGE_TYPE, IEventChangedArgs } from "jriapp_utils/eventstore";
-    export { IEventChangedArgs, EVENT_CHANGE_TYPE };
-    export function fn_addToolTip($el: JQuery, tip: string, isError?: boolean, pos?: string): void;
-    export type PropChangedCommand = TCommand<{
-        property: string;
-    }, any>;
-    export const PropChangedCommand: new (fn_action: TAction<{
-        property: string;
-    }, any>, thisObj?: any, fn_canExecute?: TPredicate<{
-        property: string;
-    }, any>) => PropChangedCommand;
-    export const css: {
-        fieldError: string;
-        commandLink: string;
-        checkedNull: string;
-        disabled: string;
-        opacity: string;
-        color: string;
-        fontSize: string;
-    };
-    export const PROP_NAME: {
-        isVisible: string;
-        validationErrors: string;
-        toolTip: string;
-        css: string;
-        isEnabled: string;
-        value: string;
-        command: string;
-        disabled: string;
-        commandParam: string;
-        isBusy: string;
-        delay: string;
-        checked: string;
-        color: string;
-        wrap: string;
-        text: string;
-        html: string;
-        preventDefault: string;
-        imageSrc: string;
-        glyph: string;
-        href: string;
-        fontSize: string;
-        borderColor: string;
-        borderStyle: string;
-        width: string;
-        height: string;
-        src: string;
-        click: string;
-    };
-    export class BaseElView extends BaseObject implements IElView {
-        private _objId;
-        private _$el;
-        protected _errors: IValidationInfo[];
-        protected _toolTip: string;
-        private _eventStore;
-        private _props;
-        private _classes;
-        private _display;
-        private _css;
-        constructor(options: IViewOptions);
-        private _getStore();
-        protected _onEventChanged(args: IEventChangedArgs): void;
-        protected _onEventAdded(name: string, newVal: ICommand): void;
-        protected _onEventDeleted(name: string, oldVal: ICommand): void;
-        protected _applyToolTip(): void;
-        protected _getErrorTipInfo(errors: IValidationInfo[]): string;
-        protected _setFieldError(isError: boolean): void;
-        protected _updateErrorUI(el: HTMLElement, errors: IValidationInfo[]): void;
-        protected _setToolTip($el: JQuery, tip: string, isError?: boolean): void;
-        destroy(): void;
-        toString(): string;
-        readonly $el: JQuery;
-        readonly el: HTMLElement;
-        readonly uniqueID: string;
-        isVisible: boolean;
-        validationErrors: IValidationInfo[];
-        readonly dataName: string;
-        toolTip: string;
-        readonly events: IPropertyBag;
-        readonly props: IPropertyBag;
-        readonly classes: IPropertyBag;
-        css: string;
-        readonly app: IApplication;
-    }
-}
-declare module "jriapp_core/binding" {
-    import { BINDING_MODE } from "jriapp_core/const";
-    import { IBaseObject, IBindingInfo, IBindingOptions, IBinding, IConverter } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
-    export function getBindingOptions(bindInfo: IBindingInfo, defaultTarget: IBaseObject, defaultSource: any): IBindingOptions;
-    export class Binding extends BaseObject implements IBinding {
-        private _state;
-        private _mode;
-        private _converter;
-        private _converterParam;
-        private _srcPath;
-        private _tgtPath;
-        private _srcFixed;
-        private _pathItems;
-        private _objId;
-        private _srcEnd;
-        private _tgtEnd;
-        private _source;
-        private _target;
-        private _umask;
-        private _cntUtgt;
-        private _cntUSrc;
-        constructor(options: IBindingOptions);
-        private _update();
-        private _onSrcErrChanged(err_notif, args?);
-        private _getTgtChangedFn(self, obj, prop, restPath, lvl);
-        private _getSrcChangedFn(self, obj, prop, restPath, lvl);
-        private _parseSrc(obj, path, lvl);
-        private _parseSrc2(obj, path, lvl);
-        private _parseTgt(obj, path, lvl);
-        private _parseTgt2(obj, path, lvl);
-        private _setPathItem(newObj, bindingTo, lvl, path);
-        private _cleanUp(obj);
-        private _onTgtDestroyed(sender, args);
-        private _onSrcDestroyed(sender, args);
-        private _updateTarget(sender?, args?);
-        private _updateSource(sender?, args?);
-        protected _setTarget(value: any): void;
-        protected _setSource(value: any): void;
-        destroy(): void;
-        toString(): string;
-        readonly uniqueID: string;
-        target: IBaseObject;
-        source: any;
-        readonly targetPath: string[];
-        readonly sourcePath: string[];
-        sourceValue: any;
-        targetValue: any;
-        readonly mode: BINDING_MODE;
-        converter: IConverter;
-        converterParam: any;
-        readonly isSourceFixed: boolean;
-        isDisabled: boolean;
-    }
-}
-declare module "jriapp_content/basic" {
-    import { IApplication, IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IElView, IViewOptions, IBaseObject, IBindingInfo, IBindingOptions, IFieldInfo } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
-    import { Binding } from "jriapp_core/binding";
-    export class BasicContent extends BaseObject implements IContent {
-        protected _parentEl: HTMLElement;
-        protected _el: HTMLElement;
-        protected _options: IContentOptions;
-        protected _isReadOnly: boolean;
-        private _isEditing;
-        protected _dataContext: any;
-        protected _lfScope: ILifeTimeScope;
-        protected _target: IElView;
-        constructor(options: IConstructorContentOptions);
-        protected init(): void;
-        protected updateCss(): void;
-        protected getIsCanBeEdited(): boolean;
-        protected createTargetElement(): IElView;
-        protected getBindingOption(bindingInfo: IBindingInfo, target: IBaseObject, dataContext: any, targetPath: string): IBindingOptions;
-        protected getBindings(): Binding[];
-        protected updateBindingSource(): void;
-        protected cleanUp(): void;
-        protected getElementView(el: HTMLElement, view_info: {
-            name: string;
-            options: IViewOptions;
-        }): IElView;
-        protected getFieldInfo(): IFieldInfo;
-        protected render(): void;
-        destroy(): void;
-        toString(): string;
-        readonly parentEl: HTMLElement;
-        readonly target: IElView;
-        isEditing: boolean;
-        dataContext: any;
-        readonly app: IApplication;
-    }
-}
-declare module "jriapp_elview/command" {
-    import { IViewOptions } from "jriapp_core/shared";
-    import { ICommand } from "jriapp_core/mvvm";
-    import { BaseElView } from "jriapp_elview/elview";
-    export interface ICommandViewOptions extends IViewOptions {
-        preventDefault?: boolean;
-        stopPropagation?: boolean;
-    }
-    export class CommandElView extends BaseElView {
-        private _command;
-        private _commandParam;
-        private _preventDefault;
-        private _stopPropagation;
-        private _disabled;
-        constructor(options: ICommandViewOptions);
-        private _onCanExecuteChanged(cmd, args);
-        protected _onCommandChanged(): void;
-        protected invokeCommand(args: any, isAsync: boolean): void;
-        destroy(): void;
-        toString(): string;
-        isEnabled: boolean;
-        command: ICommand;
-        commandParam: any;
-        readonly preventDefault: boolean;
-        readonly stopPropagation: boolean;
-    }
-}
-declare module "jriapp_core/template" {
-    import { ITemplate, ITemplateEvents, IViewOptions } from "jriapp_core/shared";
-    import { CommandElView } from "jriapp_elview/command";
-    export const css: {
-        templateContainer: string;
-        templateError: string;
-    };
-    export interface ITemplateOptions {
-        dataContext?: any;
-        templEvents?: ITemplateEvents;
-    }
-    export function createTemplate(dataContext?: any, templEvents?: ITemplateEvents): ITemplate;
-    export class TemplateElView extends CommandElView implements ITemplateEvents {
-        private _template;
-        private _isEnabled;
-        constructor(options: IViewOptions);
-        templateLoading(template: ITemplate): void;
-        templateLoaded(template: ITemplate, error?: any): void;
-        templateUnLoading(template: ITemplate): void;
-        toString(): string;
-        isEnabled: boolean;
-        readonly template: ITemplate;
-    }
-}
-declare module "jriapp_content/template" {
-    import { IContent, IApplication, ITemplate, IConstructorContentOptions } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
-    export class TemplateContent extends BaseObject implements IContent {
-        private _parentEl;
-        private _template;
-        private _templateInfo;
-        private _isEditing;
-        private _dataContext;
-        private _isDisabled;
-        private _templateID;
-        constructor(options: IConstructorContentOptions);
-        private getTemplateID();
-        private createTemplate();
-        protected render(): void;
-        protected cleanUp(): void;
-        destroy(): void;
-        toString(): string;
-        readonly parentEl: HTMLElement;
-        readonly template: ITemplate;
-        isEditing: boolean;
-        dataContext: any;
-        readonly app: IApplication;
-    }
-}
-declare module "jriapp_elview/input" {
-    import { BaseElView } from "jriapp_elview/elview";
-    export class InputElView extends BaseElView {
-        toString(): string;
-        isEnabled: boolean;
-        value: string;
-    }
-}
-declare module "jriapp_elview/textbox" {
-    import { IViewOptions } from "jriapp_core/shared";
-    import { InputElView } from "jriapp_elview/input";
-    export interface ITextBoxOptions extends IViewOptions {
-        updateOnKeyUp?: boolean;
-    }
-    export type TKeyPressArgs = {
-        keyCode: number;
-        value: string;
-        isCancel: boolean;
-    };
-    export class TextBoxElView extends InputElView {
-        constructor(options: ITextBoxOptions);
-        protected _getEventNames(): string[];
-        addOnKeyPress(fn: (sender: TextBoxElView, args: TKeyPressArgs) => void, nmspace?: string): void;
-        removeOnKeyPress(nmspace?: string): void;
-        toString(): string;
-        color: string;
-    }
-}
-declare module "jriapp_content/string" {
-    import { IFieldInfo } from "jriapp_core/shared";
-    import { BasicContent } from "jriapp_content/basic";
-    export class StringContent extends BasicContent {
-        static __allowedKeys: number[];
-        private readonly _allowedKeys;
-        protected render(): void;
-        protected previewKeyPress(fieldInfo: IFieldInfo, keyCode: number, value: string): boolean;
-        toString(): string;
-    }
-}
-declare module "jriapp_elview/textarea" {
-    import { BaseElView } from "jriapp_elview/elview";
-    import { ITextBoxOptions, TKeyPressArgs } from "jriapp_elview/textbox";
-    export interface ITextAreaOptions extends ITextBoxOptions {
-        wrap?: string;
-    }
-    export class TextAreaElView extends BaseElView {
-        constructor(options: ITextAreaOptions);
-        protected _getEventNames(): string[];
-        addOnKeyPress(fn: (sender: TextAreaElView, args: TKeyPressArgs) => void, nmspace?: string): void;
-        removeOnKeyPress(nmspace?: string): void;
-        toString(): string;
-        value: string;
-        isEnabled: boolean;
-        wrap: any;
-    }
-}
-declare module "jriapp_content/multyline" {
-    import { IElView, IConstructorContentOptions, IFieldInfo } from "jriapp_core/shared";
-    import { BasicContent } from "jriapp_content/basic";
-    export class MultyLineContent extends BasicContent {
-        static __allowedKeys: number[];
-        private readonly _allowedKeys;
-        constructor(options: IConstructorContentOptions);
-        protected createTargetElement(): IElView;
-        protected render(): void;
-        protected previewKeyPress(fieldInfo: IFieldInfo, keyCode: number, value: string): boolean;
-        toString(): string;
-    }
-}
-declare module "jriapp_elview/checkbox" {
-    import { IViewOptions } from "jriapp_core/shared";
-    import { InputElView } from "jriapp_elview/input";
-    export class CheckBoxElView extends InputElView {
-        private _checked;
-        constructor(options: IViewOptions);
-        protected _updateState(): void;
-        toString(): string;
-        checked: boolean;
-    }
-}
-declare module "jriapp_content/bool" {
-    import { IElView } from "jriapp_core/shared";
-    import { CheckBoxElView } from "jriapp_elview/checkbox";
-    import { BasicContent } from "jriapp_content/basic";
-    export class BoolContent extends BasicContent {
-        protected init(): void;
-        protected cleanUp(): void;
-        protected createCheckBoxView(): CheckBoxElView;
-        protected createTargetElement(): IElView;
-        protected updateCss(): void;
-        destroy(): void;
-        render(): void;
-        toString(): string;
-    }
-}
-declare module "jriapp_content/number" {
-    import { IBindingOptions, IBindingInfo, IBaseObject } from "jriapp_core/shared";
-    import { BasicContent } from "jriapp_content/basic";
-    export class NumberContent extends BasicContent {
-        static __allowedKeys: number[];
-        private readonly _allowedKeys;
-        protected getBindingOption(bindingInfo: IBindingInfo, tgt: IBaseObject, dctx: any, targetPath: string): IBindingOptions;
-        protected render(): void;
-        protected previewKeyPress(keyCode: number, value: string): boolean;
-        toString(): string;
-    }
-}
-declare module "jriapp_content/date" {
-    import { IConstructorContentOptions, IBindingInfo, IBindingOptions, IElView, IBaseObject } from "jriapp_core/shared";
-    import { BasicContent } from "jriapp_content/basic";
-    export class DateContent extends BasicContent {
-        constructor(options: IConstructorContentOptions);
-        protected getBindingOption(bindingInfo: IBindingInfo, tgt: IBaseObject, dctx: any, targetPath: string): IBindingOptions;
-        protected createTargetElement(): IElView;
-        toString(): string;
-    }
-}
-declare module "jriapp_content/datetime" {
-    import { IBindingInfo, IBaseObject, IBindingOptions } from "jriapp_core/shared";
-    import { BasicContent } from "jriapp_content/basic";
-    export class DateTimeContent extends BasicContent {
-        protected getBindingOption(bindingInfo: IBindingInfo, tgt: IBaseObject, dctx: any, targetPath: string): IBindingOptions;
-        toString(): string;
-    }
-}
-declare module "jriapp_content/factory" {
-    import { IContentFactory, IContentFactoryList, IContentOptions, IContentConstructor, IConstructorContentOptions, TFactoryGetter, IContent } from "jriapp_core/shared";
-    export { css as contentCSS } from "jriapp_content/int";
-    export { BasicContent } from "jriapp_content/basic";
-    export { TemplateContent } from "jriapp_content/template";
-    export { StringContent } from "jriapp_content/string";
-    export { MultyLineContent } from "jriapp_content/multyline";
-    export { BoolContent } from "jriapp_content/bool";
-    export { NumberContent } from "jriapp_content/number";
-    export { DateContent } from "jriapp_content/date";
-    export { DateTimeContent } from "jriapp_content/datetime";
-    export class ContentFactory implements IContentFactory {
-        constructor();
-        getContentType(options: IContentOptions): IContentConstructor;
-        createContent(options: IConstructorContentOptions): IContent;
-        isExternallyCachable(contentType: IContentConstructor): boolean;
-    }
-    export class FactoryList implements IContentFactoryList {
-        private _factory;
-        constructor();
-        addFactory(factoryGetter: TFactoryGetter): void;
-        getContentType(options: IContentOptions): IContentConstructor;
-        createContent(options: IConstructorContentOptions): IContent;
-        isExternallyCachable(contentType: IContentConstructor): boolean;
-    }
-    export const contentFactories: FactoryList;
-}
-declare module "jriapp_core/datepicker" {
-    import { IDatepicker } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
-    import { TextBoxElView, ITextBoxOptions } from "jriapp_elview/textbox";
-    export class Datepicker extends BaseObject implements IDatepicker {
-        private _datepickerRegion;
-        private _dateFormat;
-        constructor();
-        toString(): string;
-        attachTo($el: any, options?: {
-            dateFormat?: string;
-        }): void;
-        detachFrom($el: any): void;
-        parseDate(str: string): Date;
-        formatDate(date: Date): string;
-        dateFormat: string;
-        datepickerRegion: string;
-        readonly datePickerFn: any;
-    }
-    export interface IDatePickerOptions extends ITextBoxOptions {
-        datepicker?: any;
-    }
-    export class DatePickerElView extends TextBoxElView {
-        constructor(options: IDatePickerOptions);
-        destroy(): void;
-        toString(): string;
-    }
-}
-declare module "jriapp_core/dataform" {
-    import { IApplication, IBaseObject, IValidationInfo, IViewOptions } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
-    import { BaseElView } from "jriapp_elview/elview";
-    export const css: {
-        dataform: string;
-        error: string;
-    };
-    export class DataForm extends BaseObject {
-        private static _DATA_FORM_SELECTOR;
-        private static _DATA_CONTENT_SELECTOR;
-        private _el;
-        private _$el;
-        private _objId;
-        private _dataContext;
-        private _isEditing;
-        private _content;
-        private _lfTime;
-        private _contentCreated;
-        private _editable;
-        private _errNotification;
-        private _parentDataForm;
-        private _errors;
-        private _isInsideTemplate;
-        private _contentPromise;
-        constructor(options: IViewOptions);
-        private _getBindings();
-        private _getElViews();
-        private _createContent();
-        private _updateCreatedContent();
-        private _updateContent();
-        private _onDSErrorsChanged(sender?, args?);
-        _onIsEditingChanged(sender: any, args: any): void;
-        private _bindDS();
-        private _unbindDS();
-        private _clearContent();
-        destroy(): void;
-        toString(): string;
-        readonly app: IApplication;
-        readonly el: HTMLElement;
-        dataContext: IBaseObject;
-        isEditing: boolean;
-        validationErrors: IValidationInfo[];
-        isInsideTemplate: boolean;
-    }
-    export class DataFormElView extends BaseElView {
-        private _form;
-        constructor(options: IViewOptions);
-        protected _getErrorTipInfo(errors: IValidationInfo[]): string;
-        protected _updateErrorUI(el: HTMLElement, errors: IValidationInfo[]): void;
-        destroy(): void;
-        toString(): string;
-        dataContext: IBaseObject;
-        readonly form: DataForm;
-    }
-}
-declare module "jriapp_elview/anchor" {
-    import { IViewOptions } from "jriapp_core/shared";
-    import { CommandElView } from "jriapp_elview/command";
-    export interface IAncorOptions extends IViewOptions {
-        imageSrc?: string;
-        glyph?: string;
-    }
-    export class AnchorElView extends CommandElView {
-        private _imageSrc;
-        private _glyph;
-        private _image;
-        private _span;
-        constructor(options: IAncorOptions);
-        protected _onClick(e: Event): void;
-        protected _updateImage(src: string): void;
-        protected _updateGlyph(glyph: string): void;
-        destroy(): void;
-        toString(): string;
-        imageSrc: string;
-        glyph: string;
-        html: string;
-        text: string;
-        href: string;
-    }
-}
-declare module "jriapp_elview/span" {
-    import { BaseElView } from "jriapp_elview/elview";
-    export class SpanElView extends BaseElView {
-        toString(): string;
-        text: string;
-        value: string;
-        html: string;
-        color: string;
-        fontSize: string;
-    }
-}
-declare module "jriapp_elview/block" {
-    import { SpanElView } from "jriapp_elview/span";
-    export class BlockElView extends SpanElView {
-        toString(): string;
-        width: number;
-        height: number;
-    }
-}
-declare module "jriapp_elview/busy" {
-    import { IViewOptions } from "jriapp_core/shared";
-    import { BaseElView } from "jriapp_elview/elview";
-    export interface IBusyViewOptions extends IViewOptions {
-        img?: string;
-        delay?: number | string;
-    }
-    export class BusyElView extends BaseElView {
-        private _delay;
-        private _timeOut;
-        private _loaderPath;
-        private _$loader;
-        private _isBusy;
-        constructor(options: IBusyViewOptions);
-        destroy(): void;
-        toString(): string;
-        isBusy: boolean;
-        delay: number;
-    }
-}
-declare module "jriapp_elview/button" {
-    import { IViewOptions } from "jriapp_core/shared";
-    import { CommandElView } from "jriapp_elview/command";
-    export class ButtonElView extends CommandElView {
-        constructor(options: IViewOptions);
-        protected _onClick(e: Event): void;
-        toString(): string;
-        value: string;
-        text: string;
-        html: string;
-    }
-}
-declare module "jriapp_elview/checkbox3" {
-    import { IViewOptions } from "jriapp_core/shared";
-    import { InputElView } from "jriapp_elview/input";
-    export class CheckBoxThreeStateElView extends InputElView {
-        private _checked;
-        constructor(options: IViewOptions);
-        protected _updateState(): void;
-        toString(): string;
-        checked: boolean;
-    }
-}
-declare module "jriapp_elview/expander" {
-    import { AnchorElView, IAncorOptions } from "jriapp_elview/anchor";
-    export interface IExpanderOptions extends IAncorOptions {
-        expandedsrc?: string;
-        collapsedsrc?: string;
-        isExpanded?: boolean;
-    }
-    export const PROP_NAME: {
-        isExpanded: string;
-    };
-    export class ExpanderElView extends AnchorElView {
-        private _expandedsrc;
-        private _collapsedsrc;
-        private _isExpanded;
-        constructor(options: IExpanderOptions);
-        protected refresh(): void;
-        protected _onCommandChanged(): void;
-        protected _onClick(e: any): void;
-        invokeCommand(): void;
-        toString(): string;
-        isExpanded: boolean;
-    }
-}
-declare module "jriapp_elview/hidden" {
-    import { InputElView } from "jriapp_elview/input";
-    export class HiddenElView extends InputElView {
-        toString(): string;
-    }
-}
-declare module "jriapp_elview/img" {
-    import { IViewOptions } from "jriapp_core/shared";
-    import { BaseElView } from "jriapp_elview/elview";
-    export class ImgElView extends BaseElView {
-        constructor(options: IViewOptions);
-        toString(): string;
-        src: string;
-    }
-}
-declare module "jriapp_elview/radio" {
-    import { CheckBoxElView } from "jriapp_elview/checkbox";
-    export class RadioElView extends CheckBoxElView {
-        toString(): string;
-        value: string;
-        readonly name: string;
-    }
-}
-declare module "jriapp_elview/all" {
-    export { BaseElView, fn_addToolTip, PropChangedCommand, IEventChangedArgs, EVENT_CHANGE_TYPE } from "jriapp_elview/elview";
-    export { AnchorElView, IAncorOptions } from "jriapp_elview/anchor";
-    export { BlockElView } from "jriapp_elview/block";
-    export { BusyElView, IBusyViewOptions } from "jriapp_elview/busy";
-    export { ButtonElView } from "jriapp_elview/button";
-    export { CheckBoxElView } from "jriapp_elview/checkbox";
-    export { CheckBoxThreeStateElView } from "jriapp_elview/checkbox3";
-    export { CommandElView } from "jriapp_elview/command";
-    export { ExpanderElView, IExpanderOptions } from "jriapp_elview/expander";
-    export { HiddenElView } from "jriapp_elview/hidden";
-    export { ImgElView } from "jriapp_elview/img";
-    export { InputElView } from "jriapp_elview/input";
-    export { RadioElView } from "jriapp_elview/radio";
-    export { SpanElView } from "jriapp_elview/span";
-    export { TextAreaElView, ITextAreaOptions } from "jriapp_elview/textarea";
-    export { TextBoxElView, ITextBoxOptions, TKeyPressArgs } from "jriapp_elview/textbox";
-}
-declare module "jriapp_utils/propwatcher" {
-    import { BaseObject } from "jriapp_core/object";
-    export class PropWatcher extends BaseObject {
-        private _objId;
-        private _objs;
-        constructor();
-        static create(): PropWatcher;
-        addPropWatch(obj: BaseObject, prop: string, fn_onChange: (prop: string) => void): void;
-        addWatch(obj: BaseObject, props: string[], fn_onChange: (prop: string) => void): void;
-        removeWatch(obj: BaseObject): void;
-        destroy(): void;
-        toString(): string;
-        readonly uniqueID: string;
     }
 }
 declare module "jriapp_collection/int" {
@@ -2675,17 +2085,14 @@ declare module "jriapp" {
     export { DblClick } from "jriapp_utils/dblclick";
     export { DEBUG, ERROR } from "jriapp_utils/coreutils";
     export { bootstrap } from "jriapp_core/bootstrap";
-    export { contentFactories } from "jriapp_content/factory";
     export { Binding } from "jriapp_core/binding";
-    export * from "jriapp_core/datepicker";
-    export { DataForm, DataFormElView } from "jriapp_core/dataform";
-    export { createTemplate, TemplateElView, ITemplateOptions } from "jriapp_core/template";
-    export * from "jriapp_elview/all";
+    export { Datepicker } from "jriapp_core/datepicker";
+    export { createTemplate, ITemplateOptions } from "jriapp_core/template";
     export { LifeTimeScope } from "jriapp_utils/lifetime";
     export { PropWatcher } from "jriapp_utils/propwatcher";
     export { WaitQueue, IWaitQueueItem } from "jriapp_utils/waitqueue";
     export { Utils } from "jriapp_utils/utils";
-    export * from "jriapp_core/mvvm";
+    export { ViewModel, TemplateCommand, BaseCommand, Command, ICommand, TCommand } from "jriapp_core/mvvm";
     export { ICollection, ICollectionItem, IValueUtils, IEditableCollection, IItemAspect, IPermissions, ISimpleCollection, COLL_CHANGE_OPER, COLL_CHANGE_REASON, COLL_CHANGE_TYPE, ITEM_STATUS } from "jriapp_collection/int";
     export { BaseCollection } from "jriapp_collection/collection";
     export { CollectionItem } from "jriapp_collection/item";
@@ -2695,4 +2102,32 @@ declare module "jriapp" {
     export { ValidationError } from "jriapp_collection/validation";
     export { Application } from "jriapp_core/app";
     export const VERSION: string;
+}
+declare module "jriapp_utils/eventstore" {
+    import { IPropertyBag } from "jriapp_core/shared";
+    import { ICommand } from "jriapp_core/mvvm";
+    import { BaseObject } from "jriapp_core/object";
+    export const enum EVENT_CHANGE_TYPE {
+        None = 0,
+        Added = 1,
+        Deleted = 2,
+        Updated = 3,
+    }
+    export interface IEventChangedArgs {
+        name: string;
+        changeType: EVENT_CHANGE_TYPE;
+        oldVal: ICommand;
+        newVal: ICommand;
+    }
+    export class EventStore extends BaseObject implements IPropertyBag {
+        private _dic;
+        private _onChange;
+        constructor(onChange: (sender: EventStore, args: IEventChangedArgs) => void);
+        _isHasProp(prop: string): boolean;
+        getProp(name: string): ICommand;
+        setProp(name: string, command: ICommand): void;
+        trigger(name: string, args?: any): void;
+        toString(): string;
+        destroy(): void;
+    }
 }

@@ -2227,9 +2227,9 @@ define("jriapp_utils/utils", ["require", "exports", "jriapp_utils/coreutils", "j
     }());
     exports.Utils = Utils;
 });
-define("jriapp_elview/factory", ["require", "exports", "jriapp_core/const", "jriapp_core/bootstrap", "jriapp_core/lang", "jriapp_core/parser", "jriapp_core/object", "jriapp_utils/utils"], function (require, exports, const_2, bootstrap_1, lang_5, parser_1, object_2, utils_1) {
+define("jriapp_core/elview", ["require", "exports", "jriapp_core/const", "jriapp_core/bootstrap", "jriapp_core/lang", "jriapp_core/parser", "jriapp_core/object", "jriapp_utils/utils"], function (require, exports, const_2, bootstrap_1, lang_5, parser_1, object_2, utils_1) {
     "use strict";
-    var utils = utils_1.Utils, $ = utils.dom.$;
+    var utils = utils_1.Utils, $ = utils.dom.$, parse = parser_1.parser;
     function createElViewFactory(register) {
         return new ElViewFactory(register);
     }
@@ -2345,7 +2345,7 @@ define("jriapp_elview/factory", ["require", "exports", "jriapp_core/const", "jri
             var view_name = null, vw_options = null, attr, data_view_op_arr, data_view_op;
             if (el.hasAttribute(const_2.DATA_ATTR.DATA_VIEW)) {
                 attr = el.getAttribute(const_2.DATA_ATTR.DATA_VIEW);
-                data_view_op_arr = parser_1.parser.parseOptions(attr);
+                data_view_op_arr = parse.parseOptions(attr);
                 if (!!data_view_op_arr && data_view_op_arr.length > 0) {
                     data_view_op = data_view_op_arr[0];
                     if (!!data_view_op.name && data_view_op.name !== "default") {
@@ -2373,6 +2373,45 @@ define("jriapp_elview/factory", ["require", "exports", "jriapp_core/const", "jri
         });
         return ElViewFactory;
     }(object_2.BaseObject));
+});
+define("jriapp_core/content", ["require", "exports", "jriapp_core/lang"], function (require, exports, lang_6) {
+    "use strict";
+    function createContentFactoryList() {
+        return new FactoryList();
+    }
+    exports.createContentFactoryList = createContentFactoryList;
+    var LastFactory = (function () {
+        function LastFactory() {
+        }
+        LastFactory.prototype.getContentType = function (options) {
+            throw new Error(lang_6.ERRS.ERR_BINDING_CONTENT_NOT_FOUND);
+        };
+        LastFactory.prototype.createContent = function (options) {
+            throw new Error(lang_6.ERRS.ERR_BINDING_CONTENT_NOT_FOUND);
+        };
+        LastFactory.prototype.isExternallyCachable = function (contentType) {
+            return false;
+        };
+        return LastFactory;
+    }());
+    var FactoryList = (function () {
+        function FactoryList() {
+            this._factory = new LastFactory();
+        }
+        FactoryList.prototype.addFactory = function (factoryGetter) {
+            this._factory = factoryGetter(this._factory);
+        };
+        FactoryList.prototype.getContentType = function (options) {
+            return this._factory.getContentType(options);
+        };
+        FactoryList.prototype.createContent = function (options) {
+            return this._factory.createContent(options);
+        };
+        FactoryList.prototype.isExternallyCachable = function (contentType) {
+            return this._factory.isExternallyCachable(contentType);
+        };
+        return FactoryList;
+    }());
 });
 define("jriapp_core/defaults", ["require", "exports", "jriapp_core/shared", "jriapp_core/object", "jriapp_utils/checks", "jriapp_utils/strutils"], function (require, exports, coreMOD, object_3, checks_7, strUtils_4) {
     "use strict";
@@ -2652,7 +2691,7 @@ define("jriapp_utils/waitqueue", ["require", "exports", "jriapp_core/object", "j
     }(object_4.BaseObject));
     exports.WaitQueue = WaitQueue;
 });
-define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/strutils", "jriapp_utils/checks", "jriapp_utils/coreutils", "jriapp_utils/async", "jriapp_utils/http", "jriapp_utils/waitqueue"], function (require, exports, lang_6, object_5, strUtils_5, checks_8, coreutils_8, async_3, http_2, waitqueue_1) {
+define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/strutils", "jriapp_utils/checks", "jriapp_utils/coreutils", "jriapp_utils/async", "jriapp_utils/http", "jriapp_utils/waitqueue"], function (require, exports, lang_7, object_5, strUtils_5, checks_8, coreutils_8, async_3, http_2, waitqueue_1) {
     "use strict";
     var checks = checks_8.Checks, coreUtils = coreutils_8.CoreUtils, strUtils = strUtils_5.StringUtils, defer = async_3.AsyncUtils;
     var PROP_NAME = {
@@ -2743,14 +2782,14 @@ define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriap
                 groupName: null
             }, loader);
             if (!loader.groupName && !checks.isFunc(loader.fn_loader)) {
-                throw new Error(strUtils.format(lang_6.ERRS.ERR_ASSERTION_FAILED, "fn_loader is Function"));
+                throw new Error(strUtils.format(lang_7.ERRS.ERR_ASSERTION_FAILED, "fn_loader is Function"));
             }
             var prevLoader = self._getTemplateLoaderCore(name);
             if (!!prevLoader) {
                 if ((!prevLoader.fn_loader && !!prevLoader.groupName) && (!loader.groupName && !!loader.fn_loader)) {
                     return self._registerTemplateLoaderCore(name, loader);
                 }
-                throw new Error(strUtils.format(lang_6.ERRS.ERR_TEMPLATE_ALREADY_REGISTERED, name));
+                throw new Error(strUtils.format(lang_7.ERRS.ERR_TEMPLATE_ALREADY_REGISTERED, name));
             }
             return self._registerTemplateLoaderCore(name, loader);
         };
@@ -2761,7 +2800,7 @@ define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriap
             if (!loader.fn_loader && !!loader.groupName) {
                 var group_1 = self._getTemplateGroup(loader.groupName);
                 if (!group_1) {
-                    throw new Error(strUtils.format(lang_6.ERRS.ERR_TEMPLATE_GROUP_NOTREGISTERED, loader.groupName));
+                    throw new Error(strUtils.format(lang_7.ERRS.ERR_TEMPLATE_GROUP_NOTREGISTERED, loader.groupName));
                 }
                 return function () {
                     if (!group_1.promise) {
@@ -2776,7 +2815,7 @@ define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriap
                             }
                             var loader = self._getTemplateLoaderCore(name);
                             if (!loader || !loader.fn_loader) {
-                                var error = strUtils.format(lang_6.ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
+                                var error = strUtils.format(lang_7.ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
                                 if (coreutils_8.DEBUG.isDebugging())
                                     coreutils_8.LOG.error(error);
                                 throw new Error(error);
@@ -2784,7 +2823,7 @@ define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriap
                         });
                         var loader = self._getTemplateLoaderCore(name);
                         if (!loader || !loader.fn_loader) {
-                            var error = strUtils.format(lang_6.ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
+                            var error = strUtils.format(lang_7.ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
                             if (coreutils_8.DEBUG.isDebugging())
                                 coreutils_8.LOG.error(error);
                             throw new Error(error);
@@ -3127,7 +3166,7 @@ define("jriapp_utils/tooltip", ["require", "exports", "jriapp_utils/dom"], funct
         return tooltipService;
     }());
 });
-define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jriapp_elview/factory", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/defaults", "jriapp_utils/strutils", "jriapp_utils/coreutils", "jriapp_utils/tloader", "jriapp_utils/sloader", "jriapp_utils/path", "jriapp_utils/tooltip", "jriapp_utils/dom", "jriapp_utils/async"], function (require, exports, const_3, factory_1, lang_7, object_6, defaults_1, strutils_5, coreutils_9, tloader_1, sloader_1, path_2, tooltip_1, dom_5, async_5) {
+define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jriapp_core/elview", "jriapp_core/content", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/defaults", "jriapp_utils/strutils", "jriapp_utils/coreutils", "jriapp_utils/tloader", "jriapp_utils/sloader", "jriapp_utils/path", "jriapp_utils/tooltip", "jriapp_utils/dom", "jriapp_utils/async"], function (require, exports, const_3, elview_1, content_1, lang_8, object_6, defaults_1, strutils_5, coreutils_9, tloader_1, sloader_1, path_2, tooltip_1, dom_5, async_5) {
     "use strict";
     var dom = dom_5.DomUtils, $ = dom.$, _async = async_5.AsyncUtils, doc = dom.document, win = dom.window, coreUtils = coreutils_9.CoreUtils, strUtils = strutils_5.StringUtils;
     var _TEMPLATE_SELECTOR = 'script[type="text/html"]';
@@ -3141,21 +3180,22 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
         curSelectable: "currentSelectable",
         isReady: "isReady"
     };
-    var BootstrapState;
     (function (BootstrapState) {
         BootstrapState[BootstrapState["None"] = 0] = "None";
         BootstrapState[BootstrapState["Initializing"] = 1] = "Initializing";
         BootstrapState[BootstrapState["Initialized"] = 2] = "Initialized";
         BootstrapState[BootstrapState["Ready"] = 3] = "Ready";
         BootstrapState[BootstrapState["Error"] = 4] = "Error";
-    })(BootstrapState || (BootstrapState = {}));
+        BootstrapState[BootstrapState["Destroyed"] = 5] = "Destroyed";
+    })(exports.BootstrapState || (exports.BootstrapState = {}));
+    var BootstrapState = exports.BootstrapState;
     var Bootstrap = (function (_super) {
         __extends(Bootstrap, _super);
         function Bootstrap() {
             _super.call(this);
             var self = this;
             if (!!exports.bootstrap)
-                throw new Error(lang_7.ERRS.ERR_GLOBAL_SINGLTON);
+                throw new Error(lang_8.ERRS.ERR_GLOBAL_SINGLTON);
             this._bootState = 0;
             this._appInst = null;
             this._currentSelectable = null;
@@ -3169,7 +3209,8 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             this._templateLoader.addOnError(function (s, a) {
                 return self.handleError(a.error, a.source);
             });
-            this._elViewRegister = factory_1.createElViewRegister(null);
+            this._elViewRegister = elview_1.createElViewRegister(null);
+            this._contentFactory = content_1.createContentFactoryList();
             this._internal = {
                 initialize: function () {
                     return self._initialize();
@@ -3210,8 +3251,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             });
         };
         Bootstrap.prototype._bindGlobalEvents = function () {
-            var self = this;
-            var $win = $(win), $doc = $(doc);
+            var self = this, $win = $(win), $doc = $(doc);
             $doc.on("click.jriapp", function (e) {
                 e.stopPropagation();
                 self.currentSelectable = null;
@@ -3248,10 +3288,10 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             if (app === void 0) { app = null; }
             var self = this, templates = coreUtils.arr.fromList(root.querySelectorAll(_TEMPLATE_SELECTOR));
             templates.forEach(function (el) {
-                var html, name = el.getAttribute("id");
+                var name = el.getAttribute("id");
                 if (!name)
-                    throw new Error(lang_7.ERRS.ERR_TEMPLATE_HAS_NO_ID);
-                html = el.innerHTML;
+                    throw new Error(lang_8.ERRS.ERR_TEMPLATE_HAS_NO_ID);
+                var html = el.innerHTML;
                 self._processTemplate(name, html, app);
             });
         };
@@ -3262,15 +3302,12 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
         Bootstrap.prototype._processTemplate = function (name, html, app) {
             var self = this, deferred = _async.createSyncDeferred();
             var res = strUtils.fastTrim(html);
-            var fn = function () {
-                return deferred.promise();
+            var loader = {
+                fn_loader: function () {
+                    return deferred.promise();
+                }
             };
-            if (!!app) {
-                name = app.appName + "." + name;
-            }
-            self.templateLoader.registerTemplateLoader(name, {
-                fn_loader: fn
-            });
+            self.templateLoader.registerTemplateLoader(!app ? name : (app.appName + "." + name), loader);
             deferred.resolve(res);
         };
         Bootstrap.prototype._getEventNames = function () {
@@ -3288,42 +3325,43 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             _super.prototype._addHandler.call(this, name, fn, nmspace, context, priority);
         };
         Bootstrap.prototype._init = function () {
-            var self = this, deferred = _async.createDeferred(), invalidOperErr = new Error("Invalid operation");
-            if (self.getIsDestroyCalled())
-                return deferred.reject(invalidOperErr);
-            this._bindGlobalEvents();
-            self.registerSvc(const_3.TOOLTIP_SVC, tooltip_1.createToolTipSvc());
-            self._bootState = 2;
-            self.raiseEvent(GLOB_EVENTS.initialized, {});
-            self.removeHandler(GLOB_EVENTS.initialized, null);
-            deferred.resolve(_async.delay(function () {
-                if (self.getIsDestroyCalled())
-                    throw invalidOperErr;
-                self._processHTMLTemplates();
-                self._bootState = 3;
-                self.raisePropertyChanged(PROP_NAME.isReady);
-            }));
-            return deferred.promise().then(function () {
-                if (self._bootState !== 3)
-                    throw invalidOperErr;
-                self.raiseEvent(GLOB_EVENTS.load, {});
-                self.removeHandler(GLOB_EVENTS.load, null);
+            var self = this;
+            var promise = self.stylesLoader.whenAllLoaded().then(function () {
+                if (self._bootState !== 0)
+                    throw new Error("Invalid operation: bootState !== BootstrapState.None");
+                self._bootState = 1;
+                self._bindGlobalEvents();
+                self.registerSvc(const_3.TOOLTIP_SVC, tooltip_1.createToolTipSvc());
+                self._bootState = 2;
+                self.raiseEvent(GLOB_EVENTS.initialized, {});
+                self.removeHandler(GLOB_EVENTS.initialized);
+                return _async.delay(function () {
+                    if (self.getIsDestroyCalled())
+                        throw new Error("Bootstrap is in destroyed state");
+                    self._processHTMLTemplates();
+                    self._bootState = 3;
+                    self.raisePropertyChanged(PROP_NAME.isReady);
+                    return self;
+                });
             });
+            var res = promise.then(function (boot) {
+                if (boot._bootState !== 3)
+                    throw new Error("Invalid operation: bootState !== BootstrapState.Ready");
+                boot.raiseEvent(GLOB_EVENTS.load, {});
+                boot.removeHandler(GLOB_EVENTS.load);
+                return boot;
+            });
+            return res;
         };
         Bootstrap.prototype._initialize = function () {
             var _this = this;
-            var self = this, deferred = _async.createDeferred(), invalidOperErr = new Error("Invalid operation");
-            if (this._bootState !== 0)
-                return deferred.reject(invalidOperErr);
-            this._bootState = 1;
-            var promise = deferred.resolve(this.stylesLoader.whenAllLoaded()).then(function () {
-                return self._init();
-            }).fail(function (err) {
-                _this._bootState = 4;
-                _this.handleError(err, _this);
-                throw err;
+            var self = this;
+            return self._init().then(function () {
+                return self;
+            }, function (err) {
+                self._bootState = 4;
+                coreutils_9.ERROR.reThrow(err, _this.handleError(err, self));
             });
-            return promise;
         };
         Bootstrap.prototype._trackSelectable = function (selectable) {
             var self = this, isel = selectable.getISelectable(), el = isel.getContainerEl();
@@ -3341,24 +3379,29 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
                 this.currentSelectable = null;
         };
         Bootstrap.prototype._registerApp = function (app) {
-            if (!this._appInst) {
-                this._appInst = app;
-                coreutils_9.ERROR.addHandler(app.appName, app);
+            if (!!this._appInst) {
+                throw new Error("Application already registered");
             }
+            this._appInst = app;
+            coreutils_9.ERROR.addHandler(app.appName, app);
         };
         Bootstrap.prototype._unregisterApp = function (app) {
-            if (!this._appInst)
-                return;
-            coreutils_9.ERROR.removeHandler(app.appName);
-            this._appInst = null;
-            this.templateLoader.unRegisterTemplateGroup(app.appName);
-            this.templateLoader.unRegisterTemplateLoader(app.appName);
+            if (!this._appInst || this._appInst.appName !== app.appName) {
+                throw new Error("Invalid operation");
+            }
+            try {
+                coreutils_9.ERROR.removeHandler(app.appName);
+                this.templateLoader.unRegisterTemplateGroup(app.appName);
+                this.templateLoader.unRegisterTemplateLoader(app.appName);
+            }
+            finally {
+                this._appInst = null;
+            }
         };
         Bootstrap.prototype._destroyApp = function () {
-            var self = this;
-            if (!!self._appInst) {
-                self._appInst.destroy();
-                self._appInst = null;
+            var self = this, app = self._appInst;
+            if (!!app && !app.getIsDestroyCalled()) {
+                app.destroy();
             }
         };
         Bootstrap.prototype._registerObject = function (root, name, obj) {
@@ -3374,7 +3417,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             var name2 = const_3.STORE_KEY.CONVERTER + name;
             var res = this._getObject(this, name2);
             if (!res)
-                throw new Error(strUtils.format(lang_7.ERRS.ERR_CONVERTER_NOTREGISTERED, name));
+                throw new Error(strUtils.format(lang_8.ERRS.ERR_CONVERTER_NOTREGISTERED, name));
             return res;
         };
         Bootstrap.prototype._waitLoaded = function (onLoad) {
@@ -3386,8 +3429,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
                             onLoad(self);
                         }
                         catch (err) {
-                            self.handleError(err, self);
-                            throw err;
+                            coreutils_9.ERROR.reThrow(err, self.handleError(err, self));
                         }
                     }, 0);
                 });
@@ -3426,18 +3468,13 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
                         onInit(self);
                     }
                     catch (err) {
-                        self.handleError(err, self);
-                        throw err;
+                        coreutils_9.ERROR.reThrow(err, self.handleError(err, self));
                     }
                 }, 0);
             });
         };
         Bootstrap.prototype.startApp = function (appFactory, onStartUp) {
-            var self = this, deferred = _async.createDeferred();
-            var promise = deferred.promise().fail(function (err) {
-                self.handleError(err, self);
-                throw err;
-            });
+            var self = this, deferred = _async.createDeferred(), promise = deferred.promise();
             self._waitLoaded(function () {
                 try {
                     var app = appFactory();
@@ -3447,7 +3484,12 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
                     deferred.reject(err);
                 }
             });
-            return promise;
+            var res = promise.then(function (app) {
+                return app;
+            }, function (err) {
+                coreutils_9.ERROR.reThrow(err, self.handleError(err, self));
+            });
+            return res;
         };
         Bootstrap.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -3463,11 +3505,13 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             }
             self._elViewRegister.destroy();
             self._elViewRegister = null;
+            self._contentFactory = null;
             self._moduleInits = [];
             $(doc).off(".jriapp");
             win.onerror = null;
             $(win).off(".jriapp");
             coreutils_9.ERROR.removeHandler("*");
+            this._bootState = 5;
             _super.prototype.destroy.call(this);
         };
         Bootstrap.prototype.registerSvc = function (name, obj) {
@@ -3488,7 +3532,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
                 this._registerObject(this, name2, obj);
             }
             else
-                throw new Error(strUtils.format(lang_7.ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
+                throw new Error(strUtils.format(lang_8.ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
         };
         Bootstrap.prototype.registerElView = function (name, elViewType) {
             this._elViewRegister.registerElView(name, elViewType);
@@ -3510,6 +3554,11 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
         });
         Object.defineProperty(Bootstrap.prototype, "elViewRegister", {
             get: function () { return this._elViewRegister; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Bootstrap.prototype, "contentFactory", {
+            get: function () { return this._contentFactory; },
             enumerable: true,
             configurable: true
         });
@@ -3545,12 +3594,19 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Bootstrap.prototype, "state", {
+            get: function () {
+                return this._bootState;
+            },
+            enumerable: true,
+            configurable: true
+        });
         return Bootstrap;
     }(object_6.BaseObject));
     exports.Bootstrap = Bootstrap;
     exports.bootstrap = new Bootstrap();
 });
-define("jriapp_core/converter", ["require", "exports", "jriapp_core/lang", "jriapp_utils/checks", "jriapp_utils/strutils", "jriapp_utils/coreutils", "jriapp_core/bootstrap"], function (require, exports, lang_8, checks_9, strUtils_6, coreutils_10, bootstrap_2) {
+define("jriapp_core/converter", ["require", "exports", "jriapp_core/lang", "jriapp_utils/checks", "jriapp_utils/strutils", "jriapp_utils/coreutils", "jriapp_core/bootstrap"], function (require, exports, lang_9, checks_9, strUtils_6, coreutils_10, bootstrap_2) {
     "use strict";
     var checks = checks_9.Checks, strUtils = strUtils_6.StringUtils, coreUtils = coreutils_10.CoreUtils, boot = bootstrap_2.bootstrap;
     exports.NUM_CONV = { None: 0, Integer: 1, Decimal: 2, Float: 3, SmallInt: 4 };
@@ -3607,7 +3663,7 @@ define("jriapp_core/converter", ["require", "exports", "jriapp_core/lang", "jria
                 return null;
             var m = moment(val, param);
             if (!m.isValid()) {
-                throw new Error(strUtils.format(lang_8.ERRS.ERR_CONV_INVALID_DATE, val));
+                throw new Error(strUtils.format(lang_9.ERRS.ERR_CONV_INVALID_DATE, val));
             }
             return m.toDate();
         };
@@ -3659,7 +3715,7 @@ define("jriapp_core/converter", ["require", "exports", "jriapp_core/lang", "jria
                     break;
             }
             if (!checks.isNumber(num)) {
-                throw new Error(strUtils.format(lang_8.ERRS.ERR_CONV_INVALID_NUM, val));
+                throw new Error(strUtils.format(lang_9.ERRS.ERR_CONV_INVALID_NUM, val));
             }
             return num;
         };
@@ -3896,631 +3952,10 @@ define("jriapp_utils/dblclick", ["require", "exports"], function (require, expor
     }());
     exports.DblClick = DblClick;
 });
-define("jriapp_content/int", ["require", "exports", "jriapp_utils/utils", "jriapp_core/parser"], function (require, exports, utils_2, parser_2) {
+define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_core/parser", "jriapp_utils/utils"], function (require, exports, lang_10, object_7, bootstrap_3, parser_2, utils_2) {
     "use strict";
-    var utils = utils_2.Utils, coreUtils = utils.core, checks = utils.check;
-    exports.css = {
-        content: "ria-content-field",
-        required: "ria-required-field",
-        checkbox: "ria-checkbox"
-    };
-    function parseContentAttr(content_attr) {
-        var contentOptions = {
-            name: null,
-            templateInfo: null,
-            bindingInfo: null,
-            displayInfo: null,
-            fieldName: null,
-            options: null
-        };
-        var attr, temp_opts = parser_2.parser.parseOptions(content_attr);
-        if (temp_opts.length === 0)
-            return contentOptions;
-        attr = temp_opts[0];
-        if (!attr.template && !!attr.fieldName) {
-            var bindInfo = {
-                target: null, source: null,
-                targetPath: null, sourcePath: attr.fieldName,
-                mode: "OneWay",
-                converter: null, converterParam: null
-            };
-            contentOptions.bindingInfo = bindInfo;
-            contentOptions.displayInfo = attr.css;
-            contentOptions.fieldName = attr.fieldName;
-            if (!!attr.name)
-                contentOptions.name = attr.name;
-            if (!!attr.options)
-                contentOptions.options = attr.options;
-            if (attr.readOnly !== checks.undefined)
-                contentOptions.readOnly = coreUtils.parseBool(attr.readOnly);
-        }
-        else if (!!attr.template) {
-            contentOptions.templateInfo = attr.template;
-            delete attr.template;
-        }
-        return contentOptions;
-    }
-    exports.parseContentAttr = parseContentAttr;
-});
-define("jriapp_core/mvvm", ["require", "exports", "jriapp_core/object", "jriapp_utils/coreutils"], function (require, exports, object_7, coreutils_11) {
-    "use strict";
-    var CMD_EVENTS = {
-        can_execute_changed: "canExecute_changed"
-    };
-    var TCommand = (function (_super) {
-        __extends(TCommand, _super);
-        function TCommand(fn_action, thisObj, fn_canExecute) {
-            _super.call(this);
-            this._objId = "cmd" + coreutils_11.CoreUtils.getNewID();
-            this._action = fn_action;
-            this._thisObj = !thisObj ? null : thisObj;
-            this._predicate = !fn_canExecute ? null : fn_canExecute;
-        }
-        TCommand.prototype._getEventNames = function () {
-            var base_events = _super.prototype._getEventNames.call(this);
-            return [CMD_EVENTS.can_execute_changed].concat(base_events);
-        };
-        TCommand.prototype._canExecute = function (sender, param, context) {
-            if (!this._predicate)
-                return true;
-            return this._predicate.apply(context, [sender, param, this._thisObj]);
-        };
-        TCommand.prototype._execute = function (sender, param, context) {
-            if (!!this._action) {
-                this._action.apply(context, [sender, param, this._thisObj]);
-            }
-        };
-        TCommand.prototype.addOnCanExecuteChanged = function (fn, nmspace, context) {
-            this._addHandler(CMD_EVENTS.can_execute_changed, fn, nmspace, context);
-        };
-        TCommand.prototype.removeOnCanExecuteChanged = function (nmspace) {
-            this._removeHandler(CMD_EVENTS.can_execute_changed, nmspace);
-        };
-        TCommand.prototype.canExecute = function (sender, param) {
-            return this._canExecute(sender, param, this._thisObj || this);
-        };
-        TCommand.prototype.execute = function (sender, param) {
-            this._execute(sender, param, this._thisObj || this);
-        };
-        TCommand.prototype.destroy = function () {
-            if (this._isDestroyed)
-                return;
-            this._isDestroyCalled = true;
-            this._action = null;
-            this._thisObj = null;
-            this._predicate = null;
-            _super.prototype.destroy.call(this);
-        };
-        TCommand.prototype.raiseCanExecuteChanged = function () {
-            this.raiseEvent(CMD_EVENTS.can_execute_changed, {});
-        };
-        TCommand.prototype.toString = function () {
-            return "Command";
-        };
-        Object.defineProperty(TCommand.prototype, "uniqueID", {
-            get: function () {
-                return this._objId;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TCommand.prototype, "thisObj", {
-            get: function () {
-                return this._thisObj;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return TCommand;
-    }(object_7.BaseObject));
-    exports.TCommand = TCommand;
-    var BaseCommand = (function (_super) {
-        __extends(BaseCommand, _super);
-        function BaseCommand(thisObj) {
-            _super.call(this, null, thisObj, null);
-            this._action = this.Action;
-            this._predicate = this.getIsCanExecute;
-        }
-        BaseCommand.prototype.canExecute = function (sender, param) {
-            return this._canExecute(sender, param, this);
-        };
-        BaseCommand.prototype.execute = function (sender, param) {
-            this._execute(sender, param, this);
-        };
-        return BaseCommand;
-    }(TCommand));
-    exports.BaseCommand = BaseCommand;
-    exports.Command = TCommand;
-    exports.TemplateCommand = TCommand;
-    var ViewModel = (function (_super) {
-        __extends(ViewModel, _super);
-        function ViewModel(app) {
-            _super.call(this);
-            this._app = app;
-            this._objId = "vm" + coreutils_11.CoreUtils.getNewID();
-        }
-        ViewModel.prototype.toString = function () {
-            return "ViewModel";
-        };
-        ViewModel.prototype.destroy = function () {
-            this._app = null;
-            _super.prototype.destroy.call(this);
-        };
-        Object.defineProperty(ViewModel.prototype, "uniqueID", {
-            get: function () {
-                return this._objId;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ViewModel.prototype, "app", {
-            get: function () {
-                return this._app;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return ViewModel;
-    }(object_7.BaseObject));
-    exports.ViewModel = ViewModel;
-});
-define("jriapp_utils/eventstore", ["require", "exports", "jriapp_core/object", "jriapp_utils/syschecks"], function (require, exports, object_8, syschecks_5) {
-    "use strict";
-    var PROP_BAG = syschecks_5.SysChecks._PROP_BAG_NAME();
-    (function (EVENT_CHANGE_TYPE) {
-        EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["None"] = 0] = "None";
-        EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["Added"] = 1] = "Added";
-        EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["Deleted"] = 2] = "Deleted";
-        EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["Updated"] = 3] = "Updated";
-    })(exports.EVENT_CHANGE_TYPE || (exports.EVENT_CHANGE_TYPE = {}));
-    var EVENT_CHANGE_TYPE = exports.EVENT_CHANGE_TYPE;
-    var EventStore = (function (_super) {
-        __extends(EventStore, _super);
-        function EventStore(onChange) {
-            _super.call(this);
-            this._dic = null;
-            this._onChange = onChange;
-        }
-        EventStore.prototype._isHasProp = function (prop) {
-            return true;
-        };
-        EventStore.prototype.getProp = function (name) {
-            if (!this._dic)
-                return null;
-            var cmd = this._dic[name];
-            if (!cmd)
-                return null;
-            return cmd;
-        };
-        EventStore.prototype.setProp = function (name, command) {
-            if (!this._dic && !!command)
-                this._dic = {};
-            if (!this._dic)
-                return;
-            var old = this._dic[name];
-            if (!command && !!old) {
-                delete this._dic[name];
-                if (!!this._onChange) {
-                    this._onChange(this, {
-                        name: name,
-                        changeType: 2,
-                        oldVal: old,
-                        newVal: null
-                    });
-                    this.raisePropertyChanged(name);
-                }
-                return;
-            }
-            this._dic[name] = command;
-            if (!!this._onChange) {
-                if (!old) {
-                    this._onChange(this, {
-                        name: name,
-                        changeType: 1,
-                        oldVal: null,
-                        newVal: command
-                    });
-                }
-                else {
-                    this._onChange(this, {
-                        name: name,
-                        changeType: 3,
-                        oldVal: old,
-                        newVal: command
-                    });
-                }
-                this.raisePropertyChanged(name);
-            }
-        };
-        EventStore.prototype.trigger = function (name, args) {
-            if (!this._dic)
-                return;
-            var command = this._dic[name];
-            if (!command)
-                return;
-            args = args || {};
-            if (command.canExecute(this, args))
-                command.execute(this, args);
-        };
-        EventStore.prototype.toString = function () {
-            return PROP_BAG;
-        };
-        EventStore.prototype.destroy = function () {
-            if (!!this._dic) {
-                this._dic = null;
-            }
-            this._onChange = null;
-            _super.prototype.destroy.call(this);
-        };
-        return EventStore;
-    }(object_8.BaseObject));
-    exports.EventStore = EventStore;
-});
-define("jriapp_elview/elview", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/syschecks", "jriapp_core/bootstrap", "jriapp_utils/utils", "jriapp_core/mvvm", "jriapp_utils/eventstore"], function (require, exports, const_4, lang_9, object_9, syschecks_6, bootstrap_3, utils_3, mvvm_1, eventstore_1) {
-    "use strict";
-    exports.EVENT_CHANGE_TYPE = eventstore_1.EVENT_CHANGE_TYPE;
-    var utils = utils_3.Utils, coreUtils = utils.core, dom = utils.dom, $ = dom.$, checks = utils.check, PROP_BAG = syschecks_6.SysChecks._PROP_BAG_NAME(), boot = bootstrap_3.bootstrap;
-    syschecks_6.SysChecks._isElView = function (obj) {
-        return !!obj && obj instanceof BaseElView;
-    };
-    function fn_addToolTip($el, tip, isError, pos) {
-        var svc = boot.getSvc(const_4.TOOLTIP_SVC);
-        svc.addToolTip($el, tip, isError, pos);
-    }
-    exports.fn_addToolTip = fn_addToolTip;
-    exports.PropChangedCommand = mvvm_1.TCommand;
-    exports.css = {
-        fieldError: "ria-field-error",
-        commandLink: "ria-command-link",
-        checkedNull: "ria-checked-null",
-        disabled: "disabled",
-        opacity: "opacity",
-        color: "color",
-        fontSize: "font-size"
-    };
-    exports.PROP_NAME = {
-        isVisible: "isVisible",
-        validationErrors: "validationErrors",
-        toolTip: "toolTip",
-        css: "css",
-        isEnabled: "isEnabled",
-        value: "value",
-        command: "command",
-        disabled: "disabled",
-        commandParam: "commandParam",
-        isBusy: "isBusy",
-        delay: "delay",
-        checked: "checked",
-        color: "color",
-        wrap: "wrap",
-        text: "text",
-        html: "html",
-        preventDefault: "preventDefault",
-        imageSrc: "imageSrc",
-        glyph: "glyph",
-        href: "href",
-        fontSize: "fontSize",
-        borderColor: "borderColor",
-        borderStyle: "borderStyle",
-        width: "width",
-        height: "height",
-        src: "src",
-        click: "click"
-    };
-    var PropertyBag = (function (_super) {
-        __extends(PropertyBag, _super);
-        function PropertyBag(el) {
-            _super.call(this);
-            this._el = el;
-        }
-        PropertyBag.prototype._isHasProp = function (prop) {
-            return checks.isHasProp(this._el, prop);
-        };
-        PropertyBag.prototype.getProp = function (name) {
-            return this._el[name];
-        };
-        PropertyBag.prototype.setProp = function (name, val) {
-            var old = this._el[name];
-            if (old !== val) {
-                this._el[name] = val;
-                this.raisePropertyChanged(name);
-            }
-        };
-        PropertyBag.prototype.toString = function () {
-            return PROP_BAG;
-        };
-        return PropertyBag;
-    }(object_9.BaseObject));
-    var CSSBag = (function (_super) {
-        __extends(CSSBag, _super);
-        function CSSBag(el) {
-            _super.call(this);
-            this._el = el;
-        }
-        CSSBag.prototype._isHasProp = function (prop) {
-            return true;
-        };
-        CSSBag.prototype.getProp = function (name) {
-            return checks.undefined;
-        };
-        CSSBag.prototype.setProp = function (name, val) {
-            if (val === checks.undefined)
-                return;
-            if (name === "*") {
-                if (!val) {
-                    dom.removeClass([this._el], null);
-                }
-                else if (checks.isArray(val)) {
-                    dom.setClasses([this._el], val);
-                }
-                else if (checks.isString(val)) {
-                    dom.setClasses([this._el], val.split(" "));
-                }
-                return;
-            }
-            dom.setClass([this._el], name, !val);
-        };
-        CSSBag.prototype.toString = function () {
-            return PROP_BAG;
-        };
-        return CSSBag;
-    }(object_9.BaseObject));
-    var BaseElView = (function (_super) {
-        __extends(BaseElView, _super);
-        function BaseElView(options) {
-            _super.call(this);
-            var el = options.el;
-            this._$el = $(el);
-            this._toolTip = options.tip;
-            this._eventStore = null;
-            this._props = null;
-            this._classes = null;
-            this._display = null;
-            this._css = options.css;
-            this._objId = "elv" + coreUtils.getNewID();
-            this._errors = null;
-            if (!!this._css) {
-                dom.addClass([el], this._css);
-            }
-            this._applyToolTip();
-            this._getStore().setElView(el, this);
-        }
-        BaseElView.prototype._getStore = function () {
-            return boot.getApp().viewFactory.store;
-        };
-        BaseElView.prototype._onEventChanged = function (args) {
-            switch (args.changeType) {
-                case 1:
-                    this._onEventAdded(args.name, args.newVal);
-                    break;
-                case 2:
-                    this._onEventDeleted(args.name, args.oldVal);
-                    break;
-            }
-        };
-        BaseElView.prototype._onEventAdded = function (name, newVal) {
-            var self = this;
-            if (this.getIsDestroyCalled())
-                return;
-            this.$el.on(name + "." + this.uniqueID, function (e) {
-                e.stopPropagation();
-                if (!!self._eventStore)
-                    self._eventStore.trigger(name, e);
-            });
-        };
-        BaseElView.prototype._onEventDeleted = function (name, oldVal) {
-            this.$el.off(name + "." + this.uniqueID);
-        };
-        BaseElView.prototype._applyToolTip = function () {
-            if (!!this._toolTip) {
-                this._setToolTip(this.$el, this._toolTip);
-            }
-        };
-        BaseElView.prototype._getErrorTipInfo = function (errors) {
-            var tip = ["<b>", lang_9.STRS.VALIDATE.errorInfo, "</b>", "<br/>"];
-            errors.forEach(function (info) {
-                var res = "";
-                info.errors.forEach(function (str) {
-                    res = res + " " + str;
-                });
-                tip.push(res);
-                res = "";
-            });
-            return tip.join("");
-        };
-        BaseElView.prototype._setFieldError = function (isError) {
-            dom.setClass([this.el], exports.css.fieldError, !isError);
-        };
-        BaseElView.prototype._updateErrorUI = function (el, errors) {
-            if (!el) {
-                return;
-            }
-            var $el = this.$el;
-            if (!!errors && errors.length > 0) {
-                fn_addToolTip($el, this._getErrorTipInfo(errors), true);
-                this._setFieldError(true);
-            }
-            else {
-                this._setToolTip($el, this.toolTip);
-                this._setFieldError(false);
-            }
-        };
-        BaseElView.prototype._setToolTip = function ($el, tip, isError) {
-            fn_addToolTip($el, tip, isError);
-        };
-        BaseElView.prototype.destroy = function () {
-            if (this._isDestroyed)
-                return;
-            this._isDestroyCalled = true;
-            this._getStore().setElView(this.el, null);
-            this._$el.off("." + this.uniqueID);
-            this.validationErrors = null;
-            this.toolTip = null;
-            if (!!this._eventStore) {
-                this._eventStore.destroy();
-                this._eventStore = null;
-            }
-            if (!!this._props) {
-                this._props.destroy();
-                this._props = checks.undefined;
-            }
-            if (!!this._classes) {
-                this._classes.destroy();
-                this._classes = checks.undefined;
-            }
-            this._display = null;
-            this._css = null;
-            _super.prototype.destroy.call(this);
-        };
-        BaseElView.prototype.toString = function () {
-            return "BaseElView";
-        };
-        Object.defineProperty(BaseElView.prototype, "$el", {
-            get: function () {
-                return this._$el;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BaseElView.prototype, "el", {
-            get: function () {
-                return this._$el[0];
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BaseElView.prototype, "uniqueID", {
-            get: function () { return this._objId; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BaseElView.prototype, "isVisible", {
-            get: function () {
-                var v = this.$el.css("display");
-                return !(v === "none");
-            },
-            set: function (v) {
-                v = !!v;
-                if (v !== this.isVisible) {
-                    if (!v) {
-                        this._display = this.$el.css("display");
-                        if (this._display === "none")
-                            this._display = null;
-                        this.$el.css("display", "none");
-                    }
-                    else {
-                        if (!!this._display)
-                            this.$el.css("display", this._display);
-                        else
-                            this.$el.css("display", "");
-                    }
-                    this.raisePropertyChanged(exports.PROP_NAME.isVisible);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BaseElView.prototype, "validationErrors", {
-            get: function () { return this._errors; },
-            set: function (v) {
-                if (v !== this._errors) {
-                    this._errors = v;
-                    this.raisePropertyChanged(exports.PROP_NAME.validationErrors);
-                    this._updateErrorUI(this.el, this._errors);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BaseElView.prototype, "dataName", {
-            get: function () { return this._$el.attr(const_4.DATA_ATTR.DATA_NAME); },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BaseElView.prototype, "toolTip", {
-            get: function () { return this._toolTip; },
-            set: function (v) {
-                if (this._toolTip !== v) {
-                    this._toolTip = v;
-                    this._setToolTip(this.$el, v);
-                    this.raisePropertyChanged(exports.PROP_NAME.toolTip);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BaseElView.prototype, "events", {
-            get: function () {
-                var _this = this;
-                if (!this._eventStore) {
-                    if (this.getIsDestroyCalled())
-                        return null;
-                    this._eventStore = new eventstore_1.EventStore(function (s, a) {
-                        _this._onEventChanged(a);
-                    });
-                }
-                return this._eventStore;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BaseElView.prototype, "props", {
-            get: function () {
-                if (!this._props) {
-                    if (this.getIsDestroyCalled())
-                        return checks.undefined;
-                    this._props = new PropertyBag(this.el);
-                }
-                return this._props;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BaseElView.prototype, "classes", {
-            get: function () {
-                if (!this._classes) {
-                    if (this.getIsDestroyCalled())
-                        return checks.undefined;
-                    this._classes = new CSSBag(this.el);
-                }
-                return this._classes;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BaseElView.prototype, "css", {
-            get: function () { return this._css; },
-            set: function (v) {
-                var arr = [];
-                if (this._css !== v) {
-                    if (!!this._css)
-                        arr.push("-" + this._css);
-                    this._css = v;
-                    if (!!this._css)
-                        arr.push("+" + this._css);
-                    dom.setClasses(this._$el.toArray(), arr);
-                    this.raisePropertyChanged(exports.PROP_NAME.css);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BaseElView.prototype, "app", {
-            get: function () {
-                return boot.getApp();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return BaseElView;
-    }(object_9.BaseObject));
-    exports.BaseElView = BaseElView;
-    boot.registerElView("generic", BaseElView);
-});
-define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_core/parser", "jriapp_utils/utils"], function (require, exports, lang_10, object_10, bootstrap_4, parser_3, utils_4) {
-    "use strict";
-    var utils = utils_4.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, syschecks = utils.sys, debug = utils.debug, log = utils.log, parse = parser_3.parser, boot = bootstrap_4.bootstrap;
-    syschecks._isBinding = function (obj) {
+    var utils = utils_2.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, sys = utils.sys, debug = utils.debug, log = utils.log, parse = parser_2.parser, boot = bootstrap_3.bootstrap;
+    sys._isBinding = function (obj) {
         return (!!obj && obj instanceof Binding);
     };
     function fn_reportUnResolved(bindTo, root, path, propName) {
@@ -4660,7 +4095,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             if (!opts.target) {
                 throw new Error(lang_10.ERRS.ERR_BIND_TARGET_EMPTY);
             }
-            if (!syschecks._isBaseObj(opts.target)) {
+            if (!sys._isBaseObj(opts.target)) {
                 throw new Error(lang_10.ERRS.ERR_BIND_TARGET_INVALID);
             }
             this._state = null;
@@ -4742,7 +4177,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
         };
         Binding.prototype._onSrcErrChanged = function (err_notif, args) {
             var errors = [], tgt = this._tgtEnd, src = this._srcEnd, srcPath = this._srcPath;
-            if (!!tgt && syschecks._isElView(tgt)) {
+            if (!!tgt && sys._isElView(tgt)) {
                 if (!!src && srcPath.length > 0) {
                     var prop = srcPath[srcPath.length - 1];
                     errors = err_notif.getFieldErrors(prop);
@@ -4791,7 +4226,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             }
         };
         Binding.prototype._parseSrc2 = function (obj, path, lvl) {
-            var self = this, nextObj, isBaseObj = (!!obj && syschecks._isBaseObj(obj)), isValidProp;
+            var self = this, nextObj, isBaseObj = (!!obj && sys._isBaseObj(obj)), isValidProp;
             if (isBaseObj) {
                 obj.addOnDestroyed(self._onSrcDestroyed, self._objId, self);
                 self._setPathItem(obj, 0, lvl, path);
@@ -4855,7 +4290,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             }
         };
         Binding.prototype._parseTgt2 = function (obj, path, lvl) {
-            var self = this, nextObj, isBaseObj = syschecks._isBaseObj(obj), isValidProp = false;
+            var self = this, nextObj, isBaseObj = sys._isBaseObj(obj), isValidProp = false;
             if (isBaseObj) {
                 obj.addOnDestroyed(self._onTgtDestroyed, self._objId, self);
                 self._setPathItem(obj, 1, lvl, path);
@@ -4976,7 +4411,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                     this.sourceValue = this._converter.convertToSource(this.targetValue, this._converterParam, this._srcEnd);
             }
             catch (ex) {
-                if (!syschecks._isValidationError(ex) || !syschecks._isElView(this._tgtEnd)) {
+                if (!sys._isValidationError(ex) || !sys._isElView(this._tgtEnd)) {
                     utils.err.reThrow(ex, this.handleError(ex, this));
                 }
             }
@@ -4999,7 +4434,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                     }
                 }
                 this._setPathItem(null, 1, 0, this._tgtPath);
-                if (!!value && !syschecks._isBaseObj(value))
+                if (!!value && !sys._isBaseObj(value))
                     throw new Error(lang_10.ERRS.ERR_BIND_TARGET_INVALID);
                 this._target = value;
                 this._parseTgt(this._target, this._tgtPath, 0);
@@ -5179,1471 +4614,12 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             configurable: true
         });
         return Binding;
-    }(object_10.BaseObject));
+    }(object_7.BaseObject));
     exports.Binding = Binding;
 });
-define("jriapp_content/basic", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/object", "jriapp_core/binding", "jriapp_utils/lifetime", "jriapp_utils/utils", "jriapp_content/int"], function (require, exports, bootstrap_5, object_11, binding_1, lifetime_1, utils_5, int_1) {
+define("jriapp_core/datepicker", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/coreutils", "jriapp_utils/dom", "jriapp_core/bootstrap"], function (require, exports, lang_11, object_8, coreutils_11, dom_6, bootstrap_4) {
     "use strict";
-    var utils = utils_5.Utils, dom = utils.dom, $ = dom.$, doc = utils.dom.document, coreUtils = utils.core, checks = utils.check, boot = bootstrap_5.bootstrap;
-    var BasicContent = (function (_super) {
-        __extends(BasicContent, _super);
-        function BasicContent(options) {
-            _super.call(this);
-            options = coreUtils.extend({
-                parentEl: null,
-                contentOptions: null,
-                dataContext: null,
-                isEditing: false
-            }, options);
-            this._el = null;
-            this._parentEl = options.parentEl;
-            this._isEditing = !!options.isEditing;
-            this._dataContext = options.dataContext;
-            this._options = options.contentOptions;
-            this._isReadOnly = !!this._options.readOnly;
-            this._lfScope = null;
-            this._target = null;
-            dom.addClass([this._parentEl], int_1.css.content);
-            this.init();
-            this.render();
-        }
-        BasicContent.prototype.init = function () { };
-        BasicContent.prototype.updateCss = function () {
-            var displayInfo = this._options.displayInfo, el = this._parentEl, fieldInfo = this.getFieldInfo();
-            if (this._isEditing && this.getIsCanBeEdited()) {
-                if (!!displayInfo) {
-                    if (!!displayInfo.editCss) {
-                        dom.addClass([el], displayInfo.editCss);
-                    }
-                    if (!!displayInfo.displayCss) {
-                        dom.removeClass([el], displayInfo.displayCss);
-                    }
-                }
-                if (!!fieldInfo && !fieldInfo.isNullable) {
-                    dom.addClass([el], int_1.css.required);
-                }
-            }
-            else {
-                if (!!displayInfo) {
-                    if (!!displayInfo.displayCss) {
-                        dom.addClass([el], displayInfo.displayCss);
-                    }
-                    if (!!displayInfo.editCss) {
-                        dom.removeClass([el], displayInfo.editCss);
-                    }
-                }
-                if (!!fieldInfo && !fieldInfo.isNullable) {
-                    dom.removeClass([el], int_1.css.required);
-                }
-            }
-        };
-        BasicContent.prototype.getIsCanBeEdited = function () {
-            if (this._isReadOnly)
-                return false;
-            var finf = this.getFieldInfo();
-            if (!finf)
-                return false;
-            var editable = utils.getEditable(this._dataContext);
-            return !!editable && !finf.isReadOnly && finf.fieldType !== 2;
-        };
-        BasicContent.prototype.createTargetElement = function () {
-            var el, info = { name: null, options: null };
-            if (this._isEditing && this.getIsCanBeEdited()) {
-                el = doc.createElement("input");
-                el.setAttribute("type", "text");
-                info.options = this._options.options;
-            }
-            else {
-                el = doc.createElement("span");
-            }
-            this.updateCss();
-            this._el = el;
-            return this.getElementView(this._el, info);
-        };
-        BasicContent.prototype.getBindingOption = function (bindingInfo, target, dataContext, targetPath) {
-            var options = binding_1.getBindingOptions(bindingInfo, target, dataContext);
-            if (this.isEditing && this.getIsCanBeEdited())
-                options.mode = 2;
-            else
-                options.mode = 1;
-            if (!!targetPath)
-                options.targetPath = targetPath;
-            return options;
-        };
-        BasicContent.prototype.getBindings = function () {
-            if (!this._lfScope)
-                return [];
-            var arr = this._lfScope.getObjs(), res = [];
-            for (var i = 0, len = arr.length; i < len; i += 1) {
-                if (utils.sys._isBinding(arr[i]))
-                    res.push(arr[i]);
-            }
-            return res;
-        };
-        BasicContent.prototype.updateBindingSource = function () {
-            var binding, bindings = this.getBindings();
-            for (var i = 0, len = bindings.length; i < len; i += 1) {
-                binding = bindings[i];
-                if (!binding.isSourceFixed)
-                    binding.source = this._dataContext;
-            }
-        };
-        BasicContent.prototype.cleanUp = function () {
-            if (!!this._lfScope) {
-                this._lfScope.destroy();
-                this._lfScope = null;
-            }
-            if (!!this._el) {
-                dom.removeNode(this._el);
-                this._el = null;
-            }
-            this._target = null;
-        };
-        BasicContent.prototype.getElementView = function (el, view_info) {
-            var factory = boot.getApp().viewFactory, elView = factory.store.getElView(el);
-            if (!!elView)
-                return elView;
-            view_info.options = coreUtils.merge({ el: el }, view_info.options);
-            return factory.createElView(view_info);
-        };
-        BasicContent.prototype.getFieldInfo = function () {
-            return this._options.fieldInfo;
-        };
-        BasicContent.prototype.render = function () {
-            try {
-                this.cleanUp();
-                var bindingInfo = this._options.bindingInfo;
-                if (!!bindingInfo) {
-                    this._target = this.createTargetElement();
-                    this._lfScope = new lifetime_1.LifeTimeScope();
-                    if (!!this._target)
-                        this._lfScope.addObj(this._target);
-                    var options = this.getBindingOption(bindingInfo, this._target, this._dataContext, "value");
-                    this._parentEl.appendChild(this._el);
-                    this._lfScope.addObj(this.app.bind(options));
-                }
-            }
-            catch (ex) {
-                utils.err.reThrow(ex, this.handleError(ex, this));
-            }
-        };
-        BasicContent.prototype.destroy = function () {
-            if (this._isDestroyed)
-                return;
-            this._isDestroyCalled = true;
-            var displayInfo = this._options.displayInfo;
-            dom.removeClass([this._parentEl], int_1.css.content);
-            dom.removeClass([this._parentEl], int_1.css.required);
-            if (!!displayInfo && !!displayInfo.displayCss) {
-                dom.removeClass([this._parentEl], displayInfo.displayCss);
-            }
-            if (!!displayInfo && !!displayInfo.editCss) {
-                dom.removeClass([this._parentEl], displayInfo.editCss);
-            }
-            this.cleanUp();
-            this._parentEl = null;
-            this._dataContext = null;
-            this._options = null;
-            _super.prototype.destroy.call(this);
-        };
-        BasicContent.prototype.toString = function () {
-            return "BindingContent";
-        };
-        Object.defineProperty(BasicContent.prototype, "parentEl", {
-            get: function () { return this._parentEl; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BasicContent.prototype, "target", {
-            get: function () { return this._target; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BasicContent.prototype, "isEditing", {
-            get: function () { return this._isEditing; },
-            set: function (v) {
-                if (this._isEditing !== v) {
-                    this._isEditing = v;
-                    this.render();
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BasicContent.prototype, "dataContext", {
-            get: function () { return this._dataContext; },
-            set: function (v) {
-                if (this._dataContext !== v) {
-                    this._dataContext = v;
-                    this.updateBindingSource();
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BasicContent.prototype, "app", {
-            get: function () {
-                return boot.getApp();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return BasicContent;
-    }(object_11.BaseObject));
-    exports.BasicContent = BasicContent;
-});
-define("jriapp_elview/command", ["require", "exports", "jriapp_utils/utils", "jriapp_elview/elview"], function (require, exports, utils_6, elview_1) {
-    "use strict";
-    var utils = utils_6.Utils, dom = utils.dom, checks = utils.check;
-    var CommandElView = (function (_super) {
-        __extends(CommandElView, _super);
-        function CommandElView(options) {
-            _super.call(this, options);
-            this._command = null;
-            this._commandParam = null;
-            this._preventDefault = !!options.preventDefault;
-            this._stopPropagation = !!options.stopPropagation;
-            this._disabled = ("disabled" in this.el) ? checks.undefined : false;
-            dom.setClass(this.$el.toArray(), elview_1.css.disabled, this.isEnabled);
-        }
-        CommandElView.prototype._onCanExecuteChanged = function (cmd, args) {
-            this.isEnabled = cmd.canExecute(this, this._commandParam);
-        };
-        CommandElView.prototype._onCommandChanged = function () {
-            this.raisePropertyChanged(elview_1.PROP_NAME.command);
-        };
-        CommandElView.prototype.invokeCommand = function (args, isAsync) {
-            var self = this;
-            args = args || this._commandParam || {};
-            if (!!self.command && self.command.canExecute(self, args)) {
-                if (isAsync) {
-                    setTimeout(function () {
-                        if (self.getIsDestroyCalled())
-                            return;
-                        try {
-                            if (!!self.command && self.command.canExecute(self, args))
-                                self.command.execute(self, args);
-                        }
-                        catch (ex) {
-                            self.handleError(ex, self);
-                        }
-                    }, 0);
-                }
-                else {
-                    self.command.execute(self, args);
-                }
-            }
-        };
-        CommandElView.prototype.destroy = function () {
-            if (this._isDestroyed)
-                return;
-            this._isDestroyCalled = true;
-            if (checks.isBaseObject(this._command)) {
-                this._command.removeNSHandlers(this.uniqueID);
-            }
-            this.command = null;
-            this._commandParam = null;
-            _super.prototype.destroy.call(this);
-        };
-        CommandElView.prototype.toString = function () {
-            return "CommandElView";
-        };
-        Object.defineProperty(CommandElView.prototype, "isEnabled", {
-            get: function () {
-                var el = this.el;
-                if (this._disabled === checks.undefined)
-                    return !el.disabled;
-                else
-                    return !this._disabled;
-            },
-            set: function (v) {
-                var el = this.el;
-                if (v !== this.isEnabled) {
-                    if (this._disabled === checks.undefined)
-                        el.disabled = !v;
-                    else
-                        this._disabled = !v;
-                    dom.setClass(this.$el.toArray(), elview_1.css.disabled, !!v);
-                    this.raisePropertyChanged(elview_1.PROP_NAME.isEnabled);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CommandElView.prototype, "command", {
-            get: function () { return this._command; },
-            set: function (v) {
-                var self = this;
-                if (v !== this._command) {
-                    if (checks.isBaseObject(this._command)) {
-                        this._command.removeNSHandlers(this.uniqueID);
-                    }
-                    this._command = v;
-                    if (!!this._command) {
-                        this._command.addOnCanExecuteChanged(self._onCanExecuteChanged, this.uniqueID, self);
-                        self.isEnabled = this._command.canExecute(self, this.commandParam || {});
-                    }
-                    else {
-                        self.isEnabled = false;
-                    }
-                    this._onCommandChanged();
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CommandElView.prototype, "commandParam", {
-            get: function () { return this._commandParam; },
-            set: function (v) {
-                if (v !== this._commandParam) {
-                    this._commandParam = v;
-                    this.raisePropertyChanged(elview_1.PROP_NAME.commandParam);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CommandElView.prototype, "preventDefault", {
-            get: function () {
-                return this._preventDefault;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CommandElView.prototype, "stopPropagation", {
-            get: function () {
-                return this._stopPropagation;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return CommandElView;
-    }(elview_1.BaseElView));
-    exports.CommandElView = CommandElView;
-});
-define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jriapp_utils/syschecks", "jriapp_utils/checks", "jriapp_utils/strutils", "jriapp_utils/arrhelper", "jriapp_utils/coreutils", "jriapp_utils/dom", "jriapp_utils/async", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_elview/command"], function (require, exports, const_5, syschecks_7, checks_10, strUtils_7, arrhelper_6, coreutils_12, dom_6, async_6, lang_11, object_12, bootstrap_6, command_1) {
-    "use strict";
-    var defer = async_6.AsyncUtils, dom = dom_6.DomUtils, $ = dom.$, doc = dom.document, coreUtils = coreutils_12.CoreUtils, checks = checks_10.Checks, strUtils = strUtils_7.StringUtils, arrHelper = arrhelper_6.ArrayHelper, syschecks = syschecks_7.SysChecks, boot = bootstrap_6.bootstrap;
-    exports.css = {
-        templateContainer: "ria-template-container",
-        templateError: "ria-template-error"
-    };
-    syschecks_7.SysChecks._isTemplateElView = function (obj) {
-        return !!obj && obj instanceof TemplateElView;
-    };
-    var PROP_NAME = {
-        dataContext: "dataContext",
-        templateID: "templateID",
-        template: "template",
-        isEnabled: "isEnabled"
-    };
-    function createTemplate(dataContext, templEvents) {
-        var options = {
-            dataContext: dataContext,
-            templEvents: templEvents
-        };
-        return new Template(options);
-    }
-    exports.createTemplate = createTemplate;
-    var Template = (function (_super) {
-        __extends(Template, _super);
-        function Template(options) {
-            _super.call(this);
-            this._dataContext = options.dataContext;
-            this._templEvents = options.templEvents;
-            this._loadedElem = null;
-            this._lfTime = null;
-            this._templateID = null;
-            this._templElView = null;
-            this._el = doc.createElement("div");
-            this._el.className = exports.css.templateContainer;
-        }
-        Template.prototype._getBindings = function () {
-            if (!this._lfTime)
-                return [];
-            var arr = this._lfTime.getObjs(), res = [];
-            for (var i = 0, len = arr.length; i < len; i += 1) {
-                if (syschecks._isBinding(arr[i]))
-                    res.push(arr[i]);
-            }
-            return res;
-        };
-        Template.prototype._getElViews = function () {
-            if (!this._lfTime)
-                return [];
-            var arr = this._lfTime.getObjs(), res = [];
-            for (var i = 0, len = arr.length; i < len; i += 1) {
-                if (syschecks._isElView(arr[i]))
-                    res.push(arr[i]);
-            }
-            return res;
-        };
-        Template.prototype._getTemplateElView = function () {
-            if (!this._lfTime)
-                return null;
-            var arr = this._getElViews();
-            for (var i = 0, j = arr.length; i < j; i += 1) {
-                if (syschecks_7.SysChecks._isTemplateElView(arr[i])) {
-                    return arr[i];
-                }
-            }
-            return null;
-        };
-        Template.prototype._loadAsync = function (name) {
-            var self = this, fn_loader = this.app.getTemplateLoader(name), promise;
-            if (checks.isFunc(fn_loader) && checks.isThenable(promise = fn_loader())) {
-                return promise.then(function (html) {
-                    var tmpDiv = doc.createElement("div");
-                    tmpDiv.innerHTML = html;
-                    tmpDiv = tmpDiv.firstElementChild;
-                    return tmpDiv;
-                }, function (err) {
-                    if (!!err && !!err.message)
-                        throw err;
-                    else
-                        throw new Error(strUtils.format(lang_11.ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
-                });
-            }
-            else {
-                var deferred = defer.createDeferred();
-                return deferred.reject(new Error(strUtils.format(lang_11.ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID)));
-            }
-        };
-        Template.prototype._loadTemplate = function () {
-            var self = this, id = self.templateID, templateEl = self.el;
-            try {
-                if (!!self._loadedElem)
-                    self._unloadTemplate();
-                if (!!id) {
-                    var loadPromise = self._loadAsync(id), bindPromise = loadPromise.then(function (loadedEl) {
-                        return self._dataBind(templateEl, loadedEl);
-                    });
-                    bindPromise.fail(function (err) {
-                        if (self.getIsDestroyCalled())
-                            return;
-                        self._onFail(templateEl, err);
-                    });
-                }
-            }
-            catch (ex) {
-                self._onFail(templateEl, ex);
-            }
-        };
-        Template.prototype._onLoading = function () {
-            if (!!this._templEvents) {
-                this._templEvents.templateLoading(this);
-            }
-        };
-        Template.prototype._onLoaded = function (error) {
-            this._templElView = this._getTemplateElView();
-            if (!!this._templEvents) {
-                this._templEvents.templateLoaded(this, error);
-            }
-            if (!!this._templElView) {
-                this._templElView.templateLoaded(this, error);
-            }
-        };
-        Template.prototype._unloadTemplate = function () {
-            try {
-                if (!!this._templEvents) {
-                    this._templEvents.templateUnLoading(this);
-                }
-                if (!!this._templElView) {
-                    this._templElView.templateUnLoading(this);
-                }
-            }
-            finally {
-                this._cleanUp();
-            }
-        };
-        Template.prototype._dataBind = function (templateEl, loadedEl) {
-            var self = this;
-            if (self.getIsDestroyCalled())
-                coreutils_12.ERROR.abort();
-            if (!loadedEl)
-                throw new Error(strUtils.format(lang_11.ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
-            if (!!self._loadedElem) {
-                self._unloadTemplate();
-            }
-            dom.setClass([templateEl], exports.css.templateError, true);
-            self._loadedElem = loadedEl;
-            self._onLoading();
-            templateEl.appendChild(loadedEl);
-            var promise = self.app._getInternal().bindTemplateElements(loadedEl);
-            return promise.then(function (lftm) {
-                if (self.getIsDestroyCalled()) {
-                    lftm.destroy();
-                    coreutils_12.ERROR.abort();
-                }
-                self._lfTime = lftm;
-                self._updateBindingSource();
-                self._onLoaded(null);
-                return loadedEl;
-            });
-        };
-        Template.prototype._onFail = function (templateEl, err) {
-            var self = this;
-            if (self.getIsDestroyCalled())
-                return;
-            self._onLoaded(err);
-            if (coreutils_12.ERROR.checkIsAbort(err)) {
-                return;
-            }
-            dom.setClass([templateEl], exports.css.templateError, false);
-            var ex;
-            if (!!err) {
-                if (!!err.message) {
-                    ex = err;
-                }
-                else if (!!err.statusText) {
-                    ex = new Error(err.statusText);
-                }
-                else {
-                    ex = new Error('error: ' + err);
-                }
-            }
-            if (!ex)
-                ex = new Error(strUtils.format(lang_11.ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
-            self.handleError(ex, self);
-        };
-        Template.prototype._updateBindingSource = function () {
-            var i, len, binding, bindings = this._getBindings();
-            for (i = 0, len = bindings.length; i < len; i += 1) {
-                binding = bindings[i];
-                if (!binding.isSourceFixed)
-                    binding.source = this.dataContext;
-            }
-        };
-        Template.prototype._cleanUp = function () {
-            if (!!this._lfTime) {
-                this._lfTime.destroy();
-                this._lfTime = null;
-            }
-            this._templElView = null;
-            if (!!this._loadedElem) {
-                $(this._loadedElem).remove();
-                this._loadedElem = null;
-            }
-        };
-        Template.prototype.destroy = function () {
-            if (this._isDestroyed)
-                return;
-            this._isDestroyCalled = true;
-            this._unloadTemplate();
-            if (!!this._el) {
-                $(this._el).remove();
-                this._el = null;
-            }
-            this._dataContext = null;
-            this._templEvents = null;
-            _super.prototype.destroy.call(this);
-        };
-        Template.prototype.findElByDataName = function (name) {
-            return arrHelper.fromList(this._el.querySelectorAll(["*[", const_5.DATA_ATTR.DATA_NAME, '="', name, '"]'].join("")));
-        };
-        Template.prototype.findElViewsByDataName = function (name) {
-            var self = this, els = this.findElByDataName(name), res = [], viewStore = boot.getApp().viewFactory.store;
-            els.forEach(function (el) {
-                var elView = viewStore.getElView(el);
-                if (!!elView)
-                    res.push(elView);
-            });
-            return res;
-        };
-        Template.prototype.toString = function () {
-            return "ITemplate";
-        };
-        Object.defineProperty(Template.prototype, "loadedElem", {
-            get: function () {
-                return this._loadedElem;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Template.prototype, "dataContext", {
-            get: function () { return this._dataContext; },
-            set: function (v) {
-                if (this._dataContext !== v) {
-                    this._dataContext = v;
-                    this._updateBindingSource();
-                    this.raisePropertyChanged(PROP_NAME.dataContext);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Template.prototype, "templateID", {
-            get: function () { return this._templateID; },
-            set: function (v) {
-                if (this._templateID !== v) {
-                    this._templateID = v;
-                    this._loadTemplate();
-                    this.raisePropertyChanged(PROP_NAME.templateID);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Template.prototype, "el", {
-            get: function () { return this._el; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Template.prototype, "app", {
-            get: function () {
-                return bootstrap_6.bootstrap.getApp();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return Template;
-    }(object_12.BaseObject));
-    var TemplateElView = (function (_super) {
-        __extends(TemplateElView, _super);
-        function TemplateElView(options) {
-            _super.call(this, options);
-            this._template = null;
-            this._isEnabled = true;
-        }
-        TemplateElView.prototype.templateLoading = function (template) {
-        };
-        TemplateElView.prototype.templateLoaded = function (template, error) {
-            if (!!error)
-                return;
-            var self = this;
-            try {
-                self._template = template;
-                var args = { template: template, isLoaded: true };
-                self.invokeCommand(args, false);
-                this.raisePropertyChanged(PROP_NAME.template);
-            }
-            catch (ex) {
-                this.handleError(ex, this);
-                coreutils_12.ERROR.throwDummy(ex);
-            }
-        };
-        TemplateElView.prototype.templateUnLoading = function (template) {
-            var self = this;
-            try {
-                var args = { template: template, isLoaded: false };
-                self.invokeCommand(args, false);
-            }
-            catch (ex) {
-                this.handleError(ex, this);
-            }
-            finally {
-                self._template = null;
-            }
-            this.raisePropertyChanged(PROP_NAME.template);
-        };
-        TemplateElView.prototype.toString = function () {
-            return "TemplateElView";
-        };
-        Object.defineProperty(TemplateElView.prototype, "isEnabled", {
-            get: function () { return this._isEnabled; },
-            set: function (v) {
-                if (this._isEnabled !== v) {
-                    this._isEnabled = v;
-                    this.raisePropertyChanged(PROP_NAME.isEnabled);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TemplateElView.prototype, "template", {
-            get: function () {
-                return this._template;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return TemplateElView;
-    }(command_1.CommandElView));
-    exports.TemplateElView = TemplateElView;
-    ;
-    boot.registerElView("template", TemplateElView);
-});
-define("jriapp_content/template", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/object", "jriapp_core/template", "jriapp_core/lang", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_content/int"], function (require, exports, bootstrap_7, object_13, template_1, lang_12, coreutils_13, utils_7, int_2) {
-    "use strict";
-    var utils = utils_7.Utils, coreUtils = utils.core, dom = utils.dom, $ = dom.$, boot = bootstrap_7.bootstrap;
-    var TemplateContent = (function (_super) {
-        __extends(TemplateContent, _super);
-        function TemplateContent(options) {
-            _super.call(this);
-            options = coreUtils.extend({
-                parentEl: null,
-                contentOptions: null,
-                dataContext: null,
-                isEditing: false,
-                appName: null
-            }, options);
-            this._templateID = null;
-            this._parentEl = options.parentEl;
-            this._isEditing = options.isEditing;
-            this._dataContext = options.dataContext;
-            this._templateInfo = options.contentOptions.templateInfo;
-            this._template = null;
-            dom.addClass([this._parentEl], int_2.css.content);
-            this.render();
-        }
-        TemplateContent.prototype.getTemplateID = function () {
-            if (!this._templateInfo) {
-                throw new Error(lang_12.ERRS.ERR_TEMPLATE_ID_INVALID);
-            }
-            var info = this._templateInfo, id = info.displayID;
-            if (this._isEditing && !!info.editID) {
-                id = info.editID;
-            }
-            if (!id) {
-                id = info.editID;
-            }
-            if (!id)
-                throw new Error(lang_12.ERRS.ERR_TEMPLATE_ID_INVALID);
-            return id;
-        };
-        TemplateContent.prototype.createTemplate = function () {
-            var template = template_1.createTemplate(this._dataContext);
-            template.templateID = this._templateID;
-            return template;
-        };
-        TemplateContent.prototype.render = function () {
-            try {
-                var id = this.getTemplateID();
-                if (this._templateID !== id) {
-                    this.cleanUp();
-                    this._templateID = id;
-                    this._template = this.createTemplate();
-                    this._parentEl.appendChild(this._template.el);
-                }
-            }
-            catch (ex) {
-                coreutils_13.ERROR.reThrow(ex, this.handleError(ex, this));
-            }
-        };
-        TemplateContent.prototype.cleanUp = function () {
-            if (!!this._template) {
-                this._template.destroy();
-                this._template = null;
-                this._templateID = null;
-            }
-        };
-        TemplateContent.prototype.destroy = function () {
-            if (this._isDestroyed)
-                return;
-            this._isDestroyCalled = true;
-            dom.removeClass([this._parentEl], int_2.css.content);
-            this.cleanUp();
-            this._parentEl = null;
-            this._dataContext = null;
-            this._templateInfo = null;
-            _super.prototype.destroy.call(this);
-        };
-        TemplateContent.prototype.toString = function () {
-            return "TemplateContent";
-        };
-        Object.defineProperty(TemplateContent.prototype, "parentEl", {
-            get: function () { return this._parentEl; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TemplateContent.prototype, "template", {
-            get: function () { return this._template; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TemplateContent.prototype, "isEditing", {
-            get: function () { return this._isEditing; },
-            set: function (v) {
-                if (this._isEditing !== v) {
-                    this._isEditing = v;
-                    this.render();
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TemplateContent.prototype, "dataContext", {
-            get: function () { return this._dataContext; },
-            set: function (v) {
-                if (this._dataContext !== v) {
-                    this._dataContext = v;
-                    if (!!this._template) {
-                        this._template.dataContext = this._dataContext;
-                    }
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TemplateContent.prototype, "app", {
-            get: function () { return boot.getApp(); },
-            enumerable: true,
-            configurable: true
-        });
-        return TemplateContent;
-    }(object_13.BaseObject));
-    exports.TemplateContent = TemplateContent;
-});
-define("jriapp_elview/input", ["require", "exports", "jriapp_elview/elview"], function (require, exports, elview_2) {
-    "use strict";
-    var InputElView = (function (_super) {
-        __extends(InputElView, _super);
-        function InputElView() {
-            _super.apply(this, arguments);
-        }
-        InputElView.prototype.toString = function () {
-            return "InputElView";
-        };
-        Object.defineProperty(InputElView.prototype, "isEnabled", {
-            get: function () {
-                var el = this.el;
-                return !el.disabled;
-            },
-            set: function (v) {
-                var el = this.el;
-                if (v !== this.isEnabled) {
-                    el.disabled = !v;
-                    this.raisePropertyChanged(elview_2.PROP_NAME.isEnabled);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(InputElView.prototype, "value", {
-            get: function () {
-                return this.$el.val();
-            },
-            set: function (v) {
-                var x = this.value;
-                var str = "" + v;
-                v = (v === null) ? "" : str;
-                if (x !== v) {
-                    this.$el.val(v);
-                    this.raisePropertyChanged(elview_2.PROP_NAME.value);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return InputElView;
-    }(elview_2.BaseElView));
-    exports.InputElView = InputElView;
-});
-define("jriapp_elview/textbox", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/input"], function (require, exports, utils_8, bootstrap_8, elview_3, input_1) {
-    "use strict";
-    var utils = utils_8.Utils, $ = utils.dom.$;
-    var TXTBOX_EVENTS = {
-        keypress: "keypress"
-    };
-    var TextBoxElView = (function (_super) {
-        __extends(TextBoxElView, _super);
-        function TextBoxElView(options) {
-            _super.call(this, options);
-            var self = this;
-            var $el = this.$el;
-            $el.on("change." + this.uniqueID, function (e) {
-                e.stopPropagation();
-                self.raisePropertyChanged(elview_3.PROP_NAME.value);
-            });
-            $el.on("keypress." + this.uniqueID, function (e) {
-                e.stopPropagation();
-                var args = { keyCode: e.which, value: e.target.value, isCancel: false };
-                self.raiseEvent(TXTBOX_EVENTS.keypress, args);
-                if (args.isCancel)
-                    e.preventDefault();
-            });
-            if (!!options.updateOnKeyUp) {
-                $el.on("keyup." + this.uniqueID, function (e) {
-                    e.stopPropagation();
-                    self.raisePropertyChanged(elview_3.PROP_NAME.value);
-                });
-            }
-        }
-        TextBoxElView.prototype._getEventNames = function () {
-            var base_events = _super.prototype._getEventNames.call(this);
-            return [TXTBOX_EVENTS.keypress].concat(base_events);
-        };
-        TextBoxElView.prototype.addOnKeyPress = function (fn, nmspace) {
-            this._addHandler(TXTBOX_EVENTS.keypress, fn, nmspace);
-        };
-        TextBoxElView.prototype.removeOnKeyPress = function (nmspace) {
-            this._removeHandler(TXTBOX_EVENTS.keypress, nmspace);
-        };
-        TextBoxElView.prototype.toString = function () {
-            return "TextBoxElView";
-        };
-        Object.defineProperty(TextBoxElView.prototype, "color", {
-            get: function () {
-                var $el = this.$el;
-                return $el.css(elview_3.css.color);
-            },
-            set: function (v) {
-                var $el = this.$el;
-                var x = $el.css(elview_3.css.color);
-                if (v !== x) {
-                    $el.css(elview_3.css.color, v);
-                    this.raisePropertyChanged(elview_3.PROP_NAME.color);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return TextBoxElView;
-    }(input_1.InputElView));
-    exports.TextBoxElView = TextBoxElView;
-    bootstrap_8.bootstrap.registerElView("input:text", TextBoxElView);
-});
-define("jriapp_content/string", ["require", "exports", "jriapp_elview/textbox", "jriapp_content/basic"], function (require, exports, textbox_1, basic_1) {
-    "use strict";
-    var StringContent = (function (_super) {
-        __extends(StringContent, _super);
-        function StringContent() {
-            _super.apply(this, arguments);
-        }
-        Object.defineProperty(StringContent.prototype, "_allowedKeys", {
-            get: function () {
-                if (!StringContent.__allowedKeys) {
-                    StringContent.__allowedKeys = [0, 8, 127, 37, 39, 35, 36, 9, 27, 13];
-                }
-                return StringContent.__allowedKeys;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        StringContent.prototype.render = function () {
-            _super.prototype.render.call(this);
-            var self = this, fieldInfo = self.getFieldInfo();
-            if (self._target instanceof textbox_1.TextBoxElView) {
-                self._target.addOnKeyPress(function (sender, args) {
-                    args.isCancel = !self.previewKeyPress(fieldInfo, args.keyCode, args.value);
-                });
-            }
-        };
-        StringContent.prototype.previewKeyPress = function (fieldInfo, keyCode, value) {
-            if (this._allowedKeys.indexOf(keyCode) > -1)
-                return true;
-            return !(fieldInfo.maxLength > 0 && value.length >= fieldInfo.maxLength);
-        };
-        StringContent.prototype.toString = function () {
-            return "StringContent";
-        };
-        StringContent.__allowedKeys = null;
-        return StringContent;
-    }(basic_1.BasicContent));
-    exports.StringContent = StringContent;
-});
-define("jriapp_elview/textarea", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview"], function (require, exports, utils_9, bootstrap_9, elview_4) {
-    "use strict";
-    var utils = utils_9.Utils, $ = utils.dom.$;
-    var TXTAREA_EVENTS = {
-        keypress: "keypress"
-    };
-    var TextAreaElView = (function (_super) {
-        __extends(TextAreaElView, _super);
-        function TextAreaElView(options) {
-            _super.call(this, options);
-            var self = this;
-            if (!!options.wrap) {
-                this.wrap = options.wrap;
-            }
-            var $el = this.$el;
-            $el.on("change." + this.uniqueID, function (e) {
-                e.stopPropagation();
-                self.raisePropertyChanged(elview_4.PROP_NAME.value);
-            });
-            $el.on("keypress." + this.uniqueID, function (e) {
-                e.stopPropagation();
-                var args = { keyCode: e.which, value: e.target.value, isCancel: false };
-                self.raiseEvent(TXTAREA_EVENTS.keypress, args);
-                if (args.isCancel)
-                    e.preventDefault();
-            });
-            if (!!options.updateOnKeyUp) {
-                $el.on("keyup." + this.uniqueID, function (e) {
-                    e.stopPropagation();
-                    self.raisePropertyChanged(elview_4.PROP_NAME.value);
-                });
-            }
-        }
-        TextAreaElView.prototype._getEventNames = function () {
-            var base_events = _super.prototype._getEventNames.call(this);
-            return [TXTAREA_EVENTS.keypress].concat(base_events);
-        };
-        TextAreaElView.prototype.addOnKeyPress = function (fn, nmspace) {
-            this._addHandler(TXTAREA_EVENTS.keypress, fn, nmspace);
-        };
-        TextAreaElView.prototype.removeOnKeyPress = function (nmspace) {
-            this._removeHandler(TXTAREA_EVENTS.keypress, nmspace);
-        };
-        TextAreaElView.prototype.toString = function () {
-            return "TextAreaElView";
-        };
-        Object.defineProperty(TextAreaElView.prototype, "value", {
-            get: function () {
-                return this.$el.val();
-            },
-            set: function (v) {
-                var x = this.$el.val();
-                var str = "" + v;
-                v = (v === null) ? "" : str;
-                if (x !== v) {
-                    this.$el.val(v);
-                    this.raisePropertyChanged(elview_4.PROP_NAME.value);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TextAreaElView.prototype, "isEnabled", {
-            get: function () { return !this.$el.prop("disabled"); },
-            set: function (v) {
-                v = !!v;
-                if (v !== this.isEnabled) {
-                    this.$el.prop("disabled", !v);
-                    this.raisePropertyChanged(elview_4.PROP_NAME.isEnabled);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TextAreaElView.prototype, "wrap", {
-            get: function () {
-                return this.$el.prop("wrap");
-            },
-            set: function (v) {
-                var x = this.wrap;
-                if (x !== v) {
-                    this.$el.prop("wrap", v);
-                    this.raisePropertyChanged(elview_4.PROP_NAME.wrap);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return TextAreaElView;
-    }(elview_4.BaseElView));
-    exports.TextAreaElView = TextAreaElView;
-    bootstrap_9.bootstrap.registerElView("textarea", TextAreaElView);
-});
-define("jriapp_content/multyline", ["require", "exports", "jriapp_core/lang", "jriapp_utils/utils", "jriapp_elview/textarea", "jriapp_content/basic"], function (require, exports, lang_13, utils_10, textarea_1, basic_2) {
-    "use strict";
-    var utils = utils_10.Utils, NAME = "multyline", strUtils = utils.str, document = utils.dom.document;
-    var MultyLineContent = (function (_super) {
-        __extends(MultyLineContent, _super);
-        function MultyLineContent(options) {
-            if (options.contentOptions.name !== NAME) {
-                throw new Error(strUtils.format(lang_13.ERRS.ERR_ASSERTION_FAILED, strUtils.format("contentOptions.name === '{0}'", NAME)));
-            }
-            _super.call(this, options);
-        }
-        Object.defineProperty(MultyLineContent.prototype, "_allowedKeys", {
-            get: function () {
-                if (!MultyLineContent.__allowedKeys) {
-                    MultyLineContent.__allowedKeys = [0, 8, 127, 37, 39, 35, 36, 9, 27, 13];
-                }
-                return MultyLineContent.__allowedKeys;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        MultyLineContent.prototype.createTargetElement = function () {
-            var el, info = { name: null, options: null };
-            if (this.isEditing && this.getIsCanBeEdited()) {
-                el = document.createElement("textarea");
-                info.options = this._options.options;
-                info.name = null;
-            }
-            else {
-                el = document.createElement("div");
-            }
-            this.updateCss();
-            this._el = el;
-            return this.getElementView(this._el, info);
-        };
-        MultyLineContent.prototype.render = function () {
-            _super.prototype.render.call(this);
-            var self = this, fieldInfo = self.getFieldInfo();
-            if (self._target instanceof textarea_1.TextAreaElView) {
-                self._target.addOnKeyPress(function (sender, args) {
-                    args.isCancel = !self.previewKeyPress(fieldInfo, args.keyCode, args.value);
-                });
-            }
-        };
-        MultyLineContent.prototype.previewKeyPress = function (fieldInfo, keyCode, value) {
-            if (this._allowedKeys.indexOf(keyCode) > -1)
-                return true;
-            return !(fieldInfo.maxLength > 0 && value.length >= fieldInfo.maxLength);
-        };
-        MultyLineContent.prototype.toString = function () {
-            return "MultyLineContent";
-        };
-        MultyLineContent.__allowedKeys = null;
-        return MultyLineContent;
-    }(basic_2.BasicContent));
-    exports.MultyLineContent = MultyLineContent;
-});
-define("jriapp_elview/checkbox", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/input"], function (require, exports, utils_11, bootstrap_10, elview_5, input_2) {
-    "use strict";
-    var utils = utils_11.Utils, dom = utils.dom, $ = dom.$, boot = bootstrap_10.bootstrap;
-    var CheckBoxElView = (function (_super) {
-        __extends(CheckBoxElView, _super);
-        function CheckBoxElView(options) {
-            _super.call(this, options);
-            var self = this;
-            var chk = this.el;
-            this._checked = null;
-            chk.checked = false;
-            this.$el.on("change." + this.uniqueID, function (e) {
-                e.stopPropagation();
-                if (self.checked !== this.checked)
-                    self.checked = this.checked;
-            });
-            this._updateState();
-        }
-        CheckBoxElView.prototype._updateState = function () {
-            dom.setClass(this.$el.toArray(), elview_5.css.checkedNull, !utils.check.isNt(this.checked));
-        };
-        CheckBoxElView.prototype.toString = function () {
-            return "CheckBoxElView";
-        };
-        Object.defineProperty(CheckBoxElView.prototype, "checked", {
-            get: function () {
-                return this._checked;
-            },
-            set: function (v) {
-                if (this._checked !== v) {
-                    this._checked = v;
-                    var chk = this.el;
-                    chk.checked = !!v;
-                    this._updateState();
-                    this.raisePropertyChanged(elview_5.PROP_NAME.checked);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return CheckBoxElView;
-    }(input_2.InputElView));
-    exports.CheckBoxElView = CheckBoxElView;
-    boot.registerElView("input:checkbox", CheckBoxElView);
-    boot.registerElView("checkbox", CheckBoxElView);
-});
-define("jriapp_content/bool", ["require", "exports", "jriapp_utils/lifetime", "jriapp_utils/utils", "jriapp_elview/checkbox", "jriapp_content/int", "jriapp_content/basic"], function (require, exports, lifetime_2, utils_12, checkbox_1, int_3, basic_3) {
-    "use strict";
-    var dom = utils_12.Utils.dom, doc = dom.document;
-    var BoolContent = (function (_super) {
-        __extends(BoolContent, _super);
-        function BoolContent() {
-            _super.apply(this, arguments);
-        }
-        BoolContent.prototype.init = function () {
-            this._target = this.createTargetElement();
-            var bindingInfo = this._options.bindingInfo;
-            if (!!bindingInfo) {
-                this.updateCss();
-                this._lfScope = new lifetime_2.LifeTimeScope();
-                var options = this.getBindingOption(bindingInfo, this._target, this._dataContext, "checked");
-                options.mode = 2;
-                this._lfScope.addObj(this.app.bind(options));
-            }
-        };
-        BoolContent.prototype.cleanUp = function () {
-        };
-        BoolContent.prototype.createCheckBoxView = function () {
-            var chk = document.createElement("input");
-            chk.setAttribute("type", "checkbox");
-            dom.addClass([chk], int_3.css.checkbox);
-            var chbxView = new checkbox_1.CheckBoxElView({ el: chk });
-            return chbxView;
-        };
-        BoolContent.prototype.createTargetElement = function () {
-            var tgt = this._target;
-            if (!tgt) {
-                tgt = this.createCheckBoxView();
-                this._el = tgt.el;
-            }
-            var label = doc.createElement("label");
-            dom.addClass([label], int_3.css.checkbox);
-            label.appendChild(this._el);
-            label.appendChild(doc.createElement("span"));
-            this._parentEl.appendChild(label);
-            return tgt;
-        };
-        BoolContent.prototype.updateCss = function () {
-            _super.prototype.updateCss.call(this);
-            var el = this._el;
-            if (this.isEditing && this.getIsCanBeEdited()) {
-                el.disabled = false;
-            }
-            else {
-                el.disabled = true;
-            }
-        };
-        BoolContent.prototype.destroy = function () {
-            if (this._isDestroyed)
-                return;
-            this._isDestroyCalled = true;
-            if (!!this._lfScope) {
-                this._lfScope.destroy();
-                this._lfScope = null;
-            }
-            if (!!this._target) {
-                this._target.destroy();
-                this._target = null;
-            }
-            _super.prototype.destroy.call(this);
-        };
-        BoolContent.prototype.render = function () {
-            this.cleanUp();
-            this.updateCss();
-        };
-        BoolContent.prototype.toString = function () {
-            return "BoolContent";
-        };
-        return BoolContent;
-    }(basic_3.BasicContent));
-    exports.BoolContent = BoolContent;
-});
-define("jriapp_content/number", ["require", "exports", "jriapp_core/bootstrap", "jriapp_elview/textbox", "jriapp_content/basic"], function (require, exports, bootstrap_11, textbox_2, basic_4) {
-    "use strict";
-    var NumberContent = (function (_super) {
-        __extends(NumberContent, _super);
-        function NumberContent() {
-            _super.apply(this, arguments);
-        }
-        Object.defineProperty(NumberContent.prototype, "_allowedKeys", {
-            get: function () {
-                if (!NumberContent.__allowedKeys) {
-                    NumberContent.__allowedKeys = [0, 8, 127, 37, 39, 35, 36, 9, 27, 13];
-                }
-                return NumberContent.__allowedKeys;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        NumberContent.prototype.getBindingOption = function (bindingInfo, tgt, dctx, targetPath) {
-            var options = _super.prototype.getBindingOption.call(this, bindingInfo, tgt, dctx, targetPath);
-            var finf = this.getFieldInfo();
-            switch (finf.dataType) {
-                case 3:
-                    options.converter = this.app.getConverter("integerConverter");
-                    break;
-                case 4:
-                    options.converter = this.app.getConverter("decimalConverter");
-                    break;
-                default:
-                    options.converter = this.app.getConverter("floatConverter");
-                    break;
-            }
-            return options;
-        };
-        NumberContent.prototype.render = function () {
-            _super.prototype.render.call(this);
-            var self = this;
-            if (self._target instanceof textbox_2.TextBoxElView) {
-                self._target.addOnKeyPress(function (sender, args) {
-                    args.isCancel = !self.previewKeyPress(args.keyCode, args.value);
-                });
-            }
-        };
-        NumberContent.prototype.previewKeyPress = function (keyCode, value) {
-            var ch = String.fromCharCode(keyCode), digits = "1234567890", defaults = bootstrap_11.bootstrap.defaults, notAllowedChars = "~@#$%^&*()+=_";
-            if (notAllowedChars.indexOf(ch) > -1)
-                return false;
-            if (this._allowedKeys.indexOf(keyCode) > -1)
-                return true;
-            if (ch === "-" && value.length === 0)
-                return true;
-            if (ch === defaults.decimalPoint) {
-                if (value.length === 0)
-                    return false;
-                else
-                    return value.indexOf(ch) < 0;
-            }
-            if (ch === defaults.thousandSep)
-                return true;
-            else
-                return digits.indexOf(ch) > -1;
-        };
-        NumberContent.prototype.toString = function () {
-            return "NumberContent";
-        };
-        NumberContent.__allowedKeys = null;
-        return NumberContent;
-    }(basic_4.BasicContent));
-    exports.NumberContent = NumberContent;
-});
-define("jriapp_content/date", ["require", "exports", "jriapp_core/lang", "jriapp_utils/utils", "jriapp_content/basic"], function (require, exports, lang_14, utils_13, basic_5) {
-    "use strict";
-    var utils = utils_13.Utils, strUtils = utils.str, doc = utils.dom.document;
-    var NAME = "datepicker";
-    var DateContent = (function (_super) {
-        __extends(DateContent, _super);
-        function DateContent(options) {
-            if (options.contentOptions.name !== NAME) {
-                throw new Error(strUtils.format(lang_14.ERRS.ERR_ASSERTION_FAILED, strUtils.format("contentOptions.name === '{0}'", NAME)));
-            }
-            _super.call(this, options);
-        }
-        DateContent.prototype.getBindingOption = function (bindingInfo, tgt, dctx, targetPath) {
-            var options = _super.prototype.getBindingOption.call(this, bindingInfo, tgt, dctx, targetPath);
-            options.converter = this.app.getConverter("dateConverter");
-            return options;
-        };
-        DateContent.prototype.createTargetElement = function () {
-            var el, info = { name: null, options: null };
-            if (this.isEditing && this.getIsCanBeEdited()) {
-                el = doc.createElement("input");
-                el.setAttribute("type", "text");
-                info.options = this._options.options;
-                info.name = NAME;
-            }
-            else {
-                el = doc.createElement("span");
-            }
-            this.updateCss();
-            this._el = el;
-            return this.getElementView(this._el, info);
-        };
-        DateContent.prototype.toString = function () {
-            return "DateContent";
-        };
-        return DateContent;
-    }(basic_5.BasicContent));
-    exports.DateContent = DateContent;
-});
-define("jriapp_content/datetime", ["require", "exports", "jriapp_core/bootstrap", "jriapp_content/basic"], function (require, exports, bootstrap_12, basic_6) {
-    "use strict";
-    var DateTimeContent = (function (_super) {
-        __extends(DateTimeContent, _super);
-        function DateTimeContent() {
-            _super.apply(this, arguments);
-        }
-        DateTimeContent.prototype.getBindingOption = function (bindingInfo, tgt, dctx, targetPath) {
-            var options = _super.prototype.getBindingOption.call(this, bindingInfo, tgt, dctx, targetPath);
-            options.converter = this.app.getConverter("dateTimeConverter");
-            var finf = this.getFieldInfo(), defaults = bootstrap_12.bootstrap.defaults;
-            switch (finf.dataType) {
-                case 6:
-                    options.converterParam = defaults.dateTimeFormat;
-                    break;
-                case 7:
-                    options.converterParam = defaults.dateFormat;
-                    break;
-                case 8:
-                    options.converterParam = defaults.timeFormat;
-                    break;
-                default:
-                    options.converterParam = null;
-                    break;
-            }
-            return options;
-        };
-        DateTimeContent.prototype.toString = function () {
-            return "DateTimeContent";
-        };
-        return DateTimeContent;
-    }(basic_6.BasicContent));
-    exports.DateTimeContent = DateTimeContent;
-});
-define("jriapp_content/factory", ["require", "exports", "jriapp_core/lang", "jriapp_utils/utils", "jriapp_content/basic", "jriapp_content/template", "jriapp_content/string", "jriapp_content/multyline", "jriapp_content/bool", "jriapp_content/number", "jriapp_content/date", "jriapp_content/datetime", "jriapp_content/int", "jriapp_content/basic", "jriapp_content/template", "jriapp_content/string", "jriapp_content/multyline", "jriapp_content/bool", "jriapp_content/number", "jriapp_content/date", "jriapp_content/datetime"], function (require, exports, lang_15, utils_14, basic_7, template_2, string_1, multyline_1, bool_1, number_1, date_1, datetime_1, int_4, basic_8, template_3, string_2, multyline_2, bool_2, number_2, date_2, datetime_2) {
-    "use strict";
-    exports.contentCSS = int_4.css;
-    exports.BasicContent = basic_8.BasicContent;
-    exports.TemplateContent = template_3.TemplateContent;
-    exports.StringContent = string_2.StringContent;
-    exports.MultyLineContent = multyline_2.MultyLineContent;
-    exports.BoolContent = bool_2.BoolContent;
-    exports.NumberContent = number_2.NumberContent;
-    exports.DateContent = date_2.DateContent;
-    exports.DateTimeContent = datetime_2.DateTimeContent;
-    var utils = utils_14.Utils, strUtils = utils.str;
-    var ContentFactory = (function () {
-        function ContentFactory() {
-        }
-        ContentFactory.prototype.getContentType = function (options) {
-            if (!!options.templateInfo) {
-                return template_2.TemplateContent;
-            }
-            if (!options.bindingInfo) {
-                throw new Error(strUtils.format(lang_15.ERRS.ERR_PARAM_INVALID, "options", "bindingInfo"));
-            }
-            var fieldInfo = options.fieldInfo, res;
-            switch (fieldInfo.dataType) {
-                case 0:
-                    res = basic_7.BasicContent;
-                    break;
-                case 1:
-                    if (options.name === "multyline")
-                        res = multyline_1.MultyLineContent;
-                    else
-                        res = string_1.StringContent;
-                    break;
-                case 2:
-                    res = bool_1.BoolContent;
-                    break;
-                case 3:
-                    res = number_1.NumberContent;
-                    break;
-                case 4:
-                case 5:
-                    res = number_1.NumberContent;
-                    break;
-                case 6:
-                case 8:
-                    res = datetime_1.DateTimeContent;
-                    break;
-                case 7:
-                    if (options.name === "datepicker")
-                        res = date_1.DateContent;
-                    else
-                        res = datetime_1.DateTimeContent;
-                    break;
-                case 9:
-                case 10:
-                    res = basic_7.BasicContent;
-                    break;
-                default:
-                    throw new Error(strUtils.format(lang_15.ERRS.ERR_FIELD_DATATYPE, fieldInfo.dataType));
-            }
-            if (!res)
-                throw new Error(lang_15.ERRS.ERR_BINDING_CONTENT_NOT_FOUND);
-            return res;
-        };
-        ContentFactory.prototype.createContent = function (options) {
-            var contentType = this.getContentType(options.contentOptions);
-            return new contentType(options);
-        };
-        ContentFactory.prototype.isExternallyCachable = function (contentType) {
-            return false;
-        };
-        return ContentFactory;
-    }());
-    exports.ContentFactory = ContentFactory;
-    var FactoryList = (function () {
-        function FactoryList() {
-            this._factory = new ContentFactory();
-        }
-        FactoryList.prototype.addFactory = function (factoryGetter) {
-            this._factory = factoryGetter(this._factory);
-        };
-        FactoryList.prototype.getContentType = function (options) {
-            return this._factory.getContentType(options);
-        };
-        FactoryList.prototype.createContent = function (options) {
-            return this._factory.createContent(options);
-        };
-        FactoryList.prototype.isExternallyCachable = function (contentType) {
-            return this._factory.isExternallyCachable(contentType);
-        };
-        return FactoryList;
-    }());
-    exports.FactoryList = FactoryList;
-    exports.contentFactories = new FactoryList();
-});
-define("jriapp_core/datepicker", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/coreutils", "jriapp_utils/dom", "jriapp_core/bootstrap", "jriapp_elview/textbox"], function (require, exports, lang_16, object_14, coreutils_14, dom_7, bootstrap_13, textbox_3) {
-    "use strict";
-    var coreUtils = coreutils_14.CoreUtils, dom = dom_7.DomUtils, $ = dom.$, boot = bootstrap_13.bootstrap;
+    var coreUtils = coreutils_11.CoreUtils, dom = dom_6.DomUtils, $ = dom.$, boot = bootstrap_4.bootstrap;
     var PROP_NAME = {
         dateFormat: "dateFormat",
         datepickerRegion: "datepickerRegion"
@@ -6655,7 +4631,7 @@ define("jriapp_core/datepicker", ["require", "exports", "jriapp_core/lang", "jri
             this._dateFormat = null;
             this._datepickerRegion = "";
             if (!$.datepicker) {
-                throw new Error(lang_16.ERRS.ERR_JQUERY_DATEPICKER_NOTFOUND);
+                throw new Error(lang_11.ERRS.ERR_JQUERY_DATEPICKER_NOTFOUND);
             }
             this.dateFormat = "dd.mm.yy";
         }
@@ -6727,1212 +4703,292 @@ define("jriapp_core/datepicker", ["require", "exports", "jriapp_core/lang", "jri
             configurable: true
         });
         return Datepicker;
-    }(object_14.BaseObject));
+    }(object_8.BaseObject));
     exports.Datepicker = Datepicker;
-    var DatePickerElView = (function (_super) {
-        __extends(DatePickerElView, _super);
-        function DatePickerElView(options) {
-            _super.call(this, options);
-            var $el = this.$el;
-            boot.defaults.datepicker.attachTo($el, options.datepicker);
-        }
-        DatePickerElView.prototype.destroy = function () {
-            if (this._isDestroyed)
-                return;
-            this._isDestroyCalled = true;
-            var $el = this.$el;
-            boot.defaults.datepicker.detachFrom($el);
-            _super.prototype.destroy.call(this);
-        };
-        DatePickerElView.prototype.toString = function () {
-            return "DatePickerElView";
-        };
-        return DatePickerElView;
-    }(textbox_3.TextBoxElView));
-    exports.DatePickerElView = DatePickerElView;
     boot.registerSvc("IDatepicker", new Datepicker());
-    boot.registerElView("datepicker", DatePickerElView);
 });
-define("jriapp_core/dataform", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_content/factory", "jriapp_core/parser", "jriapp_utils/utils", "jriapp_elview/elview", "jriapp_content/int"], function (require, exports, const_6, lang_17, object_15, bootstrap_14, factory_2, parser_4, utils_15, elview_6, int_5) {
+define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jriapp_utils/syschecks", "jriapp_utils/checks", "jriapp_utils/strutils", "jriapp_utils/arrhelper", "jriapp_utils/coreutils", "jriapp_utils/dom", "jriapp_utils/async", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap"], function (require, exports, const_4, syschecks_5, checks_10, strUtils_7, arrhelper_6, coreutils_12, dom_7, async_6, lang_12, object_9, bootstrap_5) {
     "use strict";
-    var utils = utils_15.Utils, dom = utils.dom, $ = dom.$, doc = dom.document, checks = utils.check, coreUtils = utils.core, strUtils = utils.str, syschecks = utils.sys, parse = parser_4.parser, boot = bootstrap_14.bootstrap;
+    var _async = async_6.AsyncUtils, dom = dom_7.DomUtils, $ = dom.$, doc = dom.document, coreUtils = coreutils_12.CoreUtils, checks = checks_10.Checks, strUtils = strUtils_7.StringUtils, arrHelper = arrhelper_6.ArrayHelper, sys = syschecks_5.SysChecks, boot = bootstrap_5.bootstrap;
     exports.css = {
-        dataform: "ria-dataform",
-        error: "ria-form-error"
+        templateContainer: "ria-template-container",
+        templateError: "ria-template-error"
     };
-    syschecks._setIsInsideTemplate = function (elView) {
-        if (!!elView && elView instanceof DataFormElView) {
-            elView.form.isInsideTemplate = true;
-        }
-    };
-    syschecks._isDataForm = function (el) {
-        if (!el) {
-            return false;
-        }
-        if (el.hasAttribute(const_6.DATA_ATTR.DATA_FORM)) {
-            return true;
-        }
-        else {
-            var attr = el.getAttribute(const_6.DATA_ATTR.DATA_VIEW);
-            if (!attr) {
-                return false;
-            }
-            var opts = parse.parseOptions(attr);
-            return (opts.length > 0 && opts[0].name === const_6.ELVIEW_NM.DataForm);
-        }
-    };
-    syschecks._isInsideDataForm = function (el) {
-        if (!el) {
-            return false;
-        }
-        var parent = el.parentElement;
-        if (!!parent) {
-            if (!syschecks._isDataForm(parent)) {
-                return syschecks._isInsideDataForm(parent);
-            }
-            else {
-                return true;
-            }
-        }
-        return false;
-    };
-    syschecks._isInNestedForm = function (root, forms, el) {
-        var i, oNode, len = forms.length;
-        if (len === 0) {
-            return false;
-        }
-        oNode = el.parentElement;
-        while (!!oNode) {
-            for (i = 0; i < len; i += 1) {
-                if (oNode === forms[i]) {
-                    return true;
-                }
-            }
-            if (!!root && oNode === root) {
-                return false;
-            }
-            oNode = oNode.parentElement;
-        }
-        return false;
-    };
-    syschecks._getParentDataForm = function (rootForm, el) {
-        if (!el)
-            return null;
-        var parent = el.parentElement, attr, opts;
-        if (!!parent) {
-            if (parent === rootForm)
-                return rootForm;
-            if (syschecks._isDataForm(parent)) {
-                return parent;
-            }
-            else
-                return syschecks._getParentDataForm(rootForm, parent);
-        }
-        return null;
-    };
-    function getFieldInfo(obj, fieldName) {
-        if (!obj)
-            return null;
-        if (!!obj._aspect && checks.isFunc(obj._aspect.getFieldInfo)) {
-            return obj._aspect.getFieldInfo(fieldName);
-        }
-        else if (checks.isFunc(obj.getFieldInfo)) {
-            return obj.getFieldInfo(fieldName);
-        }
-        else
-            return null;
-    }
     var PROP_NAME = {
         dataContext: "dataContext",
-        isEditing: "isEditing",
-        validationErrors: "validationErrors",
-        form: "form"
+        templateID: "templateID",
+        template: "template",
+        isEnabled: "isEnabled"
     };
-    var DataForm = (function (_super) {
-        __extends(DataForm, _super);
-        function DataForm(options) {
+    function createTemplate(dataContext, templEvents) {
+        var options = {
+            dataContext: dataContext,
+            templEvents: templEvents
+        };
+        return new Template(options);
+    }
+    exports.createTemplate = createTemplate;
+    var Template = (function (_super) {
+        __extends(Template, _super);
+        function Template(options) {
             _super.call(this);
-            var self = this, parent;
-            this._el = options.el;
-            this._$el = $(this._el);
-            this._objId = "frm" + coreUtils.getNewID();
-            this._dataContext = null;
-            dom.addClass([this._el], exports.css.dataform);
-            this._isEditing = false;
-            this._content = [];
+            this._dataContext = options.dataContext;
+            this._templEvents = options.templEvents;
+            this._loadedElem = null;
             this._lfTime = null;
-            this._contentCreated = false;
-            this._editable = null;
-            this._errNotification = null;
-            this._parentDataForm = null;
-            this._errors = null;
-            this._contentPromise = null;
-            parent = syschecks._getParentDataForm(null, this._el);
-            if (!!parent) {
-                self._parentDataForm = this.app.viewFactory.getOrCreateElView(parent);
-                self._parentDataForm.addOnDestroyed(function (sender, args) {
-                    if (!self._isDestroyCalled)
-                        self.destroy();
-                }, self._objId);
-            }
+            this._templateID = null;
+            this._templElView = null;
+            this._el = doc.createElement("div");
+            this._el.className = exports.css.templateContainer;
         }
-        DataForm.prototype._getBindings = function () {
+        Template.prototype._getBindings = function () {
             if (!this._lfTime)
                 return [];
             var arr = this._lfTime.getObjs(), res = [];
             for (var i = 0, len = arr.length; i < len; i += 1) {
-                if (syschecks._isBinding(arr[i]))
+                if (sys._isBinding(arr[i]))
                     res.push(arr[i]);
             }
             return res;
         };
-        DataForm.prototype._getElViews = function () {
+        Template.prototype._getElViews = function () {
             if (!this._lfTime)
                 return [];
             var arr = this._lfTime.getObjs(), res = [];
             for (var i = 0, len = arr.length; i < len; i += 1) {
-                if (syschecks._isElView(arr[i]))
+                if (sys._isElView(arr[i]))
                     res.push(arr[i]);
             }
             return res;
         };
-        DataForm.prototype._createContent = function () {
-            var dctx = this._dataContext, self = this;
-            if (!dctx) {
-                return;
-            }
-            var contentElements = coreUtils.arr.fromList(this._el.querySelectorAll(DataForm._DATA_CONTENT_SELECTOR)), isEditing = this.isEditing;
-            var forms = coreUtils.arr.fromList(this._el.querySelectorAll(DataForm._DATA_FORM_SELECTOR));
-            contentElements.forEach(function (el) {
-                if (syschecks._isInNestedForm(self._el, forms, el))
-                    return;
-                var attr = el.getAttribute(const_6.DATA_ATTR.DATA_CONTENT), op = int_5.parseContentAttr(attr);
-                if (!!op.fieldName && !op.fieldInfo) {
-                    op.fieldInfo = getFieldInfo(dctx, op.fieldName);
-                    if (!op.fieldInfo) {
-                        throw new Error(strUtils.format(lang_17.ERRS.ERR_DBSET_INVALID_FIELDNAME, "", op.fieldName));
-                    }
+        Template.prototype._getTemplateElView = function () {
+            if (!this._lfTime)
+                return null;
+            var arr = this._getElViews();
+            for (var i = 0, j = arr.length; i < j; i += 1) {
+                if (sys._isTemplateElView(arr[i])) {
+                    return arr[i];
                 }
-                var contentType = factory_2.contentFactories.getContentType(op);
-                var content = new contentType({ parentEl: el, contentOptions: op, dataContext: dctx, isEditing: isEditing });
-                self._content.push(content);
-            });
-            var promise = self.app._getInternal().bindElements(this._el, dctx, true, this.isInsideTemplate);
+            }
+            return null;
+        };
+        Template.prototype._loadAsync = function (name) {
+            var self = this, fn_loader = this.app.getTemplateLoader(name), promise;
+            if (checks.isFunc(fn_loader) && checks.isThenable(promise = fn_loader())) {
+                return promise.then(function (html) {
+                    var tmpDiv = doc.createElement("div");
+                    tmpDiv.innerHTML = html;
+                    tmpDiv = tmpDiv.firstElementChild;
+                    return tmpDiv;
+                }, function (err) {
+                    if (!!err && !!err.message)
+                        throw err;
+                    else
+                        throw new Error(strUtils.format(lang_12.ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
+                });
+            }
+            else {
+                var deferred = _async.createDeferred();
+                return deferred.reject(new Error(strUtils.format(lang_12.ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID)));
+            }
+        };
+        Template.prototype._loadTemplate = function () {
+            var self = this, id = self.templateID, templateEl = self.el;
+            try {
+                if (!!self._loadedElem)
+                    self._unloadTemplate();
+                if (!!id) {
+                    var loadPromise = self._loadAsync(id), bindPromise = loadPromise.then(function (loadedEl) {
+                        return self._dataBind(templateEl, loadedEl);
+                    });
+                    bindPromise.fail(function (err) {
+                        if (self.getIsDestroyCalled())
+                            return;
+                        self._onFail(templateEl, err);
+                    });
+                }
+            }
+            catch (ex) {
+                self._onFail(templateEl, ex);
+            }
+        };
+        Template.prototype._onLoading = function () {
+            if (!!this._templEvents) {
+                this._templEvents.templateLoading(this);
+            }
+        };
+        Template.prototype._onLoaded = function (error) {
+            this._templElView = this._getTemplateElView();
+            if (!!this._templEvents) {
+                this._templEvents.templateLoaded(this, error);
+            }
+            if (!!this._templElView) {
+                this._templElView.templateLoaded(this, error);
+            }
+        };
+        Template.prototype._unloadTemplate = function () {
+            try {
+                if (!!this._templEvents) {
+                    this._templEvents.templateUnLoading(this);
+                }
+                if (!!this._templElView) {
+                    this._templElView.templateUnLoading(this);
+                }
+            }
+            finally {
+                this._cleanUp();
+            }
+        };
+        Template.prototype._dataBind = function (templateEl, loadedEl) {
+            var self = this;
+            if (self.getIsDestroyCalled())
+                coreutils_12.ERROR.abort();
+            if (!loadedEl)
+                throw new Error(strUtils.format(lang_12.ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
+            if (!!self._loadedElem) {
+                self._unloadTemplate();
+            }
+            dom.setClass([templateEl], exports.css.templateError, true);
+            self._loadedElem = loadedEl;
+            self._onLoading();
+            templateEl.appendChild(loadedEl);
+            var promise = self.app._getInternal().bindTemplateElements(loadedEl);
             return promise.then(function (lftm) {
                 if (self.getIsDestroyCalled()) {
                     lftm.destroy();
-                    return;
+                    coreutils_12.ERROR.abort();
                 }
                 self._lfTime = lftm;
-                var bindings = self._getBindings();
-                bindings.forEach(function (binding) {
-                    if (!binding.isSourceFixed)
-                        binding.source = dctx;
-                });
-                self._contentCreated = true;
+                self._updateBindingSource();
+                self._onLoaded(null);
+                return loadedEl;
             });
         };
-        DataForm.prototype._updateCreatedContent = function () {
-            var dctx = this._dataContext, self = this;
-            try {
-                this._content.forEach(function (content) {
-                    content.dataContext = dctx;
-                    content.isEditing = self.isEditing;
-                });
-                var bindings = this._getBindings();
-                bindings.forEach(function (binding) {
-                    if (!binding.isSourceFixed)
-                        binding.source = dctx;
-                });
-            }
-            catch (ex) {
-                utils.err.reThrow(ex, this.handleError(ex, this));
-            }
-        };
-        DataForm.prototype._updateContent = function () {
+        Template.prototype._onFail = function (templateEl, err) {
             var self = this;
-            try {
-                if (self._contentCreated) {
-                    self._updateCreatedContent();
+            if (self.getIsDestroyCalled())
+                return;
+            self._onLoaded(err);
+            if (coreutils_12.ERROR.checkIsAbort(err)) {
+                return;
+            }
+            dom.setClass([templateEl], exports.css.templateError, false);
+            var ex;
+            if (!!err) {
+                if (!!err.message) {
+                    ex = err;
+                }
+                else if (!!err.statusText) {
+                    ex = new Error(err.statusText);
                 }
                 else {
-                    if (!!self._contentPromise) {
-                        self._contentPromise.then(function () {
-                            if (self.getIsDestroyCalled())
-                                return;
-                            self._updateCreatedContent();
-                        }, function (err) {
-                            if (self.getIsDestroyCalled())
-                                return;
-                            self.handleError(err, self);
-                        });
-                    }
-                    else {
-                        self._contentPromise = self._createContent();
-                    }
+                    ex = new Error('error: ' + err);
                 }
             }
-            catch (ex) {
-                utils.err.reThrow(ex, self.handleError(ex, self));
+            if (!ex)
+                ex = new Error(strUtils.format(lang_12.ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
+            self.handleError(ex, self);
+        };
+        Template.prototype._updateBindingSource = function () {
+            var i, len, binding, bindings = this._getBindings();
+            for (i = 0, len = bindings.length; i < len; i += 1) {
+                binding = bindings[i];
+                if (!binding.isSourceFixed)
+                    binding.source = this.dataContext;
             }
         };
-        DataForm.prototype._onDSErrorsChanged = function (sender, args) {
-            if (!!this._errNotification)
-                this.validationErrors = this._errNotification.getAllErrors();
-        };
-        DataForm.prototype._onIsEditingChanged = function (sender, args) {
-            this.isEditing = this._editable.isEditing;
-        };
-        DataForm.prototype._bindDS = function () {
-            var dataContext = this._dataContext, self = this;
-            if (!dataContext)
-                return;
-            if (!!dataContext) {
-                this._editable = utils.getEditable(dataContext);
-                this._errNotification = utils.getErrorNotification(dataContext);
-            }
-            dataContext.addOnDestroyed(function (s, a) {
-                self.dataContext = null;
-            }, self._objId);
-            if (!!this._editable) {
-                this._editable.addOnPropertyChange(PROP_NAME.isEditing, self._onIsEditingChanged, self._objId, self);
-            }
-            if (!!this._errNotification) {
-                this._errNotification.addOnErrorsChanged(self._onDSErrorsChanged, self._objId, self);
-            }
-        };
-        DataForm.prototype._unbindDS = function () {
-            var dataContext = this._dataContext;
-            this.validationErrors = null;
-            if (!!dataContext && !dataContext.getIsDestroyCalled()) {
-                dataContext.removeNSHandlers(this._objId);
-                if (!!this._editable) {
-                    this._editable.removeNSHandlers(this._objId);
-                }
-                if (!!this._errNotification) {
-                    this._errNotification.removeOnErrorsChanged(this._objId);
-                }
-            }
-            this._editable = null;
-            this._errNotification = null;
-        };
-        DataForm.prototype._clearContent = function () {
-            this._content.forEach(function (content) {
-                content.destroy();
-            });
-            this._content = [];
+        Template.prototype._cleanUp = function () {
             if (!!this._lfTime) {
                 this._lfTime.destroy();
                 this._lfTime = null;
             }
-            this._contentCreated = false;
+            this._templElView = null;
+            if (!!this._loadedElem) {
+                $(this._loadedElem).remove();
+                this._loadedElem = null;
+            }
         };
-        DataForm.prototype.destroy = function () {
+        Template.prototype.destroy = function () {
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
-            this._clearContent();
-            dom.removeClass([this.el], exports.css.dataform);
-            this._el = null;
-            this._$el = null;
-            this._unbindDS();
-            var parentDataForm = this._parentDataForm;
-            this._parentDataForm = null;
-            if (!!parentDataForm && !parentDataForm.getIsDestroyCalled()) {
-                parentDataForm.removeNSHandlers(this._objId);
+            this._unloadTemplate();
+            if (!!this._el) {
+                $(this._el).remove();
+                this._el = null;
             }
             this._dataContext = null;
-            this._contentCreated = false;
-            this._contentPromise = null;
+            this._templEvents = null;
             _super.prototype.destroy.call(this);
         };
-        DataForm.prototype.toString = function () {
-            return "DataForm";
+        Template.prototype.findElByDataName = function (name) {
+            return arrHelper.fromList(this._el.querySelectorAll(["*[", const_4.DATA_ATTR.DATA_NAME, '="', name, '"]'].join("")));
         };
-        Object.defineProperty(DataForm.prototype, "app", {
-            get: function () { return boot.getApp(); },
+        Template.prototype.findElViewsByDataName = function (name) {
+            var self = this, els = this.findElByDataName(name), res = [], viewStore = boot.getApp().viewFactory.store;
+            els.forEach(function (el) {
+                var elView = viewStore.getElView(el);
+                if (!!elView)
+                    res.push(elView);
+            });
+            return res;
+        };
+        Template.prototype.toString = function () {
+            return "ITemplate";
+        };
+        Object.defineProperty(Template.prototype, "loadedElem", {
+            get: function () {
+                return this._loadedElem;
+            },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(DataForm.prototype, "el", {
+        Object.defineProperty(Template.prototype, "dataContext", {
+            get: function () { return this._dataContext; },
+            set: function (v) {
+                if (this._dataContext !== v) {
+                    this._dataContext = v;
+                    this._updateBindingSource();
+                    this.raisePropertyChanged(PROP_NAME.dataContext);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Template.prototype, "templateID", {
+            get: function () { return this._templateID; },
+            set: function (v) {
+                if (this._templateID !== v) {
+                    this._templateID = v;
+                    this._loadTemplate();
+                    this.raisePropertyChanged(PROP_NAME.templateID);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Template.prototype, "el", {
             get: function () { return this._el; },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(DataForm.prototype, "dataContext", {
-            get: function () { return this._dataContext; },
-            set: function (v) {
-                try {
-                    if (v === this._dataContext)
-                        return;
-                    if (!!v && !syschecks._isBaseObj(v)) {
-                        throw new Error(lang_17.ERRS.ERR_DATAFRM_DCTX_INVALID);
-                    }
-                    this._unbindDS();
-                    this._dataContext = v;
-                    this._bindDS();
-                    this._updateContent();
-                    this.raisePropertyChanged(PROP_NAME.dataContext);
-                    if (!!this._dataContext) {
-                        if (!!this._editable && this._isEditing !== this._editable.isEditing) {
-                            this.isEditing = this._editable.isEditing;
-                        }
-                        if (!!this._errNotification) {
-                            this._onDSErrorsChanged();
-                        }
-                    }
-                }
-                catch (ex) {
-                    utils.err.reThrow(ex, this.handleError(ex, this));
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(DataForm.prototype, "isEditing", {
-            get: function () { return this._isEditing; },
-            set: function (v) {
-                var dataContext = this._dataContext;
-                if (!dataContext)
-                    return;
-                var isEditing = this._isEditing, editable;
-                if (!!this._editable)
-                    editable = this._editable;
-                if (!editable && v !== isEditing) {
-                    this._isEditing = v;
-                    this._updateContent();
-                    this.raisePropertyChanged(PROP_NAME.isEditing);
-                    return;
-                }
-                if (v !== isEditing && !!editable) {
-                    try {
-                        if (v) {
-                            editable.beginEdit();
-                        }
-                        else {
-                            editable.endEdit();
-                        }
-                    }
-                    catch (ex) {
-                        utils.err.reThrow(ex, this.handleError(ex, dataContext));
-                    }
-                }
-                if (!!editable && editable.isEditing !== isEditing) {
-                    this._isEditing = editable.isEditing;
-                    this._updateContent();
-                    this.raisePropertyChanged(PROP_NAME.isEditing);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(DataForm.prototype, "validationErrors", {
-            get: function () { return this._errors; },
-            set: function (v) {
-                if (v !== this._errors) {
-                    this._errors = v;
-                    this.raisePropertyChanged(PROP_NAME.validationErrors);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(DataForm.prototype, "isInsideTemplate", {
-            get: function () { return this._isInsideTemplate; },
-            set: function (v) {
-                this._isInsideTemplate = v;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        DataForm._DATA_FORM_SELECTOR = ["*[", const_6.DATA_ATTR.DATA_FORM, "]"].join("");
-        DataForm._DATA_CONTENT_SELECTOR = ["*[", const_6.DATA_ATTR.DATA_CONTENT, "]:not([", const_6.DATA_ATTR.DATA_COLUMN, "])"].join("");
-        return DataForm;
-    }(object_15.BaseObject));
-    exports.DataForm = DataForm;
-    var DataFormElView = (function (_super) {
-        __extends(DataFormElView, _super);
-        function DataFormElView(options) {
-            _super.call(this, options);
-            var self = this;
-            this._form = new DataForm(options);
-            this._form.addOnDestroyed(function () {
-                self._form = null;
-                self.raisePropertyChanged(PROP_NAME.form);
-            });
-            this._form.addOnPropertyChange("*", function (form, args) {
-                switch (args.property) {
-                    case PROP_NAME.validationErrors:
-                        self.validationErrors = form.validationErrors;
-                        break;
-                    case PROP_NAME.dataContext:
-                        self.raisePropertyChanged(args.property);
-                        break;
-                }
-            }, this.uniqueID);
-        }
-        DataFormElView.prototype._getErrorTipInfo = function (errors) {
-            var tip = ["<b>", lang_17.STRS.VALIDATE.errorInfo, "</b>", "<ul>"];
-            errors.forEach(function (info) {
-                var fieldName = info.fieldName, res = "";
-                if (!!fieldName) {
-                    res = lang_17.STRS.VALIDATE.errorField + " " + fieldName;
-                }
-                info.errors.forEach(function (str) {
-                    if (!!res)
-                        res = res + " -> " + str;
-                    else
-                        res = str;
-                });
-                tip.push("<li>" + res + "</li>");
-                res = "";
-            });
-            tip.push("</ul>");
-            return tip.join("");
-        };
-        DataFormElView.prototype._updateErrorUI = function (el, errors) {
-            if (!el) {
-                return;
-            }
-            var $el = this.$el;
-            if (!!errors && errors.length > 0) {
-                var $img = $("<div data-name=\"error_info\" class=\"" + exports.css.error + "\" />");
-                $el.prepend($img);
-                elview_6.fn_addToolTip($img, this._getErrorTipInfo(errors), true);
-                this._setFieldError(true);
-            }
-            else {
-                $el.children('div[data-name="error_info"]').remove();
-                this._setFieldError(false);
-            }
-        };
-        DataFormElView.prototype.destroy = function () {
-            if (this._isDestroyed)
-                return;
-            this._isDestroyCalled = true;
-            if (!!this._form && !this._form.getIsDestroyCalled()) {
-                this._form.destroy();
-            }
-            this._form = null;
-            _super.prototype.destroy.call(this);
-        };
-        DataFormElView.prototype.toString = function () {
-            return "DataFormElView";
-        };
-        Object.defineProperty(DataFormElView.prototype, "dataContext", {
+        Object.defineProperty(Template.prototype, "app", {
             get: function () {
-                if (this._isDestroyCalled)
-                    return null;
-                return this._form.dataContext;
-            },
-            set: function (v) {
-                if (this._isDestroyCalled)
-                    return;
-                if (this.dataContext !== v) {
-                    this._form.dataContext = v;
-                }
+                return bootstrap_5.bootstrap.getApp();
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(DataFormElView.prototype, "form", {
-            get: function () { return this._form; },
-            enumerable: true,
-            configurable: true
-        });
-        return DataFormElView;
-    }(elview_6.BaseElView));
-    exports.DataFormElView = DataFormElView;
-    boot.registerElView(const_6.ELVIEW_NM.DataForm, DataFormElView);
+        return Template;
+    }(object_9.BaseObject));
 });
-define("jriapp_elview/anchor", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/command"], function (require, exports, utils_16, bootstrap_15, elview_7, command_2) {
-    "use strict";
-    var utils = utils_16.Utils, dom = utils.dom, $ = dom.$;
-    var AnchorElView = (function (_super) {
-        __extends(AnchorElView, _super);
-        function AnchorElView(options) {
-            _super.call(this, options);
-            var self = this;
-            this._imageSrc = null;
-            this._image = null;
-            this._span = null;
-            this._glyph = null;
-            if (!!options.imageSrc)
-                this.imageSrc = options.imageSrc;
-            if (!!options.glyph)
-                this.glyph = options.glyph;
-            dom.addClass([this.el], elview_7.css.commandLink);
-            this.$el.on("click." + this.uniqueID, function (e) {
-                self._onClick(e);
-            });
-        }
-        AnchorElView.prototype._onClick = function (e) {
-            if (this.stopPropagation)
-                e.stopPropagation();
-            if (this.preventDefault)
-                e.preventDefault();
-            this.invokeCommand(null, true);
-        };
-        AnchorElView.prototype._updateImage = function (src) {
-            var $a = this.$el, self = this;
-            if (this._imageSrc === src)
-                return;
-            this._imageSrc = src;
-            if (!!this._image && !src) {
-                dom.removeNode(this._image);
-                this._image = null;
-                return;
-            }
-            if (!!src) {
-                if (!this._image) {
-                    $a.empty();
-                    this._image = new Image();
-                    $a[0].appendChild(this._image);
-                }
-                this._image.src = src;
-            }
-        };
-        AnchorElView.prototype._updateGlyph = function (glyph) {
-            var $a = this.$el;
-            if (this._glyph === glyph)
-                return;
-            var oldGlyph = this._glyph;
-            this._glyph = glyph;
-            if (!!oldGlyph && !glyph) {
-                dom.removeNode(this._span);
-                return;
-            }
-            if (!!glyph) {
-                if (!this._span) {
-                    $a.empty();
-                    this._span = dom.document.createElement("span");
-                    $a[0].appendChild(this._span);
-                }
-                if (!!oldGlyph) {
-                    dom.removeClass([this._span], oldGlyph);
-                }
-                dom.addClass([this._span], glyph);
-            }
-        };
-        AnchorElView.prototype.destroy = function () {
-            if (this._isDestroyed)
-                return;
-            this._isDestroyCalled = true;
-            dom.removeClass([this.el], elview_7.css.commandLink);
-            this.imageSrc = null;
-            this.glyph = null;
-            _super.prototype.destroy.call(this);
-        };
-        AnchorElView.prototype.toString = function () {
-            return "AnchorElView";
-        };
-        Object.defineProperty(AnchorElView.prototype, "imageSrc", {
-            get: function () { return this._imageSrc; },
-            set: function (v) {
-                var x = this._imageSrc;
-                if (x !== v) {
-                    this._updateImage(v);
-                    this.raisePropertyChanged(elview_7.PROP_NAME.imageSrc);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(AnchorElView.prototype, "glyph", {
-            get: function () { return this._glyph; },
-            set: function (v) {
-                var x = this._glyph;
-                if (x !== v) {
-                    this._updateGlyph(v);
-                    this.raisePropertyChanged(elview_7.PROP_NAME.glyph);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(AnchorElView.prototype, "html", {
-            get: function () {
-                return this.$el.html();
-            },
-            set: function (v) {
-                var x = this.$el.html();
-                if (v === null)
-                    v = "";
-                else
-                    v = "" + v;
-                if (x !== v) {
-                    this.$el.html(v);
-                    this.raisePropertyChanged(elview_7.PROP_NAME.html);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(AnchorElView.prototype, "text", {
-            get: function () {
-                return this.$el.text();
-            },
-            set: function (v) {
-                var x = this.$el.text();
-                if (v === null)
-                    v = "";
-                else
-                    v = "" + v;
-                if (x !== v) {
-                    this.$el.text(v);
-                    this.raisePropertyChanged(elview_7.PROP_NAME.text);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(AnchorElView.prototype, "href", {
-            get: function () {
-                return this.$el.prop("href");
-            },
-            set: function (v) {
-                var x = this.href;
-                if (v === null)
-                    v = "";
-                else
-                    v = "" + v;
-                if (x !== v) {
-                    this.$el.prop("href", v);
-                    this.raisePropertyChanged(elview_7.PROP_NAME.href);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return AnchorElView;
-    }(command_2.CommandElView));
-    exports.AnchorElView = AnchorElView;
-    bootstrap_15.bootstrap.registerElView("a", AnchorElView);
-    bootstrap_15.bootstrap.registerElView("abutton", AnchorElView);
-});
-define("jriapp_elview/span", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview"], function (require, exports, utils_17, bootstrap_16, elview_8) {
-    "use strict";
-    var utils = utils_17.Utils, $ = utils.dom.$;
-    var SpanElView = (function (_super) {
-        __extends(SpanElView, _super);
-        function SpanElView() {
-            _super.apply(this, arguments);
-        }
-        SpanElView.prototype.toString = function () {
-            return "SpanElView";
-        };
-        Object.defineProperty(SpanElView.prototype, "text", {
-            get: function () { return this.$el.text(); },
-            set: function (v) {
-                var $el = this.$el, x = $el.text();
-                var str = "" + v;
-                v = v === null ? "" : str;
-                if (x !== v) {
-                    $el.text(v);
-                    this.raisePropertyChanged(elview_8.PROP_NAME.text);
-                    this.raisePropertyChanged(elview_8.PROP_NAME.value);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(SpanElView.prototype, "value", {
-            get: function () {
-                return this.text;
-            },
-            set: function (v) {
-                this.text = v;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(SpanElView.prototype, "html", {
-            get: function () { return this.$el.html(); },
-            set: function (v) {
-                var x = this.$el.html();
-                var str = "" + v;
-                v = v === null ? "" : str;
-                if (x !== v) {
-                    this.$el.html(v);
-                    this.raisePropertyChanged(elview_8.PROP_NAME.html);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(SpanElView.prototype, "color", {
-            get: function () {
-                var $el = this.$el;
-                return $el.css(elview_8.css.color);
-            },
-            set: function (v) {
-                var $el = this.$el;
-                var x = $el.css(elview_8.css.color);
-                if (v !== x) {
-                    $el.css(elview_8.css.color, v);
-                    this.raisePropertyChanged(elview_8.PROP_NAME.color);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(SpanElView.prototype, "fontSize", {
-            get: function () {
-                var $el = this.$el;
-                return $el.css(elview_8.css.fontSize);
-            },
-            set: function (v) {
-                var $el = this.$el;
-                var x = $el.css(elview_8.css.fontSize);
-                if (v !== x) {
-                    $el.css(elview_8.css.fontSize, v);
-                    this.raisePropertyChanged(elview_8.PROP_NAME.fontSize);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return SpanElView;
-    }(elview_8.BaseElView));
-    exports.SpanElView = SpanElView;
-    bootstrap_16.bootstrap.registerElView("span", SpanElView);
-});
-define("jriapp_elview/block", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/span"], function (require, exports, utils_18, bootstrap_17, elview_9, span_1) {
-    "use strict";
-    var utils = utils_18.Utils, $ = utils.dom.$, boot = bootstrap_17.bootstrap;
-    var BlockElView = (function (_super) {
-        __extends(BlockElView, _super);
-        function BlockElView() {
-            _super.apply(this, arguments);
-        }
-        BlockElView.prototype.toString = function () {
-            return "BlockElView";
-        };
-        Object.defineProperty(BlockElView.prototype, "width", {
-            get: function () {
-                var $el = this.$el;
-                return $el.width();
-            },
-            set: function (v) {
-                var $el = this.$el;
-                var x = $el.width();
-                if (v !== x) {
-                    $el.width(v);
-                    this.raisePropertyChanged(elview_9.PROP_NAME.width);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BlockElView.prototype, "height", {
-            get: function () {
-                var $el = this.$el;
-                return $el.height();
-            },
-            set: function (v) {
-                var $el = this.$el;
-                var x = $el.height();
-                if (v !== x) {
-                    $el.height(v);
-                    this.raisePropertyChanged(elview_9.PROP_NAME.height);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return BlockElView;
-    }(span_1.SpanElView));
-    exports.BlockElView = BlockElView;
-    boot.registerElView("block", BlockElView);
-    boot.registerElView("div", BlockElView);
-    boot.registerElView("section", BlockElView);
-});
-define("jriapp_elview/busy", ["require", "exports", "jriapp_core/const", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview"], function (require, exports, const_7, utils_19, bootstrap_18, elview_10) {
-    "use strict";
-    var utils = utils_19.Utils, $ = utils.dom.$, checks = utils.check;
-    var BusyElView = (function (_super) {
-        __extends(BusyElView, _super);
-        function BusyElView(options) {
-            _super.call(this, options);
-            var img;
-            if (!!options.img)
-                img = options.img;
-            else
-                img = const_7.LOADER_GIF.Default;
-            this._delay = 400;
-            this._timeOut = null;
-            if (!checks.isNt(options.delay))
-                this._delay = parseInt("" + options.delay);
-            this._loaderPath = bootstrap_18.bootstrap.getImagePath(img);
-            this._$loader = $(new Image());
-            this._$loader.css({ position: "absolute", display: "none", zIndex: "10000" });
-            this._$loader.prop("src", this._loaderPath);
-            this._$loader.appendTo(this.el);
-            this._isBusy = false;
-        }
-        BusyElView.prototype.destroy = function () {
-            if (this._isDestroyed)
-                return;
-            this._isDestroyCalled = true;
-            if (!!this._timeOut) {
-                clearTimeout(this._timeOut);
-                this._timeOut = null;
-            }
-            this._$loader.remove();
-            this._$loader = null;
-            _super.prototype.destroy.call(this);
-        };
-        BusyElView.prototype.toString = function () {
-            return "BusyElView";
-        };
-        Object.defineProperty(BusyElView.prototype, "isBusy", {
-            get: function () { return this._isBusy; },
-            set: function (v) {
-                var self = this, fn = function () {
-                    self._timeOut = null;
-                    self._$loader.show();
-                    self._$loader.position({
-                        "of": $(self.el)
-                    });
-                };
-                if (v !== self._isBusy) {
-                    self._isBusy = v;
-                    if (self._isBusy) {
-                        if (!!self._timeOut) {
-                            clearTimeout(self._timeOut);
-                            self._timeOut = null;
-                        }
-                        if (self._delay > 0) {
-                            self._timeOut = setTimeout(fn, self._delay);
-                        }
-                        else
-                            fn();
-                    }
-                    else {
-                        if (!!self._timeOut) {
-                            clearTimeout(self._timeOut);
-                            self._timeOut = null;
-                        }
-                        else
-                            self._$loader.hide();
-                    }
-                    self.raisePropertyChanged(elview_10.PROP_NAME.isBusy);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BusyElView.prototype, "delay", {
-            get: function () { return this._delay; },
-            set: function (v) {
-                if (v !== this._delay) {
-                    this._delay = v;
-                    this.raisePropertyChanged(elview_10.PROP_NAME.delay);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return BusyElView;
-    }(elview_10.BaseElView));
-    exports.BusyElView = BusyElView;
-    bootstrap_18.bootstrap.registerElView("busy", BusyElView);
-    bootstrap_18.bootstrap.registerElView("busy_indicator", BusyElView);
-});
-define("jriapp_elview/button", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/command"], function (require, exports, utils_20, bootstrap_19, elview_11, command_3) {
-    "use strict";
-    var utils = utils_20.Utils, $ = utils.dom.$, boot = bootstrap_19.bootstrap;
-    var ButtonElView = (function (_super) {
-        __extends(ButtonElView, _super);
-        function ButtonElView(options) {
-            _super.call(this, options);
-            var self = this;
-            this.$el.on("click." + this.uniqueID, function (e) {
-                self._onClick(e);
-            });
-        }
-        ButtonElView.prototype._onClick = function (e) {
-            if (this.stopPropagation)
-                e.stopPropagation();
-            if (this.preventDefault)
-                e.preventDefault();
-            this.invokeCommand(null, true);
-        };
-        ButtonElView.prototype.toString = function () {
-            return "ButtonElView";
-        };
-        Object.defineProperty(ButtonElView.prototype, "value", {
-            get: function () {
-                return this.$el.val();
-            },
-            set: function (v) {
-                var x = this.$el.val();
-                if (v === null)
-                    v = "";
-                else
-                    v = "" + v;
-                if (x !== v) {
-                    this.$el.val(v);
-                    this.raisePropertyChanged(elview_11.PROP_NAME.value);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ButtonElView.prototype, "text", {
-            get: function () {
-                return this.$el.text();
-            },
-            set: function (v) {
-                var x = this.$el.text();
-                if (v === null)
-                    v = "";
-                else
-                    v = "" + v;
-                if (x !== v) {
-                    this.$el.text(v);
-                    this.raisePropertyChanged(elview_11.PROP_NAME.text);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ButtonElView.prototype, "html", {
-            get: function () {
-                return this.$el.html();
-            },
-            set: function (v) {
-                var x = this.$el.html();
-                if (v === null)
-                    v = "";
-                else
-                    v = "" + v;
-                if (x !== v) {
-                    this.$el.html(v);
-                    this.raisePropertyChanged(elview_11.PROP_NAME.html);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return ButtonElView;
-    }(command_3.CommandElView));
-    exports.ButtonElView = ButtonElView;
-    boot.registerElView("input:button", ButtonElView);
-    boot.registerElView("input:submit", ButtonElView);
-    boot.registerElView("button", ButtonElView);
-});
-define("jriapp_elview/checkbox3", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/input"], function (require, exports, utils_21, bootstrap_20, elview_12, input_3) {
-    "use strict";
-    var utils = utils_21.Utils, dom = utils.dom, $ = dom.$, boot = bootstrap_20.bootstrap;
-    var CheckBoxThreeStateElView = (function (_super) {
-        __extends(CheckBoxThreeStateElView, _super);
-        function CheckBoxThreeStateElView(options) {
-            _super.call(this, options);
-            var self = this;
-            var chk = this.el;
-            this._checked = null;
-            chk.checked = false;
-            chk.indeterminate = this._checked === null;
-            this.$el.on("click." + this.uniqueID, function (e) {
-                e.stopPropagation();
-                if (self.checked === null)
-                    self.checked = true;
-                else
-                    self.checked = !self.checked ? null : false;
-            });
-            this._updateState();
-        }
-        CheckBoxThreeStateElView.prototype._updateState = function () {
-            dom.setClass(this.$el.toArray(), elview_12.css.checkedNull, !utils.check.isNt(this.checked));
-        };
-        CheckBoxThreeStateElView.prototype.toString = function () {
-            return "CheckBoxThreeStateElView";
-        };
-        Object.defineProperty(CheckBoxThreeStateElView.prototype, "checked", {
-            get: function () {
-                return this._checked;
-            },
-            set: function (v) {
-                if (this._checked !== v) {
-                    this._checked = v;
-                    var chk = this.el;
-                    chk.checked = !!v;
-                    chk.indeterminate = this._checked === null;
-                    this._updateState();
-                    this.raisePropertyChanged(elview_12.PROP_NAME.checked);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return CheckBoxThreeStateElView;
-    }(input_3.InputElView));
-    exports.CheckBoxThreeStateElView = CheckBoxThreeStateElView;
-    boot.registerElView("threeState", CheckBoxThreeStateElView);
-    boot.registerElView("checkbox3", CheckBoxThreeStateElView);
-});
-define("jriapp_elview/expander", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/anchor"], function (require, exports, utils_22, bootstrap_21, anchor_1) {
-    "use strict";
-    var utils = utils_22.Utils, $ = utils.dom.$;
-    exports.PROP_NAME = {
-        isExpanded: "isExpanded"
-    };
-    var COLLAPSE_IMG = "collapse.jpg", EXPAND_IMG = "expand.jpg";
-    var ExpanderElView = (function (_super) {
-        __extends(ExpanderElView, _super);
-        function ExpanderElView(options) {
-            var expandedsrc = options.expandedsrc || bootstrap_21.bootstrap.getImagePath(COLLAPSE_IMG);
-            var collapsedsrc = options.collapsedsrc || bootstrap_21.bootstrap.getImagePath(EXPAND_IMG);
-            var isExpanded = !!options.isExpanded;
-            options.imageSrc = null;
-            _super.call(this, options);
-            this._expandedsrc = expandedsrc;
-            this._collapsedsrc = collapsedsrc;
-            this.isExpanded = isExpanded;
-        }
-        ExpanderElView.prototype.refresh = function () {
-            if (this.getIsDestroyCalled())
-                return;
-            this.imageSrc = this._isExpanded ? this._expandedsrc : this._collapsedsrc;
-        };
-        ExpanderElView.prototype._onCommandChanged = function () {
-            _super.prototype._onCommandChanged.call(this);
-            this.invokeCommand();
-        };
-        ExpanderElView.prototype._onClick = function (e) {
-            if (this.preventDefault)
-                e.preventDefault();
-            this.isExpanded = !this.isExpanded;
-        };
-        ExpanderElView.prototype.invokeCommand = function () {
-            this.refresh();
-            _super.prototype.invokeCommand.call(this, null, true);
-        };
-        ExpanderElView.prototype.toString = function () {
-            return "ExpanderElView";
-        };
-        Object.defineProperty(ExpanderElView.prototype, "isExpanded", {
-            get: function () { return this._isExpanded; },
-            set: function (v) {
-                if (this._isExpanded !== v) {
-                    this._isExpanded = v;
-                    this.invokeCommand();
-                    this.raisePropertyChanged(exports.PROP_NAME.isExpanded);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return ExpanderElView;
-    }(anchor_1.AnchorElView));
-    exports.ExpanderElView = ExpanderElView;
-    bootstrap_21.bootstrap.registerElView("expander", ExpanderElView);
-});
-define("jriapp_elview/hidden", ["require", "exports", "jriapp_core/bootstrap", "jriapp_elview/input"], function (require, exports, bootstrap_22, input_4) {
-    "use strict";
-    var HiddenElView = (function (_super) {
-        __extends(HiddenElView, _super);
-        function HiddenElView() {
-            _super.apply(this, arguments);
-        }
-        HiddenElView.prototype.toString = function () {
-            return "HiddenElView";
-        };
-        return HiddenElView;
-    }(input_4.InputElView));
-    exports.HiddenElView = HiddenElView;
-    bootstrap_22.bootstrap.registerElView("input:hidden", HiddenElView);
-});
-define("jriapp_elview/img", ["require", "exports", "jriapp_core/bootstrap", "jriapp_elview/elview"], function (require, exports, bootstrap_23, elview_13) {
-    "use strict";
-    var ImgElView = (function (_super) {
-        __extends(ImgElView, _super);
-        function ImgElView(options) {
-            _super.call(this, options);
-        }
-        ImgElView.prototype.toString = function () {
-            return "ImgElView";
-        };
-        Object.defineProperty(ImgElView.prototype, "src", {
-            get: function () { return this.$el.prop("src"); },
-            set: function (v) {
-                var x = this.src;
-                if (x !== v) {
-                    this.$el.prop("src", v);
-                    this.raisePropertyChanged(elview_13.PROP_NAME.src);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return ImgElView;
-    }(elview_13.BaseElView));
-    exports.ImgElView = ImgElView;
-    bootstrap_23.bootstrap.registerElView("img", ImgElView);
-});
-define("jriapp_elview/radio", ["require", "exports", "jriapp_utils/utils", "jriapp_core/bootstrap", "jriapp_elview/elview", "jriapp_elview/checkbox"], function (require, exports, utils_23, bootstrap_24, elview_14, checkbox_2) {
-    "use strict";
-    var utils = utils_23.Utils, dom = utils.dom, $ = dom.$;
-    var RadioElView = (function (_super) {
-        __extends(RadioElView, _super);
-        function RadioElView() {
-            _super.apply(this, arguments);
-        }
-        RadioElView.prototype.toString = function () {
-            return "RadioElView";
-        };
-        Object.defineProperty(RadioElView.prototype, "value", {
-            get: function () { return this.$el.val(); },
-            set: function (v) {
-                var strv = utils.core.check.isNt(v) ? "" : ("" + v);
-                if (strv !== this.$el.val()) {
-                    this.$el.val(strv);
-                    this.raisePropertyChanged(elview_14.PROP_NAME.value);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(RadioElView.prototype, "name", {
-            get: function () { return this.$el.prop("name"); },
-            enumerable: true,
-            configurable: true
-        });
-        return RadioElView;
-    }(checkbox_2.CheckBoxElView));
-    exports.RadioElView = RadioElView;
-    bootstrap_24.bootstrap.registerElView("input:radio", RadioElView);
-});
-define("jriapp_elview/all", ["require", "exports", "jriapp_elview/elview", "jriapp_elview/anchor", "jriapp_elview/block", "jriapp_elview/busy", "jriapp_elview/button", "jriapp_elview/checkbox", "jriapp_elview/checkbox3", "jriapp_elview/command", "jriapp_elview/expander", "jriapp_elview/hidden", "jriapp_elview/img", "jriapp_elview/input", "jriapp_elview/radio", "jriapp_elview/span", "jriapp_elview/textarea", "jriapp_elview/textbox"], function (require, exports, elview_15, anchor_2, block_1, busy_1, button_1, checkbox_3, checkbox3_1, command_4, expander_1, hidden_1, img_1, input_5, radio_1, span_2, textarea_2, textbox_4) {
-    "use strict";
-    exports.BaseElView = elview_15.BaseElView;
-    exports.fn_addToolTip = elview_15.fn_addToolTip;
-    exports.PropChangedCommand = elview_15.PropChangedCommand;
-    exports.EVENT_CHANGE_TYPE = elview_15.EVENT_CHANGE_TYPE;
-    exports.AnchorElView = anchor_2.AnchorElView;
-    exports.BlockElView = block_1.BlockElView;
-    exports.BusyElView = busy_1.BusyElView;
-    exports.ButtonElView = button_1.ButtonElView;
-    exports.CheckBoxElView = checkbox_3.CheckBoxElView;
-    exports.CheckBoxThreeStateElView = checkbox3_1.CheckBoxThreeStateElView;
-    exports.CommandElView = command_4.CommandElView;
-    exports.ExpanderElView = expander_1.ExpanderElView;
-    exports.HiddenElView = hidden_1.HiddenElView;
-    exports.ImgElView = img_1.ImgElView;
-    exports.InputElView = input_5.InputElView;
-    exports.RadioElView = radio_1.RadioElView;
-    exports.SpanElView = span_2.SpanElView;
-    exports.TextAreaElView = textarea_2.TextAreaElView;
-    exports.TextBoxElView = textbox_4.TextBoxElView;
-});
-define("jriapp_utils/propwatcher", ["require", "exports", "jriapp_core/object", "jriapp_utils/coreutils"], function (require, exports, object_16, coreutils_15) {
+define("jriapp_utils/propwatcher", ["require", "exports", "jriapp_core/object", "jriapp_utils/coreutils"], function (require, exports, object_10, coreutils_13) {
     "use strict";
     var PropWatcher = (function (_super) {
         __extends(PropWatcher, _super);
         function PropWatcher() {
             _super.call(this);
-            this._objId = "prw" + coreutils_15.CoreUtils.getNewID();
+            this._objId = "prw" + coreutils_13.CoreUtils.getNewID();
             this._objs = [];
         }
         PropWatcher.create = function () {
@@ -7981,8 +5037,130 @@ define("jriapp_utils/propwatcher", ["require", "exports", "jriapp_core/object", 
             configurable: true
         });
         return PropWatcher;
-    }(object_16.BaseObject));
+    }(object_10.BaseObject));
     exports.PropWatcher = PropWatcher;
+});
+define("jriapp_core/mvvm", ["require", "exports", "jriapp_core/object", "jriapp_utils/coreutils"], function (require, exports, object_11, coreutils_14) {
+    "use strict";
+    var CMD_EVENTS = {
+        can_execute_changed: "canExecute_changed"
+    };
+    var TCommand = (function (_super) {
+        __extends(TCommand, _super);
+        function TCommand(fn_action, thisObj, fn_canExecute) {
+            _super.call(this);
+            this._objId = "cmd" + coreutils_14.CoreUtils.getNewID();
+            this._action = fn_action;
+            this._thisObj = !thisObj ? null : thisObj;
+            this._predicate = !fn_canExecute ? null : fn_canExecute;
+        }
+        TCommand.prototype._getEventNames = function () {
+            var base_events = _super.prototype._getEventNames.call(this);
+            return [CMD_EVENTS.can_execute_changed].concat(base_events);
+        };
+        TCommand.prototype._canExecute = function (sender, param, context) {
+            if (!this._predicate)
+                return true;
+            return this._predicate.apply(context, [sender, param, this._thisObj]);
+        };
+        TCommand.prototype._execute = function (sender, param, context) {
+            if (!!this._action) {
+                this._action.apply(context, [sender, param, this._thisObj]);
+            }
+        };
+        TCommand.prototype.addOnCanExecuteChanged = function (fn, nmspace, context) {
+            this._addHandler(CMD_EVENTS.can_execute_changed, fn, nmspace, context);
+        };
+        TCommand.prototype.removeOnCanExecuteChanged = function (nmspace) {
+            this._removeHandler(CMD_EVENTS.can_execute_changed, nmspace);
+        };
+        TCommand.prototype.canExecute = function (sender, param) {
+            return this._canExecute(sender, param, this._thisObj || this);
+        };
+        TCommand.prototype.execute = function (sender, param) {
+            this._execute(sender, param, this._thisObj || this);
+        };
+        TCommand.prototype.destroy = function () {
+            if (this._isDestroyed)
+                return;
+            this._isDestroyCalled = true;
+            this._action = null;
+            this._thisObj = null;
+            this._predicate = null;
+            _super.prototype.destroy.call(this);
+        };
+        TCommand.prototype.raiseCanExecuteChanged = function () {
+            this.raiseEvent(CMD_EVENTS.can_execute_changed, {});
+        };
+        TCommand.prototype.toString = function () {
+            return "Command";
+        };
+        Object.defineProperty(TCommand.prototype, "uniqueID", {
+            get: function () {
+                return this._objId;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TCommand.prototype, "thisObj", {
+            get: function () {
+                return this._thisObj;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return TCommand;
+    }(object_11.BaseObject));
+    exports.TCommand = TCommand;
+    var BaseCommand = (function (_super) {
+        __extends(BaseCommand, _super);
+        function BaseCommand(thisObj) {
+            _super.call(this, null, thisObj, null);
+            this._action = this.Action;
+            this._predicate = this.getIsCanExecute;
+        }
+        BaseCommand.prototype.canExecute = function (sender, param) {
+            return this._canExecute(sender, param, this);
+        };
+        BaseCommand.prototype.execute = function (sender, param) {
+            this._execute(sender, param, this);
+        };
+        return BaseCommand;
+    }(TCommand));
+    exports.BaseCommand = BaseCommand;
+    exports.Command = TCommand;
+    exports.TemplateCommand = TCommand;
+    var ViewModel = (function (_super) {
+        __extends(ViewModel, _super);
+        function ViewModel(app) {
+            _super.call(this);
+            this._app = app;
+            this._objId = "vm" + coreutils_14.CoreUtils.getNewID();
+        }
+        ViewModel.prototype.toString = function () {
+            return "ViewModel";
+        };
+        ViewModel.prototype.destroy = function () {
+            this._app = null;
+            _super.prototype.destroy.call(this);
+        };
+        Object.defineProperty(ViewModel.prototype, "uniqueID", {
+            get: function () {
+                return this._objId;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ViewModel.prototype, "app", {
+            get: function () {
+                return this._app;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return ViewModel;
+    }(object_11.BaseObject));
+    exports.ViewModel = ViewModel;
 });
 define("jriapp_collection/int", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -8031,9 +5209,9 @@ define("jriapp_collection/int", ["require", "exports"], function (require, expor
         destroyed: "destroyed"
     };
 });
-define("jriapp_collection/utils", ["require", "exports", "jriapp_utils/utils", "jriapp_core/lang"], function (require, exports, utils_24, lang_18) {
+define("jriapp_collection/utils", ["require", "exports", "jriapp_utils/utils", "jriapp_core/lang"], function (require, exports, utils_3, lang_13) {
     "use strict";
-    var utils = utils_24.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
+    var utils = utils_3.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
     function pad(num) {
         if (num < 10) {
             return "0" + num;
@@ -8067,7 +5245,7 @@ define("jriapp_collection/utils", ["require", "exports", "jriapp_utils/utils", "
                     dt.setMinutes(dt.getMinutes() - clientTZ);
                     break;
                 default:
-                    throw new Error(strUtils.format(lang_18.ERRS.ERR_PARAM_INVALID, "dtcnv", dtcnv));
+                    throw new Error(strUtils.format(lang_13.ERRS.ERR_PARAM_INVALID, "dtcnv", dtcnv));
             }
             return dt;
         },
@@ -8075,7 +5253,7 @@ define("jriapp_collection/utils", ["require", "exports", "jriapp_utils/utils", "
             if (dt === null)
                 return null;
             if (!checks.isDate(dt))
-                throw new Error(strUtils.format(lang_18.ERRS.ERR_PARAM_INVALID, "dt", dt));
+                throw new Error(strUtils.format(lang_13.ERRS.ERR_PARAM_INVALID, "dt", dt));
             var clientTZ = coreUtils.get_timeZoneOffset();
             switch (dtcnv) {
                 case 0:
@@ -8088,7 +5266,7 @@ define("jriapp_collection/utils", ["require", "exports", "jriapp_utils/utils", "
                     dt.setMinutes(dt.getMinutes() + clientTZ);
                     break;
                 default:
-                    throw new Error(strUtils.format(lang_18.ERRS.ERR_PARAM_INVALID, "dtcnv", dtcnv));
+                    throw new Error(strUtils.format(lang_13.ERRS.ERR_PARAM_INVALID, "dtcnv", dtcnv));
             }
             return dateToString(dt);
         },
@@ -8164,10 +5342,10 @@ define("jriapp_collection/utils", ["require", "exports", "jriapp_utils/utils", "
                     }
                     break;
                 default:
-                    throw new Error(strUtils.format(lang_18.ERRS.ERR_PARAM_INVALID, "dataType", dataType));
+                    throw new Error(strUtils.format(lang_13.ERRS.ERR_PARAM_INVALID, "dataType", dataType));
             }
             if (!isOK)
-                throw new Error(strUtils.format(lang_18.ERRS.ERR_FIELD_WRONG_TYPE, v, dataType));
+                throw new Error(strUtils.format(lang_13.ERRS.ERR_FIELD_WRONG_TYPE, v, dataType));
             return res;
         },
         parseValue: function (v, dataType, dtcnv, serverTZ) {
@@ -8201,7 +5379,7 @@ define("jriapp_collection/utils", ["require", "exports", "jriapp_utils/utils", "
                     res = JSON.parse(v);
                     break;
                 default:
-                    throw new Error(strUtils.format(lang_18.ERRS.ERR_PARAM_INVALID, "dataType", dataType));
+                    throw new Error(strUtils.format(lang_13.ERRS.ERR_PARAM_INVALID, "dataType", dataType));
             }
             return res;
         }
@@ -8209,7 +5387,7 @@ define("jriapp_collection/utils", ["require", "exports", "jriapp_utils/utils", "
     function fn_getPropertyByName(name, props) {
         var arrProps = props.filter(function (f) { return f.fieldName === name; });
         if (!arrProps || arrProps.length !== 1)
-            throw new Error(strUtils.format(lang_18.ERRS.ERR_ASSERTION_FAILED, "arrProps.length === 1"));
+            throw new Error(strUtils.format(lang_13.ERRS.ERR_ASSERTION_FAILED, "arrProps.length === 1"));
         return arrProps[0];
     }
     exports.fn_getPropertyByName = fn_getPropertyByName;
@@ -8244,21 +5422,21 @@ define("jriapp_collection/utils", ["require", "exports", "jriapp_utils/utils", "
     }
     exports.fn_traverseFields = fn_traverseFields;
 });
-define("jriapp_collection/validation", ["require", "exports", "jriapp_core/shared", "jriapp_core/lang", "jriapp_utils/syschecks", "jriapp_utils/utils"], function (require, exports, shared_4, lang_19, syschecks_8, utils_25) {
+define("jriapp_collection/validation", ["require", "exports", "jriapp_core/shared", "jriapp_core/lang", "jriapp_utils/syschecks", "jriapp_utils/utils"], function (require, exports, shared_4, lang_14, syschecks_6, utils_4) {
     "use strict";
-    var utils = utils_25.Utils;
-    syschecks_8.SysChecks._isValidationError = function (obj) {
+    var utils = utils_4.Utils;
+    syschecks_6.SysChecks._isValidationError = function (obj) {
         return (!!obj && obj instanceof ValidationError);
     };
     var ValidationError = (function (_super) {
         __extends(ValidationError, _super);
         function ValidationError(errorInfo, item) {
-            var message = lang_19.ERRS.ERR_VALIDATION + "\r\n", i = 0;
+            var message = lang_14.ERRS.ERR_VALIDATION + "\r\n", i = 0;
             errorInfo.forEach(function (err) {
                 if (i > 0)
                     message = message + "\r\n";
                 if (!!err.fieldName)
-                    message = message + " " + lang_19.STRS.TEXT.txtField + ": " + err.fieldName + " -> " + err.errors.join(", ");
+                    message = message + " " + lang_14.STRS.TEXT.txtField + ": " + err.fieldName + " -> " + err.errors.join(", ");
                 else
                     message = message + err.errors.join(", ");
                 i += 1;
@@ -8296,12 +5474,12 @@ define("jriapp_collection/validation", ["require", "exports", "jriapp_core/share
             var rangeParts = range.split(",");
             if (!!rangeParts[0]) {
                 if (num < parseFloat(rangeParts[0])) {
-                    throw new Error(utils.str.format(lang_19.ERRS.ERR_FIELD_RANGE, num, range));
+                    throw new Error(utils.str.format(lang_14.ERRS.ERR_FIELD_RANGE, num, range));
                 }
             }
             if (!!rangeParts[1]) {
                 if (num > parseFloat(rangeParts[1])) {
-                    throw new Error(utils.str.format(lang_19.ERRS.ERR_FIELD_RANGE, num, range));
+                    throw new Error(utils.str.format(lang_14.ERRS.ERR_FIELD_RANGE, num, range));
                 }
             }
         };
@@ -8309,12 +5487,12 @@ define("jriapp_collection/validation", ["require", "exports", "jriapp_core/share
             var rangeParts = range.split(",");
             if (!!rangeParts[0]) {
                 if (dt < Validations._dtRangeToDate(rangeParts[0])) {
-                    throw new Error(utils.str.format(lang_19.ERRS.ERR_FIELD_RANGE, dt, range));
+                    throw new Error(utils.str.format(lang_14.ERRS.ERR_FIELD_RANGE, dt, range));
                 }
             }
             if (!!rangeParts[1]) {
                 if (dt > Validations._dtRangeToDate(rangeParts[1])) {
-                    throw new Error(utils.str.format(lang_19.ERRS.ERR_FIELD_RANGE, dt, range));
+                    throw new Error(utils.str.format(lang_14.ERRS.ERR_FIELD_RANGE, dt, range));
                 }
             }
         };
@@ -8322,10 +5500,10 @@ define("jriapp_collection/validation", ["require", "exports", "jriapp_core/share
     }());
     exports.Validations = Validations;
 });
-define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/syschecks", "jriapp_core/object", "jriapp_core/lang", "jriapp_utils/waitqueue", "jriapp_utils/utils", "jriapp_core/parser", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/validation"], function (require, exports, syschecks_9, object_17, lang_20, waitqueue_2, utils_26, parser_5, int_6, utils_27, validation_1) {
+define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/syschecks", "jriapp_core/object", "jriapp_core/lang", "jriapp_utils/waitqueue", "jriapp_utils/utils", "jriapp_core/parser", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/validation"], function (require, exports, syschecks_7, object_12, lang_15, waitqueue_2, utils_5, parser_3, int_1, utils_6, validation_1) {
     "use strict";
-    var utils = utils_26.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, parse = parser_5.parser;
-    syschecks_9.SysChecks._isCollection = function (obj) { return (!!obj && obj instanceof BaseCollection); };
+    var utils = utils_5.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, parse = parser_3.parser;
+    syschecks_7.SysChecks._isCollection = function (obj) { return (!!obj && obj instanceof BaseCollection); };
     var COLL_EVENTS = {
         begin_edit: "begin_edit",
         end_edit: "end_edit",
@@ -8541,16 +5719,16 @@ define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/sysc
             this._removeHandler(COLL_EVENTS.status_changed, nmspace);
         };
         BaseCollection.prototype.addOnPageIndexChanged = function (handler, nmspace, context) {
-            this.addOnPropertyChange(int_6.PROP_NAME.pageIndex, handler, nmspace, context);
+            this.addOnPropertyChange(int_1.PROP_NAME.pageIndex, handler, nmspace, context);
         };
         BaseCollection.prototype.addOnPageSizeChanged = function (handler, nmspace, context) {
-            this.addOnPropertyChange(int_6.PROP_NAME.pageSize, handler, nmspace, context);
+            this.addOnPropertyChange(int_1.PROP_NAME.pageSize, handler, nmspace, context);
         };
         BaseCollection.prototype.addOnTotalCountChanged = function (handler, nmspace, context) {
-            this.addOnPropertyChange(int_6.PROP_NAME.totalCount, handler, nmspace, context);
+            this.addOnPropertyChange(int_1.PROP_NAME.totalCount, handler, nmspace, context);
         };
         BaseCollection.prototype.addOnCurrentChanged = function (handler, nmspace, context) {
-            this.addOnPropertyChange(int_6.PROP_NAME.currentItem, handler, nmspace, context);
+            this.addOnPropertyChange(int_1.PROP_NAME.currentItem, handler, nmspace, context);
         };
         BaseCollection.prototype._getPKFieldInfos = function () {
             if (!!this._pkInfo)
@@ -8580,13 +5758,13 @@ define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/sysc
             this.raiseEvent(COLL_EVENTS.current_changing, { newCurrent: newCurrent });
         };
         BaseCollection.prototype._onCurrentChanged = function () {
-            this.raisePropertyChanged(int_6.PROP_NAME.currentItem);
+            this.raisePropertyChanged(int_1.PROP_NAME.currentItem);
         };
         BaseCollection.prototype._onCountChanged = function () {
-            this.raisePropertyChanged(int_6.PROP_NAME.count);
+            this.raisePropertyChanged(int_1.PROP_NAME.count);
         };
         BaseCollection.prototype._onEditingChanged = function () {
-            this.raisePropertyChanged(int_6.PROP_NAME.isEditing);
+            this.raisePropertyChanged(int_1.PROP_NAME.isEditing);
         };
         BaseCollection.prototype._onItemStatusChanged = function (item, oldStatus) {
             this.raiseEvent(COLL_EVENTS.status_changed, { item: item, oldStatus: oldStatus, key: item._key });
@@ -8612,7 +5790,7 @@ define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/sysc
         };
         BaseCollection.prototype._attach = function (item, itemPos) {
             if (!!this._itemsByKey[item._key]) {
-                throw new Error(lang_20.ERRS.ERR_ITEM_IS_ATTACHED);
+                throw new Error(lang_15.ERRS.ERR_ITEM_IS_ATTACHED);
             }
             try {
                 this.endEdit();
@@ -8633,7 +5811,7 @@ define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/sysc
             this._itemsByKey[item._key] = item;
             this._onCollectionChanged({ changeType: 1, reason: 0, oper: 2, items: [item], pos: [pos] });
             item._aspect._onAttach();
-            this.raisePropertyChanged(int_6.PROP_NAME.count);
+            this.raisePropertyChanged(int_1.PROP_NAME.count);
             this._onCurrentChanging(item);
             this._currentPos = pos;
             this._onCurrentChanged();
@@ -8644,7 +5822,7 @@ define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/sysc
                 this._onCollectionChanged({ changeType: 0, reason: 0, oper: 3, items: [item], pos: [pos] });
             }
             finally {
-                this.raisePropertyChanged(int_6.PROP_NAME.count);
+                this.raisePropertyChanged(int_1.PROP_NAME.count);
             }
         };
         BaseCollection.prototype._onPageSizeChanged = function () {
@@ -8675,15 +5853,15 @@ define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/sysc
                 return;
             }
             if (!v._key)
-                throw new Error(lang_20.ERRS.ERR_ITEM_IS_DETACHED);
+                throw new Error(lang_15.ERRS.ERR_ITEM_IS_DETACHED);
             var oldItem, pos, item = self.getItemByKey(v._key);
             if (!item) {
-                throw new Error(lang_20.ERRS.ERR_ITEM_IS_NOTFOUND);
+                throw new Error(lang_15.ERRS.ERR_ITEM_IS_NOTFOUND);
             }
             oldItem = self.getItemByPos(oldPos);
             pos = self._items.indexOf(v);
             if (pos < 0) {
-                throw new Error(lang_20.ERRS.ERR_ITEM_IS_NOTFOUND);
+                throw new Error(lang_15.ERRS.ERR_ITEM_IS_NOTFOUND);
             }
             if (oldPos !== pos || oldItem !== v) {
                 self._onCurrentChanging(v);
@@ -8709,7 +5887,7 @@ define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/sysc
         };
         BaseCollection.prototype._getStrValue = function (val, fieldInfo) {
             var dcnv = fieldInfo.dateConversion, stz = coreUtils.get_timeZoneOffset();
-            return utils_27.valueUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
+            return utils_6.valueUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
         };
         BaseCollection.prototype._onBeforeEditing = function (item, isBegin, isCanceled) {
             if (this._isUpdating)
@@ -8729,7 +5907,7 @@ define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/sysc
                 this.raiseEvent(COLL_EVENTS.begin_edit, { item: item });
                 this._onEditingChanged();
                 if (!!item) {
-                    item._aspect.raisePropertyChanged(int_6.PROP_NAME.isEditing);
+                    item._aspect.raisePropertyChanged(int_1.PROP_NAME.isEditing);
                 }
             }
             else {
@@ -8738,7 +5916,7 @@ define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/sysc
                 this.raiseEvent(COLL_EVENTS.end_edit, { item: item, isCanceled: isCanceled });
                 this._onEditingChanged();
                 if (!!oldItem) {
-                    oldItem._aspect.raisePropertyChanged(int_6.PROP_NAME.isEditing);
+                    oldItem._aspect.raisePropertyChanged(int_1.PROP_NAME.isEditing);
                 }
             }
         };
@@ -8839,7 +6017,7 @@ define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/sysc
         BaseCollection.prototype._setIsLoading = function (v) {
             if (this._isLoading !== v) {
                 this._isLoading = v;
-                this.raisePropertyChanged(int_6.PROP_NAME.isLoading);
+                this.raisePropertyChanged(int_1.PROP_NAME.isLoading);
             }
         };
         BaseCollection.prototype._getInternal = function () {
@@ -8884,11 +6062,11 @@ define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/sysc
             }
             if (fld.fieldType === 5) {
                 for (var i = 1; i < parts.length; i += 1) {
-                    fld = utils_27.fn_getPropertyByName(parts[i], fld.nested);
+                    fld = utils_6.fn_getPropertyByName(parts[i], fld.nested);
                 }
                 return fld;
             }
-            throw new Error(strUtils.format(lang_20.ERRS.ERR_PARAM_INVALID, "fieldName", fieldName));
+            throw new Error(strUtils.format(lang_15.ERRS.ERR_PARAM_INVALID, "fieldName", fieldName));
         };
         BaseCollection.prototype.getFieldNames = function () {
             return this.getFieldInfos().map(function (f) {
@@ -8945,7 +6123,7 @@ define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/sysc
         };
         BaseCollection.prototype.getItemByKey = function (key) {
             if (!key)
-                throw new Error(lang_20.ERRS.ERR_KEY_IS_EMPTY);
+                throw new Error(lang_15.ERRS.ERR_KEY_IS_EMPTY);
             return this._itemsByKey["" + key];
         };
         BaseCollection.prototype.findByPK = function () {
@@ -9068,7 +6246,7 @@ define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/sysc
             try {
                 var oldPos = utils.arr.remove(this._items, item), key = item._key;
                 if (oldPos < 0) {
-                    throw new Error(lang_20.ERRS.ERR_ITEM_IS_NOTFOUND);
+                    throw new Error(lang_15.ERRS.ERR_ITEM_IS_NOTFOUND);
                 }
                 this._onRemoved(item, oldPos);
                 delete this._itemsByKey[key];
@@ -9136,7 +6314,7 @@ define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/sysc
         };
         BaseCollection.prototype.waitForNotLoading = function (callback, groupName) {
             this._waitQueue.enQueue({
-                prop: int_6.PROP_NAME.isLoading,
+                prop: int_1.PROP_NAME.isLoading,
                 groupName: groupName,
                 predicate: function (val) {
                     return !val;
@@ -9175,8 +6353,8 @@ define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/sysc
             set: function (v) {
                 if (v !== this._totalCount) {
                     this._totalCount = v;
-                    this.raisePropertyChanged(int_6.PROP_NAME.totalCount);
-                    this.raisePropertyChanged(int_6.PROP_NAME.pageCount);
+                    this.raisePropertyChanged(int_1.PROP_NAME.totalCount);
+                    this.raisePropertyChanged(int_1.PROP_NAME.pageCount);
                 }
             },
             enumerable: true,
@@ -9187,7 +6365,7 @@ define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/sysc
             set: function (v) {
                 if (this._options.pageSize !== v) {
                     this._options.pageSize = v;
-                    this.raisePropertyChanged(int_6.PROP_NAME.pageSize);
+                    this.raisePropertyChanged(int_1.PROP_NAME.pageSize);
                     this._onPageSizeChanged();
                 }
             },
@@ -9205,7 +6383,7 @@ define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/sysc
                     }
                     this._pageIndex = v;
                     this._onPageChanged();
-                    this.raisePropertyChanged(int_6.PROP_NAME.pageIndex);
+                    this.raisePropertyChanged(int_1.PROP_NAME.pageIndex);
                 }
             },
             enumerable: true,
@@ -9249,7 +6427,7 @@ define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/sysc
             set: function (v) {
                 if (this._isUpdating !== v) {
                     this._isUpdating = v;
-                    this.raisePropertyChanged(int_6.PROP_NAME.isUpdating);
+                    this.raisePropertyChanged(int_1.PROP_NAME.isUpdating);
                 }
             },
             enumerable: true,
@@ -9261,12 +6439,12 @@ define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/sysc
             configurable: true
         });
         return BaseCollection;
-    }(object_17.BaseObject));
+    }(object_12.BaseObject));
     exports.BaseCollection = BaseCollection;
 });
-define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/validation"], function (require, exports, object_18, coreutils_16, utils_28, lang_21, int_7, utils_29, validation_2) {
+define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/validation"], function (require, exports, object_13, coreutils_15, utils_7, lang_16, int_2, utils_8, validation_2) {
     "use strict";
-    var utils = utils_28.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
+    var utils = utils_7.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
     var ItemAspect = (function (_super) {
         __extends(ItemAspect, _super);
         function ItemAspect(collection) {
@@ -9289,10 +6467,10 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
         };
         ItemAspect.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
-            return [int_7.ITEM_EVENTS.errors_changed].concat(base_events);
+            return [int_2.ITEM_EVENTS.errors_changed].concat(base_events);
         };
         ItemAspect.prototype._onErrorsChanged = function (args) {
-            this.raiseEvent(int_7.ITEM_EVENTS.errors_changed, args);
+            this.raiseEvent(int_2.ITEM_EVENTS.errors_changed, args);
         };
         ItemAspect.prototype._beginEdit = function () {
             var coll = this.collection;
@@ -9311,7 +6489,7 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
                 catch (ex) {
                     isHandled = this.handleError(ex, item);
                     item._aspect.cancelEdit();
-                    coreutils_16.ERROR.reThrow(ex, isHandled);
+                    coreutils_15.ERROR.reThrow(ex, isHandled);
                 }
             }
             if (this.isDetached)
@@ -9366,11 +6544,11 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
                     return valInfo;
                 if (this.isNew) {
                     if (value === null && !fieldInfo.isNullable && !fieldInfo.isReadOnly && !fieldInfo.isAutoGenerated)
-                        throw new Error(lang_21.ERRS.ERR_FIELD_ISNOT_NULLABLE);
+                        throw new Error(lang_16.ERRS.ERR_FIELD_ISNOT_NULLABLE);
                 }
                 else {
                     if (value === null && !fieldInfo.isNullable && !fieldInfo.isReadOnly)
-                        throw new Error(lang_21.ERRS.ERR_FIELD_ISNOT_NULLABLE);
+                        throw new Error(lang_16.ERRS.ERR_FIELD_ISNOT_NULLABLE);
                 }
             }
             catch (ex) {
@@ -9386,7 +6564,7 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
         };
         ItemAspect.prototype._validateAll = function () {
             var self = this, fieldInfos = this.collection.getFieldInfos(), errs = [];
-            utils_29.fn_traverseFields(fieldInfos, function (fld, fullName) {
+            utils_8.fn_traverseFields(fieldInfos, function (fld, fullName) {
                 if (fld.fieldType !== 5) {
                     var res_1 = self._validateField(fullName);
                     if (!!res_1) {
@@ -9405,9 +6583,9 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             if (this._skipValidate(fieldInfo, val))
                 return res;
             if (fieldInfo.isReadOnly && !(fieldInfo.allowClientDefault && this.isNew))
-                throw new Error(lang_21.ERRS.ERR_FIELD_READONLY);
+                throw new Error(lang_16.ERRS.ERR_FIELD_READONLY);
             if ((val === null || (checks.isString(val) && !val)) && !fieldInfo.isNullable)
-                throw new Error(lang_21.ERRS.ERR_FIELD_ISNOT_NULLABLE);
+                throw new Error(lang_16.ERRS.ERR_FIELD_ISNOT_NULLABLE);
             if (val === null)
                 return val;
             switch (fieldInfo.dataType) {
@@ -9416,35 +6594,35 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
                 case 9:
                 case 1:
                     if (!checks.isString(val)) {
-                        throw new Error(strUtils.format(lang_21.ERRS.ERR_FIELD_WRONG_TYPE, val, "String"));
+                        throw new Error(strUtils.format(lang_16.ERRS.ERR_FIELD_WRONG_TYPE, val, "String"));
                     }
                     if (fieldInfo.maxLength > 0 && val.length > fieldInfo.maxLength)
-                        throw new Error(strUtils.format(lang_21.ERRS.ERR_FIELD_MAXLEN, fieldInfo.maxLength));
+                        throw new Error(strUtils.format(lang_16.ERRS.ERR_FIELD_MAXLEN, fieldInfo.maxLength));
                     if (fieldInfo.isNullable && val === "")
                         res = null;
                     if (!!fieldInfo.regex) {
                         var reg = new RegExp(fieldInfo.regex, "i");
                         if (!reg.test(val)) {
-                            throw new Error(strUtils.format(lang_21.ERRS.ERR_FIELD_REGEX, val));
+                            throw new Error(strUtils.format(lang_16.ERRS.ERR_FIELD_REGEX, val));
                         }
                     }
                     break;
                 case 10:
                     if (!checks.isArray(val)) {
-                        throw new Error(strUtils.format(lang_21.ERRS.ERR_FIELD_WRONG_TYPE, val, "Array"));
+                        throw new Error(strUtils.format(lang_16.ERRS.ERR_FIELD_WRONG_TYPE, val, "Array"));
                     }
                     if (fieldInfo.maxLength > 0 && val.length > fieldInfo.maxLength)
-                        throw new Error(strUtils.format(lang_21.ERRS.ERR_FIELD_MAXLEN, fieldInfo.maxLength));
+                        throw new Error(strUtils.format(lang_16.ERRS.ERR_FIELD_MAXLEN, fieldInfo.maxLength));
                     break;
                 case 2:
                     if (!checks.isBoolean(val))
-                        throw new Error(strUtils.format(lang_21.ERRS.ERR_FIELD_WRONG_TYPE, val, "Boolean"));
+                        throw new Error(strUtils.format(lang_16.ERRS.ERR_FIELD_WRONG_TYPE, val, "Boolean"));
                     break;
                 case 3:
                 case 4:
                 case 5:
                     if (!checks.isNumber(val))
-                        throw new Error(strUtils.format(lang_21.ERRS.ERR_FIELD_WRONG_TYPE, val, "Number"));
+                        throw new Error(strUtils.format(lang_16.ERRS.ERR_FIELD_WRONG_TYPE, val, "Number"));
                     if (!!fieldInfo.range) {
                         validation_2.Validations.checkNumRange(Number(val), fieldInfo.range);
                     }
@@ -9452,24 +6630,24 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
                 case 6:
                 case 7:
                     if (!checks.isDate(val))
-                        throw new Error(strUtils.format(lang_21.ERRS.ERR_FIELD_WRONG_TYPE, val, "Date"));
+                        throw new Error(strUtils.format(lang_16.ERRS.ERR_FIELD_WRONG_TYPE, val, "Date"));
                     if (!!fieldInfo.range) {
                         validation_2.Validations.checkDateRange(val, fieldInfo.range);
                     }
                     break;
                 case 8:
                     if (!checks.isDate(val))
-                        throw new Error(strUtils.format(lang_21.ERRS.ERR_FIELD_WRONG_TYPE, val, "Time"));
+                        throw new Error(strUtils.format(lang_16.ERRS.ERR_FIELD_WRONG_TYPE, val, "Time"));
                     break;
                 default:
-                    throw new Error(strUtils.format(lang_21.ERRS.ERR_PARAM_INVALID, "dataType", fieldInfo.dataType));
+                    throw new Error(strUtils.format(lang_16.ERRS.ERR_PARAM_INVALID, "dataType", fieldInfo.dataType));
             }
             return res;
         };
         ItemAspect.prototype._resetIsNew = function () {
         };
         ItemAspect.prototype._fakeDestroy = function () {
-            this.raiseEvent(int_7.ITEM_EVENTS.destroyed, {});
+            this.raiseEvent(int_2.ITEM_EVENTS.destroyed, {});
             this.removeNSHandlers();
         };
         ItemAspect.prototype.handleError = function (error, source) {
@@ -9577,10 +6755,10 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             return !!itemErrors;
         };
         ItemAspect.prototype.addOnErrorsChanged = function (fn, nmspace, context) {
-            this._addHandler(int_7.ITEM_EVENTS.errors_changed, fn, nmspace, context);
+            this._addHandler(int_2.ITEM_EVENTS.errors_changed, fn, nmspace, context);
         };
         ItemAspect.prototype.removeOnErrorsChanged = function (nmspace) {
-            this._removeHandler(int_7.ITEM_EVENTS.errors_changed, nmspace);
+            this._removeHandler(int_2.ITEM_EVENTS.errors_changed, nmspace);
         };
         ItemAspect.prototype.getFieldErrors = function (fieldName) {
             var itemErrors = this.collection._getInternal().getErrors(this.item);
@@ -9773,10 +6951,10 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             return obj.val;
         };
         return ItemAspect;
-    }(object_18.BaseObject));
+    }(object_13.BaseObject));
     exports.ItemAspect = ItemAspect;
 });
-define("jriapp_collection/item", ["require", "exports", "jriapp_core/object", "jriapp_collection/int"], function (require, exports, object_19, int_8) {
+define("jriapp_collection/item", ["require", "exports", "jriapp_core/object", "jriapp_collection/int"], function (require, exports, object_14, int_3) {
     "use strict";
     var CollectionItem = (function (_super) {
         __extends(CollectionItem, _super);
@@ -9785,7 +6963,7 @@ define("jriapp_collection/item", ["require", "exports", "jriapp_core/object", "j
             this.__aspect = aspect;
         }
         CollectionItem.prototype._fakeDestroy = function () {
-            this.raiseEvent(int_8.ITEM_EVENTS.destroyed, {});
+            this.raiseEvent(int_3.ITEM_EVENTS.destroyed, {});
             this.removeNSHandlers();
         };
         Object.defineProperty(CollectionItem.prototype, "_aspect", {
@@ -9826,17 +7004,17 @@ define("jriapp_collection/item", ["require", "exports", "jriapp_core/object", "j
             return "CollectionItem";
         };
         return CollectionItem;
-    }(object_19.BaseObject));
+    }(object_14.BaseObject));
     exports.CollectionItem = CollectionItem;
 });
-define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/collection", "jriapp_collection/aspect", "jriapp_collection/validation"], function (require, exports, coreutils_17, utils_30, lang_22, int_9, utils_31, collection_1, aspect_1, validation_3) {
+define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/collection", "jriapp_collection/aspect", "jriapp_collection/validation"], function (require, exports, coreutils_16, utils_9, lang_17, int_4, utils_10, collection_1, aspect_1, validation_3) {
     "use strict";
-    var utils = utils_30.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
+    var utils = utils_9.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
     function fn_initVals(coll, obj) {
         var vals = obj || {};
         if (!!obj) {
             var fieldInfos = coll.getFieldInfos();
-            utils_31.fn_traverseFields(fieldInfos, function (fld, fullName) {
+            utils_10.fn_traverseFields(fieldInfos, function (fld, fullName) {
                 if (fld.fieldType === 5)
                     coreUtils.setValue(vals, fullName, {}, false);
                 else
@@ -9924,7 +7102,7 @@ define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils"
         BaseList.prototype._updateFieldMap = function (props) {
             var self = this;
             if (!checks.isArray(props) || props.length === 0)
-                throw new Error(strUtils.format(lang_22.ERRS.ERR_PARAM_INVALID, "props", props));
+                throw new Error(strUtils.format(lang_17.ERRS.ERR_PARAM_INVALID, "props", props));
             self._fieldMap = {};
             self._fieldInfos = [];
             props.forEach(function (prop) {
@@ -9932,7 +7110,7 @@ define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils"
                 fldInfo.dataType = prop.dtype;
                 self._fieldMap[prop.name] = fldInfo;
                 self._fieldInfos.push(fldInfo);
-                utils_31.fn_traverseField(fldInfo, function (fld, fullName) {
+                utils_10.fn_traverseField(fldInfo, function (fld, fullName) {
                     fld.dependents = null;
                     fld.fullName = fullName;
                 });
@@ -9943,7 +7121,7 @@ define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils"
                 this.endEdit();
             }
             catch (ex) {
-                coreutils_17.ERROR.reThrow(ex, this.handleError(ex, this));
+                coreutils_16.ERROR.reThrow(ex, this.handleError(ex, this));
             }
             return _super.prototype._attach.call(this, item);
         };
@@ -9991,7 +7169,7 @@ define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils"
                     }
                 });
                 if (newItems.length > 0) {
-                    this.raisePropertyChanged(int_9.PROP_NAME.count);
+                    this.raisePropertyChanged(int_4.PROP_NAME.count);
                 }
             }
             finally {
@@ -10032,10 +7210,10 @@ define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils"
     }(collection_1.BaseCollection));
     exports.BaseList = BaseList;
 });
-define("jriapp_collection/dictionary", ["require", "exports", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_utils/syschecks", "jriapp_collection/collection", "jriapp_collection/list"], function (require, exports, utils_32, lang_23, syschecks_10, collection_2, list_1) {
+define("jriapp_collection/dictionary", ["require", "exports", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_utils/syschecks", "jriapp_collection/collection", "jriapp_collection/list"], function (require, exports, utils_11, lang_18, syschecks_8, collection_2, list_1) {
     "use strict";
-    var utils = utils_32.Utils, strUtils = utils.str, checks = utils.check;
-    syschecks_10.SysChecks._getItemByProp = function (obj, prop) {
+    var utils = utils_11.Utils, strUtils = utils.str, checks = utils.check;
+    syschecks_8.SysChecks._getItemByProp = function (obj, prop) {
         if (obj instanceof BaseDictionary) {
             return obj.getItemByKey(prop);
         }
@@ -10049,12 +7227,12 @@ define("jriapp_collection/dictionary", ["require", "exports", "jriapp_utils/util
         __extends(BaseDictionary, _super);
         function BaseDictionary(itemType, keyName, props) {
             if (!keyName)
-                throw new Error(strUtils.format(lang_23.ERRS.ERR_PARAM_INVALID, "keyName", keyName));
+                throw new Error(strUtils.format(lang_18.ERRS.ERR_PARAM_INVALID, "keyName", keyName));
             _super.call(this, itemType, props);
             this._keyName = keyName;
             var keyFld = this.getFieldInfo(keyName);
             if (!keyFld)
-                throw new Error(strUtils.format(lang_23.ERRS.ERR_DICTKEY_IS_NOTFOUND, keyName));
+                throw new Error(strUtils.format(lang_18.ERRS.ERR_DICTKEY_IS_NOTFOUND, keyName));
             keyFld.isPrimaryKey = 1;
         }
         BaseDictionary.prototype._getNewKey = function (item) {
@@ -10063,14 +7241,14 @@ define("jriapp_collection/dictionary", ["require", "exports", "jriapp_utils/util
             }
             var key = item[this._keyName];
             if (checks.isNt(key))
-                throw new Error(strUtils.format(lang_23.ERRS.ERR_DICTKEY_IS_EMPTY, this.keyName));
+                throw new Error(strUtils.format(lang_18.ERRS.ERR_DICTKEY_IS_EMPTY, this.keyName));
             return "" + key;
         };
         BaseDictionary.prototype._onItemAdded = function (item) {
             _super.prototype._onItemAdded.call(this, item);
             var key = item[this._keyName], self = this;
             if (checks.isNt(key))
-                throw new Error(strUtils.format(lang_23.ERRS.ERR_DICTKEY_IS_EMPTY, this.keyName));
+                throw new Error(strUtils.format(lang_18.ERRS.ERR_DICTKEY_IS_EMPTY, this.keyName));
             var oldkey = item._key, newkey = "" + key;
             if (oldkey !== newkey) {
                 delete self._itemsByKey[oldkey];
@@ -10106,9 +7284,9 @@ define("jriapp_collection/dictionary", ["require", "exports", "jriapp_utils/util
     }(list_1.BaseList));
     exports.BaseDictionary = BaseDictionary;
 });
-define("jriapp_utils/mloader", ["require", "exports", "jriapp_utils/utils", "jriapp_utils/sloader"], function (require, exports, utils_33, sloader_2) {
+define("jriapp_utils/mloader", ["require", "exports", "jriapp_utils/utils", "jriapp_utils/sloader"], function (require, exports, utils_12, sloader_2) {
     "use strict";
-    var utils = utils_33.Utils, coreUtils = utils.core, strUtils = utils.str, defer = utils.defer, arr = utils.arr, resolvedPromise = defer.createSyncDeferred().resolve(), CSSPrefix = "css!";
+    var utils = utils_12.Utils, coreUtils = utils.core, strUtils = utils.str, defer = utils.defer, arr = utils.arr, resolvedPromise = defer.createSyncDeferred().resolve(), CSSPrefix = "css!";
     var _moduleLoader = null;
     function create() {
         if (!_moduleLoader)
@@ -10240,9 +7418,9 @@ define("jriapp_utils/mloader", ["require", "exports", "jriapp_utils/utils", "jri
         return ModuleLoader;
     }());
 });
-define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "jriapp_core/shared", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_utils/lifetime", "jriapp_utils/utils", "jriapp_utils/mloader", "jriapp_core/binding", "jriapp_core/parser"], function (require, exports, const_8, shared_5, lang_24, object_20, bootstrap_25, lifetime_3, utils_34, mloader_1, binding_2, parser_6) {
+define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "jriapp_core/shared", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_utils/lifetime", "jriapp_utils/utils", "jriapp_utils/mloader", "jriapp_core/binding", "jriapp_core/parser"], function (require, exports, const_5, shared_5, lang_19, object_15, bootstrap_6, lifetime_1, utils_13, mloader_1, binding_1, parser_4) {
     "use strict";
-    var utils = utils_34.Utils, $ = utils.dom.$, doc = utils.dom.document, strUtils = utils.str, syschecks = utils.sys, checks = utils.check, boot = bootstrap_25.bootstrap;
+    var utils = utils_13.Utils, $ = utils.dom.$, doc = utils.dom.document, strUtils = utils.str, syschecks = utils.sys, checks = utils.check, boot = bootstrap_6.bootstrap;
     function createDataBindSvc(root, elViewFactory) {
         return new DataBindingService(root, elViewFactory);
     }
@@ -10260,19 +7438,19 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
             var val, allAttrs = el.attributes, attr, res = { el: el, dataView: null, dataForm: null, expressions: [] };
             for (var i = 0, n = allAttrs.length; i < n; i++) {
                 attr = allAttrs[i];
-                if (strUtils.startsWith(attr.name, const_8.DATA_ATTR.DATA_BIND)) {
+                if (strUtils.startsWith(attr.name, const_5.DATA_ATTR.DATA_BIND)) {
                     val = attr.value.trim();
                     if (!val) {
-                        throw new Error(strUtils.format(lang_24.ERRS.ERR_PARAM_INVALID, attr.name, "empty"));
+                        throw new Error(strUtils.format(lang_19.ERRS.ERR_PARAM_INVALID, attr.name, "empty"));
                     }
                     if (val[0] !== "{" && val[val.length - 1] !== "}")
                         val = "{" + val + "}";
                     res.expressions.push(val);
                 }
-                if (strUtils.startsWith(attr.name, const_8.DATA_ATTR.DATA_FORM)) {
+                if (strUtils.startsWith(attr.name, const_5.DATA_ATTR.DATA_FORM)) {
                     res.dataForm = attr.value.trim();
                 }
-                if (strUtils.startsWith(attr.name, const_8.DATA_ATTR.DATA_VIEW)) {
+                if (strUtils.startsWith(attr.name, const_5.DATA_ATTR.DATA_VIEW)) {
                     res.dataView = attr.value.trim();
                 }
             }
@@ -10297,7 +7475,7 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
             }
         };
         DataBindingService.prototype._getRequiredModuleNames = function (el) {
-            var attr = el.getAttribute(const_8.DATA_ATTR.DATA_REQUIRE);
+            var attr = el.getAttribute(const_5.DATA_ATTR.DATA_REQUIRE);
             if (!attr)
                 return [];
             var reqArr = attr.split(",");
@@ -10321,7 +7499,7 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
         DataBindingService.prototype._updDataFormAttr = function (bindElems) {
             bindElems.forEach(function (bindElem) {
                 if (!bindElem.dataForm && syschecks._isDataForm(bindElem.el)) {
-                    bindElem.el.setAttribute(const_8.DATA_ATTR.DATA_FORM, "yes");
+                    bindElem.el.setAttribute(const_5.DATA_ATTR.DATA_FORM, "yes");
                     bindElem.dataForm = "yes";
                 }
             });
@@ -10333,10 +7511,10 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
                 syschecks._setIsInsideTemplate(elView);
             bind_attr = bindElem.expressions.join("");
             if (!!bind_attr) {
-                temp_opts = parser_6.parser.parseOptions(bind_attr);
+                temp_opts = parser_4.parser.parseOptions(bind_attr);
                 for (var j = 0, len = temp_opts.length; j < len; j += 1) {
                     info = temp_opts[j];
-                    op = binding_2.getBindingOptions(info, elView, defSource);
+                    op = binding_1.getBindingOptions(info, elView, defSource);
                     var binding = self.bind(op);
                     lftm.addObj(binding);
                 }
@@ -10345,7 +7523,7 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
         DataBindingService.prototype._bindTemplateElements = function (templateEl) {
             var self = this, defer = utils.defer.createSyncDeferred();
             try {
-                var rootBindEl = self._toBindableElement(templateEl), bindElems = void 0, lftm_1 = new lifetime_3.LifeTimeScope();
+                var rootBindEl = self._toBindableElement(templateEl), bindElems = void 0, lftm_1 = new lifetime_1.LifeTimeScope();
                 if (!!rootBindEl && !!rootBindEl.dataForm) {
                     bindElems = [rootBindEl];
                 }
@@ -10396,7 +7574,7 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
             var self = this, defer = utils.defer.createSyncDeferred();
             scope = scope || doc;
             try {
-                var bindElems = self._getBindableElements(scope), lftm_2 = new lifetime_3.LifeTimeScope();
+                var bindElems = self._getBindableElements(scope), lftm_2 = new lifetime_1.LifeTimeScope();
                 if (!isDataFormBind) {
                     self._updDataFormAttr(bindElems);
                 }
@@ -10431,7 +7609,7 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
             });
         };
         DataBindingService.prototype.bind = function (opts) {
-            return new binding_2.Binding(opts);
+            return new binding_1.Binding(opts);
         };
         DataBindingService.prototype.destroy = function () {
             this._cleanUp();
@@ -10440,11 +7618,11 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
             _super.prototype.destroy.call(this);
         };
         return DataBindingService;
-    }(object_20.BaseObject));
+    }(object_15.BaseObject));
 });
-define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_utils/utils", "jriapp_elview/factory", "jriapp_core/databindsvc"], function (require, exports, const_9, lang_25, object_21, bootstrap_26, utils_35, factory_3, databindsvc_1) {
+define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_utils/utils", "jriapp_core/elview", "jriapp_core/databindsvc"], function (require, exports, const_6, lang_20, object_16, bootstrap_7, utils_14, elview_2, databindsvc_1) {
     "use strict";
-    var utils = utils_35.Utils, $ = utils.dom.$, doc = utils.dom.document, boot = bootstrap_26.bootstrap;
+    var utils = utils_14.Utils, $ = utils.dom.$, doc = utils.dom.document, boot = bootstrap_7.bootstrap;
     var APP_EVENTS = {
         startup: "startup"
     };
@@ -10463,15 +7641,15 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
             if (!options) {
                 options = {};
             }
-            var self = this, moduleInits = options.modulesInits || {}, app_name = const_9.APP_NAME;
+            var self = this, moduleInits = options.modulesInits || {}, app_name = const_6.APP_NAME;
             this._appName = app_name;
             this._options = options;
             if (!!boot.getApp())
-                throw new Error(utils.str.format(lang_25.ERRS.ERR_APP_NAME_NOT_UNIQUE, app_name));
+                throw new Error(utils.str.format(lang_20.ERRS.ERR_APP_NAME_NOT_UNIQUE, app_name));
             this._objId = "app:" + utils.core.getNewID();
             this._app_state = 0;
             this._moduleInits = moduleInits;
-            this._viewFactory = factory_3.createElViewFactory(boot.elViewRegister);
+            this._viewFactory = elview_2.createElViewFactory(boot.elViewRegister);
             this._dataBindingService = databindsvc_1.createDataBindSvc(this.appRoot, this._viewFactory);
             this._objMaps = [];
             this._exports = {};
@@ -10491,7 +7669,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
             this._objMaps.forEach(function (objMap) {
                 utils.core.forEachProp(objMap, function (name) {
                     var obj = objMap[name];
-                    if (obj instanceof object_21.BaseObject) {
+                    if (obj instanceof object_16.BaseObject) {
                         if (!obj.getIsDestroyed()) {
                             obj.removeNSHandlers(self.uniqueID);
                         }
@@ -10530,29 +7708,29 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
             return this._dataBindingService.bind(opts);
         };
         Application.prototype.registerConverter = function (name, obj) {
-            var name2 = const_9.STORE_KEY.CONVERTER + name;
+            var name2 = const_6.STORE_KEY.CONVERTER + name;
             if (!boot._getInternal().getObject(this, name2)) {
                 boot._getInternal().registerObject(this, name2, obj);
             }
             else
-                throw new Error(utils.str.format(lang_25.ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
+                throw new Error(utils.str.format(lang_20.ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
         };
         Application.prototype.getConverter = function (name) {
-            var name2 = const_9.STORE_KEY.CONVERTER + name;
+            var name2 = const_6.STORE_KEY.CONVERTER + name;
             var res = boot._getInternal().getObject(this, name2);
             if (!res) {
                 res = boot._getInternal().getObject(boot, name2);
             }
             if (!res)
-                throw new Error(utils.str.format(lang_25.ERRS.ERR_CONVERTER_NOTREGISTERED, name));
+                throw new Error(utils.str.format(lang_20.ERRS.ERR_CONVERTER_NOTREGISTERED, name));
             return res;
         };
         Application.prototype.registerSvc = function (name, obj) {
-            var name2 = const_9.STORE_KEY.SVC + name;
+            var name2 = const_6.STORE_KEY.SVC + name;
             return boot._getInternal().registerObject(this, name2, obj);
         };
         Application.prototype.getSvc = function (name) {
-            var name2 = const_9.STORE_KEY.SVC + name;
+            var name2 = const_6.STORE_KEY.SVC + name;
             var res = boot._getInternal().getObject(this, name2);
             if (!res) {
                 res = boot._getInternal().getObject(boot, name2);
@@ -10563,7 +7741,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
             this._viewFactory.register.registerElView(name, vw_type);
         };
         Application.prototype.registerObject = function (name, obj) {
-            var self = this, name2 = const_9.STORE_KEY.OBJECT + name;
+            var self = this, name2 = const_6.STORE_KEY.OBJECT + name;
             if (utils.check.isBaseObject(obj)) {
                 obj.addOnDestroyed(function (s, a) {
                     boot._getInternal().unregisterObject(self, name2);
@@ -10575,7 +7753,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
             }
         };
         Application.prototype.getObject = function (name) {
-            var name2 = const_9.STORE_KEY.OBJECT + name;
+            var name2 = const_6.STORE_KEY.OBJECT + name;
             var res = boot._getInternal().getObject(this, name2);
             return res;
         };
@@ -10631,7 +7809,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
             });
             try {
                 if (!!onStartUp && !utils.check.isFunc(onStartUp))
-                    throw new Error(lang_25.ERRS.ERR_APP_SETUP_INVALID);
+                    throw new Error(lang_20.ERRS.ERR_APP_SETUP_INVALID);
                 boot.templateLoader.waitForNotLoading(fn_startApp, null);
             }
             catch (ex) {
@@ -10665,7 +7843,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
             if (!res) {
                 res = boot.templateLoader.getTemplateLoader(name);
                 if (!res)
-                    return function () { return utils.defer.createDeferred().reject(new Error(utils.str.format(lang_25.ERRS.ERR_TEMPLATE_NOTREGISTERED, name))); };
+                    return function () { return utils.defer.createDeferred().reject(new Error(utils.str.format(lang_20.ERRS.ERR_TEMPLATE_NOTREGISTERED, name))); };
             }
             return res;
         };
@@ -10747,51 +7925,47 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
             configurable: true
         });
         return Application;
-    }(object_21.BaseObject));
+    }(object_16.BaseObject));
     exports.Application = Application;
 });
-define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/const", "jriapp_core/shared", "jriapp_utils/syschecks", "jriapp_core/lang", "jriapp_core/converter", "jriapp_core/object", "jriapp_utils/debounce", "jriapp_utils/dblclick", "jriapp_utils/coreutils", "jriapp_core/bootstrap", "jriapp_content/factory", "jriapp_core/binding", "jriapp_core/datepicker", "jriapp_core/dataform", "jriapp_core/template", "jriapp_elview/all", "jriapp_utils/lifetime", "jriapp_utils/propwatcher", "jriapp_utils/waitqueue", "jriapp_utils/utils", "jriapp_core/mvvm", "jriapp_collection/int", "jriapp_collection/collection", "jriapp_collection/item", "jriapp_collection/aspect", "jriapp_collection/list", "jriapp_collection/dictionary", "jriapp_collection/validation", "jriapp_core/app"], function (require, exports, bootstrap_27, const_10, shared_6, syschecks_11, lang_26, converter_1, object_22, debounce_1, dblclick_1, coreutils_18, bootstrap_28, factory_4, binding_3, datepicker_1, dataform_1, template_4, all_1, lifetime_4, propwatcher_1, waitqueue_3, utils_36, mvvm_2, int_10, collection_3, item_1, aspect_2, list_2, dictionary_1, validation_4, app_1) {
+define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/const", "jriapp_core/shared", "jriapp_utils/syschecks", "jriapp_core/lang", "jriapp_core/converter", "jriapp_core/object", "jriapp_utils/debounce", "jriapp_utils/dblclick", "jriapp_utils/coreutils", "jriapp_core/bootstrap", "jriapp_core/binding", "jriapp_core/datepicker", "jriapp_core/template", "jriapp_utils/lifetime", "jriapp_utils/propwatcher", "jriapp_utils/waitqueue", "jriapp_utils/utils", "jriapp_core/mvvm", "jriapp_collection/int", "jriapp_collection/collection", "jriapp_collection/item", "jriapp_collection/aspect", "jriapp_collection/list", "jriapp_collection/dictionary", "jriapp_collection/validation", "jriapp_core/app"], function (require, exports, bootstrap_8, const_7, shared_6, syschecks_9, lang_21, converter_1, object_17, debounce_1, dblclick_1, coreutils_17, bootstrap_9, binding_2, datepicker_1, template_1, lifetime_2, propwatcher_1, waitqueue_3, utils_15, mvvm_1, int_5, collection_3, item_1, aspect_2, list_2, dictionary_1, validation_4, app_1) {
     "use strict";
-    function __export(m) {
-        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-    }
-    exports.DEBUG_LEVEL = const_10.DEBUG_LEVEL;
-    exports.DATE_CONVERSION = const_10.DATE_CONVERSION;
-    exports.FIELD_TYPE = const_10.FIELD_TYPE;
-    exports.DATA_TYPE = const_10.DATA_TYPE;
-    exports.SORT_ORDER = const_10.SORT_ORDER;
-    exports.FILTER_TYPE = const_10.FILTER_TYPE;
-    exports.KEYS = const_10.KEYS;
-    exports.BINDING_MODE = const_10.BINDING_MODE;
-    exports.BindTo = const_10.BindTo;
+    exports.DEBUG_LEVEL = const_7.DEBUG_LEVEL;
+    exports.DATE_CONVERSION = const_7.DATE_CONVERSION;
+    exports.FIELD_TYPE = const_7.FIELD_TYPE;
+    exports.DATA_TYPE = const_7.DATA_TYPE;
+    exports.SORT_ORDER = const_7.SORT_ORDER;
+    exports.FILTER_TYPE = const_7.FILTER_TYPE;
+    exports.KEYS = const_7.KEYS;
+    exports.BINDING_MODE = const_7.BINDING_MODE;
+    exports.BindTo = const_7.BindTo;
     exports.BaseError = shared_6.BaseError;
-    exports.SysChecks = syschecks_11.SysChecks;
-    exports.LocaleSTRS = lang_26.STRS;
-    exports.LocaleERRS = lang_26.ERRS;
+    exports.SysChecks = syschecks_9.SysChecks;
+    exports.LocaleSTRS = lang_21.STRS;
+    exports.LocaleERRS = lang_21.ERRS;
     exports.BaseConverter = converter_1.BaseConverter;
-    exports.BaseObject = object_22.BaseObject;
+    exports.BaseObject = object_17.BaseObject;
     exports.Debounce = debounce_1.Debounce;
     exports.DblClick = dblclick_1.DblClick;
-    exports.DEBUG = coreutils_18.DEBUG;
-    exports.ERROR = coreutils_18.ERROR;
-    exports.bootstrap = bootstrap_28.bootstrap;
-    exports.contentFactories = factory_4.contentFactories;
-    exports.Binding = binding_3.Binding;
-    __export(datepicker_1);
-    exports.DataForm = dataform_1.DataForm;
-    exports.DataFormElView = dataform_1.DataFormElView;
-    exports.createTemplate = template_4.createTemplate;
-    exports.TemplateElView = template_4.TemplateElView;
-    __export(all_1);
-    exports.LifeTimeScope = lifetime_4.LifeTimeScope;
+    exports.DEBUG = coreutils_17.DEBUG;
+    exports.ERROR = coreutils_17.ERROR;
+    exports.bootstrap = bootstrap_9.bootstrap;
+    exports.Binding = binding_2.Binding;
+    exports.Datepicker = datepicker_1.Datepicker;
+    exports.createTemplate = template_1.createTemplate;
+    exports.LifeTimeScope = lifetime_2.LifeTimeScope;
     exports.PropWatcher = propwatcher_1.PropWatcher;
     exports.WaitQueue = waitqueue_3.WaitQueue;
-    exports.Utils = utils_36.Utils;
-    __export(mvvm_2);
-    exports.COLL_CHANGE_OPER = int_10.COLL_CHANGE_OPER;
-    exports.COLL_CHANGE_REASON = int_10.COLL_CHANGE_REASON;
-    exports.COLL_CHANGE_TYPE = int_10.COLL_CHANGE_TYPE;
-    exports.ITEM_STATUS = int_10.ITEM_STATUS;
+    exports.Utils = utils_15.Utils;
+    exports.ViewModel = mvvm_1.ViewModel;
+    exports.TemplateCommand = mvvm_1.TemplateCommand;
+    exports.BaseCommand = mvvm_1.BaseCommand;
+    exports.Command = mvvm_1.Command;
+    exports.TCommand = mvvm_1.TCommand;
+    exports.COLL_CHANGE_OPER = int_5.COLL_CHANGE_OPER;
+    exports.COLL_CHANGE_REASON = int_5.COLL_CHANGE_REASON;
+    exports.COLL_CHANGE_TYPE = int_5.COLL_CHANGE_TYPE;
+    exports.ITEM_STATUS = int_5.ITEM_STATUS;
     exports.BaseCollection = collection_3.BaseCollection;
     exports.CollectionItem = item_1.CollectionItem;
     exports.ItemAspect = aspect_2.ItemAspect;
@@ -10800,6 +7974,98 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.BaseDictionary = dictionary_1.BaseDictionary;
     exports.ValidationError = validation_4.ValidationError;
     exports.Application = app_1.Application;
-    exports.VERSION = "0.9.93.1";
-    bootstrap_27.Bootstrap._initFramework();
+    exports.VERSION = "0.9.95";
+    bootstrap_8.Bootstrap._initFramework();
+});
+define("jriapp_utils/eventstore", ["require", "exports", "jriapp_core/object", "jriapp_utils/syschecks"], function (require, exports, object_18, syschecks_10) {
+    "use strict";
+    var PROP_BAG = syschecks_10.SysChecks._PROP_BAG_NAME();
+    (function (EVENT_CHANGE_TYPE) {
+        EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["None"] = 0] = "None";
+        EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["Added"] = 1] = "Added";
+        EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["Deleted"] = 2] = "Deleted";
+        EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["Updated"] = 3] = "Updated";
+    })(exports.EVENT_CHANGE_TYPE || (exports.EVENT_CHANGE_TYPE = {}));
+    var EVENT_CHANGE_TYPE = exports.EVENT_CHANGE_TYPE;
+    var EventStore = (function (_super) {
+        __extends(EventStore, _super);
+        function EventStore(onChange) {
+            _super.call(this);
+            this._dic = null;
+            this._onChange = onChange;
+        }
+        EventStore.prototype._isHasProp = function (prop) {
+            return true;
+        };
+        EventStore.prototype.getProp = function (name) {
+            if (!this._dic)
+                return null;
+            var cmd = this._dic[name];
+            if (!cmd)
+                return null;
+            return cmd;
+        };
+        EventStore.prototype.setProp = function (name, command) {
+            if (!this._dic && !!command)
+                this._dic = {};
+            if (!this._dic)
+                return;
+            var old = this._dic[name];
+            if (!command && !!old) {
+                delete this._dic[name];
+                if (!!this._onChange) {
+                    this._onChange(this, {
+                        name: name,
+                        changeType: 2,
+                        oldVal: old,
+                        newVal: null
+                    });
+                    this.raisePropertyChanged(name);
+                }
+                return;
+            }
+            this._dic[name] = command;
+            if (!!this._onChange) {
+                if (!old) {
+                    this._onChange(this, {
+                        name: name,
+                        changeType: 1,
+                        oldVal: null,
+                        newVal: command
+                    });
+                }
+                else {
+                    this._onChange(this, {
+                        name: name,
+                        changeType: 3,
+                        oldVal: old,
+                        newVal: command
+                    });
+                }
+                this.raisePropertyChanged(name);
+            }
+        };
+        EventStore.prototype.trigger = function (name, args) {
+            if (!this._dic)
+                return;
+            var command = this._dic[name];
+            if (!command)
+                return;
+            args = args || {};
+            if (command.canExecute(this, args))
+                command.execute(this, args);
+        };
+        EventStore.prototype.toString = function () {
+            return PROP_BAG;
+        };
+        EventStore.prototype.destroy = function () {
+            if (!!this._dic) {
+                this._dic = null;
+            }
+            this._onChange = null;
+            _super.prototype.destroy.call(this);
+        };
+        return EventStore;
+    }(object_18.BaseObject));
+    exports.EventStore = EventStore;
 });

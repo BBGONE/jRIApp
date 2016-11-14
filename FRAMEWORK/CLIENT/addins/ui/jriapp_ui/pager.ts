@@ -4,7 +4,7 @@ import { ERRS, STRS } from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
 import { Debounce } from "jriapp_utils/debounce";
 import { Utils } from "jriapp_utils/utils";
-import { BaseElView, fn_addToolTip } from "jriapp_elview/elview";
+import { BaseElView, fn_addToolTip } from "./generic";
 import { ICollection, ICollectionItem, COLL_CHANGE_TYPE, COLL_CHANGE_REASON } from "jriapp_collection/int";
 import { bootstrap } from "jriapp";
 
@@ -498,6 +498,3 @@ export class PagerElView extends BaseElView {
 }
 
 boot.registerElView("pager", PagerElView);
-
-//Load Stylesheet for the bundle
-boot.loadOwnStyle("jriapp_ui");

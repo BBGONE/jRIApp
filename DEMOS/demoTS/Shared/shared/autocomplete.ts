@@ -33,7 +33,7 @@ export interface IAutocompleteOptions extends RIAPP.IViewOptions {
     height?: any;
 }
 
-export class AutoCompleteElView extends RIAPP.InputElView implements RIAPP.ITemplateEvents {
+export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemplateEvents {
     private _templateId: string;
     private _fieldName: string;
     private _dbSetName: string;

@@ -17,7 +17,7 @@ declare module "common" {
     export interface IDLinkOptions extends RIAPP.IViewOptions {
         baseUri?: string;
     }
-    export class DownloadLinkElView extends RIAPP.BaseElView {
+    export class DownloadLinkElView extends uiMOD.BaseElView {
         _baseUri: string;
         _id: string;
         constructor(options: IDLinkOptions);
@@ -25,7 +25,7 @@ declare module "common" {
         href: any;
         id: string;
     }
-    export class FileImgElView extends RIAPP.BaseElView {
+    export class FileImgElView extends uiMOD.BaseElView {
         private _baseUri;
         private _id;
         private _fileName;
@@ -57,6 +57,7 @@ declare module "common" {
 declare module "autocomplete" {
     import * as RIAPP from "jriapp";
     import * as dbMOD from "jriapp_db";
+    import * as uiMOD from "jriapp_ui";
     export interface IAutocompleteOptions extends RIAPP.IViewOptions {
         dbContext: string;
         templateId: string;
@@ -67,7 +68,7 @@ declare module "autocomplete" {
         width?: any;
         height?: any;
     }
-    export class AutoCompleteElView extends RIAPP.InputElView implements RIAPP.ITemplateEvents {
+    export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemplateEvents {
         private _templateId;
         private _fieldName;
         private _dbSetName;

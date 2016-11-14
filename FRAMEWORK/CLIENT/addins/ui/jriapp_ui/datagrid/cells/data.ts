@@ -1,14 +1,14 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { IContent } from "jriapp_core/shared";
 import { ERRS } from "jriapp_core/lang";
-import { contentFactories } from "jriapp_content/factory";
 import { Utils } from "jriapp_utils/utils";
+import { bootstrap } from "jriapp_core/bootstrap";
 
 import { css } from "../const";
 import { BaseCell, ICellOptions } from "./base";
 import { DataColumn } from "../columns/data";
 
-const utils = Utils, dom = utils.dom, $ = dom.$;
+const utils = Utils, dom = utils.dom, $ = dom.$, boot = bootstrap;
 
 export class DataCell extends BaseCell<DataColumn> {
     private _content: IContent;
@@ -41,8 +41,8 @@ export class DataCell extends BaseCell<DataColumn> {
         const self = this;
         contentOptions.initContentFn = null;
         try {
-            let contentType = contentFactories.getContentType(contentOptions);
-            if (contentFactories.isExternallyCachable(contentType)) {
+            let contentType = boot.contentFactory.getContentType(contentOptions);
+            if (boot.contentFactory.isExternallyCachable(contentType)) {
                 contentOptions.initContentFn = this.column._getInitContentFn();
             }
 

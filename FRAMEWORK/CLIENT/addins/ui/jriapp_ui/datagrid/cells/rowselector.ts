@@ -1,8 +1,8 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { DATA_ATTR } from "jriapp_core/const";
 import { IContent, IBindingInfo, IContentOptions } from "jriapp_core/shared";
-import { BoolContent } from "jriapp_content/bool";
 import { Utils } from "jriapp_utils/utils";
+import { BoolContent } from "../../content/bool";
 
 import { css, PROP_NAME } from "../const";
 import { BaseCell, ICellOptions } from "./base";

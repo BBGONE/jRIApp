@@ -2,7 +2,7 @@
 import { DATA_ATTR, } from "jriapp_core/const";
 import { ERRS, STRS } from "jriapp_core/lang";
 import { ButtonCss } from "jriapp_core/shared";
-import { fn_addToolTip } from "jriapp_elview/elview";
+import { fn_addToolTip } from "../../generic";
 import { Utils } from "jriapp_utils/utils";
 
 import { css, actionsSelector, txtMap, editSelector, deleteSelector  } from "../const";

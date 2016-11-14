@@ -94,7 +94,7 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
             configurable: true
         });
         return DownloadLinkElView;
-    }(RIAPP.BaseElView));
+    }(uiMOD.BaseElView));
     exports.DownloadLinkElView = DownloadLinkElView;
     var FileImgElView = (function (_super) {
         __extends(FileImgElView, _super);
@@ -186,7 +186,7 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
             configurable: true
         });
         return FileImgElView;
-    }(RIAPP.BaseElView));
+    }(uiMOD.BaseElView));
     exports.FileImgElView = FileImgElView;
     var ErrorViewModel = (function (_super) {
         __extends(ErrorViewModel, _super);
@@ -310,7 +310,7 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
     exports.initModule = initModule;
     ;
 });
-define("autocomplete", ["require", "exports", "jriapp", "common"], function (require, exports, RIAPP, COMMON) {
+define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], function (require, exports, RIAPP, uiMOD, COMMON) {
     "use strict";
     var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
     function findElemViewInTemplate(template, name) {
@@ -620,7 +620,7 @@ define("autocomplete", ["require", "exports", "jriapp", "common"], function (req
             configurable: true
         });
         return AutoCompleteElView;
-    }(RIAPP.InputElView));
+    }(uiMOD.InputElView));
     exports.AutoCompleteElView = AutoCompleteElView;
     function initModule(app) {
         app.registerElView('autocomplete', AutoCompleteElView);

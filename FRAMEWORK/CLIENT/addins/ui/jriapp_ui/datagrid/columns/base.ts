@@ -4,7 +4,7 @@ import { IContentOptions, ITemplateEvents, ITemplate } from "jriapp_core/shared"
 import { createTemplate } from "jriapp_core/template";
 import { BaseObject } from "jriapp_core/object";
 import { Utils } from "jriapp_utils/utils";
-import { fn_addToolTip } from "jriapp_elview/elview";
+import { fn_addToolTip } from "../../generic";
 import { bootstrap } from "jriapp_core/bootstrap";
 
 import { css } from "../const";

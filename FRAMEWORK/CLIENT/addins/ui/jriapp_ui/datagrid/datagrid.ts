@@ -14,8 +14,8 @@ import { parser } from "jriapp_core/parser";
 import { COLL_CHANGE_TYPE, ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollection, ICollItemAddedArgs,
     COLL_CHANGE_REASON, ITEM_STATUS
 } from "jriapp_collection/int";
-import { BaseElView } from "jriapp_elview/elview";
-import { parseContentAttr } from "jriapp_content/int";
+import { BaseElView } from "../generic";
+import { parseContentAttr } from "../content/int";
 import { IDialogConstructorOptions, DataEditDialog } from "../dialog";
 
 import { css, ROW_POSITION, COLUMN_TYPE, ROW_ACTION, PROP_NAME } from "./const";
@@ -1293,6 +1293,3 @@ export class DataGridElView extends BaseElView {
 
 boot.registerElView("table", DataGridElView);
 boot.registerElView("datagrid", DataGridElView);
-
-//Load Stylesheet for the bundle
-boot.loadOwnStyle("jriapp_ui");

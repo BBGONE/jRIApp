@@ -1,18 +1,21 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { BINDING_MODE, BindTo } from "./const";
-import { IBaseObject, IIndexer, IBindingInfo, IBindingOptions, IBinding, IConverter, IErrorNotification, IValidationInfo, IApplication } from "./shared";
+import {
+    IBaseObject, IIndexer, IBindingInfo, IBindingOptions,
+    IBinding, IConverter, IErrorNotification, IValidationInfo, IApplication, IElView
+} from "./shared";
 import { ERRS } from "./lang";
 import { BaseObject }  from "./object";
 import { baseConverter } from "./converter";
 import { bootstrap } from "./bootstrap";
 import { parser } from "./parser";
 import { Utils } from "../jriapp_utils/utils";
-import { BaseElView } from "../jriapp_elview/elview";
 
-let utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, syschecks = utils.sys, debug = utils.debug, log = utils.log,
+const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
+    sys = utils.sys, debug = utils.debug, log = utils.log,
     parse = parser, boot = bootstrap;
 
-syschecks._isBinding = (obj: any) => {
+sys._isBinding = (obj: any) => {
     return (!!obj && obj instanceof Binding);
 };
 
@@ -208,7 +211,7 @@ export class Binding extends BaseObject implements IBinding {
             throw new Error(ERRS.ERR_BIND_TARGET_EMPTY);
         }
 
-        if (!syschecks._isBaseObj(opts.target)) {
+        if (!sys._isBaseObj(opts.target)) {
             throw new Error(ERRS.ERR_BIND_TARGET_INVALID);
         }
 
@@ -296,12 +299,12 @@ export class Binding extends BaseObject implements IBinding {
     }
     private _onSrcErrChanged(err_notif: IErrorNotification, args?: any) {
         let errors: IValidationInfo[] = [], tgt = this._tgtEnd, src = this._srcEnd, srcPath = this._srcPath;
-        if (!!tgt && syschecks._isElView(tgt)) {
+        if (!!tgt && sys._isElView(tgt)) {
             if (!!src && srcPath.length > 0) {
                 let prop = srcPath[srcPath.length - 1];
                 errors = err_notif.getFieldErrors(prop);
             }
-            (<BaseElView>tgt).validationErrors = errors;
+            (<IElView>tgt).validationErrors = errors;
         }
     }
     private _getTgtChangedFn(self: Binding, obj: any, prop: string, restPath: string[], lvl: number) {
@@ -347,7 +350,7 @@ export class Binding extends BaseObject implements IBinding {
         }
     }
     private _parseSrc2(obj: any, path: string[], lvl: number) {
-        let self = this, nextObj: any, isBaseObj = (!!obj && syschecks._isBaseObj(obj)), isValidProp: boolean;
+        let self = this, nextObj: any, isBaseObj = (!!obj && sys._isBaseObj(obj)), isValidProp: boolean;
 
         if (isBaseObj) {
             (<IBaseObject>obj).addOnDestroyed(self._onSrcDestroyed, self._objId, self);
@@ -420,7 +423,7 @@ export class Binding extends BaseObject implements IBinding {
         }
     }
     private _parseTgt2(obj: any, path: string[], lvl: number) {
-        let self = this, nextObj: any, isBaseObj = syschecks._isBaseObj(obj), isValidProp = false;
+        let self = this, nextObj: any, isBaseObj = sys._isBaseObj(obj), isValidProp = false;
 
         if (isBaseObj) {
             (<IBaseObject>obj).addOnDestroyed(self._onTgtDestroyed, self._objId, self);
@@ -551,7 +554,7 @@ export class Binding extends BaseObject implements IBinding {
                 this.sourceValue = this._converter.convertToSource(this.targetValue, this._converterParam, this._srcEnd);
         }
         catch (ex) {
-            if (!syschecks._isValidationError(ex) || !syschecks._isElView(this._tgtEnd)) {
+            if (!sys._isValidationError(ex) || !sys._isElView(this._tgtEnd)) {
                 //BaseElView is notified about errors in _onSrcErrorsChanged event handler
                 //we only need to invoke _onError in other cases
                 //1) when target is not BaseElView
@@ -580,7 +583,7 @@ export class Binding extends BaseObject implements IBinding {
                 }
             }
             this._setPathItem(null, BindTo.Target, 0, this._tgtPath);
-            if (!!value && !syschecks._isBaseObj(value))
+            if (!!value && !sys._isBaseObj(value))
                 throw new Error(ERRS.ERR_BIND_TARGET_INVALID);
             this._target = value;
             this._parseTgt(this._target, this._tgtPath, 0);

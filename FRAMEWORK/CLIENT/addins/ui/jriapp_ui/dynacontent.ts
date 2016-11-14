@@ -4,7 +4,7 @@ import { createTemplate } from "jriapp_core/template";
 import { BaseObject } from "jriapp_core/object";
 import { Utils } from "jriapp_utils/utils";
 import { bootstrap } from "jriapp_core/bootstrap";
-import { BaseElView } from "jriapp_elview/elview";
+import { BaseElView } from "./generic";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
 

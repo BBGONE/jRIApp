@@ -42,7 +42,7 @@ export interface IDLinkOptions extends RIAPP.IViewOptions {
     baseUri?: string;
 }
 
-export class DownloadLinkElView extends RIAPP.BaseElView {
+export class DownloadLinkElView extends uiMOD.BaseElView {
     _baseUri: string;
     _id: string;
 
@@ -97,7 +97,7 @@ export class DownloadLinkElView extends RIAPP.BaseElView {
     }
 }
 
-export class FileImgElView extends RIAPP.BaseElView {
+export class FileImgElView extends uiMOD.BaseElView {
     private _baseUri: string;
     private _id: string;
     private _fileName: string;

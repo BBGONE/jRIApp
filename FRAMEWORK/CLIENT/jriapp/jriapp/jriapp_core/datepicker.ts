@@ -5,7 +5,6 @@ import { BaseObject }  from "../jriapp_core/object";
 import { CoreUtils } from "../jriapp_utils/coreutils";
 import { DomUtils } from "../jriapp_utils/dom";
 import { bootstrap } from "../jriapp_core/bootstrap";
-import { TextBoxElView, ITextBoxOptions } from "../jriapp_elview/textbox";
 
 const coreUtils = CoreUtils, dom = DomUtils, $ = dom.$, boot = bootstrap;
 
@@ -85,29 +84,4 @@ export class Datepicker extends BaseObject implements IDatepicker {
    }
 }
 
-export interface IDatePickerOptions extends ITextBoxOptions {
-    datepicker?: any;
-}
-
-export class DatePickerElView extends TextBoxElView {
-    constructor(options: IDatePickerOptions) {
-        super(options);
-        let $el = this.$el;
-        boot.defaults.datepicker.attachTo($el, options.datepicker);
-    }
-    destroy() {
-        if (this._isDestroyed)
-            return;
-        this._isDestroyCalled = true;
-        let $el = this.$el;
-        boot.defaults.datepicker.detachFrom($el);
-        super.destroy();
-   }
-    toString() {
-        return "DatePickerElView";
-   }
-}
-
-
 boot.registerSvc("IDatepicker", new Datepicker());
-boot.registerElView("datepicker", DatePickerElView);

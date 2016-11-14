@@ -1,6 +1,9 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { DATA_ATTR } from "../jriapp_core/const";
-import { ITemplate, ILifeTimeScope, ITemplateEvents, IApplication, IPromise, IVoidPromise, IElView, IViewOptions } from "../jriapp_core/shared";
+import {
+    ITemplate, ILifeTimeScope, ITemplateEvents,
+    IApplication, IPromise, IVoidPromise, IElView, IViewOptions
+} from "../jriapp_core/shared";
 import { SysChecks } from "../jriapp_utils/syschecks";
 import { Checks } from "../jriapp_utils/checks";
 import { StringUtils } from "../jriapp_utils/strUtils";
@@ -11,20 +14,14 @@ import { AsyncUtils } from "../jriapp_utils/async";
 import { ERRS } from "../jriapp_core/lang";
 import { BaseObject }  from "../jriapp_core/object";
 import { bootstrap } from "../jriapp_core/bootstrap";
-import { BaseElView } from "../jriapp_elview/elview";
-import { CommandElView } from "../jriapp_elview/command";
 import { Binding } from "binding";
 
-const defer = AsyncUtils, dom = DomUtils, $ = dom.$, doc = dom.document, coreUtils = CoreUtils,
-    checks = Checks, strUtils = StringUtils, arrHelper = ArrayHelper, syschecks = SysChecks, boot = bootstrap;
+const _async = AsyncUtils, dom = DomUtils, $ = dom.$, doc = dom.document, coreUtils = CoreUtils,
+    checks = Checks, strUtils = StringUtils, arrHelper = ArrayHelper, sys = SysChecks, boot = bootstrap;
 
 export const css = {
     templateContainer: "ria-template-container",
     templateError: "ria-template-error"
-};
-
-SysChecks._isTemplateElView = (obj: any) => {
-    return !!obj && obj instanceof TemplateElView;
 };
 
 const PROP_NAME = {
@@ -50,7 +47,7 @@ export function createTemplate(dataContext ?: any, templEvents?: ITemplateEvents
 class Template extends BaseObject implements ITemplate {
     private _el: HTMLElement;
     private _lfTime: ILifeTimeScope;
-    private _templElView: TemplateElView;
+    private _templElView: ITemplateEvents;
     private _loadedElem: HTMLElement;
     private _dataContext: any;
     private _templEvents?: ITemplateEvents;
@@ -72,28 +69,28 @@ class Template extends BaseObject implements ITemplate {
             return [];
         const arr = this._lfTime.getObjs(), res: Binding[] = [];
         for (let i = 0, len = arr.length; i < len; i += 1) {
-            if (syschecks._isBinding(arr[i]))
+            if (sys._isBinding(arr[i]))
                 res.push(<Binding>arr[i]);
         }
         return res;
     }
-    private _getElViews(): BaseElView[] {
+    private _getElViews(): IElView[] {
         if (!this._lfTime)
             return [];
-        const arr = this._lfTime.getObjs(), res: BaseElView[] = [];
+        const arr = this._lfTime.getObjs(), res: IElView[] = [];
         for (let i = 0, len = arr.length; i < len; i += 1) {
-            if (syschecks._isElView(arr[i]))
-                res.push(<BaseElView>arr[i]);
+            if (sys._isElView(arr[i]))
+                res.push(<IElView>arr[i]);
         }
         return res;
     }
-    private _getTemplateElView(): TemplateElView {
+    private _getTemplateElView(): ITemplateEvents {
         if (!this._lfTime)
             return null;
         const arr = this._getElViews();
         for (let i = 0, j = arr.length; i < j; i += 1) {
-            if (SysChecks._isTemplateElView(arr[i])) {
-                return <TemplateElView>arr[i];
+            if (sys._isTemplateElView(arr[i])) {
+                return <ITemplateEvents><any>arr[i];
             }
         }
         return null;
@@ -117,7 +114,7 @@ class Template extends BaseObject implements ITemplate {
             });
         }
         else {
-            const deferred = defer.createDeferred<HTMLElement>();
+            const deferred = _async.createDeferred<HTMLElement>();
             return deferred.reject(new Error(strUtils.format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID)));
         }
     }
@@ -299,62 +296,3 @@ class Template extends BaseObject implements ITemplate {
         return bootstrap.getApp();
     }
 }
-
-
-export class TemplateElView extends CommandElView implements ITemplateEvents {
-    private _template: ITemplate;
-    private _isEnabled: boolean;
-
-    constructor(options: IViewOptions) {
-        super(options);
-        this._template = null;
-        this._isEnabled = true;
-    }
-    templateLoading(template: ITemplate): void {
-        //noop
-    }
-    templateLoaded(template: ITemplate, error?: any): void {
-        if (!!error)
-            return;
-        let self = this;
-        try {
-            self._template = template;
-            let args = { template: template, isLoaded: true };
-            self.invokeCommand(args, false);
-            this.raisePropertyChanged(PROP_NAME.template);
-        }
-        catch (ex) {
-            this.handleError(ex, this);
-            ERROR.throwDummy(ex);
-        }
-    }
-    templateUnLoading(template: ITemplate): void {
-        let self = this;
-        try {
-            let args = { template: template, isLoaded: false };
-            self.invokeCommand(args, false);
-        }
-        catch (ex) {
-            this.handleError(ex, this);
-        }
-        finally {
-            self._template = null;
-        }
-        this.raisePropertyChanged(PROP_NAME.template);
-    }
-    toString() {
-        return "TemplateElView";
-    }
-    get isEnabled() { return this._isEnabled; }
-    set isEnabled(v: boolean) {
-        if (this._isEnabled !== v) {
-            this._isEnabled = v;
-            this.raisePropertyChanged(PROP_NAME.isEnabled);
-        }
-    }
-    get template() {
-        return this._template;
-    }
-};
-
-boot.registerElView("template", TemplateElView);

@@ -9,7 +9,7 @@ import { BaseObject }  from "./object";
 import { bootstrap } from "./bootstrap";
 import { LifeTimeScope } from "../jriapp_utils/lifetime";
 import { Utils } from "../jriapp_utils/utils";
-import { createElViewFactory } from "../jriapp_elview/factory";
+import { createElViewFactory } from "./elview";
 import { createDataBindSvc } from "./databindsvc";
 
 const utils = Utils, $ = utils.dom.$, doc = utils.dom.document, boot = bootstrap;

@@ -2,7 +2,7 @@
 import { IViewOptions, IPropertyBag } from "jriapp_core/shared";
 import { Utils } from "jriapp_utils/utils";
 import { bootstrap } from "jriapp_core/bootstrap";
-import { BaseElView } from "jriapp_elview/elview";
+import { BaseElView } from "./generic";
 
 const utils = Utils, coreUtils = utils.core;
 

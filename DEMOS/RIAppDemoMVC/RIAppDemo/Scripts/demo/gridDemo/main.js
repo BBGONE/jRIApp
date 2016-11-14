@@ -1782,7 +1782,7 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
             this._testInvokeCommand = new commands_2.TestInvokeCommand(this);
             this._columnCommand = new RIAPP.TCommand(function (sender, cmdParam, viewModel) {
                 var dataName = "";
-                if (sender instanceof RIAPP.BaseElView) {
+                if (sender instanceof uiMOD.BaseElView) {
                     dataName = sender.dataName;
                 }
                 alert(utils.str.format("You clicked on \"{0}\", current ProductID is: {1}", dataName, (!cmdParam ? "Not selected" : cmdParam.ProductID)));
