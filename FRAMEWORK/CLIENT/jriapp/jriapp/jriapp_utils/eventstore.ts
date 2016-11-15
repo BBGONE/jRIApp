@@ -2,9 +2,9 @@
 import { IIndexer, IPropertyBag } from "../jriapp_core/shared";
 import { ICommand } from "../jriapp_core/mvvm";
 import { BaseObject }  from "../jriapp_core/object";
-import { SysChecks } from "./syschecks";
+import { SysUtils } from "./sysutils";
 
-const PROP_BAG = SysChecks._PROP_BAG_NAME();
+const PROP_BAG = SysUtils.PROP_BAG_NAME();
 export const enum EVENT_CHANGE_TYPE { None = 0, Added = 1, Deleted = 2, Updated = 3 }
 
 export interface IEventChangedArgs {

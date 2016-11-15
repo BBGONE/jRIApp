@@ -9,7 +9,7 @@ import { CommandElView } from "./command";
 
 const utils = Utils, sys = utils.sys, boot = bootstrap;
 
-sys._isTemplateElView = (obj: any) => {
+sys.isTemplateElView = (obj: any) => {
     return !!obj && obj instanceof TemplateElView;
 };
 

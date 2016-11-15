@@ -2,13 +2,13 @@
 import { BINDING_MODE } from "jriapp_core/const";
 import { IElView } from "jriapp_core/shared";
 import { LifeTimeScope } from "jriapp_utils/lifetime";
-import { Utils } from "jriapp_utils/utils";
+import { DomUtils } from "jriapp_utils/dom";
 import { CheckBoxElView } from "../checkbox";
 
 import { css } from "./int";
 import { BasicContent } from "./basic";
 
-const dom = Utils.dom, doc = dom.document;
+const dom = DomUtils, doc = dom.document;
 
 export class BoolContent extends BasicContent {
     protected init() {

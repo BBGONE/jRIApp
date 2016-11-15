@@ -3,13 +3,14 @@ import { DATA_ATTR, } from "jriapp_core/const";
 import { ERRS, STRS } from "jriapp_core/lang";
 import { ButtonCss } from "jriapp_core/shared";
 import { fn_addToolTip } from "../../generic";
+import { DomUtils } from "jriapp_utils/dom";
 import { Utils } from "jriapp_utils/utils";
 
 import { css, actionsSelector, txtMap, editSelector, deleteSelector  } from "../const";
 import { BaseCell, ICellOptions } from "./base";
 import { ActionsColumn } from "../columns/actions";
 
-const utils = Utils, dom = utils.dom, $ = dom.$, strUtils = utils.str, checks = utils.check;
+const utils = Utils, dom = DomUtils, $ = dom.$, strUtils = utils.str, checks = utils.check;
 
 const _editImages = '<span data-role="row-action" data-name="img_ok" class="{0}"></span><span data-role="row-action" data-name="img_cancel" class="{1}"></span>';
 const _viewImages = '<span data-role="row-action" data-name="img_edit" class="{0}"></span><span data-role="row-action" data-name="img_delete" class="{1}"></span>';

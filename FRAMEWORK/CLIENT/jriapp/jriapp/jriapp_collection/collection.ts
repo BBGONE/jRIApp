@@ -4,7 +4,7 @@ import {
     IFieldInfo, IIndexer, IValidationInfo, TEventHandler, TPropChangedHandler, IBaseObject,
     IPromise, TPriority
 } from "../jriapp_core/shared";
-import { SysChecks } from "../jriapp_utils/syschecks";
+import { SysUtils } from "../jriapp_utils/sysutils";
 import { BaseObject }  from "../jriapp_core/object";
 import { ERRS } from "../jriapp_core/lang";
 import { WaitQueue } from "../jriapp_utils/waitqueue";
@@ -21,7 +21,7 @@ import { ValidationError } from "./validation";
 const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, parse = parser;
 
 //REPLACE DUMMY IMPLEMENTATIONS
-SysChecks._isCollection = (obj) => { return (!!obj && obj instanceof BaseCollection); };
+SysUtils.isCollection = (obj) => { return (!!obj && obj instanceof BaseCollection); };
 
 const COLL_EVENTS = {
     begin_edit: "begin_edit",

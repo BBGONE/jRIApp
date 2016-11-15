@@ -1,12 +1,13 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { BaseObject } from "jriapp_core/object";
 import { Debounce } from "jriapp_utils/debounce";
-import { DblClick } from "jriapp_utils/dblclick";
+import { DomUtils } from "jriapp_utils/dom";
 import { Utils } from "jriapp_utils/utils";
 import { ICollection, ICollectionItem, ICollChangedArgs, COLL_CHANGE_TYPE, COLL_CHANGE_REASON, ITEM_STATUS,
     ICollItemArgs, ICollItemAddedArgs
 } from "jriapp_collection/int";
 
+import { DblClick } from "../../utils/dblclick";
 import { css, ROW_POSITION, PROP_NAME } from "../const";
 import { BaseCell } from "../cells/base";
 import { ExpanderCell } from "../cells/expander";
@@ -22,7 +23,7 @@ import { RowSelectorColumn } from "../columns/rowselector";
 
 import { DataGrid } from "../datagrid"
 
-const utils = Utils, dom = utils.dom, $ = dom.$, doc = dom.document;
+const utils = Utils, dom = DomUtils, $ = dom.$, doc = dom.document;
 
 const fn_state = (row: Row) => {
     const val = !row.item ? null : (<any>row.item)[row.grid.options.rowStateField];
@@ -164,8 +165,8 @@ export class Row extends BaseObject {
     }
     updateErrorState() {
         //TODO: add implementation to show explanation of error
-        let hasErrors = this._item._aspect.getIsHasErrors();
-        utils.dom.setClass(this._$tr.toArray(), css.rowError, !hasErrors);
+        const hasErrors = this._item._aspect.getIsHasErrors();
+        dom.setClass(this._$tr.toArray(), css.rowError, !hasErrors);
     }
     scrollIntoView(animate?: boolean, pos?: ROW_POSITION) {
         this.grid.scrollToRow({ row: this, animate: animate, pos: pos });

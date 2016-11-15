@@ -7,13 +7,14 @@ import {
 import { ERRS, STRS } from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
 import { Debounce } from "jriapp_utils/debounce";
-import { DblClick } from "jriapp_utils/dblclick";
+import { DomUtils } from "jriapp_utils/dom";
 import { Utils } from "jriapp_utils/utils";
 import { bootstrap } from "jriapp_core/bootstrap";
 import { parser } from "jriapp_core/parser";
 import { COLL_CHANGE_TYPE, ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollection, ICollItemAddedArgs,
     COLL_CHANGE_REASON, ITEM_STATUS
 } from "jriapp_collection/int";
+import { DblClick } from "../utils/dblclick";
 import { BaseElView } from "../generic";
 import { parseContentAttr } from "../content/int";
 import { IDialogConstructorOptions, DataEditDialog } from "../dialog";
@@ -46,8 +47,9 @@ export { BaseColumn as DataGridColumn } from "./columns/base";
 export { ROW_POSITION, COLUMN_TYPE, ROW_ACTION } from "./const";
 export { IDataGridAnimation, DefaultAnimation } from "./animation";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err;
-const dom = utils.dom, $ = dom.$, doc = dom.document, boot = bootstrap;
+const utils = Utils, checks = utils.check, strUtils = utils.str,
+    coreUtils = utils.core, ERROR = utils.err, sys = utils.sys,
+    dom = DomUtils, $ = dom.$, doc = dom.document, boot = bootstrap;
 
 let _columnWidthInterval: any, _gridsCount: number = 0;
 let _created_grids: IIndexer<DataGrid> = { };
@@ -202,12 +204,12 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 isPrependAllRows: false
             });
 
-        if (!!options.dataSource && !checks.isCollection(options.dataSource))
+        if (!!options.dataSource && !sys.isCollection(options.dataSource))
             throw new Error(ERRS.ERR_GRID_DATASRC_INVALID);
         this._options = options;
         const table = this._options.el, $table = $(table);
         this._$table = $table;
-        utils.dom.addClass([table], css.dataTable);
+        dom.addClass([table], css.dataTable);
         this._name = $table.attr(DATA_ATTR.DATA_NAME);
         this._objId = "grd" + coreUtils.getNewID();
         this._rowMap = {};

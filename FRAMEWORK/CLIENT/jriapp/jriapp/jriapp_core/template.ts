@@ -4,7 +4,7 @@ import {
     ITemplate, ILifeTimeScope, ITemplateEvents,
     IApplication, IPromise, IVoidPromise, IElView, IViewOptions
 } from "../jriapp_core/shared";
-import { SysChecks } from "../jriapp_utils/syschecks";
+import { SysUtils } from "../jriapp_utils/sysutils";
 import { Checks } from "../jriapp_utils/checks";
 import { StringUtils } from "../jriapp_utils/strUtils";
 import { ArrayHelper } from "../jriapp_utils/arrhelper";
@@ -17,7 +17,7 @@ import { bootstrap } from "../jriapp_core/bootstrap";
 import { Binding } from "binding";
 
 const _async = AsyncUtils, dom = DomUtils, $ = dom.$, doc = dom.document, coreUtils = CoreUtils,
-    checks = Checks, strUtils = StringUtils, arrHelper = ArrayHelper, sys = SysChecks, boot = bootstrap;
+    checks = Checks, strUtils = StringUtils, arrHelper = ArrayHelper, sys = SysUtils, boot = bootstrap;
 
 export const css = {
     templateContainer: "ria-template-container",
@@ -69,7 +69,7 @@ class Template extends BaseObject implements ITemplate {
             return [];
         const arr = this._lfTime.getObjs(), res: Binding[] = [];
         for (let i = 0, len = arr.length; i < len; i += 1) {
-            if (sys._isBinding(arr[i]))
+            if (sys.isBinding(arr[i]))
                 res.push(<Binding>arr[i]);
         }
         return res;
@@ -79,7 +79,7 @@ class Template extends BaseObject implements ITemplate {
             return [];
         const arr = this._lfTime.getObjs(), res: IElView[] = [];
         for (let i = 0, len = arr.length; i < len; i += 1) {
-            if (sys._isElView(arr[i]))
+            if (sys.isElView(arr[i]))
                 res.push(<IElView>arr[i]);
         }
         return res;
@@ -89,7 +89,7 @@ class Template extends BaseObject implements ITemplate {
             return null;
         const arr = this._getElViews();
         for (let i = 0, j = arr.length; i < j; i += 1) {
-            if (sys._isTemplateElView(arr[i])) {
+            if (sys.isTemplateElView(arr[i])) {
                 return <ITemplateEvents><any>arr[i];
             }
         }

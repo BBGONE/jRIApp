@@ -1,16 +1,23 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {DATA_ATTR, KEYS } from "jriapp_core/const";
-import { IApplication, ITemplate, ITemplateEvents, ISelectable, IViewOptions, TEventHandler,
-    ISelectableProvider, IBaseObject } from "jriapp_core/shared";
+import {
+    IApplication, ITemplate, ITemplateEvents, ISelectable,
+    IViewOptions, TEventHandler, ISelectableProvider, IBaseObject
+} from "jriapp_core/shared";
 import { createTemplate } from "jriapp_core/template";
 import { ERRS } from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
+import { DomUtils } from "jriapp_utils/dom";
 import { Utils } from "jriapp_utils/utils";
 import { BaseElView } from "./generic";
-import { ICollection, ICollectionItem, ICollChangedArgs, COLL_CHANGE_TYPE, COLL_CHANGE_REASON, ITEM_STATUS } from "jriapp_collection/int";
+import {
+    ICollection, ICollectionItem, ICollChangedArgs, COLL_CHANGE_TYPE,
+    COLL_CHANGE_REASON, ITEM_STATUS
+} from "jriapp_collection/int";
 import { bootstrap } from "jriapp";
 
-const utils = Utils, dom = utils.dom, $ = dom.$, doc = dom.document, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, boot = bootstrap;
+const utils = Utils, dom = DomUtils, $ = dom.$, doc = dom.document, sys = utils.sys,
+    checks = utils.check, strUtils = utils.str, coreUtils = utils.core, boot = bootstrap;
 
 const css = {
     stackpanel: "ria-stackpanel",
@@ -67,7 +74,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
                 orientation: VERTICAL
             }, options);
 
-        if (!!options.dataSource && !checks.isCollection(options.dataSource))
+        if (!!options.dataSource && !sys.isCollection(options.dataSource))
             throw new Error(ERRS.ERR_STACKPNL_DATASRC_INVALID);
         if (!options.templateID)
             throw new Error(ERRS.ERR_STACKPNL_TEMPLATE_INVALID);

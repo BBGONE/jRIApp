@@ -17,12 +17,11 @@ export {
     IAbortablePromise, IErrorHandler, IFieldInfo, ILifeTimeScope, ITemplateGroupInfo,
     ITemplateGroupInfoEx, ITemplateInfo, ITemplateLoaderInfo, IValidationInfo, ITaskQueue, IViewOptions
 } from "./jriapp_core/shared";
-export { SysChecks } from "./jriapp_utils/syschecks";
+export { SysUtils } from "./jriapp_utils/sysutils";
 export { STRS as LocaleSTRS, ERRS as LocaleERRS } from "./jriapp_core/lang";
 export { BaseConverter } from "./jriapp_core/converter";
 export { BaseObject } from "./jriapp_core/object";
 export { Debounce } from "./jriapp_utils/debounce";
-export { DblClick } from "./jriapp_utils/dblclick";
 export { DEBUG, ERROR } from "./jriapp_utils/coreutils";
 export { bootstrap } from "./jriapp_core/bootstrap";
 export { Binding } from "./jriapp_core/binding";
@@ -52,6 +51,6 @@ export { BaseDictionary } from "./jriapp_collection/dictionary";
 export { ValidationError } from "./jriapp_collection/validation";
 export { Application } from "./jriapp_core/app";
 
-export const VERSION = "0.9.95";
+export const VERSION = "0.9.96";
 
 Bootstrap._initFramework();

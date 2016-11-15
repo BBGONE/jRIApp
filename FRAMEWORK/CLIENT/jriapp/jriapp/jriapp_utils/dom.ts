@@ -7,14 +7,19 @@ if (!("jQuery" in window))
 
 /**
  * mostly pure javascript methods for the DOM manipulation
- */
+*/
 export class DomUtils {
     static window: Window = window;
     static document: Document = window.document;
 
     static isContained(oNode: any, oCont: any) {
-        if (!oNode) return false;
-        while (!!(oNode = oNode.parentNode)) if (oNode === oCont) return true;
+        if (!oNode)
+            return false;
+        while (!!(oNode = oNode.parentNode)) {
+            if (oNode === oCont)
+                return true;
+        }
+
         return false;
     }
     static removeNode(node: Node) {
@@ -179,6 +184,7 @@ export class DomUtils {
     static removeClass(elems: Element[], css: string): void {
         DomUtils.setClass(elems || [], css, true);
     }
+
     //JQuery related
     static $: JQueryStatic = jQuery;
     static destroy$Plugin($el: JQuery, name: string): void {

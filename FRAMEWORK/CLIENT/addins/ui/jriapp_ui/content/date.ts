@@ -4,12 +4,13 @@ import {
     IElView, IBaseObject
 } from "jriapp_core/shared";
 import { ERRS } from "jriapp_core/lang";
-import { Utils } from "jriapp_utils/utils";
+import { DomUtils } from "jriapp_utils/dom";
+import { StringUtils } from "jriapp_utils/strutils";
 
 import { css } from "./int";
 import { BasicContent } from "./basic";
 
-const utils = Utils, strUtils = utils.str, doc = utils.dom.document;
+const strUtils = StringUtils, doc = DomUtils.document;
 
 const NAME = "datepicker";
 

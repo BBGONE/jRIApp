@@ -2,9 +2,10 @@
 import { IViewOptions, IBaseObject } from "jriapp_core/shared";
 import { ICommand } from "jriapp_core/mvvm";
 import { Utils } from "jriapp_utils/utils";
+import { DomUtils } from "jriapp_utils/dom";
 import { BaseElView, PROP_NAME, css } from "./generic";
 
-const utils = Utils, dom = utils.dom, checks = utils.check;
+const utils = Utils, dom = DomUtils, checks = utils.check, sys = utils.sys;
 
 export interface ICommandViewOptions extends IViewOptions {
     preventDefault?: boolean;
@@ -60,7 +61,7 @@ export class CommandElView extends BaseElView {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        if (checks.isBaseObject(this._command)) {
+        if (sys.isBaseObj(this._command)) {
             (<IBaseObject><any>this._command).removeNSHandlers(this.uniqueID);
         }
         this.command = null;
@@ -93,7 +94,7 @@ export class CommandElView extends BaseElView {
     set command(v) {
         let self = this;
         if (v !== this._command) {
-            if (checks.isBaseObject(this._command)) {
+            if (sys.isBaseObj(this._command)) {
                 (<IBaseObject><any>this._command).removeNSHandlers(this.uniqueID);
             }
             this._command = v;

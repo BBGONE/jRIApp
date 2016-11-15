@@ -9,8 +9,9 @@ import { BaseObject } from "./object";
 import { ERROR } from "../jriapp_utils/coreutils";
 import { LifeTimeScope } from "../jriapp_utils/lifetime";
 import { Utils } from "../jriapp_utils/utils";
+import { DomUtils } from "../jriapp_utils/dom";
 
-const utils = Utils, $ = utils.dom.$, parse = parser;
+const utils = Utils, $ = DomUtils.$, parse = parser;
 
 export function createElViewFactory(register: IElViewRegister): IElViewFactory {
     return new ElViewFactory(register);

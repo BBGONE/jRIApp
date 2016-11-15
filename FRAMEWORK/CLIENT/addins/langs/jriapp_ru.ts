@@ -2,9 +2,9 @@
 /** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import * as langMOD from "jriapp_core/lang";
 import { bootstrap } from "jriapp_core/bootstrap";
-import { Utils } from "jriapp_utils/utils";
+import { DomUtils } from "jriapp_utils/dom";
 
-const utils = Utils;
+const $ = DomUtils.$;
 
 let PAGER: langMOD.IPagerText = {
     firstText: "<<",
@@ -44,7 +44,7 @@ let _STRS: langMOD.ILocaleText = { PAGER: PAGER, VALIDATE: VALIDATE, TEXT: TEXT 
 langMOD.assign(langMOD.STRS, _STRS);
 
 bootstrap.addOnInitialize((bootstrap, args) => {
-    (<any>utils.dom.$).datepicker.regional["ru"] = {
+    (<any>$).datepicker.regional["ru"] = {
         closeText: "Закрыть",
         prevText: "&#x3c;Пред",
         nextText: "След&#x3e;",

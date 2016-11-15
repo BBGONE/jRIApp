@@ -567,27 +567,8 @@ declare module "jriapp_utils/strutils" {
         static padLeft(val: string, length: number, str: string): string;
     }
 }
-declare module "jriapp_utils/syschecks" {
-    import * as coreMOD from "jriapp_core/shared";
-    export class SysChecks {
-        static _isBaseObj: (obj: any) => boolean;
-        static _isElView: (obj: any) => boolean;
-        static _isBinding: (obj: any) => boolean;
-        static _isPropBag: (obj: any) => boolean;
-        static _isCollection: (obj: any) => boolean;
-        static _getItemByProp: (obj: any, prop: string) => any;
-        static _isValidationError: (obj: any) => boolean;
-        static _isTemplateElView: (obj: any) => boolean;
-        static _setIsInsideTemplate: (elView: coreMOD.IElView) => void;
-        static _isDataForm: (el: HTMLElement) => boolean;
-        static _isInsideDataForm: (el: HTMLElement) => boolean;
-        static _isInNestedForm: (root: any, forms: HTMLElement[], el: HTMLElement) => boolean;
-        static _getParentDataForm: (rootForm: HTMLElement, el: HTMLElement) => HTMLElement;
-        static _PROP_BAG_NAME(): string;
-    }
-}
 declare module "jriapp_utils/checks" {
-    import { IBaseObject, IEditable, ISubmittable, IErrorNotification, IThenable } from "jriapp_core/shared";
+    import { IThenable } from "jriapp_core/shared";
     export class Checks {
         static undefined: any;
         static isHasProp(obj: any, prop: string): boolean;
@@ -604,11 +585,6 @@ declare module "jriapp_utils/checks" {
         static isNumeric(a: any): a is Number;
         static isBoolString(a: any): boolean;
         static isArray<T>(a: any): a is Array<T>;
-        static isBaseObject(a: any): a is IBaseObject;
-        static isCollection(a: any): boolean;
-        static isEditable(obj: any): obj is IEditable;
-        static isSubmittable(obj: any): obj is ISubmittable;
-        static isErrorNotification(obj: any): obj is IErrorNotification;
         static isThenable(a: any): a is IThenable<any>;
     }
 }
@@ -784,6 +760,31 @@ declare module "jriapp_core/lang" {
     export let ERRS: IErrors;
     export let STRS: ILocaleText;
 }
+declare module "jriapp_utils/sysutils" {
+    import { ISubmittable, IErrorNotification, IEditable, IElView } from "jriapp_core/shared";
+    export class SysUtils {
+        static isBaseObj: (obj: any) => boolean;
+        static isElView: (obj: any) => boolean;
+        static isBinding: (obj: any) => boolean;
+        static isPropBag: (obj: any) => boolean;
+        static isCollection: (obj: any) => boolean;
+        static getItemByProp: (obj: any, prop: string) => any;
+        static isValidationError: (obj: any) => boolean;
+        static isTemplateElView: (obj: any) => boolean;
+        static setIsInsideTemplate: (elView: IElView) => void;
+        static isDataForm: (el: HTMLElement) => boolean;
+        static isInsideDataForm: (el: HTMLElement) => boolean;
+        static isInNestedForm: (root: any, forms: HTMLElement[], el: HTMLElement) => boolean;
+        static getParentDataForm: (rootForm: HTMLElement, el: HTMLElement) => HTMLElement;
+        static isEditable(obj: any): obj is IEditable;
+        static isSubmittable(obj: any): obj is ISubmittable;
+        static isErrorNotification(obj: any): obj is IErrorNotification;
+        static getErrorNotification(obj: any): IErrorNotification;
+        static getEditable(obj: any): IEditable;
+        static getSubmittable(obj: any): ISubmittable;
+        static PROP_BAG_NAME(): string;
+    }
+}
 declare module "jriapp_utils/eventhelper" {
     import { TPriority, IIndexer, IBaseObject, TEventHandler } from "jriapp_core/shared";
     export interface IEventNode {
@@ -867,25 +868,6 @@ declare module "jriapp_utils/lifetime" {
         toString(): string;
     }
 }
-declare module "jriapp_utils/dom" {
-    export class DomUtils {
-        static window: Window;
-        static document: Document;
-        static isContained(oNode: any, oCont: any): boolean;
-        static removeNode(node: Node): void;
-        static insertAfter(node: Node, refNode: Node): void;
-        static insertBefore(node: Node, refNode: Node): void;
-        static wrap(elem: Element, wrapper: Element): void;
-        static unwrap(elem: Element): void;
-        private static getClassMap(el);
-        static setClasses(elems: Element[], classes: string[]): void;
-        static setClass(elems: Element[], css: string, remove?: boolean): void;
-        static addClass(elems: Element[], css: string): void;
-        static removeClass(elems: Element[], css: string): void;
-        static $: JQueryStatic;
-        static destroy$Plugin($el: JQuery, name: string): void;
-    }
-}
 declare module "jriapp_utils/deferred" {
     import * as coreMOD from "jriapp_core/shared";
     export const enum PromiseState {
@@ -954,6 +936,7 @@ declare module "jriapp_utils/async" {
         static whenAll<T>(args: Array<T | IThenable<T>>): IPromise<T[]>;
         static getTaskQueue(): ITaskQueue;
         static delay<T>(func: () => T, time?: number): IPromise<T>;
+        static parseJSON(res: string | any): IPromise<any>;
     }
 }
 declare module "jriapp_utils/http" {
@@ -968,32 +951,46 @@ declare module "jriapp_utils/http" {
         static ajaxTimeOut: number;
     }
 }
+declare module "jriapp_utils/dom" {
+    export class DomUtils {
+        static window: Window;
+        static document: Document;
+        static isContained(oNode: any, oCont: any): boolean;
+        static removeNode(node: Node): void;
+        static insertAfter(node: Node, refNode: Node): void;
+        static insertBefore(node: Node, refNode: Node): void;
+        static wrap(elem: Element, wrapper: Element): void;
+        static unwrap(elem: Element): void;
+        private static getClassMap(el);
+        static setClasses(elems: Element[], classes: string[]): void;
+        static setClass(elems: Element[], css: string, remove?: boolean): void;
+        static addClass(elems: Element[], css: string): void;
+        static removeClass(elems: Element[], css: string): void;
+        static $: JQueryStatic;
+        static destroy$Plugin($el: JQuery, name: string): void;
+    }
+}
 declare module "jriapp_utils/utils" {
-    import { ISubmittable, IErrorNotification, IEditable, IPromise } from "jriapp_core/shared";
     import { CoreUtils, ERROR, DEBUG, LOG } from "jriapp_utils/coreutils";
-    import { SysChecks } from "jriapp_utils/syschecks";
-    import { DomUtils } from "jriapp_utils/dom";
+    import { SysUtils } from "jriapp_utils/sysutils";
     import { AsyncUtils } from "jriapp_utils/async";
     import { HttpUtils } from "jriapp_utils/http";
     import { StringUtils } from "jriapp_utils/strutils";
     import { Checks } from "jriapp_utils/checks";
     import { ArrayHelper } from "jriapp_utils/arrhelper";
+    import { DomUtils } from "jriapp_utils/dom";
     export class Utils {
         static check: typeof Checks;
         static str: typeof StringUtils;
         static arr: typeof ArrayHelper;
-        static dom: typeof DomUtils;
         static http: typeof HttpUtils;
         static core: typeof CoreUtils;
         static defer: typeof AsyncUtils;
         static err: typeof ERROR;
         static log: typeof LOG;
         static debug: typeof DEBUG;
-        static sys: typeof SysChecks;
-        static getErrorNotification(obj: any): IErrorNotification;
-        static getEditable(obj: any): IEditable;
-        static getSubmittable(obj: any): ISubmittable;
-        static parseJSON(res: string | any): IPromise<any>;
+        static sys: typeof SysUtils;
+        static dom: typeof DomUtils;
     }
 }
 declare module "jriapp_core/elview" {
@@ -1121,14 +1118,6 @@ declare module "jriapp_utils/sloader" {
         hash: string;
         search: string;
     }
-}
-declare module "jriapp_utils/tooltip" {
-    import { ITooltipService } from "jriapp_core/shared";
-    export const css: {
-        toolTip: string;
-        toolTipError: string;
-    };
-    export function createToolTipSvc(): ITooltipService;
 }
 declare module "jriapp_core/bootstrap" {
     import { IApplication, ISelectableProvider, IExports, IConverter, ISvcStore, IIndexer, IBaseObject, IPromise, TEventHandler, IStylesLoader, IContentFactoryList, IElViewRegister, TPriority } from "jriapp_core/shared";
@@ -1277,23 +1266,6 @@ declare module "jriapp_utils/debounce" {
         private _interval;
         constructor(interval?: number);
         enqueue(fn: () => any): void;
-        destroy(): void;
-        getIsDestroyed(): boolean;
-        getIsDestroyCalled(): boolean;
-        interval: number;
-    }
-}
-declare module "jriapp_utils/dblclick" {
-    import * as coreMOD from "jriapp_core/shared";
-    export class DblClick implements coreMOD.IDisposable {
-        private _isDestroyed;
-        private _timer;
-        private _interval;
-        private _fn_OnClick;
-        private _fn_OnDblClick;
-        constructor(interval?: number);
-        click(): void;
-        add(fn_OnClick: () => any, fn_OnDblClick?: () => any): void;
         destroy(): void;
         getIsDestroyed(): boolean;
         getIsDestroyCalled(): boolean;
@@ -2077,12 +2049,11 @@ declare module "jriapp_core/app" {
 declare module "jriapp" {
     export { DEBUG_LEVEL, DATE_CONVERSION, FIELD_TYPE, DATA_TYPE, SORT_ORDER, FILTER_TYPE, KEYS, BINDING_MODE, BindTo } from "jriapp_core/const";
     export { TEventHandler, TErrorArgs, TErrorHandler, TPropChangedHandler, IDisposable, IIndexer, IBaseObject, IAppOptions, IApplication, TBindingMode, BaseError, ITemplate, ITemplateEvents, IAbortable, IBinding, IBindingInfo, IBindingOptions, IConverter, IContentFactory, IDatepicker, IDeferred, IElView, IThenable, IVoidPromise, IPromise, ITooltipService, IEditable, ISubmittable, ISelectable, ISelectableProvider, IAbortablePromise, IErrorHandler, IFieldInfo, ILifeTimeScope, ITemplateGroupInfo, ITemplateGroupInfoEx, ITemplateInfo, ITemplateLoaderInfo, IValidationInfo, ITaskQueue, IViewOptions } from "jriapp_core/shared";
-    export { SysChecks } from "jriapp_utils/syschecks";
+    export { SysUtils } from "jriapp_utils/sysutils";
     export { STRS as LocaleSTRS, ERRS as LocaleERRS } from "jriapp_core/lang";
     export { BaseConverter } from "jriapp_core/converter";
     export { BaseObject } from "jriapp_core/object";
     export { Debounce } from "jriapp_utils/debounce";
-    export { DblClick } from "jriapp_utils/dblclick";
     export { DEBUG, ERROR } from "jriapp_utils/coreutils";
     export { bootstrap } from "jriapp_core/bootstrap";
     export { Binding } from "jriapp_core/binding";

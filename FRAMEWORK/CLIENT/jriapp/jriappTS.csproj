@@ -67,6 +67,7 @@
     <TypeScriptCompile Include="jriapp\jriapp.ts" />
     <TypeScriptCompile Include="jriapp\jriapp_core\databindsvc.ts" />
     <TypeScriptCompile Include="jriapp\jriapp_core\content.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_utils\dom.ts" />
     <TypeScriptCompile Include="jriapp\jriapp_utils\eventstore.ts" />
     <TypeScriptCompile Include="jriapp\jriapp_core\elview.ts" />
     <TypeScriptCompile Include="jriapp\jriapp_core\binding.ts" />
@@ -88,13 +89,10 @@
     <TypeScriptCompile Include="jriapp\jriapp_utils\tloader.ts" />
     <TypeScriptCompile Include="jriapp\jriapp_utils\sloader.ts" />
     <TypeScriptCompile Include="jriapp\jriapp_utils\utils.ts" />
-    <TypeScriptCompile Include="jriapp\jriapp_utils\tooltip.ts" />
     <TypeScriptCompile Include="jriapp\jriapp_utils\checks.ts" />
-    <TypeScriptCompile Include="jriapp\jriapp_utils\syschecks.ts" />
-    <TypeScriptCompile Include="jriapp\jriapp_utils\dblclick.ts" />
+    <TypeScriptCompile Include="jriapp\jriapp_utils\sysutils.ts" />
     <TypeScriptCompile Include="jriapp\jriapp_utils\http.ts" />
     <TypeScriptCompile Include="jriapp\jriapp_utils\async.ts" />
-    <TypeScriptCompile Include="jriapp\jriapp_utils\dom.ts" />
     <TypeScriptCompile Include="jriapp\jriapp_utils\strutils.ts" />
     <TypeScriptCompile Include="jriapp\jriapp_utils\eventhelper.ts" />
     <TypeScriptCompile Include="jriapp\jriapp_utils\debounce.ts" />

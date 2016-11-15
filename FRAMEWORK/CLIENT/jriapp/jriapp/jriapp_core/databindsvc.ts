@@ -12,8 +12,10 @@ import { Utils } from "../jriapp_utils/utils";
 import { create as createModulesLoader } from "../jriapp_utils/mloader";
 import { getBindingOptions, Binding } from "./binding";
 import { parser } from "./parser";
+import { DomUtils } from "../jriapp_utils/dom";
 
-const utils = Utils, $ = utils.dom.$, doc = utils.dom.document, strUtils = utils.str, syschecks = utils.sys, checks = utils.check, boot = bootstrap;
+const utils = Utils, $ = DomUtils.$, doc = DomUtils.document, strUtils = utils.str,
+    sysutils = utils.sys, checks = utils.check, boot = bootstrap;
 
 export function createDataBindSvc(root: Document | HTMLElement, elViewFactory: IElViewFactory): IDataBindingService {
     return new DataBindingService(root, elViewFactory);
@@ -101,7 +103,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
     private _updDataFormAttr(bindElems: IBindableElement[]): void {
         //mark all dataforms for easier checking that the element is a dataform
         bindElems.forEach(function (bindElem) {
-            if (!bindElem.dataForm && syschecks._isDataForm(bindElem.el)) {
+            if (!bindElem.dataForm && sysutils.isDataForm(bindElem.el)) {
                 bindElem.el.setAttribute(DATA_ATTR.DATA_FORM, "yes");
                 bindElem.dataForm = "yes";
             }
@@ -111,7 +113,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
         let self = this, op: IBindingOptions, bind_attr: string, temp_opts: IBindingInfo[], info: IBindingInfo;
         lftm.addObj(elView);
         if (isInsideTemplate)
-            syschecks._setIsInsideTemplate(elView);
+            sysutils.setIsInsideTemplate(elView);
 
         //then create databinding if element has data-bind attribute
         bind_attr = bindElem.expressions.join("");
@@ -147,7 +149,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
             let forms = self._getOnlyDataFormElems(bindElems);
 
             let needBinding = bindElems.filter((bindElem) => {
-                return !syschecks._isInNestedForm(templateEl, forms, bindElem.el);
+                return !sysutils.isInNestedForm(templateEl, forms, bindElem.el);
             });
 
             needBinding.forEach(function (bindElem) {
@@ -201,7 +203,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
             const forms = self._getOnlyDataFormElems(bindElems);
 
             const needBinding = bindElems.filter((bindElem) => {
-                return !syschecks._isInNestedForm(scope, forms, bindElem.el);
+                return !sysutils.isInNestedForm(scope, forms, bindElem.el);
             });
 
             needBinding.forEach(function (bindElem) {

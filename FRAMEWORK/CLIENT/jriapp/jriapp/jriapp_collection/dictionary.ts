@@ -1,14 +1,14 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { Utils } from "../jriapp_utils/utils";
 import { ERRS } from "../jriapp_core/lang";
-import { SysChecks } from "../jriapp_utils/syschecks";
+import { SysUtils } from "../jriapp_utils/sysutils";
 import { COLL_CHANGE_TYPE, COLL_CHANGE_REASON, COLL_CHANGE_OPER, IPropInfo, ICollectionItem } from "./int";
 import { BaseCollection } from "./collection";
 import { BaseList, IListItem, IListItemConstructor } from "./list";
 
 const utils = Utils, strUtils = utils.str, checks = utils.check;
 
-SysChecks._getItemByProp = (obj: any, prop: string) => {
+SysUtils.getItemByProp = (obj: any, prop: string) => {
     if (obj instanceof BaseDictionary) {
         return (<BaseDictionary<IListItem, any>>obj).getItemByKey(prop);
     }

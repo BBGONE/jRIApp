@@ -6,20 +6,23 @@ import {
 } from "jriapp_core/shared";
 import { ERRS, STRS } from "jriapp_core/lang";
 import { BaseObject }  from "jriapp_core/object";
-import { SysChecks } from "jriapp_utils/syschecks";
 import { bootstrap } from "jriapp_core/bootstrap";
+import { DomUtils } from "jriapp_utils/dom";
 import { Utils } from "jriapp_utils/utils";
 import { TAction, TCommand, ICommand, Command, TPredicate } from "jriapp_core/mvvm";
 import { EventStore, EVENT_CHANGE_TYPE, IEventChangedArgs } from "jriapp_utils/eventstore";
+import { createToolTipSvc } from "./utils/tooltip";
 
 export { IEventChangedArgs, EVENT_CHANGE_TYPE };
 
-const utils = Utils, coreUtils = utils.core, dom = utils.dom, $ = dom.$, checks = utils.check,
-    PROP_BAG = SysChecks._PROP_BAG_NAME(), boot = bootstrap;
+const utils = Utils, coreUtils = utils.core, dom = DomUtils, $ = dom.$, checks = utils.check,
+    sys = utils.sys, PROP_BAG = sys.PROP_BAG_NAME(), boot = bootstrap;
 
-SysChecks._isElView = function (obj: any): boolean {
+sys.isElView = function (obj: any): boolean {
     return !!obj && obj instanceof BaseElView;
 };
+
+boot.registerSvc(TOOLTIP_SVC, createToolTipSvc());
 
 export function fn_addToolTip($el: JQuery, tip: string, isError?: boolean, pos?: string) {
     let svc = boot.getSvc<ITooltipService>(TOOLTIP_SVC);

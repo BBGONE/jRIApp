@@ -1,12 +1,12 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { Utils } from "jriapp_utils/utils";
+import { DomUtils } from "jriapp_utils/dom";
 
 import { css } from "../const";
 import { BaseCell, ICellOptions } from "./base";
 import { Row } from "../rows/row";
 import { ExpanderColumn } from "../columns/expander";
 
-const utils = Utils, dom = utils.dom, $ = dom.$;
+const dom = DomUtils, $ = dom.$;
 
 export class ExpanderCell extends BaseCell<ExpanderColumn> {
     constructor(options: ICellOptions) {

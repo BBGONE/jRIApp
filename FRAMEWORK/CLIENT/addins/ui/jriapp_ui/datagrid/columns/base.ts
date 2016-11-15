@@ -3,6 +3,7 @@ import { DATA_ATTR } from "jriapp_core/const";
 import { IContentOptions, ITemplateEvents, ITemplate } from "jriapp_core/shared";
 import { createTemplate } from "jriapp_core/template";
 import { BaseObject } from "jriapp_core/object";
+import { DomUtils } from "jriapp_utils/dom";
 import { Utils } from "jriapp_utils/utils";
 import { fn_addToolTip } from "../../generic";
 import { bootstrap } from "jriapp_core/bootstrap";
@@ -11,7 +12,7 @@ import { css } from "../const";
 import { BaseCell } from "../cells/base";
 import { DataGrid } from "../datagrid";
 
-const utils = Utils, dom = utils.dom, $ = dom.$, doc = dom.document, boot = bootstrap;
+const utils = Utils, dom = DomUtils, $ = dom.$, doc = dom.document, boot = bootstrap;
 
 export interface IColumnInfo {
     "type"?: string;
@@ -154,7 +155,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
     set isSelected(v) {
         if (!!this._col && this._isSelected !== v) {
             this._isSelected = v;
-            utils.dom.setClass([this._col], css.columnSelected, !this._isSelected);
+            dom.setClass([this._col], css.columnSelected, !this._isSelected);
         }
     }
 }

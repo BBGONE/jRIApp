@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import * as constsMOD from "../jriapp_core/const";
-import { ITooltipService } from "../jriapp_core/shared";
-import { DomUtils } from "./dom";
+import * as constsMOD from "jriapp_core/const";
+import { ITooltipService } from "jriapp_core/shared";
+import { DomUtils } from "jriapp_utils/dom";
 
 const dom = DomUtils, $ = dom.$, window = dom.window;
 

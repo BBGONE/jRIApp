@@ -1,12 +1,12 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { BaseError, IValidationInfo } from "../jriapp_core/shared";
 import { ERRS, STRS } from "../jriapp_core/lang";
-import { SysChecks } from "../jriapp_utils/syschecks";
+import { SysUtils } from "../jriapp_utils/sysutils";
 import { Utils } from "../jriapp_utils/utils";
 
 const utils = Utils;
 
-SysChecks._isValidationError = (obj: any) => {
+SysUtils.isValidationError = (obj: any) => {
     return (!!obj && obj instanceof ValidationError);
 };
 

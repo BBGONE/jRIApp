@@ -1,6 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { IContent } from "jriapp_core/shared";
 import { ERRS } from "jriapp_core/lang";
+import { DomUtils } from "jriapp_utils/dom";
 import { Utils } from "jriapp_utils/utils";
 import { bootstrap } from "jriapp_core/bootstrap";
 
@@ -8,7 +9,7 @@ import { css } from "../const";
 import { BaseCell, ICellOptions } from "./base";
 import { DataColumn } from "../columns/data";
 
-const utils = Utils, dom = utils.dom, $ = dom.$, boot = bootstrap;
+const utils = Utils, dom = DomUtils, $ = dom.$, boot = bootstrap;
 
 export class DataCell extends BaseCell<DataColumn> {
     private _content: IContent;
@@ -80,7 +81,7 @@ export class DataCell extends BaseCell<DataColumn> {
             this._stateCss = css;
             if (!!this._stateCss)
                 arr.push("+" + this._stateCss);
-            utils.dom.setClasses([this.td], arr);
+            dom.setClasses([this.td], arr);
         }
     }
     destroy() {

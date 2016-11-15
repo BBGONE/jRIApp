@@ -14,12 +14,12 @@ import { CoreUtils, ERROR } from "../jriapp_utils/coreutils";
 import { TemplateLoader } from "../jriapp_utils/tloader";
 import { createCssLoader } from "../jriapp_utils/sloader";
 import { PathHelper } from "../jriapp_utils/path";
-import { createToolTipSvc } from "../jriapp_utils/tooltip";
 import { DomUtils } from "../jriapp_utils/dom";
 import { AsyncUtils } from "../jriapp_utils/async";
 
-const dom = DomUtils, $ = dom.$, _async = AsyncUtils, doc = dom.document, win = dom.window,
+const dom = DomUtils, $ = dom.$, _async = AsyncUtils, win = dom.window, doc = win.document,
     coreUtils = CoreUtils, strUtils = StringUtils;
+
 const _TEMPLATE_SELECTOR = 'script[type="text/html"]';
 const stylesLoader = createCssLoader();
 
@@ -148,7 +148,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         });
 
         //this is a way to attach for correct work in firefox
-        dom.window.onerror = function (msg: any, url: string, linenumber: number) {
+        win.onerror = function (msg: any, url: string, linenumber: number) {
             if (!!msg && msg.toString().indexOf(DUMY_ERROR) > -1) {
                 return true;
             }
@@ -173,8 +173,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     }
     //process templates in HTML Document
     private _processHTMLTemplates(): void {
-        const self = this, root = dom.document;
-        self._processTemplates(root);
+        this._processTemplates(doc);
     }
     private _processTemplate(name: string, html: string, app: IApplication): void {
         const self = this, deferred = _async.createSyncDeferred<string>();
@@ -217,7 +216,6 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
 
             self._bindGlobalEvents();
 
-            self.registerSvc(TOOLTIP_SVC, createToolTipSvc());
             self._bootState = BootstrapState.Initialized;
             self.raiseEvent(GLOB_EVENTS.initialized, {});
             self.removeHandler(GLOB_EVENTS.initialized);

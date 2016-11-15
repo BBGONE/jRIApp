@@ -14,7 +14,7 @@ import { DbSet } from "./dbset";
 import { SubmitError } from "./error";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
-    valUtils = valueUtils;
+    valUtils = valueUtils, sys = utils.sys;
 
 const ENTITYASPECT_EVENTS = {
     destroyed: "destroyed"
@@ -364,7 +364,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
                 throw new ValidationError([validation_error], this);
             }
         } catch (ex) {
-            if (utils.sys._isValidationError(ex)) {
+            if (sys.isValidationError(ex)) {
                 error = ex;
             }
             else {

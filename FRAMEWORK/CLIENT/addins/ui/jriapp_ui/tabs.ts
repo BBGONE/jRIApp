@@ -1,10 +1,11 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { IViewOptions, IPropertyBag } from "jriapp_core/shared";
+import { DomUtils } from "jriapp_utils/dom";
 import { Utils } from "jriapp_utils/utils";
 import { bootstrap } from "jriapp_core/bootstrap";
 import { BaseElView } from "./generic";
 
-const utils = Utils, coreUtils = utils.core;
+const utils = Utils, coreUtils = utils.core, dom = DomUtils;
 
 const PROP_NAME = {
     tabIndex: "tabIndex",
@@ -59,8 +60,8 @@ export class TabsElView extends BaseElView implements ITabs {
        }, 0);
    }
     protected _destroyTabs() {
-        let $el = this.$el;
-        utils.dom.destroy$Plugin($el, "tabs");
+        const $el = this.$el;
+        dom.destroy$Plugin($el, "tabs");
         this._tabsCreated = false;
         if (!!this._tabsEvents) {
             this._tabsEvents.removeTabs();
@@ -68,7 +69,7 @@ export class TabsElView extends BaseElView implements ITabs {
 
    }
     protected _onTabsCreated() {
-        let self = this, $el = self.$el;
+       const self = this, $el = self.$el;
         if (!!self._tabsEvents) {
             self._tabsEvents.addTabs(self);
        }
@@ -89,7 +90,7 @@ export class TabsElView extends BaseElView implements ITabs {
    }
     get tabsEvents() { return this._tabsEvents; }
     set tabsEvents(v) {
-        let old = this._tabsEvents;
+        const old = this._tabsEvents;
         if (v !== old) {
             if (!!old)
                 old.removeTabs();

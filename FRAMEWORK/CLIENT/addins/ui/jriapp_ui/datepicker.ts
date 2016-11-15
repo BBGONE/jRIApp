@@ -1,11 +1,11 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { IDatepicker } from "jriapp_core/shared";
 import { ERRS } from "jriapp_core/lang";
-import { Utils } from "jriapp_utils/utils";
+import { DomUtils } from "jriapp_utils/dom";
 import { bootstrap } from "jriapp_core/bootstrap";
 import { TextBoxElView, ITextBoxOptions } from "./textbox";
 
-const coreUtils = Utils.core, dom = Utils.dom, $ = dom.$, boot = bootstrap;
+const dom = DomUtils, $ = dom.$, boot = bootstrap;
 
 const PROP_NAME = {
     dateFormat: "dateFormat",

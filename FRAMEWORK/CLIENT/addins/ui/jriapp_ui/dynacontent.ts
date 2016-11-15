@@ -3,10 +3,12 @@ import { ITemplate, IVoidPromise, ITemplateEvents, IBaseObject, IViewOptions } f
 import { createTemplate } from "jriapp_core/template";
 import { BaseObject } from "jriapp_core/object";
 import { Utils } from "jriapp_utils/utils";
+import { DomUtils } from "jriapp_utils/dom";
 import { bootstrap } from "jriapp_core/bootstrap";
 import { BaseElView } from "./generic";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+const utils = Utils, checks = utils.check, strUtils = utils.str,
+    coreUtils = utils.core, sys = utils.sys, dom = DomUtils;
 
 export interface IDynaContentAnimation {
     beforeShow(template: ITemplate, isFirstShow: boolean): void;
@@ -55,7 +57,7 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
     templateLoaded(template: ITemplate, error?: any): void {
         if (this.getIsDestroyCalled())
             return;
-        if (!utils.dom.isContained(template.el, this.el)) {
+        if (!dom.isContained(template.el, this.el)) {
             this.el.appendChild(template.el);
         }
 
@@ -126,7 +128,7 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
         let t = this._template;
         this._template = null;
 
-        if (checks.isBaseObject(a)) {
+        if (sys.isBaseObj(a)) {
             (<IBaseObject><any>a).destroy();
         }
         if (!!t) {

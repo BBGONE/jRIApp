@@ -6,12 +6,14 @@ import {
 import { createTemplate } from "jriapp_core/template";
 import * as langMOD from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
+import { DomUtils } from "jriapp_utils/dom";
 import { Utils } from "jriapp_utils/utils";
 import { bootstrap } from "jriapp_core/bootstrap";
 import { ViewModel } from "jriapp_core/mvvm";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
-const $ = utils.dom.$, doc = utils.dom.document, ERROR = utils.err, boot = bootstrap;
+const utils = Utils, checks = utils.check, strUtils = utils.str,
+    coreUtils = utils.core, sys = utils.sys, $ = DomUtils.$, doc = DomUtils.document,
+    ERROR = utils.err, boot = bootstrap;
 
 export const enum DIALOG_ACTION { Default = 0, StayOpen = 1 };
 
@@ -76,7 +78,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     private _fn_OnCancel: (dialog: DataEditDialog) => DIALOG_ACTION;
     private _fn_OnTemplateCreated: (template: ITemplate) => void;
     private _fn_OnTemplateDestroy: (template: ITemplate) => void;
-    private _isEditable: IEditable;
+    private _editable: IEditable;
     private _template: ITemplate;
     private _$dlgEl: JQuery;
     private _result: "ok" | "cancel";
@@ -118,18 +120,18 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         this._fn_OnTemplateCreated = options.fn_OnTemplateCreated;
         this._fn_OnTemplateDestroy = options.fn_OnTemplateDestroy;
 
-        this._isEditable = null;
+        this._editable = null;
         this._template = null;
         this._$dlgEl = null;
         this._result = null;
         this._currentSelectable = null;
         this._fn_submitOnOK = function () {
-            let iSubmittable = utils.getSubmittable(self._dataContext);
-            if (!iSubmittable || !iSubmittable.isCanSubmit) {
+            let submittable = sys.getSubmittable(self._dataContext);
+            if (!submittable || !submittable.isCanSubmit) {
                 //signals immediatly
                 return utils.defer.createDeferred<void>().resolve();
             }
-            return iSubmittable.submitChanges();
+            return submittable.submitChanges();
         };
         this._updateIsEditable();
         this._options = {
@@ -159,7 +161,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         this._removeHandler(DLG_EVENTS.refresh, nmspace);
     }
     protected _updateIsEditable() {
-        this._isEditable = utils.getEditable(this._dataContext);
+        this._editable = sys.getEditable(this._dataContext);
     }
     protected _createDialog() {
         try {
@@ -270,8 +272,8 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             return;
         }
 
-        if (!!this._isEditable)
-            canCommit = this._isEditable.endEdit();
+        if (!!this._editable)
+            canCommit = this._editable.endEdit();
         else
             canCommit = true;
 
@@ -290,8 +292,8 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
                     self.hide();
                 }, function () {
                     //resume editing if fn_onEndEdit callback returns false in isOk argument
-                    if (!!self._isEditable) {
-                        if (!self._isEditable.beginEdit()) {
+                    if (!!self._editable) {
+                        if (!self._editable.beginEdit()) {
                             self._result = "cancel";
                             self.hide();
                         }
@@ -311,8 +313,8 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         }
         if (action === DIALOG_ACTION.StayOpen)
             return;
-        if (!!this._isEditable)
-            this._isEditable.cancelEdit();
+        if (!!this._editable)
+            this._editable.cancelEdit();
         this._result = "cancel";
         this.hide();
     }
@@ -334,8 +336,8 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     protected _onClose() {
         try {
             if (this._result !== "ok" && !!this._dataContext) {
-                if (!!this._isEditable) {
-                    this._isEditable.cancelEdit();
+                if (!!this._editable) {
+                    this._editable.cancelEdit();
                 }
             }
             if (!!this._fn_OnClose)
@@ -401,7 +403,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         this._template = null;
         this._dataContext = null;
         this._fn_submitOnOK = null;
-        this._isEditable = null;
+        this._editable = null;
         super.destroy();
     }
     get dataContext() { return this._dataContext; }

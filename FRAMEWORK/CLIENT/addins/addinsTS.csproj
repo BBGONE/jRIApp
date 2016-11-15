@@ -125,6 +125,8 @@
     <TypeScriptCompile Include="ui\jriapp_ui\template.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\textarea.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\textbox.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\utils\dblclick.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\utils\tooltip.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="db\tsconfig.json" />

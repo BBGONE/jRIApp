@@ -81,6 +81,14 @@ declare module "jriapp_ui/content/template" {
         readonly app: IApplication;
     }
 }
+declare module "jriapp_ui/utils/tooltip" {
+    import { ITooltipService } from "jriapp_core/shared";
+    export const css: {
+        toolTip: string;
+        toolTipError: string;
+    };
+    export function createToolTipSvc(): ITooltipService;
+}
 declare module "jriapp_ui/generic" {
     import { IElView, IValidationInfo, IApplication, IViewOptions, IPropertyBag } from "jriapp_core/shared";
     import { BaseObject } from "jriapp_core/object";
@@ -504,7 +512,7 @@ declare module "jriapp_ui/dialog" {
         private _fn_OnCancel;
         private _fn_OnTemplateCreated;
         private _fn_OnTemplateDestroy;
-        private _isEditable;
+        private _editable;
         private _template;
         private _$dlgEl;
         private _result;
@@ -593,6 +601,23 @@ declare module "jriapp_ui/dynacontent" {
         templateID: string;
         dataContext: any;
         animation: IDynaContentAnimation;
+    }
+}
+declare module "jriapp_ui/utils/dblclick" {
+    import { IDisposable } from "jriapp_core/shared";
+    export class DblClick implements IDisposable {
+        private _isDestroyed;
+        private _timer;
+        private _interval;
+        private _fn_OnClick;
+        private _fn_OnDblClick;
+        constructor(interval?: number);
+        click(): void;
+        add(fn_OnClick: () => any, fn_OnDblClick?: () => any): void;
+        destroy(): void;
+        getIsDestroyed(): boolean;
+        getIsDestroyCalled(): boolean;
+        interval: number;
     }
 }
 declare module "jriapp_ui/datagrid/const" {
@@ -830,7 +855,7 @@ declare module "jriapp_ui/datagrid/cells/rowselector" {
     export class RowSelectorCell extends BaseCell<RowSelectorColumn> {
         private _$chk;
         constructor(options: ICellOptions);
-        checked: any;
+        checked: boolean;
         destroy(): void;
         toString(): string;
     }
@@ -898,7 +923,7 @@ declare module "jriapp_ui/datagrid/rows/row" {
 declare module "jriapp_ui/datagrid/cells/base" {
     import { BaseObject } from "jriapp_core/object";
     import { ICollectionItem } from "jriapp_collection/int";
-    import { DblClick } from "jriapp_utils/dblclick";
+    import { DblClick } from "jriapp_ui/utils/dblclick";
     import { Row } from "jriapp_ui/datagrid/rows/row";
     import { BaseColumn } from "jriapp_ui/datagrid/columns/base";
     import { DataGrid } from "jriapp_ui/datagrid/datagrid";
@@ -1668,6 +1693,7 @@ declare module "jriapp_ui" {
     export { SpanElView } from "jriapp_ui/span";
     export { TextAreaElView, ITextAreaOptions } from "jriapp_ui/textarea";
     export { TextBoxElView, ITextBoxOptions, TKeyPressArgs } from "jriapp_ui/textbox";
+    export { DblClick } from "jriapp_ui/utils/dblclick";
     export * from "jriapp_ui/content/all";
 }
 declare module "jriapp_ui/template" {

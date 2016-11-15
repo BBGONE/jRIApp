@@ -3,9 +3,6 @@ import {
     IBaseObject, IEditable, ISubmittable, IErrorNotification,
     IThenable, IPropertyBag
 } from "../jriapp_core/shared";
-import { SysChecks } from "./syschecks";
-
-const syschecks = SysChecks;
 
 export class Checks {
     static undefined: any = void (0);
@@ -62,26 +59,6 @@ export class Checks {
     static isArray<T>(a: any): a is Array<T> {
         if (!a) return false;
         return Array.isArray(a);
-    }
-    static isBaseObject(a: any): a is IBaseObject {
-        return syschecks._isBaseObj(a);
-    }
-    static isCollection(a: any): boolean {
-        return syschecks._isCollection(a);
-    }
-    static isEditable(obj: any): obj is IEditable {
-        const isBO = Checks.isBaseObject(obj);
-        return isBO && Checks.isFunc(obj.beginEdit) && !!obj.endEdit && !!obj.cancelEdit && Checks.isHasProp(obj, "isEditing");
-    }
-    static isSubmittable(obj: any): obj is ISubmittable {
-        return !!obj && Checks.isFunc(obj.submitChanges) && Checks.isHasProp(obj, "isCanSubmit");
-    }
-    static isErrorNotification(obj: any): obj is IErrorNotification {
-        if (!obj) return false;
-        if (!Checks.isFunc(obj.getIErrorNotification))
-            return false;
-        const tmp = obj.getIErrorNotification();
-        return !!tmp && Checks.isFunc(tmp.getIErrorNotification);
     }
     static isThenable(a: any): a is IThenable<any> {
         if (!a) return false;

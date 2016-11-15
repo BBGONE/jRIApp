@@ -1,12 +1,12 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { BaseObject } from "jriapp_core/object";
-import { Utils } from "jriapp_utils/utils";
+import { DomUtils } from "jriapp_utils/dom";
 
 import { css } from "../const";
 import { FillSpaceCell } from "../cells/fillspace";
 import { DataGrid } from "../datagrid"
 
-const utils = Utils, $ = utils.dom.$;
+const dom = DomUtils, $ = dom.$;
 
 export class FillSpaceRow extends BaseObject {
     private _grid: DataGrid;
@@ -20,7 +20,7 @@ export class FillSpaceRow extends BaseObject {
         this._$tr = $(tr);
         this._cell = null;
         this._createCell();
-        utils.dom.addClass([tr], css.fillVSpace);
+        dom.addClass([tr], css.fillVSpace);
     }
     private _createCell() {
         let td: HTMLTableCellElement = <HTMLTableCellElement>document.createElement("td");
@@ -46,7 +46,7 @@ export class FillSpaceRow extends BaseObject {
         this._grid._tBodyEl.appendChild(this.tr);
     }
     detach() {
-        utils.dom.removeNode(this.tr);
+        dom.removeNode(this.tr);
     }
     get tr() { return this._$tr[0]; }
     get $tr() { return this._$tr; }

@@ -11,8 +11,10 @@ import { LifeTimeScope } from "../jriapp_utils/lifetime";
 import { Utils } from "../jriapp_utils/utils";
 import { createElViewFactory } from "./elview";
 import { createDataBindSvc } from "./databindsvc";
+import { DomUtils } from "../jriapp_utils/dom";
 
-const utils = Utils, $ = utils.dom.$, doc = utils.dom.document, boot = bootstrap;
+const utils = Utils, $ = DomUtils.$, doc = DomUtils.document,
+    boot = bootstrap, sys = utils.sys;
 
 const APP_EVENTS = {
     startup: "startup"
@@ -153,7 +155,7 @@ export class Application extends BaseObject implements IApplication {
     */
     registerObject(name: string, obj: any): void {
         let self = this, name2 = STORE_KEY.OBJECT + name;
-        if (utils.check.isBaseObject(obj)) {
+        if (sys.isBaseObj(obj)) {
             (<IBaseObject>obj).addOnDestroyed((s, a) => {
                 boot._getInternal().unregisterObject(self, name2);
             }, self.uniqueID);

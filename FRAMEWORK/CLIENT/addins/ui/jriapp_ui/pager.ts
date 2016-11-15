@@ -3,12 +3,14 @@ import { IApplication, IViewOptions } from "jriapp_core/shared";
 import { ERRS, STRS } from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
 import { Debounce } from "jriapp_utils/debounce";
+import { DomUtils } from "jriapp_utils/dom";
 import { Utils } from "jriapp_utils/utils";
 import { BaseElView, fn_addToolTip } from "./generic";
 import { ICollection, ICollectionItem, COLL_CHANGE_TYPE, COLL_CHANGE_REASON } from "jriapp_collection/int";
 import { bootstrap } from "jriapp";
 
-const utils = Utils, dom = utils.dom, $ = dom.$, doc = utils.dom.document, checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
+const utils = Utils, dom = DomUtils, $ = dom.$, doc = dom.document, sys = utils.sys,
+    checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
     ERROR = utils.err, boot = bootstrap;
 let _STRS = STRS.PAGER;
 
@@ -66,7 +68,7 @@ export class Pager extends BaseObject {
                 hideOnSinglePage: true,
                 sliderSize: 25
             }, options);
-        if (!!options.dataSource && !checks.isCollection(options.dataSource))
+        if (!!options.dataSource && !sys.isCollection(options.dataSource))
             throw new Error(ERRS.ERR_PAGER_DATASRC_INVALID);
         this._options = options;
         this._$el = $(options.el);

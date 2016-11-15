@@ -2,12 +2,13 @@
 import { IPropertyBag } from "shared";
 import { ERRS } from "./lang";
 import { BaseObject }  from "object";
-import { SysChecks } from "../jriapp_utils/syschecks";
 import { Checks } from "../jriapp_utils/checks";
 import { StringUtils } from "../jriapp_utils/strUtils";
 import { CoreUtils } from "../jriapp_utils/coreutils";
+import { SysUtils } from "../jriapp_utils/sysutils";
 
-const checks = Checks, syschecks = SysChecks, strUtils = StringUtils, coreUtils = CoreUtils;
+
+const checks = Checks, strUtils = StringUtils, coreUtils = CoreUtils, sys = SysUtils;
 
 const __trimOuterBracesRX = /^([{]){0,1}|([}]){0,1}$/g;
 const __trimQuotsRX = /^(['"])+|(['"])+$/g;
@@ -138,22 +139,22 @@ export class Parser {
         if (!prop)
             return obj;
 
-        if (checks.isBaseObject(obj) && obj.getIsDestroyCalled())
+        if (sys.isBaseObj(obj) && obj.getIsDestroyCalled())
             return checks.undefined;
 
         if (strUtils.startsWith(prop, "[")) {
             //it is an indexed property like ['someProp']
             prop = trimQuotes(trimBrackets(prop));
 
-            if (syschecks._isCollection(obj)) {
-                return syschecks._getItemByProp(obj, prop);
+            if (sys.isCollection(obj)) {
+                return sys.getItemByProp(obj, prop);
             }
             else if (checks.isArray(obj)) {
                 return obj[parseInt(prop, 10)];
             }
         }
 
-        if (syschecks._isPropBag(obj)) {
+        if (sys.isPropBag(obj)) {
             return (<IPropertyBag>obj).getProp(prop);
         }
         else {
@@ -163,7 +164,7 @@ export class Parser {
     setPropertyValue(obj: any, prop: string, val: any) {
         if (!prop)
             throw new Error("Invalid operation: Empty Property name");
-        if (checks.isBaseObject(obj) && obj.getIsDestroyCalled())
+        if (sys.isBaseObj(obj) && obj.getIsDestroyCalled())
             return;
 
         //it is an indexed property, obj must be an Array or ComandStore or a simple indexer
@@ -177,7 +178,7 @@ export class Parser {
             }
         }
 
-        if (syschecks._isPropBag(obj)) {
+        if (sys.isPropBag(obj)) {
             (<IPropertyBag>obj).setProp(prop, val);
         }
         else {

@@ -7,12 +7,13 @@ import {
 import { BaseObject }  from "jriapp_core/object";
 import { Binding, getBindingOptions } from "jriapp_core/binding";
 import { LifeTimeScope } from "jriapp_utils/lifetime";
+import { DomUtils } from "jriapp_utils/dom";
 import { Utils } from "jriapp_utils/utils";
 
 import { css } from "./int";
 
-const utils = Utils, dom = utils.dom, $ = dom.$, doc = utils.dom.document,
-    coreUtils = utils.core, checks = utils.check, boot = bootstrap;
+const utils = Utils, dom = DomUtils, $ = dom.$, doc = dom.document,
+    coreUtils = utils.core, checks = utils.check, boot = bootstrap, sys = utils.sys;
 
 export class BasicContent extends BaseObject implements IContent {
     protected _parentEl: HTMLElement;
@@ -82,7 +83,7 @@ export class BasicContent extends BaseObject implements IContent {
         let finf = this.getFieldInfo();
         if (!finf)
             return false;
-        const editable = utils.getEditable(this._dataContext);
+        const editable = sys.getEditable(this._dataContext);
         return !!editable && !finf.isReadOnly && finf.fieldType !== FIELD_TYPE.Calculated;
     }
     protected createTargetElement(): IElView {
@@ -116,7 +117,7 @@ export class BasicContent extends BaseObject implements IContent {
             return [];
         let arr = this._lfScope.getObjs(), res: Binding[] = [];
         for (let i = 0, len = arr.length; i < len; i += 1) {
-            if (utils.sys._isBinding(arr[i]))
+            if (sys.isBinding(arr[i]))
                 res.push(<Binding>arr[i]);
         }
         return res;

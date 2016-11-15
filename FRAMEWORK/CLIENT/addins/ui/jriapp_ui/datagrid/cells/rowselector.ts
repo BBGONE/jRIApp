@@ -1,14 +1,14 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { DATA_ATTR } from "jriapp_core/const";
 import { IContent, IBindingInfo, IContentOptions } from "jriapp_core/shared";
-import { Utils } from "jriapp_utils/utils";
+import { DomUtils } from "jriapp_utils/dom";
 import { BoolContent } from "../../content/bool";
 
 import { css, PROP_NAME } from "../const";
 import { BaseCell, ICellOptions } from "./base";
 import { RowSelectorColumn } from "../columns/rowselector";
 
-const utils = Utils, dom = utils.dom, $ = dom.$, doc = dom.document, checks = utils.check;
+const dom = DomUtils, $ = dom.$, doc = dom.document;
 
 export class RowSelectorCell extends BaseCell<RowSelectorColumn> {
     private _$chk: JQuery;
@@ -16,8 +16,8 @@ export class RowSelectorCell extends BaseCell<RowSelectorColumn> {
     constructor(options: ICellOptions) {
         super(options);
         dom.addClass([this.td], css.rowSelector);
-        let label = doc.createElement("label");
-        let chk = doc.createElement("input");
+        const label = doc.createElement("label");
+        const chk = doc.createElement("input");
         chk.type = "checkbox";
         chk.checked = false;
         chk.className = css.rowSelector;
@@ -34,7 +34,7 @@ export class RowSelectorCell extends BaseCell<RowSelectorColumn> {
             let chk = <HTMLInputElement>this._$chk[0];
             return chk.checked;
         }
-        return checks.undefined;
+        return void 0;
     }
     set checked(v) {
         let bv = !!v;

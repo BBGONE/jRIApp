@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import * as coreMOD from "../jriapp_core/shared";
+import { IDisposable } from "jriapp_core/shared";
 
-export class DblClick implements coreMOD.IDisposable {
+export class DblClick implements IDisposable {
     private _isDestroyed: boolean;
     private _timer: number;
     private _interval: number;
@@ -16,7 +16,7 @@ export class DblClick implements coreMOD.IDisposable {
         this._fn_OnDblClick = null;
     }
     click() {
-        let self = this;
+        const self = this;
         if (!!this._timer) {
             clearTimeout(this._timer);
             this._timer = null;

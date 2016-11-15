@@ -1,13 +1,14 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { SORT_ORDER } from "jriapp_core/const";
 import { IIndexer, IBaseObject, IExternallyCachable } from "jriapp_core/shared";
+import { DomUtils } from "jriapp_utils/dom";
 import { Utils } from "jriapp_utils/utils";
 
 import { css, PROP_NAME } from "../const";
 import { BaseColumn, IColumnInfo, ICellInfo } from "./base";
 import { DataGrid } from "../datagrid";
 
-const utils = Utils, dom = utils.dom, $ = dom.$;
+const utils = Utils, dom = DomUtils, $ = dom.$;
 
 export class DataColumn extends BaseColumn {
     private _sortOrder: SORT_ORDER;
@@ -27,7 +28,7 @@ export class DataColumn extends BaseColumn {
     }
     protected _onColumnClicked() {
         if (this.isSortable && !!this.sortMemberName) {
-            let sortOrd = this._sortOrder;
+            const sortOrd = this._sortOrder;
             this.grid._getInternal().resetColumnsSort();
 
             this.sortOrder = (sortOrd === SORT_ORDER.ASC) ? SORT_ORDER.DESC : SORT_ORDER.ASC; 
@@ -41,7 +42,7 @@ export class DataColumn extends BaseColumn {
         return this._objCache[key];
     }
     _getInitContentFn(): (content: IExternallyCachable) => void {
-        let self = this;
+        const self = this;
         return function (content: IExternallyCachable) {
             content.addOnObjectCreated(function (sender, args) {
                 self._cacheObject(args.objectKey, args.object);
@@ -56,7 +57,7 @@ export class DataColumn extends BaseColumn {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        let self = this;
+        const self = this;
         utils.core.forEachProp(self._objCache, function (key) {
             self._objCache[key].destroy();
         });
@@ -72,8 +73,8 @@ export class DataColumn extends BaseColumn {
     set sortOrder(v) {
         if (this._sortOrder !== v) {
             this._sortOrder = v;
-            let styles = [(v === SORT_ORDER.ASC ? "+" : "-") + css.colSortAsc, (v === SORT_ORDER.DESC ? "+" : "-") + css.colSortDesc];
-            utils.dom.setClasses([this.col], styles);
+            const styles = [(v === SORT_ORDER.ASC ? "+" : "-") + css.colSortAsc, (v === SORT_ORDER.DESC ? "+" : "-") + css.colSortDesc];
+            dom.setClasses([this.col], styles);
             this.raisePropertyChanged(PROP_NAME.sortOrder);
         }
     }

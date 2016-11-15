@@ -35,6 +35,7 @@ export { SpanElView } from "./jriapp_ui/span";
 export { TextAreaElView, ITextAreaOptions } from "./jriapp_ui/textarea";
 export { TextBoxElView, ITextBoxOptions, TKeyPressArgs } from "./jriapp_ui/textbox";
 
+export { DblClick } from "./jriapp_ui/utils/dblclick";
 export * from "./jriapp_ui/content/all";
 
 initContentFactory();

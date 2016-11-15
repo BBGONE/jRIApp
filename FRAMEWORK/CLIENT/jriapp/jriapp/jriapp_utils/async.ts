@@ -1,8 +1,16 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { IThenable, ITaskQueue } from "../jriapp_core/shared";
-import { IPromise, IDeferred, create as createDefer, createSync as createSyncDefer, whenAll, getTaskQueue } from "./deferred";
+import {
+    IPromise, IDeferred, create as createDefer,
+    createSync as createSyncDefer, whenAll, getTaskQueue
+} from "./deferred";
+export {
+    IPromise, IPromiseState, IAbortablePromise, PromiseState,
+    IDeferred, whenAll, AbortablePromise
+} from "./deferred";
+import { Checks } from "./checks";
 
-export { IPromise, IPromiseState, IAbortablePromise, PromiseState, IDeferred, whenAll, AbortablePromise } from "./deferred";
+const checks = Checks;
 
 export class AsyncUtils {
     static createDeferred<T>(): IDeferred<T> {
@@ -30,5 +38,16 @@ export class AsyncUtils {
         }, !time ? 0 : time);
 
         return deferred.promise();
+    }
+    static parseJSON(res: string | any): IPromise<any> {
+        return AsyncUtils.delay(() => {
+            let parsed: any = null;
+            if (checks.isString(res))
+                parsed = JSON.parse(res);
+            else
+                parsed = res;
+
+            return parsed;
+        });
     }
 }

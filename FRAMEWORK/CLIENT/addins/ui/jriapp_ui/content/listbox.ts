@@ -6,6 +6,7 @@ import {
 } from "jriapp_core/shared";
 import { ERRS } from "jriapp_core/lang";
 import { parser } from "jriapp_core/parser";
+import { DomUtils } from "jriapp_utils/dom";
 import { Utils } from "jriapp_utils/utils";
 import { ICollection, ICollectionItem } from "jriapp_collection/int";
 import { bootstrap } from "jriapp_core/bootstrap";
@@ -13,7 +14,7 @@ import { ListBoxElView } from "../listbox";
 import { SpanElView } from "../span";
 import { BasicContent } from "./basic";
 
-const utils = Utils, $ = utils.dom.$, doc = utils.dom.document, checks = utils.check,
+const utils = Utils, dom = DomUtils, $ = dom.$, doc = dom.document, checks = utils.check,
     strUtils = utils.str, coreUtils = utils.core;
     
 
@@ -143,7 +144,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         }
         let el = doc.createElement("span"), displayInfo = this._options.displayInfo;
         if (!!displayInfo && !!displayInfo.displayCss) {
-            utils.dom.addClass([el], displayInfo.displayCss);
+            dom.addClass([el], displayInfo.displayCss);
         }
         let spanView = new SpanElView({ el: el });
         this._spanView = spanView;
@@ -172,7 +173,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
     }
     protected cleanUp() {
         if (!!this._el) {
-            utils.dom.removeNode(this._el);
+            dom.removeNode(this._el);
             this._el = null;
         }
         if (!!this._listBinding) {

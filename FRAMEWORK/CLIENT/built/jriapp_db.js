@@ -2214,7 +2214,7 @@ define("jriapp_db/error", ["require", "exports", "jriapp_core/shared", "jriapp_u
 });
 define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/waitqueue", "jriapp_utils/utils", "jriapp_collection/utils", "jriapp_db/const", "jriapp_db/association", "jriapp_db/error"], function (require, exports, shared_2, langMOD, object_5, waitqueue_1, utils_9, utils_10, const_5, association_1, error_1) {
     "use strict";
-    var utils = utils_9.Utils, http = utils.http, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err, valUtils = utils_10.valueUtils;
+    var utils = utils_9.Utils, http = utils.http, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err, valUtils = utils_10.valueUtils, _async = utils.defer;
     var DATA_SVC_METH = {
         Invoke: "invoke",
         Query: "query",
@@ -2342,7 +2342,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
         DbContext.prototype._initMethod = function (methodInfo) {
             var self = this;
             this._svcMethods[methodInfo.methodName] = function (args) {
-                var deferred = utils.defer.createDeferred();
+                var deferred = _async.createDeferred();
                 var callback = function (res) {
                     if (!res.error) {
                         deferred.resolve(res.result);
@@ -2441,7 +2441,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
                 var req_promise = http.postAjax(invokeUrl, postData, self.requestHeaders);
                 self._addRequestPromise(req_promise, operType);
                 req_promise.then(function (res) {
-                    return utils.parseJSON(res);
+                    return _async.parseJSON(res);
                 }).then(function (res) {
                     fn_onComplete(res);
                 }, function (err) {
@@ -2458,7 +2458,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
             }
         };
         DbContext.prototype._loadFromCache = function (query, reason) {
-            var self = this, defer = utils.defer.createDeferred();
+            var self = this, defer = _async.createDeferred();
             setTimeout(function () {
                 if (self.getIsDestroyCalled()) {
                     defer.reject(new shared_2.AbortError());
@@ -2485,7 +2485,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
             });
         };
         DbContext.prototype._onLoaded = function (res, query, reason) {
-            var self = this, defer = utils.defer.createDeferred();
+            var self = this, defer = _async.createDeferred();
             setTimeout(function () {
                 if (self.getIsDestroyCalled()) {
                     defer.reject(new shared_2.AbortError());
@@ -2653,7 +2653,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
             var req_promise = http.postAjax(self._getUrl(DATA_SVC_METH.Query), JSON.stringify(requestInfo), self.requestHeaders);
             self._addRequestPromise(req_promise, 2, requestInfo.dbSetName);
             req_promise.then(function (res) {
-                return utils.parseJSON(res);
+                return _async.parseJSON(res);
             }).then(function (response) {
                 return self._onLoaded(response, context.query, context.reason);
             }).then(function (loadRes) {
@@ -2700,7 +2700,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
                 var url = self._getUrl(DATA_SVC_METH.Refresh), req_promise = http.postAjax(url, JSON.stringify(request), self.requestHeaders);
                 self._addRequestPromise(req_promise, operType);
                 req_promise.then(function (res) {
-                    return utils.parseJSON(res);
+                    return _async.parseJSON(res);
                 }).then(function (res) {
                     if (self.getIsDestroyCalled())
                         return;
@@ -2716,7 +2716,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
             }
         };
         DbContext.prototype._refreshItem = function (item) {
-            var self = this, deferred = utils.defer.createDeferred();
+            var self = this, deferred = _async.createDeferred();
             var context = {
                 item: item,
                 dbSet: item._aspect.dbSet,
@@ -2776,7 +2776,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
             if (!query) {
                 throw new Error(langMOD.ERRS.ERR_DB_LOAD_NO_QUERY);
             }
-            var self = this, deferred = utils.defer.createDeferred();
+            var self = this, deferred = _async.createDeferred();
             var context = {
                 query: query,
                 reason: reason,
@@ -2832,7 +2832,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
             var req_promise = http.postAjax(self._getUrl(DATA_SVC_METH.Submit), JSON.stringify(changeSet), self.requestHeaders);
             self._addRequestPromise(req_promise, 1);
             req_promise.then(function (res) {
-                return utils.parseJSON(res);
+                return _async.parseJSON(res);
             }).then(function (res) {
                 if (self.getIsDestroyCalled())
                     return;
@@ -2854,7 +2854,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
             if (!!this._initState) {
                 return this._initState;
             }
-            var self = this, operType = 5, deferred = utils.defer.createDeferred();
+            var self = this, operType = 5, deferred = _async.createDeferred();
             this._initState = deferred.promise();
             this._initState.then(function () {
                 if (self.getIsDestroyCalled())
@@ -2916,7 +2916,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
             if (!!this._pendingSubmit) {
                 return this._pendingSubmit.promise;
             }
-            var deferred = utils.defer.createDeferred(), submitState = { promise: deferred.promise() };
+            var deferred = _async.createDeferred(), submitState = { promise: deferred.promise() };
             this._pendingSubmit = submitState;
             var context = {
                 fn_onStart: function () {
@@ -3063,7 +3063,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_core/shared", "jria
 });
 define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jriapp_utils/utils", "jriapp_collection/utils", "jriapp_collection/validation", "jriapp_collection/aspect", "jriapp_db/const", "jriapp_db/error"], function (require, exports, lang_3, utils_11, utils_12, validation_1, aspect_1, const_6, error_2) {
     "use strict";
-    var utils = utils_11.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, valUtils = utils_12.valueUtils;
+    var utils = utils_11.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, valUtils = utils_12.valueUtils, sys = utils.sys;
     var ENTITYASPECT_EVENTS = {
         destroyed: "destroyed"
     };
@@ -3387,7 +3387,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_core/lang", "jr
                 }
             }
             catch (ex) {
-                if (utils.sys._isValidationError(ex)) {
+                if (sys.isValidationError(ex)) {
                     error = ex;
                 }
                 else {
@@ -3573,7 +3573,7 @@ define("jriapp_db/int", ["require", "exports"], function (require, exports) {
 });
 define("jriapp_db/dataview", ["require", "exports", "jriapp_core/lang", "jriapp_utils/debounce", "jriapp_utils/utils", "jriapp_collection/collection", "jriapp_db/const"], function (require, exports, lang_4, debounce_3, utils_13, collection_2, const_7) {
     "use strict";
-    var utils = utils_13.Utils, _async = utils.defer, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr, ERROR = utils.err;
+    var utils = utils_13.Utils, _async = utils.defer, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr, ERROR = utils.err, sys = utils.sys;
     var VIEW_EVENTS = {
         refreshed: "view_refreshed"
     };
@@ -3587,7 +3587,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_core/lang", "jriapp_
                 fn_sort: null,
                 fn_itemsProvider: null
             }, options);
-            if (!checks.isCollection(opts.dataSource))
+            if (!sys.isCollection(opts.dataSource))
                 throw new Error(lang_4.ERRS.ERR_DATAVIEW_DATASRC_INVALID);
             if (!!opts.fn_filter && !checks.isFunc(opts.fn_filter))
                 throw new Error(lang_4.ERRS.ERR_DATAVIEW_FILTER_INVALID);

@@ -7,11 +7,13 @@ import { bootstrap } from "jriapp_core/bootstrap";
 import { BaseObject }  from "jriapp_core/object";
 import { createTemplate } from "jriapp_core/template";
 import { ERRS } from "jriapp_core/lang";
+import { DomUtils } from "jriapp_utils/dom";
 import { Utils } from "jriapp_utils/utils";
 
 import { css } from "./int";
 
-const utils = Utils, coreUtils = utils.core, dom = utils.dom, $ = dom.$, boot = bootstrap, ERROR = utils.err;
+const utils = Utils, coreUtils = utils.core,
+    dom = DomUtils, $ = dom.$, boot = bootstrap, ERROR = utils.err;
 
 export class TemplateContent extends BaseObject implements IContent {
     private _parentEl: HTMLElement;

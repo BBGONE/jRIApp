@@ -1,12 +1,18 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { FIELD_TYPE, DATE_CONVERSION, DATA_TYPE, SORT_ORDER } from "jriapp_core/const";
-import { IIndexer, IVoidPromise, AbortError, IBaseObject, TEventHandler } from "jriapp_core/shared";
+import {
+    IIndexer, IVoidPromise, AbortError,
+    IBaseObject, TEventHandler
+} from "jriapp_core/shared";
 import * as langMOD from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
 import { bootstrap } from "jriapp_core/bootstrap";
 import { WaitQueue } from "jriapp_utils/waitqueue";
 import { Utils } from "jriapp_utils/utils";
-import { IPromiseState, IPromise, IAbortablePromise, PromiseState, IDeferred } from "jriapp_utils/async";
+import {
+    IPromiseState, IPromise, IAbortablePromise,
+    PromiseState, IDeferred
+} from "jriapp_utils/async";
 import { COLL_CHANGE_REASON } from "jriapp_collection/int";
 import { valueUtils } from "jriapp_collection/utils";
 import {
@@ -19,10 +25,13 @@ import { DbSet } from "./dbset";
 import { DbSets } from "./dbsets";
 import { Association } from "./association";
 import { DataQuery, TDataQuery } from "./dataquery";
-import { AccessDeniedError, ConcurrencyError, SvcValidationError, DataOperationError, SubmitError } from "./error";
+import {
+    AccessDeniedError, ConcurrencyError, SvcValidationError,
+    DataOperationError, SubmitError
+} from "./error";
 
-const utils = Utils, http = utils.http, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err,
-    valUtils = valueUtils;
+const utils = Utils, http = utils.http, checks = utils.check, strUtils = utils.str,
+    coreUtils = utils.core, ERROR = utils.err, valUtils = valueUtils, _async = utils.defer;
 
 const DATA_SVC_METH = {
     Invoke: "invoke",
@@ -194,7 +203,7 @@ export class DbContext extends BaseObject {
         let self = this;
         //function expects method parameters
         this._svcMethods[methodInfo.methodName] = function (args: { [paramName: string]: any; }) {
-            let deferred = utils.defer.createDeferred<any>();
+            let deferred = _async.createDeferred<any>();
             let callback = function (res: { result: any; error: any; }) {
                 if (!res.error) {
                     deferred.resolve(res.result);
@@ -302,7 +311,7 @@ export class DbContext extends BaseObject {
             self._addRequestPromise(req_promise, operType);
 
             req_promise.then(function (res: string) {
-                return utils.parseJSON(res);
+                return _async.parseJSON(res);
             }).then(function (res: IInvokeResponse) { //success
                 fn_onComplete(res);
             }, function (err) { //error
@@ -319,7 +328,7 @@ export class DbContext extends BaseObject {
         }
     }
     protected _loadFromCache(query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IPromise<IQueryResult<IEntityItem>> {
-        let self = this, defer = utils.defer.createDeferred<IQueryResult<IEntityItem>>();
+        let self = this, defer = _async.createDeferred<IQueryResult<IEntityItem>>();
         setTimeout(() => {
             if (self.getIsDestroyCalled()) {
                 defer.reject(new AbortError());
@@ -345,7 +354,7 @@ export class DbContext extends BaseObject {
         });
     }
     protected _onLoaded(res: IQueryResponse, query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IPromise<IQueryResult<IEntityItem>> {
-        let self = this, defer = utils.defer.createDeferred<IQueryResult<IEntityItem>>();
+        let self = this, defer = _async.createDeferred<IQueryResult<IEntityItem>>();
         setTimeout(() => {
             if (self.getIsDestroyCalled()) {
                 defer.reject(new AbortError());
@@ -542,7 +551,7 @@ export class DbContext extends BaseObject {
         let req_promise = http.postAjax(self._getUrl(DATA_SVC_METH.Query), JSON.stringify(requestInfo), self.requestHeaders);
         self._addRequestPromise(req_promise, DATA_OPER.Query, requestInfo.dbSetName);
         req_promise.then(function (res: string) {
-            return utils.parseJSON(res);
+            return _async.parseJSON(res);
         }).then(function (response: IQueryResponse) {
             return self._onLoaded(response, context.query, context.reason);
         }).then((loadRes) => {
@@ -600,7 +609,7 @@ export class DbContext extends BaseObject {
             self._addRequestPromise(req_promise, operType);
 
             req_promise.then((res: string) => {
-                return utils.parseJSON(res);
+                return _async.parseJSON(res);
             }).then((res: IRefreshRowInfo) => { //success
                 if (self.getIsDestroyCalled())
                     return;
@@ -616,7 +625,7 @@ export class DbContext extends BaseObject {
         }
     }
     protected _refreshItem(item: IEntityItem): IPromise<IEntityItem> {
-        const self = this, deferred = utils.defer.createDeferred<IEntityItem>();
+        const self = this, deferred = _async.createDeferred<IEntityItem>();
         const context = {
             item: item,
             dbSet: item._aspect.dbSet,
@@ -678,7 +687,7 @@ export class DbContext extends BaseObject {
             throw new Error(langMOD.ERRS.ERR_DB_LOAD_NO_QUERY);
         }
 
-        const self = this, deferred = utils.defer.createDeferred<IQueryResult<IEntityItem>>();
+        const self = this, deferred = _async.createDeferred<IQueryResult<IEntityItem>>();
 
         const context = {
             query: query,
@@ -745,7 +754,7 @@ export class DbContext extends BaseObject {
         let req_promise = http.postAjax(self._getUrl(DATA_SVC_METH.Submit), JSON.stringify(changeSet), self.requestHeaders);
         self._addRequestPromise(req_promise, DATA_OPER.Submit);
         req_promise.then((res: string) => {
-            return utils.parseJSON(res);
+            return _async.parseJSON(res);
         }).then(function (res: IChangeSet) {
             if (self.getIsDestroyCalled())
                 return;
@@ -770,7 +779,7 @@ export class DbContext extends BaseObject {
         if (!!this._initState) {
             return this._initState;
         }
-        const self = this, operType = DATA_OPER.Init, deferred = utils.defer.createDeferred<any>();
+        const self = this, operType = DATA_OPER.Init, deferred = _async.createDeferred<any>();
 
         this._initState = deferred.promise();
         this._initState.then(() => {
@@ -843,7 +852,7 @@ export class DbContext extends BaseObject {
             return this._pendingSubmit.promise;
         }
 
-        const deferred = utils.defer.createDeferred<void>(), submitState = { promise: deferred.promise() };
+        const deferred = _async.createDeferred<void>(), submitState = { promise: deferred.promise() };
         this._pendingSubmit = submitState;
 
         const context = {

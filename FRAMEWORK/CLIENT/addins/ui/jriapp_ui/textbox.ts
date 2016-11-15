@@ -1,11 +1,11 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { IViewOptions } from "jriapp_core/shared";
-import { Utils } from "jriapp_utils/utils";
+import { DomUtils } from "jriapp_utils/dom";
 import { bootstrap } from "jriapp_core/bootstrap";
 import { css, PROP_NAME } from "./generic";
 import { InputElView } from "./input";
 
-const utils = Utils, $ = utils.dom.$;
+const dom = DomUtils, $ = dom.$;
 const TXTBOX_EVENTS = {
     keypress: "keypress"
 };

@@ -443,35 +443,8 @@ define("jriapp_utils/strutils", ["require", "exports"], function (require, expor
     exports.StringUtils = StringUtils;
     ;
 });
-define("jriapp_utils/syschecks", ["require", "exports"], function (require, exports) {
+define("jriapp_utils/checks", ["require", "exports"], function (require, exports) {
     "use strict";
-    var PROP_BAG = "IPBag";
-    var SysChecks = (function () {
-        function SysChecks() {
-        }
-        SysChecks._PROP_BAG_NAME = function () { return PROP_BAG; };
-        SysChecks._isBaseObj = function (obj) { return false; };
-        SysChecks._isElView = function (obj) { return false; };
-        SysChecks._isBinding = function (obj) { return false; };
-        SysChecks._isPropBag = function (obj) {
-            return SysChecks._isBaseObj(obj) && obj.toString() === PROP_BAG;
-        };
-        SysChecks._isCollection = function (obj) { return false; };
-        SysChecks._getItemByProp = function (obj, prop) { return null; };
-        SysChecks._isValidationError = function (obj) { return false; };
-        SysChecks._isTemplateElView = function (obj) { return false; };
-        SysChecks._setIsInsideTemplate = function (elView) { };
-        SysChecks._isDataForm = function (el) { return false; };
-        SysChecks._isInsideDataForm = function (el) { return false; };
-        SysChecks._isInNestedForm = function (root, forms, el) { return false; };
-        SysChecks._getParentDataForm = function (rootForm, el) { return null; };
-        return SysChecks;
-    }());
-    exports.SysChecks = SysChecks;
-});
-define("jriapp_utils/checks", ["require", "exports", "jriapp_utils/syschecks"], function (require, exports, syschecks_1) {
-    "use strict";
-    var syschecks = syschecks_1.SysChecks;
     var Checks = (function () {
         function Checks() {
         }
@@ -536,27 +509,6 @@ define("jriapp_utils/checks", ["require", "exports", "jriapp_utils/syschecks"], 
             if (!a)
                 return false;
             return Array.isArray(a);
-        };
-        Checks.isBaseObject = function (a) {
-            return syschecks._isBaseObj(a);
-        };
-        Checks.isCollection = function (a) {
-            return syschecks._isCollection(a);
-        };
-        Checks.isEditable = function (obj) {
-            var isBO = Checks.isBaseObject(obj);
-            return isBO && Checks.isFunc(obj.beginEdit) && !!obj.endEdit && !!obj.cancelEdit && Checks.isHasProp(obj, "isEditing");
-        };
-        Checks.isSubmittable = function (obj) {
-            return !!obj && Checks.isFunc(obj.submitChanges) && Checks.isHasProp(obj, "isCanSubmit");
-        };
-        Checks.isErrorNotification = function (obj) {
-            if (!obj)
-                return false;
-            if (!Checks.isFunc(obj.getIErrorNotification))
-                return false;
-            var tmp = obj.getIErrorNotification();
-            return !!tmp && Checks.isFunc(tmp.getIErrorNotification);
         };
         Checks.isThenable = function (a) {
             if (!a)
@@ -977,9 +929,85 @@ define("jriapp_core/lang", ["require", "exports", "jriapp_utils/coreutils"], fun
     exports.ERRS = _ERRS;
     exports.STRS = _STRS;
 });
-define("jriapp_utils/eventhelper", ["require", "exports", "jriapp_utils/checks", "jriapp_utils/strutils", "jriapp_utils/coreutils", "jriapp_core/lang"], function (require, exports, checks_2, strutils_2, coreutils_2, lang_1) {
+define("jriapp_utils/sysutils", ["require", "exports", "jriapp_utils/checks"], function (require, exports, checks_2) {
     "use strict";
-    var checks = checks_2.Checks, strUtils = strutils_2.StringUtils, debug = coreutils_2.DEBUG;
+    var checks = checks_2.Checks;
+    var PROP_BAG = "IPBag";
+    var SysUtils = (function () {
+        function SysUtils() {
+        }
+        SysUtils.isEditable = function (obj) {
+            var isBO = SysUtils.isBaseObj(obj);
+            return isBO && checks.isFunc(obj.beginEdit) && !!obj.endEdit && !!obj.cancelEdit && checks_2.Checks.isHasProp(obj, "isEditing");
+        };
+        SysUtils.isSubmittable = function (obj) {
+            return !!obj && checks.isFunc(obj.submitChanges) && checks.isHasProp(obj, "isCanSubmit");
+        };
+        SysUtils.isErrorNotification = function (obj) {
+            if (!obj)
+                return false;
+            if (!checks.isFunc(obj.getIErrorNotification))
+                return false;
+            var tmp = obj.getIErrorNotification();
+            return !!tmp && checks.isFunc(tmp.getIErrorNotification);
+        };
+        SysUtils.getErrorNotification = function (obj) {
+            if (!obj) {
+                return null;
+            }
+            else if (!!obj._aspect && SysUtils.isErrorNotification(obj._aspect))
+                return obj._aspect.getIErrorNotification();
+            else if (SysUtils.isErrorNotification(obj))
+                return obj.getIErrorNotification();
+            return null;
+        };
+        SysUtils.getEditable = function (obj) {
+            if (!obj) {
+                return null;
+            }
+            else if (!!obj._aspect && SysUtils.isEditable(obj._aspect)) {
+                return obj._aspect;
+            }
+            else if (SysUtils.isEditable(obj)) {
+                return obj;
+            }
+            return null;
+        };
+        SysUtils.getSubmittable = function (obj) {
+            if (!obj) {
+                return null;
+            }
+            else if (!!obj._aspect && SysUtils.isSubmittable(obj._aspect)) {
+                return obj._aspect;
+            }
+            else if (SysUtils.isSubmittable(obj)) {
+                return obj;
+            }
+            return null;
+        };
+        SysUtils.PROP_BAG_NAME = function () { return PROP_BAG; };
+        SysUtils.isBaseObj = function (obj) { return false; };
+        SysUtils.isElView = function (obj) { return false; };
+        SysUtils.isBinding = function (obj) { return false; };
+        SysUtils.isPropBag = function (obj) {
+            return SysUtils.isBaseObj(obj) && obj.toString() === PROP_BAG;
+        };
+        SysUtils.isCollection = function (obj) { return false; };
+        SysUtils.getItemByProp = function (obj, prop) { return null; };
+        SysUtils.isValidationError = function (obj) { return false; };
+        SysUtils.isTemplateElView = function (obj) { return false; };
+        SysUtils.setIsInsideTemplate = function (elView) { };
+        SysUtils.isDataForm = function (el) { return false; };
+        SysUtils.isInsideDataForm = function (el) { return false; };
+        SysUtils.isInNestedForm = function (root, forms, el) { return false; };
+        SysUtils.getParentDataForm = function (rootForm, el) { return null; };
+        return SysUtils;
+    }());
+    exports.SysUtils = SysUtils;
+});
+define("jriapp_utils/eventhelper", ["require", "exports", "jriapp_utils/checks", "jriapp_utils/strutils", "jriapp_utils/coreutils", "jriapp_core/lang"], function (require, exports, checks_3, strutils_2, coreutils_2, lang_1) {
+    "use strict";
+    var checks = checks_3.Checks, strUtils = strutils_2.StringUtils, debug = coreutils_2.DEBUG;
     var EventList = (function () {
         function EventList() {
         }
@@ -1137,14 +1165,14 @@ define("jriapp_utils/eventhelper", ["require", "exports", "jriapp_utils/checks",
     }());
     exports.EventHelper = EventHelper;
 });
-define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_utils/syschecks", "jriapp_utils/checks", "jriapp_utils/strutils", "jriapp_utils/coreutils", "jriapp_utils/eventhelper"], function (require, exports, lang_2, syschecks_2, checks_3, strUtils_1, coreutils_3, eventhelper_1) {
+define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_utils/sysutils", "jriapp_utils/checks", "jriapp_utils/strutils", "jriapp_utils/coreutils", "jriapp_utils/eventhelper"], function (require, exports, lang_2, sysutils_1, checks_4, strUtils_1, coreutils_3, eventhelper_1) {
     "use strict";
     var OBJ_EVENTS = {
         error: "error",
         destroyed: "destroyed"
     };
-    var checks = checks_3.Checks, strUtils = strUtils_1.StringUtils, coreUtils = coreutils_3.CoreUtils, evHelper = eventhelper_1.EventHelper, debug = coreutils_3.DEBUG, syschecks = syschecks_2.SysChecks;
-    syschecks._isBaseObj = function (obj) {
+    var checks = checks_4.Checks, strUtils = strUtils_1.StringUtils, coreUtils = coreutils_3.CoreUtils, evHelper = eventhelper_1.EventHelper, debug = coreutils_3.DEBUG, sysutils = sysutils_1.SysUtils;
+    sysutils.isBaseObj = function (obj) {
         return (!!obj && obj instanceof BaseObject);
     };
     var ObjState;
@@ -1257,7 +1285,7 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
                     debug.checkStartDebugger();
                     throw new Error(strUtils.format(lang_2.ERRS.ERR_PROP_NAME_INVALID, name));
                 }
-                if (syschecks._isBaseObj(obj)) {
+                if (sysutils.isBaseObj(obj)) {
                     obj.raisePropertyChanged(lastPropName);
                 }
             }
@@ -1313,9 +1341,9 @@ define("jriapp_core/object", ["require", "exports", "jriapp_core/lang", "jriapp_
     }());
     exports.BaseObject = BaseObject;
 });
-define("jriapp_core/parser", ["require", "exports", "jriapp_core/lang", "jriapp_utils/syschecks", "jriapp_utils/checks", "jriapp_utils/strutils", "jriapp_utils/coreutils"], function (require, exports, lang_3, syschecks_3, checks_4, strUtils_2, coreutils_4) {
+define("jriapp_core/parser", ["require", "exports", "jriapp_core/lang", "jriapp_utils/checks", "jriapp_utils/strutils", "jriapp_utils/coreutils", "jriapp_utils/sysutils"], function (require, exports, lang_3, checks_5, strUtils_2, coreutils_4, sysutils_2) {
     "use strict";
-    var checks = checks_4.Checks, syschecks = syschecks_3.SysChecks, strUtils = strUtils_2.StringUtils, coreUtils = coreutils_4.CoreUtils;
+    var checks = checks_5.Checks, strUtils = strUtils_2.StringUtils, coreUtils = coreutils_4.CoreUtils, sys = sysutils_2.SysUtils;
     var __trimOuterBracesRX = /^([{]){0,1}|([}]){0,1}$/g;
     var __trimQuotsRX = /^(['"])+|(['"])+$/g;
     var __trimBracketsRX = /^(\[)+|(\])+$/g;
@@ -1428,18 +1456,18 @@ define("jriapp_core/parser", ["require", "exports", "jriapp_core/lang", "jriapp_
         Parser.prototype.resolveProp = function (obj, prop) {
             if (!prop)
                 return obj;
-            if (checks.isBaseObject(obj) && obj.getIsDestroyCalled())
+            if (sys.isBaseObj(obj) && obj.getIsDestroyCalled())
                 return checks.undefined;
             if (strUtils.startsWith(prop, "[")) {
                 prop = trimQuotes(trimBrackets(prop));
-                if (syschecks._isCollection(obj)) {
-                    return syschecks._getItemByProp(obj, prop);
+                if (sys.isCollection(obj)) {
+                    return sys.getItemByProp(obj, prop);
                 }
                 else if (checks.isArray(obj)) {
                     return obj[parseInt(prop, 10)];
                 }
             }
-            if (syschecks._isPropBag(obj)) {
+            if (sys.isPropBag(obj)) {
                 return obj.getProp(prop);
             }
             else {
@@ -1449,7 +1477,7 @@ define("jriapp_core/parser", ["require", "exports", "jriapp_core/lang", "jriapp_
         Parser.prototype.setPropertyValue = function (obj, prop, val) {
             if (!prop)
                 throw new Error("Invalid operation: Empty Property name");
-            if (checks.isBaseObject(obj) && obj.getIsDestroyCalled())
+            if (sys.isBaseObj(obj) && obj.getIsDestroyCalled())
                 return;
             if (strUtils.startsWith(prop, "[")) {
                 prop = trimQuotes(trimBrackets(prop));
@@ -1458,7 +1486,7 @@ define("jriapp_core/parser", ["require", "exports", "jriapp_core/lang", "jriapp_
                     return;
                 }
             }
-            if (syschecks._isPropBag(obj)) {
+            if (sys.isPropBag(obj)) {
                 obj.setProp(prop, val);
             }
             else {
@@ -1597,6 +1625,407 @@ define("jriapp_utils/lifetime", ["require", "exports", "jriapp_core/object", "jr
     }(object_1.BaseObject));
     exports.LifeTimeScope = LifeTimeScope;
 });
+define("jriapp_utils/deferred", ["require", "exports", "jriapp_core/shared", "jriapp_utils/checks"], function (require, exports, coreMOD, checks_6) {
+    "use strict";
+    (function (PromiseState) {
+        PromiseState[PromiseState["Pending"] = 0] = "Pending";
+        PromiseState[PromiseState["ResolutionInProgress"] = 1] = "ResolutionInProgress";
+        PromiseState[PromiseState["Resolved"] = 2] = "Resolved";
+        PromiseState[PromiseState["Rejected"] = 3] = "Rejected";
+    })(exports.PromiseState || (exports.PromiseState = {}));
+    var PromiseState = exports.PromiseState;
+    function create() {
+        return new Deferred(fn_dispatch);
+    }
+    exports.create = create;
+    function createSync() {
+        return new Deferred(fn_dispatchImmediate);
+    }
+    exports.createSync = createSync;
+    function getTaskQueue() {
+        return taskQueue;
+    }
+    exports.getTaskQueue = getTaskQueue;
+    function whenAll(args) {
+        var deferred = create(), errors = [], countAll = args.length, result = new Array(args.length);
+        var checkResult = function () {
+            if (countAll === 0) {
+                if (errors.length > 0)
+                    deferred.reject(new coreMOD.AggregateError(errors));
+                else
+                    deferred.resolve(result);
+            }
+        };
+        var cnt = args.length;
+        if (cnt === 0) {
+            deferred.resolve([]);
+        }
+        var _loop_1 = function(i) {
+            var value = args[i];
+            if (checks_6.Checks.isThenable(value)) {
+                value.then(function (res) {
+                    --countAll;
+                    result[i] = res;
+                    checkResult();
+                }, function (err) {
+                    --countAll;
+                    result[i] = err;
+                    errors.push(err);
+                    checkResult();
+                });
+            }
+            else {
+                --countAll;
+                result[i] = value;
+                checkResult();
+            }
+        };
+        for (var i = 0; i < cnt; i += 1) {
+            _loop_1(i);
+        }
+        return deferred.promise();
+    }
+    exports.whenAll = whenAll;
+    function fn_dispatch(task) {
+        taskQueue.enque(task);
+    }
+    function fn_dispatchImmediate(task) {
+        task();
+    }
+    var TaskQueue = (function () {
+        function TaskQueue() {
+            this._tasks = [];
+            this._state = 0;
+        }
+        TaskQueue.prototype._process = function () {
+            var tasks = this._tasks;
+            this._tasks = [];
+            for (var i = 0; i < tasks.length; i += 1) {
+                tasks[i]();
+            }
+        };
+        TaskQueue.prototype.enque = function (task) {
+            var _this = this;
+            this._tasks.push(task);
+            if (this._state === 0) {
+                this._state = 1;
+                setTimeout(function () { if (_this._state !== 1)
+                    return; _this._state = 0; _this._process(); }, 0);
+            }
+        };
+        TaskQueue.prototype.clear = function () {
+            this._tasks = [];
+            this._state = 0;
+        };
+        return TaskQueue;
+    }());
+    var Callback = (function () {
+        function Callback(dispatcher, successCB, errorCB) {
+            this._dispatcher = dispatcher;
+            this._successCB = successCB;
+            this._errorCB = errorCB;
+            this.deferred = new Deferred(this._dispatcher);
+        }
+        Callback.prototype.resolve = function (value, defer) {
+            var _this = this;
+            if (!checks_6.Checks.isFunc(this._successCB)) {
+                this.deferred.resolve(value);
+                return;
+            }
+            if (!!defer) {
+                this._dispatcher(function () { return _this._dispatchCallback(_this._successCB, value); });
+            }
+            else {
+                this._dispatchCallback(this._successCB, value);
+            }
+        };
+        Callback.prototype.reject = function (error, defer) {
+            var _this = this;
+            if (!checks_6.Checks.isFunc(this._errorCB)) {
+                this.deferred.reject(error);
+                return;
+            }
+            if (!!defer) {
+                this._dispatcher(function () { return _this._dispatchCallback(_this._errorCB, error); });
+            }
+            else {
+                this._dispatchCallback(this._errorCB, error);
+            }
+        };
+        Callback.prototype._dispatchCallback = function (callback, arg) {
+            var result;
+            try {
+                result = callback(arg);
+                this.deferred.resolve(result);
+            }
+            catch (err) {
+                this.deferred.reject(err);
+                return;
+            }
+        };
+        return Callback;
+    }());
+    var Deferred = (function () {
+        function Deferred(dispatcher) {
+            this._dispatcher = dispatcher;
+            this._value = checks_6.Checks.undefined;
+            this._error = checks_6.Checks.undefined;
+            this._state = 0;
+            this._stack = [];
+            this._promise = new Promise(this);
+        }
+        Deferred.prototype._resolve = function (value) {
+            var _this = this;
+            var pending = true;
+            try {
+                if (checks_6.Checks.isThenable(value)) {
+                    if (value === this._promise) {
+                        throw new TypeError("recursive resolution");
+                    }
+                    var fn_then = value.then;
+                    this._state = 1;
+                    fn_then.call(value, function (result) {
+                        if (pending) {
+                            pending = false;
+                            _this._resolve(result);
+                        }
+                    }, function (error) {
+                        if (pending) {
+                            pending = false;
+                            _this._reject(error);
+                        }
+                    });
+                }
+                else {
+                    this._state = 1;
+                    this._dispatcher(function () {
+                        _this._state = 2;
+                        _this._value = value;
+                        var i, stackSize = _this._stack.length;
+                        for (i = 0; i < stackSize; i++) {
+                            _this._stack[i].resolve(value, false);
+                        }
+                        _this._stack.splice(0, stackSize);
+                    });
+                }
+            }
+            catch (err) {
+                if (pending) {
+                    this._reject(err);
+                }
+            }
+            return this;
+        };
+        Deferred.prototype._reject = function (error) {
+            var _this = this;
+            this._state = 1;
+            this._dispatcher(function () {
+                _this._state = 3;
+                _this._error = error;
+                var stackSize = _this._stack.length, i = 0;
+                for (i = 0; i < stackSize; i++) {
+                    _this._stack[i].reject(error, false);
+                }
+                _this._stack.splice(0, stackSize);
+            });
+            return this;
+        };
+        Deferred.prototype._then = function (successCB, errorCB) {
+            if (!checks_6.Checks.isFunc(successCB) && !checks_6.Checks.isFunc(errorCB)) {
+                return this._promise;
+            }
+            var cb = new Callback(this._dispatcher, successCB, errorCB);
+            switch (this._state) {
+                case 0:
+                case 1:
+                    this._stack.push(cb);
+                    break;
+                case 2:
+                    cb.resolve(this._value, true);
+                    break;
+                case 3:
+                    cb.reject(this._error, true);
+                    break;
+            }
+            return cb.deferred.promise();
+        };
+        Deferred.prototype.resolve = function (value) {
+            if (this._state !== 0) {
+                return this.promise();
+            }
+            return this._resolve(value).promise();
+        };
+        Deferred.prototype.reject = function (error) {
+            if (this._state !== 0) {
+                return this.promise();
+            }
+            return this._reject(error).promise();
+        };
+        Deferred.prototype.promise = function () {
+            return this._promise;
+        };
+        Deferred.prototype.state = function () {
+            return this._state;
+        };
+        return Deferred;
+    }());
+    var Promise = (function () {
+        function Promise(deferred) {
+            this._deferred = deferred;
+        }
+        Promise.prototype.then = function (successCB, errorCB) {
+            return this._deferred._then(successCB, errorCB);
+        };
+        Promise.prototype.fail = function (errorCB) {
+            return this._deferred._then(checks_6.Checks.undefined, errorCB);
+        };
+        Promise.prototype.always = function (errorCB) {
+            return this._deferred._then(errorCB, errorCB);
+        };
+        Promise.prototype.state = function () {
+            return this._deferred.state();
+        };
+        return Promise;
+    }());
+    var AbortablePromise = (function () {
+        function AbortablePromise(deferred, abortable) {
+            this._deferred = deferred;
+            this._abortable = abortable;
+            this._aborted = false;
+        }
+        AbortablePromise.prototype.then = function (successCB, errorCB) {
+            return this._deferred.promise().then(successCB, errorCB);
+        };
+        AbortablePromise.prototype.fail = function (errorCB) {
+            return this._deferred.promise().fail(errorCB);
+        };
+        AbortablePromise.prototype.always = function (errorCB) {
+            return this._deferred.promise().always(errorCB);
+        };
+        AbortablePromise.prototype.abort = function (reason) {
+            if (this._aborted)
+                return;
+            var self = this;
+            self._deferred.reject(new coreMOD.AbortError(reason));
+            self._aborted = true;
+            setTimeout(function () { self._abortable.abort(); }, 0);
+        };
+        AbortablePromise.prototype.state = function () {
+            return this._deferred.state();
+        };
+        return AbortablePromise;
+    }());
+    exports.AbortablePromise = AbortablePromise;
+    var taskQueue = new TaskQueue();
+});
+define("jriapp_utils/async", ["require", "exports", "jriapp_utils/deferred", "jriapp_utils/deferred", "jriapp_utils/checks"], function (require, exports, deferred_1, deferred_2, checks_7) {
+    "use strict";
+    exports.PromiseState = deferred_2.PromiseState;
+    exports.whenAll = deferred_2.whenAll;
+    exports.AbortablePromise = deferred_2.AbortablePromise;
+    var checks = checks_7.Checks;
+    var AsyncUtils = (function () {
+        function AsyncUtils() {
+        }
+        AsyncUtils.createDeferred = function () {
+            return deferred_1.create();
+        };
+        AsyncUtils.createSyncDeferred = function () {
+            return deferred_1.createSync();
+        };
+        AsyncUtils.whenAll = function (args) {
+            return deferred_1.whenAll(args);
+        };
+        AsyncUtils.getTaskQueue = function () {
+            return deferred_1.getTaskQueue();
+        };
+        AsyncUtils.delay = function (func, time) {
+            var deferred = deferred_1.create();
+            setTimeout(function () {
+                try {
+                    deferred.resolve(func());
+                }
+                catch (err) {
+                    deferred.reject(err);
+                }
+            }, !time ? 0 : time);
+            return deferred.promise();
+        };
+        AsyncUtils.parseJSON = function (res) {
+            return AsyncUtils.delay(function () {
+                var parsed = null;
+                if (checks.isString(res))
+                    parsed = JSON.parse(res);
+                else
+                    parsed = res;
+                return parsed;
+            });
+        };
+        return AsyncUtils;
+    }());
+    exports.AsyncUtils = AsyncUtils;
+});
+define("jriapp_utils/http", ["require", "exports", "jriapp_core/shared", "jriapp_utils/strutils", "jriapp_utils/coreutils", "jriapp_utils/async"], function (require, exports, shared_2, strUtils_3, coreutils_5, async_1) {
+    "use strict";
+    var coreUtils = coreutils_5.CoreUtils, strUtils = strUtils_3.StringUtils, defer = async_1.AsyncUtils;
+    var HttpUtils = (function () {
+        function HttpUtils() {
+        }
+        HttpUtils.isStatusOK = function (status) {
+            var chk = "" + status;
+            return chk.length === 3 && strUtils.startsWith(chk, "2");
+        };
+        HttpUtils._getXMLRequest = function (url, method, deferred, headers) {
+            var req = new XMLHttpRequest();
+            req.open(method, url, true);
+            req.responseType = "text";
+            req.onload = function (e) {
+                var status = "" + this.status;
+                if (status === "200") {
+                    var res = this.response;
+                    deferred.resolve(res);
+                }
+                else {
+                    if (HttpUtils.isStatusOK(status))
+                        deferred.reject(new shared_2.DummyError(new Error(strUtils.format('Status: "{0}" loading from URL: "{1}"', status, url))));
+                    else
+                        deferred.reject(new Error(strUtils.format('Error: "{0}" to load from URL: "{1}"', status, url)));
+                }
+            };
+            req.onerror = function (e) {
+                deferred.reject(new Error(strUtils.format('Error: "{0}" to load from URL: "{1}"', this.status, url)));
+            };
+            req.ontimeout = function () {
+                deferred.reject(new Error(strUtils.format('Error: "Request Timeout" to load from URL: "{0}"', url)));
+            };
+            req.onabort = function (e) {
+                deferred.reject(new Error(strUtils.format('HTTP Request Operation Aborted for URL: "{0}"', url)));
+            };
+            req.timeout = HttpUtils.ajaxTimeOut * 1000;
+            var _headers = coreUtils.merge(HttpUtils.defaultHeaders);
+            _headers = coreUtils.merge(headers, _headers);
+            coreUtils.iterateIndexer(_headers, function (name, val) {
+                req.setRequestHeader(name, val);
+            });
+            return req;
+        };
+        HttpUtils.postAjax = function (url, postData, headers) {
+            var _headers = coreUtils.merge(headers, { "Content-Type": "application/json; charset=utf-8" });
+            var deferred = defer.createDeferred(), req = HttpUtils._getXMLRequest(url, "POST", deferred, _headers);
+            req.send(postData);
+            return new async_1.AbortablePromise(deferred, req);
+        };
+        HttpUtils.getAjax = function (url, headers) {
+            var deferred = defer.createDeferred(), req = HttpUtils._getXMLRequest(url, "GET", deferred, headers);
+            req.send(null);
+            return new async_1.AbortablePromise(deferred, req);
+        };
+        HttpUtils.defaultHeaders = {};
+        HttpUtils.ajaxTimeOut = 600;
+        return HttpUtils;
+    }());
+    exports.HttpUtils = HttpUtils;
+});
 define("jriapp_utils/dom", ["require", "exports", "jriapp_core/lang"], function (require, exports, lang_4) {
     "use strict";
     if (!("jQuery" in window))
@@ -1607,9 +2036,10 @@ define("jriapp_utils/dom", ["require", "exports", "jriapp_core/lang"], function 
         DomUtils.isContained = function (oNode, oCont) {
             if (!oNode)
                 return false;
-            while (!!(oNode = oNode.parentNode))
+            while (!!(oNode = oNode.parentNode)) {
                 if (oNode === oCont)
                     return true;
+            }
             return false;
         };
         DomUtils.removeNode = function (node) {
@@ -1772,464 +2202,29 @@ define("jriapp_utils/dom", ["require", "exports", "jriapp_core/lang"], function 
     }());
     exports.DomUtils = DomUtils;
 });
-define("jriapp_utils/deferred", ["require", "exports", "jriapp_core/shared", "jriapp_utils/checks"], function (require, exports, coreMOD, checks_5) {
+define("jriapp_utils/utils", ["require", "exports", "jriapp_utils/coreutils", "jriapp_utils/sysutils", "jriapp_utils/async", "jriapp_utils/http", "jriapp_utils/strutils", "jriapp_utils/checks", "jriapp_utils/arrhelper", "jriapp_utils/dom"], function (require, exports, coreutils_6, sysutils_3, async_2, http_1, strutils_3, checks_8, arrhelper_3, dom_1) {
     "use strict";
-    (function (PromiseState) {
-        PromiseState[PromiseState["Pending"] = 0] = "Pending";
-        PromiseState[PromiseState["ResolutionInProgress"] = 1] = "ResolutionInProgress";
-        PromiseState[PromiseState["Resolved"] = 2] = "Resolved";
-        PromiseState[PromiseState["Rejected"] = 3] = "Rejected";
-    })(exports.PromiseState || (exports.PromiseState = {}));
-    var PromiseState = exports.PromiseState;
-    function create() {
-        return new Deferred(fn_dispatch);
-    }
-    exports.create = create;
-    function createSync() {
-        return new Deferred(fn_dispatchImmediate);
-    }
-    exports.createSync = createSync;
-    function getTaskQueue() {
-        return taskQueue;
-    }
-    exports.getTaskQueue = getTaskQueue;
-    function whenAll(args) {
-        var deferred = create(), errors = [], countAll = args.length, result = new Array(args.length);
-        var checkResult = function () {
-            if (countAll === 0) {
-                if (errors.length > 0)
-                    deferred.reject(new coreMOD.AggregateError(errors));
-                else
-                    deferred.resolve(result);
-            }
-        };
-        var cnt = args.length;
-        if (cnt === 0) {
-            deferred.resolve([]);
-        }
-        var _loop_1 = function(i) {
-            var value = args[i];
-            if (checks_5.Checks.isThenable(value)) {
-                value.then(function (res) {
-                    --countAll;
-                    result[i] = res;
-                    checkResult();
-                }, function (err) {
-                    --countAll;
-                    result[i] = err;
-                    errors.push(err);
-                    checkResult();
-                });
-            }
-            else {
-                --countAll;
-                result[i] = value;
-                checkResult();
-            }
-        };
-        for (var i = 0; i < cnt; i += 1) {
-            _loop_1(i);
-        }
-        return deferred.promise();
-    }
-    exports.whenAll = whenAll;
-    function fn_dispatch(task) {
-        taskQueue.enque(task);
-    }
-    function fn_dispatchImmediate(task) {
-        task();
-    }
-    var TaskQueue = (function () {
-        function TaskQueue() {
-            this._tasks = [];
-            this._state = 0;
-        }
-        TaskQueue.prototype._process = function () {
-            var tasks = this._tasks;
-            this._tasks = [];
-            for (var i = 0; i < tasks.length; i += 1) {
-                tasks[i]();
-            }
-        };
-        TaskQueue.prototype.enque = function (task) {
-            var _this = this;
-            this._tasks.push(task);
-            if (this._state === 0) {
-                this._state = 1;
-                setTimeout(function () { if (_this._state !== 1)
-                    return; _this._state = 0; _this._process(); }, 0);
-            }
-        };
-        TaskQueue.prototype.clear = function () {
-            this._tasks = [];
-            this._state = 0;
-        };
-        return TaskQueue;
-    }());
-    var Callback = (function () {
-        function Callback(dispatcher, successCB, errorCB) {
-            this._dispatcher = dispatcher;
-            this._successCB = successCB;
-            this._errorCB = errorCB;
-            this.deferred = new Deferred(this._dispatcher);
-        }
-        Callback.prototype.resolve = function (value, defer) {
-            var _this = this;
-            if (!checks_5.Checks.isFunc(this._successCB)) {
-                this.deferred.resolve(value);
-                return;
-            }
-            if (!!defer) {
-                this._dispatcher(function () { return _this._dispatchCallback(_this._successCB, value); });
-            }
-            else {
-                this._dispatchCallback(this._successCB, value);
-            }
-        };
-        Callback.prototype.reject = function (error, defer) {
-            var _this = this;
-            if (!checks_5.Checks.isFunc(this._errorCB)) {
-                this.deferred.reject(error);
-                return;
-            }
-            if (!!defer) {
-                this._dispatcher(function () { return _this._dispatchCallback(_this._errorCB, error); });
-            }
-            else {
-                this._dispatchCallback(this._errorCB, error);
-            }
-        };
-        Callback.prototype._dispatchCallback = function (callback, arg) {
-            var result;
-            try {
-                result = callback(arg);
-                this.deferred.resolve(result);
-            }
-            catch (err) {
-                this.deferred.reject(err);
-                return;
-            }
-        };
-        return Callback;
-    }());
-    var Deferred = (function () {
-        function Deferred(dispatcher) {
-            this._dispatcher = dispatcher;
-            this._value = checks_5.Checks.undefined;
-            this._error = checks_5.Checks.undefined;
-            this._state = 0;
-            this._stack = [];
-            this._promise = new Promise(this);
-        }
-        Deferred.prototype._resolve = function (value) {
-            var _this = this;
-            var pending = true;
-            try {
-                if (checks_5.Checks.isThenable(value)) {
-                    if (value === this._promise) {
-                        throw new TypeError("recursive resolution");
-                    }
-                    var fn_then = value.then;
-                    this._state = 1;
-                    fn_then.call(value, function (result) {
-                        if (pending) {
-                            pending = false;
-                            _this._resolve(result);
-                        }
-                    }, function (error) {
-                        if (pending) {
-                            pending = false;
-                            _this._reject(error);
-                        }
-                    });
-                }
-                else {
-                    this._state = 1;
-                    this._dispatcher(function () {
-                        _this._state = 2;
-                        _this._value = value;
-                        var i, stackSize = _this._stack.length;
-                        for (i = 0; i < stackSize; i++) {
-                            _this._stack[i].resolve(value, false);
-                        }
-                        _this._stack.splice(0, stackSize);
-                    });
-                }
-            }
-            catch (err) {
-                if (pending) {
-                    this._reject(err);
-                }
-            }
-            return this;
-        };
-        Deferred.prototype._reject = function (error) {
-            var _this = this;
-            this._state = 1;
-            this._dispatcher(function () {
-                _this._state = 3;
-                _this._error = error;
-                var stackSize = _this._stack.length, i = 0;
-                for (i = 0; i < stackSize; i++) {
-                    _this._stack[i].reject(error, false);
-                }
-                _this._stack.splice(0, stackSize);
-            });
-            return this;
-        };
-        Deferred.prototype._then = function (successCB, errorCB) {
-            if (!checks_5.Checks.isFunc(successCB) && !checks_5.Checks.isFunc(errorCB)) {
-                return this._promise;
-            }
-            var cb = new Callback(this._dispatcher, successCB, errorCB);
-            switch (this._state) {
-                case 0:
-                case 1:
-                    this._stack.push(cb);
-                    break;
-                case 2:
-                    cb.resolve(this._value, true);
-                    break;
-                case 3:
-                    cb.reject(this._error, true);
-                    break;
-            }
-            return cb.deferred.promise();
-        };
-        Deferred.prototype.resolve = function (value) {
-            if (this._state !== 0) {
-                return this.promise();
-            }
-            return this._resolve(value).promise();
-        };
-        Deferred.prototype.reject = function (error) {
-            if (this._state !== 0) {
-                return this.promise();
-            }
-            return this._reject(error).promise();
-        };
-        Deferred.prototype.promise = function () {
-            return this._promise;
-        };
-        Deferred.prototype.state = function () {
-            return this._state;
-        };
-        return Deferred;
-    }());
-    var Promise = (function () {
-        function Promise(deferred) {
-            this._deferred = deferred;
-        }
-        Promise.prototype.then = function (successCB, errorCB) {
-            return this._deferred._then(successCB, errorCB);
-        };
-        Promise.prototype.fail = function (errorCB) {
-            return this._deferred._then(checks_5.Checks.undefined, errorCB);
-        };
-        Promise.prototype.always = function (errorCB) {
-            return this._deferred._then(errorCB, errorCB);
-        };
-        Promise.prototype.state = function () {
-            return this._deferred.state();
-        };
-        return Promise;
-    }());
-    var AbortablePromise = (function () {
-        function AbortablePromise(deferred, abortable) {
-            this._deferred = deferred;
-            this._abortable = abortable;
-            this._aborted = false;
-        }
-        AbortablePromise.prototype.then = function (successCB, errorCB) {
-            return this._deferred.promise().then(successCB, errorCB);
-        };
-        AbortablePromise.prototype.fail = function (errorCB) {
-            return this._deferred.promise().fail(errorCB);
-        };
-        AbortablePromise.prototype.always = function (errorCB) {
-            return this._deferred.promise().always(errorCB);
-        };
-        AbortablePromise.prototype.abort = function (reason) {
-            if (this._aborted)
-                return;
-            var self = this;
-            self._deferred.reject(new coreMOD.AbortError(reason));
-            self._aborted = true;
-            setTimeout(function () { self._abortable.abort(); }, 0);
-        };
-        AbortablePromise.prototype.state = function () {
-            return this._deferred.state();
-        };
-        return AbortablePromise;
-    }());
-    exports.AbortablePromise = AbortablePromise;
-    var taskQueue = new TaskQueue();
-});
-define("jriapp_utils/async", ["require", "exports", "jriapp_utils/deferred", "jriapp_utils/deferred"], function (require, exports, deferred_1, deferred_2) {
-    "use strict";
-    exports.PromiseState = deferred_2.PromiseState;
-    exports.whenAll = deferred_2.whenAll;
-    exports.AbortablePromise = deferred_2.AbortablePromise;
-    var AsyncUtils = (function () {
-        function AsyncUtils() {
-        }
-        AsyncUtils.createDeferred = function () {
-            return deferred_1.create();
-        };
-        AsyncUtils.createSyncDeferred = function () {
-            return deferred_1.createSync();
-        };
-        AsyncUtils.whenAll = function (args) {
-            return deferred_1.whenAll(args);
-        };
-        AsyncUtils.getTaskQueue = function () {
-            return deferred_1.getTaskQueue();
-        };
-        AsyncUtils.delay = function (func, time) {
-            var deferred = deferred_1.create();
-            setTimeout(function () {
-                try {
-                    deferred.resolve(func());
-                }
-                catch (err) {
-                    deferred.reject(err);
-                }
-            }, !time ? 0 : time);
-            return deferred.promise();
-        };
-        return AsyncUtils;
-    }());
-    exports.AsyncUtils = AsyncUtils;
-});
-define("jriapp_utils/http", ["require", "exports", "jriapp_core/shared", "jriapp_utils/strutils", "jriapp_utils/coreutils", "jriapp_utils/async"], function (require, exports, shared_2, strUtils_3, coreutils_5, async_1) {
-    "use strict";
-    var coreUtils = coreutils_5.CoreUtils, strUtils = strUtils_3.StringUtils, defer = async_1.AsyncUtils;
-    var HttpUtils = (function () {
-        function HttpUtils() {
-        }
-        HttpUtils.isStatusOK = function (status) {
-            var chk = "" + status;
-            return chk.length === 3 && strUtils.startsWith(chk, "2");
-        };
-        HttpUtils._getXMLRequest = function (url, method, deferred, headers) {
-            var req = new XMLHttpRequest();
-            req.open(method, url, true);
-            req.responseType = "text";
-            req.onload = function (e) {
-                var status = "" + this.status;
-                if (status === "200") {
-                    var res = this.response;
-                    deferred.resolve(res);
-                }
-                else {
-                    if (HttpUtils.isStatusOK(status))
-                        deferred.reject(new shared_2.DummyError(new Error(strUtils.format('Status: "{0}" loading from URL: "{1}"', status, url))));
-                    else
-                        deferred.reject(new Error(strUtils.format('Error: "{0}" to load from URL: "{1}"', status, url)));
-                }
-            };
-            req.onerror = function (e) {
-                deferred.reject(new Error(strUtils.format('Error: "{0}" to load from URL: "{1}"', this.status, url)));
-            };
-            req.ontimeout = function () {
-                deferred.reject(new Error(strUtils.format('Error: "Request Timeout" to load from URL: "{0}"', url)));
-            };
-            req.onabort = function (e) {
-                deferred.reject(new Error(strUtils.format('HTTP Request Operation Aborted for URL: "{0}"', url)));
-            };
-            req.timeout = HttpUtils.ajaxTimeOut * 1000;
-            var _headers = coreUtils.merge(HttpUtils.defaultHeaders);
-            _headers = coreUtils.merge(headers, _headers);
-            coreUtils.iterateIndexer(_headers, function (name, val) {
-                req.setRequestHeader(name, val);
-            });
-            return req;
-        };
-        HttpUtils.postAjax = function (url, postData, headers) {
-            var _headers = coreUtils.merge(headers, { "Content-Type": "application/json; charset=utf-8" });
-            var deferred = defer.createDeferred(), req = HttpUtils._getXMLRequest(url, "POST", deferred, _headers);
-            req.send(postData);
-            return new async_1.AbortablePromise(deferred, req);
-        };
-        HttpUtils.getAjax = function (url, headers) {
-            var deferred = defer.createDeferred(), req = HttpUtils._getXMLRequest(url, "GET", deferred, headers);
-            req.send(null);
-            return new async_1.AbortablePromise(deferred, req);
-        };
-        HttpUtils.defaultHeaders = {};
-        HttpUtils.ajaxTimeOut = 600;
-        return HttpUtils;
-    }());
-    exports.HttpUtils = HttpUtils;
-});
-define("jriapp_utils/utils", ["require", "exports", "jriapp_utils/coreutils", "jriapp_utils/syschecks", "jriapp_utils/dom", "jriapp_utils/async", "jriapp_utils/http", "jriapp_utils/strutils", "jriapp_utils/checks", "jriapp_utils/arrhelper"], function (require, exports, coreutils_6, syschecks_4, dom_1, async_2, http_1, strutils_3, checks_6, arrhelper_3) {
-    "use strict";
-    var checks = checks_6.Checks, _async = async_2.AsyncUtils;
     var Utils = (function () {
         function Utils() {
         }
-        Utils.getErrorNotification = function (obj) {
-            if (!obj) {
-                return null;
-            }
-            else if (!!obj._aspect && checks.isErrorNotification(obj._aspect))
-                return obj._aspect.getIErrorNotification();
-            else if (checks.isErrorNotification(obj))
-                return obj.getIErrorNotification();
-            return null;
-        };
-        Utils.getEditable = function (obj) {
-            if (!obj) {
-                return null;
-            }
-            else if (!!obj._aspect && checks.isEditable(obj._aspect)) {
-                return obj._aspect;
-            }
-            else if (checks.isEditable(obj)) {
-                return obj;
-            }
-            return null;
-        };
-        Utils.getSubmittable = function (obj) {
-            if (!obj) {
-                return null;
-            }
-            else if (!!obj._aspect && checks.isSubmittable(obj._aspect)) {
-                return obj._aspect;
-            }
-            else if (checks.isSubmittable(obj)) {
-                return obj;
-            }
-            return null;
-        };
-        Utils.parseJSON = function (res) {
-            return _async.delay(function () {
-                var parsed = null;
-                if (checks.isString(res))
-                    parsed = JSON.parse(res);
-                else
-                    parsed = res;
-                return parsed;
-            });
-        };
-        Utils.check = checks;
+        Utils.check = checks_8.Checks;
         Utils.str = strutils_3.StringUtils;
         Utils.arr = arrhelper_3.ArrayHelper;
-        Utils.dom = dom_1.DomUtils;
         Utils.http = http_1.HttpUtils;
         Utils.core = coreutils_6.CoreUtils;
-        Utils.defer = _async;
+        Utils.defer = async_2.AsyncUtils;
         Utils.err = coreutils_6.ERROR;
         Utils.log = coreutils_6.LOG;
         Utils.debug = coreutils_6.DEBUG;
-        Utils.sys = syschecks_4.SysChecks;
+        Utils.sys = sysutils_3.SysUtils;
+        Utils.dom = dom_1.DomUtils;
         return Utils;
     }());
     exports.Utils = Utils;
 });
-define("jriapp_core/elview", ["require", "exports", "jriapp_core/const", "jriapp_core/bootstrap", "jriapp_core/lang", "jriapp_core/parser", "jriapp_core/object", "jriapp_utils/utils"], function (require, exports, const_2, bootstrap_1, lang_5, parser_1, object_2, utils_1) {
+define("jriapp_core/elview", ["require", "exports", "jriapp_core/const", "jriapp_core/bootstrap", "jriapp_core/lang", "jriapp_core/parser", "jriapp_core/object", "jriapp_utils/utils", "jriapp_utils/dom"], function (require, exports, const_2, bootstrap_1, lang_5, parser_1, object_2, utils_1, dom_2) {
     "use strict";
-    var utils = utils_1.Utils, $ = utils.dom.$, parse = parser_1.parser;
+    var utils = utils_1.Utils, $ = dom_2.DomUtils.$, parse = parser_1.parser;
     function createElViewFactory(register) {
         return new ElViewFactory(register);
     }
@@ -2413,9 +2408,9 @@ define("jriapp_core/content", ["require", "exports", "jriapp_core/lang"], functi
         return FactoryList;
     }());
 });
-define("jriapp_core/defaults", ["require", "exports", "jriapp_core/shared", "jriapp_core/object", "jriapp_utils/checks", "jriapp_utils/strutils"], function (require, exports, coreMOD, object_3, checks_7, strUtils_4) {
+define("jriapp_core/defaults", ["require", "exports", "jriapp_core/shared", "jriapp_core/object", "jriapp_utils/checks", "jriapp_utils/strutils"], function (require, exports, coreMOD, object_3, checks_9, strUtils_4) {
     "use strict";
-    var checks = checks_7.Checks, strUtils = strUtils_4.StringUtils;
+    var checks = checks_9.Checks, strUtils = strUtils_4.StringUtils;
     var PROP_NAME = {
         dateFormat: "dateFormat",
         timeFormat: "timeFormat",
@@ -2691,9 +2686,9 @@ define("jriapp_utils/waitqueue", ["require", "exports", "jriapp_core/object", "j
     }(object_4.BaseObject));
     exports.WaitQueue = WaitQueue;
 });
-define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/strutils", "jriapp_utils/checks", "jriapp_utils/coreutils", "jriapp_utils/async", "jriapp_utils/http", "jriapp_utils/waitqueue"], function (require, exports, lang_7, object_5, strUtils_5, checks_8, coreutils_8, async_3, http_2, waitqueue_1) {
+define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_utils/strutils", "jriapp_utils/checks", "jriapp_utils/coreutils", "jriapp_utils/async", "jriapp_utils/http", "jriapp_utils/waitqueue"], function (require, exports, lang_7, object_5, strUtils_5, checks_10, coreutils_8, async_3, http_2, waitqueue_1) {
     "use strict";
-    var checks = checks_8.Checks, coreUtils = coreutils_8.CoreUtils, strUtils = strUtils_5.StringUtils, defer = async_3.AsyncUtils;
+    var checks = checks_10.Checks, coreUtils = coreutils_8.CoreUtils, strUtils = strUtils_5.StringUtils, defer = async_3.AsyncUtils;
     var PROP_NAME = {
         isLoading: "isLoading"
     };
@@ -2886,9 +2881,9 @@ define("jriapp_utils/tloader", ["require", "exports", "jriapp_core/lang", "jriap
     }(object_5.BaseObject));
     exports.TemplateLoader = TemplateLoader;
 });
-define("jriapp_utils/path", ["require", "exports", "jriapp_core/shared", "jriapp_utils/dom", "jriapp_utils/arrhelper", "jriapp_utils/strutils"], function (require, exports, shared_3, dom_2, arrhelper_4, strutils_4) {
+define("jriapp_utils/path", ["require", "exports", "jriapp_core/shared", "jriapp_utils/dom", "jriapp_utils/arrhelper", "jriapp_utils/strutils"], function (require, exports, shared_3, dom_3, arrhelper_4, strutils_4) {
     "use strict";
-    var doc = dom_2.DomUtils.document, head = doc.head || doc.getElementsByTagName("head")[0];
+    var doc = dom_3.DomUtils.document, head = doc.head || doc.getElementsByTagName("head")[0];
     exports.frameworkJS = shared_3.Config.frameworkJS || "jriapp.js";
     var stylesDir = "css", imageDir = "img";
     function fn_getFrameworkPath() {
@@ -3001,10 +2996,10 @@ define("jriapp_utils/path", ["require", "exports", "jriapp_core/shared", "jriapp
     }());
     exports.PathHelper = PathHelper;
 });
-define("jriapp_utils/sloader", ["require", "exports", "jriapp_utils/arrhelper", "jriapp_utils/dom", "jriapp_utils/async", "jriapp_utils/path"], function (require, exports, arrhelper_5, dom_3, async_4, path_1) {
+define("jriapp_utils/sloader", ["require", "exports", "jriapp_utils/arrhelper", "jriapp_utils/dom", "jriapp_utils/async", "jriapp_utils/path"], function (require, exports, arrhelper_5, dom_4, async_4, path_1) {
     "use strict";
     var resolvedPromise = async_4.AsyncUtils.createSyncDeferred().resolve();
-    var doc = dom_3.DomUtils.document, head = doc.head || doc.getElementsByTagName("head")[0];
+    var doc = dom_4.DomUtils.document, head = doc.head || doc.getElementsByTagName("head")[0];
     var _stylesLoader = null;
     exports.frameworkCss = "jriapp.css";
     function createCssLoader() {
@@ -3115,60 +3110,9 @@ define("jriapp_utils/sloader", ["require", "exports", "jriapp_utils/arrhelper", 
         return StylesLoader;
     }());
 });
-define("jriapp_utils/tooltip", ["require", "exports", "jriapp_utils/dom"], function (require, exports, dom_4) {
+define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jriapp_core/elview", "jriapp_core/content", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/defaults", "jriapp_utils/strutils", "jriapp_utils/coreutils", "jriapp_utils/tloader", "jriapp_utils/sloader", "jriapp_utils/path", "jriapp_utils/dom", "jriapp_utils/async"], function (require, exports, const_3, elview_1, content_1, lang_8, object_6, defaults_1, strutils_5, coreutils_9, tloader_1, sloader_1, path_2, dom_5, async_5) {
     "use strict";
-    var dom = dom_4.DomUtils, $ = dom.$, window = dom.window;
-    exports.css = {
-        toolTip: "qtip",
-        toolTipError: "qtip-red"
-    };
-    function createToolTipSvc() {
-        return new tooltipService();
-    }
-    exports.createToolTipSvc = createToolTipSvc;
-    var tooltipService = (function () {
-        function tooltipService() {
-        }
-        tooltipService.prototype.addToolTip = function ($el, tip, isError, pos) {
-            var options = {
-                content: {
-                    text: tip
-                },
-                style: {
-                    classes: !!isError ? exports.css.toolTipError : exports.css.toolTip
-                },
-                position: {
-                    my: "top left",
-                    at: (!!pos) ? pos : "bottom right",
-                    viewport: $(window),
-                    adjust: {
-                        method: "flip",
-                        x: 0,
-                        y: 0
-                    }
-                },
-                hide: {
-                    event: "unfocus click mouseleave",
-                    leave: true
-                }
-            };
-            if (!!$el.data("qtip")) {
-                if (!tip) {
-                    $el.qtip("destroy", true);
-                }
-                else
-                    $el.qtip("option", "content.text", tip);
-            }
-            else if (!!tip) {
-                $el.qtip(options);
-            }
-        };
-        return tooltipService;
-    }());
-});
-define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jriapp_core/elview", "jriapp_core/content", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/defaults", "jriapp_utils/strutils", "jriapp_utils/coreutils", "jriapp_utils/tloader", "jriapp_utils/sloader", "jriapp_utils/path", "jriapp_utils/tooltip", "jriapp_utils/dom", "jriapp_utils/async"], function (require, exports, const_3, elview_1, content_1, lang_8, object_6, defaults_1, strutils_5, coreutils_9, tloader_1, sloader_1, path_2, tooltip_1, dom_5, async_5) {
-    "use strict";
-    var dom = dom_5.DomUtils, $ = dom.$, _async = async_5.AsyncUtils, doc = dom.document, win = dom.window, coreUtils = coreutils_9.CoreUtils, strUtils = strutils_5.StringUtils;
+    var dom = dom_5.DomUtils, $ = dom.$, _async = async_5.AsyncUtils, win = dom.window, doc = win.document, coreUtils = coreutils_9.CoreUtils, strUtils = strutils_5.StringUtils;
     var _TEMPLATE_SELECTOR = 'script[type="text/html"]';
     var stylesLoader = sloader_1.createCssLoader();
     var GLOB_EVENTS = {
@@ -3271,7 +3215,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             $win.on("beforeunload.jriapp", function () {
                 self.raiseEvent(GLOB_EVENTS.unload, {});
             });
-            dom.window.onerror = function (msg, url, linenumber) {
+            win.onerror = function (msg, url, linenumber) {
                 if (!!msg && msg.toString().indexOf(const_3.DUMY_ERROR) > -1) {
                     return true;
                 }
@@ -3296,8 +3240,7 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
             });
         };
         Bootstrap.prototype._processHTMLTemplates = function () {
-            var self = this, root = dom.document;
-            self._processTemplates(root);
+            this._processTemplates(doc);
         };
         Bootstrap.prototype._processTemplate = function (name, html, app) {
             var self = this, deferred = _async.createSyncDeferred();
@@ -3331,7 +3274,6 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
                     throw new Error("Invalid operation: bootState !== BootstrapState.None");
                 self._bootState = 1;
                 self._bindGlobalEvents();
-                self.registerSvc(const_3.TOOLTIP_SVC, tooltip_1.createToolTipSvc());
                 self._bootState = 2;
                 self.raiseEvent(GLOB_EVENTS.initialized, {});
                 self.removeHandler(GLOB_EVENTS.initialized);
@@ -3606,9 +3548,9 @@ define("jriapp_core/bootstrap", ["require", "exports", "jriapp_core/const", "jri
     exports.Bootstrap = Bootstrap;
     exports.bootstrap = new Bootstrap();
 });
-define("jriapp_core/converter", ["require", "exports", "jriapp_core/lang", "jriapp_utils/checks", "jriapp_utils/strutils", "jriapp_utils/coreutils", "jriapp_core/bootstrap"], function (require, exports, lang_9, checks_9, strUtils_6, coreutils_10, bootstrap_2) {
+define("jriapp_core/converter", ["require", "exports", "jriapp_core/lang", "jriapp_utils/checks", "jriapp_utils/strutils", "jriapp_utils/coreutils", "jriapp_core/bootstrap"], function (require, exports, lang_9, checks_11, strUtils_6, coreutils_10, bootstrap_2) {
     "use strict";
-    var checks = checks_9.Checks, strUtils = strUtils_6.StringUtils, coreUtils = coreutils_10.CoreUtils, boot = bootstrap_2.bootstrap;
+    var checks = checks_11.Checks, strUtils = strUtils_6.StringUtils, coreUtils = coreutils_10.CoreUtils, boot = bootstrap_2.bootstrap;
     exports.NUM_CONV = { None: 0, Integer: 1, Decimal: 2, Float: 3, SmallInt: 4 };
     var BaseConverter = (function () {
         function BaseConverter() {
@@ -3886,76 +3828,10 @@ define("jriapp_utils/debounce", ["require", "exports"], function (require, expor
     }());
     exports.Debounce = Debounce;
 });
-define("jriapp_utils/dblclick", ["require", "exports"], function (require, exports) {
-    "use strict";
-    var DblClick = (function () {
-        function DblClick(interval) {
-            if (interval === void 0) { interval = 0; }
-            this._isDestroyed = false;
-            this._timer = null;
-            this._interval = !interval ? 0 : interval;
-            this._fn_OnClick = null;
-            this._fn_OnDblClick = null;
-        }
-        DblClick.prototype.click = function () {
-            var self = this;
-            if (!!this._timer) {
-                clearTimeout(this._timer);
-                this._timer = null;
-                if (!!this._fn_OnDblClick)
-                    this._fn_OnDblClick();
-                else if (!!this._fn_OnClick)
-                    this._fn_OnClick();
-            }
-            else {
-                if (!!this._fn_OnClick) {
-                    this._timer = setTimeout(function () {
-                        self._timer = null;
-                        if (!!self._fn_OnClick)
-                            self._fn_OnClick();
-                    }, self._interval);
-                }
-            }
-        };
-        DblClick.prototype.add = function (fn_OnClick, fn_OnDblClick) {
-            if (this._isDestroyed)
-                return;
-            this._fn_OnClick = fn_OnClick;
-            this._fn_OnDblClick = fn_OnDblClick;
-        };
-        DblClick.prototype.destroy = function () {
-            if (this._isDestroyed)
-                return;
-            this._isDestroyed = true;
-            clearTimeout(this._timer);
-            this._timer = null;
-            this._fn_OnClick = null;
-            this._fn_OnDblClick = null;
-        };
-        DblClick.prototype.getIsDestroyed = function () {
-            return this._isDestroyed;
-        };
-        DblClick.prototype.getIsDestroyCalled = function () {
-            return this._isDestroyed;
-        };
-        Object.defineProperty(DblClick.prototype, "interval", {
-            get: function () {
-                return this._interval;
-            },
-            set: function (v) {
-                this._interval = v;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return DblClick;
-    }());
-    exports.DblClick = DblClick;
-});
 define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_core/parser", "jriapp_utils/utils"], function (require, exports, lang_10, object_7, bootstrap_3, parser_2, utils_2) {
     "use strict";
     var utils = utils_2.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, sys = utils.sys, debug = utils.debug, log = utils.log, parse = parser_2.parser, boot = bootstrap_3.bootstrap;
-    sys._isBinding = function (obj) {
+    sys.isBinding = function (obj) {
         return (!!obj && obj instanceof Binding);
     };
     function fn_reportUnResolved(bindTo, root, path, propName) {
@@ -4095,7 +3971,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             if (!opts.target) {
                 throw new Error(lang_10.ERRS.ERR_BIND_TARGET_EMPTY);
             }
-            if (!sys._isBaseObj(opts.target)) {
+            if (!sys.isBaseObj(opts.target)) {
                 throw new Error(lang_10.ERRS.ERR_BIND_TARGET_INVALID);
             }
             this._state = null;
@@ -4119,7 +3995,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             this._setTarget(opts.target);
             this._setSource(opts.source);
             this._update();
-            var err_notif = utils.getErrorNotification(this._srcEnd);
+            var err_notif = sys.getErrorNotification(this._srcEnd);
             if (!!err_notif && err_notif.getIsHasErrors())
                 this._onSrcErrChanged(err_notif);
         }
@@ -4177,7 +4053,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
         };
         Binding.prototype._onSrcErrChanged = function (err_notif, args) {
             var errors = [], tgt = this._tgtEnd, src = this._srcEnd, srcPath = this._srcPath;
-            if (!!tgt && sys._isElView(tgt)) {
+            if (!!tgt && sys.isElView(tgt)) {
                 if (!!src && srcPath.length > 0) {
                     var prop = srcPath[srcPath.length - 1];
                     errors = err_notif.getFieldErrors(prop);
@@ -4226,7 +4102,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             }
         };
         Binding.prototype._parseSrc2 = function (obj, path, lvl) {
-            var self = this, nextObj, isBaseObj = (!!obj && sys._isBaseObj(obj)), isValidProp;
+            var self = this, nextObj, isBaseObj = (!!obj && sys.isBaseObj(obj)), isValidProp;
             if (isBaseObj) {
                 obj.addOnDestroyed(self._onSrcDestroyed, self._objId, self);
                 self._setPathItem(obj, 0, lvl, path);
@@ -4260,7 +4136,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                             }
                         }, self._objId);
                     }
-                    var err_notif = utils.getErrorNotification(obj);
+                    var err_notif = sys.getErrorNotification(obj);
                     if (!!err_notif) {
                         err_notif.addOnErrorsChanged(self._onSrcErrChanged, self._objId, self);
                     }
@@ -4290,7 +4166,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
             }
         };
         Binding.prototype._parseTgt2 = function (obj, path, lvl) {
-            var self = this, nextObj, isBaseObj = sys._isBaseObj(obj), isValidProp = false;
+            var self = this, nextObj, isBaseObj = sys.isBaseObj(obj), isValidProp = false;
             if (isBaseObj) {
                 obj.addOnDestroyed(self._onTgtDestroyed, self._objId, self);
                 self._setPathItem(obj, 1, lvl, path);
@@ -4358,7 +4234,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
         Binding.prototype._cleanUp = function (obj) {
             if (!!obj) {
                 obj.removeNSHandlers(this._objId);
-                var err_notif = utils.getErrorNotification(obj);
+                var err_notif = sys.getErrorNotification(obj);
                 if (!!err_notif) {
                     err_notif.removeOnErrorsChanged(this._objId);
                 }
@@ -4411,7 +4287,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                     this.sourceValue = this._converter.convertToSource(this.targetValue, this._converterParam, this._srcEnd);
             }
             catch (ex) {
-                if (!sys._isValidationError(ex) || !sys._isElView(this._tgtEnd)) {
+                if (!sys.isValidationError(ex) || !sys.isElView(this._tgtEnd)) {
                     utils.err.reThrow(ex, this.handleError(ex, this));
                 }
             }
@@ -4434,7 +4310,7 @@ define("jriapp_core/binding", ["require", "exports", "jriapp_core/lang", "jriapp
                     }
                 }
                 this._setPathItem(null, 1, 0, this._tgtPath);
-                if (!!value && !sys._isBaseObj(value))
+                if (!!value && !sys.isBaseObj(value))
                     throw new Error(lang_10.ERRS.ERR_BIND_TARGET_INVALID);
                 this._target = value;
                 this._parseTgt(this._target, this._tgtPath, 0);
@@ -4707,9 +4583,9 @@ define("jriapp_core/datepicker", ["require", "exports", "jriapp_core/lang", "jri
     exports.Datepicker = Datepicker;
     boot.registerSvc("IDatepicker", new Datepicker());
 });
-define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jriapp_utils/syschecks", "jriapp_utils/checks", "jriapp_utils/strutils", "jriapp_utils/arrhelper", "jriapp_utils/coreutils", "jriapp_utils/dom", "jriapp_utils/async", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap"], function (require, exports, const_4, syschecks_5, checks_10, strUtils_7, arrhelper_6, coreutils_12, dom_7, async_6, lang_12, object_9, bootstrap_5) {
+define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jriapp_utils/sysutils", "jriapp_utils/checks", "jriapp_utils/strutils", "jriapp_utils/arrhelper", "jriapp_utils/coreutils", "jriapp_utils/dom", "jriapp_utils/async", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap"], function (require, exports, const_4, sysutils_4, checks_12, strUtils_7, arrhelper_6, coreutils_12, dom_7, async_6, lang_12, object_9, bootstrap_5) {
     "use strict";
-    var _async = async_6.AsyncUtils, dom = dom_7.DomUtils, $ = dom.$, doc = dom.document, coreUtils = coreutils_12.CoreUtils, checks = checks_10.Checks, strUtils = strUtils_7.StringUtils, arrHelper = arrhelper_6.ArrayHelper, sys = syschecks_5.SysChecks, boot = bootstrap_5.bootstrap;
+    var _async = async_6.AsyncUtils, dom = dom_7.DomUtils, $ = dom.$, doc = dom.document, coreUtils = coreutils_12.CoreUtils, checks = checks_12.Checks, strUtils = strUtils_7.StringUtils, arrHelper = arrhelper_6.ArrayHelper, sys = sysutils_4.SysUtils, boot = bootstrap_5.bootstrap;
     exports.css = {
         templateContainer: "ria-template-container",
         templateError: "ria-template-error"
@@ -4746,7 +4622,7 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
                 return [];
             var arr = this._lfTime.getObjs(), res = [];
             for (var i = 0, len = arr.length; i < len; i += 1) {
-                if (sys._isBinding(arr[i]))
+                if (sys.isBinding(arr[i]))
                     res.push(arr[i]);
             }
             return res;
@@ -4756,7 +4632,7 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
                 return [];
             var arr = this._lfTime.getObjs(), res = [];
             for (var i = 0, len = arr.length; i < len; i += 1) {
-                if (sys._isElView(arr[i]))
+                if (sys.isElView(arr[i]))
                     res.push(arr[i]);
             }
             return res;
@@ -4766,7 +4642,7 @@ define("jriapp_core/template", ["require", "exports", "jriapp_core/const", "jria
                 return null;
             var arr = this._getElViews();
             for (var i = 0, j = arr.length; i < j; i += 1) {
-                if (sys._isTemplateElView(arr[i])) {
+                if (sys.isTemplateElView(arr[i])) {
                     return arr[i];
                 }
             }
@@ -5422,10 +5298,10 @@ define("jriapp_collection/utils", ["require", "exports", "jriapp_utils/utils", "
     }
     exports.fn_traverseFields = fn_traverseFields;
 });
-define("jriapp_collection/validation", ["require", "exports", "jriapp_core/shared", "jriapp_core/lang", "jriapp_utils/syschecks", "jriapp_utils/utils"], function (require, exports, shared_4, lang_14, syschecks_6, utils_4) {
+define("jriapp_collection/validation", ["require", "exports", "jriapp_core/shared", "jriapp_core/lang", "jriapp_utils/sysutils", "jriapp_utils/utils"], function (require, exports, shared_4, lang_14, sysutils_5, utils_4) {
     "use strict";
     var utils = utils_4.Utils;
-    syschecks_6.SysChecks._isValidationError = function (obj) {
+    sysutils_5.SysUtils.isValidationError = function (obj) {
         return (!!obj && obj instanceof ValidationError);
     };
     var ValidationError = (function (_super) {
@@ -5500,10 +5376,10 @@ define("jriapp_collection/validation", ["require", "exports", "jriapp_core/share
     }());
     exports.Validations = Validations;
 });
-define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/syschecks", "jriapp_core/object", "jriapp_core/lang", "jriapp_utils/waitqueue", "jriapp_utils/utils", "jriapp_core/parser", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/validation"], function (require, exports, syschecks_7, object_12, lang_15, waitqueue_2, utils_5, parser_3, int_1, utils_6, validation_1) {
+define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/sysutils", "jriapp_core/object", "jriapp_core/lang", "jriapp_utils/waitqueue", "jriapp_utils/utils", "jriapp_core/parser", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/validation"], function (require, exports, sysutils_6, object_12, lang_15, waitqueue_2, utils_5, parser_3, int_1, utils_6, validation_1) {
     "use strict";
     var utils = utils_5.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, parse = parser_3.parser;
-    syschecks_7.SysChecks._isCollection = function (obj) { return (!!obj && obj instanceof BaseCollection); };
+    sysutils_6.SysUtils.isCollection = function (obj) { return (!!obj && obj instanceof BaseCollection); };
     var COLL_EVENTS = {
         begin_edit: "begin_edit",
         end_edit: "end_edit",
@@ -6444,7 +6320,7 @@ define("jriapp_collection/collection", ["require", "exports", "jriapp_utils/sysc
 });
 define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", "jriapp_utils/coreutils", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_collection/int", "jriapp_collection/utils", "jriapp_collection/validation"], function (require, exports, object_13, coreutils_15, utils_7, lang_16, int_2, utils_8, validation_2) {
     "use strict";
-    var utils = utils_7.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
+    var utils = utils_7.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, sys = utils.sys;
     var ItemAspect = (function (_super) {
         __extends(ItemAspect, _super);
         function ItemAspect(collection) {
@@ -6696,7 +6572,7 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             internal.onEditing(item, true, false);
             if (!!this._valueBag && this.isEditing) {
                 coreUtils.iterateIndexer(this._valueBag, function (name, obj) {
-                    if (!!obj && checks.isEditable(obj.val))
+                    if (!!obj && sys.isEditable(obj.val))
                         obj.val.beginEdit();
                 });
             }
@@ -6709,7 +6585,7 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             internal.onBeforeEditing(item, false, false);
             if (!!this._valueBag) {
                 coreUtils.iterateIndexer(this._valueBag, function (name, obj) {
-                    if (!!obj && checks.isEditable(obj.val))
+                    if (!!obj && sys.isEditable(obj.val))
                         obj.val.endEdit();
                 });
             }
@@ -6726,7 +6602,7 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             internal.onBeforeEditing(item, false, true);
             if (!!this._valueBag) {
                 coreUtils.iterateIndexer(this._valueBag, function (name, obj) {
-                    if (!!obj && checks.isEditable(obj.val))
+                    if (!!obj && sys.isEditable(obj.val))
                         obj.val.cancelEdit();
                 });
             }
@@ -6830,9 +6706,9 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
         };
         ItemAspect.prototype._delCustomVal = function (old) {
             if (!!old) {
-                if (checks.isEditable(old.val) && old.val.isEditing)
+                if (sys.isEditable(old.val) && old.val.isEditing)
                     old.val.cancelEdit();
-                if (old.isOwnIt && checks.isBaseObject(old.val))
+                if (old.isOwnIt && sys.isBaseObj(old.val))
                     old.val.destroy();
             }
         };
@@ -6937,7 +6813,7 @@ define("jriapp_collection/aspect", ["require", "exports", "jriapp_core/object", 
             }
             else {
                 this._valueBag[name] = { val: val, isOwnIt: !!isOwnVal };
-                if (this.isEditing && checks.isEditable(val))
+                if (this.isEditing && sys.isEditable(val))
                     val.beginEdit();
             }
         };
@@ -7210,10 +7086,10 @@ define("jriapp_collection/list", ["require", "exports", "jriapp_utils/coreutils"
     }(collection_1.BaseCollection));
     exports.BaseList = BaseList;
 });
-define("jriapp_collection/dictionary", ["require", "exports", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_utils/syschecks", "jriapp_collection/collection", "jriapp_collection/list"], function (require, exports, utils_11, lang_18, syschecks_8, collection_2, list_1) {
+define("jriapp_collection/dictionary", ["require", "exports", "jriapp_utils/utils", "jriapp_core/lang", "jriapp_utils/sysutils", "jriapp_collection/collection", "jriapp_collection/list"], function (require, exports, utils_11, lang_18, sysutils_7, collection_2, list_1) {
     "use strict";
     var utils = utils_11.Utils, strUtils = utils.str, checks = utils.check;
-    syschecks_8.SysChecks._getItemByProp = function (obj, prop) {
+    sysutils_7.SysUtils.getItemByProp = function (obj, prop) {
         if (obj instanceof BaseDictionary) {
             return obj.getItemByKey(prop);
         }
@@ -7418,9 +7294,9 @@ define("jriapp_utils/mloader", ["require", "exports", "jriapp_utils/utils", "jri
         return ModuleLoader;
     }());
 });
-define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "jriapp_core/shared", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_utils/lifetime", "jriapp_utils/utils", "jriapp_utils/mloader", "jriapp_core/binding", "jriapp_core/parser"], function (require, exports, const_5, shared_5, lang_19, object_15, bootstrap_6, lifetime_1, utils_13, mloader_1, binding_1, parser_4) {
+define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "jriapp_core/shared", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_utils/lifetime", "jriapp_utils/utils", "jriapp_utils/mloader", "jriapp_core/binding", "jriapp_core/parser", "jriapp_utils/dom"], function (require, exports, const_5, shared_5, lang_19, object_15, bootstrap_6, lifetime_1, utils_13, mloader_1, binding_1, parser_4, dom_8) {
     "use strict";
-    var utils = utils_13.Utils, $ = utils.dom.$, doc = utils.dom.document, strUtils = utils.str, syschecks = utils.sys, checks = utils.check, boot = bootstrap_6.bootstrap;
+    var utils = utils_13.Utils, $ = dom_8.DomUtils.$, doc = dom_8.DomUtils.document, strUtils = utils.str, sysutils = utils.sys, checks = utils.check, boot = bootstrap_6.bootstrap;
     function createDataBindSvc(root, elViewFactory) {
         return new DataBindingService(root, elViewFactory);
     }
@@ -7498,7 +7374,7 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
         };
         DataBindingService.prototype._updDataFormAttr = function (bindElems) {
             bindElems.forEach(function (bindElem) {
-                if (!bindElem.dataForm && syschecks._isDataForm(bindElem.el)) {
+                if (!bindElem.dataForm && sysutils.isDataForm(bindElem.el)) {
                     bindElem.el.setAttribute(const_5.DATA_ATTR.DATA_FORM, "yes");
                     bindElem.dataForm = "yes";
                 }
@@ -7508,7 +7384,7 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
             var self = this, op, bind_attr, temp_opts, info;
             lftm.addObj(elView);
             if (isInsideTemplate)
-                syschecks._setIsInsideTemplate(elView);
+                sysutils.setIsInsideTemplate(elView);
             bind_attr = bindElem.expressions.join("");
             if (!!bind_attr) {
                 temp_opts = parser_4.parser.parseOptions(bind_attr);
@@ -7536,7 +7412,7 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
                 self._updDataFormAttr(bindElems);
                 var forms_1 = self._getOnlyDataFormElems(bindElems);
                 var needBinding = bindElems.filter(function (bindElem) {
-                    return !syschecks._isInNestedForm(templateEl, forms_1, bindElem.el);
+                    return !sysutils.isInNestedForm(templateEl, forms_1, bindElem.el);
                 });
                 needBinding.forEach(function (bindElem) {
                     var elView = self._elViewFactory.getOrCreateElView(bindElem.el);
@@ -7580,7 +7456,7 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
                 }
                 var forms_2 = self._getOnlyDataFormElems(bindElems);
                 var needBinding = bindElems.filter(function (bindElem) {
-                    return !syschecks._isInNestedForm(scope, forms_2, bindElem.el);
+                    return !sysutils.isInNestedForm(scope, forms_2, bindElem.el);
                 });
                 needBinding.forEach(function (bindElem) {
                     var elView = self._elViewFactory.getOrCreateElView(bindElem.el);
@@ -7620,9 +7496,9 @@ define("jriapp_core/databindsvc", ["require", "exports", "jriapp_core/const", "j
         return DataBindingService;
     }(object_15.BaseObject));
 });
-define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_utils/utils", "jriapp_core/elview", "jriapp_core/databindsvc"], function (require, exports, const_6, lang_20, object_16, bootstrap_7, utils_14, elview_2, databindsvc_1) {
+define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_core/lang", "jriapp_core/object", "jriapp_core/bootstrap", "jriapp_utils/utils", "jriapp_core/elview", "jriapp_core/databindsvc", "jriapp_utils/dom"], function (require, exports, const_6, lang_20, object_16, bootstrap_7, utils_14, elview_2, databindsvc_1, dom_9) {
     "use strict";
-    var utils = utils_14.Utils, $ = utils.dom.$, doc = utils.dom.document, boot = bootstrap_7.bootstrap;
+    var utils = utils_14.Utils, $ = dom_9.DomUtils.$, doc = dom_9.DomUtils.document, boot = bootstrap_7.bootstrap, sys = utils.sys;
     var APP_EVENTS = {
         startup: "startup"
     };
@@ -7742,7 +7618,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
         };
         Application.prototype.registerObject = function (name, obj) {
             var self = this, name2 = const_6.STORE_KEY.OBJECT + name;
-            if (utils.check.isBaseObject(obj)) {
+            if (sys.isBaseObj(obj)) {
                 obj.addOnDestroyed(function (s, a) {
                     boot._getInternal().unregisterObject(self, name2);
                 }, self.uniqueID);
@@ -7928,7 +7804,7 @@ define("jriapp_core/app", ["require", "exports", "jriapp_core/const", "jriapp_co
     }(object_16.BaseObject));
     exports.Application = Application;
 });
-define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/const", "jriapp_core/shared", "jriapp_utils/syschecks", "jriapp_core/lang", "jriapp_core/converter", "jriapp_core/object", "jriapp_utils/debounce", "jriapp_utils/dblclick", "jriapp_utils/coreutils", "jriapp_core/bootstrap", "jriapp_core/binding", "jriapp_core/datepicker", "jriapp_core/template", "jriapp_utils/lifetime", "jriapp_utils/propwatcher", "jriapp_utils/waitqueue", "jriapp_utils/utils", "jriapp_core/mvvm", "jriapp_collection/int", "jriapp_collection/collection", "jriapp_collection/item", "jriapp_collection/aspect", "jriapp_collection/list", "jriapp_collection/dictionary", "jriapp_collection/validation", "jriapp_core/app"], function (require, exports, bootstrap_8, const_7, shared_6, syschecks_9, lang_21, converter_1, object_17, debounce_1, dblclick_1, coreutils_17, bootstrap_9, binding_2, datepicker_1, template_1, lifetime_2, propwatcher_1, waitqueue_3, utils_15, mvvm_1, int_5, collection_3, item_1, aspect_2, list_2, dictionary_1, validation_4, app_1) {
+define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/const", "jriapp_core/shared", "jriapp_utils/sysutils", "jriapp_core/lang", "jriapp_core/converter", "jriapp_core/object", "jriapp_utils/debounce", "jriapp_utils/coreutils", "jriapp_core/bootstrap", "jriapp_core/binding", "jriapp_core/datepicker", "jriapp_core/template", "jriapp_utils/lifetime", "jriapp_utils/propwatcher", "jriapp_utils/waitqueue", "jriapp_utils/utils", "jriapp_core/mvvm", "jriapp_collection/int", "jriapp_collection/collection", "jriapp_collection/item", "jriapp_collection/aspect", "jriapp_collection/list", "jriapp_collection/dictionary", "jriapp_collection/validation", "jriapp_core/app"], function (require, exports, bootstrap_8, const_7, shared_6, sysutils_8, lang_21, converter_1, object_17, debounce_1, coreutils_17, bootstrap_9, binding_2, datepicker_1, template_1, lifetime_2, propwatcher_1, waitqueue_3, utils_15, mvvm_1, int_5, collection_3, item_1, aspect_2, list_2, dictionary_1, validation_4, app_1) {
     "use strict";
     exports.DEBUG_LEVEL = const_7.DEBUG_LEVEL;
     exports.DATE_CONVERSION = const_7.DATE_CONVERSION;
@@ -7940,13 +7816,12 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.BINDING_MODE = const_7.BINDING_MODE;
     exports.BindTo = const_7.BindTo;
     exports.BaseError = shared_6.BaseError;
-    exports.SysChecks = syschecks_9.SysChecks;
+    exports.SysUtils = sysutils_8.SysUtils;
     exports.LocaleSTRS = lang_21.STRS;
     exports.LocaleERRS = lang_21.ERRS;
     exports.BaseConverter = converter_1.BaseConverter;
     exports.BaseObject = object_17.BaseObject;
     exports.Debounce = debounce_1.Debounce;
-    exports.DblClick = dblclick_1.DblClick;
     exports.DEBUG = coreutils_17.DEBUG;
     exports.ERROR = coreutils_17.ERROR;
     exports.bootstrap = bootstrap_9.bootstrap;
@@ -7974,12 +7849,12 @@ define("jriapp", ["require", "exports", "jriapp_core/bootstrap", "jriapp_core/co
     exports.BaseDictionary = dictionary_1.BaseDictionary;
     exports.ValidationError = validation_4.ValidationError;
     exports.Application = app_1.Application;
-    exports.VERSION = "0.9.95";
+    exports.VERSION = "0.9.96";
     bootstrap_8.Bootstrap._initFramework();
 });
-define("jriapp_utils/eventstore", ["require", "exports", "jriapp_core/object", "jriapp_utils/syschecks"], function (require, exports, object_18, syschecks_10) {
+define("jriapp_utils/eventstore", ["require", "exports", "jriapp_core/object", "jriapp_utils/sysutils"], function (require, exports, object_18, sysutils_9) {
     "use strict";
-    var PROP_BAG = syschecks_10.SysChecks._PROP_BAG_NAME();
+    var PROP_BAG = sysutils_9.SysUtils.PROP_BAG_NAME();
     (function (EVENT_CHANGE_TYPE) {
         EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["None"] = 0] = "None";
         EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["Added"] = 1] = "Added";

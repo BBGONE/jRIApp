@@ -4,11 +4,16 @@ import { ERRS } from "jriapp_core/lang";
 import { BaseObject } from "jriapp_core/object";
 import { bootstrap } from "jriapp_core/bootstrap";
 import { parser } from "jriapp_core/parser";
+import { DomUtils } from "jriapp_utils/dom";
 import { Utils } from "jriapp_utils/utils";
-import { ICollection, ICollectionItem, ICollChangedArgs, ITEM_STATUS, COLL_CHANGE_TYPE } from "jriapp_collection/int";
+import {
+    ICollection, ICollectionItem, ICollChangedArgs,
+    ITEM_STATUS, COLL_CHANGE_TYPE
+} from "jriapp_collection/int";
 import { BaseElView } from "./generic";
 
-const utils = Utils, $ = utils.dom.$, doc = utils.dom.document, checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
+const utils = Utils, $ = DomUtils.$, doc = DomUtils.document, sys= utils.sys,
+    checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
     boot = bootstrap;
 
 export interface IOptionStateProvider {
@@ -77,7 +82,7 @@ export class ListBox extends BaseObject {
                 textPath: null,
                 statePath: null
             }, options);
-        if (!!options.dataSource && !checks.isCollection(options.dataSource))
+        if (!!options.dataSource && !sys.isCollection(options.dataSource))
             throw new Error(ERRS.ERR_LISTBOX_DATASRC_INVALID);
         this._$el = $(options.el);
         this._options = options;

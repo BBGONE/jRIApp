@@ -13,7 +13,9 @@ import {
 import { BaseCollection } from "jriapp_collection/collection";
 import { PROP_NAME } from "./const";
 
-const utils = Utils, _async = utils.defer, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr, ERROR = utils.err;
+const utils = Utils, _async = utils.defer, checks = utils.check,
+    strUtils = utils.str, coreUtils = utils.core,
+    arrHelper = utils.arr, ERROR = utils.err, sys = utils.sys;
 
 const VIEW_EVENTS = {
     refreshed: "view_refreshed"
@@ -44,7 +46,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
             fn_itemsProvider: null
         }, options);
 
-        if (!checks.isCollection(opts.dataSource))
+        if (!sys.isCollection(opts.dataSource))
             throw new Error(ERRS.ERR_DATAVIEW_DATASRC_INVALID);
         if (!!opts.fn_filter && !checks.isFunc(opts.fn_filter))
             throw new Error(ERRS.ERR_DATAVIEW_FILTER_INVALID);

@@ -4,7 +4,7 @@ import {
     TErrorArgs, TPropChangedHandler
 } from "shared";
 import { ERRS } from "lang";
-import { SysChecks } from "../jriapp_utils/syschecks";
+import { SysUtils } from "../jriapp_utils/sysutils";
 import { Checks } from "../jriapp_utils/checks";
 import { StringUtils } from "../jriapp_utils/strUtils";
 import { CoreUtils, ERROR, DEBUG } from "../jriapp_utils/coreutils";
@@ -15,9 +15,9 @@ const OBJ_EVENTS = {
     destroyed: "destroyed"
 };
 
-const checks = Checks, strUtils = StringUtils, coreUtils = CoreUtils, evHelper = EventHelper, debug = DEBUG, syschecks = SysChecks;
+const checks = Checks, strUtils = StringUtils, coreUtils = CoreUtils, evHelper = EventHelper, debug = DEBUG, sysutils = SysUtils;
 
-syschecks._isBaseObj = function (obj: any): boolean {
+sysutils.isBaseObj = function (obj: any): boolean {
     return (!!obj && obj instanceof BaseObject);
 };
 
@@ -125,7 +125,7 @@ export class BaseObject implements IBaseObject {
                 debug.checkStartDebugger();
                 throw new Error(strUtils.format(ERRS.ERR_PROP_NAME_INVALID, name));
             }
-            if (syschecks._isBaseObj(obj)) {
+            if (sysutils.isBaseObj(obj)) {
                 (<IBaseObject>obj).raisePropertyChanged(lastPropName);
             }
         }

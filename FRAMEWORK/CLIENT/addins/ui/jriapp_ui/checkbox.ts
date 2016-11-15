@@ -1,11 +1,12 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { IViewOptions } from "jriapp_core/shared";
+import { DomUtils } from "jriapp_utils/dom";
 import { Utils } from "jriapp_utils/utils";
 import { bootstrap } from "jriapp_core/bootstrap";
 import { css, PROP_NAME } from "./generic";
 import { InputElView } from "./input";
 
-const utils = Utils, dom = utils.dom, $ = dom.$, boot = bootstrap;
+const dom = DomUtils, $ = dom.$, checks = Utils.check, boot = bootstrap;
 
 export class CheckBoxElView extends InputElView {
     private _checked: boolean;
@@ -25,7 +26,7 @@ export class CheckBoxElView extends InputElView {
         this._updateState();
     }
     protected _updateState() {
-        dom.setClass(this.$el.toArray(), css.checkedNull, !utils.check.isNt(this.checked));
+        dom.setClass(this.$el.toArray(), css.checkedNull, !checks.isNt(this.checked));
     }
     toString() {
         return "CheckBoxElView";

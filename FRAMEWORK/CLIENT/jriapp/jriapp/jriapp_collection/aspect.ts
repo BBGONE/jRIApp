@@ -11,7 +11,8 @@ import { BaseCollection } from "./collection";
 import { fn_traverseFields } from "./utils";
 import { ValidationError, Validations } from "./validation";
 
-const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
+const utils = Utils, coreUtils = utils.core, strUtils = utils.str,
+    checks = utils.check, sys = utils.sys;
 
 interface ICustomVal
 {
@@ -289,7 +290,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         internal.onEditing(item, true, false);
         if (!!this._valueBag && this.isEditing) {
             coreUtils.iterateIndexer(this._valueBag, (name, obj) => {
-                if (!!obj && checks.isEditable(obj.val))
+                if (!!obj && sys.isEditable(obj.val))
                     obj.val.beginEdit();
             });
         }
@@ -302,7 +303,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         internal.onBeforeEditing(item, false, false);
         if (!!this._valueBag) {
             coreUtils.iterateIndexer(this._valueBag, (name, obj) => {
-                if (!!obj && checks.isEditable(obj.val))
+                if (!!obj && sys.isEditable(obj.val))
                     obj.val.endEdit();
             });
         }
@@ -320,7 +321,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         internal.onBeforeEditing(item, false, true);
         if (!!this._valueBag) {
             coreUtils.iterateIndexer(this._valueBag, (name, obj) => {
-                if (!!obj && checks.isEditable(obj.val))
+                if (!!obj && sys.isEditable(obj.val))
                     obj.val.cancelEdit();
             });
         }
@@ -427,10 +428,10 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     }
     private _delCustomVal(old: ICustomVal) {
         if (!!old) {
-            if (checks.isEditable(old.val) && old.val.isEditing)
+            if (sys.isEditable(old.val) && old.val.isEditing)
                 old.val.cancelEdit();
 
-            if (old.isOwnIt && checks.isBaseObject(old.val))
+            if (old.isOwnIt && sys.isBaseObj(old.val))
                 old.val.destroy();
         }
     }
@@ -492,7 +493,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         }
         else {
             this._valueBag[name] = { val: val, isOwnIt: !!isOwnVal };
-            if (this.isEditing && checks.isEditable(val))
+            if (this.isEditing && sys.isEditable(val))
                 val.beginEdit();
         }
     }
