@@ -1,4 +1,5 @@
 ﻿@using RIAPP.DataService.Mvc.Utils
+@using System.Web.Optimization
 <!DOCTYPE html>
 <html>
 <head>
@@ -28,11 +29,15 @@
     @RenderSection("JSImport", false)
 
     <script src="@Url.Asset("/Scripts/require.min.js", false)" type="text/javascript"></script>
+    @Scripts.Render("~/bundles/jriapp")
+    @Scripts.Render("~/bundles/shared")
+   
+     @*
     <script src="@Url.Asset("/Scripts/jriapp/jriapp_shared.js", true)" type="text/javascript"></script>
     <script src="@Url.Asset("/Scripts/jriapp/jriapp.js", true)" type="text/javascript"></script>
     <script src="@Url.Asset("/Scripts/jriapp/jriapp_ui.js", true)" type="text/javascript"></script>
     <script src="@Url.Content("~/Scripts/demo/shared/shared.js", true)" type="text/javascript"></script>
-
+    *@
 
     <script type="text/javascript">
         var jriapp_config = {
@@ -42,11 +47,13 @@
 
         var config = {
             baseUrl: "@Url.Asset("/Scripts/demo/", true)",
+            @*
             bundles: {
                 "@Url.Asset("/Scripts/jriapp/jriapp_db.js", true)": ["jriapp_db"],
                 "@Url.Asset("/Scripts/jriapp/jriapp_langs.js", true)": ["jriapp_ru"]
             },
-            //taken from web config (i removed it here because Url.Asset  uses the bust too, so no need for the two busts)
+            *@
+            //taken from web config (i removed it here because Url.Asset uses the bust too, so no need for the two busts)
             @*@urlArgs: "bust=@Url.Bust()",*@
             waitSeconds: 10
         };
