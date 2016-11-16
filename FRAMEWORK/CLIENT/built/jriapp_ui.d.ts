@@ -1459,6 +1459,52 @@ declare module "jriapp_ui/tabs" {
         tabIndex: number;
     }
 }
+declare module "jriapp_ui/command" {
+    import { IViewOptions } from "jriapp/shared";
+    import { ICommand } from "jriapp/mvvm";
+    import { BaseElView } from "jriapp_ui/generic";
+    export interface ICommandViewOptions extends IViewOptions {
+        preventDefault?: boolean;
+        stopPropagation?: boolean;
+    }
+    export class CommandElView extends BaseElView {
+        private _command;
+        private _commandParam;
+        private _preventDefault;
+        private _stopPropagation;
+        private _disabled;
+        constructor(options: ICommandViewOptions);
+        private _onCanExecuteChanged(cmd, args);
+        protected _onCommandChanged(): void;
+        protected invokeCommand(args: any, isAsync: boolean): void;
+        destroy(): void;
+        toString(): string;
+        isEnabled: boolean;
+        command: ICommand;
+        commandParam: any;
+        readonly preventDefault: boolean;
+        readonly stopPropagation: boolean;
+    }
+}
+declare module "jriapp_ui/template" {
+    import { ITemplate, ITemplateEvents, IViewOptions } from "jriapp/shared";
+    import { CommandElView } from "jriapp_ui/command";
+    export interface ITemplateOptions {
+        dataContext?: any;
+        templEvents?: ITemplateEvents;
+    }
+    export class TemplateElView extends CommandElView implements ITemplateEvents {
+        private _template;
+        private _isEnabled;
+        constructor(options: IViewOptions);
+        templateLoading(template: ITemplate): void;
+        templateLoaded(template: ITemplate, error?: any): void;
+        templateUnLoading(template: ITemplate): void;
+        toString(): string;
+        isEnabled: boolean;
+        readonly template: ITemplate;
+    }
+}
 declare module "jriapp_ui/dataform" {
     import { IBaseObject, IValidationInfo, BaseObject } from "jriapp_shared";
     import { IApplication, IViewOptions } from "jriapp/shared";
@@ -1524,33 +1570,6 @@ declare module "jriapp_ui/datepicker" {
         constructor(options: IDatePickerOptions);
         destroy(): void;
         toString(): string;
-    }
-}
-declare module "jriapp_ui/command" {
-    import { IViewOptions } from "jriapp/shared";
-    import { ICommand } from "jriapp/mvvm";
-    import { BaseElView } from "jriapp_ui/generic";
-    export interface ICommandViewOptions extends IViewOptions {
-        preventDefault?: boolean;
-        stopPropagation?: boolean;
-    }
-    export class CommandElView extends BaseElView {
-        private _command;
-        private _commandParam;
-        private _preventDefault;
-        private _stopPropagation;
-        private _disabled;
-        constructor(options: ICommandViewOptions);
-        private _onCanExecuteChanged(cmd, args);
-        protected _onCommandChanged(): void;
-        protected invokeCommand(args: any, isAsync: boolean): void;
-        destroy(): void;
-        toString(): string;
-        isEnabled: boolean;
-        command: ICommand;
-        commandParam: any;
-        readonly preventDefault: boolean;
-        readonly stopPropagation: boolean;
     }
 }
 declare module "jriapp_ui/anchor" {
@@ -1684,6 +1703,7 @@ declare module "jriapp_ui" {
     export * from "jriapp_ui/stackpanel";
     export * from "jriapp_ui/tabs";
     export { BaseElView, fn_addToolTip } from "jriapp_ui/generic";
+    export { TemplateElView } from "jriapp_ui/template";
     export { DataForm, DataFormElView } from "jriapp_ui/dataform";
     export { DatePickerElView } from "jriapp_ui/datepicker";
     export { AnchorElView, IAncorOptions } from "jriapp_ui/anchor";
@@ -1703,23 +1723,4 @@ declare module "jriapp_ui" {
     export { TextBoxElView, ITextBoxOptions, TKeyPressArgs } from "jriapp_ui/textbox";
     export { DblClick } from "jriapp_ui/utils/dblclick";
     export * from "jriapp_ui/content/all";
-}
-declare module "jriapp_ui/template" {
-    import { ITemplate, ITemplateEvents, IViewOptions } from "jriapp/shared";
-    import { CommandElView } from "jriapp_ui/command";
-    export interface ITemplateOptions {
-        dataContext?: any;
-        templEvents?: ITemplateEvents;
-    }
-    export class TemplateElView extends CommandElView implements ITemplateEvents {
-        private _template;
-        private _isEnabled;
-        constructor(options: IViewOptions);
-        templateLoading(template: ITemplate): void;
-        templateLoaded(template: ITemplate, error?: any): void;
-        templateUnLoading(template: ITemplate): void;
-        toString(): string;
-        isEnabled: boolean;
-        readonly template: ITemplate;
-    }
 }

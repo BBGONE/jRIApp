@@ -7015,9 +7015,212 @@ define("jriapp_ui/tabs", ["require", "exports", "jriapp_shared", "jriapp/utils/j
     exports.TabsElView = TabsElView;
     bootstrap_18.bootstrap.registerElView("tabs", TabsElView);
 });
-define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/utils/jquery", "jriapp/const", "jriapp/utils/viewchecks", "jriapp/bootstrap", "jriapp_ui/generic", "jriapp_ui/content/int"], function (require, exports, jriapp_shared_35, jquery_18, const_25, viewchecks_2, bootstrap_19, generic_14, int_6) {
+define("jriapp_ui/command", ["require", "exports", "jriapp_shared", "jriapp_ui/generic"], function (require, exports, jriapp_shared_35, generic_14) {
     "use strict";
-    var utils = jriapp_shared_35.Utils, dom = jriapp_shared_35.Utils.dom, doc = dom.document, checks = utils.check, coreUtils = utils.core, strUtils = utils.str, sys = utils.sys, parse = jriapp_shared_35.parser, boot = bootstrap_19.bootstrap, viewChecks = viewchecks_2.ViewChecks;
+    var utils = jriapp_shared_35.Utils, dom = utils.dom, checks = utils.check, sys = utils.sys;
+    var CommandElView = (function (_super) {
+        __extends(CommandElView, _super);
+        function CommandElView(options) {
+            _super.call(this, options);
+            this._command = null;
+            this._commandParam = null;
+            this._preventDefault = !!options.preventDefault;
+            this._stopPropagation = !!options.stopPropagation;
+            this._disabled = ("disabled" in this.el) ? checks.undefined : false;
+            dom.setClass(this.$el.toArray(), generic_14.css.disabled, this.isEnabled);
+        }
+        CommandElView.prototype._onCanExecuteChanged = function (cmd, args) {
+            this.isEnabled = cmd.canExecute(this, this._commandParam);
+        };
+        CommandElView.prototype._onCommandChanged = function () {
+            this.raisePropertyChanged(generic_14.PROP_NAME.command);
+        };
+        CommandElView.prototype.invokeCommand = function (args, isAsync) {
+            var self = this;
+            args = args || this._commandParam || {};
+            if (!!self.command && self.command.canExecute(self, args)) {
+                if (isAsync) {
+                    setTimeout(function () {
+                        if (self.getIsDestroyCalled())
+                            return;
+                        try {
+                            if (!!self.command && self.command.canExecute(self, args))
+                                self.command.execute(self, args);
+                        }
+                        catch (ex) {
+                            self.handleError(ex, self);
+                        }
+                    }, 0);
+                }
+                else {
+                    self.command.execute(self, args);
+                }
+            }
+        };
+        CommandElView.prototype.destroy = function () {
+            if (this._isDestroyed)
+                return;
+            this._isDestroyCalled = true;
+            if (sys.isBaseObj(this._command)) {
+                this._command.removeNSHandlers(this.uniqueID);
+            }
+            this.command = null;
+            this._commandParam = null;
+            _super.prototype.destroy.call(this);
+        };
+        CommandElView.prototype.toString = function () {
+            return "CommandElView";
+        };
+        Object.defineProperty(CommandElView.prototype, "isEnabled", {
+            get: function () {
+                var el = this.el;
+                if (this._disabled === checks.undefined)
+                    return !el.disabled;
+                else
+                    return !this._disabled;
+            },
+            set: function (v) {
+                var el = this.el;
+                if (v !== this.isEnabled) {
+                    if (this._disabled === checks.undefined)
+                        el.disabled = !v;
+                    else
+                        this._disabled = !v;
+                    dom.setClass(this.$el.toArray(), generic_14.css.disabled, !!v);
+                    this.raisePropertyChanged(generic_14.PROP_NAME.isEnabled);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CommandElView.prototype, "command", {
+            get: function () { return this._command; },
+            set: function (v) {
+                var self = this;
+                if (v !== this._command) {
+                    if (sys.isBaseObj(this._command)) {
+                        this._command.removeNSHandlers(this.uniqueID);
+                    }
+                    this._command = v;
+                    if (!!this._command) {
+                        this._command.addOnCanExecuteChanged(self._onCanExecuteChanged, this.uniqueID, self);
+                        self.isEnabled = this._command.canExecute(self, this.commandParam || {});
+                    }
+                    else {
+                        self.isEnabled = false;
+                    }
+                    this._onCommandChanged();
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CommandElView.prototype, "commandParam", {
+            get: function () { return this._commandParam; },
+            set: function (v) {
+                if (v !== this._commandParam) {
+                    this._commandParam = v;
+                    this.raisePropertyChanged(generic_14.PROP_NAME.commandParam);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CommandElView.prototype, "preventDefault", {
+            get: function () {
+                return this._preventDefault;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CommandElView.prototype, "stopPropagation", {
+            get: function () {
+                return this._stopPropagation;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return CommandElView;
+    }(generic_14.BaseElView));
+    exports.CommandElView = CommandElView;
+});
+define("jriapp_ui/template", ["require", "exports", "jriapp_shared", "jriapp/utils/viewchecks", "jriapp/bootstrap", "jriapp_ui/command"], function (require, exports, jriapp_shared_36, viewchecks_2, bootstrap_19, command_1) {
+    "use strict";
+    var utils = jriapp_shared_36.Utils, viewChecks = viewchecks_2.ViewChecks, boot = bootstrap_19.bootstrap;
+    viewChecks.isTemplateElView = function (obj) {
+        return !!obj && obj instanceof TemplateElView;
+    };
+    var PROP_NAME = {
+        template: "template",
+        isEnabled: "isEnabled"
+    };
+    var TemplateElView = (function (_super) {
+        __extends(TemplateElView, _super);
+        function TemplateElView(options) {
+            _super.call(this, options);
+            this._template = null;
+            this._isEnabled = true;
+        }
+        TemplateElView.prototype.templateLoading = function (template) {
+        };
+        TemplateElView.prototype.templateLoaded = function (template, error) {
+            if (!!error)
+                return;
+            var self = this;
+            try {
+                self._template = template;
+                var args = { template: template, isLoaded: true };
+                self.invokeCommand(args, false);
+                this.raisePropertyChanged(PROP_NAME.template);
+            }
+            catch (ex) {
+                utils.err.reThrow(ex, this.handleError(ex, this));
+            }
+        };
+        TemplateElView.prototype.templateUnLoading = function (template) {
+            var self = this;
+            try {
+                var args = { template: template, isLoaded: false };
+                self.invokeCommand(args, false);
+            }
+            catch (ex) {
+                this.handleError(ex, this);
+            }
+            finally {
+                self._template = null;
+            }
+            this.raisePropertyChanged(PROP_NAME.template);
+        };
+        TemplateElView.prototype.toString = function () {
+            return "TemplateElView";
+        };
+        Object.defineProperty(TemplateElView.prototype, "isEnabled", {
+            get: function () { return this._isEnabled; },
+            set: function (v) {
+                if (this._isEnabled !== v) {
+                    this._isEnabled = v;
+                    this.raisePropertyChanged(PROP_NAME.isEnabled);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TemplateElView.prototype, "template", {
+            get: function () {
+                return this._template;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return TemplateElView;
+    }(command_1.CommandElView));
+    exports.TemplateElView = TemplateElView;
+    ;
+    boot.registerElView("template", TemplateElView);
+});
+define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/utils/jquery", "jriapp/const", "jriapp/utils/viewchecks", "jriapp/bootstrap", "jriapp_ui/generic", "jriapp_ui/content/int"], function (require, exports, jriapp_shared_37, jquery_18, const_25, viewchecks_3, bootstrap_20, generic_15, int_6) {
+    "use strict";
+    var utils = jriapp_shared_37.Utils, dom = jriapp_shared_37.Utils.dom, doc = dom.document, checks = utils.check, coreUtils = utils.core, strUtils = utils.str, sys = utils.sys, parse = jriapp_shared_37.parser, boot = bootstrap_20.bootstrap, viewChecks = viewchecks_3.ViewChecks;
     exports.css = {
         dataform: "ria-dataform",
         error: "ria-form-error"
@@ -7172,7 +7375,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
                 if (!!op.fieldName && !op.fieldInfo) {
                     op.fieldInfo = getFieldInfo(dctx, op.fieldName);
                     if (!op.fieldInfo) {
-                        throw new Error(strUtils.format(jriapp_shared_35.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, "", op.fieldName));
+                        throw new Error(strUtils.format(jriapp_shared_37.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, "", op.fieldName));
                     }
                 }
                 var contentType = boot.contentFactory.getContentType(op);
@@ -7328,7 +7531,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
                     if (v === this._dataContext)
                         return;
                     if (!!v && !sys.isBaseObj(v)) {
-                        throw new Error(jriapp_shared_35.LocaleERRS.ERR_DATAFRM_DCTX_INVALID);
+                        throw new Error(jriapp_shared_37.LocaleERRS.ERR_DATAFRM_DCTX_INVALID);
                     }
                     this._unbindDS();
                     this._dataContext = v;
@@ -7410,7 +7613,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
         DataForm._DATA_FORM_SELECTOR = ["*[", const_25.DATA_ATTR.DATA_FORM, "]"].join("");
         DataForm._DATA_CONTENT_SELECTOR = ["*[", const_25.DATA_ATTR.DATA_CONTENT, "]:not([", const_25.DATA_ATTR.DATA_COLUMN, "])"].join("");
         return DataForm;
-    }(jriapp_shared_35.BaseObject));
+    }(jriapp_shared_37.BaseObject));
     exports.DataForm = DataForm;
     var DataFormElView = (function (_super) {
         __extends(DataFormElView, _super);
@@ -7434,11 +7637,11 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             }, this.uniqueID);
         }
         DataFormElView.prototype._getErrorTipInfo = function (errors) {
-            var tip = ["<b>", jriapp_shared_35.LocaleSTRS.VALIDATE.errorInfo, "</b>", "<ul>"];
+            var tip = ["<b>", jriapp_shared_37.LocaleSTRS.VALIDATE.errorInfo, "</b>", "<ul>"];
             errors.forEach(function (info) {
                 var fieldName = info.fieldName, res = "";
                 if (!!fieldName) {
-                    res = jriapp_shared_35.LocaleSTRS.VALIDATE.errorField + " " + fieldName;
+                    res = jriapp_shared_37.LocaleSTRS.VALIDATE.errorField + " " + fieldName;
                 }
                 info.errors.forEach(function (str) {
                     if (!!res)
@@ -7460,7 +7663,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             if (!!errors && errors.length > 0) {
                 var $img = jquery_18.$("<div data-name=\"error_info\" class=\"" + exports.css.error + "\" />");
                 $el.prepend($img);
-                generic_14.fn_addToolTip($img, this._getErrorTipInfo(errors), true);
+                generic_15.fn_addToolTip($img, this._getErrorTipInfo(errors), true);
                 this._setFieldError(true);
             }
             else {
@@ -7503,13 +7706,13 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             configurable: true
         });
         return DataFormElView;
-    }(generic_14.BaseElView));
+    }(generic_15.BaseElView));
     exports.DataFormElView = DataFormElView;
     boot.registerElView(const_25.ELVIEW_NM.DataForm, DataFormElView);
 });
-define("jriapp_ui/datepicker", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/textbox"], function (require, exports, bootstrap_20, textbox_3) {
+define("jriapp_ui/datepicker", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/textbox"], function (require, exports, bootstrap_21, textbox_3) {
     "use strict";
-    var boot = bootstrap_20.bootstrap;
+    var boot = bootstrap_21.bootstrap;
     var PROP_NAME = {
         dateFormat: "dateFormat",
         datepickerRegion: "datepickerRegion"
@@ -7537,138 +7740,9 @@ define("jriapp_ui/datepicker", ["require", "exports", "jriapp/bootstrap", "jriap
     exports.DatePickerElView = DatePickerElView;
     boot.registerElView("datepicker", DatePickerElView);
 });
-define("jriapp_ui/command", ["require", "exports", "jriapp_shared", "jriapp_ui/generic"], function (require, exports, jriapp_shared_36, generic_15) {
+define("jriapp_ui/anchor", ["require", "exports", "jriapp_shared", "jriapp/bootstrap", "jriapp_ui/generic", "jriapp_ui/command"], function (require, exports, jriapp_shared_38, bootstrap_22, generic_16, command_2) {
     "use strict";
-    var utils = jriapp_shared_36.Utils, dom = utils.dom, checks = utils.check, sys = utils.sys;
-    var CommandElView = (function (_super) {
-        __extends(CommandElView, _super);
-        function CommandElView(options) {
-            _super.call(this, options);
-            this._command = null;
-            this._commandParam = null;
-            this._preventDefault = !!options.preventDefault;
-            this._stopPropagation = !!options.stopPropagation;
-            this._disabled = ("disabled" in this.el) ? checks.undefined : false;
-            dom.setClass(this.$el.toArray(), generic_15.css.disabled, this.isEnabled);
-        }
-        CommandElView.prototype._onCanExecuteChanged = function (cmd, args) {
-            this.isEnabled = cmd.canExecute(this, this._commandParam);
-        };
-        CommandElView.prototype._onCommandChanged = function () {
-            this.raisePropertyChanged(generic_15.PROP_NAME.command);
-        };
-        CommandElView.prototype.invokeCommand = function (args, isAsync) {
-            var self = this;
-            args = args || this._commandParam || {};
-            if (!!self.command && self.command.canExecute(self, args)) {
-                if (isAsync) {
-                    setTimeout(function () {
-                        if (self.getIsDestroyCalled())
-                            return;
-                        try {
-                            if (!!self.command && self.command.canExecute(self, args))
-                                self.command.execute(self, args);
-                        }
-                        catch (ex) {
-                            self.handleError(ex, self);
-                        }
-                    }, 0);
-                }
-                else {
-                    self.command.execute(self, args);
-                }
-            }
-        };
-        CommandElView.prototype.destroy = function () {
-            if (this._isDestroyed)
-                return;
-            this._isDestroyCalled = true;
-            if (sys.isBaseObj(this._command)) {
-                this._command.removeNSHandlers(this.uniqueID);
-            }
-            this.command = null;
-            this._commandParam = null;
-            _super.prototype.destroy.call(this);
-        };
-        CommandElView.prototype.toString = function () {
-            return "CommandElView";
-        };
-        Object.defineProperty(CommandElView.prototype, "isEnabled", {
-            get: function () {
-                var el = this.el;
-                if (this._disabled === checks.undefined)
-                    return !el.disabled;
-                else
-                    return !this._disabled;
-            },
-            set: function (v) {
-                var el = this.el;
-                if (v !== this.isEnabled) {
-                    if (this._disabled === checks.undefined)
-                        el.disabled = !v;
-                    else
-                        this._disabled = !v;
-                    dom.setClass(this.$el.toArray(), generic_15.css.disabled, !!v);
-                    this.raisePropertyChanged(generic_15.PROP_NAME.isEnabled);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CommandElView.prototype, "command", {
-            get: function () { return this._command; },
-            set: function (v) {
-                var self = this;
-                if (v !== this._command) {
-                    if (sys.isBaseObj(this._command)) {
-                        this._command.removeNSHandlers(this.uniqueID);
-                    }
-                    this._command = v;
-                    if (!!this._command) {
-                        this._command.addOnCanExecuteChanged(self._onCanExecuteChanged, this.uniqueID, self);
-                        self.isEnabled = this._command.canExecute(self, this.commandParam || {});
-                    }
-                    else {
-                        self.isEnabled = false;
-                    }
-                    this._onCommandChanged();
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CommandElView.prototype, "commandParam", {
-            get: function () { return this._commandParam; },
-            set: function (v) {
-                if (v !== this._commandParam) {
-                    this._commandParam = v;
-                    this.raisePropertyChanged(generic_15.PROP_NAME.commandParam);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CommandElView.prototype, "preventDefault", {
-            get: function () {
-                return this._preventDefault;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CommandElView.prototype, "stopPropagation", {
-            get: function () {
-                return this._stopPropagation;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return CommandElView;
-    }(generic_15.BaseElView));
-    exports.CommandElView = CommandElView;
-});
-define("jriapp_ui/anchor", ["require", "exports", "jriapp_shared", "jriapp/bootstrap", "jriapp_ui/generic", "jriapp_ui/command"], function (require, exports, jriapp_shared_37, bootstrap_21, generic_16, command_1) {
-    "use strict";
-    var dom = jriapp_shared_37.Utils.dom, boot = bootstrap_21.bootstrap;
+    var dom = jriapp_shared_38.Utils.dom, boot = bootstrap_22.bootstrap;
     var AnchorElView = (function (_super) {
         __extends(AnchorElView, _super);
         function AnchorElView(options) {
@@ -7826,14 +7900,14 @@ define("jriapp_ui/anchor", ["require", "exports", "jriapp_shared", "jriapp/boots
             configurable: true
         });
         return AnchorElView;
-    }(command_1.CommandElView));
+    }(command_2.CommandElView));
     exports.AnchorElView = AnchorElView;
     boot.registerElView("a", AnchorElView);
     boot.registerElView("abutton", AnchorElView);
 });
-define("jriapp_ui/block", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/generic", "jriapp_ui/span"], function (require, exports, bootstrap_22, generic_17, span_2) {
+define("jriapp_ui/block", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/generic", "jriapp_ui/span"], function (require, exports, bootstrap_23, generic_17, span_2) {
     "use strict";
-    var boot = bootstrap_22.bootstrap;
+    var boot = bootstrap_23.bootstrap;
     var BlockElView = (function (_super) {
         __extends(BlockElView, _super);
         function BlockElView() {
@@ -7881,9 +7955,9 @@ define("jriapp_ui/block", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/
     boot.registerElView("div", BlockElView);
     boot.registerElView("section", BlockElView);
 });
-define("jriapp_ui/busy", ["require", "exports", "jriapp_shared", "jriapp/utils/jquery", "jriapp/const", "jriapp/bootstrap", "jriapp_ui/generic"], function (require, exports, jriapp_shared_38, jquery_19, const_26, bootstrap_23, generic_18) {
+define("jriapp_ui/busy", ["require", "exports", "jriapp_shared", "jriapp/utils/jquery", "jriapp/const", "jriapp/bootstrap", "jriapp_ui/generic"], function (require, exports, jriapp_shared_39, jquery_19, const_26, bootstrap_24, generic_18) {
     "use strict";
-    var checks = jriapp_shared_38.Utils.check, boot = bootstrap_23.bootstrap;
+    var checks = jriapp_shared_39.Utils.check, boot = bootstrap_24.bootstrap;
     var BusyElView = (function (_super) {
         __extends(BusyElView, _super);
         function BusyElView(options) {
@@ -7897,7 +7971,7 @@ define("jriapp_ui/busy", ["require", "exports", "jriapp_shared", "jriapp/utils/j
             this._timeOut = null;
             if (!checks.isNt(options.delay))
                 this._delay = parseInt("" + options.delay);
-            this._loaderPath = bootstrap_23.bootstrap.getImagePath(img);
+            this._loaderPath = bootstrap_24.bootstrap.getImagePath(img);
             this._$loader = jquery_19.$(new Image());
             this._$loader.css({ position: "absolute", display: "none", zIndex: "10000" });
             this._$loader.prop("src", this._loaderPath);
@@ -7973,9 +8047,9 @@ define("jriapp_ui/busy", ["require", "exports", "jriapp_shared", "jriapp/utils/j
     boot.registerElView("busy", BusyElView);
     boot.registerElView("busy_indicator", BusyElView);
 });
-define("jriapp_ui/button", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/generic", "jriapp_ui/command"], function (require, exports, bootstrap_24, generic_19, command_2) {
+define("jriapp_ui/button", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/generic", "jriapp_ui/command"], function (require, exports, bootstrap_25, generic_19, command_3) {
     "use strict";
-    var boot = bootstrap_24.bootstrap;
+    var boot = bootstrap_25.bootstrap;
     var ButtonElView = (function (_super) {
         __extends(ButtonElView, _super);
         function ButtonElView(options) {
@@ -8050,15 +8124,15 @@ define("jriapp_ui/button", ["require", "exports", "jriapp/bootstrap", "jriapp_ui
             configurable: true
         });
         return ButtonElView;
-    }(command_2.CommandElView));
+    }(command_3.CommandElView));
     exports.ButtonElView = ButtonElView;
     boot.registerElView("input:button", ButtonElView);
     boot.registerElView("input:submit", ButtonElView);
     boot.registerElView("button", ButtonElView);
 });
-define("jriapp_ui/checkbox3", ["require", "exports", "jriapp_shared", "jriapp/bootstrap", "jriapp_ui/input", "jriapp_ui/generic"], function (require, exports, jriapp_shared_39, bootstrap_25, input_3, generic_20) {
+define("jriapp_ui/checkbox3", ["require", "exports", "jriapp_shared", "jriapp/bootstrap", "jriapp_ui/input", "jriapp_ui/generic"], function (require, exports, jriapp_shared_40, bootstrap_26, input_3, generic_20) {
     "use strict";
-    var checks = jriapp_shared_39.Utils.check, dom = jriapp_shared_39.Utils.dom, boot = bootstrap_25.bootstrap;
+    var checks = jriapp_shared_40.Utils.check, dom = jriapp_shared_40.Utils.dom, boot = bootstrap_26.bootstrap;
     var CheckBoxThreeStateElView = (function (_super) {
         __extends(CheckBoxThreeStateElView, _super);
         function CheckBoxThreeStateElView(options) {
@@ -8106,7 +8180,7 @@ define("jriapp_ui/checkbox3", ["require", "exports", "jriapp_shared", "jriapp/bo
     boot.registerElView("threeState", CheckBoxThreeStateElView);
     boot.registerElView("checkbox3", CheckBoxThreeStateElView);
 });
-define("jriapp_ui/expander", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/anchor"], function (require, exports, bootstrap_26, anchor_1) {
+define("jriapp_ui/expander", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/anchor"], function (require, exports, bootstrap_27, anchor_1) {
     "use strict";
     exports.PROP_NAME = {
         isExpanded: "isExpanded"
@@ -8115,8 +8189,8 @@ define("jriapp_ui/expander", ["require", "exports", "jriapp/bootstrap", "jriapp_
     var ExpanderElView = (function (_super) {
         __extends(ExpanderElView, _super);
         function ExpanderElView(options) {
-            var expandedsrc = options.expandedsrc || bootstrap_26.bootstrap.getImagePath(COLLAPSE_IMG);
-            var collapsedsrc = options.collapsedsrc || bootstrap_26.bootstrap.getImagePath(EXPAND_IMG);
+            var expandedsrc = options.expandedsrc || bootstrap_27.bootstrap.getImagePath(COLLAPSE_IMG);
+            var collapsedsrc = options.collapsedsrc || bootstrap_27.bootstrap.getImagePath(EXPAND_IMG);
             var isExpanded = !!options.isExpanded;
             options.imageSrc = null;
             _super.call(this, options);
@@ -8160,9 +8234,9 @@ define("jriapp_ui/expander", ["require", "exports", "jriapp/bootstrap", "jriapp_
         return ExpanderElView;
     }(anchor_1.AnchorElView));
     exports.ExpanderElView = ExpanderElView;
-    bootstrap_26.bootstrap.registerElView("expander", ExpanderElView);
+    bootstrap_27.bootstrap.registerElView("expander", ExpanderElView);
 });
-define("jriapp_ui/hidden", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/input"], function (require, exports, bootstrap_27, input_4) {
+define("jriapp_ui/hidden", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/input"], function (require, exports, bootstrap_28, input_4) {
     "use strict";
     var HiddenElView = (function (_super) {
         __extends(HiddenElView, _super);
@@ -8175,9 +8249,9 @@ define("jriapp_ui/hidden", ["require", "exports", "jriapp/bootstrap", "jriapp_ui
         return HiddenElView;
     }(input_4.InputElView));
     exports.HiddenElView = HiddenElView;
-    bootstrap_27.bootstrap.registerElView("input:hidden", HiddenElView);
+    bootstrap_28.bootstrap.registerElView("input:hidden", HiddenElView);
 });
-define("jriapp_ui/img", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/generic"], function (require, exports, bootstrap_28, generic_21) {
+define("jriapp_ui/img", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/generic"], function (require, exports, bootstrap_29, generic_21) {
     "use strict";
     var ImgElView = (function (_super) {
         __extends(ImgElView, _super);
@@ -8202,11 +8276,11 @@ define("jriapp_ui/img", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/ge
         return ImgElView;
     }(generic_21.BaseElView));
     exports.ImgElView = ImgElView;
-    bootstrap_28.bootstrap.registerElView("img", ImgElView);
+    bootstrap_29.bootstrap.registerElView("img", ImgElView);
 });
-define("jriapp_ui/radio", ["require", "exports", "jriapp_shared", "jriapp/bootstrap", "jriapp_ui/generic", "jriapp_ui/checkbox"], function (require, exports, jriapp_shared_40, bootstrap_29, generic_22, checkbox_2) {
+define("jriapp_ui/radio", ["require", "exports", "jriapp_shared", "jriapp/bootstrap", "jriapp_ui/generic", "jriapp_ui/checkbox"], function (require, exports, jriapp_shared_41, bootstrap_30, generic_22, checkbox_2) {
     "use strict";
-    var checks = jriapp_shared_40.Utils.check;
+    var checks = jriapp_shared_41.Utils.check;
     var RadioElView = (function (_super) {
         __extends(RadioElView, _super);
         function RadioElView() {
@@ -8235,9 +8309,9 @@ define("jriapp_ui/radio", ["require", "exports", "jriapp_shared", "jriapp/bootst
         return RadioElView;
     }(checkbox_2.CheckBoxElView));
     exports.RadioElView = RadioElView;
-    bootstrap_29.bootstrap.registerElView("input:radio", RadioElView);
+    bootstrap_30.bootstrap.registerElView("input:radio", RadioElView);
 });
-define("jriapp_ui", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/content/all", "jriapp_ui/dialog", "jriapp_ui/dynacontent", "jriapp_ui/datagrid/datagrid", "jriapp_ui/pager", "jriapp_ui/listbox", "jriapp_ui/stackpanel", "jriapp_ui/tabs", "jriapp_ui/generic", "jriapp_ui/dataform", "jriapp_ui/datepicker", "jriapp_ui/anchor", "jriapp_ui/block", "jriapp_ui/busy", "jriapp_ui/button", "jriapp_ui/checkbox", "jriapp_ui/checkbox3", "jriapp_ui/command", "jriapp_ui/expander", "jriapp_ui/hidden", "jriapp_ui/img", "jriapp_ui/input", "jriapp_ui/radio", "jriapp_ui/span", "jriapp_ui/textarea", "jriapp_ui/textbox", "jriapp_ui/utils/dblclick", "jriapp_ui/content/all"], function (require, exports, bootstrap_30, all_1, dialog_2, dynacontent_1, datagrid_1, pager_1, listbox_4, stackpanel_1, tabs_1, generic_23, dataform_1, datepicker_1, anchor_2, block_1, busy_1, button_1, checkbox_3, checkbox3_1, command_3, expander_4, hidden_1, img_1, input_5, radio_1, span_3, textarea_2, textbox_4, dblclick_2, all_2) {
+define("jriapp_ui", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/content/all", "jriapp_ui/dialog", "jriapp_ui/dynacontent", "jriapp_ui/datagrid/datagrid", "jriapp_ui/pager", "jriapp_ui/listbox", "jriapp_ui/stackpanel", "jriapp_ui/tabs", "jriapp_ui/generic", "jriapp_ui/template", "jriapp_ui/dataform", "jriapp_ui/datepicker", "jriapp_ui/anchor", "jriapp_ui/block", "jriapp_ui/busy", "jriapp_ui/button", "jriapp_ui/checkbox", "jriapp_ui/checkbox3", "jriapp_ui/command", "jriapp_ui/expander", "jriapp_ui/hidden", "jriapp_ui/img", "jriapp_ui/input", "jriapp_ui/radio", "jriapp_ui/span", "jriapp_ui/textarea", "jriapp_ui/textbox", "jriapp_ui/utils/dblclick", "jriapp_ui/content/all"], function (require, exports, bootstrap_31, all_1, dialog_2, dynacontent_1, datagrid_1, pager_1, listbox_4, stackpanel_1, tabs_1, generic_23, template_9, dataform_1, datepicker_1, anchor_2, block_1, busy_1, button_1, checkbox_3, checkbox3_1, command_4, expander_4, hidden_1, img_1, input_5, radio_1, span_3, textarea_2, textbox_4, dblclick_2, all_2) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -8260,6 +8334,7 @@ define("jriapp_ui", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/conten
     __export(tabs_1);
     exports.BaseElView = generic_23.BaseElView;
     exports.fn_addToolTip = generic_23.fn_addToolTip;
+    exports.TemplateElView = template_9.TemplateElView;
     exports.DataForm = dataform_1.DataForm;
     exports.DataFormElView = dataform_1.DataFormElView;
     exports.DatePickerElView = datepicker_1.DatePickerElView;
@@ -8269,7 +8344,7 @@ define("jriapp_ui", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/conten
     exports.ButtonElView = button_1.ButtonElView;
     exports.CheckBoxElView = checkbox_3.CheckBoxElView;
     exports.CheckBoxThreeStateElView = checkbox3_1.CheckBoxThreeStateElView;
-    exports.CommandElView = command_3.CommandElView;
+    exports.CommandElView = command_4.CommandElView;
     exports.ExpanderElView = expander_4.ExpanderElView;
     exports.HiddenElView = hidden_1.HiddenElView;
     exports.ImgElView = img_1.ImgElView;
@@ -8281,79 +8356,5 @@ define("jriapp_ui", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/conten
     exports.DblClick = dblclick_2.DblClick;
     __export(all_2);
     all_1.initContentFactory();
-    bootstrap_30.bootstrap.loadOwnStyle("jriapp_ui");
-});
-define("jriapp_ui/template", ["require", "exports", "jriapp_shared", "jriapp/utils/viewchecks", "jriapp/bootstrap", "jriapp_ui/command"], function (require, exports, jriapp_shared_41, viewchecks_3, bootstrap_31, command_4) {
-    "use strict";
-    var utils = jriapp_shared_41.Utils, viewChecks = viewchecks_3.ViewChecks, boot = bootstrap_31.bootstrap;
-    viewChecks.isTemplateElView = function (obj) {
-        return !!obj && obj instanceof TemplateElView;
-    };
-    var PROP_NAME = {
-        template: "template",
-        isEnabled: "isEnabled"
-    };
-    var TemplateElView = (function (_super) {
-        __extends(TemplateElView, _super);
-        function TemplateElView(options) {
-            _super.call(this, options);
-            this._template = null;
-            this._isEnabled = true;
-        }
-        TemplateElView.prototype.templateLoading = function (template) {
-        };
-        TemplateElView.prototype.templateLoaded = function (template, error) {
-            if (!!error)
-                return;
-            var self = this;
-            try {
-                self._template = template;
-                var args = { template: template, isLoaded: true };
-                self.invokeCommand(args, false);
-                this.raisePropertyChanged(PROP_NAME.template);
-            }
-            catch (ex) {
-                utils.err.reThrow(ex, this.handleError(ex, this));
-            }
-        };
-        TemplateElView.prototype.templateUnLoading = function (template) {
-            var self = this;
-            try {
-                var args = { template: template, isLoaded: false };
-                self.invokeCommand(args, false);
-            }
-            catch (ex) {
-                this.handleError(ex, this);
-            }
-            finally {
-                self._template = null;
-            }
-            this.raisePropertyChanged(PROP_NAME.template);
-        };
-        TemplateElView.prototype.toString = function () {
-            return "TemplateElView";
-        };
-        Object.defineProperty(TemplateElView.prototype, "isEnabled", {
-            get: function () { return this._isEnabled; },
-            set: function (v) {
-                if (this._isEnabled !== v) {
-                    this._isEnabled = v;
-                    this.raisePropertyChanged(PROP_NAME.isEnabled);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TemplateElView.prototype, "template", {
-            get: function () {
-                return this._template;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return TemplateElView;
-    }(command_4.CommandElView));
-    exports.TemplateElView = TemplateElView;
-    ;
-    boot.registerElView("template", TemplateElView);
+    bootstrap_31.bootstrap.loadOwnStyle("jriapp_ui");
 });
