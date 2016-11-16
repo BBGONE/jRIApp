@@ -37,6 +37,8 @@ intermixed HTML and Scripts inside template (<i>the code is 100% separated from 
 <li>And the code does not know (agnostic) about the structure of HTML page.</li>
 <li>The framework uses HTML5 features implemented in most of the browsers (<i>starting from IE9</i>) and does not need Polyfills 
 and the code is not overengineered.</li>
+<li>Classes for using the data service can be used without using the whole framework. They can be used in React, Angular.js and
+any other framework. They are 158 kb.(minified)</li>
 </ul>
 <br/>
 It can be used to work with NOSQL and relational databases because it can work with complex properties of unlimited depth. 
