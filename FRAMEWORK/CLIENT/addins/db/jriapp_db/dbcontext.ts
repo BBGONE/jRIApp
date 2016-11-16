@@ -1,20 +1,15 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { FIELD_TYPE, DATE_CONVERSION, DATA_TYPE, SORT_ORDER } from "jriapp_core/const";
 import {
-    IIndexer, IVoidPromise, AbortError,
-    IBaseObject, TEventHandler
-} from "jriapp_core/shared";
-import * as langMOD from "jriapp_core/lang";
-import { BaseObject } from "jriapp_core/object";
-import { bootstrap } from "jriapp_core/bootstrap";
-import { WaitQueue } from "jriapp_utils/waitqueue";
-import { Utils } from "jriapp_utils/utils";
+    FIELD_TYPE, DATE_CONVERSION, DATA_TYPE, SORT_ORDER
+} from "jriapp_shared/const";
 import {
-    IPromiseState, IPromise, IAbortablePromise,
-    PromiseState, IDeferred
-} from "jriapp_utils/async";
-import { COLL_CHANGE_REASON } from "jriapp_collection/int";
-import { valueUtils } from "jriapp_collection/utils";
+    IIndexer, IVoidPromise, AbortError, IBaseObject, TEventHandler, LocaleERRS as ERRS, BaseObject, Utils, WaitQueue
+} from "jriapp_shared";
+import {
+    IPromiseState, IPromise, IAbortablePromise, PromiseState, IDeferred
+} from "jriapp_shared/utils/async";
+import { COLL_CHANGE_REASON } from "jriapp_shared/collection/int";
+import { valueUtils } from "jriapp_shared/collection/utils";
 import {
     IEntityItem, IRefreshRowInfo, IQueryResult, IQueryInfo, IAssociationInfo, IAssocConstructorOptions,
     IPermissionsInfo, IPermissions, IInvokeRequest, IInvokeResponse, IQueryRequest, IQueryResponse, ITrackAssoc,
@@ -48,17 +43,17 @@ function __checkError(svcError: { name: string; message?: string; }, oper: DATA_
         return;
     switch (svcError.name) {
         case "AccessDeniedException":
-            throw new AccessDeniedError(langMOD.ERRS.ERR_ACCESS_DENIED, oper);
+            throw new AccessDeniedError(ERRS.ERR_ACCESS_DENIED, oper);
         case "ConcurrencyException":
-            throw new ConcurrencyError(langMOD.ERRS.ERR_CONCURRENCY, oper);
+            throw new ConcurrencyError(ERRS.ERR_CONCURRENCY, oper);
         case "ValidationException":
-            throw new SvcValidationError(strUtils.format(langMOD.ERRS.ERR_SVC_VALIDATION,
+            throw new SvcValidationError(strUtils.format(ERRS.ERR_SVC_VALIDATION,
                 svcError.message), oper);
         case "DomainServiceException":
-            throw new DataOperationError(strUtils.format(langMOD.ERRS.ERR_SVC_ERROR,
+            throw new DataOperationError(strUtils.format(ERRS.ERR_SVC_ERROR,
                 svcError.message), oper);
         default:
-            throw new DataOperationError(strUtils.format(langMOD.ERRS.ERR_UNEXPECTED_SVC_ERROR,
+            throw new DataOperationError(strUtils.format(ERRS.ERR_UNEXPECTED_SVC_ERROR,
                 svcError.message), oper);
     }
 }
@@ -143,7 +138,7 @@ export class DbContext extends BaseObject {
     }
     protected _initDbSets() {
         if (this.isInitialized)
-            throw new Error(langMOD.ERRS.ERR_DOMAIN_CONTEXT_INITIALIZED);
+            throw new Error(ERRS.ERR_DOMAIN_CONTEXT_INITIALIZED);
     }
     protected _initAssociations(associations: IAssociationInfo[]) {
         let self = this;
@@ -256,10 +251,10 @@ export class DbContext extends BaseObject {
             pinfo = parameterInfos[i];
             val = args[pinfo.name];
             if (!pinfo.isNullable && !pinfo.isArray && !(pinfo.dataType === DATA_TYPE.String || pinfo.dataType === DATA_TYPE.Binary) && checks.isNt(val)) {
-                throw new Error(strUtils.format(langMOD.ERRS.ERR_SVC_METH_PARAM_INVALID, pinfo.name, val, methodInfo.methodName));
+                throw new Error(strUtils.format(ERRS.ERR_SVC_METH_PARAM_INVALID, pinfo.name, val, methodInfo.methodName));
             }
             if (checks.isFunc(val)) {
-                throw new Error(strUtils.format(langMOD.ERRS.ERR_SVC_METH_PARAM_INVALID, pinfo.name, val, methodInfo.methodName));
+                throw new Error(strUtils.format(ERRS.ERR_SVC_METH_PARAM_INVALID, pinfo.name, val, methodInfo.methodName));
             }
             if (pinfo.isArray && !checks.isNt(val) && !checks.isArray(val)) {
                 val = [val];
@@ -292,7 +287,7 @@ export class DbContext extends BaseObject {
                 return;
             try {
                 if (!res)
-                    throw new Error(strUtils.format(langMOD.ERRS.ERR_UNEXPECTED_SVC_ERROR, "operation result is empty"));
+                    throw new Error(strUtils.format(ERRS.ERR_UNEXPECTED_SVC_ERROR, "operation result is empty"));
                 __checkError(res.error, operType);
                 callback({ result: res.result, error: null });
             } catch (ex) {
@@ -365,11 +360,11 @@ export class DbContext extends BaseObject {
                 loadRes: IQueryResult<IEntityItem>;
             try {
                 if (checks.isNt(res))
-                    throw new Error(strUtils.format(langMOD.ERRS.ERR_UNEXPECTED_SVC_ERROR, "null result"));
+                    throw new Error(strUtils.format(ERRS.ERR_UNEXPECTED_SVC_ERROR, "null result"));
                 dbSetName = res.dbSetName;
                 dbSet = self.getDbSet(dbSetName);
                 if (checks.isNt(dbSet))
-                    throw new Error(strUtils.format(langMOD.ERRS.ERR_DBSET_NAME_INVALID, dbSetName));
+                    throw new Error(strUtils.format(ERRS.ERR_DBSET_NAME_INVALID, dbSetName));
                 __checkError(res.error, operType);
                 let isClearAll = (!!query && query.isClearPrevData);
 
@@ -400,7 +395,7 @@ export class DbContext extends BaseObject {
                     jsDB.rows.forEach(function (row) {
                         let item = eSet.getItemByKey(row.clientKey);
                         if (!item) {
-                            throw new Error(strUtils.format(langMOD.ERRS.ERR_KEY_IS_NOTFOUND, row.clientKey));
+                            throw new Error(strUtils.format(ERRS.ERR_KEY_IS_NOTFOUND, row.clientKey));
                         }
                         submitted.push(item);
                         if (!!row.invalid) {
@@ -571,7 +566,7 @@ export class DbContext extends BaseObject {
             if (!res.rowInfo) {
                 item._aspect.dbSet.removeItem(item);
                 item.destroy();
-                throw new Error(langMOD.ERRS.ERR_ITEM_DELETED_BY_ANOTHER_USER);
+                throw new Error(ERRS.ERR_ITEM_DELETED_BY_ANOTHER_USER);
             }
             else
                 item._aspect._refreshValues(res.rowInfo, REFRESH_MODE.MergeIntoCurrent);
@@ -684,7 +679,7 @@ export class DbContext extends BaseObject {
     }
     protected _load(query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IPromise<IQueryResult<IEntityItem>> {
         if (!query) {
-            throw new Error(langMOD.ERRS.ERR_DB_LOAD_NO_QUERY);
+            throw new Error(ERRS.ERR_DB_LOAD_NO_QUERY);
         }
 
         const self = this, deferred = _async.createDeferred<IQueryResult<IEntityItem>>();
@@ -799,7 +794,7 @@ export class DbContext extends BaseObject {
 
         try {
             if (!checks.isString(opts.serviceUrl)) {
-                throw new Error(strUtils.format(langMOD.ERRS.ERR_PARAM_INVALID, "serviceUrl", opts.serviceUrl));
+                throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "serviceUrl", opts.serviceUrl));
             }
             this._serviceUrl = opts.serviceUrl;
             this._initDbSets();
@@ -841,7 +836,7 @@ export class DbContext extends BaseObject {
         let name2 = "get" + name;
         let f = this._assoc[name2];
         if (!f)
-            throw new Error(strUtils.format(langMOD.ERRS.ERR_ASSOC_NAME_INVALID, name));
+            throw new Error(strUtils.format(ERRS.ERR_ASSOC_NAME_INVALID, name));
         return f();
     }
     submitChanges(): IVoidPromise {

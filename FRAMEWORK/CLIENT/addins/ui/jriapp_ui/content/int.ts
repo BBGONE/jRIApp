@@ -1,9 +1,12 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IContentOptions, ITemplateInfo, IBindingInfo }  from "jriapp_core/shared";
-import { Utils } from "jriapp_utils/utils";
-import { parser } from "jriapp_core/parser";
+import {
+    Utils, parser
+} from "jriapp_shared";
+import {
+    IContentOptions, ITemplateInfo, IBindingInfo
+} from "jriapp/shared";
 
-const utils = Utils, coreUtils = utils.core, checks = utils.check;
+const utils = Utils, coreUtils = utils.core, checks = utils.check, parse = parser;
 
 export const css = {
     content: "ria-content-field",
@@ -31,7 +34,7 @@ export function parseContentAttr(content_attr: string): IContentOptions {
         options: null
     };
 
-    let attr: IDataContentAttr, temp_opts = parser.parseOptions(content_attr);
+    let attr: IDataContentAttr, temp_opts = parse.parseOptions(content_attr);
 
     if (temp_opts.length === 0)
         return contentOptions;

@@ -1,8 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IErrorNotification, IFieldInfo, IValidationInfo, TEventHandler } from "jriapp_core/shared";
-import * as langMOD from "jriapp_core/lang";
-import { BaseObject } from "jriapp_core/object";
-import { Utils } from "jriapp_utils/utils";
+import {
+    IErrorNotification, IFieldInfo, IValidationInfo, TEventHandler, BaseObject, LocaleERRS as ERRS, Utils
+} from "jriapp_shared";
 import { IEntityItem } from "./int";
 import { EntityAspect } from "./entity_aspect";
 import { DbContext } from "./dbcontext";
@@ -43,7 +42,7 @@ export class BaseComplexProperty extends BaseObject implements IErrorNotificatio
     getPropertyByName(name: string): IFieldInfo {
         let arrProps = this.getProperties().filter((f) => { return f.fieldName === name; });
         if (!arrProps || arrProps.length !== 1)
-            throw new Error(strUtils.format(langMOD.ERRS.ERR_ASSERTION_FAILED, "arrProps.length === 1"));
+            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "arrProps.length === 1"));
         return arrProps[0];
    }
     getIsHasErrors(): boolean {
@@ -129,7 +128,7 @@ export class ChildComplexProperty extends BaseComplexProperty {
             parent = (<ChildComplexProperty>parent).getParent();
        }
         if (!parent || !(parent instanceof RootComplexProperty))
-            throw new Error(strUtils.format(langMOD.ERRS.ERR_ASSERTION_FAILED, "parent instanceof RootComplexProperty"));
+            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "parent instanceof RootComplexProperty"));
         return <RootComplexProperty>parent;
    }
     getFullPath(name: string): string {

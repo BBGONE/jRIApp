@@ -1,6 +1,7 @@
 /// <reference path="jriapp.d.ts" />
+/// <reference path="jriapp_shared.d.ts" />
 declare module "jriapp_ui/content/int" {
-    import { IContentOptions, ITemplateInfo } from "jriapp_core/shared";
+    import { IContentOptions, ITemplateInfo } from "jriapp/shared";
     export const css: {
         content: string;
         required: string;
@@ -20,9 +21,9 @@ declare module "jriapp_ui/content/int" {
     export function parseContentAttr(content_attr: string): IContentOptions;
 }
 declare module "jriapp_ui/content/basic" {
-    import { IApplication, IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IElView, IViewOptions, IBaseObject, IBindingInfo, IBindingOptions, IFieldInfo } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
-    import { Binding } from "jriapp_core/binding";
+    import { IBaseObject, IFieldInfo, BaseObject } from "jriapp_shared";
+    import { IApplication, IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IElView, IViewOptions, IBindingInfo, IBindingOptions } from "jriapp/shared";
+    import { Binding } from "jriapp/binding";
     export class BasicContent extends BaseObject implements IContent {
         protected _parentEl: HTMLElement;
         protected _el: HTMLElement;
@@ -57,8 +58,8 @@ declare module "jriapp_ui/content/basic" {
     }
 }
 declare module "jriapp_ui/content/template" {
-    import { IContent, IApplication, ITemplate, IConstructorContentOptions } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
+    import { BaseObject } from "jriapp_shared";
+    import { IContent, IApplication, ITemplate, IConstructorContentOptions } from "jriapp/shared";
     export class TemplateContent extends BaseObject implements IContent {
         private _parentEl;
         private _template;
@@ -82,7 +83,7 @@ declare module "jriapp_ui/content/template" {
     }
 }
 declare module "jriapp_ui/utils/tooltip" {
-    import { ITooltipService } from "jriapp_core/shared";
+    import { ITooltipService } from "jriapp/shared";
     export const css: {
         toolTip: string;
         toolTipError: string;
@@ -90,10 +91,10 @@ declare module "jriapp_ui/utils/tooltip" {
     export function createToolTipSvc(): ITooltipService;
 }
 declare module "jriapp_ui/generic" {
-    import { IElView, IValidationInfo, IApplication, IViewOptions, IPropertyBag } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
-    import { ICommand } from "jriapp_core/mvvm";
-    import { EVENT_CHANGE_TYPE, IEventChangedArgs } from "jriapp_utils/eventstore";
+    import { BaseObject, IPropertyBag, IValidationInfo } from "jriapp_shared";
+    import { IElView, IApplication, IViewOptions } from "jriapp/shared";
+    import { ICommand } from "jriapp/mvvm";
+    import { EVENT_CHANGE_TYPE, IEventChangedArgs } from "jriapp/utils/eventstore";
     export { IEventChangedArgs, EVENT_CHANGE_TYPE };
     export function fn_addToolTip($el: JQuery, tip: string, isError?: boolean, pos?: string): void;
     export const css: {
@@ -179,7 +180,7 @@ declare module "jriapp_ui/input" {
     }
 }
 declare module "jriapp_ui/textbox" {
-    import { IViewOptions } from "jriapp_core/shared";
+    import { IViewOptions } from "jriapp/shared";
     import { InputElView } from "jriapp_ui/input";
     export interface ITextBoxOptions extends IViewOptions {
         updateOnKeyUp?: boolean;
@@ -199,7 +200,7 @@ declare module "jriapp_ui/textbox" {
     }
 }
 declare module "jriapp_ui/content/string" {
-    import { IFieldInfo } from "jriapp_core/shared";
+    import { IFieldInfo } from "jriapp_shared";
     import { BasicContent } from "jriapp_ui/content/basic";
     export class StringContent extends BasicContent {
         static __allowedKeys: number[];
@@ -227,7 +228,8 @@ declare module "jriapp_ui/textarea" {
     }
 }
 declare module "jriapp_ui/content/multyline" {
-    import { IElView, IConstructorContentOptions, IFieldInfo } from "jriapp_core/shared";
+    import { IFieldInfo } from "jriapp_shared";
+    import { IElView, IConstructorContentOptions } from "jriapp/shared";
     import { BasicContent } from "jriapp_ui/content/basic";
     export class MultyLineContent extends BasicContent {
         static __allowedKeys: number[];
@@ -240,7 +242,7 @@ declare module "jriapp_ui/content/multyline" {
     }
 }
 declare module "jriapp_ui/checkbox" {
-    import { IViewOptions } from "jriapp_core/shared";
+    import { IViewOptions } from "jriapp/shared";
     import { InputElView } from "jriapp_ui/input";
     export class CheckBoxElView extends InputElView {
         private _checked;
@@ -251,7 +253,7 @@ declare module "jriapp_ui/checkbox" {
     }
 }
 declare module "jriapp_ui/content/bool" {
-    import { IElView } from "jriapp_core/shared";
+    import { IElView } from "jriapp/shared";
     import { CheckBoxElView } from "jriapp_ui/checkbox";
     import { BasicContent } from "jriapp_ui/content/basic";
     export class BoolContent extends BasicContent {
@@ -266,7 +268,8 @@ declare module "jriapp_ui/content/bool" {
     }
 }
 declare module "jriapp_ui/content/number" {
-    import { IBindingOptions, IBindingInfo, IBaseObject } from "jriapp_core/shared";
+    import { IBaseObject } from "jriapp_shared";
+    import { IBindingOptions, IBindingInfo } from "jriapp/shared";
     import { BasicContent } from "jriapp_ui/content/basic";
     export class NumberContent extends BasicContent {
         static __allowedKeys: number[];
@@ -278,7 +281,8 @@ declare module "jriapp_ui/content/number" {
     }
 }
 declare module "jriapp_ui/content/date" {
-    import { IConstructorContentOptions, IBindingInfo, IBindingOptions, IElView, IBaseObject } from "jriapp_core/shared";
+    import { IBaseObject } from "jriapp_shared";
+    import { IConstructorContentOptions, IBindingInfo, IBindingOptions, IElView } from "jriapp/shared";
     import { BasicContent } from "jriapp_ui/content/basic";
     export class DateContent extends BasicContent {
         constructor(options: IConstructorContentOptions);
@@ -288,7 +292,8 @@ declare module "jriapp_ui/content/date" {
     }
 }
 declare module "jriapp_ui/content/datetime" {
-    import { IBindingInfo, IBaseObject, IBindingOptions } from "jriapp_core/shared";
+    import { IBaseObject } from "jriapp_shared";
+    import { IBindingInfo, IBindingOptions } from "jriapp/shared";
     import { BasicContent } from "jriapp_ui/content/basic";
     export class DateTimeContent extends BasicContent {
         protected getBindingOption(bindingInfo: IBindingInfo, tgt: IBaseObject, dctx: any, targetPath: string): IBindingOptions;
@@ -296,9 +301,9 @@ declare module "jriapp_ui/content/datetime" {
     }
 }
 declare module "jriapp_ui/listbox" {
-    import { TEventHandler, IViewOptions } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
-    import { ICollection, ICollectionItem, ICollChangedArgs, ITEM_STATUS } from "jriapp_collection/int";
+    import { BaseObject, TEventHandler } from "jriapp_shared";
+    import { ICollection, ICollectionItem, ICollChangedArgs, ITEM_STATUS } from "jriapp_shared/collection/int";
+    import { IViewOptions } from "jriapp/shared";
     import { BaseElView } from "jriapp_ui/generic";
     export interface IOptionStateProvider {
         getCSS(item: ICollectionItem, itemIndex: number, val: any): string;
@@ -403,7 +408,8 @@ declare module "jriapp_ui/span" {
     }
 }
 declare module "jriapp_ui/content/listbox" {
-    import { IBaseObject, IExternallyCachable, IBinding, IConstructorContentOptions, IElView } from "jriapp_core/shared";
+    import { IBaseObject } from "jriapp_shared";
+    import { IExternallyCachable, IBinding, IConstructorContentOptions, IElView } from "jriapp/shared";
     import { ListBoxElView } from "jriapp_ui/listbox";
     import { SpanElView } from "jriapp_ui/span";
     import { BasicContent } from "jriapp_ui/content/basic";
@@ -470,9 +476,9 @@ declare module "jriapp_ui/content/all" {
     export function initContentFactory(): void;
 }
 declare module "jriapp_ui/dialog" {
-    import { ITemplate, ITemplateEvents, IApplication, IBaseObject, TEventHandler, IPromise } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
-    import { ViewModel } from "jriapp_core/mvvm";
+    import { IBaseObject, TEventHandler, IPromise, BaseObject } from "jriapp_shared";
+    import { ITemplate, ITemplateEvents, IApplication } from "jriapp/shared";
+    import { ViewModel } from "jriapp/mvvm";
     export const enum DIALOG_ACTION {
         Default = 0,
         StayOpen = 1,
@@ -572,7 +578,8 @@ declare module "jriapp_ui/dialog" {
     }
 }
 declare module "jriapp_ui/dynacontent" {
-    import { ITemplate, IVoidPromise, ITemplateEvents, IViewOptions } from "jriapp_core/shared";
+    import { IVoidPromise } from "jriapp_shared";
+    import { ITemplate, ITemplateEvents, IViewOptions } from "jriapp/shared";
     import { BaseElView } from "jriapp_ui/generic";
     export interface IDynaContentAnimation {
         beforeShow(template: ITemplate, isFirstShow: boolean): void;
@@ -604,7 +611,7 @@ declare module "jriapp_ui/dynacontent" {
     }
 }
 declare module "jriapp_ui/utils/dblclick" {
-    import { IDisposable } from "jriapp_core/shared";
+    import { IDisposable } from "jriapp_shared";
     export class DblClick implements IDisposable {
         private _isDestroyed;
         private _timer;
@@ -621,7 +628,7 @@ declare module "jriapp_ui/utils/dblclick" {
     }
 }
 declare module "jriapp_ui/datagrid/const" {
-    import { IIndexer } from "jriapp_core/shared";
+    import { IIndexer } from "jriapp_shared";
     export const COLUMN_TYPE: {
         DATA: string;
         ROW_EXPANDER: string;
@@ -682,7 +689,7 @@ declare module "jriapp_ui/datagrid/const" {
     };
 }
 declare module "jriapp_ui/datagrid/animation" {
-    import { BaseObject } from "jriapp_core/object";
+    import { BaseObject } from "jriapp_shared";
     export interface IDataGridAnimation {
         beforeShow(el: HTMLElement): void;
         show(onEnd: () => void): void;
@@ -702,8 +709,8 @@ declare module "jriapp_ui/datagrid/animation" {
     }
 }
 declare module "jriapp_ui/datagrid/columns/base" {
-    import { IContentOptions, ITemplateEvents, ITemplate } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
+    import { BaseObject } from "jriapp_shared";
+    import { IContentOptions, ITemplateEvents, ITemplate } from "jriapp/shared";
     import { DataGrid } from "jriapp_ui/datagrid/datagrid";
     export interface IColumnInfo {
         "type"?: string;
@@ -769,8 +776,9 @@ declare module "jriapp_ui/datagrid/cells/expander" {
     }
 }
 declare module "jriapp_ui/datagrid/columns/data" {
-    import { SORT_ORDER } from "jriapp_core/const";
-    import { IBaseObject, IExternallyCachable } from "jriapp_core/shared";
+    import { IBaseObject } from "jriapp_shared";
+    import { SORT_ORDER } from "jriapp_shared/const";
+    import { IExternallyCachable } from "jriapp/shared";
     import { BaseColumn, ICellInfo } from "jriapp_ui/datagrid/columns/base";
     import { DataGrid } from "jriapp_ui/datagrid/datagrid";
     export class DataColumn extends BaseColumn {
@@ -861,8 +869,8 @@ declare module "jriapp_ui/datagrid/cells/rowselector" {
     }
 }
 declare module "jriapp_ui/datagrid/rows/row" {
-    import { BaseObject } from "jriapp_core/object";
-    import { ICollectionItem } from "jriapp_collection/int";
+    import { BaseObject } from "jriapp_shared";
+    import { ICollectionItem } from "jriapp_shared/collection/int";
     import { ROW_POSITION } from "jriapp_ui/datagrid/const";
     import { BaseCell } from "jriapp_ui/datagrid/cells/base";
     import { ExpanderCell } from "jriapp_ui/datagrid/cells/expander";
@@ -921,8 +929,8 @@ declare module "jriapp_ui/datagrid/rows/row" {
     }
 }
 declare module "jriapp_ui/datagrid/cells/base" {
-    import { BaseObject } from "jriapp_core/object";
-    import { ICollectionItem } from "jriapp_collection/int";
+    import { BaseObject } from "jriapp_shared";
+    import { ICollectionItem } from "jriapp_shared/collection/int";
     import { DblClick } from "jriapp_ui/utils/dblclick";
     import { Row } from "jriapp_ui/datagrid/rows/row";
     import { BaseColumn } from "jriapp_ui/datagrid/columns/base";
@@ -956,8 +964,8 @@ declare module "jriapp_ui/datagrid/cells/base" {
     }
 }
 declare module "jriapp_ui/datagrid/rows/details" {
-    import { BaseObject } from "jriapp_core/object";
-    import { ICollectionItem } from "jriapp_collection/int";
+    import { BaseObject } from "jriapp_shared";
+    import { ICollectionItem } from "jriapp_shared/collection/int";
     import { Row } from "jriapp_ui/datagrid/rows/row";
     import { DetailsCell } from "jriapp_ui/datagrid/cells/details";
     import { DataGrid } from "jriapp_ui/datagrid/datagrid";
@@ -995,9 +1003,9 @@ declare module "jriapp_ui/datagrid/rows/details" {
     }
 }
 declare module "jriapp_ui/datagrid/cells/details" {
-    import { ITemplate } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
-    import { ICollectionItem } from "jriapp_collection/int";
+    import { BaseObject } from "jriapp_shared";
+    import { ITemplate } from "jriapp/shared";
+    import { ICollectionItem } from "jriapp_shared/collection/int";
     import { DetailsRow } from "jriapp_ui/datagrid/rows/details";
     import { DataGrid } from "jriapp_ui/datagrid/datagrid";
     export class DetailsCell extends BaseObject {
@@ -1019,7 +1027,7 @@ declare module "jriapp_ui/datagrid/cells/details" {
     }
 }
 declare module "jriapp_ui/datagrid/rows/fillspace" {
-    import { BaseObject } from "jriapp_core/object";
+    import { BaseObject } from "jriapp_shared";
     import { FillSpaceCell } from "jriapp_ui/datagrid/cells/fillspace";
     import { DataGrid } from "jriapp_ui/datagrid/datagrid";
     export class FillSpaceRow extends BaseObject {
@@ -1043,7 +1051,7 @@ declare module "jriapp_ui/datagrid/rows/fillspace" {
     }
 }
 declare module "jriapp_ui/datagrid/cells/fillspace" {
-    import { BaseObject } from "jriapp_core/object";
+    import { BaseObject } from "jriapp_shared";
     import { FillSpaceRow } from "jriapp_ui/datagrid/rows/fillspace";
     import { DataGrid } from "jriapp_ui/datagrid/datagrid";
     export class FillSpaceCell extends BaseObject {
@@ -1064,9 +1072,9 @@ declare module "jriapp_ui/datagrid/cells/fillspace" {
     }
 }
 declare module "jriapp_ui/datagrid/datagrid" {
-    import { ISelectableProvider, TEventHandler, ISelectable, IViewOptions } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
-    import { ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollection, ICollItemAddedArgs, ITEM_STATUS } from "jriapp_collection/int";
+    import { TEventHandler, BaseObject } from "jriapp_shared";
+    import { ISelectableProvider, ISelectable, IViewOptions } from "jriapp/shared";
+    import { ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollection, ICollItemAddedArgs, ITEM_STATUS } from "jriapp_shared/collection/int";
     import { BaseElView } from "jriapp_ui/generic";
     import { IDialogConstructorOptions } from "jriapp_ui/dialog";
     import { ROW_POSITION, ROW_ACTION } from "jriapp_ui/datagrid/const";
@@ -1269,10 +1277,10 @@ declare module "jriapp_ui/datagrid/datagrid" {
     }
 }
 declare module "jriapp_ui/pager" {
-    import { IViewOptions } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
+    import { BaseObject } from "jriapp_shared";
+    import { IViewOptions } from "jriapp/shared";
     import { BaseElView } from "jriapp_ui/generic";
-    import { ICollection, ICollectionItem } from "jriapp_collection/int";
+    import { ICollection, ICollectionItem } from "jriapp_shared/collection/int";
     export interface IPagerOptions {
         showTip?: boolean;
         showInfo?: boolean;
@@ -1344,10 +1352,10 @@ declare module "jriapp_ui/pager" {
     }
 }
 declare module "jriapp_ui/stackpanel" {
-    import { ITemplate, ISelectable, IViewOptions, TEventHandler, ISelectableProvider, IBaseObject } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
+    import { BaseObject, IBaseObject, TEventHandler } from "jriapp_shared";
+    import { ITemplate, ISelectable, IViewOptions, ISelectableProvider } from "jriapp/shared";
     import { BaseElView } from "jriapp_ui/generic";
-    import { ICollection, ICollectionItem, ICollChangedArgs, ITEM_STATUS } from "jriapp_collection/int";
+    import { ICollection, ICollectionItem, ICollChangedArgs, ITEM_STATUS } from "jriapp_shared/collection/int";
     export interface IStackPanelOptions {
         templateID: string;
         orientation?: "vertical" | "horizontal";
@@ -1421,7 +1429,7 @@ declare module "jriapp_ui/stackpanel" {
     }
 }
 declare module "jriapp_ui/tabs" {
-    import { IViewOptions } from "jriapp_core/shared";
+    import { IViewOptions } from "jriapp/shared";
     import { BaseElView } from "jriapp_ui/generic";
     export interface ITabs {
         readonly uniqueID: string;
@@ -1452,8 +1460,8 @@ declare module "jriapp_ui/tabs" {
     }
 }
 declare module "jriapp_ui/dataform" {
-    import { IApplication, IBaseObject, IValidationInfo, IViewOptions } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
+    import { IBaseObject, IValidationInfo, BaseObject } from "jriapp_shared";
+    import { IApplication, IViewOptions } from "jriapp/shared";
     import { BaseElView } from "jriapp_ui/generic";
     export const css: {
         dataform: string;
@@ -1519,8 +1527,8 @@ declare module "jriapp_ui/datepicker" {
     }
 }
 declare module "jriapp_ui/command" {
-    import { IViewOptions } from "jriapp_core/shared";
-    import { ICommand } from "jriapp_core/mvvm";
+    import { IViewOptions } from "jriapp/shared";
+    import { ICommand } from "jriapp/mvvm";
     import { BaseElView } from "jriapp_ui/generic";
     export interface ICommandViewOptions extends IViewOptions {
         preventDefault?: boolean;
@@ -1546,7 +1554,7 @@ declare module "jriapp_ui/command" {
     }
 }
 declare module "jriapp_ui/anchor" {
-    import { IViewOptions } from "jriapp_core/shared";
+    import { IViewOptions } from "jriapp/shared";
     import { CommandElView } from "jriapp_ui/command";
     export interface IAncorOptions extends IViewOptions {
         imageSrc?: string;
@@ -1579,7 +1587,7 @@ declare module "jriapp_ui/block" {
     }
 }
 declare module "jriapp_ui/busy" {
-    import { IViewOptions } from "jriapp_core/shared";
+    import { IViewOptions } from "jriapp/shared";
     import { BaseElView } from "jriapp_ui/generic";
     export interface IBusyViewOptions extends IViewOptions {
         img?: string;
@@ -1599,7 +1607,7 @@ declare module "jriapp_ui/busy" {
     }
 }
 declare module "jriapp_ui/button" {
-    import { IViewOptions } from "jriapp_core/shared";
+    import { IViewOptions } from "jriapp/shared";
     import { CommandElView } from "jriapp_ui/command";
     export class ButtonElView extends CommandElView {
         constructor(options: IViewOptions);
@@ -1611,7 +1619,7 @@ declare module "jriapp_ui/button" {
     }
 }
 declare module "jriapp_ui/checkbox3" {
-    import { IViewOptions } from "jriapp_core/shared";
+    import { IViewOptions } from "jriapp/shared";
     import { InputElView } from "jriapp_ui/input";
     export class CheckBoxThreeStateElView extends InputElView {
         private _checked;
@@ -1651,7 +1659,7 @@ declare module "jriapp_ui/hidden" {
     }
 }
 declare module "jriapp_ui/img" {
-    import { IViewOptions } from "jriapp_core/shared";
+    import { IViewOptions } from "jriapp/shared";
     import { BaseElView } from "jriapp_ui/generic";
     export class ImgElView extends BaseElView {
         constructor(options: IViewOptions);
@@ -1697,7 +1705,7 @@ declare module "jriapp_ui" {
     export * from "jriapp_ui/content/all";
 }
 declare module "jriapp_ui/template" {
-    import { ITemplate, ITemplateEvents, IViewOptions } from "jriapp_core/shared";
+    import { ITemplate, ITemplateEvents, IViewOptions } from "jriapp/shared";
     import { CommandElView } from "jriapp_ui/command";
     export interface ITemplateOptions {
         dataContext?: any;

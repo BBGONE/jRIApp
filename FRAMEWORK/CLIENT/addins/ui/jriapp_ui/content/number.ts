@@ -1,7 +1,9 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { DATA_TYPE, KEYS } from "jriapp_core/const";
-import { IBindingOptions, IBindingInfo, IBaseObject }  from "jriapp_core/shared";
-import { bootstrap } from "jriapp_core/bootstrap";
+import { DATA_TYPE } from "jriapp_shared/const";
+import { IBaseObject } from "jriapp_shared";
+import { KEYS } from "jriapp/const";
+import { IBindingOptions, IBindingInfo }  from "jriapp/shared";
+import { bootstrap } from "jriapp/bootstrap";
 import { TextBoxElView } from "../textbox";
 
 import { css } from "./int";

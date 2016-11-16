@@ -1,19 +1,17 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { DATA_ATTR, KEYS } from "jriapp_core/const";
 import {
-    IApplication, ISelectableProvider, TEventHandler, IIndexer, ISelectable,
-    IViewOptions, TPriority
-} from "jriapp_core/shared";
-import { ERRS, STRS } from "jriapp_core/lang";
-import { BaseObject } from "jriapp_core/object";
-import { Debounce } from "jriapp_utils/debounce";
-import { DomUtils } from "jriapp_utils/dom";
-import { Utils } from "jriapp_utils/utils";
-import { bootstrap } from "jriapp_core/bootstrap";
-import { parser } from "jriapp_core/parser";
+    TEventHandler, IIndexer, TPriority, LocaleERRS as ERRS, LocaleSTRS as STRS, BaseObject, Debounce,
+    parser, Utils
+} from "jriapp_shared";
+import { $ } from "jriapp/utils/jquery";
+import { DATA_ATTR, KEYS } from "jriapp/const";
+import {
+    IApplication, ISelectableProvider, ISelectable, IViewOptions
+} from "jriapp/shared";
+import { bootstrap } from "jriapp/bootstrap";
 import { COLL_CHANGE_TYPE, ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollection, ICollItemAddedArgs,
     COLL_CHANGE_REASON, ITEM_STATUS
-} from "jriapp_collection/int";
+} from "jriapp_shared/collection/int";
 import { DblClick } from "../utils/dblclick";
 import { BaseElView } from "../generic";
 import { parseContentAttr } from "../content/int";
@@ -49,7 +47,7 @@ export { IDataGridAnimation, DefaultAnimation } from "./animation";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str,
     coreUtils = utils.core, ERROR = utils.err, sys = utils.sys,
-    dom = DomUtils, $ = dom.$, doc = dom.document, boot = bootstrap;
+    dom = utils.dom, doc = dom.document, boot = bootstrap;
 
 let _columnWidthInterval: any, _gridsCount: number = 0;
 let _created_grids: IIndexer<DataGrid> = { };

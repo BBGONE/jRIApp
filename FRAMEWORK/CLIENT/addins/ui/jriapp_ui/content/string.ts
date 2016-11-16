@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { KEYS } from "jriapp_core/const";
-import { IFieldInfo }  from "jriapp_core/shared";
+import { KEYS } from "jriapp/const";
+import { IFieldInfo }  from "jriapp_shared";
 import { TextBoxElView } from "../textbox";
 
 import { css } from "./int";

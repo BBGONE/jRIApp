@@ -8,7 +8,7 @@ import { ProductsFilter } from "./filters";
 import { DemoApplication } from "./app";
 import { TestInvokeCommand } from "./commands";
 
-var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = utils.dom.$;
+var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = RIAPP.$;
 
 class RowStateProvider implements uiMOD.IRowStateProvider {
     getCSS(item: RIAPP.ICollectionItem, val: any): string {

@@ -1,12 +1,15 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IViewOptions } from "jriapp_core/shared";
-import { DomUtils } from "jriapp_utils/dom";
-import { bootstrap } from "jriapp_core/bootstrap";
+import {
+    Utils
+} from "jriapp_shared";
+import { $ } from "jriapp/utils/jquery";
+import { IViewOptions } from "jriapp/shared";
+import { bootstrap } from "jriapp/bootstrap";
 import { css, PROP_NAME, IEventChangedArgs, EVENT_CHANGE_TYPE } from "./generic";
-import { ICommand } from "jriapp_core/mvvm";
+import { ICommand } from "jriapp/mvvm";
 import { CommandElView } from "./command";
 
-const dom = DomUtils, $ = dom.$, boot = bootstrap;
+const dom = Utils.dom, boot = bootstrap;
 
 export interface IAncorOptions extends IViewOptions {
     imageSrc?: string;

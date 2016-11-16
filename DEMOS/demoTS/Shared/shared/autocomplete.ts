@@ -3,7 +3,7 @@ import * as dbMOD from "jriapp_db";
 import * as uiMOD from "jriapp_ui";
 import * as COMMON from "./common";
 
-var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
+const bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
 
 function findElemViewInTemplate(template: RIAPP.ITemplate, name: string) {
     //look by data-name attribute value
@@ -100,7 +100,7 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
         this._isOpen = false;
         this._createGridDataSource();
         this._template = this._createTemplate();
-        this._$dropDown = utils.dom.$(utils.dom.document.createElement("div"));
+        this._$dropDown = RIAPP.$(utils.dom.document.createElement("div"));
         this._$dropDown.css({
             "position": "absolute",
             "left": "-2000px",
@@ -130,11 +130,11 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
         }
         this._btnOk = findElemInTemplate(template, 'btnOk');
         this._btnCancel = findElemInTemplate(template, 'btnCancel');
-        utils.dom.$(this._btnOk).click(() => {
+        RIAPP.$(this._btnOk).click(() => {
             self._updateSelection();
             self._hide();
         });
-        utils.dom.$(this._btnCancel).click(() => {
+        RIAPP.$(this._btnCancel).click(() => {
             self._hide();
         });
     }
@@ -208,7 +208,7 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
         (<any>this._$dropDown).position(<any>{
             my: "left top",
             at: "left bottom",
-            of: utils.dom.$(this.el),
+            of: RIAPP.$(this.el),
             offset: "0 0"
         });
     }
@@ -239,7 +239,7 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
                 self._hide();
             }, this.uniqueID);
 
-            utils.dom.$(utils.dom.document).on('keyup.' + this.uniqueID, function (e) {
+            RIAPP.$(utils.dom.document).on('keyup.' + this.uniqueID, function (e) {
                 e.stopPropagation();
                 if (bootstrap.currentSelectable === self._lookupGrid)
                     self._onKeyPress(e.which);
@@ -252,7 +252,7 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
         var self = this;
         if (!this._isOpen)
             return;
-        utils.dom.$(utils.dom.document).off('.' + this.uniqueID);
+        RIAPP.$(utils.dom.document).off('.' + this.uniqueID);
         this._$dlg.off('.' + this.uniqueID);
 
         if (!!this._lookupGrid) {

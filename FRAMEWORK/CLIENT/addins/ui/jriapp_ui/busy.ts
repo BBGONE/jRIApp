@@ -1,14 +1,16 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { LOADER_GIF } from "jriapp_core/const";
-import { IViewOptions } from "jriapp_core/shared";
-import { DomUtils } from "jriapp_utils/dom";
-import { Utils } from "jriapp_utils/utils";
-import { bootstrap } from "jriapp_core/bootstrap";
+import {
+    Utils
+} from "jriapp_shared";
+import { $ } from "jriapp/utils/jquery";
+import { LOADER_GIF } from "jriapp/const";
+import { IViewOptions } from "jriapp/shared";
+import { bootstrap } from "jriapp/bootstrap";
 
 
 import { BaseElView, PROP_NAME } from "./generic";
 
-const $ = DomUtils.$, checks = Utils.check, boot = bootstrap;
+const checks = Utils.check, boot = bootstrap;
 
 export interface IBusyViewOptions extends IViewOptions {
     img?: string

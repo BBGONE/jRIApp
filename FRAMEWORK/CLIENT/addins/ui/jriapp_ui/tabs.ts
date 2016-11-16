@@ -1,11 +1,11 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IViewOptions, IPropertyBag } from "jriapp_core/shared";
-import { DomUtils } from "jriapp_utils/dom";
-import { Utils } from "jriapp_utils/utils";
-import { bootstrap } from "jriapp_core/bootstrap";
+import { Utils, IPropertyBag } from "jriapp_shared";
+import { $, JQueryUtils } from "jriapp/utils/jquery";
+import { IViewOptions } from "jriapp/shared";
+import { bootstrap } from "jriapp/bootstrap";
 import { BaseElView } from "./generic";
 
-const utils = Utils, coreUtils = utils.core, dom = DomUtils;
+const utils = Utils, coreUtils = utils.core;
 
 const PROP_NAME = {
     tabIndex: "tabIndex",
@@ -61,7 +61,7 @@ export class TabsElView extends BaseElView implements ITabs {
    }
     protected _destroyTabs() {
         const $el = this.$el;
-        dom.destroy$Plugin($el, "tabs");
+        JQueryUtils.destroy$Plugin($el, "tabs");
         this._tabsCreated = false;
         if (!!this._tabsEvents) {
             this._tabsEvents.removeTabs();

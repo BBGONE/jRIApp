@@ -1,20 +1,17 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { BaseObject } from "jriapp_core/object";
-import { Debounce } from "jriapp_utils/debounce";
-import { DomUtils } from "jriapp_utils/dom";
-import { Utils } from "jriapp_utils/utils";
+import { BaseObject, Debounce, Utils } from "jriapp_shared";
 import { ICollection, ICollectionItem, ICollChangedArgs, COLL_CHANGE_TYPE, COLL_CHANGE_REASON, ITEM_STATUS,
     ICollItemArgs, ICollItemAddedArgs
-} from "jriapp_collection/int";
-
+} from "jriapp_shared/collection/int";
+import { $ } from "jriapp/utils/jquery";
 import { DblClick } from "../../utils/dblclick";
 import { css, ROW_POSITION } from "../const";
 import { Row } from "./row";
 import { DetailsCell } from "../cells/details";
 import { DataGrid } from "../datagrid"
 
-const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr;
-const dom = DomUtils, $ = dom.$, document = dom.document;
+const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr,
+    dom = utils.dom, document = dom.document;
 
 export class DetailsRow extends BaseObject {
     private _grid: DataGrid;

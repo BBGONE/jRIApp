@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IViewOptions } from "jriapp_core/shared";
-import { bootstrap } from "jriapp_core/bootstrap";
+import { IViewOptions } from "jriapp/shared";
+import { bootstrap } from "jriapp/bootstrap";
 import { BaseElView, PROP_NAME } from "./generic";
 
 export class ImgElView extends BaseElView {

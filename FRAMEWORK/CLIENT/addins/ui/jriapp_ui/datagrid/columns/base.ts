@@ -1,18 +1,17 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { DATA_ATTR } from "jriapp_core/const";
-import { IContentOptions, ITemplateEvents, ITemplate } from "jriapp_core/shared";
-import { createTemplate } from "jriapp_core/template";
-import { BaseObject } from "jriapp_core/object";
-import { DomUtils } from "jriapp_utils/dom";
-import { Utils } from "jriapp_utils/utils";
+import { BaseObject, Utils } from "jriapp_shared";
+import { $ } from "jriapp/utils/jquery";
+import { DATA_ATTR } from "jriapp/const";
+import { IContentOptions, ITemplateEvents, ITemplate } from "jriapp/shared";
+import { createTemplate } from "jriapp/template";
 import { fn_addToolTip } from "../../generic";
-import { bootstrap } from "jriapp_core/bootstrap";
+import { bootstrap } from "jriapp/bootstrap";
 
 import { css } from "../const";
 import { BaseCell } from "../cells/base";
 import { DataGrid } from "../datagrid";
 
-const utils = Utils, dom = DomUtils, $ = dom.$, doc = dom.document, boot = bootstrap;
+const utils = Utils, dom = utils.dom, doc = dom.document, boot = bootstrap;
 
 export interface IColumnInfo {
     "type"?: string;

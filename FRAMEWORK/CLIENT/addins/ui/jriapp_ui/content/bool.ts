@@ -1,14 +1,16 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { BINDING_MODE } from "jriapp_core/const";
-import { IElView } from "jriapp_core/shared";
-import { LifeTimeScope } from "jriapp_utils/lifetime";
-import { DomUtils } from "jriapp_utils/dom";
+import {
+    Utils
+} from "jriapp_shared";
+import { BINDING_MODE } from "jriapp/const";
+import { IElView } from "jriapp/shared";
+import { LifeTimeScope } from "jriapp/utils/lifetime";
 import { CheckBoxElView } from "../checkbox";
 
 import { css } from "./int";
 import { BasicContent } from "./basic";
 
-const dom = DomUtils, doc = dom.document;
+const dom = Utils.dom, doc = dom.document;
 
 export class BoolContent extends BasicContent {
     protected init() {

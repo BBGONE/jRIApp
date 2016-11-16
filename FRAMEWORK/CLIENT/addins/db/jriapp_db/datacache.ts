@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import * as langMOD from "jriapp_core/lang";
-import { BaseObject } from "jriapp_core/object";
-import { Utils } from "jriapp_utils/utils";
+import {
+    BaseObject, LocaleERRS as ERRS, Utils
+} from "jriapp_shared";
 import { PROP_NAME } from "./const";
 import { DataQuery } from "./dataquery";
 import { IEntityItem } from "./int";
@@ -29,7 +29,7 @@ export class DataCache extends BaseObject {
         if (res.length === 0)
             return null;
         if (res.length !== 1)
-            throw new Error(strUtils.format(langMOD.ERRS.ERR_ASSERTION_FAILED, "res.length === 1"));
+            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "res.length === 1"));
         return res[0];
    }
     //reset items key index

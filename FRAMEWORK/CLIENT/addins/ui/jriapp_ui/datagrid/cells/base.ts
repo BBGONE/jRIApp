@@ -1,9 +1,8 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { DATA_ATTR } from "jriapp_core/const";
-import { BaseObject } from "jriapp_core/object";
-import { ICollectionItem } from "jriapp_collection/int";
-import { DomUtils } from "jriapp_utils/dom";
-import { Utils } from "jriapp_utils/utils";
+import { BaseObject, Utils } from "jriapp_shared";
+import { $ } from "jriapp/utils/jquery";
+import { DATA_ATTR } from "jriapp/const";
+import { ICollectionItem } from "jriapp_shared/collection/int";
 
 import { DblClick } from "../../utils/dblclick";
 import { css } from "../const";
@@ -11,7 +10,7 @@ import { Row } from "../rows/row";
 import { BaseColumn } from "../columns/base";
 import { DataGrid } from "../datagrid"
 
-const utils = Utils, dom = DomUtils, $ = dom.$;
+const utils = Utils, dom = utils.dom;
 
 export interface ICellOptions {
     row: Row;

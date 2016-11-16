@@ -1,18 +1,15 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    ITemplate, ITemplateEvents, IApplication, IVoidPromise, IEditable, IBaseObject,
-    TEventHandler, ISelectableProvider, IDeferred, IPromise
-} from "jriapp_core/shared";
-import { createTemplate } from "jriapp_core/template";
-import * as langMOD from "jriapp_core/lang";
-import { BaseObject } from "jriapp_core/object";
-import { DomUtils } from "jriapp_utils/dom";
-import { Utils } from "jriapp_utils/utils";
-import { bootstrap } from "jriapp_core/bootstrap";
-import { ViewModel } from "jriapp_core/mvvm";
+    Utils, IBaseObject, IVoidPromise, IEditable, TEventHandler, IDeferred, IPromise, LocaleSTRS as STRS, BaseObject
+} from "jriapp_shared";
+import { $ } from "jriapp/utils/jquery";
+import { ITemplate, ITemplateEvents, IApplication, ISelectableProvider } from "jriapp/shared";
+import { createTemplate } from "jriapp/template";
+import { bootstrap } from "jriapp/bootstrap";
+import { ViewModel } from "jriapp/mvvm";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str,
-    coreUtils = utils.core, sys = utils.sys, $ = DomUtils.$, doc = DomUtils.document,
+    coreUtils = utils.core, sys = utils.sys, doc = utils.dom.document,
     ERROR = utils.err, boot = bootstrap;
 
 export const enum DIALOG_ACTION { Default = 0, StayOpen = 1 };
@@ -210,7 +207,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         let self = this, buttons = [
             {
                 'id': self._objId + "Refresh",
-                'text': langMOD.STRS.TEXT.txtRefresh,
+                'text': STRS.TEXT.txtRefresh,
                 'class': "btn btn-info",
                 'click': function () {
                     self._onRefresh();
@@ -218,7 +215,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             },
             {
                 'id': self._objId + "Ok",
-                'text': langMOD.STRS.TEXT.txtOk,
+                'text': STRS.TEXT.txtOk,
                 'class': "btn btn-info",
                 'click': function () {
                     self._onOk();
@@ -226,7 +223,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             },
             {
                 'id': self._objId + "Cancel",
-                'text': langMOD.STRS.TEXT.txtCancel,
+                'text': STRS.TEXT.txtCancel,
                 'class': "btn btn-info",
                 'click': function () {
                     self._onCancel();
@@ -281,7 +278,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             if (this._submitOnOK) {
                 this._disableButtons(true);
                 let title = this.title;
-                this.title = langMOD.STRS.TEXT.txtSubmitting;
+                this.title = STRS.TEXT.txtSubmitting;
                 let promise = this._fn_submitOnOK();
                 promise.always(function () {
                     self._disableButtons(false);

@@ -1,6 +1,7 @@
 ﻿/// <reference path="../../built/jriapp.d.ts" />
+/// <reference path="../../built/jriapp_shared.d.ts" />
 /** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { bootstrap } from "jriapp_core/bootstrap";
+import { bootstrap } from "jriapp/bootstrap";
 import { initContentFactory } from "./jriapp_ui/content/all";
 
 export { DIALOG_ACTION, IDialogConstructorOptions, DataEditDialog, DialogVM } from "./jriapp_ui/dialog";

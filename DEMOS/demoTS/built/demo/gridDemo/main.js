@@ -1453,7 +1453,7 @@ define("gridDemo/commands", ["require", "exports", "jriapp"], function (require,
 });
 define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/demoDB", "gridDemo/commands"], function (require, exports, RIAPP, dbMOD, DEMODB, commands_1) {
     "use strict";
-    var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = utils.dom.$;
+    var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = RIAPP.$;
     var ProductsFilter = (function (_super) {
         __extends(ProductsFilter, _super);
         function ProductsFilter(app) {
@@ -1682,7 +1682,7 @@ define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/d
 });
 define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "common", "gridDemo/filters", "gridDemo/commands"], function (require, exports, RIAPP, dbMOD, uiMOD, COMMON, filters_1, commands_2) {
     "use strict";
-    var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = utils.dom.$;
+    var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = RIAPP.$;
     var RowStateProvider = (function () {
         function RowStateProvider() {
         }
@@ -2061,7 +2061,7 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
 });
 define("gridDemo/baseUpload", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
     "use strict";
-    var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = utils.dom.$;
+    var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = RIAPP.$;
     var BaseUploadVM = (function (_super) {
         __extends(BaseUploadVM, _super);
         function BaseUploadVM(url) {
@@ -2197,7 +2197,7 @@ define("gridDemo/baseUpload", ["require", "exports", "jriapp"], function (requir
 });
 define("gridDemo/uploads", ["require", "exports", "jriapp", "jriapp_ui", "gridDemo/baseUpload"], function (require, exports, RIAPP, uiMOD, baseUpload_1) {
     "use strict";
-    var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = utils.dom.$;
+    var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = RIAPP.$;
     var fn_getTemplateElement = function (template, name) {
         var t = template;
         var els = t.findElByDataName(name);
@@ -2464,7 +2464,7 @@ define("gridDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "common",
 });
 define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], function (require, exports, RIAPP, uiMOD) {
     "use strict";
-    var utils = RIAPP.Utils, $ = utils.dom.$;
+    var utils = RIAPP.Utils, $ = RIAPP.$;
     var $doc = $(utils.dom.document);
     var $head = $("head");
     var $drag = null;
@@ -2807,7 +2807,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
 });
 define("gridDemo/main", ["require", "exports", "jriapp", "common", "gridDemo/app", "gridDemo/resizableGrid"], function (require, exports, RIAPP, COMMON, app_1, ResizableGrid) {
     "use strict";
-    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = utils.dom.$;
+    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = RIAPP.$;
     var styles = ["lsize", 'msize', 'ssize', 'nsize'];
     var SizeConverter = (function (_super) {
         __extends(SizeConverter, _super);

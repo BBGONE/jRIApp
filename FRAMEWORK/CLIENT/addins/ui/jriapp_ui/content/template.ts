@@ -1,19 +1,16 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+import { $ } from "jriapp/utils/jquery";
+import { BaseObject, LocaleERRS as ERRS, Utils } from "jriapp_shared";
 import {
     IContent, ITemplateEvents, IApplication, ITemplate, ITemplateInfo,
     IConstructorContentOptions
-} from "jriapp_core/shared";
-import { bootstrap } from "jriapp_core/bootstrap";
-import { BaseObject }  from "jriapp_core/object";
-import { createTemplate } from "jriapp_core/template";
-import { ERRS } from "jriapp_core/lang";
-import { DomUtils } from "jriapp_utils/dom";
-import { Utils } from "jriapp_utils/utils";
+} from "jriapp/shared";
+import { bootstrap } from "jriapp/bootstrap";
+import { createTemplate } from "jriapp/template";
 
 import { css } from "./int";
 
-const utils = Utils, coreUtils = utils.core,
-    dom = DomUtils, $ = dom.$, boot = bootstrap, ERROR = utils.err;
+const utils = Utils, coreUtils = utils.core, dom = utils.dom, boot = bootstrap, ERROR = utils.err;
 
 export class TemplateContent extends BaseObject implements IContent {
     private _parentEl: HTMLElement;

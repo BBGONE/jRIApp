@@ -1,15 +1,16 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IApplication, IViewOptions } from "jriapp_core/shared";
-import { ERRS, STRS } from "jriapp_core/lang";
-import { BaseObject } from "jriapp_core/object";
-import { Debounce } from "jriapp_utils/debounce";
-import { DomUtils } from "jriapp_utils/dom";
-import { Utils } from "jriapp_utils/utils";
+import {
+    Utils, BaseObject, IBaseObject, LocaleERRS as ERRS, LocaleSTRS as STRS, Debounce
+} from "jriapp_shared";
+import { $ } from "jriapp/utils/jquery";
+import { IApplication, IViewOptions } from "jriapp/shared";
 import { BaseElView, fn_addToolTip } from "./generic";
-import { ICollection, ICollectionItem, COLL_CHANGE_TYPE, COLL_CHANGE_REASON } from "jriapp_collection/int";
+import {
+    ICollection, ICollectionItem, ICollChangedArgs, ITEM_STATUS, COLL_CHANGE_TYPE, COLL_CHANGE_REASON
+} from "jriapp_shared/collection/int";
 import { bootstrap } from "jriapp";
 
-const utils = Utils, dom = DomUtils, $ = dom.$, doc = dom.document, sys = utils.sys,
+const utils = Utils, dom = utils.dom, doc = dom.document, sys = utils.sys,
     checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
     ERROR = utils.err, boot = bootstrap;
 let _STRS = STRS.PAGER;

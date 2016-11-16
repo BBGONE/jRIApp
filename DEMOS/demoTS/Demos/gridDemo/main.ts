@@ -12,7 +12,7 @@ import * as DEMODB from "../demo/demoDB";
 import { IMainOptions, DemoApplication } from "./app";
 import * as  ResizableGrid from "./resizableGrid";
 
-var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = utils.dom.$;
+var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = RIAPP.$;
 const styles = ["lsize", 'msize', 'ssize', 'nsize'];
 
 /*

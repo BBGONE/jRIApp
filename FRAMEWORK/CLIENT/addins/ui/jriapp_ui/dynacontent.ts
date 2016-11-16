@@ -1,14 +1,11 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { ITemplate, IVoidPromise, ITemplateEvents, IBaseObject, IViewOptions } from "jriapp_core/shared";
-import { createTemplate } from "jriapp_core/template";
-import { BaseObject } from "jriapp_core/object";
-import { Utils } from "jriapp_utils/utils";
-import { DomUtils } from "jriapp_utils/dom";
-import { bootstrap } from "jriapp_core/bootstrap";
+import { Utils, BaseObject, IVoidPromise, IBaseObject } from "jriapp_shared";
+import { ITemplate, ITemplateEvents, IViewOptions } from "jriapp/shared";
+import { createTemplate } from "jriapp/template";
+import { bootstrap } from "jriapp/bootstrap";
 import { BaseElView } from "./generic";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str,
-    coreUtils = utils.core, sys = utils.sys, dom = DomUtils;
+const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, sys = utils.sys, dom = utils.dom;
 
 export interface IDynaContentAnimation {
     beforeShow(template: ITemplate, isFirstShow: boolean): void;

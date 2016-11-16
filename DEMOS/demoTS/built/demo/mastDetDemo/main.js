@@ -1493,7 +1493,7 @@ define("mastDetDemo/productVM", ["require", "exports", "jriapp"], function (requ
 });
 define("mastDetDemo/orderDetVM", ["require", "exports", "jriapp", "mastDetDemo/productVM"], function (require, exports, RIAPP, productVM_1) {
     "use strict";
-    var utils = RIAPP.Utils, $ = utils.dom.$;
+    var utils = RIAPP.Utils, $ = RIAPP.$;
     var OrderDetailVM = (function (_super) {
         __extends(OrderDetailVM, _super);
         function OrderDetailVM(orderVM) {
@@ -1585,7 +1585,7 @@ define("mastDetDemo/orderDetVM", ["require", "exports", "jriapp", "mastDetDemo/p
 });
 define("mastDetDemo/orderVM", ["require", "exports", "jriapp", "demo/demoDB", "mastDetDemo/orderDetVM", "mastDetDemo/addressVM"], function (require, exports, RIAPP, DEMODB, orderDetVM_1, addressVM_1) {
     "use strict";
-    var utils = RIAPP.Utils, $ = utils.dom.$;
+    var utils = RIAPP.Utils, $ = RIAPP.$;
     var OrderVM = (function (_super) {
         __extends(OrderVM, _super);
         function OrderVM(customerVM) {
@@ -1789,7 +1789,7 @@ define("mastDetDemo/orderVM", ["require", "exports", "jriapp", "demo/demoDB", "m
 });
 define("mastDetDemo/customerVM", ["require", "exports", "jriapp", "jriapp_db", "mastDetDemo/orderVM"], function (require, exports, RIAPP, dbMOD, orderVM_1) {
     "use strict";
-    var utils = RIAPP.Utils, $ = utils.dom.$;
+    var utils = RIAPP.Utils, $ = RIAPP.$;
     var CustomerVM = (function (_super) {
         __extends(CustomerVM, _super);
         function CustomerVM(app) {
@@ -2152,7 +2152,7 @@ define("mastDetDemo/addressVM", ["require", "exports", "jriapp"], function (requ
 });
 define("mastDetDemo/prodAutocomplete", ["require", "exports", "jriapp", "autocomplete"], function (require, exports, RIAPP, AUTOCOMPLETE) {
     "use strict";
-    var utils = RIAPP.Utils, $ = utils.dom.$;
+    var utils = RIAPP.Utils, $ = RIAPP.$;
     var ProductAutoComplete = (function (_super) {
         __extends(ProductAutoComplete, _super);
         function ProductAutoComplete(options) {

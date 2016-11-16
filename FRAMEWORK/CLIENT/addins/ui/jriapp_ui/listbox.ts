@@ -1,18 +1,16 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IBaseObject, TEventHandler, IBinding, IElViewStore, IViewOptions } from "jriapp_core/shared";
-import { ERRS } from "jriapp_core/lang";
-import { BaseObject } from "jriapp_core/object";
-import { bootstrap } from "jriapp_core/bootstrap";
-import { parser } from "jriapp_core/parser";
-import { DomUtils } from "jriapp_utils/dom";
-import { Utils } from "jriapp_utils/utils";
 import {
-    ICollection, ICollectionItem, ICollChangedArgs,
-    ITEM_STATUS, COLL_CHANGE_TYPE
-} from "jriapp_collection/int";
+    Utils, BaseObject, IBaseObject, LocaleERRS as ERRS, parser, TEventHandler
+} from "jriapp_shared";
+import { $ } from "jriapp/utils/jquery";
+import {
+    ICollection, ICollectionItem, ICollChangedArgs, ITEM_STATUS, COLL_CHANGE_TYPE
+} from "jriapp_shared/collection/int";
+import { IViewOptions } from "jriapp/shared";
+import { bootstrap } from "jriapp/bootstrap";
 import { BaseElView } from "./generic";
 
-const utils = Utils, $ = DomUtils.$, doc = DomUtils.document, sys= utils.sys,
+const utils = Utils, doc = utils.dom.document, sys= utils.sys,
     checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
     boot = bootstrap;
 

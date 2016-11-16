@@ -1,16 +1,15 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { FIELD_TYPE, DATE_CONVERSION, DATA_TYPE, SORT_ORDER } from "jriapp_core/const";
-import { IPromise, IFieldInfo, TEventHandler, TPriority } from "jriapp_core/shared";
-import { ERRS } from "jriapp_core/lang";
-import { BaseObject } from "jriapp_core/object";
-import { parser } from "jriapp_core/parser";
-import { Debounce } from "jriapp_utils/debounce";
-import { Utils } from "jriapp_utils/utils";
+import {
+    FIELD_TYPE, DATE_CONVERSION, DATA_TYPE, SORT_ORDER
+} from "jriapp_shared/const";
+import {
+    IPromise, IFieldInfo, TEventHandler, TPriority, LocaleERRS as ERRS, BaseObject, parser, Debounce, Utils
+} from "jriapp_shared";
 import {
     ICollection, ICollectionItem, ICollChangedArgs, ICollItemStatusArgs, IErrors, IPermissions,
     COLL_CHANGE_TYPE, COLL_CHANGE_REASON, COLL_CHANGE_OPER
-} from "jriapp_collection/int";
-import { BaseCollection } from "jriapp_collection/collection";
+} from "jriapp_shared/collection/int";
+import { BaseCollection } from "jriapp_shared/collection/base";
 import { PROP_NAME } from "./const";
 
 const utils = Utils, _async = utils.defer, checks = utils.check,

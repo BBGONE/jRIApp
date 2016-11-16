@@ -5,7 +5,7 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "common"], function (require, exports, RIAPP, uiMOD, FOLDERBROWSER_SVC, COMMON) {
     "use strict";
-    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = utils.dom.$;
+    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = RIAPP.$;
     var FolderBrowser = (function (_super) {
         __extends(FolderBrowser, _super);
         function FolderBrowser(app, options) {
@@ -89,8 +89,7 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
                 }
             }
             catch (ex) {
-                self.handleError(ex, self);
-                RIAPP.ERROR.throwDummy(ex);
+                utils.err.reThrow(ex, self.handleError(ex, self));
             }
         };
         FolderBrowser.prototype._addItemsToNode = function (node, items) {

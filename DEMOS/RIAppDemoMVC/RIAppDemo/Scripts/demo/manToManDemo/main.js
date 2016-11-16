@@ -1818,7 +1818,7 @@ define("manToManDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "comm
 });
 define("manToManDemo/addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "common"], function (require, exports, RIAPP, dbMOD, uiMOD, COMMON) {
     "use strict";
-    var utils = RIAPP.Utils, $ = utils.dom.$;
+    var utils = RIAPP.Utils, $ = RIAPP.$;
     var AddAddressVM = (function (_super) {
         __extends(AddAddressVM, _super);
         function AddAddressVM(customerAddressVM) {

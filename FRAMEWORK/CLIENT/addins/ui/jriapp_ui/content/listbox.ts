@@ -1,21 +1,22 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { BINDING_MODE } from "jriapp_core/const";
 import {
-    IBaseObject, IExternallyCachable, IBinding, IBindingOptions,
+    IBaseObject, LocaleERRS as ERRS, parser, Utils
+} from "jriapp_shared";
+import { $ } from "jriapp/utils/jquery";
+import { BINDING_MODE } from "jriapp/const";
+import {
+    IExternallyCachable, IBinding, IBindingOptions,
     IConstructorContentOptions, IContentFactory, IContentConstructor, IContent, IContentOptions, IElView
-} from "jriapp_core/shared";
-import { ERRS } from "jriapp_core/lang";
-import { parser } from "jriapp_core/parser";
-import { DomUtils } from "jriapp_utils/dom";
-import { Utils } from "jriapp_utils/utils";
-import { ICollection, ICollectionItem } from "jriapp_collection/int";
-import { bootstrap } from "jriapp_core/bootstrap";
+} from "jriapp/shared";
+import {
+    ICollection, ICollectionItem
+} from "jriapp_shared/collection/int";
+import { bootstrap } from "jriapp/bootstrap";
 import { ListBoxElView } from "../listbox";
 import { SpanElView } from "../span";
 import { BasicContent } from "./basic";
 
-const utils = Utils, dom = DomUtils, $ = dom.$, doc = dom.document, checks = utils.check,
-    strUtils = utils.str, coreUtils = utils.core;
+const utils = Utils, dom =utils.dom, doc = dom.document, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
     
 
 const PROP_NAME = {

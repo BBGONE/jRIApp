@@ -1,11 +1,9 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IFieldInfo, IIndexer, TPriority } from "jriapp_core/shared";
-import { ERRS } from "jriapp_core/lang";
-import { BaseObject } from "jriapp_core/object";
-import { bootstrap } from "jriapp_core/bootstrap";
-import { Debounce } from "jriapp_utils/debounce";
-import { Utils } from "jriapp_utils/utils";
-import { ICollChangedArgs, COLL_CHANGE_TYPE, ITEM_STATUS } from "jriapp_collection/int";
+import {
+    Utils, BaseObject, IIndexer, IFieldInfo, TPriority, LocaleERRS as ERRS, Debounce
+} from "jriapp_shared";
+import { bootstrap } from "jriapp/bootstrap";
+import { ICollChangedArgs, COLL_CHANGE_TYPE, ITEM_STATUS } from "jriapp_shared/collection/int";
 import { DELETE_ACTION } from "./const";
 import { IAssocConstructorOptions, IEntityItem } from "./int";
 import { DbContext } from "./dbcontext";

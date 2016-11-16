@@ -2,14 +2,8 @@
 /// <reference path="../thirdparty/moment.d.ts" />
 /// <reference path="../thirdparty/qtip2.d.ts" />
 /// <reference path="../thirdparty/require.d.ts" />
-declare module "jriapp_core/const" {
-    export enum DEBUG_LEVEL {
-        NONE = 0,
-        NORMAL = 1,
-        HIGH = 2,
-    }
-    export const APP_NAME: string;
-    export const DUMY_ERROR: string;
+/// <reference path="jriapp_shared.d.ts" />
+declare module "jriapp/const" {
     export const TOOLTIP_SVC: string;
     export const STORE_KEY: {
         SVC: string;
@@ -28,49 +22,6 @@ declare module "jriapp_core/const" {
         DATA_FORM: string;
         DATA_REQUIRE: string;
     };
-    export const enum DATE_CONVERSION {
-        None = 0,
-        ServerLocalToClientLocal = 1,
-        UtcToClientLocal = 2,
-    }
-    export const enum DATA_TYPE {
-        None = 0,
-        String = 1,
-        Bool = 2,
-        Integer = 3,
-        Decimal = 4,
-        Float = 5,
-        DateTime = 6,
-        Date = 7,
-        Time = 8,
-        Guid = 9,
-        Binary = 10,
-    }
-    export const enum FIELD_TYPE {
-        None = 0,
-        ClientOnly = 1,
-        Calculated = 2,
-        Navigation = 3,
-        RowTimeStamp = 4,
-        Object = 5,
-        ServerCalculated = 6,
-    }
-    export const enum SORT_ORDER {
-        ASC = 0,
-        DESC = 1,
-    }
-    export const enum FILTER_TYPE {
-        Equals = 0,
-        Between = 1,
-        StartsWith = 2,
-        EndsWith = 3,
-        Contains = 4,
-        Gt = 5,
-        Lt = 6,
-        GtEq = 7,
-        LtEq = 8,
-        NotEq = 9,
-    }
     export const enum KEYS {
         backspace = 8,
         tab = 9,
@@ -105,143 +56,25 @@ declare module "jriapp_core/const" {
         BackWay = 3,
     }
 }
-declare module "jriapp_core/shared" {
-    import * as constsMOD from "jriapp_core/const";
-    export interface IJRIAppConfig {
+declare module "jriapp/shared" {
+    import { BINDING_MODE, BindTo } from "jriapp/const";
+    import { IBaseObject, IDisposable, IIndexer, IPromise, IVoidPromise, IValidationInfo, IFieldInfo, IErrorHandler, TEventHandler, IConfig } from "jriapp_shared";
+    export interface IJRIAppConfig extends IConfig {
         frameworkPath?: string;
         frameworkJS?: string;
         bust?: string;
-        debugLevel?: constsMOD.DEBUG_LEVEL;
     }
     export const Config: IJRIAppConfig;
-    export let DebugLevel: constsMOD.DEBUG_LEVEL;
     export class ButtonCss {
         static Edit: string;
         static Delete: string;
         static OK: string;
         static Cancel: string;
     }
-    export type TEventHandler<T, U> = (sender: T, args: U) => void;
-    export type TErrorArgs = {
-        error: any;
-        source: any;
-        isHandled: boolean;
-    };
-    export type TErrorHandler = (sender: any, args: TErrorArgs) => void;
-    export type TPropChangedHandler = (sender: any, args: {
-        property: string;
-    }) => void;
-    export interface IDisposable {
-        destroy(): void;
-        getIsDestroyed(): boolean;
-        getIsDestroyCalled(): boolean;
-    }
-    export interface IIndexer<T> {
-        [name: string]: T;
-    }
-    export interface IErrorHandler {
-        handleError(error: any, source: any): boolean;
-    }
-    export const enum TPriority {
-        Normal = 0,
-        AboveNormal = 1,
-        High = 2,
-    }
-    export interface ITaskQueue {
-        enque(task: () => void): void;
-    }
-    export interface IBaseObject extends IErrorHandler, IDisposable {
-        _isHasProp(prop: string): boolean;
-        raisePropertyChanged(name: string): void;
-        addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeHandler(name?: string, nmspace?: string): void;
-        addOnPropertyChange(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnPropertyChange(prop?: string, nmspace?: string): void;
-        removeNSHandlers(nmspace?: string): void;
-        addOnError(handler: TErrorHandler, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnError(nmspace?: string): void;
-        addOnDestroyed(handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnDestroyed(nmspace?: string): void;
-        raiseEvent(name: string, args: any): void;
-    }
-    export interface IPropertyBag extends IBaseObject {
-        getProp(name: string): any;
-        setProp(name: string, val: any): void;
-    }
     export interface ILifeTimeScope extends IBaseObject {
         addObj(b: IBaseObject): void;
         removeObj(b: IBaseObject): void;
         getObjs(): IBaseObject[];
-    }
-    export interface IAbortable {
-        abort(reason?: string): void;
-    }
-    export interface ISuccessCB<T, TP> {
-        (value: T): TP;
-    }
-    export interface IDeferredSuccessCB<T, TP> {
-        (value: T): IThenable<TP>;
-    }
-    export interface IErrorCB<TP> {
-        (err: any): TP;
-    }
-    export interface IVoidErrorCB {
-        (err: any): void;
-    }
-    export interface IDeferredErrorCB<TP> {
-        (error: any): IThenable<TP>;
-    }
-    export interface IThenable<T> {
-        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IDeferredErrorCB<TP>): IThenable<TP>;
-        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IErrorCB<TP>): IThenable<TP>;
-        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IDeferredErrorCB<TP>): IThenable<TP>;
-        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IErrorCB<TP>): IThenable<TP>;
-    }
-    export interface IPromise<T> extends IThenable<T> {
-        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IDeferredErrorCB<TP>): IPromise<TP>;
-        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IErrorCB<TP>): IPromise<TP>;
-        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IVoidErrorCB): IPromise<TP>;
-        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IDeferredErrorCB<TP>): IPromise<TP>;
-        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IErrorCB<TP>): IPromise<TP>;
-        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IVoidErrorCB): IPromise<TP>;
-        always<TP>(errorCB?: IDeferredErrorCB<TP>): IPromise<TP>;
-        always<TP>(errorCB?: IErrorCB<TP>): IPromise<TP>;
-        always(errorCB?: IVoidErrorCB): IPromise<void>;
-        fail(errorCB?: IDeferredErrorCB<T>): IPromise<T>;
-        fail(errorCB?: IErrorCB<T>): IPromise<T>;
-        fail(errorCB?: IVoidErrorCB): IPromise<void>;
-    }
-    export interface IVoidPromise extends IPromise<void> {
-    }
-    export interface IDeferred<T> {
-        resolve(value?: IThenable<T>): IPromise<T>;
-        resolve(value?: T): IPromise<T>;
-        reject(error?: any): IPromise<T>;
-        promise(): IPromise<T>;
-    }
-    export interface IAbortablePromise<T> extends IPromise<T>, IAbortable {
-    }
-    export interface IEditable {
-        beginEdit(): boolean;
-        endEdit(): boolean;
-        cancelEdit(): boolean;
-        readonly isEditing: boolean;
-    }
-    export interface ISubmittable {
-        submitChanges(): IVoidPromise;
-        readonly isCanSubmit: boolean;
-    }
-    export interface IValidationInfo {
-        readonly fieldName: string;
-        readonly errors: string[];
-    }
-    export interface IErrorNotification {
-        getIsHasErrors(): boolean;
-        addOnErrorsChanged(fn: TEventHandler<any, any>, nmspace?: string, context?: any): void;
-        removeOnErrorsChanged(nmspace?: string): void;
-        getFieldErrors(fieldName: string): IValidationInfo[];
-        getAllErrors(): IValidationInfo[];
-        getIErrorNotification(): IErrorNotification;
     }
     export interface IDatepicker {
         datepickerRegion: string;
@@ -285,7 +118,7 @@ declare module "jriapp_core/shared" {
         groupName?: string;
     }
     export interface IUnResolvedBindingArgs {
-        bindTo: constsMOD.BindTo;
+        bindTo: BindTo;
         root: any;
         path: string;
         propName: string;
@@ -309,25 +142,6 @@ declare module "jriapp_core/shared" {
         templateLoading(template: ITemplate): void;
         templateLoaded(template: ITemplate, error?: any): void;
         templateUnLoading(template: ITemplate): void;
-    }
-    export interface IFieldInfo {
-        fieldName: string;
-        isPrimaryKey: number;
-        dataType: constsMOD.DATA_TYPE;
-        isNullable: boolean;
-        isReadOnly: boolean;
-        isAutoGenerated: boolean;
-        isNeedOriginal: boolean;
-        maxLength: number;
-        dateConversion: constsMOD.DATE_CONVERSION;
-        allowClientDefault: boolean;
-        range: string;
-        regex: string;
-        fieldType: constsMOD.FIELD_TYPE;
-        dependentOn: string;
-        nested: IFieldInfo[];
-        dependents?: string[];
-        fullName?: string;
     }
     export interface IViewOptions {
         css?: string;
@@ -374,7 +188,7 @@ declare module "jriapp_core/shared" {
         bind(opts: IBindingOptions): IBinding;
     }
     export interface IBindingOptions {
-        mode?: constsMOD.BINDING_MODE;
+        mode?: BINDING_MODE;
         converterParam?: any;
         converter?: IConverter;
         targetPath: string;
@@ -401,7 +215,7 @@ declare module "jriapp_core/shared" {
         sourcePath: string[];
         sourceValue: any;
         targetValue: any;
-        mode: constsMOD.BINDING_MODE;
+        mode: BINDING_MODE;
         converter: IConverter;
         converterParam: any;
         isSourceFixed: boolean;
@@ -508,355 +322,10 @@ declare module "jriapp_core/shared" {
         modulesInits?: IIndexer<(app: IApplication) => void>;
         appRoot?: Document | HTMLElement;
     }
-    export class BaseError {
-        private _message;
-        constructor(message?: string);
-        toString(): string;
-        readonly isDummy: boolean;
-        readonly message: string;
-    }
-    export class DummyError extends BaseError {
-        private _origError;
-        constructor(originalError: any);
-        readonly isDummy: boolean;
-        readonly origError: any;
-    }
-    export class AbortError extends BaseError {
-        private _reason;
-        constructor(reason?: string);
-        readonly isDummy: boolean;
-        readonly reason: string;
-    }
-    export class AggregateError extends BaseError {
-        private _errors;
-        constructor(errors?: any[]);
-        readonly errors: any[];
-        readonly count: number;
-        readonly message: string;
-        toString(): string;
-    }
 }
-declare module "jriapp_utils/arrhelper" {
-    export interface IArrayLikeList<T> {
-        length: number;
-        [index: number]: T;
-    }
-    export class ArrayHelper {
-        static clone<T>(arr: T[]): T[];
-        static fromList<T extends U, U>(list: IArrayLikeList<U>): T[];
-        static fromList<T>(list: IArrayLikeList<any>): T[];
-        static fromList<T>(list: IArrayLikeList<T>): T[];
-        static distinct(arr: string[]): string[];
-        static distinct(arr: number[]): number[];
-        static remove(array: any[], obj: any): number;
-        static insert(array: any[], obj: any, pos: number): void;
-    }
-}
-declare module "jriapp_utils/strutils" {
-    export class StringUtils {
-        private static ERR_STRING_FORMAT_INVALID;
-        static endsWith(str: string, suffix: string): boolean;
-        static startsWith(str: string, prefix: string): boolean;
-        static fastTrim(str: string): string;
-        static trim(str: string, chars?: string): string;
-        static ltrim(str: string, chars?: string): string;
-        static rtrim(str: string, chars?: string): string;
-        static format(format_str: string, ...args: any[]): string;
-        static formatNumber(num: any, decimals?: number, dec_point?: string, thousands_sep?: string): string;
-        static stripNonNumeric(str: string): string;
-        static padLeft(val: string, length: number, str: string): string;
-    }
-}
-declare module "jriapp_utils/checks" {
-    import { IThenable } from "jriapp_core/shared";
-    export class Checks {
-        static undefined: any;
-        static isHasProp(obj: any, prop: string): boolean;
-        static isNull(a: any): a is void;
-        static isUndefined(a: any): a is void;
-        static isNt(a: any): a is void;
-        static isObject(a: any): boolean;
-        static isSimpleObject(a: any): boolean;
-        static isString(a: any): a is string;
-        static isFunc(a: any): a is Function;
-        static isBoolean(a: any): a is boolean;
-        static isDate(a: any): a is Date;
-        static isNumber(a: any): a is Number;
-        static isNumeric(a: any): a is Number;
-        static isBoolString(a: any): boolean;
-        static isArray<T>(a: any): a is Array<T>;
-        static isThenable(a: any): a is IThenable<any>;
-    }
-}
-declare module "jriapp_utils/coreutils" {
-    import { IIndexer, IErrorHandler } from "jriapp_core/shared";
-    import { ArrayHelper } from "jriapp_utils/arrhelper";
-    import { StringUtils } from "jriapp_utils/strutils";
-    import { Checks } from "jriapp_utils/checks";
-    export class DEBUG {
-        static checkStartDebugger(): void;
-        static isDebugging(): boolean;
-    }
-    export class ERROR {
-        private static _handlers;
-        static addHandler(name: string, handler: IErrorHandler): void;
-        static removeHandler(name: string): void;
-        static handleError(sender: any, error: any, source: any): boolean;
-        static throwDummy(err: any): void;
-        static checkIsDummy(error: any): boolean;
-        static checkIsAbort(error: any): boolean;
-        static reThrow(ex: any, isHandled: boolean): void;
-        static abort(reason?: string): void;
-    }
-    export class LOG {
-        static log(str: string): void;
-        static warn(str: string): void;
-        static error(str: string): void;
-    }
-    export class CoreUtils {
-        private static _newID;
-        private static ERR_OBJ_ALREADY_REGISTERED;
-        private static CHARS;
-        static check: typeof Checks;
-        static str: typeof StringUtils;
-        static arr: typeof ArrayHelper;
-        static getNewID(): number;
-        static get_timeZoneOffset: () => number;
-        static hasProp: typeof Checks.isHasProp;
-        static setValue(root: any, namePath: string, val: any, checkOverwrite: boolean): void;
-        static getValue(root: any, namePath: string): any;
-        static removeValue(root: any, namePath: string): any;
-        static resolveOwner(obj: any, path: string): any;
-        static uuid(len?: number, radix?: number): string;
-        static parseBool(a: any): boolean;
-        static round(num: number, decimals: number): number;
-        static merge<S, T>(source: S, target?: T): S | T;
-        static clone(obj: any, target?: any): any;
-        static iterateIndexer<T>(obj: IIndexer<T>, fn: (name: string, val: T) => void): void;
-        static extend<T, U>(defaults: T, current: U): T | U;
-        static memoize<T>(callback: () => T): () => T;
-        static forEachProp(obj: any, fn: (name: string) => void): void;
-        static assignStrings<T extends U, U extends IIndexer<any>>(target: T, source: U): T;
-    }
-}
-declare module "jriapp_core/lang" {
-    import * as coreMOD from "jriapp_core/shared";
-    export function assign<T extends U, U extends coreMOD.IIndexer<any>>(target: T, source: U): T;
-    export interface IErrors extends coreMOD.IIndexer<string> {
-        ERR_OBJ_ALREADY_REGISTERED: string;
-        ERR_APP_NEED_JQUERY: string;
-        ERR_ASSERTION_FAILED: string;
-        ERR_BINDING_CONTENT_NOT_FOUND: string;
-        ERR_DBSET_READONLY: string;
-        ERR_DBSET_INVALID_FIELDNAME: string;
-        ERR_FIELD_READONLY: string;
-        ERR_FIELD_ISNOT_NULLABLE: string;
-        ERR_FIELD_WRONG_TYPE: string;
-        ERR_FIELD_MAXLEN: string;
-        ERR_FIELD_DATATYPE: string;
-        ERR_FIELD_REGEX: string;
-        ERR_FIELD_RANGE: string;
-        ERR_EVENT_INVALID: string;
-        ERR_EVENT_INVALID_FUNC: string;
-        ERR_MODULE_NOT_REGISTERED: string;
-        ERR_MODULE_ALREDY_REGISTERED: string;
-        ERR_PROP_NAME_EMPTY: string;
-        ERR_PROP_NAME_INVALID: string;
-        ERR_GLOBAL_SINGLTON: string;
-        ERR_TEMPLATE_ALREADY_REGISTERED: string;
-        ERR_TEMPLATE_NOTREGISTERED: string;
-        ERR_TEMPLATE_GROUP_NOTREGISTERED: string;
-        ERR_TEMPLATE_HAS_NO_ID: string;
-        ERR_CONVERTER_NOTREGISTERED: string;
-        ERR_JQUERY_DATEPICKER_NOTFOUND: string;
-        ERR_PARAM_INVALID: string;
-        ERR_PARAM_INVALID_TYPE: string;
-        ERR_KEY_IS_EMPTY: string;
-        ERR_KEY_IS_NOTFOUND: string;
-        ERR_ITEM_IS_ATTACHED: string;
-        ERR_ITEM_IS_DETACHED: string;
-        ERR_ITEM_IS_NOTFOUND: string;
-        ERR_ITEM_NAME_COLLISION: string;
-        ERR_DICTKEY_IS_NOTFOUND: string;
-        ERR_DICTKEY_IS_EMPTY: string;
-        ERR_CONV_INVALID_DATE: string;
-        ERR_CONV_INVALID_NUM: string;
-        ERR_QUERY_NAME_NOTFOUND: string;
-        ERR_QUERY_BETWEEN: string;
-        ERR_QUERY_OPERATOR_INVALID: string;
-        ERR_OPER_REFRESH_INVALID: string;
-        ERR_CALC_FIELD_DEFINE: string;
-        ERR_CALC_FIELD_SELF_DEPEND: string;
-        ERR_DOMAIN_CONTEXT_INITIALIZED: string;
-        ERR_DOMAIN_CONTEXT_NOT_INITIALIZED: string;
-        ERR_SVC_METH_PARAM_INVALID: string;
-        ERR_DB_LOAD_NO_QUERY: string;
-        ERR_DBSET_NAME_INVALID: string;
-        ERR_APP_NAME_NOT_UNIQUE: string;
-        ERR_ELVIEW_NOT_REGISTERED: string;
-        ERR_ELVIEW_NOT_CREATED: string;
-        ERR_BIND_TARGET_EMPTY: string;
-        ERR_BIND_TGTPATH_INVALID: string;
-        ERR_BIND_MODE_INVALID: string;
-        ERR_BIND_TARGET_INVALID: string;
-        ERR_EXPR_BRACES_INVALID: string;
-        ERR_APP_SETUP_INVALID: string;
-        ERR_GRID_DATASRC_INVALID: string;
-        ERR_COLLECTION_CHANGETYPE_INVALID: string;
-        ERR_GRID_COLTYPE_INVALID: string;
-        ERR_PAGER_DATASRC_INVALID: string;
-        ERR_STACKPNL_DATASRC_INVALID: string;
-        ERR_STACKPNL_TEMPLATE_INVALID: string;
-        ERR_LISTBOX_DATASRC_INVALID: string;
-        ERR_DATAFRM_DCTX_INVALID: string;
-        ERR_DCTX_HAS_NO_FIELDINFO: string;
-        ERR_TEMPLATE_ID_INVALID: string;
-        ERR_ITEM_DELETED_BY_ANOTHER_USER: string;
-        ERR_ACCESS_DENIED: string;
-        ERR_CONCURRENCY: string;
-        ERR_VALIDATION: string;
-        ERR_SVC_VALIDATION: string;
-        ERR_SVC_ERROR: string;
-        ERR_UNEXPECTED_SVC_ERROR: string;
-        ERR_ASSOC_NAME_INVALID: string;
-        ERR_DATAVIEW_DATASRC_INVALID: string;
-        ERR_DATAVIEW_FILTER_INVALID: string;
-    }
-    export interface IPagerText extends coreMOD.IIndexer<string> {
-        firstText: string;
-        lastText: string;
-        previousText: string;
-        nextText: string;
-        pageInfo: string;
-        firstPageTip: string;
-        prevPageTip: string;
-        nextPageTip: string;
-        lastPageTip: string;
-        showingTip: string;
-        showTip: string;
-    }
-    export interface IValidateText extends coreMOD.IIndexer<string> {
-        errorInfo: string;
-        errorField: string;
-    }
-    export interface IText extends coreMOD.IIndexer<string> {
-        txtEdit: string;
-        txtAddNew: string;
-        txtDelete: string;
-        txtCancel: string;
-        txtOk: string;
-        txtRefresh: string;
-        txtAskDelete: string;
-        txtSubmitting: string;
-        txtSave: string;
-        txtClose: string;
-        txtField: string;
-    }
-    export interface ILocaleText extends coreMOD.IIndexer<any> {
-        PAGER: IPagerText;
-        VALIDATE: IValidateText;
-        TEXT: IText;
-    }
-    export let ERRS: IErrors;
-    export let STRS: ILocaleText;
-}
-declare module "jriapp_utils/sysutils" {
-    import { ISubmittable, IErrorNotification, IEditable, IElView } from "jriapp_core/shared";
-    export class SysUtils {
-        static isBaseObj: (obj: any) => boolean;
-        static isElView: (obj: any) => boolean;
-        static isBinding: (obj: any) => boolean;
-        static isPropBag: (obj: any) => boolean;
-        static isCollection: (obj: any) => boolean;
-        static getItemByProp: (obj: any, prop: string) => any;
-        static isValidationError: (obj: any) => boolean;
-        static isTemplateElView: (obj: any) => boolean;
-        static setIsInsideTemplate: (elView: IElView) => void;
-        static isDataForm: (el: HTMLElement) => boolean;
-        static isInsideDataForm: (el: HTMLElement) => boolean;
-        static isInNestedForm: (root: any, forms: HTMLElement[], el: HTMLElement) => boolean;
-        static getParentDataForm: (rootForm: HTMLElement, el: HTMLElement) => HTMLElement;
-        static isEditable(obj: any): obj is IEditable;
-        static isSubmittable(obj: any): obj is ISubmittable;
-        static isErrorNotification(obj: any): obj is IErrorNotification;
-        static getErrorNotification(obj: any): IErrorNotification;
-        static getEditable(obj: any): IEditable;
-        static getSubmittable(obj: any): ISubmittable;
-        static PROP_BAG_NAME(): string;
-    }
-}
-declare module "jriapp_utils/eventhelper" {
-    import { TPriority, IIndexer, IBaseObject, TEventHandler } from "jriapp_core/shared";
-    export interface IEventNode {
-        context: any;
-        fn: TEventHandler<any, any>;
-        next: IEventNode;
-    }
-    export type IEventNodeArray = IEventNode[];
-    export interface INamespaceMap {
-        [ns: string]: IEventNodeArray;
-    }
-    export interface IEventList {
-        [priority: number]: INamespaceMap;
-    }
-    export class EventHelper {
-        static removeNs(ev: IIndexer<IEventList>, ns?: string): void;
-        static add(ev: IIndexer<IEventList>, name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        static remove(ev: IIndexer<IEventList>, name?: string, nmspace?: string): void;
-        static raise(sender: any, ev: IIndexer<IEventList>, name: string, args: any): void;
-        static raiseProp(sender: any, ev: IIndexer<IEventList>, prop: string, args: any): void;
-    }
-}
-declare module "jriapp_core/object" {
-    import { IBaseObject, TPriority, TEventHandler, TErrorHandler, TPropChangedHandler } from "jriapp_core/shared";
-    export class BaseObject implements IBaseObject {
-        private _obj_state;
-        private _events;
-        constructor();
-        protected _getEventNames(): string[];
-        protected _addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        protected _removeHandler(name?: string, nmspace?: string): void;
-        protected readonly _isDestroyed: boolean;
-        protected _isDestroyCalled: boolean;
-        _isHasProp(prop: string): boolean;
-        handleError(error: any, source: any): boolean;
-        addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeHandler(name?: string, nmspace?: string): void;
-        addOnDestroyed(handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnDestroyed(nmspace?: string): void;
-        addOnError(handler: TErrorHandler, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnError(nmspace?: string): void;
-        removeNSHandlers(nmspace?: string): void;
-        raiseEvent(name: string, args: any): void;
-        raisePropertyChanged(name: string): void;
-        addOnPropertyChange(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnPropertyChange(prop?: string, nmspace?: string): void;
-        getIsDestroyed(): boolean;
-        getIsDestroyCalled(): boolean;
-        destroy(): void;
-    }
-}
-declare module "jriapp_core/parser" {
-    export class Parser {
-        protected _getKeyVals(val: string): {
-            key: string;
-            val: any;
-        }[];
-        getPathParts(path: string): string[];
-        resolveProp(obj: any, prop: string): any;
-        setPropertyValue(obj: any, prop: string, val: any): void;
-        resolveBindingSource(root: any, srcParts: string[]): any;
-        resolvePath(obj: any, path: string): any;
-        private getBraceParts(val, firstOnly);
-        parseOption(part: string): any;
-        parseOptions(str: string): any[];
-        toString(): string;
-    }
-    export const parser: Parser;
-}
-declare module "jriapp_utils/lifetime" {
-    import { IBaseObject, ILifeTimeScope } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
+declare module "jriapp/utils/lifetime" {
+    import { IBaseObject, BaseObject } from "jriapp_shared";
+    import { ILifeTimeScope } from "jriapp/shared";
     export class LifeTimeScope extends BaseObject implements ILifeTimeScope {
         private _objs;
         constructor();
@@ -868,143 +337,25 @@ declare module "jriapp_utils/lifetime" {
         toString(): string;
     }
 }
-declare module "jriapp_utils/deferred" {
-    import * as coreMOD from "jriapp_core/shared";
-    export const enum PromiseState {
-        Pending = 0,
-        ResolutionInProgress = 1,
-        Resolved = 2,
-        Rejected = 3,
-    }
-    export interface IPromiseState {
-        state(): PromiseState;
-    }
-    export interface IPromise<T> extends coreMOD.IPromise<T>, IPromiseState {
-        then<TP>(successCB?: coreMOD.IDeferredSuccessCB<T, TP>, errorCB?: coreMOD.IDeferredErrorCB<TP>): IPromise<TP>;
-        then<TP>(successCB?: coreMOD.IDeferredSuccessCB<T, TP>, errorCB?: coreMOD.IErrorCB<TP>): IPromise<TP>;
-        then<TP>(successCB?: coreMOD.IDeferredSuccessCB<T, TP>, errorCB?: coreMOD.IVoidErrorCB): IPromise<TP>;
-        then<TP>(successCB?: coreMOD.ISuccessCB<T, TP>, errorCB?: coreMOD.IDeferredErrorCB<TP>): IPromise<TP>;
-        then<TP>(successCB?: coreMOD.ISuccessCB<T, TP>, errorCB?: coreMOD.IErrorCB<TP>): IPromise<TP>;
-        then<TP>(successCB?: coreMOD.ISuccessCB<T, TP>, errorCB?: coreMOD.IVoidErrorCB): IPromise<TP>;
-        always<TP>(errorCB?: coreMOD.IDeferredErrorCB<TP>): IPromise<TP>;
-        always<TP>(errorCB?: coreMOD.IErrorCB<TP>): IPromise<TP>;
-        always(errorCB?: coreMOD.IVoidErrorCB): IPromise<void>;
-        fail(errorCB?: coreMOD.IDeferredErrorCB<T>): IPromise<T>;
-        fail(errorCB?: coreMOD.IErrorCB<T>): IPromise<T>;
-        fail(errorCB?: coreMOD.IVoidErrorCB): IPromise<void>;
-    }
-    export interface IAbortablePromise<T> extends IPromise<T>, coreMOD.IAbortable {
-    }
-    export interface IDeferred<T> extends coreMOD.IDeferred<T>, IPromiseState {
-        resolve(value?: coreMOD.IThenable<T>): IPromise<T>;
-        resolve(value?: T): IPromise<T>;
-        reject(error?: any): IPromise<T>;
-        promise(): IPromise<T>;
-    }
-    export function create<T>(): IDeferred<T>;
-    export function createSync<T>(): IDeferred<T>;
-    export function getTaskQueue(): coreMOD.ITaskQueue;
-    export function whenAll<T>(args: Array<T | coreMOD.IThenable<T>>): IPromise<T[]>;
-    export class AbortablePromise<T> implements IAbortablePromise<T> {
-        private _deferred;
-        private _abortable;
-        private _aborted;
-        constructor(deferred: IDeferred<T>, abortable: coreMOD.IAbortable);
-        then<TP>(successCB?: coreMOD.IDeferredSuccessCB<T, TP>, errorCB?: coreMOD.IDeferredErrorCB<TP>): IPromise<TP>;
-        then<TP>(successCB?: coreMOD.IDeferredSuccessCB<T, TP>, errorCB?: coreMOD.IErrorCB<TP>): IPromise<TP>;
-        then<TP>(successCB?: coreMOD.IDeferredSuccessCB<T, TP>, errorCB?: coreMOD.IVoidErrorCB): IPromise<TP>;
-        then<TP>(successCB?: coreMOD.ISuccessCB<T, TP>, errorCB?: coreMOD.IDeferredErrorCB<TP>): IPromise<TP>;
-        then<TP>(successCB?: coreMOD.ISuccessCB<T, TP>, errorCB?: coreMOD.IErrorCB<TP>): IPromise<TP>;
-        then<TP>(successCB?: coreMOD.ISuccessCB<T, TP>, errorCB?: coreMOD.IVoidErrorCB): IPromise<TP>;
-        fail(errorCB?: coreMOD.IDeferredErrorCB<T>): IPromise<T>;
-        fail(errorCB?: coreMOD.IErrorCB<T>): IPromise<T>;
-        fail(errorCB?: coreMOD.IVoidErrorCB): IPromise<void>;
-        always<TP>(errorCB?: coreMOD.IDeferredErrorCB<TP>): IPromise<TP>;
-        always<TP>(errorCB?: coreMOD.IErrorCB<TP>): IPromise<TP>;
-        always(errorCB?: coreMOD.IVoidErrorCB): IPromise<void>;
-        abort(reason?: string): void;
-        state(): PromiseState;
-    }
-}
-declare module "jriapp_utils/async" {
-    import { IThenable, ITaskQueue } from "jriapp_core/shared";
-    import { IPromise, IDeferred } from "jriapp_utils/deferred";
-    export { IPromise, IPromiseState, IAbortablePromise, PromiseState, IDeferred, whenAll, AbortablePromise } from "jriapp_utils/deferred";
-    export class AsyncUtils {
-        static createDeferred<T>(): IDeferred<T>;
-        static createSyncDeferred<T>(): IDeferred<T>;
-        static whenAll<T>(args: Array<T | IThenable<T>>): IPromise<T[]>;
-        static getTaskQueue(): ITaskQueue;
-        static delay<T>(func: () => T, time?: number): IPromise<T>;
-        static parseJSON(res: string | any): IPromise<any>;
-    }
-}
-declare module "jriapp_utils/http" {
-    import { IIndexer } from "jriapp_core/shared";
-    import { IAbortablePromise } from "jriapp_utils/async";
-    export class HttpUtils {
-        static isStatusOK(status: string | number): boolean;
-        private static _getXMLRequest(url, method, deferred, headers?);
-        static postAjax(url: string, postData: string, headers?: IIndexer<string>): IAbortablePromise<string>;
-        static getAjax(url: string, headers?: IIndexer<string>): IAbortablePromise<string>;
-        static defaultHeaders: IIndexer<string>;
-        static ajaxTimeOut: number;
-    }
-}
-declare module "jriapp_utils/dom" {
-    export class DomUtils {
-        static window: Window;
-        static document: Document;
-        static isContained(oNode: any, oCont: any): boolean;
-        static removeNode(node: Node): void;
-        static insertAfter(node: Node, refNode: Node): void;
-        static insertBefore(node: Node, refNode: Node): void;
-        static wrap(elem: Element, wrapper: Element): void;
-        static unwrap(elem: Element): void;
-        private static getClassMap(el);
-        static setClasses(elems: Element[], classes: string[]): void;
-        static setClass(elems: Element[], css: string, remove?: boolean): void;
-        static addClass(elems: Element[], css: string): void;
-        static removeClass(elems: Element[], css: string): void;
+declare module "jriapp/utils/jquery" {
+    export const $: JQueryStatic;
+    export class JQueryUtils {
         static $: JQueryStatic;
         static destroy$Plugin($el: JQuery, name: string): void;
     }
 }
-declare module "jriapp_utils/utils" {
-    import { CoreUtils, ERROR, DEBUG, LOG } from "jriapp_utils/coreutils";
-    import { SysUtils } from "jriapp_utils/sysutils";
-    import { AsyncUtils } from "jriapp_utils/async";
-    import { HttpUtils } from "jriapp_utils/http";
-    import { StringUtils } from "jriapp_utils/strutils";
-    import { Checks } from "jriapp_utils/checks";
-    import { ArrayHelper } from "jriapp_utils/arrhelper";
-    import { DomUtils } from "jriapp_utils/dom";
-    export class Utils {
-        static check: typeof Checks;
-        static str: typeof StringUtils;
-        static arr: typeof ArrayHelper;
-        static http: typeof HttpUtils;
-        static core: typeof CoreUtils;
-        static defer: typeof AsyncUtils;
-        static err: typeof ERROR;
-        static log: typeof LOG;
-        static debug: typeof DEBUG;
-        static sys: typeof SysUtils;
-        static dom: typeof DomUtils;
-    }
-}
-declare module "jriapp_core/elview" {
-    import { IElViewFactory, IElViewRegister } from "jriapp_core/shared";
+declare module "jriapp/elview" {
+    import { IElViewFactory, IElViewRegister } from "jriapp/shared";
     export function createElViewFactory(register: IElViewRegister): IElViewFactory;
     export function createElViewRegister(next?: IElViewRegister): IElViewRegister;
 }
-declare module "jriapp_core/content" {
-    import { IContentFactoryList } from "jriapp_core/shared";
+declare module "jriapp/content" {
+    import { IContentFactoryList } from "jriapp/shared";
     export function createContentFactoryList(): IContentFactoryList;
 }
-declare module "jriapp_core/defaults" {
-    import * as coreMOD from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
+declare module "jriapp/defaults" {
+    import { BaseObject } from "jriapp_shared";
+    import { ISvcStore, IDatepicker, ButtonCss } from "jriapp/shared";
     export class Defaults extends BaseObject {
         private _imagesPath;
         private _dateFormat;
@@ -1014,46 +365,22 @@ declare module "jriapp_core/defaults" {
         private _thousandSep;
         private _decPrecision;
         private _svcStore;
-        constructor(typeStore: coreMOD.ISvcStore);
+        constructor(typeStore: ISvcStore);
         toString(): string;
         dateFormat: string;
         timeFormat: string;
         dateTimeFormat: string;
-        readonly datepicker: coreMOD.IDatepicker;
+        readonly datepicker: IDatepicker;
         imagesPath: string;
         decimalPoint: string;
         thousandSep: string;
         decPrecision: number;
-        readonly ButtonsCSS: typeof coreMOD.ButtonCss;
+        readonly ButtonsCSS: typeof ButtonCss;
     }
 }
-declare module "jriapp_utils/waitqueue" {
-    import { IBaseObject } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
-    export interface IWaitQueueItem {
-        prop: string;
-        groupName?: string;
-        predicate: (val: any) => boolean;
-        action: (...args: any[]) => void;
-        actionArgs?: any[];
-        lastWins?: boolean;
-    }
-    export class WaitQueue extends BaseObject {
-        private _objId;
-        private _owner;
-        private _queue;
-        constructor(owner: IBaseObject);
-        protected _checkQueue(prop: string, value: any): void;
-        enQueue(item: IWaitQueueItem): void;
-        destroy(): void;
-        toString(): string;
-        readonly uniqueID: string;
-        readonly owner: IBaseObject;
-    }
-}
-declare module "jriapp_utils/tloader" {
-    import { IPromise, IApplication, ITemplateGroupInfoEx, ITemplateLoaderInfo } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
+declare module "jriapp/utils/tloader" {
+    import { IPromise, BaseObject } from "jriapp_shared";
+    import { IApplication, ITemplateGroupInfoEx, ITemplateLoaderInfo } from "jriapp/shared";
     export class TemplateLoader extends BaseObject {
         private _templateLoaders;
         private _templateGroups;
@@ -1082,7 +409,7 @@ declare module "jriapp_utils/tloader" {
         readonly isLoading: boolean;
     }
 }
-declare module "jriapp_utils/path" {
+declare module "jriapp/utils/path" {
     export const frameworkJS: string;
     export interface IUrlParts {
         protocol: string;
@@ -1105,8 +432,8 @@ declare module "jriapp_utils/path" {
         static getFrameworkImgPath(): string;
     }
 }
-declare module "jriapp_utils/sloader" {
-    import { IStylesLoader } from "jriapp_core/shared";
+declare module "jriapp/utils/sloader" {
+    import { IStylesLoader } from "jriapp/shared";
     export const frameworkCss: string;
     export function createCssLoader(): IStylesLoader;
     export interface IUrlParts {
@@ -1119,11 +446,11 @@ declare module "jriapp_utils/sloader" {
         search: string;
     }
 }
-declare module "jriapp_core/bootstrap" {
-    import { IApplication, ISelectableProvider, IExports, IConverter, ISvcStore, IIndexer, IBaseObject, IPromise, TEventHandler, IStylesLoader, IContentFactoryList, IElViewRegister, TPriority } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
-    import { Defaults } from "jriapp_core/defaults";
-    import { TemplateLoader } from "jriapp_utils/tloader";
+declare module "jriapp/bootstrap" {
+    import { IIndexer, IBaseObject, IPromise, TEventHandler, TPriority, BaseObject } from "jriapp_shared";
+    import { IApplication, ISelectableProvider, IExports, IConverter, ISvcStore, IStylesLoader, IContentFactoryList, IElViewRegister } from "jriapp/shared";
+    import { Defaults } from "jriapp/defaults";
+    import { TemplateLoader } from "jriapp/utils/tloader";
     export interface IInternalBootstrapMethods {
         initialize(): IPromise<Bootstrap>;
         trackSelectable(selectable: ISelectableProvider): void;
@@ -1204,8 +531,20 @@ declare module "jriapp_core/bootstrap" {
     }
     export const bootstrap: Bootstrap;
 }
-declare module "jriapp_core/converter" {
-    import { IConverter } from "jriapp_core/shared";
+declare module "jriapp/utils/viewchecks" {
+    import { IElView } from "jriapp/shared";
+    export class ViewChecks {
+        static isElView: (obj: any) => boolean;
+        static isTemplateElView: (obj: any) => boolean;
+        static setIsInsideTemplate: (elView: IElView) => void;
+        static isDataForm: (el: HTMLElement) => boolean;
+        static isInsideDataForm: (el: HTMLElement) => boolean;
+        static isInNestedForm: (root: any, forms: HTMLElement[], el: HTMLElement) => boolean;
+        static getParentDataForm: (rootForm: HTMLElement, el: HTMLElement) => HTMLElement;
+    }
+}
+declare module "jriapp/converter" {
+    import { IConverter } from "jriapp/shared";
     export const NUM_CONV: {
         None: number;
         Integer: number;
@@ -1258,24 +597,10 @@ declare module "jriapp_core/converter" {
         convertToTarget(val: any, param: any, dataContext: any): boolean;
     }
 }
-declare module "jriapp_utils/debounce" {
-    import * as coreMOD from "jriapp_core/shared";
-    export class Debounce implements coreMOD.IDisposable {
-        private _isDestroyed;
-        private _timer;
-        private _interval;
-        constructor(interval?: number);
-        enqueue(fn: () => any): void;
-        destroy(): void;
-        getIsDestroyed(): boolean;
-        getIsDestroyCalled(): boolean;
-        interval: number;
-    }
-}
-declare module "jriapp_core/binding" {
-    import { BINDING_MODE } from "jriapp_core/const";
-    import { IBaseObject, IBindingInfo, IBindingOptions, IBinding, IConverter } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
+declare module "jriapp/binding" {
+    import { IBaseObject, BaseObject } from "jriapp_shared";
+    import { BINDING_MODE } from "jriapp/const";
+    import { IBindingInfo, IBindingOptions, IBinding, IConverter } from "jriapp/shared";
     export function getBindingOptions(bindInfo: IBindingInfo, defaultTarget: IBaseObject, defaultSource: any): IBindingOptions;
     export class Binding extends BaseObject implements IBinding {
         private _state;
@@ -1327,9 +652,9 @@ declare module "jriapp_core/binding" {
         isDisabled: boolean;
     }
 }
-declare module "jriapp_core/datepicker" {
-    import { IDatepicker } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
+declare module "jriapp/datepicker" {
+    import { BaseObject } from "jriapp_shared";
+    import { IDatepicker } from "jriapp/shared";
     export class Datepicker extends BaseObject implements IDatepicker {
         private _datepickerRegion;
         private _dateFormat;
@@ -1346,8 +671,8 @@ declare module "jriapp_core/datepicker" {
         readonly datePickerFn: any;
     }
 }
-declare module "jriapp_core/template" {
-    import { ITemplate, ITemplateEvents } from "jriapp_core/shared";
+declare module "jriapp/template" {
+    import { ITemplate, ITemplateEvents } from "jriapp/shared";
     export const css: {
         templateContainer: string;
         templateError: string;
@@ -1358,8 +683,8 @@ declare module "jriapp_core/template" {
     }
     export function createTemplate(dataContext?: any, templEvents?: ITemplateEvents): ITemplate;
 }
-declare module "jriapp_utils/propwatcher" {
-    import { BaseObject } from "jriapp_core/object";
+declare module "jriapp/utils/propwatcher" {
+    import { BaseObject } from "jriapp_shared";
     export class PropWatcher extends BaseObject {
         private _objId;
         private _objs;
@@ -1373,9 +698,9 @@ declare module "jriapp_utils/propwatcher" {
         readonly uniqueID: string;
     }
 }
-declare module "jriapp_core/mvvm" {
-    import { IBaseObject, ITemplate, IApplication } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
+declare module "jriapp/mvvm" {
+    import { BaseObject, IBaseObject } from "jriapp_shared";
+    import { ITemplate, IApplication } from "jriapp/shared";
     export interface ICommand {
         canExecute: (sender: any, param: any) => boolean;
         execute: (sender: any, param: any) => void;
@@ -1434,571 +759,17 @@ declare module "jriapp_core/mvvm" {
         readonly app: TApp;
     }
 }
-declare module "jriapp_collection/int" {
-    import { DATE_CONVERSION, DATA_TYPE, SORT_ORDER } from "jriapp_core/const";
-    import { IBaseObject, IErrorNotification, IEditable, ISubmittable, TEventHandler, IFieldInfo, TPropChangedHandler, IPromise, IValidationInfo, TPriority } from "jriapp_core/shared";
-    export const enum COLL_CHANGE_TYPE {
-        Remove = 0,
-        Add = 1,
-        Reset = 2,
-        Remap = 3,
-    }
-    export const enum COLL_CHANGE_REASON {
-        None = 0,
-        PageChange = 1,
-        Sorting = 2,
-    }
-    export const enum COLL_CHANGE_OPER {
-        None = 0,
-        Fill = 1,
-        Attach = 2,
-        Remove = 3,
-        Commit = 4,
-        Sort = 5,
-    }
-    export const enum ITEM_STATUS {
-        None = 0,
-        Added = 1,
-        Updated = 2,
-        Deleted = 3,
-    }
-    export const PROP_NAME: {
-        isEditing: string;
-        currentItem: string;
-        count: string;
-        totalCount: string;
-        pageCount: string;
-        pageSize: string;
-        pageIndex: string;
-        isUpdating: string;
-        isLoading: string;
-    };
-    export const ITEM_EVENTS: {
-        errors_changed: string;
-        destroyed: string;
-    };
-    export interface ICollectionOptions {
-        enablePaging: boolean;
-        pageSize: number;
-    }
-    export interface IPermissions {
-        canAddRow: boolean;
-        canEditRow: boolean;
-        canDeleteRow: boolean;
-        canRefreshRow: boolean;
-    }
-    export interface IItemAspect<TItem extends ICollectionItem> extends IBaseObject, IErrorNotification, IEditable, ISubmittable {
-        getFieldInfo(fieldName: string): IFieldInfo;
-        getFieldNames(): string[];
-        getErrorString(): string;
-        deleteItem(): boolean;
-        _onAttaching(): void;
-        _onAttach(): void;
-        _setIsDetached(v: boolean): void;
-        _setIsCached(v: boolean): void;
-        raiseErrorsChanged(args: any): void;
-        readonly isCanSubmit: boolean;
-        readonly status: ITEM_STATUS;
-        readonly isNew: boolean;
-        readonly isDeleted: boolean;
-        readonly collection: ICollection<TItem>;
-        readonly isUpdating: boolean;
-        readonly isHasChanges: boolean;
-        readonly isEditing: boolean;
-        readonly isDetached: boolean;
-        readonly isCached: boolean;
-        key: string;
-        item: TItem;
-    }
-    export interface ICollectionItem extends IBaseObject {
-        readonly _aspect: IItemAspect<ICollectionItem>;
-        _key: string;
-    }
-    export interface ICollChangedArgs<TItem extends ICollectionItem> {
-        changeType: COLL_CHANGE_TYPE;
-        reason: COLL_CHANGE_REASON;
-        oper: COLL_CHANGE_OPER;
-        items: TItem[];
-        pos?: number[];
-        old_key?: string;
-        new_key?: string;
-    }
-    export interface ICollFillArgs<TItem extends ICollectionItem> {
-        reason: COLL_CHANGE_REASON;
-        items: TItem[];
-        newItems: TItem[];
-    }
-    export interface ICollValidateArgs<TItem extends ICollectionItem> {
-        item: TItem;
-        fieldName: string;
-        errors: string[];
-    }
-    export interface ICollItemStatusArgs<TItem extends ICollectionItem> {
-        item: TItem;
-        oldStatus: ITEM_STATUS;
-        key: string;
-    }
-    export interface ICollItemAddedArgs<TItem extends ICollectionItem> {
-        item: TItem;
-        isAddNewHandled: boolean;
-    }
-    export interface ICommitChangesArgs<TItem extends ICollectionItem> {
-        item: TItem;
-        isBegin: boolean;
-        isRejected: boolean;
-        status: ITEM_STATUS;
-    }
-    export interface ICollItemArgs<TItem extends ICollectionItem> {
-        item: TItem;
-    }
-    export interface IPageChangingArgs {
-        page: number;
-        isCancel: boolean;
-    }
-    export interface ICancellableArgs<TItem extends ICollectionItem> {
-        item: TItem;
-        isCancel: boolean;
-    }
-    export interface IItemAddedArgs<TItem extends ICollectionItem> {
-        item: TItem;
-        isAddNewHandled: boolean;
-    }
-    export interface ICollEndEditArgs<TItem extends ICollectionItem> {
-        item: TItem;
-        isCanceled: boolean;
-    }
-    export interface ICurrentChangingArgs<TItem extends ICollectionItem> {
-        newCurrent: TItem;
-    }
-    export interface ICollectionEvents<TItem extends ICollectionItem> {
-        addOnClearing(fn: TEventHandler<ICollection<TItem>, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnClearing(nmspace?: string): void;
-        addOnCleared(fn: TEventHandler<ICollection<TItem>, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnCleared(nmspace?: string): void;
-        addOnCollChanged(fn: TEventHandler<ICollection<TItem>, ICollChangedArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnCollChanged(nmspace?: string): void;
-        addOnFill(fn: TEventHandler<ICollection<TItem>, ICollFillArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnFill(nmspace?: string): void;
-        addOnValidate(fn: TEventHandler<ICollection<TItem>, ICollValidateArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnValidate(nmspace?: string): void;
-        addOnItemDeleting(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnItemDeleting(nmspace?: string): void;
-        addOnItemAdding(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnItemAdding(nmspace?: string): void;
-        addOnItemAdded(fn: TEventHandler<ICollection<TItem>, IItemAddedArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnItemAdded(nmspace?: string): void;
-        addOnCurrentChanging(fn: TEventHandler<ICollection<TItem>, ICurrentChangingArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnCurrentChanging(nmspace?: string): void;
-        addOnPageChanging(fn: TEventHandler<ICollection<TItem>, IPageChangingArgs>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnPageChanging(nmspace?: string): void;
-        addOnErrorsChanged(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnErrorsChanged(nmspace?: string): void;
-        addOnBeginEdit(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnBeginEdit(nmspace?: string): void;
-        addOnEndEdit(fn: TEventHandler<ICollection<TItem>, ICollEndEditArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnEndEdit(nmspace?: string): void;
-        addOnCommitChanges(fn: TEventHandler<ICollection<TItem>, ICommitChangesArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnCommitChanges(nmspace?: string): void;
-        addOnStatusChanged(fn: TEventHandler<ICollection<TItem>, ICollItemStatusArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnStatusChanged(nmspace?: string): void;
-        addOnPageIndexChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void;
-        addOnPageSizeChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void;
-        addOnTotalCountChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void;
-        addOnCurrentChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void;
-    }
-    export interface IEditableCollection<TItem extends ICollectionItem> {
-        removeItem(item: TItem): void;
-        cancelEdit(): void;
-        endEdit(): void;
-        addNew(): TItem;
-        getItemsWithErrors(): TItem[];
-        getIsHasErrors(): boolean;
-        isEditing: boolean;
-        isUpdating: boolean;
-        permissions: IPermissions;
-    }
-    export interface ISimpleCollection<TItem extends ICollectionItem> extends IBaseObject {
-        getFieldInfo(fieldName: string): IFieldInfo;
-        getFieldNames(): string[];
-        getFieldInfos(): IFieldInfo[];
-        getItemByPos(pos: number): TItem;
-        getItemByKey(key: string): TItem;
-        findByPK(...vals: any[]): TItem;
-        moveFirst(skipDeleted?: boolean): boolean;
-        movePrev(skipDeleted?: boolean): boolean;
-        moveNext(skipDeleted?: boolean): boolean;
-        moveLast(skipDeleted?: boolean): boolean;
-        goTo(pos: number): boolean;
-        forEach(callback: (item: TItem) => void, thisObj?: any): void;
-        sort(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any>;
-        sortLocal(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any>;
-        clear(): void;
-        items: TItem[];
-        currentItem: TItem;
-        count: number;
-        totalCount: number;
-        pageSize: number;
-        pageIndex: number;
-        pageCount: number;
-        isPagingEnabled: boolean;
-        isLoading: boolean;
-    }
-    export interface ICollection<TItem extends ICollectionItem> extends ISimpleCollection<TItem>, IEditableCollection<TItem>, ICollectionEvents<TItem> {
-        options: ICollectionOptions;
-    }
-    export interface IValueUtils {
-        valueToDate(val: string, dtcnv: DATE_CONVERSION, serverTZ: number): Date;
-        dateToValue(dt: Date, dtcnv: DATE_CONVERSION, serverTZ: number): string;
-        compareVals(v1: any, v2: any, dataType: DATA_TYPE): boolean;
-        stringifyValue(v: any, dtcnv: DATE_CONVERSION, dataType: DATA_TYPE, serverTZ: number): string;
-        parseValue(v: string, dataType: DATA_TYPE, dtcnv: DATE_CONVERSION, serverTZ: number): any;
-    }
-    export interface IPropInfo {
-        name: string;
-        dtype: number;
-    }
-    export interface IErrors {
-        [fieldName: string]: string[];
-    }
-    export interface IErrorsList {
-        [item_key: string]: IErrors;
-    }
-    export interface IInternalCollMethods<TItem extends ICollectionItem> {
-        getEditingItem(): TItem;
-        getStrValue(val: any, fieldInfo: IFieldInfo): string;
-        onBeforeEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void;
-        onEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void;
-        onCommitChanges(item: TItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS): void;
-        validateItem(item: TItem): IValidationInfo;
-        validateItemField(item: TItem, fieldName: string): IValidationInfo;
-        addErrors(item: TItem, errors: IValidationInfo[]): void;
-        addError(item: TItem, fieldName: string, errors: string[]): void;
-        removeError(item: TItem, fieldName: string): void;
-        removeAllErrors(item: TItem): void;
-        getErrors(item: TItem): IErrors;
-        onErrorsChanged(item: TItem): void;
-        onItemDeleting(args: ICancellableArgs<TItem>): boolean;
-    }
-}
-declare module "jriapp_collection/utils" {
-    import { IFieldInfo } from "jriapp_core/shared";
-    import { IValueUtils } from "jriapp_collection/int";
-    export let valueUtils: IValueUtils;
-    export function fn_getPropertyByName(name: string, props: IFieldInfo[]): IFieldInfo;
-    export type TraveseFieldCB<T> = (fld: IFieldInfo, name: string, parent_res?: T) => T;
-    export function fn_traverseField<T>(fld: IFieldInfo, fn: TraveseFieldCB<T>, parent_res?: T): void;
-    export function fn_traverseFields<T>(flds: IFieldInfo[], fn: TraveseFieldCB<T>, parent_res?: T): void;
-}
-declare module "jriapp_collection/validation" {
-    import { BaseError, IValidationInfo } from "jriapp_core/shared";
-    export class ValidationError extends BaseError {
-        private _errors;
-        private _item;
-        constructor(errorInfo: IValidationInfo[], item: any);
-        readonly item: any;
-        readonly errors: IValidationInfo[];
-    }
-    export class Validations {
-        private static _dtRangeToDate(str);
-        static checkNumRange(num: number, range: string): void;
-        static checkDateRange(dt: Date, range: string): void;
-    }
-}
-declare module "jriapp_collection/collection" {
-    import { SORT_ORDER } from "jriapp_core/const";
-    import { IFieldInfo, IIndexer, IValidationInfo, TEventHandler, TPropChangedHandler, IBaseObject, IPromise, TPriority } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
-    import { WaitQueue } from "jriapp_utils/waitqueue";
-    import { ICollectionItem, ICollection, ICollectionOptions, IPermissions, IInternalCollMethods, ICollChangedArgs, ICancellableArgs, ICollFillArgs, ICollEndEditArgs, ICollItemArgs, ICollItemStatusArgs, ICollValidateArgs, ICurrentChangingArgs, ICommitChangesArgs, IItemAddedArgs, IPageChangingArgs, IErrorsList, IErrors, ITEM_STATUS, COLL_CHANGE_REASON, COLL_CHANGE_OPER } from "jriapp_collection/int";
-    export class BaseCollection<TItem extends ICollectionItem> extends BaseObject implements ICollection<TItem> {
-        protected _options: ICollectionOptions;
-        protected _isLoading: boolean;
-        protected _EditingItem: TItem;
-        protected _perms: IPermissions;
-        protected _totalCount: number;
-        protected _pageIndex: number;
-        protected _items: TItem[];
-        protected _itemsByKey: IIndexer<TItem>;
-        protected _currentPos: number;
-        protected _newKey: number;
-        protected _fieldMap: IIndexer<IFieldInfo>;
-        protected _fieldInfos: IFieldInfo[];
-        protected _errors: IErrorsList;
-        protected _ignoreChangeErrors: boolean;
-        protected _pkInfo: IFieldInfo[];
-        protected _isUpdating: boolean;
-        protected _waitQueue: WaitQueue;
-        protected _internal: IInternalCollMethods<TItem>;
-        constructor();
-        static getEmptyFieldInfo(fieldName: string): IFieldInfo;
-        protected _getEventNames(): string[];
-        addOnClearing(fn: TEventHandler<ICollection<TItem>, {
-            reason: COLL_CHANGE_REASON;
-        }>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnClearing(nmspace?: string): void;
-        addOnCleared(fn: TEventHandler<ICollection<TItem>, {
-            reason: COLL_CHANGE_REASON;
-        }>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnCleared(nmspace?: string): void;
-        addOnCollChanged(fn: TEventHandler<ICollection<TItem>, ICollChangedArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnCollChanged(nmspace?: string): void;
-        addOnFill(fn: TEventHandler<ICollection<TItem>, ICollFillArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnFill(nmspace?: string): void;
-        addOnValidate(fn: TEventHandler<ICollection<TItem>, ICollValidateArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnValidate(nmspace?: string): void;
-        addOnItemDeleting(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnItemDeleting(nmspace?: string): void;
-        addOnItemAdding(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnItemAdding(nmspace?: string): void;
-        addOnItemAdded(fn: TEventHandler<ICollection<TItem>, IItemAddedArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnItemAdded(nmspace?: string): void;
-        addOnCurrentChanging(fn: TEventHandler<ICollection<TItem>, ICurrentChangingArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnCurrentChanging(nmspace?: string): void;
-        addOnPageChanging(fn: TEventHandler<ICollection<TItem>, IPageChangingArgs>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnPageChanging(nmspace?: string): void;
-        addOnErrorsChanged(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnErrorsChanged(nmspace?: string): void;
-        addOnBeginEdit(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnBeginEdit(nmspace?: string): void;
-        addOnEndEdit(fn: TEventHandler<ICollection<TItem>, ICollEndEditArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnEndEdit(nmspace?: string): void;
-        addOnBeforeBeginEdit(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnBeforeBeginEdit(nmspace?: string): void;
-        addOnBeforeEndEdit(fn: TEventHandler<ICollection<TItem>, ICollEndEditArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeBeforeOnEndEdit(nmspace?: string): void;
-        addOnCommitChanges(fn: TEventHandler<ICollection<TItem>, ICommitChangesArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnCommitChanges(nmspace?: string): void;
-        addOnStatusChanged(fn: TEventHandler<ICollection<TItem>, ICollItemStatusArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnStatusChanged(nmspace?: string): void;
-        addOnPageIndexChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void;
-        addOnPageSizeChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void;
-        addOnTotalCountChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void;
-        addOnCurrentChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void;
-        protected _getPKFieldInfos(): IFieldInfo[];
-        protected _checkCurrentChanging(newCurrent: TItem): void;
-        protected _onCurrentChanging(newCurrent: TItem): void;
-        protected _onCurrentChanged(): void;
-        protected _onCountChanged(): void;
-        protected _onEditingChanged(): void;
-        protected _onItemStatusChanged(item: TItem, oldStatus: ITEM_STATUS): void;
-        protected _onCollectionChanged(args: ICollChangedArgs<TItem>): void;
-        protected _onFillEnd(args: ICollFillArgs<TItem>): void;
-        protected _onItemAdding(item: TItem): void;
-        protected _onItemAdded(item: TItem): void;
-        protected _createNew(): TItem;
-        protected _attach(item: TItem, itemPos?: number): number;
-        protected _onRemoved(item: TItem, pos: number): void;
-        protected _onPageSizeChanged(): void;
-        protected _onPageChanging(): boolean;
-        protected _onPageChanged(): void;
-        protected _setCurrentItem(v: TItem): void;
-        protected _destroyItems(): void;
-        _isHasProp(prop: string): boolean;
-        protected _getEditingItem(): TItem;
-        protected _getStrValue(val: any, fieldInfo: IFieldInfo): string;
-        protected _onBeforeEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void;
-        protected _onEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void;
-        protected _onCommitChanges(item: TItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS): void;
-        protected _validateItem(item: TItem): IValidationInfo;
-        protected _validateItemField(item: TItem, fieldName: string): IValidationInfo;
-        protected _addErrors(item: TItem, errors: IValidationInfo[]): void;
-        protected _addError(item: TItem, fieldName: string, errors: string[]): void;
-        protected _removeError(item: TItem, fieldName: string): void;
-        protected _removeAllErrors(item: TItem): void;
-        protected _getErrors(item: TItem): IErrors;
-        protected _onErrorsChanged(item: TItem): void;
-        protected _onItemDeleting(args: ICancellableArgs<TItem>): boolean;
-        protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER): void;
-        _setIsLoading(v: boolean): void;
-        _getInternal(): IInternalCollMethods<TItem>;
-        _getSortFn(fieldNames: string[], sortOrder: SORT_ORDER): (a: any, b: any) => number;
-        getFieldInfo(fieldName: string): IFieldInfo;
-        getFieldNames(): string[];
-        getFieldInfos(): IFieldInfo[];
-        cancelEdit(): void;
-        endEdit(): void;
-        getItemsWithErrors(): TItem[];
-        addNew(): TItem;
-        getItemByPos(pos: number): TItem;
-        getItemByKey(key: string): TItem;
-        findByPK(...vals: any[]): TItem;
-        moveFirst(skipDeleted?: boolean): boolean;
-        movePrev(skipDeleted?: boolean): boolean;
-        moveNext(skipDeleted?: boolean): boolean;
-        moveLast(skipDeleted?: boolean): boolean;
-        goTo(pos: number): boolean;
-        forEach(callback: (item: TItem) => void, thisObj?: any): void;
-        removeItem(item: TItem): void;
-        getIsHasErrors(): boolean;
-        sort(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any>;
-        sortLocal(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any>;
-        clear(): void;
-        destroy(): void;
-        waitForNotLoading(callback: () => void, groupName: string): void;
-        toString(): string;
-        readonly options: ICollectionOptions;
-        readonly items: TItem[];
-        currentItem: TItem;
-        readonly count: number;
-        totalCount: number;
-        pageSize: number;
-        pageIndex: number;
-        readonly pageCount: number;
-        readonly isPagingEnabled: boolean;
-        readonly isEditing: boolean;
-        readonly isLoading: boolean;
-        isUpdating: boolean;
-        readonly permissions: IPermissions;
-    }
-}
-declare module "jriapp_collection/aspect" {
-    import { IIndexer, IValidationInfo, IFieldInfo, IVoidPromise, TEventHandler, IErrorNotification } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
-    import { ICollectionItem, IItemAspect, ITEM_STATUS } from "jriapp_collection/int";
-    import { BaseCollection } from "jriapp_collection/collection";
-    export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implements IItemAspect<TItem> {
-        private _key;
-        private _item;
-        private _collection;
-        protected _status: ITEM_STATUS;
-        protected _saveVals: IIndexer<any>;
-        protected _vals: IIndexer<any>;
-        protected _notEdited: boolean;
-        private _isCached;
-        private _isDetached;
-        private _valueBag;
-        _setIsDetached(v: boolean): void;
-        _setIsCached(v: boolean): void;
-        constructor(collection: BaseCollection<TItem>);
-        protected _getEventNames(): string[];
-        protected _onErrorsChanged(args: any): void;
-        protected _beginEdit(): boolean;
-        protected _endEdit(): boolean;
-        protected _cancelEdit(): boolean;
-        protected _validate(): IValidationInfo;
-        protected _skipValidate(fieldInfo: IFieldInfo, val: any): boolean;
-        protected _validateField(fieldName: string): IValidationInfo;
-        protected _validateAll(): IValidationInfo[];
-        protected _checkVal(fieldInfo: IFieldInfo, val: any): any;
-        protected _resetIsNew(): void;
-        protected _fakeDestroy(): void;
-        handleError(error: any, source: any): boolean;
-        _onAttaching(): void;
-        _onAttach(): void;
-        raiseErrorsChanged(args: any): void;
-        getFieldInfo(fieldName: string): IFieldInfo;
-        getFieldNames(): string[];
-        getErrorString(): string;
-        submitChanges(): IVoidPromise;
-        rejectChanges(): void;
-        beginEdit(): boolean;
-        endEdit(): boolean;
-        cancelEdit(): boolean;
-        deleteItem(): boolean;
-        getIsHasErrors(): boolean;
-        addOnErrorsChanged(fn: TEventHandler<ItemAspect<TItem>, any>, nmspace?: string, context?: any): void;
-        removeOnErrorsChanged(nmspace?: string): void;
-        getFieldErrors(fieldName: string): IValidationInfo[];
-        getAllErrors(): IValidationInfo[];
-        getIErrorNotification(): IErrorNotification;
-        destroy(): void;
-        private _delCustomVal(old);
-        toString(): string;
-        item: TItem;
-        readonly isCanSubmit: boolean;
-        readonly status: ITEM_STATUS;
-        readonly isNew: boolean;
-        readonly isDeleted: boolean;
-        key: string;
-        readonly collection: BaseCollection<TItem>;
-        readonly isUpdating: boolean;
-        readonly isEditing: boolean;
-        readonly isHasChanges: boolean;
-        readonly isCached: boolean;
-        readonly isDetached: boolean;
-        setCustomVal(name: string, val: any, isOwnVal?: boolean): void;
-        getCustomVal(name: string): any;
-    }
-}
-declare module "jriapp_collection/item" {
-    import { BaseObject } from "jriapp_core/object";
-    import { ICollectionItem } from "jriapp_collection/int";
-    import { ItemAspect } from "jriapp_collection/aspect";
-    export class CollectionItem<TAspect extends ItemAspect<ICollectionItem>> extends BaseObject implements ICollectionItem {
-        private __aspect;
-        constructor(aspect: TAspect);
-        protected _fakeDestroy(): void;
-        readonly _aspect: TAspect;
-        _key: string;
-        destroy(): void;
-        toString(): string;
-    }
-}
-declare module "jriapp_collection/list" {
-    import { IIndexer } from "jriapp_core/shared";
-    import { ICollectionItem, IPropInfo } from "jriapp_collection/int";
-    import { BaseCollection } from "jriapp_collection/collection";
-    import { ItemAspect } from "jriapp_collection/aspect";
-    export interface IListItem extends ICollectionItem {
-        readonly _aspect: ListItemAspect<IListItem, any>;
-    }
-    export interface IListItemAspectConstructor<TItem extends IListItem, TObj> {
-        new (coll: BaseList<TItem, TObj>, obj?: TObj): ListItemAspect<TItem, TObj>;
-    }
-    export interface IListItemConstructor<TItem extends IListItem, TObj> {
-        new (aspect: ListItemAspect<TItem, TObj>): TItem;
-    }
-    export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TItem> {
-        protected _isNew: boolean;
-        constructor(coll: BaseList<TItem, TObj>, obj?: TObj);
-        _setProp(name: string, val: any): void;
-        _getProp(name: string): any;
-        _resetIsNew(): void;
-        toString(): string;
-        readonly list: BaseList<TItem, TObj>;
-        readonly vals: IIndexer<any>;
-        readonly isNew: boolean;
-    }
-    export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TItem> {
-        protected _itemType: IListItemConstructor<TItem, TObj>;
-        constructor(itemType: IListItemConstructor<TItem, TObj>, props: IPropInfo[]);
-        private _updateFieldMap(props);
-        protected _attach(item: TItem): number;
-        protected _createNew(): TItem;
-        protected _getNewKey(item: TItem): string;
-        protected createItem(obj?: TObj): TItem;
-        destroy(): void;
-        fillItems(objArray: TObj[], clearAll?: boolean): void;
-        toArray(): TObj[];
-        getNewObjects(): TItem[];
-        resetNewObjects(): void;
-        toString(): string;
-    }
-}
-declare module "jriapp_collection/dictionary" {
-    import { IPropInfo } from "jriapp_collection/int";
-    import { BaseList, IListItem, IListItemConstructor } from "jriapp_collection/list";
-    export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TItem, TObj> {
-        private _keyName;
-        constructor(itemType: IListItemConstructor<TItem, TObj>, keyName: string, props: IPropInfo[]);
-        protected _getNewKey(item: TItem): string;
-        protected _onItemAdded(item: TItem): void;
-        protected _onRemoved(item: TItem, pos: number): void;
-        readonly keyName: string;
-        toString(): string;
-    }
-}
-declare module "jriapp_utils/mloader" {
-    import { IModuleLoader } from "jriapp_core/shared";
+declare module "jriapp/utils/mloader" {
+    import { IModuleLoader } from "jriapp/shared";
     export function create(): IModuleLoader;
 }
-declare module "jriapp_core/databindsvc" {
-    import { IElViewFactory, IDataBindingService } from "jriapp_core/shared";
+declare module "jriapp/databindsvc" {
+    import { IElViewFactory, IDataBindingService } from "jriapp/shared";
     export function createDataBindSvc(root: Document | HTMLElement, elViewFactory: IElViewFactory): IDataBindingService;
 }
-declare module "jriapp_core/app" {
-    import { IElViewFactory, IViewType, IIndexer, IApplication, IPromise, IBindingOptions, IAppOptions, IInternalAppMethods, IBaseObject, TEventHandler, IConverter, ITemplateGroupInfo, IBinding } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
+declare module "jriapp/app" {
+    import { IIndexer, TEventHandler, IPromise, IBaseObject, BaseObject } from "jriapp_shared";
+    import { IElViewFactory, IViewType, IApplication, IBindingOptions, IAppOptions, IInternalAppMethods, IConverter, ITemplateGroupInfo, IBinding } from "jriapp/shared";
     export class Application extends BaseObject implements IApplication {
         private _UC;
         private _moduleInits;
@@ -2047,37 +818,25 @@ declare module "jriapp_core/app" {
     }
 }
 declare module "jriapp" {
-    export { DEBUG_LEVEL, DATE_CONVERSION, FIELD_TYPE, DATA_TYPE, SORT_ORDER, FILTER_TYPE, KEYS, BINDING_MODE, BindTo } from "jriapp_core/const";
-    export { TEventHandler, TErrorArgs, TErrorHandler, TPropChangedHandler, IDisposable, IIndexer, IBaseObject, IAppOptions, IApplication, TBindingMode, BaseError, ITemplate, ITemplateEvents, IAbortable, IBinding, IBindingInfo, IBindingOptions, IConverter, IContentFactory, IDatepicker, IDeferred, IElView, IThenable, IVoidPromise, IPromise, ITooltipService, IEditable, ISubmittable, ISelectable, ISelectableProvider, IAbortablePromise, IErrorHandler, IFieldInfo, ILifeTimeScope, ITemplateGroupInfo, ITemplateGroupInfoEx, ITemplateInfo, ITemplateLoaderInfo, IValidationInfo, ITaskQueue, IViewOptions } from "jriapp_core/shared";
-    export { SysUtils } from "jriapp_utils/sysutils";
-    export { STRS as LocaleSTRS, ERRS as LocaleERRS } from "jriapp_core/lang";
-    export { BaseConverter } from "jriapp_core/converter";
-    export { BaseObject } from "jriapp_core/object";
-    export { Debounce } from "jriapp_utils/debounce";
-    export { DEBUG, ERROR } from "jriapp_utils/coreutils";
-    export { bootstrap } from "jriapp_core/bootstrap";
-    export { Binding } from "jriapp_core/binding";
-    export { Datepicker } from "jriapp_core/datepicker";
-    export { createTemplate, ITemplateOptions } from "jriapp_core/template";
-    export { LifeTimeScope } from "jriapp_utils/lifetime";
-    export { PropWatcher } from "jriapp_utils/propwatcher";
-    export { WaitQueue, IWaitQueueItem } from "jriapp_utils/waitqueue";
-    export { Utils } from "jriapp_utils/utils";
-    export { ViewModel, TemplateCommand, BaseCommand, Command, ICommand, TCommand } from "jriapp_core/mvvm";
-    export { ICollection, ICollectionItem, IValueUtils, IEditableCollection, IItemAspect, IPermissions, ISimpleCollection, COLL_CHANGE_OPER, COLL_CHANGE_REASON, COLL_CHANGE_TYPE, ITEM_STATUS } from "jriapp_collection/int";
-    export { BaseCollection } from "jriapp_collection/collection";
-    export { CollectionItem } from "jriapp_collection/item";
-    export { ItemAspect } from "jriapp_collection/aspect";
-    export { ListItemAspect, IListItem, BaseList, IListItemAspectConstructor, IListItemConstructor } from "jriapp_collection/list";
-    export { BaseDictionary } from "jriapp_collection/dictionary";
-    export { ValidationError } from "jriapp_collection/validation";
-    export { Application } from "jriapp_core/app";
+    export * from "jriapp_shared";
+    export { KEYS, BINDING_MODE, BindTo } from "jriapp/const";
+    export { IAppOptions, IApplication, TBindingMode, ITemplate, ITemplateEvents, IBinding, IBindingInfo, IBindingOptions, IConverter, IContentFactory, IDatepicker, IElView, ITooltipService, ISelectable, ISelectableProvider, ILifeTimeScope, ITemplateGroupInfo, ITemplateGroupInfoEx, ITemplateInfo, ITemplateLoaderInfo, IViewOptions } from "jriapp/shared";
+    export { JQueryUtils, $ } from "jriapp/utils/jquery";
+    export { ViewChecks } from "jriapp/utils/viewchecks";
+    export { BaseConverter } from "jriapp/converter";
+    export { bootstrap } from "jriapp/bootstrap";
+    export { Binding } from "jriapp/binding";
+    export { Datepicker } from "jriapp/datepicker";
+    export { createTemplate, ITemplateOptions } from "jriapp/template";
+    export { LifeTimeScope } from "jriapp/utils/lifetime";
+    export { PropWatcher } from "jriapp/utils/propwatcher";
+    export { ViewModel, TemplateCommand, BaseCommand, Command, ICommand, TCommand } from "jriapp/mvvm";
+    export { Application } from "jriapp/app";
     export const VERSION: string;
 }
-declare module "jriapp_utils/eventstore" {
-    import { IPropertyBag } from "jriapp_core/shared";
-    import { ICommand } from "jriapp_core/mvvm";
-    import { BaseObject } from "jriapp_core/object";
+declare module "jriapp/utils/eventstore" {
+    import { BaseObject, IPropertyBag } from "jriapp_shared";
+    import { ICommand } from "jriapp/mvvm";
     export const enum EVENT_CHANGE_TYPE {
         None = 0,
         Added = 1,

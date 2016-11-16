@@ -206,6 +206,7 @@
     <Content Include="Scripts\jriapp\jriapp.js" />
     <Content Include="Scripts\jriapp\jriapp_db.js" />
     <Content Include="Scripts\jriapp\jriapp_langs.js" />
+    <Content Include="Scripts\jriapp\jriapp_shared.js" />
     <Content Include="Scripts\jriapp\jriapp_ui.js" />
     <Content Include="Scripts\jriapp\img\actions.png" />
     <Content Include="Scripts\jriapp\img\cancel.png" />

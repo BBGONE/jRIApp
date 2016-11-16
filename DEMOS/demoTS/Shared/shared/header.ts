@@ -2,7 +2,8 @@
 import * as dbMOD from "jriapp_db";
 import * as uiMOD from "jriapp_ui";
 
-var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = utils.dom.$;
+const bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = RIAPP.$;
+
 export var topPanel: string;
 export var contentPanel: string;
 topPanel = "#demoHeader";

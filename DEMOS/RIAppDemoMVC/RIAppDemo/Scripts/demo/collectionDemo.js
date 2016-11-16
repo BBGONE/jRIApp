@@ -5,7 +5,7 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 define(["require", "exports", "jriapp", "./demoDB", "common"], function (require, exports, RIAPP, DEMODB, COMMON) {
     "use strict";
-    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = utils.dom.$;
+    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = RIAPP.$;
     var RadioValueConverter = (function (_super) {
         __extends(RadioValueConverter, _super);
         function RadioValueConverter() {

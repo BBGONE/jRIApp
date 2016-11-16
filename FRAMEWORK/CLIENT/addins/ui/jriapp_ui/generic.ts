@@ -1,24 +1,22 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { TOOLTIP_SVC, DATA_ATTR } from "jriapp_core/const";
 import {
-    ITooltipService, IElView, IElViewStore, IValidationInfo, IApplication, IViewOptions,
-    IPropertyBag, IIndexer
-} from "jriapp_core/shared";
-import { ERRS, STRS } from "jriapp_core/lang";
-import { BaseObject }  from "jriapp_core/object";
-import { bootstrap } from "jriapp_core/bootstrap";
-import { DomUtils } from "jriapp_utils/dom";
-import { Utils } from "jriapp_utils/utils";
-import { TAction, TCommand, ICommand, Command, TPredicate } from "jriapp_core/mvvm";
-import { EventStore, EVENT_CHANGE_TYPE, IEventChangedArgs } from "jriapp_utils/eventstore";
+    Utils, BaseObject, IPropertyBag, IValidationInfo, IIndexer, LocaleERRS as ERRS, LocaleSTRS as STRS
+} from "jriapp_shared";
+import { $ } from "jriapp/utils/jquery";
+import { ViewChecks } from "jriapp/utils/viewchecks";
+import { TOOLTIP_SVC, DATA_ATTR } from "jriapp/const";
+import { ITooltipService, IElView, IElViewStore,IApplication, IViewOptions } from "jriapp/shared";
+import { bootstrap } from "jriapp/bootstrap";
+import { TAction, TCommand, ICommand, Command, TPredicate } from "jriapp/mvvm";
+import { EventStore, EVENT_CHANGE_TYPE, IEventChangedArgs } from "jriapp/utils/eventstore";
 import { createToolTipSvc } from "./utils/tooltip";
 
 export { IEventChangedArgs, EVENT_CHANGE_TYPE };
 
-const utils = Utils, coreUtils = utils.core, dom = DomUtils, $ = dom.$, checks = utils.check,
-    sys = utils.sys, PROP_BAG = sys.PROP_BAG_NAME(), boot = bootstrap;
+const utils = Utils, coreUtils = utils.core, dom = utils.dom, checks = utils.check,
+    sys = utils.sys, PROP_BAG = sys.PROP_BAG_NAME(), boot = bootstrap, viewChecks = ViewChecks;
 
-sys.isElView = function (obj: any): boolean {
+viewChecks.isElView = function (obj: any): boolean {
     return !!obj && obj instanceof BaseElView;
 };
 

@@ -1,12 +1,10 @@
 ﻿/// <reference path="../../built/jriapp.d.ts" />
 /** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import * as langMOD from "jriapp_core/lang";
-import { bootstrap } from "jriapp_core/bootstrap";
-import { DomUtils } from "jriapp_utils/dom";
+import { $ } from "jriapp/utils/jquery";
+import { IPagerText, IValidateText, IText, ILocaleText, STRS, assign } from "jriapp_shared/lang";
+import { bootstrap } from "jriapp/bootstrap";
 
-const $ = DomUtils.$;
-
-let PAGER: langMOD.IPagerText = {
+let PAGER: IPagerText = {
     firstText: "<<",
     lastText: ">>",
     previousText: "<",
@@ -20,12 +18,12 @@ let PAGER: langMOD.IPagerText = {
     showTip: "показать записи от {0} до {1} из {2}"
 };
 
-let VALIDATE: langMOD.IValidateText = {
+let VALIDATE: IValidateText = {
     errorInfo: "Ошибки:",
     errorField: "поле:"
 };
 
-let TEXT: langMOD.IText = {
+let TEXT: IText = {
     txtEdit: "Редактировать",
     txtAddNew: "Добавить",
     txtDelete: "Удалить",
@@ -39,9 +37,9 @@ let TEXT: langMOD.IText = {
     txtField: "Поле"
 };
 
-let _STRS: langMOD.ILocaleText = { PAGER: PAGER, VALIDATE: VALIDATE, TEXT: TEXT };
+let _STRS: ILocaleText = { PAGER: PAGER, VALIDATE: VALIDATE, TEXT: TEXT };
 
-langMOD.assign(langMOD.STRS, _STRS);
+assign(STRS, _STRS);
 
 bootstrap.addOnInitialize((bootstrap, args) => {
     (<any>$).datepicker.regional["ru"] = {

@@ -1,11 +1,10 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IViewOptions, IBaseObject } from "jriapp_core/shared";
-import { ICommand } from "jriapp_core/mvvm";
-import { Utils } from "jriapp_utils/utils";
-import { DomUtils } from "jriapp_utils/dom";
+import { Utils, IBaseObject } from "jriapp_shared";
+import { IViewOptions } from "jriapp/shared";
+import { ICommand } from "jriapp/mvvm";
 import { BaseElView, PROP_NAME, css } from "./generic";
 
-const utils = Utils, dom = DomUtils, checks = utils.check, sys = utils.sys;
+const utils = Utils, dom = utils.dom, checks = utils.check, sys = utils.sys;
 
 export interface ICommandViewOptions extends IViewOptions {
     preventDefault?: boolean;

@@ -1,9 +1,9 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import * as constsMOD from "jriapp_core/const";
-import { ITooltipService } from "jriapp_core/shared";
-import { DomUtils } from "jriapp_utils/dom";
+import { Utils } from "jriapp_shared";
+import { ITooltipService } from "jriapp/shared";
+import { $ } from "jriapp/utils/jquery";
 
-const dom = DomUtils, $ = dom.$, window = dom.window;
+const window = Utils.dom.window;
 
 export const css = {
     toolTip: "qtip",

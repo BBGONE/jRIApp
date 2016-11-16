@@ -1,6 +1,5 @@
-define("jriapp_ru", ["require", "exports", "jriapp_core/lang", "jriapp_core/bootstrap", "jriapp_utils/dom"], function (require, exports, langMOD, bootstrap_1, dom_1) {
+define("jriapp_ru", ["require", "exports", "jriapp/utils/jquery", "jriapp_shared/lang", "jriapp/bootstrap"], function (require, exports, jquery_1, lang_1, bootstrap_1) {
     "use strict";
-    var $ = dom_1.DomUtils.$;
     var PAGER = {
         firstText: "<<",
         lastText: ">>",
@@ -32,9 +31,9 @@ define("jriapp_ru", ["require", "exports", "jriapp_core/lang", "jriapp_core/boot
         txtField: "Поле"
     };
     var _STRS = { PAGER: PAGER, VALIDATE: VALIDATE, TEXT: TEXT };
-    langMOD.assign(langMOD.STRS, _STRS);
+    lang_1.assign(lang_1.STRS, _STRS);
     bootstrap_1.bootstrap.addOnInitialize(function (bootstrap, args) {
-        $.datepicker.regional["ru"] = {
+        jquery_1.$.datepicker.regional["ru"] = {
             closeText: "Закрыть",
             prevText: "&#x3c;Пред",
             nextText: "След&#x3e;",

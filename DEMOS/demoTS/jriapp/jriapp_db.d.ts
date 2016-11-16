@@ -42,9 +42,8 @@ declare module "jriapp_db/const" {
     };
 }
 declare module "jriapp_db/dataquery" {
-    import { FILTER_TYPE, SORT_ORDER } from "jriapp_core/const";
-    import { IPromise, IFieldInfo } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
+    import { FILTER_TYPE, SORT_ORDER } from "jriapp_shared/const";
+    import { IPromise, IFieldInfo, BaseObject } from "jriapp_shared";
     import { IEntityItem, IQueryInfo, IFilterInfo, ISortInfo, IQueryResult, IEntityConstructor } from "jriapp_db/int";
     import { DataCache } from "jriapp_db/datacache";
     import { DbSet } from "jriapp_db/dbset";
@@ -113,7 +112,7 @@ declare module "jriapp_db/dataquery" {
     export type TDataQuery = DataQuery<IEntityItem>;
 }
 declare module "jriapp_db/datacache" {
-    import { BaseObject } from "jriapp_core/object";
+    import { BaseObject } from "jriapp_shared";
     import { DataQuery } from "jriapp_db/dataquery";
     import { IEntityItem } from "jriapp_db/int";
     export interface ICachedPage {
@@ -150,10 +149,10 @@ declare module "jriapp_db/datacache" {
     }
 }
 declare module "jriapp_db/dbset" {
-    import { SORT_ORDER } from "jriapp_core/const";
-    import { IFieldInfo, TEventHandler, IBaseObject, IPromise, TPriority } from "jriapp_core/shared";
-    import { IInternalCollMethods, COLL_CHANGE_REASON, ITEM_STATUS } from "jriapp_collection/int";
-    import { BaseCollection } from "jriapp_collection/collection";
+    import { SORT_ORDER } from "jriapp_shared/const";
+    import { IFieldInfo, TEventHandler, IBaseObject, IPromise, TPriority } from "jriapp_shared";
+    import { IInternalCollMethods, COLL_CHANGE_REASON, ITEM_STATUS } from "jriapp_shared/collection/int";
+    import { BaseCollection } from "jriapp_shared/collection/base";
     import { IFieldName, IEntityItem, IEntityConstructor, IRowInfo, ITrackAssoc, IQueryResponse, IPermissions, IDbSetConstuctorOptions, IDbSetOptions, ICalcFieldImpl, INavFieldImpl, IQueryResult, IRowData, IDbSetLoadedArgs } from "jriapp_db/int";
     import { REFRESH_MODE } from "jriapp_db/const";
     import { DataQuery } from "jriapp_db/dataquery";
@@ -280,7 +279,7 @@ declare module "jriapp_db/dbset" {
     export type TDbSet = DbSet<IEntityItem, DbContext>;
 }
 declare module "jriapp_db/dbsets" {
-    import { BaseObject } from "jriapp_core/object";
+    import { BaseObject } from "jriapp_shared";
     import { IEntityItem } from "jriapp_db/int";
     import { DbContext } from "jriapp_db/dbcontext";
     import { DbSet, IDbSetConstructor } from "jriapp_db/dbset";
@@ -298,9 +297,8 @@ declare module "jriapp_db/dbsets" {
     }
 }
 declare module "jriapp_db/association" {
-    import { IFieldInfo, IIndexer } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
-    import { ICollChangedArgs, ITEM_STATUS } from "jriapp_collection/int";
+    import { BaseObject, IIndexer, IFieldInfo } from "jriapp_shared";
+    import { ICollChangedArgs, ITEM_STATUS } from "jriapp_shared/collection/int";
     import { DELETE_ACTION } from "jriapp_db/const";
     import { IAssocConstructorOptions, IEntityItem } from "jriapp_db/int";
     import { DbContext } from "jriapp_db/dbcontext";
@@ -374,7 +372,7 @@ declare module "jriapp_db/association" {
     }
 }
 declare module "jriapp_db/error" {
-    import { BaseError } from "jriapp_core/shared";
+    import { BaseError } from "jriapp_shared";
     import { IEntityItem } from "jriapp_db/int";
     import { DATA_OPER } from "jriapp_db/const";
     export class DataOperationError extends BaseError {
@@ -399,10 +397,9 @@ declare module "jriapp_db/error" {
     }
 }
 declare module "jriapp_db/dbcontext" {
-    import { IIndexer, IVoidPromise, IBaseObject, TEventHandler } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
-    import { IPromise, IAbortablePromise } from "jriapp_utils/async";
-    import { COLL_CHANGE_REASON } from "jriapp_collection/int";
+    import { IIndexer, IVoidPromise, IBaseObject, TEventHandler, BaseObject } from "jriapp_shared";
+    import { IPromise, IAbortablePromise } from "jriapp_shared/utils/async";
+    import { COLL_CHANGE_REASON } from "jriapp_shared/collection/int";
     import { IEntityItem, IRefreshRowInfo, IQueryResult, IQueryInfo, IAssociationInfo, IPermissionsInfo, IInvokeRequest, IQueryResponse, IChangeSet } from "jriapp_db/int";
     import { DATA_OPER } from "jriapp_db/const";
     import { DbSet } from "jriapp_db/dbset";
@@ -522,9 +519,9 @@ declare module "jriapp_db/dbcontext" {
     }
 }
 declare module "jriapp_db/entity_aspect" {
-    import { IFieldInfo, IVoidPromise, IPromise } from "jriapp_core/shared";
-    import { ITEM_STATUS } from "jriapp_collection/int";
-    import { ItemAspect } from "jriapp_collection/aspect";
+    import { IFieldInfo, IVoidPromise, IPromise } from "jriapp_shared";
+    import { ITEM_STATUS } from "jriapp_shared/collection/int";
+    import { ItemAspect } from "jriapp_shared/collection/aspect";
     import { REFRESH_MODE } from "jriapp_db/const";
     import { DbContext } from "jriapp_db/dbcontext";
     import { IEntityItem, IEntityConstructor, IRowData, IFieldName, IValueChange, IRowInfo } from "jriapp_db/int";
@@ -584,9 +581,9 @@ declare module "jriapp_db/entity_aspect" {
     }
 }
 declare module "jriapp_db/int" {
-    import { DATE_CONVERSION, FILTER_TYPE, DATA_TYPE, SORT_ORDER } from "jriapp_core/const";
-    import { IFieldInfo } from "jriapp_core/shared";
-    import { ICollectionItem, IPermissions as ICollPermissions, ICollectionOptions, COLL_CHANGE_REASON } from "jriapp_collection/int";
+    import { DATE_CONVERSION, FILTER_TYPE, DATA_TYPE, SORT_ORDER } from "jriapp_shared/const";
+    import { IFieldInfo } from "jriapp_shared";
+    import { ICollectionItem, IPermissions as ICollPermissions, ICollectionOptions, COLL_CHANGE_REASON } from "jriapp_shared/collection/int";
     import { DELETE_ACTION } from "jriapp_db/const";
     import { EntityAspect } from "jriapp_db/entity_aspect";
     import { DbContext } from "jriapp_db/dbcontext";
@@ -793,10 +790,10 @@ declare module "jriapp_db/int" {
     }
 }
 declare module "jriapp_db/dataview" {
-    import { SORT_ORDER } from "jriapp_core/const";
-    import { IPromise, IFieldInfo, TEventHandler } from "jriapp_core/shared";
-    import { ICollection, ICollectionItem, ICollChangedArgs, ICollItemStatusArgs, IErrors, IPermissions, COLL_CHANGE_REASON, COLL_CHANGE_OPER } from "jriapp_collection/int";
-    import { BaseCollection } from "jriapp_collection/collection";
+    import { SORT_ORDER } from "jriapp_shared/const";
+    import { IPromise, IFieldInfo, TEventHandler } from "jriapp_shared";
+    import { ICollection, ICollectionItem, ICollChangedArgs, ICollItemStatusArgs, IErrors, IPermissions, COLL_CHANGE_REASON, COLL_CHANGE_OPER } from "jriapp_shared/collection/int";
+    import { BaseCollection } from "jriapp_shared/collection/base";
     export interface IDataViewOptions<TItem extends ICollectionItem> {
         dataSource: ICollection<TItem>;
         fn_filter?: (item: TItem) => boolean;
@@ -853,7 +850,7 @@ declare module "jriapp_db/dataview" {
     export type TDataView = DataView<ICollectionItem>;
 }
 declare module "jriapp_db/child_dataview" {
-    import { Debounce } from "jriapp_utils/debounce";
+    import { Debounce } from "jriapp_shared";
     import { IEntityItem } from "jriapp_db/int";
     import { Association } from "jriapp_db/association";
     import { DataView } from "jriapp_db/dataview";
@@ -877,8 +874,7 @@ declare module "jriapp_db/child_dataview" {
     export type TChildDataView = ChildDataView<IEntityItem>;
 }
 declare module "jriapp_db/complexprop" {
-    import { IErrorNotification, IFieldInfo, IValidationInfo, TEventHandler } from "jriapp_core/shared";
-    import { BaseObject } from "jriapp_core/object";
+    import { IErrorNotification, IFieldInfo, IValidationInfo, TEventHandler, BaseObject } from "jriapp_shared";
     import { IEntityItem } from "jriapp_db/int";
     import { EntityAspect } from "jriapp_db/entity_aspect";
     import { DbContext } from "jriapp_db/dbcontext";

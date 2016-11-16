@@ -1,12 +1,12 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IViewOptions } from "jriapp_core/shared";
-import { DomUtils } from "jriapp_utils/dom";
-import { bootstrap } from "jriapp_core/bootstrap";
+import { $ } from "jriapp/utils/jquery";
+import { IViewOptions } from "jriapp/shared";
+import { bootstrap } from "jriapp/bootstrap";
 import { css, PROP_NAME, IEventChangedArgs, EVENT_CHANGE_TYPE } from "./generic";
-import { ICommand } from "jriapp_core/mvvm";
+import { ICommand } from "jriapp/mvvm";
 import { CommandElView } from "./command";
 
-const $ = DomUtils.$, boot = bootstrap;
+const boot = bootstrap;
 
 export class ButtonElView extends CommandElView {
     constructor(options: IViewOptions) {

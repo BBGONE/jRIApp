@@ -1,12 +1,14 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { FIELD_TYPE, DATE_CONVERSION, DATA_TYPE, SORT_ORDER } from "jriapp_core/const";
-import { IFieldInfo, IIndexer, IValidationInfo, IVoidPromise, IPromise } from "jriapp_core/shared";
-import { ERRS } from "jriapp_core/lang";
-import { Utils } from "jriapp_utils/utils";
-import { valueUtils, fn_traverseFields } from "jriapp_collection/utils";
-import { ValidationError } from "jriapp_collection/validation";
-import { ICancellableArgs, ITEM_STATUS } from "jriapp_collection/int";
-import { ItemAspect } from "jriapp_collection/aspect";
+import {
+    FIELD_TYPE, DATE_CONVERSION, DATA_TYPE, SORT_ORDER
+} from "jriapp_shared/const";
+import {
+    IFieldInfo, IIndexer, IValidationInfo, IVoidPromise, IPromise, LocaleERRS as ERRS, Utils
+} from "jriapp_shared";
+import { valueUtils, fn_traverseFields } from "jriapp_shared/collection/utils";
+import { ValidationError } from "jriapp_shared/collection/validation";
+import { ICancellableArgs, ITEM_STATUS } from "jriapp_shared/collection/int";
+import { ItemAspect } from "jriapp_shared/collection/aspect";
 import { FLAGS, REFRESH_MODE, PROP_NAME } from "./const";
 import { DbContext } from "./dbcontext";
 import { IEntityItem, IEntityConstructor, IRowData, IFieldName, IValueChange, IRowInfo } from "./int";

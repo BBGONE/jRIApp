@@ -1,10 +1,10 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { DomUtils } from "jriapp_utils/dom";
-import { bootstrap } from "jriapp_core/bootstrap";
+import { $ } from "jriapp/utils/jquery";
+import { bootstrap } from "jriapp/bootstrap";
 import { BaseElView, css, PROP_NAME } from "./generic";
 import { SpanElView } from "./span";
 
-const  $ = DomUtils.$, boot = bootstrap;
+const boot = bootstrap;
 
 export class BlockElView extends SpanElView {
     toString() {

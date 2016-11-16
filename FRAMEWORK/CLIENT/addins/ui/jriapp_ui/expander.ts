@@ -1,10 +1,8 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IViewOptions } from "jriapp_core/shared";
-import { DomUtils } from "jriapp_utils/dom";
-import { bootstrap } from "jriapp_core/bootstrap";
+import { IViewOptions } from "jriapp/shared";
+import { $ } from "jriapp/utils/jquery";
+import { bootstrap } from "jriapp/bootstrap";
 import { AnchorElView, IAncorOptions } from "./anchor";
-
-const $ = DomUtils.$;
 
 export interface IExpanderOptions extends IAncorOptions {
     expandedsrc?: string;

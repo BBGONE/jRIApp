@@ -1,15 +1,14 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { DATA_ATTR } from "jriapp_core/const";
-import {
-    ITemplate, ITemplateEvents, IElView, IViewOptions
-} from "jriapp_core/shared";
-import { Utils } from "jriapp_utils/utils";
-import { bootstrap } from "jriapp_core/bootstrap";
+import { Utils } from "jriapp_shared";
+import { DATA_ATTR } from "jriapp/const";
+import { ITemplate, ITemplateEvents, IElView, IViewOptions } from "jriapp/shared";
+import { ViewChecks } from "jriapp/utils/viewchecks";
+import { bootstrap } from "jriapp/bootstrap";
 import { CommandElView } from "./command";
 
-const utils = Utils, sys = utils.sys, boot = bootstrap;
+const utils = Utils, viewChecks = ViewChecks, boot = bootstrap;
 
-sys.isTemplateElView = (obj: any) => {
+viewChecks.isTemplateElView = (obj: any) => {
     return !!obj && obj instanceof TemplateElView;
 };
 

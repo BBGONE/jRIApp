@@ -1,12 +1,11 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { DATA_TYPE } from "jriapp_core/const";
+import { DATA_TYPE } from "jriapp_shared/const";
+import { LocaleERRS as ERRS, Utils } from "jriapp_shared";
 import {
     IApplication, IContentFactory, IContentFactoryList, IContentOptions,
     IContentConstructor, IConstructorContentOptions, TFactoryGetter, IContent
-} from "jriapp_core/shared";
-import { ERRS } from "jriapp_core/lang";
-import { Utils } from "jriapp_utils/utils";
-import { bootstrap } from "jriapp_core/bootstrap";
+} from "jriapp/shared";
+import { bootstrap } from "jriapp/bootstrap";
 
 import { css } from "./int";
 import { BasicContent } from "./basic";

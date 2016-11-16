@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { BaseObject } from "jriapp_core/object";
+import { BaseObject } from "jriapp_shared";
 
 export interface IDataGridAnimation {
     beforeShow(el: HTMLElement): void;

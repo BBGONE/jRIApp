@@ -1,10 +1,11 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { FIELD_TYPE, FILTER_TYPE, SORT_ORDER } from "jriapp_core/const";
-import { IPromise, IFieldInfo } from "jriapp_core/shared";
-import * as langMOD from "jriapp_core/lang";
-import { BaseObject } from "jriapp_core/object";
-import { Utils } from "jriapp_utils/utils";
-import { valueUtils } from "jriapp_collection/utils";
+import {
+    FIELD_TYPE, FILTER_TYPE, SORT_ORDER
+} from "jriapp_shared/const";
+import {
+    IPromise, IFieldInfo, BaseObject, Utils, LocaleERRS as ERRS
+} from "jriapp_shared";
+import { valueUtils } from "jriapp_shared/collection/utils";
 import { PROP_NAME } from "./const";
 import { IEntityItem, IQueryInfo, IFilterInfo, ISortInfo, IQueryResult, IEntityConstructor } from "./int";
 import { DataCache } from "./datacache";
@@ -87,7 +88,7 @@ export class DataQuery<TItem extends IEntityItem> extends BaseObject {
         let fkind = FILTER_TYPE.Equals;
         let fld = this.getFieldInfo(fieldName);
         if (!fld)
-            throw new Error(strUtils.format(langMOD.ERRS.ERR_DBSET_INVALID_FIELDNAME, this.dbSetName, fieldName));
+            throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, this.dbSetName, fieldName));
         let stz = this.serverTimezone, dcnv = fld.dateConversion, vals: any[] = [];
         if (!checks.isArray(value))
             vals = [value];
@@ -113,10 +114,10 @@ export class DataQuery<TItem extends IEntityItem> extends BaseObject {
             case FILTER_TYPE.Between:
                 fkind = operand;
                 if (value.length !== 2)
-                    throw new Error(langMOD.ERRS.ERR_QUERY_BETWEEN);
+                    throw new Error(ERRS.ERR_QUERY_BETWEEN);
                 break;
             default:
-                throw new Error(strUtils.format(langMOD.ERRS.ERR_QUERY_OPERATOR_INVALID, operand));
+                throw new Error(strUtils.format(ERRS.ERR_QUERY_OPERATOR_INVALID, operand));
        }
         let filterItem = { fieldName: fieldName, kind: fkind, values: vals };
         this._filterInfo.filterItems.push(filterItem);

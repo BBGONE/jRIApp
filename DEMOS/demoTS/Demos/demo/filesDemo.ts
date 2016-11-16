@@ -5,7 +5,7 @@ import * as uiMOD from "jriapp_ui";
 import * as FOLDERBROWSER_SVC from "./folderBrowserSvc";
 import * as COMMON from "common";
 
-var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = utils.dom.$;
+var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = RIAPP.$;
 declare var DTNodeStatus_Ok: any;
 
 export interface IMainOptions extends RIAPP.IAppOptions {
@@ -110,7 +110,7 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
         return promise;
     }
     private _onLoaded(fetchedItems: FOLDERBROWSER_SVC.FileSystemObject[]) {
-        var self = this;
+        const self = this;
         try {
             var topLevel = fetchedItems.filter(function (item) {
                 return item.Level == 0;
@@ -120,8 +120,7 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
             }
         }
         catch (ex) {
-            self.handleError(ex, self);
-            RIAPP.ERROR.throwDummy(ex);
+            utils.err.reThrow(ex, self.handleError(ex, self))
         }
     }
     private _addItemsToNode(node: any, items: FOLDERBROWSER_SVC.FileSystemObject[]) {

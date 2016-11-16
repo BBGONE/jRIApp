@@ -1,16 +1,15 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    IApplication, IConstructorContentOptions, IBindingInfo, IBindingOptions,
-    IElView, IBaseObject
-} from "jriapp_core/shared";
-import { ERRS } from "jriapp_core/lang";
-import { DomUtils } from "jriapp_utils/dom";
-import { StringUtils } from "jriapp_utils/strutils";
+    IBaseObject, LocaleERRS as ERRS, Utils
+} from "jriapp_shared";
+import {
+    IApplication, IConstructorContentOptions, IBindingInfo, IBindingOptions, IElView
+} from "jriapp/shared";
 
 import { css } from "./int";
 import { BasicContent } from "./basic";
 
-const strUtils = StringUtils, doc = DomUtils.document;
+const utils = Utils, strUtils = utils.str, doc = utils.dom.document;
 
 const NAME = "datepicker";
 

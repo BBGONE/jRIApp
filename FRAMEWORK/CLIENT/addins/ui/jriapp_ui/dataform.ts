@@ -1,35 +1,35 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { DATA_ATTR, ELVIEW_NM } from "jriapp_core/const";
 import {
-    IApplication, IFieldInfo, IBaseObject, IContent, IEditable, IElView, IErrorNotification,
-    IValidationInfo, ILifeTimeScope, IVoidPromise, IViewOptions
-} from "jriapp_core/shared";
-import { ERRS, STRS } from "jriapp_core/lang";
-import { BaseObject } from "jriapp_core/object";
-import { bootstrap } from "jriapp_core/bootstrap";
-import { parser } from "jriapp_core/parser";
-import { DomUtils } from "jriapp_utils/dom";
-import { Utils } from "jriapp_utils/utils";
+    Utils, IFieldInfo, IBaseObject, IEditable, IErrorNotification,
+    IValidationInfo, IVoidPromise, BaseObject, LocaleERRS as ERRS, LocaleSTRS as STRS,  parser
+} from "jriapp_shared";
+import { $ } from "jriapp/utils/jquery";
+import { DATA_ATTR, ELVIEW_NM } from "jriapp/const";
+import { ViewChecks } from "jriapp/utils/viewchecks";
+import {
+    IApplication, IContent, IElView, ILifeTimeScope, IViewOptions
+} from "jriapp/shared";
+import { bootstrap } from "jriapp/bootstrap";
 import { BaseElView, fn_addToolTip } from "./generic";
-import { Binding } from "jriapp_core/binding";
+import { Binding } from "jriapp/binding";
 import { parseContentAttr } from "./content/int";
 
-const utils = Utils, dom = DomUtils, $ = dom.$, doc = dom.document,
+const utils = Utils, dom = Utils.dom, doc = dom.document,
     checks = utils.check, coreUtils = utils.core, strUtils = utils.str,
-    sys = utils.sys, parse = parser, boot = bootstrap;
+    sys = utils.sys, parse = parser, boot = bootstrap, viewChecks = ViewChecks;
 
 export const css = {
     dataform: "ria-dataform",
     error: "ria-form-error"
 };
 
-sys.setIsInsideTemplate = function (elView: BaseElView) {
+viewChecks.setIsInsideTemplate = function (elView: BaseElView) {
     if (!!elView && elView instanceof DataFormElView) {
         (<DataFormElView>elView).form.isInsideTemplate = true;
     }
 };
 
-sys.isDataForm = function (el: HTMLElement): boolean {
+viewChecks.isDataForm = function (el: HTMLElement): boolean {
     if (!el) {
         return false;
     }
@@ -47,15 +47,15 @@ sys.isDataForm = function (el: HTMLElement): boolean {
     }
 };
 
-sys.isInsideDataForm = function (el: HTMLElement): boolean {
+viewChecks.isInsideDataForm = function (el: HTMLElement): boolean {
     if (!el) {
         return false;
     }
 
     const parent = el.parentElement;
     if (!!parent) {
-        if (!sys.isDataForm(parent)) {
-            return sys.isInsideDataForm(parent);
+        if (!viewChecks.isDataForm(parent)) {
+            return viewChecks.isInsideDataForm(parent);
         }
         else {
             return true;
@@ -66,7 +66,7 @@ sys.isInsideDataForm = function (el: HTMLElement): boolean {
 };
 
 //check if the element inside of any dataform in the forms array
-sys.isInNestedForm = function (root: any, forms: HTMLElement[], el: HTMLElement): boolean {
+viewChecks.isInNestedForm = function (root: any, forms: HTMLElement[], el: HTMLElement): boolean {
     let i: number, oNode: HTMLElement, len = forms.length;
     if (len === 0) {
         return false;
@@ -97,18 +97,18 @@ sys.isInNestedForm = function (root: any, forms: HTMLElement[], el: HTMLElement)
        in case of dataforms nesting, element's parent dataform can be nested dataform
        this function returns element dataform
 */
-sys.getParentDataForm = function (rootForm: HTMLElement, el: HTMLElement): HTMLElement {
+viewChecks.getParentDataForm = function (rootForm: HTMLElement, el: HTMLElement): HTMLElement {
     if (!el)
         return null;
     let parent = el.parentElement, attr: string, opts: any[];
     if (!!parent) {
         if (parent === rootForm)
             return rootForm;
-        if (sys.isDataForm(parent)) {
+        if (viewChecks.isDataForm(parent)) {
             return parent;
         }
         else
-            return sys.getParentDataForm(rootForm, parent);
+            return viewChecks.getParentDataForm(rootForm, parent);
     }
 
     return null;
@@ -170,7 +170,7 @@ export class DataForm extends BaseObject {
         this._errors = null;
         this._contentPromise = null;
 
-        parent = sys.getParentDataForm(null, this._el);
+        parent = viewChecks.getParentDataForm(null, this._el);
         //if this form is nested inside another dataform
         //subscribe for parent's destroy event
         if (!!parent) {
@@ -197,7 +197,7 @@ export class DataForm extends BaseObject {
             return [];
         let arr: any[] = this._lfTime.getObjs(), res: BaseElView[] = [];
         for (let i = 0, len = arr.length; i < len; i += 1) {
-            if (sys.isElView(arr[i]))
+            if (viewChecks.isElView(arr[i]))
                 res.push(arr[i]);
         }
         return res;
@@ -215,7 +215,7 @@ export class DataForm extends BaseObject {
 
         contentElements.forEach(function (el) {
             //check if the element inside a nested dataform
-            if (sys.isInNestedForm(self._el, forms, el))
+            if (viewChecks.isInNestedForm(self._el, forms, el))
                 return;
             let attr = el.getAttribute(DATA_ATTR.DATA_CONTENT),
                 op = parseContentAttr(attr);

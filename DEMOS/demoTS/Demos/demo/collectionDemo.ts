@@ -5,7 +5,7 @@ import * as uiMOD from "jriapp_ui";
 import * as DEMODB from "./demoDB";
 import * as COMMON from "common";
 
-var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = utils.dom.$;
+var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = RIAPP.$;
 
 export class RadioValueConverter extends RIAPP.BaseConverter {
     convertToSource(val: any, param: any, dataContext: any) {

@@ -11,7 +11,7 @@ import * as DEMODB from "./demoDB";
 import * as COMMON from "common";
 import * as HEADER from "header";
 
-var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = utils.dom.$;
+var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = RIAPP.$;
 
 //an example how to define a strongly typed command
 class ResetCommand extends RIAPP.BaseCommand<any, ProductsFilter>
@@ -876,7 +876,7 @@ export class DemoApplication extends RIAPP.Application {
         this._uploadVM = null;
     }
     onStartUp() {
-        var self = this, options: IMainOptions = self.options;
+        const self = this, options: IMainOptions = self.options;
         this._dbContext = new DEMODB.DbContext();
         this._dbContext.initialize({ serviceUrl: options.service_url, permissions: options.permissionInfo });
         function toText(str:any) {
@@ -924,8 +924,7 @@ export class DemoApplication extends RIAPP.Application {
                     return loadRes;
                 });
             }, (err) => {
-                this.handleError(err, this);
-                RIAPP.ERROR.throwDummy(err);
+                utils.err.reThrow(err, self.handleError(err, self))
             });
         }
 

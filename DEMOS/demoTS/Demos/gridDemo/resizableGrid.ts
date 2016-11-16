@@ -3,7 +3,7 @@ import * as dbMOD from "jriapp_db";
 import * as uiMOD from "jriapp_ui";
 import * as COMMON from "common";
 
-let utils = RIAPP.Utils, $ = utils.dom.$;
+let utils = RIAPP.Utils, $ = RIAPP.$;
 
 let $doc = $(utils.dom.document); 	//window object
 let $head = $("head");			//head object

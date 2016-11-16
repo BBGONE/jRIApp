@@ -8,7 +8,7 @@ import { DemoApplication } from "./app";
 import { CustomerVM } from "./customerVM";
 import { AddAddressVM } from "./addAddressVM";
 
-var utils = RIAPP.Utils, $ = utils.dom.$;
+var utils = RIAPP.Utils, $ = RIAPP.$;
 
 export class CustomerAddressVM extends RIAPP.ViewModel<DemoApplication> {
     private _customerVM: CustomerVM;

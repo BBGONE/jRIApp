@@ -1,22 +1,19 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import {DATA_ATTR, KEYS } from "jriapp_core/const";
+import { Utils, BaseObject, IBaseObject, LocaleERRS as ERRS, parser, TEventHandler } from "jriapp_shared";
+import { $ } from "jriapp/utils/jquery";
+import {DATA_ATTR, KEYS } from "jriapp/const";
 import {
-    IApplication, ITemplate, ITemplateEvents, ISelectable,
-    IViewOptions, TEventHandler, ISelectableProvider, IBaseObject
-} from "jriapp_core/shared";
-import { createTemplate } from "jriapp_core/template";
-import { ERRS } from "jriapp_core/lang";
-import { BaseObject } from "jriapp_core/object";
-import { DomUtils } from "jriapp_utils/dom";
-import { Utils } from "jriapp_utils/utils";
+    IApplication, ITemplate, ITemplateEvents, ISelectable,  IViewOptions, ISelectableProvider
+} from "jriapp/shared";
+import { createTemplate } from "jriapp/template";
 import { BaseElView } from "./generic";
 import {
     ICollection, ICollectionItem, ICollChangedArgs, COLL_CHANGE_TYPE,
     COLL_CHANGE_REASON, ITEM_STATUS
-} from "jriapp_collection/int";
+} from "jriapp_shared/collection/int";
 import { bootstrap } from "jriapp";
 
-const utils = Utils, dom = DomUtils, $ = dom.$, doc = dom.document, sys = utils.sys,
+const utils = Utils, dom = utils.dom, doc = dom.document, sys = utils.sys,
     checks = utils.check, strUtils = utils.str, coreUtils = utils.core, boot = bootstrap;
 
 const css = {

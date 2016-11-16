@@ -6,7 +6,7 @@ import * as DEMODB from "../demo/demoDB";
 import { ResetCommand } from "./commands";
 import { DemoApplication } from "./app";
 
-var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = utils.dom.$;
+var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = RIAPP.$;
 
 export class ProductsFilter extends RIAPP.BaseObject {
     private _prodNumber: any;

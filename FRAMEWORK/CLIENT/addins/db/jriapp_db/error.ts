@@ -1,6 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { BaseError } from "jriapp_core/shared";
-import { Utils } from "jriapp_utils/utils";
+import { BaseError, Utils } from "jriapp_shared";
 import { IEntityItem } from "./int";
 import { DATA_OPER } from "./const";
 

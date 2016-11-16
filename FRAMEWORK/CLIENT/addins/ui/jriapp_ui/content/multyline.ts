@@ -1,16 +1,15 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { KEYS } from "jriapp_core/const";
-import { ERRS } from "jriapp_core/lang";
-import { IApplication, IElView, IConstructorContentOptions, IFieldInfo } from "jriapp_core/shared";
-import { DomUtils } from "jriapp_utils/dom";
-import { Utils } from "jriapp_utils/utils";
+import { LocaleERRS as ERRS, IFieldInfo, Utils } from "jriapp_shared";
+import { KEYS } from "jriapp/const";
+import {
+    IApplication, IElView, IConstructorContentOptions
+} from "jriapp/shared";
 import { TextAreaElView } from "../textarea";
 
 import { css } from "./int";
 import { BasicContent } from "./basic";
 
-const utils = Utils, NAME = "multyline", strUtils = utils.str,
-    dom = DomUtils, document = dom.document;
+const utils = Utils, NAME = "multyline", strUtils = utils.str, dom = utils.dom, document = dom.document;
 
 export class MultyLineContent extends BasicContent {
     static __allowedKeys: number[] = null;

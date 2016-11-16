@@ -153,6 +153,7 @@
     <Content Include="Content\scripts\jriapp\jriapp.js" />
     <Content Include="Content\scripts\jriapp\jriapp_db.js" />
     <Content Include="Content\scripts\jriapp\jriapp_langs.js" />
+    <Content Include="Content\scripts\jriapp\jriapp_shared.js" />
     <Content Include="Content\scripts\jriapp\jriapp_ui.js" />
     <Content Include="Content\scripts\jriapp\img\actions.png" />
     <Content Include="Content\scripts\jriapp\img\cancel.png" />

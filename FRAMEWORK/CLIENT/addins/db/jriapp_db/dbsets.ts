@@ -1,7 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import * as langMOD from "jriapp_core/lang";
-import { BaseObject } from "jriapp_core/object";
-import { Utils } from "jriapp_utils/utils";
+import { BaseObject, LocaleERRS as ERRS, Utils } from "jriapp_shared";
 import { PROP_NAME } from "./const";
 import { IEntityItem } from "./int";
 import { DbContext } from "./dbcontext";
@@ -52,7 +50,7 @@ export class DbSets extends BaseObject {
     getDbSet(name: string) {
         let f = this._dbSets[name];
         if (!f)
-            throw new Error(strUtils.format(langMOD.ERRS.ERR_DBSET_NAME_INVALID, name));
+            throw new Error(strUtils.format(ERRS.ERR_DBSET_NAME_INVALID, name));
         return f();
     }
     destroy() {

@@ -1,10 +1,10 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { DATA_ATTR } from "jriapp_core/const";
-import { ITemplateEvents, ITemplate } from "jriapp_core/shared";
-import { createTemplate } from "jriapp_core/template";
-import { bootstrap } from "jriapp_core/bootstrap";
-import { BaseObject } from "jriapp_core/object";
-import { ICollectionItem } from "jriapp_collection/int";
+import { BaseObject } from "jriapp_shared";
+import { DATA_ATTR } from "jriapp/const";
+import { ITemplateEvents, ITemplate } from "jriapp/shared";
+import { createTemplate } from "jriapp/template";
+import { bootstrap } from "jriapp/bootstrap";
+import { ICollectionItem } from "jriapp_shared/collection/int";
 
 import { DetailsRow } from "../rows/details";
 import { DataGrid } from "../datagrid"

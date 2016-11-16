@@ -1,11 +1,12 @@
-﻿/// <reference path="../../jriapp/jriapp.d.ts" />
+﻿/// <reference path="../../jriapp/jriapp_shared.d.ts" />
+/// <reference path="../../jriapp/jriapp.d.ts" />
 /// <reference path="../../jriapp/jriapp_ui.d.ts" />
 /// <reference path="../../jriapp/jriapp_db.d.ts" />
 import * as RIAPP from "jriapp";
 import * as dbMOD from "jriapp_db";
 import * as uiMOD from "jriapp_ui";
 
-var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = utils.dom.$;
+const bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = RIAPP.$;
 
 export interface IGridEvents<TItem extends RIAPP.ICollectionItem> {
     regFocusGridFunc(doFocus: () => void): void;

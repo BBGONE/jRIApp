@@ -1,13 +1,14 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { DATA_ATTR } from "jriapp_core/const";
-import { DomUtils } from "jriapp_utils/dom";
+import { Utils } from "jriapp_shared";
+import { DATA_ATTR } from "jriapp/const";
+import { $ } from "jriapp/utils/jquery";
 
 import { css, ROW_ACTION } from "../const";
 import { IColumnInfo, BaseColumn, ICellInfo } from "./base";
 import { ActionsCell } from "../cells/actions";
 import { DataGrid } from "../datagrid";
 
-const dom = DomUtils, $ = dom.$;
+const dom = Utils.dom;
 
 export interface IActionsColumnInfo extends IColumnInfo {
 }

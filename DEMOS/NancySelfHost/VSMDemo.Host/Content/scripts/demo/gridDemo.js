@@ -5,7 +5,7 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 define(["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "./demoDB", "common", "header"], function (require, exports, RIAPP, dbMOD, uiMOD, DEMODB, COMMON, HEADER) {
     "use strict";
-    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = utils.dom.$;
+    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = RIAPP.$;
     var ResetCommand = (function (_super) {
         __extends(ResetCommand, _super);
         function ResetCommand() {
@@ -895,7 +895,6 @@ define(["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "./demoDB", "c
             this._uploadVM = null;
         }
         DemoApplication.prototype.onStartUp = function () {
-            var _this = this;
             var self = this, options = self.options;
             this._dbContext = new DEMODB.DbContext();
             this._dbContext.initialize({ serviceUrl: options.service_url, permissions: options.permissionInfo });
@@ -935,8 +934,7 @@ define(["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "./demoDB", "c
                         return loadRes;
                     });
                 }, function (err) {
-                    _this.handleError(err, _this);
-                    RIAPP.ERROR.throwDummy(err);
+                    utils.err.reThrow(err, self.handleError(err, self));
                 });
             }
             _super.prototype.onStartUp.call(this);

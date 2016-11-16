@@ -1,12 +1,9 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { BaseObject } from "jriapp_core/object";
-import { Debounce } from "jriapp_utils/debounce";
-import { DomUtils } from "jriapp_utils/dom";
-import { Utils } from "jriapp_utils/utils";
+import { BaseObject, Debounce, Utils } from "jriapp_shared";
 import { ICollection, ICollectionItem, ICollChangedArgs, COLL_CHANGE_TYPE, COLL_CHANGE_REASON, ITEM_STATUS,
     ICollItemArgs, ICollItemAddedArgs
-} from "jriapp_collection/int";
-
+} from "jriapp_shared/collection/int";
+import { $ } from "jriapp/utils/jquery";
 import { DblClick } from "../../utils/dblclick";
 import { css, ROW_POSITION, PROP_NAME } from "../const";
 import { BaseCell } from "../cells/base";
@@ -23,7 +20,7 @@ import { RowSelectorColumn } from "../columns/rowselector";
 
 import { DataGrid } from "../datagrid"
 
-const utils = Utils, dom = DomUtils, $ = dom.$, doc = dom.document;
+const utils = Utils, dom = utils.dom, doc = dom.document;
 
 const fn_state = (row: Row) => {
     const val = !row.item ? null : (<any>row.item)[row.grid.options.rowStateField];

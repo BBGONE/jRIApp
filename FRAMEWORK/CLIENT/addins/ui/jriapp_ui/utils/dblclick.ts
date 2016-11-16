@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IDisposable } from "jriapp_core/shared";
+import { IDisposable } from "jriapp_shared";
 
 export class DblClick implements IDisposable {
     private _isDestroyed: boolean;

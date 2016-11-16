@@ -1,19 +1,22 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { FIELD_TYPE, BINDING_MODE } from "jriapp_core/const";
-import { bootstrap } from "jriapp_core/bootstrap";
+import { FIELD_TYPE } from "jriapp_shared/const";
+import {
+    IBaseObject, IFieldInfo, BaseObject, Utils
+} from "jriapp_shared";
+import { $ } from "jriapp/utils/jquery";
+import { BINDING_MODE } from "jriapp/const";
 import {
     IApplication, IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IElView, IViewOptions,
-    IBaseObject, IBindingInfo, IBindingOptions, IBinding, IFieldInfo } from "jriapp_core/shared";
-import { BaseObject }  from "jriapp_core/object";
-import { Binding, getBindingOptions } from "jriapp_core/binding";
-import { LifeTimeScope } from "jriapp_utils/lifetime";
-import { DomUtils } from "jriapp_utils/dom";
-import { Utils } from "jriapp_utils/utils";
+    IBindingInfo, IBindingOptions, IBinding
+} from "jriapp/shared";
+import { bootstrap } from "jriapp/bootstrap";
+import { Binding, getBindingOptions } from "jriapp/binding";
+import { LifeTimeScope } from "jriapp/utils/lifetime";
 
 import { css } from "./int";
 
-const utils = Utils, dom = DomUtils, $ = dom.$, doc = dom.document,
-    coreUtils = utils.core, checks = utils.check, boot = bootstrap, sys = utils.sys;
+const utils = Utils, dom = utils.dom, doc = dom.document, coreUtils = utils.core,
+    checks = utils.check, boot = bootstrap, sys = utils.sys;
 
 export class BasicContent extends BaseObject implements IContent {
     protected _parentEl: HTMLElement;

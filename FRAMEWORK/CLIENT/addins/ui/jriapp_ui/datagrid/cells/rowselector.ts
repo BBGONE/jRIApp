@@ -1,14 +1,15 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { DATA_ATTR } from "jriapp_core/const";
-import { IContent, IBindingInfo, IContentOptions } from "jriapp_core/shared";
-import { DomUtils } from "jriapp_utils/dom";
+import { Utils } from "jriapp_shared";
+import { $ } from "jriapp/utils/jquery";
+import { DATA_ATTR } from "jriapp/const";
+import { IContent, IBindingInfo, IContentOptions } from "jriapp/shared";
 import { BoolContent } from "../../content/bool";
 
 import { css, PROP_NAME } from "../const";
 import { BaseCell, ICellOptions } from "./base";
 import { RowSelectorColumn } from "../columns/rowselector";
 
-const dom = DomUtils, $ = dom.$, doc = dom.document;
+const dom = Utils.dom, doc = dom.document;
 
 export class RowSelectorCell extends BaseCell<RowSelectorColumn> {
     private _$chk: JQuery;

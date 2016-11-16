@@ -6,7 +6,7 @@ import * as DEMODB from "../demo/demoDB";
 import { DemoApplication } from "./app";
 import { CustomerAddressVM } from "./custAddressVM";
 
-var utils = RIAPP.Utils, $ = utils.dom.$;
+var utils = RIAPP.Utils, $ = RIAPP.$;
 
 //RIAPP.ISubmittable allows for the edit dialog to submit changes automatically
 export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RIAPP.ISubmittable {

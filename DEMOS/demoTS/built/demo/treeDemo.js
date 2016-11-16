@@ -5,7 +5,7 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "common"], function (require, exports, RIAPP, dbMOD, FOLDERBROWSER_SVC, COMMON) {
     "use strict";
-    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, infoType = "BASE_ROOT", $ = utils.dom.$;
+    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, infoType = "BASE_ROOT", $ = RIAPP.$;
     var ExProps = (function (_super) {
         __extends(ExProps, _super);
         function ExProps(item, dbContext) {
