@@ -38,23 +38,36 @@ intermixed HTML and Scripts inside template (<i>the code is 100% separated from 
 <li>The framework uses HTML5 features implemented in most of the browsers (<i>starting from IE9</i>) and does not need Polyfills 
 and the code is not overengineered.</li>
 <li>Classes for using the data service can be used without using the whole framework. They can be used in React, Angular.js and
-any other framework. They are 158 kb.(minified)</li>
+any other framework no different as when using them with this framework. They are 158 kb.(minified)</li>
 </ul>
 <br/>
-It can be used to work with NOSQL and relational databases because it can work with complex properties of unlimited depth. 
+The client side of framework is split into 5 bundles: 
+<b>jriapp_shared.js</b> - the bundle with common classes (collection types, utilities, other common types)
+<b>jriapp.js</b> - application class and data binding infrastructure (it depends on <b>jriapp_shared.js</b>)
+<b>jriapp_ui.js</b> - element views for the User Interface (it depends on  <b>jriapp.js</b> and <b>jriapp_shared.js</b>)
+<b>jriapp_db.js</b> - client side entity framework (it depends on  <b>jriapp_shared.js</b>)
+<b>jriapp_langs.js</b> - local strings, needed for other than english language
+<br/>
+If someone does not want to use this framework, but needs only the means to work with 
+databases in other frameworks, he (she) can use only <b>jriapp_shared.js</b> and <b>jriapp_db.js</b> bundles.
+<br/>
+It can also be used to work with NOSQL and relational databases because it can work with complex properties of unlimited depth. 
+<br/>
 The entities and DbContext is strongly typed because the client domain model (entities, lists, dictionaries, dbsets, dbcontext) is generated in typescript language by data service methods
-and there's no need to use not strongly typed ones (<i>in breeze.js, you need to find changes of field names everywhere in your code after changing them on the server side</i>). 
-The data service (<i>the server side</i>) can work with data managers for each entity (<i>optionally, but it is very useful not to have a long sheet of code inside the data service</i>). 
-This feature allows to separate the CRUD and query methods for each entity into its own class.<br/>
-Databinding uses classic property change tracking pattern like it is done in Silverlight and there's a <i>BaseObject</i> class in the framework which supports change notification and events
-(<i>It is much more useful in practice than to have a central hub for events like EventAggregator, because it is difficult to distinguish which of the multiple objects triggered the event.
-There's also a problem that's it's impractical to add strongly type methods to subscribe to the events to the EventAggregator (because it is global and shared), 
-and it is easier with the global class to  cause memory leaks.
-Although if you need an EventAggregator then just use a separate class inherited from the BaseObject</i>). 
-The Events implemented to allow to provide a namespace when subscribing to them, which helps to unsubscribe from a bunch of them very easily - by just providing the namespace.
+and there's no need to use dynamically typed ones. It provides more reliability for the application and much more easy refactoring.
+<br/>
+The data service (<i>the server side</i>) can work with data managers for each entity 
+(<i>it is optional, but is very useful not to have a long sheet of code inside the data service</i>). 
+This feature allows to separate the CRUD and query methods for each entity into its own class.
+<br/>
+The Databinding uses classic property change tracking notification pattern and 
+there's a <i>BaseObject</i> class in the framework which supports change notification and events.
+<br/>
+The Events implemented to allow for provision of a namespace when subscribing to them, 
+which helps to unsubscribe from a bunch of them very easily - by just providing the namespace.
 They, also, can have the priority set for them when subscribing.
 <br/><br/>
-I chose not to implement features which can be easily borrowed from third party libs.<br/>
+I have chosen not to implement features which can be easily borrowed from third party libs.<br/>
 For example, there's no dependency injection feature because the <a href="https://github.com/inversify/InversifyJS" target="_blank"><i>Inversify.js</i></a> library can be used for that.
 It has no Router implementation because switching the views using the framework is done by changing the property value (the current name of the template displaying inside the dynacontent).
 In the framework's SPA demo it is done by binding an anchor to a command on the view model. 
@@ -70,8 +83,9 @@ The framework's data binding resembles Microsoft Silverlight data bindings style
 The framework is protected from overposting attacks out of the box because it uses metadata on the  server which checks what is posted and it uses special
 tabular format to transfer queries data to and from the server.
 Protection from XSRF attacks is handled by allowing to add headers to all requests to the server. This feature can be used to attach
-anti XSRF tokens to the requests.<br/>
-The full framework minified size is 380KB.
+anti XSRF tokens to the requests.
+<br/>
+The full framework minified size is 380KB (or 85,5 kb gzipped).
 </p>
 <p>
 <b>The framework contains the docs which at present for the old version of the framework (it can be used anyway)</b>
