@@ -3151,7 +3151,7 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/const", "jr
             this._objMaps.forEach(function (objMap) {
                 utils.core.forEachProp(objMap, function (name) {
                     var obj = objMap[name];
-                    if (obj instanceof jriapp_shared_18.BaseObject) {
+                    if (sys.isBaseObj(obj)) {
                         if (!obj.getIsDestroyed()) {
                             obj.removeNSHandlers(self.uniqueID);
                         }
@@ -3161,8 +3161,7 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/const", "jr
             this._objMaps = [];
         };
         Application.prototype._initAppModules = function () {
-            var self = this;
-            var keys = Object.keys(self._moduleInits);
+            var self = this, keys = Object.keys(self._moduleInits);
             keys.forEach(function (key) {
                 var initFn = self._moduleInits[key];
                 initFn(self);
@@ -3435,98 +3434,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.0.0.0";
+    exports.VERSION = "1.0.0.2";
     bootstrap_8.Bootstrap._initFramework();
-});
-define("jriapp/utils/eventstore", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_20) {
-    "use strict";
-    var utils = jriapp_shared_20.Utils, PROP_BAG = utils.sys.PROP_BAG_NAME();
-    (function (EVENT_CHANGE_TYPE) {
-        EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["None"] = 0] = "None";
-        EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["Added"] = 1] = "Added";
-        EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["Deleted"] = 2] = "Deleted";
-        EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["Updated"] = 3] = "Updated";
-    })(exports.EVENT_CHANGE_TYPE || (exports.EVENT_CHANGE_TYPE = {}));
-    var EVENT_CHANGE_TYPE = exports.EVENT_CHANGE_TYPE;
-    var EventStore = (function (_super) {
-        __extends(EventStore, _super);
-        function EventStore(onChange) {
-            _super.call(this);
-            this._dic = null;
-            this._onChange = onChange;
-        }
-        EventStore.prototype._isHasProp = function (prop) {
-            return true;
-        };
-        EventStore.prototype.getProp = function (name) {
-            if (!this._dic)
-                return null;
-            var cmd = this._dic[name];
-            if (!cmd)
-                return null;
-            return cmd;
-        };
-        EventStore.prototype.setProp = function (name, command) {
-            if (!this._dic && !!command)
-                this._dic = {};
-            if (!this._dic)
-                return;
-            var old = this._dic[name];
-            if (!command && !!old) {
-                delete this._dic[name];
-                if (!!this._onChange) {
-                    this._onChange(this, {
-                        name: name,
-                        changeType: 2,
-                        oldVal: old,
-                        newVal: null
-                    });
-                    this.raisePropertyChanged(name);
-                }
-                return;
-            }
-            this._dic[name] = command;
-            if (!!this._onChange) {
-                if (!old) {
-                    this._onChange(this, {
-                        name: name,
-                        changeType: 1,
-                        oldVal: null,
-                        newVal: command
-                    });
-                }
-                else {
-                    this._onChange(this, {
-                        name: name,
-                        changeType: 3,
-                        oldVal: old,
-                        newVal: command
-                    });
-                }
-                this.raisePropertyChanged(name);
-            }
-        };
-        EventStore.prototype.trigger = function (name, args) {
-            if (!this._dic)
-                return;
-            var command = this._dic[name];
-            if (!command)
-                return;
-            args = args || {};
-            if (command.canExecute(this, args))
-                command.execute(this, args);
-        };
-        EventStore.prototype.toString = function () {
-            return PROP_BAG;
-        };
-        EventStore.prototype.destroy = function () {
-            if (!!this._dic) {
-                this._dic = null;
-            }
-            this._onChange = null;
-            _super.prototype.destroy.call(this);
-        };
-        return EventStore;
-    }(jriapp_shared_20.BaseObject));
-    exports.EventStore = EventStore;
 });

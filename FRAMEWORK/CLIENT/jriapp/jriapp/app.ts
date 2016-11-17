@@ -73,11 +73,11 @@ export class Application extends BaseObject implements IApplication {
         boot._getInternal().registerApp(this);
     }
     private _cleanUpObjMaps() {
-        let self = this;
+        const self = this;
         this._objMaps.forEach((objMap) => {
             utils.core.forEachProp(objMap, (name) => {
                 let obj = objMap[name];
-                if (obj instanceof BaseObject) {
+                if (sys.isBaseObj(obj)) {
                     if (!(<IBaseObject>obj).getIsDestroyed()) {
                         (<IBaseObject>obj).removeNSHandlers(self.uniqueID);
                     }
@@ -87,8 +87,7 @@ export class Application extends BaseObject implements IApplication {
         this._objMaps = [];
     }
     private _initAppModules() {
-        let self = this;
-        let keys = Object.keys(self._moduleInits);
+        const self = this, keys = Object.keys(self._moduleInits);
         keys.forEach((key) => {
             let initFn = self._moduleInits[key];
             initFn(self);

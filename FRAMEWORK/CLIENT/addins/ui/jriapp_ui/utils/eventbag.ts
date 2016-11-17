@@ -2,7 +2,7 @@
 import {
     BaseObject, Utils, IIndexer, IPropertyBag
 } from "jriapp_shared";
-import { ICommand } from "../mvvm";
+import { ICommand } from "jriapp/mvvm";
 
 const utils= Utils, PROP_BAG = utils.sys.PROP_BAG_NAME();
 export const enum EVENT_CHANGE_TYPE { None = 0, Added = 1, Deleted = 2, Updated = 3 }
@@ -15,11 +15,11 @@ export interface IEventChangedArgs {
 }
 
 //dispatches events through commands that can be attached by the data binding
-export class EventStore extends BaseObject implements IPropertyBag {
+export class EventBag extends BaseObject implements IPropertyBag {
     private _dic: IIndexer<ICommand>;
-    private _onChange: (sender: EventStore, args: IEventChangedArgs) => void;
+    private _onChange: (sender: EventBag, args: IEventChangedArgs) => void;
 
-    constructor(onChange: (sender: EventStore, args: IEventChangedArgs) => void) {
+    constructor(onChange: (sender: EventBag, args: IEventChangedArgs) => void) {
         super();
         this._dic = null;
         this._onChange = onChange;

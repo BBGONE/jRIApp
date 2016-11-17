@@ -64,7 +64,7 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
                     throw new ValidationError([validation_error], this);
                 }
             } catch (ex) {
-                if (ex instanceof ValidationError) {
+                if (utils.sys.isValidationError(ex)) {
                     error = ex;
                 }
                 else {

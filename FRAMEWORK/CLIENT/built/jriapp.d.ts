@@ -834,30 +834,3 @@ declare module "jriapp" {
     export { Application } from "jriapp/app";
     export const VERSION: string;
 }
-declare module "jriapp/utils/eventstore" {
-    import { BaseObject, IPropertyBag } from "jriapp_shared";
-    import { ICommand } from "jriapp/mvvm";
-    export const enum EVENT_CHANGE_TYPE {
-        None = 0,
-        Added = 1,
-        Deleted = 2,
-        Updated = 3,
-    }
-    export interface IEventChangedArgs {
-        name: string;
-        changeType: EVENT_CHANGE_TYPE;
-        oldVal: ICommand;
-        newVal: ICommand;
-    }
-    export class EventStore extends BaseObject implements IPropertyBag {
-        private _dic;
-        private _onChange;
-        constructor(onChange: (sender: EventStore, args: IEventChangedArgs) => void);
-        _isHasProp(prop: string): boolean;
-        getProp(name: string): ICommand;
-        setProp(name: string, command: ICommand): void;
-        trigger(name: string, args?: any): void;
-        toString(): string;
-        destroy(): void;
-    }
-}

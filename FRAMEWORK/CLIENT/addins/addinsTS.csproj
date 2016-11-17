@@ -125,7 +125,10 @@
     <TypeScriptCompile Include="ui\jriapp_ui\template.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\textarea.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\textbox.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\utils\cssbag.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\utils\dblclick.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\utils\eventbag.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\utils\propbag.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\utils\tooltip.ts" />
   </ItemGroup>
   <ItemGroup>

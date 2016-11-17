@@ -4157,7 +4157,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                     }
                 }
                 catch (ex) {
-                    if (ex instanceof validation_3.ValidationError) {
+                    if (utils.sys.isValidationError(ex)) {
                         error = ex;
                     }
                     else {

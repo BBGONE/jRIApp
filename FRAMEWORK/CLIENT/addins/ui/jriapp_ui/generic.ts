@@ -8,13 +8,15 @@ import { TOOLTIP_SVC, DATA_ATTR } from "jriapp/const";
 import { ITooltipService, IElView, IElViewStore,IApplication, IViewOptions } from "jriapp/shared";
 import { bootstrap } from "jriapp/bootstrap";
 import { TAction, TCommand, ICommand, Command, TPredicate } from "jriapp/mvvm";
-import { EventStore, EVENT_CHANGE_TYPE, IEventChangedArgs } from "jriapp/utils/eventstore";
+import { EventBag, EVENT_CHANGE_TYPE, IEventChangedArgs } from "./utils/eventbag";
+import { PropertyBag } from "./utils/propbag";
+import { CSSBag } from "./utils/cssbag";
 import { createToolTipSvc } from "./utils/tooltip";
 
 export { IEventChangedArgs, EVENT_CHANGE_TYPE };
 
 const utils = Utils, coreUtils = utils.core, dom = utils.dom, checks = utils.check,
-    sys = utils.sys, PROP_BAG = sys.PROP_BAG_NAME(), boot = bootstrap, viewChecks = ViewChecks;
+    boot = bootstrap, viewChecks = ViewChecks;
 
 viewChecks.isElView = function (obj: any): boolean {
     return !!obj && obj instanceof BaseElView;
@@ -67,83 +69,13 @@ export const PROP_NAME = {
     click: "click"
 };
 
-// wraps HTMLElement to get or change property using data binding
-class PropertyBag extends BaseObject implements IPropertyBag {
-    private _el: IIndexer<any>;
-
-    constructor(el: HTMLElement) {
-        super();
-        this._el = el;
-    }
-    //override
-    _isHasProp(prop: string) {
-        return checks.isHasProp(this._el, prop);
-    }
-    //implement IPropertyBag
-    getProp(name: string): any {
-        return this._el[name];
-    }
-    setProp(name: string, val: any): void {
-        let old = this._el[name];
-        if (old !== val) {
-            this._el[name] = val;
-            this.raisePropertyChanged(name);
-        }
-    }
-    toString() {
-        return PROP_BAG;
-    }
-}
-
-// wraps HTMLElement to add or remove classNames using data binding
-class CSSBag extends BaseObject implements IPropertyBag {
-    private _el: Element;
-
-    constructor(el: Element) {
-        super();
-        this._el = el;
-    }
-    //override
-    _isHasProp(prop: string) {
-        return true;
-    }
-   //implement IPropertyBag
-    getProp(name: string): any {
-        return checks.undefined;
-    }
-    setProp(name: string, val: any): void {
-        if (val === checks.undefined)
-            return;
-
-        if (name === "*") {
-            if (!val) {
-                //remove all classes
-                dom.removeClass([this._el], null);
-            }
-            else if (checks.isArray(val))
-            {
-                dom.setClasses([this._el], <string[]>val);
-            }
-            else if (checks.isString(val)) {
-                dom.setClasses([this._el], val.split(" "));
-            }
-            return;
-        }
-
-        //set individual classes
-        dom.setClass([this._el], name, !val);
-    }
-    toString() {
-        return PROP_BAG;
-    }
-}
 
 export class BaseElView extends BaseObject implements IElView {
     private _objId: string;
     private _$el: JQuery;
     protected _errors: IValidationInfo[];
     protected _toolTip: string;
-    private _eventStore: EventStore;
+    private _eventStore: EventBag;
     private _props: IPropertyBag;
     private _classes: IPropertyBag;
     //saves old display before making display: none
@@ -314,7 +246,7 @@ export class BaseElView extends BaseObject implements IElView {
             if (this.getIsDestroyCalled())
                 return null;
 
-            this._eventStore = new EventStore((s, a) => {
+            this._eventStore = new EventBag((s, a) => {
                 this._onEventChanged(a);
             });
         }

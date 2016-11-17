@@ -82,6 +82,55 @@ declare module "jriapp_ui/content/template" {
         readonly app: IApplication;
     }
 }
+declare module "jriapp_ui/utils/eventbag" {
+    import { BaseObject, IPropertyBag } from "jriapp_shared";
+    import { ICommand } from "jriapp/mvvm";
+    export const enum EVENT_CHANGE_TYPE {
+        None = 0,
+        Added = 1,
+        Deleted = 2,
+        Updated = 3,
+    }
+    export interface IEventChangedArgs {
+        name: string;
+        changeType: EVENT_CHANGE_TYPE;
+        oldVal: ICommand;
+        newVal: ICommand;
+    }
+    export class EventBag extends BaseObject implements IPropertyBag {
+        private _dic;
+        private _onChange;
+        constructor(onChange: (sender: EventBag, args: IEventChangedArgs) => void);
+        _isHasProp(prop: string): boolean;
+        getProp(name: string): ICommand;
+        setProp(name: string, command: ICommand): void;
+        trigger(name: string, args?: any): void;
+        toString(): string;
+        destroy(): void;
+    }
+}
+declare module "jriapp_ui/utils/propbag" {
+    import { BaseObject, IPropertyBag } from "jriapp_shared";
+    export class PropertyBag extends BaseObject implements IPropertyBag {
+        private _el;
+        constructor(el: HTMLElement);
+        _isHasProp(prop: string): boolean;
+        getProp(name: string): any;
+        setProp(name: string, val: any): void;
+        toString(): string;
+    }
+}
+declare module "jriapp_ui/utils/cssbag" {
+    import { BaseObject, IPropertyBag } from "jriapp_shared";
+    export class CSSBag extends BaseObject implements IPropertyBag {
+        private _el;
+        constructor(el: Element);
+        _isHasProp(prop: string): boolean;
+        getProp(name: string): any;
+        setProp(name: string, val: any): void;
+        toString(): string;
+    }
+}
 declare module "jriapp_ui/utils/tooltip" {
     import { ITooltipService } from "jriapp/shared";
     export const css: {
@@ -94,7 +143,7 @@ declare module "jriapp_ui/generic" {
     import { BaseObject, IPropertyBag, IValidationInfo } from "jriapp_shared";
     import { IElView, IApplication, IViewOptions } from "jriapp/shared";
     import { ICommand } from "jriapp/mvvm";
-    import { EVENT_CHANGE_TYPE, IEventChangedArgs } from "jriapp/utils/eventstore";
+    import { EVENT_CHANGE_TYPE, IEventChangedArgs } from "jriapp_ui/utils/eventbag";
     export { IEventChangedArgs, EVENT_CHANGE_TYPE };
     export function fn_addToolTip($el: JQuery, tip: string, isError?: boolean, pos?: string): void;
     export const css: {

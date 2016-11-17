@@ -62,7 +62,6 @@
     <TypeScriptCompile Include="jriapp.ts" />
     <TypeScriptCompile Include="jriapp\databindsvc.ts" />
     <TypeScriptCompile Include="jriapp\content.ts" />
-    <TypeScriptCompile Include="jriapp\utils\eventstore.ts" />
     <TypeScriptCompile Include="jriapp\elview.ts" />
     <TypeScriptCompile Include="jriapp\binding.ts" />
     <TypeScriptCompile Include="jriapp\bootstrap.ts" />
