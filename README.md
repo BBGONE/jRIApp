@@ -41,13 +41,12 @@ and the code is not overengineered.</li>
 any other framework no different as when using them with this framework. They are 158 kb.(minified)</li>
 </ul>
 <br/>
-The client side of framework is split into 5 bundles: 
-<b>jriapp_shared.js</b> - the bundle with common classes (collection types, utilities, other common types)
-<b>jriapp.js</b> - application class and data binding infrastructure (it depends on <b>jriapp_shared.js</b>)
-<b>jriapp_ui.js</b> - element views for the User Interface (it depends on  <b>jriapp.js</b> and <b>jriapp_shared.js</b>)
-<b>jriapp_db.js</b> - client side entity framework (it depends on  <b>jriapp_shared.js</b>)
-<b>jriapp_langs.js</b> - local strings, needed for other than english language
-<br/>
+The client side of framework is split into 5 bundles:<br/>
+<b>jriapp_shared.js</b> - the bundle with common classes (collection types, utilities, other common types)<br/>
+<b>jriapp.js</b> - application class and data binding infrastructure (it depends on <b>jriapp_shared.js</b>)<br/>
+<b>jriapp_ui.js</b> - element views for the User Interface (it depends on  <b>jriapp.js</b> and <b>jriapp_shared.js</b>)<br/>
+<b>jriapp_db.js</b> - client side entity framework (it depends on  <b>jriapp_shared.js</b>)<br/>
+<b>jriapp_langs.js</b> - local strings, needed for other than english language<br/><br/>
 If someone does not want to use this framework, but needs only the means to work with 
 databases in other frameworks, he (she) can use only <b>jriapp_shared.js</b> and <b>jriapp_db.js</b> bundles.
 <br/>
