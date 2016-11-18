@@ -1680,9 +1680,8 @@ define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/d
     }(RIAPP.BaseObject));
     exports.ProductsFilter = ProductsFilter;
 });
-define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "common", "gridDemo/filters", "gridDemo/commands"], function (require, exports, RIAPP, dbMOD, uiMOD, COMMON, filters_1, commands_2) {
+define("gridDemo/states", ["require", "exports"], function (require, exports) {
     "use strict";
-    var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = RIAPP.$;
     var RowStateProvider = (function () {
         function RowStateProvider() {
         }
@@ -1691,6 +1690,7 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
         };
         return RowStateProvider;
     }());
+    exports.RowStateProvider = RowStateProvider;
     var OptionTextProvider = (function () {
         function OptionTextProvider() {
         }
@@ -1702,6 +1702,7 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
         };
         return OptionTextProvider;
     }());
+    exports.OptionTextProvider = OptionTextProvider;
     var OptionStateProvider = (function () {
         function OptionStateProvider() {
         }
@@ -1713,6 +1714,11 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
         };
         return OptionStateProvider;
     }());
+    exports.OptionStateProvider = OptionStateProvider;
+});
+define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "common", "gridDemo/filters", "gridDemo/commands", "gridDemo/states"], function (require, exports, RIAPP, dbMOD, uiMOD, COMMON, filters_1, commands_2, states_1) {
+    "use strict";
+    var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = RIAPP.$;
     var ProductViewModel = (function (_super) {
         __extends(ProductViewModel, _super);
         function ProductViewModel(app) {
@@ -1726,9 +1732,9 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
             this._selected = {};
             this._selectedCount = 0;
             this._invokeResult = null;
-            this._rowStateProvider = new RowStateProvider();
-            this._optionTextProvider = new OptionTextProvider();
-            this._optionStateProvider = new OptionStateProvider();
+            this._rowStateProvider = new states_1.RowStateProvider();
+            this._optionTextProvider = new states_1.OptionTextProvider();
+            this._optionStateProvider = new states_1.OptionStateProvider();
             var sodAssoc = self.dbContext.associations.getOrdDetailsToProduct();
             this._vwSalesOrderDet = new dbMOD.ChildDataView({
                 association: sodAssoc,

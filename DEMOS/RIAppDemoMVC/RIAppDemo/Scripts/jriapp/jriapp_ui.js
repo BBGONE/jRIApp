@@ -1456,7 +1456,7 @@ define("jriapp_ui/content/datetime", ["require", "exports", "jriapp/bootstrap", 
 });
 define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/utils/jquery", "jriapp/bootstrap", "jriapp_ui/generic"], function (require, exports, jriapp_shared_13, jquery_3, bootstrap_9, generic_5) {
     "use strict";
-    var utils = jriapp_shared_13.Utils, doc = utils.dom.document, sys = utils.sys, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, boot = bootstrap_9.bootstrap;
+    var utils = jriapp_shared_13.Utils, doc = utils.dom.document, sys = utils.sys, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, boot = bootstrap_9.bootstrap, parse = jriapp_shared_13.parser;
     var PROP_NAME = {
         dataSource: "dataSource",
         selectedItem: "selectedItem",
@@ -1507,12 +1507,13 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             var ds = this._options.dataSource;
             this._options.dataSource = null;
             this.dataSource = ds;
-            this._fn_state = function (sender) {
-                var item = sender;
+            this._fn_state = function (item) {
+                if (!self._stateProvider)
+                    return;
                 var data = self._keyMap[item._key];
                 if (!data)
                     return;
-                var css = self._onOptionStateChanged(data);
+                var css = self._stateProvider.getCSS(item, data.op.index, parse.resolvePath(item, self.statePath));
                 data.op.className = css;
             };
         }
@@ -1695,11 +1696,6 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 }
             }
         };
-        ListBox.prototype._onOptionStateChanged = function (data) {
-            if (!this._stateProvider)
-                return "";
-            return this._stateProvider.getCSS(data.item, data.op.index, jriapp_shared_13.parser.resolvePath(data.item, this.statePath));
-        };
         ListBox.prototype._bindDS = function () {
             var self = this, ds = this.dataSource;
             if (!ds)
@@ -1752,10 +1748,13 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     selEl.add(oOption, firstOp);
                 }
             }
-            else
+            else {
                 selEl.add(oOption, null);
-            if (!!this.statePath && !!item) {
-                item.addOnPropertyChange(this.statePath, this._fn_state, this._objId, this);
+            }
+            if (!!item) {
+                if (!!this.statePath) {
+                    item.addOnPropertyChange(this.statePath, this._fn_state, this._objId);
+                }
                 this._fn_state(item);
             }
             return oOption;
@@ -3699,9 +3698,8 @@ define("jriapp_ui/datagrid/cells/data", ["require", "exports", "jriapp_shared", 
         __extends(DataCell, _super);
         function DataCell(options) {
             _super.call(this, options);
-            this._content = null;
-            this._stateCss = null;
             var self = this;
+            this._content = null;
             this._click.interval = 350;
             this._click.add(function () {
                 self._onCellClicked(self.row);
@@ -3748,17 +3746,6 @@ define("jriapp_ui/datagrid/cells/data", ["require", "exports", "jriapp_shared", 
         DataCell.prototype._endEdit = function (isCanceled) {
             if (this._content.isEditing) {
                 this._content.isEditing = false;
-            }
-        };
-        DataCell.prototype._setState = function (css) {
-            if (this._stateCss !== css) {
-                var arr = [];
-                if (!!this._stateCss)
-                    arr.push("-" + this._stateCss);
-                this._stateCss = css;
-                if (!!this._stateCss)
-                    arr.push("+" + this._stateCss);
-                dom.setClasses([this.td], arr);
             }
         };
         DataCell.prototype.destroy = function () {
@@ -4093,9 +4080,9 @@ define("jriapp_ui/datagrid/cells/rowselector", ["require", "exports", "jriapp_sh
 });
 define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_shared", "jriapp/utils/jquery", "jriapp_ui/datagrid/const", "jriapp_ui/datagrid/cells/expander", "jriapp_ui/datagrid/cells/data", "jriapp_ui/datagrid/cells/actions", "jriapp_ui/datagrid/cells/rowselector", "jriapp_ui/datagrid/columns/expander", "jriapp_ui/datagrid/columns/actions", "jriapp_ui/datagrid/columns/rowselector"], function (require, exports, jriapp_shared_28, jquery_10, const_16, expander_1, data_1, actions_1, rowselector_1, expander_2, actions_2, rowselector_2) {
     "use strict";
-    var utils = jriapp_shared_28.Utils, dom = utils.dom, doc = dom.document;
+    var utils = jriapp_shared_28.Utils, dom = utils.dom, doc = dom.document, parse = jriapp_shared_28.parser;
     var fn_state = function (row) {
-        var val = !row.item ? null : row.item[row.grid.options.rowStateField];
+        var val = !row.item ? null : parse.resolvePath(row.item, row.grid.options.rowStateField);
         var css = row.grid._getInternal().onRowStateChanged(row, val);
         row._setState(css);
     };
@@ -4115,6 +4102,7 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_shared", "j
             this._isDeleted = false;
             this._isSelected = false;
             this._isDetached = false;
+            this._stateCss = null;
             this._isDeleted = item._aspect.isDeleted;
             if (this._isDeleted) {
                 dom.addClass([tr], const_16.css.rowDeleted);
@@ -4153,11 +4141,14 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_shared", "j
             return cell;
         };
         Row.prototype._setState = function (css) {
-            for (var i = 0, len = this._cells.length; i < len; i++) {
-                var cell = this._cells[i];
-                if (cell instanceof data_1.DataCell) {
-                    cell._setState(css);
-                }
+            if (this._stateCss !== css) {
+                var arr = [];
+                if (!!this._stateCss)
+                    arr.push("-" + this._stateCss);
+                this._stateCss = css;
+                if (!!this._stateCss)
+                    arr.push("+" + this._stateCss);
+                dom.setClasses([this.tr], arr);
             }
         };
         Row.prototype._onBeginEdit = function () {
@@ -4846,7 +4837,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
     exports.COLUMN_TYPE = const_23.COLUMN_TYPE;
     exports.ROW_ACTION = const_23.ROW_ACTION;
     exports.DefaultAnimation = animation_2.DefaultAnimation;
-    var utils = jriapp_shared_34.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err, sys = utils.sys, dom = utils.dom, doc = dom.document, boot = bootstrap_17.bootstrap;
+    var utils = jriapp_shared_34.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err, sys = utils.sys, dom = utils.dom, parse = jriapp_shared_34.parser, doc = dom.document, boot = bootstrap_17.bootstrap;
     var _columnWidthInterval, _gridsCount = 0;
     var _created_grids = {};
     function getDataGrids() {
@@ -5244,7 +5235,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 content: null
             };
             var options;
-            var temp_opts = jriapp_shared_34.parser.parseOptions(column_attr);
+            var temp_opts = parse.parseOptions(column_attr);
             if (temp_opts.length > 0)
                 options = coreUtils.extend(defaultOp, temp_opts[0]);
             else

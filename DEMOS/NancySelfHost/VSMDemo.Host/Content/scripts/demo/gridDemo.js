@@ -3,7 +3,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "./demoDB", "common", "header"], function (require, exports, RIAPP, dbMOD, uiMOD, DEMODB, COMMON, HEADER) {
+define(["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "./demoDB", "common", "header", "./states"], function (require, exports, RIAPP, dbMOD, uiMOD, DEMODB, COMMON, HEADER, states_1) {
     "use strict";
     var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = RIAPP.$;
     var ResetCommand = (function (_super) {
@@ -244,36 +244,6 @@ define(["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "./demoDB", "c
         return ProductsFilter;
     }(RIAPP.BaseObject));
     exports.ProductsFilter = ProductsFilter;
-    var RowStateProvider = (function () {
-        function RowStateProvider() {
-        }
-        RowStateProvider.prototype.getCSS = function (item, val) {
-            return (!val) ? 'rowInactive' : null;
-        };
-        return RowStateProvider;
-    }());
-    var OptionTextProvider = (function () {
-        function OptionTextProvider() {
-        }
-        OptionTextProvider.prototype.getText = function (item, itemIndex, text) {
-            if (itemIndex > 0)
-                return itemIndex + ') ' + text;
-            else
-                return text;
-        };
-        return OptionTextProvider;
-    }());
-    var OptionStateProvider = (function () {
-        function OptionStateProvider() {
-        }
-        OptionStateProvider.prototype.getCSS = function (item, itemIndex, val) {
-            if (itemIndex % 2 == 0)
-                return "gray-bgc";
-            else
-                return "white-bgc";
-        };
-        return OptionStateProvider;
-    }());
     var TestInvokeCommand = (function (_super) {
         __extends(TestInvokeCommand, _super);
         function TestInvokeCommand() {
@@ -308,9 +278,9 @@ define(["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "./demoDB", "c
             this._selected = {};
             this._selectedCount = 0;
             this._invokeResult = null;
-            this._rowStateProvider = new RowStateProvider();
-            this._optionTextProvider = new OptionTextProvider();
-            this._optionStateProvider = new OptionStateProvider();
+            this._rowStateProvider = new states_1.RowStateProvider();
+            this._optionTextProvider = new states_1.OptionTextProvider();
+            this._optionStateProvider = new states_1.OptionStateProvider();
             var sodAssoc = self.dbContext.associations.getOrdDetailsToProduct();
             this._vwSalesOrderDet = new dbMOD.ChildDataView({
                 association: sodAssoc,
@@ -591,12 +561,16 @@ define(["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "./demoDB", "c
             configurable: true
         });
         Object.defineProperty(ProductViewModel.prototype, "optionTextProvider", {
-            get: function () { return this._optionTextProvider; },
+            get: function () {
+                return this._optionTextProvider;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(ProductViewModel.prototype, "optionStateProvider", {
-            get: function () { return this._optionStateProvider; },
+            get: function () {
+                return this._optionStateProvider;
+            },
             enumerable: true,
             configurable: true
         });

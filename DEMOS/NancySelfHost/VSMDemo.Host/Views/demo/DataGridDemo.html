@@ -60,7 +60,7 @@
         font-weight: bolder;
     }
 
-    .rowInactive {
+    .rowInactive > td.ria-data-cell {
         color: gray;
         text-decoration: line-through;
     }
@@ -91,11 +91,9 @@
 
 @Section['JSImport']
 <script type="text/javascript">
-
-</script>
-<script type="text/javascript">
-    var jriapp_config = {
-        bust: "bust=v01"
+   var jriapp_config = {
+        bust: "bust=v02",
+        debugLevel: 0
     };
     var config = {
         baseUrl: "@Model.siteBase/scripts/demo/",
@@ -147,13 +145,17 @@
             </td>
             <td>
                 <label for="prodName">Name:</label>
-                <input type="text" id="prodName" placeholder="Name" data-bind-1="{this.value,to=filter.name,mode=TwoWay}" data-bind-2="{this.toolTip,to=filter.searchTextToolTip}" />
+                <input type="text" id="prodName" placeholder="Name"
+                       data-bind-1="{this.value,to=filter.name,mode=TwoWay}" 
+                       data-bind-2="{this.toolTip,to=filter.searchTextToolTip}" />
             </td>
             <td>
                 <label for="prodMCat">Main Category:</label>
                 <select id="prodMCat" size="1" class="span3"
                         data-bind-1="{this.dataSource,to=filter.ParentCategories}"
                         data-bind-2="{this.selectedValue,to=filter.parentCategoryID,mode=TwoWay}"
+                        data-bind-3="{this.textProvider,to=optionTextProvider}"
+                        data-bind-4="{this.stateProvider,to=optionStateProvider}"
                         data-view="options:{valuePath=ProductCategoryID,textPath=Name}"></select>
             </td>
             <td>
@@ -163,6 +165,8 @@
                         data-bind-2="{this.selectedValue,to=filter.childCategoryID,mode=TwoWay}"
                         data-bind-3="{this.selectedItem,to=filter.selectedCategory,mode=TwoWay}"
                         data-bind-4="{this.toolTip,to=filter.selectedCategory.Name}"
+                        data-bind-5="{this.textProvider,to=optionTextProvider}"
+                        data-bind-6="{this.stateProvider,to=optionStateProvider}"
                         data-view="options:{valuePath=ProductCategoryID,textPath=Name}"></select>
             </td>
             <td>

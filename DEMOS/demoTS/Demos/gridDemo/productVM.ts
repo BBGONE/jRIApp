@@ -7,33 +7,10 @@ import * as DEMODB from "../demo/demoDB";
 import { ProductsFilter } from "./filters";
 import { DemoApplication } from "./app";
 import { TestInvokeCommand } from "./commands";
+import { RowStateProvider, OptionStateProvider, OptionTextProvider } from "./states";
 
 var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = RIAPP.$;
 
-class RowStateProvider implements uiMOD.IRowStateProvider {
-    getCSS(item: RIAPP.ICollectionItem, val: any): string {
-        return (!val) ? 'rowInactive' : null;
-    }
-}
-
-class OptionTextProvider implements uiMOD.IOptionTextProvider {
-    getText(item: RIAPP.ICollectionItem, itemIndex: number, text: string): string {
-        if (itemIndex > 0)
-            return itemIndex + ') ' + text;
-        else
-            return text;
-    }
-}
-
-class OptionStateProvider implements uiMOD.IOptionStateProvider {
-    getCSS(item: RIAPP.ICollectionItem, itemIndex: number, val: any): string {
-        //var name: string = val;
-        if (itemIndex % 2 == 0)
-            return "gray-bgc";
-        else
-            return "white-bgc";
-    }
-}
 
 export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implements uiMOD.ITabsEvents {
     private _filter: ProductsFilter;

@@ -124,6 +124,7 @@
     <Content Include="Content\scripts\demo\main.js" />
     <Content Include="Content\scripts\demo\gridDemo.js" />
     <Content Include="Content\scripts\demo\shared.js" />
+    <Content Include="Content\scripts\demo\states.js" />
     <Content Include="Content\scripts\jquery\external\jquery.cookie.js" />
     <Content Include="Content\scripts\jquery\jquery-3.1.1.min.js" />
     <Content Include="Content\scripts\jquery\ui\AUTHORS.txt" />

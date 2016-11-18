@@ -66,7 +66,7 @@
         font-weight: bolder;
     }
 
-    .rowInactive {
+    .rowInactive > td.ria-data-cell {
         color: gray;
         text-decoration: line-through;
     }
@@ -126,77 +126,6 @@
         div.bold.nsize {
             color: darkgoldenrod;
         }
-
-/* Checkbox styles for testing that it works */
-/*
-    .ria-row-selector > label {
-        margin-left: 10px;
-    }
-
-    input.ria-row-selector + span {
-        cursor: pointer;
-    }
-
-    input.ria-row-selector:not(checked) {
-        position: absolute;
-        opacity: 0 !important;
-        outline: none !important;
-    }
-
-    input.ria-row-selector:checked {
-        position: absolute;
-        opacity: 0 !important;
-        outline: none !important;
-    }
-
-    input.ria-row-selector:not(checked) + span {
-        position: relative;
-        padding: 0 0 0 60px;
-    }
-
-        input.ria-row-selector:not(checked) + span:before {
-            content: '';
-            position: absolute;
-            top: -4px;
-            left: 0;
-            width: 50px;
-            height: 26px;
-            border-radius: 13px;
-            background: #b5bdc8;
-            background: -moz-radial-gradient(center, ellipse cover, #b5bdc8 0%, #828c95 36%, #28343b 100%);
-            background: -webkit-radial-gradient(center, ellipse cover, #b5bdc8 0%,#828c95 36%,#28343b 100%);
-            background: radial-gradient(ellipse at center, #b5bdc8 0%,#828c95 36%,#28343b 100%);
-            box-shadow: inset 0 2px 3px rgba(0,0,0,.2);
-        }
-
-        input.ria-row-selector:not(checked) + span:after {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: 2px;
-            width: 22px;
-            height: 22px;
-            border-radius: 10px;
-            background: #FFF;
-            box-shadow: 0 2px 5px rgba(0,0,0,.3);
-            transition: all .2s;
-        }
-
-    input.ria-row-selector:checked + span:before {
-        background: #1e5799;
-        background: -moz-radial-gradient(center, ellipse cover, #1e5799 0%, #2989d8 50%, #207cca 51%, #7db9e8 100%);
-        background: -webkit-radial-gradient(center, ellipse cover, #1e5799 0%,#2989d8 50%,#207cca 51%,#7db9e8 100%);
-        background: radial-gradient(ellipse at center, #1e5799 0%,#2989d8 50%,#207cca 51%,#7db9e8 100%);
-    }
-
-    input.ria-row-selector:checked + span:after {
-        left: 26px;
-    }
-
-    input.ria-row-selector:focus + span:before {
-        box-shadow: 0 0 0 3px rgba(255,255,125,.5);
-    }
-*/
 </style>
 
 <script src="@Url.Content("~/Scripts/demo/gridDemo/main.js", true)" type="text/javascript"></script>
@@ -276,7 +205,7 @@
                         data-bind-2="{this.selectedValue,to=filter.parentCategoryID,mode=TwoWay}"
                         data-bind-3="{this.textProvider,to=optionTextProvider}"
                         data-bind-4="{this.stateProvider,to=optionStateProvider}"
-                        data-view="options:{valuePath=ProductCategoryID,textPath=Name,statePath=Name}">
+                        data-view="options:{valuePath=ProductCategoryID,textPath=Name}">
                 </select>
             </td>
             <td>
@@ -288,7 +217,7 @@
                         data-bind-4="{this.toolTip,to=filter.selectedCategory.Name}"
                         data-bind-5="{this.textProvider,to=optionTextProvider}"
                         data-bind-6="{this.stateProvider,to=optionStateProvider}"
-                        data-view="options:{valuePath=ProductCategoryID,textPath=Name,statePath=Name}">
+                        data-view="options:{valuePath=ProductCategoryID,textPath=Name}">
                 </select>
             </td>
             <td>
@@ -300,7 +229,7 @@
                         data-bind-4="{this.selectedItem,to=filter.selectedModel,mode=TwoWay}"
                         data-bind-5="{this.textProvider,to=optionTextProvider}"
                         data-bind-6="{this.stateProvider,to=optionStateProvider}"
-                        data-view="options:{valuePath=ProductModelID,textPath=Name,statePath=Name}">
+                        data-view="options:{valuePath=ProductModelID,textPath=Name}">
                 </select>
             </td>
         </tr>

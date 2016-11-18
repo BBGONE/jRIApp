@@ -10,6 +10,7 @@ import * as uiMOD from "jriapp_ui";
 import * as DEMODB from "./demoDB";
 import * as COMMON from "common";
 import * as HEADER from "header";
+import { RowStateProvider, OptionStateProvider, OptionTextProvider } from "./states";
 
 var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = RIAPP.$;
 
@@ -195,31 +196,6 @@ export class ProductsFilter extends RIAPP.BaseObject {
         rows: dbMOD.IRowData[];
     }) { this.ProductCategories.fillData(data); }
     get dbContext() { return this._app.dbContext; }
-}
-
-class RowStateProvider implements uiMOD.IRowStateProvider {
-    getCSS(item: RIAPP.ICollectionItem, val: any): string {
-        return (!val) ? 'rowInactive' : null;
-    }
-}
-
-class OptionTextProvider implements uiMOD.IOptionTextProvider {
-    getText(item: RIAPP.ICollectionItem, itemIndex: number, text: string): string {
-        if (itemIndex > 0)
-            return itemIndex + ') ' + text;
-        else
-            return text;
-    }
-}
-
-class OptionStateProvider implements uiMOD.IOptionStateProvider {
-    getCSS(item: RIAPP.ICollectionItem, itemIndex: number, val: any): string {
-        //var name: string = val;
-        if (itemIndex % 2 == 0)
-            return "gray-bgc";
-        else
-            return "white-bgc";
-    }
 }
 
 //an example how to define a strongly typed command
@@ -553,8 +529,12 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
     get vwSalesOrderDet() { return this._vwSalesOrderDet; }
 
     get rowStateProvider() { return this._rowStateProvider; }
-    get optionTextProvider() { return this._optionTextProvider; }
-    get optionStateProvider() { return this._optionStateProvider }
+    get optionTextProvider() {
+        return this._optionTextProvider;
+    }
+    get optionStateProvider() {
+        return this._optionStateProvider
+    }
     get tabsEvents(): uiMOD.ITabsEvents { return this; }
     get grid(): uiMOD.DataGrid { return this._dataGrid; }
     set grid(v: uiMOD.DataGrid) {
