@@ -110,8 +110,8 @@ export class ListBox extends BaseObject {
             const data: IMappedItem = self._keyMap[item._key];
             if (!data)
                 return;
-            const css = self._stateProvider.getCSS(item, data.op.index, parse.resolvePath(item, self.statePath));
-            data.op.className = css;
+            const path = self.statePath, val = !path? null : parse.resolvePath(item, path);
+            data.op.className = self._stateProvider.getCSS(item, data.op.index, val);
         };
     }
     destroy() {

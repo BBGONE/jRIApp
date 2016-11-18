@@ -23,8 +23,9 @@ import { DataGrid } from "../datagrid"
 const utils = Utils, dom = utils.dom, doc = dom.document, parse = parser;
 
 const fn_state = (row: Row) => {
-    const val = !row.item ? null : parse.resolvePath(row.item, row.grid.options.rowStateField);
-    const css = row.grid._getInternal().onRowStateChanged(row, val);
+    const path = row.grid.options.rowStateField,
+        val = (!row.item || !path) ? null : parse.resolvePath(row.item, path),
+        css = row.grid._getInternal().onRowStateChanged(row, val);
     row._setState(css);
 };
 
@@ -66,10 +67,12 @@ export class Row extends BaseObject {
         }
 
         this._createCells();
-        if (!!this._item && !!this.isHasStateField) {
-            this._item.addOnPropertyChange(this._grid.options.rowStateField, function (s, a) {
-                fn_state(self);
-            }, this._objId);
+        if (!!this._item) {
+            if (!!this.isHasStateField) {
+                this._item.addOnPropertyChange(this._grid.options.rowStateField, function (s, a) {
+                    fn_state(self);
+                }, this._objId);
+            }
             fn_state(self);
         }
     }

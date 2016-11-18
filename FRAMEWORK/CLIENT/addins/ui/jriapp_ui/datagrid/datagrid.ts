@@ -1243,7 +1243,7 @@ export class DataGridElView extends BaseElView {
         if (!this._grid)
             return;
         this._grid.addOnRowStateChanged(function (s, args) {
-            let self: DataGridElView = this;
+            const self: DataGridElView = this;
             if (!!self._stateProvider) {
                 args.css = self._stateProvider.getCSS(args.row.item, args.val);
             }

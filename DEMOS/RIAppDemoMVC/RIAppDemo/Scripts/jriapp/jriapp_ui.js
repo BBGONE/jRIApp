@@ -1513,8 +1513,8 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 var data = self._keyMap[item._key];
                 if (!data)
                     return;
-                var css = self._stateProvider.getCSS(item, data.op.index, parse.resolvePath(item, self.statePath));
-                data.op.className = css;
+                var path = self.statePath, val = !path ? null : parse.resolvePath(item, path);
+                data.op.className = self._stateProvider.getCSS(item, data.op.index, val);
             };
         }
         ListBox.prototype.destroy = function () {
@@ -4082,8 +4082,7 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_shared", "j
     "use strict";
     var utils = jriapp_shared_28.Utils, dom = utils.dom, doc = dom.document, parse = jriapp_shared_28.parser;
     var fn_state = function (row) {
-        var val = !row.item ? null : parse.resolvePath(row.item, row.grid.options.rowStateField);
-        var css = row.grid._getInternal().onRowStateChanged(row, val);
+        var path = row.grid.options.rowStateField, val = (!row.item || !path) ? null : parse.resolvePath(row.item, path), css = row.grid._getInternal().onRowStateChanged(row, val);
         row._setState(css);
     };
     var Row = (function (_super) {
@@ -4108,10 +4107,12 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_shared", "j
                 dom.addClass([tr], const_16.css.rowDeleted);
             }
             this._createCells();
-            if (!!this._item && !!this.isHasStateField) {
-                this._item.addOnPropertyChange(this._grid.options.rowStateField, function (s, a) {
-                    fn_state(self);
-                }, this._objId);
+            if (!!this._item) {
+                if (!!this.isHasStateField) {
+                    this._item.addOnPropertyChange(this._grid.options.rowStateField, function (s, a) {
+                        fn_state(self);
+                    }, this._objId);
+                }
                 fn_state(self);
             }
         }
