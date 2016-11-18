@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { BaseObject, Debounce, Utils } from "jriapp_shared";
+import { BaseObject, Debounce, Utils, parser } from "jriapp_shared";
 import { ICollection, ICollectionItem, ICollChangedArgs, COLL_CHANGE_TYPE, COLL_CHANGE_REASON, ITEM_STATUS,
     ICollItemArgs, ICollItemAddedArgs
 } from "jriapp_shared/collection/int";
@@ -20,10 +20,10 @@ import { RowSelectorColumn } from "../columns/rowselector";
 
 import { DataGrid } from "../datagrid"
 
-const utils = Utils, dom = utils.dom, doc = dom.document;
+const utils = Utils, dom = utils.dom, doc = dom.document, parse = parser;
 
 const fn_state = (row: Row) => {
-    const val = !row.item ? null : (<any>row.item)[row.grid.options.rowStateField];
+    const val = !row.item ? null : parse.resolvePath(row.item, row.grid.options.rowStateField);
     const css = row.grid._getInternal().onRowStateChanged(row, val);
     row._setState(css);
 };
@@ -40,6 +40,7 @@ export class Row extends BaseObject {
     private _isDeleted: boolean;
     private _isSelected: boolean;
     private _isDetached: boolean;
+    private _stateCss: string;
     
     constructor(grid: DataGrid, options: {
         tr: HTMLTableRowElement;
@@ -58,6 +59,7 @@ export class Row extends BaseObject {
         this._isDeleted = false;
         this._isSelected = false;
         this._isDetached = false;
+        this._stateCss = null;
         this._isDeleted = item._aspect.isDeleted;
         if (this._isDeleted) {
             dom.addClass([tr], css.rowDeleted);
@@ -98,11 +100,14 @@ export class Row extends BaseObject {
         return cell;
     }
     _setState(css: string) {
-        for (let i = 0, len = this._cells.length; i < len; i++) {
-            let cell = this._cells[i];
-            if (cell instanceof DataCell) {
-                (<DataCell>cell)._setState(css);
-            }
+        if (this._stateCss !== css) {
+            let arr: string[] = [];
+            if (!!this._stateCss)
+                arr.push("-" + this._stateCss);
+            this._stateCss = css;
+            if (!!this._stateCss)
+                arr.push("+" + this._stateCss);
+            dom.setClasses([this.tr], arr);
         }
     }
     _onBeginEdit() {

@@ -47,7 +47,7 @@ export { IDataGridAnimation, DefaultAnimation } from "./animation";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str,
     coreUtils = utils.core, ERROR = utils.err, sys = utils.sys,
-    dom = utils.dom, doc = dom.document, boot = bootstrap;
+    dom = utils.dom, parse = parser, doc = dom.document, boot = bootstrap;
 
 let _columnWidthInterval: any, _gridsCount: number = 0;
 let _created_grids: IIndexer<DataGrid> = { };
@@ -526,7 +526,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         };
         let options: IColumnInfo;
 
-        let temp_opts = parser.parseOptions(column_attr);
+        const temp_opts = parse.parseOptions(column_attr);
         if (temp_opts.length > 0)
             options = coreUtils.extend(defaultOp, temp_opts[0]);
         else

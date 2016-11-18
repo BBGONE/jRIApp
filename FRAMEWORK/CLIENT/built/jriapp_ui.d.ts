@@ -400,7 +400,6 @@ declare module "jriapp_ui/listbox" {
         protected _onEdit(item: ICollectionItem, isBegin: boolean, isCanceled: boolean): void;
         protected _onStatusChanged(item: ICollectionItem, oldStatus: ITEM_STATUS): void;
         protected _onCommitChanges(item: ICollectionItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS): void;
-        protected _onOptionStateChanged(data: IMappedItem): string;
         private _bindDS();
         private _unbindDS();
         private _addOption(item, first);
@@ -850,12 +849,10 @@ declare module "jriapp_ui/datagrid/cells/data" {
     import { DataColumn } from "jriapp_ui/datagrid/columns/data";
     export class DataCell extends BaseCell<DataColumn> {
         private _content;
-        private _stateCss;
         constructor(options: ICellOptions);
         protected _initContent(): void;
         _beginEdit(): void;
         _endEdit(isCanceled: boolean): void;
-        _setState(css: string): void;
         destroy(): void;
         toString(): string;
     }
@@ -938,6 +935,7 @@ declare module "jriapp_ui/datagrid/rows/row" {
         private _isDeleted;
         private _isSelected;
         private _isDetached;
+        private _stateCss;
         constructor(grid: DataGrid, options: {
             tr: HTMLTableRowElement;
             item: ICollectionItem;

@@ -12,7 +12,7 @@ import { BaseElView } from "./generic";
 
 const utils = Utils, doc = utils.dom.document, sys= utils.sys,
     checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
-    boot = bootstrap;
+    boot = bootstrap, parse = parser;
 
 export interface IOptionStateProvider {
     getCSS(item: ICollectionItem, itemIndex: number, val: any): string;
@@ -54,6 +54,7 @@ const LISTBOX_EVENTS = {
     refreshed: "refreshed"
 };
 
+
 export class ListBox extends BaseObject {
     private _$el: JQuery;
     private _objId: string;
@@ -65,7 +66,7 @@ export class ListBox extends BaseObject {
     private _savedValue: string;
     private _tempValue: any;
     private _options: IListBoxConstructorOptions;
-    private _fn_state: (item: IBaseObject, args?: any) => void;
+    private _fn_state: (item: IBaseObject) => void;
     private _textProvider: IOptionTextProvider;
     private _stateProvider: IOptionStateProvider;
 
@@ -103,12 +104,13 @@ export class ListBox extends BaseObject {
         let ds = this._options.dataSource;
         this._options.dataSource = null;
         this.dataSource = ds;
-        this._fn_state = (sender) => {
-            let item = <ICollectionItem><any>sender;
-            let data: IMappedItem = self._keyMap[item._key];
+        this._fn_state = (item: ICollectionItem) => {
+            if (!self._stateProvider)
+                return;
+            const data: IMappedItem = self._keyMap[item._key];
             if (!data)
                 return;
-            let css = self._onOptionStateChanged(data);
+            const css = self._stateProvider.getCSS(item, data.op.index, parse.resolvePath(item, self.statePath));
             data.op.className = css;
         };
     }
@@ -296,11 +298,6 @@ export class ListBox extends BaseObject {
             }
         }
     }
-    protected _onOptionStateChanged(data: IMappedItem): string {
-        if (!this._stateProvider)
-            return "";
-        return this._stateProvider.getCSS(data.item, data.op.index, parser.resolvePath(data.item, this.statePath));
-    }
     private _bindDS() {
         let self = this, ds = this.dataSource;
         if (!ds) return;
@@ -351,12 +348,16 @@ export class ListBox extends BaseObject {
                 selEl.add(oOption, firstOp);
             }
         }
-        else
+        else {
             selEl.add(oOption, null);
-        if (!!this.statePath && !!item) {
-            item.addOnPropertyChange(this.statePath, this._fn_state, this._objId, this);
-            this._fn_state(<IBaseObject>item);
         }
+        if (!!item) {
+            if (!!this.statePath) {
+                item.addOnPropertyChange(this.statePath, this._fn_state, this._objId);
+            }
+            this._fn_state(item);
+        }
+        
         return oOption;
     }
     private _mapByValue() {

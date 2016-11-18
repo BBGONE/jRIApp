@@ -12,13 +12,11 @@ const utils = Utils, dom = utils.dom, boot = bootstrap;
 
 export class DataCell extends BaseCell<DataColumn> {
     private _content: IContent;
-    private _stateCss: string;
-
+ 
     constructor(options: ICellOptions) {
         super(options);
+        const self = this;
         this._content = null;
-        this._stateCss = null;
-        let self = this;
         this._click.interval = 350;
         this._click.add(() => {
             self._onCellClicked(self.row);
@@ -70,17 +68,6 @@ export class DataCell extends BaseCell<DataColumn> {
     _endEdit(isCanceled: boolean) {
         if (this._content.isEditing) {
             this._content.isEditing = false;
-        }
-    }
-    _setState(css: string): void {
-        if (this._stateCss !== css) {
-            let arr: string[] = [];
-            if (!!this._stateCss)
-                arr.push("-" + this._stateCss);
-            this._stateCss = css;
-            if (!!this._stateCss)
-                arr.push("+" + this._stateCss);
-            dom.setClasses([this.td], arr);
         }
     }
     destroy() {
