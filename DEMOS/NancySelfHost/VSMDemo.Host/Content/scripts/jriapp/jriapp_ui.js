@@ -4838,7 +4838,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
     exports.COLUMN_TYPE = const_23.COLUMN_TYPE;
     exports.ROW_ACTION = const_23.ROW_ACTION;
     exports.DefaultAnimation = animation_2.DefaultAnimation;
-    var utils = jriapp_shared_34.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err, sys = utils.sys, dom = utils.dom, parse = jriapp_shared_34.parser, doc = dom.document, boot = bootstrap_17.bootstrap;
+    var utils = jriapp_shared_34.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err, sys = utils.sys, dom = utils.dom, parse = jriapp_shared_34.parser, doc = dom.document, win = dom.window, boot = bootstrap_17.bootstrap;
     var _columnWidthInterval, _gridsCount = 0;
     var _created_grids = {};
     function getDataGrids() {
@@ -4861,21 +4861,22 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
         return null;
     }
     exports.findDataGrid = findDataGrid;
+    function updateWidth() {
+        _checkGridWidth();
+        _columnWidthInterval = dom.window.requestAnimationFrame(updateWidth);
+    }
     function _gridCreated(grid) {
         _created_grids[grid.uniqueID] = grid;
         _gridsCount += 1;
         if (_gridsCount === 1) {
-            jquery_14.$(window).on('resize.datagrid', _checkGridWidth);
-            _columnWidthInterval = setInterval(_checkGridWidth, 400);
+            _columnWidthInterval = win.requestAnimationFrame(updateWidth);
         }
-        setTimeout(grid._getInternal().columnWidthCheck, 0);
     }
     function _gridDestroyed(grid) {
         delete _created_grids[grid.uniqueID];
         _gridsCount -= 1;
         if (_gridsCount === 0) {
-            jquery_14.$(window).off('resize.datagrid');
-            clearInterval(_columnWidthInterval);
+            win.cancelAnimationFrame(_columnWidthInterval);
         }
     }
     function _checkGridWidth() {
@@ -4939,7 +4940,6 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             this._$wrapper = null;
             this._$contaner = null;
             this._wrapTable();
-            this._colSizeDebounce = new jriapp_shared_34.Debounce();
             this._scrollDebounce = new jriapp_shared_34.Debounce();
             this._selectable = {
                 getContainerEl: function () {
@@ -5487,8 +5487,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             var self = this, headCells = this._tHeadCells, cellInfos = [];
             var cnt = headCells.length;
             for (var i = 0; i < cnt; i += 1) {
-                var th = headCells[i];
-                var attr = this._parseColumnAttr(th.getAttribute(const_21.DATA_ATTR.DATA_COLUMN), th.getAttribute(const_21.DATA_ATTR.DATA_CONTENT));
+                var th = headCells[i], attr = this._parseColumnAttr(th.getAttribute(const_21.DATA_ATTR.DATA_COLUMN), th.getAttribute(const_21.DATA_ATTR.DATA_CONTENT));
                 cellInfos.push({ th: th, colInfo: attr });
             }
             cellInfos.forEach(function (cellInfo) {
@@ -5496,6 +5495,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 if (!!col)
                     self._columns.push(col);
             });
+            self.updateColumnsSize();
         };
         DataGrid.prototype._createColumn = function (cellInfo) {
             var col;
@@ -5529,7 +5529,8 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
         DataGrid.prototype._appendItems = function (newItems) {
             if (this.getIsDestroyCalled())
                 return;
-            var self = this, item, tbody = this._tBodyEl;
+            var self = this, tbody = this._tBodyEl;
+            var item = null;
             for (var i = 0, k = newItems.length; i < k; i += 1) {
                 item = newItems[i];
                 if (!self._rowMap[item._key]) {
@@ -5537,9 +5538,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                     self._createRowForItem(tbody, item, isPrepend);
                 }
             }
-            this._colSizeDebounce.enqueue(function () {
-                self.updateColumnsSize();
-            });
+            self.updateColumnsSize();
         };
         DataGrid.prototype._refresh = function (isPageChanged) {
             var self = this, ds = this.dataSource;
@@ -5563,10 +5562,8 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 if (self.isUseScrollInto)
                     self.scrollToCurrent();
             });
-            this._colSizeDebounce.enqueue(function () {
-                self.updateColumnsSize();
-                self._updateTableDisplay();
-            });
+            self.updateColumnsSize();
+            self._updateTableDisplay();
         };
         DataGrid.prototype._createRowForItem = function (parent, item, prepend) {
             var self = this, tr = doc.createElement("tr");
@@ -5742,7 +5739,6 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             this._clearGrid();
             _gridDestroyed(this);
             boot._getInternal().untrackSelectable(this);
-            this._colSizeDebounce.destroy();
             this._scrollDebounce.destroy();
             if (!!this._details) {
                 this._details.destroy();

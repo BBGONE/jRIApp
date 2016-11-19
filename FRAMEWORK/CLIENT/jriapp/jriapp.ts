@@ -34,6 +34,6 @@ export {
 
 export { Application } from "./jriapp/app";
 
-export const VERSION = "1.0.0.3";
+export const VERSION = "1.0.0.4";
 
 Bootstrap._initFramework();

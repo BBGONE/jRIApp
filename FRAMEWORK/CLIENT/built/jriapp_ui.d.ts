@@ -1201,7 +1201,6 @@ declare module "jriapp_ui/datagrid/datagrid" {
         private _$contaner;
         private _internal;
         private _selectable;
-        private _colSizeDebounce;
         private _scrollDebounce;
         constructor(options: IDataGridConstructorOptions);
         protected _getEventNames(): string[];

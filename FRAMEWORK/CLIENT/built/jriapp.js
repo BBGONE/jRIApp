@@ -891,6 +891,21 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
         BootstrapState[BootstrapState["Destroyed"] = 5] = "Destroyed";
     })(exports.BootstrapState || (exports.BootstrapState = {}));
     var BootstrapState = exports.BootstrapState;
+    (function () {
+        var win = dom.window;
+        if (!win.requestAnimationFrame) {
+            var requestAnimationFrame_1 = win.requestAnimationFrame || win.mozRequestAnimationFrame ||
+                win.webkitRequestAnimationFrame || win.msRequestAnimationFrame || function fallbackRAF(func) {
+                return win.setTimeout(func, 40);
+            };
+            var cancelAnimationFrame_1 = win.cancelAnimationFrame || win.mozCancelAnimationFrame ||
+                win.webkitCancelAnimationFrame || win.webkitCancelRequestAnimationFrame || win.msCancelAnimationFrame || function fallbackCAF(handle) {
+                return win.clearTimeout(handle);
+            };
+            win.requestAnimationFrame = requestAnimationFrame_1;
+            win.cancelAnimationFrame = cancelAnimationFrame_1;
+        }
+    })();
     var Bootstrap = (function (_super) {
         __extends(Bootstrap, _super);
         function Bootstrap() {
@@ -3434,6 +3449,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.0.0.3";
+    exports.VERSION = "1.0.0.4";
     bootstrap_8.Bootstrap._initFramework();
 });

@@ -47,9 +47,9 @@ export { IDataGridAnimation, DefaultAnimation } from "./animation";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str,
     coreUtils = utils.core, ERROR = utils.err, sys = utils.sys,
-    dom = utils.dom, parse = parser, doc = dom.document, boot = bootstrap;
+    dom = utils.dom, parse = parser, doc = dom.document, win = dom.window, boot = bootstrap;
 
-let _columnWidthInterval: any, _gridsCount: number = 0;
+let _columnWidthInterval: number, _gridsCount: number = 0;
 let _created_grids: IIndexer<DataGrid> = { };
 
 export function getDataGrids(): DataGrid[] {
@@ -74,28 +74,30 @@ export function findDataGrid(gridName: string): DataGrid {
     return null;
 }
 
+function updateWidth() {
+    _checkGridWidth();
+    _columnWidthInterval = dom.window.requestAnimationFrame(updateWidth);
+}
+
 function _gridCreated(grid: DataGrid) {
     _created_grids[grid.uniqueID] = grid;
     _gridsCount += 1;
     if (_gridsCount === 1) {
-        $(window).on('resize.datagrid', _checkGridWidth);
-        _columnWidthInterval = setInterval(_checkGridWidth, 400);
+        _columnWidthInterval = win.requestAnimationFrame(updateWidth);
     }
-    setTimeout(grid._getInternal().columnWidthCheck, 0);
 }
 
 function _gridDestroyed(grid: DataGrid) {
     delete _created_grids[grid.uniqueID];
     _gridsCount -= 1;
     if (_gridsCount === 0) {
-        $(window).off('resize.datagrid');
-        clearInterval(_columnWidthInterval);
+        win.cancelAnimationFrame(_columnWidthInterval);
     }
 }
 
 function _checkGridWidth() {
     coreUtils.forEachProp(_created_grids, (id) => {
-        let grid = _created_grids[id];
+        const grid = _created_grids[id];
         if (grid.getIsDestroyCalled())
             return;
         grid._getInternal().columnWidthCheck();
@@ -178,7 +180,6 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     private _$contaner: JQuery;
     private _internal: IInternalDataGridMethods;
     private _selectable: ISelectable;
-    private _colSizeDebounce: Debounce;
     private _scrollDebounce: Debounce;
 
     constructor(options: IDataGridConstructorOptions) {
@@ -226,7 +227,6 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._$wrapper = null;
         this._$contaner = null;
         this._wrapTable();
-        this._colSizeDebounce = new Debounce();
         this._scrollDebounce = new Debounce();
         this._selectable = {
             getContainerEl: () => {
@@ -784,12 +784,11 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._$contaner = null;
     }
     protected _createColumns() {
-        let self = this, headCells = this._tHeadCells, cellInfos: ICellInfo[] = [];
+        const self = this, headCells = this._tHeadCells, cellInfos: ICellInfo[] = [];
         const cnt = headCells.length;
 
         for (let i = 0; i < cnt; i += 1) {
-            let th = headCells[i];
-            let attr = this._parseColumnAttr(th.getAttribute(DATA_ATTR.DATA_COLUMN), th.getAttribute(DATA_ATTR.DATA_CONTENT));
+            let th = headCells[i], attr = this._parseColumnAttr(th.getAttribute(DATA_ATTR.DATA_COLUMN), th.getAttribute(DATA_ATTR.DATA_CONTENT));
             cellInfos.push({ th: th, colInfo: attr });
         }
 
@@ -798,6 +797,8 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             if (!!col)
                 self._columns.push(col);
         });
+
+        self.updateColumnsSize();
     }
     protected _createColumn(cellInfo: ICellInfo) {
         let col: BaseColumn;
@@ -831,7 +832,8 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     protected _appendItems(newItems: ICollectionItem[]) {
         if (this.getIsDestroyCalled())
             return;
-        let self = this, item: ICollectionItem, tbody = this._tBodyEl;
+        const self = this, tbody = this._tBodyEl;
+        let item: ICollectionItem = null;
         for (let i = 0, k = newItems.length; i < k; i += 1) {
             item = newItems[i];
             if (!self._rowMap[item._key]) {
@@ -839,9 +841,8 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 self._createRowForItem(tbody, item, isPrepend);
             }
         }
-        this._colSizeDebounce.enqueue(() => {
-            self.updateColumnsSize();
-        });
+
+        self.updateColumnsSize();
     }
     protected _refresh(isPageChanged: boolean) {
         const self = this, ds = this.dataSource;
@@ -865,10 +866,9 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             if (self.isUseScrollInto)
                 self.scrollToCurrent();
         });
-        this._colSizeDebounce.enqueue(() => {
-            self.updateColumnsSize();
-            self._updateTableDisplay();
-        });
+
+        self.updateColumnsSize();
+        self._updateTableDisplay();
     }
     protected _createRowForItem(parent: Node, item: ICollectionItem, prepend?: boolean) {
         const self = this, tr = doc.createElement("tr");
@@ -1072,7 +1072,6 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._clearGrid();
         _gridDestroyed(this);
         boot._getInternal().untrackSelectable(this);
-        this._colSizeDebounce.destroy();
         this._scrollDebounce.destroy();
         if (!!this._details) {
             this._details.destroy();

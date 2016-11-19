@@ -51,6 +51,24 @@ export const enum BootstrapState {
     None = 0, Initializing = 1, Initialized = 2, Ready = 3, Error = 4, Destroyed = 5
 }
 
+(function () {
+    const win: any = dom.window;
+    if (!win.requestAnimationFrame) {
+        let requestAnimationFrame = win.requestAnimationFrame || win.mozRequestAnimationFrame ||
+            win.webkitRequestAnimationFrame || win.msRequestAnimationFrame || function fallbackRAF(func: FrameRequestCallback) {
+                return win.setTimeout(func, 40);
+            };
+
+        let cancelAnimationFrame = win.cancelAnimationFrame || win.mozCancelAnimationFrame ||
+            win.webkitCancelAnimationFrame || win.webkitCancelRequestAnimationFrame || win.msCancelAnimationFrame || function fallbackCAF(handle: number) {
+                return win.clearTimeout(handle);
+            };
+
+        win.requestAnimationFrame = requestAnimationFrame;
+        win.cancelAnimationFrame = cancelAnimationFrame;
+    }
+})();
+
 export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     public static _initFramework() {
         $(doc).ready(function ($) {
