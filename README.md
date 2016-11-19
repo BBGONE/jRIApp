@@ -6,6 +6,7 @@
 the client and the server (<i>optional and has a respective optional db addin for the client side</i>) parts. 
 The client side part was written in <b>typescript</b> language. The server side part was  written in C# (<i>but potentially can be written in any server side language</i>) 
 and the demo application was implemented using ASP.NET MVC project.
+You can watch a short video of the demo on <a href="https://youtu.be/dQyOOw2dK4w" target="_blank">YouTube</a>. 
 <br/>
 (<i>
 In order to use the Demo you need Microsoft SQL Server (Express edition will suffice) installed and Microsoft's Adventure Works (the Lite version) database is attached
@@ -106,10 +107,3 @@ The documentation explains how you can use the framework in more details.
 <p>
 LICENSE: MIT LICENSE
 </p>
-P.S. There are videos on my youtube channel (for the old version of the framework)<br/>
-You can watch an old video of the SPA demo on <a href="http://youtu.be/m2lxFWhJghA" target="_blank">YouTube SPA Demo</a>. 
-I made some improvements to the demos since that time. In addition there are more demo pages than the SPA demo in the video. 
-(<i>DataGrid Demo, Master Details Demo, Many To Many Demo, Files Explorer Demo, DataBinding Demo, Collections Demo, TreeView Demo</i>)
-So it is better to use the real demo to see how it works in real life.<br/>
-I don't want to publish online demo because it needs to pay for that on my part, and the demos use a real database instead of per session only data.
-The Demos are more real worldish than simple <b>TO DO</b> demos many framework makers publish, because i tried to test every feature in the framework using the demos, but the TO DO application is too simple for this.
