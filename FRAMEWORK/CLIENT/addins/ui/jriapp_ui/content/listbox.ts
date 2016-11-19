@@ -68,8 +68,6 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         this._listBinding = null;
         this._value = null;
         this._objId = "lku" + coreUtils.getNewID();
-    }
-    protected init() {
         if (!!this._options.initContentFn) {
             this._options.initContentFn(this);
         }
@@ -93,6 +91,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
     protected getListBoxElView(): ListBoxElView {
         if (!!this._listBoxElView)
             return this._listBoxElView;
+
         const lookUpOptions: ILookupOptions = this._options.options, objectKey = "listBoxElView";
 
         let args1: TObjNeededArgs = { objectKey: objectKey, object: null };
@@ -107,8 +106,8 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
             return this._listBoxElView;
         }
         //IF NO ELEMENT VIEW in THE CACHE - proceed creating new ElView
-        let listBoxElView = this.createListBoxElView(lookUpOptions);
-        let args2: TObjCreatedArgs = { objectKey: objectKey, object: listBoxElView, isCachedExternally: false };
+        const listBoxElView = this.createListBoxElView(lookUpOptions);
+        const args2: TObjCreatedArgs = { objectKey: objectKey, object: listBoxElView, isCachedExternally: false };
         //this allows to cache listBox externally
         this.raiseEvent(LOOKUP_EVENTS.obj_created, args2);
         this._isListBoxCachedExternally = args2.isCachedExternally;
@@ -120,19 +119,19 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         this.updateTextValue();
     }
     protected createListBoxElView(lookUpOptions: ILookupOptions): ListBoxElView {
-        let options = {
+        const options = {
             valuePath: lookUpOptions.valuePath,
             textPath: lookUpOptions.textPath,
             statePath: (!lookUpOptions.statePath) ? null : lookUpOptions.statePath,
             el: doc.createElement("select")
         }, el = options.el, dataSource = parser.resolvePath(this.app, lookUpOptions.dataSource);
         el.setAttribute("size", "1");
-        let elView = new ListBoxElView(options);
+        const elView = new ListBoxElView(options);
         elView.dataSource = dataSource;
         return elView;
     }
     protected updateTextValue() {
-        let spanView = this.getSpanView();
+        const spanView = this.getSpanView();
         spanView.value = this.getLookupText();
     }
     protected getLookupText() {
@@ -143,18 +142,13 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         if (!!this._spanView) {
             return this._spanView;
         }
-        let el = doc.createElement("span"), displayInfo = this._options.displayInfo;
+        const el = doc.createElement("span"), displayInfo = this._options.displayInfo;
         if (!!displayInfo && !!displayInfo.displayCss) {
             dom.addClass([el], displayInfo.displayCss);
         }
         let spanView = new SpanElView({ el: el });
         this._spanView = spanView;
         return this._spanView;
-    }
-    protected render() {
-        this.cleanUp();
-        this.createTargetElement();
-        this._parentEl.appendChild(this._el);
     }
     protected createTargetElement(): IElView {
         let tgt: IElView, el: HTMLElement, selectView: ListBoxElView, spanView: SpanElView;
@@ -187,8 +181,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         }
 
         if (!!this._listBoxElView && this._isListBoxCachedExternally) {
-            if (!this._listBoxElView.getIsDestroyCalled())
-                this._listBoxElView.listBox.removeOnRefreshed(this.uniqueID);
+            this._listBoxElView.listBox.removeNSHandlers(this.uniqueID);
             this._listBoxElView = null;
         }
     }
@@ -224,21 +217,27 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         };
         return this.app.bind(options);
     }
+    render() {
+        this.cleanUp();
+        this.createTargetElement();
+        this._parentEl.appendChild(this._el);
+    }
     destroy() {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
         this.cleanUp();
-        if (!!this._listBoxElView && !this._listBoxElView.getIsDestroyCalled()) {
-            this._listBoxElView.listBox.removeOnRefreshed(this.uniqueID);
-            if (!this._isListBoxCachedExternally)
+        if (!!this._listBoxElView) {
+            this._listBoxElView.listBox.removeNSHandlers(this.uniqueID);
+            if (!this._isListBoxCachedExternally && !this._listBoxElView.getIsDestroyCalled()) {
                 this._listBoxElView.destroy();
+            }
+            this._listBoxElView = null;
         }
-        this._listBoxElView = null;
         if (!!this._spanView) {
             this._spanView.destroy();
+            this._spanView = null;
         }
-        this._spanView = null;
         super.destroy();
     }
     toString() {
@@ -253,42 +252,4 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         this.updateTextValue();
     }
     get uniqueID() { return this._objId; }
-}
-
-class ContentFactory implements IContentFactory {
-    private _nextFactory: IContentFactory;
-
-    constructor(nextFactory?: IContentFactory) {
-        this._nextFactory = nextFactory;
-    }
-
-    getContentType(options: IContentOptions): IContentConstructor {
-        if (options.name === "lookup") {
-            return LookupContent;
-        }
-
-        if (!this._nextFactory) {
-            throw new Error(ERRS.ERR_BINDING_CONTENT_NOT_FOUND);
-        }
-        else {
-            return this._nextFactory.getContentType(options);
-        }
-    }
-    createContent(options: IConstructorContentOptions): IContent {
-        let contentType = this.getContentType(options);
-        return new contentType(options);
-    }
-    isExternallyCachable(contentType: IContentConstructor): boolean {
-        if (LookupContent === contentType)
-            return true;
-        if (!this._nextFactory)
-            return false;
-        return this._nextFactory.isExternallyCachable(contentType);
-    }
-}
-
-export function initContentFactory() {
-    bootstrap.contentFactory.addFactory((nextFactory?: IContentFactory) => {
-        return new ContentFactory(nextFactory);
-    });
 }

@@ -2,7 +2,7 @@
 /// <reference path="../../built/jriapp_shared.d.ts" />
 /** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { bootstrap } from "jriapp/bootstrap";
-import { initContentFactory } from "./jriapp_ui/content/all";
+import { initContentFactory } from "./jriapp_ui/content/factory";
 
 export { DIALOG_ACTION, IDialogConstructorOptions, DataEditDialog, DialogVM } from "./jriapp_ui/dialog";
 export { DynaContentElView, IDynaContentAnimation, IDynaContentOptions } from "./jriapp_ui/dynacontent";

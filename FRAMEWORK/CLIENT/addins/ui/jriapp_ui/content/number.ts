@@ -18,8 +18,7 @@ export class NumberContent extends BasicContent {
         return NumberContent.__allowedKeys;
     }
     protected getBindingOption(bindingInfo: IBindingInfo, tgt: IBaseObject, dctx: any, targetPath: string) {
-        let options = super.getBindingOption(bindingInfo, tgt, dctx, targetPath);
-        let finf = this.getFieldInfo();
+        const options = super.getBindingOption(bindingInfo, tgt, dctx, targetPath), finf = this.getFieldInfo();
         switch (finf.dataType) {
             case DATA_TYPE.Integer:
                 options.converter = this.app.getConverter("integerConverter");
@@ -32,15 +31,6 @@ export class NumberContent extends BasicContent {
                 break;
         }
         return options;
-    }
-    protected render() {
-        super.render();
-        let self = this;
-        if (self._target instanceof TextBoxElView) {
-            (<TextBoxElView>self._target).addOnKeyPress(function (sender, args) {
-                args.isCancel = !self.previewKeyPress(args.keyCode, args.value);
-            });
-        }
     }
     protected previewKeyPress(keyCode: number, value: string) {
         let ch = String.fromCharCode(keyCode), digits = "1234567890", defaults = bootstrap.defaults, notAllowedChars = "~@#$%^&*()+=_";
@@ -60,6 +50,15 @@ export class NumberContent extends BasicContent {
             return true
         else
             return digits.indexOf(ch) > -1;
+    }
+    render() {
+        super.render();
+        const self = this;
+        if (self._target instanceof TextBoxElView) {
+            (<TextBoxElView>self._target).addOnKeyPress(function (sender, args) {
+                args.isCancel = !self.previewKeyPress(args.keyCode, args.value);
+            });
+        }
     }
     toString() {
         return "NumberContent";

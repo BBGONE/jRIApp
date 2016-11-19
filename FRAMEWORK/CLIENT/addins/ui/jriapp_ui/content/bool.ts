@@ -1,9 +1,9 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    Utils
+    Utils,
 } from "jriapp_shared";
 import { BINDING_MODE } from "jriapp/const";
-import { IElView } from "jriapp/shared";
+import { IElView, IConstructorContentOptions } from "jriapp/shared";
 import { LifeTimeScope } from "jriapp/utils/lifetime";
 import { CheckBoxElView } from "../checkbox";
 
@@ -13,9 +13,10 @@ import { BasicContent } from "./basic";
 const dom = Utils.dom, doc = dom.document;
 
 export class BoolContent extends BasicContent {
-    protected init() {
+    constructor(options: IConstructorContentOptions) {
+        super(options);
         this._target = this.createTargetElement();
-        let bindingInfo = this._options.bindingInfo;
+        const bindingInfo = this._options.bindingInfo;
         if (!!bindingInfo) {
             this.updateCss();
             this._lfScope = new LifeTimeScope();
@@ -58,6 +59,10 @@ export class BoolContent extends BasicContent {
              el.disabled = true;
         }
     }
+    render() {
+        this.cleanUp();
+        this.updateCss();
+    }
     destroy() {
         if (this._isDestroyed)
             return;
@@ -71,10 +76,6 @@ export class BoolContent extends BasicContent {
             this._target = null;
         }
         super.destroy();
-    }
-    render() {
-        this.cleanUp();
-        this.updateCss();
     }
     toString() {
         return "BoolContent";

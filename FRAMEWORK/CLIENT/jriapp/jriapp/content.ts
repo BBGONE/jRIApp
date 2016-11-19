@@ -20,9 +20,6 @@ class LastFactory implements IContentFactory {
     getContentType(options: IContentOptions): IContentConstructor {
         throw new Error(ERRS.ERR_BINDING_CONTENT_NOT_FOUND);
     }
-    createContent(options: IConstructorContentOptions): IContent {
-        throw new Error(ERRS.ERR_BINDING_CONTENT_NOT_FOUND);
-    }
     isExternallyCachable(contentType: IContentConstructor): boolean {
         return false;
     }
@@ -39,9 +36,6 @@ class FactoryList implements IContentFactoryList {
     }
     getContentType(options: IContentOptions): IContentConstructor {
         return this._factory.getContentType(options);
-    }
-    createContent(options: IConstructorContentOptions): IContent {
-        return this._factory.createContent(options);
     }
     isExternallyCachable(contentType: IContentConstructor): boolean {
         return this._factory.isExternallyCachable(contentType);

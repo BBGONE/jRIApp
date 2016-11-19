@@ -226,9 +226,10 @@ export class DataForm extends BaseObject {
                 }
             }
 
-            let contentType = boot.contentFactory.getContentType(op);
-            let content = new contentType({ parentEl: el, contentOptions: op, dataContext: dctx, isEditing: isEditing });
+            const contentType = boot.contentFactory.getContentType(op);
+            const content = new contentType({ parentEl: el, contentOptions: op, dataContext: dctx, isEditing: isEditing });
             self._content.push(content);
+            content.render();
         });
 
         let promise = self.app._getInternal().bindElements(this._el, dctx, true, this.isInsideTemplate);

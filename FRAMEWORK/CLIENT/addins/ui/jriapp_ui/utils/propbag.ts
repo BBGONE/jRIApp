@@ -1,4 +1,5 @@
-﻿import {
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+import {
     BaseObject, Utils, IIndexer, IPropertyBag
 } from "jriapp_shared";
 

@@ -39,7 +39,7 @@ export class DataCell extends BaseCell<DataColumn> {
         const self = this;
         contentOptions.initContentFn = null;
         try {
-            let contentType = boot.contentFactory.getContentType(contentOptions);
+            const contentType = boot.contentFactory.getContentType(contentOptions);
             if (boot.contentFactory.isExternallyCachable(contentType)) {
                 contentOptions.initContentFn = this.column._getInitContentFn();
             }
@@ -55,6 +55,7 @@ export class DataCell extends BaseCell<DataColumn> {
                 dataContext: this.item,
                 isEditing: this.item._aspect.isEditing
             });
+            this._content.render();
         }
         finally {
             delete contentOptions.initContentFn;

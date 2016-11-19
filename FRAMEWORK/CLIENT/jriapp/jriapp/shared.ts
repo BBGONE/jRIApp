@@ -207,6 +207,7 @@ export interface IExternallyCachable {
 export interface IContent extends IBaseObject {
     isEditing: boolean;
     dataContext: any;
+    render(): void;
 }
 
 export interface IContentConstructor {
@@ -240,7 +241,6 @@ export interface IConstructorContentOptions {
 
 export interface IContentFactory {
     getContentType(options: IContentOptions): IContentConstructor;
-    createContent(options: IConstructorContentOptions): IContent;
     isExternallyCachable(contentType: IContentConstructor): boolean;
 }
 

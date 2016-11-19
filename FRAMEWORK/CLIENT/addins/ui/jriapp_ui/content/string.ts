@@ -14,22 +14,21 @@ export class StringContent extends BasicContent {
         }
         return StringContent.__allowedKeys;
     }
-    protected render() {
+    protected previewKeyPress(fieldInfo: IFieldInfo, keyCode: number, value: string) {
+        if (this._allowedKeys.indexOf(keyCode) > -1)
+            return true;
+        return !(fieldInfo.maxLength > 0 && value.length >= fieldInfo.maxLength);
+    }
+    render() {
         super.render();
-        let self = this, fieldInfo = self.getFieldInfo();
+        const self = this, fieldInfo = self.getFieldInfo();
         if (self._target instanceof TextBoxElView) {
             (<TextBoxElView>self._target).addOnKeyPress(function (sender, args) {
                 args.isCancel = !self.previewKeyPress(fieldInfo, args.keyCode, args.value);
             });
         }
     }
-    protected previewKeyPress(fieldInfo: IFieldInfo, keyCode: number, value: string) {
-        if (this._allowedKeys.indexOf(keyCode) > -1)
-            return true;
-        return !(fieldInfo.maxLength > 0 && value.length >= fieldInfo.maxLength);
-    }
     toString() {
         return "StringContent";
     }
-
 }

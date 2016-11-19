@@ -47,12 +47,9 @@ export class BasicContent extends BaseObject implements IContent {
         this._lfScope = null;
         this._target = null;
         dom.addClass([this._parentEl], css.content);
-        this.init();
-        this.render();
     }
-    protected init() { }
     protected updateCss() {
-        let displayInfo = this._options.displayInfo, el = this._parentEl, fieldInfo = this.getFieldInfo();
+        const displayInfo = this._options.displayInfo, el = this._parentEl, fieldInfo = this.getFieldInfo();
         if (this._isEditing && this.getIsCanBeEdited()) {
             if (!!displayInfo) {
                 if (!!displayInfo.editCss) {
@@ -154,10 +151,10 @@ export class BasicContent extends BaseObject implements IContent {
     protected getFieldInfo(): IFieldInfo {
         return this._options.fieldInfo;
     }
-    protected render() {
+    render() {
         try {
             this.cleanUp();
-            let bindingInfo = this._options.bindingInfo;
+            const bindingInfo = this._options.bindingInfo;
             if (!!bindingInfo) {
                 this._target = this.createTargetElement();
                 this._lfScope = new LifeTimeScope();

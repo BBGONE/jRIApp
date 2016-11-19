@@ -13,7 +13,7 @@ export class DateTimeContent extends BasicContent {
     protected getBindingOption(bindingInfo: IBindingInfo, tgt: IBaseObject, dctx: any, targetPath: string) {
         let options = super.getBindingOption(bindingInfo, tgt, dctx, targetPath);
         options.converter = this.app.getConverter("dateTimeConverter");
-        let finf = this.getFieldInfo(), defaults = bootstrap.defaults;
+        const finf = this.getFieldInfo(), defaults = bootstrap.defaults;
         switch (finf.dataType) {
             case DATA_TYPE.DateTime:
                 options.converterParam = defaults.dateTimeFormat;

@@ -288,9 +288,6 @@ define("jriapp/content", ["require", "exports", "jriapp_shared"], function (requ
         LastFactory.prototype.getContentType = function (options) {
             throw new Error(ERRS.ERR_BINDING_CONTENT_NOT_FOUND);
         };
-        LastFactory.prototype.createContent = function (options) {
-            throw new Error(ERRS.ERR_BINDING_CONTENT_NOT_FOUND);
-        };
         LastFactory.prototype.isExternallyCachable = function (contentType) {
             return false;
         };
@@ -305,9 +302,6 @@ define("jriapp/content", ["require", "exports", "jriapp_shared"], function (requ
         };
         FactoryList.prototype.getContentType = function (options) {
             return this._factory.getContentType(options);
-        };
-        FactoryList.prototype.createContent = function (options) {
-            return this._factory.createContent(options);
         };
         FactoryList.prototype.isExternallyCachable = function (contentType) {
             return this._factory.isExternallyCachable(contentType);
@@ -3449,6 +3443,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.0.0.4";
+    exports.VERSION = "1.0.5";
     bootstrap_8.Bootstrap._initFramework();
 });

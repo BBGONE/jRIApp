@@ -82,6 +82,7 @@
     <TypeScriptCompile Include="ui\jriapp_ui\content\date.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\content\datetime.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\content\all.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\content\factory.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\content\int.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\content\listbox.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\content\multyline.ts" />

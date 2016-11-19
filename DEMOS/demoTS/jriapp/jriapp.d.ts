@@ -235,6 +235,7 @@ declare module "jriapp/shared" {
     export interface IContent extends IBaseObject {
         isEditing: boolean;
         dataContext: any;
+        render(): void;
     }
     export interface IContentConstructor {
         new (options: IConstructorContentOptions): IContent;
@@ -265,7 +266,6 @@ declare module "jriapp/shared" {
     }
     export interface IContentFactory {
         getContentType(options: IContentOptions): IContentConstructor;
-        createContent(options: IConstructorContentOptions): IContent;
         isExternallyCachable(contentType: IContentConstructor): boolean;
     }
     export interface IContentFactoryList extends IContentFactory {

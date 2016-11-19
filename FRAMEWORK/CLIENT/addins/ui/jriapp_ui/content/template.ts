@@ -38,7 +38,6 @@ export class TemplateContent extends BaseObject implements IContent {
         this._templateInfo = options.contentOptions.templateInfo;
         this._template = null;
         dom.addClass([this._parentEl], css.content);
-        this.render();
     }
     private getTemplateID() {
         if (!this._templateInfo) {
@@ -58,13 +57,20 @@ export class TemplateContent extends BaseObject implements IContent {
         return id;
     }
     private createTemplate(): ITemplate {
-        let template = createTemplate(this._dataContext);
+        const template = createTemplate(this._dataContext);
         template.templateID = this._templateID;
         return template;
     }
-    protected render() {
+    protected cleanUp() {
+        if (!!this._template) {
+            this._template.destroy();
+            this._template = null;
+            this._templateID = null;
+        }
+    }
+    render() {
         try {
-            let id = this.getTemplateID();
+            const id = this.getTemplateID();
             if (this._templateID !== id) {
                 this.cleanUp();
                 this._templateID = id;
@@ -73,13 +79,6 @@ export class TemplateContent extends BaseObject implements IContent {
             }
         } catch (ex) {
             ERROR.reThrow(ex, this.handleError(ex, this));
-        }
-    }
-    protected cleanUp() {
-        if (!!this._template) {
-            this._template.destroy();
-            this._template = null;
-            this._templateID = null;
         }
     }
     destroy() {

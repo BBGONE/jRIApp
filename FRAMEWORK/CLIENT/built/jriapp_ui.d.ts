@@ -34,7 +34,6 @@ declare module "jriapp_ui/content/basic" {
         protected _lfScope: ILifeTimeScope;
         protected _target: IElView;
         constructor(options: IConstructorContentOptions);
-        protected init(): void;
         protected updateCss(): void;
         protected getIsCanBeEdited(): boolean;
         protected createTargetElement(): IElView;
@@ -47,7 +46,7 @@ declare module "jriapp_ui/content/basic" {
             options: IViewOptions;
         }): IElView;
         protected getFieldInfo(): IFieldInfo;
-        protected render(): void;
+        render(): void;
         destroy(): void;
         toString(): string;
         readonly parentEl: HTMLElement;
@@ -71,8 +70,8 @@ declare module "jriapp_ui/content/template" {
         constructor(options: IConstructorContentOptions);
         private getTemplateID();
         private createTemplate();
-        protected render(): void;
         protected cleanUp(): void;
+        render(): void;
         destroy(): void;
         toString(): string;
         readonly parentEl: HTMLElement;
@@ -254,8 +253,8 @@ declare module "jriapp_ui/content/string" {
     export class StringContent extends BasicContent {
         static __allowedKeys: number[];
         private readonly _allowedKeys;
-        protected render(): void;
         protected previewKeyPress(fieldInfo: IFieldInfo, keyCode: number, value: string): boolean;
+        render(): void;
         toString(): string;
     }
 }
@@ -285,8 +284,8 @@ declare module "jriapp_ui/content/multyline" {
         private readonly _allowedKeys;
         constructor(options: IConstructorContentOptions);
         protected createTargetElement(): IElView;
-        protected render(): void;
         protected previewKeyPress(fieldInfo: IFieldInfo, keyCode: number, value: string): boolean;
+        render(): void;
         toString(): string;
     }
 }
@@ -302,17 +301,17 @@ declare module "jriapp_ui/checkbox" {
     }
 }
 declare module "jriapp_ui/content/bool" {
-    import { IElView } from "jriapp/shared";
+    import { IElView, IConstructorContentOptions } from "jriapp/shared";
     import { CheckBoxElView } from "jriapp_ui/checkbox";
     import { BasicContent } from "jriapp_ui/content/basic";
     export class BoolContent extends BasicContent {
-        protected init(): void;
+        constructor(options: IConstructorContentOptions);
         protected cleanUp(): void;
         protected createCheckBoxView(): CheckBoxElView;
         protected createTargetElement(): IElView;
         protected updateCss(): void;
-        destroy(): void;
         render(): void;
+        destroy(): void;
         toString(): string;
     }
 }
@@ -324,8 +323,8 @@ declare module "jriapp_ui/content/number" {
         static __allowedKeys: number[];
         private readonly _allowedKeys;
         protected getBindingOption(bindingInfo: IBindingInfo, tgt: IBaseObject, dctx: any, targetPath: string): IBindingOptions;
-        protected render(): void;
         protected previewKeyPress(keyCode: number, value: string): boolean;
+        render(): void;
         toString(): string;
     }
 }
@@ -485,7 +484,6 @@ declare module "jriapp_ui/content/listbox" {
         private _value;
         private _objId;
         constructor(options: IConstructorContentOptions);
-        protected init(): void;
         protected _getEventNames(): string[];
         addOnObjectCreated(fn: (sender: any, args: TObjCreatedArgs) => void, nmspace?: string): void;
         removeOnObjectCreated(nmspace?: string): void;
@@ -497,30 +495,19 @@ declare module "jriapp_ui/content/listbox" {
         protected updateTextValue(): void;
         protected getLookupText(): string;
         protected getSpanView(): SpanElView;
-        protected render(): void;
         protected createTargetElement(): IElView;
         protected cleanUp(): void;
         protected updateBindingSource(): void;
         protected bindToValue(): IBinding;
         protected bindToList(selectView: ListBoxElView): IBinding;
+        render(): void;
         destroy(): void;
         toString(): string;
         value: any;
         readonly uniqueID: string;
     }
-    export function initContentFactory(): void;
 }
-declare module "jriapp_ui/content/all" {
-    export { css as contentCSS } from "jriapp_ui/content/int";
-    export { BasicContent } from "jriapp_ui/content/basic";
-    export { TemplateContent } from "jriapp_ui/content/template";
-    export { StringContent } from "jriapp_ui/content/string";
-    export { MultyLineContent } from "jriapp_ui/content/multyline";
-    export { BoolContent } from "jriapp_ui/content/bool";
-    export { NumberContent } from "jriapp_ui/content/number";
-    export { DateContent } from "jriapp_ui/content/date";
-    export { DateTimeContent } from "jriapp_ui/content/datetime";
-    export { LookupContent } from "jriapp_ui/content/listbox";
+declare module "jriapp_ui/content/factory" {
     export function initContentFactory(): void;
 }
 declare module "jriapp_ui/dialog" {
@@ -1739,6 +1726,18 @@ declare module "jriapp_ui/radio" {
         value: string;
         readonly name: string;
     }
+}
+declare module "jriapp_ui/content/all" {
+    export { css as contentCSS } from "jriapp_ui/content/int";
+    export { BasicContent } from "jriapp_ui/content/basic";
+    export { TemplateContent } from "jriapp_ui/content/template";
+    export { StringContent } from "jriapp_ui/content/string";
+    export { MultyLineContent } from "jriapp_ui/content/multyline";
+    export { BoolContent } from "jriapp_ui/content/bool";
+    export { NumberContent } from "jriapp_ui/content/number";
+    export { DateContent } from "jriapp_ui/content/date";
+    export { DateTimeContent } from "jriapp_ui/content/datetime";
+    export { LookupContent } from "jriapp_ui/content/listbox";
 }
 declare module "jriapp_ui" {
     export { DIALOG_ACTION, IDialogConstructorOptions, DataEditDialog, DialogVM } from "jriapp_ui/dialog";
