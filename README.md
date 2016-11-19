@@ -6,7 +6,8 @@
 the client and the server (<i>optional and has a respective optional db addin for the client side</i>) parts. 
 The client side part was written in <b>typescript</b> language. The server side part was  written in C# (<i>but potentially can be written in any server side language</i>) 
 and the demo application was implemented using ASP.NET MVC project.
-You can watch a short video of the demo on <a href="https://youtu.be/dQyOOw2dK4w" target="_blank">YouTube</a>. 
+<br/>
+You can watch a short video of the demo on <a href="https://youtu.be/dQyOOw2dK4w" target="_blank"><b>YouTube</b></a>. 
 <br/>
 (<i>
 In order to use the Demo you need Microsoft SQL Server (Express edition will suffice) installed and Microsoft's Adventure Works (the Lite version) database is attached
