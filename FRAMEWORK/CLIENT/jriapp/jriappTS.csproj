@@ -57,6 +57,7 @@
   <ItemGroup>
     <TypeScriptCompile Include="jriapp\shared.ts" />
     <TypeScriptCompile Include="jriapp\utils\jquery.ts" />
+    <TypeScriptCompile Include="jriapp\utils\parser.ts" />
     <TypeScriptCompile Include="jriapp\utils\viewchecks.ts" />
     <TypeScriptCompile Include="jriapp\app.ts" />
     <TypeScriptCompile Include="jriapp.ts" />

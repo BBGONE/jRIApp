@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
     IBaseObject, IIndexer, IErrorNotification, IValidationInfo, LocaleERRS,
-    BaseObject, parser, Utils
+    BaseObject, Utils
 } from "jriapp_shared";
 import { BINDING_MODE, BindTo } from "./const";
 import {
@@ -9,12 +9,13 @@ import {
     IBinding, IConverter, IApplication, IElView
 } from "./shared";
 import { ViewChecks } from "./utils/viewchecks";
+import { Parser } from "./utils/parser";
 import { baseConverter } from "./converter";
 import { bootstrap } from "./bootstrap";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
     sys = utils.sys, debug = utils.debug, log = utils.log,
-    parse = parser, boot = bootstrap, ERRS = LocaleERRS, viewChecks = ViewChecks;
+    parser = Parser, boot = bootstrap, ERRS = LocaleERRS, viewChecks = ViewChecks;
 
 sys.isBinding = (obj: any) => {
     return (!!obj && obj instanceof Binding);
@@ -135,7 +136,7 @@ export function getBindingOptions(
                 bindingOpts.target = defaultTarget;
             else {
                 //if no fixed target, then target evaluation starts from this app
-                bindingOpts.target = parse.resolveBindingSource(app, parse.getPathParts(fixedTarget));
+                bindingOpts.target = parser.resolveSource(app, sys.getPathParts(fixedTarget));
             }
         }
         else {
@@ -155,7 +156,7 @@ export function getBindingOptions(
             }
             else {
                 //source evaluation starts from this app
-                bindingOpts.source = parse.resolveBindingSource(app, parse.getPathParts(fixedSource));
+                bindingOpts.source = parser.resolveSource(app, sys.getPathParts(fixedSource));
             }
         }
         else {
@@ -221,8 +222,8 @@ export class Binding extends BaseObject implements IBinding {
         this._mode = opts.mode;
         this._converter = !opts.converter ? null : opts.converter;
         this._converterParam = opts.converterParam;
-        this._srcPath = parse.getPathParts(opts.sourcePath);
-        this._tgtPath = parse.getPathParts(opts.targetPath);
+        this._srcPath = sys.getPathParts(opts.sourcePath);
+        this._tgtPath = sys.getPathParts(opts.targetPath);
         if (this._tgtPath.length < 1)
             throw new Error(strUtils.format(ERRS.ERR_BIND_TGTPATH_INVALID, opts.targetPath));
         this._srcFixed = (!!opts.isSourceFixed);
@@ -310,7 +311,7 @@ export class Binding extends BaseObject implements IBinding {
     }
     private _getTgtChangedFn(self: Binding, obj: any, prop: string, restPath: string[], lvl: number) {
         let fn = function (sender: any, data: any) {
-            let val = parse.resolveProp(obj, prop);
+            let val = sys.getProp(obj, prop);
             if (restPath.length > 0) {
                 self._setPathItem(null, BindTo.Target, lvl, restPath);
             }
@@ -322,7 +323,7 @@ export class Binding extends BaseObject implements IBinding {
     }
     private _getSrcChangedFn(self: Binding, obj: any, prop: string, restPath: string[], lvl: number) {
         let fn = function (sender: any, data: any) {
-            let val = parse.resolveProp(obj, prop);
+            let val = sys.getProp(obj, prop);
             if (restPath.length > 0) {
                 self._setPathItem(null, BindTo.Source, lvl, restPath);
             }
@@ -366,7 +367,7 @@ export class Binding extends BaseObject implements IBinding {
             }
 
             if (!!obj) {
-                nextObj = parse.resolveProp(obj, path[0]);
+                nextObj = sys.getProp(obj, path[0]);
                 if (!!nextObj) {
                     self._parseSrc2(nextObj, path.slice(1), lvl + 1);
                 }
@@ -438,7 +439,7 @@ export class Binding extends BaseObject implements IBinding {
                     self._objId);
             }
             if (!!obj) {
-                nextObj = parse.resolveProp(obj, path[0]);
+                nextObj = sys.getProp(obj, path[0]);
                 if (!!nextObj) {
                     self._parseTgt2(nextObj, path.slice(1), lvl + 1);
                 }
@@ -664,7 +665,7 @@ export class Binding extends BaseObject implements IBinding {
             res = this._srcEnd;
         if (!!this._srcEnd) {
             let prop = this._srcPath[this._srcPath.length - 1];
-            res = parse.resolveProp(this._srcEnd, prop);
+            res = sys.getProp(this._srcEnd, prop);
         }
         return res;
     }
@@ -672,13 +673,13 @@ export class Binding extends BaseObject implements IBinding {
         if (this._srcPath.length === 0 || !this._srcEnd || v === checks.undefined)
             return;
         const prop = this._srcPath[this._srcPath.length - 1];
-        parse.setPropertyValue(this._srcEnd, prop, v);
+        sys.setProp(this._srcEnd, prop, v);
     }
     get targetValue() {
         let res: any = null;
         if (!!this._tgtEnd) {
             let prop = this._tgtPath[this._tgtPath.length - 1];
-            res = parse.resolveProp(this._tgtEnd, prop);
+            res = sys.getProp(this._tgtEnd, prop);
         }
         return res;
     }
@@ -686,7 +687,7 @@ export class Binding extends BaseObject implements IBinding {
         if (this._tgtPath.length === 0 || !this._tgtEnd || v === checks.undefined)
             return;
         const prop = this._tgtPath[this._tgtPath.length - 1];
-        parse.setPropertyValue(this._tgtEnd, prop, v);
+        sys.setProp(this._tgtEnd, prop, v);
     }
     get mode() { return this._mode; }
     get converter() { return this._converter; }

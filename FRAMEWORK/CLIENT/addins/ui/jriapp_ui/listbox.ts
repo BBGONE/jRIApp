@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    Utils, BaseObject, IBaseObject, LocaleERRS as ERRS, parser, TEventHandler
+    Utils, BaseObject, IBaseObject, LocaleERRS as ERRS, TEventHandler
 } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
 import {
@@ -12,7 +12,7 @@ import { BaseElView } from "./generic";
 
 const utils = Utils, doc = utils.dom.document, sys= utils.sys,
     checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
-    boot = bootstrap, parse = parser;
+    boot = bootstrap;
 
 export interface IOptionStateProvider {
     getCSS(item: ICollectionItem, itemIndex: number, val: any): string;
@@ -110,7 +110,7 @@ export class ListBox extends BaseObject {
             const data: IMappedItem = self._keyMap[item._key];
             if (!data)
                 return;
-            const path = self.statePath, val = !path? null : parse.resolvePath(item, path);
+            const path = self.statePath, val = !path? null : sys.resolvePath(item, path);
             data.op.className = self._stateProvider.getCSS(item, data.op.index, val);
         };
     }
@@ -167,7 +167,7 @@ export class ListBox extends BaseObject {
         if (!item)
             return null;
         if (!!this._options.valuePath) {
-            return parser.resolvePath(item, this._options.valuePath);
+            return sys.resolvePath(item, this._options.valuePath);
         }
         else
             return checks.undefined;
@@ -178,7 +178,7 @@ export class ListBox extends BaseObject {
             return res;
 
         if (!!this._options.textPath) {
-            let t = parser.resolvePath(item, this._options.textPath);
+            let t = sys.resolvePath(item, this._options.textPath);
             if (checks.isNt(t))
                 return "";
             res = "" + t;

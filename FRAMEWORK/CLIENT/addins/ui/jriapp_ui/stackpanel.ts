@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { Utils, BaseObject, IBaseObject, LocaleERRS as ERRS, parser, TEventHandler } from "jriapp_shared";
+import { Utils, BaseObject, IBaseObject, LocaleERRS as ERRS, TEventHandler } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
 import {DATA_ATTR, KEYS } from "jriapp/const";
 import {

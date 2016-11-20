@@ -244,7 +244,7 @@ define("jriapp_shared/utils/arrhelper", ["require", "exports"], function (requir
 });
 define("jriapp_shared/utils/strutils", ["require", "exports"], function (require, exports) {
     "use strict";
-    var undefined = void (0);
+    var undefined = void (0), trimQuotsRX = /^(['"])+|(['"])+$/g, trimBracketsRX = /^(\[)+|(\])+$/g;
     var StringUtils = (function () {
         function StringUtils() {
         }
@@ -377,6 +377,12 @@ define("jriapp_shared/utils/strutils", ["require", "exports"], function (require
             return val.length >= length
                 ? val
                 : (new Array(Math.ceil((length - val.length) / str.length) + 1).join(str)).substr(0, (length - val.length)) + val;
+        };
+        StringUtils.trimQuotes = function (val) {
+            return StringUtils.trim(val.replace(trimQuotsRX, ""));
+        };
+        StringUtils.trimBrackets = function (val) {
+            return StringUtils.trim(val.replace(trimBracketsRX, ""));
         };
         StringUtils.ERR_STRING_FORMAT_INVALID = "String format has invalid expression value: ";
         return StringUtils;
@@ -785,10 +791,10 @@ define("jriapp_shared/lang", ["require", "exports", "jriapp_shared/utils/coreuti
     exports.ERRS = _ERRS;
     exports.STRS = _STRS;
 });
-define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/utils/checks"], function (require, exports, checks_2) {
+define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/utils/checks", "jriapp_shared/utils/strutils"], function (require, exports, checks_2, strUtils_1) {
     "use strict";
-    var checks = checks_2.Checks;
-    var PROP_BAG = "IPBag";
+    var checks = checks_2.Checks, strUtils = strUtils_1.StringUtils;
+    var PROP_BAG = "IPBag", INDEXED_PROP_RX = /(^\w+)\s*\[\s*['"]?\s*([^'"]+)\s*['",]?\s*\]/i;
     var SysUtils = (function () {
         function SysUtils() {
         }
@@ -842,6 +848,76 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/uti
             return null;
         };
         SysUtils.PROP_BAG_NAME = function () { return PROP_BAG; };
+        SysUtils.getPathParts = function (path) {
+            var parts = (!path) ? [] : path.split("."), parts2 = [];
+            parts.forEach(function (part) {
+                var obj, index;
+                var matches = part.match(INDEXED_PROP_RX);
+                if (!!matches) {
+                    obj = matches[1];
+                    index = matches[2];
+                    parts2.push(obj);
+                    parts2.push("[" + index + "]");
+                }
+                else
+                    parts2.push(part);
+            });
+            return parts2;
+        };
+        SysUtils.getProp = function (obj, prop) {
+            var self = SysUtils;
+            if (!prop)
+                return obj;
+            if (self.isBaseObj(obj) && obj.getIsDestroyCalled())
+                return checks.undefined;
+            if (strUtils.startsWith(prop, "[")) {
+                prop = strUtils.trimQuotes(strUtils.trimBrackets(prop));
+                if (self.isCollection(obj)) {
+                    return self.getItemByProp(obj, prop);
+                }
+                else if (checks.isArray(obj)) {
+                    return obj[parseInt(prop, 10)];
+                }
+            }
+            if (self.isPropBag(obj)) {
+                return obj.getProp(prop);
+            }
+            else {
+                return obj[prop];
+            }
+        };
+        SysUtils.resolvePath = function (obj, path) {
+            var self = SysUtils;
+            if (!path)
+                return obj;
+            var parts = self.getPathParts(path), res = obj, len = parts.length - 1;
+            for (var i = 0; i < len; i += 1) {
+                res = self.getProp(res, parts[i]);
+                if (!res)
+                    return checks.undefined;
+            }
+            return self.getProp(res, parts[len]);
+        };
+        SysUtils.setProp = function (obj, prop, val) {
+            var self = SysUtils;
+            if (!prop)
+                throw new Error("Invalid operation: Empty Property name");
+            if (self.isBaseObj(obj) && obj.getIsDestroyCalled())
+                return;
+            if (strUtils.startsWith(prop, "[")) {
+                prop = strUtils.trimQuotes(strUtils.trimBrackets(prop));
+                if (checks.isArray(obj)) {
+                    obj[parseInt(prop, 10)] = val;
+                    return;
+                }
+            }
+            if (self.isPropBag(obj)) {
+                obj.setProp(prop, val);
+            }
+            else {
+                obj[prop] = val;
+            }
+        };
         SysUtils.isBaseObj = function (obj) { return false; };
         SysUtils.isBinding = function (obj) { return false; };
         SysUtils.isPropBag = function (obj) {
@@ -1092,13 +1168,13 @@ define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/
     }());
     exports.EventHelper = EventHelper;
 });
-define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/strutils", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/error", "jriapp_shared/utils/debug", "jriapp_shared/utils/eventhelper"], function (require, exports, lang_2, sysutils_1, checks_4, strUtils_1, coreutils_2, error_1, debug_2, eventhelper_1) {
+define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/strutils", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/error", "jriapp_shared/utils/debug", "jriapp_shared/utils/eventhelper"], function (require, exports, lang_2, sysutils_1, checks_4, strUtils_2, coreutils_2, error_1, debug_2, eventhelper_1) {
     "use strict";
     var OBJ_EVENTS = {
         error: "error",
         destroyed: "destroyed"
     };
-    var checks = checks_4.Checks, strUtils = strUtils_1.StringUtils, coreUtils = coreutils_2.CoreUtils, evHelper = eventhelper_1.EventHelper, debug = debug_2.DEBUG, sys = sysutils_1.SysUtils;
+    var checks = checks_4.Checks, strUtils = strUtils_2.StringUtils, coreUtils = coreutils_2.CoreUtils, evHelper = eventhelper_1.EventHelper, debug = debug_2.DEBUG, sys = sysutils_1.SysUtils;
     sys.isBaseObj = function (obj) {
         return (!!obj && obj instanceof BaseObject);
     };
@@ -1824,9 +1900,9 @@ define("jriapp_shared/utils/async", ["require", "exports", "jriapp_shared/utils/
     }());
     exports.AsyncUtils = AsyncUtils;
 });
-define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/shared", "jriapp_shared/utils/strutils", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/async"], function (require, exports, shared_4, strUtils_2, coreutils_4, async_1) {
+define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/shared", "jriapp_shared/utils/strutils", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/async"], function (require, exports, shared_4, strUtils_3, coreutils_4, async_1) {
     "use strict";
-    var coreUtils = coreutils_4.CoreUtils, strUtils = strUtils_2.StringUtils, _async = async_1.AsyncUtils;
+    var coreUtils = coreutils_4.CoreUtils, strUtils = strUtils_3.StringUtils, _async = async_1.AsyncUtils;
     var HttpUtils = (function () {
         function HttpUtils() {
         }
@@ -2072,252 +2148,7 @@ define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/
     }());
     exports.Utils = Utils;
 });
-define("jriapp_shared/utils/parser", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/checks", "jriapp_shared/utils/strutils", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/sysutils"], function (require, exports, lang_3, checks_8, strUtils_3, coreutils_6, sysutils_3) {
-    "use strict";
-    var checks = checks_8.Checks, strUtils = strUtils_3.StringUtils, coreUtils = coreutils_6.CoreUtils, sys = sysutils_3.SysUtils;
-    var __trimOuterBracesRX = /^([{]){0,1}|([}]){0,1}$/g;
-    var __trimQuotsRX = /^(['"])+|(['"])+$/g;
-    var __trimBracketsRX = /^(\[)+|(\])+$/g;
-    var __indexedPropRX = /(^\w+)\s*\[\s*['"]?\s*([^'"]+)\s*['",]?\s*\]/i;
-    var __valueDelimeter1 = ":";
-    var __valueDelimeter2 = "=";
-    var __keyValDelimeter = ",";
-    function trimOuterBraces(val) {
-        return strUtils.trim(val.replace(__trimOuterBracesRX, ""));
-    }
-    function trimQuotes(val) {
-        return strUtils.trim(val.replace(__trimQuotsRX, ""));
-    }
-    function trimBrackets(val) {
-        return strUtils.trim(val.replace(__trimBracketsRX, ""));
-    }
-    function isInsideBraces(str) {
-        return (strUtils.startsWith(str, "{") && strUtils.endsWith(str, "}"));
-    }
-    var Parser = (function () {
-        function Parser() {
-        }
-        Parser.prototype._getKeyVals = function (val) {
-            var i, ch, literal, parts = [], kv = { key: "", val: "" }, isKey = true, vd1 = __valueDelimeter1, vd2 = __valueDelimeter2, kvd = __keyValDelimeter;
-            var addNewKeyValPair = function (kv) {
-                if (kv.val) {
-                    if (checks.isNumeric(kv.val)) {
-                        kv.val = Number(kv.val);
-                    }
-                    else if (checks.isBoolString(kv.val)) {
-                        kv.val = coreUtils.parseBool(kv.val);
-                    }
-                }
-                parts.push(kv);
-            };
-            var checkTokens = function (kv) {
-                if (kv.val === "" && strUtils.startsWith(kv.key, "this.")) {
-                    kv.val = kv.key.substr(5);
-                    kv.key = "targetPath";
-                }
-            };
-            for (i = 0; i < val.length; i += 1) {
-                ch = val.charAt(i);
-                if (ch === "'" || ch === '"') {
-                    if (!literal)
-                        literal = ch;
-                    else if (literal === ch)
-                        literal = null;
-                }
-                if (!literal && ch === "{" && !isKey) {
-                    var bracePart = val.substr(i);
-                    var braceParts = this.getBraceParts(bracePart, true);
-                    if (braceParts.length > 0) {
-                        bracePart = braceParts[0];
-                        kv.val += bracePart;
-                        i += bracePart.length - 1;
-                    }
-                    else {
-                        throw new Error(strUtils.format(lang_3.ERRS.ERR_EXPR_BRACES_INVALID, bracePart));
-                    }
-                    continue;
-                }
-                if (!literal && ch === kvd) {
-                    if (!!kv.key) {
-                        addNewKeyValPair(kv);
-                        kv = { key: "", val: "" };
-                        isKey = true;
-                    }
-                }
-                else if (!literal && (ch === vd1 || ch === vd2)) {
-                    isKey = false;
-                }
-                else {
-                    if (isKey)
-                        kv.key += ch;
-                    else
-                        kv.val += ch;
-                }
-            }
-            if (!!kv.key) {
-                addNewKeyValPair(kv);
-            }
-            parts.forEach(function (kv) {
-                kv.key = strUtils.trim(kv.key);
-                if (checks.isString(kv.val))
-                    kv.val = strUtils.trim(kv.val);
-                checkTokens(kv);
-            });
-            parts = parts.filter(function (kv) {
-                return kv.val !== "";
-            });
-            return parts;
-        };
-        Parser.prototype.getPathParts = function (path) {
-            var self = this, parts = (!path) ? [] : path.split("."), parts2 = [];
-            parts.forEach(function (part) {
-                var matches, obj, index;
-                matches = part.match(__indexedPropRX);
-                if (!!matches) {
-                    obj = matches[1];
-                    index = matches[2];
-                    parts2.push(obj);
-                    parts2.push("[" + index + "]");
-                }
-                else
-                    parts2.push(part);
-            });
-            return parts2;
-        };
-        Parser.prototype.resolveProp = function (obj, prop) {
-            if (!prop)
-                return obj;
-            if (sys.isBaseObj(obj) && obj.getIsDestroyCalled())
-                return checks.undefined;
-            if (strUtils.startsWith(prop, "[")) {
-                prop = trimQuotes(trimBrackets(prop));
-                if (sys.isCollection(obj)) {
-                    return sys.getItemByProp(obj, prop);
-                }
-                else if (checks.isArray(obj)) {
-                    return obj[parseInt(prop, 10)];
-                }
-            }
-            if (sys.isPropBag(obj)) {
-                return obj.getProp(prop);
-            }
-            else {
-                return obj[prop];
-            }
-        };
-        Parser.prototype.setPropertyValue = function (obj, prop, val) {
-            if (!prop)
-                throw new Error("Invalid operation: Empty Property name");
-            if (sys.isBaseObj(obj) && obj.getIsDestroyCalled())
-                return;
-            if (strUtils.startsWith(prop, "[")) {
-                prop = trimQuotes(trimBrackets(prop));
-                if (checks.isArray(obj)) {
-                    obj[parseInt(prop, 10)] = val;
-                    return;
-                }
-            }
-            if (sys.isPropBag(obj)) {
-                obj.setProp(prop, val);
-            }
-            else {
-                obj[prop] = val;
-            }
-        };
-        Parser.prototype.resolveBindingSource = function (root, srcParts) {
-            if (!root)
-                return checks.undefined;
-            if (srcParts.length === 0) {
-                return root;
-            }
-            if (srcParts.length > 0) {
-                return this.resolveBindingSource(this.resolveProp(root, srcParts[0]), srcParts.slice(1));
-            }
-            throw new Error("Invalid operation");
-        };
-        Parser.prototype.resolvePath = function (obj, path) {
-            if (!path)
-                return obj;
-            var parts = this.getPathParts(path), res = obj, len = parts.length - 1;
-            for (var i = 0; i < len; i += 1) {
-                res = this.resolveProp(res, parts[i]);
-                if (!res)
-                    return checks.undefined;
-            }
-            return this.resolveProp(res, parts[len]);
-        };
-        Parser.prototype.getBraceParts = function (val, firstOnly) {
-            var i, s = "", ch, literal, cnt = 0, parts = [];
-            for (i = 0; i < val.length; i += 1) {
-                ch = val.charAt(i);
-                if (ch === "'" || ch === '"') {
-                    if (!literal)
-                        literal = ch;
-                    else if (literal === ch)
-                        literal = null;
-                }
-                if (!literal && ch === "{") {
-                    cnt += 1;
-                    s += ch;
-                }
-                else if (!literal && ch === "}") {
-                    cnt -= 1;
-                    s += ch;
-                    if (cnt === 0) {
-                        parts.push(s);
-                        s = "";
-                        if (firstOnly)
-                            return parts;
-                    }
-                }
-                else {
-                    if (cnt > 0) {
-                        s += ch;
-                    }
-                }
-            }
-            return parts;
-        };
-        Parser.prototype.parseOption = function (part) {
-            var res = {}, self = this;
-            part = strUtils.trim(part);
-            if (isInsideBraces(part))
-                part = trimOuterBraces(part);
-            var kvals = self._getKeyVals(part);
-            kvals.forEach(function (kv) {
-                var isString = checks.isString(kv.val);
-                if (isString && isInsideBraces(kv.val))
-                    res[kv.key] = self.parseOption(kv.val);
-                else {
-                    if (isString)
-                        res[kv.key] = trimQuotes(kv.val);
-                    else
-                        res[kv.key] = kv.val;
-                }
-            });
-            return res;
-        };
-        Parser.prototype.parseOptions = function (str) {
-            var res = [], self = this;
-            str = strUtils.trim(str);
-            var parts = [str];
-            if (isInsideBraces(str)) {
-                parts = self.getBraceParts(str, false);
-            }
-            parts.forEach(function (part) {
-                res.push(self.parseOption(part));
-            });
-            return res;
-        };
-        Parser.prototype.toString = function () {
-            return "Parser";
-        };
-        return Parser;
-    }());
-    exports.Parser = Parser;
-    exports.parser = new Parser();
-});
-define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang"], function (require, exports, utils_1, lang_4) {
+define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang"], function (require, exports, utils_1, lang_3) {
     "use strict";
     var utils = utils_1.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
     function pad(num) {
@@ -2353,7 +2184,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
                     dt.setMinutes(dt.getMinutes() - clientTZ);
                     break;
                 default:
-                    throw new Error(strUtils.format(lang_4.ERRS.ERR_PARAM_INVALID, "dtcnv", dtcnv));
+                    throw new Error(strUtils.format(lang_3.ERRS.ERR_PARAM_INVALID, "dtcnv", dtcnv));
             }
             return dt;
         },
@@ -2361,7 +2192,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
             if (dt === null)
                 return null;
             if (!checks.isDate(dt))
-                throw new Error(strUtils.format(lang_4.ERRS.ERR_PARAM_INVALID, "dt", dt));
+                throw new Error(strUtils.format(lang_3.ERRS.ERR_PARAM_INVALID, "dt", dt));
             var clientTZ = coreUtils.get_timeZoneOffset();
             switch (dtcnv) {
                 case 0:
@@ -2374,7 +2205,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
                     dt.setMinutes(dt.getMinutes() + clientTZ);
                     break;
                 default:
-                    throw new Error(strUtils.format(lang_4.ERRS.ERR_PARAM_INVALID, "dtcnv", dtcnv));
+                    throw new Error(strUtils.format(lang_3.ERRS.ERR_PARAM_INVALID, "dtcnv", dtcnv));
             }
             return dateToString(dt);
         },
@@ -2450,10 +2281,10 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
                     }
                     break;
                 default:
-                    throw new Error(strUtils.format(lang_4.ERRS.ERR_PARAM_INVALID, "dataType", dataType));
+                    throw new Error(strUtils.format(lang_3.ERRS.ERR_PARAM_INVALID, "dataType", dataType));
             }
             if (!isOK)
-                throw new Error(strUtils.format(lang_4.ERRS.ERR_FIELD_WRONG_TYPE, v, dataType));
+                throw new Error(strUtils.format(lang_3.ERRS.ERR_FIELD_WRONG_TYPE, v, dataType));
             return res;
         },
         parseValue: function (v, dataType, dtcnv, serverTZ) {
@@ -2487,7 +2318,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
                     res = JSON.parse(v);
                     break;
                 default:
-                    throw new Error(strUtils.format(lang_4.ERRS.ERR_PARAM_INVALID, "dataType", dataType));
+                    throw new Error(strUtils.format(lang_3.ERRS.ERR_PARAM_INVALID, "dataType", dataType));
             }
             return res;
         }
@@ -2495,7 +2326,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
     function fn_getPropertyByName(name, props) {
         var arrProps = props.filter(function (f) { return f.fieldName === name; });
         if (!arrProps || arrProps.length !== 1)
-            throw new Error(strUtils.format(lang_4.ERRS.ERR_ASSERTION_FAILED, "arrProps.length === 1"));
+            throw new Error(strUtils.format(lang_3.ERRS.ERR_ASSERTION_FAILED, "arrProps.length === 1"));
         return arrProps[0];
     }
     exports.fn_getPropertyByName = fn_getPropertyByName;
@@ -2530,7 +2361,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
     }
     exports.fn_traverseFields = fn_traverseFields;
 });
-define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_shared/shared", "jriapp_shared/lang", "jriapp_shared/utils/utils"], function (require, exports, shared_5, lang_5, utils_2) {
+define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_shared/shared", "jriapp_shared/lang", "jriapp_shared/utils/utils"], function (require, exports, shared_5, lang_4, utils_2) {
     "use strict";
     var utils = utils_2.Utils, sys = utils.sys;
     sys.isValidationError = function (obj) {
@@ -2539,12 +2370,12 @@ define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_sha
     var ValidationError = (function (_super) {
         __extends(ValidationError, _super);
         function ValidationError(errorInfo, item) {
-            var message = lang_5.ERRS.ERR_VALIDATION + "\r\n", i = 0;
+            var message = lang_4.ERRS.ERR_VALIDATION + "\r\n", i = 0;
             errorInfo.forEach(function (err) {
                 if (i > 0)
                     message = message + "\r\n";
                 if (!!err.fieldName)
-                    message = message + " " + lang_5.STRS.TEXT.txtField + ": " + err.fieldName + " -> " + err.errors.join(", ");
+                    message = message + " " + lang_4.STRS.TEXT.txtField + ": " + err.fieldName + " -> " + err.errors.join(", ");
                 else
                     message = message + err.errors.join(", ");
                 i += 1;
@@ -2582,12 +2413,12 @@ define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_sha
             var rangeParts = range.split(",");
             if (!!rangeParts[0]) {
                 if (num < parseFloat(rangeParts[0])) {
-                    throw new Error(utils.str.format(lang_5.ERRS.ERR_FIELD_RANGE, num, range));
+                    throw new Error(utils.str.format(lang_4.ERRS.ERR_FIELD_RANGE, num, range));
                 }
             }
             if (!!rangeParts[1]) {
                 if (num > parseFloat(rangeParts[1])) {
-                    throw new Error(utils.str.format(lang_5.ERRS.ERR_FIELD_RANGE, num, range));
+                    throw new Error(utils.str.format(lang_4.ERRS.ERR_FIELD_RANGE, num, range));
                 }
             }
         };
@@ -2595,12 +2426,12 @@ define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_sha
             var rangeParts = range.split(",");
             if (!!rangeParts[0]) {
                 if (dt < Validations._dtRangeToDate(rangeParts[0])) {
-                    throw new Error(utils.str.format(lang_5.ERRS.ERR_FIELD_RANGE, dt, range));
+                    throw new Error(utils.str.format(lang_4.ERRS.ERR_FIELD_RANGE, dt, range));
                 }
             }
             if (!!rangeParts[1]) {
                 if (dt > Validations._dtRangeToDate(rangeParts[1])) {
-                    throw new Error(utils.str.format(lang_5.ERRS.ERR_FIELD_RANGE, dt, range));
+                    throw new Error(utils.str.format(lang_4.ERRS.ERR_FIELD_RANGE, dt, range));
                 }
             }
         };
@@ -2608,9 +2439,9 @@ define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_sha
     }());
     exports.Validations = Validations;
 });
-define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/utils", "jriapp_shared/utils/parser", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/collection/validation"], function (require, exports, object_2, lang_6, waitqueue_1, utils_3, parser_1, int_1, utils_4, validation_1) {
+define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/utils", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/collection/validation"], function (require, exports, object_2, lang_5, waitqueue_1, utils_3, int_1, utils_4, validation_1) {
     "use strict";
-    var utils = utils_3.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, parse = parser_1.parser, sys = utils.sys;
+    var utils = utils_3.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, sys = utils.sys;
     sys.isCollection = function (obj) { return (!!obj && obj instanceof BaseCollection); };
     var COLL_EVENTS = {
         begin_edit: "begin_edit",
@@ -2898,7 +2729,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         };
         BaseCollection.prototype._attach = function (item, itemPos) {
             if (!!this._itemsByKey[item._key]) {
-                throw new Error(lang_6.ERRS.ERR_ITEM_IS_ATTACHED);
+                throw new Error(lang_5.ERRS.ERR_ITEM_IS_ATTACHED);
             }
             try {
                 this.endEdit();
@@ -2961,15 +2792,15 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 return;
             }
             if (!v._key)
-                throw new Error(lang_6.ERRS.ERR_ITEM_IS_DETACHED);
+                throw new Error(lang_5.ERRS.ERR_ITEM_IS_DETACHED);
             var oldItem, pos, item = self.getItemByKey(v._key);
             if (!item) {
-                throw new Error(lang_6.ERRS.ERR_ITEM_IS_NOTFOUND);
+                throw new Error(lang_5.ERRS.ERR_ITEM_IS_NOTFOUND);
             }
             oldItem = self.getItemByPos(oldPos);
             pos = self._items.indexOf(v);
             if (pos < 0) {
-                throw new Error(lang_6.ERRS.ERR_ITEM_IS_NOTFOUND);
+                throw new Error(lang_5.ERRS.ERR_ITEM_IS_NOTFOUND);
             }
             if (oldPos !== pos || oldItem !== v) {
                 self._onCurrentChanging(v);
@@ -2985,7 +2816,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         };
         BaseCollection.prototype._isHasProp = function (prop) {
             if (strUtils.startsWith(prop, "[")) {
-                var res = parse.resolveProp(this, prop);
+                var res = sys.getProp(this, prop);
                 return !checks.isUndefined(res);
             }
             return _super.prototype._isHasProp.call(this, prop);
@@ -3139,8 +2970,8 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 var res = 0, i, len, af, bf, fieldName;
                 for (i = 0, len = fieldNames.length; i < len; i += 1) {
                     fieldName = fieldNames[i];
-                    af = parse.resolvePath(a, fieldName);
-                    bf = parse.resolvePath(b, fieldName);
+                    af = sys.resolvePath(a, fieldName);
+                    bf = sys.resolvePath(b, fieldName);
                     if (af === checks.undefined)
                         af = null;
                     if (bf === checks.undefined)
@@ -3174,7 +3005,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 }
                 return fld;
             }
-            throw new Error(strUtils.format(lang_6.ERRS.ERR_PARAM_INVALID, "fieldName", fieldName));
+            throw new Error(strUtils.format(lang_5.ERRS.ERR_PARAM_INVALID, "fieldName", fieldName));
         };
         BaseCollection.prototype.getFieldNames = function () {
             return this.getFieldInfos().map(function (f) {
@@ -3231,7 +3062,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         };
         BaseCollection.prototype.getItemByKey = function (key) {
             if (!key)
-                throw new Error(lang_6.ERRS.ERR_KEY_IS_EMPTY);
+                throw new Error(lang_5.ERRS.ERR_KEY_IS_EMPTY);
             return this._itemsByKey["" + key];
         };
         BaseCollection.prototype.findByPK = function () {
@@ -3354,7 +3185,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             try {
                 var oldPos = utils.arr.remove(this._items, item), key = item._key;
                 if (oldPos < 0) {
-                    throw new Error(lang_6.ERRS.ERR_ITEM_IS_NOTFOUND);
+                    throw new Error(lang_5.ERRS.ERR_ITEM_IS_NOTFOUND);
                 }
                 this._onRemoved(item, oldPos);
                 delete this._itemsByKey[key];
@@ -3550,7 +3381,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
     }(object_2.BaseObject));
     exports.BaseCollection = BaseCollection;
 });
-define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/utils/utils", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/collection/validation"], function (require, exports, object_3, lang_7, utils_5, int_2, utils_6, validation_2) {
+define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/utils/utils", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/collection/validation"], function (require, exports, object_3, lang_6, utils_5, int_2, utils_6, validation_2) {
     "use strict";
     var utils = utils_5.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, sys = utils.sys, ERROR = utils.err;
     var ItemAspect = (function (_super) {
@@ -3652,11 +3483,11 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                     return valInfo;
                 if (this.isNew) {
                     if (value === null && !fieldInfo.isNullable && !fieldInfo.isReadOnly && !fieldInfo.isAutoGenerated)
-                        throw new Error(lang_7.ERRS.ERR_FIELD_ISNOT_NULLABLE);
+                        throw new Error(lang_6.ERRS.ERR_FIELD_ISNOT_NULLABLE);
                 }
                 else {
                     if (value === null && !fieldInfo.isNullable && !fieldInfo.isReadOnly)
-                        throw new Error(lang_7.ERRS.ERR_FIELD_ISNOT_NULLABLE);
+                        throw new Error(lang_6.ERRS.ERR_FIELD_ISNOT_NULLABLE);
                 }
             }
             catch (ex) {
@@ -3691,9 +3522,9 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             if (this._skipValidate(fieldInfo, val))
                 return res;
             if (fieldInfo.isReadOnly && !(fieldInfo.allowClientDefault && this.isNew))
-                throw new Error(lang_7.ERRS.ERR_FIELD_READONLY);
+                throw new Error(lang_6.ERRS.ERR_FIELD_READONLY);
             if ((val === null || (checks.isString(val) && !val)) && !fieldInfo.isNullable)
-                throw new Error(lang_7.ERRS.ERR_FIELD_ISNOT_NULLABLE);
+                throw new Error(lang_6.ERRS.ERR_FIELD_ISNOT_NULLABLE);
             if (val === null)
                 return val;
             switch (fieldInfo.dataType) {
@@ -3702,35 +3533,35 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                 case 9:
                 case 1:
                     if (!checks.isString(val)) {
-                        throw new Error(strUtils.format(lang_7.ERRS.ERR_FIELD_WRONG_TYPE, val, "String"));
+                        throw new Error(strUtils.format(lang_6.ERRS.ERR_FIELD_WRONG_TYPE, val, "String"));
                     }
                     if (fieldInfo.maxLength > 0 && val.length > fieldInfo.maxLength)
-                        throw new Error(strUtils.format(lang_7.ERRS.ERR_FIELD_MAXLEN, fieldInfo.maxLength));
+                        throw new Error(strUtils.format(lang_6.ERRS.ERR_FIELD_MAXLEN, fieldInfo.maxLength));
                     if (fieldInfo.isNullable && val === "")
                         res = null;
                     if (!!fieldInfo.regex) {
                         var reg = new RegExp(fieldInfo.regex, "i");
                         if (!reg.test(val)) {
-                            throw new Error(strUtils.format(lang_7.ERRS.ERR_FIELD_REGEX, val));
+                            throw new Error(strUtils.format(lang_6.ERRS.ERR_FIELD_REGEX, val));
                         }
                     }
                     break;
                 case 10:
                     if (!checks.isArray(val)) {
-                        throw new Error(strUtils.format(lang_7.ERRS.ERR_FIELD_WRONG_TYPE, val, "Array"));
+                        throw new Error(strUtils.format(lang_6.ERRS.ERR_FIELD_WRONG_TYPE, val, "Array"));
                     }
                     if (fieldInfo.maxLength > 0 && val.length > fieldInfo.maxLength)
-                        throw new Error(strUtils.format(lang_7.ERRS.ERR_FIELD_MAXLEN, fieldInfo.maxLength));
+                        throw new Error(strUtils.format(lang_6.ERRS.ERR_FIELD_MAXLEN, fieldInfo.maxLength));
                     break;
                 case 2:
                     if (!checks.isBoolean(val))
-                        throw new Error(strUtils.format(lang_7.ERRS.ERR_FIELD_WRONG_TYPE, val, "Boolean"));
+                        throw new Error(strUtils.format(lang_6.ERRS.ERR_FIELD_WRONG_TYPE, val, "Boolean"));
                     break;
                 case 3:
                 case 4:
                 case 5:
                     if (!checks.isNumber(val))
-                        throw new Error(strUtils.format(lang_7.ERRS.ERR_FIELD_WRONG_TYPE, val, "Number"));
+                        throw new Error(strUtils.format(lang_6.ERRS.ERR_FIELD_WRONG_TYPE, val, "Number"));
                     if (!!fieldInfo.range) {
                         validation_2.Validations.checkNumRange(Number(val), fieldInfo.range);
                     }
@@ -3738,17 +3569,17 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                 case 6:
                 case 7:
                     if (!checks.isDate(val))
-                        throw new Error(strUtils.format(lang_7.ERRS.ERR_FIELD_WRONG_TYPE, val, "Date"));
+                        throw new Error(strUtils.format(lang_6.ERRS.ERR_FIELD_WRONG_TYPE, val, "Date"));
                     if (!!fieldInfo.range) {
                         validation_2.Validations.checkDateRange(val, fieldInfo.range);
                     }
                     break;
                 case 8:
                     if (!checks.isDate(val))
-                        throw new Error(strUtils.format(lang_7.ERRS.ERR_FIELD_WRONG_TYPE, val, "Time"));
+                        throw new Error(strUtils.format(lang_6.ERRS.ERR_FIELD_WRONG_TYPE, val, "Time"));
                     break;
                 default:
-                    throw new Error(strUtils.format(lang_7.ERRS.ERR_PARAM_INVALID, "dataType", fieldInfo.dataType));
+                    throw new Error(strUtils.format(lang_6.ERRS.ERR_PARAM_INVALID, "dataType", fieldInfo.dataType));
             }
             return res;
         };
@@ -4115,7 +3946,7 @@ define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/ob
     }(object_4.BaseObject));
     exports.CollectionItem = CollectionItem;
 });
-define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/collection/base", "jriapp_shared/collection/aspect", "jriapp_shared/collection/validation"], function (require, exports, utils_7, lang_8, int_4, utils_8, base_1, aspect_1, validation_3) {
+define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/collection/base", "jriapp_shared/collection/aspect", "jriapp_shared/collection/validation"], function (require, exports, utils_7, lang_7, int_4, utils_8, base_1, aspect_1, validation_3) {
     "use strict";
     var utils = utils_7.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, ERROR = utils.err;
     function fn_initVals(coll, obj) {
@@ -4210,7 +4041,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
         BaseList.prototype._updateFieldMap = function (props) {
             var self = this;
             if (!checks.isArray(props) || props.length === 0)
-                throw new Error(strUtils.format(lang_8.ERRS.ERR_PARAM_INVALID, "props", props));
+                throw new Error(strUtils.format(lang_7.ERRS.ERR_PARAM_INVALID, "props", props));
             self._fieldMap = {};
             self._fieldInfos = [];
             props.forEach(function (prop) {
@@ -4318,7 +4149,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
     }(base_1.BaseCollection));
     exports.BaseList = BaseList;
 });
-define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/list"], function (require, exports, utils_9, lang_9, base_2, list_1) {
+define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/list"], function (require, exports, utils_9, lang_8, base_2, list_1) {
     "use strict";
     var utils = utils_9.Utils, strUtils = utils.str, checks = utils.check, sys = utils.sys;
     sys.getItemByProp = function (obj, prop) {
@@ -4335,12 +4166,12 @@ define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_sha
         __extends(BaseDictionary, _super);
         function BaseDictionary(itemType, keyName, props) {
             if (!keyName)
-                throw new Error(strUtils.format(lang_9.ERRS.ERR_PARAM_INVALID, "keyName", keyName));
+                throw new Error(strUtils.format(lang_8.ERRS.ERR_PARAM_INVALID, "keyName", keyName));
             _super.call(this, itemType, props);
             this._keyName = keyName;
             var keyFld = this.getFieldInfo(keyName);
             if (!keyFld)
-                throw new Error(strUtils.format(lang_9.ERRS.ERR_DICTKEY_IS_NOTFOUND, keyName));
+                throw new Error(strUtils.format(lang_8.ERRS.ERR_DICTKEY_IS_NOTFOUND, keyName));
             keyFld.isPrimaryKey = 1;
         }
         BaseDictionary.prototype._getNewKey = function (item) {
@@ -4349,14 +4180,14 @@ define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_sha
             }
             var key = item[this._keyName];
             if (checks.isNt(key))
-                throw new Error(strUtils.format(lang_9.ERRS.ERR_DICTKEY_IS_EMPTY, this.keyName));
+                throw new Error(strUtils.format(lang_8.ERRS.ERR_DICTKEY_IS_EMPTY, this.keyName));
             return "" + key;
         };
         BaseDictionary.prototype._onItemAdded = function (item) {
             _super.prototype._onItemAdded.call(this, item);
             var key = item[this._keyName], self = this;
             if (checks.isNt(key))
-                throw new Error(strUtils.format(lang_9.ERRS.ERR_DICTKEY_IS_EMPTY, this.keyName));
+                throw new Error(strUtils.format(lang_8.ERRS.ERR_DICTKEY_IS_EMPTY, this.keyName));
             var oldkey = item._key, newkey = "" + key;
             if (oldkey !== newkey) {
                 delete self._itemsByKey[oldkey];
@@ -4440,7 +4271,7 @@ define("jriapp_shared/utils/debounce", ["require", "exports"], function (require
     }());
     exports.Debounce = Debounce;
 });
-define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_shared/shared", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/collection/int", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/collection/validation", "jriapp_shared/utils/utils", "jriapp_shared/utils/parser", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce"], function (require, exports, const_4, shared_6, object_5, lang_10, int_5, base_3, item_1, aspect_2, list_2, dictionary_1, validation_4, utils_10, parser_2, waitqueue_2, debounce_1) {
+define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_shared/shared", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/collection/int", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/collection/validation", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce"], function (require, exports, const_4, shared_6, object_5, lang_9, int_5, base_3, item_1, aspect_2, list_2, dictionary_1, validation_4, utils_10, waitqueue_2, debounce_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -4448,8 +4279,8 @@ define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_sh
     __export(const_4);
     __export(shared_6);
     __export(object_5);
-    exports.LocaleSTRS = lang_10.STRS;
-    exports.LocaleERRS = lang_10.ERRS;
+    exports.LocaleSTRS = lang_9.STRS;
+    exports.LocaleERRS = lang_9.ERRS;
     exports.COLL_CHANGE_OPER = int_5.COLL_CHANGE_OPER;
     exports.COLL_CHANGE_REASON = int_5.COLL_CHANGE_REASON;
     exports.COLL_CHANGE_TYPE = int_5.COLL_CHANGE_TYPE;
@@ -4462,7 +4293,6 @@ define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_sh
     exports.BaseDictionary = dictionary_1.BaseDictionary;
     exports.ValidationError = validation_4.ValidationError;
     exports.Utils = utils_10.Utils;
-    exports.parser = parser_2.parser;
     exports.WaitQueue = waitqueue_2.WaitQueue;
     exports.Debounce = debounce_1.Debounce;
 });

@@ -3,7 +3,7 @@ import {
     FIELD_TYPE, DATE_CONVERSION, DATA_TYPE, SORT_ORDER
 } from "jriapp_shared/const";
 import {
-    IPromise, IFieldInfo, TEventHandler, TPriority, LocaleERRS as ERRS, BaseObject, parser, Debounce, Utils
+    IPromise, IFieldInfo, TEventHandler, TPriority, LocaleERRS as ERRS, BaseObject, Debounce, Utils
 } from "jriapp_shared";
 import {
     ICollection, ICollectionItem, ICollChangedArgs, ICollItemStatusArgs, IErrors, IPermissions,

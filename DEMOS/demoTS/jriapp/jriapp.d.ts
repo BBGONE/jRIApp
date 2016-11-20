@@ -337,6 +337,17 @@ declare module "jriapp/utils/lifetime" {
         toString(): string;
     }
 }
+declare module "jriapp/utils/parser" {
+    export class Parser {
+        private static _checkKeyVal(kv);
+        private static _addKeyVal(kv, parts);
+        private static _getKeyVals(val);
+        static resolveSource(root: any, srcParts: string[]): any;
+        static getBraceParts(val: string, firstOnly: boolean): string[];
+        static parseOption(part: string): any;
+        static parseOptions(str: string): any[];
+    }
+}
 declare module "jriapp/utils/jquery" {
     export const $: JQueryStatic;
     export class JQueryUtils {

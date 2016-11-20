@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
     Utils, IFieldInfo, IBaseObject, IEditable, IErrorNotification,
-    IValidationInfo, IVoidPromise, BaseObject, LocaleERRS as ERRS, LocaleSTRS as STRS,  parser
+    IValidationInfo, IVoidPromise, BaseObject, LocaleERRS as ERRS, LocaleSTRS as STRS
 } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
 import { DATA_ATTR, ELVIEW_NM } from "jriapp/const";
@@ -9,6 +9,9 @@ import { ViewChecks } from "jriapp/utils/viewchecks";
 import {
     IApplication, IContent, IElView, ILifeTimeScope, IViewOptions
 } from "jriapp/shared";
+import {
+    Parser
+} from "jriapp/utils/parser";
 import { bootstrap } from "jriapp/bootstrap";
 import { BaseElView, fn_addToolTip } from "./generic";
 import { Binding } from "jriapp/binding";
@@ -16,7 +19,7 @@ import { parseContentAttr } from "./content/int";
 
 const utils = Utils, dom = Utils.dom, doc = dom.document,
     checks = utils.check, coreUtils = utils.core, strUtils = utils.str,
-    sys = utils.sys, parse = parser, boot = bootstrap, viewChecks = ViewChecks;
+    sys = utils.sys, parser = Parser, boot = bootstrap, viewChecks = ViewChecks;
 
 export const css = {
     dataform: "ria-dataform",
@@ -42,7 +45,7 @@ viewChecks.isDataForm = function (el: HTMLElement): boolean {
         if (!attr) {
             return false;
         }
-        const opts = parse.parseOptions(attr);
+        const opts = parser.parseOptions(attr);
         return (opts.length > 0 && opts[0].name === ELVIEW_NM.DataForm);
     }
 };

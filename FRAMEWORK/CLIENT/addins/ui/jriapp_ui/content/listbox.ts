@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    IBaseObject, LocaleERRS as ERRS, parser, Utils
+    IBaseObject, LocaleERRS as ERRS, Utils
 } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
 import { BINDING_MODE } from "jriapp/const";
@@ -16,7 +16,8 @@ import { ListBoxElView } from "../listbox";
 import { SpanElView } from "../span";
 import { BasicContent } from "./basic";
 
-const utils = Utils, dom =utils.dom, doc = dom.document, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+const utils = Utils, dom = utils.dom, doc = dom.document, checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
+    sys = utils.sys;
     
 
 const PROP_NAME = {
@@ -124,7 +125,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
             textPath: lookUpOptions.textPath,
             statePath: (!lookUpOptions.statePath) ? null : lookUpOptions.statePath,
             el: doc.createElement("select")
-        }, el = options.el, dataSource = parser.resolvePath(this.app, lookUpOptions.dataSource);
+        }, el = options.el, dataSource = sys.resolvePath(this.app, lookUpOptions.dataSource);
         el.setAttribute("size", "1");
         const elView = new ListBoxElView(options);
         elView.dataSource = dataSource;

@@ -1,5 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-const undefined: any = void (0);
+const undefined: any = void (0), trimQuotsRX = /^(['"])+|(['"])+$/g, trimBracketsRX = /^(\[)+|(\])+$/g;
+
 
 export class StringUtils {
     private static ERR_STRING_FORMAT_INVALID = "String format has invalid expression value: ";
@@ -140,5 +141,11 @@ export class StringUtils {
         return val.length >= length
             ? val
             : (new Array(Math.ceil((length - val.length) / str.length) + 1).join(str)).substr(0, (length - val.length)) + val;
+    }
+    static trimQuotes(val: string) {
+        return StringUtils.trim(val.replace(trimQuotsRX, ""));
+    }
+    static trimBrackets(val: string) {
+        return StringUtils.trim(val.replace(trimBracketsRX, ""));
     }
 };

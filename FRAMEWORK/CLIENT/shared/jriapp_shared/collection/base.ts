@@ -8,7 +8,6 @@ import { BaseObject }  from "../object";
 import { ERRS } from "../lang";
 import { WaitQueue } from "../utils/waitqueue";
 import { Utils } from "../utils/utils";
-import { parser } from "../utils/parser";
 
 import { ICollectionItem, ICollection, ICollectionOptions, IPermissions, IInternalCollMethods, ICollChangedArgs,
     ICancellableArgs, ICollFillArgs, ICollEndEditArgs, ICollItemAddedArgs, ICollectionEvents, ICollItemArgs, ICollItemStatusArgs,
@@ -17,7 +16,7 @@ import { ICollectionItem, ICollection, ICollectionOptions, IPermissions, IIntern
 import { valueUtils, fn_getPropertyByName } from "./utils";
 import { ValidationError } from "./validation";
 
-const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, parse = parser, sys = utils.sys;
+const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, sys = utils.sys;
 
 //REPLACE DUMMY IMPLEMENTATIONS
 sys.isCollection = (obj) => { return (!!obj && obj instanceof BaseCollection); };
@@ -418,7 +417,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     _isHasProp(prop: string) {
         //first check for indexed property name
         if (strUtils.startsWith(prop, "[")) {
-            let res = parse.resolveProp(this, prop);
+            let res = sys.getProp(this, prop);
             return !checks.isUndefined(res);
         }
         return super._isHasProp(prop);
@@ -572,8 +571,8 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
             let res = 0, i: number, len: number, af: any, bf: any, fieldName: string;
             for (i = 0, len = fieldNames.length; i < len; i += 1) {
                 fieldName = fieldNames[i];
-                af = parse.resolvePath(a, fieldName);
-                bf = parse.resolvePath(b, fieldName);
+                af = sys.resolvePath(a, fieldName);
+                bf = sys.resolvePath(b, fieldName);
                 if (af === checks.undefined)
                     af = null;
                 if (bf === checks.undefined)

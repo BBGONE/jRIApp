@@ -53,7 +53,6 @@
     <TypeScriptCompile Include="jriapp_shared\utils\eventhelper.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\http.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\logger.ts" />
-    <TypeScriptCompile Include="jriapp_shared\utils\parser.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\strutils.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\sysutils.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\utils.ts" />

@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { BaseObject, Debounce, Utils, parser } from "jriapp_shared";
+import { BaseObject, Debounce, Utils } from "jriapp_shared";
 import { ICollection, ICollectionItem, ICollChangedArgs, COLL_CHANGE_TYPE, COLL_CHANGE_REASON, ITEM_STATUS,
     ICollItemArgs, ICollItemAddedArgs
 } from "jriapp_shared/collection/int";
@@ -20,11 +20,11 @@ import { RowSelectorColumn } from "../columns/rowselector";
 
 import { DataGrid } from "../datagrid"
 
-const utils = Utils, dom = utils.dom, doc = dom.document, parse = parser;
+const utils = Utils, dom = utils.dom, doc = dom.document, sys = utils.sys;
 
 const fn_state = (row: Row) => {
     const path = row.grid.options.rowStateField,
-        val = (!row.item || !path) ? null : parse.resolvePath(row.item, path),
+        val = (!row.item || !path) ? null : sys.resolvePath(row.item, path),
         css = row.grid._getInternal().onRowStateChanged(row, val);
     row._setState(css);
 };

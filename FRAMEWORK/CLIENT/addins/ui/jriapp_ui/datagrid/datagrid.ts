@@ -1,13 +1,16 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
     TEventHandler, IIndexer, TPriority, LocaleERRS as ERRS, LocaleSTRS as STRS, BaseObject, Debounce,
-    parser, Utils
+    Utils
 } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
 import { DATA_ATTR, KEYS } from "jriapp/const";
 import {
     IApplication, ISelectableProvider, ISelectable, IViewOptions
 } from "jriapp/shared";
+import {
+    Parser
+} from "jriapp/utils/parser";
 import { bootstrap } from "jriapp/bootstrap";
 import { COLL_CHANGE_TYPE, ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollection, ICollItemAddedArgs,
     COLL_CHANGE_REASON, ITEM_STATUS
@@ -47,7 +50,7 @@ export { IDataGridAnimation, DefaultAnimation } from "./animation";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str,
     coreUtils = utils.core, ERROR = utils.err, sys = utils.sys,
-    dom = utils.dom, parse = parser, doc = dom.document, win = dom.window, boot = bootstrap;
+    dom = utils.dom, parser = Parser, doc = dom.document, win = dom.window, boot = bootstrap;
 
 let _columnWidthInterval: number, _gridsCount: number = 0;
 let _created_grids: IIndexer<DataGrid> = { };
@@ -526,7 +529,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         };
         let options: IColumnInfo;
 
-        const temp_opts = parse.parseOptions(column_attr);
+        const temp_opts = parser.parseOptions(column_attr);
         if (temp_opts.length > 0)
             options = coreUtils.extend(defaultOp, temp_opts[0]);
         else

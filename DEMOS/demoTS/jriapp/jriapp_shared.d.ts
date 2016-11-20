@@ -250,12 +250,14 @@ declare module "jriapp_shared/utils/strutils" {
         static formatNumber(num: any, decimals?: number, dec_point?: string, thousands_sep?: string): string;
         static stripNonNumeric(str: string): string;
         static padLeft(val: string, length: number, str: string): string;
+        static trimQuotes(val: string): string;
+        static trimBrackets(val: string): string;
     }
 }
 declare module "jriapp_shared/utils/checks" {
     import { IThenable } from "jriapp_shared/shared";
     export class Checks {
-        static undefined: any;
+        static readonly undefined: any;
         static isHasProp(obj: any, prop: string): boolean;
         static isNull(a: any): a is void;
         static isUndefined(a: any): a is void;
@@ -441,6 +443,10 @@ declare module "jriapp_shared/utils/sysutils" {
         static getEditable(obj: any): IEditable;
         static getSubmittable(obj: any): ISubmittable;
         static PROP_BAG_NAME(): string;
+        static getPathParts(path: string): string[];
+        static getProp(obj: any, prop: string): any;
+        static resolvePath(obj: any, path: string): any;
+        static setProp(obj: any, prop: string, val: any): void;
     }
 }
 declare module "jriapp_shared/utils/error" {
@@ -917,24 +923,6 @@ declare module "jriapp_shared/utils/utils" {
         static readonly dom: typeof DomUtils;
     }
 }
-declare module "jriapp_shared/utils/parser" {
-    export class Parser {
-        protected _getKeyVals(val: string): {
-            key: string;
-            val: any;
-        }[];
-        getPathParts(path: string): string[];
-        resolveProp(obj: any, prop: string): any;
-        setPropertyValue(obj: any, prop: string, val: any): void;
-        resolveBindingSource(root: any, srcParts: string[]): any;
-        resolvePath(obj: any, path: string): any;
-        private getBraceParts(val, firstOnly);
-        parseOption(part: string): any;
-        parseOptions(str: string): any[];
-        toString(): string;
-    }
-    export const parser: Parser;
-}
 declare module "jriapp_shared/collection/utils" {
     import { IFieldInfo } from "jriapp_shared/shared";
     import { IValueUtils } from "jriapp_shared/collection/int";
@@ -1270,7 +1258,6 @@ declare module "jriapp_shared" {
     export { BaseDictionary } from "jriapp_shared/collection/dictionary";
     export { ValidationError } from "jriapp_shared/collection/validation";
     export { Utils } from "jriapp_shared/utils/utils";
-    export { parser } from "jriapp_shared/utils/parser";
     export { WaitQueue, IWaitQueueItem } from "jriapp_shared/utils/waitqueue";
     export { Debounce } from "jriapp_shared/utils/debounce";
 }

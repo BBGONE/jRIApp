@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    BaseObject, Utils, IIndexer, IErrorHandler, LocaleERRS, parser
+    BaseObject, Utils, IIndexer, IErrorHandler, LocaleERRS
 } from "jriapp_shared";
 import { DATA_ATTR, STORE_KEY } from "./const";
 import {
@@ -9,9 +9,10 @@ import {
 } from "./shared";
 import { bootstrap } from "./bootstrap";
 import { LifeTimeScope } from "./utils/lifetime";
+import { Parser } from "./utils/parser";
 import { $ } from "./utils/jquery";
 
-const utils = Utils, parse = parser, ERROR = utils.err, ERRS = LocaleERRS;
+const utils = Utils, parser = Parser, ERROR = utils.err, ERRS = LocaleERRS;
 
 export function createElViewFactory(register: IElViewRegister): IElViewFactory {
     return new ElViewFactory(register);
@@ -148,7 +149,7 @@ class ElViewFactory extends BaseObject implements IElViewFactory {
             data_view_op: any;
         if (el.hasAttribute(DATA_ATTR.DATA_VIEW)) {
             attr = el.getAttribute(DATA_ATTR.DATA_VIEW);
-            data_view_op_arr = parse.parseOptions(attr);
+            data_view_op_arr = parser.parseOptions(attr);
             if (!!data_view_op_arr && data_view_op_arr.length > 0) {
                 data_view_op = data_view_op_arr[0];
                 if (!!data_view_op.name && data_view_op.name !== "default") {

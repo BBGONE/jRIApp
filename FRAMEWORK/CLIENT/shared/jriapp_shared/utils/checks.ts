@@ -5,7 +5,7 @@ import {
 } from "../shared";
 
 export class Checks {
-    static undefined: any = void (0);
+    static readonly undefined: any = void (0);
 
     static isHasProp(obj: any, prop: string): boolean {
         if (!obj)
