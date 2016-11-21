@@ -73,15 +73,15 @@ declare module "jriapp_db/dataquery" {
         private _isPagingEnabled;
         constructor(dbSet: DbSet<TItem, DbContext>, queryInfo: IQueryInfo);
         private _addSort(fieldName, sortOrder);
-        private _addFilterItem(fieldName, operand, value);
+        private _addFilterItem(fieldName, operand, value, checkFieldName?);
         private _resetCacheInvalidated();
         private _clearCache();
         private _getCache();
         private _reindexCache();
         private _isPageCached(pageIndex);
         _getInternal(): IInternalQueryMethods<TItem>;
-        where(fieldName: string, operand: FILTER_TYPE, value: any): this;
-        and(fieldName: string, operand: FILTER_TYPE, value: any): this;
+        where(fieldName: string, operand: FILTER_TYPE, value: any, checkFieldName?: boolean): this;
+        and(fieldName: string, operand: FILTER_TYPE, value: any, checkFieldName?: boolean): this;
         orderBy(fieldName: string, sortOrder?: SORT_ORDER): this;
         thenBy(fieldName: string, sortOrder?: SORT_ORDER): this;
         clearSort(): this;

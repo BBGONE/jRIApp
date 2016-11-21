@@ -3047,6 +3047,7 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
             this._templateID = null;
             this._template = null;
             this._animation = null;
+            this._debounce = new jriapp_shared_17.Debounce();
         }
         DynaContentElView.prototype.templateLoading = function (template) {
             if (this.getIsDestroyCalled())
@@ -3122,6 +3123,8 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
+            this._debounce.destroy();
+            this._debounce = null;
             var a = this._animation;
             this._animation = null;
             var t = this._template;
@@ -3145,12 +3148,16 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
                 return this._templateID;
             },
             set: function (v) {
-                var old = this._templateID;
+                var self = this, old = self._templateID;
                 if (old !== v) {
-                    this._prevTemplateID = this._templateID;
+                    this._prevTemplateID = old;
                     this._templateID = v;
-                    this._templateChanging(old, v);
                     this.raisePropertyChanged(PROP_NAME.templateID);
+                    this._debounce.enqueue(function () {
+                        if (self.getIsDestroyCalled())
+                            return;
+                        self._templateChanging(old, v);
+                    });
                 }
             },
             enumerable: true,

@@ -633,6 +633,7 @@ declare module "jriapp_ui/dynacontent" {
         private _templateID;
         private _template;
         private _animation;
+        private _debounce;
         constructor(options: IDynaContentOptions);
         templateLoading(template: ITemplate): void;
         templateLoaded(template: ITemplate, error?: any): void;

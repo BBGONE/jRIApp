@@ -98,20 +98,27 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             this._sortInfo.sortItems.push(sortItem);
             this._cacheInvalidated = true;
         };
-        DataQuery.prototype._addFilterItem = function (fieldName, operand, value) {
-            var fkind = 0;
-            var fld = this.getFieldInfo(fieldName);
-            if (!fld)
-                throw new Error(strUtils.format(jriapp_shared_1.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, this.dbSetName, fieldName));
-            var stz = this.serverTimezone, dcnv = fld.dateConversion, vals = [];
+        DataQuery.prototype._addFilterItem = function (fieldName, operand, value, checkFieldName) {
+            if (checkFieldName === void 0) { checkFieldName = true; }
+            var fkind = 0, vals = [], stz = this.serverTimezone;
             if (!checks.isArray(value))
                 vals = [value];
             else
                 vals = value;
             var tmpVals = arrHelper.clone(vals);
-            vals = tmpVals.map(function (v) {
-                return valUtils.stringifyValue(v, dcnv, fld.dataType, stz);
-            });
+            var fld = this.getFieldInfo(fieldName);
+            if (!fld && checkFieldName)
+                throw new Error(strUtils.format(jriapp_shared_1.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, this.dbSetName, fieldName));
+            if (!!fld) {
+                vals = tmpVals.map(function (v) {
+                    return valUtils.stringifyValue(v, fld.dateConversion, fld.dataType, stz);
+                });
+            }
+            else {
+                vals = tmpVals.map(function (v) {
+                    return valUtils.stringifyValue(v, 0, checks.isDate(v) ? 7 : 0, stz);
+                });
+            }
             switch (operand) {
                 case 0:
                 case 9:
@@ -167,12 +174,14 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
         DataQuery.prototype._getInternal = function () {
             return this._internal;
         };
-        DataQuery.prototype.where = function (fieldName, operand, value) {
-            this._addFilterItem(fieldName, operand, value);
+        DataQuery.prototype.where = function (fieldName, operand, value, checkFieldName) {
+            if (checkFieldName === void 0) { checkFieldName = true; }
+            this._addFilterItem(fieldName, operand, value, checkFieldName);
             return this;
         };
-        DataQuery.prototype.and = function (fieldName, operand, value) {
-            this._addFilterItem(fieldName, operand, value);
+        DataQuery.prototype.and = function (fieldName, operand, value, checkFieldName) {
+            if (checkFieldName === void 0) { checkFieldName = true; }
+            this._addFilterItem(fieldName, operand, value, checkFieldName);
             return this;
         };
         DataQuery.prototype.orderBy = function (fieldName, sortOrder) {

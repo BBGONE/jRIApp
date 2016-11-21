@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { Utils, BaseObject, IVoidPromise, IBaseObject } from "jriapp_shared";
+import { Utils, BaseObject, IVoidPromise, IBaseObject, Debounce } from "jriapp_shared";
 import { ITemplate, ITemplateEvents, IViewOptions } from "jriapp/shared";
 import { createTemplate } from "jriapp/template";
 import { bootstrap } from "jriapp/bootstrap";
@@ -33,6 +33,7 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
     private _templateID: string;
     private _template: ITemplate;
     private _animation: IDynaContentAnimation;
+    private _debounce: Debounce;
 
     constructor(options: IDynaContentOptions) {
         super(options);
@@ -41,6 +42,7 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
         this._templateID = null;
         this._template = null;
         this._animation = null;
+        this._debounce = new Debounce();
     }
     templateLoading(template: ITemplate): void {
         if (this.getIsDestroyCalled())
@@ -68,7 +70,7 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
         //noop
     }
     private _templateChanging(oldName: string, newName: string) {
-        let self = this;
+        const self = this;
         try {
             if (!newName && !!this._template) {
                 if (!!this._animation && !!this._template.loadedElem) {
@@ -120,9 +122,11 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
         if (this._isDestroyed)
             return
         this._isDestroyCalled = true;
-        let a = this._animation;
+        this._debounce.destroy();
+        this._debounce = null;
+        const a = this._animation;
         this._animation = null;
-        let t = this._template;
+        const t = this._template;
         this._template = null;
 
         if (sys.isBaseObj(a)) {
@@ -139,12 +143,16 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
         return this._templateID;
     }
     set templateID(v: string) {
-        let old = this._templateID;
+        const self = this, old = self._templateID;
         if (old !== v) {
-            this._prevTemplateID = this._templateID;
+            this._prevTemplateID = old;
             this._templateID = v;
-            this._templateChanging(old, v);
             this.raisePropertyChanged(PROP_NAME.templateID);
+            this._debounce.enqueue(() => {
+                if (self.getIsDestroyCalled())
+                    return;
+                self._templateChanging(old, v);
+            });
         }
     }
     get dataContext() { return this._dataContext; }

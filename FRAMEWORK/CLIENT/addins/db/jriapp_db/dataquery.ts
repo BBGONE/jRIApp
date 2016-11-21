@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    FIELD_TYPE, FILTER_TYPE, SORT_ORDER
+    FIELD_TYPE, FILTER_TYPE, SORT_ORDER, DATE_CONVERSION, DATA_TYPE
 } from "jriapp_shared/const";
 import {
     IPromise, IFieldInfo, BaseObject, Utils, LocaleERRS as ERRS
@@ -84,20 +84,28 @@ export class DataQuery<TItem extends IEntityItem> extends BaseObject {
         this._sortInfo.sortItems.push(sortItem);
         this._cacheInvalidated = true;
    }
-    private _addFilterItem(fieldName: string, operand: FILTER_TYPE, value: any[]) {
-        let fkind = FILTER_TYPE.Equals;
-        let fld = this.getFieldInfo(fieldName);
-        if (!fld)
-            throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, this.dbSetName, fieldName));
-        let stz = this.serverTimezone, dcnv = fld.dateConversion, vals: any[] = [];
+    private _addFilterItem(fieldName: string, operand: FILTER_TYPE, value: any[], checkFieldName = true) {
+        let fkind = FILTER_TYPE.Equals, vals: any[] = [], stz = this.serverTimezone
         if (!checks.isArray(value))
             vals = [value];
         else
             vals = value;
+
         let tmpVals = arrHelper.clone(vals);
-        vals = tmpVals.map(function (v) {
-            return valUtils.stringifyValue(v, dcnv, fld.dataType, stz);
-       });
+        const fld = this.getFieldInfo(fieldName);
+        if (!fld && checkFieldName)
+            throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, this.dbSetName, fieldName));
+
+        if (!!fld) {
+            vals = tmpVals.map(function (v) {
+                return valUtils.stringifyValue(v, fld.dateConversion, fld.dataType, stz);
+            });
+        }
+        else {
+            vals = tmpVals.map(function (v) {
+                return valUtils.stringifyValue(v, DATE_CONVERSION.None, checks.isDate(v) ? DATA_TYPE.Date : DATA_TYPE.None, stz);
+            });
+        }
 
         switch (operand) {
             case FILTER_TYPE.Equals:
@@ -118,8 +126,9 @@ export class DataQuery<TItem extends IEntityItem> extends BaseObject {
                 break;
             default:
                 throw new Error(strUtils.format(ERRS.ERR_QUERY_OPERATOR_INVALID, operand));
-       }
-        let filterItem = { fieldName: fieldName, kind: fkind, values: vals };
+        }
+
+        const filterItem = { fieldName: fieldName, kind: fkind, values: vals };
         this._filterInfo.filterItems.push(filterItem);
         this._cacheInvalidated = true;
    }
@@ -153,13 +162,13 @@ export class DataQuery<TItem extends IEntityItem> extends BaseObject {
    }
     _getInternal(): IInternalQueryMethods<TItem> {
         return this._internal;
-   }
-    where(fieldName: string, operand: FILTER_TYPE, value: any) {
-        this._addFilterItem(fieldName, operand, value);
+    }
+    where(fieldName: string, operand: FILTER_TYPE, value: any, checkFieldName = true) {
+        this._addFilterItem(fieldName, operand, value, checkFieldName);
         return this;
    }
-    and(fieldName: string, operand: FILTER_TYPE, value: any) {
-        this._addFilterItem(fieldName, operand, value);
+    and(fieldName: string, operand: FILTER_TYPE, value: any, checkFieldName = true) {
+        this._addFilterItem(fieldName, operand, value, checkFieldName);
         return this;
    }
     orderBy(fieldName: string, sortOrder?: SORT_ORDER) {
