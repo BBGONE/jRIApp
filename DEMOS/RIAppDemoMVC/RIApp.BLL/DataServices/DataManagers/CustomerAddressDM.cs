@@ -15,15 +15,15 @@ namespace RIAppDemo.BLL.DataServices.DataManagers
         public QueryResult<CustomerAddress> ReadCustomerAddress()
         {
             int? totalCount = null;
-            var res = PerformQuery(ref totalCount).AsEnumerable();
+            var res = PerformQuery(ref totalCount);
             return new QueryResult<CustomerAddress>(res, totalCount);
         }
 
         [Query]
-        public async Task<QueryResult<CustomerAddress>> ReadAddressForCustomers(int[] custIDs)
+        public QueryResult<CustomerAddress> ReadAddressForCustomers(int[] custIDs)
         {
             int? totalCount = null;
-            var res = await DB.CustomerAddresses.Where(ca => custIDs.Contains(ca.CustomerID)).ToListAsync();
+            var res = DB.CustomerAddresses.Where(ca => custIDs.Contains(ca.CustomerID));
             return new QueryResult<CustomerAddress>(res, totalCount);
         }
 

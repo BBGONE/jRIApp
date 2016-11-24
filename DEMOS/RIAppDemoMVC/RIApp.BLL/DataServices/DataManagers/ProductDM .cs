@@ -13,13 +13,9 @@ namespace RIAppDemo.BLL.DataServices.DataManagers
     public class ProductDM : AdWDataManager<Product>
     {
         /// <summary>
-        ///     The method can be asynchronous if instead of QueryResult
-        ///     <Product>
-        ///         type
-        ///         you return Task<QueryResult
-        ///         <Product>
-        ///             >
-        ///             the demo shows the asynchronous variant
+        ///     The method can be asynchronous if instead of QueryResult<Product>
+        ///     type you return Task<QueryResult<Product>>
+        ///     the demo shows the async variant
         /// </summary>
         /// <param name="param1"></param>
         /// <param name="param2"></param>
@@ -37,11 +33,10 @@ namespace RIAppDemo.BLL.DataServices.DataManagers
             var productIDs = productsArr.Select(p => p.ProductID).Distinct().ToArray();
             var queryResult = new QueryResult<Product>(productsArr, totalCount);
 
-            //the last async part
             var subResult = new SubResult
             {
                 dbSetName = "SalesOrderDetail",
-                Result = await DB.SalesOrderDetails.AsNoTracking().Where(sod => productIDs.Contains(sod.ProductID)).ToArrayAsync()
+                Result = DB.SalesOrderDetails.AsNoTracking().Where(sod => productIDs.Contains(sod.ProductID))
             };
 
             //include related SalesOrderDetails with the products in the same query result
@@ -84,10 +79,9 @@ namespace RIAppDemo.BLL.DataServices.DataManagers
         }
 
         /// <summary>
-        ///     This is just a demo which shows that you can return Task
-        ///     <Product>
-        ///         type from this method
-        ///         instead of simply returning the Product type (async execution)
+        ///     This is just for a demo to show that you can return Task<Product>
+        ///     type from this method
+        ///     instead of simply returning the Product type (for async execution)
         /// </summary>
         /// <param name="refreshInfo"></param>
         /// <returns>Product or Task<Product></returns>

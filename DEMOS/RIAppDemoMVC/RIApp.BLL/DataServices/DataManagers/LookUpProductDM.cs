@@ -10,15 +10,13 @@ namespace RIAppDemo.BLL.DataServices.DataManagers
     public class LookUpProductDM : AdWDataManager<LookUpProduct>
     {
         [Query]
-        public Task<QueryResult<LookUpProduct>> ReadProductLookUp()
+        public QueryResult<LookUpProduct> ReadProductLookUp()
         {
             int? totalCount = null;
-            var res =
-                PerformQuery<Product>(ref totalCount)
-                    .Select(p => new LookUpProduct {ProductID = p.ProductID, Name = p.Name})
-                    .AsEnumerable();
+            var res = PerformQuery<Product>(ref totalCount)
+                    .Select(p => new LookUpProduct {ProductID = p.ProductID, Name = p.Name});
             var queryResult = new QueryResult<LookUpProduct>(res, totalCount);
-            return Task.FromResult(queryResult);
+            return queryResult;
         }
     }
 }
