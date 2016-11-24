@@ -121,12 +121,12 @@
     <Compile Include="Utils\OperationalMethods.cs" />
     <Compile Include="Utils\MethodMap.cs" />
     <Compile Include="Utils\MultiMap.cs" />
-    <Compile Include="Utils\ResourceHelper.cs" />
     <Compile Include="Utils\CachedMetadata.cs" />
     <Compile Include="DomainService\Exceptions\ValidationException.cs" />
     <Compile Include="DomainService\Types\Association.cs" />
     <Compile Include="DomainService\Types\ErrorInfo.cs" />
     <Compile Include="DomainService\Types\Metadata.cs" />
+    <Compile Include="Utils\ResourceStringHelper.cs" />
     <Compile Include="Utils\TemplateParser.cs" />
     <Compile Include="Utils\CodeGen\TypeScriptHelper.cs" />
     <Compile Include="Utils\ValueConverter.cs" />

@@ -9,20 +9,13 @@ namespace RIAPP.DataService.Utils
     {
         private const char LEFT_CHAR = '{';
         private const char RIGHT_CHAR = '}';
-
-        public TemplateParser(string resourceID):
-            this(()=> ResourceHelper.GetResourceString(resourceID))
+     
+        public TemplateParser(string template)
         {
-         
+            DocParts = new Lazy<IEnumerable<DocPart>>(() => ParseTemplate(template), true);
         }
 
-        public TemplateParser(Func<string> templateProvider)
-        {
-            var template = templateProvider();
-            DocParts = ParseTemplate(template);
-        }
-
-        public IEnumerable<DocPart> DocParts { get; }
+        public Lazy<IEnumerable<DocPart>> DocParts { get; }
 
         private DocPart GetDocPart(string str)
         {
@@ -93,13 +86,15 @@ namespace RIAPP.DataService.Utils
             return list;
         }
 
-        public void ProcessParts(Action<DocPart> fn_partsHandler)
+        public void ProcessParts(Action<DocPart> partHandler)
         {
-            var parts = DocParts.ToList();
-            parts.ForEach(part => { fn_partsHandler(part); });
+            foreach (var part in DocParts.Value)
+            {
+                partHandler(part);
+            }
         }
 
-        public static void ProcessTemplate(TemplateParser parser, IDictionary<string, Func<string>> partsProvider, StringBuilder result)
+        public static void ProcessTemplate(TemplateParser parser, IDictionary<string, Func<string>> parts, StringBuilder result)
         {
             parser.ProcessParts(part =>
             {
@@ -109,29 +104,27 @@ namespace RIAPP.DataService.Utils
                 }
                 else
                 {
-                    if (partsProvider.ContainsKey(part.value))
-                        result.Append(partsProvider[part.value]());
+                    if (parts.ContainsKey(part.value))
+                        result.Append(parts[part.value]());
                 }
             });
         }
 
-        public static void ProcessTemplate(string templateName, IDictionary<string, Func<string>> partsProvider, StringBuilder result)
-        {
-            ProcessTemplate(new TemplateParser(templateName), partsProvider, result);
-        }
-
-        public static string ProcessTemplate(string templateName, IDictionary<string, Func<string>> partsProvider)
+        public static string ProcessTemplate(TemplateParser parser, IDictionary<string, Func<string>> parts)
         {
             StringBuilder result = new StringBuilder();
-            ProcessTemplate(new TemplateParser(templateName), partsProvider, result);
+            ProcessTemplate(parser, parts, result);
             return result.ToString();
         }
 
-        public static string ProcessTemplate(TemplateParser parser, IDictionary<string, Func<string>> partsProvider)
+        public static string ProcessTemplate(string template, IDictionary<string, Func<string>> parts)
         {
-            StringBuilder result = new StringBuilder();
-            ProcessTemplate(parser, partsProvider, result);
-            return result.ToString();
+            return ProcessTemplate(new TemplateParser(template), parts);
+        }
+
+        public static void ProcessTemplate(string template, IDictionary<string, Func<string>> parts, StringBuilder result)
+        {
+            ProcessTemplate(new TemplateParser(template), parts, result);
         }
 
         public struct DocPart

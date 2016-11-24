@@ -922,10 +922,10 @@ namespace RIAPP.DataService.Utils
             if (keywords.TryGetValue(token.text, out value))
             {
                 if (value is Type) return ParseTypeAccess((Type) value);
-                if (value == keywordIt) return ParseIt();
-                if (value == keywordOuterIt) return ParseOuterIt();
-                if (value == keywordIif) return ParseIif();
-                if (value == keywordNew) return ParseNew();
+                if ((string)value == keywordIt) return ParseIt();
+                if ((string)value == keywordOuterIt) return ParseOuterIt();
+                if ((string)value == keywordIif) return ParseIif();
+                if ((string)value == keywordNew) return ParseNew();
                 NextToken();
                 return (Expression) value;
             }

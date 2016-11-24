@@ -4,17 +4,19 @@ using System.Text;
 
 namespace RIAPP.DataService.Utils
 {
-    public class ResourceHelper
+    public class ResourceStringHelper
     {
-        public static string GetResourceString(string ID)
+        private const string NAMESPACE = "RIAPP.DataService.Resources";
+
+        public static string Get(string ID)
         {
-            var a = typeof(ResourceHelper).Assembly;
+            var a = typeof(ResourceStringHelper).Assembly;
             //string[] resNames = a.GetManifestResourceNames();
-            using (var stream = a.GetManifestResourceStream("RIAPP.DataService.Resources." + ID))
+            using (var stream = a.GetManifestResourceStream(string.Format("{0}.{1}", NAMESPACE, ID)))
             {
                 if (null == stream)
                 {
-                    throw new Exception("Can not find resource: \"" + ID + "\"");
+                    throw new Exception("Can not find embedded string resource: \"" + ID + "\"");
                 }
                 var rd = new StreamReader(stream, Encoding.UTF8);
                 var txt = rd.ReadToEnd();

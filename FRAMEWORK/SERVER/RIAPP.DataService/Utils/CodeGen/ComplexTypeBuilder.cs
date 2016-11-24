@@ -38,7 +38,6 @@ namespace RIAPP.DataService.Utils.CodeGen
 
             fieldInfo._TypeScriptDataType = typeName;
 
-            var sb = new StringBuilder(512);
             var sbProperties = new StringBuilder();
             var sbFieldsDef = new StringBuilder();
             var sbFieldsInit = new StringBuilder();
@@ -102,33 +101,15 @@ namespace RIAPP.DataService.Utils.CodeGen
             if (level > 0)
                 templateName = "ChildComplexProperty.txt";
 
-            new TemplateParser(templateName).ProcessParts(part =>
-            {
-                if (!part.isPlaceHolder)
-                {
-                    sb.Append(part.value);
-                }
-                else
-                {
-                    switch (part.value)
-                    {
-                        case "PROPERTIES":
-                            sb.Append(sbProperties.ToString());
-                            break;
-                        case "TYPE_NAME":
-                            sb.Append(typeName);
-                            break;
-                        case "FIELDS_DEF":
-                            sb.Append(sbFieldsDef.ToString());
-                            break;
-                        case "FIELDS_INIT":
-                            sb.Append(sbFieldsInit.ToString());
-                            break;
-                    }
-                }
-            });
+            Dictionary<string, Func<string>> dic = new Dictionary<string, Func<string>>();
+            dic.Add("PROPERTIES", () => sbProperties.ToString());
+            dic.Add("TYPE_NAME", () => typeName);
+            dic.Add("FIELDS_DEF", () => sbFieldsDef.ToString());
+            dic.Add("FIELDS_INIT", () => sbFieldsInit.ToString());
 
-            _complexTypes.Add(typeName, sb.ToString());
+            string complexType = TemplateParser.ProcessTemplate(ResourceStringHelper.Get(templateName), dic);
+
+            _complexTypes.Add(typeName, complexType);
             return typeName;
         }
 
