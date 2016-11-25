@@ -99,6 +99,7 @@
     <Compile Include="DomainService\BaseDataManager.cs" />
     <Compile Include="Utils\CallContext.cs" />
     <Compile Include="Utils\CodeGen\BaseCsharpProvider.cs" />
+    <Compile Include="Utils\CodeGen\CodeGenTemplate.cs" />
     <Compile Include="Utils\CodeGen\XamlProvider.cs" />
     <Compile Include="Utils\CodeGen\TypeScriptProvider.cs" />
     <Compile Include="Utils\DateTimeHelper.cs" />
@@ -126,7 +127,6 @@
     <Compile Include="DomainService\Types\Association.cs" />
     <Compile Include="DomainService\Types\ErrorInfo.cs" />
     <Compile Include="DomainService\Types\Metadata.cs" />
-    <Compile Include="Utils\ResourceStringHelper.cs" />
     <Compile Include="Utils\TemplateParser.cs" />
     <Compile Include="Utils\CodeGen\TypeScriptHelper.cs" />
     <Compile Include="Utils\ValueConverter.cs" />

@@ -2,15 +2,15 @@
 using System.IO;
 using System.Text;
 
-namespace RIAPP.DataService.Utils
+namespace RIAPP.DataService.Utils.CodeGen
 {
-    public class ResourceStringHelper
+    public class CodeGenTemplate: TemplateParser
     {
         private const string NAMESPACE = "RIAPP.DataService.Resources";
 
-        public static string Get(string ID)
+        private static string GetTemplate(string ID)
         {
-            var a = typeof(ResourceStringHelper).Assembly;
+            var a = typeof(CodeGenTemplate).Assembly;
             //string[] resNames = a.GetManifestResourceNames();
             using (var stream = a.GetManifestResourceStream(string.Format("{0}.{1}", NAMESPACE, ID)))
             {
@@ -22,6 +22,12 @@ namespace RIAPP.DataService.Utils
                 var txt = rd.ReadToEnd();
                 return txt;
             }
+        }
+
+        public CodeGenTemplate(string ID) :
+            base(() => GetTemplate(ID))
+        {
+           
         }
     }
 }

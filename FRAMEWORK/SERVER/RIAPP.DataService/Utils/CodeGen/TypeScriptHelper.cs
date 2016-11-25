@@ -23,17 +23,13 @@ namespace RIAPP.DataService.Utils.CodeGen
         private readonly List<Association> _associations;
         private readonly ISerializer _serializer;
 
-        private readonly TemplateParser _entityTemplate = new TemplateParser(GetTemplate("Entity.txt"));
-        private readonly TemplateParser _entityIntfTemplate = new TemplateParser(GetTemplate("EntityInterface.txt"));
-        private readonly TemplateParser _dictionaryTemplate = new TemplateParser(GetTemplate("Dictionary.txt"));
-        private readonly TemplateParser _listTemplate = new TemplateParser(GetTemplate("List.txt"));
-        private readonly TemplateParser _listItemTemplate = new TemplateParser(GetTemplate("ListItem.txt"));
-        private readonly TemplateParser _dbSetTemplate = new TemplateParser(GetTemplate("DbSet.txt"));
-        private static string GetTemplate(string ID)
-        {
-            return ResourceStringHelper.Get(ID);
-        }
-
+        private readonly CodeGenTemplate _entityTemplate = new CodeGenTemplate("Entity.txt");
+        private readonly CodeGenTemplate _entityIntfTemplate = new CodeGenTemplate("EntityInterface.txt");
+        private readonly CodeGenTemplate _dictionaryTemplate = new CodeGenTemplate("Dictionary.txt");
+        private readonly CodeGenTemplate _listTemplate = new CodeGenTemplate("List.txt");
+        private readonly CodeGenTemplate _listItemTemplate = new CodeGenTemplate("ListItem.txt");
+        private readonly CodeGenTemplate _dbSetTemplate = new CodeGenTemplate("DbSet.txt");
+  
         public TypeScriptHelper(IServiceContainer serviceContainer, CachedMetadata metadata,
             IEnumerable<Type> clientTypes)
         {
@@ -176,7 +172,7 @@ namespace RIAPP.DataService.Utils.CodeGen
 
         private string createHeader()
         {
-            return TemplateParser.ProcessTemplate(GetTemplate("Header.txt"), new Dictionary<string, Func<string>>());
+            return new CodeGenTemplate("Header.txt").ProcessTemplate();
         }
 
         private string createDbSetProps()
@@ -316,7 +312,7 @@ namespace RIAPP.DataService.Utils.CodeGen
             dic.Add("KEY_NAME", () => keyName);
             dic.Add("PK_VALS", () => pkVals);
 
-            return TemplateParser.ProcessTemplate(_dictionaryTemplate, dic);
+            return _dictionaryTemplate.ProcessTemplate(dic);
         }
 
         private string createList(string name, string itemName, string aspectName, string interfaceName,
@@ -329,7 +325,7 @@ namespace RIAPP.DataService.Utils.CodeGen
             dic.Add("INTERFACE_NAME", () => interfaceName);
             dic.Add("PROP_INFOS", () => properties);
 
-            return TemplateParser.ProcessTemplate(_listTemplate, dic);
+            return _listTemplate.ProcessTemplate(dic);
         }
 
         private string createListItem(string itemName, string aspectName, string interfaceName,
@@ -350,7 +346,7 @@ namespace RIAPP.DataService.Utils.CodeGen
             dic.Add("ASPECT_NAME", () => aspectName);
             dic.Add("ITEM_PROPS", () => sbProps.ToString());
 
-            return TemplateParser.ProcessTemplate(_listItemTemplate, dic);
+            return _listItemTemplate.ProcessTemplate(dic);
         }
 
         private string createClientType(Type type)
@@ -536,7 +532,7 @@ namespace RIAPP.DataService.Utils.CodeGen
             dic.Add("ASSOCIATIONS", () => _serializer.Serialize(_associations));
             dic.Add("METHODS", () => _serializer.Serialize(_metadata.methodDescriptions.OrderByDescending(m=>m.isQuery).ThenBy(m=>m.methodName)));
 
-            return TemplateParser.ProcessTemplate(GetTemplate("DbContext.txt"), dic);
+            return new CodeGenTemplate("DbContext.txt").ProcessTemplate(dic);
         }
 
         private string createDbSetType(string entityDef, DbSetInfo dbSetInfo)
@@ -578,7 +574,7 @@ namespace RIAPP.DataService.Utils.CodeGen
             dic.Add("CALC_FIELDS", () => createCalcFields(dbSetInfo));
             dic.Add("PK_VALS", () => pkVals);
 
-            return TemplateParser.ProcessTemplate(_dbSetTemplate, dic);
+            return _dbSetTemplate.ProcessTemplate(dic);
         }
 
         private string createEntityInterface(string entityInterfaceName, string fieldsDef)
@@ -587,7 +583,7 @@ namespace RIAPP.DataService.Utils.CodeGen
             dic.Add("ENTITY_INTERFACE", () => entityInterfaceName);
             dic.Add("INTERFACE_FIELDS", () => fieldsDef);
 
-            return TrimEnd(TemplateParser.ProcessTemplate(_entityIntfTemplate, dic));
+            return TrimEnd(_entityIntfTemplate.ProcessTemplate(dic));
         }
 
         
@@ -697,7 +693,7 @@ namespace RIAPP.DataService.Utils.CodeGen
             dic.Add("FIELDS_DEF", () => TrimEnd(sbFieldsDef.ToString()));
             dic.Add("FIELDS_INIT", () => TrimEnd(sbFieldsInit.ToString()));
 
-            string entityDef = TrimEnd(TemplateParser.ProcessTemplate(_entityTemplate, dic));
+            string entityDef = TrimEnd(_entityTemplate.ProcessTemplate(dic));
             string interfaceDef = this.createEntityInterface(entityInterfaceName, TrimEnd(sbInterfaceFields.ToString()));
 
             return new KeyValuePair<string, string>(interfaceDef, entityDef);

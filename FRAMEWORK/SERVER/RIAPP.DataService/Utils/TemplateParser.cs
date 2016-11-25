@@ -9,13 +9,19 @@ namespace RIAPP.DataService.Utils
     {
         private const char LEFT_CHAR = '{';
         private const char RIGHT_CHAR = '}';
-     
-        public TemplateParser(string template)
+
+        public TemplateParser(string template) :
+            this(() => template)
         {
             DocParts = new Lazy<IEnumerable<DocPart>>(() => ParseTemplate(template), true);
         }
 
-        public Lazy<IEnumerable<DocPart>> DocParts { get; }
+        public TemplateParser(Func<string> templateProvider)
+        {
+            DocParts = new Lazy<IEnumerable<DocPart>>(() => ParseTemplate(templateProvider()), true);
+        }
+
+        private Lazy<IEnumerable<DocPart>> DocParts { get; }
 
         private DocPart GetDocPart(string str)
         {
@@ -86,7 +92,7 @@ namespace RIAPP.DataService.Utils
             return list;
         }
 
-        public void ProcessParts(Action<DocPart> partHandler)
+        private void ProcessParts(Action<DocPart> partHandler)
         {
             foreach (var part in DocParts.Value)
             {
@@ -94,9 +100,9 @@ namespace RIAPP.DataService.Utils
             }
         }
 
-        public static void ProcessTemplate(TemplateParser parser, IDictionary<string, Func<string>> parts, StringBuilder result)
+        public void ProcessTemplate(IDictionary<string, Func<string>> parts, StringBuilder result)
         {
-            parser.ProcessParts(part =>
+            this.ProcessParts(part =>
             {
                 if (!part.isPlaceHolder)
                 {
@@ -110,24 +116,16 @@ namespace RIAPP.DataService.Utils
             });
         }
 
-        public static string ProcessTemplate(TemplateParser parser, IDictionary<string, Func<string>> parts)
+        public string ProcessTemplate(IDictionary<string, Func<string>> parts = null)
         {
+            if (parts == null)
+                parts = new Dictionary<string, Func<string>>();
             StringBuilder result = new StringBuilder();
-            ProcessTemplate(parser, parts, result);
+            this.ProcessTemplate(parts, result);
             return result.ToString();
         }
 
-        public static string ProcessTemplate(string template, IDictionary<string, Func<string>> parts)
-        {
-            return ProcessTemplate(new TemplateParser(template), parts);
-        }
-
-        public static void ProcessTemplate(string template, IDictionary<string, Func<string>> parts, StringBuilder result)
-        {
-            ProcessTemplate(new TemplateParser(template), parts, result);
-        }
-
-        public struct DocPart
+        private struct DocPart
         {
             public bool isPlaceHolder;
             public string value;

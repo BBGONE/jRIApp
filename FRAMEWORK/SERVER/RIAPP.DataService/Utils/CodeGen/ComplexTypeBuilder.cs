@@ -107,7 +107,7 @@ namespace RIAPP.DataService.Utils.CodeGen
             dic.Add("FIELDS_DEF", () => sbFieldsDef.ToString());
             dic.Add("FIELDS_INIT", () => sbFieldsInit.ToString());
 
-            string complexType = TemplateParser.ProcessTemplate(ResourceStringHelper.Get(templateName), dic);
+            string complexType = new CodeGenTemplate(templateName).ProcessTemplate(dic);
 
             _complexTypes.Add(typeName, complexType);
             return typeName;
