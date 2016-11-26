@@ -9,28 +9,6 @@ and the demo application was implemented using ASP.NET MVC project.
 <br/>
 You can watch a short video of the demo on <a href="https://youtu.be/dQyOOw2dK4w" target="_blank"><b>YouTube</b></a> and <a href="https://www.youtube.com/watch?v=m2lxFWhJghA" target="_blank"><b>Older video</b></a>. 
 <br/>
-(<i>
-In order to use the Demo you need Microsoft SQL Server (Express edition will suffice) installed and Microsoft's Adventure Works (the Lite version) database is attached<br/>
-First find under which account MS SQL is running<br/>
-<pre>
-DECLARE @sqlser varchar(120);
-EXEC master..xp_regread @rootkey='HKEY_LOCAL_MACHINE', 
-@key='SYSTEM\CurrentControlSet\Services\MSSQLSERVER', 
-@value_name='objectname', @value=@sqlser OUTPUT;
-SELECT convert(varchar(30),@sqlser) as [ACCOUNT]
-</pre>
-<br/>
-If it is running under <b>SYSTEM</b> account then just attach the AdventureWorks database with the next command<br/>
-<pre>
---do not forget to edit the path to the db file!
-CREATE DATABASE AdventureWorksLT2012   
-ON (FILENAME = 'C:\DATA\DB\DATA\AdventureWorksLT2012_Data.mdf') 
-FOR ATTACH_REBUILD_LOG;
-</pre>
-If it is running under <b>NT Service\MSSQLSERVER</b> account then you need to grant full access right to the folder with the db file to this account.
-And you need to execute script to attach the db from Sql Server Management Studio by starting it using 'Run As Administrator'
-</i>)
-<br/>
 The framework was designed primarily for creating data centric Line of Business (LOB) applications 
 which will work natively in browsers without the need for plugins. (<i>Although it can be used for other types of applications, too.</i>)
 </p>
@@ -121,6 +99,29 @@ It is created using <a href="https://github.com/sta/websocket-sharp" target="_bl
 By using the data service you can generate strongly typed client side domain model in typescript language.
 See the demoTS project for an example. (the DEMODB.ts file contains the generated code.)
 The documentation explains how you can use the framework in more details.
+</p>
+<p>
+<i>
+In order to use the Demo you need Microsoft SQL Server (Express edition will suffice) installed and Microsoft's Adventure Works (the Lite version) database is attached<br/>
+First find under which account MS SQL is running<br/>
+<pre>
+DECLARE @sqlser varchar(120);
+EXEC master..xp_regread @rootkey='HKEY_LOCAL_MACHINE', 
+@key='SYSTEM\CurrentControlSet\Services\MSSQLSERVER', 
+@value_name='objectname', @value=@sqlser OUTPUT;
+SELECT convert(varchar(30),@sqlser) as [ACCOUNT]
+</pre>
+<br/>
+If it is running under <b>SYSTEM</b> account then just attach the AdventureWorks database with the next command<br/>
+<pre>
+--do not forget to edit the path to the db file!
+CREATE DATABASE AdventureWorksLT2012   
+ON (FILENAME = 'C:\DATA\DB\DATA\AdventureWorksLT2012_Data.mdf') 
+FOR ATTACH_REBUILD_LOG;
+</pre>
+If it is running under <b>NT Service\MSSQLSERVER</b> account then you need to grant full access right to the folder with the db file to this account.
+And you need to execute script to attach the db from Sql Server Management Studio by starting it using 'Run As Administrator'
+</i>
 </p>
 <p>
 LICENSE: MIT LICENSE
