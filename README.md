@@ -14,17 +14,19 @@ In order to use the Demo you need Microsoft SQL Server (Express edition will suf
 First find under which account MS SQL is running<br/>
 <pre>
 DECLARE @sqlser varchar(120);
-EXEC master..xp_regread @rootkey='HKEY_LOCAL_MACHINE', @key='SYSTEM\CurrentControlSet\Services\MSSQLSERVER', @value_name='objectname', @value=@sqlser OUTPUT;
+EXEC master..xp_regread @rootkey='HKEY_LOCAL_MACHINE', 
+@key='SYSTEM\CurrentControlSet\Services\MSSQLSERVER', 
+@value_name='objectname', @value=@sqlser OUTPUT;
 SELECT convert(varchar(30),@sqlser) as [ACCOUNT]
 </pre>
 <br/>
 If it is running under <b>SYSTEM</b> account then just attach the AdventureWorks database with the next command<br/>
 <pre>
+--do not forget to edit the path to the db file!
 CREATE DATABASE AdventureWorksLT2012   
-ON (FILENAME = 'C:\DATA\DB\DATA\AdventureWorksLT2012_Data.mdf') --do not forget to edit the path to the db file!
+ON (FILENAME = 'C:\DATA\DB\DATA\AdventureWorksLT2012_Data.mdf') 
 FOR ATTACH_REBUILD_LOG;
 </pre>
-<br/>
 If it is running under <b>NT Service\MSSQLSERVER</b> account then you need to grant full access right to the folder with the db file to this account.
 And you need to execute script to attach the db from Sql Server Management Studio by starting it using 'Run As Administrator'
 </i>)
