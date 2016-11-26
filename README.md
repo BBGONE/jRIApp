@@ -10,8 +10,23 @@ and the demo application was implemented using ASP.NET MVC project.
 You can watch a short video of the demo on <a href="https://youtu.be/dQyOOw2dK4w" target="_blank"><b>YouTube</b></a> and <a href="https://www.youtube.com/watch?v=m2lxFWhJghA" target="_blank"><b>Older video</b></a>. 
 <br/>
 (<i>
-In order to use the Demo you need Microsoft SQL Server (Express edition will suffice) installed and Microsoft's Adventure Works (the Lite version) database is attached
- <a href="https://msdn.microsoft.com/en-us/library/dd410121.aspx" target="_blank"><i>How to attach AdventureWorksLT</i></a>.
+In order to use the Demo you need Microsoft SQL Server (Express edition will suffice) installed and Microsoft's Adventure Works (the Lite version) database is attached<br/>
+First find under which account MS SQL is running
+```
+DECLARE @sqlser varchar(120);
+EXEC master..xp_regread @rootkey='HKEY_LOCAL_MACHINE', @key='SYSTEM\CurrentControlSet\Services\MSSQLSERVER', @value_name='objectname', @value=@sqlser OUTPUT;
+SELECT convert(varchar(30),@sqlser) as [ACCOUNT]
+```
+<br/>
+If it is running under <b>SYSTEM</b> account then just attach the AdventureWorks database with the next command
+```
+CREATE DATABASE AdventureWorksLT2012   
+ON (FILENAME = 'C:\DATA\DB\DATA\AdventureWorksLT2012_Data.mdf') --do not forget to edit the path to the db file!
+FOR ATTACH_REBUILD_LOG;
+```
+<br/>
+If it is running under <b>NT Service\MSSQLSERVER</b> account then you need to grant full access right to the folder with the db file to this account.
+And you need to execute script to attach the db from Sql Server Management Studio by starting it using 'Run As Administrator'
 </i>)
 <br/>
 The framework was designed primarily for creating data centric Line of Business (LOB) applications 
