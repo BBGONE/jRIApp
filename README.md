@@ -103,8 +103,9 @@ The documentation explains how you can use the framework in more details.
 <p>
 <i>
 In order to use the Demo you need Microsoft SQL Server (Express edition will suffice) installed and Microsoft's Adventure Works (the Lite version) database is attached<br/>
-First find under which account MS SQL is running<br/>
+For that, first find under which account MS SQL is running (using Transact SQL or just whatch it in the services)<br/>
 <pre>
+--TSQL to find under which account the Server is running
 DECLARE @sqlser varchar(120);
 EXEC master..xp_regread @rootkey='HKEY_LOCAL_MACHINE', 
 @key='SYSTEM\CurrentControlSet\Services\MSSQLSERVER', 
