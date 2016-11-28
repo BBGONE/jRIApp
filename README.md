@@ -47,7 +47,7 @@ The client side of framework is split into 5 bundles:<br/>
 <b>jriapp_langs.js</b> - local strings, needed for other than english language<br/><br/>
 If someone does not want to use this framework, but needs only the means to work with 
 databases in other frameworks, he (she) can use only <b>jriapp_shared.js</b> and <b>jriapp_db.js</b> bundles.
-<br/>
+<br/><br/>
 	The worst thing about JavaScript is that it is not statically typed, so if you need to maintain a lot of JavaScript code you'll need to be very disciplined 
 (and your team members as well) or you'll end up in maintenance hell (<i>This is especially true for data centric applications which greatly benefit from statically typed client side domain model</i>).<br/> 
 By using code generation feature, The client side domain model (<i>entities, lists, dictionaries, dbsets, dbcontext</i>) is generated in statically typed typescript language.
