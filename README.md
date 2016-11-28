@@ -14,8 +14,7 @@ which will work natively in browsers without the need for plugins. (<i>Although 
 </p>
 <p>
 I wrote this framework because everything i searched through was not suitable for serious data centric HTML5 applications.</br>
-The other frameworks offer very much what is not needed and very little of what is needed to develop 
-this kind of applications<br/>
+The other frameworks offer very much what is not needed and very little of what is needed to develop this kind of applications<br/>
 (<i>P.S. - the framework depends on JQuery, Moment, QTip, Require. The Moment, QTip and Require are easily replaceable, 
 but JQuery is more widely used in the framework (<i>but also can be replaced if needs be</i>).
 </i>
@@ -34,6 +33,8 @@ intermixed HTML and Scripts inside template (<i>the code is 100% separated from 
 <li>And the code does not know (agnostic) about the structure of HTML page.</li>
 <li>The framework uses HTML5 features implemented in most of the browsers (<i>starting from IE9</i>) and does not need Polyfills 
 and the code is not overengineered.</li>
+<li>Besides relational databases it can also be used to work with NOSQL because it can work with complex properties of unlimited depth. 
+<i>(the properties can be complex objects which can also contain complex properties)</i></li>
 <li>Classes for using the data service can be used without using the whole framework. They can be used in React, Angular.js and
 any other framework no different as when using them with this framework. They are 158 kb.(minified)</li>
 </ul>
@@ -47,21 +48,19 @@ The client side of framework is split into 5 bundles:<br/>
 If someone does not want to use this framework, but needs only the means to work with 
 databases in other frameworks, he (she) can use only <b>jriapp_shared.js</b> and <b>jriapp_db.js</b> bundles.
 <br/>
-It can also be used to work with NOSQL and relational databases because it can work with complex properties of unlimited depth. 
+The worst thing about JavaScript is that it is not statically typed, so if you need to maintain a lot of JavaScript code you'll need to be very disciplined 
+(and your team members as well) or you'll end up in maintenance hell (<i>This is especially true for data centric applications which greatly benefit from statically typed client side domain model</i>).<br/> 
+By using code generation feature, The client side domain model (<i>entities, lists, dictionaries, dbsets, dbcontext</i>) is generated in statically typed typescript language.
+ It provides more reliability for the application and much more easy refactoring and maintenance.
 <br/>
-The entities and DbContext is strongly typed because the client domain model (entities, lists, dictionaries, dbsets, dbcontext) is generated in typescript language by data service methods
-and there's no need to use dynamically typed ones. It provides more reliability for the application and much more easy refactoring.
+The data service (<i>on the server side</i>) can work with data managers for each entity (<i>it is optional, but is very useful not to have a long sheet of code inside the data service</i>). 
+This feature allows to separate the CRUD and query methods for each entity into its own class. (<i>in the demo i used a mix to show that is possible to use any style</i>)
 <br/>
-The data service (<i>the server side</i>) can work with data managers for each entity 
-(<i>it is optional, but is very useful not to have a long sheet of code inside the data service</i>). 
-This feature allows to separate the CRUD and query methods for each entity into its own class.
+The Databinding uses classic property change event notification pattern and there's a <i>BaseObject</i> class in the framework which supports change notification and events.
 <br/>
-The Databinding uses classic property change tracking notification pattern and 
-there's a <i>BaseObject</i> class in the framework which supports change notification and events.
-<br/>
-The Events implemented to allow for provision of a namespace when subscribing to them, 
-which helps to unsubscribe from a bunch of them very easily - by just providing the namespace.
-They, also, can have the priority set for them when subscribing.
+The Events implemented to allow for provision of a namespace when subscribing to them, which helps to unsubscribe from a bunch of them very easily - by just providing the namespace.
+They, also, can have the priority set for them when subscribing (<i>event priority is used in the db bundle to have the highest event priority for the association which subscribes
+to the collection events, and the above normal priority is also used in the dataview class. Everywhere else is used the normal priority for subscription</i>).
 <br/><br/>
 I have chosen not to implement features which can be easily borrowed from third party libs.<br/>
 For example, there's no dependency injection feature because the <a href="https://github.com/inversify/InversifyJS" target="_blank"><i>Inversify.js</i></a> library can be used for that.
