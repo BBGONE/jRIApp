@@ -21,4 +21,5 @@ export { ValidationError } from "./jriapp_shared/collection/validation";
 
 export { Utils } from "./jriapp_shared/utils/utils";
 export { WaitQueue, IWaitQueueItem } from "./jriapp_shared/utils/waitqueue";
-export { Debounce } from "./jriapp_shared/utils/debounce"
+export { Debounce } from "./jriapp_shared/utils/debounce";
+export { Lazy } from "./jriapp_shared/utils/lazy";

@@ -1208,10 +1208,12 @@ export class DataGridElView extends BaseElView {
     private _grid: DataGrid;
     private _options: IDataGridViewOptions;
     private _stateProvider: IRowStateProvider;
+    private _stateDebounce: Debounce;
 
     constructor(options: IDataGridViewOptions) {
         super(options);
         this._stateProvider = null;
+        this._stateDebounce = new Debounce();
         this._grid = null;
         this._options = options;
         this._createGrid();
@@ -1223,6 +1225,8 @@ export class DataGridElView extends BaseElView {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
+        this._stateDebounce.destroy();
+        this._stateDebounce = null;
         if (!!this._grid && !this._grid.getIsDestroyCalled()) {
             this._grid.destroy();
         }
@@ -1276,13 +1280,13 @@ export class DataGridElView extends BaseElView {
         if (v !== this._stateProvider) {
             this._stateProvider = v;
             this.raisePropertyChanged(PROP_NAME.stateProvider);
-            setTimeout(() => {
+            this._stateDebounce.enqueue(() => {
                 if (!this._grid || this._grid.getIsDestroyCalled())
                     return;
                 this._grid.rows.forEach((row) => {
                     row.updateUIState();
                 });
-            }, 0);
+            });
         }
     }
     get animation() {

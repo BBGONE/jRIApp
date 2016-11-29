@@ -283,16 +283,17 @@ declare module "jriapp_db/dbsets" {
     import { IEntityItem } from "jriapp_db/int";
     import { DbContext } from "jriapp_db/dbcontext";
     import { DbSet, IDbSetConstructor } from "jriapp_db/dbset";
+    export type TDbSet = DbSet<IEntityItem, DbContext>;
     export class DbSets extends BaseObject {
         private _dbContext;
         private _dbSets;
         private _arrDbSets;
         constructor(dbContext: DbContext);
-        protected _dbSetCreated(dbSet: DbSet<IEntityItem, DbContext>): void;
+        protected _dbSetCreated(dbSet: TDbSet): void;
         protected _createDbSet(name: string, dbSetType: IDbSetConstructor<IEntityItem>): void;
         readonly dbSetNames: string[];
         readonly arrDbSets: DbSet<IEntityItem, DbContext>[];
-        getDbSet(name: string): DbSet<IEntityItem, DbContext>;
+        getDbSet(name: string): TDbSet;
         destroy(): void;
     }
 }

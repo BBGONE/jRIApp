@@ -90,6 +90,9 @@ declare module "jriapp_shared/shared" {
     export interface ITaskQueue {
         enque(task: () => void): void;
     }
+    export interface ILazyInitializer<T> {
+        (): T;
+    }
     export interface IBaseObject extends IErrorHandler, IDisposable {
         _isHasProp(prop: string): boolean;
         raisePropertyChanged(name: string): void;
@@ -1245,6 +1248,18 @@ declare module "jriapp_shared/utils/debounce" {
         interval: number;
     }
 }
+declare module "jriapp_shared/utils/lazy" {
+    import { ILazyInitializer, IDisposable } from "jriapp_shared/shared";
+    export class Lazy<T> implements IDisposable {
+        private _val;
+        private _factory;
+        constructor(initializer: ILazyInitializer<T>);
+        readonly Value: T;
+        destroy(): void;
+        getIsDestroyed(): boolean;
+        getIsDestroyCalled(): boolean;
+    }
+}
 declare module "jriapp_shared" {
     export * from "jriapp_shared/const";
     export * from "jriapp_shared/shared";
@@ -1260,4 +1275,5 @@ declare module "jriapp_shared" {
     export { Utils } from "jriapp_shared/utils/utils";
     export { WaitQueue, IWaitQueueItem } from "jriapp_shared/utils/waitqueue";
     export { Debounce } from "jriapp_shared/utils/debounce";
+    export { Lazy } from "jriapp_shared/utils/lazy";
 }

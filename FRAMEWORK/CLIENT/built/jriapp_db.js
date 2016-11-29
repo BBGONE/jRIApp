@@ -1468,16 +1468,12 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared", "jriapp_db/co
         DbSets.prototype._createDbSet = function (name, dbSetType) {
             var self = this, dbContext = this._dbContext;
             if (!!self._dbSets[name])
-                throw new Error(utils.str.format("DbSet: {0} is already exists", name));
-            self._dbSets[name] = function () {
-                var t = new dbSetType(dbContext);
-                var f = function () {
-                    return t;
-                };
-                self._dbSets[name] = f;
-                self._dbSetCreated(t);
-                return f();
-            };
+                throw new Error(utils.str.format("DbSet: {0} is already created", name));
+            self._dbSets[name] = new jriapp_shared_4.Lazy(function () {
+                var res = new dbSetType(dbContext);
+                self._dbSetCreated(res);
+                return res;
+            });
         };
         Object.defineProperty(DbSets.prototype, "dbSetNames", {
             get: function () {
@@ -1494,10 +1490,10 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared", "jriapp_db/co
             configurable: true
         });
         DbSets.prototype.getDbSet = function (name) {
-            var f = this._dbSets[name];
-            if (!f)
+            var res = this._dbSets[name];
+            if (!res)
                 throw new Error(strUtils.format(jriapp_shared_4.LocaleERRS.ERR_DBSET_NAME_INVALID, name));
-            return f();
+            return res.Value;
         };
         DbSets.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -1518,12 +1514,18 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared", "jriapp_db/co
 define("jriapp_db/association", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_5) {
     "use strict";
     var utils = jriapp_shared_5.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr;
+    var _newID = 0;
+    function getNewID() {
+        var id = "$ass" + _newID;
+        _newID += 1;
+        return id;
+    }
     var Association = (function (_super) {
         __extends(Association, _super);
         function Association(options) {
             _super.call(this);
             var self = this;
-            this._objId = "ass" + coreUtils.getNewID();
+            this._objId = getNewID();
             var opts = coreUtils.extend({
                 dbContext: null,
                 parentName: "",
@@ -2336,23 +2338,18 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 parentToChildrenName: assoc.parentToChildrenName,
                 childToParentName: assoc.childToParentName,
                 name: assoc.name
-            };
-            var name = "get" + assoc.name;
-            this._assoc[name] = function () {
-                var t = new association_1.Association(options);
-                self._arrAssoc.push(t);
-                var f = function () {
-                    return t;
-                };
-                self._assoc[name] = f;
-                return f();
-            };
+            }, name = "get" + assoc.name;
+            var lazy = new jriapp_shared_7.Lazy(function () {
+                var res = new association_1.Association(options);
+                self._arrAssoc.push(res);
+                return res;
+            });
+            this._assoc[name] = function () { return lazy.Value; };
         };
         DbContext.prototype._initMethod = function (methodInfo) {
             var self = this;
             this._svcMethods[methodInfo.methodName] = function (args) {
-                var deferred = _async.createDeferred();
-                var callback = function (res) {
+                var deferred = _async.createDeferred(), callback = function (res) {
                     if (!res.error) {
                         deferred.resolve(res.result);
                     }
@@ -2914,11 +2911,10 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             return this._dbSets.getDbSet(name);
         };
         DbContext.prototype.getAssociation = function (name) {
-            var name2 = "get" + name;
-            var f = this._assoc[name2];
-            if (!f)
+            var name2 = "get" + name, fn = this._assoc[name2];
+            if (!fn)
                 throw new Error(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_ASSOC_NAME_INVALID, name));
-            return f();
+            return fn();
         };
         DbContext.prototype.submitChanges = function () {
             var self = this;

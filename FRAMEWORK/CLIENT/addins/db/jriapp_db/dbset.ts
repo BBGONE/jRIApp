@@ -13,10 +13,6 @@ import { BaseCollection } from "jriapp_shared/collection/base";
 import {
     valueUtils, fn_traverseField, fn_traverseFields, fn_getPropertyByName
 } from "jriapp_shared/collection/utils";
-
-const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err,
-    valUtils = valueUtils;
-
 import {
     IFieldName, IEntityItem, IEntityConstructor, IValueChange, IRowInfo, ITrackAssoc, IQueryResponse,
     IPermissions, IDbSetConstuctorOptions, IAssociationInfo, IDbSetInfo, ICalcFieldImpl, INavFieldImpl,
@@ -27,6 +23,10 @@ import { DataCache } from "datacache";
 import { DataQuery } from "dataquery";
 import { DbContext } from "dbcontext";
 import { EntityAspect } from "entity_aspect";
+
+const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err,
+    valUtils = valueUtils;
+
 
 export interface IFillFromServiceArgs {
     res: IQueryResponse;
@@ -131,7 +131,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
 
         self._mapAssocFields();
         Object.freeze(this._perms);
-        let internalObj = {
+        const internalObj = {
             getCalcFieldVal: (fieldName: string, item: TItem) => {
                 return self._getCalcFieldVal(fieldName, item);
             },

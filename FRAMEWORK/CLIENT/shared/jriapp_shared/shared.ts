@@ -42,6 +42,10 @@ export interface ITaskQueue {
     enque(task: () => void): void;
 }
 
+export interface ILazyInitializer<T> {
+    (): T
+}
+
 export interface IBaseObject extends IErrorHandler, IDisposable {
     _isHasProp(prop: string): boolean;
     raisePropertyChanged(name: string): void;

@@ -4271,7 +4271,42 @@ define("jriapp_shared/utils/debounce", ["require", "exports"], function (require
     }());
     exports.Debounce = Debounce;
 });
-define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_shared/shared", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/collection/int", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/collection/validation", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce"], function (require, exports, const_4, shared_6, object_5, lang_9, int_5, base_3, item_1, aspect_2, list_2, dictionary_1, validation_4, utils_10, waitqueue_2, debounce_1) {
+define("jriapp_shared/utils/lazy", ["require", "exports"], function (require, exports) {
+    "use strict";
+    var Lazy = (function () {
+        function Lazy(initializer) {
+            this._val = null;
+            this._factory = initializer;
+        }
+        Object.defineProperty(Lazy.prototype, "Value", {
+            get: function () {
+                if (this._val === null) {
+                    this._val = this._factory();
+                }
+                return this._val;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Lazy.prototype.destroy = function () {
+            if (!this.getIsDestroyed()) {
+                if ("destroy" in this._val) {
+                    this._val.destroy();
+                }
+                this._val = null;
+            }
+        };
+        Lazy.prototype.getIsDestroyed = function () {
+            return this._val === null;
+        };
+        Lazy.prototype.getIsDestroyCalled = function () {
+            return this._val === null;
+        };
+        return Lazy;
+    }());
+    exports.Lazy = Lazy;
+});
+define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_shared/shared", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/collection/int", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/collection/validation", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, const_4, shared_6, object_5, lang_9, int_5, base_3, item_1, aspect_2, list_2, dictionary_1, validation_4, utils_10, waitqueue_2, debounce_1, lazy_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -4295,4 +4330,5 @@ define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_sh
     exports.Utils = utils_10.Utils;
     exports.WaitQueue = waitqueue_2.WaitQueue;
     exports.Debounce = debounce_1.Debounce;
+    exports.Lazy = lazy_1.Lazy;
 });

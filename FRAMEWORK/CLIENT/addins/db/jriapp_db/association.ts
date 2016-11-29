@@ -9,7 +9,14 @@ import { IAssocConstructorOptions, IEntityItem } from "./int";
 import { DbContext } from "./dbcontext";
 import { DbSet } from "./dbset";
 
-const  utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr;
+const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr;
+
+let _newID = 0;
+function getNewID(): string {
+    let id = "$ass" + _newID;
+    _newID += 1;
+    return id;
+}
 
 export class Association extends BaseObject {
     private _objId: string;
@@ -37,8 +44,8 @@ export class Association extends BaseObject {
 
     constructor(options: IAssocConstructorOptions) {
         super();
-        let self = this;
-        this._objId = "ass" + coreUtils.getNewID();
+        const self = this;
+        this._objId = getNewID();
         let opts: IAssocConstructorOptions = coreUtils.extend({
             dbContext: null,
             parentName: "",

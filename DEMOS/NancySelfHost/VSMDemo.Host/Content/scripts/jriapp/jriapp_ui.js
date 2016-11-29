@@ -638,6 +638,12 @@ define("jriapp_ui/generic", ["require", "exports", "jriapp_shared", "jriapp/util
         src: "src",
         click: "click"
     };
+    var _newID = 0;
+    function getNewID() {
+        var id = "$elv" + _newID;
+        _newID += 1;
+        return id;
+    }
     var BaseElView = (function (_super) {
         __extends(BaseElView, _super);
         function BaseElView(options) {
@@ -650,7 +656,7 @@ define("jriapp_ui/generic", ["require", "exports", "jriapp_shared", "jriapp/util
             this._classes = null;
             this._display = null;
             this._css = options.css;
-            this._objId = "elv" + coreUtils.getNewID();
+            this._objId = getNewID();
             this._errors = null;
             if (!!this._css) {
                 dom.addClass([el], this._css);
@@ -5921,6 +5927,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
         function DataGridElView(options) {
             _super.call(this, options);
             this._stateProvider = null;
+            this._stateDebounce = new jriapp_shared_34.Debounce();
             this._grid = null;
             this._options = options;
             this._createGrid();
@@ -5932,6 +5939,8 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
+            this._stateDebounce.destroy();
+            this._stateDebounce = null;
             if (!!this._grid && !this._grid.getIsDestroyCalled()) {
                 this._grid.destroy();
             }
@@ -5992,13 +6001,13 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 if (v !== this._stateProvider) {
                     this._stateProvider = v;
                     this.raisePropertyChanged(const_22.PROP_NAME.stateProvider);
-                    setTimeout(function () {
+                    this._stateDebounce.enqueue(function () {
                         if (!_this._grid || _this._grid.getIsDestroyCalled())
                             return;
                         _this._grid.rows.forEach(function (row) {
                             row.updateUIState();
                         });
-                    }, 0);
+                    });
                 }
             },
             enumerable: true,

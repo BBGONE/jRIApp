@@ -921,11 +921,17 @@ namespace RIAPP.DataService.Utils
             object value;
             if (keywords.TryGetValue(token.text, out value))
             {
-                if (value is Type) return ParseTypeAccess((Type) value);
-                if ((string)value == keywordIt) return ParseIt();
-                if ((string)value == keywordOuterIt) return ParseOuterIt();
-                if ((string)value == keywordIif) return ParseIif();
-                if ((string)value == keywordNew) return ParseNew();
+                if (value is Type)
+                {
+                    return ParseTypeAccess((Type)value);
+                }
+                else if (value is string)
+                {
+                    if ((string)value == keywordIt) return ParseIt();
+                    if ((string)value == keywordOuterIt) return ParseOuterIt();
+                    if ((string)value == keywordIif) return ParseIif();
+                    if ((string)value == keywordNew) return ParseNew();
+                }
                 NextToken();
                 return (Expression) value;
             }

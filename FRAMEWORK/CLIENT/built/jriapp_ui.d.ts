@@ -1300,6 +1300,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         private _grid;
         private _options;
         private _stateProvider;
+        private _stateDebounce;
         constructor(options: IDataGridViewOptions);
         toString(): string;
         destroy(): void;

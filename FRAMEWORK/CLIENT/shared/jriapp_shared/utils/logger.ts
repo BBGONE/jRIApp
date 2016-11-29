@@ -1,4 +1,6 @@
-﻿export class LOGGER {
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+
+export class LOGGER {
     static log(str: string): void {
         console.log(str);
     }

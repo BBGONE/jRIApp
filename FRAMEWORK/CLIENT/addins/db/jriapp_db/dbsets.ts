@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { BaseObject, LocaleERRS as ERRS, Utils } from "jriapp_shared";
+import { BaseObject, LocaleERRS as ERRS, Utils, Lazy, IIndexer } from "jriapp_shared";
 import { PROP_NAME } from "./const";
 import { IEntityItem } from "./int";
 import { DbContext } from "./dbcontext";
@@ -7,11 +7,12 @@ import { DbSet, IDbSetConstructor } from "./dbset";
 
 const utils = Utils, strUtils = utils.str;
 
-//implements the lazy initialization pattern for creation of DbSet's instances
+export type TDbSet = DbSet<IEntityItem, DbContext>;
+
 export class DbSets extends BaseObject {
     private _dbContext: DbContext;
-    private _dbSets: { [name: string]: () => DbSet<IEntityItem, DbContext>; };
-    private _arrDbSets: DbSet<IEntityItem, DbContext>[];
+    private _dbSets: IIndexer<Lazy<TDbSet>>;
+    private _arrDbSets: TDbSet[];
 
     constructor(dbContext: DbContext) {
         super();
@@ -19,27 +20,22 @@ export class DbSets extends BaseObject {
         this._arrDbSets = [];
         this._dbSets = {};
     }
-    protected _dbSetCreated(dbSet: DbSet<IEntityItem, DbContext>) {
-        let self = this;
+    protected _dbSetCreated(dbSet: TDbSet) {
+        const self = this;
         this._arrDbSets.push(dbSet);
         dbSet.addOnPropertyChange(PROP_NAME.isHasChanges, function (sender, args) {
             self._dbContext._getInternal().onDbSetHasChangesChanged(sender);
         });
     }
     protected _createDbSet(name: string, dbSetType: IDbSetConstructor<IEntityItem>) {
-        let self = this, dbContext = this._dbContext;
+        const self = this, dbContext = this._dbContext;
         if (!!self._dbSets[name])
-            throw new Error(utils.str.format("DbSet: {0} is already exists", name));
-        //Lazy creation pattern
-        self._dbSets[name] = function () {
-            let t = new dbSetType(dbContext);
-            let f = function () {
-                return t;
-            };
-            self._dbSets[name] = f;
-            self._dbSetCreated(t);
-            return f();
-        };
+            throw new Error(utils.str.format("DbSet: {0} is already created", name));
+        self._dbSets[name] = new Lazy<DbSet<IEntityItem,DbContext>>(() => {
+            const res = new dbSetType(dbContext);
+            self._dbSetCreated(res);
+            return res;
+        });
     }
     get dbSetNames() {
         return Object.keys(this._dbSets);
@@ -47,11 +43,11 @@ export class DbSets extends BaseObject {
     get arrDbSets() {
         return this._arrDbSets;
     }
-    getDbSet(name: string) {
-        let f = this._dbSets[name];
-        if (!f)
+    getDbSet(name: string): TDbSet {
+        const res = this._dbSets[name];
+        if (!res)
             throw new Error(strUtils.format(ERRS.ERR_DBSET_NAME_INVALID, name));
-        return f();
+        return res.Value;
     }
     destroy() {
         if (this._isDestroyed)

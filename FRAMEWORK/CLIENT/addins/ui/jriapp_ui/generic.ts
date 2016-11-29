@@ -69,6 +69,13 @@ export const PROP_NAME = {
     click: "click"
 };
 
+let _newID = 0;
+function getNewID(): string {
+    let id = "$elv" + _newID;
+    _newID += 1;
+    return id;
+}
+
 
 export class BaseElView extends BaseObject implements IElView {
     private _objId: string;
@@ -95,7 +102,7 @@ export class BaseElView extends BaseObject implements IElView {
         this._display = null;
         this._css = options.css;
 
-        this._objId = "elv" + coreUtils.getNewID();
+        this._objId = getNewID();
         this._errors = null;
         if (!!this._css) {
             dom.addClass([el], this._css);

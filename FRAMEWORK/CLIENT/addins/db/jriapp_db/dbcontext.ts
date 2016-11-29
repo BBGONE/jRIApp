@@ -3,7 +3,7 @@ import {
     FIELD_TYPE, DATE_CONVERSION, DATA_TYPE, SORT_ORDER
 } from "jriapp_shared/const";
 import {
-    IIndexer, IVoidPromise, AbortError, IBaseObject, TEventHandler, LocaleERRS as ERRS, BaseObject, Utils, WaitQueue
+    IIndexer, IVoidPromise, AbortError, IBaseObject, TEventHandler, LocaleERRS as ERRS, BaseObject, Utils, WaitQueue, Lazy
 } from "jriapp_shared";
 import {
     IPromiseState, IPromise, IAbortablePromise, PromiseState, IDeferred
@@ -83,7 +83,7 @@ export class DbContext extends BaseObject {
     protected _dbSets: DbSets;
     //_svcMethods: { [methodName: string]: (args: { [paramName: string]: any; }) => IPromise<any>; };
     protected _svcMethods: any;
-    //_assoc:  { [getname: string]: () => Association; }
+    //_assoc: IIndexer<() => Association>;
     protected _assoc: any;
     private _arrAssoc: Association[];
     private _queryInf: { [queryName: string]: IQueryInfo; };
@@ -97,7 +97,7 @@ export class DbContext extends BaseObject {
 
     constructor() {
         super();
-        let self = this;
+        const self = this;
         this._initState = null;
         this._requestHeaders = {};
         this._requests = [];
@@ -165,7 +165,7 @@ export class DbContext extends BaseObject {
         });
     }
     protected _initAssociation(assoc: IAssociationInfo) {
-        let self = this, options: IAssocConstructorOptions = {
+        const self = this, options: IAssocConstructorOptions = {
             dbContext: self,
             parentName: assoc.parentDbSetName,
             childName: assoc.childDbSetName,
@@ -179,27 +179,19 @@ export class DbContext extends BaseObject {
             parentToChildrenName: assoc.parentToChildrenName,
             childToParentName: assoc.childToParentName,
             name: assoc.name
-        };
-        let name = "get" + assoc.name;
-
-        //lazy initialization pattern
-        this._assoc[name] = function () {
-            let t = new Association(options);
-            self._arrAssoc.push(t);
-            let f = function () {
-                return t;
-            };
-            self._assoc[name] = f;
-            return f();
-        };
-
+        }, name = "get" + assoc.name;
+        const lazy = new Lazy<Association>(() => {
+            const res = new Association(options);
+            self._arrAssoc.push(res);
+            return res;
+        });
+        this._assoc[name] = () => lazy.Value;
     }
     protected _initMethod(methodInfo: IQueryInfo) {
-        let self = this;
+        const self = this;
         //function expects method parameters
         this._svcMethods[methodInfo.methodName] = function (args: { [paramName: string]: any; }) {
-            let deferred = _async.createDeferred<any>();
-            let callback = function (res: { result: any; error: any; }) {
+            const deferred = _async.createDeferred<any>(), callback = function (res: { result: any; error: any; }) {
                 if (!res.error) {
                     deferred.resolve(res.result);
                 }
@@ -209,7 +201,7 @@ export class DbContext extends BaseObject {
             };
 
             try {
-                let data = self._getMethodParams(methodInfo, args);
+                const data = self._getMethodParams(methodInfo, args);
                 self._invokeMethod(methodInfo, data, callback);
             } catch (ex) {
                 if (!ERROR.checkIsDummy(ex)) {
@@ -833,11 +825,10 @@ export class DbContext extends BaseObject {
         return this._dbSets.getDbSet(name);
     }
     getAssociation(name: string): Association {
-        let name2 = "get" + name;
-        let f = this._assoc[name2];
-        if (!f)
+        const name2 = "get" + name, fn = this._assoc[name2];
+        if (!fn)
             throw new Error(strUtils.format(ERRS.ERR_ASSOC_NAME_INVALID, name));
-        return f();
+        return fn();
     }
     submitChanges(): IVoidPromise {
         const self = this;
