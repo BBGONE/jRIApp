@@ -939,6 +939,7 @@ declare module "jriapp_ui/datagrid/rows/row" {
         destroy(): void;
         deleteRow(): void;
         updateErrorState(): void;
+        updateUIState(): void;
         scrollIntoView(animate?: boolean, pos?: ROW_POSITION): void;
         toString(): string;
         readonly offset: JQueryCoordinates;
@@ -1307,7 +1308,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         dataSource: any;
         readonly grid: DataGrid;
         stateProvider: IRowStateProvider;
-        animation: any;
+        animation: IDataGridAnimation;
     }
 }
 declare module "jriapp_ui/pager" {

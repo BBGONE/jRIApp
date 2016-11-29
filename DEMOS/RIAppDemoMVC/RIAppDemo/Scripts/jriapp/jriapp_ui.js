@@ -4170,6 +4170,9 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_shared", "j
             var hasErrors = this._item._aspect.getIsHasErrors();
             dom.setClass(this._$tr.toArray(), const_16.css.rowError, !hasErrors);
         };
+        Row.prototype.updateUIState = function () {
+            fn_state(this);
+        };
         Row.prototype.scrollIntoView = function (animate, pos) {
             this.grid.scrollToRow({ row: this, animate: animate, pos: pos });
         };
@@ -5985,9 +5988,17 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
         Object.defineProperty(DataGridElView.prototype, "stateProvider", {
             get: function () { return this._stateProvider; },
             set: function (v) {
+                var _this = this;
                 if (v !== this._stateProvider) {
                     this._stateProvider = v;
                     this.raisePropertyChanged(const_22.PROP_NAME.stateProvider);
+                    setTimeout(function () {
+                        if (!_this._grid || _this._grid.getIsDestroyCalled())
+                            return;
+                        _this._grid.rows.forEach(function (row) {
+                            row.updateUIState();
+                        });
+                    }, 0);
                 }
             },
             enumerable: true,
@@ -5995,13 +6006,9 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
         });
         Object.defineProperty(DataGridElView.prototype, "animation", {
             get: function () {
-                if (this.getIsDestroyCalled())
-                    return checks.undefined;
                 return this._grid.options.animation;
             },
             set: function (v) {
-                if (this._isDestroyCalled)
-                    return;
                 if (this.animation !== v) {
                     this._grid.options.animation = v;
                     this.raisePropertyChanged(const_22.PROP_NAME.animation);

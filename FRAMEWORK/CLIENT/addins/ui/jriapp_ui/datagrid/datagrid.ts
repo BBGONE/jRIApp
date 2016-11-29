@@ -1276,16 +1276,19 @@ export class DataGridElView extends BaseElView {
         if (v !== this._stateProvider) {
             this._stateProvider = v;
             this.raisePropertyChanged(PROP_NAME.stateProvider);
+            setTimeout(() => {
+                if (!this._grid || this._grid.getIsDestroyCalled())
+                    return;
+                this._grid.rows.forEach((row) => {
+                    row.updateUIState();
+                });
+            }, 0);
         }
     }
     get animation() {
-        if (this.getIsDestroyCalled())
-            return checks.undefined;
         return this._grid.options.animation;
     }
     set animation(v) {
-        if (this._isDestroyCalled)
-            return;
         if (this.animation !== v) {
             this._grid.options.animation = v;
             this.raisePropertyChanged(PROP_NAME.animation);

@@ -96,10 +96,6 @@ export interface IRefreshRowInfo {
     error: { name: string; message: string; };
 }
 
-export interface IDbSetOptions extends ICollectionOptions {
-    dbSetName: string;
-}
-
 export interface IDbSetConstuctorOptions {
     dbContext: DbContext;
     dbSetInfo: IDbSetInfo;

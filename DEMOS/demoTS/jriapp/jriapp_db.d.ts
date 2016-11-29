@@ -153,7 +153,7 @@ declare module "jriapp_db/dbset" {
     import { IFieldInfo, TEventHandler, IBaseObject, IPromise, TPriority } from "jriapp_shared";
     import { IInternalCollMethods, COLL_CHANGE_REASON, ITEM_STATUS } from "jriapp_shared/collection/int";
     import { BaseCollection } from "jriapp_shared/collection/base";
-    import { IFieldName, IEntityItem, IEntityConstructor, IRowInfo, ITrackAssoc, IQueryResponse, IPermissions, IDbSetConstuctorOptions, IDbSetOptions, ICalcFieldImpl, INavFieldImpl, IQueryResult, IRowData, IDbSetLoadedArgs } from "jriapp_db/int";
+    import { IFieldName, IEntityItem, IEntityConstructor, IRowInfo, ITrackAssoc, IQueryResponse, IPermissions, IDbSetConstuctorOptions, ICalcFieldImpl, INavFieldImpl, IQueryResult, IRowData, IDbSetLoadedArgs } from "jriapp_db/int";
     import { REFRESH_MODE } from "jriapp_db/const";
     import { DataQuery } from "jriapp_db/dataquery";
     import { DbContext } from "jriapp_db/dbcontext";
@@ -196,7 +196,6 @@ declare module "jriapp_db/dbset" {
         private _parentAssocMap;
         private _changeCount;
         private _changeCache;
-        protected _options: IDbSetOptions;
         protected _navfldMap: {
             [fieldName: string]: INavFieldImpl<TItem>;
         };
@@ -210,6 +209,7 @@ declare module "jriapp_db/dbset" {
         protected _ignorePageChanged: boolean;
         protected _query: DataQuery<TItem>;
         private _pageDebounce;
+        private _dbSetName;
         constructor(opts: IDbSetConstuctorOptions);
         handleError(error: any, source: any): boolean;
         protected _getEventNames(): string[];
@@ -583,7 +583,7 @@ declare module "jriapp_db/entity_aspect" {
 declare module "jriapp_db/int" {
     import { DATE_CONVERSION, FILTER_TYPE, DATA_TYPE, SORT_ORDER } from "jriapp_shared/const";
     import { IFieldInfo } from "jriapp_shared";
-    import { ICollectionItem, IPermissions as ICollPermissions, ICollectionOptions, COLL_CHANGE_REASON } from "jriapp_shared/collection/int";
+    import { ICollectionItem, IPermissions as ICollPermissions, COLL_CHANGE_REASON } from "jriapp_shared/collection/int";
     import { DELETE_ACTION } from "jriapp_db/const";
     import { EntityAspect } from "jriapp_db/entity_aspect";
     import { DbContext } from "jriapp_db/dbcontext";
@@ -662,9 +662,6 @@ declare module "jriapp_db/int" {
             name: string;
             message: string;
         };
-    }
-    export interface IDbSetOptions extends ICollectionOptions {
-        dbSetName: string;
     }
     export interface IDbSetConstuctorOptions {
         dbContext: DbContext;

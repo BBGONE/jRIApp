@@ -578,7 +578,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             _super.call(this);
             var self = this, dbContext = opts.dbContext, dbSetInfo = opts.dbSetInfo, fieldInfos = dbSetInfo.fieldInfos;
             this._dbContext = dbContext;
-            this._options.dbSetName = dbSetInfo.dbSetName;
+            this._dbSetName = dbSetInfo.dbSetName;
             this._options.enablePaging = dbSetInfo.enablePaging;
             this._options.pageSize = dbSetInfo.pageSize;
             this._query = null;
@@ -793,7 +793,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         };
         DbSet.prototype._setCurrentItem = function (v) {
             if (!!v && !(v instanceof this._entityType)) {
-                throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_PARAM_INVALID_TYPE, "currentItem", this._options.dbSetName));
+                throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_PARAM_INVALID_TYPE, "currentItem", this.dbSetName));
             }
             _super.prototype._setCurrentItem.call(this, v);
         };
@@ -1381,7 +1381,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             _super.prototype.destroy.call(this);
         };
         DbSet.prototype.toString = function () {
-            return this._options.dbSetName;
+            return this.dbSetName;
         };
         Object.defineProperty(DbSet.prototype, "items", {
             get: function () { return this._items; },
@@ -1396,7 +1396,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             configurable: true
         });
         Object.defineProperty(DbSet.prototype, "dbSetName", {
-            get: function () { return this._options.dbSetName; },
+            get: function () { return this._dbSetName; },
             enumerable: true,
             configurable: true
         });

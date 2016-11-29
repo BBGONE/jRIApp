@@ -2440,8 +2440,9 @@ define("jriapp/datepicker", ["require", "exports", "jriapp_shared", "jriapp/boot
                     var regional = this.datePickerFn.regional[this._datepickerRegion];
                     return regional.dateFormat;
                 }
-                else
+                else {
                     return this._dateFormat;
+                }
             },
             set: function (v) {
                 if (this.dateFormat !== v) {
@@ -3613,6 +3614,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.0.7";
+    exports.VERSION = "1.0.9";
     bootstrap_8.Bootstrap._initFramework();
 });

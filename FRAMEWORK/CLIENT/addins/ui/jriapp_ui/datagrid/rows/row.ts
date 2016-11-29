@@ -173,6 +173,9 @@ export class Row extends BaseObject {
         const hasErrors = this._item._aspect.getIsHasErrors();
         dom.setClass(this._$tr.toArray(), css.rowError, !hasErrors);
     }
+    updateUIState() {
+        fn_state(this);
+    }
     scrollIntoView(animate?: boolean, pos?: ROW_POSITION) {
         this.grid.scrollToRow({ row: this, animate: animate, pos: pos });
     }

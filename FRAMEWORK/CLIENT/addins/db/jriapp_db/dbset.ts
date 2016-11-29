@@ -18,9 +18,9 @@ const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = uti
     valUtils = valueUtils;
 
 import {
-    IFieldName, IEntityItem, IEntityConstructor, IValueChange, IRowInfo, ITrackAssoc, IQueryResponse, IPermissions, IDbSetConstuctorOptions, IDbSetOptions,
-    IAssociationInfo, IDbSetInfo, ICalcFieldImpl, INavFieldImpl, IQueryResult, IQueryRequest, IQueryParamInfo, IRowData,
-    IDbSetLoadedArgs
+    IFieldName, IEntityItem, IEntityConstructor, IValueChange, IRowInfo, ITrackAssoc, IQueryResponse,
+    IPermissions, IDbSetConstuctorOptions, IAssociationInfo, IDbSetInfo, ICalcFieldImpl, INavFieldImpl,
+    IQueryResult, IQueryRequest, IQueryParamInfo, IRowData, IDbSetLoadedArgs
 } from "int";
 import { PROP_NAME, REFRESH_MODE } from "const";
 import { DataCache } from "datacache";
@@ -75,7 +75,6 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
     private _parentAssocMap: { [fieldName: string]: IAssociationInfo; };
     private _changeCount: number;
     private _changeCache: { [key: string]: TItem; };
-    protected _options: IDbSetOptions;
     protected _navfldMap: { [fieldName: string]: INavFieldImpl<TItem>; };
     protected _calcfldMap: { [fieldName: string]: ICalcFieldImpl<TItem>; };
     protected _itemsByKey: { [key: string]: TItem; };
@@ -83,12 +82,13 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
     protected _ignorePageChanged: boolean;
     protected _query: DataQuery<TItem>;
     private _pageDebounce: Debounce;
+    private _dbSetName: string;
 
     constructor(opts: IDbSetConstuctorOptions) {
         super();
         let self = this, dbContext = opts.dbContext, dbSetInfo = opts.dbSetInfo, fieldInfos = dbSetInfo.fieldInfos;
         this._dbContext = <TDbContext>dbContext;
-        this._options.dbSetName = dbSetInfo.dbSetName;
+        this._dbSetName = dbSetInfo.dbSetName;
         this._options.enablePaging = dbSetInfo.enablePaging;
         this._options.pageSize = dbSetInfo.pageSize;
         this._query = null;
@@ -323,7 +323,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
     }
     protected _setCurrentItem(v: TItem) {
         if (!!v && !(v instanceof this._entityType)) {
-            throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID_TYPE, "currentItem", this._options.dbSetName));
+            throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID_TYPE, "currentItem", this.dbSetName));
         }
         super._setCurrentItem(v);
     }
@@ -972,13 +972,13 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         super.destroy();
     }
     toString() {
-        return this._options.dbSetName;
+        return this.dbSetName;
     }
     get items() { return this._items; }
     get dbContext(): TDbContext {
         return this._dbContext;
     }
-    get dbSetName() { return this._options.dbSetName; }
+    get dbSetName() { return this._dbSetName; }
     get entityType() { return this._entityType; }
     get query() { return this._query; }
     get isHasChanges(): boolean { return this._changeCount > 0; }
