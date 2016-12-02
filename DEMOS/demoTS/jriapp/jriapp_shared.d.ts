@@ -8,6 +8,15 @@ declare module "jriapp_shared/const" {
     export const DUMY_ERROR: string;
 }
 declare module "jriapp_shared/iasync" {
+    export const enum PromiseState {
+        Pending = 0,
+        ResolutionInProgress = 1,
+        Resolved = 2,
+        Rejected = 3,
+    }
+    export interface IPromiseState {
+        state(): PromiseState;
+    }
     export interface ITaskQueue {
         enque(task: () => void): void;
     }
@@ -57,28 +66,19 @@ declare module "jriapp_shared/iasync" {
         reject(error?: any): IPromise<T>;
         promise(): IPromise<T>;
     }
-    export const enum PromiseState {
-        Pending = 0,
-        ResolutionInProgress = 1,
-        Resolved = 2,
-        Rejected = 3,
-    }
-    export interface IPromiseState {
-        state(): PromiseState;
-    }
     export interface IStatefulPromise<T> extends IPromise<T>, IPromiseState {
-        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IDeferredErrorCB<TP>): IPromise<TP>;
-        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IErrorCB<TP>): IPromise<TP>;
-        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IVoidErrorCB): IPromise<TP>;
-        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IDeferredErrorCB<TP>): IPromise<TP>;
-        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IErrorCB<TP>): IPromise<TP>;
-        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IVoidErrorCB): IPromise<TP>;
-        always<TP>(errorCB?: IDeferredErrorCB<TP>): IPromise<TP>;
-        always<TP>(errorCB?: IErrorCB<TP>): IPromise<TP>;
-        always(errorCB?: IVoidErrorCB): IPromise<void>;
-        fail(errorCB?: IDeferredErrorCB<T>): IPromise<T>;
-        fail(errorCB?: IErrorCB<T>): IPromise<T>;
-        fail(errorCB?: IVoidErrorCB): IPromise<void>;
+        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
+        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
+        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IVoidErrorCB): IStatefulPromise<TP>;
+        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
+        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
+        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IVoidErrorCB): IStatefulPromise<TP>;
+        always<TP>(errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
+        always<TP>(errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
+        always(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
+        fail(errorCB?: IDeferredErrorCB<T>): IStatefulPromise<T>;
+        fail(errorCB?: IErrorCB<T>): IStatefulPromise<T>;
+        fail(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
     }
     export interface IAbortablePromise<T> extends IStatefulPromise<T>, IAbortable {
     }
@@ -835,7 +835,7 @@ declare module "jriapp_shared/utils/logger" {
     }
 }
 declare module "jriapp_shared/utils/deferred" {
-    import { IStatefulDeferred, IStatefulPromise, IThenable, ITaskQueue, PromiseState, IPromise, IAbortablePromise, IDeferredErrorCB, IDeferredSuccessCB, IErrorCB, IVoidErrorCB, ISuccessCB, IAbortable } from "jriapp_shared/iasync";
+    import { IStatefulDeferred, IStatefulPromise, IThenable, ITaskQueue, PromiseState, IAbortablePromise, IDeferredErrorCB, IDeferredSuccessCB, IErrorCB, IVoidErrorCB, ISuccessCB, IAbortable } from "jriapp_shared/iasync";
     export function createDefer<T>(): IStatefulDeferred<T>;
     export function createSyncDefer<T>(): IStatefulDeferred<T>;
     export function getTaskQueue(): ITaskQueue;
@@ -845,18 +845,18 @@ declare module "jriapp_shared/utils/deferred" {
         private _abortable;
         private _aborted;
         constructor(deferred: IStatefulDeferred<T>, abortable: IAbortable);
-        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IDeferredErrorCB<TP>): IPromise<TP>;
-        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IErrorCB<TP>): IPromise<TP>;
-        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IVoidErrorCB): IPromise<TP>;
-        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IDeferredErrorCB<TP>): IPromise<TP>;
-        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IErrorCB<TP>): IPromise<TP>;
-        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IVoidErrorCB): IPromise<TP>;
-        fail(errorCB?: IDeferredErrorCB<T>): IPromise<T>;
-        fail(errorCB?: IErrorCB<T>): IPromise<T>;
-        fail(errorCB?: IVoidErrorCB): IPromise<void>;
-        always<TP>(errorCB?: IDeferredErrorCB<TP>): IPromise<TP>;
-        always<TP>(errorCB?: IErrorCB<TP>): IPromise<TP>;
-        always(errorCB?: IVoidErrorCB): IPromise<void>;
+        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
+        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
+        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IVoidErrorCB): IStatefulPromise<TP>;
+        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
+        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
+        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IVoidErrorCB): IStatefulPromise<TP>;
+        fail(errorCB?: IDeferredErrorCB<T>): IStatefulPromise<T>;
+        fail(errorCB?: IErrorCB<T>): IStatefulPromise<T>;
+        fail(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
+        always<TP>(errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
+        always<TP>(errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
+        always(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
         abort(reason?: string): void;
         state(): PromiseState;
     }
@@ -1244,14 +1244,11 @@ declare module "jriapp_shared/collection/dictionary" {
 declare module "jriapp_shared/utils/debounce" {
     import { IDisposable } from "jriapp_shared/int";
     export class Debounce implements IDisposable {
-        private _isDestroyed;
         private _timer;
         private _interval;
         constructor(interval?: number);
         enqueue(fn: () => any): void;
         destroy(): void;
-        getIsDestroyed(): boolean;
-        getIsDestroyCalled(): boolean;
         interval: number;
     }
 }

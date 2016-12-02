@@ -1579,6 +1579,7 @@ define("jriapp_shared/utils/logger", ["require", "exports"], function (require, 
 define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/errors", "jriapp_shared/utils/checks"], function (require, exports, errors_2, checks_5) {
     "use strict";
     var checks = checks_5.Checks;
+    var taskQueue = null;
     function createDefer() {
         return new Deferred(fn_dispatch);
     }
@@ -1588,6 +1589,9 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
     }
     exports.createSyncDefer = createSyncDefer;
     function getTaskQueue() {
+        if (!taskQueue) {
+            taskQueue = new TaskQueue();
+        }
         return taskQueue;
     }
     exports.getTaskQueue = getTaskQueue;
@@ -1632,7 +1636,7 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
     }
     exports.whenAll = whenAll;
     function fn_dispatch(task) {
-        taskQueue.enque(task);
+        getTaskQueue().enque(task);
     }
     function fn_dispatchImmediate(task) {
         task();
@@ -1861,7 +1865,6 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
         return AbortablePromise;
     }());
     exports.AbortablePromise = AbortablePromise;
-    var taskQueue = new TaskQueue();
 });
 define("jriapp_shared/utils/async", ["require", "exports", "jriapp_shared/utils/deferred", "jriapp_shared/utils/checks"], function (require, exports, deferred_1, checks_6) {
     "use strict";
@@ -4235,34 +4238,26 @@ define("jriapp_shared/utils/debounce", ["require", "exports"], function (require
     var Debounce = (function () {
         function Debounce(interval) {
             if (interval === void 0) { interval = 0; }
-            this._isDestroyed = false;
             this._timer = null;
             this._interval = !interval ? 0 : interval;
         }
         Debounce.prototype.enqueue = function (fn) {
             var _this = this;
-            if (this._isDestroyed)
+            if (this._timer === void 0)
                 return;
-            clearTimeout(this._timer);
+            if (!!this._timer) {
+                clearTimeout(this._timer);
+            }
             this._timer = setTimeout(function () {
                 _this._timer = null;
-                if (_this._isDestroyed)
-                    return;
                 fn();
             }, this._interval);
         };
         Debounce.prototype.destroy = function () {
-            if (this._isDestroyed)
-                return;
-            this._isDestroyed = true;
-            clearTimeout(this._timer);
-            this._timer = null;
-        };
-        Debounce.prototype.getIsDestroyed = function () {
-            return this._isDestroyed;
-        };
-        Debounce.prototype.getIsDestroyCalled = function () {
-            return this._isDestroyed;
+            if (!!this._timer) {
+                clearTimeout(this._timer);
+            }
+            this._timer = void 0;
         };
         Object.defineProperty(Debounce.prototype, "interval", {
             get: function () {

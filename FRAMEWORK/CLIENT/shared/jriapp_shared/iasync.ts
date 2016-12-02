@@ -1,4 +1,10 @@
-﻿export interface ITaskQueue {
+﻿export const enum PromiseState { Pending, ResolutionInProgress, Resolved, Rejected }
+
+export interface IPromiseState {
+    state(): PromiseState;
+}
+
+export interface ITaskQueue {
     enque(task: () => void): void;
 }
 
@@ -93,45 +99,39 @@ export interface IDeferred<T> {
     promise(): IPromise<T>;
 }
 
-export const enum PromiseState { Pending, ResolutionInProgress, Resolved, Rejected }
-
-export interface IPromiseState {
-    state(): PromiseState;
-}
-
 export interface IStatefulPromise<T> extends IPromise<T>, IPromiseState {
     then<TP>(
         successCB?: IDeferredSuccessCB<T, TP>,
         errorCB?: IDeferredErrorCB<TP>
-    ): IPromise<TP>;
+    ): IStatefulPromise<TP>;
     then<TP>(
         successCB?: IDeferredSuccessCB<T, TP>,
         errorCB?: IErrorCB<TP>
-    ): IPromise<TP>;
+    ): IStatefulPromise<TP>;
     then<TP>(
         successCB?: IDeferredSuccessCB<T, TP>,
         errorCB?: IVoidErrorCB
-    ): IPromise<TP>;
+    ): IStatefulPromise<TP>;
     then<TP>(
         successCB?: ISuccessCB<T, TP>,
         errorCB?: IDeferredErrorCB<TP>
-    ): IPromise<TP>;
+    ): IStatefulPromise<TP>;
     then<TP>(
         successCB?: ISuccessCB<T, TP>,
         errorCB?: IErrorCB<TP>
-    ): IPromise<TP>;
+    ): IStatefulPromise<TP>;
     then<TP>(
         successCB?: ISuccessCB<T, TP>,
         errorCB?: IVoidErrorCB
-    ): IPromise<TP>;
+    ): IStatefulPromise<TP>;
 
-    always<TP>(errorCB?: IDeferredErrorCB<TP>): IPromise<TP>;
-    always<TP>(errorCB?: IErrorCB<TP>): IPromise<TP>;
-    always(errorCB?: IVoidErrorCB): IPromise<void>;
+    always<TP>(errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
+    always<TP>(errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
+    always(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
 
-    fail(errorCB?: IDeferredErrorCB<T>): IPromise<T>;
-    fail(errorCB?: IErrorCB<T>): IPromise<T>;
-    fail(errorCB?: IVoidErrorCB): IPromise<void>;
+    fail(errorCB?: IDeferredErrorCB<T>): IStatefulPromise<T>;
+    fail(errorCB?: IErrorCB<T>): IStatefulPromise<T>;
+    fail(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
 }
 
 export interface IAbortablePromise<T> extends IStatefulPromise<T>, IAbortable {

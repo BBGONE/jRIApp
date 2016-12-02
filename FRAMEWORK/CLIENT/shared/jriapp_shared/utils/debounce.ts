@@ -2,38 +2,30 @@
 import { IDisposable } from "../int";
 
 export class Debounce implements IDisposable {
-    private _isDestroyed: boolean;
     private _timer: number;
     private _interval: number;
 
     constructor(interval: number = 0) {
-        this._isDestroyed = false;
         this._timer = null;
         this._interval = !interval ? 0 : interval;
     }
     enqueue(fn: () => any) {
-        if (this._isDestroyed)
+        if (this._timer === void 0)
             return;
-        clearTimeout(this._timer);
+
+        if (!!this._timer) {
+            clearTimeout(this._timer);
+        }
         this._timer = setTimeout(() => {
             this._timer = null;
-            if (this._isDestroyed)
-                return;
             fn();
         }, this._interval);
     }
     destroy(): void {
-        if (this._isDestroyed)
-            return;
-        this._isDestroyed = true;
-        clearTimeout(this._timer);
-        this._timer = null;
-    }
-    getIsDestroyed(): boolean {
-        return this._isDestroyed;
-    }
-    getIsDestroyCalled(): boolean {
-        return this._isDestroyed;
+        if (!!this._timer) {
+            clearTimeout(this._timer);
+        }
+        this._timer = void 0;
     }
     get interval() {
         return this._interval;
