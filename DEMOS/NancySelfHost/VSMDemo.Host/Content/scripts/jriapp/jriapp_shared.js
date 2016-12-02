@@ -4279,11 +4279,16 @@ define("jriapp_shared/utils/lazy", ["require", "exports"], function (require, ex
         function Lazy(factory) {
             this._val = null;
             this._factory = factory;
+            if (!this._factory)
+                new Error("Invalid value factory provided in Lazy class constructor");
         }
         Object.defineProperty(Lazy.prototype, "Value", {
             get: function () {
                 if (this._val === null) {
                     this._val = this._factory();
+                    if (!this._val)
+                        new Error("the value factory did'not returned an object");
+                    this._factory = null;
                 }
                 return this._val;
             },
@@ -4297,6 +4302,7 @@ define("jriapp_shared/utils/lazy", ["require", "exports"], function (require, ex
                 }
                 this._val = void 0;
             }
+            this._factory = null;
         };
         Object.defineProperty(Lazy.prototype, "IsValueCreated", {
             get: function () {

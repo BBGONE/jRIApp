@@ -1,4 +1,5 @@
-﻿import { DUMY_ERROR } from "./const";
+﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+import { DUMY_ERROR } from "./const";
 
 export class BaseError {
     private _message: string;
