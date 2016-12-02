@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    ISubmittable, IErrorNotification, IEditable, IPromise, IPropertyBag
-} from "../shared";
+    ISubmittable, IErrorNotification, IEditable, IPropertyBag
+} from "../int";
 import { Checks } from "./checks";
 import { StringUtils } from "./strUtils";
 

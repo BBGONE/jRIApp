@@ -1,13 +1,13 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    FIELD_TYPE, DATE_CONVERSION, DATA_TYPE, SORT_ORDER
-} from "jriapp_shared/const";
+    FIELD_TYPE, DATE_CONVERSION, DATA_TYPE, SORT_ORDER, ITEM_STATUS
+} from "jriapp_shared/collection/const";
 import {
-    IFieldInfo, IIndexer, IValidationInfo, IVoidPromise, IPromise, LocaleERRS as ERRS, Utils
+    IIndexer, IValidationInfo, IVoidPromise, IPromise, LocaleERRS as ERRS, Utils
 } from "jriapp_shared";
 import { valueUtils, fn_traverseFields } from "jriapp_shared/collection/utils";
 import { ValidationError } from "jriapp_shared/collection/validation";
-import { ICancellableArgs, ITEM_STATUS } from "jriapp_shared/collection/int";
+import { ICancellableArgs, IFieldInfo } from "jriapp_shared/collection/int";
 import { ItemAspect } from "jriapp_shared/collection/aspect";
 import { FLAGS, REFRESH_MODE, PROP_NAME } from "./const";
 import { DbContext } from "./dbcontext";

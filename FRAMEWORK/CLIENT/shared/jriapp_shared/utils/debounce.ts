@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IDisposable } from "../shared";
+import { IDisposable } from "../int";
 
 export class Debounce implements IDisposable {
     private _isDestroyed: boolean;

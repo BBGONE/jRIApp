@@ -1,10 +1,10 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    DATE_CONVERSION, FILTER_TYPE, DATA_TYPE, SORT_ORDER
-} from "jriapp_shared/const";
-import { IFieldInfo } from "jriapp_shared";
+    DATE_CONVERSION, FILTER_TYPE, DATA_TYPE, SORT_ORDER, COLL_CHANGE_REASON
+} from "jriapp_shared/collection/const";
 import {
-    ICollectionItem, IPermissions as ICollPermissions, ICollectionOptions, COLL_CHANGE_REASON
+    ICollectionItem, IPermissions as ICollPermissions,
+    ICollectionOptions, IFieldInfo
 } from "jriapp_shared/collection/int";
 import { DELETE_ACTION } from "./const";
 import { EntityAspect } from "./entity_aspect";

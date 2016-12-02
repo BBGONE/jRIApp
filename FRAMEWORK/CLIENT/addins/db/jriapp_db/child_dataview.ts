@@ -3,7 +3,10 @@ import {
     BaseObject, Utils, Debounce, LocaleERRS as ERRS
 } from "jriapp_shared";
 import {
-    COLL_CHANGE_REASON, ICollection
+    COLL_CHANGE_REASON
+} from "jriapp_shared/collection/const";
+import {
+    ICollection
 } from "jriapp_shared/collection/int";
 import { PROP_NAME } from "./const";
 import { IEntityItem } from "./int";

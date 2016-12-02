@@ -1,9 +1,14 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { DATE_CONVERSION, DATA_TYPE, FIELD_TYPE, SORT_ORDER } from "../const";
 import {
-    IFieldInfo, IIndexer, IValidationInfo, TEventHandler, TPropChangedHandler, IBaseObject,
-    IPromise, TPriority
-} from "../shared";
+    DATE_CONVERSION, DATA_TYPE, FIELD_TYPE, SORT_ORDER,
+    ITEM_STATUS, COLL_CHANGE_REASON, COLL_CHANGE_TYPE, COLL_CHANGE_OPER
+} from "./const";
+import { IFieldInfo } from "./int";
+import { IPromise } from "../iasync";
+import {
+    IIndexer, IValidationInfo, TEventHandler, TPropChangedHandler,
+    IBaseObject, TPriority
+} from "../int";
 import { BaseObject }  from "../object";
 import { ERRS } from "../lang";
 import { WaitQueue } from "../utils/waitqueue";
@@ -12,7 +17,7 @@ import { Utils } from "../utils/utils";
 import { ICollectionItem, ICollection, ICollectionOptions, IPermissions, IInternalCollMethods, ICollChangedArgs,
     ICancellableArgs, ICollFillArgs, ICollEndEditArgs, ICollItemAddedArgs, ICollectionEvents, ICollItemArgs, ICollItemStatusArgs,
     ICollValidateArgs, ICurrentChangingArgs, ICommitChangesArgs, IItemAddedArgs, IPageChangingArgs,
-    IErrorsList, IErrors, PROP_NAME, ITEM_STATUS, COLL_CHANGE_REASON, COLL_CHANGE_TYPE, COLL_CHANGE_OPER } from "./int";
+    IErrorsList, IErrors, PROP_NAME } from "./int";
 import { valueUtils, fn_getPropertyByName } from "./utils";
 import { ValidationError } from "./validation";
 

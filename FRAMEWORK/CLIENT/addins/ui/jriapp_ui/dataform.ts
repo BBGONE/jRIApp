@@ -1,8 +1,10 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    Utils, IFieldInfo, IBaseObject, IEditable, IErrorNotification,
-    IValidationInfo, IVoidPromise, BaseObject, LocaleERRS as ERRS, LocaleSTRS as STRS
+    Utils, IBaseObject, IEditable, IErrorNotification,
+    IValidationInfo, IVoidPromise, BaseObject, LocaleERRS as ERRS,
+    LocaleSTRS as STRS
 } from "jriapp_shared";
+import { IFieldInfo } from "jriapp_shared/collection/int";
 import { $ } from "jriapp/utils/jquery";
 import { DATA_ATTR, ELVIEW_NM } from "jriapp/const";
 import { ViewChecks } from "jriapp/utils/viewchecks";

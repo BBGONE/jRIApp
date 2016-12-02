@@ -42,8 +42,9 @@ declare module "jriapp_db/const" {
     };
 }
 declare module "jriapp_db/dataquery" {
-    import { FILTER_TYPE, SORT_ORDER } from "jriapp_shared/const";
-    import { IPromise, IFieldInfo, BaseObject } from "jriapp_shared";
+    import { FILTER_TYPE, SORT_ORDER } from "jriapp_shared/collection/const";
+    import { IPromise, BaseObject } from "jriapp_shared";
+    import { IFieldInfo } from "jriapp_shared/collection/int";
     import { IEntityItem, IQueryInfo, IFilterInfo, ISortInfo, IQueryResult, IEntityConstructor } from "jriapp_db/int";
     import { DataCache } from "jriapp_db/datacache";
     import { DbSet } from "jriapp_db/dbset";
@@ -149,9 +150,9 @@ declare module "jriapp_db/datacache" {
     }
 }
 declare module "jriapp_db/dbset" {
-    import { SORT_ORDER } from "jriapp_shared/const";
-    import { IFieldInfo, TEventHandler, IBaseObject, IPromise, TPriority } from "jriapp_shared";
-    import { IInternalCollMethods, COLL_CHANGE_REASON, ITEM_STATUS } from "jriapp_shared/collection/int";
+    import { SORT_ORDER, COLL_CHANGE_REASON, ITEM_STATUS } from "jriapp_shared/collection/const";
+    import { TEventHandler, IBaseObject, IPromise, TPriority } from "jriapp_shared";
+    import { IInternalCollMethods, IFieldInfo } from "jriapp_shared/collection/int";
     import { BaseCollection } from "jriapp_shared/collection/base";
     import { IFieldName, IEntityItem, IEntityConstructor, IRowInfo, ITrackAssoc, IQueryResponse, IPermissions, IDbSetConstuctorOptions, ICalcFieldImpl, INavFieldImpl, IQueryResult, IRowData, IDbSetLoadedArgs } from "jriapp_db/int";
     import { REFRESH_MODE } from "jriapp_db/const";
@@ -298,8 +299,9 @@ declare module "jriapp_db/dbsets" {
     }
 }
 declare module "jriapp_db/association" {
-    import { BaseObject, IIndexer, IFieldInfo } from "jriapp_shared";
-    import { ICollChangedArgs, ITEM_STATUS } from "jriapp_shared/collection/int";
+    import { BaseObject, IIndexer } from "jriapp_shared";
+    import { ITEM_STATUS } from "jriapp_shared/collection/const";
+    import { ICollChangedArgs, IFieldInfo } from "jriapp_shared/collection/int";
     import { DELETE_ACTION } from "jriapp_db/const";
     import { IAssocConstructorOptions, IEntityItem } from "jriapp_db/int";
     import { DbContext } from "jriapp_db/dbcontext";
@@ -398,9 +400,8 @@ declare module "jriapp_db/error" {
     }
 }
 declare module "jriapp_db/dbcontext" {
-    import { IIndexer, IVoidPromise, IBaseObject, TEventHandler, BaseObject } from "jriapp_shared";
-    import { IPromise, IAbortablePromise } from "jriapp_shared/utils/async";
-    import { COLL_CHANGE_REASON } from "jriapp_shared/collection/int";
+    import { COLL_CHANGE_REASON } from "jriapp_shared/collection/const";
+    import { IIndexer, IVoidPromise, IBaseObject, TEventHandler, BaseObject, IStatefulPromise, IAbortablePromise } from "jriapp_shared";
     import { IEntityItem, IRefreshRowInfo, IQueryResult, IQueryInfo, IAssociationInfo, IPermissionsInfo, IInvokeRequest, IQueryResponse, IChangeSet } from "jriapp_db/int";
     import { DATA_OPER } from "jriapp_db/const";
     import { DbSet } from "jriapp_db/dbset";
@@ -409,15 +410,15 @@ declare module "jriapp_db/dbcontext" {
     import { DataQuery } from "jriapp_db/dataquery";
     export interface IInternalDbxtMethods {
         onItemRefreshed(res: IRefreshRowInfo, item: IEntityItem): void;
-        refreshItem(item: IEntityItem): IPromise<IEntityItem>;
+        refreshItem(item: IEntityItem): IStatefulPromise<IEntityItem>;
         getQueryInfo(name: string): IQueryInfo;
         onDbSetHasChangesChanged(eSet: DbSet<IEntityItem, DbContext>): void;
-        load(query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IPromise<IQueryResult<IEntityItem>>;
+        load(query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
     }
     export class DbContext extends BaseObject {
         private _requestHeaders;
         private _requests;
-        protected _initState: IPromise<any>;
+        protected _initState: IStatefulPromise<any>;
         protected _dbSets: DbSets;
         protected _svcMethods: any;
         protected _assoc: any;
@@ -447,9 +448,9 @@ declare module "jriapp_db/dbcontext" {
             result: any;
             error: any;
         }) => void): void;
-        protected _loadFromCache(query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IPromise<IQueryResult<IEntityItem>>;
+        protected _loadFromCache(query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
         protected _loadSubsets(res: IQueryResponse, isClearAll: boolean): void;
-        protected _onLoaded(res: IQueryResponse, query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IPromise<IQueryResult<IEntityItem>>;
+        protected _onLoaded(res: IQueryResponse, query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
         protected _dataSaved(res: IChangeSet): void;
         protected _getChanges(): IChangeSet;
         protected _getUrl(action: string): string;
@@ -479,10 +480,10 @@ declare module "jriapp_db/dbcontext" {
             fn_onErr: (ex: any) => void;
             fn_onOK: (res: IRefreshRowInfo) => void;
         }): void;
-        protected _refreshItem(item: IEntityItem): IPromise<IEntityItem>;
+        protected _refreshItem(item: IEntityItem): IStatefulPromise<IEntityItem>;
         protected _getQueryInfo(name: string): IQueryInfo;
         protected _onDbSetHasChangesChanged(eSet: DbSet<IEntityItem, DbContext>): void;
-        protected _load(query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IPromise<IQueryResult<IEntityItem>>;
+        protected _load(query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
         protected _submitChanges(args: {
             fn_onStart: () => void;
             fn_onEnd: () => void;
@@ -502,7 +503,7 @@ declare module "jriapp_db/dbcontext" {
         getDbSet(name: string): DbSet<IEntityItem, DbContext>;
         getAssociation(name: string): Association;
         submitChanges(): IVoidPromise;
-        load(query: DataQuery<IEntityItem>): IPromise<IQueryResult<IEntityItem>>;
+        load(query: DataQuery<IEntityItem>): IStatefulPromise<IQueryResult<IEntityItem>>;
         acceptChanges(): void;
         rejectChanges(): void;
         abortRequests(reason?: string, operType?: DATA_OPER): void;
@@ -520,8 +521,9 @@ declare module "jriapp_db/dbcontext" {
     }
 }
 declare module "jriapp_db/entity_aspect" {
-    import { IFieldInfo, IVoidPromise, IPromise } from "jriapp_shared";
-    import { ITEM_STATUS } from "jriapp_shared/collection/int";
+    import { ITEM_STATUS } from "jriapp_shared/collection/const";
+    import { IVoidPromise, IPromise } from "jriapp_shared";
+    import { IFieldInfo } from "jriapp_shared/collection/int";
     import { ItemAspect } from "jriapp_shared/collection/aspect";
     import { REFRESH_MODE } from "jriapp_db/const";
     import { DbContext } from "jriapp_db/dbcontext";
@@ -582,9 +584,8 @@ declare module "jriapp_db/entity_aspect" {
     }
 }
 declare module "jriapp_db/int" {
-    import { DATE_CONVERSION, FILTER_TYPE, DATA_TYPE, SORT_ORDER } from "jriapp_shared/const";
-    import { IFieldInfo } from "jriapp_shared";
-    import { ICollectionItem, IPermissions as ICollPermissions, COLL_CHANGE_REASON } from "jriapp_shared/collection/int";
+    import { DATE_CONVERSION, FILTER_TYPE, DATA_TYPE, SORT_ORDER, COLL_CHANGE_REASON } from "jriapp_shared/collection/const";
+    import { ICollectionItem, IPermissions as ICollPermissions, IFieldInfo } from "jriapp_shared/collection/int";
     import { DELETE_ACTION } from "jriapp_db/const";
     import { EntityAspect } from "jriapp_db/entity_aspect";
     import { DbContext } from "jriapp_db/dbcontext";
@@ -788,9 +789,9 @@ declare module "jriapp_db/int" {
     }
 }
 declare module "jriapp_db/dataview" {
-    import { SORT_ORDER } from "jriapp_shared/const";
-    import { IPromise, IFieldInfo, TEventHandler } from "jriapp_shared";
-    import { ICollection, ICollectionItem, ICollChangedArgs, ICollItemStatusArgs, IErrors, IPermissions, COLL_CHANGE_REASON, COLL_CHANGE_OPER } from "jriapp_shared/collection/int";
+    import { SORT_ORDER, COLL_CHANGE_REASON, COLL_CHANGE_OPER } from "jriapp_shared/collection/const";
+    import { IPromise, TEventHandler } from "jriapp_shared";
+    import { ICollection, ICollectionItem, ICollChangedArgs, ICollItemStatusArgs, IErrors, IPermissions, IFieldInfo } from "jriapp_shared/collection/int";
     import { BaseCollection } from "jriapp_shared/collection/base";
     export interface IDataViewOptions<TItem extends ICollectionItem> {
         dataSource: ICollection<TItem>;
@@ -872,7 +873,8 @@ declare module "jriapp_db/child_dataview" {
     export type TChildDataView = ChildDataView<IEntityItem>;
 }
 declare module "jriapp_db/complexprop" {
-    import { IErrorNotification, IFieldInfo, IValidationInfo, TEventHandler, BaseObject } from "jriapp_shared";
+    import { IErrorNotification, IValidationInfo, TEventHandler, BaseObject } from "jriapp_shared";
+    import { IFieldInfo } from "jriapp_shared/collection/int";
     import { IEntityItem } from "jriapp_db/int";
     import { EntityAspect } from "jriapp_db/entity_aspect";
     import { DbContext } from "jriapp_db/dbcontext";

@@ -1,13 +1,14 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    FIELD_TYPE, DATE_CONVERSION, DATA_TYPE, SORT_ORDER
-} from "jriapp_shared/const";
+    FIELD_TYPE, DATE_CONVERSION, DATA_TYPE, SORT_ORDER,
+    COLL_CHANGE_REASON, COLL_CHANGE_TYPE, COLL_CHANGE_OPER, ITEM_STATUS
+} from "jriapp_shared/collection/const";
 import {
-    IIndexer, IFieldInfo, IValidationInfo, TEventHandler, IBaseObject,
+    IIndexer, IValidationInfo, TEventHandler, IBaseObject,
     IPromise, TPriority, LocaleERRS as ERRS, BaseObject, Debounce, Utils
 } from "jriapp_shared";
 import {
-    IInternalCollMethods, COLL_CHANGE_REASON, COLL_CHANGE_TYPE, COLL_CHANGE_OPER, ITEM_STATUS
+    IInternalCollMethods, IFieldInfo
 } from "jriapp_shared/collection/int";
 import { BaseCollection } from "jriapp_shared/collection/base";
 import {

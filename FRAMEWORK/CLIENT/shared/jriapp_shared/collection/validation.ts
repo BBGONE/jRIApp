@@ -1,5 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { BaseError, IValidationInfo } from "../shared";
+import { IValidationInfo } from "../int";
+import { BaseError } from "../errors";
 import { ERRS, STRS } from "../lang";
 import { Utils } from "../utils/utils";
 

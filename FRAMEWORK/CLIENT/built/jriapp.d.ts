@@ -58,7 +58,8 @@ declare module "jriapp/const" {
 }
 declare module "jriapp/shared" {
     import { BINDING_MODE, BindTo } from "jriapp/const";
-    import { IBaseObject, IDisposable, IIndexer, IPromise, IVoidPromise, IValidationInfo, IFieldInfo, IErrorHandler, TEventHandler, IConfig } from "jriapp_shared";
+    import { IBaseObject, IDisposable, IIndexer, IPromise, IVoidPromise, IValidationInfo, IErrorHandler, TEventHandler, IConfig } from "jriapp_shared";
+    import { IFieldInfo } from "jriapp_shared/collection/int";
     export interface IJRIAppConfig extends IConfig {
         frameworkPath?: string;
         frameworkJS?: string;
@@ -289,7 +290,7 @@ declare module "jriapp/shared" {
         bindTemplateElements(templateEl: HTMLElement): IPromise<ILifeTimeScope>;
         bindElements(scope: Document | HTMLElement, dctx: any, isDataFormBind: boolean, isInsideTemplate: boolean): IPromise<ILifeTimeScope>;
     }
-    export interface IApplication extends IErrorHandler, IExports, IDisposable {
+    export interface IApplication extends IErrorHandler, IExports, IBaseObject {
         _getInternal(): IInternalAppMethods;
         addOnStartUp(fn: TEventHandler<IApplication, any>, nmspace?: string, context?: IBaseObject): void;
         removeOnStartUp(nmspace?: string): void;
@@ -830,6 +831,8 @@ declare module "jriapp/app" {
 }
 declare module "jriapp" {
     export * from "jriapp_shared";
+    export * from "jriapp_shared/collection/const";
+    export * from "jriapp_shared/collection/int";
     export { KEYS, BINDING_MODE, BindTo } from "jriapp/const";
     export { IAppOptions, IApplication, TBindingMode, ITemplate, ITemplateEvents, IBinding, IBindingInfo, IBindingOptions, IConverter, IContentFactory, IDatepicker, IElView, ITooltipService, ISelectable, ISelectableProvider, ILifeTimeScope, ITemplateGroupInfo, ITemplateGroupInfoEx, ITemplateInfo, ITemplateLoaderInfo, IViewOptions } from "jriapp/shared";
     export { JQueryUtils, $ } from "jriapp/utils/jquery";

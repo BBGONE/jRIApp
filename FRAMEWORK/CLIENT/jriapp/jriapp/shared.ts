@@ -2,9 +2,9 @@
 import { BINDING_MODE, BindTo } from "./const";
 import {
     DEBUG_LEVEL, IBaseObject, IDisposable, IIndexer, IPromise,
-    IVoidPromise, IValidationInfo, IFieldInfo, IErrorHandler, TEventHandler, IConfig
+    IVoidPromise, IValidationInfo, IErrorHandler, TEventHandler, IConfig
 } from "jriapp_shared";
-
+import { IFieldInfo } from "jriapp_shared/collection/int";
 
 //config global variable can be used using this interface
 export interface IJRIAppConfig extends IConfig {
@@ -272,7 +272,7 @@ export interface IInternalAppMethods {
     bindElements(scope: Document | HTMLElement, dctx: any, isDataFormBind: boolean, isInsideTemplate: boolean): IPromise<ILifeTimeScope>;
 }
 
-export interface IApplication extends IErrorHandler, IExports, IDisposable {
+export interface IApplication extends IErrorHandler, IExports, IBaseObject {
     _getInternal(): IInternalAppMethods;
     addOnStartUp(fn: TEventHandler<IApplication, any>, nmspace?: string, context?: IBaseObject): void;
     removeOnStartUp(nmspace?: string): void;

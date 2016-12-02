@@ -6,7 +6,10 @@ import { $ } from "jriapp/utils/jquery";
 import { IApplication, IViewOptions } from "jriapp/shared";
 import { BaseElView, fn_addToolTip } from "./generic";
 import {
-    ICollection, ICollectionItem, ICollChangedArgs, ITEM_STATUS, COLL_CHANGE_TYPE, COLL_CHANGE_REASON
+    COLL_CHANGE_REASON, ITEM_STATUS, COLL_CHANGE_TYPE
+} from "jriapp_shared/collection/const";
+import {
+    ICollection, ICollectionItem, ICollChangedArgs
 } from "jriapp_shared/collection/int";
 import { bootstrap } from "jriapp";
 

@@ -1,33 +1,30 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IThenable, ITaskQueue } from "../shared";
 import {
-    IPromise, IDeferred, create as createDefer,
-    createSync as createSyncDefer, whenAll, getTaskQueue
-} from "./deferred";
-export {
-    IPromise, IPromiseState, IAbortablePromise, PromiseState,
-    IDeferred, whenAll, AbortablePromise
+    IThenable, ITaskQueue, IStatefulDeferred, IStatefulPromise, PromiseState
+} from "../iasync";
+import {
+    createDefer, createSyncDefer, whenAll, getTaskQueue
 } from "./deferred";
 import { Checks } from "./checks";
 
 const checks = Checks;
 
 export class AsyncUtils {
-    static createDeferred<T>(): IDeferred<T> {
+    static createDeferred<T>(): IStatefulDeferred<T> {
         return createDefer<T>();
     }
     //immediate resolve and reject without setTimeout
-    static createSyncDeferred<T>(): IDeferred<T> {
+    static createSyncDeferred<T>(): IStatefulDeferred<T> {
         return createSyncDefer<T>();
     }
-    static whenAll<T>(args: Array<T | IThenable<T>>): IPromise<T[]> {
+    static whenAll<T>(args: Array<T | IThenable<T>>): IStatefulPromise<T[]> {
         return whenAll(args);
     }
     static getTaskQueue(): ITaskQueue {
         return getTaskQueue();
     }
-    static delay<T>(func: () => T, time?: number): IPromise<T> {
-        let deferred = createDefer<T>();
+    static delay<T>(func: () => T, time?: number): IStatefulPromise<T> {
+        const deferred = createDefer<T>();
         setTimeout(() => {
             try {
                 deferred.resolve(func());
@@ -39,7 +36,7 @@ export class AsyncUtils {
 
         return deferred.promise();
     }
-    static parseJSON(res: string | any): IPromise<any> {
+    static parseJSON(res: string | any): IStatefulPromise<any> {
         return AsyncUtils.delay(() => {
             let parsed: any = null;
             if (checks.isString(res))

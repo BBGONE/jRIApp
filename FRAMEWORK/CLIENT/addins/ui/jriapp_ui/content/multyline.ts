@@ -1,5 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { LocaleERRS as ERRS, IFieldInfo, Utils } from "jriapp_shared";
+import { LocaleERRS as ERRS, Utils } from "jriapp_shared";
+import { IFieldInfo } from "jriapp_shared/collection/int";
 import { KEYS } from "jriapp/const";
 import {
     IApplication, IElView, IConstructorContentOptions

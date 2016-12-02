@@ -919,9 +919,7 @@ define("jriapp/utils/path", ["require", "exports", "jriapp_shared", "jriapp/shar
 });
 define("jriapp/utils/sloader", ["require", "exports", "jriapp_shared", "jriapp_shared/utils/async", "jriapp/utils/path"], function (require, exports, jriapp_shared_9, async_1, path_1) {
     "use strict";
-    var defer = async_1.AsyncUtils, utils = jriapp_shared_9.Utils, dom = utils.dom, arrHelper = utils.arr;
-    var resolvedPromise = defer.createSyncDeferred().resolve();
-    var doc = dom.document, head = doc.head || doc.getElementsByTagName("head")[0];
+    var _async = async_1.AsyncUtils, utils = jriapp_shared_9.Utils, dom = utils.dom, arrHelper = utils.arr, resolvedPromise = _async.createSyncDeferred().resolve(), doc = dom.document, head = doc.head || doc.getElementsByTagName("head")[0];
     var _stylesLoader = null;
     exports.frameworkCss = "jriapp.css";
     function createCssLoader() {
@@ -945,7 +943,7 @@ define("jriapp/utils/sloader", ["require", "exports", "jriapp_shared", "jriapp_s
             return resolvedPromise;
         }
         else {
-            return async_1.whenAll(promises);
+            return _async.whenAll(promises);
         }
     }
     function createLink(url) {
@@ -994,7 +992,7 @@ define("jriapp/utils/sloader", ["require", "exports", "jriapp_shared", "jriapp_s
             if (!!cssPromise) {
                 return cssPromise;
             }
-            var deferred = defer.createSyncDeferred();
+            var deferred = _async.createSyncDeferred();
             cssPromise = deferred.promise();
             if (this.isStyleSheetLoaded(url)) {
                 deferred.resolve(url);
@@ -2983,7 +2981,9 @@ define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/u
             }
         }
         else {
-            return defer.whenAll(loads.map(function (load) { return load.defered.promise(); }));
+            return defer.whenAll(loads.map(function (load) {
+                return load.defered.promise();
+            }));
         }
     }
     var ModuleLoader = (function () {
@@ -3589,15 +3589,17 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/const", "jr
     }(jriapp_shared_19.BaseObject));
     exports.Application = Application;
 });
-define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jriapp/const", "jriapp/utils/jquery", "jriapp/utils/viewchecks", "jriapp/converter", "jriapp/bootstrap", "jriapp/binding", "jriapp/datepicker", "jriapp/template", "jriapp/utils/lifetime", "jriapp/utils/propwatcher", "jriapp/mvvm", "jriapp/app"], function (require, exports, bootstrap_8, jriapp_shared_20, const_6, jquery_6, viewchecks_4, converter_1, bootstrap_9, binding_2, datepicker_1, template_1, lifetime_2, propwatcher_1, mvvm_1, app_1) {
+define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jriapp_shared/collection/const", "jriapp_shared/collection/int", "jriapp/const", "jriapp/utils/jquery", "jriapp/utils/viewchecks", "jriapp/converter", "jriapp/bootstrap", "jriapp/binding", "jriapp/datepicker", "jriapp/template", "jriapp/utils/lifetime", "jriapp/utils/propwatcher", "jriapp/mvvm", "jriapp/app"], function (require, exports, bootstrap_8, jriapp_shared_20, const_6, int_1, const_7, jquery_6, viewchecks_4, converter_1, bootstrap_9, binding_2, datepicker_1, template_1, lifetime_2, propwatcher_1, mvvm_1, app_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
     }
     __export(jriapp_shared_20);
-    exports.KEYS = const_6.KEYS;
-    exports.BINDING_MODE = const_6.BINDING_MODE;
-    exports.BindTo = const_6.BindTo;
+    __export(const_6);
+    __export(int_1);
+    exports.KEYS = const_7.KEYS;
+    exports.BINDING_MODE = const_7.BINDING_MODE;
+    exports.BindTo = const_7.BindTo;
     exports.JQueryUtils = jquery_6.JQueryUtils;
     exports.$ = jquery_6.$;
     exports.ViewChecks = viewchecks_4.ViewChecks;
@@ -3614,6 +3616,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.0.9";
+    exports.VERSION = "1.1.0";
     bootstrap_8.Bootstrap._initFramework();
 });

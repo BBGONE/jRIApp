@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IIndexer } from "../shared";
+import { IIndexer } from "../int";
 
 export interface IArrayLikeList<T> {
     length: number;

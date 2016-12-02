@@ -21,7 +21,8 @@ declare module "jriapp_ui/content/int" {
     export function parseContentAttr(content_attr: string): IContentOptions;
 }
 declare module "jriapp_ui/content/basic" {
-    import { IBaseObject, IFieldInfo, BaseObject } from "jriapp_shared";
+    import { IBaseObject, BaseObject } from "jriapp_shared";
+    import { IFieldInfo } from "jriapp_shared/collection/int";
     import { IApplication, IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IElView, IViewOptions, IBindingInfo, IBindingOptions } from "jriapp/shared";
     import { Binding } from "jriapp/binding";
     export class BasicContent extends BaseObject implements IContent {
@@ -248,7 +249,7 @@ declare module "jriapp_ui/textbox" {
     }
 }
 declare module "jriapp_ui/content/string" {
-    import { IFieldInfo } from "jriapp_shared";
+    import { IFieldInfo } from "jriapp_shared/collection/int";
     import { BasicContent } from "jriapp_ui/content/basic";
     export class StringContent extends BasicContent {
         static __allowedKeys: number[];
@@ -276,7 +277,7 @@ declare module "jriapp_ui/textarea" {
     }
 }
 declare module "jriapp_ui/content/multyline" {
-    import { IFieldInfo } from "jriapp_shared";
+    import { IFieldInfo } from "jriapp_shared/collection/int";
     import { IElView, IConstructorContentOptions } from "jriapp/shared";
     import { BasicContent } from "jriapp_ui/content/basic";
     export class MultyLineContent extends BasicContent {
@@ -350,7 +351,8 @@ declare module "jriapp_ui/content/datetime" {
 }
 declare module "jriapp_ui/listbox" {
     import { BaseObject, TEventHandler } from "jriapp_shared";
-    import { ICollection, ICollectionItem, ICollChangedArgs, ITEM_STATUS } from "jriapp_shared/collection/int";
+    import { ITEM_STATUS } from "jriapp_shared/collection/const";
+    import { ICollection, ICollectionItem, ICollChangedArgs } from "jriapp_shared/collection/int";
     import { IViewOptions } from "jriapp/shared";
     import { BaseElView } from "jriapp_ui/generic";
     export interface IOptionStateProvider {
@@ -813,7 +815,7 @@ declare module "jriapp_ui/datagrid/cells/expander" {
 }
 declare module "jriapp_ui/datagrid/columns/data" {
     import { IBaseObject } from "jriapp_shared";
-    import { SORT_ORDER } from "jriapp_shared/const";
+    import { SORT_ORDER } from "jriapp_shared/collection/const";
     import { IExternallyCachable } from "jriapp/shared";
     import { BaseColumn, ICellInfo } from "jriapp_ui/datagrid/columns/base";
     import { DataGrid } from "jriapp_ui/datagrid/datagrid";
@@ -1110,7 +1112,8 @@ declare module "jriapp_ui/datagrid/cells/fillspace" {
 declare module "jriapp_ui/datagrid/datagrid" {
     import { TEventHandler, BaseObject } from "jriapp_shared";
     import { ISelectableProvider, ISelectable, IViewOptions } from "jriapp/shared";
-    import { ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollection, ICollItemAddedArgs, ITEM_STATUS } from "jriapp_shared/collection/int";
+    import { ITEM_STATUS } from "jriapp_shared/collection/const";
+    import { ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollection, ICollItemAddedArgs } from "jriapp_shared/collection/int";
     import { BaseElView } from "jriapp_ui/generic";
     import { IDialogConstructorOptions } from "jriapp_ui/dialog";
     import { ROW_POSITION, ROW_ACTION } from "jriapp_ui/datagrid/const";
@@ -1391,7 +1394,8 @@ declare module "jriapp_ui/stackpanel" {
     import { BaseObject, IBaseObject, TEventHandler } from "jriapp_shared";
     import { ITemplate, ISelectable, IViewOptions, ISelectableProvider } from "jriapp/shared";
     import { BaseElView } from "jriapp_ui/generic";
-    import { ICollection, ICollectionItem, ICollChangedArgs, ITEM_STATUS } from "jriapp_shared/collection/int";
+    import { ITEM_STATUS } from "jriapp_shared/collection/const";
+    import { ICollection, ICollectionItem, ICollChangedArgs } from "jriapp_shared/collection/int";
     export interface IStackPanelOptions {
         templateID: string;
         orientation?: "vertical" | "horizontal";

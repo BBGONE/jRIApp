@@ -1,7 +1,10 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { BaseObject, Debounce, Utils } from "jriapp_shared";
-import { ICollection, ICollectionItem, ICollChangedArgs, COLL_CHANGE_TYPE, COLL_CHANGE_REASON, ITEM_STATUS,
-    ICollItemArgs, ICollItemAddedArgs
+import {
+    COLL_CHANGE_REASON, ITEM_STATUS, COLL_CHANGE_TYPE
+} from "jriapp_shared/collection/const";
+import {
+    ICollection, ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollItemAddedArgs
 } from "jriapp_shared/collection/int";
 import { $ } from "jriapp/utils/jquery";
 import { DblClick } from "../../utils/dblclick";

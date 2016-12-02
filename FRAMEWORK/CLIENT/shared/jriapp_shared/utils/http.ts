@@ -1,8 +1,11 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IDeferred, IIndexer, DummyError } from "../shared";
+import { IDeferred, IAbortablePromise } from "../iasync";
+import { IIndexer } from "../int";
 import { StringUtils } from "./strUtils";
+import { DummyError } from "../errors";
 import { CoreUtils } from "./coreutils";
-import { AsyncUtils, IAbortablePromise, AbortablePromise } from "./async";
+import { AbortablePromise } from "./deferred";
+import { AsyncUtils } from "./async";
 
 const coreUtils = CoreUtils, strUtils = StringUtils, _async = AsyncUtils;
 
@@ -12,7 +15,7 @@ export class HttpUtils {
         return chk.length === 3 && strUtils.startsWith(chk, "2");
     }
     private static _getXMLRequest(url: string, method: string, deferred: IDeferred<string>, headers?: IIndexer<string>) {
-        let req = new XMLHttpRequest();
+        const req = new XMLHttpRequest();
         req.open(method, url, true);
         req.responseType = "text";
         req.onload = function (e) {
@@ -46,13 +49,15 @@ export class HttpUtils {
         return req;
     }
     static postAjax(url: string, postData: string, headers?: IIndexer<string>): IAbortablePromise<string> {
-        let _headers = <IIndexer<string>>coreUtils.merge(headers, { "Content-Type": "application/json; charset=utf-8" });
-        let deferred = _async.createDeferred<string>(), req = HttpUtils._getXMLRequest(url, "POST", deferred, _headers);
+        const _headers = <IIndexer<string>>coreUtils.merge(headers, { "Content-Type": "application/json; charset=utf-8" });
+        const deferred = _async.createDeferred<string>(),
+            req = HttpUtils._getXMLRequest(url, "POST", deferred, _headers);
         req.send(postData);
         return new AbortablePromise(deferred, req);
     }
     static getAjax(url: string, headers?: IIndexer<string>): IAbortablePromise<string> {
-        let deferred = _async.createDeferred<string>(), req = HttpUtils._getXMLRequest(url, "GET", deferred, headers);
+        const deferred = _async.createDeferred<string>(),
+            req = HttpUtils._getXMLRequest(url, "GET", deferred, headers);
         req.send(null);
         return new AbortablePromise(deferred, req);
     }

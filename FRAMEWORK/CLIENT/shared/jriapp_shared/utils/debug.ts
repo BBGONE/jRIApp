@@ -1,5 +1,5 @@
 ﻿import { DEBUG_LEVEL } from "../const";
-import { DebugLevel } from "../shared";
+import { DebugLevel } from "../int";
 
 export class DEBUG {
     static checkStartDebugger() {

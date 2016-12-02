@@ -1,11 +1,14 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { FIELD_TYPE } from "../const";
-import { IValidationInfo, IIndexer } from "../shared";
+import { FIELD_TYPE } from "./const";
+import { IValidationInfo, IIndexer } from "../int";
 import { Utils } from "../utils/utils";
 import { ERRS } from "../lang";
 
 import {
-    ICollectionItem, IPropInfo, COLL_CHANGE_TYPE, COLL_CHANGE_REASON, COLL_CHANGE_OPER, PROP_NAME
+    COLL_CHANGE_REASON, COLL_CHANGE_TYPE, COLL_CHANGE_OPER
+} from "./const";
+import {
+    ICollectionItem, IPropInfo, PROP_NAME
 } from "./int";
 import { fn_traverseFields, fn_traverseField } from "./utils";
 import { BaseCollection } from "./base";

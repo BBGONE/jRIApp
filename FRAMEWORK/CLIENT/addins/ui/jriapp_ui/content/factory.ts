@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { DATA_TYPE } from "jriapp_shared/const";
+import { DATA_TYPE } from "jriapp_shared/collection/const";
 import { LocaleERRS as ERRS, Utils } from "jriapp_shared";
 import {
     IContentFactory, IContentFactoryList, IContentOptions,

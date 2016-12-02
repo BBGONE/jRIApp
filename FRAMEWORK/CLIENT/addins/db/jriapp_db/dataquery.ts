@@ -1,10 +1,11 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
     FIELD_TYPE, FILTER_TYPE, SORT_ORDER, DATE_CONVERSION, DATA_TYPE
-} from "jriapp_shared/const";
+} from "jriapp_shared/collection/const";
 import {
-    IPromise, IFieldInfo, BaseObject, Utils, LocaleERRS as ERRS
+    IPromise, BaseObject, Utils, LocaleERRS as ERRS
 } from "jriapp_shared";
+import { IFieldInfo } from "jriapp_shared/collection/int";
 import { valueUtils } from "jriapp_shared/collection/utils";
 import { PROP_NAME } from "./const";
 import { IEntityItem, IQueryInfo, IFilterInfo, ISortInfo, IQueryResult, IEntityConstructor } from "./int";

@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { IIndexer, IBaseObject, Utils } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
-import { SORT_ORDER } from "jriapp_shared/const";
+import { SORT_ORDER } from "jriapp_shared/collection/const";
 import { IExternallyCachable } from "jriapp/shared";
 
 import { css, PROP_NAME } from "../const";

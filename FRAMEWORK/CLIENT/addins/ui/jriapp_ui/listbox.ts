@@ -4,7 +4,10 @@ import {
 } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
 import {
-    ICollection, ICollectionItem, ICollChangedArgs, ITEM_STATUS, COLL_CHANGE_TYPE
+    ITEM_STATUS, COLL_CHANGE_TYPE
+} from "jriapp_shared/collection/const";
+import {
+    ICollection, ICollectionItem, ICollChangedArgs
 } from "jriapp_shared/collection/int";
 import { IViewOptions } from "jriapp/shared";
 import { bootstrap } from "jriapp/bootstrap";

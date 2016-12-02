@@ -1,5 +1,6 @@
 ﻿import { APP_NAME } from "../const";
-import { IIndexer, DummyError, AbortError, IErrorHandler } from "../shared";
+import { DummyError, AbortError } from "../errors";
+import { IIndexer, IErrorHandler } from "../int";
 
 export class ERROR {
     private static _handlers: IIndexer<IErrorHandler> = {};

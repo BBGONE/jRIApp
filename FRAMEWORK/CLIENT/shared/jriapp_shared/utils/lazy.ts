@@ -1,12 +1,14 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { ILazyInitializer, IDisposable } from "../shared";
+import { IDisposable } from "../int";
+
+export type TValueFactory<T> = () => T;
 
 export class Lazy<T> implements IDisposable {
     private _val: T = null;
-    private _factory: ILazyInitializer<T>;
+    private _factory: TValueFactory<T>;
 
-    constructor(initializer: ILazyInitializer<T>) {
-        this._factory = initializer;
+    constructor(factory: TValueFactory<T>) {
+        this._factory = factory;
     }
     public get Value(): T {
         if (this._val === null) {
@@ -16,17 +18,14 @@ export class Lazy<T> implements IDisposable {
         return this._val;
     }
     public destroy() {
-        if (!this.getIsDestroyed()) {
+        if (this.IsValueCreated) {
             if ("destroy" in this._val) {
                 (<any>this._val).destroy();
             }
-            this._val = null;
+            this._val = void 0;
         }
     }
-    getIsDestroyed(): boolean {
-        return this._val === null;
-    }
-    getIsDestroyCalled(): boolean {
-        return this._val === null;
+    get IsValueCreated(): boolean {
+        return !!this._val;
     }
 }

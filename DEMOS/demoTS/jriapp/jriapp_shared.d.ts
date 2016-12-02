@@ -6,106 +6,10 @@ declare module "jriapp_shared/const" {
     }
     export const APP_NAME: string;
     export const DUMY_ERROR: string;
-    export const enum DATE_CONVERSION {
-        None = 0,
-        ServerLocalToClientLocal = 1,
-        UtcToClientLocal = 2,
-    }
-    export const enum DATA_TYPE {
-        None = 0,
-        String = 1,
-        Bool = 2,
-        Integer = 3,
-        Decimal = 4,
-        Float = 5,
-        DateTime = 6,
-        Date = 7,
-        Time = 8,
-        Guid = 9,
-        Binary = 10,
-    }
-    export const enum FIELD_TYPE {
-        None = 0,
-        ClientOnly = 1,
-        Calculated = 2,
-        Navigation = 3,
-        RowTimeStamp = 4,
-        Object = 5,
-        ServerCalculated = 6,
-    }
-    export const enum SORT_ORDER {
-        ASC = 0,
-        DESC = 1,
-    }
-    export const enum FILTER_TYPE {
-        Equals = 0,
-        Between = 1,
-        StartsWith = 2,
-        EndsWith = 3,
-        Contains = 4,
-        Gt = 5,
-        Lt = 6,
-        GtEq = 7,
-        LtEq = 8,
-        NotEq = 9,
-    }
 }
-declare module "jriapp_shared/shared" {
-    import { DEBUG_LEVEL, DATA_TYPE, DATE_CONVERSION, FIELD_TYPE } from "jriapp_shared/const";
-    export interface IConfig {
-        debugLevel?: DEBUG_LEVEL;
-    }
-    export const Config: IConfig;
-    export let DebugLevel: DEBUG_LEVEL;
-    export type TEventHandler<T, U> = (sender: T, args: U) => void;
-    export type TErrorArgs = {
-        error: any;
-        source: any;
-        isHandled: boolean;
-    };
-    export type TErrorHandler = (sender: any, args: TErrorArgs) => void;
-    export type TPropChangedHandler = (sender: any, args: {
-        property: string;
-    }) => void;
-    export interface IDisposable {
-        destroy(): void;
-        getIsDestroyed(): boolean;
-        getIsDestroyCalled(): boolean;
-    }
-    export interface IIndexer<T> {
-        [name: string]: T;
-    }
-    export interface IErrorHandler {
-        handleError(error: any, source: any): boolean;
-    }
-    export interface IPropertyBag extends IBaseObject {
-        getProp(name: string): any;
-        setProp(name: string, val: any): void;
-    }
-    export const enum TPriority {
-        Normal = 0,
-        AboveNormal = 1,
-        High = 2,
-    }
+declare module "jriapp_shared/iasync" {
     export interface ITaskQueue {
         enque(task: () => void): void;
-    }
-    export interface ILazyInitializer<T> {
-        (): T;
-    }
-    export interface IBaseObject extends IErrorHandler, IDisposable {
-        _isHasProp(prop: string): boolean;
-        raisePropertyChanged(name: string): void;
-        addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeHandler(name?: string, nmspace?: string): void;
-        addOnPropertyChange(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnPropertyChange(prop?: string, nmspace?: string): void;
-        removeNSHandlers(nmspace?: string): void;
-        addOnError(handler: TErrorHandler, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnError(nmspace?: string): void;
-        addOnDestroyed(handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnDestroyed(nmspace?: string): void;
-        raiseEvent(name: string, args: any): void;
     }
     export interface IAbortable {
         abort(reason?: string): void;
@@ -153,7 +57,89 @@ declare module "jriapp_shared/shared" {
         reject(error?: any): IPromise<T>;
         promise(): IPromise<T>;
     }
-    export interface IAbortablePromise<T> extends IPromise<T>, IAbortable {
+    export const enum PromiseState {
+        Pending = 0,
+        ResolutionInProgress = 1,
+        Resolved = 2,
+        Rejected = 3,
+    }
+    export interface IPromiseState {
+        state(): PromiseState;
+    }
+    export interface IStatefulPromise<T> extends IPromise<T>, IPromiseState {
+        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IDeferredErrorCB<TP>): IPromise<TP>;
+        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IErrorCB<TP>): IPromise<TP>;
+        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IVoidErrorCB): IPromise<TP>;
+        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IDeferredErrorCB<TP>): IPromise<TP>;
+        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IErrorCB<TP>): IPromise<TP>;
+        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IVoidErrorCB): IPromise<TP>;
+        always<TP>(errorCB?: IDeferredErrorCB<TP>): IPromise<TP>;
+        always<TP>(errorCB?: IErrorCB<TP>): IPromise<TP>;
+        always(errorCB?: IVoidErrorCB): IPromise<void>;
+        fail(errorCB?: IDeferredErrorCB<T>): IPromise<T>;
+        fail(errorCB?: IErrorCB<T>): IPromise<T>;
+        fail(errorCB?: IVoidErrorCB): IPromise<void>;
+    }
+    export interface IAbortablePromise<T> extends IStatefulPromise<T>, IAbortable {
+    }
+    export interface IStatefulDeferred<T> extends IDeferred<T>, IPromiseState {
+        resolve(value?: IThenable<T>): IStatefulPromise<T>;
+        resolve(value?: T): IStatefulPromise<T>;
+        reject(error?: any): IStatefulPromise<T>;
+        promise(): IStatefulPromise<T>;
+    }
+}
+declare module "jriapp_shared/int" {
+    import { DEBUG_LEVEL } from "jriapp_shared/const";
+    import { IVoidPromise } from "jriapp_shared/iasync";
+    export interface IConfig {
+        debugLevel?: DEBUG_LEVEL;
+    }
+    export const Config: IConfig;
+    export let DebugLevel: DEBUG_LEVEL;
+    export type TEventHandler<T, U> = (sender: T, args: U) => void;
+    export type TErrorArgs = {
+        error: any;
+        source: any;
+        isHandled: boolean;
+    };
+    export type TErrorHandler = (sender: any, args: TErrorArgs) => void;
+    export type TPropChangedHandler = (sender: any, args: {
+        property: string;
+    }) => void;
+    export interface IDisposable {
+        destroy(): void;
+    }
+    export interface IIndexer<T> {
+        [name: string]: T;
+    }
+    export interface IErrorHandler {
+        handleError(error: any, source: any): boolean;
+    }
+    export interface IPropertyBag extends IBaseObject {
+        getProp(name: string): any;
+        setProp(name: string, val: any): void;
+    }
+    export const enum TPriority {
+        Normal = 0,
+        AboveNormal = 1,
+        High = 2,
+    }
+    export interface IBaseObject extends IErrorHandler, IDisposable {
+        _isHasProp(prop: string): boolean;
+        getIsDestroyed(): boolean;
+        getIsDestroyCalled(): boolean;
+        raisePropertyChanged(name: string): void;
+        addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
+        removeHandler(name?: string, nmspace?: string): void;
+        addOnPropertyChange(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
+        removeOnPropertyChange(prop?: string, nmspace?: string): void;
+        removeNSHandlers(nmspace?: string): void;
+        addOnError(handler: TErrorHandler, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
+        removeOnError(nmspace?: string): void;
+        addOnDestroyed(handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
+        removeOnDestroyed(nmspace?: string): void;
+        raiseEvent(name: string, args: any): void;
     }
     export interface IEditable {
         beginEdit(): boolean;
@@ -177,25 +163,8 @@ declare module "jriapp_shared/shared" {
         getAllErrors(): IValidationInfo[];
         getIErrorNotification(): IErrorNotification;
     }
-    export interface IFieldInfo {
-        fieldName: string;
-        isPrimaryKey: number;
-        dataType: DATA_TYPE;
-        isNullable: boolean;
-        isReadOnly: boolean;
-        isAutoGenerated: boolean;
-        isNeedOriginal: boolean;
-        maxLength: number;
-        dateConversion: DATE_CONVERSION;
-        allowClientDefault: boolean;
-        range: string;
-        regex: string;
-        fieldType: FIELD_TYPE;
-        dependentOn: string;
-        nested: IFieldInfo[];
-        dependents?: string[];
-        fullName?: string;
-    }
+}
+declare module "jriapp_shared/errors" {
     export class BaseError {
         private _message;
         constructor(message?: string);
@@ -258,7 +227,7 @@ declare module "jriapp_shared/utils/strutils" {
     }
 }
 declare module "jriapp_shared/utils/checks" {
-    import { IThenable } from "jriapp_shared/shared";
+    import { IThenable } from "jriapp_shared/iasync";
     export class Checks {
         static readonly undefined: any;
         static isHasProp(obj: any, prop: string): boolean;
@@ -279,7 +248,7 @@ declare module "jriapp_shared/utils/checks" {
     }
 }
 declare module "jriapp_shared/utils/coreutils" {
-    import { IIndexer } from "jriapp_shared/shared";
+    import { IIndexer } from "jriapp_shared/int";
     import { ArrayHelper } from "jriapp_shared/utils/arrhelper";
     import { StringUtils } from "jriapp_shared/utils/strutils";
     import { Checks } from "jriapp_shared/utils/checks";
@@ -310,7 +279,7 @@ declare module "jriapp_shared/utils/coreutils" {
     }
 }
 declare module "jriapp_shared/lang" {
-    import { IIndexer } from "jriapp_shared/shared";
+    import { IIndexer } from "jriapp_shared/int";
     export function assign<T extends U, U extends IIndexer<any>>(target: T, source: U): T;
     export interface IErrors extends IIndexer<string> {
         ERR_OBJ_ALREADY_REGISTERED: string;
@@ -431,7 +400,7 @@ declare module "jriapp_shared/lang" {
     export let STRS: ILocaleText;
 }
 declare module "jriapp_shared/utils/sysutils" {
-    import { ISubmittable, IErrorNotification, IEditable } from "jriapp_shared/shared";
+    import { ISubmittable, IErrorNotification, IEditable } from "jriapp_shared/int";
     export class SysUtils {
         static isBaseObj: (obj: any) => boolean;
         static isBinding: (obj: any) => boolean;
@@ -453,7 +422,7 @@ declare module "jriapp_shared/utils/sysutils" {
     }
 }
 declare module "jriapp_shared/utils/error" {
-    import { IErrorHandler } from "jriapp_shared/shared";
+    import { IErrorHandler } from "jriapp_shared/int";
     export class ERROR {
         private static _handlers;
         static addHandler(name: string, handler: IErrorHandler): void;
@@ -473,7 +442,7 @@ declare module "jriapp_shared/utils/debug" {
     }
 }
 declare module "jriapp_shared/utils/eventhelper" {
-    import { TPriority, IIndexer, IBaseObject, TEventHandler } from "jriapp_shared/shared";
+    import { TPriority, IIndexer, IBaseObject, TEventHandler } from "jriapp_shared/int";
     export interface IEventNode {
         context: any;
         fn: TEventHandler<any, any>;
@@ -495,7 +464,7 @@ declare module "jriapp_shared/utils/eventhelper" {
     }
 }
 declare module "jriapp_shared/object" {
-    import { IBaseObject, TPriority, TEventHandler, TErrorHandler, TPropChangedHandler } from "jriapp_shared/shared";
+    import { IBaseObject, TPriority, TEventHandler, TErrorHandler, TPropChangedHandler } from "jriapp_shared/int";
     export class BaseObject implements IBaseObject {
         private _obj_state;
         private _events;
@@ -523,9 +492,50 @@ declare module "jriapp_shared/object" {
         destroy(): void;
     }
 }
-declare module "jriapp_shared/collection/int" {
-    import { DATE_CONVERSION, DATA_TYPE, SORT_ORDER } from "jriapp_shared/const";
-    import { IBaseObject, IErrorNotification, IEditable, ISubmittable, TEventHandler, IFieldInfo, TPropChangedHandler, IPromise, IValidationInfo, TPriority } from "jriapp_shared/shared";
+declare module "jriapp_shared/collection/const" {
+    export const enum DATE_CONVERSION {
+        None = 0,
+        ServerLocalToClientLocal = 1,
+        UtcToClientLocal = 2,
+    }
+    export const enum DATA_TYPE {
+        None = 0,
+        String = 1,
+        Bool = 2,
+        Integer = 3,
+        Decimal = 4,
+        Float = 5,
+        DateTime = 6,
+        Date = 7,
+        Time = 8,
+        Guid = 9,
+        Binary = 10,
+    }
+    export const enum FIELD_TYPE {
+        None = 0,
+        ClientOnly = 1,
+        Calculated = 2,
+        Navigation = 3,
+        RowTimeStamp = 4,
+        Object = 5,
+        ServerCalculated = 6,
+    }
+    export const enum SORT_ORDER {
+        ASC = 0,
+        DESC = 1,
+    }
+    export const enum FILTER_TYPE {
+        Equals = 0,
+        Between = 1,
+        StartsWith = 2,
+        EndsWith = 3,
+        Contains = 4,
+        Gt = 5,
+        Lt = 6,
+        GtEq = 7,
+        LtEq = 8,
+        NotEq = 9,
+    }
     export const enum COLL_CHANGE_TYPE {
         Remove = 0,
         Add = 1,
@@ -551,6 +561,11 @@ declare module "jriapp_shared/collection/int" {
         Updated = 2,
         Deleted = 3,
     }
+}
+declare module "jriapp_shared/collection/int" {
+    import { DATE_CONVERSION, DATA_TYPE, SORT_ORDER, FIELD_TYPE, COLL_CHANGE_OPER, COLL_CHANGE_REASON, COLL_CHANGE_TYPE, ITEM_STATUS } from "jriapp_shared/collection/const";
+    import { IPromise } from "jriapp_shared/iasync";
+    import { IBaseObject, IErrorNotification, IEditable, ISubmittable, TEventHandler, TPropChangedHandler, IValidationInfo, TPriority } from "jriapp_shared/int";
     export const PROP_NAME: {
         isEditing: string;
         currentItem: string;
@@ -566,6 +581,25 @@ declare module "jriapp_shared/collection/int" {
         errors_changed: string;
         destroyed: string;
     };
+    export interface IFieldInfo {
+        fieldName: string;
+        isPrimaryKey: number;
+        dataType: DATA_TYPE;
+        isNullable: boolean;
+        isReadOnly: boolean;
+        isAutoGenerated: boolean;
+        isNeedOriginal: boolean;
+        maxLength: number;
+        dateConversion: DATE_CONVERSION;
+        allowClientDefault: boolean;
+        range: string;
+        regex: string;
+        fieldType: FIELD_TYPE;
+        dependentOn: string;
+        nested: IFieldInfo[];
+        dependents?: string[];
+        fullName?: string;
+    }
     export interface ICollectionOptions {
         enablePaging: boolean;
         pageSize: number;
@@ -770,7 +804,7 @@ declare module "jriapp_shared/collection/int" {
     }
 }
 declare module "jriapp_shared/utils/waitqueue" {
-    import { IBaseObject } from "jriapp_shared/shared";
+    import { IBaseObject } from "jriapp_shared/int";
     import { BaseObject } from "jriapp_shared/object";
     export interface IWaitQueueItem {
         prop: string;
@@ -801,47 +835,16 @@ declare module "jriapp_shared/utils/logger" {
     }
 }
 declare module "jriapp_shared/utils/deferred" {
-    import { IPromise as IBasePromise, IDeferred as IBaseDeferred, IDeferredSuccessCB, IDeferredErrorCB, IErrorCB, IVoidErrorCB, ISuccessCB, ITaskQueue, IAbortable, IThenable } from "jriapp_shared/shared";
-    export const enum PromiseState {
-        Pending = 0,
-        ResolutionInProgress = 1,
-        Resolved = 2,
-        Rejected = 3,
-    }
-    export interface IPromiseState {
-        state(): PromiseState;
-    }
-    export interface IPromise<T> extends IBasePromise<T>, IPromiseState {
-        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IDeferredErrorCB<TP>): IPromise<TP>;
-        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IErrorCB<TP>): IPromise<TP>;
-        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IVoidErrorCB): IPromise<TP>;
-        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IDeferredErrorCB<TP>): IPromise<TP>;
-        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IErrorCB<TP>): IPromise<TP>;
-        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IVoidErrorCB): IPromise<TP>;
-        always<TP>(errorCB?: IDeferredErrorCB<TP>): IPromise<TP>;
-        always<TP>(errorCB?: IErrorCB<TP>): IPromise<TP>;
-        always(errorCB?: IVoidErrorCB): IPromise<void>;
-        fail(errorCB?: IDeferredErrorCB<T>): IPromise<T>;
-        fail(errorCB?: IErrorCB<T>): IPromise<T>;
-        fail(errorCB?: IVoidErrorCB): IPromise<void>;
-    }
-    export interface IAbortablePromise<T> extends IPromise<T>, IAbortable {
-    }
-    export interface IDeferred<T> extends IBaseDeferred<T>, IPromiseState {
-        resolve(value?: IThenable<T>): IPromise<T>;
-        resolve(value?: T): IPromise<T>;
-        reject(error?: any): IPromise<T>;
-        promise(): IPromise<T>;
-    }
-    export function create<T>(): IDeferred<T>;
-    export function createSync<T>(): IDeferred<T>;
+    import { IStatefulDeferred, IStatefulPromise, IThenable, ITaskQueue, PromiseState, IPromise, IAbortablePromise, IDeferredErrorCB, IDeferredSuccessCB, IErrorCB, IVoidErrorCB, ISuccessCB, IAbortable } from "jriapp_shared/iasync";
+    export function createDefer<T>(): IStatefulDeferred<T>;
+    export function createSyncDefer<T>(): IStatefulDeferred<T>;
     export function getTaskQueue(): ITaskQueue;
-    export function whenAll<T>(args: Array<T | IThenable<T>>): IPromise<T[]>;
+    export function whenAll<T>(args: Array<T | IThenable<T>>): IStatefulPromise<T[]>;
     export class AbortablePromise<T> implements IAbortablePromise<T> {
         private _deferred;
         private _abortable;
         private _aborted;
-        constructor(deferred: IDeferred<T>, abortable: IAbortable);
+        constructor(deferred: IStatefulDeferred<T>, abortable: IAbortable);
         then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IDeferredErrorCB<TP>): IPromise<TP>;
         then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IErrorCB<TP>): IPromise<TP>;
         then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IVoidErrorCB): IPromise<TP>;
@@ -859,21 +862,19 @@ declare module "jriapp_shared/utils/deferred" {
     }
 }
 declare module "jriapp_shared/utils/async" {
-    import { IThenable, ITaskQueue } from "jriapp_shared/shared";
-    import { IPromise, IDeferred } from "jriapp_shared/utils/deferred";
-    export { IPromise, IPromiseState, IAbortablePromise, PromiseState, IDeferred, whenAll, AbortablePromise } from "jriapp_shared/utils/deferred";
+    import { IThenable, ITaskQueue, IStatefulDeferred, IStatefulPromise } from "jriapp_shared/iasync";
     export class AsyncUtils {
-        static createDeferred<T>(): IDeferred<T>;
-        static createSyncDeferred<T>(): IDeferred<T>;
-        static whenAll<T>(args: Array<T | IThenable<T>>): IPromise<T[]>;
+        static createDeferred<T>(): IStatefulDeferred<T>;
+        static createSyncDeferred<T>(): IStatefulDeferred<T>;
+        static whenAll<T>(args: Array<T | IThenable<T>>): IStatefulPromise<T[]>;
         static getTaskQueue(): ITaskQueue;
-        static delay<T>(func: () => T, time?: number): IPromise<T>;
-        static parseJSON(res: string | any): IPromise<any>;
+        static delay<T>(func: () => T, time?: number): IStatefulPromise<T>;
+        static parseJSON(res: string | any): IStatefulPromise<any>;
     }
 }
 declare module "jriapp_shared/utils/http" {
-    import { IIndexer } from "jriapp_shared/shared";
-    import { IAbortablePromise } from "jriapp_shared/utils/async";
+    import { IAbortablePromise } from "jriapp_shared/iasync";
+    import { IIndexer } from "jriapp_shared/int";
     export class HttpUtils {
         static isStatusOK(status: string | number): boolean;
         private static _getXMLRequest(url, method, deferred, headers?);
@@ -927,7 +928,7 @@ declare module "jriapp_shared/utils/utils" {
     }
 }
 declare module "jriapp_shared/collection/utils" {
-    import { IFieldInfo } from "jriapp_shared/shared";
+    import { IFieldInfo } from "jriapp_shared/collection/int";
     import { IValueUtils } from "jriapp_shared/collection/int";
     export let valueUtils: IValueUtils;
     export function fn_getPropertyByName(name: string, props: IFieldInfo[]): IFieldInfo;
@@ -936,7 +937,8 @@ declare module "jriapp_shared/collection/utils" {
     export function fn_traverseFields<T>(flds: IFieldInfo[], fn: TraveseFieldCB<T>, parent_res?: T): void;
 }
 declare module "jriapp_shared/collection/validation" {
-    import { BaseError, IValidationInfo } from "jriapp_shared/shared";
+    import { IValidationInfo } from "jriapp_shared/int";
+    import { BaseError } from "jriapp_shared/errors";
     export class ValidationError extends BaseError {
         private _errors;
         private _item;
@@ -951,11 +953,13 @@ declare module "jriapp_shared/collection/validation" {
     }
 }
 declare module "jriapp_shared/collection/base" {
-    import { SORT_ORDER } from "jriapp_shared/const";
-    import { IFieldInfo, IIndexer, IValidationInfo, TEventHandler, TPropChangedHandler, IBaseObject, IPromise, TPriority } from "jriapp_shared/shared";
+    import { SORT_ORDER, ITEM_STATUS, COLL_CHANGE_REASON, COLL_CHANGE_OPER } from "jriapp_shared/collection/const";
+    import { IFieldInfo } from "jriapp_shared/collection/int";
+    import { IPromise } from "jriapp_shared/iasync";
+    import { IIndexer, IValidationInfo, TEventHandler, TPropChangedHandler, IBaseObject, TPriority } from "jriapp_shared/int";
     import { BaseObject } from "jriapp_shared/object";
     import { WaitQueue } from "jriapp_shared/utils/waitqueue";
-    import { ICollectionItem, ICollection, ICollectionOptions, IPermissions, IInternalCollMethods, ICollChangedArgs, ICancellableArgs, ICollFillArgs, ICollEndEditArgs, ICollItemArgs, ICollItemStatusArgs, ICollValidateArgs, ICurrentChangingArgs, ICommitChangesArgs, IItemAddedArgs, IPageChangingArgs, IErrorsList, IErrors, ITEM_STATUS, COLL_CHANGE_REASON, COLL_CHANGE_OPER } from "jriapp_shared/collection/int";
+    import { ICollectionItem, ICollection, ICollectionOptions, IPermissions, IInternalCollMethods, ICollChangedArgs, ICancellableArgs, ICollFillArgs, ICollEndEditArgs, ICollItemArgs, ICollItemStatusArgs, ICollValidateArgs, ICurrentChangingArgs, ICommitChangesArgs, IItemAddedArgs, IPageChangingArgs, IErrorsList, IErrors } from "jriapp_shared/collection/int";
     export class BaseCollection<TItem extends ICollectionItem> extends BaseObject implements ICollection<TItem> {
         protected _options: ICollectionOptions;
         protected _isLoading: boolean;
@@ -1098,9 +1102,12 @@ declare module "jriapp_shared/collection/base" {
     }
 }
 declare module "jriapp_shared/collection/aspect" {
-    import { IIndexer, IValidationInfo, IFieldInfo, IVoidPromise, TEventHandler, IErrorNotification } from "jriapp_shared/shared";
+    import { ITEM_STATUS } from "jriapp_shared/collection/const";
+    import { IFieldInfo } from "jriapp_shared/collection/int";
+    import { IVoidPromise } from "jriapp_shared/iasync";
+    import { IIndexer, IValidationInfo, TEventHandler, IErrorNotification } from "jriapp_shared/int";
     import { BaseObject } from "jriapp_shared/object";
-    import { ICollectionItem, IItemAspect, ITEM_STATUS } from "jriapp_shared/collection/int";
+    import { ICollectionItem, IItemAspect } from "jriapp_shared/collection/int";
     import { BaseCollection } from "jriapp_shared/collection/base";
     export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implements IItemAspect<TItem> {
         private _key;
@@ -1181,7 +1188,7 @@ declare module "jriapp_shared/collection/item" {
     }
 }
 declare module "jriapp_shared/collection/list" {
-    import { IIndexer } from "jriapp_shared/shared";
+    import { IIndexer } from "jriapp_shared/int";
     import { ICollectionItem, IPropInfo } from "jriapp_shared/collection/int";
     import { BaseCollection } from "jriapp_shared/collection/base";
     import { ItemAspect } from "jriapp_shared/collection/aspect";
@@ -1235,7 +1242,7 @@ declare module "jriapp_shared/collection/dictionary" {
     }
 }
 declare module "jriapp_shared/utils/debounce" {
-    import { IDisposable } from "jriapp_shared/shared";
+    import { IDisposable } from "jriapp_shared/int";
     export class Debounce implements IDisposable {
         private _isDestroyed;
         private _timer;
@@ -1249,23 +1256,24 @@ declare module "jriapp_shared/utils/debounce" {
     }
 }
 declare module "jriapp_shared/utils/lazy" {
-    import { ILazyInitializer, IDisposable } from "jriapp_shared/shared";
+    import { IDisposable } from "jriapp_shared/int";
+    export type TValueFactory<T> = () => T;
     export class Lazy<T> implements IDisposable {
         private _val;
         private _factory;
-        constructor(initializer: ILazyInitializer<T>);
+        constructor(factory: TValueFactory<T>);
         readonly Value: T;
         destroy(): void;
-        getIsDestroyed(): boolean;
-        getIsDestroyCalled(): boolean;
+        readonly IsValueCreated: boolean;
     }
 }
 declare module "jriapp_shared" {
     export * from "jriapp_shared/const";
-    export * from "jriapp_shared/shared";
+    export * from "jriapp_shared/int";
+    export * from "jriapp_shared/errors";
+    export * from "jriapp_shared/iasync";
     export * from "jriapp_shared/object";
     export { STRS as LocaleSTRS, ERRS as LocaleERRS } from "jriapp_shared/lang";
-    export { ICollection, ICollectionItem, IValueUtils, IEditableCollection, IItemAspect, IPermissions, ISimpleCollection, COLL_CHANGE_OPER, COLL_CHANGE_REASON, COLL_CHANGE_TYPE, ITEM_STATUS } from "jriapp_shared/collection/int";
     export { BaseCollection } from "jriapp_shared/collection/base";
     export { CollectionItem } from "jriapp_shared/collection/item";
     export { ItemAspect } from "jriapp_shared/collection/aspect";
@@ -1275,5 +1283,5 @@ declare module "jriapp_shared" {
     export { Utils } from "jriapp_shared/utils/utils";
     export { WaitQueue, IWaitQueueItem } from "jriapp_shared/utils/waitqueue";
     export { Debounce } from "jriapp_shared/utils/debounce";
-    export { Lazy } from "jriapp_shared/utils/lazy";
+    export { Lazy, TValueFactory } from "jriapp_shared/utils/lazy";
 }

@@ -1,8 +1,9 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { FIELD_TYPE } from "jriapp_shared/const";
+import { FIELD_TYPE } from "jriapp_shared/collection/const";
 import {
-    IBaseObject, IFieldInfo, BaseObject, Utils
+    IBaseObject, BaseObject, Utils
 } from "jriapp_shared";
+import { IFieldInfo } from "jriapp_shared/collection/int";
 import { $ } from "jriapp/utils/jquery";
 import { BINDING_MODE } from "jriapp/const";
 import {

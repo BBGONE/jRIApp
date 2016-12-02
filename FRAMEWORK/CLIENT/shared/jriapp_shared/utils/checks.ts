@@ -1,8 +1,10 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    IBaseObject, IEditable, ISubmittable, IErrorNotification,
-    IThenable, IPropertyBag
-} from "../shared";
+   IThenable
+} from "../iasync";
+import {
+    IBaseObject, IEditable, ISubmittable, IErrorNotification, IPropertyBag
+} from "../int";
 
 export class Checks {
     static readonly undefined: any = void (0);

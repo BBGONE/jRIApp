@@ -1,67 +1,19 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    IPromise as IBasePromise, IDeferred as IBaseDeferred, IDeferredSuccessCB,
-    IDeferredErrorCB, IErrorCB, IVoidErrorCB, ISuccessCB, ITaskQueue, IAbortable,
-    IThenable, AbortError, AggregateError
-} from "../shared";
-import { Checks as checks } from "./checks";
+    IStatefulDeferred, IStatefulPromise, IPromiseState, IThenable, ITaskQueue, PromiseState,
+    IPromise, IAbortablePromise, IDeferredErrorCB, IDeferredSuccessCB, IErrorCB, IVoidErrorCB,
+    ISuccessCB, IAbortable, IDeferred
+} from "../iasync";
+import { AbortError, AggregateError } from "../errors";
+import { Checks } from "./checks";
 
-export const enum PromiseState { Pending, ResolutionInProgress, Resolved, Rejected }
+const checks = Checks;
 
-export interface IPromiseState {
-    state(): PromiseState;
-}
-
-export interface IPromise<T> extends IBasePromise<T>, IPromiseState {
-    then<TP>(
-        successCB?: IDeferredSuccessCB<T, TP>,
-        errorCB?: IDeferredErrorCB<TP>
-    ): IPromise<TP>;
-    then<TP>(
-        successCB?: IDeferredSuccessCB<T, TP>,
-        errorCB?: IErrorCB<TP>
-    ): IPromise<TP>;
-    then<TP>(
-        successCB?: IDeferredSuccessCB<T, TP>,
-        errorCB?: IVoidErrorCB
-    ): IPromise<TP>;
-    then<TP>(
-        successCB?: ISuccessCB<T, TP>,
-        errorCB?: IDeferredErrorCB<TP>
-    ): IPromise<TP>;
-    then<TP>(
-        successCB?: ISuccessCB<T, TP>,
-        errorCB?: IErrorCB<TP>
-    ): IPromise<TP>;
-    then<TP>(
-        successCB?: ISuccessCB<T, TP>,
-        errorCB?: IVoidErrorCB
-    ): IPromise<TP>;
-
-    always<TP>(errorCB?: IDeferredErrorCB<TP>): IPromise<TP>;
-    always<TP>(errorCB?: IErrorCB<TP>): IPromise<TP>;
-    always(errorCB?: IVoidErrorCB): IPromise<void>;
-
-    fail(errorCB?: IDeferredErrorCB<T>): IPromise<T>;
-    fail(errorCB?: IErrorCB<T>): IPromise<T>;
-    fail(errorCB?: IVoidErrorCB): IPromise<void>;
-}
-
-export interface IAbortablePromise<T> extends IPromise<T>, IAbortable {
-}
-
-export interface IDeferred<T> extends IBaseDeferred<T>, IPromiseState {
-    resolve(value?: IThenable<T>): IPromise<T>;
-    resolve(value?: T): IPromise<T>;
-    reject(error?: any): IPromise<T>;
-    promise(): IPromise<T>;
-}
-
-export function create<T>(): IDeferred<T> {
+export function createDefer<T>(): IStatefulDeferred<T> {
     return new Deferred(fn_dispatch);
 }
 
-export function createSync<T>(): IDeferred<T> {
+export function createSyncDefer<T>(): IStatefulDeferred<T> {
     return new Deferred(fn_dispatchImmediate);
 }
 
@@ -69,9 +21,10 @@ export function getTaskQueue(): ITaskQueue {
     return taskQueue;
 }
 
-export function whenAll<T>(args: Array<T | IThenable<T>>): IPromise<T[]> {
-    let deferred = create<T[]>(), errors = <any[]>[], countAll = args.length, result = new Array<T>(args.length);
-    let checkResult = function () {
+export function whenAll<T>(args: Array<T | IThenable<T>>): IStatefulPromise<T[]> {
+    let deferred = createDefer<T[]>(), errors = <any[]>[], countAll = args.length,
+        result = new Array<T>(args.length);
+    const checkResult = function () {
             if (countAll === 0) {
                 if (errors.length > 0)
                     deferred.reject(new AggregateError(errors));
@@ -203,8 +156,8 @@ class Callback {
     public deferred: IDeferred<any>;
 }
 
-class Deferred<T> implements IDeferred<T> {
-    private _promise: IPromise<T>;
+class Deferred<T> implements IStatefulDeferred<T> {
+    private _promise: IStatefulPromise<T>;
     private _stack: Array<Callback>;
     private _state: PromiseState;
     private _value: T;
@@ -220,7 +173,7 @@ class Deferred<T> implements IDeferred<T> {
         this._promise = new Promise<T>(this);
     }
 
-    private _resolve(value: any): IDeferred<T> {
+    private _resolve(value: any): IStatefulDeferred<T> {
         let pending = true;
         try {
             if (checks.isThenable(value)) {
@@ -268,7 +221,7 @@ class Deferred<T> implements IDeferred<T> {
 
         return this;
     }
-    private _reject(error?: any): IDeferred<T> {
+    private _reject(error?: any): IStatefulDeferred<T> {
         this._state = PromiseState.ResolutionInProgress;
 
         this._dispatcher(() => {
@@ -312,25 +265,25 @@ class Deferred<T> implements IDeferred<T> {
         return cb.deferred.promise();
     }
 
-    resolve(value?: T): IPromise<T>;
+    resolve(value?: T): IStatefulPromise<T>;
 
-    resolve(value?: IPromise<T>): IPromise<T>;
+    resolve(value?: IPromise<T>): IStatefulPromise<T>;
 
-    resolve(value?: any): IPromise<T> {
+    resolve(value?: any): IStatefulPromise<T> {
         if (this._state !== PromiseState.Pending) {
             return this.promise();
         }
         return this._resolve(value).promise();
     }
 
-    reject(error?: any): IPromise<T> {
+    reject(error?: any): IStatefulPromise<T> {
         if (this._state !== PromiseState.Pending) {
             return this.promise();
         }
         return this._reject(error).promise();
     }
 
-    promise(): IPromise<T> {
+    promise(): IStatefulPromise<T> {
         return this._promise;
     }
 
@@ -339,7 +292,7 @@ class Deferred<T> implements IDeferred<T> {
     }
 }
 
-class Promise<T> implements IPromise<T> {
+class Promise<T> implements IStatefulPromise<T> {
     private _deferred: Deferred<T>;
 
     constructor(deferred: Deferred<T>) {
@@ -395,11 +348,11 @@ class Promise<T> implements IPromise<T> {
 }
 
 export class AbortablePromise<T> implements IAbortablePromise<T> {
-    private _deferred: IDeferred<T>;
+    private _deferred: IStatefulDeferred<T>;
     private _abortable: IAbortable;
     private _aborted: boolean;
 
-    constructor(deferred: IDeferred<T>, abortable: IAbortable) {
+    constructor(deferred: IStatefulDeferred<T>, abortable: IAbortable) {
         this._deferred = deferred;
         this._abortable = abortable;
         this._aborted = false;

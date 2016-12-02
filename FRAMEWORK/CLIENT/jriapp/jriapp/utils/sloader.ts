@@ -1,14 +1,14 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    IIndexer, Utils
+    IIndexer, Utils, IStatefulPromise, PromiseState
 } from "jriapp_shared";
-import { AsyncUtils, IPromise, PromiseState, whenAll as asyncWhenAll } from "jriapp_shared/utils/async";
+import { AsyncUtils } from "jriapp_shared/utils/async";
 import { IStylesLoader } from "../shared";
 import { PathHelper } from "./path";
 
-const defer = AsyncUtils, utils = Utils, dom = utils.dom, arrHelper = utils.arr; 
-const resolvedPromise = defer.createSyncDeferred<void>().resolve();
-const doc = dom.document, head = doc.head || doc.getElementsByTagName("head")[0];
+const _async = AsyncUtils, utils = Utils, dom = utils.dom, arrHelper = utils.arr,
+    resolvedPromise = _async.createSyncDeferred<void>().resolve(),
+    doc = dom.document, head = doc.head || doc.getElementsByTagName("head")[0];
 let _stylesLoader: IStylesLoader = null;
 export const frameworkCss = "jriapp.css";
 
@@ -18,7 +18,7 @@ export function createCssLoader(): IStylesLoader {
     return _stylesLoader;
 }
 
-function whenAll(promises: IPromise<any>[]): IPromise<any> {
+function whenAll(promises: IStatefulPromise<any>[]): IStatefulPromise<any> {
     if (!promises)
         return resolvedPromise;
     if (promises.length === 1)
@@ -34,7 +34,7 @@ function whenAll(promises: IPromise<any>[]): IPromise<any> {
         return resolvedPromise;
     }
     else {
-        return asyncWhenAll(promises);
+        return _async.whenAll(promises);
     }
 }
 
@@ -60,10 +60,10 @@ export interface IUrlParts {
 
 //load css styles on demand
 class StylesLoader implements IStylesLoader {
-    private _loadedCSS: IIndexer<IPromise<string>>;
+    private _loadedCSS: IIndexer<IStatefulPromise<string>>;
     
     constructor() {
-        this._loadedCSS = <IIndexer<IPromise<string>>>{};
+        this._loadedCSS = <IIndexer<IStatefulPromise<string>>>{};
     }
     private isStyleSheetLoaded(url: string): boolean {
         let testUrl = PathHelper.getUrlParts(url);
@@ -93,16 +93,16 @@ class StylesLoader implements IStylesLoader {
     private static ensureCssExt(name: string): string {
         return name.search(/\.(css|less|scss)$/i) === -1 ? name + ".css" : name;
     }
-    loadStyle(url: string): IPromise<string> {
+    loadStyle(url: string): IStatefulPromise<string> {
         url = PathHelper.appendBust(url);
-        let cssUrl = PathHelper.getNormalizedUrl(url);
+        const cssUrl = PathHelper.getNormalizedUrl(url);
 
         //test if we already are loading this css file
         let cssPromise = this._loadedCSS[cssUrl];
         if (!!cssPromise) {
             return cssPromise;
         }
-        let deferred = defer.createSyncDeferred<string>();
+        const deferred = _async.createSyncDeferred<string>();
         cssPromise = deferred.promise();
 
         if (this.isStyleSheetLoaded(url)) {
@@ -121,21 +121,21 @@ class StylesLoader implements IStylesLoader {
         this._loadedCSS[cssUrl] = cssPromise;
         return cssPromise;
     }
-    loadStyles(urls: string[]): IPromise<any> {
-        let promises = <IPromise<string>[]>[];
+    loadStyles(urls: string[]): IStatefulPromise<any> {
+        let promises = <IStatefulPromise<string>[]>[];
 
         for (let i = 0; i < urls.length; i += 1) {
             promises.push(this.loadStyle(urls[i]));
         }
         return whenAll(promises);
     }
-    loadOwnStyle(cssName?: string): IPromise<string> {
+    loadOwnStyle(cssName?: string): IStatefulPromise<string> {
         cssName = cssName || frameworkCss;
         let cssUrl = PathHelper.getFrameworkCssPath() + StylesLoader.ensureCssExt(cssName);
         return this.loadStyle(cssUrl);
     }
-    whenAllLoaded(): IPromise<any> {
-        let obj = this._loadedCSS, names = Object.keys(obj), promises = <IPromise<any>[]>[];
+    whenAllLoaded(): IStatefulPromise<any> {
+        let obj = this._loadedCSS, names = Object.keys(obj), promises = <IStatefulPromise<any>[]>[];
         for (let i = 0; i < names.length; i += 1) {
             promises.push(obj[names[i]]);
         }

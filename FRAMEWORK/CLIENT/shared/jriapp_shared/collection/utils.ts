@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { FIELD_TYPE, DATE_CONVERSION, DATA_TYPE } from "../const";
-import { IFieldInfo } from "../shared";
+import { FIELD_TYPE, DATE_CONVERSION, DATA_TYPE } from "../collection/const";
+import { IFieldInfo } from "../collection/int";
 import { Utils } from "../utils/utils";
 import { ERRS } from "../lang";
 import { IValueUtils } from "./int";

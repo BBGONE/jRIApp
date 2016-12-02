@@ -53,7 +53,9 @@ function whenAll(loads: IModuleLoad[]): IPromise<any> {
         }
     }
     else {
-        return defer.whenAll(loads.map((load) => { return load.defered.promise(); }));
+        return defer.whenAll(loads.map((load) => {
+            return load.defered.promise();
+        }));
     }
 }
 

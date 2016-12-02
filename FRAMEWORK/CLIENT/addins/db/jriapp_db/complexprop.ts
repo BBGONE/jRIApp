@@ -1,7 +1,8 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    IErrorNotification, IFieldInfo, IValidationInfo, TEventHandler, BaseObject, LocaleERRS as ERRS, Utils
+    IErrorNotification, IValidationInfo, TEventHandler, BaseObject, LocaleERRS as ERRS, Utils
 } from "jriapp_shared";
+import { IFieldInfo } from "jriapp_shared/collection/int";
 import { IEntityItem } from "./int";
 import { EntityAspect } from "./entity_aspect";
 import { DbContext } from "./dbcontext";

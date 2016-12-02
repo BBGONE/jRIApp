@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    TEventHandler, IIndexer, TPriority, LocaleERRS as ERRS, LocaleSTRS as STRS, BaseObject, Debounce,
-    Utils
+    TEventHandler, IIndexer, TPriority, LocaleERRS as ERRS, LocaleSTRS as STRS, BaseObject,
+    Debounce, Utils
 } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
 import { DATA_ATTR, KEYS } from "jriapp/const";
@@ -12,8 +12,11 @@ import {
     Parser
 } from "jriapp/utils/parser";
 import { bootstrap } from "jriapp/bootstrap";
-import { COLL_CHANGE_TYPE, ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollection, ICollItemAddedArgs,
-    COLL_CHANGE_REASON, ITEM_STATUS
+import {
+    COLL_CHANGE_REASON, ITEM_STATUS, COLL_CHANGE_TYPE
+} from "jriapp_shared/collection/const";
+import {
+    ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollection, ICollItemAddedArgs
 } from "jriapp_shared/collection/int";
 import { DblClick } from "../utils/dblclick";
 import { BaseElView } from "../generic";

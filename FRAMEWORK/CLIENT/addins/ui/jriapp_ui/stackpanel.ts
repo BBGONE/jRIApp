@@ -8,8 +8,10 @@ import {
 import { createTemplate } from "jriapp/template";
 import { BaseElView } from "./generic";
 import {
-    ICollection, ICollectionItem, ICollChangedArgs, COLL_CHANGE_TYPE,
-    COLL_CHANGE_REASON, ITEM_STATUS
+    COLL_CHANGE_REASON, ITEM_STATUS, COLL_CHANGE_TYPE
+} from "jriapp_shared/collection/const";
+import {
+    ICollection, ICollectionItem, ICollChangedArgs
 } from "jriapp_shared/collection/int";
 import { bootstrap } from "jriapp";
 

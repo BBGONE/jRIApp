@@ -1,14 +1,12 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    FIELD_TYPE, DATE_CONVERSION, DATA_TYPE, SORT_ORDER
-} from "jriapp_shared/const";
+    FIELD_TYPE, DATE_CONVERSION, DATA_TYPE, SORT_ORDER, COLL_CHANGE_REASON
+} from "jriapp_shared/collection/const";
 import {
-    IIndexer, IVoidPromise, AbortError, IBaseObject, TEventHandler, LocaleERRS as ERRS, BaseObject, Utils, WaitQueue, Lazy
+    IIndexer, IVoidPromise, AbortError, IBaseObject, TEventHandler, LocaleERRS as ERRS,
+    BaseObject, Utils, WaitQueue, Lazy, IPromiseState, IStatefulPromise, IAbortablePromise,
+    PromiseState, IDeferred
 } from "jriapp_shared";
-import {
-    IPromiseState, IPromise, IAbortablePromise, PromiseState, IDeferred
-} from "jriapp_shared/utils/async";
-import { COLL_CHANGE_REASON } from "jriapp_shared/collection/int";
 import { valueUtils } from "jriapp_shared/collection/utils";
 import {
     IEntityItem, IRefreshRowInfo, IQueryResult, IQueryInfo, IAssociationInfo, IAssocConstructorOptions,
@@ -60,10 +58,10 @@ function __checkError(svcError: { name: string; message?: string; }, oper: DATA_
 
 export interface IInternalDbxtMethods {
     onItemRefreshed(res: IRefreshRowInfo, item: IEntityItem): void;
-    refreshItem(item: IEntityItem): IPromise<IEntityItem>;
+    refreshItem(item: IEntityItem): IStatefulPromise<IEntityItem>;
     getQueryInfo(name: string): IQueryInfo;
     onDbSetHasChangesChanged(eSet: DbSet<IEntityItem, DbContext>): void;
-    load(query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IPromise<IQueryResult<IEntityItem>>;
+    load(query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
 }
 
 interface IRequestPromise {
@@ -79,9 +77,9 @@ const DBCTX_EVENTS = {
 export class DbContext extends BaseObject {
     private _requestHeaders: IIndexer<string>;
     private _requests: IRequestPromise[];
-    protected _initState: IPromise<any>;
+    protected _initState: IStatefulPromise<any>;
     protected _dbSets: DbSets;
-    //_svcMethods: { [methodName: string]: (args: { [paramName: string]: any; }) => IPromise<any>; };
+    //_svcMethods: { [methodName: string]: (args: { [paramName: string]: any; }) => IStatefulPromise<any>; };
     protected _svcMethods: any;
     //_assoc: IIndexer<() => Association>;
     protected _assoc: any;
@@ -314,7 +312,7 @@ export class DbContext extends BaseObject {
             ERROR.throwDummy(ex);
         }
     }
-    protected _loadFromCache(query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IPromise<IQueryResult<IEntityItem>> {
+    protected _loadFromCache(query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
         let self = this, defer = _async.createDeferred<IQueryResult<IEntityItem>>();
         setTimeout(() => {
             if (self.getIsDestroyCalled()) {
@@ -340,7 +338,7 @@ export class DbContext extends BaseObject {
             dbSet.fillData(subset, !isClearAll);
         });
     }
-    protected _onLoaded(res: IQueryResponse, query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IPromise<IQueryResult<IEntityItem>> {
+    protected _onLoaded(res: IQueryResponse, query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
         let self = this, defer = _async.createDeferred<IQueryResult<IEntityItem>>();
         setTimeout(() => {
             if (self.getIsDestroyCalled()) {
@@ -611,7 +609,7 @@ export class DbContext extends BaseObject {
             args.fn_onErr(ex);
         }
     }
-    protected _refreshItem(item: IEntityItem): IPromise<IEntityItem> {
+    protected _refreshItem(item: IEntityItem): IStatefulPromise<IEntityItem> {
         const self = this, deferred = _async.createDeferred<IEntityItem>();
         const context = {
             item: item,
@@ -669,7 +667,7 @@ export class DbContext extends BaseObject {
             this.raisePropertyChanged(PROP_NAME.isHasChanges);
         }
     }
-    protected _load(query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IPromise<IQueryResult<IEntityItem>> {
+    protected _load(query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
         if (!query) {
             throw new Error(ERRS.ERR_DB_LOAD_NO_QUERY);
         }
@@ -887,7 +885,7 @@ export class DbContext extends BaseObject {
 
         return submitState.promise;
     }
-    load(query: DataQuery<IEntityItem>): IPromise<IQueryResult<IEntityItem>> {
+    load(query: DataQuery<IEntityItem>): IStatefulPromise<IQueryResult<IEntityItem>> {
         return this._load(query, COLL_CHANGE_REASON.None);
     }
     acceptChanges(): void {

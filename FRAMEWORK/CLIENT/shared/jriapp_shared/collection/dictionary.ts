@@ -1,7 +1,10 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { Utils } from "../utils/utils";
 import { ERRS } from "../lang";
-import { COLL_CHANGE_TYPE, COLL_CHANGE_REASON, COLL_CHANGE_OPER, IPropInfo, ICollectionItem } from "./int";
+import {
+    COLL_CHANGE_REASON, COLL_CHANGE_TYPE, COLL_CHANGE_OPER
+} from "./const";
+import { IPropInfo, ICollectionItem } from "./int";
 import { BaseCollection } from "./base";
 import { BaseList, IListItem, IListItemConstructor } from "./list";
 

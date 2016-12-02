@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
     TErrorHandler, TPriority, IIndexer, IBaseObject, TEventHandler
-} from "../shared";
+} from "../int";
 import { ERRS } from "../lang";
 import { Checks } from "./checks";
 import { StringUtils } from "./strutils";

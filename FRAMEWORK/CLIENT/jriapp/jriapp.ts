@@ -8,6 +8,8 @@
 import { Bootstrap } from "./jriapp/bootstrap";
 
 export * from "jriapp_shared";
+export * from "jriapp_shared/collection/const";
+export * from "jriapp_shared/collection/int";
 export {
     KEYS, BINDING_MODE, BindTo
 } from "./jriapp/const";
@@ -34,6 +36,6 @@ export {
 
 export { Application } from "./jriapp/app";
 
-export const VERSION = "1.0.9";
+export const VERSION = "1.1.0";
 
 Bootstrap._initFramework();

@@ -2,7 +2,7 @@
 import {
     IBaseObject, IIndexer, TPriority, TEventHandler, TErrorHandler,
     TErrorArgs, TPropChangedHandler
-} from "./shared";
+} from "./int";
 import { ERRS } from "./lang";
 import { SysUtils } from "./utils/sysutils";
 import { Checks } from "./utils/checks";

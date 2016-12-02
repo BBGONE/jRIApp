@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { ERRS } from "../lang";
-import { IIndexer } from "../shared";
+import { IIndexer } from "../int";
 
 /**
  * pure javascript methods for the DOM manipulation

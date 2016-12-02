@@ -13,56 +13,18 @@ define("jriapp_shared/const", ["require", "exports"], function (require, exports
     var DEBUG_LEVEL = exports.DEBUG_LEVEL;
     exports.APP_NAME = "app";
     exports.DUMY_ERROR = "DUMMY_ERROR";
-    (function (DATE_CONVERSION) {
-        DATE_CONVERSION[DATE_CONVERSION["None"] = 0] = "None";
-        DATE_CONVERSION[DATE_CONVERSION["ServerLocalToClientLocal"] = 1] = "ServerLocalToClientLocal";
-        DATE_CONVERSION[DATE_CONVERSION["UtcToClientLocal"] = 2] = "UtcToClientLocal";
-    })(exports.DATE_CONVERSION || (exports.DATE_CONVERSION = {}));
-    var DATE_CONVERSION = exports.DATE_CONVERSION;
-    (function (DATA_TYPE) {
-        DATA_TYPE[DATA_TYPE["None"] = 0] = "None";
-        DATA_TYPE[DATA_TYPE["String"] = 1] = "String";
-        DATA_TYPE[DATA_TYPE["Bool"] = 2] = "Bool";
-        DATA_TYPE[DATA_TYPE["Integer"] = 3] = "Integer";
-        DATA_TYPE[DATA_TYPE["Decimal"] = 4] = "Decimal";
-        DATA_TYPE[DATA_TYPE["Float"] = 5] = "Float";
-        DATA_TYPE[DATA_TYPE["DateTime"] = 6] = "DateTime";
-        DATA_TYPE[DATA_TYPE["Date"] = 7] = "Date";
-        DATA_TYPE[DATA_TYPE["Time"] = 8] = "Time";
-        DATA_TYPE[DATA_TYPE["Guid"] = 9] = "Guid";
-        DATA_TYPE[DATA_TYPE["Binary"] = 10] = "Binary";
-    })(exports.DATA_TYPE || (exports.DATA_TYPE = {}));
-    var DATA_TYPE = exports.DATA_TYPE;
-    (function (FIELD_TYPE) {
-        FIELD_TYPE[FIELD_TYPE["None"] = 0] = "None";
-        FIELD_TYPE[FIELD_TYPE["ClientOnly"] = 1] = "ClientOnly";
-        FIELD_TYPE[FIELD_TYPE["Calculated"] = 2] = "Calculated";
-        FIELD_TYPE[FIELD_TYPE["Navigation"] = 3] = "Navigation";
-        FIELD_TYPE[FIELD_TYPE["RowTimeStamp"] = 4] = "RowTimeStamp";
-        FIELD_TYPE[FIELD_TYPE["Object"] = 5] = "Object";
-        FIELD_TYPE[FIELD_TYPE["ServerCalculated"] = 6] = "ServerCalculated";
-    })(exports.FIELD_TYPE || (exports.FIELD_TYPE = {}));
-    var FIELD_TYPE = exports.FIELD_TYPE;
-    (function (SORT_ORDER) {
-        SORT_ORDER[SORT_ORDER["ASC"] = 0] = "ASC";
-        SORT_ORDER[SORT_ORDER["DESC"] = 1] = "DESC";
-    })(exports.SORT_ORDER || (exports.SORT_ORDER = {}));
-    var SORT_ORDER = exports.SORT_ORDER;
-    (function (FILTER_TYPE) {
-        FILTER_TYPE[FILTER_TYPE["Equals"] = 0] = "Equals";
-        FILTER_TYPE[FILTER_TYPE["Between"] = 1] = "Between";
-        FILTER_TYPE[FILTER_TYPE["StartsWith"] = 2] = "StartsWith";
-        FILTER_TYPE[FILTER_TYPE["EndsWith"] = 3] = "EndsWith";
-        FILTER_TYPE[FILTER_TYPE["Contains"] = 4] = "Contains";
-        FILTER_TYPE[FILTER_TYPE["Gt"] = 5] = "Gt";
-        FILTER_TYPE[FILTER_TYPE["Lt"] = 6] = "Lt";
-        FILTER_TYPE[FILTER_TYPE["GtEq"] = 7] = "GtEq";
-        FILTER_TYPE[FILTER_TYPE["LtEq"] = 8] = "LtEq";
-        FILTER_TYPE[FILTER_TYPE["NotEq"] = 9] = "NotEq";
-    })(exports.FILTER_TYPE || (exports.FILTER_TYPE = {}));
-    var FILTER_TYPE = exports.FILTER_TYPE;
 });
-define("jriapp_shared/shared", ["require", "exports", "jriapp_shared/const"], function (require, exports, const_1) {
+define("jriapp_shared/iasync", ["require", "exports"], function (require, exports) {
+    "use strict";
+    (function (PromiseState) {
+        PromiseState[PromiseState["Pending"] = 0] = "Pending";
+        PromiseState[PromiseState["ResolutionInProgress"] = 1] = "ResolutionInProgress";
+        PromiseState[PromiseState["Resolved"] = 2] = "Resolved";
+        PromiseState[PromiseState["Rejected"] = 3] = "Rejected";
+    })(exports.PromiseState || (exports.PromiseState = {}));
+    var PromiseState = exports.PromiseState;
+});
+define("jriapp_shared/int", ["require", "exports", "jriapp_shared/const"], function (require, exports, const_1) {
     "use strict";
     exports.Config = window.jriapp_config || {};
     exports.DebugLevel = (!exports.Config.debugLevel) ? const_1.DEBUG_LEVEL.NONE : exports.Config.debugLevel;
@@ -72,6 +34,9 @@ define("jriapp_shared/shared", ["require", "exports", "jriapp_shared/const"], fu
         TPriority[TPriority["High"] = 2] = "High";
     })(exports.TPriority || (exports.TPriority = {}));
     var TPriority = exports.TPriority;
+});
+define("jriapp_shared/errors", ["require", "exports", "jriapp_shared/const"], function (require, exports, const_2) {
+    "use strict";
     var BaseError = (function () {
         function BaseError(message) {
             this._message = message || "Error";
@@ -99,7 +64,7 @@ define("jriapp_shared/shared", ["require", "exports", "jriapp_shared/const"], fu
     var DummyError = (function (_super) {
         __extends(DummyError, _super);
         function DummyError(originalError) {
-            _super.call(this, const_1.DUMY_ERROR);
+            _super.call(this, const_2.DUMY_ERROR);
             this._origError = originalError;
         }
         Object.defineProperty(DummyError.prototype, "isDummy", {
@@ -122,7 +87,7 @@ define("jriapp_shared/shared", ["require", "exports", "jriapp_shared/const"], fu
     var AbortError = (function (_super) {
         __extends(AbortError, _super);
         function AbortError(reason) {
-            _super.call(this, const_1.DUMY_ERROR);
+            _super.call(this, const_2.DUMY_ERROR);
             this._reason = reason || "Operation Aborted";
         }
         Object.defineProperty(AbortError.prototype, "isDummy", {
@@ -930,7 +895,7 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/uti
     }());
     exports.SysUtils = SysUtils;
 });
-define("jriapp_shared/utils/error", ["require", "exports", "jriapp_shared/const", "jriapp_shared/shared"], function (require, exports, const_2, shared_1) {
+define("jriapp_shared/utils/error", ["require", "exports", "jriapp_shared/const", "jriapp_shared/errors"], function (require, exports, const_3, errors_1) {
     "use strict";
     var ERROR = (function () {
         function ERROR() {
@@ -946,7 +911,7 @@ define("jriapp_shared/utils/error", ["require", "exports", "jriapp_shared/const"
                 return true;
             }
             var handler, isHandled = false;
-            handler = ERROR._handlers[const_2.APP_NAME];
+            handler = ERROR._handlers[const_3.APP_NAME];
             if (!!handler) {
                 if (handler === sender)
                     handler = null;
@@ -969,13 +934,13 @@ define("jriapp_shared/utils/error", ["require", "exports", "jriapp_shared/const"
             if (ERROR.checkIsDummy(err))
                 throw err;
             else
-                throw new shared_1.DummyError(err);
+                throw new errors_1.DummyError(err);
         };
         ERROR.checkIsDummy = function (error) {
             return !!error && !!error.isDummy;
         };
         ERROR.checkIsAbort = function (error) {
-            return !!error && (error instanceof shared_1.AbortError);
+            return !!error && (error instanceof errors_1.AbortError);
         };
         ERROR.reThrow = function (ex, isHandled) {
             if (!isHandled)
@@ -984,25 +949,25 @@ define("jriapp_shared/utils/error", ["require", "exports", "jriapp_shared/const"
                 ERROR.throwDummy(ex);
         };
         ERROR.abort = function (reason) {
-            throw new shared_1.AbortError(reason);
+            throw new errors_1.AbortError(reason);
         };
         ERROR._handlers = {};
         return ERROR;
     }());
     exports.ERROR = ERROR;
 });
-define("jriapp_shared/utils/debug", ["require", "exports", "jriapp_shared/const", "jriapp_shared/shared"], function (require, exports, const_3, shared_2) {
+define("jriapp_shared/utils/debug", ["require", "exports", "jriapp_shared/const", "jriapp_shared/int"], function (require, exports, const_4, int_1) {
     "use strict";
     var DEBUG = (function () {
         function DEBUG() {
         }
         DEBUG.checkStartDebugger = function () {
-            if (shared_2.DebugLevel === const_3.DEBUG_LEVEL.HIGH) {
+            if (int_1.DebugLevel === const_4.DEBUG_LEVEL.HIGH) {
                 debugger;
             }
         };
         DEBUG.isDebugging = function () {
-            return shared_2.DebugLevel > const_3.DEBUG_LEVEL.NONE;
+            return int_1.DebugLevel > const_4.DEBUG_LEVEL.NONE;
         };
         return DEBUG;
     }());
@@ -1344,8 +1309,56 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
     }());
     exports.BaseObject = BaseObject;
 });
-define("jriapp_shared/collection/int", ["require", "exports"], function (require, exports) {
+define("jriapp_shared/collection/const", ["require", "exports"], function (require, exports) {
     "use strict";
+    (function (DATE_CONVERSION) {
+        DATE_CONVERSION[DATE_CONVERSION["None"] = 0] = "None";
+        DATE_CONVERSION[DATE_CONVERSION["ServerLocalToClientLocal"] = 1] = "ServerLocalToClientLocal";
+        DATE_CONVERSION[DATE_CONVERSION["UtcToClientLocal"] = 2] = "UtcToClientLocal";
+    })(exports.DATE_CONVERSION || (exports.DATE_CONVERSION = {}));
+    var DATE_CONVERSION = exports.DATE_CONVERSION;
+    (function (DATA_TYPE) {
+        DATA_TYPE[DATA_TYPE["None"] = 0] = "None";
+        DATA_TYPE[DATA_TYPE["String"] = 1] = "String";
+        DATA_TYPE[DATA_TYPE["Bool"] = 2] = "Bool";
+        DATA_TYPE[DATA_TYPE["Integer"] = 3] = "Integer";
+        DATA_TYPE[DATA_TYPE["Decimal"] = 4] = "Decimal";
+        DATA_TYPE[DATA_TYPE["Float"] = 5] = "Float";
+        DATA_TYPE[DATA_TYPE["DateTime"] = 6] = "DateTime";
+        DATA_TYPE[DATA_TYPE["Date"] = 7] = "Date";
+        DATA_TYPE[DATA_TYPE["Time"] = 8] = "Time";
+        DATA_TYPE[DATA_TYPE["Guid"] = 9] = "Guid";
+        DATA_TYPE[DATA_TYPE["Binary"] = 10] = "Binary";
+    })(exports.DATA_TYPE || (exports.DATA_TYPE = {}));
+    var DATA_TYPE = exports.DATA_TYPE;
+    (function (FIELD_TYPE) {
+        FIELD_TYPE[FIELD_TYPE["None"] = 0] = "None";
+        FIELD_TYPE[FIELD_TYPE["ClientOnly"] = 1] = "ClientOnly";
+        FIELD_TYPE[FIELD_TYPE["Calculated"] = 2] = "Calculated";
+        FIELD_TYPE[FIELD_TYPE["Navigation"] = 3] = "Navigation";
+        FIELD_TYPE[FIELD_TYPE["RowTimeStamp"] = 4] = "RowTimeStamp";
+        FIELD_TYPE[FIELD_TYPE["Object"] = 5] = "Object";
+        FIELD_TYPE[FIELD_TYPE["ServerCalculated"] = 6] = "ServerCalculated";
+    })(exports.FIELD_TYPE || (exports.FIELD_TYPE = {}));
+    var FIELD_TYPE = exports.FIELD_TYPE;
+    (function (SORT_ORDER) {
+        SORT_ORDER[SORT_ORDER["ASC"] = 0] = "ASC";
+        SORT_ORDER[SORT_ORDER["DESC"] = 1] = "DESC";
+    })(exports.SORT_ORDER || (exports.SORT_ORDER = {}));
+    var SORT_ORDER = exports.SORT_ORDER;
+    (function (FILTER_TYPE) {
+        FILTER_TYPE[FILTER_TYPE["Equals"] = 0] = "Equals";
+        FILTER_TYPE[FILTER_TYPE["Between"] = 1] = "Between";
+        FILTER_TYPE[FILTER_TYPE["StartsWith"] = 2] = "StartsWith";
+        FILTER_TYPE[FILTER_TYPE["EndsWith"] = 3] = "EndsWith";
+        FILTER_TYPE[FILTER_TYPE["Contains"] = 4] = "Contains";
+        FILTER_TYPE[FILTER_TYPE["Gt"] = 5] = "Gt";
+        FILTER_TYPE[FILTER_TYPE["Lt"] = 6] = "Lt";
+        FILTER_TYPE[FILTER_TYPE["GtEq"] = 7] = "GtEq";
+        FILTER_TYPE[FILTER_TYPE["LtEq"] = 8] = "LtEq";
+        FILTER_TYPE[FILTER_TYPE["NotEq"] = 9] = "NotEq";
+    })(exports.FILTER_TYPE || (exports.FILTER_TYPE = {}));
+    var FILTER_TYPE = exports.FILTER_TYPE;
     (function (COLL_CHANGE_TYPE) {
         COLL_CHANGE_TYPE[COLL_CHANGE_TYPE["Remove"] = 0] = "Remove";
         COLL_CHANGE_TYPE[COLL_CHANGE_TYPE["Add"] = 1] = "Add";
@@ -1375,6 +1388,9 @@ define("jriapp_shared/collection/int", ["require", "exports"], function (require
         ITEM_STATUS[ITEM_STATUS["Deleted"] = 3] = "Deleted";
     })(exports.ITEM_STATUS || (exports.ITEM_STATUS = {}));
     var ITEM_STATUS = exports.ITEM_STATUS;
+});
+define("jriapp_shared/collection/int", ["require", "exports"], function (require, exports) {
+    "use strict";
     exports.PROP_NAME = {
         isEditing: "isEditing",
         currentItem: "currentItem",
@@ -1560,33 +1576,27 @@ define("jriapp_shared/utils/logger", ["require", "exports"], function (require, 
     }());
     exports.LOGGER = LOGGER;
 });
-define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/shared", "jriapp_shared/utils/checks"], function (require, exports, shared_3, checks_5) {
+define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/errors", "jriapp_shared/utils/checks"], function (require, exports, errors_2, checks_5) {
     "use strict";
-    (function (PromiseState) {
-        PromiseState[PromiseState["Pending"] = 0] = "Pending";
-        PromiseState[PromiseState["ResolutionInProgress"] = 1] = "ResolutionInProgress";
-        PromiseState[PromiseState["Resolved"] = 2] = "Resolved";
-        PromiseState[PromiseState["Rejected"] = 3] = "Rejected";
-    })(exports.PromiseState || (exports.PromiseState = {}));
-    var PromiseState = exports.PromiseState;
-    function create() {
+    var checks = checks_5.Checks;
+    function createDefer() {
         return new Deferred(fn_dispatch);
     }
-    exports.create = create;
-    function createSync() {
+    exports.createDefer = createDefer;
+    function createSyncDefer() {
         return new Deferred(fn_dispatchImmediate);
     }
-    exports.createSync = createSync;
+    exports.createSyncDefer = createSyncDefer;
     function getTaskQueue() {
         return taskQueue;
     }
     exports.getTaskQueue = getTaskQueue;
     function whenAll(args) {
-        var deferred = create(), errors = [], countAll = args.length, result = new Array(args.length);
+        var deferred = createDefer(), errors = [], countAll = args.length, result = new Array(args.length);
         var checkResult = function () {
             if (countAll === 0) {
                 if (errors.length > 0)
-                    deferred.reject(new shared_3.AggregateError(errors));
+                    deferred.reject(new errors_2.AggregateError(errors));
                 else
                     deferred.resolve(result);
             }
@@ -1597,7 +1607,7 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/sha
         }
         var _loop_1 = function(i) {
             var value = args[i];
-            if (checks_5.Checks.isThenable(value)) {
+            if (checks.isThenable(value)) {
                 value.then(function (res) {
                     --countAll;
                     result[i] = res;
@@ -1663,7 +1673,7 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/sha
         }
         Callback.prototype.resolve = function (value, defer) {
             var _this = this;
-            if (!checks_5.Checks.isFunc(this._successCB)) {
+            if (!checks.isFunc(this._successCB)) {
                 this.deferred.resolve(value);
                 return;
             }
@@ -1676,7 +1686,7 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/sha
         };
         Callback.prototype.reject = function (error, defer) {
             var _this = this;
-            if (!checks_5.Checks.isFunc(this._errorCB)) {
+            if (!checks.isFunc(this._errorCB)) {
                 this.deferred.reject(error);
                 return;
             }
@@ -1703,8 +1713,8 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/sha
     var Deferred = (function () {
         function Deferred(dispatcher) {
             this._dispatcher = dispatcher;
-            this._value = checks_5.Checks.undefined;
-            this._error = checks_5.Checks.undefined;
+            this._value = checks.undefined;
+            this._error = checks.undefined;
             this._state = 0;
             this._stack = [];
             this._promise = new Promise(this);
@@ -1713,7 +1723,7 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/sha
             var _this = this;
             var pending = true;
             try {
-                if (checks_5.Checks.isThenable(value)) {
+                if (checks.isThenable(value)) {
                     if (value === this._promise) {
                         throw new TypeError("recursive resolution");
                     }
@@ -1766,7 +1776,7 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/sha
             return this;
         };
         Deferred.prototype._then = function (successCB, errorCB) {
-            if (!checks_5.Checks.isFunc(successCB) && !checks_5.Checks.isFunc(errorCB)) {
+            if (!checks.isFunc(successCB) && !checks.isFunc(errorCB)) {
                 return this._promise;
             }
             var cb = new Callback(this._dispatcher, successCB, errorCB);
@@ -1812,7 +1822,7 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/sha
             return this._deferred._then(successCB, errorCB);
         };
         Promise.prototype.fail = function (errorCB) {
-            return this._deferred._then(checks_5.Checks.undefined, errorCB);
+            return this._deferred._then(checks.undefined, errorCB);
         };
         Promise.prototype.always = function (errorCB) {
             return this._deferred._then(errorCB, errorCB);
@@ -1841,7 +1851,7 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/sha
             if (this._aborted)
                 return;
             var self = this;
-            self._deferred.reject(new shared_3.AbortError(reason));
+            self._deferred.reject(new errors_2.AbortError(reason));
             self._aborted = true;
             setTimeout(function () { self._abortable.abort(); }, 0);
         };
@@ -1853,20 +1863,17 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/sha
     exports.AbortablePromise = AbortablePromise;
     var taskQueue = new TaskQueue();
 });
-define("jriapp_shared/utils/async", ["require", "exports", "jriapp_shared/utils/deferred", "jriapp_shared/utils/deferred", "jriapp_shared/utils/checks"], function (require, exports, deferred_1, deferred_2, checks_6) {
+define("jriapp_shared/utils/async", ["require", "exports", "jriapp_shared/utils/deferred", "jriapp_shared/utils/checks"], function (require, exports, deferred_1, checks_6) {
     "use strict";
-    exports.PromiseState = deferred_2.PromiseState;
-    exports.whenAll = deferred_2.whenAll;
-    exports.AbortablePromise = deferred_2.AbortablePromise;
     var checks = checks_6.Checks;
     var AsyncUtils = (function () {
         function AsyncUtils() {
         }
         AsyncUtils.createDeferred = function () {
-            return deferred_1.create();
+            return deferred_1.createDefer();
         };
         AsyncUtils.createSyncDeferred = function () {
-            return deferred_1.createSync();
+            return deferred_1.createSyncDefer();
         };
         AsyncUtils.whenAll = function (args) {
             return deferred_1.whenAll(args);
@@ -1875,7 +1882,7 @@ define("jriapp_shared/utils/async", ["require", "exports", "jriapp_shared/utils/
             return deferred_1.getTaskQueue();
         };
         AsyncUtils.delay = function (func, time) {
-            var deferred = deferred_1.create();
+            var deferred = deferred_1.createDefer();
             setTimeout(function () {
                 try {
                     deferred.resolve(func());
@@ -1900,7 +1907,7 @@ define("jriapp_shared/utils/async", ["require", "exports", "jriapp_shared/utils/
     }());
     exports.AsyncUtils = AsyncUtils;
 });
-define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/shared", "jriapp_shared/utils/strutils", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/async"], function (require, exports, shared_4, strUtils_3, coreutils_4, async_1) {
+define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/strutils", "jriapp_shared/errors", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/deferred", "jriapp_shared/utils/async"], function (require, exports, strUtils_3, errors_3, coreutils_4, deferred_2, async_1) {
     "use strict";
     var coreUtils = coreutils_4.CoreUtils, strUtils = strUtils_3.StringUtils, _async = async_1.AsyncUtils;
     var HttpUtils = (function () {
@@ -1922,7 +1929,7 @@ define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/shared"
                 }
                 else {
                     if (HttpUtils.isStatusOK(status))
-                        deferred.reject(new shared_4.DummyError(new Error(strUtils.format('Status: "{0}" loading from URL: "{1}"', status, url))));
+                        deferred.reject(new errors_3.DummyError(new Error(strUtils.format('Status: "{0}" loading from URL: "{1}"', status, url))));
                     else
                         deferred.reject(new Error(strUtils.format('Error: "{0}" to load from URL: "{1}"', status, url)));
                 }
@@ -1948,12 +1955,12 @@ define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/shared"
             var _headers = coreUtils.merge(headers, { "Content-Type": "application/json; charset=utf-8" });
             var deferred = _async.createDeferred(), req = HttpUtils._getXMLRequest(url, "POST", deferred, _headers);
             req.send(postData);
-            return new async_1.AbortablePromise(deferred, req);
+            return new deferred_2.AbortablePromise(deferred, req);
         };
         HttpUtils.getAjax = function (url, headers) {
             var deferred = _async.createDeferred(), req = HttpUtils._getXMLRequest(url, "GET", deferred, headers);
             req.send(null);
-            return new async_1.AbortablePromise(deferred, req);
+            return new deferred_2.AbortablePromise(deferred, req);
         };
         HttpUtils.defaultHeaders = {};
         HttpUtils.ajaxTimeOut = 600;
@@ -2361,7 +2368,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
     }
     exports.fn_traverseFields = fn_traverseFields;
 });
-define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_shared/shared", "jriapp_shared/lang", "jriapp_shared/utils/utils"], function (require, exports, shared_5, lang_4, utils_2) {
+define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_shared/errors", "jriapp_shared/lang", "jriapp_shared/utils/utils"], function (require, exports, errors_4, lang_4, utils_2) {
     "use strict";
     var utils = utils_2.Utils, sys = utils.sys;
     sys.isValidationError = function (obj) {
@@ -2399,7 +2406,7 @@ define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_sha
             configurable: true
         });
         return ValidationError;
-    }(shared_5.BaseError));
+    }(errors_4.BaseError));
     exports.ValidationError = ValidationError;
     var Validations = (function () {
         function Validations() {
@@ -2439,7 +2446,7 @@ define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_sha
     }());
     exports.Validations = Validations;
 });
-define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/utils", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/collection/validation"], function (require, exports, object_2, lang_5, waitqueue_1, utils_3, int_1, utils_4, validation_1) {
+define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/utils", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/collection/validation"], function (require, exports, object_2, lang_5, waitqueue_1, utils_3, int_2, utils_4, validation_1) {
     "use strict";
     var utils = utils_3.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, sys = utils.sys;
     sys.isCollection = function (obj) { return (!!obj && obj instanceof BaseCollection); };
@@ -2658,16 +2665,16 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             this._removeHandler(COLL_EVENTS.status_changed, nmspace);
         };
         BaseCollection.prototype.addOnPageIndexChanged = function (handler, nmspace, context) {
-            this.addOnPropertyChange(int_1.PROP_NAME.pageIndex, handler, nmspace, context);
+            this.addOnPropertyChange(int_2.PROP_NAME.pageIndex, handler, nmspace, context);
         };
         BaseCollection.prototype.addOnPageSizeChanged = function (handler, nmspace, context) {
-            this.addOnPropertyChange(int_1.PROP_NAME.pageSize, handler, nmspace, context);
+            this.addOnPropertyChange(int_2.PROP_NAME.pageSize, handler, nmspace, context);
         };
         BaseCollection.prototype.addOnTotalCountChanged = function (handler, nmspace, context) {
-            this.addOnPropertyChange(int_1.PROP_NAME.totalCount, handler, nmspace, context);
+            this.addOnPropertyChange(int_2.PROP_NAME.totalCount, handler, nmspace, context);
         };
         BaseCollection.prototype.addOnCurrentChanged = function (handler, nmspace, context) {
-            this.addOnPropertyChange(int_1.PROP_NAME.currentItem, handler, nmspace, context);
+            this.addOnPropertyChange(int_2.PROP_NAME.currentItem, handler, nmspace, context);
         };
         BaseCollection.prototype._getPKFieldInfos = function () {
             if (!!this._pkInfo)
@@ -2697,13 +2704,13 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             this.raiseEvent(COLL_EVENTS.current_changing, { newCurrent: newCurrent });
         };
         BaseCollection.prototype._onCurrentChanged = function () {
-            this.raisePropertyChanged(int_1.PROP_NAME.currentItem);
+            this.raisePropertyChanged(int_2.PROP_NAME.currentItem);
         };
         BaseCollection.prototype._onCountChanged = function () {
-            this.raisePropertyChanged(int_1.PROP_NAME.count);
+            this.raisePropertyChanged(int_2.PROP_NAME.count);
         };
         BaseCollection.prototype._onEditingChanged = function () {
-            this.raisePropertyChanged(int_1.PROP_NAME.isEditing);
+            this.raisePropertyChanged(int_2.PROP_NAME.isEditing);
         };
         BaseCollection.prototype._onItemStatusChanged = function (item, oldStatus) {
             this.raiseEvent(COLL_EVENTS.status_changed, { item: item, oldStatus: oldStatus, key: item._key });
@@ -2750,7 +2757,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             this._itemsByKey[item._key] = item;
             this._onCollectionChanged({ changeType: 1, reason: 0, oper: 2, items: [item], pos: [pos] });
             item._aspect._onAttach();
-            this.raisePropertyChanged(int_1.PROP_NAME.count);
+            this.raisePropertyChanged(int_2.PROP_NAME.count);
             this._onCurrentChanging(item);
             this._currentPos = pos;
             this._onCurrentChanged();
@@ -2761,7 +2768,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 this._onCollectionChanged({ changeType: 0, reason: 0, oper: 3, items: [item], pos: [pos] });
             }
             finally {
-                this.raisePropertyChanged(int_1.PROP_NAME.count);
+                this.raisePropertyChanged(int_2.PROP_NAME.count);
             }
         };
         BaseCollection.prototype._onPageSizeChanged = function () {
@@ -2846,7 +2853,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 this.raiseEvent(COLL_EVENTS.begin_edit, { item: item });
                 this._onEditingChanged();
                 if (!!item) {
-                    item._aspect.raisePropertyChanged(int_1.PROP_NAME.isEditing);
+                    item._aspect.raisePropertyChanged(int_2.PROP_NAME.isEditing);
                 }
             }
             else {
@@ -2855,7 +2862,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 this.raiseEvent(COLL_EVENTS.end_edit, { item: item, isCanceled: isCanceled });
                 this._onEditingChanged();
                 if (!!oldItem) {
-                    oldItem._aspect.raisePropertyChanged(int_1.PROP_NAME.isEditing);
+                    oldItem._aspect.raisePropertyChanged(int_2.PROP_NAME.isEditing);
                 }
             }
         };
@@ -2956,7 +2963,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         BaseCollection.prototype._setIsLoading = function (v) {
             if (this._isLoading !== v) {
                 this._isLoading = v;
-                this.raisePropertyChanged(int_1.PROP_NAME.isLoading);
+                this.raisePropertyChanged(int_2.PROP_NAME.isLoading);
             }
         };
         BaseCollection.prototype._getInternal = function () {
@@ -3253,7 +3260,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         };
         BaseCollection.prototype.waitForNotLoading = function (callback, groupName) {
             this._waitQueue.enQueue({
-                prop: int_1.PROP_NAME.isLoading,
+                prop: int_2.PROP_NAME.isLoading,
                 groupName: groupName,
                 predicate: function (val) {
                     return !val;
@@ -3292,8 +3299,8 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             set: function (v) {
                 if (v !== this._totalCount) {
                     this._totalCount = v;
-                    this.raisePropertyChanged(int_1.PROP_NAME.totalCount);
-                    this.raisePropertyChanged(int_1.PROP_NAME.pageCount);
+                    this.raisePropertyChanged(int_2.PROP_NAME.totalCount);
+                    this.raisePropertyChanged(int_2.PROP_NAME.pageCount);
                 }
             },
             enumerable: true,
@@ -3304,7 +3311,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             set: function (v) {
                 if (this._options.pageSize !== v) {
                     this._options.pageSize = v;
-                    this.raisePropertyChanged(int_1.PROP_NAME.pageSize);
+                    this.raisePropertyChanged(int_2.PROP_NAME.pageSize);
                     this._onPageSizeChanged();
                 }
             },
@@ -3322,7 +3329,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                     }
                     this._pageIndex = v;
                     this._onPageChanged();
-                    this.raisePropertyChanged(int_1.PROP_NAME.pageIndex);
+                    this.raisePropertyChanged(int_2.PROP_NAME.pageIndex);
                 }
             },
             enumerable: true,
@@ -3366,7 +3373,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             set: function (v) {
                 if (this._isUpdating !== v) {
                     this._isUpdating = v;
-                    this.raisePropertyChanged(int_1.PROP_NAME.isUpdating);
+                    this.raisePropertyChanged(int_2.PROP_NAME.isUpdating);
                 }
             },
             enumerable: true,
@@ -3381,7 +3388,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
     }(object_2.BaseObject));
     exports.BaseCollection = BaseCollection;
 });
-define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/utils/utils", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/collection/validation"], function (require, exports, object_3, lang_6, utils_5, int_2, utils_6, validation_2) {
+define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/utils/utils", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/collection/validation"], function (require, exports, object_3, lang_6, utils_5, int_3, utils_6, validation_2) {
     "use strict";
     var utils = utils_5.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, sys = utils.sys, ERROR = utils.err;
     var ItemAspect = (function (_super) {
@@ -3406,10 +3413,10 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         };
         ItemAspect.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
-            return [int_2.ITEM_EVENTS.errors_changed].concat(base_events);
+            return [int_3.ITEM_EVENTS.errors_changed].concat(base_events);
         };
         ItemAspect.prototype._onErrorsChanged = function (args) {
-            this.raiseEvent(int_2.ITEM_EVENTS.errors_changed, args);
+            this.raiseEvent(int_3.ITEM_EVENTS.errors_changed, args);
         };
         ItemAspect.prototype._beginEdit = function () {
             var coll = this.collection;
@@ -3586,7 +3593,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         ItemAspect.prototype._resetIsNew = function () {
         };
         ItemAspect.prototype._fakeDestroy = function () {
-            this.raiseEvent(int_2.ITEM_EVENTS.destroyed, {});
+            this.raiseEvent(int_3.ITEM_EVENTS.destroyed, {});
             this.removeNSHandlers();
         };
         ItemAspect.prototype.handleError = function (error, source) {
@@ -3694,10 +3701,10 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             return !!itemErrors;
         };
         ItemAspect.prototype.addOnErrorsChanged = function (fn, nmspace, context) {
-            this._addHandler(int_2.ITEM_EVENTS.errors_changed, fn, nmspace, context);
+            this._addHandler(int_3.ITEM_EVENTS.errors_changed, fn, nmspace, context);
         };
         ItemAspect.prototype.removeOnErrorsChanged = function (nmspace) {
-            this._removeHandler(int_2.ITEM_EVENTS.errors_changed, nmspace);
+            this._removeHandler(int_3.ITEM_EVENTS.errors_changed, nmspace);
         };
         ItemAspect.prototype.getFieldErrors = function (fieldName) {
             var itemErrors = this.collection._getInternal().getErrors(this.item);
@@ -3893,7 +3900,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
     }(object_3.BaseObject));
     exports.ItemAspect = ItemAspect;
 });
-define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/object", "jriapp_shared/collection/int"], function (require, exports, object_4, int_3) {
+define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/object", "jriapp_shared/collection/int"], function (require, exports, object_4, int_4) {
     "use strict";
     var CollectionItem = (function (_super) {
         __extends(CollectionItem, _super);
@@ -3902,7 +3909,7 @@ define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/ob
             this.__aspect = aspect;
         }
         CollectionItem.prototype._fakeDestroy = function () {
-            this.raiseEvent(int_3.ITEM_EVENTS.destroyed, {});
+            this.raiseEvent(int_4.ITEM_EVENTS.destroyed, {});
             this.removeNSHandlers();
         };
         Object.defineProperty(CollectionItem.prototype, "_aspect", {
@@ -3946,7 +3953,7 @@ define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/ob
     }(object_4.BaseObject));
     exports.CollectionItem = CollectionItem;
 });
-define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/collection/base", "jriapp_shared/collection/aspect", "jriapp_shared/collection/validation"], function (require, exports, utils_7, lang_7, int_4, utils_8, base_1, aspect_1, validation_3) {
+define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/collection/base", "jriapp_shared/collection/aspect", "jriapp_shared/collection/validation"], function (require, exports, utils_7, lang_7, int_5, utils_8, base_1, aspect_1, validation_3) {
     "use strict";
     var utils = utils_7.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, ERROR = utils.err;
     function fn_initVals(coll, obj) {
@@ -4108,7 +4115,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                     }
                 });
                 if (newItems.length > 0) {
-                    this.raisePropertyChanged(int_4.PROP_NAME.count);
+                    this.raisePropertyChanged(int_5.PROP_NAME.count);
                 }
             }
             finally {
@@ -4274,9 +4281,9 @@ define("jriapp_shared/utils/debounce", ["require", "exports"], function (require
 define("jriapp_shared/utils/lazy", ["require", "exports"], function (require, exports) {
     "use strict";
     var Lazy = (function () {
-        function Lazy(initializer) {
+        function Lazy(factory) {
             this._val = null;
-            this._factory = initializer;
+            this._factory = factory;
         }
         Object.defineProperty(Lazy.prototype, "Value", {
             get: function () {
@@ -4289,37 +4296,36 @@ define("jriapp_shared/utils/lazy", ["require", "exports"], function (require, ex
             configurable: true
         });
         Lazy.prototype.destroy = function () {
-            if (!this.getIsDestroyed()) {
+            if (this.IsValueCreated) {
                 if ("destroy" in this._val) {
                     this._val.destroy();
                 }
-                this._val = null;
+                this._val = void 0;
             }
         };
-        Lazy.prototype.getIsDestroyed = function () {
-            return this._val === null;
-        };
-        Lazy.prototype.getIsDestroyCalled = function () {
-            return this._val === null;
-        };
+        Object.defineProperty(Lazy.prototype, "IsValueCreated", {
+            get: function () {
+                return !!this._val;
+            },
+            enumerable: true,
+            configurable: true
+        });
         return Lazy;
     }());
     exports.Lazy = Lazy;
 });
-define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_shared/shared", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/collection/int", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/collection/validation", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, const_4, shared_6, object_5, lang_9, int_5, base_3, item_1, aspect_2, list_2, dictionary_1, validation_4, utils_10, waitqueue_2, debounce_1, lazy_1) {
+define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/iasync", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/collection/validation", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, const_5, int_6, errors_5, iasync_1, object_5, lang_9, base_3, item_1, aspect_2, list_2, dictionary_1, validation_4, utils_10, waitqueue_2, debounce_1, lazy_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
     }
-    __export(const_4);
-    __export(shared_6);
+    __export(const_5);
+    __export(int_6);
+    __export(errors_5);
+    __export(iasync_1);
     __export(object_5);
     exports.LocaleSTRS = lang_9.STRS;
     exports.LocaleERRS = lang_9.ERRS;
-    exports.COLL_CHANGE_OPER = int_5.COLL_CHANGE_OPER;
-    exports.COLL_CHANGE_REASON = int_5.COLL_CHANGE_REASON;
-    exports.COLL_CHANGE_TYPE = int_5.COLL_CHANGE_TYPE;
-    exports.ITEM_STATUS = int_5.ITEM_STATUS;
     exports.BaseCollection = base_3.BaseCollection;
     exports.CollectionItem = item_1.CollectionItem;
     exports.ItemAspect = aspect_2.ItemAspect;
