@@ -10,8 +10,8 @@ export class Debounce implements IDisposable {
         this._interval = !interval ? 0 : interval;
     }
     enqueue(fn: () => any) {
-        if (this._timer === void 0)
-            return;
+        if (this.IsDestroyed)
+            throw new Error("Invalid operation");
 
         if (!!this._timer) {
             clearTimeout(this._timer);
@@ -32,5 +32,8 @@ export class Debounce implements IDisposable {
     }
     set interval(v: number) {
         this._interval = v;
+    }
+    get IsDestroyed(): boolean {
+        return this._timer === void 0;
     }
 }

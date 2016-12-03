@@ -4,7 +4,7 @@ import {
 } from "jriapp_shared";
 import {
     IContentOptions, ITemplateInfo, IBindingInfo
-} from "jriapp/shared";
+} from "jriapp/int";
 import {
     Parser
 } from "jriapp/utils/parser";

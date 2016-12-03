@@ -4,7 +4,7 @@ import {
 } from "jriapp_shared";
 import {
     IApplication, ITemplateGroupInfo, ITemplateGroupInfoEx, ITemplateLoaderInfo
-} from "../shared";
+} from "../int";
 
 const utils = Utils, checks = utils.check, coreUtils = utils.core,
     strUtils = utils.str, defer = utils.defer, ERRS = LocaleERRS, DEBUG = utils.debug,

@@ -4,7 +4,7 @@ import {
 } from "jriapp_shared";
 import {
     IApplication, IConstructorContentOptions, IBindingInfo, IBindingOptions, IElView
-} from "jriapp/shared";
+} from "jriapp/int";
 
 import { css } from "./int";
 import { BasicContent } from "./basic";

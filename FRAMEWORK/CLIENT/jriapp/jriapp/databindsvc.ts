@@ -8,7 +8,7 @@ import {
     IElViewFactory, IElView, IViewType, IApplication, IExports, ILifeTimeScope,
     IBindableElement, IConverter,
     IBindingOptions, IBindingInfo, IDataBindingService, IModuleLoader
-} from "./shared";
+} from "./int";
 import { bootstrap } from "./bootstrap";
 import { LifeTimeScope } from "./utils/lifetime";
 import { create as createModulesLoader } from "./utils/mloader";

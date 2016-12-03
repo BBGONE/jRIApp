@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { Utils } from "jriapp_shared";
 import { DATA_ATTR } from "jriapp/const";
-import { ITemplate, ITemplateEvents, IElView, IViewOptions } from "jriapp/shared";
+import { ITemplate, ITemplateEvents, IElView, IViewOptions } from "jriapp/int";
 import { ViewChecks } from "jriapp/utils/viewchecks";
 import { bootstrap } from "jriapp/bootstrap";
 import { CommandElView } from "./command";

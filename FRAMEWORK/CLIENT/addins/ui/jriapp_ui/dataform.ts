@@ -10,7 +10,7 @@ import { DATA_ATTR, ELVIEW_NM } from "jriapp/const";
 import { ViewChecks } from "jriapp/utils/viewchecks";
 import {
     IApplication, IContent, IElView, ILifeTimeScope, IViewOptions
-} from "jriapp/shared";
+} from "jriapp/int";
 import {
     Parser
 } from "jriapp/utils/parser";

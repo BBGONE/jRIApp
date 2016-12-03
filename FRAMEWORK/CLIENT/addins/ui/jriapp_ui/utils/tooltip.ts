@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { Utils } from "jriapp_shared";
-import { ITooltipService } from "jriapp/shared";
+import { ITooltipService } from "jriapp/int";
 import { $ } from "jriapp/utils/jquery";
 
 const window = Utils.dom.window;

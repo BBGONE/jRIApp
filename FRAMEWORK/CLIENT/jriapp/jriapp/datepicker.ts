@@ -2,7 +2,7 @@
 import {
     LocaleERRS, Utils, BaseObject
 } from "jriapp_shared";
-import { IDatepicker } from "./shared";
+import { IDatepicker } from "./int";
 import { bootstrap } from "./bootstrap";
 import { $, JQueryUtils } from "./utils/jquery";
 

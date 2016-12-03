@@ -3,7 +3,7 @@ import {
     Utils, IBaseObject, IVoidPromise, IEditable, TEventHandler, IDeferred, IPromise, LocaleSTRS as STRS, BaseObject
 } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
-import { ITemplate, ITemplateEvents, IApplication, ISelectableProvider } from "jriapp/shared";
+import { ITemplate, ITemplateEvents, IApplication, ISelectableProvider } from "jriapp/int";
 import { createTemplate } from "jriapp/template";
 import { bootstrap } from "jriapp/bootstrap";
 import { ViewModel } from "jriapp/mvvm";

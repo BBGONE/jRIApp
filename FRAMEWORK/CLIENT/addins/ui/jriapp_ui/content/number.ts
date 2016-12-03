@@ -2,7 +2,7 @@
 import { DATA_TYPE } from "jriapp_shared/collection/const";
 import { IBaseObject } from "jriapp_shared";
 import { KEYS } from "jriapp/const";
-import { IBindingOptions, IBindingInfo }  from "jriapp/shared";
+import { IBindingOptions, IBindingInfo }  from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 import { TextBoxElView } from "../textbox";
 

@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IElView } from "../shared";
+import { IElView } from "../int";
 
 export class ViewChecks {
     static isElView: (obj: any) => boolean = (obj) => { return false; };

@@ -3,7 +3,7 @@ import {
     Utils,
 } from "jriapp_shared";
 import { BINDING_MODE } from "jriapp/const";
-import { IElView, IConstructorContentOptions } from "jriapp/shared";
+import { IElView, IConstructorContentOptions } from "jriapp/int";
 import { LifeTimeScope } from "jriapp/utils/lifetime";
 import { CheckBoxElView } from "../checkbox";
 

@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { BaseObject } from "jriapp_shared";
 import { DATA_ATTR } from "jriapp/const";
-import { ITemplateEvents, ITemplate } from "jriapp/shared";
+import { ITemplateEvents, ITemplate } from "jriapp/int";
 import { createTemplate } from "jriapp/template";
 import { bootstrap } from "jriapp/bootstrap";
 import { ICollectionItem } from "jriapp_shared/collection/int";

@@ -55,7 +55,7 @@
     <TypeScriptSourceMap>false</TypeScriptSourceMap>
   </PropertyGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="jriapp\shared.ts" />
+    <TypeScriptCompile Include="jriapp\int.ts" />
     <TypeScriptCompile Include="jriapp\utils\jquery.ts" />
     <TypeScriptCompile Include="jriapp\utils\parser.ts" />
     <TypeScriptCompile Include="jriapp\utils\viewchecks.ts" />

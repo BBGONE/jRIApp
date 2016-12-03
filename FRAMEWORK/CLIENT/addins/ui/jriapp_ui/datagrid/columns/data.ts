@@ -2,7 +2,7 @@
 import { IIndexer, IBaseObject, Utils } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
 import { SORT_ORDER } from "jriapp_shared/collection/const";
-import { IExternallyCachable } from "jriapp/shared";
+import { IExternallyCachable } from "jriapp/int";
 
 import { css, PROP_NAME } from "../const";
 import { BaseColumn, IColumnInfo, ICellInfo } from "./base";

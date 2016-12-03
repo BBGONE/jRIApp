@@ -4243,8 +4243,8 @@ define("jriapp_shared/utils/debounce", ["require", "exports"], function (require
         }
         Debounce.prototype.enqueue = function (fn) {
             var _this = this;
-            if (this._timer === void 0)
-                return;
+            if (this.IsDestroyed)
+                throw new Error("Invalid operation");
             if (!!this._timer) {
                 clearTimeout(this._timer);
             }
@@ -4269,12 +4269,20 @@ define("jriapp_shared/utils/debounce", ["require", "exports"], function (require
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Debounce.prototype, "IsDestroyed", {
+            get: function () {
+                return this._timer === void 0;
+            },
+            enumerable: true,
+            configurable: true
+        });
         return Debounce;
     }());
     exports.Debounce = Debounce;
 });
-define("jriapp_shared/utils/lazy", ["require", "exports"], function (require, exports) {
+define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/checks"], function (require, exports, checks_8) {
     "use strict";
+    var checks = checks_8.Checks;
     var Lazy = (function () {
         function Lazy(factory) {
             this._val = null;
@@ -4286,7 +4294,7 @@ define("jriapp_shared/utils/lazy", ["require", "exports"], function (require, ex
             get: function () {
                 if (this._val === null) {
                     this._val = this._factory();
-                    if (!this._val)
+                    if (checks.isNt(this._val))
                         throw new Error("the value factory did'not returned an object");
                     this._factory = null;
                 }
@@ -4300,13 +4308,20 @@ define("jriapp_shared/utils/lazy", ["require", "exports"], function (require, ex
                 if ("destroy" in this._val) {
                     this._val.destroy();
                 }
-                this._val = void 0;
             }
+            this._val = void 0;
             this._factory = null;
         };
         Object.defineProperty(Lazy.prototype, "IsValueCreated", {
             get: function () {
-                return !!this._val;
+                return !checks.isNt(this._val);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Lazy.prototype, "IsDestroyed", {
+            get: function () {
+                return this._val === void 0;
             },
             enumerable: true,
             configurable: true

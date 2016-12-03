@@ -4,7 +4,7 @@ import {
 } from "jriapp_shared";
 import {
     ISvcStore, IDatepicker, ButtonCss
-} from "./shared";
+} from "./int";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str;
 

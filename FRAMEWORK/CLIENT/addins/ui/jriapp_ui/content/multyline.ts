@@ -4,7 +4,7 @@ import { IFieldInfo } from "jriapp_shared/collection/int";
 import { KEYS } from "jriapp/const";
 import {
     IApplication, IElView, IConstructorContentOptions
-} from "jriapp/shared";
+} from "jriapp/int";
 import { TextAreaElView } from "../textarea";
 
 import { css } from "./int";

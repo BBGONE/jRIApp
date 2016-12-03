@@ -7,7 +7,7 @@ import { BindTo, TOOLTIP_SVC, STORE_KEY } from "./const";
 import { IApplication, ISelectable, ISelectableProvider, IExports, IConverter, ISvcStore,
     IUnResolvedBindingArgs, IStylesLoader, IContentFactory,
     IContentFactoryList, TFactoryGetter, IContentConstructor, IContentOptions, IElViewRegister
-} from "./shared";
+} from "./int";
 import { createElViewRegister } from "./elview";
 import { createContentFactoryList } from "./content";
 import { Defaults } from "defaults";

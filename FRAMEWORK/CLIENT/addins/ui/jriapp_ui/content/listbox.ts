@@ -7,7 +7,7 @@ import { BINDING_MODE } from "jriapp/const";
 import {
     IExternallyCachable, IBinding, IBindingOptions,
     IConstructorContentOptions, IContentFactory, IContentConstructor, IContent, IContentOptions, IElView
-} from "jriapp/shared";
+} from "jriapp/int";
 import {
     ICollection, ICollectionItem
 } from "jriapp_shared/collection/int";

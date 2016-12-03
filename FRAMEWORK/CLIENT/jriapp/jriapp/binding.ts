@@ -7,7 +7,7 @@ import { BINDING_MODE, BindTo } from "./const";
 import {
     IBindingInfo, IBindingOptions,
     IBinding, IConverter, IApplication, IElView
-} from "./shared";
+} from "./int";
 import { ViewChecks } from "./utils/viewchecks";
 import { Parser } from "./utils/parser";
 import { baseConverter } from "./converter";

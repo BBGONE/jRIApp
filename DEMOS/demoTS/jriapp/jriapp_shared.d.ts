@@ -1250,6 +1250,7 @@ declare module "jriapp_shared/utils/debounce" {
         enqueue(fn: () => any): void;
         destroy(): void;
         interval: number;
+        readonly IsDestroyed: boolean;
     }
 }
 declare module "jriapp_shared/utils/lazy" {
@@ -1262,6 +1263,7 @@ declare module "jriapp_shared/utils/lazy" {
         readonly Value: T;
         destroy(): void;
         readonly IsValueCreated: boolean;
+        readonly IsDestroyed: boolean;
     }
 }
 declare module "jriapp_shared" {

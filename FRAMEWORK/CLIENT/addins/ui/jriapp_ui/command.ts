@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { Utils, IBaseObject } from "jriapp_shared";
-import { IViewOptions } from "jriapp/shared";
+import { IViewOptions } from "jriapp/int";
 import { ICommand } from "jriapp/mvvm";
 import { BaseElView, PROP_NAME, css } from "./generic";
 

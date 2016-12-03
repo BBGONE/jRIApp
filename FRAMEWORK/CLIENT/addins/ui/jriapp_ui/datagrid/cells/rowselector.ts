@@ -2,7 +2,7 @@
 import { Utils } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
 import { DATA_ATTR } from "jriapp/const";
-import { IContent, IBindingInfo, IContentOptions } from "jriapp/shared";
+import { IContent, IBindingInfo, IContentOptions } from "jriapp/int";
 import { BoolContent } from "../../content/bool";
 
 import { css, PROP_NAME } from "../const";

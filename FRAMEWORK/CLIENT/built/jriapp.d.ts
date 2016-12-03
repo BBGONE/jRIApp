@@ -56,7 +56,7 @@ declare module "jriapp/const" {
         BackWay = 3,
     }
 }
-declare module "jriapp/shared" {
+declare module "jriapp/int" {
     import { BINDING_MODE, BindTo } from "jriapp/const";
     import { IBaseObject, IDisposable, IIndexer, IPromise, IVoidPromise, IValidationInfo, IErrorHandler, TEventHandler, IConfig } from "jriapp_shared";
     import { IFieldInfo } from "jriapp_shared/collection/int";
@@ -326,7 +326,7 @@ declare module "jriapp/shared" {
 }
 declare module "jriapp/utils/lifetime" {
     import { IBaseObject, BaseObject } from "jriapp_shared";
-    import { ILifeTimeScope } from "jriapp/shared";
+    import { ILifeTimeScope } from "jriapp/int";
     export class LifeTimeScope extends BaseObject implements ILifeTimeScope {
         private _objs;
         constructor();
@@ -357,17 +357,17 @@ declare module "jriapp/utils/jquery" {
     }
 }
 declare module "jriapp/elview" {
-    import { IElViewFactory, IElViewRegister } from "jriapp/shared";
+    import { IElViewFactory, IElViewRegister } from "jriapp/int";
     export function createElViewFactory(register: IElViewRegister): IElViewFactory;
     export function createElViewRegister(next?: IElViewRegister): IElViewRegister;
 }
 declare module "jriapp/content" {
-    import { IContentFactoryList } from "jriapp/shared";
+    import { IContentFactoryList } from "jriapp/int";
     export function createContentFactoryList(): IContentFactoryList;
 }
 declare module "jriapp/defaults" {
     import { BaseObject } from "jriapp_shared";
-    import { ISvcStore, IDatepicker, ButtonCss } from "jriapp/shared";
+    import { ISvcStore, IDatepicker, ButtonCss } from "jriapp/int";
     export class Defaults extends BaseObject {
         private _imagesPath;
         private _dateFormat;
@@ -392,7 +392,7 @@ declare module "jriapp/defaults" {
 }
 declare module "jriapp/utils/tloader" {
     import { IPromise, BaseObject } from "jriapp_shared";
-    import { IApplication, ITemplateGroupInfoEx, ITemplateLoaderInfo } from "jriapp/shared";
+    import { IApplication, ITemplateGroupInfoEx, ITemplateLoaderInfo } from "jriapp/int";
     export class TemplateLoader extends BaseObject {
         private _templateLoaders;
         private _templateGroups;
@@ -445,7 +445,7 @@ declare module "jriapp/utils/path" {
     }
 }
 declare module "jriapp/utils/sloader" {
-    import { IStylesLoader } from "jriapp/shared";
+    import { IStylesLoader } from "jriapp/int";
     export const frameworkCss: string;
     export function createCssLoader(): IStylesLoader;
     export interface IUrlParts {
@@ -460,7 +460,7 @@ declare module "jriapp/utils/sloader" {
 }
 declare module "jriapp/bootstrap" {
     import { IIndexer, IBaseObject, IPromise, TEventHandler, TPriority, BaseObject } from "jriapp_shared";
-    import { IApplication, ISelectableProvider, IExports, IConverter, ISvcStore, IStylesLoader, IContentFactoryList, IElViewRegister } from "jriapp/shared";
+    import { IApplication, ISelectableProvider, IExports, IConverter, ISvcStore, IStylesLoader, IContentFactoryList, IElViewRegister } from "jriapp/int";
     import { Defaults } from "jriapp/defaults";
     import { TemplateLoader } from "jriapp/utils/tloader";
     export interface IInternalBootstrapMethods {
@@ -544,7 +544,7 @@ declare module "jriapp/bootstrap" {
     export const bootstrap: Bootstrap;
 }
 declare module "jriapp/utils/viewchecks" {
-    import { IElView } from "jriapp/shared";
+    import { IElView } from "jriapp/int";
     export class ViewChecks {
         static isElView: (obj: any) => boolean;
         static isTemplateElView: (obj: any) => boolean;
@@ -556,7 +556,7 @@ declare module "jriapp/utils/viewchecks" {
     }
 }
 declare module "jriapp/converter" {
-    import { IConverter } from "jriapp/shared";
+    import { IConverter } from "jriapp/int";
     export const NUM_CONV: {
         None: number;
         Integer: number;
@@ -612,7 +612,7 @@ declare module "jriapp/converter" {
 declare module "jriapp/binding" {
     import { IBaseObject, BaseObject } from "jriapp_shared";
     import { BINDING_MODE } from "jriapp/const";
-    import { IBindingInfo, IBindingOptions, IBinding, IConverter } from "jriapp/shared";
+    import { IBindingInfo, IBindingOptions, IBinding, IConverter } from "jriapp/int";
     export function getBindingOptions(bindInfo: IBindingInfo, defaultTarget: IBaseObject, defaultSource: any): IBindingOptions;
     export class Binding extends BaseObject implements IBinding {
         private _state;
@@ -666,7 +666,7 @@ declare module "jriapp/binding" {
 }
 declare module "jriapp/datepicker" {
     import { BaseObject } from "jriapp_shared";
-    import { IDatepicker } from "jriapp/shared";
+    import { IDatepicker } from "jriapp/int";
     export class Datepicker extends BaseObject implements IDatepicker {
         private _datepickerRegion;
         private _dateFormat;
@@ -684,7 +684,7 @@ declare module "jriapp/datepicker" {
     }
 }
 declare module "jriapp/template" {
-    import { ITemplate, ITemplateEvents } from "jriapp/shared";
+    import { ITemplate, ITemplateEvents } from "jriapp/int";
     export const css: {
         templateContainer: string;
         templateError: string;
@@ -712,7 +712,7 @@ declare module "jriapp/utils/propwatcher" {
 }
 declare module "jriapp/mvvm" {
     import { BaseObject, IBaseObject } from "jriapp_shared";
-    import { ITemplate, IApplication } from "jriapp/shared";
+    import { ITemplate, IApplication } from "jriapp/int";
     export interface ICommand {
         canExecute: (sender: any, param: any) => boolean;
         execute: (sender: any, param: any) => void;
@@ -772,16 +772,16 @@ declare module "jriapp/mvvm" {
     }
 }
 declare module "jriapp/utils/mloader" {
-    import { IModuleLoader } from "jriapp/shared";
+    import { IModuleLoader } from "jriapp/int";
     export function create(): IModuleLoader;
 }
 declare module "jriapp/databindsvc" {
-    import { IElViewFactory, IDataBindingService } from "jriapp/shared";
+    import { IElViewFactory, IDataBindingService } from "jriapp/int";
     export function createDataBindSvc(root: Document | HTMLElement, elViewFactory: IElViewFactory): IDataBindingService;
 }
 declare module "jriapp/app" {
     import { IIndexer, TEventHandler, IPromise, IBaseObject, BaseObject } from "jriapp_shared";
-    import { IElViewFactory, IViewType, IApplication, IBindingOptions, IAppOptions, IInternalAppMethods, IConverter, ITemplateGroupInfo, IBinding } from "jriapp/shared";
+    import { IElViewFactory, IViewType, IApplication, IBindingOptions, IAppOptions, IInternalAppMethods, IConverter, ITemplateGroupInfo, IBinding } from "jriapp/int";
     export class Application extends BaseObject implements IApplication {
         private _UC;
         private _moduleInits;
@@ -834,7 +834,7 @@ declare module "jriapp" {
     export * from "jriapp_shared/collection/const";
     export * from "jriapp_shared/collection/int";
     export { KEYS, BINDING_MODE, BindTo } from "jriapp/const";
-    export { IAppOptions, IApplication, TBindingMode, ITemplate, ITemplateEvents, IBinding, IBindingInfo, IBindingOptions, IConverter, IContentFactory, IDatepicker, IElView, ITooltipService, ISelectable, ISelectableProvider, ILifeTimeScope, ITemplateGroupInfo, ITemplateGroupInfoEx, ITemplateInfo, ITemplateLoaderInfo, IViewOptions } from "jriapp/shared";
+    export { IAppOptions, IApplication, TBindingMode, ITemplate, ITemplateEvents, IBinding, IBindingInfo, IBindingOptions, IConverter, IContentFactory, IDatepicker, IElView, ITooltipService, ISelectable, ISelectableProvider, ILifeTimeScope, ITemplateGroupInfo, ITemplateGroupInfoEx, ITemplateInfo, ITemplateLoaderInfo, IViewOptions } from "jriapp/int";
     export { JQueryUtils, $ } from "jriapp/utils/jquery";
     export { ViewChecks } from "jriapp/utils/viewchecks";
     export { BaseConverter } from "jriapp/converter";

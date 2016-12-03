@@ -2,7 +2,7 @@
 import { BaseObject, Utils } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
 import { DATA_ATTR } from "jriapp/const";
-import { IContentOptions, ITemplateEvents, ITemplate } from "jriapp/shared";
+import { IContentOptions, ITemplateEvents, ITemplate } from "jriapp/int";
 import { createTemplate } from "jriapp/template";
 import { fn_addToolTip } from "../../generic";
 import { bootstrap } from "jriapp/bootstrap";

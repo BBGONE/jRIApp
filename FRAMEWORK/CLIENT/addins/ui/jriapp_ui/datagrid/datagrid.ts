@@ -7,7 +7,7 @@ import { $ } from "jriapp/utils/jquery";
 import { DATA_ATTR, KEYS } from "jriapp/const";
 import {
     IApplication, ISelectableProvider, ISelectable, IViewOptions
-} from "jriapp/shared";
+} from "jriapp/int";
 import {
     Parser
 } from "jriapp/utils/parser";

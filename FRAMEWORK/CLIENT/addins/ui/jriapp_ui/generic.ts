@@ -5,7 +5,7 @@ import {
 import { $ } from "jriapp/utils/jquery";
 import { ViewChecks } from "jriapp/utils/viewchecks";
 import { TOOLTIP_SVC, DATA_ATTR } from "jriapp/const";
-import { ITooltipService, IElView, IElViewStore,IApplication, IViewOptions } from "jriapp/shared";
+import { ITooltipService, IElView, IElViewStore,IApplication, IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 import { TAction, TCommand, ICommand, Command, TPredicate } from "jriapp/mvvm";
 import { EventBag, EVENT_CHANGE_TYPE, IEventChangedArgs } from "./utils/eventbag";

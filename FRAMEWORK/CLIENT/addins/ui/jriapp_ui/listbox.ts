@@ -9,7 +9,7 @@ import {
 import {
     ICollection, ICollectionItem, ICollChangedArgs
 } from "jriapp_shared/collection/int";
-import { IViewOptions } from "jriapp/shared";
+import { IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 import { BaseElView } from "./generic";
 

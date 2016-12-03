@@ -4,7 +4,7 @@ import { $ } from "jriapp/utils/jquery";
 import {DATA_ATTR, KEYS } from "jriapp/const";
 import {
     IApplication, ITemplate, ITemplateEvents, ISelectable,  IViewOptions, ISelectableProvider
-} from "jriapp/shared";
+} from "jriapp/int";
 import { createTemplate } from "jriapp/template";
 import { BaseElView } from "./generic";
 import {

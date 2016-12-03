@@ -10,7 +10,7 @@ import {
     TFactoryGetter, IConverter, IContentOptions, ITemplate, ITemplateEvents,
     ITemplateGroupInfo, ITemplateGroupInfoEx, IContentFactory, IDataBindingService,
     IBinding, IElViewRegister
-} from "./shared";
+} from "./int";
 import { bootstrap } from "./bootstrap";
 import { LifeTimeScope } from "./utils/lifetime";
 import { createElViewFactory } from "./elview";

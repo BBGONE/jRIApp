@@ -2,7 +2,7 @@
 import {
     IBaseObject, BaseObject, Utils
 } from "jriapp_shared";
-import { ILifeTimeScope } from "../shared";
+import { ILifeTimeScope } from "../int";
 
 const utils = Utils;
 /*

@@ -6,7 +6,7 @@ import { DATA_ATTR, STORE_KEY } from "./const";
 import {
     IElViewStore, IElView, IViewType, IApplication, IExports, IViewOptions,
     IElViewFactory, IElViewRegister
-} from "./shared";
+} from "./int";
 import { bootstrap } from "./bootstrap";
 import { LifeTimeScope } from "./utils/lifetime";
 import { Parser } from "./utils/parser";

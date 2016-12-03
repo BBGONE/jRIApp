@@ -7,7 +7,7 @@ import { DATA_ATTR } from "./const";
 import {
     ITemplate, ILifeTimeScope, ITemplateEvents,
     IApplication, IElView, IViewOptions
-} from "./shared";
+} from "./int";
 import { bootstrap } from "./bootstrap";
 import { Binding } from "binding";
 import { ViewChecks } from "./utils/viewchecks";

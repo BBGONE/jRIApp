@@ -3,7 +3,7 @@ import {
     IIndexer, Utils, IStatefulPromise, PromiseState
 } from "jriapp_shared";
 import { AsyncUtils } from "jriapp_shared/utils/async";
-import { IStylesLoader } from "../shared";
+import { IStylesLoader } from "../int";
 import { PathHelper } from "./path";
 
 const _async = AsyncUtils, utils = Utils, dom = utils.dom, arrHelper = utils.arr,

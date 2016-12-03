@@ -55,7 +55,7 @@ define("jriapp/const", ["require", "exports"], function (require, exports) {
     })(exports.BINDING_MODE || (exports.BINDING_MODE = {}));
     var BINDING_MODE = exports.BINDING_MODE;
 });
-define("jriapp/shared", ["require", "exports"], function (require, exports) {
+define("jriapp/int", ["require", "exports"], function (require, exports) {
     "use strict";
     exports.Config = window.jriapp_config || {};
     var ButtonCss = (function () {
@@ -479,7 +479,7 @@ define("jriapp/content", ["require", "exports", "jriapp_shared"], function (requ
         return FactoryList;
     }());
 });
-define("jriapp/defaults", ["require", "exports", "jriapp_shared", "jriapp/shared"], function (require, exports, jriapp_shared_6, shared_1) {
+define("jriapp/defaults", ["require", "exports", "jriapp_shared", "jriapp/int"], function (require, exports, jriapp_shared_6, int_1) {
     "use strict";
     var utils = jriapp_shared_6.Utils, checks = utils.check, strUtils = utils.str;
     var PROP_NAME = {
@@ -598,7 +598,7 @@ define("jriapp/defaults", ["require", "exports", "jriapp_shared", "jriapp/shared
         });
         Object.defineProperty(Defaults.prototype, "ButtonsCSS", {
             get: function () {
-                return shared_1.ButtonCss;
+                return int_1.ButtonCss;
             },
             enumerable: true,
             configurable: true
@@ -802,10 +802,10 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
     }(jriapp_shared_7.BaseObject));
     exports.TemplateLoader = TemplateLoader;
 });
-define("jriapp/utils/path", ["require", "exports", "jriapp_shared", "jriapp/shared"], function (require, exports, jriapp_shared_8, shared_2) {
+define("jriapp/utils/path", ["require", "exports", "jriapp_shared", "jriapp/int"], function (require, exports, jriapp_shared_8, int_2) {
     "use strict";
     var utils = jriapp_shared_8.Utils, doc = utils.dom.document, head = doc.head || doc.getElementsByTagName("head")[0], arrHelper = utils.arr, strUtils = utils.str;
-    exports.frameworkJS = shared_2.Config.frameworkJS || "jriapp.js";
+    exports.frameworkJS = int_2.Config.frameworkJS || "jriapp.js";
     var stylesDir = "css", imageDir = "img";
     function fn_getFrameworkPath() {
         var name = exports.frameworkJS;
@@ -831,7 +831,7 @@ define("jriapp/utils/path", ["require", "exports", "jriapp_shared", "jriapp/shar
         function PathHelper() {
         }
         PathHelper.appendBust = function (url) {
-            var bust = shared_2.Config.bust;
+            var bust = int_2.Config.bust;
             if (!bust)
                 return url;
             return PathHelper.appendSearch(url, bust);
@@ -882,8 +882,8 @@ define("jriapp/utils/path", ["require", "exports", "jriapp_shared", "jriapp/shar
         PathHelper.getFrameworkPath = function () {
             var res = _cache["root"];
             if (!res) {
-                if (!!shared_2.Config.frameworkPath) {
-                    res = shared_2.Config.frameworkPath;
+                if (!!int_2.Config.frameworkPath) {
+                    res = int_2.Config.frameworkPath;
                 }
                 if (!res) {
                     res = fn_getFrameworkPath();
@@ -3589,14 +3589,14 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/const", "jr
     }(jriapp_shared_19.BaseObject));
     exports.Application = Application;
 });
-define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jriapp_shared/collection/const", "jriapp_shared/collection/int", "jriapp/const", "jriapp/utils/jquery", "jriapp/utils/viewchecks", "jriapp/converter", "jriapp/bootstrap", "jriapp/binding", "jriapp/datepicker", "jriapp/template", "jriapp/utils/lifetime", "jriapp/utils/propwatcher", "jriapp/mvvm", "jriapp/app"], function (require, exports, bootstrap_8, jriapp_shared_20, const_6, int_1, const_7, jquery_6, viewchecks_4, converter_1, bootstrap_9, binding_2, datepicker_1, template_1, lifetime_2, propwatcher_1, mvvm_1, app_1) {
+define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jriapp_shared/collection/const", "jriapp_shared/collection/int", "jriapp/const", "jriapp/utils/jquery", "jriapp/utils/viewchecks", "jriapp/converter", "jriapp/bootstrap", "jriapp/binding", "jriapp/datepicker", "jriapp/template", "jriapp/utils/lifetime", "jriapp/utils/propwatcher", "jriapp/mvvm", "jriapp/app"], function (require, exports, bootstrap_8, jriapp_shared_20, const_6, int_3, const_7, jquery_6, viewchecks_4, converter_1, bootstrap_9, binding_2, datepicker_1, template_1, lifetime_2, propwatcher_1, mvvm_1, app_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
     }
     __export(jriapp_shared_20);
     __export(const_6);
-    __export(int_1);
+    __export(int_3);
     exports.KEYS = const_7.KEYS;
     exports.BINDING_MODE = const_7.BINDING_MODE;
     exports.BindTo = const_7.BindTo;
@@ -3616,6 +3616,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.1.1";
+    exports.VERSION = "1.1.2";
     bootstrap_8.Bootstrap._initFramework();
 });

@@ -3,7 +3,7 @@ import {
     Utils, BaseObject, IBaseObject, LocaleERRS as ERRS, LocaleSTRS as STRS, Debounce
 } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
-import { IApplication, IViewOptions } from "jriapp/shared";
+import { IApplication, IViewOptions } from "jriapp/int";
 import { BaseElView, fn_addToolTip } from "./generic";
 import {
     COLL_CHANGE_REASON, ITEM_STATUS, COLL_CHANGE_TYPE

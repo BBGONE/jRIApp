@@ -2,7 +2,7 @@
 import {
     LocaleERRS, Utils
 } from "jriapp_shared";
-import { IConverter } from "./shared";
+import { IConverter } from "./int";
 import { bootstrap } from "./bootstrap";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str,

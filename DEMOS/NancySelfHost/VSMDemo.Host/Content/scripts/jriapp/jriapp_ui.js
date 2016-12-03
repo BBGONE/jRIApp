@@ -3817,7 +3817,7 @@ define("jriapp_ui/datagrid/columns/actions", ["require", "exports", "jriapp_shar
     }(base_5.BaseColumn));
     exports.ActionsColumn = ActionsColumn;
 });
-define("jriapp_ui/datagrid/cells/actions", ["require", "exports", "jriapp_shared", "jriapp/utils/jquery", "jriapp/const", "jriapp/shared", "jriapp_ui/generic", "jriapp_ui/datagrid/const", "jriapp_ui/datagrid/cells/base"], function (require, exports, jriapp_shared_25, jquery_7, const_10, shared_1, generic_9, const_11, base_6) {
+define("jriapp_ui/datagrid/cells/actions", ["require", "exports", "jriapp_shared", "jriapp/utils/jquery", "jriapp/const", "jriapp/int", "jriapp_ui/generic", "jriapp_ui/datagrid/const", "jriapp_ui/datagrid/cells/base"], function (require, exports, jriapp_shared_25, jquery_7, const_10, int_4, generic_9, const_11, base_6) {
     "use strict";
     var utils = jriapp_shared_25.Utils, dom = utils.dom, strUtils = utils.str, checks = utils.check;
     var _editImages = '<span data-role="row-action" data-name="img_ok" class="{0}"></span><span data-role="row-action" data-name="img_cancel" class="{1}"></span>';
@@ -3855,7 +3855,7 @@ define("jriapp_ui/datagrid/cells/actions", ["require", "exports", "jriapp_shared
         Object.defineProperty(ActionsCell.prototype, "editImages", {
             get: function () {
                 if (!editImages)
-                    editImages = strUtils.format(_editImages, shared_1.ButtonCss.OK, shared_1.ButtonCss.Cancel);
+                    editImages = strUtils.format(_editImages, int_4.ButtonCss.OK, int_4.ButtonCss.Cancel);
                 return editImages;
             },
             enumerable: true,
@@ -3864,7 +3864,7 @@ define("jriapp_ui/datagrid/cells/actions", ["require", "exports", "jriapp_shared
         Object.defineProperty(ActionsCell.prototype, "viewImages", {
             get: function () {
                 if (!viewImages)
-                    viewImages = strUtils.format(_viewImages, shared_1.ButtonCss.Edit, shared_1.ButtonCss.Delete);
+                    viewImages = strUtils.format(_viewImages, int_4.ButtonCss.Edit, int_4.ButtonCss.Delete);
                 return viewImages;
             },
             enumerable: true,
@@ -4798,7 +4798,7 @@ define("jriapp_ui/datagrid/cells/fillspace", ["require", "exports", "jriapp_shar
     }(jriapp_shared_33.BaseObject));
     exports.FillSpaceCell = FillSpaceCell;
 });
-define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "jriapp/utils/jquery", "jriapp/const", "jriapp/utils/parser", "jriapp/bootstrap", "jriapp_ui/generic", "jriapp_ui/content/int", "jriapp_ui/dialog", "jriapp_ui/datagrid/const", "jriapp_ui/datagrid/animation", "jriapp_ui/datagrid/rows/row", "jriapp_ui/datagrid/rows/details", "jriapp_ui/datagrid/rows/fillspace", "jriapp_ui/datagrid/columns/expander", "jriapp_ui/datagrid/columns/data", "jriapp_ui/datagrid/columns/actions", "jriapp_ui/datagrid/columns/rowselector", "jriapp_ui/datagrid/rows/row", "jriapp_ui/datagrid/columns/base", "jriapp_ui/datagrid/const", "jriapp_ui/datagrid/animation"], function (require, exports, jriapp_shared_34, jquery_14, const_21, parser_2, bootstrap_16, generic_10, int_4, dialog_1, const_22, animation_1, row_1, details_2, fillspace_2, expander_3, data_2, actions_3, rowselector_3, row_2, base_9, const_23, animation_2) {
+define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "jriapp/utils/jquery", "jriapp/const", "jriapp/utils/parser", "jriapp/bootstrap", "jriapp_ui/generic", "jriapp_ui/content/int", "jriapp_ui/dialog", "jriapp_ui/datagrid/const", "jriapp_ui/datagrid/animation", "jriapp_ui/datagrid/rows/row", "jriapp_ui/datagrid/rows/details", "jriapp_ui/datagrid/rows/fillspace", "jriapp_ui/datagrid/columns/expander", "jriapp_ui/datagrid/columns/data", "jriapp_ui/datagrid/columns/actions", "jriapp_ui/datagrid/columns/rowselector", "jriapp_ui/datagrid/rows/row", "jriapp_ui/datagrid/columns/base", "jriapp_ui/datagrid/const", "jriapp_ui/datagrid/animation"], function (require, exports, jriapp_shared_34, jquery_14, const_21, parser_2, bootstrap_16, generic_10, int_5, dialog_1, const_22, animation_1, row_1, details_2, fillspace_2, expander_3, data_2, actions_3, rowselector_3, row_2, base_9, const_23, animation_2) {
     "use strict";
     exports.DataGridRow = row_2.Row;
     exports.DataGridColumn = base_9.BaseColumn;
@@ -5210,7 +5210,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             else
                 options = defaultOp;
             if (!!content_attr) {
-                options.content = int_4.parseContentAttr(content_attr);
+                options.content = int_5.parseContentAttr(content_attr);
                 if (!options.sortMemberName && !!options.content.fieldName)
                     options.sortMemberName = options.content.fieldName;
             }
@@ -7283,7 +7283,7 @@ define("jriapp_ui/template", ["require", "exports", "jriapp_shared", "jriapp/uti
     ;
     boot.registerElView("template", TemplateElView);
 });
-define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/utils/jquery", "jriapp/const", "jriapp/utils/viewchecks", "jriapp/utils/parser", "jriapp/bootstrap", "jriapp_ui/generic", "jriapp_ui/content/int"], function (require, exports, jriapp_shared_40, jquery_18, const_25, viewchecks_3, parser_3, bootstrap_19, generic_15, int_5) {
+define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/utils/jquery", "jriapp/const", "jriapp/utils/viewchecks", "jriapp/utils/parser", "jriapp/bootstrap", "jriapp_ui/generic", "jriapp_ui/content/int"], function (require, exports, jriapp_shared_40, jquery_18, const_25, viewchecks_3, parser_3, bootstrap_19, generic_15, int_6) {
     "use strict";
     var utils = jriapp_shared_40.Utils, dom = jriapp_shared_40.Utils.dom, doc = dom.document, checks = utils.check, coreUtils = utils.core, strUtils = utils.str, sys = utils.sys, parser = parser_3.Parser, boot = bootstrap_19.bootstrap, viewChecks = viewchecks_3.ViewChecks;
     exports.css = {
@@ -7436,7 +7436,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             contentElements.forEach(function (el) {
                 if (viewChecks.isInNestedForm(self._el, forms, el))
                     return;
-                var attr = el.getAttribute(const_25.DATA_ATTR.DATA_CONTENT), op = int_5.parseContentAttr(attr);
+                var attr = el.getAttribute(const_25.DATA_ATTR.DATA_CONTENT), op = int_6.parseContentAttr(attr);
                 if (!!op.fieldName && !op.fieldInfo) {
                     op.fieldInfo = getFieldInfo(dctx, op.fieldName);
                     if (!op.fieldInfo) {
@@ -8377,9 +8377,9 @@ define("jriapp_ui/radio", ["require", "exports", "jriapp_shared", "jriapp/bootst
     exports.RadioElView = RadioElView;
     bootstrap_29.bootstrap.registerElView("input:radio", RadioElView);
 });
-define("jriapp_ui/content/all", ["require", "exports", "jriapp_ui/content/int", "jriapp_ui/content/basic", "jriapp_ui/content/template", "jriapp_ui/content/string", "jriapp_ui/content/multyline", "jriapp_ui/content/bool", "jriapp_ui/content/number", "jriapp_ui/content/date", "jriapp_ui/content/datetime", "jriapp_ui/content/listbox"], function (require, exports, int_6, basic_9, template_8, string_2, multyline_2, bool_2, number_2, date_2, datetime_2, listbox_3) {
+define("jriapp_ui/content/all", ["require", "exports", "jriapp_ui/content/int", "jriapp_ui/content/basic", "jriapp_ui/content/template", "jriapp_ui/content/string", "jriapp_ui/content/multyline", "jriapp_ui/content/bool", "jriapp_ui/content/number", "jriapp_ui/content/date", "jriapp_ui/content/datetime", "jriapp_ui/content/listbox"], function (require, exports, int_7, basic_9, template_8, string_2, multyline_2, bool_2, number_2, date_2, datetime_2, listbox_3) {
     "use strict";
-    exports.contentCSS = int_6.css;
+    exports.contentCSS = int_7.css;
     exports.BasicContent = basic_9.BasicContent;
     exports.TemplateContent = template_8.TemplateContent;
     exports.StringContent = string_2.StringContent;

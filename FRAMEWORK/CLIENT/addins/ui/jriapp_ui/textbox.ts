@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { $ } from "jriapp/utils/jquery";
-import { IViewOptions } from "jriapp/shared";
+import { IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 import { css, PROP_NAME } from "./generic";
 import { InputElView } from "./input";

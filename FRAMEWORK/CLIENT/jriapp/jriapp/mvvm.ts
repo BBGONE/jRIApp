@@ -2,7 +2,7 @@
 import {
     BaseObject, Utils, IErrorHandler, IBaseObject
 } from "jriapp_shared";
-import { ITemplate, IApplication } from "./shared";
+import { ITemplate, IApplication } from "./int";
 
 const coreUtils = Utils.core;
 

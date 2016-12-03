@@ -4,7 +4,7 @@ import { LocaleERRS as ERRS, Utils } from "jriapp_shared";
 import {
     IContentFactory, IContentFactoryList, IContentOptions,
     IContentConstructor, IConstructorContentOptions, TFactoryGetter, IContent
-} from "jriapp/shared";
+} from "jriapp/int";
 import { BasicContent } from "./basic";
 import { TemplateContent } from "./template";
 import { StringContent } from "./string";

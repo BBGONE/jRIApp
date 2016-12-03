@@ -9,7 +9,7 @@ import { BINDING_MODE } from "jriapp/const";
 import {
     IApplication, IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IElView, IViewOptions,
     IBindingInfo, IBindingOptions, IBinding
-} from "jriapp/shared";
+} from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 import { Binding, getBindingOptions } from "jriapp/binding";
 import { LifeTimeScope } from "jriapp/utils/lifetime";

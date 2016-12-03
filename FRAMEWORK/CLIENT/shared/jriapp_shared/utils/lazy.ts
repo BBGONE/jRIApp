@@ -1,5 +1,8 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { IDisposable } from "../int";
+import { Checks } from "./checks";
+
+const checks = Checks;
 
 export type TValueFactory<T> = () => T;
 
@@ -15,7 +18,7 @@ export class Lazy<T> implements IDisposable {
     public get Value(): T {
         if (this._val === null) {
             this._val = this._factory();
-            if (!this._val)
+            if (checks.isNt(this._val))
                 throw new Error("the value factory did'not returned an object");
             //release the reference
             this._factory = null;
@@ -28,11 +31,14 @@ export class Lazy<T> implements IDisposable {
             if ("destroy" in this._val) {
                 (<any>this._val).destroy();
             }
-            this._val = void 0;
         }
+        this._val = void 0;
         this._factory = null;
     }
     get IsValueCreated(): boolean {
-        return !!this._val;
+        return !checks.isNt(this._val);
+    }
+    get IsDestroyed(): boolean {
+        return this._val === void 0;
     }
 }

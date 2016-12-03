@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { DATA_TYPE } from "jriapp_shared/collection/const";
 import { IBaseObject } from "jriapp_shared";
-import { IApplication, IBindingInfo, IBindingOptions }  from "jriapp/shared";
+import { IApplication, IBindingInfo, IBindingOptions }  from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 
 import { css } from "./int";

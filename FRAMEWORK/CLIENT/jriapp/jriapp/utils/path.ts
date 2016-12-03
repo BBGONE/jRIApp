@@ -2,7 +2,7 @@
 import {
     IIndexer, Utils
 } from "jriapp_shared";
-import { IJRIAppConfig, Config as config } from "../shared";
+import { IJRIAppConfig, Config as config } from "../int";
 
 const utils = Utils, doc = utils.dom.document, head = doc.head || doc.getElementsByTagName("head")[0],
     arrHelper = utils.arr, strUtils = utils.str;

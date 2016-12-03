@@ -5,7 +5,7 @@ import {
 import {
     IContentFactory, IContentFactoryList, IConstructorContentOptions,
     TFactoryGetter, IContent, IContentOptions, IContentConstructor
-} from "./shared";
+} from "./int";
 
 const ERRS = LocaleERRS;
 

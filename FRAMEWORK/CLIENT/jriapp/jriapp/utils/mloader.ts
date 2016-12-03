@@ -4,7 +4,7 @@ import {
 } from "jriapp_shared";
 import {
     IViewType, IApplication, IModuleLoader
-} from "../shared";
+} from "../int";
 import { createCssLoader as createCSSLoader } from "./sloader";
 
 const utils = Utils, coreUtils = utils.core, strUtils = utils.str, defer = utils.defer,

@@ -3,7 +3,7 @@ import {
     Utils
 } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
-import { IViewOptions } from "jriapp/shared";
+import { IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 import { css, PROP_NAME, IEventChangedArgs, EVENT_CHANGE_TYPE } from "./generic";
 import { ICommand } from "jriapp/mvvm";

@@ -19,7 +19,7 @@ export {
     ITooltipService, ISelectable, ISelectableProvider,
     ILifeTimeScope, ITemplateGroupInfo, ITemplateGroupInfoEx, ITemplateInfo, ITemplateLoaderInfo,
     IViewOptions
-} from "./jriapp/shared";
+} from "./jriapp/int";
 export { JQueryUtils, $ } from "./jriapp/utils/jquery";
 export { ViewChecks } from "./jriapp/utils/viewchecks";
 export { BaseConverter } from "./jriapp/converter";
@@ -36,6 +36,6 @@ export {
 
 export { Application } from "./jriapp/app";
 
-export const VERSION = "1.1.1";
+export const VERSION = "1.1.2";
 
 Bootstrap._initFramework();

@@ -4,7 +4,7 @@ import { BaseObject, LocaleERRS as ERRS, Utils } from "jriapp_shared";
 import {
     IContent, ITemplateEvents, IApplication, ITemplate, ITemplateInfo,
     IConstructorContentOptions
-} from "jriapp/shared";
+} from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 import { createTemplate } from "jriapp/template";
 
