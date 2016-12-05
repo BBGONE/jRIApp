@@ -39,14 +39,14 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
             if (!parentItem) {
                 return [];
             }
-            let items = <TItem[]>assoc.getChildItems(parentItem);
-            return items;
+            return <TItem[]>assoc.getChildItems(parentItem);
         };
         opts.fn_filter = function (item) {
-            return assoc.isParentChild(parentItem, item);
+            const isPC = assoc.isParentChild(parentItem, item);
+            return isPC && (!oldFilter ? true : oldFilter(item));
         };
         super(opts);
-        let self = this;
+        const self = this;
 
         this._getParent = function () {
             if (self.getIsDestroyCalled())

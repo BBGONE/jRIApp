@@ -4024,11 +4024,11 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
                 if (!parentItem) {
                     return [];
                 }
-                var items = assoc.getChildItems(parentItem);
-                return items;
+                return assoc.getChildItems(parentItem);
             };
             opts.fn_filter = function (item) {
-                return assoc.isParentChild(parentItem, item);
+                var isPC = assoc.isParentChild(parentItem, item);
+                return isPC && (!oldFilter ? true : oldFilter(item));
             };
             _super.call(this, opts);
             var self = this;
