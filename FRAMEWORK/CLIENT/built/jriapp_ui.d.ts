@@ -139,7 +139,7 @@ declare module "jriapp_ui/utils/tooltip" {
     };
     export function createToolTipSvc(): ITooltipService;
 }
-declare module "jriapp_ui/generic" {
+declare module "jriapp_ui/baseview" {
     import { BaseObject, IPropertyBag, IValidationInfo } from "jriapp_shared";
     import { IElView, IApplication, IViewOptions } from "jriapp/int";
     import { ICommand } from "jriapp/mvvm";
@@ -221,7 +221,7 @@ declare module "jriapp_ui/generic" {
     }
 }
 declare module "jriapp_ui/input" {
-    import { BaseElView } from "jriapp_ui/generic";
+    import { BaseElView } from "jriapp_ui/baseview";
     export class InputElView extends BaseElView {
         toString(): string;
         isEnabled: boolean;
@@ -261,7 +261,7 @@ declare module "jriapp_ui/content/string" {
 }
 declare module "jriapp_ui/textarea" {
     import { ITextBoxOptions, TKeyPressArgs } from "jriapp_ui/textbox";
-    import { BaseElView } from "jriapp_ui/generic";
+    import { BaseElView } from "jriapp_ui/baseview";
     export interface ITextAreaOptions extends ITextBoxOptions {
         wrap?: string;
     }
@@ -354,7 +354,7 @@ declare module "jriapp_ui/listbox" {
     import { ITEM_STATUS } from "jriapp_shared/collection/const";
     import { ICollection, ICollectionItem, ICollChangedArgs } from "jriapp_shared/collection/int";
     import { IViewOptions } from "jriapp/int";
-    import { BaseElView } from "jriapp_ui/generic";
+    import { BaseElView } from "jriapp_ui/baseview";
     export interface IOptionStateProvider {
         getCSS(item: ICollectionItem, itemIndex: number, val: any): string;
     }
@@ -446,7 +446,7 @@ declare module "jriapp_ui/listbox" {
     }
 }
 declare module "jriapp_ui/span" {
-    import { BaseElView } from "jriapp_ui/generic";
+    import { BaseElView } from "jriapp_ui/baseview";
     export class SpanElView extends BaseElView {
         toString(): string;
         text: string;
@@ -617,7 +617,7 @@ declare module "jriapp_ui/dialog" {
 declare module "jriapp_ui/dynacontent" {
     import { IVoidPromise } from "jriapp_shared";
     import { ITemplate, ITemplateEvents, IViewOptions } from "jriapp/int";
-    import { BaseElView } from "jriapp_ui/generic";
+    import { BaseElView } from "jriapp_ui/baseview";
     export interface IDynaContentAnimation {
         beforeShow(template: ITemplate, isFirstShow: boolean): void;
         show(template: ITemplate, isFirstShow: boolean): IVoidPromise;
@@ -1114,7 +1114,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
     import { ISelectableProvider, ISelectable, IViewOptions } from "jriapp/int";
     import { ITEM_STATUS } from "jriapp_shared/collection/const";
     import { ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollection, ICollItemAddedArgs } from "jriapp_shared/collection/int";
-    import { BaseElView } from "jriapp_ui/generic";
+    import { BaseElView } from "jriapp_ui/baseview";
     import { IDialogConstructorOptions } from "jriapp_ui/dialog";
     import { ROW_POSITION, ROW_ACTION } from "jriapp_ui/datagrid/const";
     import { IDataGridAnimation } from "jriapp_ui/datagrid/animation";
@@ -1318,7 +1318,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
 declare module "jriapp_ui/pager" {
     import { BaseObject } from "jriapp_shared";
     import { IViewOptions } from "jriapp/int";
-    import { BaseElView } from "jriapp_ui/generic";
+    import { BaseElView } from "jriapp_ui/baseview";
     import { ICollection, ICollectionItem } from "jriapp_shared/collection/int";
     export interface IPagerOptions {
         showTip?: boolean;
@@ -1393,7 +1393,7 @@ declare module "jriapp_ui/pager" {
 declare module "jriapp_ui/stackpanel" {
     import { BaseObject, IBaseObject, TEventHandler } from "jriapp_shared";
     import { ITemplate, ISelectable, IViewOptions, ISelectableProvider } from "jriapp/int";
-    import { BaseElView } from "jriapp_ui/generic";
+    import { BaseElView } from "jriapp_ui/baseview";
     import { ITEM_STATUS } from "jriapp_shared/collection/const";
     import { ICollection, ICollectionItem, ICollChangedArgs } from "jriapp_shared/collection/int";
     export interface IStackPanelOptions {
@@ -1470,7 +1470,7 @@ declare module "jriapp_ui/stackpanel" {
 }
 declare module "jriapp_ui/tabs" {
     import { IViewOptions } from "jriapp/int";
-    import { BaseElView } from "jriapp_ui/generic";
+    import { BaseElView } from "jriapp_ui/baseview";
     export interface ITabs {
         readonly uniqueID: string;
         readonly el: HTMLElement;
@@ -1502,7 +1502,7 @@ declare module "jriapp_ui/tabs" {
 declare module "jriapp_ui/command" {
     import { IViewOptions } from "jriapp/int";
     import { ICommand } from "jriapp/mvvm";
-    import { BaseElView } from "jriapp_ui/generic";
+    import { BaseElView } from "jriapp_ui/baseview";
     export interface ICommandViewOptions extends IViewOptions {
         preventDefault?: boolean;
         stopPropagation?: boolean;
@@ -1548,7 +1548,7 @@ declare module "jriapp_ui/template" {
 declare module "jriapp_ui/dataform" {
     import { IBaseObject, IValidationInfo, BaseObject } from "jriapp_shared";
     import { IApplication, IViewOptions } from "jriapp/int";
-    import { BaseElView } from "jriapp_ui/generic";
+    import { BaseElView } from "jriapp_ui/baseview";
     export const css: {
         dataform: string;
         error: string;
@@ -1647,7 +1647,7 @@ declare module "jriapp_ui/block" {
 }
 declare module "jriapp_ui/busy" {
     import { IViewOptions } from "jriapp/int";
-    import { BaseElView } from "jriapp_ui/generic";
+    import { BaseElView } from "jriapp_ui/baseview";
     export interface IBusyViewOptions extends IViewOptions {
         img?: string;
         delay?: number | string;
@@ -1719,7 +1719,7 @@ declare module "jriapp_ui/hidden" {
 }
 declare module "jriapp_ui/img" {
     import { IViewOptions } from "jriapp/int";
-    import { BaseElView } from "jriapp_ui/generic";
+    import { BaseElView } from "jriapp_ui/baseview";
     export class ImgElView extends BaseElView {
         constructor(options: IViewOptions);
         toString(): string;
@@ -1754,7 +1754,7 @@ declare module "jriapp_ui" {
     export { ListBox, ListBoxElView, IListBoxViewOptions, IOptionStateProvider, IOptionTextProvider } from "jriapp_ui/listbox";
     export * from "jriapp_ui/stackpanel";
     export * from "jriapp_ui/tabs";
-    export { BaseElView, fn_addToolTip } from "jriapp_ui/generic";
+    export { BaseElView, fn_addToolTip } from "jriapp_ui/baseview";
     export { TemplateElView } from "jriapp_ui/template";
     export { DataForm, DataFormElView } from "jriapp_ui/dataform";
     export { DatePickerElView } from "jriapp_ui/datepicker";

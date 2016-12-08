@@ -4,7 +4,7 @@ import { $ } from "jriapp/utils/jquery";
 import { IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 import { InputElView } from "./input";
-import { css, PROP_NAME } from "./generic";
+import { css, PROP_NAME } from "./baseview";
 
 const checks = Utils.check, dom = Utils.dom, boot = bootstrap;
 

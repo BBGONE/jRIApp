@@ -8,7 +8,7 @@ import { IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 
 
-import { BaseElView, PROP_NAME } from "./generic";
+import { BaseElView, PROP_NAME } from "./baseview";
 
 const checks = Utils.check, boot = bootstrap;
 

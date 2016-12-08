@@ -4,7 +4,7 @@ import {
 } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
 import { IApplication, IViewOptions } from "jriapp/int";
-import { BaseElView, fn_addToolTip } from "./generic";
+import { BaseElView, fn_addToolTip } from "./baseview";
 import {
     COLL_CHANGE_REASON, ITEM_STATUS, COLL_CHANGE_TYPE
 } from "jriapp_shared/collection/const";

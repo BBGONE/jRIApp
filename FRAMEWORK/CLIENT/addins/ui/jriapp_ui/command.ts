@@ -2,7 +2,7 @@
 import { Utils, IBaseObject } from "jriapp_shared";
 import { IViewOptions } from "jriapp/int";
 import { ICommand } from "jriapp/mvvm";
-import { BaseElView, PROP_NAME, css } from "./generic";
+import { BaseElView, PROP_NAME, css } from "./baseview";
 
 const utils = Utils, dom = utils.dom, checks = utils.check, sys = utils.sys;
 

@@ -17,7 +17,7 @@ export {
 } from "./jriapp_ui/listbox";
 export * from "./jriapp_ui/stackpanel";
 export * from "./jriapp_ui/tabs";
-export { BaseElView, fn_addToolTip } from "./jriapp_ui/generic";
+export { BaseElView, fn_addToolTip } from "./jriapp_ui/baseview";
 export { TemplateElView } from "./jriapp_ui/template";
 export { DataForm, DataFormElView } from "./jriapp_ui/dataform";
 export { DatePickerElView } from "./jriapp_ui/datepicker";

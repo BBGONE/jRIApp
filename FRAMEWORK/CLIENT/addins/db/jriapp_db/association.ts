@@ -16,13 +16,6 @@ import { DbSet } from "./dbset";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr;
 
-let _newID = 0;
-function getNewID(): string {
-    let id = "$ass" + _newID;
-    _newID += 1;
-    return id;
-}
-
 export class Association extends BaseObject {
     private _objId: string;
     private _name: string;
@@ -50,7 +43,7 @@ export class Association extends BaseObject {
     constructor(options: IAssocConstructorOptions) {
         super();
         const self = this;
-        this._objId = getNewID();
+        this._objId = coreUtils.getNewID();
         let opts: IAssocConstructorOptions = coreUtils.extend({
             dbContext: null,
             parentName: "",

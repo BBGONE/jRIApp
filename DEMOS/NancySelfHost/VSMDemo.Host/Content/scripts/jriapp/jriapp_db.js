@@ -1514,18 +1514,12 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared", "jriapp_db/co
 define("jriapp_db/association", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_5) {
     "use strict";
     var utils = jriapp_shared_5.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr;
-    var _newID = 0;
-    function getNewID() {
-        var id = "$ass" + _newID;
-        _newID += 1;
-        return id;
-    }
     var Association = (function (_super) {
         __extends(Association, _super);
         function Association(options) {
             _super.call(this);
             var self = this;
-            this._objId = getNewID();
+            this._objId = coreUtils.getNewID();
             var opts = coreUtils.extend({
                 dbContext: null,
                 parentName: "",

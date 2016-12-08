@@ -66,13 +66,6 @@ function fn_reportMaxRec(bindTo: BindTo, src: any, tgt: any, spath: string, tpat
     log.error(msg);
 }
 
-let _newID = 0;
-function getNewID(): string {
-    let id = "$bnd" + _newID;
-    _newID += 1;
-    return id;
-}
-
 const bindModeMap: IIndexer<BINDING_MODE> = {
     OneTime: BINDING_MODE.OneTime,
     OneWay: BINDING_MODE.OneWay,
@@ -228,7 +221,7 @@ export class Binding extends BaseObject implements IBinding {
             throw new Error(strUtils.format(ERRS.ERR_BIND_TGTPATH_INVALID, opts.targetPath));
         this._srcFixed = (!!opts.isSourceFixed);
         this._pathItems = {};
-        this._objId = getNewID();
+        this._objId = coreUtils.getNewID();
         this._srcEnd = null;
         this._tgtEnd = null;
         this._source = null;

@@ -441,7 +441,7 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
         CoreUtils.getNewID = function () {
             var id = CoreUtils._newID;
             CoreUtils._newID += 1;
-            return id;
+            return id.toString(36);
         };
         CoreUtils.setValue = function (root, namePath, val, checkOverwrite) {
             var parts = namePath.split("."), parent = root, i;
@@ -624,8 +624,7 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
         CoreUtils.str = strUtils;
         CoreUtils.arr = arrHelper;
         CoreUtils.get_timeZoneOffset = (function () {
-            var dt = new Date();
-            var tz = dt.getTimezoneOffset();
+            var dt = new Date(), tz = dt.getTimezoneOffset();
             return function () {
                 return tz;
             };

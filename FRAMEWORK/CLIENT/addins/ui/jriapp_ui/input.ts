@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { IViewOptions } from "jriapp/int";
-import { BaseElView, PROP_NAME } from "./generic";
+import { BaseElView, PROP_NAME } from "./baseview";
 
 export class InputElView extends BaseElView {
     toString() {

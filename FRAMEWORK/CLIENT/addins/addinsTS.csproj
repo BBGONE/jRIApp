@@ -112,7 +112,7 @@
     <TypeScriptCompile Include="ui\jriapp_ui\dialog.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\dynacontent.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\expander.ts" />
-    <TypeScriptCompile Include="ui\jriapp_ui\generic.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\baseview.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\hidden.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\img.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\input.ts" />

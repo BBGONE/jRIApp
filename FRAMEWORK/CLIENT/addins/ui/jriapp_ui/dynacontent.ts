@@ -3,7 +3,7 @@ import { Utils, BaseObject, IVoidPromise, IBaseObject, Debounce } from "jriapp_s
 import { ITemplate, ITemplateEvents, IViewOptions } from "jriapp/int";
 import { createTemplate } from "jriapp/template";
 import { bootstrap } from "jriapp/bootstrap";
-import { BaseElView } from "./generic";
+import { BaseElView } from "./baseview";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, sys = utils.sys, dom = utils.dom;
 

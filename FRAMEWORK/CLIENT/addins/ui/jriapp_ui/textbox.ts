@@ -2,7 +2,7 @@
 import { $ } from "jriapp/utils/jquery";
 import { IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
-import { css, PROP_NAME } from "./generic";
+import { css, PROP_NAME } from "./baseview";
 import { InputElView } from "./input";
 
 const TXTBOX_EVENTS = {

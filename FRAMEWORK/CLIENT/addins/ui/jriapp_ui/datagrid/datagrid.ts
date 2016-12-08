@@ -19,7 +19,7 @@ import {
     ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollection, ICollItemAddedArgs
 } from "jriapp_shared/collection/int";
 import { DblClick } from "../utils/dblclick";
-import { BaseElView } from "../generic";
+import { BaseElView } from "../baseview";
 import { parseContentAttr } from "../content/int";
 import { IDialogConstructorOptions, DataEditDialog } from "../dialog";
 

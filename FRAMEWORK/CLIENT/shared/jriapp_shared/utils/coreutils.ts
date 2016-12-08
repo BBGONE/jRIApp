@@ -16,15 +16,14 @@ export class CoreUtils {
     static readonly str = strUtils;
     static readonly arr = arrHelper;
 
-    static getNewID(): number {
+    static getNewID(): string {
         const id = CoreUtils._newID;
         CoreUtils._newID += 1;
-        return id;
+        return id.toString(36);
     }
-    static get_timeZoneOffset = (function () {
-        let dt = new Date();
-        let tz = dt.getTimezoneOffset();
 
+    static get_timeZoneOffset = (function () {
+        const dt = new Date(), tz = dt.getTimezoneOffset();
         return function () {
             return tz;
         }

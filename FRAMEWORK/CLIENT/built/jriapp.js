@@ -1772,12 +1772,6 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
         msg += ", target path: '" + tpath + "'";
         log.error(msg);
     }
-    var _newID = 0;
-    function getNewID() {
-        var id = "$bnd" + _newID;
-        _newID += 1;
-        return id;
-    }
     var bindModeMap = {
         OneTime: 0,
         OneWay: 1,
@@ -1887,7 +1881,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                 throw new Error(strUtils.format(ERRS.ERR_BIND_TGTPATH_INVALID, opts.targetPath));
             this._srcFixed = (!!opts.isSourceFixed);
             this._pathItems = {};
-            this._objId = getNewID();
+            this._objId = coreUtils.getNewID();
             this._srcEnd = null;
             this._tgtEnd = null;
             this._source = null;
@@ -3616,6 +3610,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.1.3";
+    exports.VERSION = "1.1.4";
     bootstrap_8.Bootstrap._initFramework();
 });

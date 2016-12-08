@@ -6,7 +6,7 @@ import {
     IApplication, ITemplate, ITemplateEvents, ISelectable,  IViewOptions, ISelectableProvider
 } from "jriapp/int";
 import { createTemplate } from "jriapp/template";
-import { BaseElView } from "./generic";
+import { BaseElView } from "./baseview";
 import {
     COLL_CHANGE_REASON, ITEM_STATUS, COLL_CHANGE_TYPE
 } from "jriapp_shared/collection/const";

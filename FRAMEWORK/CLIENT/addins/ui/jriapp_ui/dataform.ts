@@ -15,7 +15,7 @@ import {
     Parser
 } from "jriapp/utils/parser";
 import { bootstrap } from "jriapp/bootstrap";
-import { BaseElView, fn_addToolTip } from "./generic";
+import { BaseElView, fn_addToolTip } from "./baseview";
 import { Binding } from "jriapp/binding";
 import { parseContentAttr } from "./content/int";
 

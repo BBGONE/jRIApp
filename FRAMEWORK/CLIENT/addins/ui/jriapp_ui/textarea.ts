@@ -3,7 +3,7 @@ import { $ } from "jriapp/utils/jquery";
 import { IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 import { ITextBoxOptions, TKeyPressArgs } from "./textbox";
-import { BaseElView, PROP_NAME } from "./generic";
+import { BaseElView, PROP_NAME } from "./baseview";
 
 const TXTAREA_EVENTS = {
     keypress: "keypress"

@@ -69,14 +69,6 @@ export const PROP_NAME = {
     click: "click"
 };
 
-let _newID = 0;
-function getNewID(): string {
-    let id = "$elv" + _newID;
-    _newID += 1;
-    return id;
-}
-
-
 export class BaseElView extends BaseObject implements IElView {
     private _objId: string;
     private _$el: JQuery;
@@ -91,7 +83,7 @@ export class BaseElView extends BaseObject implements IElView {
 
     constructor(options: IViewOptions) {
         super();
-        let el = options.el;
+        const el = options.el;
         this._$el = $(el);
         this._toolTip = options.tip;
 
@@ -102,7 +94,7 @@ export class BaseElView extends BaseObject implements IElView {
         this._display = null;
         this._css = options.css;
 
-        this._objId = getNewID();
+        this._objId = coreUtils.getNewID();
         this._errors = null;
         if (!!this._css) {
             dom.addClass([el], this._css);
@@ -296,4 +288,6 @@ export class BaseElView extends BaseObject implements IElView {
     }
 }
 
+//it is registered by two names
 boot.registerElView("generic", BaseElView);
+boot.registerElView("baseview", BaseElView);

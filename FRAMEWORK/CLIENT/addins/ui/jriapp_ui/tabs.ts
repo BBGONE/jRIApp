@@ -3,7 +3,7 @@ import { Utils, IPropertyBag } from "jriapp_shared";
 import { $, JQueryUtils } from "jriapp/utils/jquery";
 import { IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
-import { BaseElView } from "./generic";
+import { BaseElView } from "./baseview";
 
 const utils = Utils, coreUtils = utils.core;
 

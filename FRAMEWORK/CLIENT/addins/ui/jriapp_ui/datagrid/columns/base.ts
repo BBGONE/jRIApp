@@ -4,7 +4,7 @@ import { $ } from "jriapp/utils/jquery";
 import { DATA_ATTR } from "jriapp/const";
 import { IContentOptions, ITemplateEvents, ITemplate } from "jriapp/int";
 import { createTemplate } from "jriapp/template";
-import { fn_addToolTip } from "../../generic";
+import { fn_addToolTip } from "../../baseview";
 import { bootstrap } from "jriapp/bootstrap";
 
 import { css } from "../const";

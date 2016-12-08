@@ -11,7 +11,7 @@ import {
 } from "jriapp_shared/collection/int";
 import { IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
-import { BaseElView } from "./generic";
+import { BaseElView } from "./baseview";
 
 const utils = Utils, doc = utils.dom.document, sys= utils.sys,
     checks = utils.check, strUtils = utils.str, coreUtils = utils.core,

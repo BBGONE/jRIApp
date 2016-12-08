@@ -5,7 +5,7 @@ import {
 import { $ } from "jriapp/utils/jquery";
 import { IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
-import { css, PROP_NAME, IEventChangedArgs, EVENT_CHANGE_TYPE } from "./generic";
+import { css, PROP_NAME, IEventChangedArgs, EVENT_CHANGE_TYPE } from "./baseview";
 import { ICommand } from "jriapp/mvvm";
 import { CommandElView } from "./command";
 
