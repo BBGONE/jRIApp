@@ -56,7 +56,7 @@ export class Row extends BaseObject {
         this._$tr = $(tr);
         this._item = item;
         this._cells = [];
-        this._objId = "rw" + utils.core.getNewID();
+        this._objId = utils.core.getNewID();
         this._expanderCell = null;
         this._actionsCell = null;
         this._rowSelectorCell = null;

@@ -51,7 +51,7 @@ export class Application extends BaseObject implements IApplication {
         this._options = options;
         if (!!boot.getApp())
             throw new Error(utils.str.format(ERRS.ERR_APP_NAME_NOT_UNIQUE, app_name));
-        this._objId = "app:" + utils.core.getNewID();
+        this._objId = utils.core.getNewID();
         this._app_state = AppState.None;
         this._moduleInits = moduleInits;
         this._viewFactory = createElViewFactory(boot.elViewRegister);

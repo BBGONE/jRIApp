@@ -68,7 +68,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         this._valBinding = null;
         this._listBinding = null;
         this._value = null;
-        this._objId = "lku" + coreUtils.getNewID();
+        this._objId = coreUtils.getNewID();
         if (!!this._options.initContentFn) {
             this._options.initContentFn(this);
         }

@@ -435,13 +435,14 @@ define("jriapp_shared/utils/checks", ["require", "exports"], function (require, 
 define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/strutils", "jriapp_shared/utils/checks"], function (require, exports, arrhelper_1, strutils_1, checks_1) {
     "use strict";
     var checks = checks_1.Checks, strUtils = strutils_1.StringUtils, arrHelper = arrhelper_1.ArrayHelper;
+    var _newID = 0;
     var CoreUtils = (function () {
         function CoreUtils() {
         }
         CoreUtils.getNewID = function () {
-            var id = CoreUtils._newID;
-            CoreUtils._newID += 1;
-            return id.toString(36);
+            var id = _newID.toString(36);
+            _newID += 1;
+            return ":" + id;
         };
         CoreUtils.setValue = function (root, namePath, val, checkOverwrite) {
             var parts = namePath.split("."), parent = root, i;
@@ -617,7 +618,6 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
             }
             return target;
         };
-        CoreUtils._newID = 0;
         CoreUtils.ERR_OBJ_ALREADY_REGISTERED = "an Object with the name: {0} is already registered and can not be overwritten";
         CoreUtils.CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split("");
         CoreUtils.check = checks;
@@ -1413,7 +1413,7 @@ define("jriapp_shared/utils/waitqueue", ["require", "exports", "jriapp_shared/ob
         __extends(WaitQueue, _super);
         function WaitQueue(owner) {
             _super.call(this);
-            this._objId = "wq" + coreUtils.getNewID();
+            this._objId = coreUtils.getNewID();
             this._owner = owner;
             this._queue = {};
         }

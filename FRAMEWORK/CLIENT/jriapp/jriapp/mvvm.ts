@@ -29,7 +29,7 @@ export class TCommand<TParam, TThis> extends BaseObject implements ICommand {
 
     constructor(fn_action: TAction<TParam, TThis>, thisObj?: TThis, fn_canExecute?: TPredicate<TParam, TThis>) {
         super();
-        this._objId = "cmd" + coreUtils.getNewID();
+        this._objId = coreUtils.getNewID();
         this._action = fn_action;
         this._thisObj = !thisObj ? null : thisObj;
         this._predicate = !fn_canExecute ? null : fn_canExecute;
@@ -114,7 +114,7 @@ export class ViewModel<TApp extends IApplication> extends BaseObject {
     constructor(app: TApp) {
         super();
         this._app = app;
-        this._objId = "vm" + coreUtils.getNewID();
+        this._objId = coreUtils.getNewID();
     }
     toString() {
         return "ViewModel";

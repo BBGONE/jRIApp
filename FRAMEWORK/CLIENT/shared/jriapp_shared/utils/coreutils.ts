@@ -5,10 +5,10 @@ import { StringUtils } from "./strutils";
 import { Checks } from "./checks";
 
 const checks = Checks, strUtils = StringUtils, arrHelper = ArrayHelper;
+let _newID = 0;
 
 //basic utils
 export class CoreUtils {
-    private static _newID = 0;
     private static ERR_OBJ_ALREADY_REGISTERED = "an Object with the name: {0} is already registered and can not be overwritten";
     private static CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split("");
 
@@ -17,9 +17,10 @@ export class CoreUtils {
     static readonly arr = arrHelper;
 
     static getNewID(): string {
-        const id = CoreUtils._newID;
-        CoreUtils._newID += 1;
-        return id.toString(36);
+        const id = _newID.toString(36);
+        _newID += 1;
+        //added ":" to separate from a possible prefix which can be added
+        return ":" + id;
     }
 
     static get_timeZoneOffset = (function () {

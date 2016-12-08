@@ -2763,7 +2763,7 @@ define("jriapp/utils/propwatcher", ["require", "exports", "jriapp_shared"], func
         __extends(PropWatcher, _super);
         function PropWatcher() {
             _super.call(this);
-            this._objId = "prw" + coreUtils.getNewID();
+            this._objId = coreUtils.getNewID();
             this._objs = [];
         }
         PropWatcher.create = function () {
@@ -2825,7 +2825,7 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
         __extends(TCommand, _super);
         function TCommand(fn_action, thisObj, fn_canExecute) {
             _super.call(this);
-            this._objId = "cmd" + coreUtils.getNewID();
+            this._objId = coreUtils.getNewID();
             this._action = fn_action;
             this._thisObj = !thisObj ? null : thisObj;
             this._predicate = !fn_canExecute ? null : fn_canExecute;
@@ -2911,7 +2911,7 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
         function ViewModel(app) {
             _super.call(this);
             this._app = app;
-            this._objId = "vm" + coreUtils.getNewID();
+            this._objId = coreUtils.getNewID();
         }
         ViewModel.prototype.toString = function () {
             return "ViewModel";
@@ -3302,7 +3302,7 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/const", "jr
             this._options = options;
             if (!!boot.getApp())
                 throw new Error(utils.str.format(ERRS.ERR_APP_NAME_NOT_UNIQUE, app_name));
-            this._objId = "app:" + utils.core.getNewID();
+            this._objId = utils.core.getNewID();
             this._app_state = 0;
             this._moduleInits = moduleInits;
             this._viewFactory = elview_2.createElViewFactory(boot.elViewRegister);
@@ -3610,6 +3610,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.1.4";
+    exports.VERSION = "1.1.5";
     bootstrap_8.Bootstrap._initFramework();
 });

@@ -104,7 +104,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             fn_OnTemplateCreated: null,
             fn_OnTemplateDestroy: null
         }, options);
-        this._objId = "dlg" + coreUtils.getNewID();
+        this._objId = coreUtils.getNewID();
         this._dataContext = options.dataContext;
         this._templateID = options.templateID;
         this._submitOnOK = options.submitOnOK;

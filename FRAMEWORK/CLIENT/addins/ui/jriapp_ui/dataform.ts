@@ -162,7 +162,7 @@ export class DataForm extends BaseObject {
         let self = this, parent: HTMLElement;
         this._el = options.el;
         this._$el = $(this._el);
-        this._objId = "frm" + coreUtils.getNewID();
+        this._objId = coreUtils.getNewID();
         this._dataContext = null;
         dom.addClass([this._el], css.dataform);
         this._isEditing = false;

@@ -1482,7 +1482,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 throw new Error(jriapp_shared_13.LocaleERRS.ERR_LISTBOX_DATASRC_INVALID);
             this._$el = jquery_3.$(options.el);
             this._options = options;
-            this._objId = "lst" + coreUtils.getNewID();
+            this._objId = coreUtils.getNewID();
             this._$el.on("change." + this._objId, function (e) {
                 e.stopPropagation();
                 if (self._isRefreshing)
@@ -2273,7 +2273,7 @@ define("jriapp_ui/content/listbox", ["require", "exports", "jriapp_shared", "jri
             this._valBinding = null;
             this._listBinding = null;
             this._value = null;
-            this._objId = "lku" + coreUtils.getNewID();
+            this._objId = coreUtils.getNewID();
             if (!!this._options.initContentFn) {
                 this._options.initContentFn(this);
             }
@@ -2591,7 +2591,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp/utils
                 fn_OnTemplateCreated: null,
                 fn_OnTemplateDestroy: null
             }, options);
-            this._objId = "dlg" + coreUtils.getNewID();
+            this._objId = coreUtils.getNewID();
             this._dataContext = options.dataContext;
             this._templateID = options.templateID;
             this._submitOnOK = options.submitOnOK;
@@ -3384,7 +3384,7 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_shared"
             this._th = options.th;
             this._options = options.colInfo;
             this._isSelected = false;
-            this._objId = "col" + utils.core.getNewID();
+            this._objId = utils.core.getNewID();
             this._event_scope = ["td[", const_2.DATA_ATTR.DATA_EVENT_SCOPE, '="', this._objId, '"]'].join("");
             var col = doc.createElement("div");
             var $col = jquery_5.$(col);
@@ -4054,7 +4054,7 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_shared", "j
             this._$tr = jquery_10.$(tr);
             this._item = item;
             this._cells = [];
-            this._objId = "rw" + utils.core.getNewID();
+            this._objId = utils.core.getNewID();
             this._expanderCell = null;
             this._actionsCell = null;
             this._rowSelectorCell = null;
@@ -4446,7 +4446,7 @@ define("jriapp_ui/datagrid/rows/details", ["require", "exports", "jriapp_shared"
             this._cell = null;
             this._parentRow = null;
             this._isFirstShow = true;
-            this._objId = "drw" + coreUtils.getNewID();
+            this._objId = coreUtils.getNewID();
             this._createCell(options.details_id);
             dom.addClass([tr], const_18.css.rowDetails);
             this._grid.addOnRowExpanded(function (sender, args) {
@@ -4886,7 +4886,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             this._$table = $table;
             dom.addClass([table], const_22.css.dataTable);
             this._name = $table.attr(const_21.DATA_ATTR.DATA_NAME);
-            this._objId = "grd" + coreUtils.getNewID();
+            this._objId = coreUtils.getNewID();
             this._rowMap = {};
             this._rows = [];
             this._columns = [];
@@ -6064,7 +6064,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             this._options = options;
             this._$el = jquery_15.$(options.el);
             dom.addClass([options.el], css.pager);
-            this._objId = "pgr" + coreUtils.getNewID();
+            this._objId = coreUtils.getNewID();
             this._rowsPerPage = 0;
             this._rowCount = 0;
             this._currentPage = 1;
@@ -6568,7 +6568,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             if (this.orientation === HORIZONTAL) {
                 dom.addClass([options.el], css.horizontal);
             }
-            this._objId = "pnl" + coreUtils.getNewID();
+            this._objId = coreUtils.getNewID();
             this._isKeyNavigation = false;
             this._event_scope = [this._item_tag, "[", const_24.DATA_ATTR.DATA_EVENT_SCOPE, '="', this._objId, '"]'].join("");
             this._currentItem = null;
@@ -7380,7 +7380,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             var self = this, parent;
             this._el = options.el;
             this._$el = jquery_18.$(this._el);
-            this._objId = "frm" + coreUtils.getNewID();
+            this._objId = coreUtils.getNewID();
             this._dataContext = null;
             dom.addClass([this._el], exports.css.dataform);
             this._isEditing = false;

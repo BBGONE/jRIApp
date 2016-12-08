@@ -3591,7 +3591,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             if (!!opts.fn_filter && !checks.isFunc(opts.fn_filter))
                 throw new Error(jriapp_shared_9.LocaleERRS.ERR_DATAVIEW_FILTER_INVALID);
             this._refreshDebounce = new jriapp_shared_9.Debounce();
-            this._objId = "dvw" + coreUtils.getNewID();
+            this._objId = coreUtils.getNewID();
             this._dataSource = opts.dataSource;
             this._fn_filter = !opts.fn_filter ? null : opts.fn_filter;
             this._fn_sort = opts.fn_sort;

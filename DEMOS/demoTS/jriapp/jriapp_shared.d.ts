@@ -253,7 +253,6 @@ declare module "jriapp_shared/utils/coreutils" {
     import { StringUtils } from "jriapp_shared/utils/strutils";
     import { Checks } from "jriapp_shared/utils/checks";
     export class CoreUtils {
-        private static _newID;
         private static ERR_OBJ_ALREADY_REGISTERED;
         private static CHARS;
         static readonly check: typeof Checks;
