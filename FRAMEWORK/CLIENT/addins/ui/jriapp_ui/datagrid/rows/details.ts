@@ -34,7 +34,7 @@ export class DetailsRow extends BaseObject {
         this._cell = null;
         this._parentRow = null;
         this._isFirstShow = true;
-        this._objId = coreUtils.getNewID();
+        this._objId = coreUtils.getNewID("drow");
         this._createCell(options.details_id);
         dom.addClass([tr], css.rowDetails);
         this._grid.addOnRowExpanded((sender, args) => {

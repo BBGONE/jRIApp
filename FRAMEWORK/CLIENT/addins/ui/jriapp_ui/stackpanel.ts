@@ -90,7 +90,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
             dom.addClass([options.el], css.horizontal);
         }
 
-        this._objId = coreUtils.getNewID();
+        this._objId = coreUtils.getNewID("pnl");
         this._isKeyNavigation = false;
         this._event_scope = [this._item_tag, "[", DATA_ATTR.DATA_EVENT_SCOPE, '="', this._objId, '"]'].join("");
         this._currentItem = null;

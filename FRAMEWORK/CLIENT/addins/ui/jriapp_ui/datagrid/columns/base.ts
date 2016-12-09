@@ -48,7 +48,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         this._th = options.th;
         this._options = options.colInfo;
         this._isSelected = false;
-        this._objId = utils.core.getNewID();
+        this._objId = utils.core.getNewID("col");
         this._event_scope = ["td[", DATA_ATTR.DATA_EVENT_SCOPE, '="', this._objId, '"]'].join("");
 
         const col = doc.createElement("div");

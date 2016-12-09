@@ -88,7 +88,7 @@ export class ListBox extends BaseObject {
             throw new Error(ERRS.ERR_LISTBOX_DATASRC_INVALID);
         this._$el = $(options.el);
         this._options = options;
-        this._objId = coreUtils.getNewID();
+        this._objId = coreUtils.getNewID("lst");
         this._$el.on("change." + this._objId, function (e) {
             e.stopPropagation();
             if (self._isRefreshing)

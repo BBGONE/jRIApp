@@ -1519,7 +1519,7 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
         function Association(options) {
             _super.call(this);
             var self = this;
-            this._objId = coreUtils.getNewID();
+            this._objId = coreUtils.getNewID("ass");
             var opts = coreUtils.extend({
                 dbContext: null,
                 parentName: "",
@@ -3591,7 +3591,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             if (!!opts.fn_filter && !checks.isFunc(opts.fn_filter))
                 throw new Error(jriapp_shared_9.LocaleERRS.ERR_DATAVIEW_FILTER_INVALID);
             this._refreshDebounce = new jriapp_shared_9.Debounce();
-            this._objId = coreUtils.getNewID();
+            this._objId = coreUtils.getNewID("dvw");
             this._dataSource = opts.dataSource;
             this._fn_filter = !opts.fn_filter ? null : opts.fn_filter;
             this._fn_sort = opts.fn_sort;

@@ -10,7 +10,7 @@ export class PropWatcher extends BaseObject {
     private _objs: BaseObject[];
     constructor() {
         super();
-        this._objId = coreUtils.getNewID();
+        this._objId = coreUtils.getNewID("prw");
         this._objs = [];
     }
     static create() {

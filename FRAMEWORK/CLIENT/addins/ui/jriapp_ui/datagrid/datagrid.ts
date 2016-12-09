@@ -216,7 +216,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._$table = $table;
         dom.addClass([table], css.dataTable);
         this._name = $table.attr(DATA_ATTR.DATA_NAME);
-        this._objId = coreUtils.getNewID();
+        this._objId = coreUtils.getNewID("grd");
         this._rowMap = {};
         this._rows = [];
         this._columns = [];

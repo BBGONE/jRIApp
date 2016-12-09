@@ -436,14 +436,15 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
     "use strict";
     var checks = checks_1.Checks, strUtils = strutils_1.StringUtils, arrHelper = arrhelper_1.ArrayHelper;
     var UUID_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split("");
-    var _newID = 0;
+    var NEWID_MAP = {};
     var CoreUtils = (function () {
         function CoreUtils() {
         }
-        CoreUtils.getNewID = function () {
-            var id = _newID.toString(36);
-            _newID += 1;
-            return "_" + id;
+        CoreUtils.getNewID = function (prefix) {
+            if (prefix === void 0) { prefix = "*"; }
+            var id = NEWID_MAP[prefix] || 0;
+            NEWID_MAP[prefix] = id + 1;
+            return (prefix === "*") ? id.toString(36) : (prefix + "_" + id.toString(36));
         };
         CoreUtils.setValue = function (root, namePath, val, checkOverwrite) {
             var parts = namePath.split("."), parent = root, i;
@@ -1413,7 +1414,7 @@ define("jriapp_shared/utils/waitqueue", ["require", "exports", "jriapp_shared/ob
         __extends(WaitQueue, _super);
         function WaitQueue(owner) {
             _super.call(this);
-            this._objId = coreUtils.getNewID();
+            this._objId = coreUtils.getNewID("wq");
             this._owner = owner;
             this._queue = {};
         }

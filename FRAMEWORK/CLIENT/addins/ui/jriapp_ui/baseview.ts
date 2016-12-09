@@ -94,7 +94,7 @@ export class BaseElView extends BaseObject implements IElView {
         this._display = null;
         this._css = options.css;
 
-        this._objId = coreUtils.getNewID();
+        this._objId = coreUtils.getNewID("elv");
         this._errors = null;
         if (!!this._css) {
             dom.addClass([el], this._css);

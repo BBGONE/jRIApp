@@ -43,7 +43,7 @@ export class Association extends BaseObject {
     constructor(options: IAssocConstructorOptions) {
         super();
         const self = this;
-        this._objId = coreUtils.getNewID();
+        this._objId = coreUtils.getNewID("ass");
         let opts: IAssocConstructorOptions = coreUtils.extend({
             dbContext: null,
             parentName: "",

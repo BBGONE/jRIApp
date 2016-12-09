@@ -34,7 +34,7 @@ export class WaitQueue extends BaseObject {
     private _queue: { [property: string]: IWaitQueueTask[] };
     constructor(owner: IBaseObject) {
         super();
-        this._objId = coreUtils.getNewID();
+        this._objId = coreUtils.getNewID("wq");
         this._owner = owner;
         this._queue = {}
     }

@@ -257,7 +257,7 @@ declare module "jriapp_shared/utils/coreutils" {
         static readonly check: typeof Checks;
         static readonly str: typeof StringUtils;
         static readonly arr: typeof ArrayHelper;
-        static getNewID(): string;
+        static getNewID(prefix?: string): string;
         static get_timeZoneOffset: () => number;
         static hasProp: typeof Checks.isHasProp;
         static setValue(root: any, namePath: string, val: any, checkOverwrite: boolean): void;

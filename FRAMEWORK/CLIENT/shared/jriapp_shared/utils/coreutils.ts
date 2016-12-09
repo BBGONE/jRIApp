@@ -6,7 +6,7 @@ import { Checks } from "./checks";
 
 const checks = Checks, strUtils = StringUtils, arrHelper = ArrayHelper;
 const UUID_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split("");
-let _newID = 0;
+const NEWID_MAP: IIndexer<number> = {};
 
 //basic utils
 export class CoreUtils {
@@ -15,10 +15,10 @@ export class CoreUtils {
     static readonly str = strUtils;
     static readonly arr = arrHelper;
 
-    static getNewID(): string {
-        const id = _newID.toString(36);
-        _newID += 1;
-        return "_" + id;
+    static getNewID(prefix: string = "*"): string {
+        const id = NEWID_MAP[prefix] || 0;
+        NEWID_MAP[prefix] = id + 1;
+        return (prefix === "*") ? id.toString(36) : (prefix + "_" + id.toString(36));
     }
 
     static get_timeZoneOffset = (function () {

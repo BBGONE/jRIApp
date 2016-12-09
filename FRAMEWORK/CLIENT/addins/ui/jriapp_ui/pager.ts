@@ -77,7 +77,7 @@ export class Pager extends BaseObject {
         this._options = options;
         this._$el = $(options.el);
         dom.addClass([options.el], css.pager);
-        this._objId = coreUtils.getNewID();
+        this._objId = coreUtils.getNewID("pgr");
         this._rowsPerPage = 0;
         this._rowCount = 0;
         this._currentPage = 1;
