@@ -254,7 +254,6 @@ declare module "jriapp_shared/utils/coreutils" {
     import { Checks } from "jriapp_shared/utils/checks";
     export class CoreUtils {
         private static ERR_OBJ_ALREADY_REGISTERED;
-        private static CHARS;
         static readonly check: typeof Checks;
         static readonly str: typeof StringUtils;
         static readonly arr: typeof ArrayHelper;

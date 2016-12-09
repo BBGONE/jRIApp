@@ -5,13 +5,12 @@ import { StringUtils } from "./strutils";
 import { Checks } from "./checks";
 
 const checks = Checks, strUtils = StringUtils, arrHelper = ArrayHelper;
+const UUID_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split("");
 let _newID = 0;
 
 //basic utils
 export class CoreUtils {
     private static ERR_OBJ_ALREADY_REGISTERED = "an Object with the name: {0} is already registered and can not be overwritten";
-    private static CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split("");
-
     static readonly check = checks;
     static readonly str = strUtils;
     static readonly arr = arrHelper;
@@ -19,8 +18,7 @@ export class CoreUtils {
     static getNewID(): string {
         const id = _newID.toString(36);
         _newID += 1;
-        //added ":" to separate from a possible prefix which can be added
-        return ":" + id;
+        return "_" + id;
     }
 
     static get_timeZoneOffset = (function () {
@@ -105,7 +103,7 @@ export class CoreUtils {
         return res;
     }
     static uuid(len?: number, radix?: number): string {
-        let i: number, chars = CoreUtils.CHARS, uuid: string[] = [], rnd = Math.random;
+        let i: number, chars = UUID_CHARS, uuid: string[] = [], rnd = Math.random;
         radix = radix || chars.length;
 
         if (!!len) {

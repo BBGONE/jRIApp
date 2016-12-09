@@ -435,6 +435,7 @@ define("jriapp_shared/utils/checks", ["require", "exports"], function (require, 
 define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/strutils", "jriapp_shared/utils/checks"], function (require, exports, arrhelper_1, strutils_1, checks_1) {
     "use strict";
     var checks = checks_1.Checks, strUtils = strutils_1.StringUtils, arrHelper = arrhelper_1.ArrayHelper;
+    var UUID_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split("");
     var _newID = 0;
     var CoreUtils = (function () {
         function CoreUtils() {
@@ -442,7 +443,7 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
         CoreUtils.getNewID = function () {
             var id = _newID.toString(36);
             _newID += 1;
-            return ":" + id;
+            return "_" + id;
         };
         CoreUtils.setValue = function (root, namePath, val, checkOverwrite) {
             var parts = namePath.split("."), parent = root, i;
@@ -500,7 +501,7 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
             return res;
         };
         CoreUtils.uuid = function (len, radix) {
-            var i, chars = CoreUtils.CHARS, uuid = [], rnd = Math.random;
+            var i, chars = UUID_CHARS, uuid = [], rnd = Math.random;
             radix = radix || chars.length;
             if (!!len) {
                 for (i = 0; i < len; i += 1)
@@ -619,7 +620,6 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
             return target;
         };
         CoreUtils.ERR_OBJ_ALREADY_REGISTERED = "an Object with the name: {0} is already registered and can not be overwritten";
-        CoreUtils.CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split("");
         CoreUtils.check = checks;
         CoreUtils.str = strUtils;
         CoreUtils.arr = arrHelper;
