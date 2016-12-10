@@ -127,7 +127,7 @@ class Template extends BaseObject implements ITemplate {
                     return self._dataBind(templateEl, loadedEl);
                 });
 
-                bindPromise.fail((err) => {
+                bindPromise.catch((err) => {
                     if (self.getIsDestroyCalled())
                         return;
                     self._onFail(templateEl, err);

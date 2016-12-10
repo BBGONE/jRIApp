@@ -7,7 +7,7 @@ declare module "jriapp_shared/const" {
     export const APP_NAME: string;
     export const DUMY_ERROR: string;
 }
-declare module "jriapp_shared/iasync" {
+declare module "jriapp_shared/utils/ideferred" {
     export const enum PromiseState {
         Pending = 0,
         ResolutionInProgress = 1,
@@ -54,9 +54,9 @@ declare module "jriapp_shared/iasync" {
         always<TP>(errorCB?: IDeferredErrorCB<TP>): IPromise<TP>;
         always<TP>(errorCB?: IErrorCB<TP>): IPromise<TP>;
         always(errorCB?: IVoidErrorCB): IPromise<void>;
-        fail(errorCB?: IDeferredErrorCB<T>): IPromise<T>;
-        fail(errorCB?: IErrorCB<T>): IPromise<T>;
-        fail(errorCB?: IVoidErrorCB): IPromise<void>;
+        catch(errorCB?: IDeferredErrorCB<T>): IPromise<T>;
+        catch(errorCB?: IErrorCB<T>): IPromise<T>;
+        catch(errorCB?: IVoidErrorCB): IPromise<void>;
     }
     export interface IVoidPromise extends IPromise<void> {
     }
@@ -76,9 +76,9 @@ declare module "jriapp_shared/iasync" {
         always<TP>(errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
         always<TP>(errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
         always(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
-        fail(errorCB?: IDeferredErrorCB<T>): IStatefulPromise<T>;
-        fail(errorCB?: IErrorCB<T>): IStatefulPromise<T>;
-        fail(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
+        catch(errorCB?: IDeferredErrorCB<T>): IStatefulPromise<T>;
+        catch(errorCB?: IErrorCB<T>): IStatefulPromise<T>;
+        catch(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
     }
     export interface IAbortablePromise<T> extends IStatefulPromise<T>, IAbortable {
     }
@@ -91,7 +91,7 @@ declare module "jriapp_shared/iasync" {
 }
 declare module "jriapp_shared/int" {
     import { DEBUG_LEVEL } from "jriapp_shared/const";
-    import { IVoidPromise } from "jriapp_shared/iasync";
+    import { IVoidPromise } from "jriapp_shared/utils/ideferred";
     export interface IConfig {
         debugLevel?: DEBUG_LEVEL;
     }
@@ -227,7 +227,7 @@ declare module "jriapp_shared/utils/strutils" {
     }
 }
 declare module "jriapp_shared/utils/checks" {
-    import { IThenable } from "jriapp_shared/iasync";
+    import { IThenable } from "jriapp_shared/utils/ideferred";
     export class Checks {
         static readonly undefined: any;
         static isHasProp(obj: any, prop: string): boolean;
@@ -562,7 +562,7 @@ declare module "jriapp_shared/collection/const" {
 }
 declare module "jriapp_shared/collection/int" {
     import { DATE_CONVERSION, DATA_TYPE, SORT_ORDER, FIELD_TYPE, COLL_CHANGE_OPER, COLL_CHANGE_REASON, COLL_CHANGE_TYPE, ITEM_STATUS } from "jriapp_shared/collection/const";
-    import { IPromise } from "jriapp_shared/iasync";
+    import { IPromise } from "jriapp_shared/utils/ideferred";
     import { IBaseObject, IErrorNotification, IEditable, ISubmittable, TEventHandler, TPropChangedHandler, IValidationInfo, TPriority } from "jriapp_shared/int";
     export const PROP_NAME: {
         isEditing: string;
@@ -833,7 +833,7 @@ declare module "jriapp_shared/utils/logger" {
     }
 }
 declare module "jriapp_shared/utils/deferred" {
-    import { IStatefulDeferred, IStatefulPromise, IThenable, ITaskQueue, PromiseState, IAbortablePromise, IDeferredErrorCB, IDeferredSuccessCB, IErrorCB, IVoidErrorCB, ISuccessCB, IAbortable } from "jriapp_shared/iasync";
+    import { IStatefulDeferred, IStatefulPromise, IThenable, ITaskQueue, PromiseState, IAbortablePromise, IDeferredErrorCB, IDeferredSuccessCB, IErrorCB, IVoidErrorCB, ISuccessCB, IAbortable } from "jriapp_shared/utils/ideferred";
     export function createDefer<T>(): IStatefulDeferred<T>;
     export function createSyncDefer<T>(): IStatefulDeferred<T>;
     export function getTaskQueue(): ITaskQueue;
@@ -849,9 +849,9 @@ declare module "jriapp_shared/utils/deferred" {
         then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
         then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
         then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IVoidErrorCB): IStatefulPromise<TP>;
-        fail(errorCB?: IDeferredErrorCB<T>): IStatefulPromise<T>;
-        fail(errorCB?: IErrorCB<T>): IStatefulPromise<T>;
-        fail(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
+        catch(errorCB?: IDeferredErrorCB<T>): IStatefulPromise<T>;
+        catch(errorCB?: IErrorCB<T>): IStatefulPromise<T>;
+        catch(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
         always<TP>(errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
         always<TP>(errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
         always(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
@@ -860,7 +860,7 @@ declare module "jriapp_shared/utils/deferred" {
     }
 }
 declare module "jriapp_shared/utils/async" {
-    import { IThenable, ITaskQueue, IStatefulDeferred, IStatefulPromise } from "jriapp_shared/iasync";
+    import { IThenable, ITaskQueue, IStatefulDeferred, IStatefulPromise } from "jriapp_shared/utils/ideferred";
     export class AsyncUtils {
         static createDeferred<T>(): IStatefulDeferred<T>;
         static createSyncDeferred<T>(): IStatefulDeferred<T>;
@@ -871,7 +871,7 @@ declare module "jriapp_shared/utils/async" {
     }
 }
 declare module "jriapp_shared/utils/http" {
-    import { IAbortablePromise } from "jriapp_shared/iasync";
+    import { IAbortablePromise } from "jriapp_shared/utils/ideferred";
     import { IIndexer } from "jriapp_shared/int";
     export class HttpUtils {
         static isStatusOK(status: string | number): boolean;
@@ -953,7 +953,7 @@ declare module "jriapp_shared/collection/validation" {
 declare module "jriapp_shared/collection/base" {
     import { SORT_ORDER, ITEM_STATUS, COLL_CHANGE_REASON, COLL_CHANGE_OPER } from "jriapp_shared/collection/const";
     import { IFieldInfo } from "jriapp_shared/collection/int";
-    import { IPromise } from "jriapp_shared/iasync";
+    import { IPromise } from "jriapp_shared/utils/ideferred";
     import { IIndexer, IValidationInfo, TEventHandler, TPropChangedHandler, IBaseObject, TPriority } from "jriapp_shared/int";
     import { BaseObject } from "jriapp_shared/object";
     import { WaitQueue } from "jriapp_shared/utils/waitqueue";
@@ -1102,7 +1102,7 @@ declare module "jriapp_shared/collection/base" {
 declare module "jriapp_shared/collection/aspect" {
     import { ITEM_STATUS } from "jriapp_shared/collection/const";
     import { IFieldInfo } from "jriapp_shared/collection/int";
-    import { IVoidPromise } from "jriapp_shared/iasync";
+    import { IVoidPromise } from "jriapp_shared/utils/ideferred";
     import { IIndexer, IValidationInfo, TEventHandler, IErrorNotification } from "jriapp_shared/int";
     import { BaseObject } from "jriapp_shared/object";
     import { ICollectionItem, IItemAspect } from "jriapp_shared/collection/int";
@@ -1268,7 +1268,6 @@ declare module "jriapp_shared" {
     export * from "jriapp_shared/const";
     export * from "jriapp_shared/int";
     export * from "jriapp_shared/errors";
-    export * from "jriapp_shared/iasync";
     export * from "jriapp_shared/object";
     export { STRS as LocaleSTRS, ERRS as LocaleERRS } from "jriapp_shared/lang";
     export { BaseCollection } from "jriapp_shared/collection/base";
@@ -1277,6 +1276,7 @@ declare module "jriapp_shared" {
     export { ListItemAspect, IListItem, BaseList, IListItemAspectConstructor, IListItemConstructor } from "jriapp_shared/collection/list";
     export { BaseDictionary } from "jriapp_shared/collection/dictionary";
     export { ValidationError } from "jriapp_shared/collection/validation";
+    export * from "jriapp_shared/utils/ideferred";
     export { Utils } from "jriapp_shared/utils/utils";
     export { WaitQueue, IWaitQueueItem } from "jriapp_shared/utils/waitqueue";
     export { Debounce } from "jriapp_shared/utils/debounce";

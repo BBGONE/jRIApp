@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { DEBUG_LEVEL } from "./const";
-import { IVoidPromise } from "./iasync";
+import { IVoidPromise } from "./utils/ideferred";
 
 //config global variable can be used using this interface
 export interface IConfig {

@@ -751,7 +751,7 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
                         }, function (err) {
                             deferred.reject(err);
                         });
-                    }).fail(function (err) {
+                    }).catch(function (err) {
                         group_1.promise = null;
                         deferred.reject(err);
                     });
@@ -2575,7 +2575,7 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/const"
                     var loadPromise = self._loadAsync(id), bindPromise = loadPromise.then(function (loadedEl) {
                         return self._dataBind(templateEl, loadedEl);
                     });
-                    bindPromise.fail(function (err) {
+                    bindPromise.catch(function (err) {
                         if (self.getIsDestroyCalled())
                             return;
                         self._onFail(templateEl, err);
@@ -3219,7 +3219,7 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/con
             else {
                 res = self._bindTemplateElements(templateEl);
             }
-            res.fail(function (err) {
+            res.catch(function (err) {
                 setTimeout(function () {
                     self.handleError(err, self);
                 }, 0);
@@ -3610,6 +3610,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.1.7";
+    exports.VERSION = "1.1.8";
     bootstrap_8.Bootstrap._initFramework();
 });

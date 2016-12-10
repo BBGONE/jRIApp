@@ -171,7 +171,7 @@ export class TemplateLoader extends BaseObject {
                     }, (err) => {
                         deferred.reject(err);
                     });
-                }).fail((err) => {
+                }).catch((err) => {
                     group.promise = null;
                     deferred.reject(err);
                 });

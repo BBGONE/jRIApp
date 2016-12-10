@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
    IThenable
-} from "../iasync";
+} from "./ideferred";
 import {
     IBaseObject, IEditable, ISubmittable, IErrorNotification, IPropertyBag
 } from "../int";

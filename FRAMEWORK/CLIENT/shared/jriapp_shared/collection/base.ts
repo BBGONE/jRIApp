@@ -4,7 +4,7 @@ import {
     ITEM_STATUS, COLL_CHANGE_REASON, COLL_CHANGE_TYPE, COLL_CHANGE_OPER
 } from "./const";
 import { IFieldInfo } from "./int";
-import { IPromise } from "../iasync";
+import { IPromise } from "../utils/ideferred";
 import {
     IIndexer, IValidationInfo, TEventHandler, TPropChangedHandler,
     IBaseObject, TPriority

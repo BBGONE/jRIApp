@@ -40,7 +40,7 @@
     <TypeScriptCompile Include="jriapp_shared\const.ts" />
     <TypeScriptCompile Include="jriapp_shared.ts" />
     <TypeScriptCompile Include="jriapp_shared\errors.ts" />
-    <TypeScriptCompile Include="jriapp_shared\iasync.ts" />
+    <TypeScriptCompile Include="jriapp_shared\utils\ideferred.ts" />
     <TypeScriptCompile Include="jriapp_shared\lang.ts" />
     <TypeScriptCompile Include="jriapp_shared\object.ts" />
     <TypeScriptCompile Include="jriapp_shared\int.ts" />

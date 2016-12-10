@@ -184,7 +184,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
             res = self._bindTemplateElements(templateEl);
         }
 
-        res.fail((err) => {
+        res.catch((err) => {
             setTimeout(() => {
                 self.handleError(err, self);               
             }, 0);

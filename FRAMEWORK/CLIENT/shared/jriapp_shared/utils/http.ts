@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IDeferred, IAbortablePromise } from "../iasync";
+import { IDeferred, IAbortablePromise } from "./ideferred";
 import { IIndexer } from "../int";
 import { StringUtils } from "./strUtils";
 import { DummyError } from "../errors";

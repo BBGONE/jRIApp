@@ -3,7 +3,7 @@ import {
     IStatefulDeferred, IStatefulPromise, IPromiseState, IThenable, ITaskQueue, PromiseState,
     IPromise, IAbortablePromise, IDeferredErrorCB, IDeferredSuccessCB, IErrorCB, IVoidErrorCB,
     ISuccessCB, IAbortable, IDeferred
-} from "../iasync";
+} from "./ideferred";
 import { AbortError, AggregateError } from "../errors";
 import { Checks } from "./checks";
 
@@ -330,11 +330,11 @@ class Promise<T> implements IStatefulPromise<T> {
         return this._deferred._then(successCB, errorCB);
     }
 
-    fail(errorCB?: IDeferredErrorCB<T>): IStatefulPromise<T>;
-    fail(errorCB?: IErrorCB<T>): IStatefulPromise<T>;
-    fail(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
+    catch(errorCB?: IDeferredErrorCB<T>): IStatefulPromise<T>;
+    catch(errorCB?: IErrorCB<T>): IStatefulPromise<T>;
+    catch(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
 
-    fail(errorCB: any): any {
+    catch(errorCB: any): any {
         return this._deferred._then(checks.undefined, errorCB);
     }
 
@@ -389,12 +389,12 @@ export class AbortablePromise<T> implements IAbortablePromise<T> {
         return this._deferred.promise().then(successCB, errorCB);
     }
 
-    fail(errorCB?: IDeferredErrorCB<T>): IStatefulPromise<T>;
-    fail(errorCB?: IErrorCB<T>): IStatefulPromise<T>;
-    fail(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
+    catch(errorCB?: IDeferredErrorCB<T>): IStatefulPromise<T>;
+    catch(errorCB?: IErrorCB<T>): IStatefulPromise<T>;
+    catch(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
 
-    fail(errorCB: any): any {
-        return this._deferred.promise().fail(errorCB);
+    catch(errorCB: any): any {
+        return this._deferred.promise().catch(errorCB);
     }
 
     always<TP>(errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;

@@ -2,7 +2,6 @@
 export * from "./jriapp_shared/const";
 export * from "./jriapp_shared/int";
 export * from "./jriapp_shared/errors";
-export * from "./jriapp_shared/iasync";
 export * from "./jriapp_shared/object";
 
 export { STRS as LocaleSTRS, ERRS as LocaleERRS } from "./jriapp_shared/lang";
@@ -16,6 +15,7 @@ export {
 export { BaseDictionary } from "./jriapp_shared/collection/dictionary";
 export { ValidationError } from "./jriapp_shared/collection/validation";
 
+export * from "./jriapp_shared/utils/ideferred";
 export { Utils } from "./jriapp_shared/utils/utils";
 export { WaitQueue, IWaitQueueItem } from "./jriapp_shared/utils/waitqueue";
 export { Debounce } from "./jriapp_shared/utils/debounce";

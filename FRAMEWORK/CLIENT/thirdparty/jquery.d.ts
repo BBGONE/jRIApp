@@ -178,7 +178,7 @@ interface JQueryXHR extends XMLHttpRequest, JQueryPromise<any> {
      */
     abort(statusText?: string): void;
     /**
-     * Incorporates the functionality of the .done() and .fail() methods, allowing (as of jQuery 1.8) the underlying Promise to be manipulated. Refer to deferred.then() for implementation details.
+     * Incorporates the functionality of the .done() and .catch() methods, allowing (as of jQuery 1.8) the underlying Promise to be manipulated. Refer to deferred.then() for implementation details.
      */
     then<R>(doneCallback: (data: any, textStatus: string, jqXHR: JQueryXHR) => R, failCallback?: (jqXHR: JQueryXHR, textStatus: string, errorThrown: any) => void): JQueryPromise<R>;
     /**
@@ -334,7 +334,7 @@ interface JQueryPromise<T> extends JQueryGenericPromise<T> {
      * @param failCallbacks1 A function, or array of functions, that are called when the Deferred is rejected.
      * @param failCallbacks2 Optional additional functions, or arrays of functions, that are called when the Deferred is rejected.
      */
-    fail(failCallback1?: JQueryPromiseCallback<any>|JQueryPromiseCallback<any>[], ...failCallbacksN: Array<JQueryPromiseCallback<any>|JQueryPromiseCallback<any>[]>): JQueryPromise<T>;
+    catch(failCallback1?: JQueryPromiseCallback<any>|JQueryPromiseCallback<any>[], ...failCallbacksN: Array<JQueryPromiseCallback<any>|JQueryPromiseCallback<any>[]>): JQueryPromise<T>;
     /**
      * Add handlers to be called when the Deferred object generates progress notifications.
      * 
@@ -361,8 +361,7 @@ interface JQueryDeferred<T> extends JQueryGenericPromise<T> {
      * Determine the current state of a Deferred object.
      */
     state(): string;
-    /**
-     * Add handlers to be called when the Deferred object is either resolved or rejected.
+    /**     * Add handlers to be called when the Deferred object is either resolved or rejected.
      * 
      * @param alwaysCallbacks1 A function, or array of functions, that is called when the Deferred is resolved or rejected.
      * @param alwaysCallbacks2 Optional additional functions, or arrays of functions, that are called when the Deferred is resolved or rejected.
@@ -381,7 +380,7 @@ interface JQueryDeferred<T> extends JQueryGenericPromise<T> {
      * @param failCallbacks1 A function, or array of functions, that are called when the Deferred is rejected.
      * @param failCallbacks2 Optional additional functions, or arrays of functions, that are called when the Deferred is rejected.
      */
-    fail(failCallback1?: JQueryPromiseCallback<any>|JQueryPromiseCallback<any>[], ...failCallbacksN: Array<JQueryPromiseCallback<any>|JQueryPromiseCallback<any>[]>): JQueryDeferred<T>;
+    catch(failCallback1?: JQueryPromiseCallback<any>|JQueryPromiseCallback<any>[], ...failCallbacksN: Array<JQueryPromiseCallback<any>|JQueryPromiseCallback<any>[]>): JQueryDeferred<T>;
     /**
      * Add handlers to be called when the Deferred object generates progress notifications.
      * 
@@ -600,7 +599,7 @@ interface JQueryAnimationOptions {
     /**
      * A function to be called when the animation fails to complete (its Promise object is rejected). (version added: 1.8)
      */
-    fail?: (animation: JQueryPromise<any>, jumpedToEnd: boolean) => any; 
+    catch?: (animation: JQueryPromise<any>, jumpedToEnd: boolean) => any; 
     /**
      * A function to be called when the animation completes or stops without completing (its Promise object is either resolved or rejected). (version added: 1.8)
      */

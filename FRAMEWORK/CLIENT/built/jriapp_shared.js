@@ -14,7 +14,7 @@ define("jriapp_shared/const", ["require", "exports"], function (require, exports
     exports.APP_NAME = "app";
     exports.DUMY_ERROR = "DUMMY_ERROR";
 });
-define("jriapp_shared/iasync", ["require", "exports"], function (require, exports) {
+define("jriapp_shared/utils/ideferred", ["require", "exports"], function (require, exports) {
     "use strict";
     (function (PromiseState) {
         PromiseState[PromiseState["Pending"] = 0] = "Pending";
@@ -1825,7 +1825,7 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
         Promise.prototype.then = function (successCB, errorCB) {
             return this._deferred._then(successCB, errorCB);
         };
-        Promise.prototype.fail = function (errorCB) {
+        Promise.prototype.catch = function (errorCB) {
             return this._deferred._then(checks.undefined, errorCB);
         };
         Promise.prototype.always = function (errorCB) {
@@ -1845,8 +1845,8 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
         AbortablePromise.prototype.then = function (successCB, errorCB) {
             return this._deferred.promise().then(successCB, errorCB);
         };
-        AbortablePromise.prototype.fail = function (errorCB) {
-            return this._deferred.promise().fail(errorCB);
+        AbortablePromise.prototype.catch = function (errorCB) {
+            return this._deferred.promise().catch(errorCB);
         };
         AbortablePromise.prototype.always = function (errorCB) {
             return this._deferred.promise().always(errorCB);
@@ -4330,7 +4330,7 @@ define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/c
     }());
     exports.Lazy = Lazy;
 });
-define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/iasync", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/collection/validation", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, const_5, int_6, errors_5, iasync_1, object_5, lang_9, base_3, item_1, aspect_2, list_2, dictionary_1, validation_4, utils_10, waitqueue_2, debounce_1, lazy_1) {
+define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/collection/validation", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, const_5, int_6, errors_5, object_5, lang_9, base_3, item_1, aspect_2, list_2, dictionary_1, validation_4, ideferred_1, utils_10, waitqueue_2, debounce_1, lazy_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -4338,7 +4338,6 @@ define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_sh
     __export(const_5);
     __export(int_6);
     __export(errors_5);
-    __export(iasync_1);
     __export(object_5);
     exports.LocaleSTRS = lang_9.STRS;
     exports.LocaleERRS = lang_9.ERRS;
@@ -4349,6 +4348,7 @@ define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_sh
     exports.BaseList = list_2.BaseList;
     exports.BaseDictionary = dictionary_1.BaseDictionary;
     exports.ValidationError = validation_4.ValidationError;
+    __export(ideferred_1);
     exports.Utils = utils_10.Utils;
     exports.WaitQueue = waitqueue_2.WaitQueue;
     exports.Debounce = debounce_1.Debounce;

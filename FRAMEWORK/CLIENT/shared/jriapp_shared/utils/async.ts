@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
     IThenable, ITaskQueue, IStatefulDeferred, IStatefulPromise, PromiseState
-} from "../iasync";
+} from "./ideferred";
 import {
     createDefer, createSyncDefer, whenAll, getTaskQueue
 } from "./deferred";

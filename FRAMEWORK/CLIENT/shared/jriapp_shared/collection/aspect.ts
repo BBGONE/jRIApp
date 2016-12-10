@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { FIELD_TYPE, DATA_TYPE, ITEM_STATUS } from "./const";
 import { IFieldInfo } from "./int";
-import { IVoidPromise } from "../iasync";
+import { IVoidPromise } from "../utils/ideferred";
 import {
     IIndexer, IValidationInfo, TEventHandler, IErrorNotification, IBaseObject
 } from "../int";
