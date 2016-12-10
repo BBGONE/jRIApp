@@ -61,8 +61,18 @@ This feature allows to separate the CRUD and query methods for each entity into 
 	The Events implemented to allow for provision of a namespace when subscribing to them, which helps to unsubscribe from a bunch of them very easily - by just providing the namespace.
 They, also, can have the priority set for them when subscribing (<i>event priority is used in the db bundle to have the highest event priority for the association which subscribes
 to the collection events, and the above normal priority is also used in the dataview class. Everywhere else is used the normal priority for subscription</i>).
-<br/><br/>
-	The full framework minified size is 380KB (or 85,5 kb gzipped).
+<br/>
+Another thing to mention is that this framework uses approach of beefed up data side (entities, view models, element views) and no code user interface side (<i>templates</i>).
+In other frameworks you can use coding constructs (<i>if, else, foreach ...</i>) inside templates and referencing parent data contexts in there. 
+But in this framework it's the reverse of it.
+The coding constructs moved to the element views (<i>where the logic belongs</i>) and instead of referencing some parent datacontext inside the template (<i>using parent keyword, for example</i>), 
+anybody can expose object instances for databinding using properties.<br/>
+Templates and Data Forms use the datacontext for databinding inside of them and each property on the application instance is also available for it. 
+Also, entities allow to set custom values and expose them through calculated properties (<i>look into the treeview demo, for example</i>). 
+So with this set of options nobody who uses this framework will never have a roadblock to bind some values, because one can always tweak the data side to expose the needed data.
+<br/>
+<br/>
+The full framework minified size is 380KB (or 85,5 kb gzipped).
 </p>
 <p>
 	<b>The framework contains the docs which at present for the old version of the framework (it can be used anyway)</b>
