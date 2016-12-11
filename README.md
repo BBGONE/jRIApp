@@ -62,14 +62,14 @@ This feature allows to separate the CRUD and query methods for each entity into 
 They, also, can have the priority set for them when subscribing (<i>event priority is used in the db bundle to have the highest event priority for the association which subscribes
 to the collection events, and the above normal priority is also used in the dataview class. Everywhere else is used the normal priority for subscription</i>).
 <br/>
-Another thing to mention is that this framework uses approach of beefed up data side (entities, view models, element views) and no code user interface side (<i>templates</i>).
+Another thing to mention is that this framework uses approach of beefed up data side (<i>entities, view models, element views</i>) and no code user interface side (<i>templates</i>).
 In other frameworks you can use coding constructs (<i>if, else, foreach ...</i>) inside templates and referencing parent data contexts in there. 
 But in this framework it's the reverse of it.
 The coding constructs moved to the element views (<i>where the logic belongs</i>) and instead of referencing some parent datacontext inside the template (<i>using parent keyword, for example</i>), 
 anybody can expose object instances for databinding using properties.<br/>
 Templates and Data Forms use the datacontext for databinding inside of them and each property on the application instance is also available for it. 
-Also, entities allow to set custom values and expose them through calculated properties (<i>look into the treeview demo, for example</i>). 
-So with this set of options nobody who uses this framework will never have a roadblock to bind some values, because one can always tweak the data side to expose the needed data.
+If that's not enough (<i>sometimes it is</i>), entities allow to set custom values and expose them through calculated fields (<i>look into the treeview demo, for example</i>). 
+So with this set of options nobody who uses this framework will ever have a roadblock to bind some values, because anyone can always expose the data in the needed context.
 <br/>
 <br/>
 The full framework minified size is 380KB (or 85,5 kb gzipped).
