@@ -2143,22 +2143,85 @@ define("jriapp_shared/utils/dom", ["require", "exports"], function (require, exp
     }());
     exports.DomUtils = DomUtils;
 });
-define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug", "jriapp_shared/utils/error", "jriapp_shared/utils/logger", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/async", "jriapp_shared/utils/http", "jriapp_shared/utils/strutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/dom"], function (require, exports, coreutils_5, debug_3, error_2, logger_1, sysutils_2, async_2, http_1, strutils_3, checks_7, arrhelper_2, dom_1) {
+define("jriapp_shared/utils/raf", ["require", "exports", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/dom", "jriapp_shared/utils/error"], function (require, exports, checks_7, arrhelper_2, dom_1, error_2) {
+    "use strict";
+    var checks = checks_7.Checks, arrHelper = arrhelper_2.ArrayHelper, error = error_2.ERROR, win = dom_1.DomUtils.window;
+    var MAX_NUM = 99999900000;
+    function createRAF(interval) {
+        if (interval === void 0) { interval = 40; }
+        var _rafQueue = [], _rafQueueIndex = {}, _timer = null, _newHandle = 1;
+        var res = {
+            cancelRequest: function (handle) {
+                var index = _rafQueueIndex[handle];
+                if (!checks.isNt(index)) {
+                    arrHelper.removeIndex(_rafQueue, index);
+                    delete _rafQueueIndex[handle];
+                }
+            },
+            queueRequest: function (func) {
+                var handle = _newHandle;
+                _newHandle += 1;
+                var len = _rafQueue.push({ handle: handle, fn: func });
+                _rafQueueIndex[handle] = len - 1;
+                if (!_timer) {
+                    _timer = win.setTimeout(function () {
+                        var arr = _rafQueue;
+                        _timer = null;
+                        _rafQueue = [];
+                        _rafQueueIndex = {};
+                        if (_newHandle > MAX_NUM)
+                            _newHandle = 1;
+                        arr.forEach(function (raf) {
+                            try {
+                                raf.fn(raf.handle);
+                            }
+                            catch (err) {
+                                error.handleError(win, err, win);
+                            }
+                        });
+                    }, interval);
+                }
+                return handle;
+            }
+        };
+        return res;
+    }
+    exports.createRAF = createRAF;
+    function checkRAF() {
+        if (!win.requestAnimationFrame) {
+            var requestAnimationFrame_1 = win.requestAnimationFrame || win.mozRequestAnimationFrame ||
+                win.webkitRequestAnimationFrame || win.msRequestAnimationFrame;
+            var cancelAnimationFrame_1 = win.cancelAnimationFrame || win.mozCancelAnimationFrame ||
+                (win.webkitCancelAnimationFrame || win.webkitCancelRequestAnimationFrame) ||
+                win.msCancelAnimationFrame;
+            if (!requestAnimationFrame_1 || !cancelAnimationFrame_1) {
+                var _raf = createRAF();
+                requestAnimationFrame_1 = _raf.queueRequest;
+                cancelAnimationFrame_1 = _raf.cancelRequest;
+            }
+            win.requestAnimationFrame = requestAnimationFrame_1;
+            win.cancelAnimationFrame = cancelAnimationFrame_1;
+        }
+    }
+    exports.checkRAF = checkRAF;
+});
+define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug", "jriapp_shared/utils/error", "jriapp_shared/utils/logger", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/async", "jriapp_shared/utils/http", "jriapp_shared/utils/strutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/dom", "jriapp_shared/utils/raf"], function (require, exports, coreutils_5, debug_3, error_3, logger_1, sysutils_2, async_2, http_1, strutils_3, checks_8, arrhelper_3, dom_2, raf_1) {
     "use strict";
     var Utils = (function () {
         function Utils() {
         }
-        Utils.check = checks_7.Checks;
+        Utils.check = checks_8.Checks;
         Utils.str = strutils_3.StringUtils;
-        Utils.arr = arrhelper_2.ArrayHelper;
+        Utils.arr = arrhelper_3.ArrayHelper;
         Utils.http = http_1.HttpUtils;
         Utils.core = coreutils_5.CoreUtils;
         Utils.defer = async_2.AsyncUtils;
-        Utils.err = error_2.ERROR;
+        Utils.err = error_3.ERROR;
         Utils.log = logger_1.LOGGER;
         Utils.debug = debug_3.DEBUG;
         Utils.sys = sysutils_2.SysUtils;
-        Utils.dom = dom_1.DomUtils;
+        Utils.dom = dom_2.DomUtils;
+        Utils.queue = raf_1.createRAF();
         return Utils;
     }());
     exports.Utils = Utils;
@@ -4293,9 +4356,9 @@ define("jriapp_shared/utils/debounce", ["require", "exports"], function (require
     }());
     exports.Debounce = Debounce;
 });
-define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/checks"], function (require, exports, checks_8) {
+define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/checks"], function (require, exports, checks_9) {
     "use strict";
-    var checks = checks_8.Checks;
+    var checks = checks_9.Checks;
     var Lazy = (function () {
         function Lazy(factory) {
             this._val = null;
@@ -4366,64 +4429,4 @@ define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_sh
     exports.WaitQueue = waitqueue_2.WaitQueue;
     exports.Debounce = debounce_1.Debounce;
     exports.Lazy = lazy_1.Lazy;
-});
-define("jriapp_shared/utils/raf", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/utils/error"], function (require, exports, utils_11, error_3) {
-    "use strict";
-    var utils = utils_11.Utils, checks = utils.check, coreUtils = utils.core, arrHelper = utils.arr, error = error_3.ERROR;
-    var win = utils.dom.window;
-    function createRAF(interval) {
-        if (interval === void 0) { interval = 40; }
-        var _rafQueue = [], _rafQueueIndex = {}, _timer = null, _newHandle = 1;
-        var res = {
-            CAF: function (handle) {
-                var index = _rafQueueIndex[handle];
-                if (!checks.isNt(index)) {
-                    arrHelper.removeIndex(_rafQueue, index);
-                    delete _rafQueueIndex[handle];
-                }
-            },
-            RAF: function (func) {
-                var handle = _newHandle;
-                _newHandle += 1;
-                var len = _rafQueue.push({ handle: handle, fn: func });
-                _rafQueueIndex[handle] = len - 1;
-                if (!_timer) {
-                    _timer = win.setTimeout(function () {
-                        var arr = _rafQueue;
-                        _timer = null;
-                        _rafQueue = [];
-                        _rafQueueIndex = {};
-                        arr.forEach(function (raf) {
-                            try {
-                                raf.fn(raf.handle);
-                            }
-                            catch (err) {
-                                error.handleError(win, err, win);
-                            }
-                        });
-                    }, interval);
-                }
-                return handle;
-            }
-        };
-        return res;
-    }
-    exports.createRAF = createRAF;
-    function checkRAF() {
-        if (!win.requestAnimationFrame) {
-            var requestAnimationFrame_1 = win.requestAnimationFrame || win.mozRequestAnimationFrame ||
-                win.webkitRequestAnimationFrame || win.msRequestAnimationFrame;
-            var cancelAnimationFrame_1 = win.cancelAnimationFrame || win.mozCancelAnimationFrame ||
-                (win.webkitCancelAnimationFrame || win.webkitCancelRequestAnimationFrame) ||
-                win.msCancelAnimationFrame;
-            if (!requestAnimationFrame_1 || !cancelAnimationFrame_1) {
-                var _raf = createRAF();
-                requestAnimationFrame_1 = _raf.RAF;
-                cancelAnimationFrame_1 = _raf.CAF;
-            }
-            win.requestAnimationFrame = requestAnimationFrame_1;
-            win.cancelAnimationFrame = cancelAnimationFrame_1;
-        }
-    }
-    exports.checkRAF = checkRAF;
 });

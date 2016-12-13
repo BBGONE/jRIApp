@@ -900,6 +900,13 @@ declare module "jriapp_shared/utils/dom" {
         static removeClass(elems: Element[], css: string): void;
     }
 }
+declare module "jriapp_shared/utils/raf" {
+    export function createRAF(interval?: number): {
+        cancelRequest: (handle: number) => void;
+        queueRequest: (func: FrameRequestCallback) => number;
+    };
+    export function checkRAF(): void;
+}
 declare module "jriapp_shared/utils/utils" {
     import { CoreUtils } from "jriapp_shared/utils/coreutils";
     import { DEBUG } from "jriapp_shared/utils/debug";
@@ -924,6 +931,10 @@ declare module "jriapp_shared/utils/utils" {
         static readonly debug: typeof DEBUG;
         static readonly sys: typeof SysUtils;
         static readonly dom: typeof DomUtils;
+        static readonly queue: {
+            cancelRequest: (handle: number) => void;
+            queueRequest: (func: FrameRequestCallback) => number;
+        };
     }
 }
 declare module "jriapp_shared/collection/utils" {
@@ -1283,11 +1294,4 @@ declare module "jriapp_shared" {
     export { WaitQueue, IWaitQueueItem } from "jriapp_shared/utils/waitqueue";
     export { Debounce } from "jriapp_shared/utils/debounce";
     export { Lazy, TValueFactory } from "jriapp_shared/utils/lazy";
-}
-declare module "jriapp_shared/utils/raf" {
-    export function createRAF(interval?: number): {
-        CAF: (handle: number) => void;
-        RAF: (func: FrameRequestCallback) => number;
-    };
-    export function checkRAF(): void;
 }

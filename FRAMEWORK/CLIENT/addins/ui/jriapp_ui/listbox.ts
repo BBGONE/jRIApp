@@ -522,7 +522,7 @@ export class ListBox extends BaseObject {
 
             this._options.dataSource = v;
 
-            win.requestAnimationFrame(() => {
+            utils.queue.queueRequest(() => {
                 if (this.getIsDestroyCalled())
                     return;
                 this._bindDS();
@@ -609,7 +609,7 @@ export class ListBox extends BaseObject {
         if (v !== this._textProvider) {
             this._textProvider = v;
             this.raisePropertyChanged(PROP_NAME.textProvider);
-            win.requestAnimationFrame(() => {
+            utils.queue.queueRequest(() => {
                 this._resetText();
             });
         }
@@ -619,7 +619,7 @@ export class ListBox extends BaseObject {
         if (v !== this._stateProvider) {
             this._stateProvider = v;
             this.raisePropertyChanged(PROP_NAME.stateProvider);
-            win.requestAnimationFrame(() => {
+            utils.queue.queueRequest(() => {
                 this._resetState();
             });
         }

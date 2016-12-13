@@ -279,7 +279,7 @@ class Template extends BaseObject implements ITemplate {
     set dataContext(v) {
         if (this._dataContext !== v) {
             this._dataContext = v;
-            win.requestAnimationFrame(() => {
+            utils.queue.queueRequest(() => {
                 if (this.getIsDestroyCalled())
                     return;
                 this._updateBindingSource();

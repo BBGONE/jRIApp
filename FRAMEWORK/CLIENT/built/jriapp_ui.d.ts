@@ -1342,6 +1342,7 @@ declare module "jriapp_ui/pager" {
         private _rowsPerPage;
         private _rowCount;
         private _currentPage;
+        private _renderHandle;
         constructor(options: IPagerConstructorOptions);
         protected _createElement(tag: string): JQuery;
         protected _render(): void;

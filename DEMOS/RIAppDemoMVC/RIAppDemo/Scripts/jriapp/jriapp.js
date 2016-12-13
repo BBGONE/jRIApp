@@ -2709,7 +2709,7 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/const"
                 var _this = this;
                 if (this._dataContext !== v) {
                     this._dataContext = v;
-                    win.requestAnimationFrame(function () {
+                    utils.queue.queueRequest(function () {
                         if (_this.getIsDestroyCalled())
                             return;
                         _this._updateBindingSource();
@@ -3601,6 +3601,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.1.10";
+    exports.VERSION = "1.1.11";
     bootstrap_8.Bootstrap._initFramework();
 });

@@ -1,32 +1,31 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 //Implements polyfill for requestAnimationFrame API
 import { IIndexer } from "../int";
-import { Utils } from "./utils";
+import { Checks } from "./checks";
+import { ArrayHelper } from "./arrhelper";
+import { DomUtils } from "./dom";
 import { ERROR } from "./error";
 
-const utils = Utils, checks = utils.check, coreUtils = utils.core,
-    arrHelper = utils.arr, error = ERROR;
-
-
-const win: any = utils.dom.window;
+const checks = Checks, arrHelper = ArrayHelper, error = ERROR, win: any = DomUtils.window;
+const MAX_NUM = 99999900000;
 
 export function createRAF(interval: number= 40): {
-    CAF: (handle: number) => void;
-    RAF: (func: FrameRequestCallback) => number;
+    cancelRequest: (handle: number) => void;
+    queueRequest: (func: FrameRequestCallback) => number;
 } {
     let _rafQueue: { handle: number; fn: FrameRequestCallback }[] = [],
         _rafQueueIndex: IIndexer<number> = {},
         _timer: number = null, _newHandle = 1;
 
     const res = {
-        CAF: function (handle: number) {
+        cancelRequest: function (handle: number) {
             const index = _rafQueueIndex[handle];
             if (!checks.isNt(index)) {
                 arrHelper.removeIndex(_rafQueue, index);
                 delete _rafQueueIndex[handle];
             }
         },
-        RAF: function (func: FrameRequestCallback): number {
+        queueRequest: function (func: FrameRequestCallback): number {
             const handle = _newHandle;
             _newHandle += 1;
             const len = _rafQueue.push({ handle: handle, fn: func });
@@ -38,6 +37,9 @@ export function createRAF(interval: number= 40): {
                     _timer = null;
                     _rafQueue = [];
                     _rafQueueIndex = {};
+                    //recycle generated nums
+                    if (_newHandle > MAX_NUM)
+                        _newHandle = 1;
 
                     arr.forEach((raf) => {
                         try {
@@ -69,8 +71,8 @@ export function checkRAF() {
         if (!requestAnimationFrame || !cancelAnimationFrame) {
             const _raf = createRAF();
 
-            requestAnimationFrame = _raf.RAF;
-            cancelAnimationFrame = _raf.CAF;
+            requestAnimationFrame = _raf.queueRequest;
+            cancelAnimationFrame = _raf.cancelRequest;
         }
 
         win.requestAnimationFrame = requestAnimationFrame;

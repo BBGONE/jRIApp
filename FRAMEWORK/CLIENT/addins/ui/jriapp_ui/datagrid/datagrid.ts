@@ -298,10 +298,11 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             }
         };
         this._createColumns();
-        const ds = this._options.dataSource;
-        this._options.dataSource = null;
         boot._getInternal().trackSelectable(this);
         _gridCreated(this);
+
+        const ds = this._options.dataSource;
+        this._options.dataSource = null;
         this.dataSource = ds;
     }
     protected _getEventNames() {
@@ -1136,12 +1137,11 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     set dataSource(v: ICollection<ICollectionItem>) {
         if (v !== this.dataSource) {
             this._unbindDS();
-            this._clearGrid();
             this._options.dataSource = v;
-
-            win.requestAnimationFrame(() => {
+            utils.queue.queueRequest(() => {
                 if (this.getIsDestroyCalled())
                     return;
+                this._clearGrid();
                 this._bindDS();
                 this._refresh(false);
             });

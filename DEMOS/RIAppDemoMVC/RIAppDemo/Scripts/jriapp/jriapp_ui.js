@@ -1911,7 +1911,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     }
                     this._unbindDS();
                     this._options.dataSource = v;
-                    win.requestAnimationFrame(function () {
+                    utils.queue.queueRequest(function () {
                         if (_this.getIsDestroyCalled())
                             return;
                         _this._bindDS();
@@ -2026,7 +2026,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 if (v !== this._textProvider) {
                     this._textProvider = v;
                     this.raisePropertyChanged(PROP_NAME.textProvider);
-                    win.requestAnimationFrame(function () {
+                    utils.queue.queueRequest(function () {
                         _this._resetText();
                     });
                 }
@@ -2041,7 +2041,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 if (v !== this._stateProvider) {
                     this._stateProvider = v;
                     this.raisePropertyChanged(PROP_NAME.stateProvider);
-                    win.requestAnimationFrame(function () {
+                    utils.queue.queueRequest(function () {
                         _this._resetState();
                     });
                 }
@@ -3183,7 +3183,7 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
                 if (old !== v) {
                     this._prevTemplateID = old;
                     this._templateID = v;
-                    win.requestAnimationFrame(function () {
+                    utils.queue.queueRequest(function () {
                         if (self.getIsDestroyCalled())
                             return;
                         self._templateChanging(old, v);
@@ -4997,10 +4997,10 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 }
             };
             this._createColumns();
-            var ds = this._options.dataSource;
-            this._options.dataSource = null;
             boot._getInternal().trackSelectable(this);
             _gridCreated(this);
+            var ds = this._options.dataSource;
+            this._options.dataSource = null;
             this.dataSource = ds;
         }
         DataGrid.prototype._getEventNames = function () {
@@ -5832,11 +5832,11 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 var _this = this;
                 if (v !== this.dataSource) {
                     this._unbindDS();
-                    this._clearGrid();
                     this._options.dataSource = v;
-                    win.requestAnimationFrame(function () {
+                    utils.queue.queueRequest(function () {
                         if (_this.getIsDestroyCalled())
                             return;
+                        _this._clearGrid();
                         _this._bindDS();
                         _this._refresh(false);
                     });
@@ -6102,6 +6102,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             this._rowsPerPage = 0;
             this._rowCount = 0;
             this._currentPage = 1;
+            this._renderHandle = null;
             if (!!this._options.dataSource) {
                 this._bindDS();
             }
@@ -6181,7 +6182,10 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
         };
         Pager.prototype.render = function () {
             var _this = this;
-            win.requestAnimationFrame(function () {
+            if (!!this._renderHandle)
+                win.cancelAnimationFrame(this._renderHandle);
+            this._renderHandle = win.requestAnimationFrame(function () {
+                _this._renderHandle = null;
                 _this._render();
             });
         };
@@ -6626,10 +6630,10 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
                 var $el = jquery_16.$(this), mappedItem = $el.data("data");
                 self._onItemClicked(mappedItem.el, mappedItem.item);
             });
-            if (!!options.dataSource) {
-                this._bindDS();
-            }
             boot._getInternal().trackSelectable(this);
+            var ds = this._options.dataSource;
+            this._options.dataSource = null;
+            this.dataSource = ds;
         }
         StackPanel.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
@@ -6795,7 +6799,6 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             ds.addOnStatusChanged(function (sender, args) {
                 self._onItemStatusChanged(args.item, args.oldStatus);
             }, self._objId);
-            this._refresh();
         };
         StackPanel.prototype._unbindDS = function () {
             var self = this, ds = this.dataSource;
@@ -6917,14 +6920,17 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
         Object.defineProperty(StackPanel.prototype, "dataSource", {
             get: function () { return this._options.dataSource; },
             set: function (v) {
+                var _this = this;
                 if (v === this.dataSource)
                     return;
-                if (!!this.dataSource) {
-                    this._unbindDS();
-                }
+                this._unbindDS();
                 this._options.dataSource = v;
-                if (!!this.dataSource)
-                    this._bindDS();
+                utils.queue.queueRequest(function () {
+                    if (_this.getIsDestroyCalled())
+                        return;
+                    _this._bindDS();
+                    _this._refresh();
+                });
                 this.raisePropertyChanged(PROP_NAME.dataSource);
             },
             enumerable: true,

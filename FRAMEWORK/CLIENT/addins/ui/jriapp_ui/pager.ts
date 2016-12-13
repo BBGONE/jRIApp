@@ -55,6 +55,7 @@ export class Pager extends BaseObject {
     private _rowsPerPage: number;
     private _rowCount: number;
     private _currentPage: number;
+    private _renderHandle: number;
 
     constructor(options: IPagerConstructorOptions) {
         super();
@@ -80,6 +81,7 @@ export class Pager extends BaseObject {
         this._rowsPerPage = 0;
         this._rowCount = 0;
         this._currentPage = 1;
+        this._renderHandle = null;
         if (!!this._options.dataSource) {
             this._bindDS();
         }
@@ -175,7 +177,11 @@ export class Pager extends BaseObject {
         }
     }
     protected render() {
-        win.requestAnimationFrame(() => {
+        if (!!this._renderHandle)
+            win.cancelAnimationFrame(this._renderHandle);
+
+        this._renderHandle = win.requestAnimationFrame(() => {
+            this._renderHandle = null;
             this._render();
         });
     }

@@ -117,10 +117,11 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
                 let $el = $(this), mappedItem: IMappedItem = <any>$el.data("data");
                 self._onItemClicked(mappedItem.el, mappedItem.item);
             });
-        if (!!options.dataSource) {
-            this._bindDS();
-        }
         boot._getInternal().trackSelectable(this);
+
+        const ds = this._options.dataSource;
+        this._options.dataSource = null;
+        this.dataSource = ds;
     }
     protected _getEventNames() {
         let base_events = super._getEventNames();
@@ -280,18 +281,19 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         mappedItem.el.appendChild(mappedItem.template.el);
     }
     protected _bindDS() {
-        let self = this, ds = this.dataSource;
-        if (!ds) return;
+        const self = this, ds = this.dataSource;
+        if (!ds)
+            return;
         ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self);
         ds.addOnCurrentChanged(self._onDSCurrentChanged, self._objId, self);
         ds.addOnStatusChanged(function (sender, args) {
             self._onItemStatusChanged(args.item, args.oldStatus);
         }, self._objId);
-        this._refresh();
     }
     protected _unbindDS() {
-        let self = this, ds = this.dataSource;
-        if (!ds) return;
+        const self = this, ds = this.dataSource;
+        if (!ds)
+            return;
         ds.removeNSHandlers(self._objId);
     }
     protected _onItemClicked(div: HTMLElement, item: ICollectionItem) {
@@ -319,7 +321,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         this._removeItemByKey(item._key);
     }
     protected _refresh() {
-        let ds = this.dataSource, self = this;
+        const ds = this.dataSource, self = this;
         this._clearContent();
         if (!ds)
             return;
@@ -408,12 +410,14 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
     set dataSource(v) {
         if (v === this.dataSource)
             return;
-        if (!!this.dataSource) {
-            this._unbindDS();
-        }
+        this._unbindDS();
         this._options.dataSource = v;
-        if (!!this.dataSource)
+        utils.queue.queueRequest(() => {
+            if (this.getIsDestroyCalled())
+                return;
             this._bindDS();
+            this._refresh();
+        });
         this.raisePropertyChanged(PROP_NAME.dataSource);
     }
     get currentItem() { return this._currentItem; }
