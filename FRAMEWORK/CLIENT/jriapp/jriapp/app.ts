@@ -16,7 +16,6 @@ import { LifeTimeScope } from "./utils/lifetime";
 import { createElViewFactory } from "./elview";
 import { createDataBindSvc } from "./databindsvc";
 import { $ } from "./utils/jquery";
-import { checkRAF } from "./utils/raf";
 
 const utils = Utils, dom = utils.dom, doc = dom.document,
     boot = bootstrap, sys = utils.sys, ERRS = LocaleERRS;
@@ -24,9 +23,6 @@ const utils = Utils, dom = utils.dom, doc = dom.document,
 const APP_EVENTS = {
     startup: "startup"
 };
-
-//ensure that the requestAnimationFrame is implemented
-checkRAF();
 
 const enum AppState { None, Starting, Started, Destroyed, Error }
 

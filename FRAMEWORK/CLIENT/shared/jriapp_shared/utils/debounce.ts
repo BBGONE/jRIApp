@@ -16,19 +16,16 @@ export class Debounce implements IDisposable {
             throw new Error("Debounce: Object destroyed");
         if (!fn)
             throw new Error("Debounce: Invalid operation");
-
+        //the last wins
         this._fn = fn;
 
-        if (!this._timer && !!this._fn) {
+        if (!this._timer) {
             this._timer = setTimeout(() => {
+                const fn = this._fn;
                 this._timer = null;
-                try {
-                    if (!!this._fn) {
-                        this._fn();
-                    }
-                }
-                finally {
-                    this._fn = null;
+                this._fn = null;
+                if (!!fn) {
+                    fn();
                 }
             }, this._interval);
         }

@@ -1030,9 +1030,10 @@ define("jriapp/utils/sloader", ["require", "exports", "jriapp_shared", "jriapp_s
         return StylesLoader;
     }());
 });
-define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const", "jriapp/elview", "jriapp/content", "jriapp/defaults", "jriapp/utils/tloader", "jriapp/utils/sloader", "jriapp/utils/path", "jriapp/utils/jquery"], function (require, exports, jriapp_shared_10, const_2, elview_1, content_1, defaults_1, tloader_1, sloader_1, path_2, jquery_2) {
+define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const", "jriapp/elview", "jriapp/content", "jriapp/defaults", "jriapp/utils/tloader", "jriapp/utils/sloader", "jriapp/utils/path", "jriapp/utils/jquery", "jriapp_shared/utils/raf"], function (require, exports, jriapp_shared_10, const_2, elview_1, content_1, defaults_1, tloader_1, sloader_1, path_2, jquery_2, raf_1) {
     "use strict";
     var utils = jriapp_shared_10.Utils, dom = utils.dom, win = dom.window, doc = win.document, arrHelper = utils.arr, _async = utils.defer, coreUtils = utils.core, strUtils = utils.str, ERROR = utils.err, ERRS = jriapp_shared_10.LocaleERRS;
+    raf_1.checkRAF();
     var _TEMPLATE_SELECTOR = 'script[type="text/html"]';
     var stylesLoader = sloader_1.createCssLoader();
     var GLOB_EVENTS = {
@@ -3266,71 +3267,12 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/con
         return DataBindingService;
     }(jriapp_shared_18.BaseObject));
 });
-define("jriapp/utils/raf", ["require", "exports", "jriapp_shared", "jriapp/bootstrap"], function (require, exports, jriapp_shared_19, bootstrap_7) {
+define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/const", "jriapp/bootstrap", "jriapp/elview", "jriapp/databindsvc", "jriapp/utils/jquery"], function (require, exports, jriapp_shared_19, const_5, bootstrap_7, elview_2, databindsvc_1, jquery_5) {
     "use strict";
-    var utils = jriapp_shared_19.Utils, checks = utils.check, coreUtils = utils.core, arrHelper = utils.arr, boot = bootstrap_7.bootstrap;
-    var win = utils.dom.window;
-    function createRAF(interval) {
-        if (interval === void 0) { interval = 40; }
-        var rafQueue = [], rafQueueIndex = {}, timer = null, _newHandle = 1;
-        var res = {
-            CAF: function (handle) {
-                var index = rafQueueIndex[handle];
-                if (!checks.isNt(index)) {
-                    arrHelper.removeIndex(rafQueue, index);
-                    delete rafQueueIndex[handle];
-                }
-            },
-            RAF: function (func) {
-                var handle = _newHandle;
-                _newHandle += 1;
-                var len = rafQueue.push({ handle: handle, fn: func });
-                rafQueueIndex[handle] = len - 1;
-                if (!timer) {
-                    timer = win.setTimeout(function () {
-                        var tmpQueue = rafQueue, tmpTimer = timer;
-                        timer = null;
-                        rafQueue = [];
-                        rafQueueIndex = {};
-                        tmpQueue.forEach(function (raf) {
-                            try {
-                                raf.fn(raf.handle);
-                            }
-                            catch (err) {
-                                bootstrap_7.bootstrap.handleError(err, bootstrap_7.bootstrap);
-                            }
-                        });
-                    }, interval);
-                }
-                return handle;
-            }
-        };
-        return res;
-    }
-    function checkRAF() {
-        if (!win.requestAnimationFrame) {
-            var requestAnimationFrame_1 = win.requestAnimationFrame || win.mozRequestAnimationFrame ||
-                win.webkitRequestAnimationFrame || win.msRequestAnimationFrame;
-            var cancelAnimationFrame_1 = win.cancelAnimationFrame || win.mozCancelAnimationFrame ||
-                win.webkitCancelAnimationFrame || win.webkitCancelRequestAnimationFrame || win.msCancelAnimationFrame;
-            if (!requestAnimationFrame_1 || !cancelAnimationFrame_1) {
-                var _raf = createRAF();
-                requestAnimationFrame_1 = _raf.RAF;
-                cancelAnimationFrame_1 = _raf.CAF;
-            }
-            win.requestAnimationFrame = requestAnimationFrame_1;
-            win.cancelAnimationFrame = cancelAnimationFrame_1;
-        }
-    }
-    exports.checkRAF = checkRAF;
-});
-define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/const", "jriapp/bootstrap", "jriapp/elview", "jriapp/databindsvc", "jriapp/utils/jquery", "jriapp/utils/raf"], function (require, exports, jriapp_shared_20, const_5, bootstrap_8, elview_2, databindsvc_1, jquery_5, raf_1) {
-    "use strict";
-    var utils = jriapp_shared_20.Utils, dom = utils.dom, doc = dom.document, boot = bootstrap_8.bootstrap, sys = utils.sys, ERRS = jriapp_shared_20.LocaleERRS;
+    var utils = jriapp_shared_19.Utils, dom = utils.dom, doc = dom.document, boot = bootstrap_7.bootstrap, sys = utils.sys, ERRS = jriapp_shared_19.LocaleERRS;
     var APP_EVENTS = {
         startup: "startup"
     };
-    raf_1.checkRAF();
     var AppState;
     (function (AppState) {
         AppState[AppState["None"] = 0] = "None";
@@ -3346,7 +3288,7 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/const", "jr
             if (!options) {
                 options = {};
             }
-            var self = this, moduleInits = options.modulesInits || {}, app_name = jriapp_shared_20.APP_NAME;
+            var self = this, moduleInits = options.modulesInits || {}, app_name = jriapp_shared_19.APP_NAME;
             this._appName = app_name;
             this._options = options;
             if (!!boot.getApp())
@@ -3629,15 +3571,15 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/const", "jr
             configurable: true
         });
         return Application;
-    }(jriapp_shared_20.BaseObject));
+    }(jriapp_shared_19.BaseObject));
     exports.Application = Application;
 });
-define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jriapp_shared/collection/const", "jriapp_shared/collection/int", "jriapp/const", "jriapp/utils/jquery", "jriapp/utils/viewchecks", "jriapp/converter", "jriapp/bootstrap", "jriapp/binding", "jriapp/datepicker", "jriapp/template", "jriapp/utils/lifetime", "jriapp/utils/propwatcher", "jriapp/mvvm", "jriapp/app"], function (require, exports, bootstrap_9, jriapp_shared_21, const_6, int_3, const_7, jquery_6, viewchecks_4, converter_1, bootstrap_10, binding_2, datepicker_1, template_1, lifetime_2, propwatcher_1, mvvm_1, app_1) {
+define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jriapp_shared/collection/const", "jriapp_shared/collection/int", "jriapp/const", "jriapp/utils/jquery", "jriapp/utils/viewchecks", "jriapp/converter", "jriapp/bootstrap", "jriapp/binding", "jriapp/datepicker", "jriapp/template", "jriapp/utils/lifetime", "jriapp/utils/propwatcher", "jriapp/mvvm", "jriapp/app"], function (require, exports, bootstrap_8, jriapp_shared_20, const_6, int_3, const_7, jquery_6, viewchecks_4, converter_1, bootstrap_9, binding_2, datepicker_1, template_1, lifetime_2, propwatcher_1, mvvm_1, app_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
     }
-    __export(jriapp_shared_21);
+    __export(jriapp_shared_20);
     __export(const_6);
     __export(int_3);
     exports.KEYS = const_7.KEYS;
@@ -3647,7 +3589,7 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.$ = jquery_6.$;
     exports.ViewChecks = viewchecks_4.ViewChecks;
     exports.BaseConverter = converter_1.BaseConverter;
-    exports.bootstrap = bootstrap_10.bootstrap;
+    exports.bootstrap = bootstrap_9.bootstrap;
     exports.Binding = binding_2.Binding;
     exports.Datepicker = datepicker_1.Datepicker;
     exports.createTemplate = template_1.createTemplate;
@@ -3659,6 +3601,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.1.9";
-    bootstrap_9.Bootstrap._initFramework();
+    exports.VERSION = "1.1.10";
+    bootstrap_8.Bootstrap._initFramework();
 });

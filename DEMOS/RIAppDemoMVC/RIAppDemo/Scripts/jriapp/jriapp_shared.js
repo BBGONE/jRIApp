@@ -4254,16 +4254,13 @@ define("jriapp_shared/utils/debounce", ["require", "exports"], function (require
             if (!fn)
                 throw new Error("Debounce: Invalid operation");
             this._fn = fn;
-            if (!this._timer && !!this._fn) {
+            if (!this._timer) {
                 this._timer = setTimeout(function () {
+                    var fn = _this._fn;
                     _this._timer = null;
-                    try {
-                        if (!!_this._fn) {
-                            _this._fn();
-                        }
-                    }
-                    finally {
-                        _this._fn = null;
+                    _this._fn = null;
+                    if (!!fn) {
+                        fn();
                     }
                 }, this._interval);
             }
@@ -4369,4 +4366,64 @@ define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_sh
     exports.WaitQueue = waitqueue_2.WaitQueue;
     exports.Debounce = debounce_1.Debounce;
     exports.Lazy = lazy_1.Lazy;
+});
+define("jriapp_shared/utils/raf", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/utils/error"], function (require, exports, utils_11, error_3) {
+    "use strict";
+    var utils = utils_11.Utils, checks = utils.check, coreUtils = utils.core, arrHelper = utils.arr, error = error_3.ERROR;
+    var win = utils.dom.window;
+    function createRAF(interval) {
+        if (interval === void 0) { interval = 40; }
+        var _rafQueue = [], _rafQueueIndex = {}, _timer = null, _newHandle = 1;
+        var res = {
+            CAF: function (handle) {
+                var index = _rafQueueIndex[handle];
+                if (!checks.isNt(index)) {
+                    arrHelper.removeIndex(_rafQueue, index);
+                    delete _rafQueueIndex[handle];
+                }
+            },
+            RAF: function (func) {
+                var handle = _newHandle;
+                _newHandle += 1;
+                var len = _rafQueue.push({ handle: handle, fn: func });
+                _rafQueueIndex[handle] = len - 1;
+                if (!_timer) {
+                    _timer = win.setTimeout(function () {
+                        var arr = _rafQueue;
+                        _timer = null;
+                        _rafQueue = [];
+                        _rafQueueIndex = {};
+                        arr.forEach(function (raf) {
+                            try {
+                                raf.fn(raf.handle);
+                            }
+                            catch (err) {
+                                error.handleError(win, err, win);
+                            }
+                        });
+                    }, interval);
+                }
+                return handle;
+            }
+        };
+        return res;
+    }
+    exports.createRAF = createRAF;
+    function checkRAF() {
+        if (!win.requestAnimationFrame) {
+            var requestAnimationFrame_1 = win.requestAnimationFrame || win.mozRequestAnimationFrame ||
+                win.webkitRequestAnimationFrame || win.msRequestAnimationFrame;
+            var cancelAnimationFrame_1 = win.cancelAnimationFrame || win.mozCancelAnimationFrame ||
+                (win.webkitCancelAnimationFrame || win.webkitCancelRequestAnimationFrame) ||
+                win.msCancelAnimationFrame;
+            if (!requestAnimationFrame_1 || !cancelAnimationFrame_1) {
+                var _raf = createRAF();
+                requestAnimationFrame_1 = _raf.RAF;
+                cancelAnimationFrame_1 = _raf.CAF;
+            }
+            win.requestAnimationFrame = requestAnimationFrame_1;
+            win.cancelAnimationFrame = cancelAnimationFrame_1;
+        }
+    }
+    exports.checkRAF = checkRAF;
 });

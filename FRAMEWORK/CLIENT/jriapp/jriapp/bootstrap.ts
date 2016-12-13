@@ -15,11 +15,15 @@ import { TemplateLoader } from "./utils/tloader";
 import { createCssLoader } from "./utils/sloader";
 import { PathHelper } from "./utils/path";
 import { $ } from "./utils/jquery";
+import { checkRAF } from "jriapp_shared/utils/raf";
 
 
 const utils = Utils, dom = utils.dom, win = dom.window, doc = win.document, arrHelper = utils.arr,
     _async = utils.defer, coreUtils = utils.core, strUtils = utils.str, ERROR = utils.err,
     ERRS = LocaleERRS;
+
+//ensure that the requestAnimationFrame is implemented
+checkRAF();
 
 const _TEMPLATE_SELECTOR = 'script[type="text/html"]';
 const stylesLoader = createCssLoader();

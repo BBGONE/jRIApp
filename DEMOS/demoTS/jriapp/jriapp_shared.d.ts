@@ -1284,3 +1284,10 @@ declare module "jriapp_shared" {
     export { Debounce } from "jriapp_shared/utils/debounce";
     export { Lazy, TValueFactory } from "jriapp_shared/utils/lazy";
 }
+declare module "jriapp_shared/utils/raf" {
+    export function createRAF(interval?: number): {
+        CAF: (handle: number) => void;
+        RAF: (func: FrameRequestCallback) => number;
+    };
+    export function checkRAF(): void;
+}
