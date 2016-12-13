@@ -4948,6 +4948,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                     self._onKeyUp(key, event);
                 }
             };
+            this._updateCurrent = function () { };
             var tw = table.offsetWidth;
             this._internal = {
                 isRowExpanded: function (row) {
@@ -4997,11 +4998,11 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 }
             };
             this._createColumns();
-            boot._getInternal().trackSelectable(this);
-            _gridCreated(this);
             var ds = this._options.dataSource;
             this._options.dataSource = null;
             this.dataSource = ds;
+            boot._getInternal().trackSelectable(this);
+            _gridCreated(this);
         }
         DataGrid.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
@@ -5398,14 +5399,14 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 return;
             }
             var oldCurrent = null;
-            var fn_updateCurrent = function () {
+            this._updateCurrent = function () {
                 var coll = _this.dataSource, cur = !coll ? null : coll.currentItem;
                 self._onDSCurrentChanged(oldCurrent, coll.currentItem);
                 oldCurrent = coll.currentItem;
             };
             ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self);
             ds.addOnCurrentChanged(function () {
-                fn_updateCurrent();
+                self._updateCurrent();
             }, self._objId, self);
             ds.addOnBeginEdit(function (sender, args) {
                 self._onItemEdit(args.item, true, false);
@@ -5421,7 +5422,6 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             ds.addOnItemAdding(function (s, a) {
                 self.collapseDetails();
             }, self._objId);
-            fn_updateCurrent();
         };
         DataGrid.prototype._unbindDS = function () {
             var self = this, ds = this.dataSource;
@@ -5558,6 +5558,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             });
             self.updateColumnsSize();
             self._updateTableDisplay();
+            self._updateCurrent();
         };
         DataGrid.prototype._createRowForItem = function (parent, item, prepend) {
             var self = this, tr = doc.createElement("tr");
@@ -5730,6 +5731,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
+            this._updateCurrent = function () { };
             this._clearGrid();
             _gridDestroyed(this);
             boot._getInternal().untrackSelectable(this);

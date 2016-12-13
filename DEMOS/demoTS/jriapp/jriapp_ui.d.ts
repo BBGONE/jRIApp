@@ -1195,6 +1195,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         private _internal;
         private _selectable;
         private _scrollDebounce;
+        private _updateCurrent;
         constructor(options: IDataGridConstructorOptions);
         protected _getEventNames(): string[];
         addOnRowExpanded(fn: TEventHandler<DataGrid, {

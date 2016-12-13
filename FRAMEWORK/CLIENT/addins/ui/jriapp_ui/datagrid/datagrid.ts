@@ -187,6 +187,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     private _internal: IInternalDataGridMethods;
     private _selectable: ISelectable;
     private _scrollDebounce: Debounce;
+    private _updateCurrent: () => void;
 
     constructor(options: IDataGridConstructorOptions) {
         super();
@@ -248,6 +249,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 self._onKeyUp(key, event);
             }
         };
+        this._updateCurrent = () => { };
         let tw = table.offsetWidth;
 
         this._internal = {
@@ -298,12 +300,13 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             }
         };
         this._createColumns();
-        boot._getInternal().trackSelectable(this);
-        _gridCreated(this);
 
         const ds = this._options.dataSource;
         this._options.dataSource = null;
         this.dataSource = ds;
+
+        boot._getInternal().trackSelectable(this);
+        _gridCreated(this);
     }
     protected _getEventNames() {
         let base_events = super._getEventNames();
@@ -705,7 +708,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             return;
         }
         let oldCurrent: ICollectionItem = null;
-        let fn_updateCurrent = () => {
+        this._updateCurrent = () => {
             const coll = this.dataSource, cur: ICollectionItem = !coll ? null : coll.currentItem;
             self._onDSCurrentChanged(oldCurrent, coll.currentItem);
             oldCurrent = coll.currentItem;
@@ -713,7 +716,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
 
         ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self);
         ds.addOnCurrentChanged(() => {
-            fn_updateCurrent();
+            self._updateCurrent();
         }, self._objId, self);
 
         ds.addOnBeginEdit(function (sender, args) {
@@ -730,7 +733,6 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         ds.addOnItemAdding((s, a) => {
             self.collapseDetails();
         }, self._objId);
-        fn_updateCurrent();
     }
     protected _unbindDS() {
         const self = this, ds = this.dataSource;
@@ -877,6 +879,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
 
         self.updateColumnsSize();
         self._updateTableDisplay();
+        self._updateCurrent();
     }
     protected _createRowForItem(parent: Node, item: ICollectionItem, prepend?: boolean) {
         const self = this, tr = doc.createElement("tr");
@@ -1077,6 +1080,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
+        this._updateCurrent = () => { };
         this._clearGrid();
         _gridDestroyed(this);
         boot._getInternal().untrackSelectable(this);
