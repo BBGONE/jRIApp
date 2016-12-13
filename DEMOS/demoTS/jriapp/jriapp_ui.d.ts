@@ -406,12 +406,14 @@ declare module "jriapp_ui/listbox" {
         private _addOption(item, first);
         private _mapByValue();
         private _resetText();
+        private _resetState();
         private _removeOption(item);
         private _clear(isDestroy);
         private _refresh();
         private _findItemIndex(item);
         protected _setIsEnabled(el: HTMLSelectElement, v: boolean): void;
         protected _getIsEnabled(el: HTMLSelectElement): boolean;
+        protected tempValue: any;
         clear(): void;
         findItemByValue(val: any): ICollectionItem;
         getTextByValue(val: any): string;
@@ -635,7 +637,6 @@ declare module "jriapp_ui/dynacontent" {
         private _templateID;
         private _template;
         private _animation;
-        private _debounce;
         constructor(options: IDynaContentOptions);
         templateLoading(template: ITemplate): void;
         templateLoaded(template: ITemplate, error?: any): void;
@@ -1341,7 +1342,6 @@ declare module "jriapp_ui/pager" {
         private _rowsPerPage;
         private _rowCount;
         private _currentPage;
-        private _renderDebounce;
         constructor(options: IPagerConstructorOptions);
         protected _createElement(tag: string): JQuery;
         protected _render(): void;

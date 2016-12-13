@@ -200,6 +200,11 @@ define("jriapp_shared/utils/arrhelper", ["require", "exports"], function (requir
             }
             return i;
         };
+        ArrayHelper.removeIndex = function (array, index) {
+            var isOk = index > -1 && array.length > index;
+            array.splice(index, 1);
+            return isOk;
+        };
         ArrayHelper.insert = function (array, obj, pos) {
             array.splice(pos, 0, obj);
         };
@@ -4240,24 +4245,35 @@ define("jriapp_shared/utils/debounce", ["require", "exports"], function (require
             if (interval === void 0) { interval = 0; }
             this._timer = null;
             this._interval = !interval ? 0 : interval;
+            this._fn = null;
         }
         Debounce.prototype.enqueue = function (fn) {
             var _this = this;
             if (this.IsDestroyed)
-                throw new Error("Invalid operation");
-            if (!!this._timer) {
-                clearTimeout(this._timer);
+                throw new Error("Debounce: Object destroyed");
+            if (!fn)
+                throw new Error("Debounce: Invalid operation");
+            this._fn = fn;
+            if (!this._timer && !!this._fn) {
+                this._timer = setTimeout(function () {
+                    _this._timer = null;
+                    try {
+                        if (!!_this._fn) {
+                            _this._fn();
+                        }
+                    }
+                    finally {
+                        _this._fn = null;
+                    }
+                }, this._interval);
             }
-            this._timer = setTimeout(function () {
-                _this._timer = null;
-                fn();
-            }, this._interval);
         };
         Debounce.prototype.destroy = function () {
             if (!!this._timer) {
                 clearTimeout(this._timer);
             }
             this._timer = void 0;
+            this._fn = null;
         };
         Object.defineProperty(Debounce.prototype, "interval", {
             get: function () {
@@ -4288,14 +4304,14 @@ define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/c
             this._val = null;
             this._factory = factory;
             if (!this._factory)
-                throw new Error("Invalid value factory provided in Lazy class constructor");
+                throw new Error("Lazy: Invalid value factory");
         }
         Object.defineProperty(Lazy.prototype, "Value", {
             get: function () {
                 if (this._val === null) {
                     this._val = this._factory();
                     if (checks.isNt(this._val))
-                        throw new Error("the value factory did'not returned an object");
+                        throw new Error("Lazy: the value factory did'not returned an object");
                     this._factory = null;
                 }
                 return this._val;

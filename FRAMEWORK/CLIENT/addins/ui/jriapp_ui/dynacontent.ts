@@ -1,11 +1,12 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { Utils, BaseObject, IVoidPromise, IBaseObject, Debounce } from "jriapp_shared";
+import { Utils, BaseObject, IVoidPromise, IBaseObject } from "jriapp_shared";
 import { ITemplate, ITemplateEvents, IViewOptions } from "jriapp/int";
 import { createTemplate } from "jriapp/template";
 import { bootstrap } from "jriapp/bootstrap";
 import { BaseElView } from "./baseview";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, sys = utils.sys, dom = utils.dom;
+const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
+    sys = utils.sys, dom = utils.dom, win = dom.window;
 
 export interface IDynaContentAnimation {
     beforeShow(template: ITemplate, isFirstShow: boolean): void;
@@ -33,7 +34,6 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
     private _templateID: string;
     private _template: ITemplate;
     private _animation: IDynaContentAnimation;
-    private _debounce: Debounce;
 
     constructor(options: IDynaContentOptions) {
         super(options);
@@ -42,7 +42,6 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
         this._templateID = null;
         this._template = null;
         this._animation = null;
-        this._debounce = new Debounce();
     }
     templateLoading(template: ITemplate): void {
         if (this.getIsDestroyCalled())
@@ -122,8 +121,6 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
         if (this._isDestroyed)
             return
         this._isDestroyCalled = true;
-        this._debounce.destroy();
-        this._debounce = null;
         const a = this._animation;
         this._animation = null;
         const t = this._template;
@@ -147,12 +144,12 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
         if (old !== v) {
             this._prevTemplateID = old;
             this._templateID = v;
-            this.raisePropertyChanged(PROP_NAME.templateID);
-            this._debounce.enqueue(() => {
+            win.requestAnimationFrame(() => {
                 if (self.getIsDestroyCalled())
                     return;
                 self._templateChanging(old, v);
             });
+            this.raisePropertyChanged(PROP_NAME.templateID);
         }
     }
     get dataContext() { return this._dataContext; }

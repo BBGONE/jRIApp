@@ -15,7 +15,8 @@ import { $ } from "./utils/jquery";
 
 const utils = Utils, _async = utils.defer, dom = utils.dom, viewChecks = ViewChecks,
     doc = dom.document, coreUtils = utils.core, checks = utils.check, strUtils = utils.str,
-    arrHelper = utils.arr, sys = utils.sys, boot = bootstrap, ERRS = LocaleERRS, ERROR = utils.err;
+    arrHelper = utils.arr, sys = utils.sys, boot = bootstrap, ERRS = LocaleERRS, ERROR = utils.err,
+    win = dom.window;
 
 export const css = {
     templateContainer: "ria-template-container",
@@ -259,9 +260,10 @@ class Template extends BaseObject implements ITemplate {
     }
     findElViewsByDataName(name: string): IElView[] {
         //first return elements with the needed data attributes those are inside template
-        const self = this, els = this.findElByDataName(name), res: IElView[] = [],  viewStore = boot.getApp().viewFactory.store;
+        const self = this, els = this.findElByDataName(name), res: IElView[] = [],
+            viewStore = boot.getApp().viewFactory.store;
         els.forEach(function (el) {
-            let elView = viewStore.getElView(el);
+            const elView = viewStore.getElView(el);
             if (!!elView)
                 res.push(elView);
         });
@@ -277,7 +279,11 @@ class Template extends BaseObject implements ITemplate {
     set dataContext(v) {
         if (this._dataContext !== v) {
             this._dataContext = v;
-            this._updateBindingSource();
+            win.requestAnimationFrame(() => {
+                if (this.getIsDestroyCalled())
+                    return;
+                this._updateBindingSource();
+            });
             this.raisePropertyChanged(PROP_NAME.dataContext);
         }
     }

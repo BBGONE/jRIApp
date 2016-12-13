@@ -58,6 +58,7 @@
     <TypeScriptCompile Include="jriapp\int.ts" />
     <TypeScriptCompile Include="jriapp\utils\jquery.ts" />
     <TypeScriptCompile Include="jriapp\utils\parser.ts" />
+    <TypeScriptCompile Include="jriapp\utils\raf.ts" />
     <TypeScriptCompile Include="jriapp\utils\viewchecks.ts" />
     <TypeScriptCompile Include="jriapp\app.ts" />
     <TypeScriptCompile Include="jriapp.ts" />

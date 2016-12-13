@@ -13,9 +13,9 @@ import { IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 import { BaseElView } from "./baseview";
 
-const utils = Utils, doc = utils.dom.document, sys= utils.sys,
+const utils = Utils, doc = utils.dom.document, sys = utils.sys,
     checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
-    boot = bootstrap;
+    boot = bootstrap, win = utils.dom.window;
 
 export interface IOptionStateProvider {
     getCSS(item: ICollectionItem, itemIndex: number, val: any): string;
@@ -69,13 +69,13 @@ export class ListBox extends BaseObject {
     private _savedValue: string;
     private _tempValue: any;
     private _options: IListBoxConstructorOptions;
-    private _fn_state: (item: IBaseObject) => void;
+    private _fn_state: (data: IMappedItem) => void;
     private _textProvider: IOptionTextProvider;
     private _stateProvider: IOptionStateProvider;
 
     constructor(options: IListBoxConstructorOptions) {
         super();
-        let self = this;
+        const self = this;
         options = coreUtils.extend(
             {
                 el: null,
@@ -103,19 +103,17 @@ export class ListBox extends BaseObject {
         this._keyMap = {};
         this._valMap = {};
         this._savedValue = checks.undefined;
-        this._tempValue = checks.undefined;
-        let ds = this._options.dataSource;
+        this.tempValue = checks.undefined;
+        const ds = this._options.dataSource;
         this._options.dataSource = null;
-        this.dataSource = ds;
-        this._fn_state = (item: ICollectionItem) => {
-            if (!self._stateProvider)
+        this._fn_state = (data: IMappedItem) => {
+            if (!data || !data.item || data.item.getIsDestroyCalled())
                 return;
-            const data: IMappedItem = self._keyMap[item._key];
-            if (!data)
-                return;
-            const path = self.statePath, val = !path? null : sys.resolvePath(item, path);
-            data.op.className = self._stateProvider.getCSS(item, data.op.index, val);
+            const item = data.item, path = self.statePath,
+                val = !path ? null : sys.resolvePath(item, path), spr = self._stateProvider;
+            data.op.className = !spr ? "" : spr.getCSS(item, data.op.index, val);
         };
+        this.dataSource = ds;
     }
     destroy() {
         if (this._isDestroyed)
@@ -125,7 +123,7 @@ export class ListBox extends BaseObject {
         this._$el.off("." + this._objId);
         this._clear(true);
         this._$el = null;
-        this._tempValue = checks.undefined;
+        this.tempValue = checks.undefined;
         this._selectedItem = null;
         this._prevSelected = null;
         this._savedValue = null;
@@ -135,8 +133,10 @@ export class ListBox extends BaseObject {
         super.destroy();
     }
     protected _getEventNames() {
-        let base_events = super._getEventNames();
-        let events = Object.keys(LISTBOX_EVENTS).map((key, i, arr) => { return <string>(<any>LISTBOX_EVENTS)[key]; });
+        const base_events = super._getEventNames();
+        const events = Object.keys(LISTBOX_EVENTS).map((key, i, arr) => {
+            return <string>(<any>LISTBOX_EVENTS)[key];
+        });
         return events.concat(base_events);
     }
     addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any) {
@@ -161,19 +161,21 @@ export class ListBox extends BaseObject {
         }
     }
     protected _getStringValue(item: ICollectionItem): string {
-        let v = this._getValue(item);
+        const v = this._getValue(item);
         if (checks.isNt(v))
             return "";
         return "" + v;
     }
     protected _getValue(item: ICollectionItem): any {
-        if (!item)
-            return null;
+        if (!item) {
+            return checks.undefined;
+        }
         if (!!this._options.valuePath) {
             return sys.resolvePath(item, this._options.valuePath);
         }
-        else
+        else {
             return checks.undefined;
+        }
     }
     protected _getText(item: ICollectionItem, index: number): string {
         let res = "";
@@ -196,7 +198,8 @@ export class ListBox extends BaseObject {
         return res;
     }
     protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>) {
-        let self = this, data: any;
+        const self = this;
+        let data: any;
         switch (args.changeType) {
             case COLL_CHANGE_TYPE.Reset:
                 {
@@ -228,7 +231,8 @@ export class ListBox extends BaseObject {
         }
     }
     protected _onEdit(item: ICollectionItem, isBegin: boolean, isCanceled: boolean) {
-        let self = this, key: string, data: IMappedItem, oldVal: string, val: string;
+        const self = this;
+        let key: string, data: IMappedItem, oldVal: string, val: string;
         if (isBegin) {
             this._savedValue = this._getStringValue(item);
         }
@@ -302,8 +306,9 @@ export class ListBox extends BaseObject {
         }
     }
     private _bindDS() {
-        let self = this, ds = this.dataSource;
-        if (!ds) return;
+        const self = this, ds = this.dataSource;
+        if (!ds)
+            return;
         ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self);
         ds.addOnBeginEdit(function (sender, args) {
             self._onEdit(args.item, true, false);
@@ -319,8 +324,9 @@ export class ListBox extends BaseObject {
         }, self._objId);
     }
     private _unbindDS() {
-        let self = this, ds = this.dataSource;
-        if (!ds) return;
+        const self = this, ds = this.dataSource;
+        if (!ds)
+            return;
         ds.removeNSHandlers(self._objId);
     }
     private _addOption(item: ICollectionItem, first: boolean) {
@@ -333,16 +339,17 @@ export class ListBox extends BaseObject {
         if (!!this._keyMap[key]) {
             return null;
         }
-        let selEl = this.el;
+        const selEl = this.el;
         text = this._getText(item, selEl.options.length);
         val = this._getStringValue(item);
         oOption = doc.createElement("option");
         oOption.text = text;
         oOption.value = key;
-        let data: IMappedItem = { item: item, op: oOption };
+        const data: IMappedItem = { item: item, op: oOption };
         this._keyMap[key] = data;
-        if (!!val)
+        if (!!val) {
             this._valMap[val] = data;
+        }
         if (!!first) {
             if (selEl.options.length < 2)
                 selEl.add(oOption, null);
@@ -354,11 +361,12 @@ export class ListBox extends BaseObject {
         else {
             selEl.add(oOption, null);
         }
+
         if (!!item) {
             if (!!this.statePath) {
                 item.addOnPropertyChange(this.statePath, this._fn_state, this._objId);
             }
-            this._fn_state(item);
+            this._fn_state(data);
         }
         
         return oOption;
@@ -373,10 +381,20 @@ export class ListBox extends BaseObject {
         });
     }
     private _resetText() {
-        let self = this;
+        const self = this;
+        if (self.getIsDestroyCalled())
+            return;
         coreUtils.forEachProp(this._keyMap, (key) => {
-            let data = self._keyMap[key];
+            const data = self._keyMap[key];
             data.op.text = self._getText(data.item, data.op.index);
+        });
+    }
+    private _resetState() {
+        const self = this;
+        if (self.getIsDestroyCalled())
+            return;
+        coreUtils.forEachProp(this._keyMap, (key) => {
+            self._fn_state(self._keyMap[key]);
         });
     }
     private _removeOption(item: ICollectionItem) {
@@ -404,11 +422,12 @@ export class ListBox extends BaseObject {
         }
     }
     private _clear(isDestroy: boolean) {
-        let self = this;
+        const self = this;
         coreUtils.forEachProp(this._keyMap, (key) => {
-            let data = self._keyMap[key];
-            if (!!data.item)
+            const data = self._keyMap[key];
+            if (!!data.item) {
                 data.item.removeNSHandlers(self._objId);
+            }
         });
         this.el.options.length = 0;
         this._keyMap = {};
@@ -418,11 +437,13 @@ export class ListBox extends BaseObject {
             this._addOption(null, false);
             this.selectedItem = null;
         }
-        else
+        else {
             this.selectedItem = null;
+        }
     }
     private _refresh(): void {
-        let self = this, ds = this.dataSource, oldItem = this._selectedItem, tmp = self._tempValue;
+        const self = this, ds = this.dataSource, tmp = self.tempValue;
+        let oldItem = this._selectedItem;
         this._isRefreshing = true;
         try {
             this.clear();
@@ -430,19 +451,17 @@ export class ListBox extends BaseObject {
                 ds.forEach(function (item) {
                     self._addOption(item, false);
                 });
-                if (checks.isUndefined(tmp)) {
-                    self.el.selectedIndex = self._findItemIndex(oldItem);
-                }
-                else {
+
+                if (!oldItem && !checks.isNt(tmp)) {
                     oldItem = self.findItemByValue(tmp);
                     self.selectedItem = oldItem;
-                    if (!oldItem)
-                        self._tempValue = tmp;
-                    else
-                        self._tempValue = checks.undefined;
+                    self.tempValue = (!oldItem) ? tmp : checks.undefined;
+                }
+                else {
+                    self.el.selectedIndex = self._findItemIndex(oldItem);
+                    self.tempValue = checks.undefined;
                 }
             }
-
         } finally {
             self._isRefreshing = false;
         }
@@ -452,16 +471,22 @@ export class ListBox extends BaseObject {
     private _findItemIndex(item: ICollectionItem) {
         if (!item || item.getIsDestroyCalled())
             return 0;
-        let data: IMappedItem = this._keyMap[item._key];
-        if (!data)
-            return 0;
-        return data.op.index;
+        const data: IMappedItem = this._keyMap[item._key];
+        return (!data)? 0: data.op.index;
     }
     protected _setIsEnabled(el: HTMLSelectElement, v: boolean) {
         el.disabled = !v;
     }
     protected _getIsEnabled(el: HTMLSelectElement) {
         return !el.disabled;
+    }
+    protected get tempValue() {
+        return this._tempValue;
+    }
+    protected set tempValue(v) {
+        if (this._tempValue !== v) {
+            this._tempValue = v;
+        }
     }
     clear() {
         this._clear(false);
@@ -470,10 +495,8 @@ export class ListBox extends BaseObject {
         if (checks.isNt(val))
             return null;
         val = "" + val;
-        let data: IMappedItem = this._valMap[val];
-        if (!data)
-            return null;
-        return data.item;
+        const data: IMappedItem = this._valMap[val];
+        return (!data) ? null : data.item;
     }
     getTextByValue(val: any): string {
         if (checks.isNt(val))
@@ -491,44 +514,50 @@ export class ListBox extends BaseObject {
     get dataSource() { return this._options.dataSource; }
     set dataSource(v) {
         if (this.dataSource !== v) {
-            if (!!this.dataSource) {
-                this._tempValue = this.selectedValue;
-                this._unbindDS();
+            if (checks.isUndefined(this.tempValue) && !!this.dataSource) {
+                this.tempValue = this.selectedValue;
             }
+
+            this._unbindDS();
+
             this._options.dataSource = v;
-            if (!!this.dataSource) {
+
+            win.requestAnimationFrame(() => {
+                if (this.getIsDestroyCalled())
+                    return;
                 this._bindDS();
-            }
-            this._refresh();
-            if (!!this.dataSource)
-                this._tempValue = checks.undefined;
+                this._refresh();
+                this.raisePropertyChanged(PROP_NAME.selectedItem);
+                this.raisePropertyChanged(PROP_NAME.selectedValue);
+            });
+
             this.raisePropertyChanged(PROP_NAME.dataSource);
-            this.raisePropertyChanged(PROP_NAME.selectedItem);
-            this.raisePropertyChanged(PROP_NAME.selectedValue);
         }
     }
     get selectedValue() {
-        if (!!this.dataSource)
+        if (!!this.dataSource) {
             return this._getValue(this.selectedItem);
-        else
+        }
+        else {
             return checks.undefined;
+        }
     }
     set selectedValue(v) {
-        let self = this;
+        const self = this;
         if (!!this.dataSource) {
             if (this.selectedValue !== v) {
-                let item = self.findItemByValue(v);
+                const item = self.findItemByValue(v);
                 self.selectedItem = item;
                 if (!checks.isUndefined(v) && !item)
-                    self._tempValue = v;
+                    self.tempValue = v;
                 else
-                    self._tempValue = checks.undefined;
+                    self.tempValue = checks.undefined;
             }
         }
         else {
-            if (this._tempValue !== v) {
+            if (this.tempValue !== v) {
                 this._selectedItem = null;
-                this._tempValue = v;
+                this.tempValue = v;
                 this.raisePropertyChanged(PROP_NAME.selectedItem);
                 this.raisePropertyChanged(PROP_NAME.selectedValue);
             }
@@ -580,7 +609,9 @@ export class ListBox extends BaseObject {
         if (v !== this._textProvider) {
             this._textProvider = v;
             this.raisePropertyChanged(PROP_NAME.textProvider);
-            this._resetText();
+            win.requestAnimationFrame(() => {
+                this._resetText();
+            });
         }
     }
     get stateProvider() { return this._stateProvider; }
@@ -588,6 +619,9 @@ export class ListBox extends BaseObject {
         if (v !== this._stateProvider) {
             this._stateProvider = v;
             this.raisePropertyChanged(PROP_NAME.stateProvider);
+            win.requestAnimationFrame(() => {
+                this._resetState();
+            });
         }
     }
     get el() { return this._options.el; }

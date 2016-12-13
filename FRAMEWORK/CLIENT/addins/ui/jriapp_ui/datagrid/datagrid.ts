@@ -56,7 +56,7 @@ const utils = Utils, checks = utils.check, strUtils = utils.str,
     dom = utils.dom, parser = Parser, doc = dom.document, win = dom.window, boot = bootstrap;
 
 let _columnWidthInterval: number, _gridsCount: number = 0;
-let _created_grids: IIndexer<DataGrid> = { };
+const _created_grids: IIndexer<DataGrid> = {};
 
 export function getDataGrids(): DataGrid[] {
     let keys = Object.keys(_created_grids);
@@ -82,7 +82,7 @@ export function findDataGrid(gridName: string): DataGrid {
 
 function updateWidth() {
     _checkGridWidth();
-    _columnWidthInterval = dom.window.requestAnimationFrame(updateWidth);
+    _columnWidthInterval = win.requestAnimationFrame(updateWidth);
 }
 
 function _gridCreated(grid: DataGrid) {
@@ -298,9 +298,11 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             }
         };
         this._createColumns();
-        this._bindDS();
+        const ds = this._options.dataSource;
+        this._options.dataSource = null;
         boot._getInternal().trackSelectable(this);
         _gridCreated(this);
+        this.dataSource = ds;
     }
     protected _getEventNames() {
         let base_events = super._getEventNames();
@@ -727,7 +729,6 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         ds.addOnItemAdding((s, a) => {
             self.collapseDetails();
         }, self._objId);
-        this._refresh(false);
         fn_updateCurrent();
     }
     protected _unbindDS() {
@@ -1133,16 +1134,20 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     get name() { return this._name; }
     get dataSource(): ICollection<ICollectionItem> { return this._options.dataSource; }
     set dataSource(v: ICollection<ICollectionItem>) {
-        if (v === this.dataSource)
-            return;
-        if (!!this.dataSource) {
+        if (v !== this.dataSource) {
             this._unbindDS();
+            this._clearGrid();
+            this._options.dataSource = v;
+
+            win.requestAnimationFrame(() => {
+                if (this.getIsDestroyCalled())
+                    return;
+                this._bindDS();
+                this._refresh(false);
+            });
+
+            this.raisePropertyChanged(PROP_NAME.dataSource);
         }
-        this._clearGrid();
-        this._options.dataSource = v;
-        if (!!this.dataSource)
-            this._bindDS();
-        this.raisePropertyChanged(PROP_NAME.dataSource);
     }
     get rows() { return this._rows; }
     get columns() { return this._columns; }

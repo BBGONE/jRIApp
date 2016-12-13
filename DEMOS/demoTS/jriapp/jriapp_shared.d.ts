@@ -206,6 +206,7 @@ declare module "jriapp_shared/utils/arrhelper" {
         static distinct(arr: string[]): string[];
         static distinct(arr: number[]): number[];
         static remove(array: any[], obj: any): number;
+        static removeIndex(array: any[], index: number): boolean;
         static insert(array: any[], obj: any, pos: number): void;
     }
 }
@@ -1244,6 +1245,7 @@ declare module "jriapp_shared/utils/debounce" {
     export class Debounce implements IDisposable {
         private _timer;
         private _interval;
+        private _fn;
         constructor(interval?: number);
         enqueue(fn: () => any): void;
         destroy(): void;

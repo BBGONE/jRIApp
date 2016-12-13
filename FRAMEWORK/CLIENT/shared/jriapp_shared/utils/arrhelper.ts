@@ -37,11 +37,16 @@ export class ArrayHelper {
         return r;
     }
     public static remove(array: any[], obj: any): number {
-        let i = array.indexOf(obj);
+        const i = array.indexOf(obj);
         if (i > -1) {
             array.splice(i, 1);
         }
         return i;
+    }
+    public static removeIndex(array: any[], index: number): boolean {
+        const isOk = index > -1 && array.length > index;
+        array.splice(index, 1);
+        return isOk;
     }
     public static insert(array: any[], obj: any, pos: number): void {
         array.splice(pos, 0, obj);

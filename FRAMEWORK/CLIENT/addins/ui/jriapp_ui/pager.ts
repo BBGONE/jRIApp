@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    Utils, BaseObject, IBaseObject, LocaleERRS as ERRS, LocaleSTRS as STRS, Debounce
+    Utils, BaseObject, IBaseObject, LocaleERRS as ERRS, LocaleSTRS as STRS
 } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
 import { IApplication, IViewOptions } from "jriapp/int";
@@ -15,7 +15,7 @@ import { bootstrap } from "jriapp";
 
 const utils = Utils, dom = utils.dom, doc = dom.document, sys = utils.sys,
     checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
-    ERROR = utils.err, boot = bootstrap;
+    ERROR = utils.err, boot = bootstrap, win = dom.window;
 let _STRS = STRS.PAGER;
 
 const css = {
@@ -55,7 +55,6 @@ export class Pager extends BaseObject {
     private _rowsPerPage: number;
     private _rowCount: number;
     private _currentPage: number;
-    private _renderDebounce: Debounce;
 
     constructor(options: IPagerConstructorOptions) {
         super();
@@ -81,7 +80,6 @@ export class Pager extends BaseObject {
         this._rowsPerPage = 0;
         this._rowCount = 0;
         this._currentPage = 1;
-        this._renderDebounce = new Debounce(50);
         if (!!this._options.dataSource) {
             this._bindDS();
         }
@@ -177,7 +175,9 @@ export class Pager extends BaseObject {
         }
     }
     protected render() {
-        this._renderDebounce.enqueue(() => { this._render(); });
+        win.requestAnimationFrame(() => {
+            this._render();
+        });
     }
     protected _setDSPageIndex(page: number) {
         this.dataSource.pageIndex = page - 1;
@@ -195,8 +195,6 @@ export class Pager extends BaseObject {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        this._renderDebounce.destroy();
-        this._renderDebounce = null;
         this._unbindDS();
         this._clearContent();
         dom.removeClass([this.el], css.pager);
@@ -232,7 +230,7 @@ export class Pager extends BaseObject {
         this._$el.empty();
     }
     protected _reset() {
-        let ds = this.dataSource;
+        const ds = this.dataSource;
         if (!ds) {
             this._currentPage = 1;
             this._rowsPerPage = 100;
@@ -465,7 +463,7 @@ export class PagerElView extends BaseElView {
 
     constructor(options: IPagerViewOptions) {
         super(options);
-        let self = this;
+        const self = this;
         this._pager = null;
 
         this._pager = new Pager(<IPagerConstructorOptions>options);

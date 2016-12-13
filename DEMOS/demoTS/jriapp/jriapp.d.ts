@@ -779,6 +779,9 @@ declare module "jriapp/databindsvc" {
     import { IElViewFactory, IDataBindingService } from "jriapp/int";
     export function createDataBindSvc(root: Document | HTMLElement, elViewFactory: IElViewFactory): IDataBindingService;
 }
+declare module "jriapp/utils/raf" {
+    export function checkRAF(): void;
+}
 declare module "jriapp/app" {
     import { IIndexer, TEventHandler, IPromise, IBaseObject, BaseObject } from "jriapp_shared";
     import { IElViewFactory, IViewType, IApplication, IBindingOptions, IAppOptions, IInternalAppMethods, IConverter, ITemplateGroupInfo, IBinding } from "jriapp/int";
