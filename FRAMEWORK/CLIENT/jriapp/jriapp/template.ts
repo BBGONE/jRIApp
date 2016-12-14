@@ -279,11 +279,7 @@ class Template extends BaseObject implements ITemplate {
     set dataContext(v) {
         if (this._dataContext !== v) {
             this._dataContext = v;
-            utils.queue.queueRequest(() => {
-                if (this.getIsDestroyCalled())
-                    return;
-                this._updateBindingSource();
-            });
+            this._updateBindingSource();
             this.raisePropertyChanged(PROP_NAME.dataContext);
         }
     }

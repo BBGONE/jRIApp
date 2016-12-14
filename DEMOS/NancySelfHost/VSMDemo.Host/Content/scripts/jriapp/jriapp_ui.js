@@ -1498,6 +1498,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             this._valMap = {};
             this._savedValue = checks.undefined;
             this.tempValue = checks.undefined;
+            this._isDataBound = false;
             var ds = this._options.dataSource;
             this._options.dataSource = null;
             this._fn_state = function (data) {
@@ -1560,13 +1561,13 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         };
         ListBox.prototype._getValue = function (item) {
             if (!item) {
-                return checks.undefined;
+                return null;
             }
             if (!!this._options.valuePath) {
                 return sys.resolvePath(item, this._options.valuePath);
             }
             else {
-                return checks.undefined;
+                return null;
             }
         };
         ListBox.prototype._getText = function (item, index) {
@@ -1710,12 +1711,14 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             ds.addOnCommitChanges(function (sender, args) {
                 self._onCommitChanges(args.item, args.isBegin, args.isRejected, args.status);
             }, self._objId);
+            this._isDataBound = true;
         };
         ListBox.prototype._unbindDS = function () {
             var self = this, ds = this.dataSource;
             if (!ds)
                 return;
             ds.removeNSHandlers(self._objId);
+            this._isDataBound = false;
         };
         ListBox.prototype._addOption = function (item, first) {
             if (this._isDestroyCalled)
@@ -1906,12 +1909,12 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             set: function (v) {
                 var _this = this;
                 if (this.dataSource !== v) {
-                    if (checks.isUndefined(this.tempValue) && !!this.dataSource) {
+                    if (checks.isUndefined(this.tempValue) && this._isDataBound) {
                         this.tempValue = this.selectedValue;
                     }
                     this._unbindDS();
                     this._options.dataSource = v;
-                    utils.queue.queueRequest(function () {
+                    utils.queue.addTask(function () {
                         if (_this.getIsDestroyCalled())
                             return;
                         _this._bindDS();
@@ -1927,16 +1930,16 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         });
         Object.defineProperty(ListBox.prototype, "selectedValue", {
             get: function () {
-                if (!!this.dataSource) {
+                if (this._isDataBound && checks.isUndefined(this.tempValue)) {
                     return this._getValue(this.selectedItem);
                 }
                 else {
-                    return checks.undefined;
+                    return this.tempValue;
                 }
             },
             set: function (v) {
                 var self = this;
-                if (!!this.dataSource) {
+                if (this._isDataBound) {
                     if (this.selectedValue !== v) {
                         var item = self.findItemByValue(v);
                         self.selectedItem = item;
@@ -2026,7 +2029,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 if (v !== this._textProvider) {
                     this._textProvider = v;
                     this.raisePropertyChanged(PROP_NAME.textProvider);
-                    utils.queue.queueRequest(function () {
+                    utils.queue.addTask(function () {
                         _this._resetText();
                     });
                 }
@@ -2041,7 +2044,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 if (v !== this._stateProvider) {
                     this._stateProvider = v;
                     this.raisePropertyChanged(PROP_NAME.stateProvider);
-                    utils.queue.queueRequest(function () {
+                    utils.queue.addTask(function () {
                         _this._resetState();
                     });
                 }
@@ -3183,7 +3186,7 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
                 if (old !== v) {
                     this._prevTemplateID = old;
                     this._templateID = v;
-                    utils.queue.queueRequest(function () {
+                    win.requestAnimationFrame(function () {
                         if (self.getIsDestroyCalled())
                             return;
                         self._templateChanging(old, v);
@@ -5835,7 +5838,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 if (v !== this.dataSource) {
                     this._unbindDS();
                     this._options.dataSource = v;
-                    utils.queue.queueRequest(function () {
+                    utils.queue.addTask(function () {
                         if (_this.getIsDestroyCalled())
                             return;
                         _this._clearGrid();
@@ -6187,6 +6190,8 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             if (!!this._renderHandle)
                 win.cancelAnimationFrame(this._renderHandle);
             this._renderHandle = win.requestAnimationFrame(function () {
+                if (_this.getIsDestroyCalled())
+                    return;
                 _this._renderHandle = null;
                 _this._render();
             });
@@ -6927,7 +6932,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
                     return;
                 this._unbindDS();
                 this._options.dataSource = v;
-                utils.queue.queueRequest(function () {
+                utils.queue.addTask(function () {
                     if (_this.getIsDestroyCalled())
                         return;
                     _this._bindDS();

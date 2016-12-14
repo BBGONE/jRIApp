@@ -388,6 +388,7 @@ declare module "jriapp_ui/listbox" {
         private _fn_state;
         private _textProvider;
         private _stateProvider;
+        private _isDataBound;
         constructor(options: IListBoxConstructorOptions);
         destroy(): void;
         protected _getEventNames(): string[];

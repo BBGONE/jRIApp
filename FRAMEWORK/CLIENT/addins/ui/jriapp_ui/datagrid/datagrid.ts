@@ -1142,7 +1142,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         if (v !== this.dataSource) {
             this._unbindDS();
             this._options.dataSource = v;
-            utils.queue.queueRequest(() => {
+            utils.queue.addTask(() => {
                 if (this.getIsDestroyCalled())
                     return;
                 this._clearGrid();

@@ -6,6 +6,7 @@ import {
 } from "./ideferred";
 import { AbortError, AggregateError } from "../errors";
 import { Checks } from "./checks";
+import { createQueue, IQueue } from "./queue";
 
 const checks = Checks;
 let taskQueue: TaskQueue = null;
@@ -79,34 +80,14 @@ function fn_dispatchImmediate(task: () => void) {
 }
 
 class TaskQueue implements ITaskQueue {
-    private _tasks: { (): void; }[];
-    private _state: number;
+    private _queue: IQueue;
 
     constructor() {
-        this._tasks = [];
-        this._state = 0;
+        this._queue = createQueue(0);
     }
 
-    private _process(): void {
-        let tasks = this._tasks;
-        this._tasks = [];
-        for (let i = 0; i < tasks.length; i += 1) {
-            tasks[i]();
-        }
-    }
-
-    enque(task: () => void) {
-        this._tasks.push(task);
-
-        if (this._state === 0) {
-            this._state = 1;
-            setTimeout(() => { if (this._state !== 1) return; this._state = 0; this._process(); }, 0);
-        }
-    }
-
-    clear() {
-        this._tasks = [];
-        this._state = 0;
+    enque(task: (timer: number) => void) {
+        this._queue.addTask(task);
     }
 }
 

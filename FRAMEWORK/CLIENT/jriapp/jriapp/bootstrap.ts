@@ -15,15 +15,36 @@ import { TemplateLoader } from "./utils/tloader";
 import { createCssLoader } from "./utils/sloader";
 import { PathHelper } from "./utils/path";
 import { $ } from "./utils/jquery";
-import { checkRAF } from "jriapp_shared/utils/raf";
+import { createQueue, IQueue } from "jriapp_shared/utils/queue";
 
 
 const utils = Utils, dom = utils.dom, win = dom.window, doc = win.document, arrHelper = utils.arr,
     _async = utils.defer, coreUtils = utils.core, strUtils = utils.str, ERROR = utils.err,
     ERRS = LocaleERRS;
 
-//ensure that the requestAnimationFrame is implemented
-checkRAF();
+//Implements polyfill for requestAnimationFrame API
+function checkRAF() {
+    let win: any = dom.window;
+
+    if (!win.requestAnimationFrame) {
+        let requestAnimationFrame = win.requestAnimationFrame || win.mozRequestAnimationFrame ||
+            win.webkitRequestAnimationFrame || win.msRequestAnimationFrame;
+
+        let cancelAnimationFrame = win.cancelAnimationFrame || win.mozCancelAnimationFrame ||
+            (win.webkitCancelAnimationFrame || win.webkitCancelRequestAnimationFrame) ||
+            win.msCancelAnimationFrame;
+
+        if (!requestAnimationFrame || !cancelAnimationFrame) {
+            const queue = createQueue();
+
+            requestAnimationFrame = queue.addTask;
+            cancelAnimationFrame = queue.cancelTask;
+        }
+
+        win.requestAnimationFrame = requestAnimationFrame;
+        win.cancelAnimationFrame = cancelAnimationFrame;
+    }
+}
 
 const _TEMPLATE_SELECTOR = 'script[type="text/html"]';
 const stylesLoader = createCssLoader();

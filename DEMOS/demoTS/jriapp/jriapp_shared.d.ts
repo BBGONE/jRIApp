@@ -833,6 +833,13 @@ declare module "jriapp_shared/utils/logger" {
         static error(str: string): void;
     }
 }
+declare module "jriapp_shared/utils/queue" {
+    export interface IQueue {
+        cancelTask: (taskId: number) => void;
+        addTask: (func: FrameRequestCallback) => number;
+    }
+    export function createQueue(interval?: number): IQueue;
+}
 declare module "jriapp_shared/utils/deferred" {
     import { IStatefulDeferred, IStatefulPromise, IThenable, ITaskQueue, PromiseState, IAbortablePromise, IDeferredErrorCB, IDeferredSuccessCB, IErrorCB, IVoidErrorCB, ISuccessCB, IAbortable } from "jriapp_shared/utils/ideferred";
     export function createDefer<T>(): IStatefulDeferred<T>;
@@ -900,13 +907,6 @@ declare module "jriapp_shared/utils/dom" {
         static removeClass(elems: Element[], css: string): void;
     }
 }
-declare module "jriapp_shared/utils/raf" {
-    export function createRAF(interval?: number): {
-        cancelRequest: (handle: number) => void;
-        queueRequest: (func: FrameRequestCallback) => number;
-    };
-    export function checkRAF(): void;
-}
 declare module "jriapp_shared/utils/utils" {
     import { CoreUtils } from "jriapp_shared/utils/coreutils";
     import { DEBUG } from "jriapp_shared/utils/debug";
@@ -919,6 +919,7 @@ declare module "jriapp_shared/utils/utils" {
     import { Checks } from "jriapp_shared/utils/checks";
     import { ArrayHelper } from "jriapp_shared/utils/arrhelper";
     import { DomUtils } from "jriapp_shared/utils/dom";
+    import { IQueue } from "jriapp_shared/utils/queue";
     export class Utils {
         static readonly check: typeof Checks;
         static readonly str: typeof StringUtils;
@@ -931,10 +932,7 @@ declare module "jriapp_shared/utils/utils" {
         static readonly debug: typeof DEBUG;
         static readonly sys: typeof SysUtils;
         static readonly dom: typeof DomUtils;
-        static readonly queue: {
-            cancelRequest: (handle: number) => void;
-            queueRequest: (func: FrameRequestCallback) => number;
-        };
+        static readonly queue: IQueue;
     }
 }
 declare module "jriapp_shared/collection/utils" {

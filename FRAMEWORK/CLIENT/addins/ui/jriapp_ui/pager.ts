@@ -181,6 +181,8 @@ export class Pager extends BaseObject {
             win.cancelAnimationFrame(this._renderHandle);
 
         this._renderHandle = win.requestAnimationFrame(() => {
+            if (this.getIsDestroyCalled())
+                return;
             this._renderHandle = null;
             this._render();
         });

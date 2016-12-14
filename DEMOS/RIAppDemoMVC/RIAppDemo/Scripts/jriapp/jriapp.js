@@ -1030,10 +1030,26 @@ define("jriapp/utils/sloader", ["require", "exports", "jriapp_shared", "jriapp_s
         return StylesLoader;
     }());
 });
-define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const", "jriapp/elview", "jriapp/content", "jriapp/defaults", "jriapp/utils/tloader", "jriapp/utils/sloader", "jriapp/utils/path", "jriapp/utils/jquery", "jriapp_shared/utils/raf"], function (require, exports, jriapp_shared_10, const_2, elview_1, content_1, defaults_1, tloader_1, sloader_1, path_2, jquery_2, raf_1) {
+define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const", "jriapp/elview", "jriapp/content", "jriapp/defaults", "jriapp/utils/tloader", "jriapp/utils/sloader", "jriapp/utils/path", "jriapp/utils/jquery", "jriapp_shared/utils/queue"], function (require, exports, jriapp_shared_10, const_2, elview_1, content_1, defaults_1, tloader_1, sloader_1, path_2, jquery_2, queue_1) {
     "use strict";
     var utils = jriapp_shared_10.Utils, dom = utils.dom, win = dom.window, doc = win.document, arrHelper = utils.arr, _async = utils.defer, coreUtils = utils.core, strUtils = utils.str, ERROR = utils.err, ERRS = jriapp_shared_10.LocaleERRS;
-    raf_1.checkRAF();
+    function checkRAF() {
+        var win = dom.window;
+        if (!win.requestAnimationFrame) {
+            var requestAnimationFrame_1 = win.requestAnimationFrame || win.mozRequestAnimationFrame ||
+                win.webkitRequestAnimationFrame || win.msRequestAnimationFrame;
+            var cancelAnimationFrame_1 = win.cancelAnimationFrame || win.mozCancelAnimationFrame ||
+                (win.webkitCancelAnimationFrame || win.webkitCancelRequestAnimationFrame) ||
+                win.msCancelAnimationFrame;
+            if (!requestAnimationFrame_1 || !cancelAnimationFrame_1) {
+                var queue = queue_1.createQueue();
+                requestAnimationFrame_1 = queue.addTask;
+                cancelAnimationFrame_1 = queue.cancelTask;
+            }
+            win.requestAnimationFrame = requestAnimationFrame_1;
+            win.cancelAnimationFrame = cancelAnimationFrame_1;
+        }
+    }
     var _TEMPLATE_SELECTOR = 'script[type="text/html"]';
     var stylesLoader = sloader_1.createCssLoader();
     var GLOB_EVENTS = {
@@ -2706,14 +2722,9 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/const"
         Object.defineProperty(Template.prototype, "dataContext", {
             get: function () { return this._dataContext; },
             set: function (v) {
-                var _this = this;
                 if (this._dataContext !== v) {
                     this._dataContext = v;
-                    utils.queue.queueRequest(function () {
-                        if (_this.getIsDestroyCalled())
-                            return;
-                        _this._updateBindingSource();
-                    });
+                    this._updateBindingSource();
                     this.raisePropertyChanged(PROP_NAME.dataContext);
                 }
             },
@@ -3601,6 +3612,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.1.12";
+    exports.VERSION = "1.1.13";
     bootstrap_8.Bootstrap._initFramework();
 });

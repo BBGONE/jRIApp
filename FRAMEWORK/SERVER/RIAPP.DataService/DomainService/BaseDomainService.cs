@@ -171,10 +171,14 @@ namespace RIAPP.DataService.DomainService
         {
             if (!rowInfo.dbSetInfo.isTrackChanges)
                 return;
+
             try
             {
-                var diffgram = DiffGram.GetDiffGram(rowInfo.changeState.OriginalEntity, rowInfo.changeState.Entity,
-                    rowInfo.dbSetInfo.EntityType, rowInfo.changeState.NamesOfChangedFields);
+                string[] changed = rowInfo.changeType == ChangeType.Deleted ? rowInfo.dbSetInfo.GetNames().Select(f => f.n).ToArray() : rowInfo.changeState.NamesOfChangedFields;
+                var diffgram = DiffGram.GetDiffGram(rowInfo.changeState.OriginalEntity,
+                    rowInfo.changeType == ChangeType.Deleted ? null : rowInfo.changeState.Entity,
+                    rowInfo.dbSetInfo.EntityType,
+                    changed);
                 OnTrackChange(rowInfo.dbSetInfo.dbSetName, rowInfo.changeType, diffgram);
             }
             catch (Exception ex)

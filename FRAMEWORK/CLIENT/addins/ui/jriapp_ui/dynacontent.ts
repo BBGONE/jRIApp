@@ -144,7 +144,7 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
         if (old !== v) {
             this._prevTemplateID = old;
             this._templateID = v;
-            utils.queue.queueRequest(() => {
+            win.requestAnimationFrame(() => {
                 if (self.getIsDestroyCalled())
                     return;
                 self._templateChanging(old, v);

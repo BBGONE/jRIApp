@@ -1581,9 +1581,54 @@ define("jriapp_shared/utils/logger", ["require", "exports"], function (require, 
     }());
     exports.LOGGER = LOGGER;
 });
-define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/errors", "jriapp_shared/utils/checks"], function (require, exports, errors_2, checks_5) {
+define("jriapp_shared/utils/queue", ["require", "exports", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/error"], function (require, exports, checks_5, arrhelper_2, error_2) {
     "use strict";
-    var checks = checks_5.Checks;
+    var checks = checks_5.Checks, arrHelper = arrhelper_2.ArrayHelper, error = error_2.ERROR;
+    var MAX_NUM = 99999900000, win = window;
+    function createQueue(interval) {
+        if (interval === void 0) { interval = 40; }
+        var _rafQueue = [], _rafQueueIndex = {}, _timer = null, _newTaskId = 1;
+        var res = {
+            cancelTask: function (taskId) {
+                var index = _rafQueueIndex[taskId];
+                if (!checks.isNt(index)) {
+                    arrHelper.removeIndex(_rafQueue, index);
+                    delete _rafQueueIndex[taskId];
+                }
+            },
+            addTask: function (func) {
+                var taskId = _newTaskId;
+                _newTaskId += 1;
+                var len = _rafQueue.push({ taskId: taskId, func: func });
+                _rafQueueIndex[taskId] = len - 1;
+                if (!_timer) {
+                    _timer = win.setTimeout(function () {
+                        var arr = _rafQueue;
+                        _timer = null;
+                        _rafQueue = [];
+                        _rafQueueIndex = {};
+                        if (_newTaskId > MAX_NUM)
+                            _newTaskId = 1;
+                        arr.forEach(function (task) {
+                            try {
+                                task.func(task.taskId);
+                            }
+                            catch (err) {
+                                error.handleError(win, err, win);
+                            }
+                        });
+                    }, interval);
+                }
+                return taskId;
+            }
+        };
+        return res;
+    }
+    exports.createQueue = createQueue;
+});
+define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/errors", "jriapp_shared/utils/checks", "jriapp_shared/utils/queue"], function (require, exports, errors_2, checks_6, queue_1) {
+    "use strict";
+    var checks = checks_6.Checks;
     var taskQueue = null;
     function createDefer() {
         return new Deferred(fn_dispatch);
@@ -1648,28 +1693,10 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
     }
     var TaskQueue = (function () {
         function TaskQueue() {
-            this._tasks = [];
-            this._state = 0;
+            this._queue = queue_1.createQueue(0);
         }
-        TaskQueue.prototype._process = function () {
-            var tasks = this._tasks;
-            this._tasks = [];
-            for (var i = 0; i < tasks.length; i += 1) {
-                tasks[i]();
-            }
-        };
         TaskQueue.prototype.enque = function (task) {
-            var _this = this;
-            this._tasks.push(task);
-            if (this._state === 0) {
-                this._state = 1;
-                setTimeout(function () { if (_this._state !== 1)
-                    return; _this._state = 0; _this._process(); }, 0);
-            }
-        };
-        TaskQueue.prototype.clear = function () {
-            this._tasks = [];
-            this._state = 0;
+            this._queue.addTask(task);
         };
         return TaskQueue;
     }());
@@ -1871,9 +1898,9 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
     }());
     exports.AbortablePromise = AbortablePromise;
 });
-define("jriapp_shared/utils/async", ["require", "exports", "jriapp_shared/utils/deferred", "jriapp_shared/utils/checks"], function (require, exports, deferred_1, checks_6) {
+define("jriapp_shared/utils/async", ["require", "exports", "jriapp_shared/utils/deferred", "jriapp_shared/utils/checks"], function (require, exports, deferred_1, checks_7) {
     "use strict";
-    var checks = checks_6.Checks;
+    var checks = checks_7.Checks;
     var AsyncUtils = (function () {
         function AsyncUtils() {
         }
@@ -2143,69 +2170,7 @@ define("jriapp_shared/utils/dom", ["require", "exports"], function (require, exp
     }());
     exports.DomUtils = DomUtils;
 });
-define("jriapp_shared/utils/raf", ["require", "exports", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/dom", "jriapp_shared/utils/error"], function (require, exports, checks_7, arrhelper_2, dom_1, error_2) {
-    "use strict";
-    var checks = checks_7.Checks, arrHelper = arrhelper_2.ArrayHelper, error = error_2.ERROR, win = dom_1.DomUtils.window;
-    var MAX_NUM = 99999900000;
-    function createRAF(interval) {
-        if (interval === void 0) { interval = 40; }
-        var _rafQueue = [], _rafQueueIndex = {}, _timer = null, _newHandle = 1;
-        var res = {
-            cancelRequest: function (handle) {
-                var index = _rafQueueIndex[handle];
-                if (!checks.isNt(index)) {
-                    arrHelper.removeIndex(_rafQueue, index);
-                    delete _rafQueueIndex[handle];
-                }
-            },
-            queueRequest: function (func) {
-                var handle = _newHandle;
-                _newHandle += 1;
-                var len = _rafQueue.push({ handle: handle, fn: func });
-                _rafQueueIndex[handle] = len - 1;
-                if (!_timer) {
-                    _timer = win.setTimeout(function () {
-                        var arr = _rafQueue;
-                        _timer = null;
-                        _rafQueue = [];
-                        _rafQueueIndex = {};
-                        if (_newHandle > MAX_NUM)
-                            _newHandle = 1;
-                        arr.forEach(function (raf) {
-                            try {
-                                raf.fn(raf.handle);
-                            }
-                            catch (err) {
-                                error.handleError(win, err, win);
-                            }
-                        });
-                    }, interval);
-                }
-                return handle;
-            }
-        };
-        return res;
-    }
-    exports.createRAF = createRAF;
-    function checkRAF() {
-        if (!win.requestAnimationFrame) {
-            var requestAnimationFrame_1 = win.requestAnimationFrame || win.mozRequestAnimationFrame ||
-                win.webkitRequestAnimationFrame || win.msRequestAnimationFrame;
-            var cancelAnimationFrame_1 = win.cancelAnimationFrame || win.mozCancelAnimationFrame ||
-                (win.webkitCancelAnimationFrame || win.webkitCancelRequestAnimationFrame) ||
-                win.msCancelAnimationFrame;
-            if (!requestAnimationFrame_1 || !cancelAnimationFrame_1) {
-                var _raf = createRAF();
-                requestAnimationFrame_1 = _raf.queueRequest;
-                cancelAnimationFrame_1 = _raf.cancelRequest;
-            }
-            win.requestAnimationFrame = requestAnimationFrame_1;
-            win.cancelAnimationFrame = cancelAnimationFrame_1;
-        }
-    }
-    exports.checkRAF = checkRAF;
-});
-define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug", "jriapp_shared/utils/error", "jriapp_shared/utils/logger", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/async", "jriapp_shared/utils/http", "jriapp_shared/utils/strutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/dom", "jriapp_shared/utils/raf"], function (require, exports, coreutils_5, debug_3, error_3, logger_1, sysutils_2, async_2, http_1, strutils_3, checks_8, arrhelper_3, dom_2, raf_1) {
+define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug", "jriapp_shared/utils/error", "jriapp_shared/utils/logger", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/async", "jriapp_shared/utils/http", "jriapp_shared/utils/strutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/dom", "jriapp_shared/utils/queue"], function (require, exports, coreutils_5, debug_3, error_3, logger_1, sysutils_2, async_2, http_1, strutils_3, checks_8, arrhelper_3, dom_1, queue_2) {
     "use strict";
     var Utils = (function () {
         function Utils() {
@@ -2220,8 +2185,8 @@ define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/
         Utils.log = logger_1.LOGGER;
         Utils.debug = debug_3.DEBUG;
         Utils.sys = sysutils_2.SysUtils;
-        Utils.dom = dom_2.DomUtils;
-        Utils.queue = raf_1.createRAF();
+        Utils.dom = dom_1.DomUtils;
+        Utils.queue = queue_2.createQueue(0);
         return Utils;
     }());
     exports.Utils = Utils;

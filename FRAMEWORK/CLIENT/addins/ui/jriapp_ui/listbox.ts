@@ -72,6 +72,7 @@ export class ListBox extends BaseObject {
     private _fn_state: (data: IMappedItem) => void;
     private _textProvider: IOptionTextProvider;
     private _stateProvider: IOptionStateProvider;
+    private _isDataBound: boolean;
 
     constructor(options: IListBoxConstructorOptions) {
         super();
@@ -104,6 +105,7 @@ export class ListBox extends BaseObject {
         this._valMap = {};
         this._savedValue = checks.undefined;
         this.tempValue = checks.undefined;
+        this._isDataBound = false;
         const ds = this._options.dataSource;
         this._options.dataSource = null;
         this._fn_state = (data: IMappedItem) => {
@@ -168,13 +170,14 @@ export class ListBox extends BaseObject {
     }
     protected _getValue(item: ICollectionItem): any {
         if (!item) {
-            return checks.undefined;
+            return null;
         }
+
         if (!!this._options.valuePath) {
             return sys.resolvePath(item, this._options.valuePath);
         }
         else {
-            return checks.undefined;
+            return null;
         }
     }
     protected _getText(item: ICollectionItem, index: number): string {
@@ -322,12 +325,14 @@ export class ListBox extends BaseObject {
         ds.addOnCommitChanges(function (sender, args) {
             self._onCommitChanges(args.item, args.isBegin, args.isRejected, args.status);
         }, self._objId);
+        this._isDataBound = true;
     }
     private _unbindDS() {
         const self = this, ds = this.dataSource;
         if (!ds)
             return;
         ds.removeNSHandlers(self._objId);
+        this._isDataBound = false;
     }
     private _addOption(item: ICollectionItem, first: boolean) {
         if (this._isDestroyCalled)
@@ -502,7 +507,7 @@ export class ListBox extends BaseObject {
         if (checks.isNt(val))
             return "";
         val = "" + val;
-        let data: IMappedItem = this._valMap[val];
+        const data: IMappedItem = this._valMap[val];
         if (!data)
             return "";
         else
@@ -514,7 +519,7 @@ export class ListBox extends BaseObject {
     get dataSource() { return this._options.dataSource; }
     set dataSource(v) {
         if (this.dataSource !== v) {
-            if (checks.isUndefined(this.tempValue) && !!this.dataSource) {
+            if (checks.isUndefined(this.tempValue) && this._isDataBound) {
                 this.tempValue = this.selectedValue;
             }
 
@@ -522,7 +527,7 @@ export class ListBox extends BaseObject {
 
             this._options.dataSource = v;
 
-            utils.queue.queueRequest(() => {
+            utils.queue.addTask(() => {
                 if (this.getIsDestroyCalled())
                     return;
                 this._bindDS();
@@ -535,16 +540,16 @@ export class ListBox extends BaseObject {
         }
     }
     get selectedValue() {
-        if (!!this.dataSource) {
+        if (this._isDataBound && checks.isUndefined(this.tempValue)) {
             return this._getValue(this.selectedItem);
         }
         else {
-            return checks.undefined;
+            return this.tempValue;
         }
     }
     set selectedValue(v) {
         const self = this;
-        if (!!this.dataSource) {
+        if (this._isDataBound) {
             if (this.selectedValue !== v) {
                 const item = self.findItemByValue(v);
                 self.selectedItem = item;
@@ -609,7 +614,7 @@ export class ListBox extends BaseObject {
         if (v !== this._textProvider) {
             this._textProvider = v;
             this.raisePropertyChanged(PROP_NAME.textProvider);
-            utils.queue.queueRequest(() => {
+            utils.queue.addTask(() => {
                 this._resetText();
             });
         }
@@ -619,7 +624,7 @@ export class ListBox extends BaseObject {
         if (v !== this._stateProvider) {
             this._stateProvider = v;
             this.raisePropertyChanged(PROP_NAME.stateProvider);
-            utils.queue.queueRequest(() => {
+            utils.queue.addTask(() => {
                 this._resetState();
             });
         }
