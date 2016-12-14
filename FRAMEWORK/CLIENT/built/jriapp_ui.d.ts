@@ -638,6 +638,7 @@ declare module "jriapp_ui/dynacontent" {
         private _templateID;
         private _template;
         private _animation;
+        private _debounce;
         constructor(options: IDynaContentOptions);
         templateLoading(template: ITemplate): void;
         templateLoaded(template: ITemplate, error?: any): void;
@@ -1344,7 +1345,7 @@ declare module "jriapp_ui/pager" {
         private _rowsPerPage;
         private _rowCount;
         private _currentPage;
-        private _renderHandle;
+        private _debounce;
         constructor(options: IPagerConstructorOptions);
         protected _createElement(tag: string): JQuery;
         protected _render(): void;

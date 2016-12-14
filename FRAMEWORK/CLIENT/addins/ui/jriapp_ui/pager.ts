@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    Utils, BaseObject, IBaseObject, LocaleERRS as ERRS, LocaleSTRS as STRS
+    Utils, BaseObject, IBaseObject, LocaleERRS as ERRS, LocaleSTRS as STRS, Debounce
 } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
 import { IApplication, IViewOptions } from "jriapp/int";
@@ -55,7 +55,7 @@ export class Pager extends BaseObject {
     private _rowsPerPage: number;
     private _rowCount: number;
     private _currentPage: number;
-    private _renderHandle: number;
+    private _debounce: Debounce;
 
     constructor(options: IPagerConstructorOptions) {
         super();
@@ -81,7 +81,7 @@ export class Pager extends BaseObject {
         this._rowsPerPage = 0;
         this._rowCount = 0;
         this._currentPage = 1;
-        this._renderHandle = null;
+        this._debounce = new Debounce();
         if (!!this._options.dataSource) {
             this._bindDS();
         }
@@ -177,13 +177,9 @@ export class Pager extends BaseObject {
         }
     }
     protected render() {
-        if (!!this._renderHandle)
-            win.cancelAnimationFrame(this._renderHandle);
-
-        this._renderHandle = win.requestAnimationFrame(() => {
+        this._debounce.enqueue(() => {
             if (this.getIsDestroyCalled())
                 return;
-            this._renderHandle = null;
             this._render();
         });
     }
@@ -203,6 +199,8 @@ export class Pager extends BaseObject {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
+        this._debounce.destroy();
+        this._debounce = null;
         this._unbindDS();
         this._clearContent();
         dom.removeClass([this.el], css.pager);
@@ -211,8 +209,9 @@ export class Pager extends BaseObject {
         super.destroy();
     }
     protected _bindDS() {
-        let self = this, ds = this.dataSource;
-        if (!ds) return;
+        const self = this, ds = this.dataSource;
+        if (!ds)
+            return;
         ds.addOnCollChanged((s, args) => {
             switch (args.changeType) {
                 case COLL_CHANGE_TYPE.Reset:
@@ -230,8 +229,9 @@ export class Pager extends BaseObject {
         this._reset();
     }
     protected _unbindDS() {
-        let self = this, ds = this.dataSource;
-        if (!ds) return;
+        const self = this, ds = this.dataSource;
+        if (!ds)
+            return;
         ds.removeNSHandlers(self._objId);
     }
     protected _clearContent() {
@@ -252,7 +252,7 @@ export class Pager extends BaseObject {
         this.render();
     }
     protected _createLink(page: number, text: string, tip?: string) {
-        let $a = this._createElement("a"), self = this;
+        const $a = this._createElement("a"), self = this;
         $a.text("" + text);
         $a.attr("href", "javascript:void(0)");
 

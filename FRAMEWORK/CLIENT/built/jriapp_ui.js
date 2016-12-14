@@ -3084,6 +3084,7 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
             this._templateID = null;
             this._template = null;
             this._animation = null;
+            this._debounce = new jriapp_shared_17.Debounce();
         }
         DynaContentElView.prototype.templateLoading = function (template) {
             if (this.getIsDestroyCalled())
@@ -3109,11 +3110,11 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
         DynaContentElView.prototype._templateChanging = function (oldName, newName) {
             var self = this;
             try {
-                if (!newName && !!this._template) {
-                    if (!!this._animation && !!this._template.loadedElem) {
-                        this._animation.stop();
-                        this._animation.beforeHide(this._template);
-                        this._animation.hide(this._template).always(function () {
+                if (!newName && !!self._template) {
+                    if (!!self._animation && !!self._template.loadedElem) {
+                        self._animation.stop();
+                        self._animation.beforeHide(self._template);
+                        self._animation.hide(self._template).always(function () {
                             if (self.getIsDestroyCalled())
                                 return;
                             self._template.destroy();
@@ -3130,30 +3131,35 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
                 }
             }
             catch (ex) {
-                utils.err.reThrow(ex, this.handleError(ex, this));
+                utils.err.reThrow(ex, self.handleError(ex, self));
             }
-            try {
-                if (!this._template) {
-                    this._template = template_4.createTemplate(this._dataContext, this);
-                    this._template.templateID = newName;
-                    self.raisePropertyChanged(PROP_NAME.template);
+            this._debounce.enqueue(function () {
+                if (self.getIsDestroyCalled())
                     return;
-                }
-                if (!!this._animation && !!this._template.loadedElem) {
-                    this._animation.stop();
-                    this._animation.beforeHide(this._template);
-                    this._animation.hide(this._template).always(function () {
-                        if (self.getIsDestroyCalled())
-                            return;
+                try {
+                    if (!self._template) {
+                        self._template = template_4.createTemplate(self._dataContext, self);
                         self._template.templateID = newName;
-                    });
+                        self.raisePropertyChanged(PROP_NAME.template);
+                        return;
+                    }
+                    if (!!self._animation && !!self._template.loadedElem) {
+                        self._animation.stop();
+                        self._animation.beforeHide(self._template);
+                        self._animation.hide(self._template).always(function () {
+                            if (self.getIsDestroyCalled())
+                                return;
+                            self._template.templateID = newName;
+                        });
+                    }
+                    else {
+                        self._template.templateID = newName;
+                    }
                 }
-                else
-                    self._template.templateID = newName;
-            }
-            catch (ex) {
-                utils.err.reThrow(ex, this.handleError(ex, this));
-            }
+                catch (ex) {
+                    utils.err.reThrow(ex, self.handleError(ex, self));
+                }
+            });
         };
         DynaContentElView.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -3163,6 +3169,8 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
             this._animation = null;
             var t = this._template;
             this._template = null;
+            this._debounce.destroy();
+            this._debounce = null;
             if (sys.isBaseObj(a)) {
                 a.destroy();
             }
@@ -3186,11 +3194,7 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
                 if (old !== v) {
                     this._prevTemplateID = old;
                     this._templateID = v;
-                    win.requestAnimationFrame(function () {
-                        if (self.getIsDestroyCalled())
-                            return;
-                        self._templateChanging(old, v);
-                    });
+                    self._templateChanging(old, v);
                     this.raisePropertyChanged(PROP_NAME.templateID);
                 }
             },
@@ -6107,7 +6111,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             this._rowsPerPage = 0;
             this._rowCount = 0;
             this._currentPage = 1;
-            this._renderHandle = null;
+            this._debounce = new jriapp_shared_35.Debounce();
             if (!!this._options.dataSource) {
                 this._bindDS();
             }
@@ -6187,12 +6191,9 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
         };
         Pager.prototype.render = function () {
             var _this = this;
-            if (!!this._renderHandle)
-                win.cancelAnimationFrame(this._renderHandle);
-            this._renderHandle = win.requestAnimationFrame(function () {
+            this._debounce.enqueue(function () {
                 if (_this.getIsDestroyCalled())
                     return;
-                _this._renderHandle = null;
                 _this._render();
             });
         };
@@ -6212,6 +6213,8 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
+            this._debounce.destroy();
+            this._debounce = null;
             this._unbindDS();
             this._clearContent();
             dom.removeClass([this.el], css.pager);
