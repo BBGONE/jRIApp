@@ -1033,7 +1033,7 @@ define("jriapp/utils/sloader", ["require", "exports", "jriapp_shared", "jriapp_s
 define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const", "jriapp/elview", "jriapp/content", "jriapp/defaults", "jriapp/utils/tloader", "jriapp/utils/sloader", "jriapp/utils/path", "jriapp/utils/jquery", "jriapp_shared/utils/queue"], function (require, exports, jriapp_shared_10, const_2, elview_1, content_1, defaults_1, tloader_1, sloader_1, path_2, jquery_2, queue_1) {
     "use strict";
     var utils = jriapp_shared_10.Utils, dom = utils.dom, win = dom.window, doc = win.document, arrHelper = utils.arr, _async = utils.defer, coreUtils = utils.core, strUtils = utils.str, ERROR = utils.err, ERRS = jriapp_shared_10.LocaleERRS;
-    function checkRAF() {
+    (function () {
         var win = dom.window;
         if (!win.requestAnimationFrame) {
             var requestAnimationFrame_1 = win.requestAnimationFrame || win.mozRequestAnimationFrame ||
@@ -1049,7 +1049,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
             win.requestAnimationFrame = requestAnimationFrame_1;
             win.cancelAnimationFrame = cancelAnimationFrame_1;
         }
-    }
+    })();
     var _TEMPLATE_SELECTOR = 'script[type="text/html"]';
     var stylesLoader = sloader_1.createCssLoader();
     var GLOB_EVENTS = {

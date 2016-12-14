@@ -23,7 +23,7 @@ const utils = Utils, dom = utils.dom, win = dom.window, doc = win.document, arrH
     ERRS = LocaleERRS;
 
 //Implements polyfill for requestAnimationFrame API
-function checkRAF() {
+(function() {
     let win: any = dom.window;
 
     if (!win.requestAnimationFrame) {
@@ -44,7 +44,7 @@ function checkRAF() {
         win.requestAnimationFrame = requestAnimationFrame;
         win.cancelAnimationFrame = cancelAnimationFrame;
     }
-}
+})();
 
 const _TEMPLATE_SELECTOR = 'script[type="text/html"]';
 const stylesLoader = createCssLoader();
