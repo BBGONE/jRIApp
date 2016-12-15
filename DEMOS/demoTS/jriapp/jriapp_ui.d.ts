@@ -365,6 +365,8 @@ declare module "jriapp_ui/listbox" {
         valuePath: string;
         textPath: string;
         statePath?: string;
+        isNoEmptyOption?: boolean;
+        emptyOptionText?: string;
     }
     export interface IListBoxConstructorOptions extends IListBoxOptions {
         el: HTMLSelectElement;
@@ -378,24 +380,21 @@ declare module "jriapp_ui/listbox" {
         private _$el;
         private _objId;
         private _isRefreshing;
-        private _selectedItem;
-        private _prevSelected;
+        private _selectedValue;
         private _keyMap;
         private _valMap;
-        private _savedValue;
-        private _tempValue;
         private _options;
         private _fn_state;
         private _textProvider;
         private _stateProvider;
-        private _isDataBound;
+        private _savedVal;
+        private _prevIndex;
         constructor(options: IListBoxConstructorOptions);
         destroy(): void;
         protected _getEventNames(): string[];
         addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any): void;
         removeOnRefreshed(nmspace?: string): void;
         protected _onChanged(): void;
-        protected _getStringValue(item: ICollectionItem): string;
         protected _getValue(item: ICollectionItem): any;
         protected _getText(item: ICollectionItem, index: number): string;
         protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>): void;
@@ -411,14 +410,15 @@ declare module "jriapp_ui/listbox" {
         private _removeOption(item);
         private _clear(isDestroy);
         private _refresh();
-        private _findItemIndex(item);
+        protected getItemIndex(item: ICollectionItem): number;
+        protected getMappedItem(val: any): IMappedItem;
+        protected updateSelected(v: any): void;
         protected _setIsEnabled(el: HTMLSelectElement, v: boolean): void;
         protected _getIsEnabled(el: HTMLSelectElement): boolean;
-        protected tempValue: any;
+        getText(val: any): string;
         clear(): void;
-        findItemByValue(val: any): ICollectionItem;
-        getTextByValue(val: any): string;
         toString(): string;
+        protected selectedIndex: number;
         dataSource: ICollection<ICollectionItem>;
         selectedValue: any;
         selectedItem: ICollectionItem;

@@ -137,7 +137,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
     }
     protected getLookupText() {
         let listBoxView = this.getListBoxElView();
-        return listBoxView.listBox.getTextByValue(this.value);
+        return listBoxView.listBox.getText(this.value);
     }
     protected getSpanView() {
         if (!!this._spanView) {
