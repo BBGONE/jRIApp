@@ -388,7 +388,6 @@ declare module "jriapp_ui/listbox" {
         private _textProvider;
         private _stateProvider;
         private _savedVal;
-        private _prevIndex;
         constructor(options: IListBoxConstructorOptions);
         destroy(): void;
         protected _getEventNames(): string[];
@@ -411,7 +410,8 @@ declare module "jriapp_ui/listbox" {
         private _clear(isDestroy);
         private _refresh();
         protected getItemIndex(item: ICollectionItem): number;
-        protected getMappedItem(val: any): IMappedItem;
+        protected getByValue(val: any): IMappedItem;
+        protected getByIndex(index: number): IMappedItem;
         protected updateSelected(v: any): void;
         protected _setIsEnabled(el: HTMLSelectElement, v: boolean): void;
         protected _getIsEnabled(el: HTMLSelectElement): boolean;

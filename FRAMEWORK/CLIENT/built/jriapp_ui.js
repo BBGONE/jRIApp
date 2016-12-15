@@ -1501,7 +1501,6 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             this._keyMap = {};
             this._valMap = {};
             this._savedVal = checks.undefined;
-            this._prevIndex = -1;
             var ds = this._options.dataSource;
             this._options.dataSource = null;
             this._fn_state = function (data) {
@@ -1541,12 +1540,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             this._removeHandler(LISTBOX_EVENTS.refreshed, nmspace);
         };
         ListBox.prototype._onChanged = function () {
-            var op = null, key, data;
-            if (this.selectedIndex >= 0) {
-                op = this.el.options[this.selectedIndex];
-                key = op.value;
-                data = this._keyMap[key];
-            }
+            var op = null, key, data = this.getByIndex(this.selectedIndex);
             if (!data) {
                 this.selectedValue = null;
                 return;
@@ -1581,7 +1575,6 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         };
         ListBox.prototype._onDSCollectionChanged = function (sender, args) {
             var self = this;
-            var data;
             switch (args.changeType) {
                 case 2:
                     {
@@ -1602,7 +1595,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     break;
                 case 3:
                     {
-                        data = self._keyMap[args.old_key];
+                        var data = self._keyMap[args.old_key];
                         if (!!data) {
                             delete self._keyMap[args.old_key];
                             self._keyMap[args.new_key] = data;
@@ -1792,8 +1785,6 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 if (!data) {
                     return;
                 }
-                var removedIndex = data.op.index;
-                var currentIndex = this.selectedIndex;
                 item.removeNSHandlers(this._objId);
                 this.el.remove(data.op.index);
                 var val = fn_toString(this._getValue(item));
@@ -1801,12 +1792,8 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 if (!!val) {
                     delete this._valMap[val];
                 }
-                if (this._prevIndex === removedIndex) {
-                    this._prevIndex = -1;
-                }
-                if (currentIndex === removedIndex) {
-                    this.selectedIndex = this._prevIndex;
-                }
+                var curVal = this.getByIndex(this.selectedIndex);
+                this.selectedValue = (!curVal ? null : this._getValue(curVal.item));
             }
         };
         ListBox.prototype._clear = function (isDestroy) {
@@ -1820,7 +1807,6 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             this.el.options.length = 0;
             this._keyMap = {};
             this._valMap = {};
-            this._prevIndex = null;
             if (!isDestroy && !this._options.isNoEmptyOption) {
                 this._addOption(null, false);
             }
@@ -1844,22 +1830,38 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             this.raiseEvent(LISTBOX_EVENTS.refreshed, {});
         };
         ListBox.prototype.getItemIndex = function (item) {
-            if (!item || item.getIsDestroyCalled())
-                return 0;
+            if (!item || item.getIsDestroyCalled()) {
+                return -1;
+            }
             var data = this._keyMap[item._key];
-            return (!data) ? 0 : data.op.index;
+            return (!data) ? -1 : data.op.index;
         };
-        ListBox.prototype.getMappedItem = function (val) {
+        ListBox.prototype.getByValue = function (val) {
             if (checks.isNt(val))
                 return null;
             var key = fn_toString(val);
             var data = this._valMap[key];
             return (!data) ? null : data;
         };
+        ListBox.prototype.getByIndex = function (index) {
+            if (index >= 0 && index < this.el.length) {
+                var op = this.el.options[index];
+                var key = op.value;
+                return this._keyMap[key];
+            }
+            return null;
+        };
         ListBox.prototype.updateSelected = function (v) {
-            var item = this.getMappedItem(v);
-            var index = (!item ? 0 : item.op.index);
-            this.selectedIndex = index;
+            var data = this.getByValue(v);
+            var index = (!data ? 0 : data.op.index);
+            var oldRefreshing = this._isRefreshing;
+            this._isRefreshing = true;
+            try {
+                this.selectedIndex = index;
+            }
+            finally {
+                this._isRefreshing = oldRefreshing;
+            }
             this.raisePropertyChanged(PROP_NAME.selectedItem);
         };
         ListBox.prototype._setIsEnabled = function (el, v) {
@@ -1869,7 +1871,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             return !el.disabled;
         };
         ListBox.prototype.getText = function (val) {
-            var data = this.getMappedItem(val);
+            var data = this.getByValue(val);
             if (!data)
                 return "";
             else
@@ -1890,10 +1892,6 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             set: function (v) {
                 if (!!this.el && this.el.length > v && this.selectedIndex !== v) {
                     this.el.selectedIndex = v;
-                    this._prevIndex = this.el.selectedIndex;
-                }
-                else {
-                    this._prevIndex = -1;
                 }
             },
             enumerable: true,
@@ -1922,6 +1920,8 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         });
         Object.defineProperty(ListBox.prototype, "selectedValue", {
             get: function () {
+                if (!this.getByValue(this._selectedValue))
+                    return checks.undefined;
                 return this._selectedValue;
             },
             set: function (v) {
@@ -1937,14 +1937,14 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         });
         Object.defineProperty(ListBox.prototype, "selectedItem", {
             get: function () {
-                var item = this.getMappedItem(this._selectedValue);
+                var item = this.getByValue(this._selectedValue);
                 return (!item ? null : item.item);
             },
             set: function (v) {
                 var newVal = this._getValue(v);
                 if (this._selectedValue !== newVal) {
                     this._selectedValue = newVal;
-                    var item = this.getMappedItem(newVal);
+                    var item = this.getByValue(newVal);
                     this.selectedIndex = (!item ? 0 : item.op.index);
                     this.raisePropertyChanged(PROP_NAME.selectedItem);
                     this.raisePropertyChanged(PROP_NAME.selectedValue);

@@ -77,7 +77,6 @@ export class ListBox extends BaseObject {
     private _textProvider: IOptionTextProvider;
     private _stateProvider: IOptionStateProvider;
     private _savedVal: any;
-    private _prevIndex: number;
    
     constructor(options: IListBoxConstructorOptions) {
         super();
@@ -108,7 +107,6 @@ export class ListBox extends BaseObject {
         this._keyMap = {};
         this._valMap = {};
         this._savedVal = checks.undefined;
-        this._prevIndex = -1;
         const ds = this._options.dataSource;
         this._options.dataSource = null;
         this._fn_state = (data: IMappedItem) => {
@@ -150,13 +148,7 @@ export class ListBox extends BaseObject {
         this._removeHandler(LISTBOX_EVENTS.refreshed, nmspace);
     }
     protected _onChanged() {
-        let op: any = null, key: string, data: IMappedItem;
-        if (this.selectedIndex >= 0) {
-            op = this.el.options[this.selectedIndex];
-            key = op.value;
-            data = this._keyMap[key];
-        }
-
+        let op: any = null, key: string, data: IMappedItem = this.getByIndex(this.selectedIndex);
         if (!data) {
             this.selectedValue = null;
             return;
@@ -195,7 +187,6 @@ export class ListBox extends BaseObject {
     }
     protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>) {
         const self = this;
-        let data: any;
         switch (args.changeType) {
             case COLL_CHANGE_TYPE.Reset:
                 {
@@ -216,7 +207,7 @@ export class ListBox extends BaseObject {
                 break;
             case COLL_CHANGE_TYPE.Remap:
                 {
-                    data = self._keyMap[args.old_key];
+                    let data = self._keyMap[args.old_key];
                     if (!!data) {
                         delete self._keyMap[args.old_key];
                         self._keyMap[args.new_key] = data;
@@ -237,6 +228,7 @@ export class ListBox extends BaseObject {
             if (!isCanceled) {
                 const key = item._key;
                 let data = self._keyMap[key];
+
                 if (!!data) {
                     data.op.text = self._getText(item, data.op.index);
                     const val = this._getValue(item);
@@ -258,7 +250,7 @@ export class ListBox extends BaseObject {
         }
     }
     protected _onStatusChanged(item: ICollectionItem, oldStatus: ITEM_STATUS) {
-        let newStatus = item._aspect.status;
+        const newStatus = item._aspect.status;
         if (newStatus === ITEM_STATUS.Deleted) {
             this._removeOption(item);
             if (!!this._textProvider)
@@ -280,11 +272,12 @@ export class ListBox extends BaseObject {
         else {
             let oldVal = this._savedVal;
             this._savedVal = checks.undefined;
-
+            //delete is rejected
             if (isRejected && status === ITEM_STATUS.Deleted) {
                 this._addOption(item, true);
                 return;
             }
+
             let val = this._getValue(item);
             let data = self._keyMap[item._key];
             if (oldVal !== val) {
@@ -412,8 +405,7 @@ export class ListBox extends BaseObject {
             if (!data) {
                 return;
             }
-            const removedIndex = data.op.index;
-            const currentIndex = this.selectedIndex;
+
             item.removeNSHandlers(this._objId);
             this.el.remove(data.op.index);
             const val = fn_toString(this._getValue(item));
@@ -422,13 +414,8 @@ export class ListBox extends BaseObject {
                 delete this._valMap[val];
             }
 
-            if (this._prevIndex === removedIndex) {
-                this._prevIndex = -1;
-            }
-
-            if (currentIndex === removedIndex) {
-                this.selectedIndex = this._prevIndex;
-            }
+            let curVal = this.getByIndex(this.selectedIndex);
+            this.selectedValue = (!curVal ? null : this._getValue(curVal.item));
         }
     }
     private _clear(isDestroy: boolean) {
@@ -442,7 +429,6 @@ export class ListBox extends BaseObject {
         this.el.options.length = 0;
         this._keyMap = {};
         this._valMap = {};
-        this._prevIndex = null;
         if (!isDestroy && !this._options.isNoEmptyOption) {
             this._addOption(null, false);
         }
@@ -466,22 +452,38 @@ export class ListBox extends BaseObject {
         this.raiseEvent(LISTBOX_EVENTS.refreshed, {});
     }
     protected getItemIndex(item: ICollectionItem) {
-        if (!item || item.getIsDestroyCalled())
-            return 0;
+        if (!item || item.getIsDestroyCalled()) {
+            return -1;
+        }
         const data: IMappedItem = this._keyMap[item._key];
-        return (!data)? 0: data.op.index;
+        return (!data)? -1: data.op.index;
     }
-    protected getMappedItem(val: any): IMappedItem {
+    protected getByValue(val: any): IMappedItem {
         if (checks.isNt(val))
             return null;
         const key = fn_toString(val);
         const data: IMappedItem = this._valMap[key];
         return (!data) ? null : data;
     }
+    protected getByIndex(index: number): IMappedItem {
+        if (index >= 0 && index < this.el.length) {
+            let op = this.el.options[index];
+            let key = op.value;
+            return this._keyMap[key];
+        }
+        return null;
+    }
     protected updateSelected(v: any) {
-        const item: IMappedItem = this.getMappedItem(v);
-        const index = (!item ? 0 : item.op.index);
-        this.selectedIndex = index;
+        const data: IMappedItem = this.getByValue(v);
+        const index = (!data ? 0 : data.op.index);
+        const oldRefreshing = this._isRefreshing;
+        this._isRefreshing = true;
+        try {
+            this.selectedIndex = index;
+        }
+        finally {
+            this._isRefreshing = oldRefreshing;
+        }
         this.raisePropertyChanged(PROP_NAME.selectedItem);
     }
     protected _setIsEnabled(el: HTMLSelectElement, v: boolean) {
@@ -491,7 +493,7 @@ export class ListBox extends BaseObject {
         return !el.disabled;
     }
     getText(val: any): string {
-        const data: IMappedItem = this.getMappedItem(val);
+        const data: IMappedItem = this.getByValue(val);
         if (!data)
             return "";
         else
@@ -511,10 +513,6 @@ export class ListBox extends BaseObject {
     protected set selectedIndex(v: number) {
         if (!!this.el && this.el.length > v && this.selectedIndex !== v) {
             this.el.selectedIndex = v;
-            this._prevIndex = this.el.selectedIndex;
-        }
-        else {
-            this._prevIndex = -1;
         }
     }
     get dataSource() { return this._options.dataSource; }
@@ -537,6 +535,8 @@ export class ListBox extends BaseObject {
         }
     }
     get selectedValue() {
+        if (!this.getByValue(this._selectedValue))
+            return checks.undefined;
         return this._selectedValue;
     }
     set selectedValue(v) {
@@ -548,14 +548,14 @@ export class ListBox extends BaseObject {
         }
     }
     get selectedItem() {
-        const item: IMappedItem = this.getMappedItem(this._selectedValue);
+        const item: IMappedItem = this.getByValue(this._selectedValue);
         return (!item ? null : item.item);
     }
     set selectedItem(v: ICollectionItem) {
         const newVal = this._getValue(v);
         if (this._selectedValue !== newVal) {
             this._selectedValue = newVal;
-            const item = this.getMappedItem(newVal);
+            const item = this.getByValue(newVal);
             this.selectedIndex = (!item ? 0 : item.op.index);
             this.raisePropertyChanged(PROP_NAME.selectedItem);
             this.raisePropertyChanged(PROP_NAME.selectedValue);
