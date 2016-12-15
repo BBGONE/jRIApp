@@ -9,11 +9,11 @@ const MAX_NUM = 99999900000, win = window;
 
 export interface IQueue
 {
-    cancelTask: (taskId: number) => void;
-    addTask: (func: FrameRequestCallback) => number;
+    cancel: (taskId: number) => void;
+    enque: (func: FrameRequestCallback) => number;
 }
 
-export function createQueue(interval: number = 40): IQueue {
+export function createQueue(interval: number = 0): IQueue {
     let _rafQueue: {
         taskId: number;
         func: FrameRequestCallback
@@ -21,14 +21,14 @@ export function createQueue(interval: number = 40): IQueue {
         _timer: number = null, _newTaskId = 1;
 
     const res: IQueue = {
-        cancelTask: function (taskId: number) {
+        cancel: function (taskId: number) {
             const index = _rafQueueIndex[taskId];
             if (!checks.isNt(index)) {
                 arrHelper.removeIndex(_rafQueue, index);
                 delete _rafQueueIndex[taskId];
             }
         },
-        addTask: function (func: FrameRequestCallback): number {
+        enque: function (func: FrameRequestCallback): number {
             const taskId = _newTaskId;
             _newTaskId += 1;
             const len = _rafQueue.push({ taskId: taskId, func: func });

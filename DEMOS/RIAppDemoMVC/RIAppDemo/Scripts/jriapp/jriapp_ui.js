@@ -1914,7 +1914,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     }
                     this._unbindDS();
                     this._options.dataSource = v;
-                    utils.queue.addTask(function () {
+                    utils.queue.enque(function () {
                         if (_this.getIsDestroyCalled())
                             return;
                         _this._bindDS();
@@ -2028,10 +2028,10 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 var _this = this;
                 if (v !== this._textProvider) {
                     this._textProvider = v;
-                    this.raisePropertyChanged(PROP_NAME.textProvider);
-                    utils.queue.addTask(function () {
+                    utils.queue.enque(function () {
                         _this._resetText();
                     });
+                    this.raisePropertyChanged(PROP_NAME.textProvider);
                 }
             },
             enumerable: true,
@@ -2043,10 +2043,10 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 var _this = this;
                 if (v !== this._stateProvider) {
                     this._stateProvider = v;
-                    this.raisePropertyChanged(PROP_NAME.stateProvider);
-                    utils.queue.addTask(function () {
+                    utils.queue.enque(function () {
                         _this._resetState();
                     });
+                    this.raisePropertyChanged(PROP_NAME.stateProvider);
                 }
             },
             enumerable: true,
@@ -5842,7 +5842,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 if (v !== this.dataSource) {
                     this._unbindDS();
                     this._options.dataSource = v;
-                    utils.queue.addTask(function () {
+                    utils.queue.enque(function () {
                         if (_this.getIsDestroyCalled())
                             return;
                         _this._clearGrid();
@@ -6935,7 +6935,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
                     return;
                 this._unbindDS();
                 this._options.dataSource = v;
-                utils.queue.addTask(function () {
+                utils.queue.enque(function () {
                     if (_this.getIsDestroyCalled())
                         return;
                     _this._bindDS();

@@ -35,10 +35,10 @@ const utils = Utils, dom = utils.dom, win = dom.window, doc = win.document, arrH
             win.msCancelAnimationFrame;
 
         if (!requestAnimationFrame || !cancelAnimationFrame) {
-            const queue = createQueue();
+            const queue = createQueue(40);
 
-            requestAnimationFrame = queue.addTask;
-            cancelAnimationFrame = queue.cancelTask;
+            requestAnimationFrame = queue.enque;
+            cancelAnimationFrame = queue.cancel;
         }
 
         win.requestAnimationFrame = requestAnimationFrame;

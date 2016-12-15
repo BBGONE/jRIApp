@@ -18,7 +18,8 @@ declare module "jriapp_shared/utils/ideferred" {
         state(): PromiseState;
     }
     export interface ITaskQueue {
-        enque(task: () => void): void;
+        enque(task: (timer: number) => void): number;
+        cancel(taskId: number): void;
     }
     export interface IAbortable {
         abort(reason?: string): void;
@@ -835,8 +836,8 @@ declare module "jriapp_shared/utils/logger" {
 }
 declare module "jriapp_shared/utils/queue" {
     export interface IQueue {
-        cancelTask: (taskId: number) => void;
-        addTask: (func: FrameRequestCallback) => number;
+        cancel: (taskId: number) => void;
+        enque: (func: FrameRequestCallback) => number;
     }
     export function createQueue(interval?: number): IQueue;
 }
@@ -919,7 +920,7 @@ declare module "jriapp_shared/utils/utils" {
     import { Checks } from "jriapp_shared/utils/checks";
     import { ArrayHelper } from "jriapp_shared/utils/arrhelper";
     import { DomUtils } from "jriapp_shared/utils/dom";
-    import { IQueue } from "jriapp_shared/utils/queue";
+    import { ITaskQueue } from "jriapp_shared/utils/ideferred";
     export class Utils {
         static readonly check: typeof Checks;
         static readonly str: typeof StringUtils;
@@ -932,7 +933,7 @@ declare module "jriapp_shared/utils/utils" {
         static readonly debug: typeof DEBUG;
         static readonly sys: typeof SysUtils;
         static readonly dom: typeof DomUtils;
-        static readonly queue: IQueue;
+        static readonly queue: ITaskQueue;
     }
 }
 declare module "jriapp_shared/collection/utils" {
@@ -1258,7 +1259,7 @@ declare module "jriapp_shared/utils/debounce" {
         constructor(interval?: number);
         enqueue(fn: () => any): void;
         destroy(): void;
-        interval: number;
+        readonly interval: number;
         readonly IsDestroyed: boolean;
     }
 }

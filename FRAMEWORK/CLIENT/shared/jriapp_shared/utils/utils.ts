@@ -10,7 +10,8 @@ import { StringUtils } from "./strutils";
 import { Checks } from "./checks";
 import { ArrayHelper } from "./arrhelper";
 import { DomUtils } from "./dom";
-import { createQueue, IQueue } from "./queue";
+import { ITaskQueue } from "./ideferred";
+import { getTaskQueue } from "./deferred";
 
 export class Utils {
     static readonly check = Checks;
@@ -24,5 +25,5 @@ export class Utils {
     static readonly debug = DEBUG;
     static readonly sys = SysUtils;
     static readonly dom = DomUtils;
-    static readonly queue: IQueue = createQueue(0);
+    static readonly queue: ITaskQueue = getTaskQueue();
 }

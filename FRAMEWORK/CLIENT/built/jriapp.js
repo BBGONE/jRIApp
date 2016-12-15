@@ -1042,9 +1042,9 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
                 (win.webkitCancelAnimationFrame || win.webkitCancelRequestAnimationFrame) ||
                 win.msCancelAnimationFrame;
             if (!requestAnimationFrame_1 || !cancelAnimationFrame_1) {
-                var queue = queue_1.createQueue();
-                requestAnimationFrame_1 = queue.addTask;
-                cancelAnimationFrame_1 = queue.cancelTask;
+                var queue = queue_1.createQueue(40);
+                requestAnimationFrame_1 = queue.enque;
+                cancelAnimationFrame_1 = queue.cancel;
             }
             win.requestAnimationFrame = requestAnimationFrame_1;
             win.cancelAnimationFrame = cancelAnimationFrame_1;
@@ -3612,6 +3612,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.1.14";
+    exports.VERSION = "1.1.15";
     bootstrap_8.Bootstrap._initFramework();
 });

@@ -6,7 +6,8 @@ export interface IPromiseState {
 }
 
 export interface ITaskQueue {
-    enque(task: () => void): void;
+    enque(task: (timer: number) => void): number;
+    cancel(taskId: number): void;
 }
 
 export interface IAbortable {

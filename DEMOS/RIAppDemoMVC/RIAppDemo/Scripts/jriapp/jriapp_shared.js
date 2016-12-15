@@ -1586,17 +1586,17 @@ define("jriapp_shared/utils/queue", ["require", "exports", "jriapp_shared/utils/
     var checks = checks_5.Checks, arrHelper = arrhelper_2.ArrayHelper, error = error_2.ERROR;
     var MAX_NUM = 99999900000, win = window;
     function createQueue(interval) {
-        if (interval === void 0) { interval = 40; }
+        if (interval === void 0) { interval = 0; }
         var _rafQueue = [], _rafQueueIndex = {}, _timer = null, _newTaskId = 1;
         var res = {
-            cancelTask: function (taskId) {
+            cancel: function (taskId) {
                 var index = _rafQueueIndex[taskId];
                 if (!checks.isNt(index)) {
                     arrHelper.removeIndex(_rafQueue, index);
                     delete _rafQueueIndex[taskId];
                 }
             },
-            addTask: function (func) {
+            enque: function (func) {
                 var taskId = _newTaskId;
                 _newTaskId += 1;
                 var len = _rafQueue.push({ taskId: taskId, func: func });
@@ -1696,7 +1696,10 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
             this._queue = queue_1.createQueue(0);
         }
         TaskQueue.prototype.enque = function (task) {
-            this._queue.addTask(task);
+            return this._queue.enque(task);
+        };
+        TaskQueue.prototype.cancel = function (taskId) {
+            this._queue.cancel(taskId);
         };
         return TaskQueue;
     }());
@@ -2170,7 +2173,7 @@ define("jriapp_shared/utils/dom", ["require", "exports"], function (require, exp
     }());
     exports.DomUtils = DomUtils;
 });
-define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug", "jriapp_shared/utils/error", "jriapp_shared/utils/logger", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/async", "jriapp_shared/utils/http", "jriapp_shared/utils/strutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/dom", "jriapp_shared/utils/queue"], function (require, exports, coreutils_5, debug_3, error_3, logger_1, sysutils_2, async_2, http_1, strutils_3, checks_8, arrhelper_3, dom_1, queue_2) {
+define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug", "jriapp_shared/utils/error", "jriapp_shared/utils/logger", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/async", "jriapp_shared/utils/http", "jriapp_shared/utils/strutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/dom", "jriapp_shared/utils/deferred"], function (require, exports, coreutils_5, debug_3, error_3, logger_1, sysutils_2, async_2, http_1, strutils_3, checks_8, arrhelper_3, dom_1, deferred_3) {
     "use strict";
     var Utils = (function () {
         function Utils() {
@@ -2186,7 +2189,7 @@ define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/
         Utils.debug = debug_3.DEBUG;
         Utils.sys = sysutils_2.SysUtils;
         Utils.dom = dom_1.DomUtils;
-        Utils.queue = queue_2.createQueue(0);
+        Utils.queue = deferred_3.getTaskQueue();
         return Utils;
     }());
     exports.Utils = Utils;
@@ -4266,7 +4269,7 @@ define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_sha
     }(list_1.BaseList));
     exports.BaseDictionary = BaseDictionary;
 });
-define("jriapp_shared/utils/debounce", ["require", "exports"], function (require, exports) {
+define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/utils/deferred"], function (require, exports, deferred_4) {
     "use strict";
     var Debounce = (function () {
         function Debounce(interval) {
@@ -4283,19 +4286,30 @@ define("jriapp_shared/utils/debounce", ["require", "exports"], function (require
                 throw new Error("Debounce: Invalid operation");
             this._fn = fn;
             if (!this._timer) {
-                this._timer = setTimeout(function () {
+                var callback = function () {
                     var fn = _this._fn;
                     _this._timer = null;
                     _this._fn = null;
                     if (!!fn) {
                         fn();
                     }
-                }, this._interval);
+                };
+                if (!this._interval) {
+                    this._timer = deferred_4.getTaskQueue().enque(callback);
+                }
+                else {
+                    this._timer = setTimeout(callback, this._interval);
+                }
             }
         };
         Debounce.prototype.destroy = function () {
             if (!!this._timer) {
-                clearTimeout(this._timer);
+                if (!this._interval) {
+                    deferred_4.getTaskQueue().cancel(this._timer);
+                }
+                else {
+                    clearTimeout(this._timer);
+                }
             }
             this._timer = void 0;
             this._fn = null;
@@ -4303,9 +4317,6 @@ define("jriapp_shared/utils/debounce", ["require", "exports"], function (require
         Object.defineProperty(Debounce.prototype, "interval", {
             get: function () {
                 return this._interval;
-            },
-            set: function (v) {
-                this._interval = v;
             },
             enumerable: true,
             configurable: true

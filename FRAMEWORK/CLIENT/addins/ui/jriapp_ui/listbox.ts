@@ -527,7 +527,7 @@ export class ListBox extends BaseObject {
 
             this._options.dataSource = v;
 
-            utils.queue.addTask(() => {
+            utils.queue.enque(() => {
                 if (this.getIsDestroyCalled())
                     return;
                 this._bindDS();
@@ -613,20 +613,20 @@ export class ListBox extends BaseObject {
     set textProvider(v: IOptionTextProvider) {
         if (v !== this._textProvider) {
             this._textProvider = v;
-            this.raisePropertyChanged(PROP_NAME.textProvider);
-            utils.queue.addTask(() => {
+            utils.queue.enque(() => {
                 this._resetText();
             });
+            this.raisePropertyChanged(PROP_NAME.textProvider);
         }
     }
     get stateProvider() { return this._stateProvider; }
     set stateProvider(v: IOptionStateProvider) {
         if (v !== this._stateProvider) {
             this._stateProvider = v;
-            this.raisePropertyChanged(PROP_NAME.stateProvider);
-            utils.queue.addTask(() => {
+            utils.queue.enque(() => {
                 this._resetState();
             });
+            this.raisePropertyChanged(PROP_NAME.stateProvider);
         }
     }
     get el() { return this._options.el; }

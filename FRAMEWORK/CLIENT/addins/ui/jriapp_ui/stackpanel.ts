@@ -412,7 +412,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
             return;
         this._unbindDS();
         this._options.dataSource = v;
-        utils.queue.addTask(() => {
+        utils.queue.enque(() => {
             if (this.getIsDestroyCalled())
                 return;
             this._bindDS();

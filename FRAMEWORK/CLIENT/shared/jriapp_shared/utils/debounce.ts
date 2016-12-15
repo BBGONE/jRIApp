@@ -1,5 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { IDisposable } from "../int";
+import { ITaskQueue } from "./ideferred";
+import { getTaskQueue } from "./deferred";
 
 export class Debounce implements IDisposable {
     private _timer: number;
@@ -20,28 +22,37 @@ export class Debounce implements IDisposable {
         this._fn = fn;
 
         if (!this._timer) {
-            this._timer = setTimeout(() => {
+            const callback = () => {
                 const fn = this._fn;
                 this._timer = null;
                 this._fn = null;
                 if (!!fn) {
                     fn();
                 }
-            }, this._interval);
+            };
+
+            if (!this._interval) {
+                this._timer = getTaskQueue().enque(callback);
+            }
+            else {
+                this._timer = setTimeout(callback, this._interval);
+            }
         }
     }
     destroy(): void {
         if (!!this._timer) {
-            clearTimeout(this._timer);
+            if (!this._interval) {
+                getTaskQueue().cancel(this._timer);
+            }
+            else {
+                clearTimeout(this._timer);
+            }
         }
         this._timer = void 0;
         this._fn = null;
     }
     get interval() {
         return this._interval;
-    }
-    set interval(v: number) {
-        this._interval = v;
     }
     get IsDestroyed(): boolean {
         return this._timer === void 0;
