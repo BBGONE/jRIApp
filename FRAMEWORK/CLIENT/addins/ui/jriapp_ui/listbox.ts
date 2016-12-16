@@ -279,7 +279,7 @@ export class ListBox extends BaseObject {
             this._savedVal = this._getValue(item);
         }
         else {
-            let oldVal = this._savedVal;
+            const oldVal = this._savedVal;
             this._savedVal = checks.undefined;
             //delete is rejected
             if (isRejected && status === ITEM_STATUS.Deleted) {
@@ -287,8 +287,8 @@ export class ListBox extends BaseObject {
                 return;
             }
 
-            let val = this._getValue(item);
-            let data = self._keyMap[item._key];
+            const val = this._getValue(item);
+            const data = self._keyMap[item._key];
             if (oldVal !== val) {
                 if (!checks.isNt(oldVal)) {
                     delete self._valMap[fn_toString(oldVal)];
@@ -409,8 +409,7 @@ export class ListBox extends BaseObject {
         if (this._isDestroyCalled)
             return;
         if (!!item) {
-            const key = item._key;
-            let data = this._keyMap[key];
+            const key = item._key, data = this._keyMap[key];
             if (!data) {
                 return;
             }
@@ -423,7 +422,7 @@ export class ListBox extends BaseObject {
                 delete this._valMap[val];
             }
 
-            let curVal = this.getByIndex(this.selectedIndex);
+            const curVal = this.getByIndex(this.selectedIndex);
             this.selectedValue = (!curVal ? null : this._getValue(curVal.item));
         }
     }
@@ -524,15 +523,15 @@ export class ListBox extends BaseObject {
             this.el.selectedIndex = v;
         }
     }
-    get dataSource() { return this._options.dataSource; }
+    get dataSource() {
+        return this._options.dataSource;
+    }
     set dataSource(v) {
         if (this.dataSource !== v) {
             this._unbindDS();
 
             this._options.dataSource = v;
 
-            if (this.getIsDestroyCalled())
-                return;
             this._dsDebounce.enqueue(() => {
                 this._bindDS();
                 this._refresh();
@@ -544,7 +543,7 @@ export class ListBox extends BaseObject {
         }
     }
     get selectedValue() {
-        if (!this.getByValue(this._selectedValue))
+        if (!checks.isNt(this._selectedValue) && !this.getByValue(this._selectedValue))
             return checks.undefined;
         return this._selectedValue;
     }
@@ -625,12 +624,8 @@ export class ListBoxElView extends BaseElView {
  
     constructor(options: IListBoxViewOptions) {
         super(options);
-        let self = this;
+        const self = this;
         self._listBox = new ListBox(<IListBoxConstructorOptions>options);
-        self._listBox.addOnDestroyed(function () {
-            self._listBox = null;
-            self.raisePropertyChanged(PROP_NAME.listBox);
-        }, this.uniqueID);
         self._listBox.addOnPropertyChange("*", function (sender, args) {
             switch (args.property) {
                 case PROP_NAME.dataSource:
@@ -650,10 +645,9 @@ export class ListBoxElView extends BaseElView {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        if (!!this._listBox && !this._listBox.getIsDestroyCalled()) {
+        if (!this._listBox.getIsDestroyCalled()) {
             this._listBox.destroy();
         }
-        this._listBox = null;
         super.destroy();
     }
     toString() {
@@ -671,7 +665,7 @@ export class ListBoxElView extends BaseElView {
         return this._listBox.dataSource;
     }
     set dataSource(v: ICollection<ICollectionItem>) {
-        let self = this;
+        const self = this;
         if (self.dataSource !== v) {
             self._listBox.dataSource = v;
         }

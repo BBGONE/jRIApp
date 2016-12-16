@@ -2,7 +2,7 @@
 import {
     Utils, IBaseObject, IEditable, IErrorNotification,
     IValidationInfo, IVoidPromise, BaseObject, LocaleERRS as ERRS,
-    LocaleSTRS as STRS
+    LocaleSTRS as STRS, Debounce
 } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
 import { $ } from "jriapp/utils/jquery";
@@ -159,7 +159,7 @@ export class DataForm extends BaseObject {
 
     constructor(options: IViewOptions) {
         super();
-        let self = this, parent: HTMLElement;
+        const self = this;
         this._el = options.el;
         this._$el = $(this._el);
         this._objId = coreUtils.getNewID("frm");
@@ -174,8 +174,7 @@ export class DataForm extends BaseObject {
         this._parentDataForm = null;
         this._errors = null;
         this._contentPromise = null;
-
-        parent = viewChecks.getParentDataForm(null, this._el);
+        const parent = viewChecks.getParentDataForm(null, this._el);
         //if this form is nested inside another dataform
         //subscribe for parent's destroy event
         if (!!parent) {
@@ -208,15 +207,15 @@ export class DataForm extends BaseObject {
         return res;
     }
     private _createContent(): IVoidPromise {
-        let dctx: any = this._dataContext, self = this;
+        const dctx: any = this._dataContext, self = this;
         if (!dctx) {
             return;
         }
-        let contentElements = coreUtils.arr.fromList<HTMLElement>(this._el.querySelectorAll(DataForm._DATA_CONTENT_SELECTOR)),
+        const contentElements = coreUtils.arr.fromList<HTMLElement>(this._el.querySelectorAll(DataForm._DATA_CONTENT_SELECTOR)),
             isEditing = this.isEditing;
 
         //select all dataforms inside the scope
-        let forms = coreUtils.arr.fromList<HTMLElement>(this._el.querySelectorAll(DataForm._DATA_FORM_SELECTOR));
+        const forms = coreUtils.arr.fromList<HTMLElement>(this._el.querySelectorAll(DataForm._DATA_FORM_SELECTOR));
 
         contentElements.forEach(function (el) {
             //check if the element inside a nested dataform
@@ -237,14 +236,14 @@ export class DataForm extends BaseObject {
             content.render();
         });
 
-        let promise = self.app._getInternal().bindElements(this._el, dctx, true, this.isInsideTemplate);
+        const promise = self.app._getInternal().bindElements(this._el, dctx, true, this.isInsideTemplate);
         return promise.then((lftm) => {
             if (self.getIsDestroyCalled()) {
                 lftm.destroy();
                 return;
             }
             self._lfTime = lftm;
-            let bindings = self._getBindings();
+            const bindings = self._getBindings();
             bindings.forEach((binding) => {
                 if (!binding.isSourceFixed)
                     binding.source = dctx;
@@ -271,7 +270,7 @@ export class DataForm extends BaseObject {
         }
     }
     private _updateContent() {
-        let self = this;
+        const self = this;
         try {
             if (self._contentCreated) {
                 self._updateCreatedContent();
@@ -305,9 +304,10 @@ export class DataForm extends BaseObject {
         this.isEditing = this._editable.isEditing;
     }
     private _bindDS() {
-        let dataContext = this._dataContext, self = this;
+        const dataContext = this._dataContext, self = this;
         if (!dataContext)
             return;
+
         if (!!dataContext) {
             this._editable = sys.getEditable(dataContext);
             this._errNotification = sys.getErrorNotification(dataContext);
@@ -326,7 +326,7 @@ export class DataForm extends BaseObject {
         }
     }
     private _unbindDS() {
-        let dataContext = this._dataContext;
+        const dataContext = this._dataContext;
         this.validationErrors = null;
         if (!!dataContext && !dataContext.getIsDestroyCalled()) {
             dataContext.removeNSHandlers(this._objId);
@@ -360,7 +360,7 @@ export class DataForm extends BaseObject {
         this._el = null;
         this._$el = null;
         this._unbindDS();
-        let parentDataForm = this._parentDataForm;
+        const parentDataForm = this._parentDataForm;
         this._parentDataForm = null;
         if (!!parentDataForm && !parentDataForm.getIsDestroyCalled()) {
             parentDataForm.removeNSHandlers(this._objId);
@@ -377,28 +377,28 @@ export class DataForm extends BaseObject {
     get el() { return this._el; }
     get dataContext() { return this._dataContext; }
     set dataContext(v) {
-        try {
-            if (v === this._dataContext)
-                return;
-            if (!!v && !sys.isBaseObj(v)) {
-                throw new Error(ERRS.ERR_DATAFRM_DCTX_INVALID);
-            }
-            this._unbindDS();
-            this._dataContext = v;
-            this._bindDS();
-            this._updateContent();
-            this.raisePropertyChanged(PROP_NAME.dataContext);
-            if (!!this._dataContext) {
-                if (!!this._editable && this._isEditing !== this._editable.isEditing) {
-                    this.isEditing = this._editable.isEditing;
-                }
-                if (!!this._errNotification) {
-                    this._onDSErrorsChanged();
-                }
-            }
-        } catch (ex) {
-            utils.err.reThrow(ex, this.handleError(ex, this));
+        if (v === this._dataContext)
+            return;
+
+        if (!!v && !sys.isBaseObj(v)) {
+            throw new Error(ERRS.ERR_DATAFRM_DCTX_INVALID);
         }
+
+        this._unbindDS();
+        this._dataContext = v;
+
+        this._bindDS();
+        this._updateContent();
+        if (!!this._dataContext) {
+            if (!!this._editable && this._isEditing !== this._editable.isEditing) {
+                this.isEditing = this._editable.isEditing;
+            }
+            if (!!this._errNotification) {
+                this._onDSErrorsChanged();
+            }
+        }
+
+        this.raisePropertyChanged(PROP_NAME.dataContext);
     }
     get isEditing() { return this._isEditing; }
     set isEditing(v) {
@@ -458,10 +458,6 @@ export class DataFormElView extends BaseElView {
         super(options);
         const self = this;
         this._form = new DataForm(options);
-        this._form.addOnDestroyed(function () {
-            self._form = null;
-            self.raisePropertyChanged(PROP_NAME.form);
-        });
         this._form.addOnPropertyChange("*", function (form, args) {
             switch (args.property) {
                 case PROP_NAME.validationErrors:
@@ -474,7 +470,7 @@ export class DataFormElView extends BaseElView {
         }, this.uniqueID);
     }
     protected _getErrorTipInfo(errors: IValidationInfo[]) {
-        let tip = ["<b>", STRS.VALIDATE.errorInfo, "</b>", "<ul>"];
+        const tip = ["<b>", STRS.VALIDATE.errorInfo, "</b>", "<ul>"];
         errors.forEach(function (info) {
             let fieldName = info.fieldName, res = "";
             if (!!fieldName) {
@@ -496,7 +492,7 @@ export class DataFormElView extends BaseElView {
         if (!el) {
             return;
         }
-        let $el = this.$el;
+        const $el = this.$el;
         if (!!errors && errors.length > 0) {
             let $img = $(`<div data-name="error_info" class="${css.error}" />`);
             $el.prepend($img);
@@ -512,23 +508,18 @@ export class DataFormElView extends BaseElView {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        if (!!this._form && !this._form.getIsDestroyCalled()) {
+        if (!this._form.getIsDestroyCalled()) {
             this._form.destroy();
         }
-        this._form = null;
         super.destroy();
     }
     toString() {
         return "DataFormElView";
     }
     get dataContext() {
-        if (this._isDestroyCalled)
-            return null;
         return this._form.dataContext;
     }
     set dataContext(v) {
-        if (this._isDestroyCalled)
-            return;
         if (this.dataContext !== v) {
             this._form.dataContext = v;
         }

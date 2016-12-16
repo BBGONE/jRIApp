@@ -436,41 +436,29 @@ export class StackPanelElView extends BaseElView {
 
     constructor(options: IStackPanelViewOptions) {
         super(options);
-        this._panel = null;
+        const self = this;
         this._panelEvents = null;
-        this._createPanel(<IStackPanelConstructorOptions>options);
-    }
-    private _createPanel(opts: IStackPanelConstructorOptions) {
-        this._panel = new StackPanel(opts);
+        this._panel = new StackPanel(<IStackPanelConstructorOptions>options);
         this._panel.addOnItemClicked(function (sender, args) {
-            let self: StackPanelElView = this;
             if (!!self._panelEvents) {
                 self._panelEvents.onItemClicked(args.item);
             }
-        }, this.uniqueID, this);
-        this._panel.addOnDestroyed(function () {
-            let self: StackPanelElView = this;
-            self._panel = null;
-            self.raisePropertyChanged(PROP_NAME.panel);
-        }, this.uniqueID, this);
+        }, this.uniqueID);
     }
     destroy() {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        if (!!this._panel && !this._panel.getIsDestroyCalled()) {
+        if (!this._panel.getIsDestroyCalled()) {
             this._panel.destroy();
         }
         this._panelEvents = null;
-        this._panel = null;
         super.destroy();
     }
     toString() {
         return "StackPanelElView";
     }
     get dataSource(): ICollection<ICollectionItem> {
-        if (this.getIsDestroyCalled() || !this._panel)
-            return checks.undefined;
         return this._panel.dataSource;
     }
     set dataSource(v: ICollection<ICollectionItem>) {

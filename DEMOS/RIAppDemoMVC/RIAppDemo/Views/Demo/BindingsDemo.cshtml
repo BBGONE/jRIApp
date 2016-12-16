@@ -113,10 +113,14 @@
             &nbsp;<span data-bind="{this.value,to=testProperty3,source=testObject}"></span>
         </div>
         <div class="leftOffset">
-            <label for="months">Months: </label><select size="1" style="width: 150px" data-bind="{this.dataSource,to=months,source=testObject}{this.selectedValue,to=month,mode=TwoWay,source=testObject}" data-view="options:{valuePath=key,textPath=val}"></select>
+            <label for="months">Months: </label><select size="1" style="width: 150px" 
+                                                    data-bind="{this.dataSource,to=months,source=testObject}{this.selectedValue,to=month,mode=TwoWay,source=testObject}" 
+                                                    data-view="options:{valuePath=key,textPath=val,isNoEmptyOption=true}"></select>
         </div>
         <div class="leftOffset">
-            <label>Formats: </label><select size="1" style="width: 220px" data-bind="{this.dataSource,to=formats,source=testObject}{this.selectedValue,to=format,mode=TwoWay,source=testObject}" data-view="options:{valuePath=key,textPath=val}"></select>
+            <label>Formats: </label><select size="1" style="width: 220px" 
+                                            data-bind="{this.dataSource,to=formats,source=testObject}{this.selectedValue,to=format,mode=TwoWay,source=testObject}" 
+                                            data-view="options:{valuePath=key,textPath=val,emptyOptionText='Select format ...'}"></select>
         </div>
         <label class="leftOffset">boolProperty: <span style="color:black;" data-bind="{this.value,to=boolProperty,source=testObject}"></span>
             <label style="display:block;" class="ria-checkbox">

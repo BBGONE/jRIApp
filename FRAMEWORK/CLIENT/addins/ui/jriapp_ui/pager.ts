@@ -468,36 +468,24 @@ export class PagerElView extends BaseElView {
 
     constructor(options: IPagerViewOptions) {
         super(options);
-        const self = this;
-        this._pager = null;
-
         this._pager = new Pager(<IPagerConstructorOptions>options);
-        this._pager.addOnDestroyed(function () {
-            self._pager = null;
-            self.raisePropertyChanged(PROP_NAME.pager);
-        });
     }
     destroy() {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        if (!!this._pager && !this._pager.getIsDestroyCalled()) {
+        if (!this._pager.getIsDestroyCalled()) {
             this._pager.destroy();
         }
-        this._pager = null;
         super.destroy();
     }
     toString() {
         return "PagerElView";
     }
     get dataSource() {
-        if (this.getIsDestroyCalled())
-            return checks.undefined;
         return this._pager.dataSource;
     }
     set dataSource(v) {
-        if (this.getIsDestroyCalled())
-            return;
         if (this.dataSource !== v) {
             this._pager.dataSource = v;
             this.raisePropertyChanged(PROP_NAME.dataSource);

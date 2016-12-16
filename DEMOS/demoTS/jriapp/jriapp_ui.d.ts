@@ -1316,9 +1316,8 @@ declare module "jriapp_ui/datagrid/datagrid" {
         constructor(options: IDataGridViewOptions);
         toString(): string;
         destroy(): void;
-        private _createGrid();
         private _bindGridEvents();
-        dataSource: any;
+        dataSource: ICollection<ICollectionItem>;
         readonly grid: DataGrid;
         stateProvider: IRowStateProvider;
         animation: IDataGridAnimation;
@@ -1395,7 +1394,7 @@ declare module "jriapp_ui/pager" {
         constructor(options: IPagerViewOptions);
         destroy(): void;
         toString(): string;
-        dataSource: any;
+        dataSource: ICollection<ICollectionItem>;
         readonly pager: Pager;
     }
 }
@@ -1470,7 +1469,6 @@ declare module "jriapp_ui/stackpanel" {
         private _panel;
         private _panelEvents;
         constructor(options: IStackPanelViewOptions);
-        private _createPanel(opts);
         destroy(): void;
         toString(): string;
         dataSource: ICollection<ICollectionItem>;

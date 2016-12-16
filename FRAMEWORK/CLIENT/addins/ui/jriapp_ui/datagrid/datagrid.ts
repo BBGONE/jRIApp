@@ -1138,7 +1138,9 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     }
     get uniqueID() { return this._objId; }
     get name() { return this._name; }
-    get dataSource(): ICollection<ICollectionItem> { return this._options.dataSource; }
+    get dataSource(): ICollection<ICollectionItem> {
+        return this._options.dataSource;
+    }
     set dataSource(v: ICollection<ICollectionItem>) {
         if (v !== this.dataSource) {
             this._unbindDS();
@@ -1225,9 +1227,16 @@ export class DataGridElView extends BaseElView {
         super(options);
         this._stateProvider = null;
         this._stateDebounce = new Debounce();
-        this._grid = null;
         this._options = options;
-        this._createGrid();
+        const opts = <IDataGridConstructorOptions>coreUtils.extend(
+            {
+                el: <HTMLTableElement>this.el,
+                dataSource: null,
+                animation: null
+            }, options);
+
+        this._grid = new DataGrid(opts);
+        this._bindGridEvents();
     }
     toString() {
         return "DataGridElView";
@@ -1237,46 +1246,24 @@ export class DataGridElView extends BaseElView {
             return;
         this._isDestroyCalled = true;
         this._stateDebounce.destroy();
-        if (!!this._grid && !this._grid.getIsDestroyCalled()) {
+        if (!this._grid.getIsDestroyCalled()) {
             this._grid.destroy();
         }
-        this._grid = null;
         this._stateProvider = null;
         super.destroy();
     }
-    private _createGrid() {
-        let options = <IDataGridConstructorOptions>coreUtils.extend(
-            {
-                el: <HTMLTableElement>this.el,
-                dataSource: null,
-                animation: null
-            }, this._options);
-
-        this._grid = new DataGrid(options);
-        this._bindGridEvents();
-    }
     private _bindGridEvents() {
-        if (!this._grid)
-            return;
         const self = this;
         this._grid.addOnRowStateChanged(function (s, args) {
             if (!!self._stateProvider) {
                 args.css = self._stateProvider.getCSS(args.row.item, args.val);
             }
         }, this.uniqueID);
-        this._grid.addOnDestroyed(function (s, args) {
-            self._grid = null;
-            self.raisePropertyChanged(PROP_NAME.grid);
-        }, this.uniqueID);
     }
     get dataSource() {
-        if (this.getIsDestroyCalled())
-            return checks.undefined;
         return this.grid.dataSource;
     }
     set dataSource(v) {
-        if (this.getIsDestroyCalled())
-            return;
         if (this.dataSource !== v) {
             this.grid.dataSource = v;
             this.raisePropertyChanged(PROP_NAME.dataSource);

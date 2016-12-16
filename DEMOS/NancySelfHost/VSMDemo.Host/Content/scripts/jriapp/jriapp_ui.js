@@ -1786,8 +1786,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             if (this._isDestroyCalled)
                 return;
             if (!!item) {
-                var key = item._key;
-                var data = this._keyMap[key];
+                var key = item._key, data = this._keyMap[key];
                 if (!data) {
                     return;
                 }
@@ -1904,14 +1903,14 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             configurable: true
         });
         Object.defineProperty(ListBox.prototype, "dataSource", {
-            get: function () { return this._options.dataSource; },
+            get: function () {
+                return this._options.dataSource;
+            },
             set: function (v) {
                 var _this = this;
                 if (this.dataSource !== v) {
                     this._unbindDS();
                     this._options.dataSource = v;
-                    if (this.getIsDestroyCalled())
-                        return;
                     this._dsDebounce.enqueue(function () {
                         _this._bindDS();
                         _this._refresh();
@@ -1926,7 +1925,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         });
         Object.defineProperty(ListBox.prototype, "selectedValue", {
             get: function () {
-                if (!this.getByValue(this._selectedValue))
+                if (!checks.isNt(this._selectedValue) && !this.getByValue(this._selectedValue))
                     return checks.undefined;
                 return this._selectedValue;
             },
@@ -2043,10 +2042,6 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             _super.call(this, options);
             var self = this;
             self._listBox = new ListBox(options);
-            self._listBox.addOnDestroyed(function () {
-                self._listBox = null;
-                self.raisePropertyChanged(PROP_NAME.listBox);
-            }, this.uniqueID);
             self._listBox.addOnPropertyChange("*", function (sender, args) {
                 switch (args.property) {
                     case PROP_NAME.dataSource:
@@ -2066,10 +2061,9 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
-            if (!!this._listBox && !this._listBox.getIsDestroyCalled()) {
+            if (!this._listBox.getIsDestroyCalled()) {
                 this._listBox.destroy();
             }
-            this._listBox = null;
             _super.prototype.destroy.call(this);
         };
         ListBoxElView.prototype.toString = function () {
@@ -5810,7 +5804,9 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             configurable: true
         });
         Object.defineProperty(DataGrid.prototype, "dataSource", {
-            get: function () { return this._options.dataSource; },
+            get: function () {
+                return this._options.dataSource;
+            },
             set: function (v) {
                 var _this = this;
                 if (v !== this.dataSource) {
@@ -5938,9 +5934,14 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             _super.call(this, options);
             this._stateProvider = null;
             this._stateDebounce = new jriapp_shared_34.Debounce();
-            this._grid = null;
             this._options = options;
-            this._createGrid();
+            var opts = coreUtils.extend({
+                el: this.el,
+                dataSource: null,
+                animation: null
+            }, options);
+            this._grid = new DataGrid(opts);
+            this._bindGridEvents();
         }
         DataGridElView.prototype.toString = function () {
             return "DataGridElView";
@@ -5950,45 +5951,25 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 return;
             this._isDestroyCalled = true;
             this._stateDebounce.destroy();
-            if (!!this._grid && !this._grid.getIsDestroyCalled()) {
+            if (!this._grid.getIsDestroyCalled()) {
                 this._grid.destroy();
             }
-            this._grid = null;
             this._stateProvider = null;
             _super.prototype.destroy.call(this);
         };
-        DataGridElView.prototype._createGrid = function () {
-            var options = coreUtils.extend({
-                el: this.el,
-                dataSource: null,
-                animation: null
-            }, this._options);
-            this._grid = new DataGrid(options);
-            this._bindGridEvents();
-        };
         DataGridElView.prototype._bindGridEvents = function () {
-            if (!this._grid)
-                return;
             var self = this;
             this._grid.addOnRowStateChanged(function (s, args) {
                 if (!!self._stateProvider) {
                     args.css = self._stateProvider.getCSS(args.row.item, args.val);
                 }
             }, this.uniqueID);
-            this._grid.addOnDestroyed(function (s, args) {
-                self._grid = null;
-                self.raisePropertyChanged(const_22.PROP_NAME.grid);
-            }, this.uniqueID);
         };
         Object.defineProperty(DataGridElView.prototype, "dataSource", {
             get: function () {
-                if (this.getIsDestroyCalled())
-                    return checks.undefined;
                 return this.grid.dataSource;
             },
             set: function (v) {
-                if (this.getIsDestroyCalled())
-                    return;
                 if (this.dataSource !== v) {
                     this.grid.dataSource = v;
                     this.raisePropertyChanged(const_22.PROP_NAME.dataSource);
@@ -6489,22 +6470,15 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
         __extends(PagerElView, _super);
         function PagerElView(options) {
             _super.call(this, options);
-            var self = this;
-            this._pager = null;
             this._pager = new Pager(options);
-            this._pager.addOnDestroyed(function () {
-                self._pager = null;
-                self.raisePropertyChanged(PROP_NAME.pager);
-            });
         }
         PagerElView.prototype.destroy = function () {
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
-            if (!!this._pager && !this._pager.getIsDestroyCalled()) {
+            if (!this._pager.getIsDestroyCalled()) {
                 this._pager.destroy();
             }
-            this._pager = null;
             _super.prototype.destroy.call(this);
         };
         PagerElView.prototype.toString = function () {
@@ -6512,13 +6486,9 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
         };
         Object.defineProperty(PagerElView.prototype, "dataSource", {
             get: function () {
-                if (this.getIsDestroyCalled())
-                    return checks.undefined;
                 return this._pager.dataSource;
             },
             set: function (v) {
-                if (this.getIsDestroyCalled())
-                    return;
                 if (this.dataSource !== v) {
                     this._pager.dataSource = v;
                     this.raisePropertyChanged(PROP_NAME.dataSource);
@@ -6925,33 +6895,23 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
         __extends(StackPanelElView, _super);
         function StackPanelElView(options) {
             _super.call(this, options);
-            this._panel = null;
+            var self = this;
             this._panelEvents = null;
-            this._createPanel(options);
-        }
-        StackPanelElView.prototype._createPanel = function (opts) {
-            this._panel = new StackPanel(opts);
+            this._panel = new StackPanel(options);
             this._panel.addOnItemClicked(function (sender, args) {
-                var self = this;
                 if (!!self._panelEvents) {
                     self._panelEvents.onItemClicked(args.item);
                 }
-            }, this.uniqueID, this);
-            this._panel.addOnDestroyed(function () {
-                var self = this;
-                self._panel = null;
-                self.raisePropertyChanged(PROP_NAME.panel);
-            }, this.uniqueID, this);
-        };
+            }, this.uniqueID);
+        }
         StackPanelElView.prototype.destroy = function () {
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
-            if (!!this._panel && !this._panel.getIsDestroyCalled()) {
+            if (!this._panel.getIsDestroyCalled()) {
                 this._panel.destroy();
             }
             this._panelEvents = null;
-            this._panel = null;
             _super.prototype.destroy.call(this);
         };
         StackPanelElView.prototype.toString = function () {
@@ -6959,8 +6919,6 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
         };
         Object.defineProperty(StackPanelElView.prototype, "dataSource", {
             get: function () {
-                if (this.getIsDestroyCalled() || !this._panel)
-                    return checks.undefined;
                 return this._panel.dataSource;
             },
             set: function (v) {
@@ -7393,7 +7351,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
         __extends(DataForm, _super);
         function DataForm(options) {
             _super.call(this);
-            var self = this, parent;
+            var self = this;
             this._el = options.el;
             this._$el = jquery_18.$(this._el);
             this._objId = coreUtils.getNewID("frm");
@@ -7408,7 +7366,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             this._parentDataForm = null;
             this._errors = null;
             this._contentPromise = null;
-            parent = viewChecks.getParentDataForm(null, this._el);
+            var parent = viewChecks.getParentDataForm(null, this._el);
             if (!!parent) {
                 self._parentDataForm = this.app.viewFactory.getOrCreateElView(parent);
                 self._parentDataForm.addOnDestroyed(function (sender, args) {
@@ -7604,29 +7562,24 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
         Object.defineProperty(DataForm.prototype, "dataContext", {
             get: function () { return this._dataContext; },
             set: function (v) {
-                try {
-                    if (v === this._dataContext)
-                        return;
-                    if (!!v && !sys.isBaseObj(v)) {
-                        throw new Error(jriapp_shared_40.LocaleERRS.ERR_DATAFRM_DCTX_INVALID);
+                if (v === this._dataContext)
+                    return;
+                if (!!v && !sys.isBaseObj(v)) {
+                    throw new Error(jriapp_shared_40.LocaleERRS.ERR_DATAFRM_DCTX_INVALID);
+                }
+                this._unbindDS();
+                this._dataContext = v;
+                this._bindDS();
+                this._updateContent();
+                if (!!this._dataContext) {
+                    if (!!this._editable && this._isEditing !== this._editable.isEditing) {
+                        this.isEditing = this._editable.isEditing;
                     }
-                    this._unbindDS();
-                    this._dataContext = v;
-                    this._bindDS();
-                    this._updateContent();
-                    this.raisePropertyChanged(PROP_NAME.dataContext);
-                    if (!!this._dataContext) {
-                        if (!!this._editable && this._isEditing !== this._editable.isEditing) {
-                            this.isEditing = this._editable.isEditing;
-                        }
-                        if (!!this._errNotification) {
-                            this._onDSErrorsChanged();
-                        }
+                    if (!!this._errNotification) {
+                        this._onDSErrorsChanged();
                     }
                 }
-                catch (ex) {
-                    utils.err.reThrow(ex, this.handleError(ex, this));
-                }
+                this.raisePropertyChanged(PROP_NAME.dataContext);
             },
             enumerable: true,
             configurable: true
@@ -7698,10 +7651,6 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             _super.call(this, options);
             var self = this;
             this._form = new DataForm(options);
-            this._form.addOnDestroyed(function () {
-                self._form = null;
-                self.raisePropertyChanged(PROP_NAME.form);
-            });
             this._form.addOnPropertyChange("*", function (form, args) {
                 switch (args.property) {
                     case PROP_NAME.validationErrors:
@@ -7752,10 +7701,9 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
-            if (!!this._form && !this._form.getIsDestroyCalled()) {
+            if (!this._form.getIsDestroyCalled()) {
                 this._form.destroy();
             }
-            this._form = null;
             _super.prototype.destroy.call(this);
         };
         DataFormElView.prototype.toString = function () {
@@ -7763,13 +7711,9 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
         };
         Object.defineProperty(DataFormElView.prototype, "dataContext", {
             get: function () {
-                if (this._isDestroyCalled)
-                    return null;
                 return this._form.dataContext;
             },
             set: function (v) {
-                if (this._isDestroyCalled)
-                    return;
                 if (this.dataContext !== v) {
                     this._form.dataContext = v;
                 }
