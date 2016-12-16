@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { Utils, BaseObject, IBaseObject, LocaleERRS as ERRS, TEventHandler } from "jriapp_shared";
+import { Utils, BaseObject, IBaseObject, LocaleERRS as ERRS, TEventHandler, Debounce } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
 import {DATA_ATTR, KEYS } from "jriapp/const";
 import {
@@ -61,6 +61,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
     private _item_tag: string;
     private _event_scope: string;
     private _isKeyNavigation: boolean;
+    private _debounce: Debounce;
 
     constructor(options: IStackPanelConstructorOptions) {
         super();
@@ -80,7 +81,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         this._options = options;
         this._$el = $(options.el);
         dom.addClass([options.el], css.stackpanel);
-        let eltag = options.el.tagName.toLowerCase();
+        const eltag = options.el.tagName.toLowerCase();
         if (eltag === "ul" || eltag === "ol")
             this._item_tag = "li";
         else
@@ -89,7 +90,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         if (this.orientation === HORIZONTAL) {
             dom.addClass([options.el], css.horizontal);
         }
-
+        this._debounce = new Debounce();
         this._objId = coreUtils.getNewID("pnl");
         this._isKeyNavigation = false;
         this._event_scope = [this._item_tag, "[", DATA_ATTR.DATA_EVENT_SCOPE, '="', this._objId, '"]'].join("");
@@ -333,6 +334,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
+        this._debounce.destroy();
         boot._getInternal().untrackSelectable(this);
         this._unbindDS();
         this._clearContent();
@@ -412,9 +414,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
             return;
         this._unbindDS();
         this._options.dataSource = v;
-        utils.queue.enque(() => {
-            if (this.getIsDestroyCalled())
-                return;
+        this._debounce.enqueue(() => {
             this._bindDS();
             this._refresh();
         });

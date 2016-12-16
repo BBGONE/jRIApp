@@ -178,8 +178,6 @@ export class Pager extends BaseObject {
     }
     protected render() {
         this._debounce.enqueue(() => {
-            if (this.getIsDestroyCalled())
-                return;
             this._render();
         });
     }
@@ -200,7 +198,6 @@ export class Pager extends BaseObject {
             return;
         this._isDestroyCalled = true;
         this._debounce.destroy();
-        this._debounce = null;
         this._unbindDS();
         this._clearContent();
         dom.removeClass([this.el], css.pager);

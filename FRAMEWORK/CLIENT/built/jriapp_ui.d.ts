@@ -388,6 +388,9 @@ declare module "jriapp_ui/listbox" {
         private _textProvider;
         private _stateProvider;
         private _savedVal;
+        private _dsDebounce;
+        private _txtDebounce;
+        private _stDebounce;
         constructor(options: IListBoxConstructorOptions);
         destroy(): void;
         protected _getEventNames(): string[];
@@ -1197,6 +1200,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         private _internal;
         private _selectable;
         private _scrollDebounce;
+        private _dsDebounce;
         private _updateCurrent;
         constructor(options: IDataGridConstructorOptions);
         protected _getEventNames(): string[];
@@ -1418,6 +1422,7 @@ declare module "jriapp_ui/stackpanel" {
         private _item_tag;
         private _event_scope;
         private _isKeyNavigation;
+        private _debounce;
         constructor(options: IStackPanelConstructorOptions);
         protected _getEventNames(): string[];
         addOnItemClicked(fn: TEventHandler<StackPanel, {

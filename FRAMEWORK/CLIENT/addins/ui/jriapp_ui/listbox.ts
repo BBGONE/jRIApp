@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    Utils, BaseObject, IBaseObject, LocaleERRS as ERRS, TEventHandler
+    Utils, BaseObject, IBaseObject, LocaleERRS as ERRS, TEventHandler, Debounce
 } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
 import {
@@ -77,6 +77,9 @@ export class ListBox extends BaseObject {
     private _textProvider: IOptionTextProvider;
     private _stateProvider: IOptionStateProvider;
     private _savedVal: any;
+    private _dsDebounce: Debounce;
+    private _txtDebounce: Debounce;
+    private _stDebounce: Debounce;
    
     constructor(options: IListBoxConstructorOptions) {
         super();
@@ -104,11 +107,12 @@ export class ListBox extends BaseObject {
         this._stateProvider = null;
         this._isRefreshing = false;
         this._selectedValue = null;
+        this._dsDebounce = new Debounce();
+        this._stDebounce = new Debounce();
+        this._txtDebounce = new Debounce();
         this._keyMap = {};
         this._valMap = {};
         this._savedVal = checks.undefined;
-        const ds = this._options.dataSource;
-        this._options.dataSource = null;
         this._fn_state = (data: IMappedItem) => {
             if (!data || !data.item || data.item.getIsDestroyCalled())
                 return;
@@ -117,12 +121,17 @@ export class ListBox extends BaseObject {
             data.op.className = !spr ? "" : spr.getCSS(item, data.op.index, val);
         };
 
+        const ds = this._options.dataSource;
+        this._options.dataSource = null;
         this.dataSource = ds;
     }
     destroy() {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
+        this._dsDebounce.destroy();
+        this._stDebounce.destroy();
+        this._txtDebounce.destroy();
         this._unbindDS();
         this._$el.off("." + this._objId);
         this._clear(true);
@@ -522,9 +531,9 @@ export class ListBox extends BaseObject {
 
             this._options.dataSource = v;
 
-            utils.queue.enque(() => {
-                if (this.getIsDestroyCalled())
-                    return;
+            if (this.getIsDestroyCalled())
+                return;
+            this._dsDebounce.enqueue(() => {
                 this._bindDS();
                 this._refresh();
                 this.raisePropertyChanged(PROP_NAME.selectedValue);
@@ -589,7 +598,7 @@ export class ListBox extends BaseObject {
     set textProvider(v: IOptionTextProvider) {
         if (v !== this._textProvider) {
             this._textProvider = v;
-            utils.queue.enque(() => {
+            this._txtDebounce.enqueue(() => {
                 this._resetText();
             });
             this.raisePropertyChanged(PROP_NAME.textProvider);
@@ -599,7 +608,7 @@ export class ListBox extends BaseObject {
     set stateProvider(v: IOptionStateProvider) {
         if (v !== this._stateProvider) {
             this._stateProvider = v;
-            utils.queue.enque(() => {
+            this._stDebounce.enqueue(() => {
                 this._resetState();
             });
             this.raisePropertyChanged(PROP_NAME.stateProvider);

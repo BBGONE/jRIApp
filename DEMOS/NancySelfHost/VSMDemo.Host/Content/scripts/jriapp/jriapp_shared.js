@@ -4281,7 +4281,7 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
         Debounce.prototype.enqueue = function (fn) {
             var _this = this;
             if (this.IsDestroyed)
-                throw new Error("Debounce: Object destroyed");
+                return;
             if (!fn)
                 throw new Error("Debounce: Invalid operation");
             this._fn = fn;

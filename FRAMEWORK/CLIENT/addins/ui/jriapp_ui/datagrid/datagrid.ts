@@ -187,6 +187,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     private _internal: IInternalDataGridMethods;
     private _selectable: ISelectable;
     private _scrollDebounce: Debounce;
+    private _dsDebounce: Debounce;
     private _updateCurrent: () => void;
 
     constructor(options: IDataGridConstructorOptions) {
@@ -235,6 +236,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._$contaner = null;
         this._wrapTable();
         this._scrollDebounce = new Debounce();
+        this._dsDebounce = new Debounce();
         this._selectable = {
             getContainerEl: () => {
                 return self._$contaner[0];
@@ -871,8 +873,6 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             self._onPageChanged();
         }
         this._scrollDebounce.enqueue(() => {
-            if (self.getIsDestroyCalled())
-                return;
             if (self.isUseScrollInto)
                 self.scrollToCurrent();
         });
@@ -1080,11 +1080,13 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
+        this._scrollDebounce.destroy();
+        this._dsDebounce.destroy();
         this._updateCurrent = () => { };
         this._clearGrid();
+        this._unbindDS();
         _gridDestroyed(this);
         boot._getInternal().untrackSelectable(this);
-        this._scrollDebounce.destroy();
         if (!!this._details) {
             this._details.destroy();
             this._details = null;
@@ -1101,7 +1103,6 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             this._dialog.destroy();
             this._dialog = null;
         }
-        this.dataSource = null;
         this._unWrapTable();
         dom.removeClass(this._$table.toArray(), css.dataTable);
         dom.removeClass([this._tHeadRow], css.columnInfo);
@@ -1142,9 +1143,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         if (v !== this.dataSource) {
             this._unbindDS();
             this._options.dataSource = v;
-            utils.queue.enque(() => {
-                if (this.getIsDestroyCalled())
-                    return;
+            this._dsDebounce.enqueue(() => {
                 this._clearGrid();
                 this._bindDS();
                 this._refresh(false);
@@ -1238,7 +1237,6 @@ export class DataGridElView extends BaseElView {
             return;
         this._isDestroyCalled = true;
         this._stateDebounce.destroy();
-        this._stateDebounce = null;
         if (!!this._grid && !this._grid.getIsDestroyCalled()) {
             this._grid.destroy();
         }
@@ -1260,18 +1258,16 @@ export class DataGridElView extends BaseElView {
     private _bindGridEvents() {
         if (!this._grid)
             return;
+        const self = this;
         this._grid.addOnRowStateChanged(function (s, args) {
-            const self: DataGridElView = this;
             if (!!self._stateProvider) {
                 args.css = self._stateProvider.getCSS(args.row.item, args.val);
             }
-        }, this.uniqueID, this);
+        }, this.uniqueID);
         this._grid.addOnDestroyed(function (s, args) {
-            let self: DataGridElView = this;
             self._grid = null;
             self.raisePropertyChanged(PROP_NAME.grid);
-        }, this.uniqueID, this);
-
+        }, this.uniqueID);
     }
     get dataSource() {
         if (this.getIsDestroyCalled())
@@ -1291,7 +1287,6 @@ export class DataGridElView extends BaseElView {
     set stateProvider(v: IRowStateProvider) {
         if (v !== this._stateProvider) {
             this._stateProvider = v;
-            this.raisePropertyChanged(PROP_NAME.stateProvider);
             this._stateDebounce.enqueue(() => {
                 if (!this._grid || this._grid.getIsDestroyCalled())
                     return;
@@ -1299,6 +1294,8 @@ export class DataGridElView extends BaseElView {
                     row.updateUIState();
                 });
             });
+
+            this.raisePropertyChanged(PROP_NAME.stateProvider);
         }
     }
     get animation() {

@@ -1498,23 +1498,29 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             this._stateProvider = null;
             this._isRefreshing = false;
             this._selectedValue = null;
+            this._dsDebounce = new jriapp_shared_13.Debounce();
+            this._stDebounce = new jriapp_shared_13.Debounce();
+            this._txtDebounce = new jriapp_shared_13.Debounce();
             this._keyMap = {};
             this._valMap = {};
             this._savedVal = checks.undefined;
-            var ds = this._options.dataSource;
-            this._options.dataSource = null;
             this._fn_state = function (data) {
                 if (!data || !data.item || data.item.getIsDestroyCalled())
                     return;
                 var item = data.item, path = self.statePath, val = !path ? null : sys.resolvePath(item, path), spr = self._stateProvider;
                 data.op.className = !spr ? "" : spr.getCSS(item, data.op.index, val);
             };
+            var ds = this._options.dataSource;
+            this._options.dataSource = null;
             this.dataSource = ds;
         }
         ListBox.prototype.destroy = function () {
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
+            this._dsDebounce.destroy();
+            this._stDebounce.destroy();
+            this._txtDebounce.destroy();
             this._unbindDS();
             this._$el.off("." + this._objId);
             this._clear(true);
@@ -1904,9 +1910,9 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 if (this.dataSource !== v) {
                     this._unbindDS();
                     this._options.dataSource = v;
-                    utils.queue.enque(function () {
-                        if (_this.getIsDestroyCalled())
-                            return;
+                    if (this.getIsDestroyCalled())
+                        return;
+                    this._dsDebounce.enqueue(function () {
                         _this._bindDS();
                         _this._refresh();
                         _this.raisePropertyChanged(PROP_NAME.selectedValue);
@@ -1999,7 +2005,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 var _this = this;
                 if (v !== this._textProvider) {
                     this._textProvider = v;
-                    utils.queue.enque(function () {
+                    this._txtDebounce.enqueue(function () {
                         _this._resetText();
                     });
                     this.raisePropertyChanged(PROP_NAME.textProvider);
@@ -2014,7 +2020,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 var _this = this;
                 if (v !== this._stateProvider) {
                     this._stateProvider = v;
-                    utils.queue.enque(function () {
+                    this._stDebounce.enqueue(function () {
                         _this._resetState();
                     });
                     this.raisePropertyChanged(PROP_NAME.stateProvider);
@@ -4912,6 +4918,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             this._$contaner = null;
             this._wrapTable();
             this._scrollDebounce = new jriapp_shared_34.Debounce();
+            this._dsDebounce = new jriapp_shared_34.Debounce();
             this._selectable = {
                 getContainerEl: function () {
                     return self._$contaner[0];
@@ -5529,8 +5536,6 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 self._onPageChanged();
             }
             this._scrollDebounce.enqueue(function () {
-                if (self.getIsDestroyCalled())
-                    return;
                 if (self.isUseScrollInto)
                     self.scrollToCurrent();
             });
@@ -5709,11 +5714,13 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
+            this._scrollDebounce.destroy();
+            this._dsDebounce.destroy();
             this._updateCurrent = function () { };
             this._clearGrid();
+            this._unbindDS();
             _gridDestroyed(this);
             boot._getInternal().untrackSelectable(this);
-            this._scrollDebounce.destroy();
             if (!!this._details) {
                 this._details.destroy();
                 this._details = null;
@@ -5730,7 +5737,6 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 this._dialog.destroy();
                 this._dialog = null;
             }
-            this.dataSource = null;
             this._unWrapTable();
             dom.removeClass(this._$table.toArray(), const_22.css.dataTable);
             dom.removeClass([this._tHeadRow], const_22.css.columnInfo);
@@ -5813,9 +5819,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 if (v !== this.dataSource) {
                     this._unbindDS();
                     this._options.dataSource = v;
-                    utils.queue.enque(function () {
-                        if (_this.getIsDestroyCalled())
-                            return;
+                    this._dsDebounce.enqueue(function () {
                         _this._clearGrid();
                         _this._bindDS();
                         _this._refresh(false);
@@ -5949,7 +5953,6 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 return;
             this._isDestroyCalled = true;
             this._stateDebounce.destroy();
-            this._stateDebounce = null;
             if (!!this._grid && !this._grid.getIsDestroyCalled()) {
                 this._grid.destroy();
             }
@@ -5969,17 +5972,16 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
         DataGridElView.prototype._bindGridEvents = function () {
             if (!this._grid)
                 return;
+            var self = this;
             this._grid.addOnRowStateChanged(function (s, args) {
-                var self = this;
                 if (!!self._stateProvider) {
                     args.css = self._stateProvider.getCSS(args.row.item, args.val);
                 }
-            }, this.uniqueID, this);
+            }, this.uniqueID);
             this._grid.addOnDestroyed(function (s, args) {
-                var self = this;
                 self._grid = null;
                 self.raisePropertyChanged(const_22.PROP_NAME.grid);
-            }, this.uniqueID, this);
+            }, this.uniqueID);
         };
         Object.defineProperty(DataGridElView.prototype, "dataSource", {
             get: function () {
@@ -6009,7 +6011,6 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 var _this = this;
                 if (v !== this._stateProvider) {
                     this._stateProvider = v;
-                    this.raisePropertyChanged(const_22.PROP_NAME.stateProvider);
                     this._stateDebounce.enqueue(function () {
                         if (!_this._grid || _this._grid.getIsDestroyCalled())
                             return;
@@ -6017,6 +6018,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                             row.updateUIState();
                         });
                     });
+                    this.raisePropertyChanged(const_22.PROP_NAME.stateProvider);
                 }
             },
             enumerable: true,
@@ -6163,8 +6165,6 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
         Pager.prototype.render = function () {
             var _this = this;
             this._debounce.enqueue(function () {
-                if (_this.getIsDestroyCalled())
-                    return;
                 _this._render();
             });
         };
@@ -6185,7 +6185,6 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                 return;
             this._isDestroyCalled = true;
             this._debounce.destroy();
-            this._debounce = null;
             this._unbindDS();
             this._clearContent();
             dom.removeClass([this.el], css.pager);
@@ -6586,6 +6585,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             if (this.orientation === HORIZONTAL) {
                 dom.addClass([options.el], css.horizontal);
             }
+            this._debounce = new jriapp_shared_36.Debounce();
             this._objId = coreUtils.getNewID("pnl");
             this._isKeyNavigation = false;
             this._event_scope = [this._item_tag, "[", const_24.DATA_ATTR.DATA_EVENT_SCOPE, '="', this._objId, '"]'].join("");
@@ -6824,6 +6824,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
+            this._debounce.destroy();
             boot._getInternal().untrackSelectable(this);
             this._unbindDS();
             this._clearContent();
@@ -6906,9 +6907,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
                     return;
                 this._unbindDS();
                 this._options.dataSource = v;
-                utils.queue.enque(function () {
-                    if (_this.getIsDestroyCalled())
-                        return;
+                this._debounce.enqueue(function () {
                     _this._bindDS();
                     _this._refresh();
                 });

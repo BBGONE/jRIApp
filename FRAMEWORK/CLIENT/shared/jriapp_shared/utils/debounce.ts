@@ -14,8 +14,9 @@ export class Debounce implements IDisposable {
         this._fn = null;
     }
     enqueue(fn: () => any) {
+        //important, no error (just return with no action)!!!
         if (this.IsDestroyed)
-            throw new Error("Debounce: Object destroyed");
+            return;
         if (!fn)
             throw new Error("Debounce: Invalid operation");
         //the last wins
