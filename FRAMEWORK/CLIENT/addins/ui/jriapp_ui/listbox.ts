@@ -59,7 +59,7 @@ const LISTBOX_EVENTS = {
     refreshed: "refreshed"
 };
 
- function fn_toString(v: any): string {
+ function fn_Str(v: any): string {
     if (checks.isNt(v))
         return "";
     return "" + v;
@@ -157,7 +157,7 @@ export class ListBox extends BaseObject {
         this._removeHandler(LISTBOX_EVENTS.refreshed, nmspace);
     }
     protected _onChanged() {
-        let op: any = null, key: string, data: IMappedItem = this.getByIndex(this.selectedIndex);
+        const data: IMappedItem = this.getByIndex(this.selectedIndex);
         if (!data) {
             this.selectedValue = null;
             return;
@@ -186,44 +186,51 @@ export class ListBox extends BaseObject {
 
         if (!!this._options.textPath) {
             let t = sys.resolvePath(item, this._options.textPath);
-            res = fn_toString(t);
+            res = fn_Str(t);
         }
         else {
-            res = fn_toString(this._getValue(item));
+            res = fn_Str(this._getValue(item));
         }
 
         return (!this._textProvider)? res: this._textProvider.getText(item, index, res);
     }
     protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>) {
-        const self = this;
-        switch (args.changeType) {
-            case COLL_CHANGE_TYPE.Reset:
-                {
-                    this._refresh();
-                }
-                break;
-            case COLL_CHANGE_TYPE.Add:
-                args.items.forEach(function (item) {
-                    self._addOption(item, item._aspect.isNew);
-                });
-                break;
-            case COLL_CHANGE_TYPE.Remove:
-                args.items.forEach(function (item) {
-                    self._removeOption(item);
-                });
-                if (!!self._textProvider)
-                    self._resetText();
-                break;
-            case COLL_CHANGE_TYPE.Remap:
-                {
-                    let data = self._keyMap[args.old_key];
-                    if (!!data) {
-                        delete self._keyMap[args.old_key];
-                        self._keyMap[args.new_key] = data;
-                        data.op.value = args.new_key;
+        const self = this, checkChanges = this.getCheckChanges();
+        try {
+            switch (args.changeType) {
+                case COLL_CHANGE_TYPE.Reset:
+                    {
+                        this._refresh();
                     }
-                }
-                break;
+                    break;
+                case COLL_CHANGE_TYPE.Add:
+                    args.items.forEach(function (item) {
+                        self._addOption(item, item._aspect.isNew);
+                    });
+                    break;
+                case COLL_CHANGE_TYPE.Remove:
+                    {
+                        args.items.forEach(function (item) {
+                            self._removeOption(item);
+                        });
+                        if (!!self._textProvider)
+                            self._resetText();
+                    }
+                    break;
+                case COLL_CHANGE_TYPE.Remap:
+                    {
+                        const data = self._keyMap[args.old_key];
+                        if (!!data) {
+                            delete self._keyMap[args.old_key];
+                            self._keyMap[args.new_key] = data;
+                            data.op.value = args.new_key;
+                        }
+                    }
+                    break;
+            }
+        }
+        finally {
+            checkChanges();
         }
     }
     protected _onEdit(item: ICollectionItem, isBegin: boolean, isCanceled: boolean) {
@@ -232,28 +239,33 @@ export class ListBox extends BaseObject {
             this._savedVal = this._getValue(item);
         }
         else {
-            const oldVal = this._savedVal;
-            this._savedVal = checks.undefined;
             if (!isCanceled) {
-                const key = item._key;
-                let data = self._keyMap[key];
+                const oldVal = this._savedVal, checkChanges = this.getCheckChanges();
+                this._savedVal = checks.undefined;
+                try {
+                    const key = item._key;
+                    let data = self._keyMap[key];
 
-                if (!!data) {
-                    data.op.text = self._getText(item, data.op.index);
-                    const val = this._getValue(item);
-                    if (oldVal !== val) {
-                        if (!checks.isNt(oldVal)) {
-                            delete self._valMap[fn_toString(oldVal)];
+                    if (!!data) {
+                        data.op.text = self._getText(item, data.op.index);
+                        const val = this._getValue(item);
+                        if (oldVal !== val) {
+                            if (!checks.isNt(oldVal)) {
+                                delete self._valMap[fn_Str(oldVal)];
+                            }
+                            if (!checks.isNt(val)) {
+                                self._valMap[fn_Str(val)] = data;
+                            }
                         }
-                        if (!checks.isNt(val)) {
-                            self._valMap[fn_toString(val)] = data;
+                    }
+                    else {
+                        if (!checks.isNt(oldVal)) {
+                            delete self._valMap[fn_Str(oldVal)];
                         }
                     }
                 }
-                else {
-                    if (!checks.isNt(oldVal)) {
-                        delete self._valMap[fn_toString(oldVal)];
-                    }
+                finally {
+                    checkChanges();
                 }
             }
         }
@@ -291,11 +303,11 @@ export class ListBox extends BaseObject {
             const data = self._keyMap[item._key];
             if (oldVal !== val) {
                 if (!checks.isNt(oldVal)) {
-                    delete self._valMap[fn_toString(oldVal)];
+                    delete self._valMap[fn_Str(oldVal)];
                 }
 
                 if (!!data && !checks.isNt(val)) {
-                    self._valMap[fn_toString(val)] = data;
+                    self._valMap[fn_Str(val)] = data;
                 }
             }
 
@@ -348,7 +360,7 @@ export class ListBox extends BaseObject {
         else {
            text = this._getText(item, selEl.options.length);
         }
-        let val = fn_toString(this._getValue(item));
+        let val = fn_Str(this._getValue(item));
         oOption = doc.createElement("option");
         oOption.text = text;
         oOption.value = key;
@@ -382,7 +394,7 @@ export class ListBox extends BaseObject {
         const self = this;
         this._valMap = {};
         coreUtils.forEachProp(this._keyMap, (key) => {
-            const data = self._keyMap[key], val = fn_toString(self._getValue(data.item));
+            const data = self._keyMap[key], val = fn_Str(self._getValue(data.item));
             if (!!val) {
                 self._valMap[val] = data;
             }
@@ -416,7 +428,7 @@ export class ListBox extends BaseObject {
 
             item.removeNSHandlers(this._objId);
             this.el.remove(data.op.index);
-            const val = fn_toString(this._getValue(item));
+            const val = fn_Str(this._getValue(item));
             delete this._keyMap[key];
             if (!!val) {
                 delete this._valMap[val];
@@ -469,7 +481,7 @@ export class ListBox extends BaseObject {
     protected getByValue(val: any): IMappedItem {
         if (checks.isNt(val))
             return null;
-        const key = fn_toString(val);
+        const key = fn_Str(val);
         const data: IMappedItem = this._valMap[key];
         return (!data) ? null : data;
     }
@@ -492,7 +504,18 @@ export class ListBox extends BaseObject {
         finally {
             this._isRefreshing = oldRefreshing;
         }
-        this.raisePropertyChanged(PROP_NAME.selectedItem);
+    }
+    protected getCheckChanges(): () => void {
+        const self = this, prevVal = fn_Str(self.selectedValue), prevItem = self.selectedItem;
+        return function () {
+            const newVal = fn_Str(self.selectedValue), newItem = self.selectedItem;
+            if (prevVal !== newVal) {
+                self.raisePropertyChanged(PROP_NAME.selectedValue);
+            }
+            if (prevItem !== newItem) {
+                self.raisePropertyChanged(PROP_NAME.selectedItem);
+            }
+        };
     }
     protected _setIsEnabled(el: HTMLSelectElement, v: boolean) {
         el.disabled = !v;
@@ -528,6 +551,7 @@ export class ListBox extends BaseObject {
     }
     set dataSource(v) {
         if (this.dataSource !== v) {
+            const checkChanges = this.getCheckChanges();
             this._unbindDS();
 
             this._options.dataSource = v;
@@ -535,8 +559,7 @@ export class ListBox extends BaseObject {
             this._dsDebounce.enqueue(() => {
                 this._bindDS();
                 this._refresh();
-                this.raisePropertyChanged(PROP_NAME.selectedValue);
-                this.raisePropertyChanged(PROP_NAME.selectedItem);
+                checkChanges();
             });
 
             this.raisePropertyChanged(PROP_NAME.dataSource);
@@ -548,11 +571,11 @@ export class ListBox extends BaseObject {
         return this._selectedValue;
     }
     set selectedValue(v) {
-        const self = this;
         if (this._selectedValue !== v) {
+            const checkChanges = this.getCheckChanges();
             this._selectedValue = v;
             this.updateSelected(v);
-            this.raisePropertyChanged(PROP_NAME.selectedValue);
+            checkChanges();
         }
     }
     get selectedItem() {
@@ -562,11 +585,11 @@ export class ListBox extends BaseObject {
     set selectedItem(v: ICollectionItem) {
         const newVal = this._getValue(v);
         if (this._selectedValue !== newVal) {
+            const checkChanges = this.getCheckChanges();
             this._selectedValue = newVal;
             const item = this.getByValue(newVal);
             this.selectedIndex = (!item ? 0 : item.op.index);
-            this.raisePropertyChanged(PROP_NAME.selectedItem);
-            this.raisePropertyChanged(PROP_NAME.selectedValue);
+            checkChanges();
         }
     }
     get valuePath() { return this._options.valuePath; }

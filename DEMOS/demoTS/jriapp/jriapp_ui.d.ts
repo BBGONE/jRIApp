@@ -416,6 +416,7 @@ declare module "jriapp_ui/listbox" {
         protected getByValue(val: any): IMappedItem;
         protected getByIndex(index: number): IMappedItem;
         protected updateSelected(v: any): void;
+        protected getCheckChanges(): () => void;
         protected _setIsEnabled(el: HTMLSelectElement, v: boolean): void;
         protected _getIsEnabled(el: HTMLSelectElement): boolean;
         getText(val: any): string;
