@@ -3061,7 +3061,8 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
             this._templateID = null;
             this._template = null;
             this._animation = null;
-            this._debounce = new jriapp_shared_17.Debounce();
+            this._tDebounce = new jriapp_shared_17.Debounce();
+            this._dsDebounce = new jriapp_shared_17.Debounce();
         }
         DynaContentElView.prototype.templateLoading = function (template) {
             if (this.getIsDestroyCalled())
@@ -3106,48 +3107,39 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
                     }
                     return;
                 }
+                if (!self._template) {
+                    self._template = template_4.createTemplate(self._dataContext, self);
+                    self._template.templateID = newName;
+                    self.raisePropertyChanged(PROP_NAME.template);
+                    return;
+                }
+                if (!!self._animation && !!self._template.loadedElem) {
+                    self._animation.stop();
+                    self._animation.beforeHide(self._template);
+                    self._animation.hide(self._template).always(function () {
+                        if (self.getIsDestroyCalled())
+                            return;
+                        self._template.templateID = newName;
+                    });
+                }
+                else {
+                    self._template.templateID = newName;
+                }
             }
             catch (ex) {
                 utils.err.reThrow(ex, self.handleError(ex, self));
             }
-            this._debounce.enqueue(function () {
-                if (self.getIsDestroyCalled())
-                    return;
-                try {
-                    if (!self._template) {
-                        self._template = template_4.createTemplate(self._dataContext, self);
-                        self._template.templateID = newName;
-                        self.raisePropertyChanged(PROP_NAME.template);
-                        return;
-                    }
-                    if (!!self._animation && !!self._template.loadedElem) {
-                        self._animation.stop();
-                        self._animation.beforeHide(self._template);
-                        self._animation.hide(self._template).always(function () {
-                            if (self.getIsDestroyCalled())
-                                return;
-                            self._template.templateID = newName;
-                        });
-                    }
-                    else {
-                        self._template.templateID = newName;
-                    }
-                }
-                catch (ex) {
-                    utils.err.reThrow(ex, self.handleError(ex, self));
-                }
-            });
         };
         DynaContentElView.prototype.destroy = function () {
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
+            this._tDebounce.destroy();
+            this._dsDebounce.destroy();
             var a = this._animation;
             this._animation = null;
             var t = this._template;
             this._template = null;
-            this._debounce.destroy();
-            this._debounce = null;
             if (sys.isBaseObj(a)) {
                 a.destroy();
             }
@@ -3171,7 +3163,9 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
                 if (old !== v) {
                     this._prevTemplateID = old;
                     this._templateID = v;
-                    self._templateChanging(old, v);
+                    this._tDebounce.enqueue(function () {
+                        self._templateChanging(old, v);
+                    });
                     this.raisePropertyChanged(PROP_NAME.templateID);
                 }
             },
@@ -3181,11 +3175,14 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
         Object.defineProperty(DynaContentElView.prototype, "dataContext", {
             get: function () { return this._dataContext; },
             set: function (v) {
+                var _this = this;
                 if (this._dataContext !== v) {
                     this._dataContext = v;
-                    if (!!this._template) {
-                        this._template.dataContext = this._dataContext;
-                    }
+                    this._dsDebounce.enqueue(function () {
+                        if (!!_this._template) {
+                            _this._template.dataContext = _this._dataContext;
+                        }
+                    });
                     this.raisePropertyChanged(PROP_NAME.dataContext);
                 }
             },

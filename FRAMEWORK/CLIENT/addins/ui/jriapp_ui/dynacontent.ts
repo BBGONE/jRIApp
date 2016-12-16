@@ -34,7 +34,8 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
     private _templateID: string;
     private _template: ITemplate;
     private _animation: IDynaContentAnimation;
-    private _debounce: Debounce;
+    private _tDebounce: Debounce;
+    private _dsDebounce: Debounce;
 
     constructor(options: IDynaContentOptions) {
         super(options);
@@ -43,7 +44,8 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
         this._templateID = null;
         this._template = null;
         this._animation = null;
-        this._debounce = new Debounce();
+        this._tDebounce = new Debounce();
+        this._dsDebounce = new Debounce();
     }
     templateLoading(template: ITemplate): void {
         if (this.getIsDestroyCalled())
@@ -93,47 +95,39 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
                 }
                 return;
             }
+
+            if (!self._template) {
+                self._template = createTemplate(self._dataContext, self);
+                self._template.templateID = newName;
+                self.raisePropertyChanged(PROP_NAME.template);
+                return;
+            }
+            if (!!self._animation && !!self._template.loadedElem) {
+                self._animation.stop();
+                self._animation.beforeHide(self._template);
+                self._animation.hide(self._template).always(() => {
+                    if (self.getIsDestroyCalled())
+                        return;
+                    self._template.templateID = newName;
+                });
+            }
+            else {
+                self._template.templateID = newName;
+            }
         } catch (ex) {
             utils.err.reThrow(ex, self.handleError(ex, self));
         }
-
-        this._debounce.enqueue(() => {
-            if (self.getIsDestroyCalled())
-                return;
-            try {
-                if (!self._template) {
-                    self._template = createTemplate(self._dataContext, self);
-                    self._template.templateID = newName;
-                    self.raisePropertyChanged(PROP_NAME.template);
-                    return;
-                }
-                if (!!self._animation && !!self._template.loadedElem) {
-                    self._animation.stop();
-                    self._animation.beforeHide(self._template);
-                    self._animation.hide(self._template).always(() => {
-                        if (self.getIsDestroyCalled())
-                            return;
-                        self._template.templateID = newName;
-                    });
-                }
-                else {
-                    self._template.templateID = newName;
-                }
-            } catch (ex) {
-                utils.err.reThrow(ex, self.handleError(ex, self));
-            }
-        });
     }
     destroy() {
         if (this._isDestroyed)
             return
         this._isDestroyCalled = true;
+        this._tDebounce.destroy();
+        this._dsDebounce.destroy();
         const a = this._animation;
         this._animation = null;
         const t = this._template;
         this._template = null;
-        this._debounce.destroy();
-        this._debounce = null;
 
         if (sys.isBaseObj(a)) {
             (<IBaseObject><any>a).destroy();
@@ -153,7 +147,9 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
         if (old !== v) {
             this._prevTemplateID = old;
             this._templateID = v;
-            self._templateChanging(old, v);
+            this._tDebounce.enqueue(() => {
+                self._templateChanging(old, v);
+            });
             this.raisePropertyChanged(PROP_NAME.templateID);
         }
     }
@@ -161,9 +157,11 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
     set dataContext(v) {
         if (this._dataContext !== v) {
             this._dataContext = v;
-            if (!!this._template) {
-                this._template.dataContext = this._dataContext;
-            }
+            this._dsDebounce.enqueue(() => {
+                if (!!this._template) {
+                    this._template.dataContext = this._dataContext;
+                }
+            });
             this.raisePropertyChanged(PROP_NAME.dataContext);
         }
     }
