@@ -465,6 +465,9 @@ export class ListBox extends BaseObject {
                     self._addOption(item, false);
                 });
             }
+            if (!checks.isNt(this._selectedValue) && !this.getByValue(this._selectedValue)) {
+                this._selectedValue = null;
+            }
             self.updateSelected(this._selectedValue);
         } finally {
             self._isRefreshing = false;
@@ -494,7 +497,7 @@ export class ListBox extends BaseObject {
         return null;
     }
     protected updateSelected(v: any) {
-        const data: IMappedItem = this.getByValue(v);
+        const data: IMappedItem = (checks.isNt(v) ? null : this.getByValue(v));
         const index = (!data ? 0 : data.op.index);
         const oldRefreshing = this._isRefreshing;
         this._isRefreshing = true;

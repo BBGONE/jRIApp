@@ -1839,6 +1839,9 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                         self._addOption(item, false);
                     });
                 }
+                if (!checks.isNt(this._selectedValue) && !this.getByValue(this._selectedValue)) {
+                    this._selectedValue = null;
+                }
                 self.updateSelected(this._selectedValue);
             }
             finally {
@@ -1869,7 +1872,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             return null;
         };
         ListBox.prototype.updateSelected = function (v) {
-            var data = this.getByValue(v);
+            var data = (checks.isNt(v) ? null : this.getByValue(v));
             var index = (!data ? 0 : data.op.index);
             var oldRefreshing = this._isRefreshing;
             this._isRefreshing = true;
