@@ -46,11 +46,13 @@ export class Debounce implements IDisposable {
         this._fn = null;
     }
     destroy(): void {
-        if (!this._interval) {
-            getTaskQueue().cancel(this._timer);
-        }
-        else {
-            clearTimeout(this._timer);
+        if (!!this._timer) {
+            if (!this._interval) {
+                getTaskQueue().cancel(this._timer);
+            }
+            else {
+                clearTimeout(this._timer);
+            }
         }
         this._timer = void 0;
         this._fn = null;

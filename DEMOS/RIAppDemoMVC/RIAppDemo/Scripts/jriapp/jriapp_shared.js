@@ -4307,11 +4307,13 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
             this._fn = null;
         };
         Debounce.prototype.destroy = function () {
-            if (!this._interval) {
-                deferred_4.getTaskQueue().cancel(this._timer);
-            }
-            else {
-                clearTimeout(this._timer);
+            if (!!this._timer) {
+                if (!this._interval) {
+                    deferred_4.getTaskQueue().cancel(this._timer);
+                }
+                else {
+                    clearTimeout(this._timer);
+                }
             }
             this._timer = void 0;
             this._fn = null;
