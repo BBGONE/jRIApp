@@ -1511,8 +1511,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 data.op.className = !spr ? "" : spr.getCSS(item, data.op.index, val);
             };
             var ds = this._options.dataSource;
-            this._options.dataSource = null;
-            this.dataSource = ds;
+            this._setDataSource(ds);
         }
         ListBox.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -1901,18 +1900,24 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         ListBox.prototype._getIsEnabled = function (el) {
             return !el.disabled;
         };
-        ListBox.prototype.getText = function (val) {
-            var data = this.getByValue(val);
-            if (!data)
-                return "";
-            else
-                return data.op.text;
-        };
-        ListBox.prototype.clear = function () {
-            this._clear(false);
-        };
-        ListBox.prototype.toString = function () {
-            return "ListBox";
+        ListBox.prototype._setDataSource = function (v) {
+            var _this = this;
+            var checkChanges = this.getCheckChanges();
+            this._unbindDS();
+            this._options.dataSource = v;
+            this._dsDebounce.enqueue(function () {
+                var ds = _this._options.dataSource;
+                _this._txtDebounce.cancel();
+                _this._stDebounce.cancel();
+                if (!!ds && !ds.getIsDestroyCalled()) {
+                    _this._bindDS();
+                    _this._refresh();
+                }
+                else {
+                    _this.clear();
+                }
+                checkChanges();
+            });
         };
         Object.defineProperty(ListBox.prototype, "selectedIndex", {
             get: function () {
@@ -1928,21 +1933,26 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             enumerable: true,
             configurable: true
         });
+        ListBox.prototype.getText = function (val) {
+            var data = this.getByValue(val);
+            if (!data)
+                return "";
+            else
+                return data.op.text;
+        };
+        ListBox.prototype.clear = function () {
+            this._clear(false);
+        };
+        ListBox.prototype.toString = function () {
+            return "ListBox";
+        };
         Object.defineProperty(ListBox.prototype, "dataSource", {
             get: function () {
                 return this._options.dataSource;
             },
             set: function (v) {
-                var _this = this;
                 if (this.dataSource !== v) {
-                    var checkChanges_1 = this.getCheckChanges();
-                    this._unbindDS();
-                    this._options.dataSource = v;
-                    this._dsDebounce.enqueue(function () {
-                        _this._bindDS();
-                        _this._refresh();
-                        checkChanges_1();
-                    });
+                    this._setDataSource(v);
                     this.raisePropertyChanged(PROP_NAME.dataSource);
                 }
             },
@@ -3199,8 +3209,9 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
                 if (this._dataContext !== v) {
                     this._dataContext = v;
                     this._dsDebounce.enqueue(function () {
+                        var ds = _this._dataContext;
                         if (!!_this._template) {
-                            _this._template.dataContext = _this._dataContext;
+                            _this._template.dataContext = ds;
                         }
                     });
                     this.raisePropertyChanged(PROP_NAME.dataContext);
@@ -5000,11 +5011,10 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 }
             };
             this._createColumns();
-            var ds = this._options.dataSource;
-            this._options.dataSource = null;
-            this.dataSource = ds;
             boot._getInternal().trackSelectable(this);
             _gridCreated(this);
+            var ds = this._options.dataSource;
+            this._setDataSource(ds);
         }
         DataGrid.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
@@ -5293,7 +5303,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             }
         };
         DataGrid.prototype._onDSCollectionChanged = function (sender, args) {
-            var self = this, row, items = args.items;
+            var self = this;
             switch (args.changeType) {
                 case 2:
                     {
@@ -5311,7 +5321,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                     break;
                 case 0:
                     {
-                        items.forEach(function (item) {
+                        args.items.forEach(function (item) {
                             var row = self._rowMap[item._key];
                             if (!!row) {
                                 self._removeRow(row);
@@ -5322,7 +5332,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                     break;
                 case 3:
                     {
-                        row = self._rowMap[args.old_key];
+                        var row = self._rowMap[args.old_key];
                         if (!!row) {
                             delete self._rowMap[args.old_key];
                             self._rowMap[args.new_key] = row;
@@ -5584,6 +5594,21 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             var tr = doc.createElement("tr");
             return new fillspace_2.FillSpaceRow({ grid: this, tr: tr });
         };
+        DataGrid.prototype._setDataSource = function (v) {
+            var _this = this;
+            this._unbindDS();
+            this._options.dataSource = v;
+            this._dsDebounce.enqueue(function () {
+                var ds = _this._options.dataSource;
+                if (!!ds && !ds.getIsDestroyCalled()) {
+                    _this._bindDS();
+                    _this._refresh(false);
+                }
+                else {
+                    _this._clearGrid();
+                }
+            });
+        };
         DataGrid.prototype._getInternal = function () {
             return this._internal;
         };
@@ -5608,6 +5633,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 return;
             var sorts = column.sortMemberName.split(";");
             var promise = ds.sort(sorts, column.sortOrder);
+            return promise;
         };
         DataGrid.prototype.selectRows = function (isSelect) {
             this._rows.forEach(function (row) {
@@ -5834,15 +5860,8 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 return this._options.dataSource;
             },
             set: function (v) {
-                var _this = this;
                 if (v !== this.dataSource) {
-                    this._unbindDS();
-                    this._options.dataSource = v;
-                    this._dsDebounce.enqueue(function () {
-                        _this._clearGrid();
-                        _this._bindDS();
-                        _this._refresh(false);
-                    });
+                    this._setDataSource(v);
                     this.raisePropertyChanged(const_22.PROP_NAME.dataSource);
                 }
             },
@@ -6089,9 +6108,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             this._rowCount = 0;
             this._currentPage = 1;
             this._debounce = new jriapp_shared_35.Debounce();
-            if (!!this._options.dataSource) {
-                this._bindDS();
-            }
+            this._bindDS();
         }
         Pager.prototype._createElement = function (tag) {
             return jquery_15.$(doc.createElement(tag));
@@ -6322,6 +6339,11 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             }
             return tip;
         };
+        Pager.prototype._setDataSource = function (v) {
+            this._unbindDS();
+            this._options.dataSource = v;
+            this._bindDS();
+        };
         Pager.prototype.toString = function () {
             return "Pager";
         };
@@ -6335,15 +6357,10 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                 return this._options.dataSource;
             },
             set: function (v) {
-                if (v === this.dataSource)
-                    return;
-                if (!!this.dataSource) {
-                    this._unbindDS();
+                if (v !== this.dataSource) {
+                    this._setDataSource(v);
+                    this.raisePropertyChanged(PROP_NAME.dataSource);
                 }
-                this._options.dataSource = v;
-                if (!!this.dataSource)
-                    this._bindDS();
-                this.raisePropertyChanged(PROP_NAME.dataSource);
             },
             enumerable: true,
             configurable: true
@@ -6606,8 +6623,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             });
             boot._getInternal().trackSelectable(this);
             var ds = this._options.dataSource;
-            this._options.dataSource = null;
-            this.dataSource = ds;
+            this._setDataSource(ds);
         }
         StackPanel.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
@@ -6694,11 +6710,11 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             }
         };
         StackPanel.prototype._onDSCollectionChanged = function (sender, args) {
-            var self = this, items = args.items;
+            var self = this;
             switch (args.changeType) {
                 case 2:
                     {
-                        this._refresh();
+                        self._refresh();
                     }
                     break;
                 case 1:
@@ -6707,7 +6723,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
                     }
                     break;
                 case 0:
-                    items.forEach(function (item) {
+                    args.items.forEach(function (item) {
                         self._removeItem(item);
                     });
                     break;
@@ -6813,6 +6829,21 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
                 self._appendItem(item);
             });
         };
+        StackPanel.prototype._setDataSource = function (v) {
+            var _this = this;
+            this._unbindDS();
+            this._options.dataSource = v;
+            this._debounce.enqueue(function () {
+                var ds = _this._options.dataSource;
+                if (!!ds && !ds.getIsDestroyCalled()) {
+                    _this._bindDS();
+                    _this._refresh();
+                }
+                else {
+                    _this._clearContent();
+                }
+            });
+        };
         StackPanel.prototype.destroy = function () {
             if (this._isDestroyed)
                 return;
@@ -6895,16 +6926,10 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
         Object.defineProperty(StackPanel.prototype, "dataSource", {
             get: function () { return this._options.dataSource; },
             set: function (v) {
-                var _this = this;
-                if (v === this.dataSource)
-                    return;
-                this._unbindDS();
-                this._options.dataSource = v;
-                this._debounce.enqueue(function () {
-                    _this._bindDS();
-                    _this._refresh();
-                });
-                this.raisePropertyChanged(PROP_NAME.dataSource);
+                if (v !== this.dataSource) {
+                    this._setDataSource(v);
+                    this.raisePropertyChanged(PROP_NAME.dataSource);
+                }
             },
             enumerable: true,
             configurable: true

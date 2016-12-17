@@ -1590,17 +1590,16 @@ define("jriapp_shared/utils/queue", ["require", "exports", "jriapp_shared/utils/
         var _rafQueue = [], _rafQueueIndex = {}, _timer = null, _newTaskId = 1;
         var res = {
             cancel: function (taskId) {
-                var index = _rafQueueIndex[taskId];
-                if (!checks.isNt(index)) {
-                    arrHelper.removeIndex(_rafQueue, index);
-                    delete _rafQueueIndex[taskId];
+                var task = _rafQueueIndex[taskId];
+                if (!checks.isNt(task)) {
+                    task.func = null;
                 }
             },
             enque: function (func) {
                 var taskId = _newTaskId;
                 _newTaskId += 1;
-                var len = _rafQueue.push({ taskId: taskId, func: func });
-                _rafQueueIndex[taskId] = len - 1;
+                var task = { taskId: taskId, func: func }, len = _rafQueue.push(task);
+                _rafQueueIndex[taskId] = task;
                 if (!_timer) {
                     _timer = win.setTimeout(function () {
                         var arr = _rafQueue;
@@ -1611,7 +1610,9 @@ define("jriapp_shared/utils/queue", ["require", "exports", "jriapp_shared/utils/
                             _newTaskId = 1;
                         arr.forEach(function (task) {
                             try {
-                                task.func(task.taskId);
+                                if (!!task.func) {
+                                    task.func(task.taskId);
+                                }
                             }
                             catch (err) {
                                 error.handleError(win, err, win);
@@ -4302,14 +4303,15 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
                 }
             }
         };
+        Debounce.prototype.cancel = function () {
+            this._fn = null;
+        };
         Debounce.prototype.destroy = function () {
-            if (!!this._timer) {
-                if (!this._interval) {
-                    deferred_4.getTaskQueue().cancel(this._timer);
-                }
-                else {
-                    clearTimeout(this._timer);
-                }
+            if (!this._interval) {
+                deferred_4.getTaskQueue().cancel(this._timer);
+            }
+            else {
+                clearTimeout(this._timer);
             }
             this._timer = void 0;
             this._fn = null;

@@ -122,8 +122,7 @@ export class ListBox extends BaseObject {
         };
 
         const ds = this._options.dataSource;
-        this._options.dataSource = null;
-        this.dataSource = ds;
+        this._setDataSource(ds);
     }
     destroy() {
         if (this._isDestroyed)
@@ -526,6 +525,35 @@ export class ListBox extends BaseObject {
     protected _getIsEnabled(el: HTMLSelectElement) {
         return !el.disabled;
     }
+    protected _setDataSource(v: ICollection<ICollectionItem>) {
+        const checkChanges = this.getCheckChanges();
+        this._unbindDS();
+        this._options.dataSource = v;
+        this._dsDebounce.enqueue(() => {
+            const ds = this._options.dataSource;
+            this._txtDebounce.cancel();
+            this._stDebounce.cancel();
+
+            if (!!ds && !ds.getIsDestroyCalled()) {
+                this._bindDS();
+                this._refresh();
+            }
+            else {
+                this.clear();
+            }
+            checkChanges();
+        });
+    }
+    protected get selectedIndex(): number {
+        if (!this.el || this.el.length == 0)
+            return -1;
+        return this.el.selectedIndex;
+    }
+    protected set selectedIndex(v: number) {
+        if (!!this.el && this.el.length > v && this.selectedIndex !== v) {
+            this.el.selectedIndex = v;
+        }
+    }
     getText(val: any): string {
         const data: IMappedItem = this.getByValue(val);
         if (!data)
@@ -539,32 +567,12 @@ export class ListBox extends BaseObject {
     toString() {
         return "ListBox";
     }
-    protected get selectedIndex(): number {
-        if (!this.el || this.el.length == 0)
-            return -1;
-        return this.el.selectedIndex;
-    }
-    protected set selectedIndex(v: number) {
-        if (!!this.el && this.el.length > v && this.selectedIndex !== v) {
-            this.el.selectedIndex = v;
-        }
-    }
     get dataSource() {
         return this._options.dataSource;
     }
     set dataSource(v) {
         if (this.dataSource !== v) {
-            const checkChanges = this.getCheckChanges();
-            this._unbindDS();
-
-            this._options.dataSource = v;
-
-            this._dsDebounce.enqueue(() => {
-                this._bindDS();
-                this._refresh();
-                checkChanges();
-            });
-
+            this._setDataSource(v);
             this.raisePropertyChanged(PROP_NAME.dataSource);
         }
     }

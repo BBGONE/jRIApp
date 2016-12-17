@@ -702,7 +702,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         }
     }
     protected _getPKFields(): IFieldInfo[] {
-        let fieldInfos = this.getFieldInfos(), pkFlds: IFieldInfo[] = [];
+        const fieldInfos = this.getFieldInfos(), pkFlds: IFieldInfo[] = [];
         for (let i = 0, len = fieldInfos.length; i < len; i += 1) {
             let fld = fieldInfos[i];
             if (fld.isPrimaryKey > 0) {
@@ -710,10 +710,9 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
             }
         }
 
-        pkFlds = pkFlds.sort((f1, f2) => {
+       return pkFlds.sort((f1, f2) => {
             return f1.isPrimaryKey - f2.isPrimaryKey;
         });
-        return pkFlds;
     }
     protected _getNames(): IFieldName[] {
         let self = this, fieldInfos = this.getFieldInfos(), names: IFieldName[] = [];
@@ -791,7 +790,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, this.dbSetName, fieldName));
     }
     sort(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any> {
-        let self = this, query = self.query;
+        const self = this, query = self.query;
         if (!checks.isNt(query)) {
             query.clearSort();
             for (let i = 0; i < fieldNames.length; i += 1) {
@@ -815,11 +814,11 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
     }, isAppendData?: boolean): IQueryResult<TItem> {
         const self = this, reason = COLL_CHANGE_REASON.None;
         let newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [], query = this.query;
-        let isClearAll = !isAppendData;
+        const isClearAll = !isAppendData;
         if (isClearAll)
             self._clear(reason, COLL_CHANGE_OPER.Fill);
 
-        let fetchedItems = data.rows.map(function (row) {
+        const fetchedItems = data.rows.map(function (row) {
             //row.key already a string value generated on server (no need to convert to string)
             let key = row.k;
             if (!key)
@@ -855,7 +854,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
 
         this.totalCount = fetchedItems.length;
 
-        let result: IQueryResult<TItem> = {
+        const result: IQueryResult<TItem> = {
             newItems: {
                 items: newItems,
                 pos: positions
@@ -871,10 +870,10 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
     }
     //manually fill items for an array of objects
     fillItems<TObj>(data: TObj[], isAppend?: boolean): IQueryResult<TItem> {
-        let self = this;
-        let fieldInfos = this.getFieldInfos(), pkFlds = self._getPKFields();
-        let fn_ProcessField = (data: IIndexer<any>, keys: string[], fld: IFieldInfo, name: string, arr: any[]) => {
-            let isOK = fld.fieldType === FIELD_TYPE.None || fld.fieldType === FIELD_TYPE.RowTimeStamp || fld.fieldType === FIELD_TYPE.ServerCalculated;
+        const self = this;
+        const fieldInfos = this.getFieldInfos(), pkFlds = self._getPKFields();
+        const fn_ProcessField = (data: IIndexer<any>, keys: string[], fld: IFieldInfo, name: string, arr: any[]) => {
+            const isOK = fld.fieldType === FIELD_TYPE.None || fld.fieldType === FIELD_TYPE.RowTimeStamp || fld.fieldType === FIELD_TYPE.ServerCalculated;
             if (!isOK) {
                 return;
             }
@@ -897,9 +896,9 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
 
         try {
             //obtain field names
-            let names = self._getNames();
+            const names = self._getNames();
             //obtain rows
-            let rows = data.map(function (dataItem: IIndexer<any>) {
+            const rows = data.map(function (dataItem: IIndexer<any>) {
                 let row: IRowData = { k: null, v: [] };
                 let keys: string[] = new Array<string>(pkFlds.length);
 

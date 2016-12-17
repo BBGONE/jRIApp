@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
     TEventHandler, IIndexer, TPriority, LocaleERRS as ERRS, LocaleSTRS as STRS, BaseObject,
-    Debounce, Utils
+    Debounce, Utils, IPromise
 } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
 import { DATA_ATTR, KEYS } from "jriapp/const";
@@ -303,12 +303,11 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         };
         this._createColumns();
 
-        const ds = this._options.dataSource;
-        this._options.dataSource = null;
-        this.dataSource = ds;
-
         boot._getInternal().trackSelectable(this);
         _gridCreated(this);
+
+        const ds = this._options.dataSource;
+        this._setDataSource(ds);
     }
     protected _getEventNames() {
         let base_events = super._getEventNames();
@@ -481,7 +480,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         }
         if (this._rows.length === 0)
             return;
-        let rowkey = row.itemKey, i = utils.arr.remove(this._rows, row);
+        const rowkey = row.itemKey, i = utils.arr.remove(this._rows, row);
         try {
             if (i > -1) {
                 if (!row.getIsDestroyCalled()) {
@@ -602,7 +601,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         }
     }
     protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>) {
-        let self = this, row: Row, items = args.items;
+        const self = this;
         switch (args.changeType) {
             case COLL_CHANGE_TYPE.Reset:
                 {
@@ -620,8 +619,8 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 break;
             case COLL_CHANGE_TYPE.Remove:
                 {
-                    items.forEach(function (item) {
-                        let row = self._rowMap[item._key];
+                    args.items.forEach(function (item) {
+                        const row = self._rowMap[item._key];
                         if (!!row) {
                             self._removeRow(row);
                         }
@@ -631,7 +630,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 break;
             case COLL_CHANGE_TYPE.Remap:
                 {
-                    row = self._rowMap[args.old_key];
+                    const row = self._rowMap[args.old_key];
                     if (!!row) {
                         delete self._rowMap[args.old_key];
                         self._rowMap[args.new_key] = row;
@@ -749,7 +748,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this.collapseDetails();
         const self = this, tbody = self._tBodyEl, newTbody = doc.createElement("tbody");
         this.table.replaceChild(newTbody, tbody);
-        let rows = this._rows;
+        const rows = this._rows;
         this._rows = [];
         this._rowMap = {};
         rows.forEach(function (row) {
@@ -906,6 +905,20 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         const tr: HTMLTableRowElement = doc.createElement("tr");
         return new FillSpaceRow({ grid: this, tr: tr });
     }
+    protected _setDataSource(v: ICollection<ICollectionItem>) {
+        this._unbindDS();
+        this._options.dataSource = v;
+        this._dsDebounce.enqueue(() => {
+            const ds = this._options.dataSource;
+            if (!!ds && !ds.getIsDestroyCalled()) {
+                this._bindDS();
+                this._refresh(false);
+            }
+            else {
+                this._clearGrid();
+            }
+        });
+    }
     _getInternal(): IInternalDataGridMethods {
         return this._internal;
     }
@@ -926,12 +939,13 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     getISelectable(): ISelectable {
         return this._selectable;
     }
-    sortByColumn(column: DataColumn) {
-        let self = this, ds = this.dataSource;
+    sortByColumn(column: DataColumn): IPromise<any> {
+        const self = this, ds = this.dataSource;
         if (!ds)
             return;
-        let sorts = column.sortMemberName.split(";");
-        let promise = ds.sort(sorts, column.sortOrder);
+        const sorts = column.sortMemberName.split(";");
+        const promise = ds.sort(sorts, column.sortOrder);
+        return promise;
     }
     selectRows(isSelect: boolean) {
         this._rows.forEach(function (row) {
@@ -1143,14 +1157,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     }
     set dataSource(v: ICollection<ICollectionItem>) {
         if (v !== this.dataSource) {
-            this._unbindDS();
-            this._options.dataSource = v;
-            this._dsDebounce.enqueue(() => {
-                this._clearGrid();
-                this._bindDS();
-                this._refresh(false);
-            });
-
+            this._setDataSource(v);
             this.raisePropertyChanged(PROP_NAME.dataSource);
         }
     }

@@ -1142,10 +1142,9 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                     pkFlds.push(fld);
                 }
             }
-            pkFlds = pkFlds.sort(function (f1, f2) {
+            return pkFlds.sort(function (f1, f2) {
                 return f1.isPrimaryKey - f2.isPrimaryKey;
             });
-            return pkFlds;
         };
         DbSet.prototype._getNames = function () {
             var self = this, fieldInfos = this.getFieldInfos(), names = [];

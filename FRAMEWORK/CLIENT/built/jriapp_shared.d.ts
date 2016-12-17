@@ -1258,6 +1258,7 @@ declare module "jriapp_shared/utils/debounce" {
         private _fn;
         constructor(interval?: number);
         enqueue(fn: () => any): void;
+        cancel(): void;
         destroy(): void;
         readonly interval: number;
         readonly IsDestroyed: boolean;

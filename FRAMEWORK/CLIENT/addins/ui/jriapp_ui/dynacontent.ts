@@ -29,7 +29,7 @@ const PROP_NAME = {
 };
 
 export class DynaContentElView extends BaseElView implements ITemplateEvents {
-    private _dataContext: any;
+    private _dataContext: IBaseObject;
     private _prevTemplateID: string;
     private _templateID: string;
     private _template: ITemplate;
@@ -158,8 +158,9 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
         if (this._dataContext !== v) {
             this._dataContext = v;
             this._dsDebounce.enqueue(() => {
+                const ds = this._dataContext;
                 if (!!this._template) {
-                    this._template.dataContext = this._dataContext;
+                    this._template.dataContext = ds;
                 }
             });
             this.raisePropertyChanged(PROP_NAME.dataContext);

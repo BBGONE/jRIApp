@@ -82,9 +82,7 @@ export class Pager extends BaseObject {
         this._rowCount = 0;
         this._currentPage = 1;
         this._debounce = new Debounce();
-        if (!!this._options.dataSource) {
-            this._bindDS();
-        }
+        this._bindDS();
     }
     protected _createElement(tag: string) {
         return $(doc.createElement(tag));
@@ -345,6 +343,11 @@ export class Pager extends BaseObject {
         }
         return tip;
     }
+    protected _setDataSource(v: ICollection<ICollectionItem>) {
+        this._unbindDS();
+        this._options.dataSource = v;
+        this._bindDS();
+    }
     toString() {
         return "Pager";
     }
@@ -353,15 +356,10 @@ export class Pager extends BaseObject {
         return this._options.dataSource;
     }
     set dataSource(v: ICollection<ICollectionItem>) {
-        if (v === this.dataSource)
-            return;
-        if (!!this.dataSource) {
-            this._unbindDS();
+        if (v !== this.dataSource) {
+            this._setDataSource(v);
+            this.raisePropertyChanged(PROP_NAME.dataSource);
         }
-        this._options.dataSource = v;
-        if (!!this.dataSource)
-            this._bindDS();
-        this.raisePropertyChanged(PROP_NAME.dataSource);
     }
     get pageCount(): number {
         let rowCount = this.rowCount, rowsPerPage = this.rowsPerPage, result: number;

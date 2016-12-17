@@ -121,8 +121,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         boot._getInternal().trackSelectable(this);
 
         const ds = this._options.dataSource;
-        this._options.dataSource = null;
-        this.dataSource = ds;
+        this._setDataSource(ds);
     }
     protected _getEventNames() {
         let base_events = super._getEventNames();
@@ -209,11 +208,11 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         }
     }
     protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>): void {
-        let self = this, items = args.items;
+        const self = this;
         switch (args.changeType) {
             case COLL_CHANGE_TYPE.Reset:
                 {
-                    this._refresh();
+                    self._refresh();
                 }
                 break;
             case COLL_CHANGE_TYPE.Add:
@@ -222,13 +221,13 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
                 }
                 break;
             case COLL_CHANGE_TYPE.Remove:
-                items.forEach(function (item) {
+                args.items.forEach(function (item) {
                     self._removeItem(item);
                 });
                 break;
             case COLL_CHANGE_TYPE.Remap:
                 {
-                    let mappedItem = self._itemMap[args.old_key];
+                    const mappedItem = self._itemMap[args.old_key];
                     if (!!mappedItem) {
                         delete self._itemMap[args.old_key];
                         self._itemMap[args.new_key] = mappedItem;
@@ -303,7 +302,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         this.raiseEvent(PNL_EVENTS.item_clicked, { item: item });
     }
     protected _clearContent() {
-        let self = this;
+        const self = this;
         self._$el.empty();
         coreUtils.forEachProp(self._itemMap, function (key) {
             self._removeItemByKey(key);
@@ -328,6 +327,20 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
             return;
         ds.forEach(function (item) {
             self._appendItem(item);
+        });
+    }
+    protected _setDataSource(v: ICollection<ICollectionItem>) {
+        this._unbindDS();
+        this._options.dataSource = v;
+        this._debounce.enqueue(() => {
+            const ds = this._options.dataSource;
+            if (!!ds && !ds.getIsDestroyCalled()) {
+                this._bindDS();
+                this._refresh();
+            }
+            else {
+                this._clearContent();
+            }
         });
     }
     destroy() {
@@ -410,15 +423,10 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
     get templateID() { return this._options.templateID; }
     get dataSource() { return this._options.dataSource; }
     set dataSource(v) {
-        if (v === this.dataSource)
-            return;
-        this._unbindDS();
-        this._options.dataSource = v;
-        this._debounce.enqueue(() => {
-            this._bindDS();
-            this._refresh();
-        });
-        this.raisePropertyChanged(PROP_NAME.dataSource);
+        if (v !== this.dataSource) {
+            this._setDataSource(v);
+            this.raisePropertyChanged(PROP_NAME.dataSource);
+        }
     }
     get currentItem() { return this._currentItem; }
 }

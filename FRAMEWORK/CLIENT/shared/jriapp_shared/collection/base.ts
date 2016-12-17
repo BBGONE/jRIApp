@@ -829,10 +829,10 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         return this.sortLocal(fieldNames, sortOrder);
     }
     sortLocal(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any> {
-        let sortFn = this._getSortFn(fieldNames, sortOrder);
-        let self = this, deferred = utils.defer.createDeferred<void>();
+        const sortFn = this._getSortFn(fieldNames, sortOrder);
+        const self = this, deferred = utils.defer.createDeferred<void>();
         this.waitForNotLoading(() => {
-            let cur = self.currentItem;
+            const cur = self.currentItem;
             self._setIsLoading(true);
             try {
                 self._items.sort(sortFn);

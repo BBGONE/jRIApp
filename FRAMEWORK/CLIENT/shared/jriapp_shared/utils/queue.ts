@@ -13,26 +13,31 @@ export interface IQueue
     enque: (func: FrameRequestCallback) => number;
 }
 
+interface ITask {
+    taskId: number,
+    func: FrameRequestCallback;
+}
+
 export function createQueue(interval: number = 0): IQueue {
     let _rafQueue: {
         taskId: number;
         func: FrameRequestCallback
-    }[] = [], _rafQueueIndex: IIndexer<number> = {},
+    }[] = [], _rafQueueIndex: IIndexer<ITask> = {},
         _timer: number = null, _newTaskId = 1;
 
     const res: IQueue = {
         cancel: function (taskId: number) {
-            const index = _rafQueueIndex[taskId];
-            if (!checks.isNt(index)) {
-                arrHelper.removeIndex(_rafQueue, index);
-                delete _rafQueueIndex[taskId];
+            const task = _rafQueueIndex[taskId];
+            if (!checks.isNt(task)) {
+                //cancel task by setting its func to null!!!
+                task.func = null;
             }
         },
         enque: function (func: FrameRequestCallback): number {
             const taskId = _newTaskId;
             _newTaskId += 1;
-            const len = _rafQueue.push({ taskId: taskId, func: func });
-            _rafQueueIndex[taskId] = len - 1;
+            const task: ITask = { taskId: taskId, func: func }, len = _rafQueue.push(task);
+            _rafQueueIndex[taskId] = task;
 
             if (!_timer) {
                 _timer = win.setTimeout(() => {
@@ -46,7 +51,9 @@ export function createQueue(interval: number = 0): IQueue {
 
                     arr.forEach((task) => {
                         try {
-                            task.func(task.taskId);
+                            if (!!task.func) {
+                                task.func(task.taskId);
+                            }
                         }
                         catch (err) {
                             error.handleError(win, err, win);

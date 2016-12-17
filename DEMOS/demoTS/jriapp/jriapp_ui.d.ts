@@ -419,10 +419,11 @@ declare module "jriapp_ui/listbox" {
         protected getCheckChanges(): () => void;
         protected _setIsEnabled(el: HTMLSelectElement, v: boolean): void;
         protected _getIsEnabled(el: HTMLSelectElement): boolean;
+        protected _setDataSource(v: ICollection<ICollectionItem>): void;
+        protected selectedIndex: number;
         getText(val: any): string;
         clear(): void;
         toString(): string;
-        protected selectedIndex: number;
         dataSource: ICollection<ICollectionItem>;
         selectedValue: any;
         selectedItem: ICollectionItem;
@@ -622,7 +623,7 @@ declare module "jriapp_ui/dialog" {
     }
 }
 declare module "jriapp_ui/dynacontent" {
-    import { IVoidPromise } from "jriapp_shared";
+    import { IVoidPromise, IBaseObject } from "jriapp_shared";
     import { ITemplate, ITemplateEvents, IViewOptions } from "jriapp/int";
     import { BaseElView } from "jriapp_ui/baseview";
     export interface IDynaContentAnimation {
@@ -652,7 +653,7 @@ declare module "jriapp_ui/dynacontent" {
         destroy(): void;
         readonly template: ITemplate;
         templateID: string;
-        dataContext: any;
+        dataContext: IBaseObject;
         animation: IDynaContentAnimation;
     }
 }
@@ -1118,7 +1119,7 @@ declare module "jriapp_ui/datagrid/cells/fillspace" {
     }
 }
 declare module "jriapp_ui/datagrid/datagrid" {
-    import { TEventHandler, BaseObject } from "jriapp_shared";
+    import { TEventHandler, BaseObject, IPromise } from "jriapp_shared";
     import { ISelectableProvider, ISelectable, IViewOptions } from "jriapp/int";
     import { ITEM_STATUS } from "jriapp_shared/collection/const";
     import { ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollection, ICollItemAddedArgs } from "jriapp_shared/collection/int";
@@ -1266,10 +1267,11 @@ declare module "jriapp_ui/datagrid/datagrid" {
         protected _createRowForItem(parent: Node, item: ICollectionItem, prepend?: boolean): Row;
         protected _createDetails(): DetailsRow;
         protected _createFillSpace(): FillSpaceRow;
+        protected _setDataSource(v: ICollection<ICollectionItem>): void;
         _getInternal(): IInternalDataGridMethods;
         updateColumnsSize(): void;
         getISelectable(): ISelectable;
-        sortByColumn(column: DataColumn): void;
+        sortByColumn(column: DataColumn): IPromise<any>;
         selectRows(isSelect: boolean): void;
         findRowByItem(item: ICollectionItem): Row;
         collapseDetails(): void;
@@ -1372,6 +1374,7 @@ declare module "jriapp_ui/pager" {
         protected _createNext(): JQuery;
         protected _createLast(): JQuery;
         protected _buildTip(page: number): string;
+        protected _setDataSource(v: ICollection<ICollectionItem>): void;
         toString(): string;
         readonly el: HTMLElement;
         dataSource: ICollection<ICollectionItem>;
@@ -1447,6 +1450,7 @@ declare module "jriapp_ui/stackpanel" {
         protected _removeItemByKey(key: string): void;
         protected _removeItem(item: ICollectionItem): void;
         protected _refresh(): void;
+        protected _setDataSource(v: ICollection<ICollectionItem>): void;
         destroy(): void;
         getISelectable(): ISelectable;
         scrollToItem(item: ICollectionItem, isUp?: boolean): void;
