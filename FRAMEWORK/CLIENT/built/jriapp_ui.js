@@ -1522,7 +1522,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             this._txtDebounce.destroy();
             this._unbindDS();
             this._$el.off("." + this._objId);
-            this._clear(true);
+            this._clear();
             this._$el = null;
             this._selectedValue = checks.undefined;
             this._savedVal = checks.undefined;
@@ -1812,9 +1812,9 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 this.selectedValue = (!curVal ? null : this._getValue(curVal.item));
             }
         };
-        ListBox.prototype._clear = function (isDestroy) {
-            var self = this;
-            coreUtils.forEachProp(this._keyMap, function (key) {
+        ListBox.prototype._clear = function () {
+            var self = this, keys = Object.keys(self._keyMap);
+            keys.forEach(function (key) {
                 var data = self._keyMap[key];
                 if (!!data && !!data.item) {
                     data.item.removeNSHandlers(self._objId);
@@ -1823,16 +1823,15 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             this.el.options.length = 0;
             this._keyMap = {};
             this._valMap = {};
-            if (!isDestroy && !this._options.isNoEmptyOption) {
-                this._addOption(null, false);
-            }
-            this.raisePropertyChanged(PROP_NAME.selectedItem);
         };
         ListBox.prototype._refresh = function () {
             var self = this, ds = this.dataSource;
             this._isRefreshing = true;
             try {
-                this.clear();
+                this._clear();
+                if (!this._options.isNoEmptyOption) {
+                    this._addOption(null, false);
+                }
                 if (!!ds) {
                     ds.forEach(function (item) {
                         self._addOption(item, false);
@@ -1914,7 +1913,10 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     _this._refresh();
                 }
                 else {
-                    _this.clear();
+                    _this._clear();
+                    if (!_this._options.isNoEmptyOption) {
+                        _this._addOption(null, false);
+                    }
                 }
                 checkChanges();
             });
@@ -1939,9 +1941,6 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 return "";
             else
                 return data.op.text;
-        };
-        ListBox.prototype.clear = function () {
-            this._clear(false);
         };
         ListBox.prototype.toString = function () {
             return "ListBox";
@@ -5302,6 +5301,9 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 }
             }
         };
+        DataGrid.prototype._onDSClearing = function () {
+            this._clearGrid();
+        };
         DataGrid.prototype._onDSCollectionChanged = function (sender, args) {
             var self = this;
             switch (args.changeType) {
@@ -5417,6 +5419,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 oldCurrent = coll.currentItem;
             };
             ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self);
+            ds.addOnClearing(self._onDSClearing, self._objId, self);
             ds.addOnCurrentChanged(function () {
                 self._updateCurrent();
             }, self._objId, self);
@@ -5548,11 +5551,9 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
         };
         DataGrid.prototype._refresh = function (isPageChanged) {
             var self = this, ds = this.dataSource;
-            if (self.getIsDestroyCalled())
+            if (!ds || self.getIsDestroyCalled())
                 return;
-            self._clearGrid();
-            if (!ds)
-                return;
+            this._clearGrid();
             var docFr = doc.createDocumentFragment(), oldTbody = this._tBodyEl, newTbody = doc.createElement("tbody");
             ds.items.forEach(function (item, index) {
                 self._createRowForItem(docFr, item, false);
@@ -6740,6 +6741,9 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
                     throw new Error(strUtils.format(jriapp_shared_36.LocaleERRS.ERR_COLLECTION_CHANGETYPE_INVALID, args.changeType));
             }
         };
+        StackPanel.prototype._onDSClearing = function () {
+            this._clearContent();
+        };
         StackPanel.prototype._onItemStatusChanged = function (item, oldStatus) {
             var newStatus = item._aspect.status, obj = this._itemMap[item._key];
             if (!obj)
@@ -6784,6 +6788,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             if (!ds)
                 return;
             ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self);
+            ds.addOnClearing(self._onDSClearing, self._objId, self);
             ds.addOnCurrentChanged(self._onDSCurrentChanged, self._objId, self);
             ds.addOnStatusChanged(function (sender, args) {
                 self._onItemStatusChanged(args.item, args.oldStatus);
@@ -6801,9 +6806,11 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             this.raiseEvent(PNL_EVENTS.item_clicked, { item: item });
         };
         StackPanel.prototype._clearContent = function () {
-            var self = this;
+            var self = this, keys = Object.keys(self._itemMap);
+            if (keys.length === 0)
+                return;
             self._$el.empty();
-            coreUtils.forEachProp(self._itemMap, function (key) {
+            keys.forEach(function (key) {
                 self._removeItemByKey(key);
             });
         };

@@ -133,7 +133,7 @@ export class ListBox extends BaseObject {
         this._txtDebounce.destroy();
         this._unbindDS();
         this._$el.off("." + this._objId);
-        this._clear(true);
+        this._clear();
         this._$el = null;
         this._selectedValue = checks.undefined;
         this._savedVal = checks.undefined;
@@ -437,9 +437,9 @@ export class ListBox extends BaseObject {
             this.selectedValue = (!curVal ? null : this._getValue(curVal.item));
         }
     }
-    private _clear(isDestroy: boolean) {
-        const self = this;
-        coreUtils.forEachProp(this._keyMap, (key) => {
+    private _clear() {
+        const self = this, keys = Object.keys(self._keyMap);
+        keys.forEach((key) => {
             const data = self._keyMap[key];
             if (!!data && !!data.item) {
                 data.item.removeNSHandlers(self._objId);
@@ -448,17 +448,15 @@ export class ListBox extends BaseObject {
         this.el.options.length = 0;
         this._keyMap = {};
         this._valMap = {};
-        if (!isDestroy && !this._options.isNoEmptyOption) {
-            this._addOption(null, false);
-        }
-
-        this.raisePropertyChanged(PROP_NAME.selectedItem);
     }
     private _refresh(): void {
         const self = this, ds = this.dataSource;
         this._isRefreshing = true;
         try {
-            this.clear();
+            this._clear();
+            if (!this._options.isNoEmptyOption) {
+                this._addOption(null, false);
+            }
             if (!!ds) {
                 ds.forEach(function (item) {
                     self._addOption(item, false);
@@ -468,6 +466,7 @@ export class ListBox extends BaseObject {
                 this._selectedValue = null;
             }
             self.updateSelected(this._selectedValue);
+
         } finally {
             self._isRefreshing = false;
         }
@@ -539,7 +538,10 @@ export class ListBox extends BaseObject {
                 this._refresh();
             }
             else {
-                this.clear();
+                this._clear();
+                if (!this._options.isNoEmptyOption) {
+                    this._addOption(null, false);
+                }
             }
             checkChanges();
         });
@@ -560,9 +562,6 @@ export class ListBox extends BaseObject {
             return "";
         else
             return data.op.text;
-    }
-    clear() {
-        this._clear(false);
     }
     toString() {
         return "ListBox";

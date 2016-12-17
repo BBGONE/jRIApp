@@ -600,6 +600,9 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             }
         }
     }
+    protected _onDSClearing() {
+        this._clearGrid();
+    }
     protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>) {
         const self = this;
         switch (args.changeType) {
@@ -716,10 +719,10 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         };
 
         ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self);
+        ds.addOnClearing(self._onDSClearing, self._objId, self);
         ds.addOnCurrentChanged(() => {
             self._updateCurrent();
         }, self._objId, self);
-
         ds.addOnBeginEdit(function (sender, args) {
             self._onItemEdit(args.item, true, false);
         }, self._objId);
@@ -857,11 +860,9 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     }
     protected _refresh(isPageChanged: boolean) {
         const self = this, ds = this.dataSource;
-        if (self.getIsDestroyCalled())
+        if (!ds || self.getIsDestroyCalled())
             return;
-        self._clearGrid();
-        if (!ds)
-            return;
+        this._clearGrid();
         const docFr = doc.createDocumentFragment(), oldTbody = this._tBodyEl, newTbody = doc.createElement("tbody");
         ds.items.forEach(function (item, index) {
             self._createRowForItem(docFr, item, false);

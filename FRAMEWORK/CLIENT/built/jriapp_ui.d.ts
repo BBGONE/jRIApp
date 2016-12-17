@@ -410,7 +410,7 @@ declare module "jriapp_ui/listbox" {
         private _resetText();
         private _resetState();
         private _removeOption(item);
-        private _clear(isDestroy);
+        private _clear();
         private _refresh();
         protected getItemIndex(item: ICollectionItem): number;
         protected getByValue(val: any): IMappedItem;
@@ -422,7 +422,6 @@ declare module "jriapp_ui/listbox" {
         protected _setDataSource(v: ICollection<ICollectionItem>): void;
         protected selectedIndex: number;
         getText(val: any): string;
-        clear(): void;
         toString(): string;
         dataSource: ICollection<ICollectionItem>;
         selectedValue: any;
@@ -1248,6 +1247,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         protected _parseColumnAttr(column_attr: string, content_attr: string): IColumnInfo;
         protected _findUndeleted(row: Row, isUp: boolean): Row;
         protected _onDSCurrentChanged(prevCurrent: ICollectionItem, newCurrent: ICollectionItem): void;
+        protected _onDSClearing(): void;
         protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>): void;
         protected _updateTableDisplay(): void;
         protected _onPageChanged(): void;
@@ -1439,6 +1439,7 @@ declare module "jriapp_ui/stackpanel" {
         protected _updateCurrent(item: ICollectionItem, withScroll: boolean): void;
         protected _onDSCurrentChanged(sender: any, args: any): void;
         protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>): void;
+        protected _onDSClearing(): void;
         protected _onItemStatusChanged(item: ICollectionItem, oldStatus: ITEM_STATUS): void;
         protected _createTemplate(item: ICollectionItem): ITemplate;
         protected _appendItems(newItems: ICollectionItem[]): void;
