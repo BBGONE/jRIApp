@@ -6741,8 +6741,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             }
         };
         StackPanel.prototype._onItemStatusChanged = function (item, oldStatus) {
-            var newStatus = item._aspect.status;
-            var obj = this._itemMap[item._key];
+            var newStatus = item._aspect.status, obj = this._itemMap[item._key];
             if (!obj)
                 return;
             if (newStatus === 3) {

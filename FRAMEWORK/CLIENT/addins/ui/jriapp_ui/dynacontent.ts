@@ -29,7 +29,7 @@ const PROP_NAME = {
 };
 
 export class DynaContentElView extends BaseElView implements ITemplateEvents {
-    private _dataContext: IBaseObject;
+    private _dataContext: any;
     private _prevTemplateID: string;
     private _templateID: string;
     private _template: ITemplate;
@@ -50,7 +50,7 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
     templateLoading(template: ITemplate): void {
         if (this.getIsDestroyCalled())
             return;
-        let isFirstShow = !this._prevTemplateID,
+        const isFirstShow = !this._prevTemplateID,
             canShow = !!this._animation && (this._animation.isAnimateFirstShow || (!this._animation.isAnimateFirstShow && !isFirstShow));
         if (canShow) {
             this._animation.beforeShow(template, isFirstShow);

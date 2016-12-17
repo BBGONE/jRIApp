@@ -623,7 +623,7 @@ declare module "jriapp_ui/dialog" {
     }
 }
 declare module "jriapp_ui/dynacontent" {
-    import { IVoidPromise, IBaseObject } from "jriapp_shared";
+    import { IVoidPromise } from "jriapp_shared";
     import { ITemplate, ITemplateEvents, IViewOptions } from "jriapp/int";
     import { BaseElView } from "jriapp_ui/baseview";
     export interface IDynaContentAnimation {
@@ -653,7 +653,7 @@ declare module "jriapp_ui/dynacontent" {
         destroy(): void;
         readonly template: ITemplate;
         templateID: string;
-        dataContext: IBaseObject;
+        dataContext: any;
         animation: IDynaContentAnimation;
     }
 }

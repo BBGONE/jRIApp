@@ -239,8 +239,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         }
     }
     protected _onItemStatusChanged(item: ICollectionItem, oldStatus: ITEM_STATUS) {
-        let newStatus = item._aspect.status;
-        let obj = this._itemMap[item._key];
+        const newStatus = item._aspect.status, obj = this._itemMap[item._key];
         if (!obj)
             return;
         if (newStatus === ITEM_STATUS.Deleted) {
@@ -251,14 +250,14 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         }
     }
     protected _createTemplate(item: ICollectionItem) {
-        let template = createTemplate(item, null);
+        const template = createTemplate(item, null);
         template.templateID = this.templateID;
         return template;
     }
     protected _appendItems(newItems: ICollectionItem[]) {
         if (this.getIsDestroyCalled())
             return;
-        let self = this;
+        const self = this;
         newItems.forEach(function (item) {
             //a row for item already exists
             if (!!self._itemMap[item._key])
@@ -269,7 +268,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
     protected _appendItem(item: ICollectionItem) {
         if (!item._key)
             return;
-        let self = this, item_el = doc.createElement(this._item_tag), $item_el = $(item_el);
+        const self = this, item_el = doc.createElement(this._item_tag), $item_el = $(item_el);
 
         dom.addClass([item_el], css.item);
         item_el.setAttribute(DATA_ATTR.DATA_EVENT_SCOPE, this.uniqueID);

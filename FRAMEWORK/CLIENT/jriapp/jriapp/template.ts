@@ -48,7 +48,7 @@ class Template extends BaseObject implements ITemplate {
     private _lfTime: ILifeTimeScope;
     private _templElView: ITemplateEvents;
     private _loadedElem: HTMLElement;
-    private _dataContext: IBaseObject;
+    private _dataContext: any;
     private _templEvents?: ITemplateEvents;
     private _templateID: string;
 
