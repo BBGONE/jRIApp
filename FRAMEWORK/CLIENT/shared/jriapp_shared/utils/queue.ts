@@ -19,16 +19,13 @@ interface ITask {
 }
 
 export function createQueue(interval: number = 0): IQueue {
-    let _rafQueue: {
-        taskId: number;
-        func: FrameRequestCallback
-    }[] = [], _rafQueueIndex: IIndexer<ITask> = {},
+    let _rafQueue: ITask[] = [], _rafQueueMap: IIndexer<ITask> = {},
         _timer: number = null, _newTaskId = 1;
 
     const res: IQueue = {
         cancel: function (taskId: number) {
-            const task = _rafQueueIndex[taskId];
-            if (!checks.isNt(task)) {
+            const task = _rafQueueMap[taskId];
+            if (!!task) {
                 //cancel task by setting its func to null!!!
                 task.func = null;
             }
@@ -37,28 +34,39 @@ export function createQueue(interval: number = 0): IQueue {
             const taskId = _newTaskId;
             _newTaskId += 1;
             const task: ITask = { taskId: taskId, func: func }, len = _rafQueue.push(task);
-            _rafQueueIndex[taskId] = task;
+            _rafQueueMap[taskId] = task;
 
             if (!_timer) {
                 _timer = win.setTimeout(() => {
                     const arr = _rafQueue;
                     _timer = null;
                     _rafQueue = [];
-                    _rafQueueIndex = {};
-                    //recycle generated nums
+
+                    //recycle generated nums if they are too big
                     if (_newTaskId > MAX_NUM)
                         _newTaskId = 1;
 
-                    arr.forEach((task) => {
-                        try {
-                            if (!!task.func) {
-                                task.func(task.taskId);
+                    try {
+                        arr.forEach((task) => {
+                            try {
+                                if (!!task.func) {
+                                    task.func(task.taskId);
+                                }
                             }
-                        }
-                        catch (err) {
-                            error.handleError(win, err, win);
-                        }
-                    });
+                            catch (err) {
+                                error.handleError(win, err, win);
+                            }
+                        });
+                    }
+                    finally {
+                        //reset the map after all the tasks in the queue have been executed
+                        //so a task can be cancelled from another task
+                        _rafQueueMap = {};
+                        //add tasks which were queued while tasks were executing (from inside the tasks) to the map
+                        for (let i = 0; i < _rafQueue.length; i += 1) {
+                            _rafQueueMap[_rafQueue[i].taskId] = _rafQueue[i];
+                        };
+                    }
                 }, interval);
             }
 

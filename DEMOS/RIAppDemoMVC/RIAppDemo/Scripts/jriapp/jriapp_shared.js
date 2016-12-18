@@ -1587,11 +1587,11 @@ define("jriapp_shared/utils/queue", ["require", "exports", "jriapp_shared/utils/
     var MAX_NUM = 99999900000, win = window;
     function createQueue(interval) {
         if (interval === void 0) { interval = 0; }
-        var _rafQueue = [], _rafQueueIndex = {}, _timer = null, _newTaskId = 1;
+        var _rafQueue = [], _rafQueueMap = {}, _timer = null, _newTaskId = 1;
         var res = {
             cancel: function (taskId) {
-                var task = _rafQueueIndex[taskId];
-                if (!checks.isNt(task)) {
+                var task = _rafQueueMap[taskId];
+                if (!!task) {
                     task.func = null;
                 }
             },
@@ -1599,25 +1599,33 @@ define("jriapp_shared/utils/queue", ["require", "exports", "jriapp_shared/utils/
                 var taskId = _newTaskId;
                 _newTaskId += 1;
                 var task = { taskId: taskId, func: func }, len = _rafQueue.push(task);
-                _rafQueueIndex[taskId] = task;
+                _rafQueueMap[taskId] = task;
                 if (!_timer) {
                     _timer = win.setTimeout(function () {
                         var arr = _rafQueue;
                         _timer = null;
                         _rafQueue = [];
-                        _rafQueueIndex = {};
                         if (_newTaskId > MAX_NUM)
                             _newTaskId = 1;
-                        arr.forEach(function (task) {
-                            try {
-                                if (!!task.func) {
-                                    task.func(task.taskId);
+                        try {
+                            arr.forEach(function (task) {
+                                try {
+                                    if (!!task.func) {
+                                        task.func(task.taskId);
+                                    }
                                 }
+                                catch (err) {
+                                    error.handleError(win, err, win);
+                                }
+                            });
+                        }
+                        finally {
+                            _rafQueueMap = {};
+                            for (var i = 0; i < _rafQueue.length; i += 1) {
+                                _rafQueueMap[_rafQueue[i].taskId] = _rafQueue[i];
                             }
-                            catch (err) {
-                                error.handleError(win, err, win);
-                            }
-                        });
+                            ;
+                        }
                     }, interval);
                 }
                 return taskId;
@@ -2009,6 +2017,7 @@ define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/s
 });
 define("jriapp_shared/utils/dom", ["require", "exports"], function (require, exports) {
     "use strict";
+    var hasClassList = (!!window.document.documentElement.classList);
     var DomUtils = (function () {
         function DomUtils() {
         }
@@ -2108,8 +2117,7 @@ define("jriapp_shared/utils/dom", ["require", "exports"], function (require, exp
                 toRemove = [];
             }
             for (var j = 0; j < elems.length; j += 1) {
-                var el = elems[j];
-                var map = DomUtils.getClassMap(el);
+                var el = elems[j], map = DomUtils.getClassMap(el);
                 if (removeAll) {
                     map = {};
                 }
@@ -2127,35 +2135,36 @@ define("jriapp_shared/utils/dom", ["require", "exports"], function (require, exp
             if (remove === void 0) { remove = false; }
             if (!elems.length)
                 return;
-            if (remove && !css) {
-                for (var j = 0; j < elems.length; j += 1) {
-                    elems[j].className = "";
+            if (!css) {
+                if (remove) {
+                    for (var j = 0; j < elems.length; j += 1) {
+                        elems[j].className = "";
+                    }
                 }
                 return;
             }
-            if (!css)
-                return;
-            var arr = css.split(" ");
-            for (var i = 0; i < arr.length; i += 1) {
-                arr[i] = arr[i].trim();
+            var _arr = css.split(" ");
+            for (var i = 0; i < _arr.length; i += 1) {
+                _arr[i] = _arr[i].trim();
             }
-            for (var j = 0; j < elems.length; j += 1) {
-                var el = elems[j];
-                if (arr.length === 1 && !!arr[0] && !!el.classList) {
+            var arr = _arr.filter(function (val) { return !!val; });
+            if (hasClassList && arr.length === 1) {
+                for (var j = 0; j < elems.length; j += 1) {
+                    var el = elems[j];
                     if (remove)
                         el.classList.remove(arr[0]);
                     else
                         el.classList.add(arr[0]);
                 }
-                else {
-                    var map = DomUtils.getClassMap(el);
+            }
+            else {
+                for (var j = 0; j < elems.length; j += 1) {
+                    var el = elems[j], map = DomUtils.getClassMap(el);
                     for (var i = 0; i < arr.length; i += 1) {
-                        if (!!arr[i]) {
-                            if (remove)
-                                delete map[arr[i]];
-                            else
-                                map[arr[i]] = i + 1000;
-                        }
+                        if (remove)
+                            delete map[arr[i]];
+                        else
+                            map[arr[i]] = i + 1000;
                     }
                     var keys = Object.keys(map);
                     el.className = keys.join(" ");

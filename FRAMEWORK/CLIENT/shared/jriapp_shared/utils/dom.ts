@@ -2,6 +2,7 @@
 import { ERRS } from "../lang";
 import { IIndexer } from "../int";
 
+const hasClassList = (!!window.document.documentElement.classList);
 /**
  * pure javascript methods for the DOM manipulation
 */
@@ -117,8 +118,7 @@ export class DomUtils {
         }
 
         for (let j = 0; j < elems.length; j += 1) {
-            let el = elems[j];
-            let map = DomUtils.getClassMap(el);
+            let el = elems[j], map = DomUtils.getClassMap(el);
             if (removeAll) {
                 map = {};
             }
@@ -136,39 +136,38 @@ export class DomUtils {
         if (!elems.length)
             return;
 
-        if (remove && !css) {
-            for (let j = 0; j < elems.length; j += 1) {
-                elems[j].className = "";
+        if (!css) {
+            if (remove) {
+                for (let j = 0; j < elems.length; j += 1) {
+                    elems[j].className = "";
+                }
             }
             return;
         }
 
-        if (!css)
-            return;
-
-        let arr: string[] = css.split(" ");
-        for (let i = 0; i < arr.length; i += 1) {
-            arr[i] = arr[i].trim();
+        const _arr: string[] = css.split(" ");
+        for (let i = 0; i < _arr.length; i += 1) {
+            _arr[i] = _arr[i].trim();
         }
+        const arr = _arr.filter((val) => !!val);
 
-        for (let j = 0; j < elems.length; j += 1) {
-            let el = elems[j];
-            //if only one class to add or remove and classList is available
-            if (arr.length === 1 && !!arr[0] && !!el.classList) {
+        if (hasClassList && arr.length === 1) {
+            for (let j = 0; j < elems.length; j += 1) {
+                let el = elems[j];
                 if (remove)
                     el.classList.remove(arr[0]);
                 else
                     el.classList.add(arr[0]);
             }
-            else {
-                let map = DomUtils.getClassMap(el);
+        }
+        else {
+            for (let j = 0; j < elems.length; j += 1) {
+                let el = elems[j], map = DomUtils.getClassMap(el);
                 for (let i = 0; i < arr.length; i += 1) {
-                    if (!!arr[i]) {
-                        if (remove)
-                            delete map[arr[i]];
-                        else
-                            map[arr[i]] = i + 1000;
-                    }
+                    if (remove)
+                        delete map[arr[i]];
+                    else
+                        map[arr[i]] = i + 1000;
                 }
                 let keys = Object.keys(map);
                 el.className = keys.join(" ");
