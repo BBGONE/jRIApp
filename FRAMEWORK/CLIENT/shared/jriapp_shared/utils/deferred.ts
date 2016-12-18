@@ -86,7 +86,7 @@ class TaskQueue implements ITaskQueue {
         this._queue = createQueue(0);
     }
 
-    enque(task: (timer: number) => void): number {
+    enque(task: () => void): number {
         return this._queue.enque(task);
     }
 

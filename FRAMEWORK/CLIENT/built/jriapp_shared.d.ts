@@ -837,7 +837,7 @@ declare module "jriapp_shared/utils/logger" {
 declare module "jriapp_shared/utils/queue" {
     export interface IQueue {
         cancel: (taskId: number) => void;
-        enque: (func: FrameRequestCallback) => number;
+        enque: (func: () => void) => number;
     }
     export function createQueue(interval?: number): IQueue;
 }

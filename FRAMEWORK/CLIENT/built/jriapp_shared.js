@@ -1611,7 +1611,7 @@ define("jriapp_shared/utils/queue", ["require", "exports", "jriapp_shared/utils/
                             arr.forEach(function (task) {
                                 try {
                                     if (!!task.func) {
-                                        task.func(task.taskId);
+                                        task.func();
                                     }
                                 }
                                 catch (err) {

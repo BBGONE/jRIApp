@@ -10,12 +10,12 @@ const MAX_NUM = 99999900000, win = window;
 export interface IQueue
 {
     cancel: (taskId: number) => void;
-    enque: (func: FrameRequestCallback) => number;
+    enque: (func: () => void) => number;
 }
 
 interface ITask {
     taskId: number,
-    func: FrameRequestCallback;
+    func: () => void;
 }
 
 export function createQueue(interval: number = 0): IQueue {
@@ -30,7 +30,7 @@ export function createQueue(interval: number = 0): IQueue {
                 task.func = null;
             }
         },
-        enque: function (func: FrameRequestCallback): number {
+        enque: function (func: () => void): number {
             const taskId = _newTaskId;
             _newTaskId += 1;
             const task: ITask = { taskId: taskId, func: func }, len = _rafQueue.push(task);
@@ -41,7 +41,6 @@ export function createQueue(interval: number = 0): IQueue {
                     const arr = _rafQueue;
                     _timer = null;
                     _rafQueue = [];
-
                     //recycle generated nums if they are too big
                     if (_newTaskId > MAX_NUM)
                         _newTaskId = 1;
@@ -50,7 +49,7 @@ export function createQueue(interval: number = 0): IQueue {
                         arr.forEach((task) => {
                             try {
                                 if (!!task.func) {
-                                    task.func(task.taskId);
+                                    task.func();
                                 }
                             }
                             catch (err) {
