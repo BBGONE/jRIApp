@@ -4031,8 +4031,8 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                 this._vals = fn_initVals(coll, obj);
         }
         ListItemAspect.prototype._setProp = function (name, val) {
-            var validation_error, error, coll = this.collection;
-            var item = this.item;
+            var validation_error, error;
+            var coll = this.collection, item = this.item;
             if (this._getProp(name) !== val) {
                 try {
                     coreUtils.setValue(this._vals, name, val, false);

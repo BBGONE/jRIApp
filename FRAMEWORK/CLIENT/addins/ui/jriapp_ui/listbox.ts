@@ -195,42 +195,40 @@ export class ListBox extends BaseObject {
     }
     protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>) {
         const self = this, checkChanges = this.getCheckChanges();
-        try {
-            switch (args.changeType) {
-                case COLL_CHANGE_TYPE.Reset:
-                    {
-                        this._refresh();
-                    }
-                    break;
-                case COLL_CHANGE_TYPE.Add:
+        switch (args.changeType) {
+            case COLL_CHANGE_TYPE.Reset:
+                {
+                    this._refresh();
+                }
+                break;
+            case COLL_CHANGE_TYPE.Add:
+                {
                     args.items.forEach(function (item) {
                         self._addOption(item, item._aspect.isNew);
                     });
-                    break;
-                case COLL_CHANGE_TYPE.Remove:
-                    {
-                        args.items.forEach(function (item) {
-                            self._removeOption(item);
-                        });
-                        if (!!self._textProvider)
-                            self._resetText();
+                }
+                break;
+            case COLL_CHANGE_TYPE.Remove:
+                {
+                    args.items.forEach(function (item) {
+                        self._removeOption(item);
+                    });
+                    if (!!self._textProvider)
+                        self._resetText();
+                }
+                break;
+            case COLL_CHANGE_TYPE.Remap:
+                {
+                    const data = self._keyMap[args.old_key];
+                    if (!!data) {
+                        delete self._keyMap[args.old_key];
+                        self._keyMap[args.new_key] = data;
+                        data.op.value = args.new_key;
                     }
-                    break;
-                case COLL_CHANGE_TYPE.Remap:
-                    {
-                        const data = self._keyMap[args.old_key];
-                        if (!!data) {
-                            delete self._keyMap[args.old_key];
-                            self._keyMap[args.new_key] = data;
-                            data.op.value = args.new_key;
-                        }
-                    }
-                    break;
-            }
+                }
+                break;
         }
-        finally {
-            checkChanges();
-        }
+        checkChanges();
     }
     protected _onEdit(item: ICollectionItem, isBegin: boolean, isCanceled: boolean) {
         const self = this;
@@ -242,9 +240,7 @@ export class ListBox extends BaseObject {
                 const oldVal = this._savedVal, checkChanges = this.getCheckChanges();
                 this._savedVal = checks.undefined;
                 try {
-                    const key = item._key;
-                    let data = self._keyMap[key];
-
+                    const key = item._key, data = self._keyMap[key];
                     if (!!data) {
                         data.op.text = self._getText(item, data.op.index);
                         const val = this._getValue(item);
@@ -270,12 +266,15 @@ export class ListBox extends BaseObject {
         }
     }
     protected _onStatusChanged(item: ICollectionItem, oldStatus: ITEM_STATUS) {
-        const newStatus = item._aspect.status;
+        const self = this, checkChanges = this.getCheckChanges(), newStatus = item._aspect.status;
         if (newStatus === ITEM_STATUS.Deleted) {
             this._removeOption(item);
-            if (!!this._textProvider)
+            if (!!this._textProvider) {
+                //need to reset text due to the index changes
                 this._resetText();
+            }
         }
+        checkChanges();
     }
     protected _onCommitChanges(item: ICollectionItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS) {
         const self = this;
@@ -290,16 +289,16 @@ export class ListBox extends BaseObject {
             this._savedVal = this._getValue(item);
         }
         else {
-            const oldVal = this._savedVal;
+            const oldVal = this._savedVal, checkChanges = this.getCheckChanges();
             this._savedVal = checks.undefined;
             //delete is rejected
             if (isRejected && status === ITEM_STATUS.Deleted) {
                 this._addOption(item, true);
+                checkChanges();
                 return;
             }
 
-            const val = this._getValue(item);
-            const data = self._keyMap[item._key];
+            const val = this._getValue(item), data = self._keyMap[item._key];
             if (oldVal !== val) {
                 if (!checks.isNt(oldVal)) {
                     delete self._valMap[fn_Str(oldVal)];
@@ -313,6 +312,8 @@ export class ListBox extends BaseObject {
             if (!!data) {
                 data.op.text = self._getText(item, data.op.index);
             }
+
+            checkChanges();
         }
     }
     private _bindDS() {
@@ -344,6 +345,7 @@ export class ListBox extends BaseObject {
         if (!!this._keyMap[key]) {
             return null;
         }
+
         const selEl = this.el;
         let text = "";
         if (!item) {
@@ -396,8 +398,6 @@ export class ListBox extends BaseObject {
     }
     private _resetText() {
         const self = this;
-        if (self.getIsDestroyCalled())
-            return;
         coreUtils.forEachProp(this._keyMap, (key) => {
             const data = self._keyMap[key];
             data.op.text = self._getText(data.item, data.op.index);

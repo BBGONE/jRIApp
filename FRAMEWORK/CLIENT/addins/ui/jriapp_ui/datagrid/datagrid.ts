@@ -847,15 +847,35 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         if (this.getIsDestroyCalled())
             return;
         const self = this, tbody = this._tBodyEl;
-        let item: ICollectionItem = null;
-        for (let i = 0, k = newItems.length; i < k; i += 1) {
-            item = newItems[i];
+        let isPrepend = self.options.isPrependAllRows, isPrependNew = self.options.isPrependNewRows;
+
+        if (newItems.length === 1) {
+            let item = newItems[0];
             if (!self._rowMap[item._key]) {
-                let isPrepend = self.options.isPrependAllRows || (self.options.isPrependNewRows && item._aspect.isNew);
+                isPrepend = isPrepend || (isPrependNew && item._aspect.isNew);
                 self._createRowForItem(tbody, item, isPrepend);
             }
         }
+        else {
+            const docFr = doc.createDocumentFragment();
+            for (let i = 0, k = newItems.length; i < k; i += 1) {
+                let item = newItems[i];
+                if (!self._rowMap[item._key]) {
+                    self._createRowForItem(docFr, item, (isPrependNew && item._aspect.isNew));
+                }
+            }
 
+            if (!isPrepend) {
+                tbody.appendChild(docFr);
+            }
+            else {
+                if (!tbody.firstChild)
+                    tbody.appendChild(docFr);
+                else
+                    tbody.insertBefore(docFr, tbody.firstChild);
+            }
+        }
+       
         self.updateColumnsSize();
     }
     protected _refresh(isPageChanged: boolean) {

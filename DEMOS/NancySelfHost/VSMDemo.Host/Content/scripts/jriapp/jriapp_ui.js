@@ -1580,42 +1580,40 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         };
         ListBox.prototype._onDSCollectionChanged = function (sender, args) {
             var self = this, checkChanges = this.getCheckChanges();
-            try {
-                switch (args.changeType) {
-                    case 2:
-                        {
-                            this._refresh();
-                        }
-                        break;
-                    case 1:
+            switch (args.changeType) {
+                case 2:
+                    {
+                        this._refresh();
+                    }
+                    break;
+                case 1:
+                    {
                         args.items.forEach(function (item) {
                             self._addOption(item, item._aspect.isNew);
                         });
-                        break;
-                    case 0:
-                        {
-                            args.items.forEach(function (item) {
-                                self._removeOption(item);
-                            });
-                            if (!!self._textProvider)
-                                self._resetText();
+                    }
+                    break;
+                case 0:
+                    {
+                        args.items.forEach(function (item) {
+                            self._removeOption(item);
+                        });
+                        if (!!self._textProvider)
+                            self._resetText();
+                    }
+                    break;
+                case 3:
+                    {
+                        var data = self._keyMap[args.old_key];
+                        if (!!data) {
+                            delete self._keyMap[args.old_key];
+                            self._keyMap[args.new_key] = data;
+                            data.op.value = args.new_key;
                         }
-                        break;
-                    case 3:
-                        {
-                            var data = self._keyMap[args.old_key];
-                            if (!!data) {
-                                delete self._keyMap[args.old_key];
-                                self._keyMap[args.new_key] = data;
-                                data.op.value = args.new_key;
-                            }
-                        }
-                        break;
-                }
+                    }
+                    break;
             }
-            finally {
-                checkChanges();
-            }
+            checkChanges();
         };
         ListBox.prototype._onEdit = function (item, isBegin, isCanceled) {
             var self = this;
@@ -1627,8 +1625,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     var oldVal = this._savedVal, checkChanges = this.getCheckChanges();
                     this._savedVal = checks.undefined;
                     try {
-                        var key = item._key;
-                        var data = self._keyMap[key];
+                        var key = item._key, data = self._keyMap[key];
                         if (!!data) {
                             data.op.text = self._getText(item, data.op.index);
                             var val = this._getValue(item);
@@ -1654,12 +1651,14 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             }
         };
         ListBox.prototype._onStatusChanged = function (item, oldStatus) {
-            var newStatus = item._aspect.status;
+            var self = this, checkChanges = this.getCheckChanges(), newStatus = item._aspect.status;
             if (newStatus === 3) {
                 this._removeOption(item);
-                if (!!this._textProvider)
+                if (!!this._textProvider) {
                     this._resetText();
+                }
             }
+            checkChanges();
         };
         ListBox.prototype._onCommitChanges = function (item, isBegin, isRejected, status) {
             var self = this;
@@ -1673,14 +1672,14 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 this._savedVal = this._getValue(item);
             }
             else {
-                var oldVal = this._savedVal;
+                var oldVal = this._savedVal, checkChanges = this.getCheckChanges();
                 this._savedVal = checks.undefined;
                 if (isRejected && status === 3) {
                     this._addOption(item, true);
+                    checkChanges();
                     return;
                 }
-                var val = this._getValue(item);
-                var data = self._keyMap[item._key];
+                var val = this._getValue(item), data = self._keyMap[item._key];
                 if (oldVal !== val) {
                     if (!checks.isNt(oldVal)) {
                         delete self._valMap[fn_Str(oldVal)];
@@ -1692,6 +1691,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 if (!!data) {
                     data.op.text = self._getText(item, data.op.index);
                 }
+                checkChanges();
             }
         };
         ListBox.prototype._bindDS = function () {
@@ -1773,8 +1773,6 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         };
         ListBox.prototype._resetText = function () {
             var self = this;
-            if (self.getIsDestroyCalled())
-                return;
             coreUtils.forEachProp(this._keyMap, function (key) {
                 var data = self._keyMap[key];
                 data.op.text = self._getText(data.item, data.op.index);
@@ -5530,12 +5528,30 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             if (this.getIsDestroyCalled())
                 return;
             var self = this, tbody = this._tBodyEl;
-            var item = null;
-            for (var i = 0, k = newItems.length; i < k; i += 1) {
-                item = newItems[i];
+            var isPrepend = self.options.isPrependAllRows, isPrependNew = self.options.isPrependNewRows;
+            if (newItems.length === 1) {
+                var item = newItems[0];
                 if (!self._rowMap[item._key]) {
-                    var isPrepend = self.options.isPrependAllRows || (self.options.isPrependNewRows && item._aspect.isNew);
+                    isPrepend = isPrepend || (isPrependNew && item._aspect.isNew);
                     self._createRowForItem(tbody, item, isPrepend);
+                }
+            }
+            else {
+                var docFr = doc.createDocumentFragment();
+                for (var i = 0, k = newItems.length; i < k; i += 1) {
+                    var item = newItems[i];
+                    if (!self._rowMap[item._key]) {
+                        self._createRowForItem(docFr, item, (isPrependNew && item._aspect.isNew));
+                    }
+                }
+                if (!isPrepend) {
+                    tbody.appendChild(docFr);
+                }
+                else {
+                    if (!tbody.firstChild)
+                        tbody.appendChild(docFr);
+                    else
+                        tbody.insertBefore(docFr, tbody.firstChild);
                 }
             }
             self.updateColumnsSize();

@@ -47,7 +47,7 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
 
     constructor(coll: BaseList<TItem, TObj>, obj?: TObj) {
         super(coll);
-        let self = this;
+        const self = this;
         this._isNew = !obj ? true : false;
         if (!!obj)
             this._vals = <any>obj;
@@ -55,8 +55,8 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
             this._vals = fn_initVals(coll, obj);
     }
     _setProp(name: string, val: any) {
-        let validation_error: IValidationInfo, error: ValidationError, coll = this.collection;
-        let item = this.item;
+        let validation_error: IValidationInfo, error: ValidationError;
+        const coll = this.collection, item = this.item;
         if (this._getProp(name) !== val) {
             try {
                 coreUtils.setValue(this._vals, name, val, false);
@@ -106,7 +106,7 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
             this._updateFieldMap(props);
     }
     private _updateFieldMap(props: IPropInfo[]) {
-        let self = this;
+        const self = this;
         if (!checks.isArray(props) || props.length === 0)
             throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "props", props));
 
@@ -137,14 +137,14 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
     }
     //the item parameter is not used here, but can be used in descendants
     protected _getNewKey(item: TItem) {
-        //client's item ID
-        let key = "clkey_" + this._newKey;
+        //client side item ID
+        const key = "clkey_" + this._newKey;
         this._newKey += 1;
         return key;
     }
     protected createItem(obj?: TObj): TItem {
-        let aspect = new ListItemAspect<TItem, TObj>(this, obj);
-        let item = new this._itemType(aspect);
+        const aspect = new ListItemAspect<TItem, TObj>(this, obj);
+        const item = new this._itemType(aspect);
         aspect.key = this._getNewKey(item);
         aspect.item = item;
         return item;
@@ -157,14 +157,14 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
         super.destroy();
     }
     fillItems(objArray: TObj[], clearAll?: boolean) {
-        let self = this, newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];
+        const self = this, newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];
         if (!objArray)
             objArray = [];
         try {
             if (!!clearAll) this.clear();
             objArray.forEach(function (obj) {
-                let item = self.createItem(obj);
-                let oldItem = self._itemsByKey[item._key];
+                const item = self.createItem(obj);
+                const oldItem = self._itemsByKey[item._key];
                 if (!oldItem) {
                     self._items.push(item);
                     self._itemsByKey[item._key] = item;
