@@ -340,12 +340,7 @@ export class ListBox extends BaseObject {
         ds.removeNSHandlers(self._objId);
     }
     private _addOption(item: ICollectionItem, first: boolean): IMappedItem {
-        if (this._isDestroyCalled)
-            return null;
-        let oOption: HTMLOptionElement, key = "";
-        if (!!item) {
-            key = item._key;
-        }
+        const key = (!item ? "" : item._key);
         if (!!this._keyMap[key]) {
             return null;
         }
@@ -360,7 +355,7 @@ export class ListBox extends BaseObject {
            text = this._getText(item, selEl.options.length);
         }
         let val = fn_Str(this._getValue(item));
-        oOption = doc.createElement("option");
+        let oOption = doc.createElement("option");
         oOption.text = text;
         oOption.value = key;
         const data: IMappedItem = { item: item, op: oOption };
@@ -410,15 +405,11 @@ export class ListBox extends BaseObject {
     }
     private _resetState() {
         const self = this;
-        if (self.getIsDestroyCalled())
-            return;
         coreUtils.forEachProp(this._keyMap, (key) => {
             self._fn_state(self._keyMap[key]);
         });
     }
     private _removeOption(item: ICollectionItem) {
-        if (this._isDestroyCalled)
-            return;
         if (!!item) {
             const key = item._key, data = this._keyMap[key];
             if (!data) {

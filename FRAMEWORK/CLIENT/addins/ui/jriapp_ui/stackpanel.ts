@@ -133,7 +133,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
     removeOnItemClicked(nmspace?: string) {
         this._removeHandler(PNL_EVENTS.item_clicked, nmspace);
     }
-    protected _getContainerEl() { return this._options.el; }
+    protected _getContainerEl() { return this.el; }
     protected _onKeyDown(key: number, event: Event) {
         let ds = this.dataSource, self = this;
         if (!ds)
@@ -258,26 +258,25 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         return template;
     }
     protected _appendItems(newItems: ICollectionItem[]) {
-        if (this.getIsDestroyCalled())
-            return;
-        const self = this;
+     const self = this, docFr = doc.createDocumentFragment();
         newItems.forEach(function (item) {
             //a row for item already exists
             if (!!self._itemMap[item._key])
                 return;
-            self._appendItem(item);
+            self._appendItem(docFr, item);
         });
+        self.el.appendChild(docFr);
     }
-    protected _appendItem(item: ICollectionItem) {
+    protected _appendItem(parent: Node, item: ICollectionItem) {
         if (!item._key)
             return;
-        const self = this, item_el = doc.createElement(this._item_tag), $item_el = $(item_el);
+        const self = this, item_el = doc.createElement(this._item_tag);
 
         dom.addClass([item_el], css.item);
         item_el.setAttribute(DATA_ATTR.DATA_EVENT_SCOPE, this.uniqueID);
-        self._$el.append($item_el);
+        parent.appendChild(item_el);
         let mappedItem: IMappedItem = { el: item_el, template: null, item: item };
-        $item_el.data("data", mappedItem);
+        $(item_el).data("data", mappedItem);
         self._itemMap[item._key] = mappedItem;
         mappedItem.template = self._createTemplate(item);
         mappedItem.el.appendChild(mappedItem.template.el);
@@ -330,9 +329,11 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         this._clearContent();
         if (!ds)
             return;
+        const docFr = doc.createDocumentFragment();
         ds.forEach(function (item) {
-            self._appendItem(item);
+            self._appendItem(docFr, item);
         });
+        self.el.appendChild(docFr);
     }
     protected _setDataSource(v: ICollection<ICollectionItem>) {
         this._unbindDS();

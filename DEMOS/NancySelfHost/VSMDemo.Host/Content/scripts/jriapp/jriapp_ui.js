@@ -1719,12 +1719,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             ds.removeNSHandlers(self._objId);
         };
         ListBox.prototype._addOption = function (item, first) {
-            if (this._isDestroyCalled)
-                return null;
-            var oOption, key = "";
-            if (!!item) {
-                key = item._key;
-            }
+            var key = (!item ? "" : item._key);
             if (!!this._keyMap[key]) {
                 return null;
             }
@@ -1739,7 +1734,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 text = this._getText(item, selEl.options.length);
             }
             var val = fn_Str(this._getValue(item));
-            oOption = doc.createElement("option");
+            var oOption = doc.createElement("option");
             oOption.text = text;
             oOption.value = key;
             var data = { item: item, op: oOption };
@@ -1787,15 +1782,11 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         };
         ListBox.prototype._resetState = function () {
             var self = this;
-            if (self.getIsDestroyCalled())
-                return;
             coreUtils.forEachProp(this._keyMap, function (key) {
                 self._fn_state(self._keyMap[key]);
             });
         };
         ListBox.prototype._removeOption = function (item) {
-            if (this._isDestroyCalled)
-                return;
             if (!!item) {
                 var key = item._key, data = this._keyMap[key];
                 if (!data) {
@@ -6636,7 +6627,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
         StackPanel.prototype.removeOnItemClicked = function (nmspace) {
             this._removeHandler(PNL_EVENTS.item_clicked, nmspace);
         };
-        StackPanel.prototype._getContainerEl = function () { return this._options.el; };
+        StackPanel.prototype._getContainerEl = function () { return this.el; };
         StackPanel.prototype._onKeyDown = function (key, event) {
             var ds = this.dataSource, self = this;
             if (!ds)
@@ -6761,24 +6752,23 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             return template;
         };
         StackPanel.prototype._appendItems = function (newItems) {
-            if (this.getIsDestroyCalled())
-                return;
-            var self = this;
+            var self = this, docFr = doc.createDocumentFragment();
             newItems.forEach(function (item) {
                 if (!!self._itemMap[item._key])
                     return;
-                self._appendItem(item);
+                self._appendItem(docFr, item);
             });
+            self.el.appendChild(docFr);
         };
-        StackPanel.prototype._appendItem = function (item) {
+        StackPanel.prototype._appendItem = function (parent, item) {
             if (!item._key)
                 return;
-            var self = this, item_el = doc.createElement(this._item_tag), $item_el = jquery_16.$(item_el);
+            var self = this, item_el = doc.createElement(this._item_tag);
             dom.addClass([item_el], css.item);
             item_el.setAttribute(const_24.DATA_ATTR.DATA_EVENT_SCOPE, this.uniqueID);
-            self._$el.append($item_el);
+            parent.appendChild(item_el);
             var mappedItem = { el: item_el, template: null, item: item };
-            $item_el.data("data", mappedItem);
+            jquery_16.$(item_el).data("data", mappedItem);
             self._itemMap[item._key] = mappedItem;
             mappedItem.template = self._createTemplate(item);
             mappedItem.el.appendChild(mappedItem.template.el);
@@ -6831,9 +6821,11 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             this._clearContent();
             if (!ds)
                 return;
+            var docFr = doc.createDocumentFragment();
             ds.forEach(function (item) {
-                self._appendItem(item);
+                self._appendItem(docFr, item);
             });
+            self.el.appendChild(docFr);
         };
         StackPanel.prototype._setDataSource = function (v) {
             var _this = this;
