@@ -844,8 +844,6 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         return col;
     }
     protected _appendItems(newItems: ICollectionItem[]) {
-        if (this.getIsDestroyCalled())
-            return;
         const self = this, tbody = this._tBodyEl;
         let isPrepend = self.options.isPrependAllRows, isPrependNew = self.options.isPrependNewRows;
 
@@ -865,15 +863,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 }
             }
 
-            if (!isPrepend) {
-                tbody.appendChild(docFr);
-            }
-            else {
-                if (!tbody.firstChild)
-                    tbody.appendChild(docFr);
-                else
-                    tbody.insertBefore(docFr, tbody.firstChild);
-            }
+            self._addNodeToParent(tbody, docFr, isPrepend); 
         }
        
         self.updateColumnsSize();
@@ -901,21 +891,23 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         self._updateTableDisplay();
         self._updateCurrent();
     }
-    protected _createRowForItem(parent: Node, item: ICollectionItem, prepend?: boolean) {
+    protected _addNodeToParent(parent: Node, node: Node, prepend: boolean) {
+        if (!prepend) {
+            parent.appendChild(node);
+        }
+        else {
+            if (!parent.firstChild)
+                parent.appendChild(node);
+            else
+                parent.insertBefore(node, parent.firstChild);
+        }
+    }
+    protected _createRowForItem(parent: Node, item: ICollectionItem, prepend: boolean) {
         const self = this, tr = doc.createElement("tr");
         const gridRow = new Row(self, { tr: tr, item: item });
         self._rowMap[item._key] = gridRow;
         self._rows.push(gridRow);
-        if (!prepend) {
-            parent.appendChild(gridRow.tr);
-        }
-        else {
-            if (!parent.firstChild)
-                parent.appendChild(gridRow.tr);
-            else
-                parent.insertBefore(gridRow.tr, parent.firstChild);
-        }
-
+        self._addNodeToParent(parent, gridRow.tr, prepend); 
         return gridRow;
     }
     protected _createDetails() {
@@ -976,7 +968,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         });
     }
     findRowByItem(item: ICollectionItem) {
-        let row = this._rowMap[item._key];
+        const row = this._rowMap[item._key];
         if (!row)
             return null;
         return row;
@@ -984,13 +976,13 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     collapseDetails() {
         if (!this._details)
             return;
-        let old = this._expandedRow;
+        const old = this._expandedRow;
         if (!!old) {
             this._expandDetails(old, false);
         }
     }
     getSelectedRows() {
-        let res: Row[] = [];
+        const res: Row[] = [];
         this._rows.forEach(function (row) {
             if (row.isDeleted)
                 return;

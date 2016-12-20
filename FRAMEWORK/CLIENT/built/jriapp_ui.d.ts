@@ -1264,7 +1264,8 @@ declare module "jriapp_ui/datagrid/datagrid" {
         protected _createColumn(cellInfo: ICellInfo): BaseColumn;
         protected _appendItems(newItems: ICollectionItem[]): void;
         protected _refresh(isPageChanged: boolean): void;
-        protected _createRowForItem(parent: Node, item: ICollectionItem, prepend?: boolean): Row;
+        protected _addNodeToParent(parent: Node, node: Node, prepend: boolean): void;
+        protected _createRowForItem(parent: Node, item: ICollectionItem, prepend: boolean): Row;
         protected _createDetails(): DetailsRow;
         protected _createFillSpace(): FillSpaceRow;
         protected _setDataSource(v: ICollection<ICollectionItem>): void;

@@ -425,7 +425,9 @@ export class ListBox extends BaseObject {
             }
 
             const curVal = this.getByIndex(this.selectedIndex);
-            this.selectedValue = (!curVal ? null : this._getValue(curVal.item));
+            const v = (!curVal ? null : this._getValue(curVal.item));
+            this._selectedValue = v;
+            this.updateSelected(v);
         }
     }
     private _clear() {

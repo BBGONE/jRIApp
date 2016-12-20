@@ -1798,7 +1798,9 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     delete this._valMap[val];
                 }
                 var curVal = this.getByIndex(this.selectedIndex);
-                this.selectedValue = (!curVal ? null : this._getValue(curVal.item));
+                var v = (!curVal ? null : this._getValue(curVal.item));
+                this._selectedValue = v;
+                this.updateSelected(v);
             }
         };
         ListBox.prototype._clear = function () {
@@ -5525,8 +5527,6 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             return col;
         };
         DataGrid.prototype._appendItems = function (newItems) {
-            if (this.getIsDestroyCalled())
-                return;
             var self = this, tbody = this._tBodyEl;
             var isPrepend = self.options.isPrependAllRows, isPrependNew = self.options.isPrependNewRows;
             if (newItems.length === 1) {
@@ -5544,15 +5544,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                         self._createRowForItem(docFr, item, (isPrependNew && item._aspect.isNew));
                     }
                 }
-                if (!isPrepend) {
-                    tbody.appendChild(docFr);
-                }
-                else {
-                    if (!tbody.firstChild)
-                        tbody.appendChild(docFr);
-                    else
-                        tbody.insertBefore(docFr, tbody.firstChild);
-                }
+                self._addNodeToParent(tbody, docFr, isPrepend);
             }
             self.updateColumnsSize();
         };
@@ -5578,20 +5570,23 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             self._updateTableDisplay();
             self._updateCurrent();
         };
+        DataGrid.prototype._addNodeToParent = function (parent, node, prepend) {
+            if (!prepend) {
+                parent.appendChild(node);
+            }
+            else {
+                if (!parent.firstChild)
+                    parent.appendChild(node);
+                else
+                    parent.insertBefore(node, parent.firstChild);
+            }
+        };
         DataGrid.prototype._createRowForItem = function (parent, item, prepend) {
             var self = this, tr = doc.createElement("tr");
             var gridRow = new row_1.Row(self, { tr: tr, item: item });
             self._rowMap[item._key] = gridRow;
             self._rows.push(gridRow);
-            if (!prepend) {
-                parent.appendChild(gridRow.tr);
-            }
-            else {
-                if (!parent.firstChild)
-                    parent.appendChild(gridRow.tr);
-                else
-                    parent.insertBefore(gridRow.tr, parent.firstChild);
-            }
+            self._addNodeToParent(parent, gridRow.tr, prepend);
             return gridRow;
         };
         DataGrid.prototype._createDetails = function () {
