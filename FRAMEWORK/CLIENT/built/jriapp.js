@@ -1049,6 +1049,9 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
             win.requestAnimationFrame = requestAnimationFrame_1;
             win.cancelAnimationFrame = cancelAnimationFrame_1;
         }
+        if (!win.Promise) {
+            win.Promise = jriapp_shared_10.Promise;
+        }
     })();
     var _TEMPLATE_SELECTOR = 'script[type="text/html"]';
     var stylesLoader = sloader_1.createCssLoader();
@@ -3612,6 +3615,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.1.21";
+    exports.VERSION = "1.1.22";
     bootstrap_8.Bootstrap._initFramework();
 });

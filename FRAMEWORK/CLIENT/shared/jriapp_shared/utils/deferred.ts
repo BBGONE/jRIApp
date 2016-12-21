@@ -11,12 +11,12 @@ import { createQueue, IQueue } from "./queue";
 const checks = Checks;
 let taskQueue: TaskQueue = null;
 
-export function createDefer<T>(): IStatefulDeferred<T> {
-    return new Deferred(fn_dispatch);
+export function createDefer<T>(isSync?: boolean): IStatefulDeferred<T> {
+    return new Promise(null, (!isSync ? fn_dispatch : fn_dispatchImmediate)).deferred();
 }
 
 export function createSyncDefer<T>(): IStatefulDeferred<T> {
-    return new Deferred(fn_dispatchImmediate);
+    return createDefer<T>(true);
 }
 
 export function getTaskQueue(): ITaskQueue {
@@ -26,48 +26,20 @@ export function getTaskQueue(): ITaskQueue {
     return taskQueue;
 }
 
-export function whenAll<T>(args: Array<T | IThenable<T>>): IStatefulPromise<T[]> {
-    let deferred = createDefer<T[]>(), errors = <any[]>[], countAll = args.length,
-        result = new Array<T>(args.length);
-    const checkResult = function () {
-            if (countAll === 0) {
-                if (errors.length > 0)
-                    deferred.reject(new AggregateError(errors));
-                else
-                    deferred.resolve(result);
-            }
-        };
-   
-    const cnt = args.length;
-    if (cnt === 0) {
-        deferred.resolve([]);
-    }
-
-    for (let i = 0; i < cnt; i += 1) {
-        let value = args[i];
-        if (checks.isThenable(value)) {
-            (<IThenable<T>>value).then((res) => {
-                --countAll;
-                result[i] = res;
-                checkResult();
-            }, (err) => {
-                --countAll;
-                result[i] = err;
-                errors.push(err);
-                checkResult();
-            });
-        }
-        else {
-            --countAll;
-            result[i] = value;
-            checkResult();
-        }
-    }
-
-    return deferred.promise();
+export function whenAll<T>(promises: Array<T | IThenable<T>>): IStatefulPromise<T[]> {
+    const results: T[] = [], resolved = createDefer<T>().resolve(null);
+    const merged: any = promises.reduce((acc, p) => (<any>acc).then(() => p).then((r: any) => results.push(r))
+        , resolved);
+    return merged.then(() => results);
 }
 
-interface IDispatcher {
+export function race<T>(promises: Array<IPromise<T>>): IPromise<T> {
+    return new Promise((res, rej) => {
+        promises.forEach(p => p.then(res).catch(rej));
+    });
+}
+
+export interface IDispatcher {
     (closure: () => void): void;
 }
 
@@ -99,12 +71,13 @@ class Callback {
     private _dispatcher: IDispatcher;
     private _successCB: any;
     private _errorCB: any;
+    private _promise: Promise<any>;
 
     constructor(dispatcher: IDispatcher, successCB: any, errorCB: any) {
         this._dispatcher = dispatcher;
         this._successCB = successCB;
         this._errorCB = errorCB;
-        this.deferred = new Deferred<any>(this._dispatcher);
+        this._promise = new Promise<any>(null, this._dispatcher);
     }
 
     resolve(value: any, defer: boolean): void {
@@ -142,7 +115,9 @@ class Callback {
         }
     }
 
-    public deferred: IDeferred<any>;
+    get deferred(): IDeferred<any> {
+        return this._promise.deferred();
+    }
 }
 
 class Deferred<T> implements IStatefulDeferred<T> {
@@ -153,13 +128,13 @@ class Deferred<T> implements IStatefulDeferred<T> {
     private _error: any;
     private _dispatcher: IDispatcher;
 
-    constructor(dispatcher: IDispatcher) {
+    constructor(promise: IStatefulPromise<T>, dispatcher: IDispatcher) {
         this._dispatcher = dispatcher;
         this._value = checks.undefined;
         this._error = checks.undefined;
         this._state = PromiseState.Pending;
         this._stack = [];
-        this._promise = new Promise<T>(this);
+        this._promise = promise;
     }
 
     private _resolve(value: any): IStatefulDeferred<T> {
@@ -281,10 +256,14 @@ class Deferred<T> implements IStatefulDeferred<T> {
     }
 }
 
-class Promise<T> implements IStatefulPromise<T> {
+export class Promise<T> implements IStatefulPromise<T> {
     private _deferred: Deferred<T>;
 
-    constructor(deferred: Deferred<T>) {
+    constructor(fn: (resolve: (res?: T) => void, reject: (err?: any) => void) => void, dispatcher?: IDispatcher) {
+        const disp = (!dispatcher ? fn_dispatch : dispatcher), deferred = new Deferred(this, disp);
+        if (!!fn) {
+            fn((res?: T) => deferred.resolve(res), (err?: any) => deferred.reject(err));
+        }
         this._deferred = deferred;
     }
     then<TP>(
@@ -331,8 +310,32 @@ class Promise<T> implements IStatefulPromise<T> {
         return this._deferred._then(errorCB, errorCB);
     }
 
+    static all<T>(...promises: Array<T | IThenable<T>>): IStatefulPromise<T[]> {
+        return whenAll(promises);
+    }
+
+    static race<T>(promises: Array<IPromise<T>>): IPromise<T> {
+        return race(promises);
+    }
+
+    static reject<T>(reason?: any, isSync?: boolean): IStatefulPromise<T> {
+        const deferred = createDefer<T>(isSync);
+        deferred.reject(reason);
+        return deferred.promise();
+    }
+
+    static resolve<T>(value?: T, isSync?: boolean): IStatefulPromise<T> {
+        const deferred = createDefer<T>(isSync);
+        deferred.resolve(value);
+        return deferred.promise();
+    }
+
     state(): PromiseState {
         return this._deferred.state();
+    }
+
+    deferred(): IStatefulDeferred<T> {
+        return this._deferred;
     }
 }
 

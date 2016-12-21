@@ -842,11 +842,37 @@ declare module "jriapp_shared/utils/queue" {
     export function createQueue(interval?: number): IQueue;
 }
 declare module "jriapp_shared/utils/deferred" {
-    import { IStatefulDeferred, IStatefulPromise, IThenable, ITaskQueue, PromiseState, IAbortablePromise, IDeferredErrorCB, IDeferredSuccessCB, IErrorCB, IVoidErrorCB, ISuccessCB, IAbortable } from "jriapp_shared/utils/ideferred";
-    export function createDefer<T>(): IStatefulDeferred<T>;
+    import { IStatefulDeferred, IStatefulPromise, IThenable, ITaskQueue, PromiseState, IPromise, IAbortablePromise, IDeferredErrorCB, IDeferredSuccessCB, IErrorCB, IVoidErrorCB, ISuccessCB, IAbortable } from "jriapp_shared/utils/ideferred";
+    export function createDefer<T>(isSync?: boolean): IStatefulDeferred<T>;
     export function createSyncDefer<T>(): IStatefulDeferred<T>;
     export function getTaskQueue(): ITaskQueue;
-    export function whenAll<T>(args: Array<T | IThenable<T>>): IStatefulPromise<T[]>;
+    export function whenAll<T>(promises: Array<T | IThenable<T>>): IStatefulPromise<T[]>;
+    export function race<T>(promises: Array<IPromise<T>>): IPromise<T>;
+    export interface IDispatcher {
+        (closure: () => void): void;
+    }
+    export class Promise<T> implements IStatefulPromise<T> {
+        private _deferred;
+        constructor(fn: (resolve: (res?: T) => void, reject: (err?: any) => void) => void, dispatcher?: IDispatcher);
+        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
+        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
+        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IVoidErrorCB): IStatefulPromise<TP>;
+        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
+        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
+        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IVoidErrorCB): IStatefulPromise<TP>;
+        catch(errorCB?: IDeferredErrorCB<T>): IStatefulPromise<T>;
+        catch(errorCB?: IErrorCB<T>): IStatefulPromise<T>;
+        catch(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
+        always<TP>(errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
+        always<TP>(errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
+        always(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
+        static all<T>(...promises: Array<T | IThenable<T>>): IStatefulPromise<T[]>;
+        static race<T>(promises: Array<IPromise<T>>): IPromise<T>;
+        static reject<T>(reason?: any, isSync?: boolean): IStatefulPromise<T>;
+        static resolve<T>(value?: T, isSync?: boolean): IStatefulPromise<T>;
+        state(): PromiseState;
+        deferred(): IStatefulDeferred<T>;
+    }
     export class AbortablePromise<T> implements IAbortablePromise<T> {
         private _deferred;
         private _abortable;
@@ -869,11 +895,12 @@ declare module "jriapp_shared/utils/deferred" {
     }
 }
 declare module "jriapp_shared/utils/async" {
-    import { IThenable, ITaskQueue, IStatefulDeferred, IStatefulPromise } from "jriapp_shared/utils/ideferred";
+    import { IThenable, ITaskQueue, IStatefulDeferred, IStatefulPromise, IPromise } from "jriapp_shared/utils/ideferred";
     export class AsyncUtils {
         static createDeferred<T>(): IStatefulDeferred<T>;
         static createSyncDeferred<T>(): IStatefulDeferred<T>;
         static whenAll<T>(args: Array<T | IThenable<T>>): IStatefulPromise<T[]>;
+        static race<T>(promises: Array<IPromise<T>>): IPromise<T>;
         static getTaskQueue(): ITaskQueue;
         static delay<T>(func: () => T, time?: number): IStatefulPromise<T>;
         static parseJSON(res: string | any): IStatefulPromise<any>;
@@ -1290,6 +1317,7 @@ declare module "jriapp_shared" {
     export { BaseDictionary } from "jriapp_shared/collection/dictionary";
     export { ValidationError } from "jriapp_shared/collection/validation";
     export * from "jriapp_shared/utils/ideferred";
+    export { Promise } from "jriapp_shared/utils/deferred";
     export { Utils } from "jriapp_shared/utils/utils";
     export { WaitQueue, IWaitQueueItem } from "jriapp_shared/utils/waitqueue";
     export { Debounce } from "jriapp_shared/utils/debounce";

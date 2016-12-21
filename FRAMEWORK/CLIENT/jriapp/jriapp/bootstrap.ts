@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
     DUMY_ERROR, IIndexer, IBaseObject, IPromise,
-    TEventHandler, TPriority, LocaleERRS, BaseObject, Utils
+    TEventHandler, TPriority, LocaleERRS, BaseObject, Utils, Promise
 } from "jriapp_shared";
 import { BindTo, TOOLTIP_SVC, STORE_KEY } from "./const";
 import { IApplication, ISelectable, ISelectableProvider, IExports, IConverter, ISvcStore,
@@ -22,10 +22,11 @@ const utils = Utils, dom = utils.dom, win = dom.window, doc = win.document, arrH
     _async = utils.defer, coreUtils = utils.core, strUtils = utils.str, ERROR = utils.err,
     ERRS = LocaleERRS;
 
-//Implements polyfill for requestAnimationFrame API
+//Implements polyfill for requestAnimationFrame API && Promise
 (function() {
     let win: any = dom.window;
 
+    //check if requestAnimationFrame implemented
     if (!win.requestAnimationFrame) {
         let requestAnimationFrame = win.requestAnimationFrame || win.mozRequestAnimationFrame ||
             win.webkitRequestAnimationFrame || win.msRequestAnimationFrame;
@@ -43,6 +44,11 @@ const utils = Utils, dom = utils.dom, win = dom.window, doc = win.document, arrH
 
         win.requestAnimationFrame = requestAnimationFrame;
         win.cancelAnimationFrame = cancelAnimationFrame;
+    }
+
+    //check if promise implemented
+    if (!win.Promise) {
+        win.Promise = Promise;
     }
 })();
 

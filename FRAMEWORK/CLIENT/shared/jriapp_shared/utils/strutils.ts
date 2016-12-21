@@ -138,9 +138,10 @@ export class StringUtils {
     }
     static padLeft(val: string, length: number, str: string) {
         str = str || " ";
-        return val.length >= length
-            ? val
-            : (new Array(Math.ceil((length - val.length) / str.length) + 1).join(str)).substr(0, (length - val.length)) + val;
+        if (val.length >= length)
+            return val;
+        const pad = (new Array(Math.ceil((length - val.length) / str.length) + 1).join(str));
+        return (pad + val).slice(-length);  
     }
     static trimQuotes(val: string) {
         return StringUtils.trim(val.replace(trimQuotsRX, ""));
