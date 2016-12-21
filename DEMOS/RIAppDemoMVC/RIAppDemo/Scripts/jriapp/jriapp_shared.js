@@ -1636,9 +1636,9 @@ define("jriapp_shared/utils/queue", ["require", "exports", "jriapp_shared/utils/
     }
     exports.createQueue = createQueue;
 });
-define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/errors", "jriapp_shared/utils/checks", "jriapp_shared/utils/queue"], function (require, exports, errors_2, checks_6, queue_1) {
+define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/errors", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/queue"], function (require, exports, errors_2, checks_6, arrhelper_3, queue_1) {
     "use strict";
-    var checks = checks_6.Checks;
+    var checks = checks_6.Checks, arrHelper = arrhelper_3.ArrayHelper;
     var taskQueue = null;
     function createDefer(isSync) {
         return new Promise(null, (!isSync ? fn_dispatch : fn_dispatchImmediate)).deferred();
@@ -1860,14 +1860,18 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
             return this._deferred._then(errorCB, errorCB);
         };
         Promise.all = function () {
-            var promises = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                promises[_i - 0] = arguments[_i];
-            }
-            return whenAll(promises);
+            var args = arrHelper.fromList(arguments);
+            if (args.length === 1 && checks.isArray(args[0]))
+                return whenAll(args[0]);
+            else
+                return whenAll(args);
         };
-        Promise.race = function (promises) {
-            return race(promises);
+        Promise.race = function () {
+            var args = arrHelper.fromList(arguments);
+            if (args.length === 1 && checks.isArray(args[0]))
+                return race(args[0]);
+            else
+                return race(args);
         };
         Promise.reject = function (reason, isSync) {
             var deferred = createDefer(isSync);
@@ -2194,14 +2198,14 @@ define("jriapp_shared/utils/dom", ["require", "exports"], function (require, exp
     }());
     exports.DomUtils = DomUtils;
 });
-define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug", "jriapp_shared/utils/error", "jriapp_shared/utils/logger", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/async", "jriapp_shared/utils/http", "jriapp_shared/utils/strutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/dom", "jriapp_shared/utils/deferred"], function (require, exports, coreutils_5, debug_3, error_3, logger_1, sysutils_2, async_2, http_1, strutils_3, checks_8, arrhelper_3, dom_1, deferred_3) {
+define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug", "jriapp_shared/utils/error", "jriapp_shared/utils/logger", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/async", "jriapp_shared/utils/http", "jriapp_shared/utils/strutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/dom", "jriapp_shared/utils/deferred"], function (require, exports, coreutils_5, debug_3, error_3, logger_1, sysutils_2, async_2, http_1, strutils_3, checks_8, arrhelper_4, dom_1, deferred_3) {
     "use strict";
     var Utils = (function () {
         function Utils() {
         }
         Utils.check = checks_8.Checks;
         Utils.str = strutils_3.StringUtils;
-        Utils.arr = arrhelper_3.ArrayHelper;
+        Utils.arr = arrhelper_4.ArrayHelper;
         Utils.http = http_1.HttpUtils;
         Utils.core = coreutils_5.CoreUtils;
         Utils.defer = async_2.AsyncUtils;

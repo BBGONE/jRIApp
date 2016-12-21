@@ -76,7 +76,7 @@ export class TemplateLoader extends BaseObject {
         return coreUtils.getValue(this._templateLoaders, name);
     }
     public loadTemplatesAsync(fn_loader: () => IPromise<string>, app: IApplication): IPromise<any> {
-        let self = this, promise = fn_loader(), old = self.isLoading;
+        const self = this, promise = fn_loader(), old = self.isLoading;
         self._promises.push(promise);
         if (self.isLoading !== old)
             self.raisePropertyChanged(PROP_NAME.isLoading);
@@ -101,7 +101,7 @@ export class TemplateLoader extends BaseObject {
         coreUtils.removeValue(this._templateGroups, name);
     }
     public registerTemplateLoader(name: string, loader: ITemplateLoaderInfo): void {
-        let self = this;
+        const self = this;
         loader = coreUtils.extend({
             fn_loader: null,
             groupName: null
@@ -122,7 +122,7 @@ export class TemplateLoader extends BaseObject {
     }
     //this function will return promise resolved with the template's html
     public getTemplateLoader(name: string): () => IPromise<string> {
-        let self = this, loader = self._getTemplateLoaderCore(name);
+        const self = this, loader = self._getTemplateLoaderCore(name);
         if (!loader)
             return null;
         if (!loader.fn_loader && !!loader.groupName) {
@@ -183,7 +183,7 @@ export class TemplateLoader extends BaseObject {
             return loader.fn_loader;
     }
     public registerTemplateGroup(groupName: string, group: ITemplateGroupInfoEx): void {
-        let self = this, group2: ITemplateGroupInfoEx = coreUtils.extend({
+        const self = this, group2: ITemplateGroupInfoEx = coreUtils.extend({
             fn_loader: <() => IPromise<string>>null,
             url: <string>null,
             names: <string[]>null,
@@ -212,7 +212,7 @@ export class TemplateLoader extends BaseObject {
         });
     }
     public loadTemplates(url: string) {
-        let self = this;
+        const self = this;
         this.loadTemplatesAsync(function () {
             return http.getAjax(url);
         }, null);

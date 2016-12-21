@@ -6,9 +6,10 @@ import {
 } from "./ideferred";
 import { AbortError, AggregateError } from "../errors";
 import { Checks } from "./checks";
+import { ArrayHelper } from "./arrhelper";
 import { createQueue, IQueue } from "./queue";
 
-const checks = Checks;
+const checks = Checks, arrHelper = ArrayHelper;
 let taskQueue: TaskQueue = null;
 
 export function createDefer<T>(isSync?: boolean): IStatefulDeferred<T> {
@@ -33,7 +34,7 @@ export function whenAll<T>(promises: Array<T | IThenable<T>>): IStatefulPromise<
     return merged.then(() => results);
 }
 
-export function race<T>(promises: Array<IPromise<T>>): IPromise<T> {
+export function race<T>(promises: IPromise<T>[]): IPromise<T> {
     return new Promise((res, rej) => {
         promises.forEach(p => p.then(res).catch(rej));
     });
@@ -310,12 +311,28 @@ export class Promise<T> implements IStatefulPromise<T> {
         return this._deferred._then(errorCB, errorCB);
     }
 
-    static all<T>(...promises: Array<T | IThenable<T>>): IStatefulPromise<T[]> {
-        return whenAll(promises);
+    static all<T>(...promises: Array<T | IThenable<T>>): IStatefulPromise<T[]>;
+
+    static all<T>(promises: Array<T | IThenable<T>>): IStatefulPromise<T[]>;
+
+    static all<T>(): IStatefulPromise<T[]> {
+        const args: any[] = arrHelper.fromList(arguments);
+        if (args.length === 1 && checks.isArray(args[0]))
+            return whenAll(args[0]);
+        else
+            return whenAll(args);
     }
 
-    static race<T>(promises: Array<IPromise<T>>): IPromise<T> {
-        return race(promises);
+    static race<T>(...promises: Array<IPromise<T>>): IPromise<T>;
+
+    static race<T>(promises: Array<IPromise<T>>): IPromise<T>;
+
+    static race<T>(): IPromise<T> {
+        const args: any[] = arrHelper.fromList(arguments);
+        if (args.length === 1 && checks.isArray(args[0]))
+            return race(args[0]);
+        else
+            return race(args);
     }
 
     static reject<T>(reason?: any, isSync?: boolean): IStatefulPromise<T> {
