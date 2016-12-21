@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
     DUMY_ERROR, IIndexer, IBaseObject, IPromise,
-    TEventHandler, TPriority, LocaleERRS, BaseObject, Utils, Promise
+    TEventHandler, TPriority, LocaleERRS, BaseObject, Utils
 } from "jriapp_shared";
 import { BindTo, TOOLTIP_SVC, STORE_KEY } from "./const";
 import { IApplication, ISelectable, ISelectableProvider, IExports, IConverter, ISvcStore,
@@ -15,6 +15,7 @@ import { TemplateLoader } from "./utils/tloader";
 import { createCssLoader } from "./utils/sloader";
 import { PathHelper } from "./utils/path";
 import { $ } from "./utils/jquery";
+import { Promise } from "jriapp_shared/utils/deferred";
 import { createQueue, IQueue } from "jriapp_shared/utils/queue";
 
 

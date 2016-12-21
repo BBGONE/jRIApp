@@ -12,7 +12,7 @@ const checks = Checks;
 let taskQueue: TaskQueue = null;
 
 export function createDefer<T>(isSync?: boolean): IStatefulDeferred<T> {
-    return new Promise(null, (!isSync ? fn_dispatch : fn_dispatchImmediate)).deferred();
+    return new Promise<T>(null, (!isSync ? fn_dispatch : fn_dispatchImmediate)).deferred();
 }
 
 export function createSyncDefer<T>(): IStatefulDeferred<T> {
@@ -71,18 +71,18 @@ class Callback {
     private _dispatcher: IDispatcher;
     private _successCB: any;
     private _errorCB: any;
-    private _promise: Promise<any>;
+    private _deferred: IDeferred<any>;
 
     constructor(dispatcher: IDispatcher, successCB: any, errorCB: any) {
         this._dispatcher = dispatcher;
         this._successCB = successCB;
         this._errorCB = errorCB;
-        this._promise = new Promise<any>(null, this._dispatcher);
+        this._deferred = new Promise<any>(null, dispatcher).deferred();
     }
 
     resolve(value: any, defer: boolean): void {
         if (!checks.isFunc(this._successCB)) {
-            this.deferred.resolve(value);
+            this._deferred.resolve(value);
             return;
         }
 
@@ -94,7 +94,7 @@ class Callback {
     }
     reject(error: any, defer: boolean): void {
         if (!checks.isFunc(this._errorCB)) {
-            this.deferred.reject(error);
+            this._deferred.reject(error);
             return;
         }
 
@@ -105,18 +105,16 @@ class Callback {
         }
     }
     private _dispatchCallback(callback: (arg: any) => any, arg: any): void {
-        let result: any;
         try {
-            result = callback(arg);
-            this.deferred.resolve(result);
+            let result = callback(arg);
+            this._deferred.resolve(result);
         } catch (err) {
-            this.deferred.reject(err);
-            return;
+            this._deferred.reject(err);
         }
     }
 
     get deferred(): IDeferred<any> {
-        return this._promise.deferred();
+        return this._deferred;
     }
 }
 
@@ -261,10 +259,12 @@ export class Promise<T> implements IStatefulPromise<T> {
 
     constructor(fn: (resolve: (res?: T) => void, reject: (err?: any) => void) => void, dispatcher?: IDispatcher) {
         const disp = (!dispatcher ? fn_dispatch : dispatcher), deferred = new Deferred(this, disp);
-        if (!!fn) {
-            fn((res?: T) => deferred.resolve(res), (err?: any) => deferred.reject(err));
-        }
         this._deferred = deferred;
+        if (!!fn) {
+            getTaskQueue().enque(() => {
+                fn((res?: T) => deferred.resolve(res), (err?: any) => deferred.reject(err));
+            });
+        }
     }
     then<TP>(
         successCB?: IDeferredSuccessCB<T, TP>,

@@ -10,6 +10,7 @@ import { Bootstrap } from "./jriapp/bootstrap";
 export * from "jriapp_shared";
 export * from "jriapp_shared/collection/const";
 export * from "jriapp_shared/collection/int";
+export { Promise } from "jriapp_shared/utils/deferred";
 export {
     KEYS, BINDING_MODE, BindTo
 } from "./jriapp/const";

@@ -1690,12 +1690,12 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
             this._dispatcher = dispatcher;
             this._successCB = successCB;
             this._errorCB = errorCB;
-            this._promise = new Promise(null, this._dispatcher);
+            this._deferred = new Promise(null, dispatcher).deferred();
         }
         Callback.prototype.resolve = function (value, defer) {
             var _this = this;
             if (!checks.isFunc(this._successCB)) {
-                this.deferred.resolve(value);
+                this._deferred.resolve(value);
                 return;
             }
             if (!!defer) {
@@ -1708,7 +1708,7 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
         Callback.prototype.reject = function (error, defer) {
             var _this = this;
             if (!checks.isFunc(this._errorCB)) {
-                this.deferred.reject(error);
+                this._deferred.reject(error);
                 return;
             }
             if (!!defer) {
@@ -1719,19 +1719,17 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
             }
         };
         Callback.prototype._dispatchCallback = function (callback, arg) {
-            var result;
             try {
-                result = callback(arg);
-                this.deferred.resolve(result);
+                var result = callback(arg);
+                this._deferred.resolve(result);
             }
             catch (err) {
-                this.deferred.reject(err);
-                return;
+                this._deferred.reject(err);
             }
         };
         Object.defineProperty(Callback.prototype, "deferred", {
             get: function () {
-                return this._promise.deferred();
+                return this._deferred;
             },
             enumerable: true,
             configurable: true
@@ -1845,10 +1843,12 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
     var Promise = (function () {
         function Promise(fn, dispatcher) {
             var disp = (!dispatcher ? fn_dispatch : dispatcher), deferred = new Deferred(this, disp);
-            if (!!fn) {
-                fn(function (res) { return deferred.resolve(res); }, function (err) { return deferred.reject(err); });
-            }
             this._deferred = deferred;
+            if (!!fn) {
+                getTaskQueue().enque(function () {
+                    fn(function (res) { return deferred.resolve(res); }, function (err) { return deferred.reject(err); });
+                });
+            }
         }
         Promise.prototype.then = function (successCB, errorCB) {
             return this._deferred._then(successCB, errorCB);
@@ -4406,7 +4406,7 @@ define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/c
     }());
     exports.Lazy = Lazy;
 });
-define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/collection/validation", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/deferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, const_5, int_6, errors_5, object_5, lang_9, base_3, item_1, aspect_2, list_2, dictionary_1, validation_4, ideferred_1, deferred_5, utils_10, waitqueue_2, debounce_1, lazy_1) {
+define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/collection/validation", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, const_5, int_6, errors_5, object_5, lang_9, base_3, item_1, aspect_2, list_2, dictionary_1, validation_4, ideferred_1, utils_10, waitqueue_2, debounce_1, lazy_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -4425,7 +4425,6 @@ define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_sh
     exports.BaseDictionary = dictionary_1.BaseDictionary;
     exports.ValidationError = validation_4.ValidationError;
     __export(ideferred_1);
-    exports.Promise = deferred_5.Promise;
     exports.Utils = utils_10.Utils;
     exports.WaitQueue = waitqueue_2.WaitQueue;
     exports.Debounce = debounce_1.Debounce;

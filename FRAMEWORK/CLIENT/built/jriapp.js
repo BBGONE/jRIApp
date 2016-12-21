@@ -1030,7 +1030,7 @@ define("jriapp/utils/sloader", ["require", "exports", "jriapp_shared", "jriapp_s
         return StylesLoader;
     }());
 });
-define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const", "jriapp/elview", "jriapp/content", "jriapp/defaults", "jriapp/utils/tloader", "jriapp/utils/sloader", "jriapp/utils/path", "jriapp/utils/jquery", "jriapp_shared/utils/queue"], function (require, exports, jriapp_shared_10, const_2, elview_1, content_1, defaults_1, tloader_1, sloader_1, path_2, jquery_2, queue_1) {
+define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const", "jriapp/elview", "jriapp/content", "jriapp/defaults", "jriapp/utils/tloader", "jriapp/utils/sloader", "jriapp/utils/path", "jriapp/utils/jquery", "jriapp_shared/utils/deferred", "jriapp_shared/utils/queue"], function (require, exports, jriapp_shared_10, const_2, elview_1, content_1, defaults_1, tloader_1, sloader_1, path_2, jquery_2, deferred_1, queue_1) {
     "use strict";
     var utils = jriapp_shared_10.Utils, dom = utils.dom, win = dom.window, doc = win.document, arrHelper = utils.arr, _async = utils.defer, coreUtils = utils.core, strUtils = utils.str, ERROR = utils.err, ERRS = jriapp_shared_10.LocaleERRS;
     (function () {
@@ -1050,7 +1050,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
             win.cancelAnimationFrame = cancelAnimationFrame_1;
         }
         if (!win.Promise) {
-            win.Promise = jriapp_shared_10.Promise;
+            win.Promise = deferred_1.Promise;
         }
     })();
     var _TEMPLATE_SELECTOR = 'script[type="text/html"]';
@@ -3588,7 +3588,7 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/const", "jr
     }(jriapp_shared_19.BaseObject));
     exports.Application = Application;
 });
-define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jriapp_shared/collection/const", "jriapp_shared/collection/int", "jriapp/const", "jriapp/utils/jquery", "jriapp/utils/viewchecks", "jriapp/converter", "jriapp/bootstrap", "jriapp/binding", "jriapp/datepicker", "jriapp/template", "jriapp/utils/lifetime", "jriapp/utils/propwatcher", "jriapp/mvvm", "jriapp/app"], function (require, exports, bootstrap_8, jriapp_shared_20, const_6, int_3, const_7, jquery_6, viewchecks_4, converter_1, bootstrap_9, binding_2, datepicker_1, template_1, lifetime_2, propwatcher_1, mvvm_1, app_1) {
+define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jriapp_shared/collection/const", "jriapp_shared/collection/int", "jriapp_shared/utils/deferred", "jriapp/const", "jriapp/utils/jquery", "jriapp/utils/viewchecks", "jriapp/converter", "jriapp/bootstrap", "jriapp/binding", "jriapp/datepicker", "jriapp/template", "jriapp/utils/lifetime", "jriapp/utils/propwatcher", "jriapp/mvvm", "jriapp/app"], function (require, exports, bootstrap_8, jriapp_shared_20, const_6, int_3, deferred_2, const_7, jquery_6, viewchecks_4, converter_1, bootstrap_9, binding_2, datepicker_1, template_1, lifetime_2, propwatcher_1, mvvm_1, app_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -3596,6 +3596,7 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     __export(jriapp_shared_20);
     __export(const_6);
     __export(int_3);
+    exports.Promise = deferred_2.Promise;
     exports.KEYS = const_7.KEYS;
     exports.BINDING_MODE = const_7.BINDING_MODE;
     exports.BindTo = const_7.BindTo;

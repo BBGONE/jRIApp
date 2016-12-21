@@ -16,7 +16,6 @@ export { BaseDictionary } from "./jriapp_shared/collection/dictionary";
 export { ValidationError } from "./jriapp_shared/collection/validation";
 
 export * from "./jriapp_shared/utils/ideferred";
-export { Promise } from "./jriapp_shared/utils/deferred";
 export { Utils } from "./jriapp_shared/utils/utils";
 export { WaitQueue, IWaitQueueItem } from "./jriapp_shared/utils/waitqueue";
 export { Debounce } from "./jriapp_shared/utils/debounce";
