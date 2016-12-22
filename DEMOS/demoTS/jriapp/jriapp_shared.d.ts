@@ -223,7 +223,8 @@ declare module "jriapp_shared/utils/strutils" {
         static format(format_str: string, ...args: any[]): string;
         static formatNumber(num: any, decimals?: number, dec_point?: string, thousands_sep?: string): string;
         static stripNonNumeric(str: string): string;
-        static padLeft(val: string, length: number, str: string): string;
+        static padLeft(val: string, len: number, pad: string): string;
+        static fastPadLeft(val: string, pad: string): string;
         static trimQuotes(val: string): string;
         static trimBrackets(val: string): string;
     }
@@ -251,21 +252,16 @@ declare module "jriapp_shared/utils/checks" {
 }
 declare module "jriapp_shared/utils/coreutils" {
     import { IIndexer } from "jriapp_shared/int";
-    import { ArrayHelper } from "jriapp_shared/utils/arrhelper";
-    import { StringUtils } from "jriapp_shared/utils/strutils";
     import { Checks } from "jriapp_shared/utils/checks";
     export class CoreUtils {
         private static ERR_OBJ_ALREADY_REGISTERED;
-        static readonly check: typeof Checks;
-        static readonly str: typeof StringUtils;
-        static readonly arr: typeof ArrayHelper;
         static getNewID(prefix?: string): string;
         static get_timeZoneOffset: () => number;
         static hasProp: typeof Checks.isHasProp;
-        static setValue(root: any, namePath: string, val: any, checkOverwrite: boolean): void;
-        static getValue(root: any, namePath: string): any;
-        static removeValue(root: any, namePath: string): any;
-        static resolveOwner(obj: any, path: string): any;
+        static setValue(root: any, namePath: string, val: any, checkOverwrite?: boolean, separator?: string): void;
+        static getValue(root: any, namePath: string, separator?: string): any;
+        static removeValue(root: any, namePath: string, separator?: string): any;
+        static resolveOwner(obj: any, path: string, separator?: string): any;
         static uuid(len?: number, radix?: number): string;
         static parseBool(a: any): boolean;
         static round(num: number, decimals: number): number;

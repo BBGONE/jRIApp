@@ -342,12 +342,21 @@ define("jriapp_shared/utils/strutils", ["require", "exports"], function (require
             }
             return out;
         };
-        StringUtils.padLeft = function (val, length, str) {
-            str = str || " ";
-            if (val.length >= length)
+        StringUtils.padLeft = function (val, len, pad) {
+            if (!val)
+                val = "";
+            pad = pad || " ";
+            if (val.length >= len)
                 return val;
-            var pad = (new Array(Math.ceil((length - val.length) / str.length) + 1).join(str));
-            return (pad + val).slice(-length);
+            var str = new Array(len).join(pad[0]);
+            return (str + val).slice(-len);
+        };
+        StringUtils.fastPadLeft = function (val, pad) {
+            if (!val)
+                val = "";
+            if (val.length >= pad.length)
+                return val;
+            return (pad + val).slice(-pad.length);
         };
         StringUtils.trimQuotes = function (val) {
             return StringUtils.trim(val.replace(trimQuotsRX, ""));
@@ -452,24 +461,28 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
             NEWID_MAP[prefix] = id + 1;
             return (prefix === "*") ? id.toString(36) : (prefix + "_" + id.toString(36));
         };
-        CoreUtils.setValue = function (root, namePath, val, checkOverwrite) {
-            var parts = namePath.split("."), parent = root, i;
-            for (i = 0; i < parts.length - 1; i += 1) {
+        CoreUtils.setValue = function (root, namePath, val, checkOverwrite, separator) {
+            if (checkOverwrite === void 0) { checkOverwrite = false; }
+            if (separator === void 0) { separator = "."; }
+            var parts = namePath.split(separator), len = parts.length;
+            var parent = root;
+            for (var i = 0; i < len - 1; i += 1) {
                 if (!parent[parts[i]]) {
                     parent[parts[i]] = {};
                 }
                 parent = parent[parts[i]];
             }
-            var n = parts[parts.length - 1];
+            var n = parts[len - 1];
             if (!!checkOverwrite && (parent[n] !== checks.undefined)) {
                 throw new Error(strUtils.format(CoreUtils.ERR_OBJ_ALREADY_REGISTERED, namePath));
             }
             parent[n] = val;
         };
-        CoreUtils.getValue = function (root, namePath) {
-            var res;
-            var parts = namePath.split("."), parent = root, i;
-            for (i = 0; i < parts.length; i += 1) {
+        CoreUtils.getValue = function (root, namePath, separator) {
+            if (separator === void 0) { separator = "."; }
+            var parts = namePath.split(separator);
+            var res, parent = root;
+            for (var i = 0; i < parts.length; i += 1) {
                 res = parent[parts[i]];
                 if (res === checks.undefined) {
                     return null;
@@ -478,32 +491,32 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
             }
             return res;
         };
-        CoreUtils.removeValue = function (root, namePath) {
-            var parts = namePath.split("."), parent = root, i, val = null;
-            for (i = 0; i < parts.length - 1; i += 1) {
+        CoreUtils.removeValue = function (root, namePath, separator) {
+            if (separator === void 0) { separator = "."; }
+            var parts = namePath.split(separator);
+            var parent = root;
+            for (var i = 0; i < parts.length - 1; i += 1) {
                 if (!parent[parts[i]]) {
                     return null;
                 }
                 parent = parent[parts[i]];
             }
-            var n = parts[parts.length - 1];
-            val = parent[n];
+            var n = parts[parts.length - 1], val = parent[n];
             if (val !== checks_1.Checks.undefined) {
                 delete parent[n];
             }
             return val;
         };
-        CoreUtils.resolveOwner = function (obj, path) {
-            var parts = path.split("."), i, res, len = parts.length;
+        CoreUtils.resolveOwner = function (obj, path, separator) {
+            if (separator === void 0) { separator = "."; }
+            var parts = path.split(separator), len = parts.length;
             if (len === 1)
                 return obj;
-            res = obj;
-            for (i = 0; i < len - 1; i += 1) {
+            var res = obj;
+            for (var i = 0; i < len - 1; i += 1) {
                 res = res[parts[i]];
-                if (res === checks.undefined)
-                    return checks.undefined;
-                if (res === null)
-                    return null;
+                if (res === checks.undefined || res === null)
+                    return res;
             }
             return res;
         };
@@ -535,7 +548,8 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
                 return false;
             if (v === "true")
                 return true;
-            throw new Error(strUtils.format("parseBool, argument: {0} is not a valid boolean string", a));
+            else
+                throw new Error(strUtils.format("parseBool, argument: {0} is not a valid boolean string", a));
         };
         CoreUtils.round = function (num, decimals) {
             return parseFloat(num.toFixed(decimals));
@@ -558,14 +572,14 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
             if (!obj) {
                 return obj;
             }
-            if (CoreUtils.check.isArray(obj)) {
+            if (checks.isArray(obj)) {
                 len = obj.length;
                 res = new Array(len);
                 for (i = 0; i < len; i += 1) {
                     res[i] = CoreUtils.clone(obj[i], null);
                 }
             }
-            else if (CoreUtils.check.isSimpleObject(obj)) {
+            else if (checks.isSimpleObject(obj)) {
                 res = target || {};
                 var p = void 0, keys = Object.getOwnPropertyNames(obj);
                 len = keys.length;
@@ -574,8 +588,9 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
                     res[p] = CoreUtils.clone(obj[p], null);
                 }
             }
-            else
+            else {
                 return obj;
+            }
             return res;
         };
         CoreUtils.iterateIndexer = function (obj, fn) {
@@ -583,9 +598,7 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
                 return;
             var names = Object.keys(obj);
             for (var i = 0; i < names.length; i += 1) {
-                var name_1 = names[i];
-                var val = obj[name_1];
-                fn(name_1, val);
+                fn(names[i], obj[name]);
             }
         };
         CoreUtils.extend = function (defaults, current) {
@@ -627,9 +640,6 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
             return target;
         };
         CoreUtils.ERR_OBJ_ALREADY_REGISTERED = "an Object with the name: {0} is already registered and can not be overwritten";
-        CoreUtils.check = checks;
-        CoreUtils.str = strUtils;
-        CoreUtils.arr = arrHelper;
         CoreUtils.get_timeZoneOffset = (function () {
             var dt = new Date(), tz = dt.getTimezoneOffset();
             return function () {

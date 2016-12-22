@@ -85,7 +85,7 @@ export class TemplateLoader extends BaseObject {
         });
 
         res.always(() => {
-            coreUtils.arr.remove(self._promises, promise);
+            utils.arr.remove(self._promises, promise);
             if (!self.isLoading)
                 self.raisePropertyChanged(PROP_NAME.isLoading);
         });

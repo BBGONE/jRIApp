@@ -46,6 +46,11 @@ namespace RIAppDemo.Controllers
             return View();
         }
 
+        public ActionResult JsonDBDemo()
+        {
+            return View();
+        }
+
         public ActionResult SPADemo()
         {
             return View();

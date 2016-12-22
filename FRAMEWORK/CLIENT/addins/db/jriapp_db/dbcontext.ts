@@ -217,7 +217,7 @@ export class DbContext extends BaseObject {
 
         self._requests.push(item);
         req.always(() => {
-            coreUtils.arr.remove(self._requests, item);
+            utils.arr.remove(self._requests, item);
             self.raisePropertyChanged(PROP_NAME.requestCount);
             if (self._requests.length === 0)
                 self.raisePropertyChanged(PROP_NAME.isBusy);
@@ -427,7 +427,7 @@ export class DbContext extends BaseObject {
     }
     protected _getUrl(action: string): string {
         let loadUrl = this.serviceUrl;
-        if (!coreUtils.str.endsWith(loadUrl, "/"))
+        if (!strUtils.endsWith(loadUrl, "/"))
             loadUrl = loadUrl + "/";
         loadUrl = loadUrl + [action, ""].join("/");
         return loadUrl;

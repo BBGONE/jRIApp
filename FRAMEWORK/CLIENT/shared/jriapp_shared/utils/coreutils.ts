@@ -11,9 +11,6 @@ const NEWID_MAP: IIndexer<number> = {};
 //basic utils
 export class CoreUtils {
     private static ERR_OBJ_ALREADY_REGISTERED = "an Object with the name: {0} is already registered and can not be overwritten";
-    static readonly check = checks;
-    static readonly str = strUtils;
-    static readonly arr = arrHelper;
 
     static getNewID(prefix: string = "*"): string {
         const id = NEWID_MAP[prefix] || 0;
@@ -28,16 +25,10 @@ export class CoreUtils {
         }
     })();
     static hasProp = checks.isHasProp;
-    /*
-     *    Usage:     format('test {0}={1}', 'x', 100);
-     *    result:    test x=100
-    */
-    static setValue(root: any, namePath: string, val: any, checkOverwrite: boolean): void {
-        let parts = namePath.split("."),
-            parent = root,
-            i: number;
-
-        for (i = 0; i < parts.length - 1; i += 1) {
+    static setValue(root: any, namePath: string, val: any, checkOverwrite: boolean = false, separator = "."): void {
+        const parts = namePath.split(separator), len = parts.length;
+        let parent = root;
+        for (let i = 0; i < len - 1; i += 1) {
             // create a property if it doesn't exist
             if (!parent[parts[i]]) {
                 parent[parts[i]] = {};
@@ -45,19 +36,16 @@ export class CoreUtils {
             parent = parent[parts[i]];
         }
         //the last part is the name itself
-        let n = parts[parts.length - 1];
+        const n = parts[len - 1];
         if (!!checkOverwrite && (parent[n] !== checks.undefined)) {
             throw new Error(strUtils.format(CoreUtils.ERR_OBJ_ALREADY_REGISTERED, namePath));
         }
         parent[n] = val;
     }
-    static getValue(root: any, namePath: string): any {
-        let res: any;
-        let parts = namePath.split("."),
-            parent = root,
-            i: number;
-
-        for (i = 0; i < parts.length; i += 1) {
+    static getValue(root: any, namePath: string, separator = "."): any {
+        const parts = namePath.split(separator);
+        let res: any, parent = root;
+        for (let i = 0; i < parts.length; i += 1) {
             res = parent[parts[i]];
             if (res === checks.undefined) {
                 return null;
@@ -66,20 +54,17 @@ export class CoreUtils {
         }
         return res;
     }
-    static removeValue(root: any, namePath: string): any {
-        let parts = namePath.split("."),
-            parent = root,
-            i: number, val: any = null;
-
-        for (i = 0; i < parts.length - 1; i += 1) {
+    static removeValue(root: any, namePath: string, separator = "."): any {
+        const parts = namePath.split(separator);
+        let parent = root;
+        for (let i = 0; i < parts.length - 1; i += 1) {
             if (!parent[parts[i]]) {
                 return null;
             }
             parent = parent[parts[i]];
         }
         //the last part is the object name itself
-        let n = parts[parts.length - 1];
-        val = parent[n];
+        const n = parts[parts.length - 1], val = parent[n];
         if (val !== Checks.undefined) {
             delete parent[n];
         }
@@ -88,17 +73,15 @@ export class CoreUtils {
         return val;
     }
     //the object that directly has this property (last object in chain obj1.obj2.lastObj)
-    static resolveOwner(obj: any, path: string): any {
-        let parts = path.split("."), i: number, res: any, len = parts.length;
+    static resolveOwner(obj: any, path: string, separator = "."): any {
+        const parts = path.split(separator), len = parts.length;
         if (len === 1)
             return obj;
-        res = obj;
-        for (i = 0; i < len - 1; i += 1) {
+        let res = obj;
+        for (let i = 0; i < len - 1; i += 1) {
             res = res[parts[i]];
-            if (res === checks.undefined)
-                return checks.undefined;
-            if (res === null)
-                return null;
+            if (res === checks.undefined || res === null)
+                return res;
         }
         return res;
     }
@@ -134,8 +117,10 @@ export class CoreUtils {
             return a;
         const v = strUtils.trim(a).toLowerCase();
         if (v === "false") return false;
-        if (v === "true") return true;
-        throw new Error(strUtils.format("parseBool, argument: {0} is not a valid boolean string", a));
+        if (v === "true")
+            return true;
+        else
+            throw new Error(strUtils.format("parseBool, argument: {0} is not a valid boolean string", a));
     }
     static round(num: number, decimals: number): number {
         return parseFloat(num.toFixed(decimals));
@@ -159,14 +144,14 @@ export class CoreUtils {
             return obj;
         }
 
-        if (CoreUtils.check.isArray(obj)) {
+        if (checks.isArray(obj)) {
             len = obj.length;
             res = new Array(len);
             for (i = 0; i < len; i += 1) {
                 res[i] = CoreUtils.clone(obj[i], null);
             }
         }
-        else if (CoreUtils.check.isSimpleObject(obj)) {
+        else if (checks.isSimpleObject(obj)) {
             //clone only simple objects
             res = target || {};
             let p: string, keys = Object.getOwnPropertyNames(obj);
@@ -176,18 +161,17 @@ export class CoreUtils {
                 res[p] = CoreUtils.clone(obj[p], null);
             }
         }
-        else
+        else {
             return obj;
+        }
         return res;
     }
     static iterateIndexer<T>(obj: IIndexer<T>, fn: (name: string, val: T) => void) {
         if (!obj)
             return;
-        let names = Object.keys(obj);
+        const names = Object.keys(obj);
         for (let i = 0; i < names.length; i += 1) {
-            let name = names[i];
-            let val = obj[name];
-            fn(name, val);
+            fn(names[i], obj[name]);
         }
     }
     static extend<T, U>(defaults: T, current: U): T | U {
@@ -206,7 +190,7 @@ export class CoreUtils {
     static forEachProp(obj: any, fn: (name: string) => void) {
         if (!obj)
             return;
-        let names = Object.getOwnPropertyNames(obj);
+        const names = Object.getOwnPropertyNames(obj);
         names.forEach(fn);
     }
     static assignStrings<T extends U, U extends IIndexer<any>>(target: T, source: U): T {

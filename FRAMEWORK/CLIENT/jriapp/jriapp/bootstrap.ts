@@ -195,7 +195,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         this._processTemplates(tmpDiv, app);
     }
     private _processTemplates(root: HTMLElement | HTMLDocument, app: IApplication = null): void {
-        const self = this, templates = coreUtils.arr.fromList<HTMLElement>(root.querySelectorAll(_TEMPLATE_SELECTOR));
+        const self = this, templates = arrHelper.fromList<HTMLElement>(root.querySelectorAll(_TEMPLATE_SELECTOR));
         templates.forEach(function (el) {
             let name = el.getAttribute("id");
             if (!name)

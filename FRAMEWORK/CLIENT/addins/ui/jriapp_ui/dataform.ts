@@ -211,11 +211,11 @@ export class DataForm extends BaseObject {
         if (!dctx) {
             return;
         }
-        const contentElements = coreUtils.arr.fromList<HTMLElement>(this._el.querySelectorAll(DataForm._DATA_CONTENT_SELECTOR)),
+        const contentElements = utils.arr.fromList<HTMLElement>(this._el.querySelectorAll(DataForm._DATA_CONTENT_SELECTOR)),
             isEditing = this.isEditing;
 
         //select all dataforms inside the scope
-        const forms = coreUtils.arr.fromList<HTMLElement>(this._el.querySelectorAll(DataForm._DATA_FORM_SELECTOR));
+        const forms = utils.arr.fromList<HTMLElement>(this._el.querySelectorAll(DataForm._DATA_FORM_SELECTOR));
 
         contentElements.forEach(function (el) {
             //check if the element inside a nested dataform

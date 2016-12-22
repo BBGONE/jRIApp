@@ -26,6 +26,7 @@
     <TypeScriptCompile Include="demo\demoDB.ts" />
     <TypeScriptCompile Include="demo\filesDemo.ts" />
     <TypeScriptCompile Include="demo\folderBrowserSvc.ts" />
+    <TypeScriptCompile Include="demo\jsondb.ts" />
     <TypeScriptCompile Include="gridDemo\states.ts" />
     <TypeScriptCompile Include="manToManDemo\addAddressVM.ts" />
     <TypeScriptCompile Include="manToManDemo\app.ts" />

@@ -679,7 +679,7 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
                 self._onLoaded(html, app);
             });
             res.always(function () {
-                coreUtils.arr.remove(self._promises, promise);
+                utils.arr.remove(self._promises, promise);
                 if (!self.isLoading)
                     self.raisePropertyChanged(PROP_NAME.isLoading);
             });
@@ -1170,7 +1170,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
         };
         Bootstrap.prototype._processTemplates = function (root, app) {
             if (app === void 0) { app = null; }
-            var self = this, templates = coreUtils.arr.fromList(root.querySelectorAll(_TEMPLATE_SELECTOR));
+            var self = this, templates = arrHelper.fromList(root.querySelectorAll(_TEMPLATE_SELECTOR));
             templates.forEach(function (el) {
                 var name = el.getAttribute("id");
                 if (!name)
@@ -3616,6 +3616,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.1.22";
+    exports.VERSION = "1.1.23";
     bootstrap_8.Bootstrap._initFramework();
 });

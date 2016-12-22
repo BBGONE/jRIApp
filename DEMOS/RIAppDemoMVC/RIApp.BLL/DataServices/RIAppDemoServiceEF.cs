@@ -226,6 +226,75 @@ namespace RIAppDemo.BLL.DataServices
             base.Dispose(isDisposing);
         }
 
+        #region CustomerJSON
+        /// <summary>
+        /// Contrived example of an entity which has JSON data in one of its fields
+        /// just to show how to work with these entities on the client side
+        /// </summary>
+        /// <returns></returns>
+        [Query]
+        public QueryResult<CustomerJSON> ReadCustomerJSON()
+        {
+            var customers = DB.Customers.AsNoTracking() as IQueryable<Customer>;
+            var queryInfo = this.GetCurrentQueryInfo();
+            //calculate totalCount only when we fetch first page (to speed up query)
+            int? totalCount = queryInfo.pageIndex == 0 ? (int?)null : -1;
+
+            //i created JSON Data myself because there's no entity in db
+            //which has json data in its fields
+            var res = this.PerformQuery(customers, ref totalCount).AsEnumerable()
+                .Select(c => new CustomerJSON() {
+                    CustomerID = c.CustomerID,
+                    rowguid = c.rowguid,
+                    Data = this.serializer.Serialize(new
+                    {
+                        Title = c.Title,
+                        CompanyName = c.CompanyName,
+                        SalesPerson = c.SalesPerson,
+                        ModifiedDate = c.ModifiedDate,
+                        Level1 = new
+                        {
+                            FirstName = c.ComplexProp.FirstName,
+                            MiddleName = c.ComplexProp.MiddleName,
+                            LastName = c.ComplexProp.LastName,
+                            //another level to make it more complex
+                            Level2 = new
+                            {
+                                EmailAddress = c.ComplexProp.EmailAddress,
+                                Phone = c.ComplexProp.Phone
+
+                            }
+                        }
+                    })
+                });
+
+            return new QueryResult<CustomerJSON>(res, totalCount == -1? null: totalCount);
+        }
+
+        [Authorize(Roles = new[] { ADMINS_ROLE })]
+        [Insert]
+        public void InsertCustomerJSON(CustomerJSON customer)
+        {
+            //make insert here
+        }
+
+        [Authorize(Roles = new[] { ADMINS_ROLE })]
+        [Update]
+        public void UpdateCustomerJSON(CustomerJSON customer)
+        {
+            //make update here
+        }
+
+        [Authorize(Roles = new[] { ADMINS_ROLE })]
+        [Delete]
+        public void DeleteCustomerJSON(CustomerJSON customer)
+        {
+            var entity = DB.Customers.Where(c => c.CustomerID == customer.CustomerID).Single();
+            DB.Customers.Remove(entity);
+        }
+
+        #endregion
+
         #region Customer
 
         [Query]

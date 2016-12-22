@@ -2367,7 +2367,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             var self = this, item = { req: req, operType: operType, name: name }, cnt = self._requests.length, _isBusy = cnt > 0;
             self._requests.push(item);
             req.always(function () {
-                coreUtils.arr.remove(self._requests, item);
+                utils.arr.remove(self._requests, item);
                 self.raisePropertyChanged(const_5.PROP_NAME.requestCount);
                 if (self._requests.length === 0)
                     self.raisePropertyChanged(const_5.PROP_NAME.isBusy);
@@ -2565,7 +2565,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         };
         DbContext.prototype._getUrl = function (action) {
             var loadUrl = this.serviceUrl;
-            if (!coreUtils.str.endsWith(loadUrl, "/"))
+            if (!strUtils.endsWith(loadUrl, "/"))
                 loadUrl = loadUrl + "/";
             loadUrl = loadUrl + [action, ""].join("/");
             return loadUrl;

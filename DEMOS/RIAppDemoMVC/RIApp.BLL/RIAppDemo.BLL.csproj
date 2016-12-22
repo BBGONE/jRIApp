@@ -64,6 +64,7 @@
     <Compile Include="DataServices\RIAppDemoServiceEF.cs" />
     <Compile Include="DataServices\ThumbnailServiceFactory.cs" />
     <Compile Include="Models\AddressInfo.cs" />
+    <Compile Include="Models\CustomerJSON.cs" />
     <Compile Include="Models\RadioVal.cs" />
     <Compile Include="Models\StrKeyVal.cs" />
     <Compile Include="Models\HistoryItem.cs" />

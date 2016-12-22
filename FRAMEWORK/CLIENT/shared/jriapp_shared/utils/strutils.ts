@@ -38,6 +38,10 @@ export class StringUtils {
         chars = chars || "\\s";
         return str.replace(new RegExp("[" + chars + "]+$", "g"), "");
     }
+    /*
+     *    Usage:     format('test {0}={1}', 'x', 100);
+     *    result:    test x=100
+    */
     static format(format_str: string, ...args: any[]): string {
         let result = "";
         for (let i = 0; ;) {
@@ -124,7 +128,7 @@ export class StringUtils {
     }
     static stripNonNumeric(str: string) {
         str += "";
-        let rgx = /^\d|\.|-$/;
+        const rgx = /^\d|\.|-$/;
         let out = "";
         for (let i = 0; i < str.length; i++) {
             if (rgx.test(str.charAt(i))) {
@@ -136,12 +140,21 @@ export class StringUtils {
         }
         return out;
     }
-    static padLeft(val: string, length: number, str: string) {
-        str = str || " ";
-        if (val.length >= length)
+    static padLeft(val: string, len: number, pad: string) {
+        if (!val)
+            val = "";
+        pad = pad || " ";
+        if (val.length >= len)
             return val;
-        const pad = (new Array(Math.ceil((length - val.length) / str.length) + 1).join(str));
-        return (pad + val).slice(-length);  
+        const str = new Array(len).join(pad[0]);
+        return (str + val).slice(-len);  
+    }
+    static fastPadLeft(val: string, pad: string) {
+        if (!val)
+            val = "";
+        if (val.length >= pad.length)
+            return val;
+        return (pad + val).slice(-pad.length);
     }
     static trimQuotes(val: string) {
         return StringUtils.trim(val.replace(trimQuotsRX, ""));
