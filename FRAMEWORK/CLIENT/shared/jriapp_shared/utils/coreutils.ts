@@ -171,7 +171,7 @@ export class CoreUtils {
             return;
         const names = Object.keys(obj);
         for (let i = 0; i < names.length; i += 1) {
-            fn(names[i], obj[name]);
+            fn(names[i], obj[names[i]]);
         }
     }
     static extend<T, U>(defaults: T, current: U): T | U {

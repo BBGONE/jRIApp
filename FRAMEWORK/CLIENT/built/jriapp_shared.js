@@ -598,7 +598,7 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
                 return;
             var names = Object.keys(obj);
             for (var i = 0; i < names.length; i += 1) {
-                fn(names[i], obj[name]);
+                fn(names[i], obj[names[i]]);
             }
         };
         CoreUtils.extend = function (defaults, current) {
