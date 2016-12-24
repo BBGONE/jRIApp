@@ -6,7 +6,8 @@ import { Checks } from "./checks";
 import { StringUtils } from "./strUtils";
 
 const checks = Checks, strUtils = StringUtils;
-const PROP_BAG: string = "IPBag", INDEXED_PROP_RX = /(^\w+)\s*\[\s*['"]?\s*([^'"]+)\s*['",]?\s*\]/i;
+const PROP_BAG: string = "IPBag", INDEX_PROP_RX = /(\b\w+\b)?\s*(\[.*?\])/gi, trimQuotsRX = /^(['"])+|(['"])+$/g,
+    trimBracketsRX = /^(\[)+|(\])+$/g, trimSpaceRX = /^\s+|\s+$/g, allTrims = [trimBracketsRX, trimSpaceRX, trimQuotsRX, trimSpaceRX];
 
 export class SysUtils {
     //DUMMY implementations
@@ -79,17 +80,45 @@ export class SysUtils {
 
     static getPathParts(path: string) {
         let parts: string[] = (!path) ? [] : path.split("."), parts2: string[] = [];
+
         parts.forEach(function (part) {
-            let obj: string, index: string;
-            let matches = part.match(INDEXED_PROP_RX);
+            part = part.trim();
+            //if empty part
+            if (!part)
+                throw new Error("Invalid path: " + path);
+
+            let obj: string = null, matches: any[] = INDEX_PROP_RX.exec(part);
             if (!!matches) {
-                obj = matches[1];
-                index = matches[2];
-                parts2.push(obj);
-                parts2.push("[" + index + "]");
+                while (!!matches) {
+                    if (!!matches[1]) 
+                    {
+                        //if more than one object
+                        if (!!obj)
+                        {
+                            throw new Error("Invalid path: " + path);
+                        }
+                        obj = matches[1].trim();
+                        if (!!obj) {
+                            parts2.push(obj);
+                        }
+                    }
+
+                    let val = matches[2];
+                    if (!!val) {
+                        for (let i = 0; i < allTrims.length; i += 1) {
+                            val = val.replace(allTrims[i], "");
+                        }
+                        if (!!val) {
+                            parts2.push("[" + val + "]");
+                        }
+                    }
+
+                    matches = INDEX_PROP_RX.exec(part);
+                }
             }
-            else
+            else {
                 parts2.push(part);
+            }
         });
 
         return parts2;
@@ -104,7 +133,7 @@ export class SysUtils {
 
         if (strUtils.startsWith(prop, "[")) {
             //it is an indexed property like ['someProp']
-            prop = strUtils.trimQuotes(strUtils.trimBrackets(prop));
+            prop = strUtils.trimBrackets(prop);
 
             if (self.isCollection(obj)) {
                 return self.getItemByProp(obj, prop);
@@ -112,26 +141,13 @@ export class SysUtils {
             else if (checks.isArray(obj)) {
                 return obj[parseInt(prop, 10)];
             }
+            else if (self.isPropBag(obj))
+            {
+                return (<IPropertyBag>obj).getProp(prop);
+            }
         }
 
-        if (self.isPropBag(obj)) {
-            return (<IPropertyBag>obj).getProp(prop);
-        }
-        else {
-            return obj[prop];
-        }
-    }
-    static resolvePath(obj: any, path: string): any {
-        const self = SysUtils;
-        if (!path)
-            return obj;
-        let parts = self.getPathParts(path), res = obj, len = parts.length - 1;
-        for (let i = 0; i < len; i += 1) {
-            res = self.getProp(res, parts[i]);
-            if (!res)
-                return checks.undefined;
-        }
-        return self.getProp(res, parts[len]);
+        return obj[prop];
     }
     static setProp(obj: any, prop: string, val: any) {
         const self = SysUtils;
@@ -141,22 +157,36 @@ export class SysUtils {
         if (self.isBaseObj(obj) && obj.getIsDestroyCalled())
             return;
 
-        //it is an indexed property, obj must be an Array or ComandStore or a simple indexer
+        //it is an indexed property, obj must be an Array
         if (strUtils.startsWith(prop, "[")) {
             //remove brakets from a string like: [index]
-            prop = strUtils.trimQuotes(strUtils.trimBrackets(prop));
+            prop = strUtils.trimBrackets(prop);
 
             if (checks.isArray(obj)) {
                 obj[parseInt(prop, 10)] = val;
                 return;
             }
+            else if (self.isPropBag(obj))
+            {
+                (<IPropertyBag>obj).setProp(prop, val);
+                return;
+            }
         }
 
-        if (self.isPropBag(obj)) {
-            (<IPropertyBag>obj).setProp(prop, val);
+        obj[prop] = val;
+    }
+    static resolvePath(obj: any, path: string): any {
+        const self = SysUtils;
+        if (!path)
+            return obj;
+        const parts = self.getPathParts(path), maxindex = parts.length - 1;
+        let res = obj;
+        for (let i = 0; i < maxindex; i += 1) {
+            res = self.getProp(res, parts[i]);
+            if (!res) {
+                return checks.undefined;
+            }
         }
-        else {
-            obj[prop] = val;
-        }
+        return self.getProp(res, parts[maxindex]);
     }
 }

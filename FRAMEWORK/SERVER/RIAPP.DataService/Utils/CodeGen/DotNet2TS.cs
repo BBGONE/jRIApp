@@ -68,6 +68,10 @@ namespace RIAPP.DataService.Utils.CodeGen
                     isEnumerable = true;
                     return "any[]";
                 }
+                else if (t == typeof(Object))
+                {
+                    return "any";
+                }
 
                 if (t.IsEnum)
                 {

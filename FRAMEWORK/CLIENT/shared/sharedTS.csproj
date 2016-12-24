@@ -55,6 +55,7 @@
     <TypeScriptCompile Include="jriapp_shared\utils\error.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\eventhelper.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\http.ts" />
+    <TypeScriptCompile Include="jriapp_shared\utils\jsonval.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\lazy.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\logger.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\queue.ts" />

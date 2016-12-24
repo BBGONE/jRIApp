@@ -413,8 +413,8 @@ declare module "jriapp_shared/utils/sysutils" {
         static PROP_BAG_NAME(): string;
         static getPathParts(path: string): string[];
         static getProp(obj: any, prop: string): any;
-        static resolvePath(obj: any, path: string): any;
         static setProp(obj: any, prop: string, val: any): void;
+        static resolvePath(obj: any, path: string): any;
     }
 }
 declare module "jriapp_shared/utils/error" {
@@ -1319,4 +1319,56 @@ declare module "jriapp_shared" {
     export { WaitQueue, IWaitQueueItem } from "jriapp_shared/utils/waitqueue";
     export { Debounce } from "jriapp_shared/utils/debounce";
     export { Lazy, TValueFactory } from "jriapp_shared/utils/lazy";
+}
+declare module "jriapp_shared/utils/jsonval" {
+    import { IPropertyBag, IEditable } from "jriapp_shared/int";
+    import { BaseObject } from "jriapp_shared/object";
+    import { CollectionItem } from "jriapp_shared/collection/item";
+    import { IListItem, ListItemAspect, BaseList } from "jriapp_shared/collection/list";
+    export class JsonBag extends BaseObject implements IPropertyBag, IEditable {
+        private _json;
+        private _jsonChanged;
+        private _val;
+        private _saveVal;
+        constructor(json: string, jsonChanged: (json: string) => void);
+        destroy(): void;
+        protected onChanged(): void;
+        setJson(json: string): void;
+        protected _checkChanges(): void;
+        beginEdit(): boolean;
+        endEdit(): boolean;
+        cancelEdit(): boolean;
+        readonly isEditing: boolean;
+        _isHasProp(prop: string): boolean;
+        getProp(name: string): any;
+        setProp(name: string, val: any): void;
+        protected readonly val: any;
+        toString(): string;
+    }
+    export interface IAnyVal {
+        val: any;
+    }
+    export class AnyValListItem extends CollectionItem<ListItemAspect<AnyValListItem, IAnyVal>> implements IListItem, IPropertyBag, IAnyVal {
+        val: any;
+        getProp(name: string): any;
+        setProp(name: string, val: any): void;
+        readonly list: AnyList;
+        toString(): string;
+    }
+    export class AnyList extends BaseList<AnyValListItem, IAnyVal> {
+        private _onChanged;
+        private _saveVal;
+        constructor(onChanged: () => void);
+        toString(): string;
+    }
+    export class ArrayVal extends BaseObject {
+        private _vals;
+        private _list;
+        constructor(arr: any[], onChanged?: () => void);
+        destroy(): void;
+        setArr(arr: any[]): void;
+        getArr(): any[];
+        readonly list: AnyList;
+        toString(): string;
+    }
 }

@@ -132,11 +132,29 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
                 oldV = self._origVals === null ? newVal : dbSet._getInternal().getStrValue(coreUtils.getValue(self._origVals, fullName), fieldInfo),
                 isChanged = (oldV !== newVal);
             if (isChanged)
-                res = { fieldName: fieldInfo.fieldName, val: newVal, orig: oldV, flags: (FLAGS.Changed | FLAGS.Setted), nested: null };
+                res = {
+                    fieldName: fieldInfo.fieldName,
+                    val: newVal,
+                    orig: oldV,
+                    flags: (FLAGS.Changed | FLAGS.Setted),
+                    nested: null
+                };
             else if (fieldInfo.isPrimaryKey > 0 || fieldInfo.fieldType === FIELD_TYPE.RowTimeStamp || fieldInfo.isNeedOriginal)
-                res = { fieldName: fieldInfo.fieldName, val: newVal, orig: oldV, flags: FLAGS.Setted, nested: null };
+                res = {
+                    fieldName: fieldInfo.fieldName,
+                    val: newVal,
+                    orig: oldV,
+                    flags: FLAGS.Setted,
+                    nested: null
+                };
             else
-                res = { fieldName: fieldInfo.fieldName, val: null, orig: null, flags: FLAGS.None, nested: null };
+                res = {
+                    fieldName: fieldInfo.fieldName,
+                    val: null,
+                    orig: null,
+                    flags: FLAGS.None,
+                    nested: null
+                };
         }
 
         if (changedOnly) {
@@ -156,13 +174,13 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         }
     }
     protected _getValueChanges(changedOnly: boolean): IValueChange[] {
-        let self = this, flds = this.dbSet.getFieldInfos();
-        let res = flds.map((fld) => {
+        const self = this, flds = this.dbSet.getFieldInfos();
+        const res = flds.map((fld) => {
             return self._getValueChange(fld.fieldName, fld, changedOnly);
         });
 
         //remove nulls
-        let res2 = res.filter((vc) => {
+        const res2 = res.filter((vc) => {
             return !!vc;
         });
         return res2;

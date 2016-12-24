@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-const undefined: any = void (0), trimQuotsRX = /^(['"])+|(['"])+$/g, trimBracketsRX = /^(\[)+|(\])+$/g;
+const undefined: any = void (0), trimQuotsRX = /^(['"])+|(['"])+$/g, trimBracketsRX = /^(\[)+|(\])+$/g, trimSpaceRX = /^\s+|\s+$/g;
 
 
 export class StringUtils {
@@ -18,7 +18,7 @@ export class StringUtils {
     static fastTrim(str: string): string {
         if (!str)
             return str;
-        return str.replace(/^\s+|\s+$/g, "");
+        return str.replace(trimSpaceRX, "");
     }
     static trim(str: string, chars?: string): string {
         if (!chars) {
@@ -157,9 +157,9 @@ export class StringUtils {
         return (pad + val).slice(-pad.length);
     }
     static trimQuotes(val: string) {
-        return StringUtils.trim(val.replace(trimQuotsRX, ""));
+        return StringUtils.fastTrim(val.replace(trimQuotsRX, ""));
     }
     static trimBrackets(val: string) {
-        return StringUtils.trim(val.replace(trimBracketsRX, ""));
+        return StringUtils.fastTrim(val.replace(trimBracketsRX, ""));
     }
-};
+}
