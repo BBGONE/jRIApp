@@ -214,7 +214,7 @@ define("jriapp_shared/utils/arrhelper", ["require", "exports"], function (requir
 });
 define("jriapp_shared/utils/strutils", ["require", "exports"], function (require, exports) {
     "use strict";
-    var undefined = void (0), trimQuotsRX = /^(['"])+|(['"])+$/g, trimBracketsRX = /^(\[)+|(\])+$/g;
+    var undefined = void (0), trimQuotsRX = /^(['"])+|(['"])+$/g, trimBracketsRX = /^(\[)+|(\])+$/g, trimSpaceRX = /^\s+|\s+$/g;
     var StringUtils = (function () {
         function StringUtils() {
         }
@@ -231,7 +231,7 @@ define("jriapp_shared/utils/strutils", ["require", "exports"], function (require
         StringUtils.fastTrim = function (str) {
             if (!str)
                 return str;
-            return str.replace(/^\s+|\s+$/g, "");
+            return str.replace(trimSpaceRX, "");
         };
         StringUtils.trim = function (str, chars) {
             if (!chars) {
@@ -359,16 +359,15 @@ define("jriapp_shared/utils/strutils", ["require", "exports"], function (require
             return (pad + val).slice(-pad.length);
         };
         StringUtils.trimQuotes = function (val) {
-            return StringUtils.trim(val.replace(trimQuotsRX, ""));
+            return StringUtils.fastTrim(val.replace(trimQuotsRX, ""));
         };
         StringUtils.trimBrackets = function (val) {
-            return StringUtils.trim(val.replace(trimBracketsRX, ""));
+            return StringUtils.fastTrim(val.replace(trimBracketsRX, ""));
         };
         StringUtils.ERR_STRING_FORMAT_INVALID = "String format has invalid expression value: ";
         return StringUtils;
     }());
     exports.StringUtils = StringUtils;
-    ;
 });
 define("jriapp_shared/utils/checks", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -775,7 +774,7 @@ define("jriapp_shared/lang", ["require", "exports", "jriapp_shared/utils/coreuti
 define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/utils/checks", "jriapp_shared/utils/strutils"], function (require, exports, checks_2, strUtils_1) {
     "use strict";
     var checks = checks_2.Checks, strUtils = strUtils_1.StringUtils;
-    var PROP_BAG = "IPBag", INDEXED_PROP_RX = /(^\w+)\s*\[\s*['"]?\s*([^'"]+)\s*['",]?\s*\]/i;
+    var PROP_BAG = "IPBag", INDEX_PROP_RX = /(\b\w+\b)?\s*(\[.*?\])/gi, trimQuotsRX = /^(['"])+|(['"])+$/g, trimBracketsRX = /^(\[)+|(\])+$/g, trimSpaceRX = /^\s+|\s+$/g, allTrims = [trimBracketsRX, trimSpaceRX, trimQuotsRX, trimSpaceRX];
     var SysUtils = (function () {
         function SysUtils() {
         }
@@ -832,16 +831,36 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/uti
         SysUtils.getPathParts = function (path) {
             var parts = (!path) ? [] : path.split("."), parts2 = [];
             parts.forEach(function (part) {
-                var obj, index;
-                var matches = part.match(INDEXED_PROP_RX);
+                part = part.trim();
+                if (!part)
+                    throw new Error("Invalid path: " + path);
+                var obj = null, matches = INDEX_PROP_RX.exec(part);
                 if (!!matches) {
-                    obj = matches[1];
-                    index = matches[2];
-                    parts2.push(obj);
-                    parts2.push("[" + index + "]");
+                    while (!!matches) {
+                        if (!!matches[1]) {
+                            if (!!obj) {
+                                throw new Error("Invalid path: " + path);
+                            }
+                            obj = matches[1].trim();
+                            if (!!obj) {
+                                parts2.push(obj);
+                            }
+                        }
+                        var val = matches[2];
+                        if (!!val) {
+                            for (var i = 0; i < allTrims.length; i += 1) {
+                                val = val.replace(allTrims[i], "");
+                            }
+                            if (!!val) {
+                                parts2.push("[" + val + "]");
+                            }
+                        }
+                        matches = INDEX_PROP_RX.exec(part);
+                    }
                 }
-                else
+                else {
                     parts2.push(part);
+                }
             });
             return parts2;
         };
@@ -852,32 +871,18 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/uti
             if (self.isBaseObj(obj) && obj.getIsDestroyCalled())
                 return checks.undefined;
             if (strUtils.startsWith(prop, "[")) {
-                prop = strUtils.trimQuotes(strUtils.trimBrackets(prop));
+                prop = strUtils.trimBrackets(prop);
                 if (self.isCollection(obj)) {
                     return self.getItemByProp(obj, prop);
                 }
                 else if (checks.isArray(obj)) {
                     return obj[parseInt(prop, 10)];
                 }
+                else if (self.isPropBag(obj)) {
+                    return obj.getProp(prop);
+                }
             }
-            if (self.isPropBag(obj)) {
-                return obj.getProp(prop);
-            }
-            else {
-                return obj[prop];
-            }
-        };
-        SysUtils.resolvePath = function (obj, path) {
-            var self = SysUtils;
-            if (!path)
-                return obj;
-            var parts = self.getPathParts(path), res = obj, len = parts.length - 1;
-            for (var i = 0; i < len; i += 1) {
-                res = self.getProp(res, parts[i]);
-                if (!res)
-                    return checks.undefined;
-            }
-            return self.getProp(res, parts[len]);
+            return obj[prop];
         };
         SysUtils.setProp = function (obj, prop, val) {
             var self = SysUtils;
@@ -886,18 +891,31 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/uti
             if (self.isBaseObj(obj) && obj.getIsDestroyCalled())
                 return;
             if (strUtils.startsWith(prop, "[")) {
-                prop = strUtils.trimQuotes(strUtils.trimBrackets(prop));
+                prop = strUtils.trimBrackets(prop);
                 if (checks.isArray(obj)) {
                     obj[parseInt(prop, 10)] = val;
                     return;
                 }
+                else if (self.isPropBag(obj)) {
+                    obj.setProp(prop, val);
+                    return;
+                }
             }
-            if (self.isPropBag(obj)) {
-                obj.setProp(prop, val);
+            obj[prop] = val;
+        };
+        SysUtils.resolvePath = function (obj, path) {
+            var self = SysUtils;
+            if (!path)
+                return obj;
+            var parts = self.getPathParts(path), maxindex = parts.length - 1;
+            var res = obj;
+            for (var i = 0; i < maxindex; i += 1) {
+                res = self.getProp(res, parts[i]);
+                if (!res) {
+                    return checks.undefined;
+                }
             }
-            else {
-                obj[prop] = val;
-            }
+            return self.getProp(res, parts[maxindex]);
         };
         SysUtils.isBaseObj = function (obj) { return false; };
         SysUtils.isBinding = function (obj) { return false; };
@@ -4443,4 +4461,205 @@ define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_sh
     exports.WaitQueue = waitqueue_2.WaitQueue;
     exports.Debounce = debounce_1.Debounce;
     exports.Lazy = lazy_1.Lazy;
+});
+define("jriapp_shared/utils/jsonval", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/sysutils", "jriapp_shared/collection/item", "jriapp_shared/collection/list"], function (require, exports, object_6, coreutils_6, sysutils_3, item_2, list_3) {
+    "use strict";
+    var core = coreutils_6.CoreUtils, PROP_BAG = sysutils_3.SysUtils.PROP_BAG_NAME();
+    var JsonBag = (function (_super) {
+        __extends(JsonBag, _super);
+        function JsonBag(json, jsonChanged) {
+            _super.call(this);
+            this._json = void 0;
+            this._val = {};
+            this._saveVal = null;
+            this.setJson(json);
+            this._jsonChanged = jsonChanged;
+        }
+        JsonBag.prototype.destroy = function () {
+            if (this._isDestroyed)
+                return;
+            this._isDestroyCalled = true;
+            this._jsonChanged = null;
+            this._json = void 0;
+            this._val = {};
+        };
+        JsonBag.prototype.onChanged = function () {
+            if (!!this._jsonChanged) {
+                this._jsonChanged(this._json);
+            }
+        };
+        JsonBag.prototype.setJson = function (json) {
+            if (json === void 0)
+                json = null;
+            if (this._json !== json) {
+                this._json = json;
+                this._val = (!json ? {} : JSON.parse(json));
+            }
+        };
+        JsonBag.prototype._checkChanges = function () {
+            var json = JSON.stringify(this._val);
+            if (json !== this._json) {
+                this._json = json;
+                this.onChanged();
+            }
+        };
+        JsonBag.prototype.beginEdit = function () {
+            if (!this.isEditing) {
+                this._saveVal = JSON.parse(JSON.stringify(this._val));
+                return true;
+            }
+            return false;
+        };
+        JsonBag.prototype.endEdit = function () {
+            if (this.isEditing) {
+                this._saveVal = null;
+                this._checkChanges();
+                return true;
+            }
+            return false;
+        };
+        JsonBag.prototype.cancelEdit = function () {
+            if (this.isEditing) {
+                this._val = this._saveVal;
+                this._saveVal = null;
+                return true;
+            }
+            return false;
+        };
+        Object.defineProperty(JsonBag.prototype, "isEditing", {
+            get: function () {
+                return !!this._saveVal;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        JsonBag.prototype._isHasProp = function (prop) {
+            return true;
+        };
+        JsonBag.prototype.getProp = function (name) {
+            return core.getValue(this._val, name, '->');
+        };
+        JsonBag.prototype.setProp = function (name, val) {
+            var old = core.getValue(this._val, name, '->');
+            if (old !== val) {
+                core.setValue(this._val, name, val, false, '->');
+                this.raisePropertyChanged(name);
+            }
+        };
+        Object.defineProperty(JsonBag.prototype, "val", {
+            get: function () {
+                return this._val;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        JsonBag.prototype.toString = function () {
+            return PROP_BAG;
+        };
+        return JsonBag;
+    }(object_6.BaseObject));
+    exports.JsonBag = JsonBag;
+    var AnyValListItem = (function (_super) {
+        __extends(AnyValListItem, _super);
+        function AnyValListItem() {
+            _super.apply(this, arguments);
+        }
+        Object.defineProperty(AnyValListItem.prototype, "val", {
+            get: function () { return this._aspect._getProp('val'); },
+            set: function (v) { this._aspect._setProp('val', v); },
+            enumerable: true,
+            configurable: true
+        });
+        AnyValListItem.prototype.getProp = function (name) {
+            return core.getValue(this.val, name, '->');
+        };
+        AnyValListItem.prototype.setProp = function (name, val) {
+            var old = core.getValue(this.val, name, '->');
+            if (old !== val) {
+                core.setValue(this.val, name, val, false, '->');
+                this.raisePropertyChanged(name);
+            }
+        };
+        Object.defineProperty(AnyValListItem.prototype, "list", {
+            get: function () {
+                return this._aspect.list;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        AnyValListItem.prototype.toString = function () {
+            return PROP_BAG;
+        };
+        return AnyValListItem;
+    }(item_2.CollectionItem));
+    exports.AnyValListItem = AnyValListItem;
+    var AnyList = (function (_super) {
+        __extends(AnyList, _super);
+        function AnyList(onChanged) {
+            var _this = this;
+            _super.call(this, AnyValListItem, [{ name: 'val', dtype: 0 }]);
+            this._saveVal = null;
+            this._onChanged = onChanged;
+            this.addOnBeginEdit(function (s, a) {
+                _this._saveVal = JSON.stringify(a.item.val);
+            });
+            this.addOnEndEdit(function (s, a) {
+                if (a.isCanceled) {
+                    _this._saveVal = null;
+                    return;
+                }
+                var oldVal = _this._saveVal, newVal = JSON.parse(JSON.stringify(a.item.val));
+                _this._saveVal = null;
+                if (oldVal !== newVal) {
+                    if (!!_this._onChanged)
+                        _this._onChanged();
+                }
+            });
+        }
+        AnyList.prototype.toString = function () {
+            return 'AnyList';
+        };
+        return AnyList;
+    }(list_3.BaseList));
+    exports.AnyList = AnyList;
+    var ArrayVal = (function (_super) {
+        __extends(ArrayVal, _super);
+        function ArrayVal(arr, onChanged) {
+            if (onChanged === void 0) { onChanged = null; }
+            _super.call(this);
+            this._vals = [];
+            this._list = new AnyList(onChanged);
+            this.setArr(arr);
+        }
+        ArrayVal.prototype.destroy = function () {
+            if (this._isDestroyed)
+                return;
+            this._isDestroyCalled = true;
+            this._list.clear();
+        };
+        ArrayVal.prototype.setArr = function (arr) {
+            this._vals = (!arr ? [] : arr);
+            this._list.fillItems(this._vals.map(function (val) {
+                return { val: val };
+            }), true);
+        };
+        ArrayVal.prototype.getArr = function () {
+            var res = this._list.items.map(function (item) {
+                return item._aspect.vals["val"];
+            });
+            return res;
+        };
+        Object.defineProperty(ArrayVal.prototype, "list", {
+            get: function () {
+                return this._list;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ArrayVal.prototype.toString = function () {
+            return "ArrayVal";
+        };
+        return ArrayVal;
+    }(object_6.BaseObject));
+    exports.ArrayVal = ArrayVal;
 });

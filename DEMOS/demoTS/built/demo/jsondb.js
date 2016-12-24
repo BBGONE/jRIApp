@@ -5,73 +5,53 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 define(["require", "exports", "jriapp", "./demoDB", "common"], function (require, exports, RIAPP, DEMODB, COMMON) {
     "use strict";
-    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, PROP_BAG = utils.sys.PROP_BAG_NAME();
-    var JsonBag = (function (_super) {
-        __extends(JsonBag, _super);
-        function JsonBag(owner) {
-            _super.call(this);
-            this._saveVals = null;
-            this._owner = owner;
-            this.vals = (!this._owner.Data ? {} : JSON.parse(this._owner.Data));
+    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
+    var CustomerBag = (function (_super) {
+        __extends(CustomerBag, _super);
+        function CustomerBag(json, jsonChanged) {
+            _super.call(this, json, jsonChanged);
+            this._addressVal = null;
         }
-        JsonBag.prototype.beginEdit = function () {
-            if (!this.isEditing) {
-                this._saveVals = JSON.parse(JSON.stringify(this.vals));
-                return true;
+        CustomerBag.prototype.setJson = function (json) {
+            _super.prototype.setJson.call(this, json);
+            if (!!this._addressVal) {
+                this._addressVal.setArr(this.getAddressArray());
             }
-            return false;
         };
-        JsonBag.prototype.endEdit = function () {
-            if (this.isEditing) {
-                this._saveVals = null;
-                var val = JSON.stringify(this.vals);
-                if (val !== this._owner.Data) {
-                    this._owner.Data = val;
-                }
-                return true;
-            }
-            return false;
+        CustomerBag.prototype.getAddressArray = function () {
+            var arr = utils.core.getValue(this.val, this.getAddressPath(), '->');
+            return (!arr) ? [] : arr;
         };
-        JsonBag.prototype.cancelEdit = function () {
-            if (this.isEditing) {
-                this.vals = this._saveVals;
-                this._saveVals = null;
-                return true;
-            }
-            return false;
+        CustomerBag.prototype.setAddressArray = function (arr) {
+            utils.core.setValue(this.val, this.getAddressPath(), arr, false, '->');
+            this._checkChanges();
         };
-        Object.defineProperty(JsonBag.prototype, "isEditing", {
+        CustomerBag.prototype.getAddressPath = function () {
+            return "Addresses";
+        };
+        Object.defineProperty(CustomerBag.prototype, "AddressList", {
             get: function () {
-                return !!this._saveVals;
+                var _this = this;
+                if (!this._addressVal) {
+                    this._addressVal = new RIAPP.ArrayVal(this.getAddressArray(), function () {
+                        _this.setAddressArray(_this._addressVal.getArr());
+                    });
+                }
+                return this._addressVal.list;
             },
             enumerable: true,
             configurable: true
         });
-        JsonBag.prototype._isHasProp = function (prop) {
-            return true;
-        };
-        JsonBag.prototype.getProp = function (name) {
-            return utils.core.getValue(this.vals, name, '->');
-        };
-        JsonBag.prototype.setProp = function (name, val) {
-            var old = utils.core.getValue(this.vals, name, '->');
-            if (old !== val) {
-                utils.core.setValue(this.vals, name, val, false, '->');
-                this.raisePropertyChanged(name);
-            }
-        };
-        JsonBag.prototype.toString = function () {
-            return PROP_BAG;
-        };
-        return JsonBag;
-    }(RIAPP.BaseObject));
-    exports.JsonBag = JsonBag;
+        return CustomerBag;
+    }(RIAPP.JsonBag));
+    exports.CustomerBag = CustomerBag;
     var CustomerViewModel = (function (_super) {
         __extends(CustomerViewModel, _super);
         function CustomerViewModel(app) {
             _super.call(this, app);
             var self = this;
             this._dbSet = this.dbSets.CustomerJSON;
+            this._propWatcher = new RIAPP.PropWatcher();
             this._dbSet.addOnPropertyChange('currentItem', function (sender, data) {
                 self._onCurrentChanged();
             }, self.uniqueID);
@@ -83,13 +63,43 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             this._addNewCommand = new RIAPP.TCommand(function (sender, param) {
                 var item = self._dbSet.addNew();
             });
+            this._saveCommand = new RIAPP.Command(function (sender, param) {
+                self.dbContext.submitChanges();
+            }, self, function (s, p) {
+                return self.dbContext.isHasChanges;
+            });
+            this._undoCommand = new RIAPP.Command(function (sender, param) {
+                self.dbContext.rejectChanges();
+            }, self, function (s, p) {
+                return self.dbContext.isHasChanges;
+            });
+            this._propWatcher.addPropWatch(self.dbContext, 'isHasChanges', function (prop) {
+                self._saveCommand.raiseCanExecuteChanged();
+                self._undoCommand.raiseCanExecuteChanged();
+            });
             this._loadCommand = new RIAPP.TCommand(function (sender, data, viewModel) {
                 viewModel.load();
             }, self, null);
             this._dbSet.defineCustomerField(function (item) {
                 var bag = item._aspect.getCustomVal("jsonBag");
                 if (!bag) {
-                    bag = new JsonBag(item);
+                    bag = new CustomerBag(item.Data, function (data) {
+                        var saveIsEditing = item._aspect.isEditing;
+                        if (item.Data !== data) {
+                            if (!saveIsEditing) {
+                                self._dbSet.isUpdating = true;
+                                item._aspect.beginEdit();
+                            }
+                            item.Data = data;
+                            if (!saveIsEditing) {
+                                item._aspect.endEdit();
+                                self._dbSet.isUpdating = false;
+                            }
+                        }
+                    });
+                    item.addOnPropertyChange("Data", function (s, a) {
+                        bag.setJson(item.Data);
+                    }, null, null, 1);
                     item._aspect.setCustomVal("jsonBag", bag);
                 }
                 return bag;
@@ -120,6 +130,16 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
         });
         Object.defineProperty(CustomerViewModel.prototype, "addNewCommand", {
             get: function () { return this._addNewCommand; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerViewModel.prototype, "saveCommand", {
+            get: function () { return this._saveCommand; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerViewModel.prototype, "undoCommand", {
+            get: function () { return this._undoCommand; },
             enumerable: true,
             configurable: true
         });

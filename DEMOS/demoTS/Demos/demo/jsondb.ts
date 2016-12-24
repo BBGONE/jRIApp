@@ -4,83 +4,57 @@ import * as dbMOD from "jriapp_db";
 import * as DEMODB from "./demoDB";
 import * as COMMON from "common";
 
-const bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, PROP_BAG = utils.sys.PROP_BAG_NAME();
+const bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
 
-//used as a value in our calculated field
-export class JsonBag extends RIAPP.BaseObject implements RIAPP.IPropertyBag, RIAPP.IEditable {
-    private _owner: DEMODB.CustomerJSON;
-    private vals: any;
-    private _saveVals: any = null;
+export class CustomerBag extends RIAPP.JsonBag {
+    private _addressVal: RIAPP.ArrayVal = null;
+  
+    constructor(json: string, jsonChanged: (json: string) => void) {
+        super(json, jsonChanged);
+    }
+    setJson(json: string): void {
+        super.setJson(json);
+        if (!!this._addressVal) {
+            this._addressVal.setArr(this.getAddressArray());
+        }
+    }
+    getAddressArray(): any[] {
+        const arr = utils.core.getValue(this.val, this.getAddressPath(), '->');
+        return (!arr) ? [] : arr;
+    }
+    protected setAddressArray(arr: any[]): void {
+        utils.core.setValue(this.val, this.getAddressPath(), arr, false, '->');
+        this._checkChanges();
+    }
+    getAddressPath(): string {
+        return "Addresses";
+    }
 
-    constructor(owner: DEMODB.CustomerJSON) {
-        super();
-        this._owner = owner;
-        //parse JSON to object
-        this.vals = (!this._owner.Data ? {} : JSON.parse(this._owner.Data));
-    }
-
-    //implements IEditable
-    beginEdit(): boolean {
-        if (!this.isEditing) {
-            //clone data
-            this._saveVals = JSON.parse(JSON.stringify(this.vals));
-            return true;
+    //gets addresses in the form of the collection from the json value
+    get AddressList() {
+        if (!this._addressVal) {
+            this._addressVal = new RIAPP.ArrayVal(this.getAddressArray(), () => {
+                //sets modified array
+                this.setAddressArray(this._addressVal.getArr());
+            });
         }
-        return false;
-    }
-    endEdit(): boolean {
-        if (this.isEditing) {
-            this._saveVals = null;
-            let val: string = JSON.stringify(this.vals);
-            if (val !== this._owner.Data) {
-                this._owner.Data = val;
-            }
-            return true
-        }
-        return false;
-    }
-    cancelEdit(): boolean {
-        if (this.isEditing) {
-            this.vals = this._saveVals;
-            this._saveVals = null;
-            return true;
-        }
-        return false;
-    }
-    get isEditing(): boolean {
-        return !!this._saveVals;
-    }
-    //override
-    _isHasProp(prop: string) {
-        return true;
-    }
-    //implements IPropertyBag
-    getProp(name: string): any {
-        return utils.core.getValue(this.vals, name, '->');
-    }
-    setProp(name: string, val: any): void {
-        const old = utils.core.getValue(this.vals, name, '->');
-        if (old !== val) {
-            utils.core.setValue(this.vals, name, val, false, '->');
-            this.raisePropertyChanged(name);
-        }
-    }
-    toString() {
-        //This is a special name. Any PropertyBag implementation should return it.
-        //then property  value resolution will use getProp && setProp methods
-        return PROP_BAG;
+        return this._addressVal.list;
     }
 }
 
 export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
     private _dbSet: DEMODB.CustomerJSONDb;
     private _addNewCommand: RIAPP.ICommand;
+    private _saveCommand: RIAPP.ICommand;
+    private _undoCommand: RIAPP.ICommand;
     private _loadCommand: RIAPP.ICommand;
+    private _propWatcher: RIAPP.PropWatcher;
 
     constructor(app: DemoApplication) {
         super(app);
         const self = this;
         this._dbSet = this.dbSets.CustomerJSON;
+        this._propWatcher = new RIAPP.PropWatcher();
      
         //when currentItem property changes, invoke our viewmodel's method
         this._dbSet.addOnPropertyChange('currentItem', function (sender, data) {
@@ -106,17 +80,62 @@ export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
             //on clicking OK button all changes are submitted to the service
         });
 
+        this._saveCommand = new RIAPP.Command(function (sender, param) {
+            self.dbContext.submitChanges();
+        }, self, function (s, p) {
+            //the command is enabled when there are pending changes
+            return self.dbContext.isHasChanges;
+        });
+
+
+        this._undoCommand = new RIAPP.Command(function (sender, param) {
+            self.dbContext.rejectChanges();
+        }, self, function (s, p) {
+            //the command is enabled when there are pending changes
+            return self.dbContext.isHasChanges;
+        });
+
+        //the property watcher helps us handling properties changes
+        //more convenient than using addOnPropertyChange
+        this._propWatcher.addPropWatch(self.dbContext, 'isHasChanges', function (prop) {
+            self._saveCommand.raiseCanExecuteChanged();
+            self._undoCommand.raiseCanExecuteChanged();
+        });
+
         //loads data from the server for the products
         this._loadCommand = new RIAPP.TCommand<any, CustomerViewModel>(function (sender, data, viewModel) {
             viewModel.load();
         }, self, null);
 
         this._dbSet.defineCustomerField(function (item) {
-            let bag = <JsonBag>item._aspect.getCustomVal("jsonBag");
+            let bag = <CustomerBag>item._aspect.getCustomVal("jsonBag");
             if (!bag) {
-                bag = new JsonBag(item);
+                bag = new CustomerBag(item.Data, (data: string) => {
+                   const saveIsEditing = item._aspect.isEditing;
+                   if (item.Data !== data) {
+                       
+                       if (!saveIsEditing) {
+                           self._dbSet.isUpdating = true;
+                           item._aspect.beginEdit();
+                       }
+
+                       //update data
+                       item.Data = data;
+
+                       if (!saveIsEditing) {
+                           item._aspect.endEdit();
+                           self._dbSet.isUpdating = false;
+                       }
+                    }
+                });
+
+                item.addOnPropertyChange("Data", (s, a) => {
+                    bag.setJson(item.Data);
+                }, null, null, RIAPP.TPriority.AboveNormal);
+
                 item._aspect.setCustomVal("jsonBag", bag);
             }
+
             return bag;
         });
     }
@@ -140,6 +159,8 @@ export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
     }
     get dbSet() { return this._dbSet; }
     get addNewCommand() { return this._addNewCommand; }
+    get saveCommand() { return this._saveCommand; }
+    get undoCommand() { return this._undoCommand; }
     get dbContext() { return this.app.dbContext; }
     get dbSets() { return this.dbContext.dbSets; }
     get currentItem() { return this._dbSet.currentItem; }

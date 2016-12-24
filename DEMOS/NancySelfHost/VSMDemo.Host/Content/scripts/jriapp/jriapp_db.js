@@ -3156,11 +3156,29 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             else {
                 var newVal = dbSet._getInternal().getStrValue(coreUtils.getValue(self._vals, fullName), fieldInfo), oldV = self._origVals === null ? newVal : dbSet._getInternal().getStrValue(coreUtils.getValue(self._origVals, fullName), fieldInfo), isChanged = (oldV !== newVal);
                 if (isChanged)
-                    res = { fieldName: fieldInfo.fieldName, val: newVal, orig: oldV, flags: (1 | 2), nested: null };
+                    res = {
+                        fieldName: fieldInfo.fieldName,
+                        val: newVal,
+                        orig: oldV,
+                        flags: (1 | 2),
+                        nested: null
+                    };
                 else if (fieldInfo.isPrimaryKey > 0 || fieldInfo.fieldType === 4 || fieldInfo.isNeedOriginal)
-                    res = { fieldName: fieldInfo.fieldName, val: newVal, orig: oldV, flags: 2, nested: null };
+                    res = {
+                        fieldName: fieldInfo.fieldName,
+                        val: newVal,
+                        orig: oldV,
+                        flags: 2,
+                        nested: null
+                    };
                 else
-                    res = { fieldName: fieldInfo.fieldName, val: null, orig: null, flags: 0, nested: null };
+                    res = {
+                        fieldName: fieldInfo.fieldName,
+                        val: null,
+                        orig: null,
+                        flags: 0,
+                        nested: null
+                    };
             }
             if (changedOnly) {
                 if (fieldInfo.fieldType === 5) {
