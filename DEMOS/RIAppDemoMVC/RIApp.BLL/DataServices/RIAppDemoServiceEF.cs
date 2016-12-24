@@ -233,38 +233,54 @@ namespace RIAppDemo.BLL.DataServices
         /// </summary>
         /// <returns></returns>
         [Query]
-        public QueryResult<CustomerJSON> ReadCustomerJSON()
+        public async Task<QueryResult<CustomerJSON>> ReadCustomerJSON()
         {
-            var customers = DB.Customers.AsNoTracking() as IQueryable<Customer>;
+            var customers = DB.Customers.AsNoTracking().Where(c=>c.CustomerAddresses.Any()) as IQueryable<Customer>;
             var queryInfo = this.GetCurrentQueryInfo();
             //calculate totalCount only when we fetch first page (to speed up query)
             int? totalCount = queryInfo.pageIndex == 0 ? (int?)null : -1;
 
-            //i created JSON Data myself because there's no entity in db
-            //which has json data in its fields
-            var res = this.PerformQuery(customers, ref totalCount).AsEnumerable()
-                .Select(c => new CustomerJSON() {
-                    CustomerID = c.CustomerID,
-                    rowguid = c.rowguid,
-                    Data = this.serializer.Serialize(new
-                    {
-                        Title = c.Title,
-                        CompanyName = c.CompanyName,
-                        SalesPerson = c.SalesPerson,
-                        ModifiedDate = c.ModifiedDate,
-                        Level1 = new
-                        {
-                            FirstName = c.ComplexProp.FirstName,
-                            MiddleName = c.ComplexProp.MiddleName,
-                            LastName = c.ComplexProp.LastName,
-                            //another level to make it more complex
-                            Level2 = new
-                            {
-                                EmailAddress = c.ComplexProp.EmailAddress,
-                                Phone = c.ComplexProp.Phone
+            var custQuery = this.PerformQuery(customers, ref totalCount);
+            var custList = await custQuery.ToListAsync();
 
-                            }
+            var custAddresses = (from cust in custQuery
+                             from custAddr in cust.CustomerAddresses
+                             join addr in DB.Addresses on custAddr.AddressID equals addr.AddressID
+                             select new
+                             {
+                                 CustomerID = custAddr.CustomerID,
+                                 ID = addr.AddressID,
+                                 Line1 = addr.AddressLine1,
+                                 Line2 = addr.AddressLine2,
+                                 City = addr.City,
+                                 Region = addr.CountryRegion
+                             }).ToLookup((addr) => addr.CustomerID);
+
+            //i create JSON Data myself because there's no entity in db
+            //which has json data in its fields
+            var res = custList.Select(c => new CustomerJSON() {
+                CustomerID = c.CustomerID,
+                rowguid = c.rowguid,
+                Data = this.serializer.Serialize(new
+                {
+                    Title = c.Title,
+                    CompanyName = c.CompanyName,
+                    SalesPerson = c.SalesPerson,
+                    ModifiedDate = c.ModifiedDate,
+                    Level1 = new
+                    {
+                        FirstName = c.ComplexProp.FirstName,
+                        MiddleName = c.ComplexProp.MiddleName,
+                        LastName = c.ComplexProp.LastName,
+                        //another level to make it more complex
+                        Level2 = new
+                        {
+                            EmailAddress = c.ComplexProp.EmailAddress,
+                            Phone = c.ComplexProp.Phone
+
                         }
+                    },
+                    Addresses = custAddresses[c.CustomerID].Select(ca => new { ca.Line1, ca.Line2, ca.City, ca.Region})
                     })
                 });
 
