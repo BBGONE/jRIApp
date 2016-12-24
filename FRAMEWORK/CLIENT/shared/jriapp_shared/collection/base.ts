@@ -320,7 +320,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     }
     //new item is being added, but is not in the collection now
     protected _onItemAdding(item: TItem) {
-        let args: ICancellableArgs<TItem> = { item: item, isCancel: false };
+        const args: ICancellableArgs<TItem> = { item: item, isCancel: false };
         this.raiseEvent(COLL_EVENTS.item_adding, args);
         if (args.isCancel)
             utils.err.throwDummy(new Error("operation canceled"));

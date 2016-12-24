@@ -34,8 +34,9 @@ export class CustomerBag extends RIAPP.JsonBag {
     get AddressList() {
         if (!this._addressVal) {
             this._addressVal = new RIAPP.ArrayVal(this.getAddressArray(), () => {
+                let arr = this._addressVal.getArr();
                 //sets modified array
-                this.setAddressArray(this._addressVal.getArr());
+                this.setAddressArray(arr);
             });
         }
         return this._addressVal.list;
@@ -45,6 +46,7 @@ export class CustomerBag extends RIAPP.JsonBag {
 export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
     private _dbSet: DEMODB.CustomerJSONDb;
     private _addNewCommand: RIAPP.ICommand;
+    private _addNewAddrCommand: RIAPP.ICommand;
     private _saveCommand: RIAPP.ICommand;
     private _undoCommand: RIAPP.ICommand;
     private _loadCommand: RIAPP.ICommand;
@@ -78,6 +80,13 @@ export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
             var item = self._dbSet.addNew();
             //P.S. - grids editor options also has submitOnOK:true, which means
             //on clicking OK button all changes are submitted to the service
+        });
+
+        this._addNewAddrCommand = new RIAPP.TCommand<any, CustomerViewModel>(function (sender, param) {
+            const curCustomer = <CustomerBag>self.currentItem.Customer;
+            var item = curCustomer.AddressList.addNew();
+        }, self, function (s, p) {
+            return !!self.currentItem;
         });
 
         this._saveCommand = new RIAPP.Command(function (sender, param) {
@@ -140,6 +149,7 @@ export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
         });
     }
     protected _onCurrentChanged() {
+        this._addNewAddrCommand.raiseCanExecuteChanged();
         this.raisePropertyChanged('currentItem');
     }
     load() {
@@ -159,6 +169,7 @@ export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
     }
     get dbSet() { return this._dbSet; }
     get addNewCommand() { return this._addNewCommand; }
+    get addNewAddrCommand() { return this._addNewAddrCommand; }
     get saveCommand() { return this._saveCommand; }
     get undoCommand() { return this._undoCommand; }
     get dbContext() { return this.app.dbContext; }

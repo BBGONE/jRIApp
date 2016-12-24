@@ -4193,8 +4193,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                 if (!!clearAll)
                     this.clear();
                 objArray.forEach(function (obj) {
-                    var item = self.createItem(obj);
-                    var oldItem = self._itemsByKey[item._key];
+                    var item = self.createItem(obj), oldItem = self._itemsByKey[item._key];
                     if (!oldItem) {
                         self._items.push(item);
                         self._itemsByKey[item._key] = item;
@@ -4482,6 +4481,7 @@ define("jriapp_shared/utils/jsonval", ["require", "exports", "jriapp_shared/obje
             this._jsonChanged = null;
             this._json = void 0;
             this._val = {};
+            _super.prototype.destroy.call(this);
         };
         JsonBag.prototype.onChanged = function () {
             if (!!this._jsonChanged) {
@@ -4561,8 +4561,8 @@ define("jriapp_shared/utils/jsonval", ["require", "exports", "jriapp_shared/obje
     exports.JsonBag = JsonBag;
     var AnyValListItem = (function (_super) {
         __extends(AnyValListItem, _super);
-        function AnyValListItem() {
-            _super.apply(this, arguments);
+        function AnyValListItem(aspect) {
+            _super.call(this, aspect);
         }
         Object.defineProperty(AnyValListItem.prototype, "val", {
             get: function () { return this._aspect._getProp('val'); },
@@ -4611,11 +4611,41 @@ define("jriapp_shared/utils/jsonval", ["require", "exports", "jriapp_shared/obje
                 var oldVal = _this._saveVal, newVal = JSON.parse(JSON.stringify(a.item.val));
                 _this._saveVal = null;
                 if (oldVal !== newVal) {
-                    if (!!_this._onChanged)
-                        _this._onChanged();
+                    _this.onChanged();
                 }
             });
+            this.addOnCollChanged(function (s, a) {
+                switch (a.changeType) {
+                    case 0:
+                        {
+                            _this.onChanged();
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            });
+            this.addOnItemAdding(function (s, a) {
+                a.item.val = {};
+            });
         }
+        AnyList.prototype.destroy = function () {
+            if (this._isDestroyed)
+                return;
+            this._onChanged = null;
+            _super.prototype.destroy.call(this);
+        };
+        AnyList.prototype.onChanged = function () {
+            var _this = this;
+            if (!this._onChanged)
+                return;
+            setTimeout(function () {
+                if (_this.getIsDestroyCalled())
+                    return;
+                if (!!_this._onChanged)
+                    _this._onChanged();
+            }, 0);
+        };
         AnyList.prototype.toString = function () {
             return 'AnyList';
         };
@@ -4635,7 +4665,9 @@ define("jriapp_shared/utils/jsonval", ["require", "exports", "jriapp_shared/obje
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
-            this._list.clear();
+            this._list.destroy();
+            this._list = null;
+            _super.prototype.destroy.call(this);
         };
         ArrayVal.prototype.setArr = function (arr) {
             this._vals = (!arr ? [] : arr);

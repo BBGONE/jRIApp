@@ -3,6 +3,8 @@ import { IPropertyBag, IEditable } from "../int";
 import { BaseObject } from "../object";
 import { CoreUtils } from "./coreutils";
 import { SysUtils } from "./sysutils";
+import { COLL_CHANGE_TYPE } from "../collection/const";
+import { ICollChangedArgs, ICollectionItem } from "../collection/int";
 import { CollectionItem } from "../collection/item";
 import { IListItem, ListItemAspect, BaseList } from "../collection/list";
 
@@ -27,6 +29,7 @@ export class JsonBag extends BaseObject implements IPropertyBag, IEditable {
         this._jsonChanged = null;
         this._json = void 0;
         this._val = {};
+        super.destroy();
     }
     protected onChanged() {
         if (!!this._jsonChanged) {
@@ -109,6 +112,10 @@ export interface IAnyVal {
 }
 
 export class AnyValListItem extends CollectionItem<ListItemAspect<AnyValListItem, IAnyVal>> implements IListItem, IPropertyBag, IAnyVal {
+    constructor(aspect: ListItemAspect<AnyValListItem, IAnyVal>) {
+        super(aspect);
+        
+    }
     get val(): any { return <any>this._aspect._getProp('val'); }
     set val(v: any) { this._aspect._setProp('val', v); }
 
@@ -123,7 +130,6 @@ export class AnyValListItem extends CollectionItem<ListItemAspect<AnyValListItem
             this.raisePropertyChanged(name);
         }
     }
-
     get list(): AnyList {
         return <AnyList>this._aspect.list;
     }
@@ -152,11 +158,42 @@ export class AnyList extends BaseList<AnyValListItem, IAnyVal> {
             const oldVal = this._saveVal, newVal = JSON.parse(JSON.stringify(a.item.val));
             this._saveVal = null;
             if (oldVal !== newVal) {
-                if (!!this._onChanged)
-                    this._onChanged();
+                this.onChanged();
             }
         });
+        this.addOnCollChanged((s, a) => {
+            switch (a.changeType) {
+                case COLL_CHANGE_TYPE.Remove:
+                    {
+                        this.onChanged();
+                    }
+                    break;
+                default:
+                    break;
+            }
+        });
+        //adding new item (init val with an object)
+        this.addOnItemAdding((s, a) => {
+            a.item.val = {};
+        });
     }
+    destroy() {
+        if (this._isDestroyed)
+            return;
+        this._onChanged = null;
+        super.destroy();
+    }
+
+    protected onChanged() {
+        if (!this._onChanged)
+            return;
+        setTimeout(() => {
+            if (this.getIsDestroyCalled())
+                return;
+            if (!!this._onChanged)
+                this._onChanged();
+        }, 0);
+     }
     toString() {
         return 'AnyList';
     }
@@ -175,7 +212,9 @@ export class ArrayVal extends BaseObject {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        this._list.clear();
+        this._list.destroy();
+        this._list = null;
+        super.destroy();
     }
     setArr(arr: any[]): void {
         this._vals = (!arr ? [] : arr);

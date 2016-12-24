@@ -1349,6 +1349,7 @@ declare module "jriapp_shared/utils/jsonval" {
         val: any;
     }
     export class AnyValListItem extends CollectionItem<ListItemAspect<AnyValListItem, IAnyVal>> implements IListItem, IPropertyBag, IAnyVal {
+        constructor(aspect: ListItemAspect<AnyValListItem, IAnyVal>);
         val: any;
         getProp(name: string): any;
         setProp(name: string, val: any): void;
@@ -1359,6 +1360,8 @@ declare module "jriapp_shared/utils/jsonval" {
         private _onChanged;
         private _saveVal;
         constructor(onChanged: () => void);
+        destroy(): void;
+        protected onChanged(): void;
         toString(): string;
     }
     export class ArrayVal extends BaseObject {

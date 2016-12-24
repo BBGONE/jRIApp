@@ -163,8 +163,7 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
         try {
             if (!!clearAll) this.clear();
             objArray.forEach(function (obj) {
-                const item = self.createItem(obj);
-                const oldItem = self._itemsByKey[item._key];
+                const item = self.createItem(obj), oldItem = self._itemsByKey[item._key];
                 if (!oldItem) {
                     self._items.push(item);
                     self._itemsByKey[item._key] = item;

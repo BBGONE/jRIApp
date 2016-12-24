@@ -34,7 +34,8 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
                 var _this = this;
                 if (!this._addressVal) {
                     this._addressVal = new RIAPP.ArrayVal(this.getAddressArray(), function () {
-                        _this.setAddressArray(_this._addressVal.getArr());
+                        var arr = _this._addressVal.getArr();
+                        _this.setAddressArray(arr);
                     });
                 }
                 return this._addressVal.list;
@@ -62,6 +63,12 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             this._dbSet.isSubmitOnDelete = true;
             this._addNewCommand = new RIAPP.TCommand(function (sender, param) {
                 var item = self._dbSet.addNew();
+            });
+            this._addNewAddrCommand = new RIAPP.TCommand(function (sender, param) {
+                var curCustomer = self.currentItem.Customer;
+                var item = curCustomer.AddressList.addNew();
+            }, self, function (s, p) {
+                return !!self.currentItem;
             });
             this._saveCommand = new RIAPP.Command(function (sender, param) {
                 self.dbContext.submitChanges();
@@ -106,6 +113,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             });
         }
         CustomerViewModel.prototype._onCurrentChanged = function () {
+            this._addNewAddrCommand.raiseCanExecuteChanged();
             this.raisePropertyChanged('currentItem');
         };
         CustomerViewModel.prototype.load = function () {
@@ -130,6 +138,11 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
         });
         Object.defineProperty(CustomerViewModel.prototype, "addNewCommand", {
             get: function () { return this._addNewCommand; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerViewModel.prototype, "addNewAddrCommand", {
+            get: function () { return this._addNewAddrCommand; },
             enumerable: true,
             configurable: true
         });
