@@ -4510,6 +4510,7 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
                 this._val = (!json ? {} : JSON.parse(json));
                 this.raisePropertyChanged("json");
                 this.raisePropertyChanged("val");
+                this.onBagPropChanged("*");
             }
         };
         JsonBag.prototype.updateJson = function () {

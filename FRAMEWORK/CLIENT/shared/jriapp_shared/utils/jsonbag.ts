@@ -47,6 +47,7 @@ export class JsonBag extends BasePropBag implements IEditable {
             this._val = (!json ? {} : JSON.parse(json));
             this.raisePropertyChanged("json");
             this.raisePropertyChanged("val");
+            this.onBagPropChanged("*");
         }
     }
     updateJson(): boolean {

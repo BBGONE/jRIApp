@@ -325,6 +325,14 @@ export class Binding extends BaseObject implements IBinding {
         };
         return fn;
     }
+    private _addOnPropChanged(obj: IBaseObject, prop: string, fn: (s:any, a: any) => void) {
+        obj.addOnPropertyChange(prop, fn, this._objId);
+
+        //for PropertyBag also listen for all property changes notification
+        if (prop !== "[*]" && sys.isPropBag(obj)) {
+            obj.addOnPropertyChange("[*]", fn, this._objId);
+        }
+    }
     private _parseSrc(obj: any, path: string[], lvl: number) {
         const self = this;
         self._srcEnd = null;
@@ -354,9 +362,8 @@ export class Binding extends BaseObject implements IBinding {
 
         if (path.length > 1) {
             if (isBaseObj) {
-                (<IBaseObject>obj).addOnPropertyChange(path[0],
-                    self._getSrcChangedFn(self, obj, path[0], path.slice(1), lvl + 1),
-                    self._objId);
+                const fn_chng = self._getSrcChangedFn(self, obj, path[0], path.slice(1), lvl + 1);
+                self._addOnPropChanged(obj, path[0], fn_chng);
             }
 
             if (!!obj) {
@@ -377,23 +384,13 @@ export class Binding extends BaseObject implements IBinding {
             if (isValidProp) {
                 const updateOnChange = isBaseObj && (self._mode === BINDING_MODE.OneWay || self._mode === BINDING_MODE.TwoWay);
                 if (updateOnChange) {
-                    (<IBaseObject>obj).addOnPropertyChange(path[0], () => {
+                    const fn_upd = () => {
                         if (!!self._tgtEnd) {
                             self._umask |= 2;
                             self._update();
                         }
-                    }, self._objId);
-
-                    //for PropertyBag also listen for all property changes notification
-                    if (path[0] !== "[*]" && sys.isPropBag(obj))
-                    {
-                        (<IBaseObject>obj).addOnPropertyChange("[*]", () => {
-                            if (!!self._tgtEnd) {
-                                self._umask |= 2;
-                                self._update();
-                            }
-                        }, self._objId);
-                    }
+                    };
+                    self._addOnPropChanged(obj, path[0], fn_upd);
                 }
 
                 const err_notif = sys.getErrorNotification(obj);
@@ -437,10 +434,10 @@ export class Binding extends BaseObject implements IBinding {
 
         if (path.length > 1) {
             if (isBaseObj) {
-                (<IBaseObject>obj).addOnPropertyChange(path[0],
-                    self._getTgtChangedFn(self, obj, path[0], path.slice(1), lvl + 1),
-                    self._objId);
+                const fn_chng = self._getTgtChangedFn(self, obj, path[0], path.slice(1), lvl + 1);
+                self._addOnPropChanged(obj, path[0], fn_chng);
             }
+
             if (!!obj) {
                 const nextObj = sys.getProp(obj, path[0]);
                 if (!!nextObj) {
@@ -459,22 +456,13 @@ export class Binding extends BaseObject implements IBinding {
             if (isValidProp) {
                 const updateOnChange = isBaseObj && (self._mode === BINDING_MODE.TwoWay || self._mode === BINDING_MODE.BackWay);
                 if (updateOnChange) {
-                    (<IBaseObject>obj).addOnPropertyChange(path[0], () => {
+                    const fn_upd = () => {
                         if (!!self._srcEnd) {
                             self._umask |= 1;
                             self._update();
                         }
-                    }, self._objId);
-
-                    //for PropertyBag also listen for all property changes notification
-                    if (path[0] !== "[*]" && sys.isPropBag(obj)) {
-                        (<IBaseObject>obj).addOnPropertyChange("[*]", () => {
-                            if (!!self._srcEnd) {
-                                self._umask |= 1;
-                                self._update();
-                            }
-                        }, self._objId);
-                    }
+                    };
+                    self._addOnPropChanged(obj, path[0], fn_upd);
                 }
                 self._tgtEnd = obj;
             }

@@ -636,6 +636,7 @@ declare module "jriapp/binding" {
         private _onSrcErrChanged(err_notif, args?);
         private _getTgtChangedFn(self, obj, prop, restPath, lvl);
         private _getSrcChangedFn(self, obj, prop, restPath, lvl);
+        private _addOnPropChanged(obj, prop, fn);
         private _parseSrc(obj, path, lvl);
         private _parseSrc2(obj, path, lvl);
         private _parseTgt(obj, path, lvl);
