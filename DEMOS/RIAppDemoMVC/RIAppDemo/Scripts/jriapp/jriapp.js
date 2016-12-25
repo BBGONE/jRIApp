@@ -2004,7 +2004,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
             }
         };
         Binding.prototype._parseSrc2 = function (obj, path, lvl) {
-            var self = this, nextObj, isBaseObj = (!!obj && sys.isBaseObj(obj)), isValidProp;
+            var self = this, isBaseObj = sys.isBaseObj(obj);
             if (isBaseObj) {
                 obj.addOnDestroyed(self._onSrcDestroyed, self._objId, self);
                 self._setPathItem(obj, 0, lvl, path);
@@ -2014,7 +2014,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                     obj.addOnPropertyChange(path[0], self._getSrcChangedFn(self, obj, path[0], path.slice(1), lvl + 1), self._objId);
                 }
                 if (!!obj) {
-                    nextObj = sys.getProp(obj, path[0]);
+                    var nextObj = sys.getProp(obj, path[0]);
                     if (!!nextObj) {
                         self._parseSrc2(nextObj, path.slice(1), lvl + 1);
                     }
@@ -2025,9 +2025,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                 return;
             }
             if (!!obj && path.length === 1) {
-                isValidProp = true;
-                if (debug.isDebugging())
-                    isValidProp = isBaseObj ? obj._isHasProp(path[0]) : checks.isHasProp(obj, path[0]);
+                var isValidProp = (!debug.isDebugging() ? true : (isBaseObj ? obj._isHasProp(path[0]) : checks.isHasProp(obj, path[0])));
                 if (isValidProp) {
                     var updateOnChange = isBaseObj && (self._mode === 1 || self._mode === 2);
                     if (updateOnChange) {
@@ -2037,6 +2035,14 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                                 self._update();
                             }
                         }, self._objId);
+                        if (path[0] !== "[*]" && sys.isPropBag(obj)) {
+                            obj.addOnPropertyChange("[*]", function () {
+                                if (!!self._tgtEnd) {
+                                    self._umask |= 2;
+                                    self._update();
+                                }
+                            }, self._objId);
+                        }
                     }
                     var err_notif = sys.getErrorNotification(obj);
                     if (!!err_notif) {
@@ -2068,7 +2074,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
             }
         };
         Binding.prototype._parseTgt2 = function (obj, path, lvl) {
-            var self = this, nextObj, isBaseObj = sys.isBaseObj(obj), isValidProp = false;
+            var self = this, isBaseObj = sys.isBaseObj(obj);
             if (isBaseObj) {
                 obj.addOnDestroyed(self._onTgtDestroyed, self._objId, self);
                 self._setPathItem(obj, 1, lvl, path);
@@ -2078,7 +2084,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                     obj.addOnPropertyChange(path[0], self._getTgtChangedFn(self, obj, path[0], path.slice(1), lvl + 1), self._objId);
                 }
                 if (!!obj) {
-                    nextObj = sys.getProp(obj, path[0]);
+                    var nextObj = sys.getProp(obj, path[0]);
                     if (!!nextObj) {
                         self._parseTgt2(nextObj, path.slice(1), lvl + 1);
                     }
@@ -2089,10 +2095,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                 return;
             }
             if (!!obj && path.length === 1) {
-                isValidProp = true;
-                if (debug.isDebugging()) {
-                    isValidProp = isBaseObj ? obj._isHasProp(path[0]) : checks.isHasProp(obj, path[0]);
-                }
+                var isValidProp = (!debug.isDebugging() ? true : (isBaseObj ? obj._isHasProp(path[0]) : checks.isHasProp(obj, path[0])));
                 if (isValidProp) {
                     var updateOnChange = isBaseObj && (self._mode === 2 || self._mode === 3);
                     if (updateOnChange) {
@@ -2102,6 +2105,14 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                                 self._update();
                             }
                         }, self._objId);
+                        if (path[0] !== "[*]" && sys.isPropBag(obj)) {
+                            obj.addOnPropertyChange("[*]", function () {
+                                if (!!self._srcEnd) {
+                                    self._umask |= 1;
+                                    self._update();
+                                }
+                            }, self._objId);
+                        }
                     }
                     self._tgtEnd = obj;
                 }
@@ -2111,7 +2122,8 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
             }
         };
         Binding.prototype._setPathItem = function (newObj, bindingTo, lvl, path) {
-            var oldObj, key, len = lvl + path.length;
+            var len = lvl + path.length;
+            var key;
             for (var i = lvl; i < len; i += 1) {
                 switch (bindingTo) {
                     case 0:
@@ -2123,7 +2135,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                     default:
                         throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "bindingTo", bindingTo));
                 }
-                oldObj = this._pathItems[key];
+                var oldObj = this._pathItems[key];
                 if (!!oldObj) {
                     this._cleanUp(oldObj);
                     delete this._pathItems[key];
@@ -3617,6 +3629,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.1.25";
+    exports.VERSION = "1.1.26";
     bootstrap_8.Bootstrap._initFramework();
 });

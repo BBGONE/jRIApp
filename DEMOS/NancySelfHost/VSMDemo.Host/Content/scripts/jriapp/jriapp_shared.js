@@ -4415,6 +4415,7 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
             this.addOnEndEdit(function (s, a) {
                 if (a.isCanceled) {
                     _this._saveVal = null;
+                    a.item.onBagPropChanged("*");
                     return;
                 }
                 var oldVal = _this._saveVal, newVal = JSON.parse(JSON.stringify(a.item.val));
@@ -4540,6 +4541,7 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
             if (this.isEditing) {
                 this._val = this._saveVal;
                 this._saveVal = null;
+                this.onBagPropChanged("*");
                 return true;
             }
             return false;
