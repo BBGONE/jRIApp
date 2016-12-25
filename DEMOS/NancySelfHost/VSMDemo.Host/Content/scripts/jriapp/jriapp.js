@@ -1985,6 +1985,12 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
             };
             return fn;
         };
+        Binding.prototype._addOnPropChanged = function (obj, prop, fn) {
+            obj.addOnPropertyChange(prop, fn, this._objId);
+            if (prop !== "[*]" && sys.isPropBag(obj)) {
+                obj.addOnPropertyChange("[*]", fn, this._objId);
+            }
+        };
         Binding.prototype._parseSrc = function (obj, path, lvl) {
             var self = this;
             self._srcEnd = null;
@@ -2011,7 +2017,8 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
             }
             if (path.length > 1) {
                 if (isBaseObj) {
-                    obj.addOnPropertyChange(path[0], self._getSrcChangedFn(self, obj, path[0], path.slice(1), lvl + 1), self._objId);
+                    var fn_chng = self._getSrcChangedFn(self, obj, path[0], path.slice(1), lvl + 1);
+                    self._addOnPropChanged(obj, path[0], fn_chng);
                 }
                 if (!!obj) {
                     var nextObj = sys.getProp(obj, path[0]);
@@ -2029,20 +2036,13 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                 if (isValidProp) {
                     var updateOnChange = isBaseObj && (self._mode === 1 || self._mode === 2);
                     if (updateOnChange) {
-                        obj.addOnPropertyChange(path[0], function () {
+                        var fn_upd = function () {
                             if (!!self._tgtEnd) {
                                 self._umask |= 2;
                                 self._update();
                             }
-                        }, self._objId);
-                        if (path[0] !== "[*]" && sys.isPropBag(obj)) {
-                            obj.addOnPropertyChange("[*]", function () {
-                                if (!!self._tgtEnd) {
-                                    self._umask |= 2;
-                                    self._update();
-                                }
-                            }, self._objId);
-                        }
+                        };
+                        self._addOnPropChanged(obj, path[0], fn_upd);
                     }
                     var err_notif = sys.getErrorNotification(obj);
                     if (!!err_notif) {
@@ -2081,7 +2081,8 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
             }
             if (path.length > 1) {
                 if (isBaseObj) {
-                    obj.addOnPropertyChange(path[0], self._getTgtChangedFn(self, obj, path[0], path.slice(1), lvl + 1), self._objId);
+                    var fn_chng = self._getTgtChangedFn(self, obj, path[0], path.slice(1), lvl + 1);
+                    self._addOnPropChanged(obj, path[0], fn_chng);
                 }
                 if (!!obj) {
                     var nextObj = sys.getProp(obj, path[0]);
@@ -2099,20 +2100,13 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                 if (isValidProp) {
                     var updateOnChange = isBaseObj && (self._mode === 2 || self._mode === 3);
                     if (updateOnChange) {
-                        obj.addOnPropertyChange(path[0], function () {
+                        var fn_upd = function () {
                             if (!!self._srcEnd) {
                                 self._umask |= 1;
                                 self._update();
                             }
-                        }, self._objId);
-                        if (path[0] !== "[*]" && sys.isPropBag(obj)) {
-                            obj.addOnPropertyChange("[*]", function () {
-                                if (!!self._srcEnd) {
-                                    self._umask |= 1;
-                                    self._update();
-                                }
-                            }, self._objId);
-                        }
+                        };
+                        self._addOnPropChanged(obj, path[0], fn_upd);
                     }
                     self._tgtEnd = obj;
                 }
@@ -3629,6 +3623,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.1.26";
+    exports.VERSION = "1.1.27";
     bootstrap_8.Bootstrap._initFramework();
 });
