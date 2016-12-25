@@ -1,26 +1,19 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    BaseObject, Utils, IPropertyBag
+    Utils, BasePropBag
 } from "jriapp_shared";
 
-const utils = Utils, checks = utils.check, dom = utils.dom, PROP_BAG = utils.sys.PROP_BAG_NAME();
+const utils = Utils, checks = utils.check, dom = utils.dom;
 
 // wraps HTMLElement to add or remove classNames using data binding
-export class CSSBag extends BaseObject implements IPropertyBag {
+export class CSSBag extends BasePropBag {
     private _el: Element;
 
     constructor(el: Element) {
         super();
         this._el = el;
     }
-    //override
-    _isHasProp(prop: string) {
-        return true;
-    }
     //implement IPropertyBag
-    getProp(name: string): any {
-        return checks.undefined;
-    }
     setProp(name: string, val: any): void {
         if (val === checks.undefined)
             return;
@@ -38,11 +31,10 @@ export class CSSBag extends BaseObject implements IPropertyBag {
             }
             return;
         }
-
         //set individual classes
         dom.setClass([this._el], name, !val);
     }
     toString() {
-        return PROP_BAG;
+        return "CSSBag";
     }
 }

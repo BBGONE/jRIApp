@@ -422,7 +422,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     _isHasProp(prop: string) {
         //first check for indexed property name
         if (strUtils.startsWith(prop, "[")) {
-            let res = sys.getProp(this, prop);
+            const res = sys.getProp(this, prop);
             return !checks.isUndefined(res);
         }
         return super._isHasProp(prop);

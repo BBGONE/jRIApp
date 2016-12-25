@@ -118,8 +118,10 @@ declare module "jriapp_shared/int" {
         handleError(error: any, source: any): boolean;
     }
     export interface IPropertyBag extends IBaseObject {
+        onBagPropChanged(name: string): void;
         getProp(name: string): any;
         setProp(name: string, val: any): void;
+        isPropertyBag: boolean;
     }
     export const enum TPriority {
         Normal = 0,
@@ -410,7 +412,6 @@ declare module "jriapp_shared/utils/sysutils" {
         static getErrorNotification(obj: any): IErrorNotification;
         static getEditable(obj: any): IEditable;
         static getSubmittable(obj: any): ISubmittable;
-        static PROP_BAG_NAME(): string;
         static getPathParts(path: string): string[];
         static getProp(obj: any, prop: string): any;
         static setProp(obj: any, prop: string, val: any): void;
@@ -486,6 +487,94 @@ declare module "jriapp_shared/object" {
         getIsDestroyed(): boolean;
         getIsDestroyCalled(): boolean;
         destroy(): void;
+    }
+}
+declare module "jriapp_shared/utils/basebag" {
+    import { IPropertyBag } from "jriapp_shared/int";
+    import { BaseObject } from "jriapp_shared/object";
+    export class BasePropBag extends BaseObject implements IPropertyBag {
+        _isHasProp(prop: string): boolean;
+        onBagPropChanged(name: string): void;
+        getProp(name: string): any;
+        setProp(name: string, val: any): void;
+        readonly isPropertyBag: boolean;
+        toString(): string;
+    }
+}
+declare module "jriapp_shared/utils/queue" {
+    export interface IQueue {
+        cancel: (taskId: number) => void;
+        enque: (func: () => void) => number;
+    }
+    export function createQueue(interval?: number): IQueue;
+}
+declare module "jriapp_shared/utils/deferred" {
+    import { IStatefulDeferred, IStatefulPromise, IThenable, ITaskQueue, PromiseState, IPromise, IAbortablePromise, IDeferredErrorCB, IDeferredSuccessCB, IErrorCB, IVoidErrorCB, ISuccessCB, IAbortable } from "jriapp_shared/utils/ideferred";
+    export function createDefer<T>(isSync?: boolean): IStatefulDeferred<T>;
+    export function createSyncDefer<T>(): IStatefulDeferred<T>;
+    export function getTaskQueue(): ITaskQueue;
+    export function whenAll<T>(promises: Array<T | IThenable<T>>): IStatefulPromise<T[]>;
+    export function race<T>(promises: IPromise<T>[]): IPromise<T>;
+    export interface IDispatcher {
+        (closure: () => void): void;
+    }
+    export class Promise<T> implements IStatefulPromise<T> {
+        private _deferred;
+        constructor(fn: (resolve: (res?: T) => void, reject: (err?: any) => void) => void, dispatcher?: IDispatcher);
+        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
+        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
+        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IVoidErrorCB): IStatefulPromise<TP>;
+        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
+        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
+        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IVoidErrorCB): IStatefulPromise<TP>;
+        catch(errorCB?: IDeferredErrorCB<T>): IStatefulPromise<T>;
+        catch(errorCB?: IErrorCB<T>): IStatefulPromise<T>;
+        catch(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
+        always<TP>(errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
+        always<TP>(errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
+        always(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
+        static all<T>(...promises: Array<T | IThenable<T>>): IStatefulPromise<T[]>;
+        static all<T>(promises: Array<T | IThenable<T>>): IStatefulPromise<T[]>;
+        static race<T>(...promises: Array<IPromise<T>>): IPromise<T>;
+        static race<T>(promises: Array<IPromise<T>>): IPromise<T>;
+        static reject<T>(reason?: any, isSync?: boolean): IStatefulPromise<T>;
+        static resolve<T>(value?: T, isSync?: boolean): IStatefulPromise<T>;
+        state(): PromiseState;
+        deferred(): IStatefulDeferred<T>;
+    }
+    export class AbortablePromise<T> implements IAbortablePromise<T> {
+        private _deferred;
+        private _abortable;
+        private _aborted;
+        constructor(deferred: IStatefulDeferred<T>, abortable: IAbortable);
+        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
+        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
+        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IVoidErrorCB): IStatefulPromise<TP>;
+        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
+        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
+        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IVoidErrorCB): IStatefulPromise<TP>;
+        catch(errorCB?: IDeferredErrorCB<T>): IStatefulPromise<T>;
+        catch(errorCB?: IErrorCB<T>): IStatefulPromise<T>;
+        catch(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
+        always<TP>(errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
+        always<TP>(errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
+        always(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
+        abort(reason?: string): void;
+        state(): PromiseState;
+    }
+}
+declare module "jriapp_shared/utils/debounce" {
+    import { IDisposable } from "jriapp_shared/int";
+    export class Debounce implements IDisposable {
+        private _timer;
+        private _interval;
+        private _fn;
+        constructor(interval?: number);
+        enqueue(fn: () => any): void;
+        cancel(): void;
+        destroy(): void;
+        readonly interval: number;
+        readonly IsDestroyed: boolean;
     }
 }
 declare module "jriapp_shared/collection/const" {
@@ -799,97 +888,11 @@ declare module "jriapp_shared/collection/int" {
         onItemDeleting(args: ICancellableArgs<TItem>): boolean;
     }
 }
-declare module "jriapp_shared/utils/waitqueue" {
-    import { IBaseObject } from "jriapp_shared/int";
-    import { BaseObject } from "jriapp_shared/object";
-    export interface IWaitQueueItem {
-        prop: string;
-        groupName?: string;
-        predicate: (val: any) => boolean;
-        action: (...args: any[]) => void;
-        actionArgs?: any[];
-        lastWins?: boolean;
-    }
-    export class WaitQueue extends BaseObject {
-        private _objId;
-        private _owner;
-        private _queue;
-        constructor(owner: IBaseObject);
-        protected _checkQueue(prop: string, value: any): void;
-        enQueue(item: IWaitQueueItem): void;
-        destroy(): void;
-        toString(): string;
-        readonly uniqueID: string;
-        readonly owner: IBaseObject;
-    }
-}
 declare module "jriapp_shared/utils/logger" {
     export class LOGGER {
         static log(str: string): void;
         static warn(str: string): void;
         static error(str: string): void;
-    }
-}
-declare module "jriapp_shared/utils/queue" {
-    export interface IQueue {
-        cancel: (taskId: number) => void;
-        enque: (func: () => void) => number;
-    }
-    export function createQueue(interval?: number): IQueue;
-}
-declare module "jriapp_shared/utils/deferred" {
-    import { IStatefulDeferred, IStatefulPromise, IThenable, ITaskQueue, PromiseState, IPromise, IAbortablePromise, IDeferredErrorCB, IDeferredSuccessCB, IErrorCB, IVoidErrorCB, ISuccessCB, IAbortable } from "jriapp_shared/utils/ideferred";
-    export function createDefer<T>(isSync?: boolean): IStatefulDeferred<T>;
-    export function createSyncDefer<T>(): IStatefulDeferred<T>;
-    export function getTaskQueue(): ITaskQueue;
-    export function whenAll<T>(promises: Array<T | IThenable<T>>): IStatefulPromise<T[]>;
-    export function race<T>(promises: IPromise<T>[]): IPromise<T>;
-    export interface IDispatcher {
-        (closure: () => void): void;
-    }
-    export class Promise<T> implements IStatefulPromise<T> {
-        private _deferred;
-        constructor(fn: (resolve: (res?: T) => void, reject: (err?: any) => void) => void, dispatcher?: IDispatcher);
-        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
-        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
-        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IVoidErrorCB): IStatefulPromise<TP>;
-        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
-        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
-        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IVoidErrorCB): IStatefulPromise<TP>;
-        catch(errorCB?: IDeferredErrorCB<T>): IStatefulPromise<T>;
-        catch(errorCB?: IErrorCB<T>): IStatefulPromise<T>;
-        catch(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
-        always<TP>(errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
-        always<TP>(errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
-        always(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
-        static all<T>(...promises: Array<T | IThenable<T>>): IStatefulPromise<T[]>;
-        static all<T>(promises: Array<T | IThenable<T>>): IStatefulPromise<T[]>;
-        static race<T>(...promises: Array<IPromise<T>>): IPromise<T>;
-        static race<T>(promises: Array<IPromise<T>>): IPromise<T>;
-        static reject<T>(reason?: any, isSync?: boolean): IStatefulPromise<T>;
-        static resolve<T>(value?: T, isSync?: boolean): IStatefulPromise<T>;
-        state(): PromiseState;
-        deferred(): IStatefulDeferred<T>;
-    }
-    export class AbortablePromise<T> implements IAbortablePromise<T> {
-        private _deferred;
-        private _abortable;
-        private _aborted;
-        constructor(deferred: IStatefulDeferred<T>, abortable: IAbortable);
-        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
-        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
-        then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IVoidErrorCB): IStatefulPromise<TP>;
-        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
-        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
-        then<TP>(successCB?: ISuccessCB<T, TP>, errorCB?: IVoidErrorCB): IStatefulPromise<TP>;
-        catch(errorCB?: IDeferredErrorCB<T>): IStatefulPromise<T>;
-        catch(errorCB?: IErrorCB<T>): IStatefulPromise<T>;
-        catch(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
-        always<TP>(errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
-        always<TP>(errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
-        always(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
-        abort(reason?: string): void;
-        state(): PromiseState;
     }
 }
 declare module "jriapp_shared/utils/async" {
@@ -959,6 +962,30 @@ declare module "jriapp_shared/utils/utils" {
         static readonly sys: typeof SysUtils;
         static readonly dom: typeof DomUtils;
         static readonly queue: ITaskQueue;
+    }
+}
+declare module "jriapp_shared/utils/waitqueue" {
+    import { IBaseObject } from "jriapp_shared/int";
+    import { BaseObject } from "jriapp_shared/object";
+    export interface IWaitQueueItem {
+        prop: string;
+        groupName?: string;
+        predicate: (val: any) => boolean;
+        action: (...args: any[]) => void;
+        actionArgs?: any[];
+        lastWins?: boolean;
+    }
+    export class WaitQueue extends BaseObject {
+        private _objId;
+        private _owner;
+        private _queue;
+        constructor(owner: IBaseObject);
+        protected _checkQueue(prop: string, value: any): void;
+        enQueue(item: IWaitQueueItem): void;
+        destroy(): void;
+        toString(): string;
+        readonly uniqueID: string;
+        readonly owner: IBaseObject;
     }
 }
 declare module "jriapp_shared/collection/utils" {
@@ -1262,6 +1289,75 @@ declare module "jriapp_shared/collection/list" {
         toString(): string;
     }
 }
+declare module "jriapp_shared/utils/anylist" {
+    import { IPropertyBag } from "jriapp_shared/int";
+    import { CollectionItem } from "jriapp_shared/collection/item";
+    import { IListItem, ListItemAspect, BaseList } from "jriapp_shared/collection/list";
+    export interface IAnyVal {
+        val: any;
+    }
+    export class AnyValListItem extends CollectionItem<ListItemAspect<AnyValListItem, IAnyVal>> implements IListItem, IPropertyBag, IAnyVal {
+        constructor(aspect: ListItemAspect<AnyValListItem, IAnyVal>);
+        val: any;
+        onBagPropChanged(name: string): void;
+        _isHasProp(prop: string): boolean;
+        getProp(name: string): any;
+        setProp(name: string, val: any): void;
+        readonly isPropertyBag: boolean;
+        readonly list: AnyList;
+        toString(): string;
+    }
+    export class AnyList extends BaseList<AnyValListItem, IAnyVal> {
+        private _onChanged;
+        private _saveVal;
+        private _debounce;
+        constructor(onChanged: (arr: any[]) => void);
+        destroy(): void;
+        protected onChanged(): void;
+        setValues(values: any[]): void;
+        toString(): string;
+    }
+}
+declare module "jriapp_shared/utils/jsonbag" {
+    import { IEditable } from "jriapp_shared/int";
+    import { BaseObject } from "jriapp_shared/object";
+    import { BasePropBag } from "jriapp_shared/utils/basebag";
+    import { AnyList } from "jriapp_shared/utils/anylist";
+    export class JsonBag extends BasePropBag implements IEditable {
+        private _json;
+        private _jsonChanged;
+        private _val;
+        private _saveVal;
+        private _debounce;
+        constructor(json: string, jsonChanged: (json: string) => void);
+        destroy(): void;
+        protected onChanged(): void;
+        resetJson(json?: string): void;
+        updateJson(): boolean;
+        beginEdit(): boolean;
+        endEdit(): boolean;
+        cancelEdit(): boolean;
+        readonly isEditing: boolean;
+        getProp(name: string): any;
+        setProp(name: string, val: any): void;
+        readonly val: any;
+        readonly json: string;
+        toString(): string;
+    }
+    export class JsonArray extends BaseObject {
+        private _owner;
+        private _pathToArray;
+        private _list;
+        private _objId;
+        constructor(owner: JsonBag, pathToArray: string);
+        destroy(): void;
+        protected updateArray(arr: any[]): void;
+        getArray(): any[];
+        readonly pathToArray: string;
+        readonly owner: JsonBag;
+        readonly list: AnyList;
+    }
+}
 declare module "jriapp_shared/collection/dictionary" {
     import { IPropInfo } from "jriapp_shared/collection/int";
     import { BaseList, IListItem, IListItemConstructor } from "jriapp_shared/collection/list";
@@ -1273,20 +1369,6 @@ declare module "jriapp_shared/collection/dictionary" {
         protected _onRemoved(item: TItem, pos: number): void;
         readonly keyName: string;
         toString(): string;
-    }
-}
-declare module "jriapp_shared/utils/debounce" {
-    import { IDisposable } from "jriapp_shared/int";
-    export class Debounce implements IDisposable {
-        private _timer;
-        private _interval;
-        private _fn;
-        constructor(interval?: number);
-        enqueue(fn: () => any): void;
-        cancel(): void;
-        destroy(): void;
-        readonly interval: number;
-        readonly IsDestroyed: boolean;
     }
 }
 declare module "jriapp_shared/utils/lazy" {
@@ -1307,6 +1389,8 @@ declare module "jriapp_shared" {
     export * from "jriapp_shared/int";
     export * from "jriapp_shared/errors";
     export * from "jriapp_shared/object";
+    export * from "jriapp_shared/utils/basebag";
+    export * from "jriapp_shared/utils/jsonbag";
     export { STRS as LocaleSTRS, ERRS as LocaleERRS } from "jriapp_shared/lang";
     export { BaseCollection } from "jriapp_shared/collection/base";
     export { CollectionItem } from "jriapp_shared/collection/item";
@@ -1319,60 +1403,4 @@ declare module "jriapp_shared" {
     export { WaitQueue, IWaitQueueItem } from "jriapp_shared/utils/waitqueue";
     export { Debounce } from "jriapp_shared/utils/debounce";
     export { Lazy, TValueFactory } from "jriapp_shared/utils/lazy";
-}
-declare module "jriapp_shared/utils/jsonval" {
-    import { IPropertyBag, IEditable } from "jriapp_shared/int";
-    import { BaseObject } from "jriapp_shared/object";
-    import { CollectionItem } from "jriapp_shared/collection/item";
-    import { IListItem, ListItemAspect, BaseList } from "jriapp_shared/collection/list";
-    export class JsonBag extends BaseObject implements IPropertyBag, IEditable {
-        private _json;
-        private _jsonChanged;
-        private _val;
-        private _saveVal;
-        private _debounce;
-        constructor(json: string, jsonChanged: (json: string) => void);
-        destroy(): void;
-        protected onChanged(): void;
-        setJson(json: string): void;
-        protected _checkChanges(): void;
-        beginEdit(): boolean;
-        endEdit(): boolean;
-        cancelEdit(): boolean;
-        readonly isEditing: boolean;
-        _isHasProp(prop: string): boolean;
-        getProp(name: string): any;
-        setProp(name: string, val: any): void;
-        protected readonly val: any;
-        toString(): string;
-    }
-    export interface IAnyVal {
-        val: any;
-    }
-    export class AnyValListItem extends CollectionItem<ListItemAspect<AnyValListItem, IAnyVal>> implements IListItem, IPropertyBag, IAnyVal {
-        constructor(aspect: ListItemAspect<AnyValListItem, IAnyVal>);
-        val: any;
-        getProp(name: string): any;
-        setProp(name: string, val: any): void;
-        readonly list: AnyList;
-        toString(): string;
-    }
-    export class AnyList extends BaseList<AnyValListItem, IAnyVal> {
-        private _onChanged;
-        private _saveVal;
-        constructor(onChanged: () => void);
-        destroy(): void;
-        protected onChanged(): void;
-        toString(): string;
-    }
-    export class ArrayVal extends BaseObject {
-        private _vals;
-        private _list;
-        constructor(arr: any[], onChanged?: () => void);
-        destroy(): void;
-        setArr(arr: any[]): void;
-        getArr(): any[];
-        readonly list: AnyList;
-        toString(): string;
-    }
 }

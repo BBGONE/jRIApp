@@ -3,6 +3,8 @@ export * from "./jriapp_shared/const";
 export * from "./jriapp_shared/int";
 export * from "./jriapp_shared/errors";
 export * from "./jriapp_shared/object";
+export * from "./jriapp_shared/utils/basebag";
+export * from "./jriapp_shared/utils/jsonbag";
 
 export { STRS as LocaleSTRS, ERRS as LocaleERRS } from "./jriapp_shared/lang";
 

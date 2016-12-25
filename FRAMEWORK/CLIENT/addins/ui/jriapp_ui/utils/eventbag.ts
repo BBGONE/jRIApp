@@ -1,10 +1,10 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    BaseObject, Utils, IIndexer, IPropertyBag
+    Utils, IIndexer, BasePropBag
 } from "jriapp_shared";
 import { ICommand } from "jriapp/mvvm";
 
-const utils= Utils, PROP_BAG = utils.sys.PROP_BAG_NAME();
+const utils = Utils, strUtils = utils.str;
 export const enum EVENT_CHANGE_TYPE { None = 0, Added = 1, Deleted = 2, Updated = 3 }
 
 export interface IEventChangedArgs {
@@ -15,7 +15,7 @@ export interface IEventChangedArgs {
 }
 
 //dispatches events through commands that can be attached by the data binding
-export class EventBag extends BaseObject implements IPropertyBag {
+export class EventBag extends BasePropBag {
     private _dic: IIndexer<ICommand>;
     private _onChange: (sender: EventBag, args: IEventChangedArgs) => void;
 
@@ -24,25 +24,19 @@ export class EventBag extends BaseObject implements IPropertyBag {
         this._dic = null;
         this._onChange = onChange;
     }
-    //override
-    _isHasProp(prop: string) {
-        return true;
-    }
-    //implement IPropertyBag
+   //implement IPropertyBag
     getProp(name: string): ICommand {
         if (!this._dic)
             return null;
-        let cmd = this._dic[name];
-        if (!cmd)
-            return null;
-        return cmd;
+        const cmd = this._dic[name];
+        return !cmd ? null : cmd;
     }
     setProp(name: string, command: ICommand): void {
         if (!this._dic && !!command)
             this._dic = {};
         if (!this._dic)
             return;
-        let old = this._dic[name];
+        const old = this._dic[name];
         if (!command && !!old) {
             delete this._dic[name];
 
@@ -53,7 +47,7 @@ export class EventBag extends BaseObject implements IPropertyBag {
                     oldVal: old,
                     newVal: null
                 });
-                this.raisePropertyChanged(name);
+                this.onBagPropChanged(name);
             }
             return;
         }
@@ -76,7 +70,8 @@ export class EventBag extends BaseObject implements IPropertyBag {
                     newVal: command
                 });
             }
-            this.raisePropertyChanged(name);
+
+            this.onBagPropChanged(name);
         }
     }
     trigger(name: string, args?: any) {
@@ -90,7 +85,7 @@ export class EventBag extends BaseObject implements IPropertyBag {
             command.execute(this, args);
     }
     toString() {
-        return PROP_BAG;
+        return "EventBag";
     }
     destroy() {
         if (!!this._dic) {

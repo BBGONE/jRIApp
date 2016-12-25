@@ -6,7 +6,7 @@ import { Checks } from "./checks";
 import { StringUtils } from "./strUtils";
 
 const checks = Checks, strUtils = StringUtils;
-const PROP_BAG: string = "IPBag", INDEX_PROP_RX = /(\b\w+\b)?\s*(\[.*?\])/gi, trimQuotsRX = /^(['"])+|(['"])+$/g,
+const INDEX_PROP_RX = /(\b\w+\b)?\s*(\[.*?\])/gi, trimQuotsRX = /^(['"])+|(['"])+$/g,
     trimBracketsRX = /^(\[)+|(\])+$/g, trimSpaceRX = /^\s+|\s+$/g, allTrims = [trimBracketsRX, trimSpaceRX, trimQuotsRX, trimSpaceRX];
 
 export class SysUtils {
@@ -14,9 +14,9 @@ export class SysUtils {
     static isBaseObj: (obj: any) => boolean = (obj) => { return false; };
     static isBinding: (obj: any) => boolean = (obj) => { return false; };
     static isPropBag: (obj: any) => boolean = (obj) => {
-        return SysUtils.isBaseObj(obj) && obj.toString() === PROP_BAG;
+        return !!obj && obj.isPropertyBag;
     };
-    
+
     //DUMMY implementations collection
     static isCollection: (obj: any) => boolean = (obj) => { return false; };
     static getItemByProp: (obj: any, prop: string) => any = (obj, prop) => { return null; };
@@ -75,8 +75,6 @@ export class SysUtils {
 
         return null;
     }
-
-    static PROP_BAG_NAME() { return PROP_BAG; }
 
     static getPathParts(path: string) {
         let parts: string[] = (!path) ? [] : path.split("."), parts2: string[] = [];

@@ -83,7 +83,7 @@ declare module "jriapp_ui/content/template" {
     }
 }
 declare module "jriapp_ui/utils/eventbag" {
-    import { BaseObject, IPropertyBag } from "jriapp_shared";
+    import { BasePropBag } from "jriapp_shared";
     import { ICommand } from "jriapp/mvvm";
     export const enum EVENT_CHANGE_TYPE {
         None = 0,
@@ -97,11 +97,10 @@ declare module "jriapp_ui/utils/eventbag" {
         oldVal: ICommand;
         newVal: ICommand;
     }
-    export class EventBag extends BaseObject implements IPropertyBag {
+    export class EventBag extends BasePropBag {
         private _dic;
         private _onChange;
         constructor(onChange: (sender: EventBag, args: IEventChangedArgs) => void);
-        _isHasProp(prop: string): boolean;
         getProp(name: string): ICommand;
         setProp(name: string, command: ICommand): void;
         trigger(name: string, args?: any): void;
@@ -110,23 +109,20 @@ declare module "jriapp_ui/utils/eventbag" {
     }
 }
 declare module "jriapp_ui/utils/propbag" {
-    import { BaseObject, IPropertyBag } from "jriapp_shared";
-    export class PropertyBag extends BaseObject implements IPropertyBag {
+    import { BasePropBag } from "jriapp_shared";
+    export class PropertyBag extends BasePropBag {
         private _el;
         constructor(el: HTMLElement);
-        _isHasProp(prop: string): boolean;
         getProp(name: string): any;
         setProp(name: string, val: any): void;
         toString(): string;
     }
 }
 declare module "jriapp_ui/utils/cssbag" {
-    import { BaseObject, IPropertyBag } from "jriapp_shared";
-    export class CSSBag extends BaseObject implements IPropertyBag {
+    import { BasePropBag } from "jriapp_shared";
+    export class CSSBag extends BasePropBag {
         private _el;
         constructor(el: Element);
-        _isHasProp(prop: string): boolean;
-        getProp(name: string): any;
         setProp(name: string, val: any): void;
         toString(): string;
     }
