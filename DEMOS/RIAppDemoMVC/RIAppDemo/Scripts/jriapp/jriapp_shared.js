@@ -774,7 +774,7 @@ define("jriapp_shared/lang", ["require", "exports", "jriapp_shared/utils/coreuti
 define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/utils/checks", "jriapp_shared/utils/strutils"], function (require, exports, checks_2, strUtils_1) {
     "use strict";
     var checks = checks_2.Checks, strUtils = strUtils_1.StringUtils;
-    var PROP_BAG = "IPBag", INDEX_PROP_RX = /(\b\w+\b)?\s*(\[.*?\])/gi, trimQuotsRX = /^(['"])+|(['"])+$/g, trimBracketsRX = /^(\[)+|(\])+$/g, trimSpaceRX = /^\s+|\s+$/g, allTrims = [trimBracketsRX, trimSpaceRX, trimQuotsRX, trimSpaceRX];
+    var INDEX_PROP_RX = /(\b\w+\b)?\s*(\[.*?\])/gi, trimQuotsRX = /^(['"])+|(['"])+$/g, trimBracketsRX = /^(\[)+|(\])+$/g, trimSpaceRX = /^\s+|\s+$/g, allTrims = [trimBracketsRX, trimSpaceRX, trimQuotsRX, trimSpaceRX];
     var SysUtils = (function () {
         function SysUtils() {
         }
@@ -827,7 +827,6 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/uti
             }
             return null;
         };
-        SysUtils.PROP_BAG_NAME = function () { return PROP_BAG; };
         SysUtils.getPathParts = function (path) {
             var parts = (!path) ? [] : path.split("."), parts2 = [];
             parts.forEach(function (part) {
@@ -920,7 +919,7 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/uti
         SysUtils.isBaseObj = function (obj) { return false; };
         SysUtils.isBinding = function (obj) { return false; };
         SysUtils.isPropBag = function (obj) {
-            return SysUtils.isBaseObj(obj) && obj.toString() === PROP_BAG;
+            return !!obj && obj.isPropertyBag;
         };
         SysUtils.isCollection = function (obj) { return false; };
         SysUtils.getItemByProp = function (obj, prop) { return null; };
@@ -1343,272 +1342,41 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
     }());
     exports.BaseObject = BaseObject;
 });
-define("jriapp_shared/collection/const", ["require", "exports"], function (require, exports) {
+define("jriapp_shared/utils/basebag", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/strutils"], function (require, exports, object_1, strutils_3) {
     "use strict";
-    (function (DATE_CONVERSION) {
-        DATE_CONVERSION[DATE_CONVERSION["None"] = 0] = "None";
-        DATE_CONVERSION[DATE_CONVERSION["ServerLocalToClientLocal"] = 1] = "ServerLocalToClientLocal";
-        DATE_CONVERSION[DATE_CONVERSION["UtcToClientLocal"] = 2] = "UtcToClientLocal";
-    })(exports.DATE_CONVERSION || (exports.DATE_CONVERSION = {}));
-    var DATE_CONVERSION = exports.DATE_CONVERSION;
-    (function (DATA_TYPE) {
-        DATA_TYPE[DATA_TYPE["None"] = 0] = "None";
-        DATA_TYPE[DATA_TYPE["String"] = 1] = "String";
-        DATA_TYPE[DATA_TYPE["Bool"] = 2] = "Bool";
-        DATA_TYPE[DATA_TYPE["Integer"] = 3] = "Integer";
-        DATA_TYPE[DATA_TYPE["Decimal"] = 4] = "Decimal";
-        DATA_TYPE[DATA_TYPE["Float"] = 5] = "Float";
-        DATA_TYPE[DATA_TYPE["DateTime"] = 6] = "DateTime";
-        DATA_TYPE[DATA_TYPE["Date"] = 7] = "Date";
-        DATA_TYPE[DATA_TYPE["Time"] = 8] = "Time";
-        DATA_TYPE[DATA_TYPE["Guid"] = 9] = "Guid";
-        DATA_TYPE[DATA_TYPE["Binary"] = 10] = "Binary";
-    })(exports.DATA_TYPE || (exports.DATA_TYPE = {}));
-    var DATA_TYPE = exports.DATA_TYPE;
-    (function (FIELD_TYPE) {
-        FIELD_TYPE[FIELD_TYPE["None"] = 0] = "None";
-        FIELD_TYPE[FIELD_TYPE["ClientOnly"] = 1] = "ClientOnly";
-        FIELD_TYPE[FIELD_TYPE["Calculated"] = 2] = "Calculated";
-        FIELD_TYPE[FIELD_TYPE["Navigation"] = 3] = "Navigation";
-        FIELD_TYPE[FIELD_TYPE["RowTimeStamp"] = 4] = "RowTimeStamp";
-        FIELD_TYPE[FIELD_TYPE["Object"] = 5] = "Object";
-        FIELD_TYPE[FIELD_TYPE["ServerCalculated"] = 6] = "ServerCalculated";
-    })(exports.FIELD_TYPE || (exports.FIELD_TYPE = {}));
-    var FIELD_TYPE = exports.FIELD_TYPE;
-    (function (SORT_ORDER) {
-        SORT_ORDER[SORT_ORDER["ASC"] = 0] = "ASC";
-        SORT_ORDER[SORT_ORDER["DESC"] = 1] = "DESC";
-    })(exports.SORT_ORDER || (exports.SORT_ORDER = {}));
-    var SORT_ORDER = exports.SORT_ORDER;
-    (function (FILTER_TYPE) {
-        FILTER_TYPE[FILTER_TYPE["Equals"] = 0] = "Equals";
-        FILTER_TYPE[FILTER_TYPE["Between"] = 1] = "Between";
-        FILTER_TYPE[FILTER_TYPE["StartsWith"] = 2] = "StartsWith";
-        FILTER_TYPE[FILTER_TYPE["EndsWith"] = 3] = "EndsWith";
-        FILTER_TYPE[FILTER_TYPE["Contains"] = 4] = "Contains";
-        FILTER_TYPE[FILTER_TYPE["Gt"] = 5] = "Gt";
-        FILTER_TYPE[FILTER_TYPE["Lt"] = 6] = "Lt";
-        FILTER_TYPE[FILTER_TYPE["GtEq"] = 7] = "GtEq";
-        FILTER_TYPE[FILTER_TYPE["LtEq"] = 8] = "LtEq";
-        FILTER_TYPE[FILTER_TYPE["NotEq"] = 9] = "NotEq";
-    })(exports.FILTER_TYPE || (exports.FILTER_TYPE = {}));
-    var FILTER_TYPE = exports.FILTER_TYPE;
-    (function (COLL_CHANGE_TYPE) {
-        COLL_CHANGE_TYPE[COLL_CHANGE_TYPE["Remove"] = 0] = "Remove";
-        COLL_CHANGE_TYPE[COLL_CHANGE_TYPE["Add"] = 1] = "Add";
-        COLL_CHANGE_TYPE[COLL_CHANGE_TYPE["Reset"] = 2] = "Reset";
-        COLL_CHANGE_TYPE[COLL_CHANGE_TYPE["Remap"] = 3] = "Remap";
-    })(exports.COLL_CHANGE_TYPE || (exports.COLL_CHANGE_TYPE = {}));
-    var COLL_CHANGE_TYPE = exports.COLL_CHANGE_TYPE;
-    (function (COLL_CHANGE_REASON) {
-        COLL_CHANGE_REASON[COLL_CHANGE_REASON["None"] = 0] = "None";
-        COLL_CHANGE_REASON[COLL_CHANGE_REASON["PageChange"] = 1] = "PageChange";
-        COLL_CHANGE_REASON[COLL_CHANGE_REASON["Sorting"] = 2] = "Sorting";
-    })(exports.COLL_CHANGE_REASON || (exports.COLL_CHANGE_REASON = {}));
-    var COLL_CHANGE_REASON = exports.COLL_CHANGE_REASON;
-    (function (COLL_CHANGE_OPER) {
-        COLL_CHANGE_OPER[COLL_CHANGE_OPER["None"] = 0] = "None";
-        COLL_CHANGE_OPER[COLL_CHANGE_OPER["Fill"] = 1] = "Fill";
-        COLL_CHANGE_OPER[COLL_CHANGE_OPER["Attach"] = 2] = "Attach";
-        COLL_CHANGE_OPER[COLL_CHANGE_OPER["Remove"] = 3] = "Remove";
-        COLL_CHANGE_OPER[COLL_CHANGE_OPER["Commit"] = 4] = "Commit";
-        COLL_CHANGE_OPER[COLL_CHANGE_OPER["Sort"] = 5] = "Sort";
-    })(exports.COLL_CHANGE_OPER || (exports.COLL_CHANGE_OPER = {}));
-    var COLL_CHANGE_OPER = exports.COLL_CHANGE_OPER;
-    (function (ITEM_STATUS) {
-        ITEM_STATUS[ITEM_STATUS["None"] = 0] = "None";
-        ITEM_STATUS[ITEM_STATUS["Added"] = 1] = "Added";
-        ITEM_STATUS[ITEM_STATUS["Updated"] = 2] = "Updated";
-        ITEM_STATUS[ITEM_STATUS["Deleted"] = 3] = "Deleted";
-    })(exports.ITEM_STATUS || (exports.ITEM_STATUS = {}));
-    var ITEM_STATUS = exports.ITEM_STATUS;
-});
-define("jriapp_shared/collection/int", ["require", "exports"], function (require, exports) {
-    "use strict";
-    exports.PROP_NAME = {
-        isEditing: "isEditing",
-        currentItem: "currentItem",
-        count: "count",
-        totalCount: "totalCount",
-        pageCount: "pageCount",
-        pageSize: "pageSize",
-        pageIndex: "pageIndex",
-        isUpdating: "isUpdating",
-        isLoading: "isLoading"
-    };
-    exports.ITEM_EVENTS = {
-        errors_changed: "errors_changed",
-        destroyed: "destroyed"
-    };
-});
-define("jriapp_shared/utils/waitqueue", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/coreutils"], function (require, exports, object_1, coreutils_3) {
-    "use strict";
-    var coreUtils = coreutils_3.CoreUtils;
-    var WaitQueue = (function (_super) {
-        __extends(WaitQueue, _super);
-        function WaitQueue(owner) {
-            _super.call(this);
-            this._objId = coreUtils.getNewID("wq");
-            this._owner = owner;
-            this._queue = {};
+    var strUtils = strutils_3.StringUtils;
+    var BasePropBag = (function (_super) {
+        __extends(BasePropBag, _super);
+        function BasePropBag() {
+            _super.apply(this, arguments);
         }
-        WaitQueue.prototype._checkQueue = function (prop, value) {
-            if (!this._owner || this._owner.getIsDestroyCalled()) {
-                return;
+        BasePropBag.prototype._isHasProp = function (prop) {
+            if (strUtils.startsWith(prop, "[")) {
+                return true;
             }
-            var self = this, propQueue = this._queue[prop], task;
-            if (!propQueue || propQueue.length === 0) {
-                return;
-            }
-            var i, firstWinsTask = null, groups = { group: null, tasks: [] }, found = [], forRemoval = [];
-            for (i = 0; i < propQueue.length; i += 1) {
-                task = propQueue[i];
-                if (task.predicate(value)) {
-                    if (!task.group && groups.tasks.length === 0) {
-                        firstWinsTask = task;
-                        break;
-                    }
-                    else if (!!task.group) {
-                        if (!groups.group) {
-                            groups.group = task.group;
-                        }
-                        if (groups.group === task.group) {
-                            groups.tasks.push(task);
-                        }
-                    }
-                }
-            }
-            if (!!firstWinsTask) {
-                found.push(firstWinsTask);
-                forRemoval.push(firstWinsTask);
-            }
-            else {
-                while (groups.tasks.length > 0) {
-                    task = groups.tasks.pop();
-                    if (!firstWinsTask) {
-                        firstWinsTask = task;
-                    }
-                    if (firstWinsTask.lastWins) {
-                        if (found.length === 0)
-                            found.push(task);
-                    }
-                    else
-                        found.push(task);
-                    forRemoval.push(task);
-                }
-            }
-            try {
-                if (found.length > 0) {
-                    i = propQueue.length;
-                    while (i > 0) {
-                        i -= 1;
-                        if (forRemoval.indexOf(propQueue[i]) > -1) {
-                            propQueue.splice(i, 1);
-                        }
-                    }
-                    found.forEach(function (task) {
-                        try {
-                            task.action.apply(self._owner, task.args);
-                        }
-                        catch (ex) {
-                            self._owner.handleError(ex, self);
-                        }
-                    });
-                }
-            }
-            finally {
-                if (propQueue.length === 0) {
-                    delete this._queue[prop];
-                    this._owner.removeOnPropertyChange(prop, this.uniqueID);
-                }
-            }
+            return _super.prototype._isHasProp.call(this, prop);
         };
-        WaitQueue.prototype.enQueue = function (item) {
-            var opts = coreUtils.extend({
-                prop: "",
-                groupName: null,
-                predicate: null,
-                action: null,
-                actionArgs: [],
-                lastWins: false
-            }, item);
-            var self = this;
-            if (!this._owner)
-                return;
-            var property = opts.prop, propQueue = this._queue[property];
-            if (!propQueue) {
-                propQueue = [];
-                this._queue[property] = propQueue;
-                this._owner.addOnPropertyChange(property, function (s, a) {
-                    setTimeout(function () {
-                        if (self.getIsDestroyCalled())
-                            return;
-                        self._checkQueue(property, self._owner[property]);
-                    }, 0);
-                }, self.uniqueID);
-            }
-            var task = {
-                predicate: opts.predicate,
-                action: opts.action,
-                group: opts.groupName,
-                lastWins: opts.lastWins,
-                args: (!opts.actionArgs ? [] : opts.actionArgs)
-            };
-            propQueue.push(task);
-            self._checkQueue(property, self._owner[property]);
-            setTimeout(function () {
-                if (self.getIsDestroyCalled())
-                    return;
-                self._checkQueue(property, self._owner[property]);
-            }, 0);
+        BasePropBag.prototype.onBagPropChanged = function (name) {
+            this.raisePropertyChanged("[" + name + "]");
         };
-        WaitQueue.prototype.destroy = function () {
-            if (this._isDestroyed)
-                return;
-            this._isDestroyCalled = true;
-            this._owner.removeNSHandlers(this.uniqueID);
-            this._queue = {};
-            this._owner = null;
-            _super.prototype.destroy.call(this);
+        BasePropBag.prototype.getProp = function (name) {
+            return void 0;
         };
-        WaitQueue.prototype.toString = function () {
-            return "WaitQueue " + this._objId;
+        BasePropBag.prototype.setProp = function (name, val) {
         };
-        Object.defineProperty(WaitQueue.prototype, "uniqueID", {
+        Object.defineProperty(BasePropBag.prototype, "isPropertyBag", {
             get: function () {
-                return this._objId;
+                return true;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(WaitQueue.prototype, "owner", {
-            get: function () {
-                return this._owner;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return WaitQueue;
+        BasePropBag.prototype.toString = function () {
+            return "BasePropBag";
+        };
+        return BasePropBag;
     }(object_1.BaseObject));
-    exports.WaitQueue = WaitQueue;
-});
-define("jriapp_shared/utils/logger", ["require", "exports"], function (require, exports) {
-    "use strict";
-    var LOGGER = (function () {
-        function LOGGER() {
-        }
-        LOGGER.log = function (str) {
-            console.log(str);
-        };
-        LOGGER.warn = function (str) {
-            console.warn(str);
-        };
-        LOGGER.error = function (str) {
-            console.error(str);
-        };
-        return LOGGER;
-    }());
-    exports.LOGGER = LOGGER;
+    exports.BasePropBag = BasePropBag;
 });
 define("jriapp_shared/utils/queue", ["require", "exports", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/error"], function (require, exports, checks_5, arrhelper_2, error_2) {
     "use strict";
@@ -1950,29 +1718,211 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
     }());
     exports.AbortablePromise = AbortablePromise;
 });
-define("jriapp_shared/utils/async", ["require", "exports", "jriapp_shared/utils/deferred", "jriapp_shared/utils/checks"], function (require, exports, deferred_1, checks_7) {
+define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/utils/deferred"], function (require, exports, deferred_1) {
+    "use strict";
+    var Debounce = (function () {
+        function Debounce(interval) {
+            if (interval === void 0) { interval = 0; }
+            this._timer = null;
+            this._interval = !interval ? 0 : interval;
+            this._fn = null;
+        }
+        Debounce.prototype.enqueue = function (fn) {
+            var _this = this;
+            if (this.IsDestroyed)
+                return;
+            if (!fn)
+                throw new Error("Debounce: Invalid operation");
+            this._fn = fn;
+            if (!this._timer) {
+                var callback = function () {
+                    var fn = _this._fn;
+                    _this._timer = null;
+                    _this._fn = null;
+                    if (!!fn) {
+                        fn();
+                    }
+                };
+                if (!this._interval) {
+                    this._timer = deferred_1.getTaskQueue().enque(callback);
+                }
+                else {
+                    this._timer = setTimeout(callback, this._interval);
+                }
+            }
+        };
+        Debounce.prototype.cancel = function () {
+            this._fn = null;
+        };
+        Debounce.prototype.destroy = function () {
+            if (!!this._timer) {
+                if (!this._interval) {
+                    deferred_1.getTaskQueue().cancel(this._timer);
+                }
+                else {
+                    clearTimeout(this._timer);
+                }
+            }
+            this._timer = void 0;
+            this._fn = null;
+        };
+        Object.defineProperty(Debounce.prototype, "interval", {
+            get: function () {
+                return this._interval;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Debounce.prototype, "IsDestroyed", {
+            get: function () {
+                return this._timer === void 0;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return Debounce;
+    }());
+    exports.Debounce = Debounce;
+});
+define("jriapp_shared/collection/const", ["require", "exports"], function (require, exports) {
+    "use strict";
+    (function (DATE_CONVERSION) {
+        DATE_CONVERSION[DATE_CONVERSION["None"] = 0] = "None";
+        DATE_CONVERSION[DATE_CONVERSION["ServerLocalToClientLocal"] = 1] = "ServerLocalToClientLocal";
+        DATE_CONVERSION[DATE_CONVERSION["UtcToClientLocal"] = 2] = "UtcToClientLocal";
+    })(exports.DATE_CONVERSION || (exports.DATE_CONVERSION = {}));
+    var DATE_CONVERSION = exports.DATE_CONVERSION;
+    (function (DATA_TYPE) {
+        DATA_TYPE[DATA_TYPE["None"] = 0] = "None";
+        DATA_TYPE[DATA_TYPE["String"] = 1] = "String";
+        DATA_TYPE[DATA_TYPE["Bool"] = 2] = "Bool";
+        DATA_TYPE[DATA_TYPE["Integer"] = 3] = "Integer";
+        DATA_TYPE[DATA_TYPE["Decimal"] = 4] = "Decimal";
+        DATA_TYPE[DATA_TYPE["Float"] = 5] = "Float";
+        DATA_TYPE[DATA_TYPE["DateTime"] = 6] = "DateTime";
+        DATA_TYPE[DATA_TYPE["Date"] = 7] = "Date";
+        DATA_TYPE[DATA_TYPE["Time"] = 8] = "Time";
+        DATA_TYPE[DATA_TYPE["Guid"] = 9] = "Guid";
+        DATA_TYPE[DATA_TYPE["Binary"] = 10] = "Binary";
+    })(exports.DATA_TYPE || (exports.DATA_TYPE = {}));
+    var DATA_TYPE = exports.DATA_TYPE;
+    (function (FIELD_TYPE) {
+        FIELD_TYPE[FIELD_TYPE["None"] = 0] = "None";
+        FIELD_TYPE[FIELD_TYPE["ClientOnly"] = 1] = "ClientOnly";
+        FIELD_TYPE[FIELD_TYPE["Calculated"] = 2] = "Calculated";
+        FIELD_TYPE[FIELD_TYPE["Navigation"] = 3] = "Navigation";
+        FIELD_TYPE[FIELD_TYPE["RowTimeStamp"] = 4] = "RowTimeStamp";
+        FIELD_TYPE[FIELD_TYPE["Object"] = 5] = "Object";
+        FIELD_TYPE[FIELD_TYPE["ServerCalculated"] = 6] = "ServerCalculated";
+    })(exports.FIELD_TYPE || (exports.FIELD_TYPE = {}));
+    var FIELD_TYPE = exports.FIELD_TYPE;
+    (function (SORT_ORDER) {
+        SORT_ORDER[SORT_ORDER["ASC"] = 0] = "ASC";
+        SORT_ORDER[SORT_ORDER["DESC"] = 1] = "DESC";
+    })(exports.SORT_ORDER || (exports.SORT_ORDER = {}));
+    var SORT_ORDER = exports.SORT_ORDER;
+    (function (FILTER_TYPE) {
+        FILTER_TYPE[FILTER_TYPE["Equals"] = 0] = "Equals";
+        FILTER_TYPE[FILTER_TYPE["Between"] = 1] = "Between";
+        FILTER_TYPE[FILTER_TYPE["StartsWith"] = 2] = "StartsWith";
+        FILTER_TYPE[FILTER_TYPE["EndsWith"] = 3] = "EndsWith";
+        FILTER_TYPE[FILTER_TYPE["Contains"] = 4] = "Contains";
+        FILTER_TYPE[FILTER_TYPE["Gt"] = 5] = "Gt";
+        FILTER_TYPE[FILTER_TYPE["Lt"] = 6] = "Lt";
+        FILTER_TYPE[FILTER_TYPE["GtEq"] = 7] = "GtEq";
+        FILTER_TYPE[FILTER_TYPE["LtEq"] = 8] = "LtEq";
+        FILTER_TYPE[FILTER_TYPE["NotEq"] = 9] = "NotEq";
+    })(exports.FILTER_TYPE || (exports.FILTER_TYPE = {}));
+    var FILTER_TYPE = exports.FILTER_TYPE;
+    (function (COLL_CHANGE_TYPE) {
+        COLL_CHANGE_TYPE[COLL_CHANGE_TYPE["Remove"] = 0] = "Remove";
+        COLL_CHANGE_TYPE[COLL_CHANGE_TYPE["Add"] = 1] = "Add";
+        COLL_CHANGE_TYPE[COLL_CHANGE_TYPE["Reset"] = 2] = "Reset";
+        COLL_CHANGE_TYPE[COLL_CHANGE_TYPE["Remap"] = 3] = "Remap";
+    })(exports.COLL_CHANGE_TYPE || (exports.COLL_CHANGE_TYPE = {}));
+    var COLL_CHANGE_TYPE = exports.COLL_CHANGE_TYPE;
+    (function (COLL_CHANGE_REASON) {
+        COLL_CHANGE_REASON[COLL_CHANGE_REASON["None"] = 0] = "None";
+        COLL_CHANGE_REASON[COLL_CHANGE_REASON["PageChange"] = 1] = "PageChange";
+        COLL_CHANGE_REASON[COLL_CHANGE_REASON["Sorting"] = 2] = "Sorting";
+    })(exports.COLL_CHANGE_REASON || (exports.COLL_CHANGE_REASON = {}));
+    var COLL_CHANGE_REASON = exports.COLL_CHANGE_REASON;
+    (function (COLL_CHANGE_OPER) {
+        COLL_CHANGE_OPER[COLL_CHANGE_OPER["None"] = 0] = "None";
+        COLL_CHANGE_OPER[COLL_CHANGE_OPER["Fill"] = 1] = "Fill";
+        COLL_CHANGE_OPER[COLL_CHANGE_OPER["Attach"] = 2] = "Attach";
+        COLL_CHANGE_OPER[COLL_CHANGE_OPER["Remove"] = 3] = "Remove";
+        COLL_CHANGE_OPER[COLL_CHANGE_OPER["Commit"] = 4] = "Commit";
+        COLL_CHANGE_OPER[COLL_CHANGE_OPER["Sort"] = 5] = "Sort";
+    })(exports.COLL_CHANGE_OPER || (exports.COLL_CHANGE_OPER = {}));
+    var COLL_CHANGE_OPER = exports.COLL_CHANGE_OPER;
+    (function (ITEM_STATUS) {
+        ITEM_STATUS[ITEM_STATUS["None"] = 0] = "None";
+        ITEM_STATUS[ITEM_STATUS["Added"] = 1] = "Added";
+        ITEM_STATUS[ITEM_STATUS["Updated"] = 2] = "Updated";
+        ITEM_STATUS[ITEM_STATUS["Deleted"] = 3] = "Deleted";
+    })(exports.ITEM_STATUS || (exports.ITEM_STATUS = {}));
+    var ITEM_STATUS = exports.ITEM_STATUS;
+});
+define("jriapp_shared/collection/int", ["require", "exports"], function (require, exports) {
+    "use strict";
+    exports.PROP_NAME = {
+        isEditing: "isEditing",
+        currentItem: "currentItem",
+        count: "count",
+        totalCount: "totalCount",
+        pageCount: "pageCount",
+        pageSize: "pageSize",
+        pageIndex: "pageIndex",
+        isUpdating: "isUpdating",
+        isLoading: "isLoading"
+    };
+    exports.ITEM_EVENTS = {
+        errors_changed: "errors_changed",
+        destroyed: "destroyed"
+    };
+});
+define("jriapp_shared/utils/logger", ["require", "exports"], function (require, exports) {
+    "use strict";
+    var LOGGER = (function () {
+        function LOGGER() {
+        }
+        LOGGER.log = function (str) {
+            console.log(str);
+        };
+        LOGGER.warn = function (str) {
+            console.warn(str);
+        };
+        LOGGER.error = function (str) {
+            console.error(str);
+        };
+        return LOGGER;
+    }());
+    exports.LOGGER = LOGGER;
+});
+define("jriapp_shared/utils/async", ["require", "exports", "jriapp_shared/utils/deferred", "jriapp_shared/utils/checks"], function (require, exports, deferred_2, checks_7) {
     "use strict";
     var checks = checks_7.Checks;
     var AsyncUtils = (function () {
         function AsyncUtils() {
         }
         AsyncUtils.createDeferred = function () {
-            return deferred_1.createDefer();
+            return deferred_2.createDefer();
         };
         AsyncUtils.createSyncDeferred = function () {
-            return deferred_1.createSyncDefer();
+            return deferred_2.createSyncDefer();
         };
         AsyncUtils.whenAll = function (args) {
-            return deferred_1.whenAll(args);
+            return deferred_2.whenAll(args);
         };
         AsyncUtils.race = function (promises) {
-            return deferred_1.race(promises);
+            return deferred_2.race(promises);
         };
         AsyncUtils.getTaskQueue = function () {
-            return deferred_1.getTaskQueue();
+            return deferred_2.getTaskQueue();
         };
         AsyncUtils.delay = function (func, time) {
-            var deferred = deferred_1.createDefer();
+            var deferred = deferred_2.createDefer();
             setTimeout(function () {
                 try {
                     deferred.resolve(func());
@@ -1997,9 +1947,9 @@ define("jriapp_shared/utils/async", ["require", "exports", "jriapp_shared/utils/
     }());
     exports.AsyncUtils = AsyncUtils;
 });
-define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/strutils", "jriapp_shared/errors", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/deferred", "jriapp_shared/utils/async"], function (require, exports, strUtils_3, errors_3, coreutils_4, deferred_2, async_1) {
+define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/strutils", "jriapp_shared/errors", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/deferred", "jriapp_shared/utils/async"], function (require, exports, strUtils_3, errors_3, coreutils_3, deferred_3, async_1) {
     "use strict";
-    var coreUtils = coreutils_4.CoreUtils, strUtils = strUtils_3.StringUtils, _async = async_1.AsyncUtils;
+    var coreUtils = coreutils_3.CoreUtils, strUtils = strUtils_3.StringUtils, _async = async_1.AsyncUtils;
     var HttpUtils = (function () {
         function HttpUtils() {
         }
@@ -2045,12 +1995,12 @@ define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/s
             var _headers = coreUtils.merge(headers, { "Content-Type": "application/json; charset=utf-8" });
             var deferred = _async.createDeferred(), req = HttpUtils._getXMLRequest(url, "POST", deferred, _headers);
             req.send(postData);
-            return new deferred_2.AbortablePromise(deferred, req);
+            return new deferred_3.AbortablePromise(deferred, req);
         };
         HttpUtils.getAjax = function (url, headers) {
             var deferred = _async.createDeferred(), req = HttpUtils._getXMLRequest(url, "GET", deferred, headers);
             req.send(null);
-            return new deferred_2.AbortablePromise(deferred, req);
+            return new deferred_3.AbortablePromise(deferred, req);
         };
         HttpUtils.defaultHeaders = {};
         HttpUtils.ajaxTimeOut = 600;
@@ -2226,26 +2176,177 @@ define("jriapp_shared/utils/dom", ["require", "exports"], function (require, exp
     }());
     exports.DomUtils = DomUtils;
 });
-define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug", "jriapp_shared/utils/error", "jriapp_shared/utils/logger", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/async", "jriapp_shared/utils/http", "jriapp_shared/utils/strutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/dom", "jriapp_shared/utils/deferred"], function (require, exports, coreutils_5, debug_3, error_3, logger_1, sysutils_2, async_2, http_1, strutils_3, checks_8, arrhelper_4, dom_1, deferred_3) {
+define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug", "jriapp_shared/utils/error", "jriapp_shared/utils/logger", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/async", "jriapp_shared/utils/http", "jriapp_shared/utils/strutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/dom", "jriapp_shared/utils/deferred"], function (require, exports, coreutils_4, debug_3, error_3, logger_1, sysutils_2, async_2, http_1, strutils_4, checks_8, arrhelper_4, dom_1, deferred_4) {
     "use strict";
     var Utils = (function () {
         function Utils() {
         }
         Utils.check = checks_8.Checks;
-        Utils.str = strutils_3.StringUtils;
+        Utils.str = strutils_4.StringUtils;
         Utils.arr = arrhelper_4.ArrayHelper;
         Utils.http = http_1.HttpUtils;
-        Utils.core = coreutils_5.CoreUtils;
+        Utils.core = coreutils_4.CoreUtils;
         Utils.defer = async_2.AsyncUtils;
         Utils.err = error_3.ERROR;
         Utils.log = logger_1.LOGGER;
         Utils.debug = debug_3.DEBUG;
         Utils.sys = sysutils_2.SysUtils;
         Utils.dom = dom_1.DomUtils;
-        Utils.queue = deferred_3.getTaskQueue();
+        Utils.queue = deferred_4.getTaskQueue();
         return Utils;
     }());
     exports.Utils = Utils;
+});
+define("jriapp_shared/utils/waitqueue", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/coreutils"], function (require, exports, object_2, coreutils_5) {
+    "use strict";
+    var coreUtils = coreutils_5.CoreUtils;
+    var WaitQueue = (function (_super) {
+        __extends(WaitQueue, _super);
+        function WaitQueue(owner) {
+            _super.call(this);
+            this._objId = coreUtils.getNewID("wq");
+            this._owner = owner;
+            this._queue = {};
+        }
+        WaitQueue.prototype._checkQueue = function (prop, value) {
+            if (!this._owner || this._owner.getIsDestroyCalled()) {
+                return;
+            }
+            var self = this, propQueue = this._queue[prop], task;
+            if (!propQueue || propQueue.length === 0) {
+                return;
+            }
+            var i, firstWinsTask = null, groups = { group: null, tasks: [] }, found = [], forRemoval = [];
+            for (i = 0; i < propQueue.length; i += 1) {
+                task = propQueue[i];
+                if (task.predicate(value)) {
+                    if (!task.group && groups.tasks.length === 0) {
+                        firstWinsTask = task;
+                        break;
+                    }
+                    else if (!!task.group) {
+                        if (!groups.group) {
+                            groups.group = task.group;
+                        }
+                        if (groups.group === task.group) {
+                            groups.tasks.push(task);
+                        }
+                    }
+                }
+            }
+            if (!!firstWinsTask) {
+                found.push(firstWinsTask);
+                forRemoval.push(firstWinsTask);
+            }
+            else {
+                while (groups.tasks.length > 0) {
+                    task = groups.tasks.pop();
+                    if (!firstWinsTask) {
+                        firstWinsTask = task;
+                    }
+                    if (firstWinsTask.lastWins) {
+                        if (found.length === 0)
+                            found.push(task);
+                    }
+                    else
+                        found.push(task);
+                    forRemoval.push(task);
+                }
+            }
+            try {
+                if (found.length > 0) {
+                    i = propQueue.length;
+                    while (i > 0) {
+                        i -= 1;
+                        if (forRemoval.indexOf(propQueue[i]) > -1) {
+                            propQueue.splice(i, 1);
+                        }
+                    }
+                    found.forEach(function (task) {
+                        try {
+                            task.action.apply(self._owner, task.args);
+                        }
+                        catch (ex) {
+                            self._owner.handleError(ex, self);
+                        }
+                    });
+                }
+            }
+            finally {
+                if (propQueue.length === 0) {
+                    delete this._queue[prop];
+                    this._owner.removeOnPropertyChange(prop, this.uniqueID);
+                }
+            }
+        };
+        WaitQueue.prototype.enQueue = function (item) {
+            var opts = coreUtils.extend({
+                prop: "",
+                groupName: null,
+                predicate: null,
+                action: null,
+                actionArgs: [],
+                lastWins: false
+            }, item);
+            var self = this;
+            if (!this._owner)
+                return;
+            var property = opts.prop, propQueue = this._queue[property];
+            if (!propQueue) {
+                propQueue = [];
+                this._queue[property] = propQueue;
+                this._owner.addOnPropertyChange(property, function (s, a) {
+                    setTimeout(function () {
+                        if (self.getIsDestroyCalled())
+                            return;
+                        self._checkQueue(property, self._owner[property]);
+                    }, 0);
+                }, self.uniqueID);
+            }
+            var task = {
+                predicate: opts.predicate,
+                action: opts.action,
+                group: opts.groupName,
+                lastWins: opts.lastWins,
+                args: (!opts.actionArgs ? [] : opts.actionArgs)
+            };
+            propQueue.push(task);
+            self._checkQueue(property, self._owner[property]);
+            setTimeout(function () {
+                if (self.getIsDestroyCalled())
+                    return;
+                self._checkQueue(property, self._owner[property]);
+            }, 0);
+        };
+        WaitQueue.prototype.destroy = function () {
+            if (this._isDestroyed)
+                return;
+            this._isDestroyCalled = true;
+            this._owner.removeNSHandlers(this.uniqueID);
+            this._queue = {};
+            this._owner = null;
+            _super.prototype.destroy.call(this);
+        };
+        WaitQueue.prototype.toString = function () {
+            return "WaitQueue " + this._objId;
+        };
+        Object.defineProperty(WaitQueue.prototype, "uniqueID", {
+            get: function () {
+                return this._objId;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(WaitQueue.prototype, "owner", {
+            get: function () {
+                return this._owner;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return WaitQueue;
+    }(object_2.BaseObject));
+    exports.WaitQueue = WaitQueue;
 });
 define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang"], function (require, exports, utils_1, lang_3) {
     "use strict";
@@ -2538,7 +2639,7 @@ define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_sha
     }());
     exports.Validations = Validations;
 });
-define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/utils", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/collection/validation"], function (require, exports, object_2, lang_5, waitqueue_1, utils_3, int_2, utils_4, validation_1) {
+define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/utils", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/collection/validation"], function (require, exports, object_3, lang_5, waitqueue_1, utils_3, int_2, utils_4, validation_1) {
     "use strict";
     var utils = utils_3.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, sys = utils.sys;
     sys.isCollection = function (obj) { return (!!obj && obj instanceof BaseCollection); };
@@ -3477,10 +3578,10 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             configurable: true
         });
         return BaseCollection;
-    }(object_2.BaseObject));
+    }(object_3.BaseObject));
     exports.BaseCollection = BaseCollection;
 });
-define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/utils/utils", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/collection/validation"], function (require, exports, object_3, lang_6, utils_5, int_3, utils_6, validation_2) {
+define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/utils/utils", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/collection/validation"], function (require, exports, object_4, lang_6, utils_5, int_3, utils_6, validation_2) {
     "use strict";
     var utils = utils_5.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, sys = utils.sys, ERROR = utils.err;
     var ItemAspect = (function (_super) {
@@ -3989,10 +4090,10 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             return obj.val;
         };
         return ItemAspect;
-    }(object_3.BaseObject));
+    }(object_4.BaseObject));
     exports.ItemAspect = ItemAspect;
 });
-define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/object", "jriapp_shared/collection/int"], function (require, exports, object_4, int_4) {
+define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/object", "jriapp_shared/collection/int"], function (require, exports, object_5, int_4) {
     "use strict";
     var CollectionItem = (function (_super) {
         __extends(CollectionItem, _super);
@@ -4042,7 +4143,7 @@ define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/ob
             return "CollectionItem";
         };
         return CollectionItem;
-    }(object_4.BaseObject));
+    }(object_5.BaseObject));
     exports.CollectionItem = CollectionItem;
 });
 define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/collection/base", "jriapp_shared/collection/aspect", "jriapp_shared/collection/validation"], function (require, exports, utils_7, lang_7, int_5, utils_8, base_1, aspect_1, validation_3) {
@@ -4247,7 +4348,306 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
     }(base_1.BaseCollection));
     exports.BaseList = BaseList;
 });
-define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/list"], function (require, exports, utils_9, lang_8, base_2, list_1) {
+define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/strutils", "jriapp_shared/utils/debounce", "jriapp_shared/collection/item", "jriapp_shared/collection/list"], function (require, exports, coreutils_6, strutils_5, debounce_1, item_1, list_1) {
+    "use strict";
+    var core = coreutils_6.CoreUtils, strUtils = strutils_5.StringUtils;
+    var AnyValListItem = (function (_super) {
+        __extends(AnyValListItem, _super);
+        function AnyValListItem(aspect) {
+            _super.call(this, aspect);
+        }
+        Object.defineProperty(AnyValListItem.prototype, "val", {
+            get: function () { return this._aspect._getProp('val'); },
+            set: function (v) { this._aspect._setProp('val', v); },
+            enumerable: true,
+            configurable: true
+        });
+        AnyValListItem.prototype.onBagPropChanged = function (name) {
+            this.raisePropertyChanged("[" + name + "]");
+        };
+        AnyValListItem.prototype._isHasProp = function (prop) {
+            if (strUtils.startsWith(prop, "[")) {
+                return true;
+            }
+            return _super.prototype._isHasProp.call(this, prop);
+        };
+        AnyValListItem.prototype.getProp = function (name) {
+            return core.getValue(this.val, name, '->');
+        };
+        AnyValListItem.prototype.setProp = function (name, val) {
+            var old = core.getValue(this.val, name, '->');
+            if (old !== val) {
+                core.setValue(this.val, name, val, false, '->');
+                this.onBagPropChanged(name);
+            }
+        };
+        Object.defineProperty(AnyValListItem.prototype, "isPropertyBag", {
+            get: function () {
+                return true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AnyValListItem.prototype, "list", {
+            get: function () {
+                return this._aspect.list;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        AnyValListItem.prototype.toString = function () {
+            return "AnyValListItem";
+        };
+        return AnyValListItem;
+    }(item_1.CollectionItem));
+    exports.AnyValListItem = AnyValListItem;
+    var AnyList = (function (_super) {
+        __extends(AnyList, _super);
+        function AnyList(onChanged) {
+            var _this = this;
+            _super.call(this, AnyValListItem, [{ name: 'val', dtype: 0 }]);
+            this._saveVal = null;
+            this._onChanged = onChanged;
+            this._debounce = new debounce_1.Debounce();
+            this.addOnBeginEdit(function (s, a) {
+                _this._saveVal = JSON.stringify(a.item.val);
+            });
+            this.addOnEndEdit(function (s, a) {
+                if (a.isCanceled) {
+                    _this._saveVal = null;
+                    return;
+                }
+                var oldVal = _this._saveVal, newVal = JSON.parse(JSON.stringify(a.item.val));
+                _this._saveVal = null;
+                if (oldVal !== newVal) {
+                    _this.onChanged();
+                }
+            });
+            this.addOnCollChanged(function (s, a) {
+                switch (a.changeType) {
+                    case 0:
+                        {
+                            _this.onChanged();
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            });
+            this.addOnItemAdding(function (s, a) {
+                a.item.val = {};
+            });
+        }
+        AnyList.prototype.destroy = function () {
+            if (this._isDestroyed)
+                return;
+            this._isDestroyCalled = true;
+            this._debounce.destroy();
+            this._onChanged = null;
+            _super.prototype.destroy.call(this);
+        };
+        AnyList.prototype.onChanged = function () {
+            var _this = this;
+            this._debounce.enqueue(function () {
+                if (!!_this._onChanged) {
+                    var arr = _this.items.map(function (item) {
+                        return item._aspect.vals["val"];
+                    });
+                    _this._onChanged(arr);
+                }
+            });
+        };
+        AnyList.prototype.setValues = function (values) {
+            var vals = values.map(function (val) {
+                return { val: val };
+            });
+            this.fillItems(vals, true);
+        };
+        AnyList.prototype.toString = function () {
+            return "AnyList";
+        };
+        return AnyList;
+    }(list_1.BaseList));
+    exports.AnyList = AnyList;
+});
+define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/basebag", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/strutils", "jriapp_shared/utils/debounce", "jriapp_shared/utils/anylist"], function (require, exports, object_6, basebag_1, coreutils_7, strutils_6, debounce_2, anylist_1) {
+    "use strict";
+    var core = coreutils_7.CoreUtils, strUtils = strutils_6.StringUtils;
+    var JsonBag = (function (_super) {
+        __extends(JsonBag, _super);
+        function JsonBag(json, jsonChanged) {
+            _super.call(this);
+            this._json = void 0;
+            this._val = {};
+            this._saveVal = null;
+            this._debounce = new debounce_2.Debounce();
+            this.resetJson(json);
+            this._jsonChanged = jsonChanged;
+        }
+        JsonBag.prototype.destroy = function () {
+            if (this._isDestroyed)
+                return;
+            this._isDestroyCalled = true;
+            this._debounce.destroy();
+            this._jsonChanged = null;
+            this._json = void 0;
+            this._val = {};
+            _super.prototype.destroy.call(this);
+        };
+        JsonBag.prototype.onChanged = function () {
+            var _this = this;
+            this._debounce.enqueue(function () {
+                if (!!_this._jsonChanged) {
+                    _this._jsonChanged(_this._json);
+                }
+            });
+        };
+        JsonBag.prototype.resetJson = function (json) {
+            if (json === void 0) { json = null; }
+            if (this._json !== json) {
+                this._json = json;
+                this._val = (!json ? {} : JSON.parse(json));
+                this.raisePropertyChanged("json");
+                this.raisePropertyChanged("val");
+            }
+        };
+        JsonBag.prototype.updateJson = function () {
+            var json = JSON.stringify(this._val);
+            if (json !== this._json) {
+                this._json = json;
+                this.onChanged();
+                this.raisePropertyChanged("json");
+                return true;
+            }
+            return false;
+        };
+        JsonBag.prototype.beginEdit = function () {
+            if (!this.isEditing) {
+                this._saveVal = JSON.parse(JSON.stringify(this._val));
+                return true;
+            }
+            return false;
+        };
+        JsonBag.prototype.endEdit = function () {
+            if (this.isEditing) {
+                this._saveVal = null;
+                this.updateJson();
+                return true;
+            }
+            return false;
+        };
+        JsonBag.prototype.cancelEdit = function () {
+            if (this.isEditing) {
+                this._val = this._saveVal;
+                this._saveVal = null;
+                return true;
+            }
+            return false;
+        };
+        Object.defineProperty(JsonBag.prototype, "isEditing", {
+            get: function () {
+                return !!this._saveVal;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        JsonBag.prototype.getProp = function (name) {
+            return core.getValue(this._val, name, '->');
+        };
+        JsonBag.prototype.setProp = function (name, val) {
+            var old = core.getValue(this._val, name, '->');
+            if (old !== val) {
+                core.setValue(this._val, name, val, false, '->');
+                this.onBagPropChanged(name);
+            }
+        };
+        Object.defineProperty(JsonBag.prototype, "val", {
+            get: function () {
+                return this._val;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(JsonBag.prototype, "json", {
+            get: function () {
+                return this._json;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        JsonBag.prototype.toString = function () {
+            return "JsonBag";
+        };
+        return JsonBag;
+    }(basebag_1.BasePropBag));
+    exports.JsonBag = JsonBag;
+    var JsonArray = (function (_super) {
+        __extends(JsonArray, _super);
+        function JsonArray(owner, pathToArray) {
+            var _this = this;
+            _super.call(this);
+            this._list = null;
+            this._objId = core.getNewID("jsn");
+            this._owner = owner;
+            this._pathToArray = pathToArray;
+            this.owner.addOnPropertyChange("val", function () {
+                if (!!_this._list)
+                    _this._list.setValues(_this.getArray());
+            }, this._objId);
+        }
+        JsonArray.prototype.destroy = function () {
+            if (this._isDestroyed)
+                return;
+            this._isDestroyCalled = true;
+            this._owner.removeNSHandlers(this._objId);
+            this._list.destroy();
+            this._list = null;
+            this._owner = null;
+            _super.prototype.destroy.call(this);
+        };
+        JsonArray.prototype.updateArray = function (arr) {
+            core.setValue(this._owner.val, this._pathToArray, arr, false, '->');
+            this._owner.updateJson();
+        };
+        JsonArray.prototype.getArray = function () {
+            if (!this._owner)
+                return [];
+            var res = core.getValue(this._owner.val, this._pathToArray, '->');
+            return (!res) ? [] : res;
+        };
+        Object.defineProperty(JsonArray.prototype, "pathToArray", {
+            get: function () {
+                return this._pathToArray;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(JsonArray.prototype, "owner", {
+            get: function () {
+                return this._owner;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(JsonArray.prototype, "list", {
+            get: function () {
+                var _this = this;
+                if (!!this._owner && !this._list) {
+                    this._list = new anylist_1.AnyList(function (vals) {
+                        _this.updateArray(vals);
+                    });
+                    this._list.setValues(this.getArray());
+                }
+                return this._list;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return JsonArray;
+    }(object_6.BaseObject));
+    exports.JsonArray = JsonArray;
+});
+define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/list"], function (require, exports, utils_9, lang_8, base_2, list_2) {
     "use strict";
     var utils = utils_9.Utils, strUtils = utils.str, checks = utils.check, sys = utils.sys;
     sys.getItemByProp = function (obj, prop) {
@@ -4318,74 +4718,8 @@ define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_sha
             return "BaseDictionary";
         };
         return BaseDictionary;
-    }(list_1.BaseList));
+    }(list_2.BaseList));
     exports.BaseDictionary = BaseDictionary;
-});
-define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/utils/deferred"], function (require, exports, deferred_4) {
-    "use strict";
-    var Debounce = (function () {
-        function Debounce(interval) {
-            if (interval === void 0) { interval = 0; }
-            this._timer = null;
-            this._interval = !interval ? 0 : interval;
-            this._fn = null;
-        }
-        Debounce.prototype.enqueue = function (fn) {
-            var _this = this;
-            if (this.IsDestroyed)
-                return;
-            if (!fn)
-                throw new Error("Debounce: Invalid operation");
-            this._fn = fn;
-            if (!this._timer) {
-                var callback = function () {
-                    var fn = _this._fn;
-                    _this._timer = null;
-                    _this._fn = null;
-                    if (!!fn) {
-                        fn();
-                    }
-                };
-                if (!this._interval) {
-                    this._timer = deferred_4.getTaskQueue().enque(callback);
-                }
-                else {
-                    this._timer = setTimeout(callback, this._interval);
-                }
-            }
-        };
-        Debounce.prototype.cancel = function () {
-            this._fn = null;
-        };
-        Debounce.prototype.destroy = function () {
-            if (!!this._timer) {
-                if (!this._interval) {
-                    deferred_4.getTaskQueue().cancel(this._timer);
-                }
-                else {
-                    clearTimeout(this._timer);
-                }
-            }
-            this._timer = void 0;
-            this._fn = null;
-        };
-        Object.defineProperty(Debounce.prototype, "interval", {
-            get: function () {
-                return this._interval;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Debounce.prototype, "IsDestroyed", {
-            get: function () {
-                return this._timer === void 0;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return Debounce;
-    }());
-    exports.Debounce = Debounce;
 });
 define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/checks"], function (require, exports, checks_9) {
     "use strict";
@@ -4437,7 +4771,7 @@ define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/c
     }());
     exports.Lazy = Lazy;
 });
-define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/collection/validation", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, const_5, int_6, errors_5, object_5, lang_9, base_3, item_1, aspect_2, list_2, dictionary_1, validation_4, ideferred_1, utils_10, waitqueue_2, debounce_1, lazy_1) {
+define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/utils/basebag", "jriapp_shared/utils/jsonbag", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/collection/validation", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, const_5, int_6, errors_5, object_7, basebag_2, jsonbag_1, lang_9, base_3, item_2, aspect_2, list_3, dictionary_1, validation_4, ideferred_1, utils_10, waitqueue_2, debounce_3, lazy_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -4445,251 +4779,21 @@ define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_sh
     __export(const_5);
     __export(int_6);
     __export(errors_5);
-    __export(object_5);
+    __export(object_7);
+    __export(basebag_2);
+    __export(jsonbag_1);
     exports.LocaleSTRS = lang_9.STRS;
     exports.LocaleERRS = lang_9.ERRS;
     exports.BaseCollection = base_3.BaseCollection;
-    exports.CollectionItem = item_1.CollectionItem;
+    exports.CollectionItem = item_2.CollectionItem;
     exports.ItemAspect = aspect_2.ItemAspect;
-    exports.ListItemAspect = list_2.ListItemAspect;
-    exports.BaseList = list_2.BaseList;
+    exports.ListItemAspect = list_3.ListItemAspect;
+    exports.BaseList = list_3.BaseList;
     exports.BaseDictionary = dictionary_1.BaseDictionary;
     exports.ValidationError = validation_4.ValidationError;
     __export(ideferred_1);
     exports.Utils = utils_10.Utils;
     exports.WaitQueue = waitqueue_2.WaitQueue;
-    exports.Debounce = debounce_1.Debounce;
+    exports.Debounce = debounce_3.Debounce;
     exports.Lazy = lazy_1.Lazy;
-});
-define("jriapp_shared/utils/jsonval", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/debounce", "jriapp_shared/collection/item", "jriapp_shared/collection/list"], function (require, exports, object_6, coreutils_6, sysutils_3, debounce_2, item_2, list_3) {
-    "use strict";
-    var core = coreutils_6.CoreUtils, PROP_BAG = sysutils_3.SysUtils.PROP_BAG_NAME();
-    var JsonBag = (function (_super) {
-        __extends(JsonBag, _super);
-        function JsonBag(json, jsonChanged) {
-            _super.call(this);
-            this._json = void 0;
-            this._val = {};
-            this._saveVal = null;
-            this._debounce = new debounce_2.Debounce();
-            this.setJson(json);
-            this._jsonChanged = jsonChanged;
-        }
-        JsonBag.prototype.destroy = function () {
-            if (this._isDestroyed)
-                return;
-            this._isDestroyCalled = true;
-            this._debounce.destroy();
-            this._jsonChanged = null;
-            this._json = void 0;
-            this._val = {};
-            _super.prototype.destroy.call(this);
-        };
-        JsonBag.prototype.onChanged = function () {
-            var _this = this;
-            this._debounce.enqueue(function () {
-                if (!!_this._jsonChanged) {
-                    _this._jsonChanged(_this._json);
-                }
-            });
-        };
-        JsonBag.prototype.setJson = function (json) {
-            if (json === void 0)
-                json = null;
-            if (this._json !== json) {
-                this._json = json;
-                this._val = (!json ? {} : JSON.parse(json));
-            }
-        };
-        JsonBag.prototype._checkChanges = function () {
-            var json = JSON.stringify(this._val);
-            if (json !== this._json) {
-                this._json = json;
-                this.onChanged();
-            }
-        };
-        JsonBag.prototype.beginEdit = function () {
-            if (!this.isEditing) {
-                this._saveVal = JSON.parse(JSON.stringify(this._val));
-                return true;
-            }
-            return false;
-        };
-        JsonBag.prototype.endEdit = function () {
-            if (this.isEditing) {
-                this._saveVal = null;
-                this._checkChanges();
-                return true;
-            }
-            return false;
-        };
-        JsonBag.prototype.cancelEdit = function () {
-            if (this.isEditing) {
-                this._val = this._saveVal;
-                this._saveVal = null;
-                return true;
-            }
-            return false;
-        };
-        Object.defineProperty(JsonBag.prototype, "isEditing", {
-            get: function () {
-                return !!this._saveVal;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        JsonBag.prototype._isHasProp = function (prop) {
-            return true;
-        };
-        JsonBag.prototype.getProp = function (name) {
-            return core.getValue(this._val, name, '->');
-        };
-        JsonBag.prototype.setProp = function (name, val) {
-            var old = core.getValue(this._val, name, '->');
-            if (old !== val) {
-                core.setValue(this._val, name, val, false, '->');
-                this.raisePropertyChanged(name);
-            }
-        };
-        Object.defineProperty(JsonBag.prototype, "val", {
-            get: function () {
-                return this._val;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        JsonBag.prototype.toString = function () {
-            return PROP_BAG;
-        };
-        return JsonBag;
-    }(object_6.BaseObject));
-    exports.JsonBag = JsonBag;
-    var AnyValListItem = (function (_super) {
-        __extends(AnyValListItem, _super);
-        function AnyValListItem(aspect) {
-            _super.call(this, aspect);
-        }
-        Object.defineProperty(AnyValListItem.prototype, "val", {
-            get: function () { return this._aspect._getProp('val'); },
-            set: function (v) { this._aspect._setProp('val', v); },
-            enumerable: true,
-            configurable: true
-        });
-        AnyValListItem.prototype.getProp = function (name) {
-            return core.getValue(this.val, name, '->');
-        };
-        AnyValListItem.prototype.setProp = function (name, val) {
-            var old = core.getValue(this.val, name, '->');
-            if (old !== val) {
-                core.setValue(this.val, name, val, false, '->');
-                this.raisePropertyChanged(name);
-            }
-        };
-        Object.defineProperty(AnyValListItem.prototype, "list", {
-            get: function () {
-                return this._aspect.list;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        AnyValListItem.prototype.toString = function () {
-            return PROP_BAG;
-        };
-        return AnyValListItem;
-    }(item_2.CollectionItem));
-    exports.AnyValListItem = AnyValListItem;
-    var AnyList = (function (_super) {
-        __extends(AnyList, _super);
-        function AnyList(onChanged) {
-            var _this = this;
-            _super.call(this, AnyValListItem, [{ name: 'val', dtype: 0 }]);
-            this._saveVal = null;
-            this._onChanged = onChanged;
-            this.addOnBeginEdit(function (s, a) {
-                _this._saveVal = JSON.stringify(a.item.val);
-            });
-            this.addOnEndEdit(function (s, a) {
-                if (a.isCanceled) {
-                    _this._saveVal = null;
-                    return;
-                }
-                var oldVal = _this._saveVal, newVal = JSON.parse(JSON.stringify(a.item.val));
-                _this._saveVal = null;
-                if (oldVal !== newVal) {
-                    _this.onChanged();
-                }
-            });
-            this.addOnCollChanged(function (s, a) {
-                switch (a.changeType) {
-                    case 0:
-                        {
-                            _this.onChanged();
-                        }
-                        break;
-                    default:
-                        break;
-                }
-            });
-            this.addOnItemAdding(function (s, a) {
-                a.item.val = {};
-            });
-        }
-        AnyList.prototype.destroy = function () {
-            if (this._isDestroyed)
-                return;
-            this._isDestroyCalled = true;
-            this._onChanged = null;
-            _super.prototype.destroy.call(this);
-        };
-        AnyList.prototype.onChanged = function () {
-            if (!!this._onChanged)
-                this._onChanged();
-        };
-        AnyList.prototype.toString = function () {
-            return 'AnyList';
-        };
-        return AnyList;
-    }(list_3.BaseList));
-    exports.AnyList = AnyList;
-    var ArrayVal = (function (_super) {
-        __extends(ArrayVal, _super);
-        function ArrayVal(arr, onChanged) {
-            if (onChanged === void 0) { onChanged = null; }
-            _super.call(this);
-            this._vals = [];
-            this._list = new AnyList(onChanged);
-            this.setArr(arr);
-        }
-        ArrayVal.prototype.destroy = function () {
-            if (this._isDestroyed)
-                return;
-            this._isDestroyCalled = true;
-            this._list.clear();
-            _super.prototype.destroy.call(this);
-        };
-        ArrayVal.prototype.setArr = function (arr) {
-            this._vals = (!arr ? [] : arr);
-            this._list.fillItems(this._vals.map(function (val) {
-                return { val: val };
-            }), true);
-        };
-        ArrayVal.prototype.getArr = function () {
-            var res = this._list.items.map(function (item) {
-                return item._aspect.vals["val"];
-            });
-            return res;
-        };
-        Object.defineProperty(ArrayVal.prototype, "list", {
-            get: function () {
-                return this._list;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        ArrayVal.prototype.toString = function () {
-            return "ArrayVal";
-        };
-        return ArrayVal;
-    }(object_6.BaseObject));
-    exports.ArrayVal = ArrayVal;
 });

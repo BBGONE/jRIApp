@@ -3,7 +3,7 @@
     Layout = "~/Views/Shared/_LayoutDemo.cshtml";
 }
 @{
-    ViewBag.Title = "JSON Editing Demo";
+    ViewBag.Title = "JsonDB Editing Demo";
 }
 
 <style type="text/css">
@@ -45,7 +45,7 @@
 </style>
 
 <script type="text/javascript">
-    require(["jsondb", "jriapp_ui", "jriapp_ru"],
+    require(["jsondbDemo", "jriapp_ui", "jriapp_ru"],
         function(DEMO, UI, LANG) {
             $("#loading").fadeIn();
             var mainOptions = {
@@ -224,7 +224,7 @@
 <script id="custDetTemplate" type="text/html" data-role="template">
     <div style="margin: 0px; min-height: 400px; width: 100%;">
         <table style="font-size: 9pt; margin-bottom: 3px;"
-               data-bind="{this.dataSource,to=Customer.AddressList}" 
+               data-bind="{this.dataSource,to=Customer.Addresses}" 
                data-view="options={isHandleAddNew:true,editor:{templateID:addressEditTemplate,width:550,height:400,submitOnOK:false,title:'Address editing'}}">
             <thead>
                 <tr>

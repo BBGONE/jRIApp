@@ -7,39 +7,51 @@ import * as COMMON from "common";
 const bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
 
 export class CustomerBag extends RIAPP.JsonBag {
-    private _addressVal: RIAPP.ArrayVal = null;
-  
-    constructor(json: string, jsonChanged: (json: string) => void) {
-        super(json, jsonChanged);
-    }
-    setJson(json: string): void {
-        super.setJson(json);
-        if (!!this._addressVal) {
-            this._addressVal.setArr(this.getAddressArray());
-        }
-    }
-    getAddressArray(): any[] {
-        const arr = utils.core.getValue(this.val, this.getAddressPath(), '->');
-        return (!arr) ? [] : arr;
-    }
-    protected setAddressArray(arr: any[]): void {
-        utils.core.setValue(this.val, this.getAddressPath(), arr, false, '->');
-        this._checkChanges();
-    }
-    getAddressPath(): string {
-        return "Addresses";
+    private _addresses: RIAPP.JsonArray = null;
+    private _owner: DEMODB.CustomerJSON;
+
+    constructor(item: DEMODB.CustomerJSON) {
+        super(item.Data, (data: string) => {
+            const dbSet = item._aspect.dbSet, saveIsEditing = item._aspect.isEditing;
+            if (item.Data !== data) {
+
+                if (!saveIsEditing) {
+                    dbSet.isUpdating = true;
+                    item._aspect.beginEdit();
+                }
+
+                //update data
+                item.Data = data;
+
+                if (!saveIsEditing) {
+                    item._aspect.endEdit();
+                    dbSet.isUpdating = false;
+                }
+            }
+        });
+
+        item.addOnPropertyChange("Data", (s, a) => {
+            this.resetJson(item.Data);
+        }, null, null, RIAPP.TPriority.AboveNormal);
     }
 
-    //gets addresses in the form of the collection from the json value
-    get AddressList() {
-        if (!this._addressVal) {
-            this._addressVal = new RIAPP.ArrayVal(this.getAddressArray(), () => {
-                let arr = this._addressVal.getArr();
-                //sets modified array
-                this.setAddressArray(arr);
-            });
+    destroy() {
+        if (this._isDestroyed)
+            return;
+        this._isDestroyCalled = true;
+        if (!!this._addresses) {
+            this._addresses.destroy();
         }
-        return this._addressVal.list;
+        this._addresses = null;
+        super.destroy();
+    }
+    get Addresses() {
+        if (this._isDestroyCalled)
+            return void 0;
+        if (!this._addresses) {
+            this._addresses = new RIAPP.JsonArray(this, "Addresses");
+        }
+        return this._addresses.list;
     }
 }
 
@@ -84,7 +96,7 @@ export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
 
         this._addNewAddrCommand = new RIAPP.TCommand<any, CustomerViewModel>(function (sender, param) {
             const curCustomer = <CustomerBag>self.currentItem.Customer;
-            var item = curCustomer.AddressList.addNew();
+            var item = curCustomer.Addresses.addNew();
         }, self, function (s, p) {
             return !!self.currentItem;
         });
@@ -119,32 +131,9 @@ export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
         this._dbSet.defineCustomerField(function (item) {
             let bag = <CustomerBag>item._aspect.getCustomVal("jsonBag");
             if (!bag) {
-                bag = new CustomerBag(item.Data, (data: string) => {
-                   const saveIsEditing = item._aspect.isEditing;
-                   if (item.Data !== data) {
-                       
-                       if (!saveIsEditing) {
-                           self._dbSet.isUpdating = true;
-                           item._aspect.beginEdit();
-                       }
-
-                       //update data
-                       item.Data = data;
-
-                       if (!saveIsEditing) {
-                           item._aspect.endEdit();
-                           self._dbSet.isUpdating = false;
-                       }
-                    }
-                });
-
-                item.addOnPropertyChange("Data", (s, a) => {
-                    bag.setJson(item.Data);
-                }, null, null, RIAPP.TPriority.AboveNormal);
-
+                bag = new CustomerBag(item);
                 item._aspect.setCustomVal("jsonBag", bag);
             }
-
             return bag;
         });
     }

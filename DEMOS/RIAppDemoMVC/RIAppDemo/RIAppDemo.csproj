@@ -170,7 +170,7 @@
     <Content Include="Scripts\demo\filesDemo.js" />
     <Content Include="Scripts\demo\folderBrowserSvc.js" />
     <Content Include="Scripts\demo\gridDemo\main.js" />
-    <Content Include="Scripts\demo\jsondb.js" />
+    <Content Include="Scripts\demo\jsondbDemo.js" />
     <Content Include="Scripts\demo\manToManDemo\main.js" />
     <Content Include="Scripts\demo\mastDetDemo\main.js" />
     <Content Include="Scripts\demo\shared\shared.js" />

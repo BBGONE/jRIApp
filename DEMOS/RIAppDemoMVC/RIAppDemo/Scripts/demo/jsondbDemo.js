@@ -8,37 +8,45 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
     var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
     var CustomerBag = (function (_super) {
         __extends(CustomerBag, _super);
-        function CustomerBag(json, jsonChanged) {
-            _super.call(this, json, jsonChanged);
-            this._addressVal = null;
-        }
-        CustomerBag.prototype.setJson = function (json) {
-            _super.prototype.setJson.call(this, json);
-            if (!!this._addressVal) {
-                this._addressVal.setArr(this.getAddressArray());
-            }
-        };
-        CustomerBag.prototype.getAddressArray = function () {
-            var arr = utils.core.getValue(this.val, this.getAddressPath(), '->');
-            return (!arr) ? [] : arr;
-        };
-        CustomerBag.prototype.setAddressArray = function (arr) {
-            utils.core.setValue(this.val, this.getAddressPath(), arr, false, '->');
-            this._checkChanges();
-        };
-        CustomerBag.prototype.getAddressPath = function () {
-            return "Addresses";
-        };
-        Object.defineProperty(CustomerBag.prototype, "AddressList", {
-            get: function () {
-                var _this = this;
-                if (!this._addressVal) {
-                    this._addressVal = new RIAPP.ArrayVal(this.getAddressArray(), function () {
-                        var arr = _this._addressVal.getArr();
-                        _this.setAddressArray(arr);
-                    });
+        function CustomerBag(item) {
+            var _this = this;
+            _super.call(this, item.Data, function (data) {
+                var dbSet = item._aspect.dbSet, saveIsEditing = item._aspect.isEditing;
+                if (item.Data !== data) {
+                    if (!saveIsEditing) {
+                        dbSet.isUpdating = true;
+                        item._aspect.beginEdit();
+                    }
+                    item.Data = data;
+                    if (!saveIsEditing) {
+                        item._aspect.endEdit();
+                        dbSet.isUpdating = false;
+                    }
                 }
-                return this._addressVal.list;
+            });
+            this._addresses = null;
+            item.addOnPropertyChange("Data", function (s, a) {
+                _this.resetJson(item.Data);
+            }, null, null, 1);
+        }
+        CustomerBag.prototype.destroy = function () {
+            if (this._isDestroyed)
+                return;
+            this._isDestroyCalled = true;
+            if (!!this._addresses) {
+                this._addresses.destroy();
+            }
+            this._addresses = null;
+            _super.prototype.destroy.call(this);
+        };
+        Object.defineProperty(CustomerBag.prototype, "Addresses", {
+            get: function () {
+                if (this._isDestroyCalled)
+                    return void 0;
+                if (!this._addresses) {
+                    this._addresses = new RIAPP.JsonArray(this, "Addresses");
+                }
+                return this._addresses.list;
             },
             enumerable: true,
             configurable: true
@@ -66,7 +74,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             });
             this._addNewAddrCommand = new RIAPP.TCommand(function (sender, param) {
                 var curCustomer = self.currentItem.Customer;
-                var item = curCustomer.AddressList.addNew();
+                var item = curCustomer.Addresses.addNew();
             }, self, function (s, p) {
                 return !!self.currentItem;
             });
@@ -90,23 +98,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             this._dbSet.defineCustomerField(function (item) {
                 var bag = item._aspect.getCustomVal("jsonBag");
                 if (!bag) {
-                    bag = new CustomerBag(item.Data, function (data) {
-                        var saveIsEditing = item._aspect.isEditing;
-                        if (item.Data !== data) {
-                            if (!saveIsEditing) {
-                                self._dbSet.isUpdating = true;
-                                item._aspect.beginEdit();
-                            }
-                            item.Data = data;
-                            if (!saveIsEditing) {
-                                item._aspect.endEdit();
-                                self._dbSet.isUpdating = false;
-                            }
-                        }
-                    });
-                    item.addOnPropertyChange("Data", function (s, a) {
-                        bag.setJson(item.Data);
-                    }, null, null, 1);
+                    bag = new CustomerBag(item);
                     item._aspect.setCustomVal("jsonBag", bag);
                 }
                 return bag;

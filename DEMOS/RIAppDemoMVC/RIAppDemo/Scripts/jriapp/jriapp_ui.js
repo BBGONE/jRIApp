@@ -378,7 +378,7 @@ define("jriapp_ui/content/template", ["require", "exports", "jriapp_shared", "jr
 });
 define("jriapp_ui/utils/eventbag", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_4) {
     "use strict";
-    var utils = jriapp_shared_4.Utils, PROP_BAG = utils.sys.PROP_BAG_NAME();
+    var utils = jriapp_shared_4.Utils, strUtils = utils.str;
     (function (EVENT_CHANGE_TYPE) {
         EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["None"] = 0] = "None";
         EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["Added"] = 1] = "Added";
@@ -393,16 +393,11 @@ define("jriapp_ui/utils/eventbag", ["require", "exports", "jriapp_shared"], func
             this._dic = null;
             this._onChange = onChange;
         }
-        EventBag.prototype._isHasProp = function (prop) {
-            return true;
-        };
         EventBag.prototype.getProp = function (name) {
             if (!this._dic)
                 return null;
             var cmd = this._dic[name];
-            if (!cmd)
-                return null;
-            return cmd;
+            return !cmd ? null : cmd;
         };
         EventBag.prototype.setProp = function (name, command) {
             if (!this._dic && !!command)
@@ -419,7 +414,7 @@ define("jriapp_ui/utils/eventbag", ["require", "exports", "jriapp_shared"], func
                         oldVal: old,
                         newVal: null
                     });
-                    this.raisePropertyChanged(name);
+                    this.onBagPropChanged(name);
                 }
                 return;
             }
@@ -441,7 +436,7 @@ define("jriapp_ui/utils/eventbag", ["require", "exports", "jriapp_shared"], func
                         newVal: command
                     });
                 }
-                this.raisePropertyChanged(name);
+                this.onBagPropChanged(name);
             }
         };
         EventBag.prototype.trigger = function (name, args) {
@@ -455,7 +450,7 @@ define("jriapp_ui/utils/eventbag", ["require", "exports", "jriapp_shared"], func
                 command.execute(this, args);
         };
         EventBag.prototype.toString = function () {
-            return PROP_BAG;
+            return "EventBag";
         };
         EventBag.prototype.destroy = function () {
             if (!!this._dic) {
@@ -465,21 +460,17 @@ define("jriapp_ui/utils/eventbag", ["require", "exports", "jriapp_shared"], func
             _super.prototype.destroy.call(this);
         };
         return EventBag;
-    }(jriapp_shared_4.BaseObject));
+    }(jriapp_shared_4.BasePropBag));
     exports.EventBag = EventBag;
 });
 define("jriapp_ui/utils/propbag", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_5) {
     "use strict";
-    var utils = jriapp_shared_5.Utils, checks = utils.check, dom = utils.dom, PROP_BAG = utils.sys.PROP_BAG_NAME();
     var PropertyBag = (function (_super) {
         __extends(PropertyBag, _super);
         function PropertyBag(el) {
             _super.call(this);
             this._el = el;
         }
-        PropertyBag.prototype._isHasProp = function (prop) {
-            return checks.isHasProp(this._el, prop);
-        };
         PropertyBag.prototype.getProp = function (name) {
             return this._el[name];
         };
@@ -487,31 +478,25 @@ define("jriapp_ui/utils/propbag", ["require", "exports", "jriapp_shared"], funct
             var old = this._el[name];
             if (old !== val) {
                 this._el[name] = val;
-                this.raisePropertyChanged(name);
+                this.onBagPropChanged(name);
             }
         };
         PropertyBag.prototype.toString = function () {
-            return PROP_BAG;
+            return "PropertyBag";
         };
         return PropertyBag;
-    }(jriapp_shared_5.BaseObject));
+    }(jriapp_shared_5.BasePropBag));
     exports.PropertyBag = PropertyBag;
 });
 define("jriapp_ui/utils/cssbag", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_6) {
     "use strict";
-    var utils = jriapp_shared_6.Utils, checks = utils.check, dom = utils.dom, PROP_BAG = utils.sys.PROP_BAG_NAME();
+    var utils = jriapp_shared_6.Utils, checks = utils.check, dom = utils.dom;
     var CSSBag = (function (_super) {
         __extends(CSSBag, _super);
         function CSSBag(el) {
             _super.call(this);
             this._el = el;
         }
-        CSSBag.prototype._isHasProp = function (prop) {
-            return true;
-        };
-        CSSBag.prototype.getProp = function (name) {
-            return checks.undefined;
-        };
         CSSBag.prototype.setProp = function (name, val) {
             if (val === checks.undefined)
                 return;
@@ -530,10 +515,10 @@ define("jriapp_ui/utils/cssbag", ["require", "exports", "jriapp_shared"], functi
             dom.setClass([this._el], name, !val);
         };
         CSSBag.prototype.toString = function () {
-            return PROP_BAG;
+            return "CSSBag";
         };
         return CSSBag;
-    }(jriapp_shared_6.BaseObject));
+    }(jriapp_shared_6.BasePropBag));
     exports.CSSBag = CSSBag;
 });
 define("jriapp_ui/utils/tooltip", ["require", "exports", "jriapp_shared", "jriapp/utils/jquery"], function (require, exports, jriapp_shared_7, jquery_1) {
