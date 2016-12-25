@@ -17,7 +17,7 @@ export class PropertyBag extends BasePropBag {
         return this._el[name];
     }
     setProp(name: string, val: any): void {
-        let old = this._el[name];
+        const old = this._el[name];
         if (old !== val) {
             this._el[name] = val;
             this.onBagPropChanged(name);

@@ -326,7 +326,7 @@ export class Binding extends BaseObject implements IBinding {
         return fn;
     }
     private _parseSrc(obj: any, path: string[], lvl: number) {
-        let self = this;
+        const self = this;
         self._srcEnd = null;
         if (path.length === 0) {
             self._srcEnd = obj;
@@ -345,7 +345,7 @@ export class Binding extends BaseObject implements IBinding {
         }
     }
     private _parseSrc2(obj: any, path: string[], lvl: number) {
-        let self = this, nextObj: any, isBaseObj = (!!obj && sys.isBaseObj(obj)), isValidProp: boolean;
+        const self = this, isBaseObj = sys.isBaseObj(obj);
 
         if (isBaseObj) {
             (<IBaseObject>obj).addOnDestroyed(self._onSrcDestroyed, self._objId, self);
@@ -360,7 +360,7 @@ export class Binding extends BaseObject implements IBinding {
             }
 
             if (!!obj) {
-                nextObj = sys.getProp(obj, path[0]);
+                let nextObj = sys.getProp(obj, path[0]);
                 if (!!nextObj) {
                     self._parseSrc2(nextObj, path.slice(1), lvl + 1);
                 }
@@ -372,12 +372,10 @@ export class Binding extends BaseObject implements IBinding {
         }
 
         if (!!obj && path.length === 1) {
-            isValidProp = true;
-            if (debug.isDebugging())
-                isValidProp = isBaseObj ? (<IBaseObject>obj)._isHasProp(path[0]) : checks.isHasProp(obj, path[0]);
+            const isValidProp =  (!debug.isDebugging()? true: (isBaseObj ? (<IBaseObject>obj)._isHasProp(path[0]) : checks.isHasProp(obj, path[0])));
 
             if (isValidProp) {
-                let updateOnChange = isBaseObj && (self._mode === BINDING_MODE.OneWay || self._mode === BINDING_MODE.TwoWay);
+                const updateOnChange = isBaseObj && (self._mode === BINDING_MODE.OneWay || self._mode === BINDING_MODE.TwoWay);
                 if (updateOnChange) {
                     (<IBaseObject>obj).addOnPropertyChange(path[0], () => {
                         if (!!self._tgtEnd) {
@@ -385,8 +383,20 @@ export class Binding extends BaseObject implements IBinding {
                             self._update();
                         }
                     }, self._objId);
+
+                    //for PropertyBag also listen for all property changes notification
+                    if (path[0] !== "[*]" && sys.isPropBag(obj))
+                    {
+                        (<IBaseObject>obj).addOnPropertyChange("[*]", () => {
+                            if (!!self._tgtEnd) {
+                                self._umask |= 2;
+                                self._update();
+                            }
+                        }, self._objId);
+                    }
                 }
-                let err_notif = sys.getErrorNotification(obj);
+
+                const err_notif = sys.getErrorNotification(obj);
                 if (!!err_notif) {
                     err_notif.addOnErrorsChanged(self._onSrcErrChanged, self._objId, self);
                 }
@@ -398,7 +408,7 @@ export class Binding extends BaseObject implements IBinding {
         }
     }
     private _parseTgt(obj: any, path: string[], lvl: number) {
-        let self = this;
+        const self = this;
         self._tgtEnd = null;
         if (path.length === 0) {
             self._tgtEnd = obj;
@@ -418,7 +428,7 @@ export class Binding extends BaseObject implements IBinding {
         }
     }
     private _parseTgt2(obj: any, path: string[], lvl: number) {
-        let self = this, nextObj: any, isBaseObj = sys.isBaseObj(obj), isValidProp = false;
+        const self = this, isBaseObj = sys.isBaseObj(obj);
 
         if (isBaseObj) {
             (<IBaseObject>obj).addOnDestroyed(self._onTgtDestroyed, self._objId, self);
@@ -432,7 +442,7 @@ export class Binding extends BaseObject implements IBinding {
                     self._objId);
             }
             if (!!obj) {
-                nextObj = sys.getProp(obj, path[0]);
+                const nextObj = sys.getProp(obj, path[0]);
                 if (!!nextObj) {
                     self._parseTgt2(nextObj, path.slice(1), lvl + 1);
                 }
@@ -444,13 +454,10 @@ export class Binding extends BaseObject implements IBinding {
         }
 
         if (!!obj && path.length === 1) {
-            isValidProp = true;
-            if (debug.isDebugging()) {
-                isValidProp = isBaseObj ? (<IBaseObject>obj)._isHasProp(path[0]) : checks.isHasProp(obj, path[0]);
-            }
+            const isValidProp = (!debug.isDebugging() ? true : (isBaseObj ? (<IBaseObject>obj)._isHasProp(path[0]) : checks.isHasProp(obj, path[0])));
 
             if (isValidProp) {
-                let updateOnChange = isBaseObj && (self._mode === BINDING_MODE.TwoWay || self._mode === BINDING_MODE.BackWay);
+                const updateOnChange = isBaseObj && (self._mode === BINDING_MODE.TwoWay || self._mode === BINDING_MODE.BackWay);
                 if (updateOnChange) {
                     (<IBaseObject>obj).addOnPropertyChange(path[0], () => {
                         if (!!self._srcEnd) {
@@ -458,6 +465,16 @@ export class Binding extends BaseObject implements IBinding {
                             self._update();
                         }
                     }, self._objId);
+
+                    //for PropertyBag also listen for all property changes notification
+                    if (path[0] !== "[*]" && sys.isPropBag(obj)) {
+                        (<IBaseObject>obj).addOnPropertyChange("[*]", () => {
+                            if (!!self._srcEnd) {
+                                self._umask |= 1;
+                                self._update();
+                            }
+                        }, self._objId);
+                    }
                 }
                 self._tgtEnd = obj;
             }
@@ -467,7 +484,8 @@ export class Binding extends BaseObject implements IBinding {
         }
     }
     private _setPathItem(newObj: IBaseObject, bindingTo: BindTo, lvl: number, path: string[]) {
-        let oldObj: IBaseObject, key: string, len: number = lvl + path.length;
+        const len = lvl + path.length;
+        let key: string;
         for (let i = lvl; i < len; i += 1) {
             switch (bindingTo) {
                 case BindTo.Source:
@@ -480,7 +498,7 @@ export class Binding extends BaseObject implements IBinding {
                     throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "bindingTo", bindingTo));
             }
 
-            oldObj = this._pathItems[key];
+            const oldObj = this._pathItems[key];
             if (!!oldObj) {
                 this._cleanUp(oldObj);
                 delete this._pathItems[key];
@@ -494,7 +512,7 @@ export class Binding extends BaseObject implements IBinding {
     private _cleanUp(obj: IBaseObject) {
         if (!!obj) {
             obj.removeNSHandlers(this._objId);
-            let err_notif = sys.getErrorNotification(obj);
+            const err_notif = sys.getErrorNotification(obj);
             if (!!err_notif) {
                 err_notif.removeOnErrorsChanged(this._objId);
             }

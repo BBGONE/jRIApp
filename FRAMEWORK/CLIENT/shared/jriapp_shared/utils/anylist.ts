@@ -18,7 +18,6 @@ export interface IAnyVal {
 export class AnyValListItem extends CollectionItem<ListItemAspect<AnyValListItem, IAnyVal>> implements IListItem, IPropertyBag, IAnyVal {
     constructor(aspect: ListItemAspect<AnyValListItem, IAnyVal>) {
         super(aspect);
-
     }
     get val(): any { return <any>this._aspect._getProp('val'); }
     set val(v: any) { this._aspect._setProp('val', v); }
@@ -72,6 +71,7 @@ export class AnyList extends BaseList<AnyValListItem, IAnyVal> {
         this.addOnEndEdit((s, a) => {
             if (a.isCanceled) {
                 this._saveVal = null;
+                a.item.onBagPropChanged("*");
                 return;
             }
             const oldVal = this._saveVal, newVal = JSON.parse(JSON.stringify(a.item.val));
