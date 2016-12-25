@@ -1330,6 +1330,7 @@ declare module "jriapp_shared/utils/jsonval" {
         private _jsonChanged;
         private _val;
         private _saveVal;
+        private _debounce;
         constructor(json: string, jsonChanged: (json: string) => void);
         destroy(): void;
         protected onChanged(): void;

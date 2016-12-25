@@ -3,6 +3,7 @@ import { IPropertyBag, IEditable } from "../int";
 import { BaseObject } from "../object";
 import { CoreUtils } from "./coreutils";
 import { SysUtils } from "./sysutils";
+import { Debounce } from "./debounce";
 import { COLL_CHANGE_TYPE } from "../collection/const";
 import { ICollChangedArgs, ICollectionItem } from "../collection/int";
 import { CollectionItem } from "../collection/item";
@@ -16,9 +17,11 @@ export class JsonBag extends BaseObject implements IPropertyBag, IEditable {
     private _jsonChanged: (json: string) => void;
     private _val: any = {};
     private _saveVal: any = null;
+    private _debounce: Debounce;
 
     constructor(json: string, jsonChanged: (json: string) => void) {
         super();
+        this._debounce = new Debounce();
         this.setJson(json);
         this._jsonChanged = jsonChanged;
     }
@@ -26,15 +29,18 @@ export class JsonBag extends BaseObject implements IPropertyBag, IEditable {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
+        this._debounce.destroy();
         this._jsonChanged = null;
         this._json = void 0;
         this._val = {};
         super.destroy();
     }
     protected onChanged() {
-        if (!!this._jsonChanged) {
-            this._jsonChanged(this._json);
-        }
+        this._debounce.enqueue(() => {
+            if (!!this._jsonChanged) {
+                this._jsonChanged(this._json);
+            }
+        });
     }
     setJson(json: string): void {
         if (json === void 0)
@@ -180,20 +186,15 @@ export class AnyList extends BaseList<AnyValListItem, IAnyVal> {
     destroy() {
         if (this._isDestroyed)
             return;
+        this._isDestroyCalled = true;
         this._onChanged = null;
         super.destroy();
     }
 
     protected onChanged() {
-        if (!this._onChanged)
-            return;
-        setTimeout(() => {
-            if (this.getIsDestroyCalled())
-                return;
-            if (!!this._onChanged)
-                this._onChanged();
-        }, 0);
-     }
+        if (!!this._onChanged)
+            this._onChanged();
+    }
     toString() {
         return 'AnyList';
     }
@@ -212,8 +213,7 @@ export class ArrayVal extends BaseObject {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        this._list.destroy();
-        this._list = null;
+        this._list.clear();
         super.destroy();
     }
     setArr(arr: any[]): void {

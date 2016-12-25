@@ -4461,7 +4461,7 @@ define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_sh
     exports.Debounce = debounce_1.Debounce;
     exports.Lazy = lazy_1.Lazy;
 });
-define("jriapp_shared/utils/jsonval", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/sysutils", "jriapp_shared/collection/item", "jriapp_shared/collection/list"], function (require, exports, object_6, coreutils_6, sysutils_3, item_2, list_3) {
+define("jriapp_shared/utils/jsonval", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/debounce", "jriapp_shared/collection/item", "jriapp_shared/collection/list"], function (require, exports, object_6, coreutils_6, sysutils_3, debounce_2, item_2, list_3) {
     "use strict";
     var core = coreutils_6.CoreUtils, PROP_BAG = sysutils_3.SysUtils.PROP_BAG_NAME();
     var JsonBag = (function (_super) {
@@ -4471,6 +4471,7 @@ define("jriapp_shared/utils/jsonval", ["require", "exports", "jriapp_shared/obje
             this._json = void 0;
             this._val = {};
             this._saveVal = null;
+            this._debounce = new debounce_2.Debounce();
             this.setJson(json);
             this._jsonChanged = jsonChanged;
         }
@@ -4478,15 +4479,19 @@ define("jriapp_shared/utils/jsonval", ["require", "exports", "jriapp_shared/obje
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
+            this._debounce.destroy();
             this._jsonChanged = null;
             this._json = void 0;
             this._val = {};
             _super.prototype.destroy.call(this);
         };
         JsonBag.prototype.onChanged = function () {
-            if (!!this._jsonChanged) {
-                this._jsonChanged(this._json);
-            }
+            var _this = this;
+            this._debounce.enqueue(function () {
+                if (!!_this._jsonChanged) {
+                    _this._jsonChanged(_this._json);
+                }
+            });
         };
         JsonBag.prototype.setJson = function (json) {
             if (json === void 0)
@@ -4632,19 +4637,13 @@ define("jriapp_shared/utils/jsonval", ["require", "exports", "jriapp_shared/obje
         AnyList.prototype.destroy = function () {
             if (this._isDestroyed)
                 return;
+            this._isDestroyCalled = true;
             this._onChanged = null;
             _super.prototype.destroy.call(this);
         };
         AnyList.prototype.onChanged = function () {
-            var _this = this;
-            if (!this._onChanged)
-                return;
-            setTimeout(function () {
-                if (_this.getIsDestroyCalled())
-                    return;
-                if (!!_this._onChanged)
-                    _this._onChanged();
-            }, 0);
+            if (!!this._onChanged)
+                this._onChanged();
         };
         AnyList.prototype.toString = function () {
             return 'AnyList';
@@ -4665,8 +4664,7 @@ define("jriapp_shared/utils/jsonval", ["require", "exports", "jriapp_shared/obje
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
-            this._list.destroy();
-            this._list = null;
+            this._list.clear();
             _super.prototype.destroy.call(this);
         };
         ArrayVal.prototype.setArr = function (arr) {
