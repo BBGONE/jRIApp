@@ -7,6 +7,7 @@ import {
     ICollection, ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollItemAddedArgs
 } from "jriapp_shared/collection/int";
 import { $ } from "jriapp/utils/jquery";
+import { DomUtils } from "jriapp/utils/dom";
 import { DblClick } from "../../utils/dblclick";
 import { css, ROW_POSITION, PROP_NAME } from "../const";
 import { BaseCell } from "../cells/base";
@@ -23,7 +24,7 @@ import { RowSelectorColumn } from "../columns/rowselector";
 
 import { DataGrid } from "../datagrid"
 
-const utils = Utils, dom = utils.dom, doc = dom.document, sys = utils.sys;
+const utils = Utils, dom = DomUtils, doc = dom.document, sys = utils.sys;
 
 const fn_state = (row: Row) => {
     const path = row.grid.options.rowStateField,

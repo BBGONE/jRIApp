@@ -2,8 +2,8 @@
 import {
     Utils, BasePropBag
 } from "jriapp_shared";
-
-const utils = Utils, checks = utils.check, dom = utils.dom;
+import { DomUtils } from "jriapp/utils/dom";
+const utils = Utils, checks = utils.check, dom = DomUtils;
 
 // wraps HTMLElement to add or remove classNames using data binding
 export class CSSBag extends BasePropBag {

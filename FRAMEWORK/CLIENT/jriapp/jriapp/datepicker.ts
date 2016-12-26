@@ -4,10 +4,11 @@ import {
 } from "jriapp_shared";
 import { IDatepicker } from "./int";
 import { bootstrap } from "./bootstrap";
+import { DomUtils } from "./utils/dom";
 import { $, JQueryUtils } from "./utils/jquery";
 
 
-const utils = Utils, coreUtils = utils.core, dom = utils.dom,
+const utils = Utils, coreUtils = utils.core, dom = DomUtils,
     boot = bootstrap, ERRS = LocaleERRS;
 
 const PROP_NAME = {

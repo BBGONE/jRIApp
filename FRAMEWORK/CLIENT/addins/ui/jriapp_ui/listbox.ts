@@ -3,6 +3,7 @@ import {
     Utils, BaseObject, IBaseObject, LocaleERRS as ERRS, TEventHandler, Debounce
 } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
+import { DomUtils } from "jriapp/utils/dom";
 import {
     ITEM_STATUS, COLL_CHANGE_TYPE
 } from "jriapp_shared/collection/const";
@@ -13,9 +14,9 @@ import { IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 import { BaseElView } from "./baseview";
 
-const utils = Utils, doc = utils.dom.document, sys = utils.sys,
+const utils = Utils, doc = DomUtils.document, sys = utils.sys,
     checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
-    boot = bootstrap, win = utils.dom.window;
+    boot = bootstrap, win = DomUtils.window;
 
 export interface IOptionStateProvider {
     getCSS(item: ICollectionItem, itemIndex: number, val: any): string;

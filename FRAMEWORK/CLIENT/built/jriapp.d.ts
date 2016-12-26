@@ -421,6 +421,23 @@ declare module "jriapp/utils/tloader" {
         readonly isLoading: boolean;
     }
 }
+declare module "jriapp/utils/dom" {
+    export class DomUtils {
+        static window: Window;
+        static document: Document;
+        static isContained(oNode: any, oCont: any): boolean;
+        static removeNode(node: Node): void;
+        static insertAfter(node: Node, refNode: Node): void;
+        static insertBefore(node: Node, refNode: Node): void;
+        static wrap(elem: Element, wrapper: Element): void;
+        static unwrap(elem: Element): void;
+        private static getClassMap(el);
+        static setClasses(elems: Element[], classes: string[]): void;
+        static setClass(elems: Element[], css: string, remove?: boolean): void;
+        static addClass(elems: Element[], css: string): void;
+        static removeClass(elems: Element[], css: string): void;
+    }
+}
 declare module "jriapp/utils/path" {
     export const frameworkJS: string;
     export interface IUrlParts {
@@ -839,6 +856,7 @@ declare module "jriapp" {
     export { KEYS, BINDING_MODE, BindTo } from "jriapp/const";
     export { IAppOptions, IApplication, TBindingMode, ITemplate, ITemplateEvents, IBinding, IBindingInfo, IBindingOptions, IConverter, IContentFactory, IDatepicker, IElView, ITooltipService, ISelectable, ISelectableProvider, ILifeTimeScope, ITemplateGroupInfo, ITemplateGroupInfoEx, ITemplateInfo, ITemplateLoaderInfo, IViewOptions } from "jriapp/int";
     export { JQueryUtils, $ } from "jriapp/utils/jquery";
+    export { DomUtils as DOM } from "jriapp/utils/dom";
     export { ViewChecks } from "jriapp/utils/viewchecks";
     export { BaseConverter } from "jriapp/converter";
     export { bootstrap } from "jriapp/bootstrap";

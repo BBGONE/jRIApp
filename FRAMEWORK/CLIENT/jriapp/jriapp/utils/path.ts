@@ -2,9 +2,10 @@
 import {
     IIndexer, Utils
 } from "jriapp_shared";
+import { DomUtils } from "./dom";
 import { IJRIAppConfig, Config as config } from "../int";
 
-const utils = Utils, doc = utils.dom.document, head = doc.head || doc.getElementsByTagName("head")[0],
+const utils = Utils, doc = DomUtils.document, head = doc.head || doc.getElementsByTagName("head")[0],
     arrHelper = utils.arr, strUtils = utils.str;
 export const frameworkJS = config.frameworkJS || "jriapp.js";
 const stylesDir = "css", imageDir = "img";
@@ -33,7 +34,7 @@ function fn_getFrameworkPath(): string {
             if (!!parts.pathname) {
                 pathName = pathName.toLowerCase();
                 if (!!pathName && pathName.lastIndexOf(name) > -1) {
-                    let url = script.src;
+                    const url = script.src;
                     return PathHelper.getParentUrl(url);
                 }
             }

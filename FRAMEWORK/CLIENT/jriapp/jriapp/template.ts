@@ -11,9 +11,10 @@ import {
 import { bootstrap } from "./bootstrap";
 import { Binding } from "binding";
 import { ViewChecks } from "./utils/viewchecks";
+import { DomUtils } from "./utils/dom";
 import { $ } from "./utils/jquery";
 
-const utils = Utils, _async = utils.defer, dom = utils.dom, viewChecks = ViewChecks,
+const utils = Utils, _async = utils.defer, dom = DomUtils, viewChecks = ViewChecks,
     doc = dom.document, coreUtils = utils.core, checks = utils.check, strUtils = utils.str,
     arrHelper = utils.arr, sys = utils.sys, boot = bootstrap, ERRS = LocaleERRS, ERROR = utils.err,
     win = dom.window;

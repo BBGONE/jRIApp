@@ -2,8 +2,9 @@
 import { Utils } from "jriapp_shared";
 import { ITooltipService } from "jriapp/int";
 import { $ } from "jriapp/utils/jquery";
+import { DomUtils } from "jriapp/utils/dom";
 
-const window = Utils.dom.window;
+const window = DomUtils.window;
 
 export const css = {
     toolTip: "qtip",

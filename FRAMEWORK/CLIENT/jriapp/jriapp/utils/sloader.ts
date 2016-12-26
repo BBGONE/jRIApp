@@ -3,10 +3,11 @@ import {
     IIndexer, Utils, IStatefulPromise, PromiseState
 } from "jriapp_shared";
 import { AsyncUtils } from "jriapp_shared/utils/async";
+import { DomUtils } from "./dom";
 import { IStylesLoader } from "../int";
 import { PathHelper } from "./path";
 
-const _async = AsyncUtils, utils = Utils, dom = utils.dom, arrHelper = utils.arr,
+const _async = AsyncUtils, utils = Utils, dom = DomUtils, arrHelper = utils.arr,
     resolvedPromise = _async.createSyncDeferred<void>().resolve(),
     doc = dom.document, head = doc.head || doc.getElementsByTagName("head")[0];
 let _stylesLoader: IStylesLoader = null;

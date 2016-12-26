@@ -5,6 +5,7 @@ import {
 } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
 import { $ } from "jriapp/utils/jquery";
+import { DomUtils } from "jriapp/utils/dom";
 import { BINDING_MODE } from "jriapp/const";
 import {
     IApplication, IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IElView, IViewOptions,
@@ -16,7 +17,7 @@ import { LifeTimeScope } from "jriapp/utils/lifetime";
 
 import { css } from "./int";
 
-const utils = Utils, dom = utils.dom, doc = dom.document, coreUtils = utils.core,
+const utils = Utils, dom = DomUtils, doc = dom.document, coreUtils = utils.core,
     checks = utils.check, boot = bootstrap, sys = utils.sys;
 
 export class BasicContent extends BaseObject implements IContent {

@@ -14,19 +14,19 @@ import { Defaults } from "defaults";
 import { TemplateLoader } from "./utils/tloader";
 import { createCssLoader } from "./utils/sloader";
 import { PathHelper } from "./utils/path";
+import { DomUtils } from "./utils/dom";
 import { $ } from "./utils/jquery";
 import { Promise } from "jriapp_shared/utils/deferred";
 import { createQueue, IQueue } from "jriapp_shared/utils/queue";
 
-
-const utils = Utils, dom = utils.dom, win = dom.window, doc = win.document, arrHelper = utils.arr,
+const utils = Utils, dom = DomUtils, win = dom.window, doc = win.document, arrHelper = utils.arr,
     _async = utils.defer, coreUtils = utils.core, strUtils = utils.str, ERROR = utils.err,
     ERRS = LocaleERRS;
 
 //Implements polyfill for requestAnimationFrame API && Promise
-(function() {
-    let win: any = dom.window;
-
+(function () {
+    const win: any = dom.window;
+    
     //check if requestAnimationFrame implemented
     if (!win.requestAnimationFrame) {
         let requestAnimationFrame = win.requestAnimationFrame || win.mozRequestAnimationFrame ||

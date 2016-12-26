@@ -52,7 +52,6 @@
     <TypeScriptCompile Include="jriapp_shared\utils\debounce.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\debug.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\deferred.ts" />
-    <TypeScriptCompile Include="jriapp_shared\utils\dom.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\error.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\eventhelper.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\http.ts" />

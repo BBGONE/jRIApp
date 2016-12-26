@@ -1,12 +1,13 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { Utils } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
+import { DomUtils } from "jriapp/utils/dom";
 import { IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 import { InputElView } from "./input";
 import { css, PROP_NAME } from "./baseview";
 
-const checks = Utils.check, dom = Utils.dom, boot = bootstrap;
+const checks = Utils.check, dom = DomUtils, boot = bootstrap;
 
 export class CheckBoxThreeStateElView extends InputElView {
     private _checked: boolean;

@@ -2,6 +2,7 @@
 import {
     Utils,
 } from "jriapp_shared";
+import { DomUtils } from "jriapp/utils/dom";
 import { BINDING_MODE } from "jriapp/const";
 import { IElView, IConstructorContentOptions } from "jriapp/int";
 import { LifeTimeScope } from "jriapp/utils/lifetime";
@@ -10,7 +11,7 @@ import { CheckBoxElView } from "../checkbox";
 import { css } from "./int";
 import { BasicContent } from "./basic";
 
-const dom = Utils.dom, doc = dom.document;
+const dom = DomUtils, doc = dom.document;
 
 export class BoolContent extends BasicContent {
     constructor(options: IConstructorContentOptions) {

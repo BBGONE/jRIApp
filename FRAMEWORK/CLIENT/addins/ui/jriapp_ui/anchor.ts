@@ -3,13 +3,14 @@ import {
     Utils
 } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
+import { DomUtils } from "jriapp/utils/dom";
 import { IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 import { css, PROP_NAME, IEventChangedArgs, EVENT_CHANGE_TYPE } from "./baseview";
 import { ICommand } from "jriapp/mvvm";
 import { CommandElView } from "./command";
 
-const dom = Utils.dom, boot = bootstrap;
+const dom = DomUtils, boot = bootstrap;
 
 export interface IAncorOptions extends IViewOptions {
     imageSrc?: string;

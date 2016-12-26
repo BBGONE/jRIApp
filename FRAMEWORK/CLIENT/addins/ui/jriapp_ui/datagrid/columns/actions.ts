@@ -2,13 +2,13 @@
 import { Utils } from "jriapp_shared";
 import { DATA_ATTR } from "jriapp/const";
 import { $ } from "jriapp/utils/jquery";
-
+import { DomUtils } from "jriapp/utils/dom";
 import { css, ROW_ACTION } from "../const";
 import { IColumnInfo, BaseColumn, ICellInfo } from "./base";
 import { ActionsCell } from "../cells/actions";
 import { DataGrid } from "../datagrid";
 
-const dom = Utils.dom;
+const dom = DomUtils;
 
 export interface IActionsColumnInfo extends IColumnInfo {
 }

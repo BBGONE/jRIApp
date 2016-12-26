@@ -3,6 +3,7 @@ import {
     IBaseObject, LocaleERRS as ERRS, Utils
 } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
+import { DomUtils } from "jriapp/utils/dom";
 import { BINDING_MODE } from "jriapp/const";
 import {
     IExternallyCachable, IBinding, IBindingOptions,
@@ -16,7 +17,7 @@ import { ListBoxElView } from "../listbox";
 import { SpanElView } from "../span";
 import { BasicContent } from "./basic";
 
-const utils = Utils, dom = utils.dom, doc = dom.document, checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
+const utils = Utils, dom = DomUtils, doc = dom.document, checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
     sys = utils.sys;
     
 

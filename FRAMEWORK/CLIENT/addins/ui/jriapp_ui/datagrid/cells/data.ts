@@ -1,6 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { LocaleERRS as ERRS, Utils } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
+import { DomUtils } from "jriapp/utils/dom";
 import { IContent } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 
@@ -8,7 +9,7 @@ import { css } from "../const";
 import { BaseCell, ICellOptions } from "./base";
 import { DataColumn } from "../columns/data";
 
-const utils = Utils, dom = utils.dom, boot = bootstrap;
+const utils = Utils, dom = DomUtils, boot = bootstrap;
 
 export class DataCell extends BaseCell<DataColumn> {
     private _content: IContent;

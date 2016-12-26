@@ -23,6 +23,7 @@ export {
     IViewOptions
 } from "./jriapp/int";
 export { JQueryUtils, $ } from "./jriapp/utils/jquery";
+export { DomUtils as DOM } from "./jriapp/utils/dom";
 export { ViewChecks } from "./jriapp/utils/viewchecks";
 export { BaseConverter } from "./jriapp/converter";
 export { bootstrap } from "./jriapp/bootstrap";
@@ -38,6 +39,6 @@ export {
 
 export { Application } from "./jriapp/app";
 
-export const VERSION = "1.1.27";
+export const VERSION = "1.1.28";
 
 Bootstrap._initFramework();

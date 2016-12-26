@@ -3,6 +3,7 @@ import {
     Utils, BaseObject, IPropertyBag, IValidationInfo, IIndexer, LocaleERRS as ERRS, LocaleSTRS as STRS
 } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
+import { DomUtils } from "jriapp/utils/dom";
 import { ViewChecks } from "jriapp/utils/viewchecks";
 import { TOOLTIP_SVC, DATA_ATTR } from "jriapp/const";
 import { ITooltipService, IElView, IElViewStore,IApplication, IViewOptions } from "jriapp/int";
@@ -15,7 +16,7 @@ import { createToolTipSvc } from "./utils/tooltip";
 
 export { IEventChangedArgs, EVENT_CHANGE_TYPE };
 
-const utils = Utils, coreUtils = utils.core, dom = utils.dom, checks = utils.check,
+const utils = Utils, coreUtils = utils.core, dom = DomUtils, checks = utils.check,
     boot = bootstrap, viewChecks = ViewChecks;
 
 viewChecks.isElView = function (obj: any): boolean {

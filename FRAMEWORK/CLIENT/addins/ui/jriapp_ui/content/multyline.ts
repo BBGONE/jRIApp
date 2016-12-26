@@ -5,12 +5,13 @@ import { KEYS } from "jriapp/const";
 import {
     IApplication, IElView, IConstructorContentOptions
 } from "jriapp/int";
+import { DomUtils } from "jriapp/utils/dom";
 import { TextAreaElView } from "../textarea";
 
 import { css } from "./int";
 import { BasicContent } from "./basic";
 
-const utils = Utils, NAME = "multyline", strUtils = utils.str, dom = utils.dom, document = dom.document;
+const utils = Utils, NAME = "multyline", strUtils = utils.str, dom = DomUtils, document = dom.document;
 
 export class MultyLineContent extends BasicContent {
     static __allowedKeys: number[] = null;

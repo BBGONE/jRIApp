@@ -1,6 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { Utils } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
+import { DomUtils } from "jriapp/utils/dom";
 import { DATA_ATTR } from "jriapp/const";
 
 import { css, PROP_NAME } from "../const";
@@ -8,7 +9,7 @@ import { BaseColumn, ICellInfo } from "./base";
 import { DataGrid } from "../datagrid";
 import { RowSelectorCell } from "../cells/rowselector";
 
-const utils = Utils, dom = utils.dom, doc = dom.document, checks = utils.check;
+const utils = Utils, dom = DomUtils, doc = dom.document, checks = utils.check;
 
 export class RowSelectorColumn extends BaseColumn {
     private _chk: HTMLInputElement;

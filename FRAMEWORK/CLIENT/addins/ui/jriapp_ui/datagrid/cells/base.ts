@@ -1,6 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { BaseObject, Utils } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
+import { DomUtils } from "jriapp/utils/dom";
 import { DATA_ATTR } from "jriapp/const";
 import { ICollectionItem } from "jriapp_shared/collection/int";
 
@@ -10,7 +11,7 @@ import { Row } from "../rows/row";
 import { BaseColumn } from "../columns/base";
 import { DataGrid } from "../datagrid"
 
-const utils = Utils, dom = utils.dom;
+const utils = Utils, dom = DomUtils;
 
 export interface ICellOptions {
     row: Row;

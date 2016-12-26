@@ -7,6 +7,7 @@ import {
     ICollection, ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollItemAddedArgs
 } from "jriapp_shared/collection/int";
 import { $ } from "jriapp/utils/jquery";
+import { DomUtils } from "jriapp/utils/dom";
 import { DblClick } from "../../utils/dblclick";
 import { css, ROW_POSITION } from "../const";
 import { Row } from "./row";
@@ -14,7 +15,7 @@ import { DetailsCell } from "../cells/details";
 import { DataGrid } from "../datagrid"
 
 const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr,
-    dom = utils.dom, document = dom.document;
+    dom = DomUtils, document = dom.document;
 
 export class DetailsRow extends BaseObject {
     private _grid: DataGrid;

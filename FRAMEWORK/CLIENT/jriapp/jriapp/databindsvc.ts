@@ -11,13 +11,14 @@ import {
 } from "./int";
 import { bootstrap } from "./bootstrap";
 import { LifeTimeScope } from "./utils/lifetime";
+import { DomUtils } from "./utils/dom";
 import { create as createModulesLoader } from "./utils/mloader";
 import { getBindingOptions, Binding } from "./binding";
 import { ViewChecks } from "./utils/viewchecks";
 import { Parser } from "./utils/parser";
 import { $ } from "./utils/jquery";
 
-const utils = Utils, viewChecks = ViewChecks, dom = utils.dom, doc = dom.document,
+const utils = Utils, viewChecks = ViewChecks, dom = DomUtils, doc = dom.document,
     strUtils = utils.str, sys = utils.sys, checks = utils.check, boot = bootstrap, ERRS = LocaleERRS, parser = Parser;
 
 export function createDataBindSvc(root: Document | HTMLElement, elViewFactory: IElViewFactory): IDataBindingService {

@@ -13,11 +13,12 @@ import {
 } from "./int";
 import { bootstrap } from "./bootstrap";
 import { LifeTimeScope } from "./utils/lifetime";
+import { DomUtils } from "./utils/dom";
 import { createElViewFactory } from "./elview";
 import { createDataBindSvc } from "./databindsvc";
 import { $ } from "./utils/jquery";
 
-const utils = Utils, dom = utils.dom, doc = dom.document,
+const utils = Utils, dom = DomUtils, doc = dom.document,
     boot = bootstrap, sys = utils.sys, ERRS = LocaleERRS;
 
 const APP_EVENTS = {

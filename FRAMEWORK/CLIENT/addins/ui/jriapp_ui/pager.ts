@@ -3,6 +3,7 @@ import {
     Utils, BaseObject, IBaseObject, LocaleERRS as ERRS, LocaleSTRS as STRS, Debounce
 } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
+import { DomUtils } from "jriapp/utils/dom";
 import { IApplication, IViewOptions } from "jriapp/int";
 import { BaseElView, fn_addToolTip } from "./baseview";
 import {
@@ -13,7 +14,7 @@ import {
 } from "jriapp_shared/collection/int";
 import { bootstrap } from "jriapp";
 
-const utils = Utils, dom = utils.dom, doc = dom.document, sys = utils.sys,
+const utils = Utils, dom = DomUtils, doc = dom.document, sys = utils.sys,
     checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
     ERROR = utils.err, boot = bootstrap, win = dom.window;
 let _STRS = STRS.PAGER;

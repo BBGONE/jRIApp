@@ -6,6 +6,7 @@ import {
 } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
 import { $ } from "jriapp/utils/jquery";
+import { DomUtils } from "jriapp/utils/dom";
 import { DATA_ATTR, ELVIEW_NM } from "jriapp/const";
 import { ViewChecks } from "jriapp/utils/viewchecks";
 import {
@@ -19,7 +20,7 @@ import { BaseElView, fn_addToolTip } from "./baseview";
 import { Binding } from "jriapp/binding";
 import { parseContentAttr } from "./content/int";
 
-const utils = Utils, dom = Utils.dom, doc = dom.document,
+const utils = Utils, dom = DomUtils, doc = dom.document,
     checks = utils.check, coreUtils = utils.core, strUtils = utils.str,
     sys = utils.sys, parser = Parser, boot = bootstrap, viewChecks = ViewChecks;
 

@@ -1,6 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { IIndexer, IBaseObject, Utils } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
+import { DomUtils } from "jriapp/utils/dom";
 import { SORT_ORDER } from "jriapp_shared/collection/const";
 import { IExternallyCachable } from "jriapp/int";
 
@@ -8,7 +9,7 @@ import { css, PROP_NAME } from "../const";
 import { BaseColumn, IColumnInfo, ICellInfo } from "./base";
 import { DataGrid } from "../datagrid";
 
-const utils = Utils, dom = utils.dom;
+const utils = Utils, dom = DomUtils;
 
 export class DataColumn extends BaseColumn {
     private _sortOrder: SORT_ORDER;

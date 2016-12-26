@@ -1,8 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { ERRS } from "../lang";
-import { IIndexer } from "../int";
+import { IIndexer, LocaleERRS } from "jriapp_shared";
 
-const hasClassList = (!!window.document.documentElement.classList);
+const ERRS = LocaleERRS, hasClassList = (!!window.document.documentElement.classList);
 /**
  * pure javascript methods for the DOM manipulation
 */
@@ -23,7 +22,7 @@ export class DomUtils {
     static removeNode(node: Node) {
         if (!node)
             return;
-        let pnd = node.parentNode;
+        const pnd = node.parentNode;
         if (!!pnd)
             pnd.removeChild(node);
     }

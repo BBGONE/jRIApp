@@ -1,11 +1,11 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { BaseObject, Utils } from "jriapp_shared";
-
+import { DomUtils } from "jriapp/utils/dom";
 import { css } from "../const";
 import { FillSpaceRow } from "../rows/fillspace";
 import { DataGrid } from "../datagrid"
 
-const dom = Utils.dom, doc = dom.document;
+const dom = DomUtils, doc = dom.document;
 
 export class FillSpaceCell extends BaseObject {
     private _row: FillSpaceRow;

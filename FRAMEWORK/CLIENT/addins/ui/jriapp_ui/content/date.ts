@@ -5,11 +5,11 @@ import {
 import {
     IApplication, IConstructorContentOptions, IBindingInfo, IBindingOptions, IElView
 } from "jriapp/int";
-
+import { DomUtils } from "jriapp/utils/dom";
 import { css } from "./int";
 import { BasicContent } from "./basic";
 
-const utils = Utils, strUtils = utils.str, doc = utils.dom.document;
+const utils = Utils, strUtils = utils.str, doc = DomUtils.document;
 
 const NAME = "datepicker";
 

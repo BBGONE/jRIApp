@@ -3,13 +3,14 @@ import {
     Utils, IBaseObject, IVoidPromise, IEditable, TEventHandler, IDeferred, IPromise, LocaleSTRS as STRS, BaseObject
 } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
+import { DomUtils } from "jriapp/utils/dom";
 import { ITemplate, ITemplateEvents, IApplication, ISelectableProvider } from "jriapp/int";
 import { createTemplate } from "jriapp/template";
 import { bootstrap } from "jriapp/bootstrap";
 import { ViewModel } from "jriapp/mvvm";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str,
-    coreUtils = utils.core, sys = utils.sys, doc = utils.dom.document,
+    coreUtils = utils.core, sys = utils.sys, doc = DomUtils.document,
     ERROR = utils.err, boot = bootstrap;
 
 export const enum DIALOG_ACTION { Default = 0, StayOpen = 1 };

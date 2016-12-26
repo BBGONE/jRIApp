@@ -9,7 +9,6 @@ import { HttpUtils } from "./http";
 import { StringUtils } from "./strutils";
 import { Checks } from "./checks";
 import { ArrayHelper } from "./arrhelper";
-import { DomUtils } from "./dom";
 import { ITaskQueue } from "./ideferred";
 import { getTaskQueue } from "./deferred";
 
@@ -24,6 +23,5 @@ export class Utils {
     static readonly log = LOGGER;
     static readonly debug = DEBUG;
     static readonly sys = SysUtils;
-    static readonly dom = DomUtils;
     static readonly queue: ITaskQueue = getTaskQueue();
 }

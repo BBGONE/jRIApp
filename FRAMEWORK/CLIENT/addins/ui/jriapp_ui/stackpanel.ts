@@ -1,6 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { Utils, BaseObject, IBaseObject, LocaleERRS as ERRS, TEventHandler, Debounce } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
+import { DomUtils } from "jriapp/utils/dom";
 import {DATA_ATTR, KEYS } from "jriapp/const";
 import {
     IApplication, ITemplate, ITemplateEvents, ISelectable,  IViewOptions, ISelectableProvider
@@ -15,7 +16,7 @@ import {
 } from "jriapp_shared/collection/int";
 import { bootstrap } from "jriapp";
 
-const utils = Utils, dom = utils.dom, doc = dom.document, sys = utils.sys,
+const utils = Utils, dom = DomUtils, doc = dom.document, sys = utils.sys,
     checks = utils.check, strUtils = utils.str, coreUtils = utils.core, boot = bootstrap;
 
 const css = {

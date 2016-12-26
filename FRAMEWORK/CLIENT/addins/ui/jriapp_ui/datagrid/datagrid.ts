@@ -4,6 +4,7 @@ import {
     Debounce, Utils, IPromise
 } from "jriapp_shared";
 import { $ } from "jriapp/utils/jquery";
+import { DomUtils } from "jriapp/utils/dom";
 import { DATA_ATTR, KEYS } from "jriapp/const";
 import {
     IApplication, ISelectableProvider, ISelectable, IViewOptions
@@ -53,7 +54,7 @@ export { IDataGridAnimation, DefaultAnimation } from "./animation";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str,
     coreUtils = utils.core, ERROR = utils.err, sys = utils.sys,
-    dom = utils.dom, parser = Parser, doc = dom.document, win = dom.window, boot = bootstrap;
+    dom = DomUtils, parser = Parser, doc = dom.document, win = dom.window, boot = bootstrap;
 
 let _columnWidthInterval: number, _gridsCount: number = 0;
 const _created_grids: IIndexer<DataGrid> = {};
