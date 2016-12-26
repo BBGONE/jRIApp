@@ -125,7 +125,7 @@ span.ria-required-field::after {
 }
 
 /*Validation error styles*/
-.ria-field-error {
+input.ria-field-error, select.ria-field-error, textarea.ria-field-error {
     outline: 2px solid red;
 }
 
@@ -146,8 +146,9 @@ input[type=checkbox].ria-field-error, input[type=radio].ria-field-error {
     position: relative;
 }
 
+/* for dataform use border instead of outline */
 .ria-dataform.ria-field-error {
-    outline: 2px solid red;
+    border: 2px solid red;
 }
 
 label.ria-row-selector
