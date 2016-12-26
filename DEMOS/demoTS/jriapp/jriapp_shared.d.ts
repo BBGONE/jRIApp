@@ -919,23 +919,6 @@ declare module "jriapp_shared/utils/http" {
         static ajaxTimeOut: number;
     }
 }
-declare module "jriapp_shared/utils/dom" {
-    export class DomUtils {
-        static window: Window;
-        static document: Document;
-        static isContained(oNode: any, oCont: any): boolean;
-        static removeNode(node: Node): void;
-        static insertAfter(node: Node, refNode: Node): void;
-        static insertBefore(node: Node, refNode: Node): void;
-        static wrap(elem: Element, wrapper: Element): void;
-        static unwrap(elem: Element): void;
-        private static getClassMap(el);
-        static setClasses(elems: Element[], classes: string[]): void;
-        static setClass(elems: Element[], css: string, remove?: boolean): void;
-        static addClass(elems: Element[], css: string): void;
-        static removeClass(elems: Element[], css: string): void;
-    }
-}
 declare module "jriapp_shared/utils/utils" {
     import { CoreUtils } from "jriapp_shared/utils/coreutils";
     import { DEBUG } from "jriapp_shared/utils/debug";
@@ -947,7 +930,6 @@ declare module "jriapp_shared/utils/utils" {
     import { StringUtils } from "jriapp_shared/utils/strutils";
     import { Checks } from "jriapp_shared/utils/checks";
     import { ArrayHelper } from "jriapp_shared/utils/arrhelper";
-    import { DomUtils } from "jriapp_shared/utils/dom";
     import { ITaskQueue } from "jriapp_shared/utils/ideferred";
     export class Utils {
         static readonly check: typeof Checks;
@@ -960,7 +942,6 @@ declare module "jriapp_shared/utils/utils" {
         static readonly log: typeof LOGGER;
         static readonly debug: typeof DEBUG;
         static readonly sys: typeof SysUtils;
-        static readonly dom: typeof DomUtils;
         static readonly queue: ITaskQueue;
     }
 }

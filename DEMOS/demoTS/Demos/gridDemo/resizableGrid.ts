@@ -3,9 +3,9 @@ import * as dbMOD from "jriapp_db";
 import * as uiMOD from "jriapp_ui";
 import * as COMMON from "common";
 
-let utils = RIAPP.Utils, $ = RIAPP.$;
+const utils = RIAPP.Utils, $ = RIAPP.$;
 
-let $doc = $(utils.dom.document); 	//window object
+let $doc = $(RIAPP.DOM.document); //window object
 let $head = $("head");			//head object
 let $drag: JQuery = null;		//reference to the current grip that is being dragged
 

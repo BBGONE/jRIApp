@@ -2536,7 +2536,7 @@ define("gridDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "common",
 define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], function (require, exports, RIAPP, uiMOD) {
     "use strict";
     var utils = RIAPP.Utils, $ = RIAPP.$;
-    var $doc = $(utils.dom.document);
+    var $doc = $(RIAPP.DOM.document);
     var $head = $("head");
     var $drag = null;
     var ID = "id";
