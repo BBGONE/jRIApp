@@ -27,14 +27,16 @@ The framework is based on (Model-View-ViewModel) MVVM architecture:<br/>
 <li>It has built-in ability to work with data stores on the server (<i>Much like Microsoft Entity Framework does</i>)</li>
 <li>It has useful components as Data Grid and others (<i>and be used declaratively</i>). It's easy to add custom ones.</li>
 <li>It can load modules, CSS and HTML templates on demand (<i>a template can load CSS and JavaScript modules</i>)</li>
-<li>It has an ability to wrap any existing UI Control from any framework - like JQuery UI, Bootstrapp, Kendo or anything else.</li>
+<li>It has an ability to wrap any existing UI Control from any framework - like JQuery UI, Bootstrap or anything else.</li>
 <li>It has superb performance because it does not use polling for any property changes and does not use
 intermixed HTML and Scripts inside template (<i>the code is 100% separated from HTML- if you choose to do it</i>).</li>
 <li>And the code does not know (agnostic) about the structure of HTML page.</li>
 <li>The framework uses HTML5 features implemented in most of the browsers (<i>starting from IE9</i>) and does not need Polyfills 
 and the code is not overengineered.</li>
 <li>Besides relational databases it can also be used to work with NOSQL because it can work with complex properties of unlimited depth. 
-<i>(the properties can be complex objects which can also contain complex properties)</i></li>
+<i>(the properties can be complex objects which can also contain complex properties)</i><br/>
+Also, it can work with JSON to bind values extracted from it to the UI controls - it's an easy path to work with NOSQL DB. 
+</li>
 <li>Classes for using the data service can be used without using the whole framework. They can be used in React, Angular.js and
 any other framework no different as when using them with this framework. They are 158 kb.(minified)</li>
 </ul>
