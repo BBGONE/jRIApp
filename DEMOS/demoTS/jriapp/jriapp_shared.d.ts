@@ -166,6 +166,15 @@ declare module "jriapp_shared/int" {
         getAllErrors(): IValidationInfo[];
         getIErrorNotification(): IErrorNotification;
     }
+    export interface IWeakMap {
+        set(key: any, value: any): IWeakMap;
+        get(key: any): any;
+        delete(key: any): boolean;
+        has(key: any): boolean;
+    }
+    export interface WeakMapConstructor {
+        new (): IWeakMap;
+    }
 }
 declare module "jriapp_shared/errors" {
     export class BaseError {
@@ -1339,6 +1348,10 @@ declare module "jriapp_shared/utils/jsonbag" {
         readonly list: AnyList;
     }
 }
+declare module "jriapp_shared/utils/weakmap" {
+    import { IWeakMap } from "jriapp_shared/int";
+    export function createWeakMap(): IWeakMap;
+}
 declare module "jriapp_shared/collection/dictionary" {
     import { IPropInfo } from "jriapp_shared/collection/int";
     import { BaseList, IListItem, IListItemConstructor } from "jriapp_shared/collection/list";
@@ -1372,6 +1385,7 @@ declare module "jriapp_shared" {
     export * from "jriapp_shared/object";
     export * from "jriapp_shared/utils/basebag";
     export * from "jriapp_shared/utils/jsonbag";
+    export { createWeakMap } from "jriapp_shared/utils/weakmap";
     export { STRS as LocaleSTRS, ERRS as LocaleERRS } from "jriapp_shared/lang";
     export { BaseCollection } from "jriapp_shared/collection/base";
     export { CollectionItem } from "jriapp_shared/collection/item";

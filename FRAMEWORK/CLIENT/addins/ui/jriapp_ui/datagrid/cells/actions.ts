@@ -6,15 +6,15 @@ import { DATA_ATTR, } from "jriapp/const";
 import { ButtonCss } from "jriapp/int";
 import { fn_addToolTip } from "../../baseview";
 
-import { css, actionsSelector, txtMap, editSelector, deleteSelector  } from "../const";
+import { css, actionsSelector, txtMap } from "../const";
 import { BaseCell, ICellOptions } from "./base";
 import { ActionsColumn } from "../columns/actions";
 
 const utils = Utils, dom = DomUtils, strUtils = utils.str, checks = utils.check;
-
-const _editImages = '<span data-role="row-action" data-name="img_ok" class="{0}"></span><span data-role="row-action" data-name="img_cancel" class="{1}"></span>';
-const _viewImages = '<span data-role="row-action" data-name="img_edit" class="{0}"></span><span data-role="row-action" data-name="img_delete" class="{1}"></span>';
-let editImages: string = checks.undefined, viewImages: string = checks.undefined;
+export const editName = "img_edit", deleteName = "img_delete";
+const _editBtnsHTML = '<span data-role="row-action" data-name="img_ok" class="{0}"></span><span data-role="row-action" data-name="img_cancel" class="{1}"></span>';
+const _viewBtnsHTML = '<span data-role="row-action" data-name="img_edit" class="{0}"></span><span data-role="row-action" data-name="img_delete" class="{1}"></span>';
+let editBtnsHTML: string = checks.undefined, viewBtnsHTML: string = checks.undefined;
 
 export class ActionsCell extends BaseCell<ActionsColumn> {
     private _isEditing: boolean;
@@ -29,58 +29,60 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        const $td = $(this.td), $imgs = $td.find(actionsSelector);
-        $imgs.each(function (index, img) {
-            let $img = $(img);
-            $img.removeData();
+        const td = this.td, btns = dom.queryElements<HTMLElement>(td, actionsSelector);
+        btns.forEach(function (img) {
+            dom.removeData(img);
         });
         super.destroy();
     }
-    private _setupImages($images: JQuery) {
+    private _setupButtons(buttons: HTMLElement[]) {
         const self = this;
-        $images.each(function (index: number, img: HTMLElement) {
-            let $img = $(img);
-            $img.data("cell", self);
-            let name = $img.attr(DATA_ATTR.DATA_NAME);
-            fn_addToolTip($img, STRS.TEXT[txtMap[name]]);
-            $img.attr(DATA_ATTR.DATA_EVENT_SCOPE, self.column.uniqueID);
+        buttons.forEach(function (btn) {
+            dom.setData(btn, "cell", self);
+            const name = btn.getAttribute(DATA_ATTR.DATA_NAME);
+            fn_addToolTip($(btn), STRS.TEXT[txtMap[name]]);
+            btn.setAttribute(DATA_ATTR.DATA_EVENT_SCOPE, self.column.uniqueID);
         });
     }
-    protected get editImages() {
-        if (!editImages)
-            editImages = strUtils.format(_editImages, ButtonCss.OK, ButtonCss.Cancel);
-        return editImages;
+    protected get editBtnsHTML() {
+        if (!editBtnsHTML)
+            editBtnsHTML = strUtils.format(_editBtnsHTML, ButtonCss.OK, ButtonCss.Cancel);
+        return editBtnsHTML;
     }
-    protected get viewImages() {
-        if (!viewImages)
-            viewImages = strUtils.format(_viewImages, ButtonCss.Edit, ButtonCss.Delete);
-        return viewImages;
+    protected get viewBtnsHTML() {
+        if (!viewBtnsHTML)
+            viewBtnsHTML = strUtils.format(_viewBtnsHTML, ButtonCss.Edit, ButtonCss.Delete);
+        return viewBtnsHTML;
     }
     protected _createButtons(isEditing: boolean) {
         if (!this.td)
             return;
 
-        const self = this, $td = $(this.td);
-        let $newElems: JQuery;
+        const self = this, td = this.td;
+        td.innerHTML = "";
 
-        $td.empty();
         if (isEditing) {
             self._isEditing = true;
-            $newElems = $(self.editImages);
-            self._setupImages($newElems.filter(actionsSelector));
+            let editBtns = dom.fromHTML(self.editBtnsHTML);
+            self._setupButtons(editBtns);
+            dom.append(td, editBtns);
         }
         else {
             self._isEditing = false;
-            $newElems = $(self.viewImages);
+            let viewBtns = dom.fromHTML(self.viewBtnsHTML);
             if (!self.isCanEdit) {
-                $newElems = $newElems.not(editSelector);
+                viewBtns = viewBtns.filter((el) => {
+                    return !(editName === el.getAttribute(DATA_ATTR.DATA_NAME));
+                });
             }
             if (!self.isCanDelete) {
-                $newElems = $newElems.not(deleteSelector);
+                viewBtns = viewBtns.filter((el) => {
+                    return !(deleteName === el.getAttribute(DATA_ATTR.DATA_NAME));
+                });
             }
-            self._setupImages($newElems.filter(actionsSelector));
+            self._setupButtons(viewBtns);
+            dom.append(td, viewBtns);
         }
-        $td.append($newElems);
     }
     update() {
         if (!this.row)

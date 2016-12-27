@@ -11,7 +11,6 @@ declare module "jriapp/const" {
         OBJECT: string;
     };
     export const DATA_ATTR: {
-        EL_VIEW_KEY: string;
         DATA_BIND: string;
         DATA_VIEW: string;
         DATA_EVENT_SCOPE: string;
@@ -349,13 +348,6 @@ declare module "jriapp/utils/parser" {
         static parseOptions(str: string): any[];
     }
 }
-declare module "jriapp/utils/jquery" {
-    export const $: JQueryStatic;
-    export class JQueryUtils {
-        static $: JQueryStatic;
-        static destroy$Plugin($el: JQuery, name: string): void;
-    }
-}
 declare module "jriapp/elview" {
     import { IElViewFactory, IElViewRegister } from "jriapp/int";
     export function createElViewFactory(register: IElViewRegister): IElViewFactory;
@@ -423,9 +415,15 @@ declare module "jriapp/utils/tloader" {
 }
 declare module "jriapp/utils/dom" {
     export class DomUtils {
-        static window: Window;
-        static document: Document;
+        static readonly window: Window;
+        static readonly document: Document;
+        static getData(el: Node, key: string): any;
+        static setData(el: Node, key: string, val: any): void;
+        static removeData(el: Node, key?: string): void;
         static isContained(oNode: any, oCont: any): boolean;
+        static fromHTML(html: string): HTMLElement[];
+        static queryElements<T>(root: Document | HTMLElement, selector: string): T[];
+        static append(parent: Node, children: Node[]): void;
         static removeNode(node: Node): void;
         static insertAfter(node: Node, refNode: Node): void;
         static insertBefore(node: Node, refNode: Node): void;
@@ -473,6 +471,13 @@ declare module "jriapp/utils/sloader" {
         pathname: string;
         hash: string;
         search: string;
+    }
+}
+declare module "jriapp/utils/jquery" {
+    export const $: JQueryStatic;
+    export class JQueryUtils {
+        static $: JQueryStatic;
+        static destroy$Plugin($el: JQuery, name: string): void;
     }
 }
 declare module "jriapp/bootstrap" {

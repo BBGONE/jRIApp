@@ -455,8 +455,6 @@ declare module "jriapp_ui/span" {
         text: string;
         value: string;
         html: string;
-        color: string;
-        fontSize: string;
     }
 }
 declare module "jriapp_ui/content/listbox" {
@@ -714,8 +712,6 @@ declare module "jriapp_ui/datagrid/const" {
         colSortDesc: string;
     };
     export const actionsSelector: string;
-    export const editSelector: string;
-    export const deleteSelector: string;
     export const txtMap: IIndexer<string>;
     export const PROP_NAME: {
         isCurrent: string;
@@ -871,13 +867,14 @@ declare module "jriapp_ui/datagrid/columns/actions" {
 declare module "jriapp_ui/datagrid/cells/actions" {
     import { BaseCell, ICellOptions } from "jriapp_ui/datagrid/cells/base";
     import { ActionsColumn } from "jriapp_ui/datagrid/columns/actions";
+    export const editName: string, deleteName: string;
     export class ActionsCell extends BaseCell<ActionsColumn> {
         private _isEditing;
         constructor(options: ICellOptions);
         destroy(): void;
-        private _setupImages($images);
-        protected readonly editImages: string;
-        protected readonly viewImages: string;
+        private _setupButtons(buttons);
+        protected readonly editBtnsHTML: string;
+        protected readonly viewBtnsHTML: string;
         protected _createButtons(isEditing: boolean): void;
         update(): void;
         toString(): string;
@@ -901,7 +898,7 @@ declare module "jriapp_ui/datagrid/cells/rowselector" {
     import { BaseCell, ICellOptions } from "jriapp_ui/datagrid/cells/base";
     import { RowSelectorColumn } from "jriapp_ui/datagrid/columns/rowselector";
     export class RowSelectorCell extends BaseCell<RowSelectorColumn> {
-        private _$chk;
+        private _chk;
         constructor(options: ICellOptions);
         checked: boolean;
         destroy(): void;
@@ -919,7 +916,7 @@ declare module "jriapp_ui/datagrid/rows/row" {
     import { DataGrid } from "jriapp_ui/datagrid/datagrid";
     export class Row extends BaseObject {
         private _grid;
-        private _$tr;
+        private _tr;
         private _item;
         private _cells;
         private _objId;
@@ -948,11 +945,10 @@ declare module "jriapp_ui/datagrid/rows/row" {
         updateUIState(): void;
         scrollIntoView(animate?: boolean, pos?: ROW_POSITION): void;
         toString(): string;
-        readonly offset: JQueryCoordinates;
+        readonly rect: ClientRect;
         readonly height: number;
         readonly width: number;
-        readonly tr: HTMLElement;
-        readonly $tr: JQuery;
+        readonly tr: HTMLTableRowElement;
         readonly grid: DataGrid;
         readonly item: ICollectionItem;
         readonly cells: BaseCell<BaseColumn>[];
@@ -1013,7 +1009,7 @@ declare module "jriapp_ui/datagrid/rows/details" {
     import { DataGrid } from "jriapp_ui/datagrid/datagrid";
     export class DetailsRow extends BaseObject {
         private _grid;
-        private _$tr;
+        private _tr;
         private _item;
         private _cell;
         private _parentRow;
@@ -1031,11 +1027,10 @@ declare module "jriapp_ui/datagrid/rows/details" {
         private _hide(onEnd);
         destroy(): void;
         toString(): string;
-        readonly offset: JQueryCoordinates;
+        readonly rect: ClientRect;
         readonly height: number;
         readonly width: number;
-        readonly tr: HTMLElement;
-        readonly $tr: JQuery;
+        readonly tr: HTMLTableRowElement;
         readonly grid: DataGrid;
         item: ICollectionItem;
         readonly cell: DetailsCell;
@@ -1074,7 +1069,7 @@ declare module "jriapp_ui/datagrid/rows/fillspace" {
     import { DataGrid } from "jriapp_ui/datagrid/datagrid";
     export class FillSpaceRow extends BaseObject {
         private _grid;
-        private _$tr;
+        private _tr;
         private _cell;
         constructor(options: {
             grid: DataGrid;
@@ -1085,8 +1080,7 @@ declare module "jriapp_ui/datagrid/rows/fillspace" {
         toString(): string;
         attach(): void;
         detach(): void;
-        readonly tr: HTMLElement;
-        readonly $tr: JQuery;
+        readonly tr: HTMLTableRowElement;
         readonly grid: DataGrid;
         readonly cell: FillSpaceCell;
         height: number;
@@ -1264,6 +1258,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         protected _createRowForItem(parent: Node, item: ICollectionItem, prepend: boolean): Row;
         protected _createDetails(): DetailsRow;
         protected _createFillSpace(): FillSpaceRow;
+        protected _scrollTo(yPos: number, animate: boolean): void;
         protected _setDataSource(v: ICollection<ICollectionItem>): void;
         _getInternal(): IInternalDataGridMethods;
         updateColumnsSize(): void;
@@ -1414,7 +1409,7 @@ declare module "jriapp_ui/stackpanel" {
         dataSource: ICollection<ICollectionItem>;
     }
     export class StackPanel extends BaseObject implements ISelectableProvider {
-        private _$el;
+        private _el;
         private _objId;
         private _currentItem;
         private _itemMap;
@@ -1568,7 +1563,6 @@ declare module "jriapp_ui/dataform" {
         private static _DATA_FORM_SELECTOR;
         private static _DATA_CONTENT_SELECTOR;
         private _el;
-        private _$el;
         private _objId;
         private _dataContext;
         private _isEditing;

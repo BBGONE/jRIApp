@@ -10,14 +10,14 @@ const dom = DomUtils;
 
 export class FillSpaceRow extends BaseObject {
     private _grid: DataGrid;
-    private _$tr: JQuery;
+    private _tr: HTMLTableRowElement;
     private _cell: FillSpaceCell;
 
     constructor(options: { grid: DataGrid; tr: HTMLTableRowElement; }) {
         super();
         let self = this, tr = options.tr;
         this._grid = options.grid;
-        this._$tr = $(tr);
+        this._tr = tr;
         this._cell = null;
         this._createCell();
         dom.addClass([tr], css.fillVSpace);
@@ -34,8 +34,8 @@ export class FillSpaceRow extends BaseObject {
             this._cell.destroy();
             this._cell = null;
         }
-        this._$tr.remove();
-        this._$tr = null;
+        dom.removeNode(this.tr);
+        this._tr = null;
         this._grid = null;
         super.destroy();
     }
@@ -48,8 +48,7 @@ export class FillSpaceRow extends BaseObject {
     detach() {
         dom.removeNode(this.tr);
     }
-    get tr() { return this._$tr[0]; }
-    get $tr() { return this._$tr; }
+    get tr() { return this._tr; }
     get grid() { return this._grid; }
     get cell() { return this._cell; }
     get height() { return this._cell.height; }

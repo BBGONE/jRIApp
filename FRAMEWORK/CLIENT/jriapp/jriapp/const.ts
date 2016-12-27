@@ -8,7 +8,6 @@ export const STORE_KEY = {
 };
 
 export const DATA_ATTR = {
-    EL_VIEW_KEY: "data-elvwkey",
     DATA_BIND: "data-bind",
     DATA_VIEW: "data-view",
     DATA_EVENT_SCOPE: "data-scope",

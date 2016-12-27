@@ -66,7 +66,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
             return null;
     }
     private _getBindableElements(scope: Document | HTMLElement): IBindableElement[] {
-        let self = this, result: IBindableElement[] = [], allElems = utils.arr.fromList<HTMLElement>(scope.querySelectorAll("*"));
+        let self = this, result: IBindableElement[] = [], allElems = dom.queryElements<HTMLElement>(scope, "*");
         allElems.forEach(function (el) {
             let res = self._toBindableElement(el);
             if (!!res)

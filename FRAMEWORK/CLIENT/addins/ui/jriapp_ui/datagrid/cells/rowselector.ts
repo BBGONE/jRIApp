@@ -13,7 +13,7 @@ import { RowSelectorColumn } from "../columns/rowselector";
 const dom = DomUtils, doc = dom.document;
 
 export class RowSelectorCell extends BaseCell<RowSelectorColumn> {
-    private _$chk: JQuery;
+    private _chk: HTMLInputElement;
 
     constructor(options: ICellOptions) {
         super(options);
@@ -28,31 +28,23 @@ export class RowSelectorCell extends BaseCell<RowSelectorColumn> {
         label.appendChild(chk);
         label.appendChild(doc.createElement("span"));
         this.td.appendChild(label);
-        this._$chk = $(chk);
-        this._$chk.data("cell", this);
+        this._chk = chk;
+        dom.setData(chk, "cell", this);
     }
     get checked() {
-        if (!!this._$chk && !!this._$chk.length) {
-            let chk = <HTMLInputElement>this._$chk[0];
-            return chk.checked;
-        }
-        return void 0;
+        return this._chk.checked;
     }
     set checked(v) {
-        let bv = !!v;
-        if (!!this._$chk && !!this._$chk.length) {
-            let chk = <HTMLInputElement>this._$chk[0];
-            if (bv !== chk.checked) {
-                chk.checked = bv;
-            }
+        const bv = !!v;
+        if (bv !== this._chk.checked) {
+            this._chk.checked = bv;
         }
     }
     destroy() {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        this._$chk.removeData();
-        this._$chk = null;
+        dom.removeData(this._chk);
         super.destroy();
     }
     toString() {

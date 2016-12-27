@@ -144,7 +144,6 @@ export class DataForm extends BaseObject {
     private static _DATA_FORM_SELECTOR = ["*[", DATA_ATTR.DATA_FORM, "]"].join("");
     private static _DATA_CONTENT_SELECTOR = ["*[", DATA_ATTR.DATA_CONTENT, "]:not([", DATA_ATTR.DATA_COLUMN, "])"].join("");
     private _el: HTMLElement;
-    private _$el: JQuery;
     private _objId: string;
     private _dataContext: IBaseObject;
     private _isEditing: boolean;
@@ -162,7 +161,6 @@ export class DataForm extends BaseObject {
         super();
         const self = this;
         this._el = options.el;
-        this._$el = $(this._el);
         this._objId = coreUtils.getNewID("frm");
         this._dataContext = null;
         dom.addClass([this._el], css.dataform);
@@ -359,7 +357,6 @@ export class DataForm extends BaseObject {
         this._clearContent();
         dom.removeClass([this.el], css.dataform);
         this._el = null;
-        this._$el = null;
         this._unbindDS();
         const parentDataForm = this._parentDataForm;
         this._parentDataForm = null;

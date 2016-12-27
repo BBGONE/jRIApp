@@ -11,26 +11,22 @@ export class BlockElView extends SpanElView {
         return "BlockElView";
     }
     get width() {
-        let $el = this.$el;
-        return $el.width();
+        return this.el.offsetWidth;
     }
     set width(v) {
-        let $el = this.$el;
-        let x = $el.width();
+        let x = this.width;
         if (v !== x) {
-            $el.width(v);
+            this.el.style.width = v + "px";
             this.raisePropertyChanged(PROP_NAME.width);
         }
     }
     get height() {
-        let $el = this.$el;
-        return $el.height();
+        return this.el.offsetHeight;
     }
     set height(v) {
-        let $el = this.$el;
-        let x = $el.height();
+        let x = this.height;
         if (v !== x) {
-            $el.height(v);
+            this.el.style.height = v + "px";
             this.raisePropertyChanged(PROP_NAME.height);
         }
     }

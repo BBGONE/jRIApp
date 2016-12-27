@@ -14,8 +14,7 @@ export class CheckBoxThreeStateElView extends InputElView {
 
     constructor(options: IViewOptions) {
         super(options);
-        let self = this;
-        let chk = <HTMLInputElement>this.el;
+        const self = this, chk = <HTMLInputElement>this.el;
         this._checked = null;
         chk.checked = false;
         chk.indeterminate = this._checked === null;
@@ -30,7 +29,7 @@ export class CheckBoxThreeStateElView extends InputElView {
         this._updateState();
     }
     protected _updateState() {
-        dom.setClass(this.$el.toArray(), css.checkedNull, !checks.isNt(this.checked));
+        dom.setClass([this.el], css.checkedNull, !checks.isNt(this.checked));
     }
     toString() {
         return "CheckBoxThreeStateElView";
@@ -41,7 +40,7 @@ export class CheckBoxThreeStateElView extends InputElView {
     set checked(v: boolean) {
         if (this._checked !== v) {
             this._checked = v;
-            let chk = <HTMLInputElement>this.el;
+            const chk = <HTMLInputElement>this.el;
             chk.checked = !!v;
             chk.indeterminate = this._checked === null;
             this._updateState();

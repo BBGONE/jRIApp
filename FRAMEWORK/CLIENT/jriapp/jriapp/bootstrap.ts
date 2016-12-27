@@ -26,7 +26,12 @@ const utils = Utils, dom = DomUtils, win = dom.window, doc = win.document, arrHe
 //Implements polyfill for requestAnimationFrame API && Promise
 (function () {
     const win: any = dom.window;
-    
+
+    //check if promise implemented
+    if (!win.Promise) {
+        win.Promise = Promise;
+    }
+
     //check if requestAnimationFrame implemented
     if (!win.requestAnimationFrame) {
         let requestAnimationFrame = win.requestAnimationFrame || win.mozRequestAnimationFrame ||
@@ -45,11 +50,6 @@ const utils = Utils, dom = DomUtils, win = dom.window, doc = win.document, arrHe
 
         win.requestAnimationFrame = requestAnimationFrame;
         win.cancelAnimationFrame = cancelAnimationFrame;
-    }
-
-    //check if promise implemented
-    if (!win.Promise) {
-        win.Promise = Promise;
     }
 })();
 
@@ -195,12 +195,12 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         this._processTemplates(tmpDiv, app);
     }
     private _processTemplates(root: HTMLElement | HTMLDocument, app: IApplication = null): void {
-        const self = this, templates = arrHelper.fromList<HTMLElement>(root.querySelectorAll(_TEMPLATE_SELECTOR));
+        const self = this, templates = dom.queryElements<HTMLElement>(root, _TEMPLATE_SELECTOR);
         templates.forEach(function (el) {
-            let name = el.getAttribute("id");
+            const name = el.getAttribute("id");
             if (!name)
                 throw new Error(ERRS.ERR_TEMPLATE_HAS_NO_ID);
-            let html = el.innerHTML;
+            const html = el.innerHTML;
             self._processTemplate(name, html, app);
         });
     }

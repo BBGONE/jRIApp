@@ -1,14 +1,42 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IIndexer, LocaleERRS } from "jriapp_shared";
+import { IIndexer, LocaleERRS, Utils, createWeakMap, IWeakMap } from "jriapp_shared";
 
-const ERRS = LocaleERRS, hasClassList = (!!window.document.documentElement.classList);
+const ERRS = LocaleERRS, arrHelper = Utils.arr, win = window, doc = win.document,
+    hasClassList = (!!window.document.documentElement.classList), weakmap = createWeakMap();
+
 /**
  * pure javascript methods for the DOM manipulation
 */
 export class DomUtils {
-    static window: Window = window;
-    static document: Document = window.document;
+    static readonly window: Window = win;
+    static readonly document: Document = doc;
 
+    static getData(el: Node, key: string): any {
+        let map: any = weakmap.get(el);
+        if (!map)
+            return (void 0);
+        return map[key];
+    }
+    static setData(el: Node, key: string, val: any): void {
+        let map: any = weakmap.get(el);
+        if (!map) {
+            map = {};
+            weakmap.set(el, map);
+        }
+        map[key] = val;
+    }
+    static removeData(el: Node, key?: string): void {
+        let map: any = weakmap.get(el);
+        if (!map) {
+            return;
+        }
+        if (!key) {
+            weakmap.delete(el);
+        }
+        else {
+            delete map[key];
+        }
+    }
     static isContained(oNode: any, oCont: any) {
         if (!oNode)
             return false;
@@ -18,6 +46,22 @@ export class DomUtils {
         }
 
         return false;
+    }
+    static fromHTML(html: string): HTMLElement[] {
+        let div = doc.createElement("div");
+        div.innerHTML = html;
+        return arrHelper.fromList<HTMLElement>(div.children);
+    }
+    static queryElements<T>(root: Document | HTMLElement, selector: string): T[] {
+        let res = root.querySelectorAll(selector);
+        return arrHelper.fromList<T>(res);
+    }
+    static append(parent: Node, children: Node[]): void {
+        if (!children)
+            return;
+        children.forEach((node) => {
+            parent.appendChild(node);
+        });
     }
     static removeNode(node: Node) {
         if (!node)

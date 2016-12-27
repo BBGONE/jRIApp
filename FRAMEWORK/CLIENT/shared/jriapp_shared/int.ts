@@ -81,3 +81,14 @@ export interface IErrorNotification {
     getAllErrors(): IValidationInfo[];
     getIErrorNotification(): IErrorNotification;
 }
+
+export interface IWeakMap {
+    set(key: any, value: any): IWeakMap;
+    get(key: any): any;
+    delete(key: any): boolean;
+    has(key: any): boolean;
+}
+
+export interface WeakMapConstructor {
+    new (): IWeakMap;
+}

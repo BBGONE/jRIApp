@@ -32,7 +32,7 @@ export class TemplateLoader extends BaseObject {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        let self = this;
+        const self = this;
         self._promises = [];
         self._templateLoaders = {};
         self._templateGroups = {};
@@ -156,7 +156,7 @@ export class TemplateLoader extends BaseObject {
                         }
                     });
 
-                    let loader = self._getTemplateLoaderCore(name);
+                    const loader = self._getTemplateLoaderCore(name);
                     if (!loader || !loader.fn_loader) {
                         let error = strUtils.format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
                         if (DEBUG.isDebugging())
@@ -165,7 +165,7 @@ export class TemplateLoader extends BaseObject {
                     }
 
                     delete self._templateGroups[loader.groupName];
-                    let promise = loader.fn_loader();
+                    const promise = loader.fn_loader();
                     promise.then((html) => {
                         deferred.resolve(html);
                     }, (err) => {

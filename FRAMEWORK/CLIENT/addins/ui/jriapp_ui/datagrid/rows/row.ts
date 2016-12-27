@@ -35,7 +35,7 @@ const fn_state = (row: Row) => {
 
 export class Row extends BaseObject {
     private _grid: DataGrid;
-    private _$tr: JQuery;
+    private _tr: HTMLTableRowElement;
     private _item: ICollectionItem;
     private _cells: BaseCell<BaseColumn>[];
     private _objId: string;
@@ -54,10 +54,10 @@ export class Row extends BaseObject {
         super();
         const self = this, item = options.item, tr = options.tr;
         this._grid = grid;
-        this._$tr = $(tr);
+        this._tr = tr;
         this._item = item;
         this._cells = [];
-        this._objId = utils.core.getNewID("row");
+        this._objId = utils.core.getNewID("tr");
         this._expanderCell = null;
         this._actionsCell = null;
         this._rowSelectorCell = null;
@@ -155,7 +155,7 @@ export class Row extends BaseObject {
             if (!this._isDetached) {
                 grid._getInternal().removeRow(this);
             }
-            this._$tr.remove();
+            dom.removeNode(this._tr);
             const cells = this._cells, len = cells.length;
             for (let i = 0; i < len; i += 1) {
                 cells[i].destroy();
@@ -165,7 +165,7 @@ export class Row extends BaseObject {
         this._item.removeNSHandlers(this._objId);
         this._item = null;
         this._expanderCell = null;
-        this._$tr = null;
+        this._tr = null;
         this._grid = null;
         super.destroy();
     }
@@ -175,7 +175,7 @@ export class Row extends BaseObject {
     updateErrorState() {
         //TODO: add implementation to show explanation of error
         const hasErrors = this._item._aspect.getIsHasErrors();
-        dom.setClass(this._$tr.toArray(), css.rowError, !hasErrors);
+        dom.setClass([this._tr], css.rowError, !hasErrors);
     }
     updateUIState() {
         fn_state(this);
@@ -186,17 +186,16 @@ export class Row extends BaseObject {
     toString() {
         return "Row";
     }
-    get offset() {
-        return this.$tr.offset();
+    get rect() {
+        return this.tr.getBoundingClientRect();
     }
     get height() {
-        return this.$tr.outerHeight();
+        return this.tr.offsetHeight;
     }
     get width() {
-        return this.$tr.outerWidth();
+        return this.tr.offsetWidth;
     }
-    get tr() { return this._$tr[0]; }
-    get $tr() { return this._$tr; }
+    get tr() { return this._tr; }
     get grid() { return this._grid; }
     get item() { return this._item; }
     get cells() { return this._cells; }
@@ -235,19 +234,15 @@ export class Row extends BaseObject {
     get expanderCell() { return this._expanderCell; }
     get actionsCell() { return this._actionsCell; }
     get isDeleted() {
-        if (this._isDestroyCalled)
-            return true;
         return this._isDeleted;
     }
     set isDeleted(v) {
-        if (this._isDestroyCalled)
-            return;
         if (this._isDeleted !== v) {
             this._isDeleted = v;
             if (this._isDeleted) {
                 this.isExpanded = false;
             }
-            dom.setClass(this._$tr.toArray(), css.rowDeleted, !this._isDeleted);
+            dom.setClass([this._tr], css.rowDeleted, !this._isDeleted);
         }
     }
     get isDetached() {

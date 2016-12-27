@@ -49,11 +49,10 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         this._th = options.th;
         this._options = options.colInfo;
         this._isSelected = false;
-        this._objId = utils.core.getNewID("col");
+        this._objId = utils.core.getNewID("th");
         this._event_scope = ["td[", DATA_ATTR.DATA_EVENT_SCOPE, '="', this._objId, '"]'].join("");
 
         const col = doc.createElement("div");
-        const $col = $(col);
         this._col = col;
 
         dom.addClass([col], css.column);
@@ -63,8 +62,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         }
 
         this._grid._getInternal().get$Header().append(col);
-
-        $col.on("click", function (e) {
+        $(col).on("click", function (e) {
             e.stopPropagation();
             boot.currentSelectable = grid;
             grid._getInternal().setCurrentColumn(self);
@@ -73,7 +71,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
 
         this.grid.$table.on("click", this._event_scope, function (e) {
             e.stopPropagation();
-            const $td = $(this), cell = <BaseCell<BaseColumn>>$td.data("cell");
+            const td = <HTMLElement>this, cell = <BaseCell<BaseColumn>>dom.getData(td, "cell");
             if (!!cell) {
                 boot.currentSelectable = grid;
                 grid._getInternal().setCurrentColumn(self);
@@ -88,14 +86,14 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         if (!!this._options.templateID) {
             this._template = createTemplate(null, this);
             this._template.templateID = this._options.templateID;
-            $col.append(this._template.el);
+            dom.append(col, [this._template.el]);
         }
         else if (!!this._options.title) {
-            $col.html(this._options.title);
+            col.innerHTML = this._options.title;
         }
 
         if (!!this._options.tip) {
-            fn_addToolTip($col, this._options.tip, false, "bottom center");
+            fn_addToolTip($(col), this._options.tip, false, "bottom center");
         }
     }
     destroy() {

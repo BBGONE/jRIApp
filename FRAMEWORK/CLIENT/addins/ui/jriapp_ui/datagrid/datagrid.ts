@@ -919,6 +919,22 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         const tr: HTMLTableRowElement = doc.createElement("tr");
         return new FillSpaceRow({ grid: this, tr: tr });
     }
+    protected _scrollTo(yPos: number, animate: boolean) {
+        if (animate) {
+            this._$wrapper.animate({
+                scrollTop: yPos
+            }, {
+                    duration: 500,
+                    specialEasing: {
+                        width: "linear",
+                        height: "easeOutBounce"
+                    }
+                });
+        }
+        else {
+            this._$wrapper.scrollTop(yPos);
+        }
+    }
     protected _setDataSource(v: ICollection<ICollectionItem>) {
         this._unbindDS();
         this._options.dataSource = v;
@@ -1016,17 +1032,16 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     scrollToRow(args: { row: Row; animate?: boolean; pos?: ROW_POSITION; }) {
         if (!args || !args.row)
             return;
-        const row = args.row;
+        const row = args.row,  viewport = this._$wrapper[0];
         if (!!this._fillSpace) {
             //reset fillspace to calculate original table height
             this._fillSpace.height = 0;
         }
         let animate = !!args.animate,
             alignBottom = (args.pos === ROW_POSITION.Bottom),
-            viewPortHeight = this._$wrapper.innerHeight(),
-            rowHeight = row.height,
-            currentScrollTop = this._$wrapper.scrollTop(),
-            offsetDiff = currentScrollTop + row.offset.top - this._$wrapper.offset().top;
+            viewPortHeight = viewport.clientHeight, viewportRect = viewport.getBoundingClientRect(),
+            rowHeight = row.height, currentScrollTop = viewport.scrollTop,
+            offsetDiff = currentScrollTop + row.rect.top - viewportRect.top;
 
         if (alignBottom) {
             offsetDiff = Math.floor(offsetDiff + 1);
@@ -1044,12 +1059,12 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         contentHeight = Math.min(viewPortHeight, contentHeight);
         //the height of the viewport minus the row height which includes the details if expanded
         let yOffset = viewPortHeight - contentHeight;
+        let yPos = offsetDiff, deltaY = 0;
 
-        let yPos = offsetDiff;
         if (alignBottom)
             yPos -= yOffset
 
-        let maxScrollTop = this.$table.outerHeight() - viewPortHeight + 1, deltaY = 0;
+        const maxScrollTop = this.table.offsetHeight - viewPortHeight + 1;
 
         if (yPos < 0) {
             yPos = 0;
@@ -1073,20 +1088,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         if ((args.pos !== ROW_POSITION.Details) && (currentScrollTop < offsetDiff && currentScrollTop > (offsetDiff - yOffset)))
             return;
 
-        if (animate) {
-            this._$wrapper.animate({
-                scrollTop: yPos
-            }, {
-                    duration: 500,
-                    specialEasing: {
-                        width: "linear",
-                        height: "easeOutBounce"
-                    }
-                });
-        }
-        else {
-            this._$wrapper.scrollTop(yPos);
-        }
+        this._scrollTo(yPos, animate);
     }
     scrollToCurrent(pos?: ROW_POSITION, animate?: boolean) {
         this.scrollToRow({ row: this.currentRow, animate: animate, pos: pos });

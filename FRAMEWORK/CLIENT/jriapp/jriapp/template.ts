@@ -12,7 +12,6 @@ import { bootstrap } from "./bootstrap";
 import { Binding } from "binding";
 import { ViewChecks } from "./utils/viewchecks";
 import { DomUtils } from "./utils/dom";
-import { $ } from "./utils/jquery";
 
 const utils = Utils, _async = utils.defer, dom = DomUtils, viewChecks = ViewChecks,
     doc = dom.document, coreUtils = utils.core, checks = utils.check, strUtils = utils.str,
@@ -102,10 +101,8 @@ class Template extends BaseObject implements ITemplate {
         let self = this, fn_loader = this.app.getTemplateLoader(name), promise: IPromise<string>;
         if (checks.isFunc(fn_loader) && checks.isThenable(promise = fn_loader())) {
             return promise.then((html: string) => {
-                let tmpDiv: HTMLElement = doc.createElement("div");
-                tmpDiv.innerHTML = html;
-                tmpDiv = <HTMLElement>tmpDiv.firstElementChild;
-                return tmpDiv;
+                const elems = dom.fromHTML(html);
+                return elems[0];
             }, (err) => {
                 if (!!err && !!err.message)
                     throw err;
@@ -235,8 +232,7 @@ class Template extends BaseObject implements ITemplate {
         this._templElView = null;
 
         if (!!this._loadedElem) {
-            //remove with jQuery method to ensure proper cleanUp
-            $(this._loadedElem).remove();
+            dom.removeNode(this._loadedElem);
             this._loadedElem = null;
         }
     }
@@ -246,8 +242,7 @@ class Template extends BaseObject implements ITemplate {
         this._isDestroyCalled = true;
         this._unloadTemplate();
         if (!!this._el) {
-            //remove with jQuery method to ensure proper cleanUp
-            $(this._el).remove();
+            dom.removeNode(this._el);
             this._el = null;
         }
         this._dataContext = null;

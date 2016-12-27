@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    BaseObject, Utils, IIndexer, IErrorHandler, LocaleERRS
+    BaseObject, Utils, IIndexer, IErrorHandler, LocaleERRS, createWeakMap, IWeakMap
 } from "jriapp_shared";
 import { DATA_ATTR, STORE_KEY } from "./const";
 import {
@@ -10,7 +10,6 @@ import {
 import { bootstrap } from "./bootstrap";
 import { LifeTimeScope } from "./utils/lifetime";
 import { Parser } from "./utils/parser";
-import { $ } from "./utils/jquery";
 
 const utils = Utils, parser = Parser, ERROR = utils.err, ERRS = LocaleERRS;
 
@@ -53,25 +52,25 @@ class ElViewRegister implements IElViewRegister, IExports {
 }
 
 class ElViewStore implements IElViewStore {
-    private _ELV_STORE_KEY: string;
+    private _weakmap: IWeakMap;
 
     constructor() {
-        this._ELV_STORE_KEY = DATA_ATTR.EL_VIEW_KEY;
+        this._weakmap = createWeakMap();
     }
 
     public destroy(): void {
     }
     //get element view associated with HTML element(if any)
     getElView(el: HTMLElement): IElView {
-        return $.data(el, this._ELV_STORE_KEY);
+        return this._weakmap.get(el);
     }
     //store association of HTML element with its element View
     setElView(el: HTMLElement, view?: IElView): void {
         if (!view) {
-            $.removeData(el, this._ELV_STORE_KEY);
+            this._weakmap.delete(el);
         }
         else {
-            $.data(el, this._ELV_STORE_KEY, view);
+            this._weakmap.set(el, view);
         }
     }
 }
@@ -137,11 +136,11 @@ class ElViewFactory extends BaseObject implements IElViewFactory {
     }
     //checks if the element already has created and attached an ElView, if no then it creates and attaches ElView for the element
     getOrCreateElView(el: HTMLElement): IElView {
-        let elView = this.store.getElView(el);
+        const elView = this.store.getElView(el);
         //check if element view is already created for this element
         if (!!elView)
             return elView;
-        let info = this.getElementViewInfo(el);
+        const info = this.getElementViewInfo(el);
         return this.createElView(info);
     }
     getElementViewInfo(el: HTMLElement): { name: string; options: IViewOptions; } {

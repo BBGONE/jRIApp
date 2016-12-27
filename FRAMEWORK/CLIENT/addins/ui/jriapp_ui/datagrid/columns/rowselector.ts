@@ -17,7 +17,7 @@ export class RowSelectorColumn extends BaseColumn {
 
     constructor(grid: DataGrid, options: ICellInfo) {
         super(grid, options);
-        let self = this;
+        const self = this;
         this._event_chk_scope = ["input[", DATA_ATTR.DATA_EVENT_SCOPE, '="', this.uniqueID, '"]'].join("");
         dom.addClass([this.col], css.rowSelector);
         let label = doc.createElement("label");
@@ -39,7 +39,7 @@ export class RowSelectorColumn extends BaseColumn {
         //delegated event from the cells
         this.grid.$table.on("click", this._event_chk_scope, function (e) {
             e.stopPropagation();
-            const chk = <HTMLInputElement>this, $chk = $(chk), cell = <RowSelectorCell>$chk.data("cell");
+            const chk = <HTMLInputElement>this, cell = <RowSelectorCell>dom.getData(chk, "cell");
             if (!!cell && !cell.getIsDestroyCalled()) {
                 cell.row.isSelected = cell.checked;
             }
@@ -55,12 +55,10 @@ export class RowSelectorColumn extends BaseColumn {
         return checks.undefined;
     }
     set checked(v) {
-        let bv = !!v, chk = this._chk;
-        if (!!chk) {
-            if (bv !== chk.checked) {
-                chk.checked = bv;
-                this.raisePropertyChanged(PROP_NAME.checked);
-            }
+        const bv = !!v, chk = this._chk;
+        if (bv !== chk.checked) {
+            chk.checked = bv;
+            this.raisePropertyChanged(PROP_NAME.checked);
         }
     }
     destroy() {
@@ -69,7 +67,6 @@ export class RowSelectorColumn extends BaseColumn {
         this._isDestroyCalled = true;
         this.grid.$table.off("click", this._event_chk_scope);
         $(this._chk).off();
-        this._chk = null;
         super.destroy();
     }
 }

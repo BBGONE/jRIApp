@@ -53,7 +53,7 @@ const PNL_EVENTS = {
 };
 
 export class StackPanel extends BaseObject implements ISelectableProvider {
-    private _$el: JQuery;
+    private _el: HTMLElement;
     private _objId: string;
     private _currentItem: ICollectionItem;
     private _itemMap: { [key: string]: IMappedItem; };
@@ -80,7 +80,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         if (!options.templateID)
             throw new Error(ERRS.ERR_STACKPNL_TEMPLATE_INVALID);
         this._options = options;
-        this._$el = $(options.el);
+        this._el = options.el;
         dom.addClass([options.el], css.stackpanel);
         const eltag = options.el.tagName.toLowerCase();
         if (eltag === "ul" || eltag === "ol")
@@ -112,11 +112,11 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
             }
         };
 
-        this._$el.on("click", this._event_scope,
+        $(this._el).on("click", this._event_scope,
             function (e) {
                 e.stopPropagation();
                 boot.currentSelectable = self;
-                let $el = $(this), mappedItem: IMappedItem = <any>$el.data("data");
+                const el = <HTMLElement>this, mappedItem: IMappedItem = dom.getData(el, "data");
                 self._onItemClicked(mappedItem.el, mappedItem.item);
             });
         boot._getInternal().trackSelectable(this);
@@ -272,12 +272,11 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         if (!item._key)
             return;
         const self = this, item_el = doc.createElement(this._item_tag);
-
         dom.addClass([item_el], css.item);
         item_el.setAttribute(DATA_ATTR.DATA_EVENT_SCOPE, this.uniqueID);
         parent.appendChild(item_el);
-        let mappedItem: IMappedItem = { el: item_el, template: null, item: item };
-        $(item_el).data("data", mappedItem);
+        const mappedItem: IMappedItem = { el: item_el, template: null, item: item };
+        dom.setData(item_el, "data", mappedItem);
         self._itemMap[item._key] = mappedItem;
         mappedItem.template = self._createTemplate(item);
         mappedItem.el.appendChild(mappedItem.template.el);
@@ -308,7 +307,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         const self = this, keys = Object.keys(self._itemMap);
         if (keys.length === 0)
             return;
-        self._$el.empty();
+        self._el.innerHTML = "";
         keys.forEach(function (key) {
             self._removeItemByKey(key);
         });
@@ -358,12 +357,11 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         boot._getInternal().untrackSelectable(this);
         this._unbindDS();
         this._clearContent();
-        dom.removeClass([this.el], css.stackpanel);
+        dom.removeClass([this._el], css.stackpanel);
         if (this.orientation === HORIZONTAL) {
             dom.removeClass([this.el], css.horizontal);
         }
-        this._$el.off("click", this._event_scope);
-        this._$el = null;
+        $(this._el).off("click", this._event_scope);
         this._currentItem = null;
         this._itemMap = {};
         this._options = <any>{};
@@ -375,16 +373,18 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
     scrollToItem(item: ICollectionItem, isUp?: boolean) {
         if (!item)
             return;
-        let mappedItem = this._itemMap[item._key];
+        const mappedItem = this._itemMap[item._key];
         if (!mappedItem) {
             return;
         }
         //mappedItem.el.scrollIntoView(false);
-        
-        let isVert = this.orientation === VERTICAL, $item = $(mappedItem.el),
-            viewPortSize = isVert ? this._$el.innerHeight() : this._$el.innerWidth(),
-            itemSize = isVert ? $item.outerHeight() : $item.outerWidth(), currentPos = isVert ? this._$el.scrollTop() : this._$el.scrollLeft(),
-            offsetDiff = isVert ? (currentPos + $item.offset().top - this._$el.offset().top) : (currentPos + $item.offset().left - this._$el.offset().left);
+
+        let isVert = this.orientation === VERTICAL, pnl = mappedItem.el, viewport = this._el,
+            viewportRect = viewport.getBoundingClientRect(),  pnlRect = pnl.getBoundingClientRect(),
+            viewPortSize = isVert ? viewport.clientHeight : viewport.clientWidth,
+            itemSize = isVert ? pnl.offsetHeight : pnl.offsetWidth,
+            currentPos = isVert ? viewport.scrollTop : viewport.scrollLeft,
+            offsetDiff = isVert ? (currentPos + pnlRect.top - viewportRect.top) : (currentPos + pnlRect.left - viewportRect.left);
 
         let contentSize = Math.min(itemSize, viewPortSize);
         let offset = viewPortSize - contentSize;
@@ -403,9 +403,9 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         
 
         if (isVert)
-            this._$el.scrollTop(pos);
+            this._el.scrollTop = pos;
         else
-            this._$el.scrollLeft(pos);
+            this._el.scrollLeft = pos;
         
     }
     scrollToCurrent(isUp?: boolean) {
@@ -484,7 +484,7 @@ export class StackPanelElView extends BaseElView {
     }
     get panelEvents() { return this._panelEvents; }
     set panelEvents(v) {
-        let old = this._panelEvents;
+        const old = this._panelEvents;
         if (v !== old) {
             this._panelEvents = v;
             this.raisePropertyChanged(PROP_NAME.panelEvents);

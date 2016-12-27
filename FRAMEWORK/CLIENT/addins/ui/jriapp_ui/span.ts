@@ -7,13 +7,12 @@ export class SpanElView extends BaseElView {
     toString() {
         return "SpanElView";
     }
-    get text() { return this.$el.text(); }
+    get text() { return this.el.textContent; }
     set text(v) {
-        let $el = this.$el, x = $el.text();
-        let str = "" + v;
-        v = v === null ? "" : str;
+        const el = this.el, x = el.textContent, str = "" + v;
+        v = (v === null ? "" : str);
         if (x !== v) {
-            $el.text(v);
+            el.textContent = v;
             this.raisePropertyChanged(PROP_NAME.text);
             this.raisePropertyChanged(PROP_NAME.value);
         }
@@ -24,38 +23,13 @@ export class SpanElView extends BaseElView {
     set value(v) {
         this.text = v;
     }
-    get html() { return this.$el.html(); }
+    get html() { return this.el.innerHTML; }
     set html(v) {
-        let x = this.$el.html();
-        let str = "" + v;
+        const el = this.el, x = this.el.innerHTML, str = "" + v;
         v = v === null ? "" : str;
         if (x !== v) {
-            this.$el.html(v);
+            el.innerHTML = v;
             this.raisePropertyChanged(PROP_NAME.html);
-        }
-    }
-    get color() {
-        let $el = this.$el;
-        return $el.css(css.color);
-    }
-    set color(v) {
-        let $el = this.$el;
-        let x = $el.css(css.color);
-        if (v !== x) {
-            $el.css(css.color, v);
-            this.raisePropertyChanged(PROP_NAME.color);
-        }
-    }
-    get fontSize() {
-        let $el = this.$el;
-        return $el.css(css.fontSize);
-    }
-    set fontSize(v) {
-        let $el = this.$el;
-        let x = $el.css(css.fontSize);
-        if (v !== x) {
-            $el.css(css.fontSize, v);
-            this.raisePropertyChanged(PROP_NAME.fontSize);
         }
     }
 }

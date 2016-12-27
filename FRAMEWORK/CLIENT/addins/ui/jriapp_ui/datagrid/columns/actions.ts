@@ -18,14 +18,14 @@ export class ActionsColumn extends BaseColumn {
 
     constructor(grid: DataGrid, options: ICellInfo) {
         super(grid, options);
-
         const self = this, opts: IActionsColumnInfo = this.options;
         this._event_act_scope = ["span[", DATA_ATTR.DATA_EVENT_SCOPE, '="', this.uniqueID, '"]'].join("");
         dom.addClass([this.col], css.rowActions);
         const $table = this.grid.$table;
         $table.on("click", this._event_act_scope, function (e) {
             e.stopPropagation();
-            let $img = $(this), name = $img.attr(DATA_ATTR.DATA_NAME), cell: ActionsCell = <any>$img.data("cell");
+            const btn: HTMLElement = this, name = btn.getAttribute(DATA_ATTR.DATA_NAME),
+                cell = <ActionsCell>dom.getData(btn, "cell");
             self.grid.currentRow = cell.row;
             switch (name) {
                 case "img_ok":
@@ -91,12 +91,8 @@ export class ActionsColumn extends BaseColumn {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        let $table = this.grid.$table;
+        const $table = this.grid.$table;
         $table.off("click", this._event_act_scope);
-        /*
-        $table.off("mouseenter", actionsSelector);
-        $table.off("mouseout", actionsSelector);
-        */
         this.grid.removeNSHandlers(this.uniqueID);
         super.destroy();
     }

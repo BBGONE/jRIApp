@@ -64,6 +64,7 @@
     <TypeScriptCompile Include="jriapp_shared\utils\sysutils.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\utils.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\waitqueue.ts" />
+    <TypeScriptCompile Include="jriapp_shared\utils\weakmap.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="tsconfig.json" />

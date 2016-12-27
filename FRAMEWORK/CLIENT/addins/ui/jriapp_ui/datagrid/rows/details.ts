@@ -19,7 +19,7 @@ const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = uti
 
 export class DetailsRow extends BaseObject {
     private _grid: DataGrid;
-    private _$tr: JQuery;
+    private _tr: HTMLTableRowElement;
     private _item: ICollectionItem;
     private _cell: DetailsCell;
     private _parentRow: Row;
@@ -30,7 +30,7 @@ export class DetailsRow extends BaseObject {
         super();
         const self = this, tr = options.tr;
         this._grid = options.grid;
-        this._$tr =$(tr);
+        this._tr =tr;
         this._item = null;
         this._cell = null;
         this._parentRow = null;
@@ -95,26 +95,25 @@ export class DetailsRow extends BaseObject {
             this._cell.destroy();
             this._cell = null;
         }
-        this._$tr.remove();
+        dom.removeNode(this._tr);
         this._item = null;
-        this._$tr = null;
+        this._tr = null;
         this._grid = null;
         super.destroy();
     }
     toString() {
         return "DetailsRow";
     }
-    get offset() {
-        return this.$tr.offset();
+    get rect() {
+        return this.tr.getBoundingClientRect();
     }
     get height() {
-        return this.$tr.outerHeight();
+        return this.tr.offsetHeight;
     }
     get width() {
-        return this.$tr.outerWidth();
+        return this.tr.offsetHeight;
     }
-    get tr() { return this._$tr[0]; }
-    get $tr() { return this._$tr; }
+    get tr() { return this._tr; }
     get grid() { return this._grid; }
     get item() { return this._item; }
     set item(v) {

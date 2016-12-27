@@ -39,5 +39,7 @@ export class FillSpaceCell extends BaseObject {
     get grid() { return this._row.grid; }
     get div() { return this._div; }
     get height() { return this._div.offsetHeight; }
-    set height(v) { this._div.style.height = (!v ? 0 : v) + "px"; }
+    set height(v) {
+        this._div.style.height = (!v ? 0 : v) + "px";
+    }
 }

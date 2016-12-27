@@ -2008,175 +2008,7 @@ define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/s
     }());
     exports.HttpUtils = HttpUtils;
 });
-define("jriapp_shared/utils/dom", ["require", "exports"], function (require, exports) {
-    "use strict";
-    var hasClassList = (!!window.document.documentElement.classList);
-    var DomUtils = (function () {
-        function DomUtils() {
-        }
-        DomUtils.isContained = function (oNode, oCont) {
-            if (!oNode)
-                return false;
-            while (!!(oNode = oNode.parentNode)) {
-                if (oNode === oCont)
-                    return true;
-            }
-            return false;
-        };
-        DomUtils.removeNode = function (node) {
-            if (!node)
-                return;
-            var pnd = node.parentNode;
-            if (!!pnd)
-                pnd.removeChild(node);
-        };
-        DomUtils.insertAfter = function (node, refNode) {
-            var parent = refNode.parentNode;
-            if (parent.lastChild === refNode)
-                parent.appendChild(node);
-            else
-                parent.insertBefore(node, refNode.nextSibling);
-        };
-        DomUtils.insertBefore = function (node, refNode) {
-            var parent = refNode.parentNode;
-            parent.insertBefore(node, refNode);
-        };
-        DomUtils.wrap = function (elem, wrapper) {
-            var parent = elem.parentElement, nsibling = elem.nextSibling;
-            if (!parent)
-                return;
-            wrapper.appendChild(elem);
-            (!nsibling) ? parent.appendChild(wrapper) : parent.insertBefore(wrapper, nsibling);
-        };
-        DomUtils.unwrap = function (elem) {
-            var wrapper = elem.parentElement;
-            if (!wrapper)
-                return;
-            var parent = wrapper.parentElement, nsibling = wrapper.nextSibling;
-            if (!parent)
-                return;
-            parent.removeChild(wrapper);
-            (!nsibling) ? parent.appendChild(elem) : parent.insertBefore(elem, nsibling);
-        };
-        DomUtils.getClassMap = function (el) {
-            var res = {};
-            if (!el)
-                return res;
-            var className = el.className;
-            if (!className)
-                return res;
-            var arr = className.split(" ");
-            for (var i = 0; i < arr.length; i += 1) {
-                arr[i] = arr[i].trim();
-                if (!!arr[i]) {
-                    res[arr[i]] = i;
-                }
-            }
-            return res;
-        };
-        DomUtils.setClasses = function (elems, classes) {
-            if (!elems.length || !classes.length)
-                return;
-            var toAdd = [], toRemove = [], removeAll = false;
-            classes.forEach(function (v) {
-                if (!v)
-                    return;
-                var name = v.trim();
-                if (!name)
-                    return;
-                var op = v.charAt(0);
-                if (op == "+" || op == "-") {
-                    name = v.substr(1).trim();
-                }
-                if (!name)
-                    return;
-                var arr = name.split(" ");
-                for (var i = 0; i < arr.length; i += 1) {
-                    var v2 = arr[i].trim();
-                    if (!!v2) {
-                        if (op != "-") {
-                            toAdd.push(v2);
-                        }
-                        else {
-                            if (name === "*")
-                                removeAll = true;
-                            else
-                                toRemove.push(v2);
-                        }
-                    }
-                }
-            });
-            if (removeAll) {
-                toRemove = [];
-            }
-            for (var j = 0; j < elems.length; j += 1) {
-                var el = elems[j], map = DomUtils.getClassMap(el);
-                if (removeAll) {
-                    map = {};
-                }
-                for (var i = 0; i < toRemove.length; i += 1) {
-                    delete map[toRemove[i]];
-                }
-                for (var i = 0; i < toAdd.length; i += 1) {
-                    map[toAdd[i]] = i + 1000;
-                }
-                var keys = Object.keys(map);
-                el.className = keys.join(" ");
-            }
-        };
-        DomUtils.setClass = function (elems, css, remove) {
-            if (remove === void 0) { remove = false; }
-            if (!elems.length)
-                return;
-            if (!css) {
-                if (remove) {
-                    for (var j = 0; j < elems.length; j += 1) {
-                        elems[j].className = "";
-                    }
-                }
-                return;
-            }
-            var _arr = css.split(" ");
-            for (var i = 0; i < _arr.length; i += 1) {
-                _arr[i] = _arr[i].trim();
-            }
-            var arr = _arr.filter(function (val) { return !!val; });
-            if (hasClassList && arr.length === 1) {
-                for (var j = 0; j < elems.length; j += 1) {
-                    var el = elems[j];
-                    if (remove)
-                        el.classList.remove(arr[0]);
-                    else
-                        el.classList.add(arr[0]);
-                }
-            }
-            else {
-                for (var j = 0; j < elems.length; j += 1) {
-                    var el = elems[j], map = DomUtils.getClassMap(el);
-                    for (var i = 0; i < arr.length; i += 1) {
-                        if (remove)
-                            delete map[arr[i]];
-                        else
-                            map[arr[i]] = i + 1000;
-                    }
-                    var keys = Object.keys(map);
-                    el.className = keys.join(" ");
-                }
-            }
-        };
-        DomUtils.addClass = function (elems, css) {
-            DomUtils.setClass(elems || [], css, false);
-        };
-        DomUtils.removeClass = function (elems, css) {
-            DomUtils.setClass(elems || [], css, true);
-        };
-        DomUtils.window = window;
-        DomUtils.document = window.document;
-        return DomUtils;
-    }());
-    exports.DomUtils = DomUtils;
-});
-define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug", "jriapp_shared/utils/error", "jriapp_shared/utils/logger", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/async", "jriapp_shared/utils/http", "jriapp_shared/utils/strutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/dom", "jriapp_shared/utils/deferred"], function (require, exports, coreutils_4, debug_3, error_3, logger_1, sysutils_2, async_2, http_1, strutils_4, checks_8, arrhelper_4, dom_1, deferred_4) {
+define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug", "jriapp_shared/utils/error", "jriapp_shared/utils/logger", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/async", "jriapp_shared/utils/http", "jriapp_shared/utils/strutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/deferred"], function (require, exports, coreutils_4, debug_3, error_3, logger_1, sysutils_2, async_2, http_1, strutils_4, checks_8, arrhelper_4, deferred_4) {
     "use strict";
     var Utils = (function () {
         function Utils() {
@@ -2191,7 +2023,6 @@ define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/
         Utils.log = logger_1.LOGGER;
         Utils.debug = debug_3.DEBUG;
         Utils.sys = sysutils_2.SysUtils;
-        Utils.dom = dom_1.DomUtils;
         Utils.queue = deferred_4.getTaskQueue();
         return Utils;
     }());
@@ -4650,6 +4481,51 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
     }(object_6.BaseObject));
     exports.JsonArray = JsonArray;
 });
+define("jriapp_shared/utils/weakmap", ["require", "exports", "jriapp_shared/utils/coreutils"], function (require, exports, coreutils_8) {
+    "use strict";
+    var core = coreutils_8.CoreUtils, undefined = void 0;
+    var counter = (new Date().getTime()) % 1e9;
+    function createWeakMap() {
+        var win = window;
+        if (!win.WeakMap) {
+            win.WeakMap = WeakMap;
+        }
+        return new win.WeakMap();
+    }
+    exports.createWeakMap = createWeakMap;
+    var WeakMap = (function () {
+        function WeakMap() {
+            this._name = '_wm_' + (Math.random() * 1e9 >>> 0) + (counter++ + '__');
+        }
+        WeakMap.prototype.set = function (key, value) {
+            var entry = key[this._name];
+            if (!!entry && entry[0] === key)
+                entry[1] = value;
+            else
+                Object.defineProperty(key, this._name, { value: [key, value], writable: true });
+            return this;
+        };
+        WeakMap.prototype.get = function (key) {
+            var entry = key[this._name];
+            return (!entry ? undefined : (entry[0] === key ? entry[1] : undefined));
+        };
+        WeakMap.prototype.delete = function (key) {
+            var entry = key[this._name];
+            if (!entry)
+                return false;
+            var hasValue = (entry[0] === key);
+            entry[0] = entry[1] = undefined;
+            return hasValue;
+        };
+        WeakMap.prototype.has = function (key) {
+            var entry = key[this._name];
+            if (!entry)
+                return false;
+            return (entry[0] === key);
+        };
+        return WeakMap;
+    }());
+});
 define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/list"], function (require, exports, utils_9, lang_8, base_2, list_2) {
     "use strict";
     var utils = utils_9.Utils, strUtils = utils.str, checks = utils.check, sys = utils.sys;
@@ -4774,7 +4650,7 @@ define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/c
     }());
     exports.Lazy = Lazy;
 });
-define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/utils/basebag", "jriapp_shared/utils/jsonbag", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/collection/validation", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, const_5, int_6, errors_5, object_7, basebag_2, jsonbag_1, lang_9, base_3, item_2, aspect_2, list_3, dictionary_1, validation_4, ideferred_1, utils_10, waitqueue_2, debounce_3, lazy_1) {
+define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/utils/basebag", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/weakmap", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/collection/validation", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, const_5, int_6, errors_5, object_7, basebag_2, jsonbag_1, weakmap_1, lang_9, base_3, item_2, aspect_2, list_3, dictionary_1, validation_4, ideferred_1, utils_10, waitqueue_2, debounce_3, lazy_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -4785,6 +4661,7 @@ define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_sh
     __export(object_7);
     __export(basebag_2);
     __export(jsonbag_1);
+    exports.createWeakMap = weakmap_1.createWeakMap;
     exports.LocaleSTRS = lang_9.STRS;
     exports.LocaleERRS = lang_9.ERRS;
     exports.BaseCollection = base_3.BaseCollection;

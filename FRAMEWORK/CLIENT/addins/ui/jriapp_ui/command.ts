@@ -26,7 +26,7 @@ export class CommandElView extends BaseElView {
         this._preventDefault = !!options.preventDefault;
         this._stopPropagation = !!options.stopPropagation;
         this._disabled = ("disabled" in this.el) ? checks.undefined : false;
-        dom.setClass(this.$el.toArray(), css.disabled, this.isEnabled);
+        dom.setClass([this.el], css.disabled, this.isEnabled);
     }
     private _onCanExecuteChanged(cmd: ICommand, args: any) {
         this.isEnabled = cmd.canExecute(this, this._commandParam);

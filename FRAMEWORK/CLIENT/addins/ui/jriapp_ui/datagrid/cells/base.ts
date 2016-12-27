@@ -41,7 +41,7 @@ export class BaseCell<TColumn extends BaseColumn> extends BaseObject {
         this._column = <TColumn>options.column;
         this._num = options.num;
         this._td.setAttribute(DATA_ATTR.DATA_EVENT_SCOPE, this._column.uniqueID);
-        $(this._td).data("cell", this);
+        dom.setData(this._td, "cell", this);
         if (!!this._column.options.rowCellCss) {
             dom.addClass([this._td], this._column.options.rowCellCss);
         }
@@ -68,10 +68,9 @@ export class BaseCell<TColumn extends BaseColumn> extends BaseObject {
             this._click.destroy();
             this._click = null;
         }
+        dom.removeData(this._td);
         let $td = $(this._td);
-        $td.removeData();
         $td.off();
-        $td.empty();
         this._row = null;
         this._td = null;
         this._column = null;

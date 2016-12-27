@@ -48,8 +48,6 @@ export const css = {
 };
 
 export const actionsSelector = 'span[data-role="row-action"]';
-export const editSelector = '*[data-name="img_edit"]';
-export const deleteSelector = '*[data-name="img_delete"]';
 
 export const txtMap: IIndexer<string> = {
     img_ok: "txtOk",

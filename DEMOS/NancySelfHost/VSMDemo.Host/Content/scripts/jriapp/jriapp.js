@@ -12,7 +12,6 @@ define("jriapp/const", ["require", "exports"], function (require, exports) {
         OBJECT: "obj."
     };
     exports.DATA_ATTR = {
-        EL_VIEW_KEY: "data-elvwkey",
         DATA_BIND: "data-bind",
         DATA_VIEW: "data-view",
         DATA_EVENT_SCOPE: "data-scope",
@@ -279,28 +278,9 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
     }());
     exports.Parser = Parser;
 });
-define("jriapp/utils/jquery", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_3) {
+define("jriapp/elview", ["require", "exports", "jriapp_shared", "jriapp/const", "jriapp/bootstrap", "jriapp/utils/parser"], function (require, exports, jriapp_shared_3, const_1, bootstrap_1, parser_1) {
     "use strict";
-    if (!("jQuery" in window))
-        throw new Error(jriapp_shared_3.LocaleERRS.ERR_APP_NEED_JQUERY);
-    exports.$ = jQuery;
-    var JQueryUtils = (function () {
-        function JQueryUtils() {
-        }
-        JQueryUtils.destroy$Plugin = function ($el, name) {
-            var plugin = $el.data(name);
-            if (!!plugin) {
-                $el[name]("destroy");
-            }
-        };
-        JQueryUtils.$ = jQuery;
-        return JQueryUtils;
-    }());
-    exports.JQueryUtils = JQueryUtils;
-});
-define("jriapp/elview", ["require", "exports", "jriapp_shared", "jriapp/const", "jriapp/bootstrap", "jriapp/utils/parser", "jriapp/utils/jquery"], function (require, exports, jriapp_shared_4, const_1, bootstrap_1, parser_1, jquery_1) {
-    "use strict";
-    var utils = jriapp_shared_4.Utils, parser = parser_1.Parser, ERROR = utils.err, ERRS = jriapp_shared_4.LocaleERRS;
+    var utils = jriapp_shared_3.Utils, parser = parser_1.Parser, ERROR = utils.err, ERRS = jriapp_shared_3.LocaleERRS;
     function createElViewFactory(register) {
         return new ElViewFactory(register);
     }
@@ -338,19 +318,19 @@ define("jriapp/elview", ["require", "exports", "jriapp_shared", "jriapp/const", 
     }());
     var ElViewStore = (function () {
         function ElViewStore() {
-            this._ELV_STORE_KEY = const_1.DATA_ATTR.EL_VIEW_KEY;
+            this._weakmap = jriapp_shared_3.createWeakMap();
         }
         ElViewStore.prototype.destroy = function () {
         };
         ElViewStore.prototype.getElView = function (el) {
-            return jquery_1.$.data(el, this._ELV_STORE_KEY);
+            return this._weakmap.get(el);
         };
         ElViewStore.prototype.setElView = function (el, view) {
             if (!view) {
-                jquery_1.$.removeData(el, this._ELV_STORE_KEY);
+                this._weakmap.delete(el);
             }
             else {
-                jquery_1.$.data(el, this._ELV_STORE_KEY, view);
+                this._weakmap.set(el, view);
             }
         };
         return ElViewStore;
@@ -443,11 +423,11 @@ define("jriapp/elview", ["require", "exports", "jriapp_shared", "jriapp/const", 
             configurable: true
         });
         return ElViewFactory;
-    }(jriapp_shared_4.BaseObject));
+    }(jriapp_shared_3.BaseObject));
 });
-define("jriapp/content", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_5) {
+define("jriapp/content", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_4) {
     "use strict";
-    var ERRS = jriapp_shared_5.LocaleERRS;
+    var ERRS = jriapp_shared_4.LocaleERRS;
     function createContentFactoryList() {
         return new FactoryList();
     }
@@ -479,9 +459,9 @@ define("jriapp/content", ["require", "exports", "jriapp_shared"], function (requ
         return FactoryList;
     }());
 });
-define("jriapp/defaults", ["require", "exports", "jriapp_shared", "jriapp/int"], function (require, exports, jriapp_shared_6, int_1) {
+define("jriapp/defaults", ["require", "exports", "jriapp_shared", "jriapp/int"], function (require, exports, jriapp_shared_5, int_1) {
     "use strict";
-    var utils = jriapp_shared_6.Utils, checks = utils.check, strUtils = utils.str;
+    var utils = jriapp_shared_5.Utils, checks = utils.check, strUtils = utils.str;
     var PROP_NAME = {
         dateFormat: "dateFormat",
         timeFormat: "timeFormat",
@@ -604,12 +584,12 @@ define("jriapp/defaults", ["require", "exports", "jriapp_shared", "jriapp/int"],
             configurable: true
         });
         return Defaults;
-    }(jriapp_shared_6.BaseObject));
+    }(jriapp_shared_5.BaseObject));
     exports.Defaults = Defaults;
 });
-define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_7) {
+define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_6) {
     "use strict";
-    var utils = jriapp_shared_7.Utils, checks = utils.check, coreUtils = utils.core, strUtils = utils.str, defer = utils.defer, ERRS = jriapp_shared_7.LocaleERRS, DEBUG = utils.debug, LOG = utils.log, http = utils.http;
+    var utils = jriapp_shared_6.Utils, checks = utils.check, coreUtils = utils.core, strUtils = utils.str, defer = utils.defer, ERRS = jriapp_shared_6.LocaleERRS, DEBUG = utils.debug, LOG = utils.log, http = utils.http;
     var PROP_NAME = {
         isLoading: "isLoading"
     };
@@ -621,7 +601,7 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
             this._templateLoaders = {};
             this._templateGroups = {};
             this._promises = [];
-            this._waitQueue = new jriapp_shared_7.WaitQueue(self);
+            this._waitQueue = new jriapp_shared_6.WaitQueue(self);
         }
         TemplateLoader.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -799,12 +779,222 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
             configurable: true
         });
         return TemplateLoader;
-    }(jriapp_shared_7.BaseObject));
+    }(jriapp_shared_6.BaseObject));
     exports.TemplateLoader = TemplateLoader;
 });
-define("jriapp/utils/path", ["require", "exports", "jriapp_shared", "jriapp/int"], function (require, exports, jriapp_shared_8, int_2) {
+define("jriapp/utils/dom", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_7) {
     "use strict";
-    var utils = jriapp_shared_8.Utils, doc = utils.dom.document, head = doc.head || doc.getElementsByTagName("head")[0], arrHelper = utils.arr, strUtils = utils.str;
+    var ERRS = jriapp_shared_7.LocaleERRS, arrHelper = jriapp_shared_7.Utils.arr, win = window, doc = win.document, hasClassList = (!!window.document.documentElement.classList), weakmap = jriapp_shared_7.createWeakMap();
+    var DomUtils = (function () {
+        function DomUtils() {
+        }
+        DomUtils.getData = function (el, key) {
+            var map = weakmap.get(el);
+            if (!map)
+                return (void 0);
+            return map[key];
+        };
+        DomUtils.setData = function (el, key, val) {
+            var map = weakmap.get(el);
+            if (!map) {
+                map = {};
+                weakmap.set(el, map);
+            }
+            map[key] = val;
+        };
+        DomUtils.removeData = function (el, key) {
+            var map = weakmap.get(el);
+            if (!map) {
+                return;
+            }
+            if (!key) {
+                weakmap.delete(el);
+            }
+            else {
+                delete map[key];
+            }
+        };
+        DomUtils.isContained = function (oNode, oCont) {
+            if (!oNode)
+                return false;
+            while (!!(oNode = oNode.parentNode)) {
+                if (oNode === oCont)
+                    return true;
+            }
+            return false;
+        };
+        DomUtils.fromHTML = function (html) {
+            var div = doc.createElement("div");
+            div.innerHTML = html;
+            return arrHelper.fromList(div.children);
+        };
+        DomUtils.queryElements = function (root, selector) {
+            var res = root.querySelectorAll(selector);
+            return arrHelper.fromList(res);
+        };
+        DomUtils.append = function (parent, children) {
+            if (!children)
+                return;
+            children.forEach(function (node) {
+                parent.appendChild(node);
+            });
+        };
+        DomUtils.removeNode = function (node) {
+            if (!node)
+                return;
+            var pnd = node.parentNode;
+            if (!!pnd)
+                pnd.removeChild(node);
+        };
+        DomUtils.insertAfter = function (node, refNode) {
+            var parent = refNode.parentNode;
+            if (parent.lastChild === refNode)
+                parent.appendChild(node);
+            else
+                parent.insertBefore(node, refNode.nextSibling);
+        };
+        DomUtils.insertBefore = function (node, refNode) {
+            var parent = refNode.parentNode;
+            parent.insertBefore(node, refNode);
+        };
+        DomUtils.wrap = function (elem, wrapper) {
+            var parent = elem.parentElement, nsibling = elem.nextSibling;
+            if (!parent)
+                return;
+            wrapper.appendChild(elem);
+            (!nsibling) ? parent.appendChild(wrapper) : parent.insertBefore(wrapper, nsibling);
+        };
+        DomUtils.unwrap = function (elem) {
+            var wrapper = elem.parentElement;
+            if (!wrapper)
+                return;
+            var parent = wrapper.parentElement, nsibling = wrapper.nextSibling;
+            if (!parent)
+                return;
+            parent.removeChild(wrapper);
+            (!nsibling) ? parent.appendChild(elem) : parent.insertBefore(elem, nsibling);
+        };
+        DomUtils.getClassMap = function (el) {
+            var res = {};
+            if (!el)
+                return res;
+            var className = el.className;
+            if (!className)
+                return res;
+            var arr = className.split(" ");
+            for (var i = 0; i < arr.length; i += 1) {
+                arr[i] = arr[i].trim();
+                if (!!arr[i]) {
+                    res[arr[i]] = i;
+                }
+            }
+            return res;
+        };
+        DomUtils.setClasses = function (elems, classes) {
+            if (!elems.length || !classes.length)
+                return;
+            var toAdd = [], toRemove = [], removeAll = false;
+            classes.forEach(function (v) {
+                if (!v)
+                    return;
+                var name = v.trim();
+                if (!name)
+                    return;
+                var op = v.charAt(0);
+                if (op == "+" || op == "-") {
+                    name = v.substr(1).trim();
+                }
+                if (!name)
+                    return;
+                var arr = name.split(" ");
+                for (var i = 0; i < arr.length; i += 1) {
+                    var v2 = arr[i].trim();
+                    if (!!v2) {
+                        if (op != "-") {
+                            toAdd.push(v2);
+                        }
+                        else {
+                            if (name === "*")
+                                removeAll = true;
+                            else
+                                toRemove.push(v2);
+                        }
+                    }
+                }
+            });
+            if (removeAll) {
+                toRemove = [];
+            }
+            for (var j = 0; j < elems.length; j += 1) {
+                var el = elems[j], map = DomUtils.getClassMap(el);
+                if (removeAll) {
+                    map = {};
+                }
+                for (var i = 0; i < toRemove.length; i += 1) {
+                    delete map[toRemove[i]];
+                }
+                for (var i = 0; i < toAdd.length; i += 1) {
+                    map[toAdd[i]] = i + 1000;
+                }
+                var keys = Object.keys(map);
+                el.className = keys.join(" ");
+            }
+        };
+        DomUtils.setClass = function (elems, css, remove) {
+            if (remove === void 0) { remove = false; }
+            if (!elems.length)
+                return;
+            if (!css) {
+                if (remove) {
+                    for (var j = 0; j < elems.length; j += 1) {
+                        elems[j].className = "";
+                    }
+                }
+                return;
+            }
+            var _arr = css.split(" ");
+            for (var i = 0; i < _arr.length; i += 1) {
+                _arr[i] = _arr[i].trim();
+            }
+            var arr = _arr.filter(function (val) { return !!val; });
+            if (hasClassList && arr.length === 1) {
+                for (var j = 0; j < elems.length; j += 1) {
+                    var el = elems[j];
+                    if (remove)
+                        el.classList.remove(arr[0]);
+                    else
+                        el.classList.add(arr[0]);
+                }
+            }
+            else {
+                for (var j = 0; j < elems.length; j += 1) {
+                    var el = elems[j], map = DomUtils.getClassMap(el);
+                    for (var i = 0; i < arr.length; i += 1) {
+                        if (remove)
+                            delete map[arr[i]];
+                        else
+                            map[arr[i]] = i + 1000;
+                    }
+                    var keys = Object.keys(map);
+                    el.className = keys.join(" ");
+                }
+            }
+        };
+        DomUtils.addClass = function (elems, css) {
+            DomUtils.setClass(elems || [], css, false);
+        };
+        DomUtils.removeClass = function (elems, css) {
+            DomUtils.setClass(elems || [], css, true);
+        };
+        DomUtils.window = win;
+        DomUtils.document = doc;
+        return DomUtils;
+    }());
+    exports.DomUtils = DomUtils;
+});
+define("jriapp/utils/path", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/int"], function (require, exports, jriapp_shared_8, dom_1, int_2) {
+    "use strict";
+    var utils = jriapp_shared_8.Utils, doc = dom_1.DomUtils.document, head = doc.head || doc.getElementsByTagName("head")[0], arrHelper = utils.arr, strUtils = utils.str;
     exports.frameworkJS = int_2.Config.frameworkJS || "jriapp.js";
     var stylesDir = "css", imageDir = "img";
     function fn_getFrameworkPath() {
@@ -917,9 +1107,9 @@ define("jriapp/utils/path", ["require", "exports", "jriapp_shared", "jriapp/int"
     }());
     exports.PathHelper = PathHelper;
 });
-define("jriapp/utils/sloader", ["require", "exports", "jriapp_shared", "jriapp_shared/utils/async", "jriapp/utils/path"], function (require, exports, jriapp_shared_9, async_1, path_1) {
+define("jriapp/utils/sloader", ["require", "exports", "jriapp_shared", "jriapp_shared/utils/async", "jriapp/utils/dom", "jriapp/utils/path"], function (require, exports, jriapp_shared_9, async_1, dom_2, path_1) {
     "use strict";
-    var _async = async_1.AsyncUtils, utils = jriapp_shared_9.Utils, dom = utils.dom, arrHelper = utils.arr, resolvedPromise = _async.createSyncDeferred().resolve(), doc = dom.document, head = doc.head || doc.getElementsByTagName("head")[0];
+    var _async = async_1.AsyncUtils, utils = jriapp_shared_9.Utils, dom = dom_2.DomUtils, arrHelper = utils.arr, resolvedPromise = _async.createSyncDeferred().resolve(), doc = dom.document, head = doc.head || doc.getElementsByTagName("head")[0];
     var _stylesLoader = null;
     exports.frameworkCss = "jriapp.css";
     function createCssLoader() {
@@ -1030,11 +1220,33 @@ define("jriapp/utils/sloader", ["require", "exports", "jriapp_shared", "jriapp_s
         return StylesLoader;
     }());
 });
-define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const", "jriapp/elview", "jriapp/content", "jriapp/defaults", "jriapp/utils/tloader", "jriapp/utils/sloader", "jriapp/utils/path", "jriapp/utils/jquery", "jriapp_shared/utils/deferred", "jriapp_shared/utils/queue"], function (require, exports, jriapp_shared_10, const_2, elview_1, content_1, defaults_1, tloader_1, sloader_1, path_2, jquery_2, deferred_1, queue_1) {
+define("jriapp/utils/jquery", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_10) {
     "use strict";
-    var utils = jriapp_shared_10.Utils, dom = utils.dom, win = dom.window, doc = win.document, arrHelper = utils.arr, _async = utils.defer, coreUtils = utils.core, strUtils = utils.str, ERROR = utils.err, ERRS = jriapp_shared_10.LocaleERRS;
+    if (!("jQuery" in window))
+        throw new Error(jriapp_shared_10.LocaleERRS.ERR_APP_NEED_JQUERY);
+    exports.$ = jQuery;
+    var JQueryUtils = (function () {
+        function JQueryUtils() {
+        }
+        JQueryUtils.destroy$Plugin = function ($el, name) {
+            var plugin = $el.data(name);
+            if (!!plugin) {
+                $el[name]("destroy");
+            }
+        };
+        JQueryUtils.$ = jQuery;
+        return JQueryUtils;
+    }());
+    exports.JQueryUtils = JQueryUtils;
+});
+define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const", "jriapp/elview", "jriapp/content", "jriapp/defaults", "jriapp/utils/tloader", "jriapp/utils/sloader", "jriapp/utils/path", "jriapp/utils/dom", "jriapp/utils/jquery", "jriapp_shared/utils/deferred", "jriapp_shared/utils/queue"], function (require, exports, jriapp_shared_11, const_2, elview_1, content_1, defaults_1, tloader_1, sloader_1, path_2, dom_3, jquery_1, deferred_1, queue_1) {
+    "use strict";
+    var utils = jriapp_shared_11.Utils, dom = dom_3.DomUtils, win = dom.window, doc = win.document, arrHelper = utils.arr, _async = utils.defer, coreUtils = utils.core, strUtils = utils.str, ERROR = utils.err, ERRS = jriapp_shared_11.LocaleERRS;
     (function () {
         var win = dom.window;
+        if (!win.Promise) {
+            win.Promise = deferred_1.Promise;
+        }
         if (!win.requestAnimationFrame) {
             var requestAnimationFrame_1 = win.requestAnimationFrame || win.mozRequestAnimationFrame ||
                 win.webkitRequestAnimationFrame || win.msRequestAnimationFrame;
@@ -1048,9 +1260,6 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
             }
             win.requestAnimationFrame = requestAnimationFrame_1;
             win.cancelAnimationFrame = cancelAnimationFrame_1;
-        }
-        if (!win.Promise) {
-            win.Promise = deferred_1.Promise;
         }
     })();
     var _TEMPLATE_SELECTOR = 'script[type="text/html"]';
@@ -1130,12 +1339,12 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
             ERROR.addHandler("*", this);
         }
         Bootstrap._initFramework = function () {
-            jquery_2.$(doc).ready(function ($) {
+            jquery_1.$(doc).ready(function ($) {
                 exports.bootstrap._getInternal().initialize();
             });
         };
         Bootstrap.prototype._bindGlobalEvents = function () {
-            var self = this, $win = jquery_2.$(win), $doc = jquery_2.$(doc);
+            var self = this, $win = jquery_1.$(win), $doc = jquery_1.$(doc);
             $doc.on("click.jriapp", function (e) {
                 e.stopPropagation();
                 self.currentSelectable = null;
@@ -1156,7 +1365,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
                 self.raiseEvent(GLOB_EVENTS.unload, {});
             });
             win.onerror = function (msg, url, linenumber) {
-                if (!!msg && msg.toString().indexOf(jriapp_shared_10.DUMY_ERROR) > -1) {
+                if (!!msg && msg.toString().indexOf(jriapp_shared_11.DUMY_ERROR) > -1) {
                     return true;
                 }
                 alert("Error: " + msg + "\nURL: " + url + "\nLine Number: " + linenumber);
@@ -1170,7 +1379,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
         };
         Bootstrap.prototype._processTemplates = function (root, app) {
             if (app === void 0) { app = null; }
-            var self = this, templates = arrHelper.fromList(root.querySelectorAll(_TEMPLATE_SELECTOR));
+            var self = this, templates = dom.queryElements(root, _TEMPLATE_SELECTOR);
             templates.forEach(function (el) {
                 var name = el.getAttribute("id");
                 if (!name)
@@ -1247,7 +1456,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
         };
         Bootstrap.prototype._trackSelectable = function (selectable) {
             var self = this, isel = selectable.getISelectable(), el = isel.getContainerEl();
-            jquery_2.$(el).on("click." + isel.getUniqueID(), function (e) {
+            jquery_1.$(el).on("click." + isel.getUniqueID(), function (e) {
                 e.stopPropagation();
                 var target = e.target;
                 if (dom.isContained(target, el))
@@ -1256,7 +1465,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
         };
         Bootstrap.prototype._untrackSelectable = function (selectable) {
             var self = this, isel = selectable.getISelectable(), el = isel.getContainerEl();
-            jquery_2.$(el).off("click." + isel.getUniqueID());
+            jquery_1.$(el).off("click." + isel.getUniqueID());
             if (this.currentSelectable === selectable)
                 this.currentSelectable = null;
         };
@@ -1389,9 +1598,9 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
             self._elViewRegister = null;
             self._contentFactory = null;
             self._moduleInits = [];
-            jquery_2.$(doc).off(".jriapp");
+            jquery_1.$(doc).off(".jriapp");
             win.onerror = null;
-            jquery_2.$(win).off(".jriapp");
+            jquery_1.$(win).off(".jriapp");
             ERROR.removeHandler("*");
             this._bootState = 5;
             _super.prototype.destroy.call(this);
@@ -1484,7 +1693,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
             configurable: true
         });
         return Bootstrap;
-    }(jriapp_shared_10.BaseObject));
+    }(jriapp_shared_11.BaseObject));
     exports.Bootstrap = Bootstrap;
     exports.bootstrap = new Bootstrap();
 });
@@ -1504,9 +1713,9 @@ define("jriapp/utils/viewchecks", ["require", "exports"], function (require, exp
     }());
     exports.ViewChecks = ViewChecks;
 });
-define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/bootstrap"], function (require, exports, jriapp_shared_11, bootstrap_2) {
+define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/bootstrap"], function (require, exports, jriapp_shared_12, bootstrap_2) {
     "use strict";
-    var utils = jriapp_shared_11.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, boot = bootstrap_2.bootstrap, ERRS = jriapp_shared_11.LocaleERRS;
+    var utils = jriapp_shared_12.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, boot = bootstrap_2.bootstrap, ERRS = jriapp_shared_12.LocaleERRS;
     exports.NUM_CONV = { None: 0, Integer: 1, Decimal: 2, Float: 3, SmallInt: 4 };
     var BaseConverter = (function () {
         function BaseConverter() {
@@ -1736,9 +1945,9 @@ define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/boots
     boot.registerConverter("floatConverter", floatConverter);
     boot.registerConverter("notConverter", new NotConverter());
 });
-define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/viewchecks", "jriapp/utils/parser", "jriapp/bootstrap"], function (require, exports, jriapp_shared_12, viewchecks_1, parser_2, bootstrap_3) {
+define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/viewchecks", "jriapp/utils/parser", "jriapp/bootstrap"], function (require, exports, jriapp_shared_13, viewchecks_1, parser_2, bootstrap_3) {
     "use strict";
-    var utils = jriapp_shared_12.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, sys = utils.sys, debug = utils.debug, log = utils.log, parser = parser_2.Parser, boot = bootstrap_3.bootstrap, ERRS = jriapp_shared_12.LocaleERRS, viewChecks = viewchecks_1.ViewChecks;
+    var utils = jriapp_shared_13.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, sys = utils.sys, debug = utils.debug, log = utils.log, parser = parser_2.Parser, boot = bootstrap_3.bootstrap, ERRS = jriapp_shared_13.LocaleERRS, viewChecks = viewchecks_1.ViewChecks;
     sys.isBinding = function (obj) {
         return (!!obj && obj instanceof Binding);
     };
@@ -2398,12 +2607,12 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
             configurable: true
         });
         return Binding;
-    }(jriapp_shared_12.BaseObject));
+    }(jriapp_shared_13.BaseObject));
     exports.Binding = Binding;
 });
-define("jriapp/datepicker", ["require", "exports", "jriapp_shared", "jriapp/bootstrap", "jriapp/utils/jquery"], function (require, exports, jriapp_shared_13, bootstrap_4, jquery_3) {
+define("jriapp/datepicker", ["require", "exports", "jriapp_shared", "jriapp/bootstrap", "jriapp/utils/dom", "jriapp/utils/jquery"], function (require, exports, jriapp_shared_14, bootstrap_4, dom_4, jquery_2) {
     "use strict";
-    var utils = jriapp_shared_13.Utils, coreUtils = utils.core, dom = utils.dom, boot = bootstrap_4.bootstrap, ERRS = jriapp_shared_13.LocaleERRS;
+    var utils = jriapp_shared_14.Utils, coreUtils = utils.core, dom = dom_4.DomUtils, boot = bootstrap_4.bootstrap, ERRS = jriapp_shared_14.LocaleERRS;
     var PROP_NAME = {
         dateFormat: "dateFormat",
         datepickerRegion: "datepickerRegion"
@@ -2414,7 +2623,7 @@ define("jriapp/datepicker", ["require", "exports", "jriapp_shared", "jriapp/boot
             _super.call(this);
             this._dateFormat = null;
             this._datepickerRegion = "";
-            if (!jquery_3.$.datepicker) {
+            if (!jquery_2.$.datepicker) {
                 throw new Error(ERRS.ERR_JQUERY_DATEPICKER_NOTFOUND);
             }
             this.dateFormat = "dd.mm.yy";
@@ -2429,7 +2638,7 @@ define("jriapp/datepicker", ["require", "exports", "jriapp_shared", "jriapp/boot
                 $el.datepicker();
         };
         Datepicker.prototype.detachFrom = function ($el) {
-            jquery_3.JQueryUtils.destroy$Plugin($el, "datepicker");
+            jquery_2.JQueryUtils.destroy$Plugin($el, "datepicker");
         };
         Datepicker.prototype.parseDate = function (str) {
             return this.datePickerFn.parseDate(this.dateFormat, str);
@@ -2482,19 +2691,19 @@ define("jriapp/datepicker", ["require", "exports", "jriapp_shared", "jriapp/boot
         });
         Object.defineProperty(Datepicker.prototype, "datePickerFn", {
             get: function () {
-                return jquery_3.$.datepicker;
+                return jquery_2.$.datepicker;
             },
             enumerable: true,
             configurable: true
         });
         return Datepicker;
-    }(jriapp_shared_13.BaseObject));
+    }(jriapp_shared_14.BaseObject));
     exports.Datepicker = Datepicker;
     boot.registerSvc("IDatepicker", new Datepicker());
 });
-define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/const", "jriapp/bootstrap", "jriapp/utils/viewchecks", "jriapp/utils/jquery"], function (require, exports, jriapp_shared_14, const_3, bootstrap_5, viewchecks_2, jquery_4) {
+define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/const", "jriapp/bootstrap", "jriapp/utils/viewchecks", "jriapp/utils/dom"], function (require, exports, jriapp_shared_15, const_3, bootstrap_5, viewchecks_2, dom_5) {
     "use strict";
-    var utils = jriapp_shared_14.Utils, _async = utils.defer, dom = utils.dom, viewChecks = viewchecks_2.ViewChecks, doc = dom.document, coreUtils = utils.core, checks = utils.check, strUtils = utils.str, arrHelper = utils.arr, sys = utils.sys, boot = bootstrap_5.bootstrap, ERRS = jriapp_shared_14.LocaleERRS, ERROR = utils.err, win = dom.window;
+    var utils = jriapp_shared_15.Utils, _async = utils.defer, dom = dom_5.DomUtils, viewChecks = viewchecks_2.ViewChecks, doc = dom.document, coreUtils = utils.core, checks = utils.check, strUtils = utils.str, arrHelper = utils.arr, sys = utils.sys, boot = bootstrap_5.bootstrap, ERRS = jriapp_shared_15.LocaleERRS, ERROR = utils.err, win = dom.window;
     exports.css = {
         templateContainer: "ria-template-container",
         templateError: "ria-template-error"
@@ -2561,10 +2770,8 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/const"
             var self = this, fn_loader = this.app.getTemplateLoader(name), promise;
             if (checks.isFunc(fn_loader) && checks.isThenable(promise = fn_loader())) {
                 return promise.then(function (html) {
-                    var tmpDiv = doc.createElement("div");
-                    tmpDiv.innerHTML = html;
-                    tmpDiv = tmpDiv.firstElementChild;
-                    return tmpDiv;
+                    var elems = dom.fromHTML(html);
+                    return elems[0];
                 }, function (err) {
                     if (!!err && !!err.message)
                         throw err;
@@ -2689,7 +2896,7 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/const"
             }
             this._templElView = null;
             if (!!this._loadedElem) {
-                jquery_4.$(this._loadedElem).remove();
+                dom.removeNode(this._loadedElem);
                 this._loadedElem = null;
             }
         };
@@ -2699,7 +2906,7 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/const"
             this._isDestroyCalled = true;
             this._unloadTemplate();
             if (!!this._el) {
-                jquery_4.$(this._el).remove();
+                dom.removeNode(this._el);
                 this._el = null;
             }
             this._dataContext = null;
@@ -2765,11 +2972,11 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/const"
             configurable: true
         });
         return Template;
-    }(jriapp_shared_14.BaseObject));
+    }(jriapp_shared_15.BaseObject));
 });
-define("jriapp/utils/propwatcher", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_15) {
+define("jriapp/utils/propwatcher", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_16) {
     "use strict";
-    var coreUtils = jriapp_shared_15.Utils.core;
+    var coreUtils = jriapp_shared_16.Utils.core;
     var PropWatcher = (function (_super) {
         __extends(PropWatcher, _super);
         function PropWatcher() {
@@ -2823,12 +3030,12 @@ define("jriapp/utils/propwatcher", ["require", "exports", "jriapp_shared"], func
             configurable: true
         });
         return PropWatcher;
-    }(jriapp_shared_15.BaseObject));
+    }(jriapp_shared_16.BaseObject));
     exports.PropWatcher = PropWatcher;
 });
-define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_16) {
+define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_17) {
     "use strict";
-    var coreUtils = jriapp_shared_16.Utils.core;
+    var coreUtils = jriapp_shared_17.Utils.core;
     var CMD_EVENTS = {
         can_execute_changed: "canExecute_changed"
     };
@@ -2897,7 +3104,7 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
             configurable: true
         });
         return TCommand;
-    }(jriapp_shared_16.BaseObject));
+    }(jriapp_shared_17.BaseObject));
     exports.TCommand = TCommand;
     var BaseCommand = (function (_super) {
         __extends(BaseCommand, _super);
@@ -2946,12 +3153,12 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
             configurable: true
         });
         return ViewModel;
-    }(jriapp_shared_16.BaseObject));
+    }(jriapp_shared_17.BaseObject));
     exports.ViewModel = ViewModel;
 });
-define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/utils/sloader"], function (require, exports, jriapp_shared_17, sloader_2) {
+define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/utils/sloader"], function (require, exports, jriapp_shared_18, sloader_2) {
     "use strict";
-    var utils = jriapp_shared_17.Utils, coreUtils = utils.core, strUtils = utils.str, defer = utils.defer, arr = utils.arr, resolvedPromise = defer.createSyncDeferred().resolve(), CSSPrefix = "css!";
+    var utils = jriapp_shared_18.Utils, coreUtils = utils.core, strUtils = utils.str, defer = utils.defer, arr = utils.arr, resolvedPromise = defer.createSyncDeferred().resolve(), CSSPrefix = "css!";
     var _moduleLoader = null;
     function create() {
         if (!_moduleLoader)
@@ -3085,9 +3292,9 @@ define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/u
         return ModuleLoader;
     }());
 });
-define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/const", "jriapp/bootstrap", "jriapp/utils/lifetime", "jriapp/utils/mloader", "jriapp/binding", "jriapp/utils/viewchecks", "jriapp/utils/parser"], function (require, exports, jriapp_shared_18, const_4, bootstrap_6, lifetime_1, mloader_1, binding_1, viewchecks_3, parser_3) {
+define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/const", "jriapp/bootstrap", "jriapp/utils/lifetime", "jriapp/utils/dom", "jriapp/utils/mloader", "jriapp/binding", "jriapp/utils/viewchecks", "jriapp/utils/parser"], function (require, exports, jriapp_shared_19, const_4, bootstrap_6, lifetime_1, dom_6, mloader_1, binding_1, viewchecks_3, parser_3) {
     "use strict";
-    var utils = jriapp_shared_18.Utils, viewChecks = viewchecks_3.ViewChecks, dom = utils.dom, doc = dom.document, strUtils = utils.str, sys = utils.sys, checks = utils.check, boot = bootstrap_6.bootstrap, ERRS = jriapp_shared_18.LocaleERRS, parser = parser_3.Parser;
+    var utils = jriapp_shared_19.Utils, viewChecks = viewchecks_3.ViewChecks, dom = dom_6.DomUtils, doc = dom.document, strUtils = utils.str, sys = utils.sys, checks = utils.check, boot = bootstrap_6.bootstrap, ERRS = jriapp_shared_19.LocaleERRS, parser = parser_3.Parser;
     function createDataBindSvc(root, elViewFactory) {
         return new DataBindingService(root, elViewFactory);
     }
@@ -3127,7 +3334,7 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/con
                 return null;
         };
         DataBindingService.prototype._getBindableElements = function (scope) {
-            var self = this, result = [], allElems = utils.arr.fromList(scope.querySelectorAll("*"));
+            var self = this, result = [], allElems = dom.queryElements(scope, "*");
             allElems.forEach(function (el) {
                 var res = self._toBindableElement(el);
                 if (!!res)
@@ -3214,7 +3421,7 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/con
             catch (err) {
                 self.handleError(err, self);
                 setTimeout(function () {
-                    defer.reject(new jriapp_shared_18.DummyError(err));
+                    defer.reject(new jriapp_shared_19.DummyError(err));
                 }, 0);
             }
             return defer.promise();
@@ -3258,7 +3465,7 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/con
             catch (err) {
                 self.handleError(err, self);
                 setTimeout(function () {
-                    defer.reject(new jriapp_shared_18.DummyError(err));
+                    defer.reject(new jriapp_shared_19.DummyError(err));
                 }, 0);
             }
             return defer.promise();
@@ -3285,11 +3492,11 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/con
             _super.prototype.destroy.call(this);
         };
         return DataBindingService;
-    }(jriapp_shared_18.BaseObject));
+    }(jriapp_shared_19.BaseObject));
 });
-define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/const", "jriapp/bootstrap", "jriapp/elview", "jriapp/databindsvc", "jriapp/utils/jquery"], function (require, exports, jriapp_shared_19, const_5, bootstrap_7, elview_2, databindsvc_1, jquery_5) {
+define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/const", "jriapp/bootstrap", "jriapp/utils/dom", "jriapp/elview", "jriapp/databindsvc", "jriapp/utils/jquery"], function (require, exports, jriapp_shared_20, const_5, bootstrap_7, dom_7, elview_2, databindsvc_1, jquery_3) {
     "use strict";
-    var utils = jriapp_shared_19.Utils, dom = utils.dom, doc = dom.document, boot = bootstrap_7.bootstrap, sys = utils.sys, ERRS = jriapp_shared_19.LocaleERRS;
+    var utils = jriapp_shared_20.Utils, dom = dom_7.DomUtils, doc = dom.document, boot = bootstrap_7.bootstrap, sys = utils.sys, ERRS = jriapp_shared_20.LocaleERRS;
     var APP_EVENTS = {
         startup: "startup"
     };
@@ -3308,7 +3515,7 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/const", "jr
             if (!options) {
                 options = {};
             }
-            var self = this, moduleInits = options.modulesInits || {}, app_name = jriapp_shared_19.APP_NAME;
+            var self = this, moduleInits = options.modulesInits || {}, app_name = jriapp_shared_20.APP_NAME;
             this._appName = app_name;
             this._options = options;
             if (!!boot.getApp())
@@ -3499,7 +3706,7 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/const", "jr
         Application.prototype.registerTemplateById = function (name, templateId) {
             this.registerTemplateLoader(name, utils.core.memoize(function () {
                 var deferred = utils.defer.createSyncDeferred();
-                var str = jquery_5.$("#" + templateId).html();
+                var str = jquery_3.$("#" + templateId).html();
                 deferred.resolve(str);
                 return deferred.promise();
             }));
@@ -3591,15 +3798,15 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/const", "jr
             configurable: true
         });
         return Application;
-    }(jriapp_shared_19.BaseObject));
+    }(jriapp_shared_20.BaseObject));
     exports.Application = Application;
 });
-define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jriapp_shared/collection/const", "jriapp_shared/collection/int", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/deferred", "jriapp/const", "jriapp/utils/jquery", "jriapp/utils/viewchecks", "jriapp/converter", "jriapp/bootstrap", "jriapp/binding", "jriapp/datepicker", "jriapp/template", "jriapp/utils/lifetime", "jriapp/utils/propwatcher", "jriapp/mvvm", "jriapp/app"], function (require, exports, bootstrap_8, jriapp_shared_20, const_6, int_3, jsonbag_1, deferred_2, const_7, jquery_6, viewchecks_4, converter_1, bootstrap_9, binding_2, datepicker_1, template_1, lifetime_2, propwatcher_1, mvvm_1, app_1) {
+define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jriapp_shared/collection/const", "jriapp_shared/collection/int", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/deferred", "jriapp/const", "jriapp/utils/jquery", "jriapp/utils/dom", "jriapp/utils/viewchecks", "jriapp/converter", "jriapp/bootstrap", "jriapp/binding", "jriapp/datepicker", "jriapp/template", "jriapp/utils/lifetime", "jriapp/utils/propwatcher", "jriapp/mvvm", "jriapp/app"], function (require, exports, bootstrap_8, jriapp_shared_21, const_6, int_3, jsonbag_1, deferred_2, const_7, jquery_4, dom_8, viewchecks_4, converter_1, bootstrap_9, binding_2, datepicker_1, template_1, lifetime_2, propwatcher_1, mvvm_1, app_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
     }
-    __export(jriapp_shared_20);
+    __export(jriapp_shared_21);
     __export(const_6);
     __export(int_3);
     __export(jsonbag_1);
@@ -3607,8 +3814,9 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.KEYS = const_7.KEYS;
     exports.BINDING_MODE = const_7.BINDING_MODE;
     exports.BindTo = const_7.BindTo;
-    exports.JQueryUtils = jquery_6.JQueryUtils;
-    exports.$ = jquery_6.$;
+    exports.JQueryUtils = jquery_4.JQueryUtils;
+    exports.$ = jquery_4.$;
+    exports.DOM = dom_8.DomUtils;
     exports.ViewChecks = viewchecks_4.ViewChecks;
     exports.BaseConverter = converter_1.BaseConverter;
     exports.bootstrap = bootstrap_9.bootstrap;
@@ -3623,6 +3831,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.1.27";
+    exports.VERSION = "1.1.29";
     bootstrap_8.Bootstrap._initFramework();
 });
