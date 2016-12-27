@@ -72,7 +72,7 @@ export const PROP_NAME = {
 
 export class BaseElView extends BaseObject implements IElView {
     private _objId: string;
-    private _$el: JQuery;
+    private _el: HTMLElement;
     protected _errors: IValidationInfo[];
     protected _toolTip: string;
     private _eventStore: EventBag;
@@ -85,7 +85,7 @@ export class BaseElView extends BaseObject implements IElView {
     constructor(options: IViewOptions) {
         super();
         const el = options.el;
-        this._$el = $(el);
+        this._el = el;
         this._toolTip = options.tip;
 
         //lazily initialized
@@ -117,25 +117,25 @@ export class BaseElView extends BaseObject implements IElView {
         }
     }
     protected _onEventAdded(name: string, newVal: ICommand) {
-        let self = this;
+        const self = this;
         if (this.getIsDestroyCalled())
             return;
-        this.$el.on(name + "." + this.uniqueID, function (e) {
+        $(this.el).on(name + "." + this.uniqueID, function (e) {
             e.stopPropagation();
             if (!!self._eventStore)
                 self._eventStore.trigger(name, e);
         });
     }
     protected _onEventDeleted(name: string, oldVal: ICommand) {
-        this.$el.off(name + "." + this.uniqueID);
+        $(this.el).off(name + "." + this.uniqueID);
     }
     protected _applyToolTip() {
         if (!!this._toolTip) {
-            this._setToolTip(this.$el, this._toolTip);
+            this._setToolTip($(this.el), this._toolTip);
         }
     }
     protected _getErrorTipInfo(errors: IValidationInfo[]) {
-        let tip = ["<b>", STRS.VALIDATE.errorInfo, "</b>", "<br/>"];
+        const tip = ["<b>", STRS.VALIDATE.errorInfo, "</b>", "<br/>"];
         errors.forEach(function (info) {
             let res = "";
             info.errors.forEach(function (str) {
@@ -153,7 +153,7 @@ export class BaseElView extends BaseObject implements IElView {
         if (!el) {
             return;
         }
-        let $el = this.$el;
+        const $el = $(el);
         if (!!errors && errors.length > 0) {
             fn_addToolTip($el, this._getErrorTipInfo(errors), true);
             this._setFieldError(true);
@@ -171,7 +171,7 @@ export class BaseElView extends BaseObject implements IElView {
             return;
         this._isDestroyCalled = true;
         this._getStore().setElView(this.el, null);
-        this._$el.off("." + this.uniqueID);
+        $(this._el).off("." + this.uniqueID);
         this.validationErrors = null;
         this.toolTip = null;
         if (!!this._eventStore) {
@@ -193,32 +193,26 @@ export class BaseElView extends BaseObject implements IElView {
     toString() {
         return "BaseElView";
     }
-    get $el(): JQuery {
-        return this._$el;
-    }
     get el(): HTMLElement {
-        return this._$el[0];
+        return this._el;
     }
     get uniqueID(): string { return this._objId; }
     get isVisible() {
-        let v = this.$el.css("display");
+        const v = this.el.style.display;
         return !(v === "none");
     }
     set isVisible(v) {
         v = !!v;
         if (v !== this.isVisible) {
             if (!v) {
-                this._display = this.$el.css("display");
+                this._display = this.el.style.display;
                 //if saved display is none, then don't store it
                 if (this._display === "none")
                     this._display = null;
-                this.$el.css("display", "none");
+                this.el.style.display = "none";
             }
             else {
-                if (!!this._display)
-                    this.$el.css("display", this._display);
-                else
-                    this.$el.css("display", "");
+                this.el.style.display = (!this._display ? "" : this._display);
             }
             this.raisePropertyChanged(PROP_NAME.isVisible);
         }
@@ -231,12 +225,12 @@ export class BaseElView extends BaseObject implements IElView {
             this._updateErrorUI(this.el, this._errors);
         }
     }
-    get dataName(): string { return this._$el.attr(DATA_ATTR.DATA_NAME); }
+    get dataName(): string { return this._el.getAttribute(DATA_ATTR.DATA_NAME); }
     get toolTip(): string { return this._toolTip; }
     set toolTip(v: string) {
         if (this._toolTip !== v) {
             this._toolTip = v;
-            this._setToolTip(this.$el, v);
+            this._setToolTip($(this.el), v);
             this.raisePropertyChanged(PROP_NAME.toolTip);
         }
     }
@@ -280,7 +274,7 @@ export class BaseElView extends BaseObject implements IElView {
             if (!!this._css)
                 arr.push("+" + this._css);
 
-            dom.setClasses(this._$el.toArray(), arr);
+            dom.setClasses([this._el], arr);
             this.raisePropertyChanged(PROP_NAME.css);
         }
     }

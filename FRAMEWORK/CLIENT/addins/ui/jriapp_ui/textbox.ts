@@ -18,8 +18,7 @@ export type TKeyPressArgs = { keyCode: number; value: string; isCancel: boolean;
 export class TextBoxElView extends InputElView {
     constructor(options: ITextBoxOptions) {
         super(options);
-        let self = this;
-        let $el = this.$el;
+        const self = this, $el = $(this.el);
         $el.on("change." + this.uniqueID, function (e) {
             e.stopPropagation();
             self.raisePropertyChanged(PROP_NAME.value);
@@ -39,7 +38,7 @@ export class TextBoxElView extends InputElView {
         }
     }
     protected _getEventNames() {
-        let base_events = super._getEventNames();
+        const base_events = super._getEventNames();
         return [TXTBOX_EVENTS.keypress].concat(base_events);
     }
     addOnKeyPress(fn: (sender: TextBoxElView, args: TKeyPressArgs) => void, nmspace?: string) {
@@ -52,14 +51,12 @@ export class TextBoxElView extends InputElView {
         return "TextBoxElView";
     }
     get color() {
-        let $el = this.$el;
-        return $el.css(css.color);
+        return this.el.style.color;
     }
     set color(v) {
-        let $el = this.$el;
-        let x = $el.css(css.color);
+        const x = this.el.style.color;
         if (v !== x) {
-            $el.css(css.color, v);
+            this.el.style.color = v;
             this.raisePropertyChanged(PROP_NAME.color);
         }
     }

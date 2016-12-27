@@ -86,7 +86,7 @@ export class CommandElView extends BaseElView {
             else
                 this._disabled = !v;
 
-            dom.setClass(this.$el.toArray(), css.disabled, !!v);
+            dom.setClass([this.el], css.disabled, !!v);
             this.raisePropertyChanged(PROP_NAME.isEnabled);
         }
     }

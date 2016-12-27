@@ -81,7 +81,7 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
         this._btnCancel = null;
         this._$dlg = null;
 
-        var $el = this.$el;
+        var $el = $(this.el);
 
         $el.on('change.' + this.uniqueID, function (e) {
             e.stopPropagation();
@@ -222,7 +222,7 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
         if (this._isOpen)
             return;
         var self = this;
-        this._$dlg = this.$el.closest(".ui-dialog");
+        this._$dlg = $(this.el).closest(".ui-dialog");
         var dialogdrag = "dialogdrag." + this.uniqueID;
         this._$dlg.on(dialogdrag, null, (event) => {
             if (!self._isOpen)
@@ -252,7 +252,7 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
         var self = this;
         if (!this._isOpen)
             return;
-        RIAPP.$(RIAPP.DOM.document).off('.' + this.uniqueID);
+        $(RIAPP.DOM.document).off('.' + this.uniqueID);
         this._$dlg.off('.' + this.uniqueID);
 
         if (!!this._lookupGrid) {
@@ -314,17 +314,16 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
     }
     //dbSet for a datagrid's dataSource (for lookup values)
     get gridDataSource(): RIAPP.ICollection<RIAPP.ICollectionItem> { return this._gridDataSource; }
-    get value() {
-        return this.$el.val();
+    get value(): string {
+        return (<HTMLInputElement>this.el).value;
     }
     set value(v) {
-        var x = this.$el.val();
-        var str = '' + v;
-        v = (v === null) ? '' : str;
+        const x = this.value, str = "" + v;
+        v = (!v) ? "" : str;
         if (x !== v) {
-            this.$el.val(v);
+            (<HTMLInputElement>this.el).value = v;
             this._prevText = v;
-            this.raisePropertyChanged('value');
+            this.raisePropertyChanged("value");
         }
     }
     get isLoading() {

@@ -55,41 +55,32 @@ export class DownloadLinkElView extends uiMOD.BaseElView {
         this._id = '';
     }
     get text() {
-        return this.$el.text();
+        return this.el.textContent;
     }
     set text(v) {
-        var $el = this.$el;
-        var x = $el.text();
-        if (v === null)
-            v = '';
-        else
-            v = '' + v;
+        var el = this.el;
+        var x = this.text;
+        v = (!v) ? "" : ("" + v);
         if (x !== v) {
-            $el.text(v);
+            el.textContent = v;
             this.raisePropertyChanged('text');
         }
     }
-    get href() {
-        return this.$el.prop('href');
+    get href(): string {
+        return (<HTMLAnchorElement>this.el).href;
     }
     set href(v) {
-        var x = this.$el.prop('href');
-        if (v === null)
-            v = '';
-        else
-            v = '' + v;
+        let x = this.href;
+        v = (!v) ? "" : ("" + v);
         if (x !== v) {
-            this.$el.prop('href', v);
-            this.raisePropertyChanged('href');
+            (<HTMLAnchorElement>this.el).href = v;
+            this.raisePropertyChanged("href");
         }
     }
     get id() { return this._id; }
     set id(v) {
         var x = this._id;
-        if (v === null)
-            v = '';
-        else
-            v = '' + v;
+        v = (!v) ? "" : ("" + v);
         if (x !== v) {
             this._id = v;
             this.href = this._baseUri + '/' + this._id;
@@ -154,12 +145,12 @@ export class FileImgElView extends uiMOD.BaseElView {
         clearTimeout(this._debounce);
         this._debounce = setTimeout(() => {
             this._debounce = null;
-            var $img = this.$el;
+            var img = this.el;
             if (!!this._src) {
-                $img.prop('src', this._src);
+                (<HTMLImageElement>img).src = this._src;
             }
             else {
-                $img.prop('src', "data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==");
+                (<HTMLImageElement>img).src = "data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
             }
         }, 100);
     }

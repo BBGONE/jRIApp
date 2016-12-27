@@ -85,7 +85,7 @@ export const enum BootstrapState {
 
 export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     public static _initFramework() {
-        $(doc).ready(function ($) {
+        dom.ready(() => {
             bootstrap._getInternal().initialize();
         });
     }
@@ -190,9 +190,9 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         };
     }
     private _onTemplateLoaded(html: string, app: IApplication) {
-        let tmpDiv = doc.createElement("div");
-        tmpDiv.innerHTML = strUtils.fastTrim(html);
-        this._processTemplates(tmpDiv, app);
+        const divEl = doc.createElement("div");
+        divEl.innerHTML = html;
+        this._processTemplates(divEl, app);
     }
     private _processTemplates(root: HTMLElement | HTMLDocument, app: IApplication = null): void {
         const self = this, templates = dom.queryElements<HTMLElement>(root, _TEMPLATE_SELECTOR);

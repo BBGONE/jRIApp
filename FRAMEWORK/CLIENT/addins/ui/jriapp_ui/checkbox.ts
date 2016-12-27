@@ -18,7 +18,7 @@ export class CheckBoxElView extends InputElView {
         this._checked = null;
         chk.checked = false;
 
-        this.$el.on("change." + this.uniqueID, function (e) {
+        $(this.el).on("change." + this.uniqueID, function (e) {
             e.stopPropagation();
             if (self.checked !== this.checked)
                 self.checked = this.checked;

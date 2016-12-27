@@ -15,7 +15,6 @@ const PROP_NAME = {
 export interface ITabs {
     readonly uniqueID: string;
     readonly el: HTMLElement;
-    readonly $el: JQuery;
     tabIndex: number;
     isVisible: boolean;
     dataName: string;
@@ -41,14 +40,14 @@ export class TabsElView extends BaseElView implements ITabs {
         this._createTabs();
     }
     protected _createTabs() {
-        let $el = this.$el, self = this, tabOpts = {
+        let $el = $(this.el), self = this, tabOpts = {
             activate: function (e: any, tab: any) {
                 if (!!self._tabsEvents) {
                     self._tabsEvents.onTabSelected(self);
-               }
+                }
                 self.raisePropertyChanged(PROP_NAME.tabIndex);
-           }
-       };
+            }
+        };
         tabOpts = coreUtils.extend(tabOpts, self._tabOpts);
         (<any>$el).tabs(tabOpts);
         setTimeout(() => {
@@ -60,7 +59,7 @@ export class TabsElView extends BaseElView implements ITabs {
        }, 0);
    }
     protected _destroyTabs() {
-        const $el = this.$el;
+        const $el = $(this.el);
         JQueryUtils.destroy$Plugin($el, "tabs");
         this._tabsCreated = false;
         if (!!this._tabsEvents) {
@@ -69,7 +68,7 @@ export class TabsElView extends BaseElView implements ITabs {
 
    }
     protected _onTabsCreated() {
-       const self = this, $el = self.$el;
+       const self = this, $el = $(self.el);
         if (!!self._tabsEvents) {
             self._tabsEvents.addTabs(self);
        }
@@ -102,10 +101,12 @@ export class TabsElView extends BaseElView implements ITabs {
        }
    }
     get tabIndex(): number {
-        return (<any>this.$el).tabs("option", "active");
+        let $el = <any>$(this.el);
+        return $el.tabs("option", "active");
    }
     set tabIndex(v: number) {
-        (<any>this.$el).tabs("option", "active", v);
+        let $el = <any>$(this.el);
+        $el.tabs("option", "active", v);
    }
 }
 

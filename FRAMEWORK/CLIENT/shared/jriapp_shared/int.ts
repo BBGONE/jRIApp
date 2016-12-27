@@ -15,6 +15,7 @@ export type TEventHandler<T, U> = (sender: T, args: U) => void;
 export type TErrorArgs = { error: any; source: any; isHandled: boolean; };
 export type TErrorHandler = (sender: any, args: TErrorArgs) => void;
 export type TPropChangedHandler = (sender: any, args: { property: string; }) => void;
+export type TFunc = { (...args: any[]): void; };
 
 export interface IDisposable {
     destroy(): void;

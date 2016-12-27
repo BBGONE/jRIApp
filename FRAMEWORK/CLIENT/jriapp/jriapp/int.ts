@@ -145,7 +145,6 @@ export interface IViewType {
 }
 
 export interface IElView extends IBaseObject {
-    $el: JQuery;
     el: HTMLElement;
     app: IApplication;
     validationErrors: IValidationInfo[];

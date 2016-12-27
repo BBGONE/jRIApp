@@ -680,11 +680,11 @@ export class ListBoxElView extends BaseElView {
     toString() {
         return "ListBoxElView";
     }
-    get isEnabled() { return !this.$el.prop("disabled"); }
+    get isEnabled() { return !(<HTMLSelectElement>this.el).disabled; }
     set isEnabled(v: boolean) {
-        v = !!v;
-        if (v !== this.isEnabled) {
-            this.$el.prop("disabled", !v);
+        v = !v;
+        if (v !== !this.isEnabled) {
+            (<HTMLSelectElement>this.el).disabled = v;
             this.raisePropertyChanged(PROP_NAME.isEnabled);
         }
     }

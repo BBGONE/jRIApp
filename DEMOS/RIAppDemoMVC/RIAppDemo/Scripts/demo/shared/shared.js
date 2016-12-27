@@ -41,17 +41,14 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
         }
         Object.defineProperty(DownloadLinkElView.prototype, "text", {
             get: function () {
-                return this.$el.text();
+                return this.el.textContent;
             },
             set: function (v) {
-                var $el = this.$el;
-                var x = $el.text();
-                if (v === null)
-                    v = '';
-                else
-                    v = '' + v;
+                var el = this.el;
+                var x = this.text;
+                v = (!v) ? "" : ("" + v);
                 if (x !== v) {
-                    $el.text(v);
+                    el.textContent = v;
                     this.raisePropertyChanged('text');
                 }
             },
@@ -60,17 +57,14 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
         });
         Object.defineProperty(DownloadLinkElView.prototype, "href", {
             get: function () {
-                return this.$el.prop('href');
+                return this.el.href;
             },
             set: function (v) {
-                var x = this.$el.prop('href');
-                if (v === null)
-                    v = '';
-                else
-                    v = '' + v;
+                var x = this.href;
+                v = (!v) ? "" : ("" + v);
                 if (x !== v) {
-                    this.$el.prop('href', v);
-                    this.raisePropertyChanged('href');
+                    this.el.href = v;
+                    this.raisePropertyChanged("href");
                 }
             },
             enumerable: true,
@@ -80,10 +74,7 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
             get: function () { return this._id; },
             set: function (v) {
                 var x = this._id;
-                if (v === null)
-                    v = '';
-                else
-                    v = '' + v;
+                v = (!v) ? "" : ("" + v);
                 if (x !== v) {
                     this._id = v;
                     this.href = this._baseUri + '/' + this._id;
@@ -153,12 +144,12 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
                 clearTimeout(this._debounce);
                 this._debounce = setTimeout(function () {
                     _this._debounce = null;
-                    var $img = _this.$el;
+                    var img = _this.el;
                     if (!!_this._src) {
-                        $img.prop('src', _this._src);
+                        img.src = _this._src;
                     }
                     else {
-                        $img.prop('src', "data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==");
+                        img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
                     }
                 }, 100);
             },
@@ -353,7 +344,7 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             this._btnOk = null;
             this._btnCancel = null;
             this._$dlg = null;
-            var $el = this.$el;
+            var $el = $(this.el);
             $el.on('change.' + this.uniqueID, function (e) {
                 e.stopPropagation();
                 self._onTextChange();
@@ -488,7 +479,7 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             if (this._isOpen)
                 return;
             var self = this;
-            this._$dlg = this.$el.closest(".ui-dialog");
+            this._$dlg = $(this.el).closest(".ui-dialog");
             var dialogdrag = "dialogdrag." + this.uniqueID;
             this._$dlg.on(dialogdrag, null, function (event) {
                 if (!self._isOpen)
@@ -515,7 +506,7 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             var self = this;
             if (!this._isOpen)
                 return;
-            RIAPP.$(RIAPP.DOM.document).off('.' + this.uniqueID);
+            $(RIAPP.DOM.document).off('.' + this.uniqueID);
             this._$dlg.off('.' + this.uniqueID);
             if (!!this._lookupGrid) {
                 this._lookupGrid.removeNSHandlers(this.uniqueID);
@@ -597,16 +588,15 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
         });
         Object.defineProperty(AutoCompleteElView.prototype, "value", {
             get: function () {
-                return this.$el.val();
+                return this.el.value;
             },
             set: function (v) {
-                var x = this.$el.val();
-                var str = '' + v;
-                v = (v === null) ? '' : str;
+                var x = this.value, str = "" + v;
+                v = (!v) ? "" : str;
                 if (x !== v) {
-                    this.$el.val(v);
+                    this.el.value = v;
                     this._prevText = v;
-                    this.raisePropertyChanged('value');
+                    this.raisePropertyChanged("value");
                 }
             },
             enumerable: true,

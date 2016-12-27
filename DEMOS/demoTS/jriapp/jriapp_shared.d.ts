@@ -108,6 +108,9 @@ declare module "jriapp_shared/int" {
     export type TPropChangedHandler = (sender: any, args: {
         property: string;
     }) => void;
+    export type TFunc = {
+        (...args: any[]): void;
+    };
     export interface IDisposable {
         destroy(): void;
     }

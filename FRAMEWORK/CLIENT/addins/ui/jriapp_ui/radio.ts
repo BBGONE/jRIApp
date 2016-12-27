@@ -12,15 +12,15 @@ export class RadioElView extends CheckBoxElView {
     toString() {
         return "RadioElView";
     }
-    get value(): string { return this.$el.val(); }
+    get value(): string { return (<HTMLInputElement>this.el).value; }
     set value(v) {
-        let strv = checks.isNt(v)? "" : ("" + v);
-        if (strv !== this.$el.val()) {
-            this.$el.val(strv);
+        const strv = checks.isNt(v)? "" : ("" + v);
+        if (strv !== this.value) {
+            (<HTMLInputElement>this.el).value = strv;
             this.raisePropertyChanged(PROP_NAME.value);
         }
     }
-    get name(): string { return this.$el.prop("name"); }
+    get name(): string { return (<HTMLInputElement>this.el).name; }
 }
 
 bootstrap.registerElView("input:radio", RadioElView);

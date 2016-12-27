@@ -182,7 +182,7 @@ declare module "jriapp_ui/baseview" {
     };
     export class BaseElView extends BaseObject implements IElView {
         private _objId;
-        private _$el;
+        private _el;
         protected _errors: IValidationInfo[];
         protected _toolTip: string;
         private _eventStore;
@@ -202,7 +202,6 @@ declare module "jriapp_ui/baseview" {
         protected _setToolTip($el: JQuery, tip: string, isError?: boolean): void;
         destroy(): void;
         toString(): string;
-        readonly $el: JQuery;
         readonly el: HTMLElement;
         readonly uniqueID: string;
         isVisible: boolean;
@@ -269,7 +268,7 @@ declare module "jriapp_ui/textarea" {
         toString(): string;
         value: string;
         isEnabled: boolean;
-        wrap: any;
+        wrap: string;
     }
 }
 declare module "jriapp_ui/content/multyline" {
@@ -1480,7 +1479,6 @@ declare module "jriapp_ui/tabs" {
     export interface ITabs {
         readonly uniqueID: string;
         readonly el: HTMLElement;
-        readonly $el: JQuery;
         tabIndex: number;
         isVisible: boolean;
         dataName: string;
@@ -1674,6 +1672,7 @@ declare module "jriapp_ui/button" {
     import { IViewOptions } from "jriapp/int";
     import { CommandElView } from "jriapp_ui/command";
     export class ButtonElView extends CommandElView {
+        private _isButton;
         constructor(options: IViewOptions);
         protected _onClick(e: Event): void;
         toString(): string;

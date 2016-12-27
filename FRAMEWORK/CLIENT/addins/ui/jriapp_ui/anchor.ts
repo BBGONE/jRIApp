@@ -25,7 +25,7 @@ export class AnchorElView extends CommandElView {
 
     constructor(options: IAncorOptions) {
         super(options);
-        let self = this;
+        const self = this;
         this._imageSrc = null;
         this._image = null;
         this._span = null;
@@ -38,7 +38,7 @@ export class AnchorElView extends CommandElView {
             this.glyph = options.glyph;
 
         dom.addClass([this.el], css.commandLink);
-        this.$el.on("click." + this.uniqueID, function (e) {
+        $(this.el).on("click." + this.uniqueID, function (e) {
             self._onClick(e);
         });
     }
@@ -50,7 +50,7 @@ export class AnchorElView extends CommandElView {
         this.invokeCommand(null, true);
     }
     protected _updateImage(src: string) {
-        let $a = this.$el, self = this;
+        let el = this.el, self = this;
         if (this._imageSrc === src)
             return;
         this._imageSrc = src;
@@ -63,16 +63,16 @@ export class AnchorElView extends CommandElView {
 
         if (!!src) {
             if (!this._image) {
-                $a.empty();
+                el.innerHTML = "";
                 this._image = new Image();
-                $a[0].appendChild(this._image);
+                el.appendChild(this._image);
             }
 
             this._image.src = src;
         }
     }
     protected _updateGlyph(glyph: string) {
-        let $a = this.$el;
+        let el = this.el;
 
         if (this._glyph === glyph)
             return;
@@ -86,9 +86,9 @@ export class AnchorElView extends CommandElView {
 
         if (!!glyph) {
             if (!this._span) {
-                $a.empty();
+                el.innerHTML = "";
                 this._span = dom.document.createElement("span");
-                $a[0].appendChild(this._span);
+                el.appendChild(this._span);
             }
         
             if (!!oldGlyph) {
@@ -126,44 +126,35 @@ export class AnchorElView extends CommandElView {
         }
     }
     get html() {
-        return this.$el.html();
+        return this.el.innerHTML;
     }
     set html(v) {
-        let x = this.$el.html();
-        if (v === null)
-            v = "";
-        else
-            v = "" + v;
+        let x = this.el.innerHTML;
+        v = (!v) ? "" : ("" + v);
         if (x !== v) {
-            this.$el.html(v);
+            this.el.innerHTML = v;
             this.raisePropertyChanged(PROP_NAME.html);
         }
     }
     get text() {
-        return this.$el.text();
+        return this.el.textContent;
     }
     set text(v) {
-        let x = this.$el.text();
-        if (v === null)
-            v = "";
-        else
-            v = "" + v;
+        let x = this.el.textContent;
+        v = (!v) ? "" : ("" + v);
         if (x !== v) {
-            this.$el.text(v);
+            this.el.textContent = v;
             this.raisePropertyChanged(PROP_NAME.text);
         }
     }
     get href(): string {
-        return this.$el.prop("href");
+        return (<HTMLAnchorElement>this.el).href;
     }
     set href(v) {
         let x = this.href;
-        if (v === null)
-            v = "";
-        else
-            v = "" + v;
+        v = (!v) ? "" : ("" + v);
         if (x !== v) {
-            this.$el.prop("href", v);
+            (<HTMLAnchorElement>this.el).href = v;
             this.raisePropertyChanged(PROP_NAME.href);
         }
     }

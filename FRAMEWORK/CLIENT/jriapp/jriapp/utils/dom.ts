@@ -1,8 +1,36 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IIndexer, LocaleERRS, Utils, createWeakMap, IWeakMap } from "jriapp_shared";
+import { IIndexer, LocaleERRS, Utils, createWeakMap, IWeakMap, TFunc  } from "jriapp_shared";
 
-const ERRS = LocaleERRS, arrHelper = Utils.arr, win = window, doc = win.document,
+const ERRS = LocaleERRS, arrHelper = Utils.arr, win = window, doc = win.document, queue = Utils.queue,
     hasClassList = (!!window.document.documentElement.classList), weakmap = createWeakMap();
+
+export interface ICheckDOMReady {
+    (closure: TFunc): void;
+}
+
+const _checkDOMReady: ICheckDOMReady = (function () {
+    let funcs: TFunc[] = [], hack = (<any>doc.documentElement).doScroll
+        , domContentLoaded = 'DOMContentLoaded'
+        , isDOMloaded = (hack ? /^loaded|^c/ : /^loaded|^i|^c/).test(doc.readyState);
+
+    if (!isDOMloaded) {
+        let callback = () => {
+            doc.removeEventListener(domContentLoaded, <any>callback);
+            isDOMloaded = true;
+            let fn_onloaded: TFunc = null;
+            while (fn_onloaded = funcs.shift()) {
+                queue.enque(fn_onloaded);
+            }
+        };
+
+        doc.addEventListener(domContentLoaded, callback);
+    }
+
+    return function (fn: TFunc) {
+        isDOMloaded ? queue.enque(fn) : funcs.push(fn);
+    };
+})();
+
 
 /**
  * pure javascript methods for the DOM manipulation
@@ -10,6 +38,7 @@ const ERRS = LocaleERRS, arrHelper = Utils.arr, win = window, doc = win.document
 export class DomUtils {
     static readonly window: Window = win;
     static readonly document: Document = doc;
+    static readonly ready = _checkDOMReady;
 
     static getData(el: Node, key: string): any {
         let map: any = weakmap.get(el);

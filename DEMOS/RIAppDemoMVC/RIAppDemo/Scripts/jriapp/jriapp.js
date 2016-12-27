@@ -784,7 +784,24 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
 });
 define("jriapp/utils/dom", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_7) {
     "use strict";
-    var ERRS = jriapp_shared_7.LocaleERRS, arrHelper = jriapp_shared_7.Utils.arr, win = window, doc = win.document, hasClassList = (!!window.document.documentElement.classList), weakmap = jriapp_shared_7.createWeakMap();
+    var ERRS = jriapp_shared_7.LocaleERRS, arrHelper = jriapp_shared_7.Utils.arr, win = window, doc = win.document, queue = jriapp_shared_7.Utils.queue, hasClassList = (!!window.document.documentElement.classList), weakmap = jriapp_shared_7.createWeakMap();
+    var _checkDOMReady = (function () {
+        var funcs = [], hack = doc.documentElement.doScroll, domContentLoaded = 'DOMContentLoaded', isDOMloaded = (hack ? /^loaded|^c/ : /^loaded|^i|^c/).test(doc.readyState);
+        if (!isDOMloaded) {
+            var callback_1 = function () {
+                doc.removeEventListener(domContentLoaded, callback_1);
+                isDOMloaded = true;
+                var fn_onloaded = null;
+                while (fn_onloaded = funcs.shift()) {
+                    queue.enque(fn_onloaded);
+                }
+            };
+            doc.addEventListener(domContentLoaded, callback_1);
+        }
+        return function (fn) {
+            isDOMloaded ? queue.enque(fn) : funcs.push(fn);
+        };
+    })();
     var DomUtils = (function () {
         function DomUtils() {
         }
@@ -988,6 +1005,7 @@ define("jriapp/utils/dom", ["require", "exports", "jriapp_shared"], function (re
         };
         DomUtils.window = win;
         DomUtils.document = doc;
+        DomUtils.ready = _checkDOMReady;
         return DomUtils;
     }());
     exports.DomUtils = DomUtils;
@@ -1339,7 +1357,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
             ERROR.addHandler("*", this);
         }
         Bootstrap._initFramework = function () {
-            jquery_1.$(doc).ready(function ($) {
+            dom.ready(function () {
                 exports.bootstrap._getInternal().initialize();
             });
         };
@@ -1373,9 +1391,9 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
             };
         };
         Bootstrap.prototype._onTemplateLoaded = function (html, app) {
-            var tmpDiv = doc.createElement("div");
-            tmpDiv.innerHTML = strUtils.fastTrim(html);
-            this._processTemplates(tmpDiv, app);
+            var divEl = doc.createElement("div");
+            divEl.innerHTML = html;
+            this._processTemplates(divEl, app);
         };
         Bootstrap.prototype._processTemplates = function (root, app) {
             if (app === void 0) { app = null; }
@@ -3831,6 +3849,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.1.29";
+    exports.VERSION = "1.1.30";
     bootstrap_8.Bootstrap._initFramework();
 });

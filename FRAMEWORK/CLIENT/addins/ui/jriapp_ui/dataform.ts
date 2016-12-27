@@ -490,9 +490,9 @@ export class DataFormElView extends BaseElView {
         if (!el) {
             return;
         }
-        const $el = this.$el;
+        const $el = $(el);
         if (!!errors && errors.length > 0) {
-            let $img = $(`<div data-name="error_info" class="${css.error}" />`);
+            const $img = $(`<div data-name="error_info" class="${css.error}" />`);
             $el.prepend($img);
             fn_addToolTip($img, this._getErrorTipInfo(errors), true);
             this._setFieldError(true);

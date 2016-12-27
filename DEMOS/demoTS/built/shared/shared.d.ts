@@ -23,7 +23,7 @@ declare module "common" {
         _id: string;
         constructor(options: IDLinkOptions);
         text: string;
-        href: any;
+        href: string;
         id: string;
     }
     export class FileImgElView extends uiMOD.BaseElView {
@@ -117,7 +117,7 @@ declare module "autocomplete" {
         readonly template: RIAPP.ITemplate;
         dataContext: RIAPP.IBaseObject;
         readonly gridDataSource: RIAPP.ICollection<RIAPP.ICollectionItem>;
-        value: any;
+        value: string;
         readonly isLoading: boolean;
     }
     export function initModule(app: RIAPP.Application): void;

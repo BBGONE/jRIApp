@@ -7,24 +7,24 @@ export class InputElView extends BaseElView {
         return "InputElView";
     }
     get isEnabled() {
-        const el = <HTMLInputElement>this.el;
-        return !el.disabled;
+        return (<HTMLInputElement>this.el).disabled;
     }
     set isEnabled(v: boolean) {
+        v = !v;
         const el = <HTMLInputElement>this.el;
-        if (v !== this.isEnabled) {
-            el.disabled = !v;
+        if (v !== !this.isEnabled) {
+            el.disabled = v;
             this.raisePropertyChanged(PROP_NAME.isEnabled);
         }
     }
     get value(): string {
-        return this.$el.val();
+        return (<HTMLInputElement>this.el).value;
     }
     set value(v) {
         const x = this.value, str = "" + v;
-        v = (v === null) ? "" : str;
+        v = (!v) ? "" : str;
         if (x !== v) {
-            this.$el.val(v);
+            (<HTMLInputElement>this.el).value = v;
             this.raisePropertyChanged(PROP_NAME.value);
         }
     }

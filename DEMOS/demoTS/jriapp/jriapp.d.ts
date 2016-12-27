@@ -176,7 +176,6 @@ declare module "jriapp/int" {
         new (options: IViewOptions): IElView;
     }
     export interface IElView extends IBaseObject {
-        $el: JQuery;
         el: HTMLElement;
         app: IApplication;
         validationErrors: IValidationInfo[];
@@ -414,9 +413,14 @@ declare module "jriapp/utils/tloader" {
     }
 }
 declare module "jriapp/utils/dom" {
+    import { TFunc } from "jriapp_shared";
+    export interface ICheckDOMReady {
+        (closure: TFunc): void;
+    }
     export class DomUtils {
         static readonly window: Window;
         static readonly document: Document;
+        static readonly ready: ICheckDOMReady;
         static getData(el: Node, key: string): any;
         static setData(el: Node, key: string, val: any): void;
         static removeData(el: Node, key?: string): void;

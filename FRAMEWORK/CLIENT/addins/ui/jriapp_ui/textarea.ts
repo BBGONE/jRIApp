@@ -16,11 +16,11 @@ export interface ITextAreaOptions extends ITextBoxOptions {
 export class TextAreaElView extends BaseElView {
     constructor(options: ITextAreaOptions) {
         super(options);
-        let self = this;
+        const self = this, $el = $(this.el);
         if (!!options.wrap) {
             this.wrap = options.wrap;
         }
-        let $el = this.$el;
+        
         $el.on("change." + this.uniqueID, function (e) {
             e.stopPropagation();
             self.raisePropertyChanged(PROP_NAME.value);
@@ -53,32 +53,31 @@ export class TextAreaElView extends BaseElView {
         return "TextAreaElView";
     }
     get value(): string {
-        return this.$el.val();
+        return (<HTMLTextAreaElement>this.el).value;
     }
     set value(v) {
-        let x = this.$el.val();
-        let str = "" + v;
-        v = (v === null) ? "" : str;
+        const x = this.value, str = "" + v;
+        v = (!v) ? "" : str;
         if (x !== v) {
-            this.$el.val(v);
+            (<HTMLTextAreaElement>this.el).value = v;
             this.raisePropertyChanged(PROP_NAME.value);
         }
     }
-    get isEnabled() { return !this.$el.prop("disabled"); }
+    get isEnabled() { return !(<HTMLTextAreaElement>this.el).disabled; }
     set isEnabled(v: boolean) {
-        v = !!v;
-        if (v !== this.isEnabled) {
-            this.$el.prop("disabled", !v);
+        v = !v;
+        if (v !== !this.isEnabled) {
+            (<HTMLTextAreaElement>this.el).disabled = v;
             this.raisePropertyChanged(PROP_NAME.isEnabled);
         }
     }
     get wrap() {
-        return this.$el.prop("wrap");
+        return (<HTMLTextAreaElement>this.el).wrap;
     }
     set wrap(v) {
         let x = this.wrap;
         if (x !== v) {
-            this.$el.prop("wrap", v);
+            (<HTMLTextAreaElement>this.el).wrap = v;
             this.raisePropertyChanged(PROP_NAME.wrap);
         }
     }

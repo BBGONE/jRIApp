@@ -9,10 +9,13 @@ import { CommandElView } from "./command";
 const boot = bootstrap;
 
 export class ButtonElView extends CommandElView {
+    private _isButton: boolean;
+
     constructor(options: IViewOptions) {
         super(options);
-        let self = this;
-        this.$el.on("click." + this.uniqueID, function (e) {
+        const self = this;
+        this._isButton = this.el.tagName.toLowerCase() === "button";
+        $(this.el).on("click." + this.uniqueID, function (e) {
             self._onClick(e);
         });
     }
@@ -27,44 +30,42 @@ export class ButtonElView extends CommandElView {
         return "ButtonElView";
     }
     get value(): string {
-        return this.$el.val();
+        return this._isButton ? (<HTMLButtonElement>this.el).textContent : (<HTMLInputElement>this.el).value;
     }
     set value(v) {
-        let x = this.$el.val();
-        if (v === null)
-            v = "";
-        else
-            v = "" + v;
+        const x = this.value;
+        v = (!v) ? "" : ("" + v);
         if (x !== v) {
-            this.$el.val(v);
+            if (this._isButton)
+                (<HTMLButtonElement>this.el).textContent = v;
+            else
+                (<HTMLInputElement>this.el).value = v;
+
             this.raisePropertyChanged(PROP_NAME.value);
         }
     }
     get text() {
-        return this.$el.text();
+        return this.el.textContent;
     }
     set text(v) {
-        let x = this.$el.text();
-        if (v === null)
-            v = "";
-        else
-            v = "" + v;
+        let x = this.el.textContent;
+        v = (!v) ? "" : ("" + v);
         if (x !== v) {
-            this.$el.text(v);
+            this.el.textContent = v;
             this.raisePropertyChanged(PROP_NAME.text);
         }
     }
     get html() {
-        return this.$el.html();
+        return this._isButton ? (<HTMLButtonElement>this.el).innerHTML : (<HTMLInputElement>this.el).value;
     }
     set html(v) {
-        let x = this.$el.html();
-        if (v === null)
-            v = "";
-        else
-            v = "" + v;
+        const x = this.html;
+        v = (!v) ? "" : ("" + v);
         if (x !== v) {
-            this.$el.html(v);
+            if (this._isButton)
+                (<HTMLButtonElement>this.el).innerHTML = v;
+            else
+                (<HTMLInputElement>this.el).value = v;
             this.raisePropertyChanged(PROP_NAME.html);
         }
     }

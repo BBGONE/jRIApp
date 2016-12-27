@@ -18,15 +18,13 @@ export interface IDatePickerOptions extends ITextBoxOptions {
 export class DatePickerElView extends TextBoxElView {
     constructor(options: IDatePickerOptions) {
         super(options);
-        let $el = this.$el;
-        boot.defaults.datepicker.attachTo($el, options.datepicker);
+        boot.defaults.datepicker.attachTo($(this.el), options.datepicker);
     }
     destroy() {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        let $el = this.$el;
-        boot.defaults.datepicker.detachFrom($el);
+        boot.defaults.datepicker.detachFrom($(this.el));
         super.destroy();
    }
     toString() {

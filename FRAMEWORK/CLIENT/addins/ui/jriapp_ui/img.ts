@@ -10,11 +10,11 @@ export class ImgElView extends BaseElView {
     toString() {
         return "ImgElView";
     }
-    get src(): string { return this.$el.prop("src"); }
+    get src(): string { return (<HTMLImageElement>this.el).src; }
     set src(v: string) {
-        let x = this.src;
+        const x = this.src;
         if (x !== v) {
-            this.$el.prop("src", v);
+            (<HTMLImageElement>this.el).src = v;
             this.raisePropertyChanged(PROP_NAME.src);
         }
     }
