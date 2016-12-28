@@ -4,11 +4,10 @@ import { IIndexer, LocaleERRS, Utils, createWeakMap, IWeakMap, TFunc  } from "jr
 const ERRS = LocaleERRS, arrHelper = Utils.arr, win = window, doc = win.document, queue = Utils.queue,
     hasClassList = (!!window.document.documentElement.classList), weakmap = createWeakMap();
 
-export interface ICheckDOMReady {
-    (closure: TFunc): void;
-}
+export type TCheckDOMReady  = (closure: TFunc) => void;
 
-const _checkDOMReady: ICheckDOMReady = (function () {
+
+const _checkDOMReady: TCheckDOMReady = (function () {
     let funcs: TFunc[] = [], hack = (<any>doc.documentElement).doScroll
         , domContentLoaded = 'DOMContentLoaded'
         , isDOMloaded = (hack ? /^loaded|^c/ : /^loaded|^i|^c/).test(doc.readyState);

@@ -522,17 +522,16 @@ declare module "jriapp_shared/utils/queue" {
 }
 declare module "jriapp_shared/utils/deferred" {
     import { IStatefulDeferred, IStatefulPromise, IThenable, ITaskQueue, PromiseState, IPromise, IAbortablePromise, IDeferredErrorCB, IDeferredSuccessCB, IErrorCB, IVoidErrorCB, ISuccessCB, IAbortable } from "jriapp_shared/utils/ideferred";
+    import { TFunc } from "jriapp_shared/int";
     export function createDefer<T>(isSync?: boolean): IStatefulDeferred<T>;
     export function createSyncDefer<T>(): IStatefulDeferred<T>;
     export function getTaskQueue(): ITaskQueue;
     export function whenAll<T>(promises: Array<T | IThenable<T>>): IStatefulPromise<T[]>;
     export function race<T>(promises: IPromise<T>[]): IPromise<T>;
-    export interface IDispatcher {
-        (closure: () => void): void;
-    }
+    export type TDispatcher = (closure: TFunc) => void;
     export class Promise<T> implements IStatefulPromise<T> {
         private _deferred;
-        constructor(fn: (resolve: (res?: T) => void, reject: (err?: any) => void) => void, dispatcher?: IDispatcher);
+        constructor(fn: (resolve: (res?: T) => void, reject: (err?: any) => void) => void, dispatcher?: TDispatcher);
         then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
         then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
         then<TP>(successCB?: IDeferredSuccessCB<T, TP>, errorCB?: IVoidErrorCB): IStatefulPromise<TP>;

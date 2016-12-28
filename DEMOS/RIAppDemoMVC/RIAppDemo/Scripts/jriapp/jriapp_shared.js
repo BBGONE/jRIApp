@@ -1437,7 +1437,7 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
     var checks = checks_6.Checks, arrHelper = arrhelper_3.ArrayHelper;
     var taskQueue = null;
     function createDefer(isSync) {
-        return new Promise(null, (!isSync ? fn_dispatch : fn_dispatchImmediate)).deferred();
+        return new Promise(null, (!isSync ? fn_enque : fn_exec)).deferred();
     }
     exports.createDefer = createDefer;
     function createSyncDefer() {
@@ -1463,10 +1463,10 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
         });
     }
     exports.race = race;
-    function fn_dispatch(task) {
+    function fn_enque(task) {
         getTaskQueue().enque(task);
     }
-    function fn_dispatchImmediate(task) {
+    function fn_exec(task) {
         task();
     }
     var TaskQueue = (function () {
@@ -1495,10 +1495,10 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
                 return;
             }
             if (!!defer) {
-                this._dispatcher(function () { return _this._dispatchCallback(_this._successCB, value); });
+                this._dispatcher(function () { return _this._dispatch(_this._successCB, value); });
             }
             else {
-                this._dispatchCallback(this._successCB, value);
+                this._dispatch(this._successCB, value);
             }
         };
         Callback.prototype.reject = function (error, defer) {
@@ -1508,13 +1508,13 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
                 return;
             }
             if (!!defer) {
-                this._dispatcher(function () { return _this._dispatchCallback(_this._errorCB, error); });
+                this._dispatcher(function () { return _this._dispatch(_this._errorCB, error); });
             }
             else {
-                this._dispatchCallback(this._errorCB, error);
+                this._dispatch(this._errorCB, error);
             }
         };
-        Callback.prototype._dispatchCallback = function (callback, arg) {
+        Callback.prototype._dispatch = function (callback, arg) {
             try {
                 var result = callback(arg);
                 this._deferred.resolve(result);
@@ -1638,7 +1638,7 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
     }());
     var Promise = (function () {
         function Promise(fn, dispatcher) {
-            var disp = (!dispatcher ? fn_dispatch : dispatcher), deferred = new Deferred(this, disp);
+            var disp = (!dispatcher ? fn_enque : dispatcher), deferred = new Deferred(this, disp);
             this._deferred = deferred;
             if (!!fn) {
                 getTaskQueue().enque(function () {

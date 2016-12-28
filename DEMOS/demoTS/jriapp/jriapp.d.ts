@@ -414,13 +414,11 @@ declare module "jriapp/utils/tloader" {
 }
 declare module "jriapp/utils/dom" {
     import { TFunc } from "jriapp_shared";
-    export interface ICheckDOMReady {
-        (closure: TFunc): void;
-    }
+    export type TCheckDOMReady = (closure: TFunc) => void;
     export class DomUtils {
         static readonly window: Window;
         static readonly document: Document;
-        static readonly ready: ICheckDOMReady;
+        static readonly ready: TCheckDOMReady;
         static getData(el: Node, key: string): any;
         static setData(el: Node, key: string, val: any): void;
         static removeData(el: Node, key?: string): void;

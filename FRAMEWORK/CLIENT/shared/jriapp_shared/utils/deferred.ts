@@ -8,12 +8,13 @@ import { AbortError, AggregateError } from "../errors";
 import { Checks } from "./checks";
 import { ArrayHelper } from "./arrhelper";
 import { createQueue, IQueue } from "./queue";
+import { TFunc } from "../int";
 
 const checks = Checks, arrHelper = ArrayHelper;
 let taskQueue: TaskQueue = null;
 
 export function createDefer<T>(isSync?: boolean): IStatefulDeferred<T> {
-    return new Promise<T>(null, (!isSync ? fn_dispatch : fn_dispatchImmediate)).deferred();
+    return new Promise<T>(null, (!isSync ? fn_enque : fn_exec)).deferred();
 }
 
 export function createSyncDefer<T>(): IStatefulDeferred<T> {
@@ -40,15 +41,13 @@ export function race<T>(promises: IPromise<T>[]): IPromise<T> {
     });
 }
 
-export interface IDispatcher {
-    (closure: () => void): void;
-}
+export type TDispatcher = (closure: TFunc) => void;
 
-function fn_dispatch(task: () => void) {
+function fn_enque(task: () => void) {
     getTaskQueue().enque(task);
 }
 
-function fn_dispatchImmediate(task: () => void) {
+function fn_exec(task: () => void) {
     task();
 }
 
@@ -69,12 +68,12 @@ class TaskQueue implements ITaskQueue {
 }
 
 class Callback {
-    private _dispatcher: IDispatcher;
+    private _dispatcher: TDispatcher;
     private _successCB: any;
     private _errorCB: any;
     private _deferred: IDeferred<any>;
 
-    constructor(dispatcher: IDispatcher, successCB: any, errorCB: any) {
+    constructor(dispatcher: TDispatcher, successCB: any, errorCB: any) {
         this._dispatcher = dispatcher;
         this._successCB = successCB;
         this._errorCB = errorCB;
@@ -88,9 +87,9 @@ class Callback {
         }
 
         if (!!defer) {
-            this._dispatcher(() => this._dispatchCallback(this._successCB, value));
+            this._dispatcher(() => this._dispatch(this._successCB, value));
         } else {
-            this._dispatchCallback(this._successCB, value);
+            this._dispatch(this._successCB, value);
         }
     }
     reject(error: any, defer: boolean): void {
@@ -100,14 +99,14 @@ class Callback {
         }
 
         if (!!defer) {
-            this._dispatcher(() => this._dispatchCallback(this._errorCB, error));
+            this._dispatcher(() => this._dispatch(this._errorCB, error));
         } else {
-            this._dispatchCallback(this._errorCB, error);
+            this._dispatch(this._errorCB, error);
         }
     }
-    private _dispatchCallback(callback: (arg: any) => any, arg: any): void {
+    private _dispatch(callback: (arg: any) => any, arg: any): void {
         try {
-            let result = callback(arg);
+            const result = callback(arg);
             this._deferred.resolve(result);
         } catch (err) {
             this._deferred.reject(err);
@@ -125,9 +124,9 @@ class Deferred<T> implements IStatefulDeferred<T> {
     private _state: PromiseState;
     private _value: T;
     private _error: any;
-    private _dispatcher: IDispatcher;
+    private _dispatcher: TDispatcher;
 
-    constructor(promise: IStatefulPromise<T>, dispatcher: IDispatcher) {
+    constructor(promise: IStatefulPromise<T>, dispatcher: TDispatcher) {
         this._dispatcher = dispatcher;
         this._value = checks.undefined;
         this._error = checks.undefined;
@@ -258,8 +257,8 @@ class Deferred<T> implements IStatefulDeferred<T> {
 export class Promise<T> implements IStatefulPromise<T> {
     private _deferred: Deferred<T>;
 
-    constructor(fn: (resolve: (res?: T) => void, reject: (err?: any) => void) => void, dispatcher?: IDispatcher) {
-        const disp = (!dispatcher ? fn_dispatch : dispatcher), deferred = new Deferred(this, disp);
+    constructor(fn: (resolve: (res?: T) => void, reject: (err?: any) => void) => void, dispatcher?: TDispatcher) {
+        const disp = (!dispatcher ? fn_enque : dispatcher), deferred = new Deferred(this, disp);
         this._deferred = deferred;
         if (!!fn) {
             getTaskQueue().enque(() => {

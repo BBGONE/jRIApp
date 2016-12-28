@@ -3841,14 +3841,16 @@ define("jriapp_ui/datagrid/cells/actions", ["require", "exports", "jriapp_shared
             else {
                 self._isEditing = false;
                 var viewBtns = dom.fromHTML(self.viewBtnsHTML);
-                if (!self.isCanEdit) {
+                if (!self.isCanEdit || !self.isCanDelete) {
                     viewBtns = viewBtns.filter(function (el) {
-                        return !(exports.editName === el.getAttribute(const_10.DATA_ATTR.DATA_NAME));
-                    });
-                }
-                if (!self.isCanDelete) {
-                    viewBtns = viewBtns.filter(function (el) {
-                        return !(exports.deleteName === el.getAttribute(const_10.DATA_ATTR.DATA_NAME));
+                        var attr = el.getAttribute(const_10.DATA_ATTR.DATA_NAME);
+                        if (!self.isCanEdit && (exports.editName === attr)) {
+                            return false;
+                        }
+                        if (!self.isCanDelete && (exports.deleteName === attr)) {
+                            return false;
+                        }
+                        return true;
                     });
                 }
                 self._setupButtons(viewBtns);

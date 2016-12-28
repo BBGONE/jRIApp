@@ -70,14 +70,16 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
         else {
             self._isEditing = false;
             let viewBtns = dom.fromHTML(self.viewBtnsHTML);
-            if (!self.isCanEdit) {
+            if (!self.isCanEdit || !self.isCanDelete) {
                 viewBtns = viewBtns.filter((el) => {
-                    return !(editName === el.getAttribute(DATA_ATTR.DATA_NAME));
-                });
-            }
-            if (!self.isCanDelete) {
-                viewBtns = viewBtns.filter((el) => {
-                    return !(deleteName === el.getAttribute(DATA_ATTR.DATA_NAME));
+                    const attr = el.getAttribute(DATA_ATTR.DATA_NAME);
+                    if (!self.isCanEdit && (editName === attr)) {
+                        return false
+                    }
+                    if (!self.isCanDelete && (deleteName === attr)) {
+                        return false;
+                    }
+                    return true;
                 });
             }
             self._setupButtons(viewBtns);
