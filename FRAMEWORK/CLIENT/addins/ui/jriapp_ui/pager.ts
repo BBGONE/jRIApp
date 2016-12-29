@@ -2,6 +2,7 @@
 import {
     Utils, BaseObject, IBaseObject, LocaleERRS as ERRS, LocaleSTRS as STRS, Debounce
 } from "jriapp_shared";
+import { DATA_ATTR } from "jriapp/const";
 import { DomUtils } from "jriapp/utils/dom";
 import { IApplication, IViewOptions } from "jriapp/int";
 import { BaseElView, fn_addToolTip } from "./baseview";
@@ -74,6 +75,7 @@ export class Pager extends BaseObject {
                 hideOnSinglePage: true,
                 sliderSize: 25
             }, options);
+        const self = this;
         this._display = null;
         if (!!options.dataSource && !sys.isCollection(options.dataSource))
             throw new Error(ERRS.ERR_PAGER_DATASRC_INVALID);
@@ -85,6 +87,20 @@ export class Pager extends BaseObject {
         this._rowCount = 0;
         this._currentPage = 1;
         this._debounce = new Debounce();
+        dom.events.on(this._el, "click", function (e) {
+            e.preventDefault();
+            const a = <HTMLElement>this, page = parseInt(a.getAttribute("data-page"), 10);
+            self._setDSPageIndex(page);
+            self.currentPage = page;
+        }, {
+                nmspace: this._objId,
+                //using delegation
+                matchElement: (el) => {
+                    const attr = el.getAttribute(DATA_ATTR.DATA_EVENT_SCOPE),
+                        tag = el.tagName.toLowerCase();
+                    return self._objId === attr && tag === "a";
+                }
+            });
         this._bindDS();
     }
     protected _createElement(tag: string): HTMLElement {
@@ -201,6 +217,7 @@ export class Pager extends BaseObject {
         this._debounce.destroy();
         this._unbindDS();
         this._clearContent();
+        dom.events.offNS(this._el, this._objId);
         dom.removeClass([this.el], css.pager);
         this._el = null;
         this._options = <any>{};
@@ -257,12 +274,8 @@ export class Pager extends BaseObject {
         if (!!tip) {
             fn_addToolTip(a, tip);
         }
-        dom.events.on(a, "click", function (e) {
-            e.preventDefault();
-            self._setDSPageIndex(page);
-            self.currentPage = page;
-        });
-
+        a.setAttribute(DATA_ATTR.DATA_EVENT_SCOPE, this._objId);
+        a.setAttribute("data-page", "" + page);
         return a;
     }
     protected _createFirst() {
@@ -271,7 +284,7 @@ export class Pager extends BaseObject {
         if (this.showTip) {
             tip = _STRS.firstPageTip;
         }
-        let a = this._createLink(1, _STRS.firstText, tip);
+        const a = this._createLink(1, _STRS.firstText, tip);
         dom.addClass([span], css.otherPage);
         span.appendChild(a);
         return span;
