@@ -894,13 +894,10 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     }
     protected _addNodeToParent(parent: Node, node: Node, prepend: boolean) {
         if (!prepend) {
-            parent.appendChild(node);
+            dom.append(parent, [node]);
         }
         else {
-            if (!parent.firstChild)
-                parent.appendChild(node);
-            else
-                parent.insertBefore(node, parent.firstChild);
+            dom.prepend(parent, node);
         }
     }
     protected _createRowForItem(parent: Node, item: ICollectionItem, prepend: boolean) {

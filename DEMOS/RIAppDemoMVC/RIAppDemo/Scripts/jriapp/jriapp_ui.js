@@ -1462,7 +1462,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 if (self._isRefreshing)
                     return;
                 self._onChanged();
-            });
+            }, this._objId);
             this._textProvider = null;
             this._stateProvider = null;
             this._isRefreshing = false;
@@ -1490,7 +1490,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             this._stDebounce.destroy();
             this._txtDebounce.destroy();
             this._unbindDS();
-            dom.events.offNS(this._el);
+            dom.events.offNS(this._el, this._objId);
             this._clear();
             this._el = null;
             this._selectedValue = checks.undefined;
@@ -5488,13 +5488,10 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
         };
         DataGrid.prototype._addNodeToParent = function (parent, node, prepend) {
             if (!prepend) {
-                parent.appendChild(node);
+                dom.append(parent, [node]);
             }
             else {
-                if (!parent.firstChild)
-                    parent.appendChild(node);
-                else
-                    parent.insertBefore(node, parent.firstChild);
+                dom.prepend(parent, node);
             }
         };
         DataGrid.prototype._createRowForItem = function (parent, item, prepend) {

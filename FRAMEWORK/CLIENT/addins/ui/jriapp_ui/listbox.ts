@@ -102,7 +102,7 @@ export class ListBox extends BaseObject {
             if (self._isRefreshing)
                 return;
             self._onChanged();
-        });
+        }, this._objId);
         this._textProvider = null;
         this._stateProvider = null;
         this._isRefreshing = false;
@@ -132,7 +132,7 @@ export class ListBox extends BaseObject {
         this._stDebounce.destroy();
         this._txtDebounce.destroy();
         this._unbindDS();
-        dom.events.offNS(this._el);
+        dom.events.offNS(this._el, this._objId);
         this._clear();
         this._el = null;
         this._selectedValue = checks.undefined;
