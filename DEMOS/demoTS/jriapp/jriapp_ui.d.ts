@@ -141,7 +141,7 @@ declare module "jriapp_ui/baseview" {
     import { ICommand } from "jriapp/mvvm";
     import { EVENT_CHANGE_TYPE, IEventChangedArgs } from "jriapp_ui/utils/eventbag";
     export { IEventChangedArgs, EVENT_CHANGE_TYPE };
-    export function fn_addToolTip($el: JQuery, tip: string, isError?: boolean, pos?: string): void;
+    export function fn_addToolTip(el: Element, tip: string, isError?: boolean, pos?: string): void;
     export const css: {
         fieldError: string;
         commandLink: string;
@@ -199,7 +199,7 @@ declare module "jriapp_ui/baseview" {
         protected _getErrorTipInfo(errors: IValidationInfo[]): string;
         protected _setFieldError(isError: boolean): void;
         protected _updateErrorUI(el: HTMLElement, errors: IValidationInfo[]): void;
-        protected _setToolTip($el: JQuery, tip: string, isError?: boolean): void;
+        protected _setToolTip(el: Element, tip: string, isError?: boolean): void;
         destroy(): void;
         toString(): string;
         readonly el: HTMLElement;
@@ -372,7 +372,7 @@ declare module "jriapp_ui/listbox" {
         op: HTMLOptionElement;
     }
     export class ListBox extends BaseObject {
-        private _$el;
+        private _el;
         private _objId;
         private _isRefreshing;
         private _selectedValue;
@@ -772,7 +772,6 @@ declare module "jriapp_ui/datagrid/columns/base" {
         private _isSelected;
         private _objId;
         private _col;
-        private _event_scope;
         private _template;
         constructor(grid: DataGrid, options: ICellInfo);
         destroy(): void;
@@ -853,7 +852,6 @@ declare module "jriapp_ui/datagrid/columns/actions" {
     export interface IActionsColumnInfo extends IColumnInfo {
     }
     export class ActionsColumn extends BaseColumn {
-        private _event_act_scope;
         constructor(grid: DataGrid, options: ICellInfo);
         protected _onOk(cell: ActionsCell): void;
         protected _onCancel(cell: ActionsCell): void;
@@ -886,7 +884,6 @@ declare module "jriapp_ui/datagrid/columns/rowselector" {
     import { DataGrid } from "jriapp_ui/datagrid/datagrid";
     export class RowSelectorColumn extends BaseColumn {
         private _chk;
-        private _event_chk_scope;
         constructor(grid: DataGrid, options: ICellInfo);
         toString(): string;
         checked: any;
@@ -1337,15 +1334,16 @@ declare module "jriapp_ui/pager" {
         dataSource: ICollection<ICollectionItem>;
     }
     export class Pager extends BaseObject {
-        private _$el;
+        private _el;
         private _objId;
         private _options;
         private _rowsPerPage;
         private _rowCount;
         private _currentPage;
         private _debounce;
+        private _display;
         constructor(options: IPagerConstructorOptions);
-        protected _createElement(tag: string): JQuery;
+        protected _createElement(tag: string): HTMLElement;
         protected _render(): void;
         protected render(): void;
         protected _setDSPageIndex(page: number): void;
@@ -1357,13 +1355,13 @@ declare module "jriapp_ui/pager" {
         protected _unbindDS(): void;
         protected _clearContent(): void;
         protected _reset(): void;
-        protected _createLink(page: number, text: string, tip?: string): JQuery;
-        protected _createFirst(): JQuery;
-        protected _createPrevious(): JQuery;
-        protected _createCurrent(): JQuery;
-        protected _createOther(page: number): JQuery;
-        protected _createNext(): JQuery;
-        protected _createLast(): JQuery;
+        protected _createLink(page: number, text: string, tip?: string): HTMLElement;
+        protected _createFirst(): HTMLElement;
+        protected _createPrevious(): HTMLElement;
+        protected _createCurrent(): HTMLElement;
+        protected _createOther(page: number): HTMLElement;
+        protected _createNext(): HTMLElement;
+        protected _createLast(): HTMLElement;
         protected _buildTip(page: number): string;
         protected _setDataSource(v: ICollection<ICollectionItem>): void;
         toString(): string;
@@ -1381,6 +1379,7 @@ declare module "jriapp_ui/pager" {
         showFirstAndLast: boolean;
         showPreviousAndNext: boolean;
         showNumbers: boolean;
+        isVisible: boolean;
     }
     export interface IPagerViewOptions extends IPagerOptions, IViewOptions {
     }
@@ -1415,7 +1414,6 @@ declare module "jriapp_ui/stackpanel" {
         private _options;
         private _selectable;
         private _item_tag;
-        private _event_scope;
         private _isKeyNavigation;
         private _debounce;
         constructor(options: IStackPanelConstructorOptions);
@@ -1595,6 +1593,7 @@ declare module "jriapp_ui/dataform" {
     }
     export class DataFormElView extends BaseElView {
         private _form;
+        private _errorGliph;
         constructor(options: IViewOptions);
         protected _getErrorTipInfo(errors: IValidationInfo[]): string;
         protected _updateErrorUI(el: HTMLElement, errors: IValidationInfo[]): void;

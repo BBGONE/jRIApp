@@ -150,6 +150,7 @@ export class DemoApplication extends RIAPP.Application {
             self.errorVM.error = data.error;
             self.errorVM.showDialog();
         });
+
         super.onStartUp();
     }
     destroy() {
@@ -176,7 +177,6 @@ bootstrap.addOnError(function (sender, args) {
     debugger;
     alert(args.error.message);
 });
-
 
 function initModule(app: RIAPP.Application) {
     console.log("INIT Module");
