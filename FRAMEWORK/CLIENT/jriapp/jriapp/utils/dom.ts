@@ -1,5 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IIndexer, LocaleERRS, Utils, createWeakMap, IWeakMap, TFunc  } from "jriapp_shared";
+import { IIndexer, LocaleERRS, Utils, createWeakMap, IWeakMap, TFunc } from "jriapp_shared";
+import { DomEvents } from "./domevents";
 
 const ERRS = LocaleERRS, arrHelper = Utils.arr, win = window, doc = win.document, queue = Utils.queue,
     hasClassList = (!!window.document.documentElement.classList), weakmap = createWeakMap();
@@ -38,6 +39,7 @@ export class DomUtils {
     static readonly window: Window = win;
     static readonly document: Document = doc;
     static readonly ready = _checkDOMReady;
+    static readonly events = DomEvents;
 
     static getData(el: Node, key: string): any {
         let map: any = weakmap.get(el);
@@ -80,9 +82,12 @@ export class DomUtils {
         div.innerHTML = html;
         return arrHelper.fromList<HTMLElement>(div.children);
     }
-    static queryElements<T>(root: Document | HTMLElement, selector: string): T[] {
+    static queryAll<T>(root: Document | Element, selector: string): T[] {
         let res = root.querySelectorAll(selector);
         return arrHelper.fromList<T>(res);
+    }
+    static queryOne<T extends Element>(root: Document | Element, selector: string): T {
+        return <any>root.querySelector(selector);
     }
     static append(parent: Node, children: Node[]): void {
         if (!children)
@@ -90,6 +95,15 @@ export class DomUtils {
         children.forEach((node) => {
             parent.appendChild(node);
         });
+    }
+    static prepend(parent: Node, child: Node): void {
+        if (!child)
+            return;
+        let firstChild: Node = null
+        if (!(firstChild = parent.firstChild))
+            parent.appendChild(child);
+        else
+            parent.insertBefore(child, firstChild);
     }
     static removeNode(node: Node) {
         if (!node)
@@ -99,14 +113,14 @@ export class DomUtils {
             pnd.removeChild(node);
     }
     static insertAfter(node: Node, refNode: Node) {
-        let parent = refNode.parentNode;
+        const parent = refNode.parentNode;
         if (parent.lastChild === refNode)
             parent.appendChild(node);
         else
             parent.insertBefore(node, refNode.nextSibling);
     }
     static insertBefore(node: Node, refNode: Node) {
-        let parent = refNode.parentNode;
+        const parent = refNode.parentNode;
         parent.insertBefore(node, refNode);
     }
     static wrap(elem: Element, wrapper: Element) {

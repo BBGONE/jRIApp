@@ -24,9 +24,12 @@ export class ArrayHelper {
         return [].slice.call(list);
     }
 
+    public static merge<T>(arrays: Array<Array<T>>): Array<T> {
+        return [].concat.apply([], arrays);
+    }
+
     public static distinct(arr: string[]): string[];
     public static distinct(arr: number[]): number[];
-
     public static distinct(arr: any[]): any[] {
         let o = <IIndexer<any>>{}, i: number, l = arr.length, r: any[] = [];
         for (i = 0; i < l; i += 1)
@@ -36,6 +39,7 @@ export class ArrayHelper {
             r.push(o[k[i]]);
         return r;
     }
+
     public static remove(array: any[], obj: any): number {
         const i = array.indexOf(obj);
         if (i > -1) {

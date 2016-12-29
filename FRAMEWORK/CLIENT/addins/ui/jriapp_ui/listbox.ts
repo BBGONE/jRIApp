@@ -2,7 +2,6 @@
 import {
     Utils, BaseObject, IBaseObject, LocaleERRS as ERRS, TEventHandler, Debounce
 } from "jriapp_shared";
-import { $ } from "jriapp/utils/jquery";
 import { DomUtils } from "jriapp/utils/dom";
 import {
     ITEM_STATUS, COLL_CHANGE_TYPE
@@ -14,7 +13,7 @@ import { IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 import { BaseElView } from "./baseview";
 
-const utils = Utils, doc = DomUtils.document, sys = utils.sys,
+const utils = Utils, dom = DomUtils, doc = dom.document, sys = utils.sys,
     checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
     boot = bootstrap, win = DomUtils.window;
 
@@ -67,7 +66,7 @@ const LISTBOX_EVENTS = {
  }
 
 export class ListBox extends BaseObject {
-    private _$el: JQuery;
+    private _el: HTMLSelectElement;
     private _objId: string;
     private _isRefreshing: boolean;
     private _selectedValue: any;
@@ -95,10 +94,10 @@ export class ListBox extends BaseObject {
             }, options);
         if (!!options.dataSource && !sys.isCollection(options.dataSource))
             throw new Error(ERRS.ERR_LISTBOX_DATASRC_INVALID);
-        this._$el = $(options.el);
+        this._el = options.el;
         this._options = options;
         this._objId = coreUtils.getNewID("lst");
-        this._$el.on("change." + this._objId, function (e) {
+        dom.events.on(this.el, "change", function (e) {
             e.stopPropagation();
             if (self._isRefreshing)
                 return;
@@ -133,9 +132,9 @@ export class ListBox extends BaseObject {
         this._stDebounce.destroy();
         this._txtDebounce.destroy();
         this._unbindDS();
-        this._$el.off("." + this._objId);
+        dom.events.offNS(this._el);
         this._clear();
-        this._$el = null;
+        this._el = null;
         this._selectedValue = checks.undefined;
         this._savedVal = checks.undefined;
         this._options = <any>{};
@@ -584,7 +583,7 @@ export class ListBox extends BaseObject {
     }
     get selectedItem() {
         const item: IMappedItem = this.getByValue(this._selectedValue);
-        return (!item ? null : item.item);
+        return (!item ? checks.undefined : item.item);
     }
     set selectedItem(v: ICollectionItem) {
         const newVal = this._getValue(v);
@@ -640,7 +639,7 @@ export class ListBox extends BaseObject {
             this.raisePropertyChanged(PROP_NAME.stateProvider);
         }
     }
-    get el() { return this._options.el; }
+    get el() { return this._el; }
 }
 
 export interface IListBoxViewOptions extends IListBoxOptions, IViewOptions {

@@ -1,12 +1,12 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { $ } from "jriapp/utils/jquery";
 import { IViewOptions } from "jriapp/int";
+import { DomUtils } from "jriapp/utils/dom";
 import { bootstrap } from "jriapp/bootstrap";
 import { css, PROP_NAME, IEventChangedArgs, EVENT_CHANGE_TYPE } from "./baseview";
 import { ICommand } from "jriapp/mvvm";
 import { CommandElView } from "./command";
 
-const boot = bootstrap;
+const boot = bootstrap, dom = DomUtils;
 
 export class ButtonElView extends CommandElView {
     private _isButton: boolean;
@@ -15,9 +15,9 @@ export class ButtonElView extends CommandElView {
         super(options);
         const self = this;
         this._isButton = this.el.tagName.toLowerCase() === "button";
-        $(this.el).on("click." + this.uniqueID, function (e) {
+        dom.events.on(this.el, "click", function (e) {
             self._onClick(e);
-        });
+        }, this.uniqueID);
     }
     protected _onClick(e: Event) {
         if (this.stopPropagation)

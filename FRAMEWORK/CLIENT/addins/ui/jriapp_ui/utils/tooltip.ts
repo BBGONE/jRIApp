@@ -19,8 +19,8 @@ class tooltipService implements ITooltipService {
     constructor() {
     }
 
-    addToolTip($el: JQuery, tip: string, isError?: boolean, pos?: string): void {
-        let options: QTip2.QTipOptions = {
+    addToolTip(el: Element, tip: string, isError?: boolean, pos?: string): void {
+        let $el = $(el), options: QTip2.QTipOptions = {
             content: {
                 text: tip
             },

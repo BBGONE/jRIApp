@@ -184,6 +184,9 @@ define("jriapp_shared/utils/arrhelper", ["require", "exports"], function (requir
         ArrayHelper.fromList = function (list) {
             return [].slice.call(list);
         };
+        ArrayHelper.merge = function (arrays) {
+            return [].concat.apply([], arrays);
+        };
         ArrayHelper.distinct = function (arr) {
             var o = {}, i, l = arr.length, r = [];
             for (i = 0; i < l; i += 1)
@@ -1015,8 +1018,8 @@ define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/
         EventList.Create = function () {
             return {};
         };
-        EventList.Node = function (handler, ns, context) {
-            return { fn: handler, next: null, context: !context ? null : context };
+        EventList.Node = function (handler, context) {
+            return { fn: handler, context: !context ? null : context };
         };
         EventList.count = function (list) {
             if (!list)
@@ -1070,7 +1073,7 @@ define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/
         EventList.toArray = function (list) {
             if (!list)
                 return [];
-            var res = [], arr, cur, obj;
+            var res = [], arr, obj;
             for (var k = 2; k >= 0; k -= 1) {
                 obj = list[k];
                 if (!!obj) {
@@ -1091,7 +1094,7 @@ define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/
     var EventHelper = (function () {
         function EventHelper() {
         }
-        EventHelper.removeNs = function (ev, ns) {
+        EventHelper.removeNS = function (ev, ns) {
             if (!ev)
                 return;
             if (!ns)
@@ -1116,8 +1119,8 @@ define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/
             }
             if (!name)
                 throw new Error(strUtils.format(lang_1.ERRS.ERR_EVENT_INVALID, "[Empty]"));
-            var self = this, n = name, ns = !nmspace ? "*" : "" + nmspace;
-            var list = ev[n], node = evList.Node(handler, ns, context);
+            var n = name, ns = !nmspace ? "*" : "" + nmspace;
+            var list = ev[n], node = evList.Node(handler, context);
             if (!list) {
                 ev[n] = list = evList.Create();
             }
@@ -1126,9 +1129,9 @@ define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/
         EventHelper.remove = function (ev, name, nmspace) {
             if (!ev)
                 return null;
-            var self = this, ns = !nmspace ? "*" : "" + nmspace;
+            var ns = !nmspace ? "*" : "" + nmspace;
             if (!name) {
-                EventHelper.removeNs(ev, ns);
+                EventHelper.removeNS(ev, ns);
             }
             else {
                 if (ns === "*") {
@@ -1278,8 +1281,7 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
             evHelper.raise(this, this._events, name, args);
         };
         BaseObject.prototype.raisePropertyChanged = function (name) {
-            var data = { property: name };
-            var parts = name.split("."), lastPropName = parts[parts.length - 1];
+            var data = { property: name }, parts = name.split("."), lastPropName = parts[parts.length - 1];
             if (parts.length > 1) {
                 var obj = coreUtils.resolveOwner(this, name);
                 if (debug.isDebugging() && checks.isUndefined(obj)) {
@@ -1318,7 +1320,7 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
                 evHelper.remove(this._events, "0" + prop, nmspace);
             }
             else {
-                evHelper.removeNs(this._events, nmspace);
+                evHelper.removeNS(this._events, nmspace);
             }
         };
         BaseObject.prototype.getIsDestroyed = function () {

@@ -218,6 +218,7 @@ declare module "jriapp_shared/utils/arrhelper" {
         static fromList<T extends U, U>(list: IArrayLikeList<U>): T[];
         static fromList<T>(list: IArrayLikeList<any>): T[];
         static fromList<T>(list: IArrayLikeList<T>): T[];
+        static merge<T>(arrays: Array<Array<T>>): Array<T>;
         static distinct(arr: string[]): string[];
         static distinct(arr: number[]): number[];
         static remove(array: any[], obj: any): number;
@@ -452,20 +453,19 @@ declare module "jriapp_shared/utils/debug" {
 }
 declare module "jriapp_shared/utils/eventhelper" {
     import { TPriority, IIndexer, IBaseObject, TEventHandler } from "jriapp_shared/int";
-    export interface IEventNode {
+    export type TEventNode = {
         context: any;
         fn: TEventHandler<any, any>;
-        next: IEventNode;
-    }
-    export type IEventNodeArray = IEventNode[];
+    };
+    export type TEventNodeArray = TEventNode[];
     export interface INamespaceMap {
-        [ns: string]: IEventNodeArray;
+        [ns: string]: TEventNodeArray;
     }
     export interface IEventList {
         [priority: number]: INamespaceMap;
     }
     export class EventHelper {
-        static removeNs(ev: IIndexer<IEventList>, ns?: string): void;
+        static removeNS(ev: IIndexer<IEventList>, ns?: string): void;
         static add(ev: IIndexer<IEventList>, name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         static remove(ev: IIndexer<IEventList>, name?: string, nmspace?: string): void;
         static raise(sender: any, ev: IIndexer<IEventList>, name: string, args: any): void;

@@ -250,7 +250,7 @@ export interface IContentFactoryList extends IContentFactory {
 export type TFactoryGetter = (nextFactory?: IContentFactory) => IContentFactory;
 
 export interface ITooltipService {
-    addToolTip($el: JQuery, tip: string, isError?: boolean, pos?: string): void;
+    addToolTip(el: Element, tip: string, isError?: boolean, pos?: string): void;
 }
 
 export interface IStylesLoader {

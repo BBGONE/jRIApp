@@ -1,6 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { Utils, BaseObject, IBaseObject, LocaleERRS as ERRS, TEventHandler, Debounce } from "jriapp_shared";
-import { $ } from "jriapp/utils/jquery";
 import { DomUtils } from "jriapp/utils/dom";
 import {DATA_ATTR, KEYS } from "jriapp/const";
 import {
@@ -60,7 +59,6 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
     private _options: IStackPanelConstructorOptions;
     private _selectable: ISelectable;
     private _item_tag: string;
-    private _event_scope: string;
     private _isKeyNavigation: boolean;
     private _debounce: Debounce;
 
@@ -94,7 +92,6 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         this._debounce = new Debounce();
         this._objId = coreUtils.getNewID("pnl");
         this._isKeyNavigation = false;
-        this._event_scope = [this._item_tag, "[", DATA_ATTR.DATA_EVENT_SCOPE, '="', this._objId, '"]'].join("");
         this._currentItem = null;
         this._itemMap = {};
         this._selectable = {
@@ -112,13 +109,21 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
             }
         };
 
-        $(this._el).on("click", this._event_scope,
-            function (e) {
-                e.stopPropagation();
-                boot.currentSelectable = self;
-                const el = <HTMLElement>this, mappedItem: IMappedItem = dom.getData(el, "data");
-                self._onItemClicked(mappedItem.el, mappedItem.item);
+        dom.events.on(this._el, "click", function (e) {
+            e.stopPropagation();
+            boot.currentSelectable = self;
+            const el = <HTMLElement>this, mappedItem: IMappedItem = dom.getData(el, "data");
+            self._onItemClicked(mappedItem.el, mappedItem.item);
+        }, {
+                nmspace: this.uniqueID,
+                //using delegation
+                matchElement: (el) => {
+                    const attr = el.getAttribute(DATA_ATTR.DATA_EVENT_SCOPE),
+                        tag = el.tagName.toLowerCase();
+                    return self.uniqueID === attr && tag === self._item_tag;
+                }
             });
+
         boot._getInternal().trackSelectable(this);
 
         const ds = this._options.dataSource;
@@ -136,7 +141,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
     }
     protected _getContainerEl() { return this.el; }
     protected _onKeyDown(key: number, event: Event) {
-        let ds = this.dataSource, self = this;
+        const ds = this.dataSource, self = this;
         if (!ds)
             return;
         if (this.orientation === HORIZONTAL) {
@@ -201,7 +206,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         }
     }
     protected _onDSCurrentChanged(sender: any, args: any): void {
-        let ds = this.dataSource, cur = ds.currentItem;
+        const ds = this.dataSource, cur = ds.currentItem;
         if (!cur)
             this._updateCurrent(null, false);
         else {
@@ -361,7 +366,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         if (this.orientation === HORIZONTAL) {
             dom.removeClass([this.el], css.horizontal);
         }
-        $(this._el).off("click", this._event_scope);
+        dom.events.offNS(this._el, this.uniqueID);
         this._currentItem = null;
         this._itemMap = {};
         this._options = <any>{};

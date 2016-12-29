@@ -25,9 +25,9 @@ viewChecks.isElView = function (obj: any): boolean {
 
 boot.registerSvc(TOOLTIP_SVC, createToolTipSvc());
 
-export function fn_addToolTip($el: JQuery, tip: string, isError?: boolean, pos?: string) {
+export function fn_addToolTip(el: Element, tip: string, isError?: boolean, pos?: string) {
     let svc = boot.getSvc<ITooltipService>(TOOLTIP_SVC);
-    svc.addToolTip($el, tip, isError, pos);
+    svc.addToolTip(el, tip, isError, pos);
 }
 
 export const css = {
@@ -120,18 +120,18 @@ export class BaseElView extends BaseObject implements IElView {
         const self = this;
         if (this.getIsDestroyCalled())
             return;
-        $(this.el).on(name + "." + this.uniqueID, function (e) {
+        dom.events.on(this.el, name, function (e) {
             e.stopPropagation();
             if (!!self._eventStore)
                 self._eventStore.trigger(name, e);
-        });
+        }, this.uniqueID);
     }
     protected _onEventDeleted(name: string, oldVal: ICommand) {
-        $(this.el).off(name + "." + this.uniqueID);
+        dom.events.off(this.el, name, this.uniqueID);
     }
     protected _applyToolTip() {
         if (!!this._toolTip) {
-            this._setToolTip($(this.el), this._toolTip);
+            this._setToolTip(this.el, this._toolTip);
         }
     }
     protected _getErrorTipInfo(errors: IValidationInfo[]) {
@@ -153,25 +153,24 @@ export class BaseElView extends BaseObject implements IElView {
         if (!el) {
             return;
         }
-        const $el = $(el);
-        if (!!errors && errors.length > 0) {
-            fn_addToolTip($el, this._getErrorTipInfo(errors), true);
+       if (!!errors && errors.length > 0) {
+            fn_addToolTip(el, this._getErrorTipInfo(errors), true);
             this._setFieldError(true);
         }
         else {
-            this._setToolTip($el, this.toolTip);
+            this._setToolTip(el, this.toolTip);
             this._setFieldError(false);
         }
     }
-    protected _setToolTip($el: JQuery, tip: string, isError?: boolean) {
-        fn_addToolTip($el, tip, isError);
+    protected _setToolTip(el: Element, tip: string, isError?: boolean) {
+        fn_addToolTip(el, tip, isError);
     }
     destroy() {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
         this._getStore().setElView(this.el, null);
-        $(this._el).off("." + this.uniqueID);
+        dom.events.offNS(this.el, this.uniqueID);
         this.validationErrors = null;
         this.toolTip = null;
         if (!!this._eventStore) {
@@ -230,7 +229,7 @@ export class BaseElView extends BaseObject implements IElView {
     set toolTip(v: string) {
         if (this._toolTip !== v) {
             this._toolTip = v;
-            this._setToolTip($(this.el), v);
+            this._setToolTip(this.el, v);
             this.raisePropertyChanged(PROP_NAME.toolTip);
         }
     }

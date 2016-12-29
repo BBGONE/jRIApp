@@ -1,6 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { Utils } from "jriapp_shared";
-import { $ } from "jriapp/utils/jquery";
 import { DomUtils } from "jriapp/utils/dom";
 import { IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
@@ -18,11 +17,12 @@ export class CheckBoxElView extends InputElView {
         this._checked = null;
         chk.checked = false;
 
-        $(this.el).on("change." + this.uniqueID, function (e) {
+        dom.events.on(this.el, "change", function (e) {
             e.stopPropagation();
             if (self.checked !== this.checked)
                 self.checked = this.checked;
-        });
+        }, this.uniqueID);
+
         this._updateState();
     }
     protected _updateState() {

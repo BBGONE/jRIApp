@@ -1,9 +1,11 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { $ } from "jriapp/utils/jquery";
 import { IViewOptions } from "jriapp/int";
+import { DomUtils } from "jriapp/utils/dom";
 import { bootstrap } from "jriapp/bootstrap";
 import { ITextBoxOptions, TKeyPressArgs } from "./textbox";
 import { BaseElView, PROP_NAME } from "./baseview";
+
+const dom = DomUtils;
 
 const TXTAREA_EVENTS = {
     keypress: "keypress"
@@ -16,27 +18,28 @@ export interface ITextAreaOptions extends ITextBoxOptions {
 export class TextAreaElView extends BaseElView {
     constructor(options: ITextAreaOptions) {
         super(options);
-        const self = this, $el = $(this.el);
+        const self = this;
         if (!!options.wrap) {
             this.wrap = options.wrap;
         }
-        
-        $el.on("change." + this.uniqueID, function (e) {
+        dom.events.on(this.el, "change", function (e) {
             e.stopPropagation();
             self.raisePropertyChanged(PROP_NAME.value);
-        });
-        $el.on("keypress." + this.uniqueID, function (e) {
+        }, this.uniqueID);
+
+        dom.events.on(this.el, "keypress", function (e) {
             e.stopPropagation();
-            let args: TKeyPressArgs = { keyCode: e.which, value: (<any>e.target).value, isCancel: false };
+            const args: TKeyPressArgs = { keyCode: e.which, value: (<any>e.target).value, isCancel: false };
             self.raiseEvent(TXTAREA_EVENTS.keypress, args);
             if (args.isCancel)
                 e.preventDefault();
-        });
+        }, this.uniqueID);
+
         if (!!options.updateOnKeyUp) {
-            $el.on("keyup." + this.uniqueID, function (e) {
+            dom.events.on(this.el, "keyup", function (e) {
                 e.stopPropagation();
                 self.raisePropertyChanged(PROP_NAME.value);
-            });
+            }, this.uniqueID);
         }
     }
     protected _getEventNames() {

@@ -1,8 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import {
-    Utils
-} from "jriapp_shared";
-import { $ } from "jriapp/utils/jquery";
+import { Utils } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
@@ -38,9 +35,9 @@ export class AnchorElView extends CommandElView {
             this.glyph = options.glyph;
 
         dom.addClass([this.el], css.commandLink);
-        $(this.el).on("click." + this.uniqueID, function (e) {
+        dom.events.on(this.el, "click", function (e) {
             self._onClick(e);
-        });
+        }, this.uniqueID);
     }
     protected _onClick(e: Event) {
         if (this.stopPropagation)

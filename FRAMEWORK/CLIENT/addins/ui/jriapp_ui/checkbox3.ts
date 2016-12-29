@@ -1,6 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { Utils } from "jriapp_shared";
-import { $ } from "jriapp/utils/jquery";
 import { DomUtils } from "jriapp/utils/dom";
 import { IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
@@ -19,13 +18,14 @@ export class CheckBoxThreeStateElView extends InputElView {
         chk.checked = false;
         chk.indeterminate = this._checked === null;
 
-        $(this.el).on("click." + this.uniqueID, function (e) {
+        dom.events.on(this.el, "click", function (e) {
             e.stopPropagation();
             if (self.checked === null)
                 self.checked = true;
             else
                 self.checked = !self.checked ? null : false;
-        });
+        }, this.uniqueID);
+
         this._updateState();
     }
     protected _updateState() {

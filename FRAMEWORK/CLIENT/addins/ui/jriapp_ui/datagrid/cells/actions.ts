@@ -29,7 +29,7 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        const td = this.td, btns = dom.queryElements<HTMLElement>(td, actionsSelector);
+        const td = this.td, btns = dom.queryAll<HTMLElement>(td, actionsSelector);
         btns.forEach(function (img) {
             dom.removeData(img);
         });
@@ -40,7 +40,7 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
         buttons.forEach(function (btn) {
             dom.setData(btn, "cell", self);
             const name = btn.getAttribute(DATA_ATTR.DATA_NAME);
-            fn_addToolTip($(btn), STRS.TEXT[txtMap[name]]);
+            fn_addToolTip(btn, STRS.TEXT[txtMap[name]]);
             btn.setAttribute(DATA_ATTR.DATA_EVENT_SCOPE, self.column.uniqueID);
         });
     }

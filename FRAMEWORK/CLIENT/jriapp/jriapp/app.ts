@@ -271,8 +271,11 @@ export class Application extends BaseObject implements IApplication {
     //register loading a template from html element by its id value
     registerTemplateById(name: string, templateId: string): void {
         this.registerTemplateLoader(name, utils.core.memoize(() => {
-            let deferred = utils.defer.createSyncDeferred<string>();
-            let str = $("#" + templateId).html();
+            const deferred = utils.defer.createSyncDeferred<string>();
+            const el = dom.queryOne<Element>(doc, "#" + templateId);
+            if (!el)
+                throw new Error(utils.str.format(ERRS.ERR_TEMPLATE_ID_INVALID, templateId));
+            const str = el.innerHTML;
             deferred.resolve(str);
             return deferred.promise();
         }));

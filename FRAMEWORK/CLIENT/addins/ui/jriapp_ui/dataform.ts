@@ -156,7 +156,7 @@ export class DataForm extends BaseObject {
     private _errors: IValidationInfo[];
     private _isInsideTemplate: boolean;
     private _contentPromise: IVoidPromise;
-
+ 
     constructor(options: IViewOptions) {
         super();
         const self = this;
@@ -173,6 +173,7 @@ export class DataForm extends BaseObject {
         this._parentDataForm = null;
         this._errors = null;
         this._contentPromise = null;
+       
         const parent = viewChecks.getParentDataForm(null, this._el);
         //if this form is nested inside another dataform
         //subscribe for parent's destroy event
@@ -220,7 +221,7 @@ export class DataForm extends BaseObject {
             //check if the element inside a nested dataform
             if (viewChecks.isInNestedForm(self._el, forms, el))
                 return;
-            let attr = el.getAttribute(DATA_ATTR.DATA_CONTENT),
+            const attr = el.getAttribute(DATA_ATTR.DATA_CONTENT),
                 op = parseContentAttr(attr);
             if (!!op.fieldName && !op.fieldInfo) {
                 op.fieldInfo = getFieldInfo(dctx, op.fieldName);
@@ -451,11 +452,13 @@ export class DataForm extends BaseObject {
 
 export class DataFormElView extends BaseElView {
     private _form: DataForm;
+    private _errorGliph: HTMLElement;
 
     constructor(options: IViewOptions) {
         super(options);
         const self = this;
         this._form = new DataForm(options);
+        this._errorGliph = null;
         this._form.addOnPropertyChange("*", function (form, args) {
             switch (args.property) {
                 case PROP_NAME.validationErrors:
@@ -490,15 +493,20 @@ export class DataFormElView extends BaseElView {
         if (!el) {
             return;
         }
-        const $el = $(el);
         if (!!errors && errors.length > 0) {
-            const $img = $(`<div data-name="error_info" class="${css.error}" />`);
-            $el.prepend($img);
-            fn_addToolTip($img, this._getErrorTipInfo(errors), true);
+            if (!this._errorGliph) {
+                this._errorGliph = dom.fromHTML(`<div data-name="error_info" class="${css.error}" />`)[0];
+                dom.prepend(el, this._errorGliph);
+            }
+            fn_addToolTip(this._errorGliph, this._getErrorTipInfo(errors), true);
             this._setFieldError(true);
         }
         else {
-            $el.children('div[data-name="error_info"]').remove();
+            if (!!this._errorGliph) {
+                fn_addToolTip(this._errorGliph, null);
+                dom.removeNode(this._errorGliph);
+                this._errorGliph = null;
+            }
             this._setFieldError(false);
         }
     }
@@ -506,6 +514,10 @@ export class DataFormElView extends BaseElView {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
+        if (!!this._errorGliph) {
+            dom.removeNode(this._errorGliph);
+            this._errorGliph = null;
+        }
         if (!this._form.getIsDestroyCalled()) {
             this._form.destroy();
         }

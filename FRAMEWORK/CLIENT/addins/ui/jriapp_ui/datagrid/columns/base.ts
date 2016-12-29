@@ -1,6 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { BaseObject, Utils } from "jriapp_shared";
-import { $ } from "jriapp/utils/jquery";
 import { DomUtils } from "jriapp/utils/dom";
 import { DATA_ATTR } from "jriapp/const";
 import { IContentOptions, ITemplateEvents, ITemplate } from "jriapp/int";
@@ -39,7 +38,6 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
     private _isSelected: boolean;
     private _objId: string;
     private _col: HTMLDivElement;
-    private _event_scope: string;
     private _template: ITemplate;
 
     constructor(grid: DataGrid, options: ICellInfo) {
@@ -50,8 +48,6 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         this._options = options.colInfo;
         this._isSelected = false;
         this._objId = utils.core.getNewID("th");
-        this._event_scope = ["td[", DATA_ATTR.DATA_EVENT_SCOPE, '="', this._objId, '"]'].join("");
-
         const col = doc.createElement("div");
         this._col = col;
 
@@ -62,14 +58,17 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         }
 
         this._grid._getInternal().get$Header().append(col);
-        $(col).on("click", function (e) {
+
+        //a click on column itself
+        dom.events.on(this._col, "click", function (e) {
             e.stopPropagation();
             boot.currentSelectable = grid;
             grid._getInternal().setCurrentColumn(self);
             self._onColumnClicked();
-        });
+        }, this.uniqueID);
 
-        this.grid.$table.on("click", this._event_scope, function (e) {
+        //a click on any cell
+        dom.events.on(this.grid.table, "click", function (e) {
             e.stopPropagation();
             const td = <HTMLElement>this, cell = <BaseCell<BaseColumn>>dom.getData(td, "cell");
             if (!!cell) {
@@ -77,7 +76,15 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
                 grid._getInternal().setCurrentColumn(self);
                 cell.click();
             }
-        });
+        }, {
+                nmspace: this.uniqueID,
+                //using delegation
+                matchElement: (el) => {
+                    const attr = el.getAttribute(DATA_ATTR.DATA_EVENT_SCOPE),
+                        tag = el.tagName.toLowerCase();
+                    return self.uniqueID === attr && tag === "td";
+                }
+            });
 
         if (!!this._options.width) {
             this._th.style.width = this._options.width;
@@ -93,27 +100,24 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         }
 
         if (!!this._options.tip) {
-            fn_addToolTip($(col), this._options.tip, false, "bottom center");
+            fn_addToolTip(col, this._options.tip, false, "bottom center");
         }
     }
     destroy() {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        this.grid.$table.off("click", this._event_scope);
+        dom.events.offNS(this.grid.table, this.uniqueID);
 
         if (!!this._options.tip) {
-            fn_addToolTip($(this._col), null);
+            fn_addToolTip(this._col, null);
         }
 
         if (!!this._template) {
             this._template.destroy();
             this._template = null;
         }
-
-        const $col = $(this._col);
-        $col.off();
-        $col.empty();
+        dom.events.offNS(this._col, this.uniqueID);
         this._col = null;
         this._th = null;
         this._grid = null;

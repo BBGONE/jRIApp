@@ -15,7 +15,6 @@ import { TemplateLoader } from "./utils/tloader";
 import { createCssLoader } from "./utils/sloader";
 import { PathHelper } from "./utils/path";
 import { DomUtils } from "./utils/dom";
-import { $ } from "./utils/jquery";
 import { Promise } from "jriapp_shared/utils/deferred";
 import { createQueue, IQueue } from "jriapp_shared/utils/queue";
 
@@ -99,6 +98,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     private _moduleInits: { (app: IApplication): void; }[];
     private _elViewRegister: IElViewRegister;
     private _contentFactory: IContentFactoryList;
+    private _objId: string;
 
     constructor() {
         super();
@@ -108,6 +108,8 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         this._bootState = BootstrapState.None;
         this._appInst = null;
         this._currentSelectable = null;
+        this._objId = coreUtils.getNewID("app");
+
         //exported types
         this._exports = {};
         this._moduleInits = [];
@@ -157,31 +159,32 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         ERROR.addHandler("*", this);
     }
     private _bindGlobalEvents(): void {
-        const self = this, $win = $(win), $doc = $(doc);
-
+        const self = this;
+        //doc.addEventListener
         //when clicked outside any Selectable set _currentSelectable = null
-        $doc.on("click.jriapp", function (e) {
+        dom.events.on(doc, "click", function (e) {
             e.stopPropagation();
             self.currentSelectable = null;
-        });
-        $doc.on("keydown.jriapp", function (e) {
+        }, this._objId);
+        dom.events.on(doc, "keydown", function (e) {
             e.stopPropagation();
             if (!!self._currentSelectable) {
                 self._currentSelectable.getISelectable().onKeyDown(e.which, e);
             }
-        });
-        $doc.on("keyup.jriapp", function (e) {
+        }, this._objId);
+        dom.events.on(doc, "keyup", function (e) {
             e.stopPropagation();
             if (!!self._currentSelectable) {
                 self._currentSelectable.getISelectable().onKeyUp(e.which, e);
             }
-        });
-        $win.on("beforeunload.jriapp", function () {
+        }, this._objId);
+
+        dom.events.on(win, "beforeunload", function () {
             self.raiseEvent(GLOB_EVENTS.unload, {});
-        });
+        }, this._objId);
 
         //this is a way to attach for correct work in firefox
-        win.onerror = function (msg: any, url: string, linenumber: number) {
+        win.onerror = function(msg: any, url: string, linenumber: number) {
             if (!!msg && msg.toString().indexOf(DUMY_ERROR) > -1) {
                 return true;
             }
@@ -195,7 +198,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         this._processTemplates(divEl, app);
     }
     private _processTemplates(root: HTMLElement | HTMLDocument, app: IApplication = null): void {
-        const self = this, templates = dom.queryElements<HTMLElement>(root, _TEMPLATE_SELECTOR);
+        const self = this, templates = dom.queryAll<HTMLElement>(root, _TEMPLATE_SELECTOR);
         templates.forEach(function (el) {
             const name = el.getAttribute("id");
             if (!name)
@@ -284,17 +287,17 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     }
     private _trackSelectable(selectable: ISelectableProvider): void {
         const self = this, isel = selectable.getISelectable(), el = isel.getContainerEl();
-        $(el).on("click." + isel.getUniqueID(), function (e) {
+        dom.events.on(el, "click", function (e) {
             e.stopPropagation();
             const target = e.target;
             if (dom.isContained(target, el))
                 self.currentSelectable = selectable;
-        });
+        }, isel.getUniqueID());
     }
     private _untrackSelectable(selectable: ISelectableProvider): void {
         const self = this, isel = selectable.getISelectable(),
             el = isel.getContainerEl();
-        $(el).off("click." + isel.getUniqueID());
+        dom.events.off(el, "click", isel.getUniqueID());
         if (this.currentSelectable === selectable)
             this.currentSelectable = null;
     }
@@ -435,9 +438,9 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         self._elViewRegister = null;
         self._contentFactory = null;
         self._moduleInits = [];
-        $(doc).off(".jriapp");
+        dom.events.offNS(doc, this._objId);
+        dom.events.offNS(win, this._objId);
         win.onerror = null;
-        $(win).off(".jriapp");
         ERROR.removeHandler("*");
         this._bootState = BootstrapState.Destroyed;
         super.destroy();

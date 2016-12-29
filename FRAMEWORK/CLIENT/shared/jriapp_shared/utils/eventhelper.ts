@@ -10,16 +10,15 @@ import { DEBUG } from "./debug";
 const checks = Checks, strUtils = StringUtils, debug = DEBUG;
 
 
-export interface IEventNode {
+export type TEventNode = {
     context: any
     fn: TEventHandler<any, any>;
-    next: IEventNode;
-}
+};
 
-export type IEventNodeArray = IEventNode[];
+export type TEventNodeArray = TEventNode[];
 
 export interface INamespaceMap {
-    [ns: string]: IEventNodeArray;
+    [ns: string]: TEventNodeArray;
 }
 
 export interface IEventList {
@@ -30,8 +29,8 @@ class EventList {
     static Create(): IEventList {
         return {};
     }
-    static Node(handler: TErrorHandler, ns: string, context?: any): IEventNode {
-        return { fn: handler, next: null, context: !context ? null : context };
+    static Node(handler: TErrorHandler, context?: any): TEventNode {
+        return { fn: handler, context: !context ? null : context };
     }
     static count(list: IEventList): number {
         if (!list)
@@ -48,7 +47,7 @@ class EventList {
         }
         return cnt;
     }
-    static append(list: IEventList, node: IEventNode, ns: string, priority: TPriority = TPriority.Normal): void {
+    static append(list: IEventList, node: TEventNode, ns: string, priority: TPriority = TPriority.Normal): void {
         if (!ns)
             ns = "*";
         let obj = list[priority];
@@ -82,11 +81,10 @@ class EventList {
             }
         }
     }
-    static toArray(list: IEventList): IEventNode[] {
+    static toArray(list: IEventList): TEventNode[] {
         if (!list)
             return [];
-        let res: IEventNodeArray = [], arr: IEventNodeArray, cur: IEventNode,
-            obj: INamespaceMap;
+        let res: TEventNodeArray = [], arr: TEventNodeArray, obj: INamespaceMap;
 
         // from highest priority to the lowest
         for (let k = TPriority.High; k >= TPriority.Normal; k -= 1) {
@@ -109,7 +107,7 @@ const evList = EventList;
 
 export class EventHelper
 {
-    static removeNs(ev: IIndexer<IEventList>, ns?: string): void {
+    static removeNS(ev: IIndexer<IEventList>, ns?: string): void {
         if (!ev)
             return;
         if (!ns)
@@ -136,9 +134,9 @@ export class EventHelper
         if (!name)
             throw new Error(strUtils.format(ERRS.ERR_EVENT_INVALID, "[Empty]"));
 
-        const self = this, n = name, ns = !nmspace ? "*" : "" + nmspace;
+        const n = name, ns = !nmspace ? "*" : "" + nmspace;
 
-        let list = ev[n], node: IEventNode = evList.Node(handler, ns, context);
+        let list = ev[n], node: TEventNode = evList.Node(handler, context);
 
         if (!list) {
             ev[n] = list = evList.Create();
@@ -149,10 +147,10 @@ export class EventHelper
     static remove(ev: IIndexer<IEventList>, name?: string, nmspace?: string): void {
         if (!ev)
             return null;
-        const self = this, ns = !nmspace ? "*" : "" + nmspace;
+        const ns = !nmspace ? "*" : "" + nmspace;
 
         if (!name) {
-            EventHelper.removeNs(ev, ns);
+            EventHelper.removeNS(ev, ns);
         }
         else {
             //arguments supplied is name (and optionally nmspace)
@@ -169,7 +167,7 @@ export class EventHelper
             return;
         if (!!name) {
             const arr = evList.toArray(ev[name]);
-            let node: IEventNode;
+            let node: TEventNode;
             for (let i = 0; i < arr.length; i++) {
                 node = arr[i];
                 node.fn.apply(node.context, [sender, args]);

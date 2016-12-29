@@ -1,7 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { Utils } from "jriapp_shared";
 import { DATA_ATTR } from "jriapp/const";
-import { $ } from "jriapp/utils/jquery";
 import { DomUtils } from "jriapp/utils/dom";
 import { css, ROW_ACTION } from "../const";
 import { IColumnInfo, BaseColumn, ICellInfo } from "./base";
@@ -14,15 +13,11 @@ export interface IActionsColumnInfo extends IColumnInfo {
 }
 
 export class ActionsColumn extends BaseColumn {
-    private _event_act_scope: string;
-
     constructor(grid: DataGrid, options: ICellInfo) {
         super(grid, options);
         const self = this, opts: IActionsColumnInfo = this.options;
-        this._event_act_scope = ["span[", DATA_ATTR.DATA_EVENT_SCOPE, '="', this.uniqueID, '"]'].join("");
         dom.addClass([this.col], css.rowActions);
-        const $table = this.grid.$table;
-        $table.on("click", this._event_act_scope, function (e) {
+        dom.events.on(this.grid.table, "click", function (e) {
             e.stopPropagation();
             const btn: HTMLElement = this, name = btn.getAttribute(DATA_ATTR.DATA_NAME),
                 cell = <ActionsCell>dom.getData(btn, "cell");
@@ -41,7 +36,15 @@ export class ActionsColumn extends BaseColumn {
                     self._onDelete(cell);
                     break;
             }
-        });
+        }, {
+                nmspace: this.uniqueID,
+                //using delegation
+                matchElement: (el) => {
+                    const attr = el.getAttribute(DATA_ATTR.DATA_EVENT_SCOPE),
+                        tag = el.tagName.toLowerCase();
+                    return self.uniqueID === attr && tag === "span";
+                }
+            });
 
         this.grid.addOnRowAction((sender, args) => {
             switch (args.action) {
@@ -91,8 +94,7 @@ export class ActionsColumn extends BaseColumn {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        const $table = this.grid.$table;
-        $table.off("click", this._event_act_scope);
+        dom.events.offNS(this.grid.table, this.uniqueID);
         this.grid.removeNSHandlers(this.uniqueID);
         super.destroy();
     }

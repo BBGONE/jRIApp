@@ -57,6 +57,7 @@
   <ItemGroup>
     <TypeScriptCompile Include="jriapp\int.ts" />
     <TypeScriptCompile Include="jriapp\utils\dom.ts" />
+    <TypeScriptCompile Include="jriapp\utils\domevents.ts" />
     <TypeScriptCompile Include="jriapp\utils\jquery.ts" />
     <TypeScriptCompile Include="jriapp\utils\parser.ts" />
     <TypeScriptCompile Include="jriapp\utils\viewchecks.ts" />

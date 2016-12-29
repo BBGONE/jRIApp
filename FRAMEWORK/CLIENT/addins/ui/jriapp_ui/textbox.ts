@@ -1,9 +1,11 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { $ } from "jriapp/utils/jquery";
 import { IViewOptions } from "jriapp/int";
+import { DomUtils } from "jriapp/utils/dom";
 import { bootstrap } from "jriapp/bootstrap";
 import { css, PROP_NAME } from "./baseview";
 import { InputElView } from "./input";
+
+const dom = DomUtils;
 
 const TXTBOX_EVENTS = {
     keypress: "keypress"
@@ -18,23 +20,25 @@ export type TKeyPressArgs = { keyCode: number; value: string; isCancel: boolean;
 export class TextBoxElView extends InputElView {
     constructor(options: ITextBoxOptions) {
         super(options);
-        const self = this, $el = $(this.el);
-        $el.on("change." + this.uniqueID, function (e) {
+        const self = this;
+        dom.events.on(this.el, "change", function (e) {
             e.stopPropagation();
             self.raisePropertyChanged(PROP_NAME.value);
-        });
-        $el.on("keypress." + this.uniqueID, function (e) {
+        }, this.uniqueID);
+
+        dom.events.on(this.el, "keypress", function (e) {
             e.stopPropagation();
-            let args: TKeyPressArgs = { keyCode: e.which, value: (<any>e.target).value, isCancel: false };
+            const args: TKeyPressArgs = { keyCode: e.which, value: (<any>e.target).value, isCancel: false };
             self.raiseEvent(TXTBOX_EVENTS.keypress, args);
             if (args.isCancel)
                 e.preventDefault();
-        });
+        }, this.uniqueID);
+
         if (!!options.updateOnKeyUp) {
-            $el.on("keyup." + this.uniqueID, function (e) {
+            dom.events.on(this.el, "keyup", function (e) {
                 e.stopPropagation();
                 self.raisePropertyChanged(PROP_NAME.value);
-            });
+            }, this.uniqueID);
         }
     }
     protected _getEventNames() {

@@ -120,8 +120,7 @@ export class BaseObject implements IBaseObject {
         evHelper.raise(this, this._events, name, args);
     }
     raisePropertyChanged(name: string): void {
-        const data = { property: name };
-        const parts = name.split("."), lastPropName = parts[parts.length - 1];
+        const data = { property: name }, parts = name.split("."), lastPropName = parts[parts.length - 1];
         if (parts.length > 1) {
             const obj = coreUtils.resolveOwner(this, name);
             if (debug.isDebugging() && checks.isUndefined(obj)) {
@@ -161,7 +160,7 @@ export class BaseObject implements IBaseObject {
             evHelper.remove(this._events, "0" + prop, nmspace);
         }
         else {
-            evHelper.removeNs(this._events, nmspace);
+            evHelper.removeNS(this._events, nmspace);
         }
     }
     getIsDestroyed(): boolean {

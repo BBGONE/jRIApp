@@ -69,8 +69,6 @@ export class BaseCell<TColumn extends BaseColumn> extends BaseObject {
             this._click = null;
         }
         dom.removeData(this._td);
-        let $td = $(this._td);
-        $td.off();
         this._row = null;
         this._td = null;
         this._column = null;

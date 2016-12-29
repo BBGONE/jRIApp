@@ -2,7 +2,6 @@
 import {
     Utils, BaseObject, IBaseObject, LocaleERRS as ERRS, LocaleSTRS as STRS, Debounce
 } from "jriapp_shared";
-import { $ } from "jriapp/utils/jquery";
 import { DomUtils } from "jriapp/utils/dom";
 import { IApplication, IViewOptions } from "jriapp/int";
 import { BaseElView, fn_addToolTip } from "./baseview";
@@ -50,13 +49,15 @@ const PROP_NAME = {
 };
 
 export class Pager extends BaseObject {
-    private _$el: JQuery;
+    private _el: HTMLElement;
     private _objId: string;
     private _options: IPagerConstructorOptions;
     private _rowsPerPage: number;
     private _rowCount: number;
     private _currentPage: number;
     private _debounce: Debounce;
+    //saves old display before making display: none
+    private _display: string;
 
     constructor(options: IPagerConstructorOptions) {
         super();
@@ -73,11 +74,12 @@ export class Pager extends BaseObject {
                 hideOnSinglePage: true,
                 sliderSize: 25
             }, options);
+        this._display = null;
         if (!!options.dataSource && !sys.isCollection(options.dataSource))
             throw new Error(ERRS.ERR_PAGER_DATASRC_INVALID);
         this._options = options;
-        this._$el = $(options.el);
-        dom.addClass([options.el], css.pager);
+        this._el = options.el;
+        dom.addClass([this._el], css.pager);
         this._objId = coreUtils.getNewID("pgr");
         this._rowsPerPage = 0;
         this._rowCount = 0;
@@ -85,11 +87,11 @@ export class Pager extends BaseObject {
         this._debounce = new Debounce();
         this._bindDS();
     }
-    protected _createElement(tag: string) {
-        return $(doc.createElement(tag));
+    protected _createElement(tag: string): HTMLElement {
+        return doc.createElement(tag);
     }
     protected _render() {
-        let $el = this._$el, rowCount: number, currentPage: number, pageCount: number;
+        let el = this._el, rowCount: number, currentPage: number, pageCount: number;
         this._clearContent();
 
         if (this.rowsPerPage <= 0) {
@@ -108,25 +110,25 @@ export class Pager extends BaseObject {
         pageCount = this.pageCount;
 
         if (this.hideOnSinglePage && (pageCount === 1)) {
-            $el.hide();
+            this.isVisible = false;
         }
         else {
-            $el.show();
+            this.isVisible = true;
 
             if (this.showInfo) {
-                let $span = this._createElement("span");
-                let info = strUtils.format(_STRS.pageInfo, currentPage, pageCount);
-                dom.addClass($span.toArray(), css.info);
-                $span.text(info);
-                $span.appendTo($el);
+                const span = this._createElement("span");
+                const info = strUtils.format(_STRS.pageInfo, currentPage, pageCount);
+                dom.addClass([span], css.info);
+                span.textContent = info;
+                span.appendChild(el);
             }
 
             if (this.showFirstAndLast && (currentPage !== 1)) {
-                $el.append(this._createFirst());
+                el.appendChild(this._createFirst());
             }
 
             if (this.showPreviousAndNext && (currentPage !== 1)) {
-                $el.append(this._createPrevious());
+                el.appendChild(this._createPrevious());
             }
 
             if (this.showNumbers) {
@@ -158,20 +160,20 @@ export class Pager extends BaseObject {
 
                 for (let i = start; i <= end; i++) {
                     if (i === currentPage) {
-                        $el.append(this._createCurrent());
+                        el.appendChild(this._createCurrent());
                     }
                     else {
-                        $el.append(this._createOther(i));
+                        el.appendChild(this._createOther(i));
                     }
                 }
             }
 
             if (this.showPreviousAndNext && (currentPage !== pageCount)) {
-                $el.append(this._createNext());
+                el.appendChild(this._createNext());
             }
 
             if (this.showFirstAndLast && (currentPage !== pageCount)) {
-                $el.append(this._createLast());
+                el.appendChild(this._createLast());
             }
         }
     }
@@ -200,7 +202,7 @@ export class Pager extends BaseObject {
         this._unbindDS();
         this._clearContent();
         dom.removeClass([this.el], css.pager);
-        this._$el = null;
+        this._el = null;
         this._options = <any>{};
         super.destroy();
     }
@@ -231,7 +233,7 @@ export class Pager extends BaseObject {
         ds.removeNSHandlers(self._objId);
     }
     protected _clearContent() {
-        this._$el.empty();
+        this._el.innerHTML = "";
     }
     protected _reset() {
         const ds = this.dataSource;
@@ -248,88 +250,88 @@ export class Pager extends BaseObject {
         this.render();
     }
     protected _createLink(page: number, text: string, tip?: string) {
-        const $a = this._createElement("a"), self = this;
-        $a.text("" + text);
-        $a.attr("href", "javascript:void(0)");
+        const a = this._createElement("a"), self = this;
+        a.textContent = ("" + text);
+        a.setAttribute("href", "javascript:void(0)");
 
         if (!!tip) {
-            fn_addToolTip($a, tip);
+            fn_addToolTip(a, tip);
         }
-        $a.click(function (e) {
+        dom.events.on(a, "click", function (e) {
             e.preventDefault();
             self._setDSPageIndex(page);
             self.currentPage = page;
         });
 
-        return $a;
+        return a;
     }
     protected _createFirst() {
-        let $span = this._createElement("span"), tip: string, $a: JQuery;
+        let span = this._createElement("span"), tip: string;
 
         if (this.showTip) {
             tip = _STRS.firstPageTip;
         }
-        $a = this._createLink(1, _STRS.firstText, tip);
-        dom.addClass($span.toArray(), css.otherPage);
-        $span.append($a);
-        return $span;
+        let a = this._createLink(1, _STRS.firstText, tip);
+        dom.addClass([span], css.otherPage);
+        span.appendChild(a);
+        return span;
     }
     protected _createPrevious() {
-        let $span = this._createElement("span"), previousPage = this.currentPage - 1, tip: string, $a: JQuery;
+        let span = this._createElement("span"), previousPage = this.currentPage - 1, tip: string;
 
         if (this.showTip) {
             tip = strUtils.format(_STRS.prevPageTip, previousPage);
         }
 
-        $a = this._createLink(previousPage, _STRS.previousText, tip);
-        dom.addClass($span.toArray(), css.otherPage);
-        $span.append($a);
-        return $span;
+        let a = this._createLink(previousPage, _STRS.previousText, tip);
+        dom.addClass([span], css.otherPage);
+        span.appendChild(a);
+        return span;
     }
     protected _createCurrent() {
-        let $span = this._createElement("span"), currentPage = this.currentPage;
+        let span = this._createElement("span"), currentPage = this.currentPage;
 
-        $span.text("" + currentPage);
+        span.textContent = ("" + currentPage);
 
         if (this.showTip) {
-            fn_addToolTip($span, this._buildTip(currentPage));
+            fn_addToolTip(span, this._buildTip(currentPage));
         }
-        dom.addClass($span.toArray(), css.currentPage);
-        return $span;
+        dom.addClass([span], css.currentPage);
+        return span;
     }
     protected _createOther(page: number) {
-        let $span = this._createElement("span"), tip: string, $a: JQuery;
+        let span = this._createElement("span"), tip: string;
 
         if (this.showTip) {
             tip = this._buildTip(page);
         }
 
-        $a = this._createLink(page, "" + page, tip);
-        dom.addClass($span.toArray(), css.otherPage);
-        $span.append($a);
-        return $span;
+        let a = this._createLink(page, "" + page, tip);
+        dom.addClass([span], css.otherPage);
+        span.appendChild(a);
+        return span;
     }
     protected _createNext() {
-        let $span = this._createElement("span"), nextPage = this.currentPage + 1, tip: string, $a: JQuery;
+        let span = this._createElement("span"), nextPage = this.currentPage + 1, tip: string;
 
         if (this.showTip) {
             tip = strUtils.format(_STRS.nextPageTip, nextPage);
         }
-        $a = this._createLink(nextPage, _STRS.nextText, tip);
-        dom.addClass($span.toArray(), css.otherPage);
-        $span.append($a);
-        return $span;
+        let a = this._createLink(nextPage, _STRS.nextText, tip);
+        dom.addClass([span], css.otherPage);
+        span.appendChild(a);
+        return span;
     }
     protected _createLast() {
-        let $span = this._createElement("span"), tip: string, a: any;
+        let span = this._createElement("span"), tip: string;
 
         if (this.showTip) {
             tip = _STRS.lastPageTip;
         }
-        a = this._createLink(this.pageCount, _STRS.lastText, tip);
-        dom.addClass($span.toArray(), css.otherPage);
-        $span.append(a);
-        return $span;
+        let a = this._createLink(this.pageCount, _STRS.lastText, tip);
+        dom.addClass([span], css.otherPage);
+        span.appendChild(a);
+        return span;
     }
     protected _buildTip(page: number) {
         let rowsPerPage = this.rowsPerPage, rowCount = this.rowCount,
@@ -455,6 +457,26 @@ export class Pager extends BaseObject {
         if (this.showNumbers !== v) {
             this._options.showNumbers = v;
             this.render();
+        }
+    }
+    get isVisible() {
+        const v = this.el.style.display;
+        return !(v === "none");
+    }
+    set isVisible(v) {
+        v = !!v;
+        if (v !== this.isVisible) {
+            if (!v) {
+                this._display = this.el.style.display;
+                //if saved display is none, then don't store it
+                if (this._display === "none")
+                    this._display = null;
+                this.el.style.display = "none";
+            }
+            else {
+                this.el.style.display = (!this._display ? "" : this._display);
+            }
+            this.raisePropertyChanged("isVisible");
         }
     }
 }
