@@ -21,22 +21,22 @@ interface IResizeInfo {
     dc: number[];
     fixed: boolean;
     w: number;
-    $gripContainer: JQuery;
+    gripContainer: HTMLElement;
     cellspacing: number;
     len: number;
     columns: IColumnInfo[];
 }
 
 interface IColumnInfo {
-    $column: JQuery;
-    $grip: JQuery;
+    column: HTMLElement;
+    grip: HTMLElement;
     w: number;
     locked: boolean;
 }
 
 interface IGripData {
     i: number;
-    grid: ResizableGrid;
+    elview: ResizableGrid;
     last: boolean;
     w: number;
     ox: number; //original x
@@ -90,12 +90,11 @@ $head.append("<style type='text/css'>  .JColResizer{table-layout:fixed; box-sizi
 let onGripDrag = function (e: JQueryEventObject) {
     if (!$drag)
         return;
-    let gripData: IGripData = $drag.data(SIGNATURE);
-    let grid: ResizableGrid = gripData.grid;
-    if (grid.getIsDestroyCalled())
+    let gripData: IGripData = $drag.data(SIGNATURE), elview: ResizableGrid = gripData.elview;
+    if (elview.getIsDestroyCalled())
         return;
-    let data: IResizeInfo = grid.getResizeIfo();
-    let $table: JQuery = grid.grid.$table;
+    let data: IResizeInfo = elview.getResizeIfo();
+    let table = elview.grid.table;
     let oe = (<any>e.originalEvent).touches;
     //original position (touch or mouse)
     let ox = oe ? oe[0].pageX : e.pageX;
@@ -108,7 +107,7 @@ let onGripDrag = function (e: JQueryEventObject) {
     let minLen: number = data.cellspacing * 1.5 + mw;
     let last = index == data.len - 1;  //check if it is the last column's grip (usually hidden)
     //min position according to the contiguous cells
-    let min = (index > 0) ? data.columns[index - 1].$grip[0].offsetLeft + data.cellspacing + mw : minLen;	
+    let min = (index > 0) ? data.columns[index - 1].grip.offsetLeft + data.cellspacing + mw : minLen;	
     //max position according to the contiguous cells 
     let max = Infinity;
     if (data.fixed) {
@@ -116,7 +115,7 @@ let onGripDrag = function (e: JQueryEventObject) {
             max = data.w - minLen;
         }
         else {
-            max = data.columns[index + 1].$grip[0].offsetLeft - data.cellspacing - mw;
+            max = data.columns[index + 1].grip.offsetLeft - data.cellspacing - mw;
         }
     }
 
@@ -129,19 +128,19 @@ let onGripDrag = function (e: JQueryEventObject) {
 
     if (!!data.options.liveDrag) { 	//if liveDrag is enabled
         if (last) {
-            colInfo.$column.css("width", gripData.w + PX);
+            colInfo.column.style.width = (gripData.w + PX);
             if (!data.fixed) {	//if overflow is set, incriment min-width to force overflow
-                $table.css('min-width', (data.w + x - gripData.l) + PX);
+                table.style.minWidth = ((data.w + x - gripData.l) + PX);
             } else {
-                data.w = $table[0].offsetWidth;
+                data.w = table.offsetWidth;
             }
         } else {
-            grid.syncCols(index, false); //columns are synchronized
+            elview.syncCols(index, false); //columns are synchronized
         }
 
-        grid.syncGrips();
+        elview.syncGrips();
         let cb = data.options.onDrag;	//check if there is an onDrag callback
-        if (!!cb) { (<any>e).currentTarget = $table[0]; cb(e); }		//if any, it is fired			
+        if (!!cb) { (<any>e).currentTarget = table; cb(e); }		//if any, it is fired			
     }
     return false; 	//prevent text selection while dragging				
 };
@@ -157,11 +156,10 @@ let onGripDragOver = function (e: JQueryEventObject) {
     if (!$drag)
         return;
     const gripData: IGripData = $drag.data(SIGNATURE);
-    const grid: ResizableGrid = gripData.grid;
-    if (grid.getIsDestroyCalled())
+    const elview: ResizableGrid = gripData.elview;
+    if (elview.getIsDestroyCalled())
         return;
-    const data: IResizeInfo = grid.getResizeIfo();
-    const $table: JQuery = grid.grid.$table;
+    const data: IResizeInfo = elview.getResizeIfo(), table = elview.grid.table;
     //remove the grip's dragging css-class
     $drag.removeClass(data.options.draggingClass);
 
@@ -171,15 +169,15 @@ let onGripDragOver = function (e: JQueryEventObject) {
         let last = index == data.len - 1;   //check if it is the last column's grip (usually hidden)
         let colInfo = data.columns[index];  //the column being dragged
         if (last) {
-            colInfo.$column.css("width", gripData.w + PX);
+            colInfo.column.style.width = (gripData.w + PX);
             colInfo.w = gripData.w;
         } else {
-            grid.syncCols(index, true);	//the columns are updated
+            elview.syncCols(index, true);	//the columns are updated
         }
         if (!data.fixed)
-            grid.applyBounds();
-        grid.syncGrips();	//the grips are updated
-        if (!!cb) { (<any>e).currentTarget = $table[0]; cb(e); }	//if there is a callback function, it is fired
+            elview.applyBounds();
+        elview.syncGrips();	//the grips are updated
+        if (!!cb) { (<any>e).currentTarget = table; cb(e); }	//if there is a callback function, it is fired
     }
 
     $drag = null;   //since the grip's dragging is over									
@@ -192,12 +190,10 @@ let onGripDragOver = function (e: JQueryEventObject) {
  */
 let onGripMouseDown = function (e: JQueryEventObject) {
     let $grip = $(this);
-    let gripData: IGripData = $grip.data(SIGNATURE);
-    let grid: ResizableGrid = gripData.grid;
-    if (grid.getIsDestroyCalled())
+    let gripData: IGripData = $grip.data(SIGNATURE), elview: ResizableGrid = gripData.elview;
+    if (elview.getIsDestroyCalled())
         return;
-    let data: IResizeInfo = grid.getResizeIfo();
-    let $table: JQuery = grid.grid.$table;
+    let data: IResizeInfo = elview.getResizeIfo(), table = elview.grid.table;
     let touches = (<any>e.originalEvent).touches;   //touch or mouse event?
     gripData.ox = touches ? touches[0].pageX : e.pageX;    //the initial position is kept
     gripData.l = $grip[0].offsetLeft;
@@ -219,7 +215,7 @@ let onGripMouseDown = function (e: JQueryEventObject) {
             //if the colum is locked (after browser resize), then c.w must be updated		
             let c = data.columns[i];
             c.locked = false;
-            c.w = c.$column[0].offsetWidth;
+            c.w = c.column.offsetWidth;
         } 	
     }
     return false; 	//prevent text selection
@@ -289,8 +285,8 @@ export class ResizableGrid extends uiMOD.DataGridElView {
         ds.removeNSHandlers(this.uniqueID);
     }
     protected init(options: IOptions) {
-        const $table: JQuery = this.grid.$table;
-        let style = window.getComputedStyle($table[0], null);
+        const table = this.grid.table;
+        let style = window.getComputedStyle(table, null);
 
          /*
         if (options.hoverCursor !== 'e-resize') {
@@ -300,67 +296,73 @@ export class ResizableGrid extends uiMOD.DataGridElView {
 
         //the grips container object is added. 
         //Signature class forces table rendering in fixed - layout mode to prevent column's min-width
-        $table.addClass(SIGNATURE);
-        let $gripContainer = $('<div class="JCLRgrips"/>');
-        this.grid._getInternal().get$Header().before($gripContainer);
-
+        RIAPP.DOM.addClass([table], SIGNATURE);
+        let gripContainer = RIAPP.DOM.fromHTML('<div class="JCLRgrips"/>')[0];
+        const header = this.grid._getInternal().getHeader();
+        header.parentElement.insertBefore(gripContainer, header);
+         
         this._resizeInfo = {
             options: options,
             mode: options.resizeMode,
             dc: options.disabledColumns,
             fixed: options.resizeMode === 'fit',
             columns: <IColumnInfo[]>[],
-            w: $table[0].offsetWidth,
-            $gripContainer: $gripContainer,
+            w: table.offsetWidth,
+            gripContainer: gripContainer,
             cellspacing: parseInt(style.borderSpacing) || 2,
             len: 0
         };
 
-        if (options.marginLeft) $gripContainer.css("marginLeft", options.marginLeft);  	//if the table contains margins, it must be specified
-        if (options.marginRight) $gripContainer.css("marginRight", options.marginRight);  	//since there is no (direct) way to obtain margin values in its original units (%, em, ...)
+        if (options.marginLeft) gripContainer.style.marginLeft = options.marginLeft;  	//if the table contains margins, it must be specified
+        if (options.marginRight) gripContainer.style.marginRight = options.marginRight;  	//since there is no (direct) way to obtain margin values in its original units (%, em, ...)
 
         this.createGrips();	 
     }
     protected createGrips() {
-        const $table: JQuery = this.grid.$table, self = this;
-        const $allTH = $(this.grid._tHeadCells).filter(":visible")
+        const table = this.grid.table, self = this;
+        const allTH = this.grid._tHeadCells;
         const data: IResizeInfo = this._resizeInfo;
-        data.len = $allTH.length;	//table length is stored	
-
-        $allTH.each(function (index: number) {	//iterate through the table column headers			
-            let $column: JQuery = $(this); //jquery wrap for the current column		
+        data.len = allTH.length;	//table length is stored	
+        allTH.forEach(function (column, index) {	//iterate through the table column headers		
             let isDisabled: boolean = data.dc.indexOf(index) != -1;   //is this a disabled column?
             //add the visual node to be used as grip
-            let $grip: JQuery = $(data.$gripContainer.append('<div class="JCLRgrip"></div>')[0].lastChild);
-
-            $grip.append(isDisabled ? "" : data.options.gripInnerHtml).append('<div class="' + SIGNATURE + '"></div>');
+            let grip = RIAPP.DOM.fromHTML('<div class="JCLRgrip"></div>')[0];
+            data.gripContainer.appendChild(grip);
+            if (!isDisabled && !!data.options.gripInnerHtml) {
+                let inner = RIAPP.DOM.fromHTML(data.options.gripInnerHtml);
+                RIAPP.DOM.append(grip, inner);
+            }
+            RIAPP.DOM.append(grip, RIAPP.DOM.fromHTML('<div class="' + SIGNATURE + '"></div>'));
             if (index == data.len - 1) {  //if the current grip is the last one 
-                $grip.addClass("JCLRLastGrip");    //add a different css class to stlye it in a different way if needed
+                RIAPP.DOM.addClass([grip], "JCLRLastGrip");    //add a different css class to stlye it in a different way if needed
                 if (data.fixed)
-                    $grip.empty();   //if the table resizing mode is set to fixed, the last grip is removed since table width can not change
+                    grip.innerHTML = "";   //if the table resizing mode is set to fixed, the last grip is removed since table width can not change
             }
 
-            $grip.on('touchstart mousedown', onGripMouseDown); //bind the mousedown event to start dragging 
+            $(grip).on('touchstart mousedown', onGripMouseDown); //bind the mousedown event to start dragging 
 
             if (!isDisabled) {
                 //if normal column bind the mousedown event to start dragging, if disabled then apply its css class
-                $grip.removeClass('JCLRdisabledGrip').bind('touchstart mousedown', onGripMouseDown);
+                RIAPP.DOM.removeClass([grip], 'JCLRdisabledGrip');
+                $(grip).on('touchstart mousedown', onGripMouseDown);
             } else {
-                $grip.addClass('JCLRdisabledGrip');
+                RIAPP.DOM.addClass([grip], 'JCLRdisabledGrip');
             }
 
-            let colInfo: IColumnInfo = { $column: $column, $grip: $grip, w: $column[0].offsetWidth, locked: false };
+            let colInfo: IColumnInfo = { column: column, grip: grip, w: column.offsetWidth, locked: false };
             //the current grip and column are added to its table object
             data.columns.push(colInfo);
             //the width of the column is converted into pixel-based measurements
-            $column.css("width", colInfo.w + PX).removeAttr("width");
+            column.style.width = (colInfo.w + PX);
+            column.removeAttribute("width");
             //grip index and its the grid are stored
-            const gripData: IGripData = { i: index, grid: self, last: index == data.len - 1, ox: 0, x: 0, l: 0, w: 0 };
-            $grip.data(SIGNATURE, gripData);
+            const gripData: IGripData = { i: index, elview: self, last: index == data.len - 1, ox: 0, x: 0, l: 0, w: 0 };
+            $(grip).data(SIGNATURE, gripData);
         });
 
         if (!data.fixed) {
-            $table.removeAttr('width').addClass(FLEX); //if not fixed, let the table grow as needed
+            table.removeAttribute('width');
+            RIAPP.DOM.addClass([table], FLEX); //if not fixed, let the table grow as needed
         }
         //the grips are positioned according to the current table layout
         this.syncGrips();			
@@ -372,20 +374,18 @@ export class ResizableGrid extends uiMOD.DataGridElView {
         if (this.getIsDestroyCalled())
             return;
         const data: IResizeInfo = this._resizeInfo;
-        data.$gripContainer.css("width", data.w + PX);	//the grip's container width is updated
-        const $table: JQuery = this.grid.$table;
-        const $header = this.grid._getInternal().get$Header();
-        const $wrapper = this.grid._getInternal().get$Wrapper();
-        const headerHeight = $header[0].offsetHeight;
-        const tableHeight = $wrapper[0].offsetHeight;
+        data.gripContainer.style.width = (data.w + PX);	//the grip's container width is updated
+        const table = this.grid.table;
+        const header = this.grid._getInternal().getHeader();
+        const viewport = this.grid._getInternal().getWrapper();
+        const headerHeight = header.offsetHeight;
+        const tableHeight = viewport.clientHeight;
 
         for (let i = 0; i < data.len; i++) {	//for each column
             let colInfo = data.columns[i];
             //height and position of the grip is updated according to the table layout
-            colInfo.$grip.css({
-                left: (colInfo.$column[0].offsetLeft - $table[0].offsetLeft + colInfo.$column[0].offsetWidth + data.cellspacing / 2) + PX,
-                height: (data.options.headerOnly ? headerHeight : (headerHeight + tableHeight)) + PX
-            });
+            colInfo.grip.style.left = ((colInfo.column.offsetLeft - table.offsetLeft + colInfo.column.offsetWidth + data.cellspacing / 2) + PX);
+            colInfo.grip.style.height = ((data.options.headerOnly ? headerHeight : (headerHeight + tableHeight)) + PX);
         }
 
         this.grid.updateColumnsSize();
@@ -400,28 +400,25 @@ export class ResizableGrid extends uiMOD.DataGridElView {
     syncCols(i: number, isOver: boolean) {
         if (this.getIsDestroyCalled())
             return;
-        const $table: JQuery = this.grid.$table;
-        const data: IResizeInfo = this._resizeInfo;
-        const gripData: IGripData = $drag.data(SIGNATURE);
-        const inc = gripData.x - gripData.l;
-        const c: IColumnInfo = data.columns[i];
+        const table = this.grid.table, data: IResizeInfo = this._resizeInfo, gripData: IGripData = $drag.data(SIGNATURE);
+        const inc = gripData.x - gripData.l, c: IColumnInfo = data.columns[i];
   
         if (data.fixed) { //if fixed mode
             const c2: IColumnInfo = data.columns[i + 1];
-            const w2 = c2.w - inc;	
-            c2.$column.css("width", w2 + PX);
+            const w2 = c2.w - inc;
+            c2.column.style.width = (w2 + PX);
             if (isOver) {
-                c2.w = c2.$column[0].offsetWidth;
+                c2.w = c2.column.offsetWidth;
             }
         }
         else {	//if overflow is set, incriment min-width to force overflow
-            $table.css('min-width', (data.w + inc) + PX);
+            table.style.minWidth = ((data.w + inc) + PX);
         }
         
         const w = c.w + inc;
-        c.$column.css("width", w + PX);
+        c.column.style.width = (w + PX);
         if (isOver) {
-            c.w = c.$column[0].offsetWidth;
+            c.w = c.column.offsetWidth;
         }
     }
     /**
@@ -432,32 +429,32 @@ export class ResizableGrid extends uiMOD.DataGridElView {
     applyBounds() {
         if (this.getIsDestroyCalled())
             return;
-        const $table: JQuery = this.grid.$table;
+        const table = this.grid.table;
         const data: IResizeInfo = this._resizeInfo;
         //obtain real widths
-        const widths = $.map(data.columns, function (c) {
-            return c.$column[0].offsetWidth;
+        const widths = data.columns.map(function (c) {
+            return c.column.offsetWidth;
         });
 
-        data.w = $table[0].offsetWidth;
-        $table.css("width", data.w + PX);
-        $table.removeClass(FLEX);	//prevent table width changes
+        data.w = table.offsetWidth;
+        table.style.width = (data.w + PX);
+        RIAPP.DOM.removeClass([table], FLEX);	//prevent table width changes
 
-        $.each(data.columns, function (i, c) {
+        data.columns.forEach(function (c, i) {
             //set column widths applying bounds (table's max-width)
-            c.$column.css("width", widths[i] + PX);
+            c.column.style.width = (widths[i] + PX);
         });
 
-        $table.addClass(FLEX);	//allow table width changes
+        RIAPP.DOM.addClass([table], FLEX);	//allow table width changes
 
         //recalculate widths
-        $.each(data.columns, function (i, c) {
-            c.w = c.$column[0].offsetWidth;
+        data.columns.forEach(function (c, i) {
+            c.w = c.column.offsetWidth;
         });
         //recalculate width
-        data.w = $table[0].offsetWidth;
-
-        this.grid._getInternal().get$Wrapper().css("width", $table.outerWidth(true) + PX);
+        data.w = table.offsetWidth;
+        let viewport = this.grid._getInternal().getWrapper();
+        viewport.style.width = (table.offsetWidth + (viewport.offsetWidth - viewport.clientWidth)) + PX;
     }
     destroy() {
         if (this._isDestroyed)
@@ -466,11 +463,10 @@ export class ResizableGrid extends uiMOD.DataGridElView {
         _gridDestroyed(this);
         this.unBindDS(this._ds);
         this._ds = null;
-        let $table: JQuery = this.grid.$table;
-        let data: IResizeInfo = this._resizeInfo;
+        let table = this.grid.table, data: IResizeInfo = this._resizeInfo;
         if (!!data)
-            data.$gripContainer.remove();
-        $table.removeClass(SIGNATURE + " " + FLEX);
+            data.gripContainer.remove();
+        RIAPP.DOM.removeClass([table], SIGNATURE + " " + FLEX);
         this._resizeInfo = null;
         super.destroy();
     }

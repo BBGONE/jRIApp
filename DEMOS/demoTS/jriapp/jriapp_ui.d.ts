@@ -1152,9 +1152,9 @@ declare module "jriapp_ui/datagrid/datagrid" {
     }
     export interface IInternalDataGridMethods {
         isRowExpanded(row: Row): boolean;
-        get$Header(): JQuery;
-        get$Container(): JQuery;
-        get$Wrapper(): JQuery;
+        getHeader(): HTMLElement;
+        getContainer(): HTMLElement;
+        getWrapper(): HTMLElement;
         setCurrentColumn(column: BaseColumn): void;
         onRowStateChanged(row: Row, val: any): string;
         onCellDblClicked(cell: BaseCell<BaseColumn>): void;
@@ -1167,7 +1167,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
     }
     export class DataGrid extends BaseObject implements ISelectableProvider {
         private _options;
-        private _$table;
+        private _table;
         private _name;
         private _objId;
         private _rowMap;
@@ -1182,9 +1182,9 @@ declare module "jriapp_ui/datagrid/datagrid" {
         private _currentColumn;
         private _editingRow;
         private _dialog;
-        private _$header;
-        private _$wrapper;
-        private _$contaner;
+        private _header;
+        private _wrapper;
+        private _contaner;
         private _internal;
         private _selectable;
         private _scrollDebounce;
@@ -1274,7 +1274,6 @@ declare module "jriapp_ui/datagrid/datagrid" {
         focus(): void;
         addNew(): void;
         destroy(): void;
-        readonly $table: JQuery;
         readonly table: HTMLTableElement;
         readonly options: IDataGridConstructorOptions;
         readonly _tBodyEl: HTMLTableSectionElement;
