@@ -57,7 +57,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
             dom.addClass([col], this._options.colCellCss);
         }
 
-        this._grid._getInternal().get$Header().append(col);
+        this._grid._getInternal().getHeader().appendChild(col);
 
         //a click on column itself
         dom.events.on(this._col, "click", function (e) {
