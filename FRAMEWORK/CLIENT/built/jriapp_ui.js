@@ -4852,7 +4852,6 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             this._wrapTable();
             this._scrollDebounce = new jriapp_shared_28.Debounce();
             this._dsDebounce = new jriapp_shared_28.Debounce();
-            this._pageDebounce = new jriapp_shared_28.Debounce();
             this._selectable = {
                 getContainerEl: function () {
                     return self._contaner;
@@ -4987,16 +4986,12 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                     break;
                 case 34:
                     event.preventDefault();
-                    this._pageDebounce.enqueue(function () {
-                        if (ds.pageIndex > 0)
-                            ds.pageIndex = ds.pageIndex - 1;
-                    });
+                    if (ds.pageIndex > 0)
+                        ds.pageIndex = ds.pageIndex - 1;
                     break;
                 case 33:
                     event.preventDefault();
-                    this._pageDebounce.enqueue(function () {
-                        ds.pageIndex = ds.pageIndex + 1;
-                    });
+                    ds.pageIndex = ds.pageIndex + 1;
                     break;
                 case 13:
                     if (!!currentRow && !!this._actionsCol) {
@@ -5484,8 +5479,10 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             if (isPageChanged) {
                 self._onPageChanged();
             }
-            if (self.isUseScrollInto)
-                self.scrollToCurrent();
+            this._scrollDebounce.enqueue(function () {
+                if (self.isUseScrollInto)
+                    self.scrollToCurrent();
+            });
             self.updateColumnsSize();
             self._updateTableDisplay();
             self._updateCurrent();
@@ -5659,10 +5656,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             this._scrollTo(yPos, animate);
         };
         DataGrid.prototype.scrollToCurrent = function (pos, animate) {
-            var _this = this;
-            this._scrollDebounce.enqueue(function () {
-                _this.scrollToRow({ row: _this.currentRow, animate: animate, pos: pos });
-            });
+            this.scrollToRow({ row: this.currentRow, animate: animate, pos: pos });
         };
         DataGrid.prototype.focus = function () {
             this.scrollToCurrent(0);
@@ -5684,7 +5678,6 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             this._isDestroyCalled = true;
             this._scrollDebounce.destroy();
             this._dsDebounce.destroy();
-            this._pageDebounce.destroy();
             this._updateCurrent = function () { };
             this._clearGrid();
             this._unbindDS();
@@ -6030,20 +6023,12 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/const"
             this._rowsPerPage = 0;
             this._rowCount = 0;
             this._currentPage = 1;
-            this._pageDebounce = new jriapp_shared_29.Debounce();
-            this._dsDebounce = new jriapp_shared_29.Debounce();
+            this._debounce = new jriapp_shared_29.Debounce();
             dom.events.on(this._el, "click", function (e) {
-                var _this = this;
                 e.preventDefault();
-                self._pageDebounce.enqueue(function () {
-                    var a = _this, page = parseInt(a.getAttribute("data-page"), 10);
-                    self.currentPage = page;
-                    self._dsDebounce.enqueue(function () {
-                        if (!!self.dataSource) {
-                            self.dataSource.pageIndex = page - 1;
-                        }
-                    });
-                });
+                var a = this, page = parseInt(a.getAttribute("data-page"), 10);
+                self._setDSPageIndex(page);
+                self.currentPage = page;
             }, {
                 nmspace: this._objId,
                 matchElement: function (el) {
@@ -6056,7 +6041,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/const"
         Pager.prototype._createElement = function (tag) {
             return doc.createElement(tag);
         };
-        Pager.prototype.render = function () {
+        Pager.prototype._render = function () {
             var el = this._el, rowCount, currentPage, pageCount;
             this._clearContent();
             if (this.rowsPerPage <= 0) {
@@ -6126,6 +6111,15 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/const"
                 }
             }
         };
+        Pager.prototype.render = function () {
+            var _this = this;
+            this._debounce.enqueue(function () {
+                _this._render();
+            });
+        };
+        Pager.prototype._setDSPageIndex = function (page) {
+            this.dataSource.pageIndex = page - 1;
+        };
         Pager.prototype._onPageSizeChanged = function (ds, args) {
             this.rowsPerPage = ds.pageSize;
         };
@@ -6139,8 +6133,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/const"
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
-            this._pageDebounce.destroy();
-            this._dsDebounce.destroy();
+            this._debounce.destroy();
             this._unbindDS();
             this._clearContent();
             dom.events.offNS(this._el, this._objId);

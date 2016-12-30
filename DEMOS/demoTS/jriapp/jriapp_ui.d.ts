@@ -1189,7 +1189,6 @@ declare module "jriapp_ui/datagrid/datagrid" {
         private _selectable;
         private _scrollDebounce;
         private _dsDebounce;
-        private _pageDebounce;
         private _updateCurrent;
         constructor(options: IDataGridConstructorOptions);
         protected _getEventNames(): string[];
@@ -1340,12 +1339,13 @@ declare module "jriapp_ui/pager" {
         private _rowsPerPage;
         private _rowCount;
         private _currentPage;
-        private _pageDebounce;
-        private _dsDebounce;
+        private _debounce;
         private _display;
         constructor(options: IPagerConstructorOptions);
         protected _createElement(tag: string): HTMLElement;
+        protected _render(): void;
         protected render(): void;
+        protected _setDSPageIndex(page: number): void;
         protected _onPageSizeChanged(ds: ICollection<ICollectionItem>, args?: any): void;
         protected _onPageIndexChanged(ds: ICollection<ICollectionItem>, args?: any): void;
         protected _onTotalCountChanged(ds: ICollection<ICollectionItem>, args?: any): void;

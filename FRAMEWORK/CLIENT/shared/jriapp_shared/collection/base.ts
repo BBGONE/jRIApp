@@ -372,7 +372,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     protected _onPageSizeChanged() {
     }
     protected _onPageChanging() {
-        const args: IPageChangingArgs = { page: this.pageIndex, isCancel: false };
+        let args: IPageChangingArgs = { page: this.pageIndex, isCancel: false };
         this.raiseEvent(COLL_EVENTS.page_changing, args);
         if (!args.isCancel) {
             try {

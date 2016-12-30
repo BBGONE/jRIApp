@@ -56,8 +56,7 @@ export class Pager extends BaseObject {
     private _rowsPerPage: number;
     private _rowCount: number;
     private _currentPage: number;
-    private _pageDebounce: Debounce;
-    private _dsDebounce: Debounce;
+    private _debounce: Debounce;
     //saves old display before making display: none
     private _display: string;
 
@@ -87,19 +86,12 @@ export class Pager extends BaseObject {
         this._rowsPerPage = 0;
         this._rowCount = 0;
         this._currentPage = 1;
-        this._pageDebounce = new Debounce();
-        this._dsDebounce = new Debounce();
+        this._debounce = new Debounce();
         dom.events.on(this._el, "click", function (e) {
             e.preventDefault();
-            self._pageDebounce.enqueue(() => {
-                const a = <HTMLElement>this, page = parseInt(a.getAttribute("data-page"), 10);
-                self.currentPage = page;
-                self._dsDebounce.enqueue(() => {
-                    if (!!self.dataSource) {
-                        self.dataSource.pageIndex = page - 1;
-                    }
-                });
-            });
+            const a = <HTMLElement>this, page = parseInt(a.getAttribute("data-page"), 10);
+            self._setDSPageIndex(page);
+            self.currentPage = page;
         }, {
                 nmspace: this._objId,
                 //using delegation
@@ -114,7 +106,7 @@ export class Pager extends BaseObject {
     protected _createElement(tag: string): HTMLElement {
         return doc.createElement(tag);
     }
-    protected render() {
+    protected _render() {
         let el = this._el, rowCount: number, currentPage: number, pageCount: number;
         this._clearContent();
 
@@ -201,6 +193,14 @@ export class Pager extends BaseObject {
             }
         }
     }
+    protected render() {
+        this._debounce.enqueue(() => {
+            this._render();
+        });
+    }
+    protected _setDSPageIndex(page: number) {
+        this.dataSource.pageIndex = page - 1;
+    }
     protected _onPageSizeChanged(ds: ICollection<ICollectionItem>, args?: any) {
         this.rowsPerPage = ds.pageSize;
     }
@@ -214,8 +214,7 @@ export class Pager extends BaseObject {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        this._pageDebounce.destroy();
-        this._dsDebounce.destroy();
+        this._debounce.destroy();
         this._unbindDS();
         this._clearContent();
         dom.events.offNS(this._el, this._objId);
