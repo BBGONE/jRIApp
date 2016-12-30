@@ -1797,9 +1797,6 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                         self._addOption(item, false);
                     });
                 }
-                if (!checks.isNt(this._selectedValue) && !this.getByValue(this._selectedValue)) {
-                    this._selectedValue = null;
-                }
                 self.updateSelected(this._selectedValue);
             }
             finally {
@@ -1831,8 +1828,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         };
         ListBox.prototype.updateSelected = function (v) {
             var data = (checks.isNt(v) ? null : this.getByValue(v));
-            var index = (!data ? 0 : data.op.index);
-            var oldRefreshing = this._isRefreshing;
+            var index = (!data ? 0 : data.op.index), oldRefreshing = this._isRefreshing;
             this._isRefreshing = true;
             try {
                 this.selectedIndex = index;

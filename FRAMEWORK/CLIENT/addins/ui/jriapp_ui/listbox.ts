@@ -455,9 +455,6 @@ export class ListBox extends BaseObject {
                     self._addOption(item, false);
                 });
             }
-            if (!checks.isNt(this._selectedValue) && !this.getByValue(this._selectedValue)) {
-                this._selectedValue = null;
-            }
             self.updateSelected(this._selectedValue);
 
         } finally {
@@ -489,8 +486,7 @@ export class ListBox extends BaseObject {
     }
     protected updateSelected(v: any) {
         const data: IMappedItem = (checks.isNt(v) ? null : this.getByValue(v));
-        const index = (!data ? 0 : data.op.index);
-        const oldRefreshing = this._isRefreshing;
+        const index = (!data ? 0 : data.op.index), oldRefreshing = this._isRefreshing;
         this._isRefreshing = true;
         try {
             this.selectedIndex = index;
