@@ -188,6 +188,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     private _selectable: ISelectable;
     private _scrollDebounce: Debounce;
     private _dsDebounce: Debounce;
+    private _pageDebounce: Debounce;
     private _updateCurrent: () => void;
 
     constructor(options: IDataGridConstructorOptions) {
@@ -237,6 +238,8 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._wrapTable();
         this._scrollDebounce = new Debounce();
         this._dsDebounce = new Debounce();
+        this._pageDebounce = new Debounce();
+
         this._selectable = {
             getContainerEl: () => {
                 return self._contaner;
@@ -374,12 +377,16 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 break;
             case KEYS.pageDown:
                 event.preventDefault();
-                if (ds.pageIndex > 0)
-                    ds.pageIndex = ds.pageIndex - 1;
+                this._pageDebounce.enqueue(() => {
+                    if (ds.pageIndex > 0)
+                        ds.pageIndex = ds.pageIndex - 1;
+                });
                 break;
             case KEYS.pageUp:
                 event.preventDefault();
-                ds.pageIndex = ds.pageIndex + 1;
+                this._pageDebounce.enqueue(() => {
+                    ds.pageIndex = ds.pageIndex + 1;
+                });
                 break;
             case KEYS.enter:
                 if (!!currentRow && !!this._actionsCol) {
@@ -884,10 +891,8 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         if (isPageChanged) {
             self._onPageChanged();
         }
-        this._scrollDebounce.enqueue(() => {
-            if (self.isUseScrollInto)
-                self.scrollToCurrent();
-        });
+        if (self.isUseScrollInto)
+            self.scrollToCurrent();
 
         self.updateColumnsSize();
         self._updateTableDisplay();
@@ -1088,7 +1093,9 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._scrollTo(yPos, animate);
     }
     scrollToCurrent(pos?: ROW_POSITION, animate?: boolean) {
-        this.scrollToRow({ row: this.currentRow, animate: animate, pos: pos });
+        this._scrollDebounce.enqueue(() => {
+            this.scrollToRow({ row: this.currentRow, animate: animate, pos: pos });
+        });
     }
     focus() {
         this.scrollToCurrent(ROW_POSITION.Up);
@@ -1109,6 +1116,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._isDestroyCalled = true;
         this._scrollDebounce.destroy();
         this._dsDebounce.destroy();
+        this._pageDebounce.destroy();
         this._updateCurrent = () => { };
         this._clearGrid();
         this._unbindDS();

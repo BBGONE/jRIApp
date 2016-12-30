@@ -512,7 +512,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
 
             if (query.loadPageCount > 1 && isPagingEnabled) {
                 dataCache.fillCache(res.pageIndex, fetchedItems);
-                let page = dataCache.getCachedPage(query.pageIndex);
+                const page = dataCache.getCachedPage(query.pageIndex);
                 if (!page)
                     arr = [];
                 else
@@ -521,13 +521,14 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         }
 
         arr.forEach(function (item) {
-            let oldItem = self._itemsByKey[item._key];
+            const oldItem = self._itemsByKey[item._key];
             if (!oldItem) {
                 self._items.push(item);
                 positions.push(self._items.length - 1);
                 self._itemsByKey[item._key] = item;
                 newItems.push(item);
                 items.push(item);
+                item._aspect._setIsDetached(false);
             }
             else {
                 items.push(oldItem);
@@ -559,7 +560,8 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
             throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "query is not null"));
         if (query.getIsDestroyCalled())
             throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "query not destroyed"));
-        let dataCache = query._getInternal().getCache(), cachedPage = dataCache.getCachedPage(query.pageIndex),
+        const dataCache = query._getInternal().getCache(),
+            cachedPage = dataCache.getCachedPage(query.pageIndex),
             arr = !cachedPage ? <TItem[]>[] : <TItem[]>cachedPage.items;
 
 
@@ -570,13 +572,14 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
             self._itemsByKey[item._key] = item;
             positions.push(index);
             items.push(item);
+            item._aspect._setIsDetached(false);
         });
 
         if (items.length > 0) {
             this._onCountChanged();
         }
 
-        let result: IQueryResult<TItem> = {
+        const result: IQueryResult<TItem> = {
             newItems: {
                 items: items,
                 pos: positions

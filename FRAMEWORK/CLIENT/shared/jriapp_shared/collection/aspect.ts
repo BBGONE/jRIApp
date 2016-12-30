@@ -395,8 +395,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
             return;
         const self = this;
         this._isDestroyCalled = true;
-        let coll = this._collection;
-        let item = this._item;
+        const coll = this._collection, item = this._item;
         if (!!item) {
             this.cancelEdit();
             if (this._isCached) {
