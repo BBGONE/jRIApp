@@ -343,7 +343,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
     protected _setDataSource(v: ICollection<ICollectionItem>) {
         this._unbindDS();
         this._options.dataSource = v;
-        this._debounce.enqueue(() => {
+        this._debounce.enque(() => {
             const ds = this._options.dataSource;
             if (!!ds && !ds.getIsDestroyCalled()) {
                 this._bindDS();

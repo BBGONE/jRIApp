@@ -29,7 +29,6 @@ export interface IListBoxOptions {
     valuePath: string;
     textPath: string;
     statePath?: string;
-    isNoEmptyOption?: boolean;
     emptyOptionText?: string;
 }
 
@@ -80,6 +79,8 @@ export class ListBox extends BaseObject {
     private _dsDebounce: Debounce;
     private _txtDebounce: Debounce;
     private _stDebounce: Debounce;
+    private _changeDebounce: Debounce;
+    private _fn_checkChanges: () => void;
    
     constructor(options: IListBoxConstructorOptions) {
         super();
@@ -110,6 +111,7 @@ export class ListBox extends BaseObject {
         this._dsDebounce = new Debounce();
         this._stDebounce = new Debounce();
         this._txtDebounce = new Debounce();
+        this._changeDebounce = new Debounce();
         this._keyMap = {};
         this._valMap = {};
         this._savedVal = checks.undefined;
@@ -131,6 +133,8 @@ export class ListBox extends BaseObject {
         this._dsDebounce.destroy();
         this._stDebounce.destroy();
         this._txtDebounce.destroy();
+        this._changeDebounce.destroy();
+        this._fn_checkChanges = null;
         this._unbindDS();
         dom.events.offNS(this._el, this._objId);
         this._clear();
@@ -184,7 +188,7 @@ export class ListBox extends BaseObject {
         }
 
         if (!!this._options.textPath) {
-            let t = sys.resolvePath(item, this._options.textPath);
+            const t = sys.resolvePath(item, this._options.textPath);
             res = fn_Str(t);
         }
         else {
@@ -194,52 +198,58 @@ export class ListBox extends BaseObject {
         return (!this._textProvider)? res: this._textProvider.getText(item, index, res);
     }
     protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>) {
-        const self = this, checkChanges = this.getCheckChanges();
-        switch (args.changeType) {
-            case COLL_CHANGE_TYPE.Reset:
-                {
-                    this._refresh();
-                }
-                break;
-            case COLL_CHANGE_TYPE.Add:
-                {
-                    args.items.forEach(function (item) {
-                        self._addOption(item, item._aspect.isNew);
-                    });
-                }
-                break;
-            case COLL_CHANGE_TYPE.Remove:
-                {
-                    args.items.forEach(function (item) {
-                        self._removeOption(item);
-                    });
-                    if (!!self._textProvider)
-                        self._resetText();
-                }
-                break;
-            case COLL_CHANGE_TYPE.Remap:
-                {
-                    const data = self._keyMap[args.old_key];
-                    if (!!data) {
-                        delete self._keyMap[args.old_key];
-                        self._keyMap[args.new_key] = data;
-                        data.op.value = args.new_key;
+        const self = this;
+        this.setChanges();
+        try {
+            switch (args.changeType) {
+                case COLL_CHANGE_TYPE.Reset:
+                    {
+                        this._refresh();
                     }
-                }
-                break;
+                    break;
+                case COLL_CHANGE_TYPE.Add:
+                    {
+                        args.items.forEach(function (item) {
+                            self._addOption(item, item._aspect.isNew);
+                        });
+                    }
+                    break;
+                case COLL_CHANGE_TYPE.Remove:
+                    {
+                        args.items.forEach(function (item) {
+                            self._removeOption(item);
+                        });
+                        if (!!self._textProvider)
+                            self._resetText();
+                    }
+                    break;
+                case COLL_CHANGE_TYPE.Remap:
+                    {
+                        const data = self._keyMap[args.old_key];
+                        if (!!data) {
+                            delete self._keyMap[args.old_key];
+                            self._keyMap[args.new_key] = data;
+                            data.op.value = args.new_key;
+                        }
+                    }
+                    break;
+            }
         }
-        checkChanges();
+        finally {
+            this.checkChanges();
+        }
     }
     protected _onEdit(item: ICollectionItem, isBegin: boolean, isCanceled: boolean) {
         const self = this;
         if (isBegin) {
+            this.setChanges();
             this._savedVal = this._getValue(item);
         }
         else {
-            if (!isCanceled) {
-                const oldVal = this._savedVal, checkChanges = this.getCheckChanges();
-                this._savedVal = checks.undefined;
-                try {
+            try {
+                if (!isCanceled) {
+                    const oldVal = this._savedVal;
+                    this._savedVal = checks.undefined;
                     const key = item._key, data = self._keyMap[key];
                     if (!!data) {
                         data.op.text = self._getText(item, data.op.index);
@@ -259,14 +269,15 @@ export class ListBox extends BaseObject {
                         }
                     }
                 }
-                finally {
-                    checkChanges();
-                }
+            }
+            finally {
+                this.checkChanges();
             }
         }
     }
     protected _onStatusChanged(item: ICollectionItem, oldStatus: ITEM_STATUS) {
-        const self = this, checkChanges = this.getCheckChanges(), newStatus = item._aspect.status;
+        const self = this, newStatus = item._aspect.status;
+        this.setChanges();
         if (newStatus === ITEM_STATUS.Deleted) {
             this._removeOption(item);
             if (!!this._textProvider) {
@@ -274,11 +285,13 @@ export class ListBox extends BaseObject {
                 this._resetText();
             }
         }
-        checkChanges();
+        this.checkChanges();
     }
     protected _onCommitChanges(item: ICollectionItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS) {
         const self = this;
         if (isBegin) {
+            this.setChanges();
+
             if (isRejected && status === ITEM_STATUS.Added) {
                 return;
             }
@@ -289,31 +302,34 @@ export class ListBox extends BaseObject {
             this._savedVal = this._getValue(item);
         }
         else {
-            const oldVal = this._savedVal, checkChanges = this.getCheckChanges();
+            const oldVal = this._savedVal;
             this._savedVal = checks.undefined;
             //delete is rejected
             if (isRejected && status === ITEM_STATUS.Deleted) {
                 this._addOption(item, true);
-                checkChanges();
+                this.checkChanges();
                 return;
             }
 
-            const val = this._getValue(item), data = self._keyMap[item._key];
-            if (oldVal !== val) {
-                if (!checks.isNt(oldVal)) {
-                    delete self._valMap[fn_Str(oldVal)];
+            try {
+                const val = this._getValue(item), data = self._keyMap[item._key];
+                if (oldVal !== val) {
+                    if (!checks.isNt(oldVal)) {
+                        delete self._valMap[fn_Str(oldVal)];
+                    }
+
+                    if (!!data && !checks.isNt(val)) {
+                        self._valMap[fn_Str(val)] = data;
+                    }
                 }
 
-                if (!!data && !checks.isNt(val)) {
-                    self._valMap[fn_Str(val)] = data;
+                if (!!data) {
+                    data.op.text = self._getText(item, data.op.index);
                 }
             }
-
-            if (!!data) {
-                data.op.text = self._getText(item, data.op.index);
+            finally {
+                this.checkChanges();
             }
-
-            checkChanges();
         }
     }
     private _bindDS() {
@@ -444,22 +460,28 @@ export class ListBox extends BaseObject {
     }
     private _refresh(): void {
         const self = this, ds = this.dataSource;
+        this.setChanges();
         this._isRefreshing = true;
         try {
             this._clear();
-            if (!this._options.isNoEmptyOption) {
-                this._addOption(null, false);
-            }
+            this._addOption(null, false);
             if (!!ds) {
                 ds.forEach(function (item) {
                     self._addOption(item, false);
                 });
             }
-            self.updateSelected(this._selectedValue);
+            if (!checks.isNt(this._selectedValue) && !this.getByValue(this._selectedValue)) {
+                this.selectedValue = null;
+            }
+            else {
+                self.updateSelected(this._selectedValue);
+            }
 
         } finally {
             self._isRefreshing = false;
+            this.checkChanges();
         }
+
         this.raiseEvent(LISTBOX_EVENTS.refreshed, {});
     }
     protected getItemIndex(item: ICollectionItem) {
@@ -495,9 +517,14 @@ export class ListBox extends BaseObject {
             this._isRefreshing = oldRefreshing;
         }
     }
-    protected getCheckChanges(): () => void {
+    protected setChanges(): void {
+        //if already set then return
+        if (!!this._fn_checkChanges)
+            return;
         const self = this, prevVal = fn_Str(self.selectedValue), prevItem = self.selectedItem;
-        return function () {
+        this._fn_checkChanges = function () {
+            //reset function
+            self._fn_checkChanges = null;
             const newVal = fn_Str(self.selectedValue), newItem = self.selectedItem;
             if (prevVal !== newVal) {
                 self.raisePropertyChanged(PROP_NAME.selectedValue);
@@ -507,6 +534,14 @@ export class ListBox extends BaseObject {
             }
         };
     }
+    protected checkChanges(): void {
+        this._changeDebounce.enque(() => {
+            const fn = this._fn_checkChanges;
+            this._fn_checkChanges = null;
+            if (!!fn)
+                fn();
+        });
+    }
     protected _setIsEnabled(el: HTMLSelectElement, v: boolean) {
         el.disabled = !v;
     }
@@ -514,25 +549,27 @@ export class ListBox extends BaseObject {
         return !el.disabled;
     }
     protected _setDataSource(v: ICollection<ICollectionItem>) {
-        const checkChanges = this.getCheckChanges();
+        this.setChanges();
         this._unbindDS();
         this._options.dataSource = v;
-        this._dsDebounce.enqueue(() => {
-            const ds = this._options.dataSource;
-            this._txtDebounce.cancel();
-            this._stDebounce.cancel();
+        this._dsDebounce.enque(() => {
+            try {
+                const ds = this._options.dataSource;
+                this._txtDebounce.cancel();
+                this._stDebounce.cancel();
 
-            if (!!ds && !ds.getIsDestroyCalled()) {
-                this._bindDS();
-                this._refresh();
-            }
-            else {
-                this._clear();
-                if (!this._options.isNoEmptyOption) {
+                if (!!ds && !ds.getIsDestroyCalled()) {
+                    this._bindDS();
+                    this._refresh();
+                }
+                else {
+                    this._clear();
                     this._addOption(null, false);
                 }
             }
-            checkChanges();
+            finally {
+                this.checkChanges();
+            }
         });
     }
     protected get selectedIndex(): number {
@@ -571,24 +608,31 @@ export class ListBox extends BaseObject {
     }
     set selectedValue(v) {
         if (this._selectedValue !== v) {
-            const checkChanges = this.getCheckChanges();
+            const oldItem = this.selectedItem;
             this._selectedValue = v;
             this.updateSelected(v);
-            checkChanges();
+            this._fn_checkChanges = null;
+            this.raisePropertyChanged(PROP_NAME.selectedValue);
+            if (oldItem !== this.selectedItem) {
+                this.raisePropertyChanged(PROP_NAME.selectedItem);
+            }
         }
     }
     get selectedItem() {
         const item: IMappedItem = this.getByValue(this._selectedValue);
-        return (!item ? checks.undefined : item.item);
+        return (!item ? null : item.item);
     }
     set selectedItem(v: ICollectionItem) {
-        const newVal = this._getValue(v);
+        const newVal = this._getValue(v), oldItem = this.selectedItem;
         if (this._selectedValue !== newVal) {
-            const checkChanges = this.getCheckChanges();
             this._selectedValue = newVal;
             const item = this.getByValue(newVal);
             this.selectedIndex = (!item ? 0 : item.op.index);
-            checkChanges();
+            this._fn_checkChanges = null;
+            this.raisePropertyChanged(PROP_NAME.selectedValue);
+            if (oldItem !== this.selectedItem) {
+                this.raisePropertyChanged(PROP_NAME.selectedItem);
+            }
         }
     }
     get valuePath() { return this._options.valuePath; }
@@ -619,7 +663,7 @@ export class ListBox extends BaseObject {
     set textProvider(v: IOptionTextProvider) {
         if (v !== this._textProvider) {
             this._textProvider = v;
-            this._txtDebounce.enqueue(() => {
+            this._txtDebounce.enque(() => {
                 this._resetText();
             });
             this.raisePropertyChanged(PROP_NAME.textProvider);
@@ -629,7 +673,7 @@ export class ListBox extends BaseObject {
     set stateProvider(v: IOptionStateProvider) {
         if (v !== this._stateProvider) {
             this._stateProvider = v;
-            this._stDebounce.enqueue(() => {
+            this._stDebounce.enque(() => {
                 this._resetState();
             });
             this.raisePropertyChanged(PROP_NAME.stateProvider);

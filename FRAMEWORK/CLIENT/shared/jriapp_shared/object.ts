@@ -41,8 +41,9 @@ export class BaseObject implements IBaseObject {
         if (this._obj_state === void 0) {
             throw new Error("Using uninitialized object");
         }
-        if (this._obj_state !== ObjState.None)
+        if (this._obj_state !== ObjState.None) {
             throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "this._obj_state !== ObjState.None"));
+        }
         if (debug.isDebugging()) {
             if (!!name && this._getEventNames().indexOf(name) < 0) {
                 debug.checkStartDebugger();

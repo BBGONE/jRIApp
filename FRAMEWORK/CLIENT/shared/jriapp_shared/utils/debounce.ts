@@ -1,19 +1,19 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IDisposable } from "../int";
+import { IDisposable, TFunc } from "../int";
 import { ITaskQueue } from "./ideferred";
 import { getTaskQueue } from "./deferred";
 
 export class Debounce implements IDisposable {
     private _timer: number;
     private _interval: number;
-    private _fn: () => any;
+    private _fn: TFunc;
 
     constructor(interval: number = 0) {
         this._timer = null;
         this._interval = !interval ? 0 : interval;
         this._fn = null;
     }
-    enqueue(fn: () => any) {
+    enque(fn: TFunc) {
         //important, no error (just return with no action)!!!
         if (this.IsDestroyed)
             return;

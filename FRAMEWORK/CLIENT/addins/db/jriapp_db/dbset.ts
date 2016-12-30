@@ -339,14 +339,14 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         return this.createEntity(null, null);
     }
     protected _clearChangeCache() {
-        let old = this._changeCount;
+        const old = this._changeCount;
         this._changeCache = {};
         this._changeCount = 0;
         if (old !== this._changeCount)
             this.raisePropertyChanged(PROP_NAME.isHasChanges);
     }
     protected _onPageChanging() {
-        let res = super._onPageChanging();
+        const res = super._onPageChanging();
         if (!res) {
             return res;
         }
@@ -356,13 +356,13 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         return res;
     }
     protected _onPageChanged() {
-        let self = this;
+        const self = this;
         this.cancelEdit();
         super._onPageChanged();
         if (this._ignorePageChanged)
             return;
         self.query.pageIndex = self.pageIndex;
-        self._pageDebounce.enqueue(() => {
+        self._pageDebounce.enque(() => {
             self.dbContext._getInternal().load(self.query, COLL_CHANGE_REASON.PageChange);
         });
     }
@@ -372,14 +372,14 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
             this._query.pageSize = this.pageSize;
     }
     protected _defineCalculatedField(fullName: string, getFunc: (item: TItem) => any) {
-        let calcDef: ICalcFieldImpl<TItem> = coreUtils.getValue(this._calcfldMap, fullName);
+        const calcDef: ICalcFieldImpl<TItem> = coreUtils.getValue(this._calcfldMap, fullName);
         if (!calcDef) {
             throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "calculated fieldName", fullName));
         }
         calcDef.getFunc = getFunc;
     }
     protected _getStrValue(val: any, fieldInfo: IFieldInfo) {
-        let dcnv = fieldInfo.dateConversion, stz = this.dbContext.serverTimezone;
+        const dcnv = fieldInfo.dateConversion, stz = this.dbContext.serverTimezone;
         return valUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
     }
     protected _getCalcFieldVal(fieldName: string, item: TItem): any {

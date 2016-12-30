@@ -409,7 +409,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         this.totalCount = 0;
     }
     refresh(): void {
-        this._refreshDebounce.enqueue(() => {
+        this._refreshDebounce.enque(() => {
             this._refresh(COLL_CHANGE_REASON.None);
         });
     }

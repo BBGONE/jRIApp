@@ -336,6 +336,11 @@ export class Binding extends BaseObject implements IBinding {
     private _parseSrc(obj: any, path: string[], lvl: number) {
         const self = this;
         self._srcEnd = null;
+
+        if (sys.isBaseObj(obj) && (<IBaseObject>obj).getIsDestroyCalled()) {
+            return;
+        }
+
         if (path.length === 0) {
             self._srcEnd = obj;
         }
@@ -356,6 +361,8 @@ export class Binding extends BaseObject implements IBinding {
         const self = this, isBaseObj = sys.isBaseObj(obj);
 
         if (isBaseObj) {
+            if ((<IBaseObject>obj).getIsDestroyCalled())
+                return;
             (<IBaseObject>obj).addOnDestroyed(self._onSrcDestroyed, self._objId, self);
             self._setPathItem(obj, BindTo.Source, lvl, path);
         }
@@ -407,6 +414,10 @@ export class Binding extends BaseObject implements IBinding {
     private _parseTgt(obj: any, path: string[], lvl: number) {
         const self = this;
         self._tgtEnd = null;
+        if (sys.isBaseObj(obj) && (<IBaseObject>obj).getIsDestroyCalled()) {
+            return;
+        }
+
         if (path.length === 0) {
             self._tgtEnd = obj;
         }
@@ -428,6 +439,9 @@ export class Binding extends BaseObject implements IBinding {
         const self = this, isBaseObj = sys.isBaseObj(obj);
 
         if (isBaseObj) {
+            if ((<IBaseObject>obj).getIsDestroyCalled())
+                return;
+
             (<IBaseObject>obj).addOnDestroyed(self._onTgtDestroyed, self._objId, self);
             self._setPathItem(obj, BindTo.Target, lvl, path);
         }
@@ -473,18 +487,10 @@ export class Binding extends BaseObject implements IBinding {
     }
     private _setPathItem(newObj: IBaseObject, bindingTo: BindTo, lvl: number, path: string[]) {
         const len = lvl + path.length;
-        let key: string;
         for (let i = lvl; i < len; i += 1) {
-            switch (bindingTo) {
-                case BindTo.Source:
-                    key = "s" + i;
-                    break;
-                case BindTo.Target:
-                    key = "t" + i;
-                    break;
-                default:
-                    throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "bindingTo", bindingTo));
-            }
+            let key = (bindingTo === BindTo.Source) ? ("s" + i) : ((bindingTo === BindTo.Target) ? ("t" + i) : null);
+            if (!key)
+                throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "bindingTo", bindingTo));
 
             const oldObj = this._pathItems[key];
             if (!!oldObj) {
@@ -507,15 +513,30 @@ export class Binding extends BaseObject implements IBinding {
         }
     }
     private _onTgtDestroyed(sender: any, args: any) {
-        if (this.getIsDestroyCalled())
-            return;
-        this._setTarget(null);
-        this._update();
-    }
-    private _onSrcDestroyed(sender: any, args: any) {
-        let self = this;
+        const self = this;
         if (self.getIsDestroyCalled())
             return;
+
+        if (sender === self.target) {
+            this._setTarget(null);
+            this._update();
+        }
+        else {
+            self._setPathItem(null, BindTo.Target, 0, self._tgtPath);
+            utils.queue.enque(function () {
+                if (self.getIsDestroyCalled())
+                    return;
+                //rebind after the target is destroyed
+                self._parseTgt(self.target, self._tgtPath, 0);
+                self._update();
+            });
+        }
+    }
+    private _onSrcDestroyed(sender: any, args: any) {
+        const self = this;
+        if (self.getIsDestroyCalled())
+            return;
+
         if (sender === self.source)
         {
             self._setSource(null);
@@ -523,13 +544,13 @@ export class Binding extends BaseObject implements IBinding {
         }
         else {
             self._setPathItem(null, BindTo.Source, 0, self._srcPath);
-            setTimeout(function () {
+            utils.queue.enque(function () {
                 if (self.getIsDestroyCalled())
                     return;
                 //rebind after the source is destroyed
                 self._parseSrc(self.source, self._srcPath, 0);
                 self._update();
-            }, 0);
+            });
         }
     }
     private _updateTarget(sender?: any, args?: any) {
@@ -556,8 +577,9 @@ export class Binding extends BaseObject implements IBinding {
         }
         catch (ex) {
             if (!sys.isValidationError(ex) || !viewChecks.isElView(this._tgtEnd)) {
-                //BaseElView is notified about errors in _onSrcErrorsChanged event handler
-                //we only need to invoke _onError in other cases
+                //BaseElView is notified about errors in _onSrcErrChanged event handler
+                //err_notif.addOnErrorsChanged(self._onSrcErrChanged, self._objId, self);
+                //we only need to rethrow in other cases:
                 //1) when target is not BaseElView
                 //2) when error is not ValidationError
                 utils.err.reThrow(ex, this.handleError(ex, this));
@@ -620,7 +642,7 @@ export class Binding extends BaseObject implements IBinding {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        let self = this;
+        const self = this;
         coreUtils.iterateIndexer(this._pathItems, function (key, old) {
             self._cleanUp(old);
         });

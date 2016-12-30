@@ -2381,6 +2381,9 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
         Binding.prototype._parseSrc = function (obj, path, lvl) {
             var self = this;
             self._srcEnd = null;
+            if (sys.isBaseObj(obj) && obj.getIsDestroyCalled()) {
+                return;
+            }
             if (path.length === 0) {
                 self._srcEnd = obj;
             }
@@ -2399,6 +2402,8 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
         Binding.prototype._parseSrc2 = function (obj, path, lvl) {
             var self = this, isBaseObj = sys.isBaseObj(obj);
             if (isBaseObj) {
+                if (obj.getIsDestroyCalled())
+                    return;
                 obj.addOnDestroyed(self._onSrcDestroyed, self._objId, self);
                 self._setPathItem(obj, 0, lvl, path);
             }
@@ -2445,6 +2450,9 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
         Binding.prototype._parseTgt = function (obj, path, lvl) {
             var self = this;
             self._tgtEnd = null;
+            if (sys.isBaseObj(obj) && obj.getIsDestroyCalled()) {
+                return;
+            }
             if (path.length === 0) {
                 self._tgtEnd = obj;
             }
@@ -2463,6 +2471,8 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
         Binding.prototype._parseTgt2 = function (obj, path, lvl) {
             var self = this, isBaseObj = sys.isBaseObj(obj);
             if (isBaseObj) {
+                if (obj.getIsDestroyCalled())
+                    return;
                 obj.addOnDestroyed(self._onTgtDestroyed, self._objId, self);
                 self._setPathItem(obj, 1, lvl, path);
             }
@@ -2504,18 +2514,10 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
         };
         Binding.prototype._setPathItem = function (newObj, bindingTo, lvl, path) {
             var len = lvl + path.length;
-            var key;
             for (var i = lvl; i < len; i += 1) {
-                switch (bindingTo) {
-                    case 0:
-                        key = "s" + i;
-                        break;
-                    case 1:
-                        key = "t" + i;
-                        break;
-                    default:
-                        throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "bindingTo", bindingTo));
-                }
+                var key = (bindingTo === 0) ? ("s" + i) : ((bindingTo === 1) ? ("t" + i) : null);
+                if (!key)
+                    throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "bindingTo", bindingTo));
                 var oldObj = this._pathItems[key];
                 if (!!oldObj) {
                     this._cleanUp(oldObj);
@@ -2536,10 +2538,22 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
             }
         };
         Binding.prototype._onTgtDestroyed = function (sender, args) {
-            if (this.getIsDestroyCalled())
+            var self = this;
+            if (self.getIsDestroyCalled())
                 return;
-            this._setTarget(null);
-            this._update();
+            if (sender === self.target) {
+                this._setTarget(null);
+                this._update();
+            }
+            else {
+                self._setPathItem(null, 1, 0, self._tgtPath);
+                utils.queue.enque(function () {
+                    if (self.getIsDestroyCalled())
+                        return;
+                    self._parseTgt(self.target, self._tgtPath, 0);
+                    self._update();
+                });
+            }
         };
         Binding.prototype._onSrcDestroyed = function (sender, args) {
             var self = this;
@@ -2551,12 +2565,12 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
             }
             else {
                 self._setPathItem(null, 0, 0, self._srcPath);
-                setTimeout(function () {
+                utils.queue.enque(function () {
                     if (self.getIsDestroyCalled())
                         return;
                     self._parseSrc(self.source, self._srcPath, 0);
                     self._update();
-                }, 0);
+                });
             }
         };
         Binding.prototype._updateTarget = function (sender, args) {
@@ -4012,6 +4026,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.1.34";
+    exports.VERSION = "1.2.0";
     bootstrap_8.Bootstrap._initFramework();
 });

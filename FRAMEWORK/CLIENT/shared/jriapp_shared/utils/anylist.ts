@@ -109,7 +109,7 @@ export class AnyList extends BaseList<AnyValListItem, IAnyVal> {
     }
 
     protected onChanged() {
-        this._debounce.enqueue(() => {
+        this._debounce.enque(() => {
             if (!!this._onChanged) {
                 const arr = this.items.map((item) => {
                     return item._aspect.vals["val"];

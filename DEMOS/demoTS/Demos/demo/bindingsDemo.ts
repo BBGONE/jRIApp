@@ -39,6 +39,7 @@ export class TestObject extends RIAPP.BaseObject {
     private _month: number;
     private _months: DEMODB.KeyValDictionary;
     private _format: string;
+    private _formatItem: DEMODB.StrKeyValListItem;
     private _formats: DEMODB.StrKeyValDictionary;
     private _boolProperty: boolean;
 
@@ -60,17 +61,25 @@ export class TestObject extends RIAPP.BaseObject {
 
         this._month = new Date().getMonth() + 1;
         this._months = new DEMODB.KeyValDictionary();
-        this._months.fillItems([{ key: 1, val: 'January' }, { key: 2, val: 'February' }, { key: 3, val: 'March' },
-            { key: 4, val: 'April' }, { key: 5, val: 'May' }, { key: 6, val: 'June' },
-            { key: 7, val: 'July' }, { key: 8, val: 'August' }, { key: 9, val: 'September' }, { key: 10, val: 'October' },
-            { key: 11, val: 'November' }, { key: 12, val: 'December' }], true);
+        this._fillMonths();
 
         this._format = 'PDF';
+        this._formatItem = null;
         this._formats = new DEMODB.StrKeyValDictionary();
+        this._fillFormats()
+    }
+    private _fillMonths() {
+        this._months.fillItems([{ key: 1, val: 'January' }, { key: 2, val: 'February' }, { key: 3, val: 'March' },
+        { key: 4, val: 'April' }, { key: 5, val: 'May' }, { key: 6, val: 'June' },
+        { key: 7, val: 'July' }, { key: 8, val: 'August' }, { key: 9, val: 'September' }, { key: 10, val: 'October' },
+        { key: 11, val: 'November' }, { key: 12, val: 'December' }], true);
+    }
+    private _fillFormats() {
         this._formats.fillItems([{ key: 'PDF', val: 'Acrobat Reader PDF' }, { key: 'WORD', val: 'MS Word DOC' }, { key: 'EXCEL', val: 'MS Excel XLS' }], true);
     }
     _onTestCommandExecuted() {
-        alert(utils.str.format("testProperty1:{0}, format:{1}, month: {2}, boolProperty: {3}", this.testProperty1, this.format, this.month, this.boolProperty));
+        let format: string = (!this.formatItem ? "<EMPTY>" : this.formatItem.val);
+        alert(utils.str.format("testProperty1:{0}, format: {1}, month: {2}, boolProperty: {3}", this.testProperty1, format, this.month, this.boolProperty));
     }
     get testProperty1(): string { return this._testProperty1; }
     set testProperty1(v: string) {
@@ -110,10 +119,17 @@ export class TestObject extends RIAPP.BaseObject {
             "P.S. <b>command is active when the testProperty1 length > 3</b>";
     }
     get format(): string { return this._format; }
-    set format(v: string) {
+    set format(v) {
         if (this._format !== v) {
             this._format = v;
             this.raisePropertyChanged('format');
+        }
+    }
+    get formatItem(): DEMODB.StrKeyValListItem { return this._formatItem; }
+    set formatItem(v) {
+        if (this._formatItem !== v) {
+            this._formatItem = v;
+            this.raisePropertyChanged('formatItem');
         }
     }
     get isEnabled(): boolean {

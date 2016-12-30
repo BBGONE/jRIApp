@@ -829,7 +829,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             if (this._ignorePageChanged)
                 return;
             self.query.pageIndex = self.pageIndex;
-            self._pageDebounce.enqueue(function () {
+            self._pageDebounce.enque(function () {
                 self.dbContext._getInternal().load(self.query, 1);
             });
         };
@@ -1800,7 +1800,7 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
                     }
                     self._changed[key] = res;
                 });
-                this._debounce.enqueue(this._notifyBound);
+                this._debounce.enque(this._notifyBound);
             }
         };
         Association.prototype._notify = function () {
@@ -3950,7 +3950,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
         };
         DataView.prototype.refresh = function () {
             var _this = this;
-            this._refreshDebounce.enqueue(function () {
+            this._refreshDebounce.enque(function () {
                 _this._refresh(0);
             });
         };
@@ -4061,7 +4061,7 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
                     self.clear();
                     self._onViewRefreshed({});
                 }
-                self._parentDebounce.enqueue(function () {
+                self._parentDebounce.enque(function () {
                     self._refresh(0);
                 });
             };

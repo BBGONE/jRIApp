@@ -360,7 +360,6 @@ declare module "jriapp_ui/listbox" {
         valuePath: string;
         textPath: string;
         statePath?: string;
-        isNoEmptyOption?: boolean;
         emptyOptionText?: string;
     }
     export interface IListBoxConstructorOptions extends IListBoxOptions {
@@ -386,6 +385,8 @@ declare module "jriapp_ui/listbox" {
         private _dsDebounce;
         private _txtDebounce;
         private _stDebounce;
+        private _changeDebounce;
+        private _fn_checkChanges;
         constructor(options: IListBoxConstructorOptions);
         destroy(): void;
         protected _getEventNames(): string[];
@@ -411,7 +412,8 @@ declare module "jriapp_ui/listbox" {
         protected getByValue(val: any): IMappedItem;
         protected getByIndex(index: number): IMappedItem;
         protected updateSelected(v: any): void;
-        protected getCheckChanges(): () => void;
+        protected setChanges(): void;
+        protected checkChanges(): void;
         protected _setIsEnabled(el: HTMLSelectElement, v: boolean): void;
         protected _getIsEnabled(el: HTMLSelectElement): boolean;
         protected _setDataSource(v: ICollection<ICollectionItem>): void;

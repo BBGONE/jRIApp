@@ -65,7 +65,7 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
                 self._onViewRefreshed({});
             }
 
-            self._parentDebounce.enqueue(() => {
+            self._parentDebounce.enque(() => {
                 self._refresh(COLL_CHANGE_REASON.None);
             });
         };

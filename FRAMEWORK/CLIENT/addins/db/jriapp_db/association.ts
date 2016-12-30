@@ -332,7 +332,7 @@ export class Association extends BaseObject {
                 self._changed[key] = res;
             });
 
-            this._debounce.enqueue(this._notifyBound);
+            this._debounce.enque(this._notifyBound);
         }
     }
     private _notify() {

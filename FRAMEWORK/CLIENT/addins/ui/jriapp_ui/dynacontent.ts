@@ -148,7 +148,7 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
         if (old !== v) {
             this._prevTemplateID = old;
             this._templateID = v;
-            this._tDebounce.enqueue(() => {
+            this._tDebounce.enque(() => {
                 self._templateChanging(old, v);
             });
             this.raisePropertyChanged(PROP_NAME.templateID);
@@ -158,7 +158,7 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
     set dataContext(v) {
         if (this._dataContext !== v) {
             this._dataContext = v;
-            this._dsDebounce.enqueue(() => {
+            this._dsDebounce.enque(() => {
                 const ds = this._dataContext;
                 if (!!this._template) {
                     this._template.dataContext = ds;

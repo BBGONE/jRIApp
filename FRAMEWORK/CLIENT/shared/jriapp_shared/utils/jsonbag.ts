@@ -35,7 +35,7 @@ export class JsonBag extends BasePropBag implements IEditable {
         super.destroy();
     }
     protected onChanged() {
-        this._debounce.enqueue(() => {
+        this._debounce.enque(() => {
             if (!!this._jsonChanged) {
                 this._jsonChanged(this._json);
             }

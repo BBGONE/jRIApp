@@ -56,16 +56,24 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             });
             this._month = new Date().getMonth() + 1;
             this._months = new DEMODB.KeyValDictionary();
+            this._fillMonths();
+            this._format = 'PDF';
+            this._formatItem = null;
+            this._formats = new DEMODB.StrKeyValDictionary();
+            this._fillFormats();
+        }
+        TestObject.prototype._fillMonths = function () {
             this._months.fillItems([{ key: 1, val: 'January' }, { key: 2, val: 'February' }, { key: 3, val: 'March' },
                 { key: 4, val: 'April' }, { key: 5, val: 'May' }, { key: 6, val: 'June' },
                 { key: 7, val: 'July' }, { key: 8, val: 'August' }, { key: 9, val: 'September' }, { key: 10, val: 'October' },
                 { key: 11, val: 'November' }, { key: 12, val: 'December' }], true);
-            this._format = 'PDF';
-            this._formats = new DEMODB.StrKeyValDictionary();
+        };
+        TestObject.prototype._fillFormats = function () {
             this._formats.fillItems([{ key: 'PDF', val: 'Acrobat Reader PDF' }, { key: 'WORD', val: 'MS Word DOC' }, { key: 'EXCEL', val: 'MS Excel XLS' }], true);
-        }
+        };
         TestObject.prototype._onTestCommandExecuted = function () {
-            alert(utils.str.format("testProperty1:{0}, format:{1}, month: {2}, boolProperty: {3}", this.testProperty1, this.format, this.month, this.boolProperty));
+            var format = (!this.formatItem ? "<EMPTY>" : this.formatItem.val);
+            alert(utils.str.format("testProperty1:{0}, format: {1}, month: {2}, boolProperty: {3}", this.testProperty1, format, this.month, this.boolProperty));
         };
         Object.defineProperty(TestObject.prototype, "testProperty1", {
             get: function () { return this._testProperty1; },
@@ -132,6 +140,17 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
                 if (this._format !== v) {
                     this._format = v;
                     this.raisePropertyChanged('format');
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TestObject.prototype, "formatItem", {
+            get: function () { return this._formatItem; },
+            set: function (v) {
+                if (this._formatItem !== v) {
+                    this._formatItem = v;
+                    this.raisePropertyChanged('formatItem');
                 }
             },
             enumerable: true,

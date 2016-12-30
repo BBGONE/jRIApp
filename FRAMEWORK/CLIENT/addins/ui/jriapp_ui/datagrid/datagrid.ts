@@ -377,14 +377,14 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 break;
             case KEYS.pageDown:
                 event.preventDefault();
-                this._pageDebounce.enqueue(() => {
+                this._pageDebounce.enque(() => {
                     if (ds.pageIndex > 0)
                         ds.pageIndex = ds.pageIndex - 1;
                 });
                 break;
             case KEYS.pageUp:
                 event.preventDefault();
-                this._pageDebounce.enqueue(() => {
+                this._pageDebounce.enque(() => {
                     ds.pageIndex = ds.pageIndex + 1;
                 });
                 break;
@@ -941,7 +941,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     protected _setDataSource(v: ICollection<ICollectionItem>) {
         this._unbindDS();
         this._options.dataSource = v;
-        this._dsDebounce.enqueue(() => {
+        this._dsDebounce.enque(() => {
             const ds = this._options.dataSource;
             if (!!ds && !ds.getIsDestroyCalled()) {
                 this._bindDS();
@@ -1093,7 +1093,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._scrollTo(yPos, animate);
     }
     scrollToCurrent(pos?: ROW_POSITION, animate?: boolean) {
-        this._scrollDebounce.enqueue(() => {
+        this._scrollDebounce.enque(() => {
             this.scrollToRow({ row: this.currentRow, animate: animate, pos: pos });
         });
     }
@@ -1301,7 +1301,7 @@ export class DataGridElView extends BaseElView {
     set stateProvider(v: IRowStateProvider) {
         if (v !== this._stateProvider) {
             this._stateProvider = v;
-            this._stateDebounce.enqueue(() => {
+            this._stateDebounce.enque(() => {
                 if (!this._grid || this._grid.getIsDestroyCalled())
                     return;
                 this._grid.rows.forEach((row) => {

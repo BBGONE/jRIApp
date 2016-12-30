@@ -91,10 +91,10 @@ export class Pager extends BaseObject {
         this._dsDebounce = new Debounce();
         dom.events.on(this._el, "click", function (e) {
             e.preventDefault();
-            self._pageDebounce.enqueue(() => {
+            self._pageDebounce.enque(() => {
                 const a = <HTMLElement>this, page = parseInt(a.getAttribute("data-page"), 10);
                 self.currentPage = page;
-                self._dsDebounce.enqueue(() => {
+                self._dsDebounce.enque(() => {
                     if (!!self.dataSource) {
                         self.dataSource.pageIndex = page - 1;
                     }
