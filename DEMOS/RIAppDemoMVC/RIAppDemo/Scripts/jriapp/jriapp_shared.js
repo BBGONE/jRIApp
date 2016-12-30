@@ -3769,8 +3769,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                 return;
             var self = this;
             this._isDestroyCalled = true;
-            var coll = this._collection;
-            var item = this._item;
+            var coll = this._collection, item = this._item;
             if (!!item) {
                 this.cancelEdit();
                 if (this._isCached) {

@@ -976,6 +976,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                     self._itemsByKey[item._key] = item;
                     newItems.push(item);
                     items.push(item);
+                    item._aspect._setIsDetached(false);
                 }
                 else {
                     items.push(oldItem);
@@ -1011,6 +1012,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 self._itemsByKey[item._key] = item;
                 positions.push(index);
                 items.push(item);
+                item._aspect._setIsDetached(false);
             });
             if (items.length > 0) {
                 this._onCountChanged();
