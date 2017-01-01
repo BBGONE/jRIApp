@@ -702,7 +702,7 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
                     if (!group_1.promise) {
                         group_1.promise = self.loadTemplatesAsync(group_1.fn_loader, group_1.app);
                     }
-                    var deferred = defer.createSyncDeferred();
+                    var deferred = defer.createDeferred(true);
                     group_1.promise.then(function () {
                         group_1.promise = null;
                         group_1.names.forEach(function (name) {
@@ -1286,7 +1286,7 @@ define("jriapp/utils/path", ["require", "exports", "jriapp_shared", "jriapp/util
 });
 define("jriapp/utils/sloader", ["require", "exports", "jriapp_shared", "jriapp_shared/utils/async", "jriapp/utils/dom", "jriapp/utils/path"], function (require, exports, jriapp_shared_10, async_1, dom_2, path_1) {
     "use strict";
-    var _async = async_1.AsyncUtils, utils = jriapp_shared_10.Utils, dom = dom_2.DomUtils, arrHelper = utils.arr, resolvedPromise = _async.createSyncDeferred().resolve(), doc = dom.document, head = doc.head || doc.getElementsByTagName("head")[0];
+    var _async = async_1.AsyncUtils, utils = jriapp_shared_10.Utils, dom = dom_2.DomUtils, arrHelper = utils.arr, resolvedPromise = _async.resolve(void 0, true), doc = dom.document, head = doc.head || doc.getElementsByTagName("head")[0];
     var _stylesLoader = null;
     exports.frameworkCss = "jriapp.css";
     function createCssLoader() {
@@ -1300,7 +1300,7 @@ define("jriapp/utils/sloader", ["require", "exports", "jriapp_shared", "jriapp_s
             return resolvedPromise;
         if (promises.length === 1)
             return promises[0];
-        var cnt = promises.length, resolved = 0;
+        var resolved = 0, cnt = promises.length;
         for (var i = 0; i < cnt; i += 1) {
             if (promises[i].state() === 2) {
                 ++resolved;
@@ -1359,7 +1359,7 @@ define("jriapp/utils/sloader", ["require", "exports", "jriapp_shared", "jriapp_s
             if (!!cssPromise) {
                 return cssPromise;
             }
-            var deferred = _async.createSyncDeferred();
+            var deferred = _async.createDeferred(true);
             cssPromise = deferred.promise();
             if (this.isStyleSheetLoaded(url)) {
                 deferred.resolve(url);
@@ -1551,8 +1551,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
             this._processTemplates(doc);
         };
         Bootstrap.prototype._processTemplate = function (name, html, app) {
-            var self = this, deferred = _async.createSyncDeferred();
-            var res = strUtils.fastTrim(html);
+            var self = this, deferred = _async.createDeferred(true), res = strUtils.fastTrim(html);
             var loader = {
                 fn_loader: function () {
                     return deferred.promise();
@@ -1562,8 +1561,9 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
             deferred.resolve(res);
         };
         Bootstrap.prototype._getEventNames = function () {
-            var base_events = _super.prototype._getEventNames.call(this);
-            var events = Object.keys(GLOB_EVENTS).map(function (key, i, arr) { return GLOB_EVENTS[key]; });
+            var base_events = _super.prototype._getEventNames.call(this), events = Object.keys(GLOB_EVENTS).map(function (key, i, arr) {
+                return GLOB_EVENTS[key];
+            });
             return events.concat(base_events);
         };
         Bootstrap.prototype._addHandler = function (name, fn, nmspace, context, priority) {
@@ -2654,7 +2654,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                 return;
             this._isDestroyCalled = true;
             var self = this;
-            coreUtils.iterateIndexer(this._pathItems, function (key, old) {
+            coreUtils.forEachProp(this._pathItems, function (key, old) {
                 self._cleanUp(old);
             });
             this._pathItems = {};
@@ -3350,7 +3350,7 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
 });
 define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/utils/sloader"], function (require, exports, jriapp_shared_19, sloader_2) {
     "use strict";
-    var utils = jriapp_shared_19.Utils, coreUtils = utils.core, strUtils = utils.str, defer = utils.defer, arr = utils.arr, resolvedPromise = defer.createSyncDeferred().resolve(), CSSPrefix = "css!";
+    var utils = jriapp_shared_19.Utils, coreUtils = utils.core, strUtils = utils.str, defer = utils.defer, arr = utils.arr, resolvedPromise = defer.resolve(void 0, true), CSSPrefix = "css!";
     var _moduleLoader = null;
     function create() {
         if (!_moduleLoader)
@@ -3397,17 +3397,16 @@ define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/u
         }
         ModuleLoader.prototype.load = function (names) {
             var self = this;
-            var cssNames = names.filter(function (val) { return self.isCSS(val); });
-            var cssLoads = self.loadCSS(cssNames);
-            var modNames = names.filter(function (val) { return !self.isCSS(val); });
-            var forLoad = modNames.filter(function (val) { return !self._loads[val]; });
+            var cssNames = names.filter(function (val) { return self.isCSS(val); }), cssLoads = self.loadCSS(cssNames), modNames = names.filter(function (val) { return !self.isCSS(val); }), forLoad = modNames.filter(function (val) {
+                return !self._loads[val];
+            });
             if (forLoad.length > 0) {
                 forLoad.forEach(function (name) {
                     self._loads[name] = {
                         name: name,
                         err: null,
                         state: 1,
-                        defered: defer.createSyncDeferred()
+                        defered: defer.createDeferred(true)
                     };
                 });
                 require(forLoad, function () {
@@ -3425,23 +3424,24 @@ define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/u
                     });
                 });
             }
-            var loads = modNames.map(function (name) {
-                return self._loads[name];
-            });
-            loads = loads.concat(cssLoads);
+            var loads = arr.merge([modNames.map(function (name) {
+                    return self._loads[name];
+                }), cssLoads]);
             return whenAll(loads);
         };
         ModuleLoader.prototype.whenAllLoaded = function () {
             var loads = [];
-            coreUtils.iterateIndexer(this._loads, function (name, val) {
+            coreUtils.forEachProp(this._loads, function (name, val) {
                 loads.push(val);
             });
             return whenAll(loads);
         };
         ModuleLoader.prototype.loadCSS = function (names) {
-            var self = this;
-            var forLoad = names.filter(function (val) { return !self._cssLoads[val]; });
-            var urls = forLoad.map(function (val) { return self.getUrl(val); });
+            var self = this, forLoad = names.filter(function (val) {
+                return !self._cssLoads[val];
+            }), urls = forLoad.map(function (val) {
+                return self.getUrl(val);
+            });
             if (forLoad.length > 0) {
                 var cssLoader = sloader_2.createCssLoader();
                 forLoad.forEach(function (name) {
@@ -3449,7 +3449,7 @@ define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/u
                         name: name,
                         err: null,
                         state: 1,
-                        defered: defer.createSyncDeferred()
+                        defered: defer.createDeferred(true)
                     };
                 });
                 cssLoader.loadStyles(urls).then(function () {
@@ -3587,7 +3587,7 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/con
             }
         };
         DataBindingService.prototype._bindTemplateElements = function (templateEl) {
-            var self = this, defer = utils.defer.createSyncDeferred();
+            var self = this, defer = utils.defer.createDeferred(true);
             try {
                 var rootBindEl = self._toBindableElement(templateEl), bindElems = void 0, lftm_1 = new lifetime_1.LifeTimeScope();
                 if (!!rootBindEl && !!rootBindEl.dataForm) {
@@ -3619,8 +3619,8 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/con
             return defer.promise();
         };
         DataBindingService.prototype.bindTemplateElements = function (templateEl) {
-            var self = this;
-            var requiredModules = self._getRequiredModuleNames(templateEl), res;
+            var self = this, requiredModules = self._getRequiredModuleNames(templateEl);
+            var res;
             if (requiredModules.length > 0) {
                 res = self._mloader.load(requiredModules).then(function () {
                     return self._bindTemplateElements(templateEl);
@@ -3630,14 +3630,14 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/con
                 res = self._bindTemplateElements(templateEl);
             }
             res.catch(function (err) {
-                setTimeout(function () {
+                utils.queue.enque(function () {
                     self.handleError(err, self);
-                }, 0);
+                });
             });
             return res;
         };
         DataBindingService.prototype.bindElements = function (scope, defaultDataContext, isDataFormBind, isInsideTemplate) {
-            var self = this, defer = utils.defer.createSyncDeferred();
+            var self = this, defer = utils.defer.createDeferred(true);
             scope = scope || doc;
             try {
                 var bindElems = self._getBindableElements(scope), lftm_2 = new lifetime_1.LifeTimeScope();
@@ -3897,8 +3897,7 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/const", "jr
         };
         Application.prototype.registerTemplateById = function (name, templateId) {
             this.registerTemplateLoader(name, utils.core.memoize(function () {
-                var deferred = utils.defer.createSyncDeferred();
-                var el = dom.queryOne(doc, "#" + templateId);
+                var deferred = utils.defer.createDeferred(true), el = dom.queryOne(doc, "#" + templateId);
                 if (!el)
                     throw new Error(utils.str.format(ERRS.ERR_TEMPLATE_ID_INVALID, templateId));
                 var str = el.innerHTML;
@@ -3911,7 +3910,7 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/const", "jr
             if (!res) {
                 res = boot.templateLoader.getTemplateLoader(name);
                 if (!res)
-                    return function () { return utils.defer.createDeferred().reject(new Error(utils.str.format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name))); };
+                    return function () { return utils.defer.reject(new Error(utils.str.format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name))); };
             }
             return res;
         };
@@ -4026,6 +4025,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.2.0";
+    exports.VERSION = "1.2.1";
     bootstrap_8.Bootstrap._initFramework();
 });

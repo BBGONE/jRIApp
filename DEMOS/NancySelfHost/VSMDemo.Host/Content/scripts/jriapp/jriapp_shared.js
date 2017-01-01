@@ -556,37 +556,22 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
         CoreUtils.round = function (num, decimals) {
             return parseFloat(num.toFixed(decimals));
         };
-        CoreUtils.merge = function (source, target) {
-            if (!target) {
-                target = {};
-            }
-            if (!source)
-                return target;
-            var names = Object.getOwnPropertyNames(source), n;
-            for (var i = 0, len = names.length; i < len; i += 1) {
-                n = names[i];
-                target[n] = source[n];
-            }
-            return target;
-        };
         CoreUtils.clone = function (obj, target) {
-            var res, i, len;
+            var res;
             if (!obj) {
                 return obj;
             }
             if (checks.isArray(obj)) {
-                len = obj.length;
-                res = new Array(len);
-                for (i = 0; i < len; i += 1) {
-                    res[i] = CoreUtils.clone(obj[i], null);
+                res = [];
+                for (var i = 0, len = obj.length; i < len; i += 1) {
+                    res.push(CoreUtils.clone(obj[i], null));
                 }
             }
             else if (checks.isSimpleObject(obj)) {
                 res = target || {};
-                var p = void 0, keys = Object.getOwnPropertyNames(obj);
-                len = keys.length;
-                for (i = 0; i < len; i += 1) {
-                    p = keys[i];
+                var keys = Object.getOwnPropertyNames(obj);
+                for (var i = 0, len = keys.length; i < len; i += 1) {
+                    var p = keys[i];
                     res[p] = CoreUtils.clone(obj[p], null);
                 }
             }
@@ -595,16 +580,37 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
             }
             return res;
         };
-        CoreUtils.iterateIndexer = function (obj, fn) {
-            if (!obj)
-                return;
-            var names = Object.keys(obj);
-            for (var i = 0; i < names.length; i += 1) {
-                fn(names[i], obj[names[i]]);
+        CoreUtils.merge = function (source, target) {
+            if (!target) {
+                target = {};
             }
+            if (!source)
+                return target;
+            return CoreUtils.extend(target, source);
         };
-        CoreUtils.extend = function (defaults, current) {
-            return CoreUtils.merge(current, defaults);
+        CoreUtils.extend = function (target) {
+            var source = [];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                source[_i - 1] = arguments[_i];
+            }
+            if (checks.isNt(target)) {
+                throw new TypeError('extend: Cannot convert first argument to object');
+            }
+            var to = Object(target);
+            for (var i = 0; i < source.length; i++) {
+                var nextSource = source[i];
+                if (nextSource === undefined || nextSource === null) {
+                    continue;
+                }
+                var keys = Object.keys(Object(nextSource));
+                for (var nextIndex = 0, len = keys.length; nextIndex < len; nextIndex++) {
+                    var nextKey = keys[nextIndex], desc = Object.getOwnPropertyDescriptor(nextSource, nextKey);
+                    if (desc !== undefined && desc.enumerable) {
+                        to[nextKey] = nextSource[nextKey];
+                    }
+                }
+            }
+            return to;
         };
         CoreUtils.memoize = function (callback) {
             var value;
@@ -619,19 +625,19 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
         CoreUtils.forEachProp = function (obj, fn) {
             if (!obj)
                 return;
-            var names = Object.getOwnPropertyNames(obj);
-            names.forEach(fn);
+            var names = Object.keys(obj);
+            for (var i = 0, len = names.length; i < len; i += 1) {
+                fn(names[i], obj[names[i]]);
+            }
         };
         CoreUtils.assignStrings = function (target, source) {
             if (checks.isNt(target))
                 target = {};
             if (!checks.isSimpleObject(source))
                 return target;
-            var p, keys = Object.keys(source), len = keys.length, tval, sval;
-            for (var i = 0; i < len; i += 1) {
-                p = keys[i];
-                tval = target[p];
-                sval = source[p];
+            var keys = Object.keys(source);
+            for (var i = 0, len = keys.length; i < len; i += 1) {
+                var p = keys[i], tval = target[p], sval = source[p];
                 if (checks.isSimpleObject(sval)) {
                     target[p] = CoreUtils.assignStrings(tval, sval);
                 }
@@ -1905,24 +1911,27 @@ define("jriapp_shared/utils/logger", ["require", "exports"], function (require, 
 });
 define("jriapp_shared/utils/async", ["require", "exports", "jriapp_shared/utils/deferred", "jriapp_shared/utils/checks"], function (require, exports, deferred_2, checks_7) {
     "use strict";
-    var checks = checks_7.Checks;
+    var checks = checks_7.Checks, _whenAll = deferred_2.whenAll, _race = deferred_2.race, _getTaskQueue = deferred_2.getTaskQueue, _createDefer = deferred_2.createDefer;
     var AsyncUtils = (function () {
         function AsyncUtils() {
         }
-        AsyncUtils.createDeferred = function () {
-            return deferred_2.createDefer();
+        AsyncUtils.createDeferred = function (isSync) {
+            return _createDefer();
         };
-        AsyncUtils.createSyncDeferred = function () {
-            return deferred_2.createSyncDefer();
+        AsyncUtils.reject = function (reason, isSync) {
+            return deferred_2.Promise.reject(reason, isSync);
+        };
+        AsyncUtils.resolve = function (value, isSync) {
+            return deferred_2.Promise.resolve(value, isSync);
         };
         AsyncUtils.whenAll = function (args) {
-            return deferred_2.whenAll(args);
+            return _whenAll(args);
         };
         AsyncUtils.race = function (promises) {
-            return deferred_2.race(promises);
+            return _race(promises);
         };
         AsyncUtils.getTaskQueue = function () {
-            return deferred_2.getTaskQueue();
+            return _getTaskQueue();
         };
         AsyncUtils.delay = function (func, time) {
             var deferred = deferred_2.createDefer();
@@ -1938,12 +1947,7 @@ define("jriapp_shared/utils/async", ["require", "exports", "jriapp_shared/utils/
         };
         AsyncUtils.parseJSON = function (res) {
             return AsyncUtils.delay(function () {
-                var parsed = null;
-                if (checks.isString(res))
-                    parsed = JSON.parse(res);
-                else
-                    parsed = res;
-                return parsed;
+                return (checks.isString(res)) ? JSON.parse(res) : res;
             });
         };
         return AsyncUtils;
@@ -1989,7 +1993,7 @@ define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/s
             req.timeout = HttpUtils.ajaxTimeOut * 1000;
             var _headers = coreUtils.merge(HttpUtils.defaultHeaders);
             _headers = coreUtils.merge(headers, _headers);
-            coreUtils.iterateIndexer(_headers, function (name, val) {
+            coreUtils.forEachProp(_headers, function (name, val) {
                 req.setRequestHeader(name, val);
             });
             return req;
@@ -3658,9 +3662,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             return res.join("|");
         };
         ItemAspect.prototype.submitChanges = function () {
-            var deferred = utils.defer.createDeferred();
-            deferred.reject();
-            return deferred.promise();
+            return utils.defer.reject();
         };
         ItemAspect.prototype.rejectChanges = function () {
         };
@@ -3673,7 +3675,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                 return false;
             internal.onEditing(item, true, false);
             if (!!this._valueBag && this.isEditing) {
-                coreUtils.iterateIndexer(this._valueBag, function (name, obj) {
+                coreUtils.forEachProp(this._valueBag, function (name, obj) {
                     if (!!obj && sys.isEditable(obj.val))
                         obj.val.beginEdit();
                 });
@@ -3686,7 +3688,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             var coll = this.collection, internal = coll._getInternal(), item = this.item;
             internal.onBeforeEditing(item, false, false);
             if (!!this._valueBag) {
-                coreUtils.iterateIndexer(this._valueBag, function (name, obj) {
+                coreUtils.forEachProp(this._valueBag, function (name, obj) {
                     if (!!obj && sys.isEditable(obj.val))
                         obj.val.endEdit();
                 });
@@ -3703,7 +3705,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             var coll = this.collection, internal = coll._getInternal(), item = this.item, isNew = this.isNew;
             internal.onBeforeEditing(item, false, true);
             if (!!this._valueBag) {
-                coreUtils.iterateIndexer(this._valueBag, function (name, obj) {
+                coreUtils.forEachProp(this._valueBag, function (name, obj) {
                     if (!!obj && sys.isEditable(obj.val))
                         obj.val.cancelEdit();
                 });
