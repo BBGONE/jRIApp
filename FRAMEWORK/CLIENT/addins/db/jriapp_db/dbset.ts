@@ -620,41 +620,37 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         });
     }
     protected _setItemInvalid(row: IRowInfo): TItem {
-        let keyMap = this._itemsByKey, item: TItem = keyMap[row.clientKey];
-        let errors: IIndexer<string[]> = {};
+        const keyMap = this._itemsByKey, item = keyMap[row.clientKey],
+            errors: IIndexer<string[]> = {};
         row.invalid.forEach((err) => {
             if (!err.fieldName)
                 err.fieldName = "*";
             if (checks.isArray(errors[err.fieldName])) {
                 errors[err.fieldName].push(err.message);
             }
-            else
+            else {
                 errors[err.fieldName] = [err.message];
+            }
         });
-        let res: IValidationInfo[] = [];
-        coreUtils.iterateIndexer(errors, (fieldName, err) => {
+        const res: IValidationInfo[] = [];
+        coreUtils.forEachProp(errors, (fieldName, err) => {
             res.push({ fieldName: fieldName, errors: err });
         });
         this._addErrors(item, res);
         return item;
     }
     protected _getChanges(): IRowInfo[] {
-        let changes: IRowInfo[] = [];
-        let csh = this._changeCache;
-        coreUtils.forEachProp(csh, function (key) {
-            let item = csh[key];
+        const changes: IRowInfo[] = [], csh = this._changeCache;
+        coreUtils.forEachProp(csh, function (key, item) {
             changes.push(item._aspect._getRowInfo());
         });
         return changes;
     }
     protected _getTrackAssocInfo(): ITrackAssoc[] {
-        let self = this, res: ITrackAssoc[] = [];
-        let csh: { [key: string]: IEntityItem; } = this._changeCache, assocNames = Object.keys(self._trackAssoc);
-        coreUtils.forEachProp(csh, function (key) {
-            let item = csh[key];
-            assocNames.forEach(function (assocName) {
-                let assocInfo = self._trackAssoc[assocName],
-                    parentKey = item._aspect._getFieldVal(assocInfo.childToParentName),
+        const self = this, res: ITrackAssoc[] = [], csh = this._changeCache, trackAssoc = self._trackAssoc;
+        coreUtils.forEachProp(csh, function (key, item) {
+            coreUtils.forEachProp(trackAssoc, function (assocName, assocInfo) {
+                const parentKey = item._aspect._getFieldVal(assocInfo.childToParentName),
                     childKey = item._key;
                 if (!!parentKey && !!childKey) {
                     res.push({ assocName: assocName, parentKey: parentKey, childKey: childKey });
@@ -664,7 +660,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         return res;
     }
     protected _addToChanged(item: TItem): void {
-        if (item._key === null)
+        if (!item._key)
             return;
         if (!this._changeCache[item._key]) {
             this._changeCache[item._key] = item;
@@ -674,7 +670,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         }
     }
     protected _removeFromChanged(key: string): void {
-        if (key === null)
+        if (!key)
             return;
         if (!!this._changeCache[key]) {
             delete this._changeCache[key];

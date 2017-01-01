@@ -125,58 +125,64 @@ export class CoreUtils {
     static round(num: number, decimals: number): number {
         return parseFloat(num.toFixed(decimals));
     }
-    static merge<S, T>(source: S, target?: T): S | T {
-        if (!target) {
-            target = <any>{};
-        }
-        if (!source)
-            return target;
-        let names = Object.getOwnPropertyNames(source), n: string;
-        for (let i = 0, len = names.length; i < len; i += 1) {
-            n = names[i];
-            (<any>target)[n] = (<any>source)[n];
-        }
-        return target;
-    }
     static clone(obj: any, target?: any): any {
-        let res: any, i: number, len: number;
+        let res: any;
         if (!obj) {
             return obj;
         }
 
         if (checks.isArray(obj)) {
-            len = obj.length;
-            res = new Array(len);
-            for (i = 0; i < len; i += 1) {
-                res[i] = CoreUtils.clone(obj[i], null);
+            res = [];
+            for (let i = 0, len = obj.length; i < len; i += 1) {
+                res.push(CoreUtils.clone(obj[i], null));
             }
         }
         else if (checks.isSimpleObject(obj)) {
             //clone only simple objects
             res = target || {};
-            let p: string, keys = Object.getOwnPropertyNames(obj);
-            len = keys.length;
-            for (i = 0; i < len; i += 1) {
-                p = keys[i];
+            const keys = Object.getOwnPropertyNames(obj);
+            for (let i = 0, len = keys.length; i < len; i += 1) {
+                let p = keys[i];
                 res[p] = CoreUtils.clone(obj[p], null);
             }
         }
         else {
             return obj;
         }
+
         return res;
     }
-    static iterateIndexer<T>(obj: IIndexer<T>, fn: (name: string, val: T) => void) {
-        if (!obj)
-            return;
-        const names = Object.keys(obj);
-        for (let i = 0; i < names.length; i += 1) {
-            fn(names[i], obj[names[i]]);
+    static merge<S, T>(source: S, target?: T): S | T {
+        if (!target) {
+            target = <any>{};
         }
+        if (!source)
+            return target;
+        return CoreUtils.extend(target, source);
     }
-    static extend<T, U>(defaults: T, current: U): T | U {
-        return CoreUtils.merge(current, defaults);
+    static extend<T, U>(target: T, ...source: U[]): T | U {
+        if (checks.isNt(target)) {
+            throw new TypeError('extend: Cannot convert first argument to object');
+        }
+
+        var to = Object(target);
+        for (var i = 0; i < source.length; i++) {
+            let nextSource: IIndexer<any> = source[i];
+            if (nextSource === undefined || nextSource === null) {
+                continue;
+            }
+
+            let keys = Object.keys(Object(nextSource));
+            for (let nextIndex = 0, len = keys.length; nextIndex < len; nextIndex++) {
+                let nextKey = keys[nextIndex], desc = Object.getOwnPropertyDescriptor(nextSource, nextKey);
+                if (desc !== undefined && desc.enumerable) {
+                    to[nextKey] = nextSource[nextKey];
+                }
+            }
+        }
+        return to;
     }
+    //caches the result of function invocation
     static memoize<T>(callback: () => T): () => T {
         let value: T;
         return function () {
@@ -187,11 +193,13 @@ export class CoreUtils {
             return value;
         };
     }
-    static forEachProp(obj: any, fn: (name: string) => void) {
+    static forEachProp<T>(obj: IIndexer<T>, fn: (name: string, val?: T) => void) {
         if (!obj)
             return;
-        const names = Object.getOwnPropertyNames(obj);
-        names.forEach(fn);
+        const names = Object.keys(obj);
+        for (let i = 0, len = names.length; i < len; i += 1) {
+            fn(names[i], obj[names[i]]);
+        }
     }
     static assignStrings<T extends U, U extends IIndexer<any>>(target: T, source: U): T {
         if (checks.isNt(target))
@@ -199,12 +207,10 @@ export class CoreUtils {
         if (!checks.isSimpleObject(source))
             return target;
 
-        let p: string, keys = Object.keys(source), len = keys.length, tval: any, sval: any;
+        const keys = Object.keys(source);
 
-        for (let i = 0; i < len; i += 1) {
-            p = keys[i];
-            tval = target[p];
-            sval = source[p];
+        for (let i = 0, len = keys.length; i < len; i += 1) {
+            let p = keys[i], tval = target[p], sval = source[p];
             if (checks.isSimpleObject(sval)) {
                 target[p] = CoreUtils.assignStrings(tval, sval);
             }

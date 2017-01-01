@@ -3,28 +3,30 @@ import {
     IThenable, ITaskQueue, IStatefulDeferred, IStatefulPromise, PromiseState, IPromise
 } from "./ideferred";
 import {
-    createDefer, createSyncDefer, whenAll, race, getTaskQueue
+    createDefer, whenAll, race, getTaskQueue, Promise
 } from "./deferred";
 import { Checks } from "./checks";
 
-const checks = Checks;
+const checks = Checks, _whenAll = whenAll, _race = race, _getTaskQueue = getTaskQueue, _createDefer = createDefer;
 
 export class AsyncUtils {
-    static createDeferred<T>(): IStatefulDeferred<T> {
-        return createDefer<T>();
+    static createDeferred<T>(isSync?: boolean): IStatefulDeferred<T> {
+        return _createDefer<T>();
     }
-    //immediate resolve and reject without setTimeout
-    static createSyncDeferred<T>(): IStatefulDeferred<T> {
-        return createSyncDefer<T>();
+    static reject<T>(reason?: any, isSync?: boolean): IStatefulPromise<T> {
+        return Promise.reject(reason, isSync);
+    }
+    static resolve<T>(value?: T, isSync?: boolean): IStatefulPromise<T> {
+        return Promise.resolve(value, isSync);
     }
     static whenAll<T>(args: Array<T | IThenable<T>>): IStatefulPromise<T[]> {
-        return whenAll(args);
+        return _whenAll(args);
     }
     static race<T>(promises: Array<IPromise<T>>): IPromise<T> {
-        return race(promises);
+        return _race(promises);
     }
     static getTaskQueue(): ITaskQueue {
-        return getTaskQueue();
+        return _getTaskQueue();
     }
     static delay<T>(func: () => T, time?: number): IStatefulPromise<T> {
         const deferred = createDefer<T>();
@@ -41,13 +43,7 @@ export class AsyncUtils {
     }
     static parseJSON(res: string | any): IStatefulPromise<any> {
         return AsyncUtils.delay(() => {
-            let parsed: any = null;
-            if (checks.isString(res))
-                parsed = JSON.parse(res);
-            else
-                parsed = res;
-
-            return parsed;
+            return (checks.isString(res)) ? JSON.parse(res) : res;
         });
     }
 }

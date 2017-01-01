@@ -8,7 +8,7 @@ import { IStylesLoader } from "../int";
 import { PathHelper } from "./path";
 
 const _async = AsyncUtils, utils = Utils, dom = DomUtils, arrHelper = utils.arr,
-    resolvedPromise = _async.createSyncDeferred<void>().resolve(),
+    resolvedPromise = _async.resolve<void>(void 0, true),
     doc = dom.document, head = doc.head || doc.getElementsByTagName("head")[0];
 let _stylesLoader: IStylesLoader = null;
 export const frameworkCss = "jriapp.css";
@@ -24,7 +24,7 @@ function whenAll(promises: IStatefulPromise<any>[]): IStatefulPromise<any> {
         return resolvedPromise;
     if (promises.length === 1)
         return promises[0];
-    let cnt = promises.length, resolved = 0;
+    let resolved = 0, cnt = promises.length;
     for (let i = 0; i < cnt; i += 1) {
         if (promises[i].state() === PromiseState.Resolved) {
             ++resolved;
@@ -103,7 +103,7 @@ class StylesLoader implements IStylesLoader {
         if (!!cssPromise) {
             return cssPromise;
         }
-        const deferred = _async.createSyncDeferred<string>();
+        const deferred = _async.createDeferred<string>(true);
         cssPromise = deferred.promise();
 
         if (this.isStyleSheetLoaded(url)) {

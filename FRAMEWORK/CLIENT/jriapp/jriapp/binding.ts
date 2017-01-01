@@ -643,7 +643,7 @@ export class Binding extends BaseObject implements IBinding {
             return;
         this._isDestroyCalled = true;
         const self = this;
-        coreUtils.iterateIndexer(this._pathItems, function (key, old) {
+        coreUtils.forEachProp(this._pathItems, function (key, old) {
             self._cleanUp(old);
         });
         this._pathItems = {};

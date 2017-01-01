@@ -8,7 +8,7 @@ import {
 import { createCssLoader as createCSSLoader } from "./sloader";
 
 const utils = Utils, coreUtils = utils.core, strUtils = utils.str, defer = utils.defer,
-    arr = utils.arr, resolvedPromise = defer.createSyncDeferred<void>().resolve(),
+    arr = utils.arr, resolvedPromise = defer.resolve<void>(void 0, true),
     CSSPrefix = "css!";
 
 let _moduleLoader: IModuleLoader = null;
@@ -69,14 +69,13 @@ class ModuleLoader implements IModuleLoader {
     }
 
     load(names: string[]): IPromise<void> {
-        let self = this;
+        const self = this;
 
         //load CSS too if they are in the array
-        let cssNames = names.filter((val) => { return self.isCSS(val); });
-        let cssLoads = self.loadCSS(cssNames);
-
-        let modNames = names.filter((val) => { return !self.isCSS(val); });
-        let forLoad = modNames.filter((val) => { return !self._loads[val]; });
+        let cssNames = names.filter((val) => { return self.isCSS(val); }), cssLoads = self.loadCSS(cssNames),
+            modNames = names.filter((val) => { return !self.isCSS(val); }), forLoad = modNames.filter((val) => {
+                return !self._loads[val];
+            });
 
         if (forLoad.length > 0) {
             forLoad.forEach((name) => {
@@ -84,19 +83,19 @@ class ModuleLoader implements IModuleLoader {
                     name: name,
                     err: null,
                     state: LOAD_STATE.LOADING,
-                    defered: defer.createSyncDeferred<any>()
+                    defered: defer.createDeferred<any>(true)
                 };
             });
 
             require(forLoad, () => {
                 forLoad.forEach((name) => {
-                    let load = self._loads[name];
+                    const load = self._loads[name];
                     load.state = LOAD_STATE.LOADED;
                     load.defered.resolve();
                 });
             }, (err) => {
                 forLoad.forEach((name) => {
-                    let load = self._loads[name];
+                    const load = self._loads[name];
                     load.state = LOAD_STATE.LOADED;
                     load.err = err;
                     load.defered.reject(utils.str.format("Error loading modules: {0}", err));
@@ -104,36 +103,37 @@ class ModuleLoader implements IModuleLoader {
             });
         }
 
-        let loads = modNames.map((name) => {
+        const loads = arr.merge<IModuleLoad>([modNames.map((name) => {
             return self._loads[name];
-        });
+        }), cssLoads]);
 
-        loads = loads.concat(cssLoads);
         return whenAll(loads);
     }
     whenAllLoaded(): IPromise<void>
     {
         let loads: IModuleLoad[] = [];
-        coreUtils.iterateIndexer(this._loads, (name, val) => {
+        coreUtils.forEachProp(this._loads, (name, val) => {
             loads.push(val);
         });
         return whenAll(loads);
     }
 
     private loadCSS(names: string[]): IModuleLoad[] {
-        let self = this;
-        let forLoad = names.filter((val) => { return !self._cssLoads[val]; });
-        let urls = forLoad.map((val) => { return self.getUrl(val); });
+        const self = this, forLoad = names.filter((val) => {
+            return !self._cssLoads[val];
+        }), urls = forLoad.map((val) => {
+            return self.getUrl(val);
+        });
        
         if (forLoad.length > 0) {
-            let cssLoader = createCSSLoader();
+            const cssLoader = createCSSLoader();
 
             forLoad.forEach((name) => {
                 self._cssLoads[name] = {
                     name: name,
                     err: null,
                     state: LOAD_STATE.LOADING,
-                    defered: defer.createSyncDeferred<any>()
+                    defered: defer.createDeferred<any>(true)
                 };
             });
 
@@ -153,7 +153,7 @@ class ModuleLoader implements IModuleLoader {
             });
         }
 
-        let loads = names.map((name) => {
+        const loads = names.map((name) => {
             return self._cssLoads[name];
         });
         return loads;

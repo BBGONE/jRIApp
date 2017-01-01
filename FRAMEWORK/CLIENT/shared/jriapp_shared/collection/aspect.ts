@@ -272,7 +272,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         return this.collection.getFieldNames();
     }
     getErrorString(): string {
-        let itemErrors = this.collection._getInternal().getErrors(this.item);
+        const itemErrors = this.collection._getInternal().getErrors(this.item);
         if (!itemErrors)
             return "";
         let res: string[] = [];
@@ -282,9 +282,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         return res.join("|");
     }
     submitChanges(): IVoidPromise {
-        let deferred = utils.defer.createDeferred<void>();
-        deferred.reject();
-        return deferred.promise();
+        return utils.defer.reject<void>();
     }
     rejectChanges(): void {
     }
@@ -297,7 +295,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
             return false;
         internal.onEditing(item, true, false);
         if (!!this._valueBag && this.isEditing) {
-            coreUtils.iterateIndexer(this._valueBag, (name, obj) => {
+            coreUtils.forEachProp(this._valueBag, (name, obj) => {
                 if (!!obj && sys.isEditable(obj.val))
                     obj.val.beginEdit();
             });
@@ -310,7 +308,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         const coll = this.collection, internal = coll._getInternal(), item = this.item;
         internal.onBeforeEditing(item, false, false);
         if (!!this._valueBag) {
-            coreUtils.iterateIndexer(this._valueBag, (name, obj) => {
+            coreUtils.forEachProp(this._valueBag, (name, obj) => {
                 if (!!obj && sys.isEditable(obj.val))
                     obj.val.endEdit();
             });
@@ -328,7 +326,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         const coll = this.collection, internal = coll._getInternal(), item = this.item, isNew = this.isNew;
         internal.onBeforeEditing(item, false, true);
         if (!!this._valueBag) {
-            coreUtils.iterateIndexer(this._valueBag, (name, obj) => {
+            coreUtils.forEachProp(this._valueBag, (name, obj) => {
                 if (!!obj && sys.isEditable(obj.val))
                     obj.val.cancelEdit();
             });
