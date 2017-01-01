@@ -212,8 +212,8 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         this._processTemplates(doc);
     }
     private _processTemplate(name: string, html: string, app: IApplication): void {
-        const self = this, deferred = _async.createSyncDeferred<string>();
-        const res = strUtils.fastTrim(html);
+        const self = this, deferred = _async.createDeferred<string>(true),
+            res = strUtils.fastTrim(html);
 
         const loader = {
             fn_loader: function (): IPromise<string> {
@@ -226,8 +226,10 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         deferred.resolve(res);
     }
     protected _getEventNames(): string[] {
-        const base_events = super._getEventNames();
-        const events = Object.keys(GLOB_EVENTS).map((key, i, arr) => { return <string>(<any>GLOB_EVENTS)[key]; });
+        const base_events = super._getEventNames(),
+            events = Object.keys(GLOB_EVENTS).map((key, i, arr) => {
+                return <string>(<any>GLOB_EVENTS)[key];
+            });
         return events.concat(base_events);
     }
     //override

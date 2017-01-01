@@ -1055,40 +1055,36 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             });
         };
         DbSet.prototype._setItemInvalid = function (row) {
-            var keyMap = this._itemsByKey, item = keyMap[row.clientKey];
-            var errors = {};
+            var keyMap = this._itemsByKey, item = keyMap[row.clientKey], errors = {};
             row.invalid.forEach(function (err) {
                 if (!err.fieldName)
                     err.fieldName = "*";
                 if (checks.isArray(errors[err.fieldName])) {
                     errors[err.fieldName].push(err.message);
                 }
-                else
+                else {
                     errors[err.fieldName] = [err.message];
+                }
             });
             var res = [];
-            coreUtils.iterateIndexer(errors, function (fieldName, err) {
+            coreUtils.forEachProp(errors, function (fieldName, err) {
                 res.push({ fieldName: fieldName, errors: err });
             });
             this._addErrors(item, res);
             return item;
         };
         DbSet.prototype._getChanges = function () {
-            var changes = [];
-            var csh = this._changeCache;
-            coreUtils.forEachProp(csh, function (key) {
-                var item = csh[key];
+            var changes = [], csh = this._changeCache;
+            coreUtils.forEachProp(csh, function (key, item) {
                 changes.push(item._aspect._getRowInfo());
             });
             return changes;
         };
         DbSet.prototype._getTrackAssocInfo = function () {
-            var self = this, res = [];
-            var csh = this._changeCache, assocNames = Object.keys(self._trackAssoc);
-            coreUtils.forEachProp(csh, function (key) {
-                var item = csh[key];
-                assocNames.forEach(function (assocName) {
-                    var assocInfo = self._trackAssoc[assocName], parentKey = item._aspect._getFieldVal(assocInfo.childToParentName), childKey = item._key;
+            var self = this, res = [], csh = this._changeCache, trackAssoc = self._trackAssoc;
+            coreUtils.forEachProp(csh, function (key, item) {
+                coreUtils.forEachProp(trackAssoc, function (assocName, assocInfo) {
+                    var parentKey = item._aspect._getFieldVal(assocInfo.childToParentName), childKey = item._key;
                     if (!!parentKey && !!childKey) {
                         res.push({ assocName: assocName, parentKey: parentKey, childKey: childKey });
                     }
@@ -1097,7 +1093,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             return res;
         };
         DbSet.prototype._addToChanged = function (item) {
-            if (item._key === null)
+            if (!item._key)
                 return;
             if (!this._changeCache[item._key]) {
                 this._changeCache[item._key] = item;
@@ -1107,7 +1103,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             }
         };
         DbSet.prototype._removeFromChanged = function (key) {
-            if (key === null)
+            if (!key)
                 return;
             if (!!this._changeCache[key]) {
                 delete this._changeCache[key];

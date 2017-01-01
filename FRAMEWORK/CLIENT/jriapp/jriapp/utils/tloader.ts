@@ -139,7 +139,7 @@ export class TemplateLoader extends BaseObject {
                     group.promise = self.loadTemplatesAsync(group.fn_loader, group.app);
                 }
 
-                let deferred = defer.createSyncDeferred<string>();
+                const deferred = defer.createDeferred<string>(true);
 
                 group.promise.then(() => {
                     group.promise = null;
@@ -147,9 +147,9 @@ export class TemplateLoader extends BaseObject {
                         if (!!group.app) {
                             name = group.app.appName + "." + name;
                         }
-                        let loader = self._getTemplateLoaderCore(name);
+                        const loader = self._getTemplateLoaderCore(name);
                         if (!loader || !loader.fn_loader) {
-                            let error = strUtils.format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
+                            const error = strUtils.format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
                             if (DEBUG.isDebugging())
                                 LOG.error(error);
                             throw new Error(error);
@@ -158,7 +158,7 @@ export class TemplateLoader extends BaseObject {
 
                     const loader = self._getTemplateLoaderCore(name);
                     if (!loader || !loader.fn_loader) {
-                        let error = strUtils.format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
+                        const error = strUtils.format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
                         if (DEBUG.isDebugging())
                             LOG.error(error);
                         throw new Error(error);

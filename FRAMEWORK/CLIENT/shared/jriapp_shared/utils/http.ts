@@ -43,7 +43,7 @@ export class HttpUtils {
         req.timeout = HttpUtils.ajaxTimeOut * 1000;
         let _headers = <IIndexer<string>>coreUtils.merge(HttpUtils.defaultHeaders);
         _headers = coreUtils.merge(headers, _headers);
-        coreUtils.iterateIndexer(_headers, (name, val) => {
+        coreUtils.forEachProp(_headers, (name, val) => {
             req.setRequestHeader(name, val);
         });
         return req;

@@ -132,7 +132,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
         }
     }
     private _bindTemplateElements(templateEl: HTMLElement): IPromise<ILifeTimeScope> {
-        const self = this, defer = utils.defer.createSyncDeferred<ILifeTimeScope>();
+        const self = this, defer = utils.defer.createDeferred<ILifeTimeScope>(true);
         try {
             let rootBindEl = self._toBindableElement(templateEl), bindElems: IBindableElement[],
                 lftm = new LifeTimeScope();
@@ -174,8 +174,8 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
         return defer.promise();
     }
     bindTemplateElements(templateEl: HTMLElement): IPromise<ILifeTimeScope> {
-        const self = this;
-        let requiredModules = self._getRequiredModuleNames(templateEl), res: IPromise<ILifeTimeScope>;
+        const self = this, requiredModules = self._getRequiredModuleNames(templateEl);
+        let res: IPromise<ILifeTimeScope>;
         if (requiredModules.length > 0) {
             res = self._mloader.load(requiredModules).then(() => {
                 return self._bindTemplateElements(templateEl);
@@ -186,15 +186,15 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
         }
 
         res.catch((err) => {
-            setTimeout(() => {
+            utils.queue.enque(() => {
                 self.handleError(err, self);               
-            }, 0);
+            });
         });
 
         return res;
     }
     bindElements(scope: Document | HTMLElement, defaultDataContext: any, isDataFormBind: boolean, isInsideTemplate: boolean): IPromise<ILifeTimeScope> {
-        const self = this, defer = utils.defer.createSyncDeferred<ILifeTimeScope>();
+        const self = this, defer = utils.defer.createDeferred<ILifeTimeScope>(true);
         scope = scope || doc;
         try {
             const bindElems = self._getBindableElements(scope), lftm = new LifeTimeScope();

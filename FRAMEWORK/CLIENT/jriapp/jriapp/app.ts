@@ -271,8 +271,7 @@ export class Application extends BaseObject implements IApplication {
     //register loading a template from html element by its id value
     registerTemplateById(name: string, templateId: string): void {
         this.registerTemplateLoader(name, utils.core.memoize(() => {
-            const deferred = utils.defer.createSyncDeferred<string>();
-            const el = dom.queryOne<Element>(doc, "#" + templateId);
+            const deferred = utils.defer.createDeferred<string>(true), el = dom.queryOne<Element>(doc, "#" + templateId);
             if (!el)
                 throw new Error(utils.str.format(ERRS.ERR_TEMPLATE_ID_INVALID, templateId));
             const str = el.innerHTML;
@@ -285,7 +284,7 @@ export class Application extends BaseObject implements IApplication {
         if (!res) {
             res = boot.templateLoader.getTemplateLoader(name);
             if (!res)
-                return () => { return utils.defer.createDeferred<string>().reject(new Error(utils.str.format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name))) };
+                return () => { return utils.defer.reject<string>(new Error(utils.str.format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name))) };
         }
         return res;
     }

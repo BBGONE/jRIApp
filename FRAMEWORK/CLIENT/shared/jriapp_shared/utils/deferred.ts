@@ -35,7 +35,7 @@ export function whenAll<T>(promises: Array<T | IThenable<T>>): IStatefulPromise<
     return merged.then(() => results);
 }
 
-export function race<T>(promises: IPromise<T>[]): IPromise<T> {
+export function race<T>(promises: IPromise<T>[]): IStatefulPromise<T> {
     return new Promise((res, rej) => {
         promises.forEach(p => p.then(res).catch(rej));
     });
