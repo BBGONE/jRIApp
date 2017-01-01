@@ -2535,10 +2535,8 @@ define("gridDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "common",
 });
 define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], function (require, exports, RIAPP, uiMOD) {
     "use strict";
-    var utils = RIAPP.Utils, $ = RIAPP.$;
-    var $doc = $(RIAPP.DOM.document);
-    var $head = $("head");
-    var $drag = null;
+    var utils = RIAPP.Utils, $ = RIAPP.$, DOM = RIAPP.DOM, doc = RIAPP.DOM.document, head = RIAPP.DOM.queryOne(doc, "head");
+    var drag = null;
     var ID = "id";
     var PX = "px";
     var SIGNATURE = "JColResizer";
@@ -2549,27 +2547,28 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
         _created_grids[grid.uniqueID] = grid;
         _gridsCount += 1;
         if (_gridsCount === 1) {
-            $(window).on('resize.' + SIGNATURE, onResize);
+            DOM.events.on(window, 'resize', onResize, SIGNATURE);
         }
     }
     function _gridDestroyed(grid) {
         delete _created_grids[grid.uniqueID];
         _gridsCount -= 1;
         if (_gridsCount === 0) {
-            $(window).off('resize.' + SIGNATURE);
+            DOM.events.offNS(window, SIGNATURE);
         }
     }
-    $head.append("<style type='text/css'>  .JColResizer{table-layout:fixed; box-sizing: border-box;} .JCLRgrips{ height:0px; position:relative; box-sizing: border-box;} .JCLRgrip{margin-left:-5px; position:absolute; z-index:5; box-sizing: border-box;} .JCLRgrip .JColResizer{position:absolute;background-color:red;filter:alpha(opacity=1);opacity:0;width:10px;height:100%;cursor: e-resize;top:0px; box-sizing: border-box;} .JCLRLastGrip{position:absolute; width:1px; box-sizing: border-box; } .JCLRgripDrag{ border-left:1px dotted black; box-sizing: border-box; } .JCLRFlex{ width:auto!important; } .JCLRgrip.JCLRdisabledGrip .JColResizer{cursor:default; display:none;}</style>");
+    var cssRules = "<style type='text/css'>  .JColResizer{table-layout:fixed; box-sizing: border-box;} .JCLRgrips{ height:0px; position:relative; box-sizing: border-box;} .JCLRgrip{margin-left:-5px; position:absolute; z-index:5; box-sizing: border-box;} .JCLRgrip .JColResizer{position:absolute;background-color:red;filter:alpha(opacity=1);opacity:0;width:10px;height:100%;cursor: e-resize;top:0px; box-sizing: border-box;} .JCLRLastGrip{position:absolute; width:1px; box-sizing: border-box; } .JCLRgripDrag{ border-left:1px dotted black; box-sizing: border-box; } .JCLRFlex{ width:auto!important; } .JCLRgrip.JCLRdisabledGrip .JColResizer{cursor:default; display:none;}</style>";
+    DOM.append(head, RIAPP.DOM.fromHTML(cssRules));
     var onGripDrag = function (e) {
-        if (!$drag)
+        if (!drag)
             return;
-        var gripData = $drag.data(SIGNATURE), elview = gripData.elview;
+        var gripData = DOM.getData(drag, SIGNATURE), elview = gripData.elview;
         if (elview.getIsDestroyCalled())
             return;
         var data = elview.getResizeIfo();
         var table = elview.grid.table;
-        var oe = e.originalEvent.touches;
-        var ox = oe ? oe[0].pageX : e.pageX;
+        var touches = e.touches;
+        var ox = touches ? touches[0].pageX : e.pageX;
         var x = ox - gripData.ox + gripData.l;
         var mw = data.options.minWidth;
         var index = gripData.i;
@@ -2588,7 +2587,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
         }
         x = Math.max(min, Math.min(max, x));
         gripData.x = x;
-        $drag.css("left", x + PX);
+        drag.style.left = (x + PX);
         if (last) {
             gripData.w = colInfo.w + x - gripData.l;
         }
@@ -2615,17 +2614,19 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
         return false;
     };
     var onGripDragOver = function (e) {
-        $doc.off('touchend.' + SIGNATURE + ' mouseup.' + SIGNATURE);
-        $doc.off('touchmove.' + SIGNATURE + ' mousemove.' + SIGNATURE);
-        $head.find('#dragCursor').remove();
-        if (!$drag)
+        DOM.events.offNS(doc, SIGNATURE);
+        var dragCursor = RIAPP.DOM.queryOne(head, '#dragCursor');
+        if (!!dragCursor) {
+            DOM.removeNode(dragCursor);
+        }
+        if (!drag)
             return;
-        var gripData = $drag.data(SIGNATURE);
+        var gripData = DOM.getData(drag, SIGNATURE);
         var elview = gripData.elview;
         if (elview.getIsDestroyCalled())
             return;
         var data = elview.getResizeIfo(), table = elview.grid.table;
-        $drag.removeClass(data.options.draggingClass);
+        DOM.removeClass([drag], data.options.draggingClass);
         if (!!(gripData.x - gripData.l)) {
             var cb = data.options.onResize;
             var index = gripData.i;
@@ -2646,24 +2647,29 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
                 cb(e);
             }
         }
-        $drag = null;
+        drag = null;
     };
     var onGripMouseDown = function (e) {
-        var $grip = $(this);
-        var gripData = $grip.data(SIGNATURE), elview = gripData.elview;
+        var grip = this;
+        var gripData = DOM.getData(grip, SIGNATURE), elview = gripData.elview;
         if (elview.getIsDestroyCalled())
             return;
         var data = elview.getResizeIfo(), table = elview.grid.table;
-        var touches = e.originalEvent.touches;
+        var touches = e.touches;
         gripData.ox = touches ? touches[0].pageX : e.pageX;
-        gripData.l = $grip[0].offsetLeft;
+        gripData.l = grip.offsetLeft;
         gripData.x = gripData.l;
-        $doc.on('touchmove.' + SIGNATURE + ' mousemove.' + SIGNATURE, onGripDrag);
-        $doc.on('touchend.' + SIGNATURE + ' mouseup.' + SIGNATURE, onGripDragOver);
-        if ($head.find('#dragCursor').length == 0)
-            $head.append("<style id='dragCursor' type='text/css'>*{cursor:" + data.options.dragCursor + "!important}</style>");
-        $grip.addClass(data.options.draggingClass);
-        $drag = $grip;
+        DOM.events.on(doc, 'touchmove', onGripDrag, SIGNATURE);
+        DOM.events.on(doc, 'mousemove', onGripDrag, SIGNATURE);
+        DOM.events.on(doc, 'touchend', onGripDragOver, SIGNATURE);
+        DOM.events.on(doc, 'mouseup', onGripDragOver, SIGNATURE);
+        var dragCursor = DOM.queryOne(head, '#dragCursor');
+        if (!dragCursor) {
+            var html = "<style id='dragCursor' type='text/css'>*{cursor: " + data.options.dragCursor + " !important}</style>";
+            DOM.append(head, DOM.fromHTML(html));
+        }
+        DOM.addClass([grip], data.options.draggingClass);
+        drag = grip;
         var gripCol = data.columns[gripData.i];
         if (gripCol.locked) {
             for (var i = 0; i < data.len; i++) {
@@ -2675,7 +2681,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
         return false;
     };
     var onResize = function () {
-        RIAPP.Utils.core.iterateIndexer(_created_grids, function (name, gridView) {
+        RIAPP.Utils.core.forEachProp(_created_grids, function (name, gridView) {
             gridView.syncGrips();
         });
     };
@@ -2715,9 +2721,11 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
             if (!ds)
                 return;
             var self = this;
-            ds.addOnCleared(function (s, a) { setTimeout(function () { self.syncGrips(); }, 0); }, this.uniqueID);
+            ds.addOnCleared(function (s, a) {
+                utils.queue.enque(function () { self.syncGrips(); });
+            }, this.uniqueID);
             ds.addOnFill(function (s, a) {
-                setTimeout(function () { self.syncGrips(); }, 0);
+                utils.queue.enque(function () { self.syncGrips(); });
             }, this.uniqueID);
         };
         ResizableGrid.prototype.unBindDS = function (ds) {
@@ -2726,10 +2734,9 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
             ds.removeNSHandlers(this.uniqueID);
         };
         ResizableGrid.prototype.init = function (options) {
-            var table = this.grid.table;
-            var style = window.getComputedStyle(table, null);
-            RIAPP.DOM.addClass([table], SIGNATURE);
-            var gripContainer = RIAPP.DOM.fromHTML('<div class="JCLRgrips"/>')[0];
+            var table = this.grid.table, style = window.getComputedStyle(table, null);
+            DOM.addClass([table], SIGNATURE);
+            var gripContainer = DOM.fromHTML('<div class="JCLRgrips"/>')[0];
             var header = this.grid._getInternal().getHeader();
             header.parentElement.insertBefore(gripContainer, header);
             this._resizeInfo = {
@@ -2756,36 +2763,36 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
             data.len = allTH.length;
             allTH.forEach(function (column, index) {
                 var isDisabled = data.dc.indexOf(index) != -1;
-                var grip = RIAPP.DOM.fromHTML('<div class="JCLRgrip"></div>')[0];
+                var grip = DOM.fromHTML('<div class="JCLRgrip"></div>')[0];
                 data.gripContainer.appendChild(grip);
                 if (!isDisabled && !!data.options.gripInnerHtml) {
-                    var inner = RIAPP.DOM.fromHTML(data.options.gripInnerHtml);
-                    RIAPP.DOM.append(grip, inner);
+                    var inner = DOM.fromHTML(data.options.gripInnerHtml);
+                    DOM.append(grip, inner);
                 }
-                RIAPP.DOM.append(grip, RIAPP.DOM.fromHTML('<div class="' + SIGNATURE + '"></div>'));
+                DOM.append(grip, RIAPP.DOM.fromHTML('<div class="' + SIGNATURE + '"></div>'));
                 if (index == data.len - 1) {
-                    RIAPP.DOM.addClass([grip], "JCLRLastGrip");
+                    DOM.addClass([grip], "JCLRLastGrip");
                     if (data.fixed)
                         grip.innerHTML = "";
                 }
-                $(grip).on('touchstart mousedown', onGripMouseDown);
                 if (!isDisabled) {
-                    RIAPP.DOM.removeClass([grip], 'JCLRdisabledGrip');
-                    $(grip).on('touchstart mousedown', onGripMouseDown);
+                    DOM.removeClass([grip], 'JCLRdisabledGrip');
+                    DOM.events.on(grip, 'touchstart', onGripMouseDown);
+                    DOM.events.on(grip, 'mousedown', onGripMouseDown);
                 }
                 else {
-                    RIAPP.DOM.addClass([grip], 'JCLRdisabledGrip');
+                    DOM.addClass([grip], 'JCLRdisabledGrip');
                 }
                 var colInfo = { column: column, grip: grip, w: column.offsetWidth, locked: false };
                 data.columns.push(colInfo);
                 column.style.width = (colInfo.w + PX);
                 column.removeAttribute("width");
                 var gripData = { i: index, elview: self, last: index == data.len - 1, ox: 0, x: 0, l: 0, w: 0 };
-                $(grip).data(SIGNATURE, gripData);
+                DOM.setData(grip, SIGNATURE, gripData);
             });
             if (!data.fixed) {
                 table.removeAttribute('width');
-                RIAPP.DOM.addClass([table], FLEX);
+                DOM.addClass([table], FLEX);
             }
             this.syncGrips();
         };
@@ -2809,7 +2816,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
         ResizableGrid.prototype.syncCols = function (i, isOver) {
             if (this.getIsDestroyCalled())
                 return;
-            var table = this.grid.table, data = this._resizeInfo, gripData = $drag.data(SIGNATURE);
+            var table = this.grid.table, data = this._resizeInfo, gripData = DOM.getData(drag, SIGNATURE);
             var inc = gripData.x - gripData.l, c = data.columns[i];
             if (data.fixed) {
                 var c2 = data.columns[i + 1];
@@ -2838,11 +2845,11 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
             });
             data.w = table.offsetWidth;
             table.style.width = (data.w + PX);
-            RIAPP.DOM.removeClass([table], FLEX);
+            DOM.removeClass([table], FLEX);
             data.columns.forEach(function (c, i) {
                 c.column.style.width = (widths[i] + PX);
             });
-            RIAPP.DOM.addClass([table], FLEX);
+            DOM.addClass([table], FLEX);
             data.columns.forEach(function (c, i) {
                 c.w = c.column.offsetWidth;
             });
@@ -2860,7 +2867,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
             var table = this.grid.table, data = this._resizeInfo;
             if (!!data)
                 data.gripContainer.remove();
-            RIAPP.DOM.removeClass([table], SIGNATURE + " " + FLEX);
+            DOM.removeClass([table], SIGNATURE + " " + FLEX);
             this._resizeInfo = null;
             _super.prototype.destroy.call(this);
         };

@@ -280,12 +280,11 @@ declare module "jriapp_shared/utils/coreutils" {
         static uuid(len?: number, radix?: number): string;
         static parseBool(a: any): boolean;
         static round(num: number, decimals: number): number;
-        static merge<S, T>(source: S, target?: T): S | T;
         static clone(obj: any, target?: any): any;
-        static iterateIndexer<T>(obj: IIndexer<T>, fn: (name: string, val: T) => void): void;
-        static extend<T, U>(defaults: T, current: U): T | U;
+        static merge<S, T>(source: S, target?: T): S | T;
+        static extend<T, U>(target: T, ...source: U[]): T | U;
         static memoize<T>(callback: () => T): () => T;
-        static forEachProp(obj: any, fn: (name: string) => void): void;
+        static forEachProp<T>(obj: IIndexer<T>, fn: (name: string, val?: T) => void): void;
         static assignStrings<T extends U, U extends IIndexer<any>>(target: T, source: U): T;
     }
 }
@@ -527,7 +526,7 @@ declare module "jriapp_shared/utils/deferred" {
     export function createSyncDefer<T>(): IStatefulDeferred<T>;
     export function getTaskQueue(): ITaskQueue;
     export function whenAll<T>(promises: Array<T | IThenable<T>>): IStatefulPromise<T[]>;
-    export function race<T>(promises: IPromise<T>[]): IPromise<T>;
+    export function race<T>(promises: IPromise<T>[]): IStatefulPromise<T>;
     export type TDispatcher = (closure: TFunc) => void;
     export class Promise<T> implements IStatefulPromise<T> {
         private _deferred;
@@ -909,8 +908,9 @@ declare module "jriapp_shared/utils/logger" {
 declare module "jriapp_shared/utils/async" {
     import { IThenable, ITaskQueue, IStatefulDeferred, IStatefulPromise, IPromise } from "jriapp_shared/utils/ideferred";
     export class AsyncUtils {
-        static createDeferred<T>(): IStatefulDeferred<T>;
-        static createSyncDeferred<T>(): IStatefulDeferred<T>;
+        static createDeferred<T>(isSync?: boolean): IStatefulDeferred<T>;
+        static reject<T>(reason?: any, isSync?: boolean): IStatefulPromise<T>;
+        static resolve<T>(value?: T, isSync?: boolean): IStatefulPromise<T>;
         static whenAll<T>(args: Array<T | IThenable<T>>): IStatefulPromise<T[]>;
         static race<T>(promises: Array<IPromise<T>>): IPromise<T>;
         static getTaskQueue(): ITaskQueue;
