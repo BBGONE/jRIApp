@@ -4534,32 +4534,20 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
             _super.call(this, coll, obj);
         }
         AnyItemAspect.prototype._validateField = function (name) {
-            var coll = this.collection, internal = coll._getInternal(), result = internal.validateItemField(this.item, name);
-            return result;
+            var internal = this.collection._getInternal();
+            return internal.validateItemField(this.item, name);
         };
         AnyItemAspect.prototype._validateFields = function () {
-            var self = this, result = [], res = self._validateItem();
-            return res;
+            return this._validateItem();
         };
         AnyItemAspect.prototype._setProp = function (name, val) {
-            if (name !== "val")
-                throw new Error("Invalid operation: the value name must be 'val'");
-            if (!val)
-                val = {};
             if (this._getProp(name) !== val) {
                 coreUtils.setValue(this._vals, name, val, false);
                 this.item.raisePropertyChanged(name);
             }
         };
         AnyItemAspect.prototype._getProp = function (name) {
-            if (name !== "val")
-                throw new Error("Invalid operation: the value name must be 'val'");
-            var res = coreUtils.getValue(this._vals, name);
-            if (!res) {
-                res = {};
-                coreUtils.setValue(this._vals, "val", res, false);
-            }
-            return res;
+            return coreUtils.getValue(this._vals, name);
         };
         return AnyItemAspect;
     }(list_1.ListItemAspect));
@@ -4668,9 +4656,6 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
                         break;
                 }
             });
-            this.addOnItemAdding(function (s, a) {
-                a.item.val = {};
-            });
         }
         AnyList.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -4681,7 +4666,10 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
             _super.prototype.destroy.call(this);
         };
         AnyList.prototype.createItem = function (obj) {
-            var aspect = new AnyItemAspect(this, obj);
+            var objVal = obj || { val: {} };
+            if (!objVal.val)
+                objVal.val = {};
+            var aspect = new AnyItemAspect(this, objVal);
             var item = new this._itemType(aspect);
             aspect.key = this._getNewKey(item);
             aspect.item = item;
@@ -4692,7 +4680,7 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
             this._debounce.enque(function () {
                 if (!!_this._onChanged) {
                     var arr = _this.items.map(function (item) {
-                        return item._aspect.vals["val"];
+                        return item.val;
                     });
                     _this._onChanged(arr);
                 }

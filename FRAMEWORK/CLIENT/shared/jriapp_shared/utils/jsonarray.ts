@@ -101,6 +101,7 @@ export class JsonArray extends BaseObject {
             this._list = new AnyList((vals: any[]) => {
                 this.updateArray(vals);
             });
+
             this._list.addOnValidateField((s, args) => {
                 let validation_info = this._validateField(args.item, args.fieldName);
                 if (!!validation_info && validation_info.errors.length > 0)
@@ -111,6 +112,7 @@ export class JsonArray extends BaseObject {
                 let validation_infos = this._validateBag(args.item);
                 args.result = validation_infos;
             }, this._objId);
+
             this._list.setValues(this.getArray());
         }
         return this._list;

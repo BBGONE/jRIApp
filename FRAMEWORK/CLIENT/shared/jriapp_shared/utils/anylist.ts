@@ -24,20 +24,15 @@ export class AnyItemAspect<TItem extends IListItem, TObj> extends ListItemAspect
     }
     //override and made public
     _validateField(name: string): IValidationInfo {
-        const coll = this.collection, internal = coll._getInternal(), result = internal.validateItemField(this.item, name);
-        return result;
+        const internal = this.collection._getInternal();
+        return internal.validateItemField(this.item, name);
     }
     //override
     protected _validateFields(): IValidationInfo[] {
-        const self = this, result: IValidationInfo[] = [], res = self._validateItem();
-        return res;
+        return this._validateItem();
     }
     //override
     _setProp(name: string, val: any) {
-        if (name !== "val")
-            throw new Error("Invalid operation: the value name must be 'val'");
-        if (!val)
-            val = {};
         if (this._getProp(name) !== val) {
             coreUtils.setValue(this._vals, name, val, false);
             this.item.raisePropertyChanged(name);
@@ -45,14 +40,7 @@ export class AnyItemAspect<TItem extends IListItem, TObj> extends ListItemAspect
     }
     //override
     _getProp(name: string) {
-        if (name !== "val")
-            throw new Error("Invalid operation: the value name must be 'val'");
-        let res = coreUtils.getValue(this._vals, name);
-        if (!res) {
-            res = {};
-            coreUtils.setValue(this._vals, "val", res, false);
-        }
-        return res;
+        return coreUtils.getValue(this._vals, name);
     }
 }
 
@@ -136,6 +124,7 @@ export class AnyList extends BaseList<AnyValListItem, IAnyVal> {
             }
             const oldVal = this._saveVal, newVal = JSON.parse(JSON.stringify(a.item.val));
             this._saveVal = null;
+
             if (oldVal !== newVal) {
                 this.onChanged();
             }
@@ -152,11 +141,6 @@ export class AnyList extends BaseList<AnyValListItem, IAnyVal> {
                     break;
             }
         });
-
-        //adding new item (init val with an object)
-        this.addOnItemAdding((s, a) => {
-            a.item.val = {};
-        });
     }
 
     destroy() {
@@ -169,7 +153,10 @@ export class AnyList extends BaseList<AnyValListItem, IAnyVal> {
     }
     //override
     protected createItem(obj?: IAnyVal): AnyValListItem {
-        const aspect = new AnyItemAspect<AnyValListItem, IAnyVal>(this, obj);
+        const objVal = obj || { val: {} };
+        if (!objVal.val)
+            objVal.val = {};
+        const aspect = new AnyItemAspect<AnyValListItem, IAnyVal>(this, objVal);
         const item = new this._itemType(aspect);
         aspect.key = this._getNewKey(item);
         aspect.item = item;
@@ -179,7 +166,7 @@ export class AnyList extends BaseList<AnyValListItem, IAnyVal> {
         this._debounce.enque(() => {
             if (!!this._onChanged) {
                 const arr = this.items.map((item) => {
-                    return item._aspect.vals["val"];
+                    return item.val;
                 });
                 this._onChanged(arr);
             }
