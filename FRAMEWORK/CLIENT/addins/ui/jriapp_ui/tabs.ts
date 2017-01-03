@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { Utils, IPropertyBag } from "jriapp_shared";
-import { $, JQueryUtils } from "jriapp/utils/jquery";
+import { $, JQueryUtils } from "./utils/jquery";
 import { IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 import { BaseElView } from "./baseview";

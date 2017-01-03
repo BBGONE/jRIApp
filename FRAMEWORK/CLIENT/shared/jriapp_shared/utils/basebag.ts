@@ -15,9 +15,6 @@ export class BasePropBag extends BaseObject implements IPropertyBag {
         }
         return super._isHasProp(prop);
     }
-    onBagPropChanged(name: string): void {
-        this.raisePropertyChanged("[" + name + "]");
-    }
     //implements IPropertyBag
     getProp(name: string): any {
         return void 0;

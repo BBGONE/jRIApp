@@ -68,7 +68,7 @@ export interface IItemAspect<TItem extends ICollectionItem> extends IBaseObject,
     _onAttach(): void;
     _setIsDetached(v: boolean): void;
     _setIsCached(v: boolean): void;
-    raiseErrorsChanged(args: any): void;
+    raiseErrorsChanged(): void;
     readonly isCanSubmit: boolean;
     readonly status: ITEM_STATUS;
     readonly isNew: boolean;
@@ -104,7 +104,15 @@ export interface ICollFillArgs<TItem extends ICollectionItem> {
     newItems: TItem[];
 }
 
-export interface ICollValidateArgs<TItem extends ICollectionItem> { item: TItem; fieldName: string; errors: string[]; }
+export interface ICollValidateFieldArgs<TItem extends ICollectionItem> {
+    readonly item: TItem;
+    readonly fieldName: string;
+    errors: string[];
+}
+export interface ICollValidateItemArgs<TItem extends ICollectionItem> {
+    readonly item: TItem;
+    result: IValidationInfo[];
+}
 export interface ICollItemStatusArgs<TItem extends ICollectionItem> { item: TItem; oldStatus: ITEM_STATUS; key: string; }
 export interface ICollItemAddedArgs<TItem extends ICollectionItem> { item: TItem; isAddNewHandled: boolean; }
 export interface ICommitChangesArgs<TItem extends ICollectionItem> { item: TItem; isBegin: boolean; isRejected: boolean; status: ITEM_STATUS; }
@@ -124,8 +132,8 @@ export interface ICollectionEvents<TItem extends ICollectionItem> {
     removeOnCollChanged(nmspace?: string): void;
     addOnFill(fn: TEventHandler<ICollection<TItem>, ICollFillArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
     removeOnFill(nmspace?: string): void;
-    addOnValidate(fn: TEventHandler<ICollection<TItem>, ICollValidateArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-    removeOnValidate(nmspace?: string): void;
+    addOnValidateField(fn: TEventHandler<ICollection<TItem>, ICollValidateFieldArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
+    removeOnValidateField(nmspace?: string): void;
     addOnItemDeleting(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
     removeOnItemDeleting(nmspace?: string): void;
     addOnItemAdding(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
@@ -192,7 +200,8 @@ export interface ISimpleCollection<TItem extends ICollectionItem> extends IBaseO
 }
 
 export interface ICollection<TItem extends ICollectionItem> extends ISimpleCollection<TItem>, IEditableCollection<TItem>, ICollectionEvents<TItem> {
-    options: ICollectionOptions;
+    readonly options: ICollectionOptions;
+    readonly uniqueID: string;
 }
 
 export interface IValueUtils {
@@ -222,7 +231,7 @@ export interface IInternalCollMethods<TItem extends ICollectionItem> {
     onBeforeEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void;
     onEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void;
     onCommitChanges(item: TItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS): void;
-    validateItem(item: TItem): IValidationInfo;
+    validateItem(item: TItem): IValidationInfo[];
     validateItemField(item: TItem, fieldName: string): IValidationInfo;
     addErrors(item: TItem, errors: IValidationInfo[]): void;
     addError(item: TItem, fieldName: string, errors: string[]): void;

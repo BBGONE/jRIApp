@@ -6,7 +6,6 @@ import {
 import {
     ICollection, ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollItemAddedArgs
 } from "jriapp_shared/collection/int";
-import { $ } from "jriapp/utils/jquery";
 import { DomUtils } from "jriapp/utils/dom";
 import { DblClick } from "../../utils/dblclick";
 import { css, ROW_POSITION, PROP_NAME } from "../const";

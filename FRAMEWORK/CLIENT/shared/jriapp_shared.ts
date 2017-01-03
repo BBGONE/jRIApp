@@ -5,6 +5,7 @@ export * from "./jriapp_shared/errors";
 export * from "./jriapp_shared/object";
 export * from "./jriapp_shared/utils/basebag";
 export * from "./jriapp_shared/utils/jsonbag";
+export * from "./jriapp_shared/utils/jsonarray";
 export { createWeakMap } from "./jriapp_shared/utils/weakmap";
 
 export { STRS as LocaleSTRS, ERRS as LocaleERRS } from "./jriapp_shared/lang";
@@ -16,7 +17,7 @@ export {
     ListItemAspect, IListItem, BaseList, IListItemAspectConstructor, IListItemConstructor
 } from "./jriapp_shared/collection/list";
 export { BaseDictionary } from "./jriapp_shared/collection/dictionary";
-export { ValidationError } from "./jriapp_shared/collection/validation";
+export { ValidationError } from "./jriapp_shared/errors";
 
 export * from "./jriapp_shared/utils/ideferred";
 export { Utils } from "./jriapp_shared/utils/utils";

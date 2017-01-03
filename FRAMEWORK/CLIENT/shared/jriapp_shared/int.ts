@@ -30,7 +30,6 @@ export interface IErrorHandler {
 }
 
 export interface IPropertyBag extends IBaseObject {
-    onBagPropChanged(name: string): void;
     getProp(name: string): any;
     setProp(name: string, val: any): void;
     isPropertyBag: boolean;
@@ -71,7 +70,7 @@ export interface ISubmittable {
 
 export interface IValidationInfo {
     readonly fieldName: string;
-    readonly errors: string[];
+    errors: string[];
 }
 
 export interface IErrorNotification {

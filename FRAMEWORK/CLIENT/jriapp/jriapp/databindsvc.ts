@@ -16,7 +16,6 @@ import { create as createModulesLoader } from "./utils/mloader";
 import { getBindingOptions, Binding } from "./binding";
 import { ViewChecks } from "./utils/viewchecks";
 import { Parser } from "./utils/parser";
-import { $ } from "./utils/jquery";
 
 const utils = Utils, viewChecks = ViewChecks, dom = DomUtils, doc = dom.document,
     strUtils = utils.str, sys = utils.sys, checks = utils.check, boot = bootstrap, ERRS = LocaleERRS, parser = Parser;

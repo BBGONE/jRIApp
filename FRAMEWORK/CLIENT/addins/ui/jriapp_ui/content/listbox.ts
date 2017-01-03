@@ -2,7 +2,7 @@
 import {
     IBaseObject, LocaleERRS as ERRS, Utils
 } from "jriapp_shared";
-import { $ } from "jriapp/utils/jquery";
+import { $ } from "../utils/jquery";
 import { DomUtils } from "jriapp/utils/dom";
 import { BINDING_MODE } from "jriapp/const";
 import {

@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { $ } from "jriapp/utils/jquery";
+import { $ } from "./utils/jquery";
 import { IDatepicker } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 import { TextBoxElView, ITextBoxOptions } from "./textbox";
@@ -18,13 +18,23 @@ export interface IDatePickerOptions extends ITextBoxOptions {
 export class DatePickerElView extends TextBoxElView {
     constructor(options: IDatePickerOptions) {
         super(options);
-        boot.defaults.datepicker.attachTo($(this.el), options.datepicker);
+        const $el = $(this.el);
+        let datepicker = boot.getSvc<IDatepicker>("IDatepicker");
+        if (!datepicker)
+            throw new Error("IDatepicker service is not registered");
+        datepicker.attachTo($el, options.datepicker);
+        (<any>$el).datepicker("option", "onSelect", () => {
+            this.raisePropertyChanged("value");
+        });
     }
     destroy() {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        boot.defaults.datepicker.detachFrom($(this.el));
+        let datepicker = boot.getSvc<IDatepicker>("IDatepicker");
+        if (!datepicker)
+            throw new Error("IDatepicker service is not registered");
+        datepicker.detachFrom($(this.el));
         super.destroy();
    }
     toString() {

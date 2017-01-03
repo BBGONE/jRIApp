@@ -2,7 +2,7 @@
 import {
     Utils, IBaseObject, IVoidPromise, IEditable, TEventHandler, IDeferred, IPromise, LocaleSTRS as STRS, BaseObject
 } from "jriapp_shared";
-import { $ } from "jriapp/utils/jquery";
+import { $ } from "./utils/jquery";
 import { DomUtils } from "jriapp/utils/dom";
 import { ITemplate, ITemplateEvents, IApplication, ISelectableProvider } from "jriapp/int";
 import { createTemplate } from "jriapp/template";

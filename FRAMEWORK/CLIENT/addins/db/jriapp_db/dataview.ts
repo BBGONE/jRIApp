@@ -35,7 +35,6 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
     private _fn_sort: (item1: TItem, item2: TItem) => number;
     private _fn_itemsProvider: (ds: ICollection<TItem>) => TItem[];
     private _isAddingNew: boolean;
-    private _objId: string;
     private _refreshDebounce: Debounce;
 
     constructor(options: IDataViewOptions<TItem>) {
@@ -52,7 +51,6 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         if (!!opts.fn_filter && !checks.isFunc(opts.fn_filter))
             throw new Error(ERRS.ERR_DATAVIEW_FILTER_INVALID);
         this._refreshDebounce = new Debounce();
-        this._objId = coreUtils.getNewID("dvw");
         this._dataSource = opts.dataSource;
         this._fn_filter = !opts.fn_filter ? null : opts.fn_filter;
         this._fn_sort = opts.fn_sort;
@@ -65,7 +63,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         this._bindDS();
     }
     protected _getEventNames() {
-        let base_events = super._getEventNames();
+        const base_events = super._getEventNames();
         return [VIEW_EVENTS.refreshed].concat(base_events);
     }
     protected _destroyItems() {
@@ -267,12 +265,12 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         const self = this, ds = this._dataSource;
         if (!ds)
             return;
-        ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self, TPriority.AboveNormal);
+        ds.addOnCollChanged(self._onDSCollectionChanged, self.uniqueID, self, TPriority.AboveNormal);
         ds.addOnBeginEdit(function (sender, args) {
             if (!!self._itemsByKey[args.item._key]) {
                 self._onEditing(args.item, true, false);
             }
-        }, self._objId, null, TPriority.AboveNormal);
+        }, self.uniqueID, null, TPriority.AboveNormal);
         ds.addOnEndEdit(function (sender, args) {
             let isOk: boolean, item = args.item, canFilter = !!self._fn_filter;
             if (!!self._itemsByKey[item._key]) {
@@ -291,19 +289,19 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
                     }
                 }
             }
-        }, self._objId, null, TPriority.AboveNormal);
+        }, self.uniqueID, null, TPriority.AboveNormal);
         ds.addOnErrorsChanged(function (sender, args) {
             if (!!self._itemsByKey[args.item._key]) {
                 self._onErrorsChanged(args.item);
             }
-        }, self._objId, null, TPriority.AboveNormal);
-        ds.addOnStatusChanged(self._onDSStatusChanged, self._objId, self, TPriority.AboveNormal);
+        }, self.uniqueID, null, TPriority.AboveNormal);
+        ds.addOnStatusChanged(self._onDSStatusChanged, self.uniqueID, self, TPriority.AboveNormal);
 
         ds.addOnItemDeleting(function (sender, args) {
             if (!!self._itemsByKey[args.item._key]) {
                 self._onItemDeleting(args);
             }
-        }, self._objId, null, TPriority.AboveNormal);
+        }, self.uniqueID, null, TPriority.AboveNormal);
         ds.addOnItemAdded(function (sender, args) {
             if (self._isAddingNew) {
                 if (!self._itemsByKey[args.item._key]) {
@@ -313,17 +311,17 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
                 self._onEditing(args.item, true, false);
                 self._onItemAdded(args.item);
             }
-        }, self._objId, null, TPriority.AboveNormal);
+        }, self.uniqueID, null, TPriority.AboveNormal);
         ds.addOnItemAdding(function (sender, args) {
             if (self._isAddingNew) {
                 self._onItemAdding(args.item);
             }
-        }, self._objId, null, TPriority.AboveNormal);
+        }, self.uniqueID, null, TPriority.AboveNormal);
     }
     protected _unbindDS() {
         const self = this, ds = this._dataSource;
         if (!ds) return;
-        ds.removeNSHandlers(self._objId);
+        ds.removeNSHandlers(self.uniqueID);
     }
     protected _checkCurrentChanging(newCurrent: TItem) {
         let ds = this._dataSource, item: TItem;

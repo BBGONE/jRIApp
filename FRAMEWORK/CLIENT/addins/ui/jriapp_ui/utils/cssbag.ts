@@ -3,7 +3,7 @@ import {
     Utils, BasePropBag
 } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
-const utils = Utils, checks = utils.check, dom = DomUtils;
+const utils = Utils, checks = utils.check, dom = DomUtils, strUtils = utils.str;
 
 // wraps HTMLElement to add or remove classNames using data binding
 export class CSSBag extends BasePropBag {
@@ -17,8 +17,8 @@ export class CSSBag extends BasePropBag {
     setProp(name: string, val: any): void {
         if (val === checks.undefined)
             return;
-
-        if (name === "*") {
+        const cssName = strUtils.trimBrackets(name);
+        if (cssName === "*") {
             if (!val) {
                 //remove all classes
                 dom.removeClass([this._el], null);
@@ -32,7 +32,7 @@ export class CSSBag extends BasePropBag {
             return;
         }
         //set individual classes
-        dom.setClass([this._el], name, !val);
+        dom.setClass([this._el], cssName, !val);
     }
     toString() {
         return "CSSBag";

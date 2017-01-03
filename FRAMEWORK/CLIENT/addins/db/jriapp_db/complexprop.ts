@@ -79,6 +79,7 @@ export class RootComplexProperty extends BaseComplexProperty {
    }
     setValue(fullName: string, value: any) {
         this._entity._setFieldVal(fullName, value);
+        
    }
     getValue(fullName: string): any {
         return this._entity._getFieldVal(fullName);

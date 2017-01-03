@@ -28,7 +28,8 @@ export class EventBag extends BasePropBag {
     getProp(name: string): ICommand {
         if (!this._dic)
             return null;
-        const cmd = this._dic[name];
+        const eventName = strUtils.trimBrackets(name);
+        const cmd = this._dic[eventName];
         return !cmd ? null : cmd;
     }
     setProp(name: string, command: ICommand): void {
@@ -36,27 +37,27 @@ export class EventBag extends BasePropBag {
             this._dic = {};
         if (!this._dic)
             return;
-        const old = this._dic[name];
+        const eventName = strUtils.trimBrackets(name), old = this._dic[eventName];
         if (!command && !!old) {
-            delete this._dic[name];
+            delete this._dic[eventName];
 
             if (!!this._onChange) {
                 this._onChange(this, {
-                    name: name,
+                    name: eventName,
                     changeType: EVENT_CHANGE_TYPE.Deleted,
                     oldVal: old,
                     newVal: null
                 });
-                this.onBagPropChanged(name);
+                this.raisePropertyChanged(name);
             }
             return;
         }
-        this._dic[name] = command;
+        this._dic[eventName] = command;
         if (!!this._onChange) {
 
             if (!old) {
                 this._onChange(this, {
-                    name: name,
+                    name: eventName,
                     changeType: EVENT_CHANGE_TYPE.Added,
                     oldVal: null,
                     newVal: command
@@ -64,20 +65,20 @@ export class EventBag extends BasePropBag {
             }
             else {
                 this._onChange(this, {
-                    name: name,
+                    name: eventName,
                     changeType: EVENT_CHANGE_TYPE.Updated,
                     oldVal: old,
                     newVal: command
                 });
             }
 
-            this.onBagPropChanged(name);
+            this.raisePropertyChanged(name);
         }
     }
-    trigger(name: string, args?: any) {
+    trigger(eventName: string, args?: any) {
         if (!this._dic)
             return;
-        let command = this._dic[name];
+        const command = this._dic[eventName];
         if (!command)
             return;
         args = args || {};

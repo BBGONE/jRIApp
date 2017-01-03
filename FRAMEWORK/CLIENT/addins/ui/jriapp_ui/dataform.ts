@@ -5,7 +5,7 @@ import {
     LocaleSTRS as STRS, Debounce
 } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
-import { $ } from "jriapp/utils/jquery";
+import { $ } from "./utils/jquery";
 import { DomUtils } from "jriapp/utils/dom";
 import { DATA_ATTR, ELVIEW_NM } from "jriapp/const";
 import { ViewChecks } from "jriapp/utils/viewchecks";

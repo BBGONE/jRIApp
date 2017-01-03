@@ -22,13 +22,11 @@ export {
     ILifeTimeScope, ITemplateGroupInfo, ITemplateGroupInfoEx, ITemplateInfo, ITemplateLoaderInfo,
     IViewOptions
 } from "./jriapp/int";
-export { JQueryUtils, $ } from "./jriapp/utils/jquery";
 export { DomUtils as DOM } from "./jriapp/utils/dom";
 export { ViewChecks } from "./jriapp/utils/viewchecks";
 export { BaseConverter } from "./jriapp/converter";
 export { bootstrap } from "./jriapp/bootstrap";
 export { Binding } from "./jriapp/binding";
-export { Datepicker } from "./jriapp/datepicker";
 export { createTemplate, ITemplateOptions } from "./jriapp/template";
 export { LifeTimeScope } from "./jriapp/utils/lifetime";
 export { PropWatcher } from "./jriapp/utils/propwatcher";
@@ -39,6 +37,6 @@ export {
 
 export { Application } from "./jriapp/app";
 
-export const VERSION = "1.2.1";
+export const VERSION = "1.3.0";
 
 Bootstrap._initFramework();

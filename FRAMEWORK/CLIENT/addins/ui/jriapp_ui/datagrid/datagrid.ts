@@ -3,7 +3,6 @@ import {
     TEventHandler, IIndexer, TPriority, LocaleERRS as ERRS, LocaleSTRS as STRS, BaseObject,
     Debounce, Utils, IPromise
 } from "jriapp_shared";
-import { $ } from "jriapp/utils/jquery";
 import { DomUtils } from "jriapp/utils/dom";
 import { DATA_ATTR, KEYS } from "jriapp/const";
 import {

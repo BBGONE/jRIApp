@@ -1,6 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { LocaleERRS as ERRS, Utils } from "jriapp_shared";
-import { $ } from "jriapp/utils/jquery";
 import { DomUtils } from "jriapp/utils/dom";
 import { IContent } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";

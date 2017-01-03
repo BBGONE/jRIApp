@@ -5,9 +5,9 @@ import {
 import {
     IIndexer, IValidationInfo, IVoidPromise, IPromise, LocaleERRS as ERRS, Utils
 } from "jriapp_shared";
-import { valueUtils, fn_traverseFields } from "jriapp_shared/collection/utils";
-import { ValidationError } from "jriapp_shared/collection/validation";
+import { ValidationError } from "jriapp_shared/errors";
 import { ICancellableArgs, IFieldInfo } from "jriapp_shared/collection/int";
+import { valueUtils, fn_traverseFields } from "jriapp_shared/collection/utils";
 import { ItemAspect } from "jriapp_shared/collection/aspect";
 import { FLAGS, REFRESH_MODE, PROP_NAME } from "./const";
 import { DbContext } from "./dbcontext";
@@ -356,15 +356,20 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         return coreUtils.getValue(this._vals, fieldName);
     }
     _setFieldVal(fieldName: string, val: any): boolean {
-        let validation_error: IValidationInfo, error: any, dbSetName = this.dbSetName, dbSet = this.dbSet,
+        let dbSetName = this.dbSetName, dbSet = this.dbSet,
             oldV = this._getFieldVal(fieldName), newV = val, fieldInfo = this.getFieldInfo(fieldName), res = false;
         if (!fieldInfo)
             throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, dbSetName, fieldName));
         if (!this.isEditing && !this.isUpdating)
             this.beginEdit();
         try {
-            newV = this._checkVal(fieldInfo, newV);
+            if (fieldInfo.dataType === DATA_TYPE.String && fieldInfo.isNullable && !newV)
+                newV = null;
             if (oldV !== newV) {
+                if (fieldInfo.isReadOnly && !(this.isNew && fieldInfo.allowClientDefault)) {
+                    throw new Error(ERRS.ERR_FIELD_READONLY);
+                }
+
                 if (this._fldChanging(fieldName, fieldInfo, oldV, newV)) {
                     coreUtils.setValue(this._vals, fieldName, newV, false);
                     if (!(fieldInfo.fieldType === FIELD_TYPE.ClientOnly || fieldInfo.fieldType === FIELD_TYPE.ServerCalculated)) {
@@ -377,13 +382,14 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
                     this._onFieldChanged(fieldName, fieldInfo);
                     res = true;
                 }
-            }
-            dbSet._getInternal().removeError(this.item, fieldName);
-            validation_error = this._validateField(fieldName);
-            if (!!validation_error) {
-                throw new ValidationError([validation_error], this);
+                dbSet._getInternal().removeError(this.item, fieldName);
+                const validation_info = this._validateField(fieldName);
+                if (!!validation_info) {
+                    throw new ValidationError([validation_info], this);
+                }
             }
         } catch (ex) {
+            let error: ValidationError;
             if (sys.isValidationError(ex)) {
                 error = ex;
             }
@@ -392,7 +398,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
                     { fieldName: fieldName, errors: [ex.message] }
                 ], this);
             }
-            dbSet._getInternal().addError(this.item, fieldName, error.errors[0].errors);
+            dbSet._getInternal().addError(this.item, fieldName, error.validations[0].errors);
             throw error;
         }
         return res;

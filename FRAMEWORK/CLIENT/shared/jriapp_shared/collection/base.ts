@@ -16,10 +16,10 @@ import { Utils } from "../utils/utils";
 
 import { ICollectionItem, ICollection, ICollectionOptions, IPermissions, IInternalCollMethods, ICollChangedArgs,
     ICancellableArgs, ICollFillArgs, ICollEndEditArgs, ICollItemAddedArgs, ICollectionEvents, ICollItemArgs, ICollItemStatusArgs,
-    ICollValidateArgs, ICurrentChangingArgs, ICommitChangesArgs, IItemAddedArgs, IPageChangingArgs,
+    ICollValidateFieldArgs, ICollValidateItemArgs, ICurrentChangingArgs, ICommitChangesArgs, IItemAddedArgs, IPageChangingArgs,
     IErrorsList, IErrors, PROP_NAME } from "./int";
 import { valueUtils, fn_getPropertyByName } from "./utils";
-import { ValidationError } from "./validation";
+import { ValidationError } from "../errors";
 
 const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, sys = utils.sys;
 
@@ -36,7 +36,8 @@ const COLL_EVENTS = {
     item_deleting: "item_deleting",
     item_adding: "item_adding",
     item_added: "item_added",
-    validate: "validate",
+    validate_field: "validate_field",
+    validate_item: "validate_item",
     current_changing: "current_changing",
     page_changing: "page_changing",
     errors_changed: "errors_changed",
@@ -47,6 +48,7 @@ const COLL_EVENTS = {
 };
 
 export class BaseCollection<TItem extends ICollectionItem> extends BaseObject implements ICollection<TItem> {
+    private _objId: string;
     protected _options: ICollectionOptions;
     protected _isLoading: boolean;
     protected _EditingItem: TItem;
@@ -60,7 +62,6 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     protected _fieldMap: IIndexer<IFieldInfo>;
     protected _fieldInfos: IFieldInfo[];
     protected _errors: IErrorsList;
-    protected _ignoreChangeErrors: boolean;
     protected _pkInfo: IFieldInfo[];
     protected _isUpdating: boolean;
     protected _waitQueue: WaitQueue;
@@ -68,7 +69,8 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
 
     constructor() {
         super();
-        let self = this;
+        const self = this;
+        this._objId = coreUtils.getNewID("coll");
         this._options = { enablePaging: false, pageSize: 50 };
         this._isLoading = false;
         this._isUpdating = false;
@@ -85,7 +87,6 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         this._fieldMap = {};
         this._fieldInfos = [];
         this._errors = {};
-        this._ignoreChangeErrors = false;
         this._pkInfo = null;
         this._waitQueue = new WaitQueue(this);
         this._internal = {
@@ -155,8 +156,8 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         return fieldInfo;
     }
     protected _getEventNames() {
-        let base_events = super._getEventNames();
-        let events = Object.keys(COLL_EVENTS).map((key, i, arr) => { return <string>(<any>COLL_EVENTS)[key]; });
+        const base_events = super._getEventNames();
+        const events = Object.keys(COLL_EVENTS).map((key, i, arr) => { return <string>(<any>COLL_EVENTS)[key]; });
         return events.concat(base_events);
     }
     addOnClearing(fn: TEventHandler<ICollection<TItem>, { reason: COLL_CHANGE_REASON; }>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
@@ -183,11 +184,17 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     removeOnFill(nmspace?: string) {
         this._removeHandler(COLL_EVENTS.fill, nmspace);
     }
-    addOnValidate(fn: TEventHandler<ICollection<TItem>, ICollValidateArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this._addHandler(COLL_EVENTS.validate, fn, nmspace, context, priority);
+    addOnValidateField(fn: TEventHandler<ICollection<TItem>, ICollValidateFieldArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this._addHandler(COLL_EVENTS.validate_field, fn, nmspace, context, priority);
     }
-    removeOnValidate(nmspace?: string) {
-        this._removeHandler(COLL_EVENTS.validate, nmspace);
+    removeOnValidateField(nmspace?: string) {
+        this._removeHandler(COLL_EVENTS.validate_field, nmspace);
+    }
+    addOnValidateItem(fn: TEventHandler<ICollection<TItem>, ICollValidateItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this._addHandler(COLL_EVENTS.validate_item, fn, nmspace, context, priority);
+    }
+    removeOnValidateItem(nmspace?: string) {
+        this._removeHandler(COLL_EVENTS.validate_item, nmspace);
     }
     addOnItemDeleting(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
         this._addHandler(COLL_EVENTS.item_deleting, fn, nmspace, context, priority);
@@ -469,50 +476,45 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     protected _onCommitChanges(item: TItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS): void {
         this.raiseEvent(COLL_EVENTS.commit_changes, <ICommitChangesArgs<TItem>>{ item: item, isBegin: isBegin, isRejected: isRejected, status: status });
     }
-    protected _validateItem(item: TItem): IValidationInfo {
-        let args: ICollValidateArgs<TItem> = { item: item, fieldName: null, errors: [] };
-        this.raiseEvent(COLL_EVENTS.validate, args);
-        if (!!args.errors && args.errors.length > 0)
-            return { fieldName: null, errors: args.errors };
+    protected _validateItem(item: TItem): IValidationInfo[] {
+        const args: ICollValidateItemArgs<TItem> = { item: item, result: [] };
+        this.raiseEvent(COLL_EVENTS.validate_item, args);
+        if (!!args.result && args.result.length > 0)
+            return args.result;
         else
-            return null;
+            return [];
     }
     protected _validateItemField(item: TItem, fieldName: string): IValidationInfo {
-        let args: ICollValidateArgs<TItem> = { item: item, fieldName: fieldName, errors: [] };
-        this.raiseEvent(COLL_EVENTS.validate, args);
+        const args: ICollValidateFieldArgs<TItem> = { item: item, fieldName: fieldName, errors: <string[]>[] };
+        this.raiseEvent(COLL_EVENTS.validate_field, args);
         if (!!args.errors && args.errors.length > 0)
             return { fieldName: fieldName, errors: args.errors };
         else
             return null;
     }
     protected _addErrors(item: TItem, errors: IValidationInfo[]): void {
-        let self = this;
-        this._ignoreChangeErrors = true;
-        try {
-            errors.forEach(function (err) {
-                self._addError(item, err.fieldName, err.errors);
-            });
-        } finally {
-            this._ignoreChangeErrors = false;
-        }
+        const self = this;
+        errors.forEach(function (err) {
+            self._addError(item, err.fieldName, err.errors, true);
+        });
         this._onErrorsChanged(item);
     }
-    protected _addError(item: TItem, fieldName: string, errors: string[]): void {
+    protected _addError(item: TItem, fieldName: string, errors: string[], ignoreChangeErrors?: boolean): void {
         if (!fieldName)
             fieldName = "*";
         if (!(checks.isArray(errors) && errors.length > 0)) {
-            this._removeError(item, fieldName);
+            this._removeError(item, fieldName, ignoreChangeErrors);
             return;
         }
         if (!this._errors[item._key])
             this._errors[item._key] = {};
-        let itemErrors = this._errors[item._key];
+        const itemErrors = this._errors[item._key];
         itemErrors[fieldName] = errors;
-        if (!this._ignoreChangeErrors)
+        if (!ignoreChangeErrors)
             this._onErrorsChanged(item);
     }
-    protected _removeError(item: TItem, fieldName: string): void {
-        let itemErrors = this._errors[item._key];
+    protected _removeError(item: TItem, fieldName: string, ignoreChangeErrors?: boolean): void {
+        const itemErrors = this._errors[item._key];
         if (!itemErrors)
             return;
         if (!fieldName)
@@ -523,22 +525,23 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         if (Object.keys(itemErrors).length === 0) {
             delete this._errors[item._key];
         }
-        this._onErrorsChanged(item);
+        if (!ignoreChangeErrors)
+            this._onErrorsChanged(item);
     }
     protected _removeAllErrors(item: TItem): void {
-        let self = this, itemErrors = this._errors[item._key];
+        const itemErrors = this._errors[item._key];
         if (!itemErrors)
             return;
         delete this._errors[item._key];
-        self._onErrorsChanged(item);
+        this._onErrorsChanged(item);
     }
     protected _getErrors(item: TItem): IErrors {
         return this._errors[item._key];
     }
     protected _onErrorsChanged(item: TItem): void {
-        let args: ICollItemArgs<TItem> = { item: item };
+        const args: ICollItemArgs<TItem> = { item: item };
         this.raiseEvent(COLL_EVENTS.errors_changed, args);
-        item._aspect.raiseErrorsChanged({});
+        item._aspect.raiseErrorsChanged();
     }
     protected _onItemDeleting(args: ICancellableArgs<TItem>): boolean {
         this.raiseEvent(COLL_EVENTS.item_deleting, args);
@@ -641,7 +644,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         }
     }
     getItemsWithErrors(): TItem[] {
-        let self = this, res: TItem[] = [];
+        const self = this, res: TItem[] = [];
         coreUtils.forEachProp(this._errors, function (key) {
             let item = self.getItemByKey(key);
             res.push(item);
@@ -938,4 +941,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         }
     }
     get permissions(): IPermissions { return this._perms; }
+    get uniqueID() {
+        return this._objId;
+    }
 }

@@ -157,9 +157,13 @@ export class StringUtils {
         return (pad + val).slice(-pad.length);
     }
     static trimQuotes(val: string) {
+        if (!val)
+            return "";
         return StringUtils.fastTrim(val.replace(trimQuotsRX, ""));
     }
     static trimBrackets(val: string) {
+        if (!val)
+            return "";
         return StringUtils.fastTrim(val.replace(trimBracketsRX, ""));
     }
 }

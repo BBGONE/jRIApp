@@ -130,13 +130,14 @@ export class SysUtils {
             return checks.undefined;
 
         if (strUtils.startsWith(prop, "[")) {
-            //it is an indexed property like ['someProp']
-            prop = strUtils.trimBrackets(prop);
-
             if (self.isCollection(obj)) {
+                //it is an indexed property like ['someProp']
+                prop = strUtils.trimBrackets(prop);
                 return self.getItemByProp(obj, prop);
             }
             else if (checks.isArray(obj)) {
+                //it is an indexed property like ['someProp']
+                prop = strUtils.trimBrackets(prop);
                 return obj[parseInt(prop, 10)];
             }
             else if (self.isPropBag(obj))
@@ -157,10 +158,9 @@ export class SysUtils {
 
         //it is an indexed property, obj must be an Array
         if (strUtils.startsWith(prop, "[")) {
-            //remove brakets from a string like: [index]
-            prop = strUtils.trimBrackets(prop);
-
             if (checks.isArray(obj)) {
+                //remove brakets from a string like: [index]
+                prop = strUtils.trimBrackets(prop);
                 obj[parseInt(prop, 10)] = val;
                 return;
             }

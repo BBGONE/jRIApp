@@ -82,6 +82,13 @@ declare module "jriapp_ui/content/template" {
         readonly app: IApplication;
     }
 }
+declare module "jriapp_ui/utils/jquery" {
+    export const $: JQueryStatic;
+    export class JQueryUtils {
+        static $: JQueryStatic;
+        static destroy$Plugin($el: JQuery, name: string): void;
+    }
+}
 declare module "jriapp_ui/utils/eventbag" {
     import { BasePropBag } from "jriapp_shared";
     import { ICommand } from "jriapp/mvvm";
@@ -103,7 +110,7 @@ declare module "jriapp_ui/utils/eventbag" {
         constructor(onChange: (sender: EventBag, args: IEventChangedArgs) => void);
         getProp(name: string): ICommand;
         setProp(name: string, command: ICommand): void;
-        trigger(name: string, args?: any): void;
+        trigger(eventName: string, args?: any): void;
         toString(): string;
         destroy(): void;
     }
@@ -1738,6 +1745,25 @@ declare module "jriapp_ui/radio" {
         readonly name: string;
     }
 }
+declare module "jriapp_ui/utils/datepicker" {
+    import { BaseObject } from "jriapp_shared";
+    import { IDatepicker } from "jriapp";
+    export class Datepicker extends BaseObject implements IDatepicker {
+        private _datepickerRegion;
+        private _dateFormat;
+        constructor();
+        toString(): string;
+        attachTo($el: any, options?: {
+            dateFormat?: string;
+        }): void;
+        detachFrom($el: any): void;
+        parseDate(str: string): Date;
+        formatDate(date: Date): string;
+        dateFormat: string;
+        datepickerRegion: string;
+        readonly datePickerFn: any;
+    }
+}
 declare module "jriapp_ui/content/all" {
     export { css as contentCSS } from "jriapp_ui/content/int";
     export { BasicContent } from "jriapp_ui/content/basic";
@@ -1778,5 +1804,7 @@ declare module "jriapp_ui" {
     export { TextAreaElView, ITextAreaOptions } from "jriapp_ui/textarea";
     export { TextBoxElView, ITextBoxOptions, TKeyPressArgs } from "jriapp_ui/textbox";
     export { DblClick } from "jriapp_ui/utils/dblclick";
+    export { Datepicker } from "jriapp_ui/utils/datepicker";
+    export { JQueryUtils, $ } from "jriapp_ui/utils/jquery";
     export * from "jriapp_ui/content/all";
 }

@@ -2,13 +2,11 @@
 import {
     LocaleERRS, Utils, BaseObject
 } from "jriapp_shared";
-import { IDatepicker } from "./int";
-import { bootstrap } from "./bootstrap";
-import { DomUtils } from "./utils/dom";
-import { $, JQueryUtils } from "./utils/jquery";
+import { IDatepicker, bootstrap, DOM } from "jriapp";
+import { JQueryUtils, $ } from "./jquery";
 
 
-const utils = Utils, coreUtils = utils.core, dom = DomUtils,
+const utils = Utils, coreUtils = utils.core, dom = DOM,
     boot = bootstrap, ERRS = LocaleERRS;
 
 const PROP_NAME = {

@@ -13,7 +13,7 @@ import {
 import { fn_traverseFields, fn_traverseField } from "./utils";
 import { BaseCollection } from "./base";
 import { ItemAspect } from "./aspect";
-import { ValidationError } from "./validation";
+import { ValidationError } from "../errors";
 
 const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, ERROR = utils.err;
 
@@ -31,7 +31,7 @@ function fn_initVals(coll: BaseList < IListItem, any >, obj ?: any): any {
     let vals = obj || {};
     if (!!obj) {
         //if no object then set all values to nulls
-        let fieldInfos = coll.getFieldInfos();
+        const fieldInfos = coll.getFieldInfos();
         fn_traverseFields(fieldInfos, (fld, fullName) => {
             if (fld.fieldType === FIELD_TYPE.Object)
                 coreUtils.setValue(vals, fullName, {}, false);
@@ -55,16 +55,20 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
             this._vals = fn_initVals(coll, obj);
     }
     _setProp(name: string, val: any) {
-        let validation_error: IValidationInfo, error: ValidationError;
-        const coll = this.collection, item = this.item;
+        let error: ValidationError;
+        const coll = this.collection, item = this.item, fieldInfo = this.getFieldInfo(name),
+            internal = coll._getInternal();
         if (this._getProp(name) !== val) {
             try {
+                if (fieldInfo.isReadOnly && !(this.isNew && fieldInfo.allowClientDefault)) {
+                    throw new Error(ERRS.ERR_FIELD_READONLY);
+                }
                 coreUtils.setValue(this._vals, name, val, false);
                 item.raisePropertyChanged(name);
-                coll._getInternal().removeError(item, name);
-                validation_error = this._validateField(name);
-                if (!!validation_error) {
-                    throw new ValidationError([validation_error], this);
+                internal.removeError(item, name);
+                const validation_info = this._validateField(name);
+                if (!!validation_info && validation_info.errors.length > 0) {
+                    throw new ValidationError([validation_info], this);
                 }
             } catch (ex) {
                 if (utils.sys.isValidationError(ex)) {
@@ -75,25 +79,25 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
                         { fieldName: name, errors: [ex.message] }
                     ], this);
                 }
-                coll._getInternal().addError(item, name, error.errors[0].errors);
+                internal.addError(item, name, error.validations[0].errors);
                 throw error;
             }
         }
     }
-    _getProp(name: string) {
+    _getProp(name: string): any {
         return coreUtils.getValue(this._vals, name);
     }
-    _resetIsNew() {
+    _resetIsNew(): void {
         this._isNew = false;
     }
-    toString() {
+    toString(): string {
         if (!this.item)
             return "ListItemAspect";
         return this.item.toString() + "Aspect";
     }
-    get list() { return <BaseList<TItem, TObj>>this.collection; }
-    get vals() { return this._vals; }
-    get isNew() { return this._isNew; }
+    get list(): BaseList<TItem, TObj> { return <BaseList<TItem, TObj>>this.collection; }
+    get vals(): IIndexer<any> { return this._vals; }
+    get isNew(): boolean { return this._isNew; }
 }
 
 export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TItem> {

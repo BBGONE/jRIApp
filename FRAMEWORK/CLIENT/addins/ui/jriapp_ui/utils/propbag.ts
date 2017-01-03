@@ -1,8 +1,9 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    IIndexer, BasePropBag
+    IIndexer, BasePropBag, Utils
 } from "jriapp_shared";
 
+const utils = Utils, strUtils = utils.str;
 
 // wraps HTMLElement to get or change property using data binding
 export class PropertyBag extends BasePropBag {
@@ -14,13 +15,15 @@ export class PropertyBag extends BasePropBag {
     }
     //implement IPropertyBag
     getProp(name: string): any {
-        return this._el[name];
+        const propName = strUtils.trimBrackets(name);
+        return this._el[propName];
     }
     setProp(name: string, val: any): void {
-        const old = this._el[name];
+        const propName = strUtils.trimBrackets(name);
+        const old = this._el[propName];
         if (old !== val) {
-            this._el[name] = val;
-            this.onBagPropChanged(name);
+            this._el[propName] = val;
+            this.raisePropertyChanged(name);
         }
     }
     toString() {

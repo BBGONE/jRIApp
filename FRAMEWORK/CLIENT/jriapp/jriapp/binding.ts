@@ -296,15 +296,15 @@ export class Binding extends BaseObject implements IBinding {
         let errors: IValidationInfo[] = [], tgt = this._tgtEnd, src = this._srcEnd, srcPath = this._srcPath;
         if (!!tgt && viewChecks.isElView(tgt)) {
             if (!!src && srcPath.length > 0) {
-                let prop = srcPath[srcPath.length - 1];
+                const prop = sys.isPropBag(err_notif) ? srcPath[srcPath.length - 1] : srcPath.join(".");
                 errors = err_notif.getFieldErrors(prop);
             }
             (<IElView>tgt).validationErrors = errors;
         }
     }
     private _getTgtChangedFn(self: Binding, obj: any, prop: string, restPath: string[], lvl: number) {
-        let fn = function (sender: any, data: any) {
-            let val = sys.getProp(obj, prop);
+        const fn = function (sender: any, args: any) {
+            const val = sys.getProp(obj, prop);
             if (restPath.length > 0) {
                 self._setPathItem(null, BindTo.Target, lvl, restPath);
             }
@@ -315,8 +315,8 @@ export class Binding extends BaseObject implements IBinding {
         return fn;
     }
     private _getSrcChangedFn(self: Binding, obj: any, prop: string, restPath: string[], lvl: number) {
-        let fn = function (sender: any, data: any) {
-            let val = sys.getProp(obj, prop);
+        const fn = function (sender: any, args: any) {
+            const val = sys.getProp(obj, prop);
             if (restPath.length > 0) {
                 self._setPathItem(null, BindTo.Source, lvl, restPath);
             }

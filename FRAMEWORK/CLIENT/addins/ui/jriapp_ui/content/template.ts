@@ -1,5 +1,4 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { $ } from "jriapp/utils/jquery";
 import { BaseObject, LocaleERRS as ERRS, Utils } from "jriapp_shared";
 import {
     IContent, ITemplateEvents, IApplication, ITemplate, ITemplateInfo,

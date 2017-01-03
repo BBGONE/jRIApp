@@ -11,7 +11,7 @@ const checks = Checks, _whenAll = whenAll, _race = race, _getTaskQueue = getTask
 
 export class AsyncUtils {
     static createDeferred<T>(isSync?: boolean): IStatefulDeferred<T> {
-        return _createDefer<T>();
+        return _createDefer<T>(isSync);
     }
     static reject<T>(reason?: any, isSync?: boolean): IStatefulPromise<T> {
         return Promise.reject(reason, isSync);
@@ -29,7 +29,7 @@ export class AsyncUtils {
         return _getTaskQueue();
     }
     static delay<T>(func: () => T, time?: number): IStatefulPromise<T> {
-        const deferred = createDefer<T>();
+        const deferred = createDefer<T>(true);
         setTimeout(() => {
             try {
                 deferred.resolve(func());

@@ -4,7 +4,6 @@ import {
     IBaseObject, BaseObject, Utils
 } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
-import { $ } from "jriapp/utils/jquery";
 import { DomUtils } from "jriapp/utils/dom";
 import { BINDING_MODE } from "jriapp/const";
 import {

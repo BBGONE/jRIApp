@@ -2,7 +2,7 @@
 import {
     Utils
 } from "jriapp_shared";
-import { $ } from "jriapp/utils/jquery";
+import { $ } from "./utils/jquery";
 import { LOADER_GIF } from "jriapp/const";
 import { IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";

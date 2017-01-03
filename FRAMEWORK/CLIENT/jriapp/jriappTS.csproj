@@ -58,7 +58,6 @@
     <TypeScriptCompile Include="jriapp\int.ts" />
     <TypeScriptCompile Include="jriapp\utils\dom.ts" />
     <TypeScriptCompile Include="jriapp\utils\domevents.ts" />
-    <TypeScriptCompile Include="jriapp\utils\jquery.ts" />
     <TypeScriptCompile Include="jriapp\utils\parser.ts" />
     <TypeScriptCompile Include="jriapp\utils\viewchecks.ts" />
     <TypeScriptCompile Include="jriapp\app.ts" />
@@ -70,7 +69,6 @@
     <TypeScriptCompile Include="jriapp\bootstrap.ts" />
     <TypeScriptCompile Include="jriapp\const.ts" />
     <TypeScriptCompile Include="jriapp\converter.ts" />
-    <TypeScriptCompile Include="jriapp\datepicker.ts" />
     <TypeScriptCompile Include="jriapp\defaults.ts" />
     <TypeScriptCompile Include="jriapp\mvvm.ts" />
     <TypeScriptCompile Include="jriapp\utils\mloader.ts" />

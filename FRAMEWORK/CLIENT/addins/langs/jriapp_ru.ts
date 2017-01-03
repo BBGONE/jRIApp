@@ -1,8 +1,8 @@
 ﻿/// <reference path="../../built/jriapp.d.ts" />
 /** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { $ } from "jriapp/utils/jquery";
 import { IPagerText, IValidateText, IText, ILocaleText, STRS, assign } from "jriapp_shared/lang";
 import { bootstrap } from "jriapp/bootstrap";
+import { IDatepicker } from "jriapp/int";
 
 let PAGER: IPagerText = {
     firstText: "<<",
@@ -41,7 +41,11 @@ let _STRS: ILocaleText = { PAGER: PAGER, VALIDATE: VALIDATE, TEXT: TEXT };
 
 assign(STRS, _STRS);
 
-bootstrap.addOnInitialize((bootstrap, args) => {
+bootstrap.addOnInitialize((boot, args) => {
+    let datepicker = boot.getSvc<IDatepicker>("IDatepicker");
+    if (!datepicker)
+        throw new Error("IDatepicker service is not registered");
+
     (<any>$).datepicker.regional["ru"] = {
         closeText: "Закрыть",
         prevText: "&#x3c;Пред",
@@ -57,7 +61,7 @@ bootstrap.addOnInitialize((bootstrap, args) => {
         dateFormat: "dd.mm.yy",
         firstDay: 1,
         isRTL: false
-   };
-    bootstrap.defaults.datepicker.datepickerRegion = "ru";
+    };
+    datepicker.datepickerRegion = "ru";
 });
 export const moduleKey = "ru";

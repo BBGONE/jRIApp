@@ -27,11 +27,9 @@ export class Defaults extends BaseObject {
     private _decimalPoint: string;
     private _thousandSep: string;
     private _decPrecision: number;
-    private _svcStore: ISvcStore;
 
-    constructor(typeStore: ISvcStore) {
+    constructor() {
         super();
-        this._svcStore = typeStore;
         this._dateFormat = "DD.MM.YYYY";
         this._dateTimeFormat = "DD.MM.YYYY HH:mm:ss";
         this._timeFormat = "HH:mm:ss";
@@ -66,7 +64,6 @@ export class Defaults extends BaseObject {
             this.raisePropertyChanged(PROP_NAME.dateTimeFormat);
        }
    }
-    get datepicker() { return <IDatepicker>this._svcStore.getSvc("IDatepicker"); }
     //path to where application images are stored
     get imagesPath() { return this._imagesPath; }
     set imagesPath(v) {

@@ -1,5 +1,10 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { DUMY_ERROR } from "./const";
+import { SysUtils } from "./utils/sysutils";
+import { IValidationInfo } from "./int";
+import { ERRS, STRS } from "./lang";
+
+const sys = SysUtils;
 
 export class BaseError {
     private _message: string;
@@ -103,5 +108,36 @@ export class AggregateError extends BaseError {
 
     toString() {
         return "AggregateError: " + "\r\n" + this.message;
+    }
+}
+
+
+sys.isValidationError = (obj: any) => {
+    return (!!obj && obj instanceof ValidationError);
+};
+
+export class ValidationError extends BaseError {
+    private _validations: IValidationInfo[];
+    private _item: any;
+
+    constructor(validations: IValidationInfo[], item: any) {
+        let message = ERRS.ERR_VALIDATION + "\r\n";
+        validations.forEach(function (err, i) {
+            if (i > 0)
+                message = message + "\r\n";
+            if (!!err.fieldName)
+                message = message + " " + STRS.TEXT.txtField + ": '" + err.fieldName + "'  " + err.errors.join(", ");
+            else
+                message = message + err.errors.join(", ");
+        });
+        super(message);
+        this._validations = validations;
+        this._item = item;
+    }
+    get item(): any {
+        return this._item;
+    }
+    get validations(): IValidationInfo[] {
+        return this._validations;
     }
 }

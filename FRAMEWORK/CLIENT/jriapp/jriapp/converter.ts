@@ -4,6 +4,7 @@ import {
 } from "jriapp_shared";
 import { IConverter } from "./int";
 import { bootstrap } from "./bootstrap";
+import { IDatepicker } from "jriapp/int";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str,
     coreUtils = utils.core, boot = bootstrap,
@@ -27,7 +28,7 @@ export class DateConverter implements IConverter {
     convertToSource(val: any, param: any, dataContext: any): Date {
         if (!val)
             return null;
-        let defaults = bootstrap.defaults, datepicker = defaults.datepicker;
+        let defaults = boot.defaults, datepicker = boot.getSvc<IDatepicker>("IDatepicker");
         if (!!datepicker)
             return datepicker.parseDate(val);
         else
@@ -36,7 +37,7 @@ export class DateConverter implements IConverter {
     convertToTarget(val: any, param: any, dataContext: any): string {
         if (checks.isNt(val))
             return "";
-        let defaults = bootstrap.defaults, datepicker = defaults.datepicker;
+        let defaults = boot.defaults, datepicker = boot.getSvc<IDatepicker>("IDatepicker");
         if (!!datepicker)
             return datepicker.formatDate(val);
         else

@@ -152,7 +152,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
                 return self._getConverter(name);
             }
         };
-        this._defaults = new Defaults(this);
+        this._defaults = new Defaults();
         this.defaults.imagesPath = PathHelper.getFrameworkImgPath();
         //load jriapp.css (it will load only if it is not loaded yet)
         stylesLoader.loadOwnStyle();
@@ -448,16 +448,16 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         super.destroy();
     }
     registerSvc(name: string, obj: any) {
-        let name2 = STORE_KEY.SVC + name;
+        const name2 = STORE_KEY.SVC + name;
         return this._registerObject(this, name2, obj);
     }
     unregisterSvc(name: string, obj: any) {
-        let name2 = STORE_KEY.SVC + name;
+        const name2 = STORE_KEY.SVC + name;
         return this._unregisterObject(this, name2);
     }
     getSvc<T>(name: string): T;
     getSvc(name: string): any {
-        let name2 = STORE_KEY.SVC + name;
+        const name2 = STORE_KEY.SVC + name;
         return this._getObject(this, name2);
     }
     registerConverter(name: string, obj: IConverter) {
