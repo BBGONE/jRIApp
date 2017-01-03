@@ -121,7 +121,6 @@ declare module "jriapp_shared/int" {
         handleError(error: any, source: any): boolean;
     }
     export interface IPropertyBag extends IBaseObject {
-        onBagPropChanged(name: string): void;
         getProp(name: string): any;
         setProp(name: string, val: any): void;
         isPropertyBag: boolean;
@@ -159,7 +158,7 @@ declare module "jriapp_shared/int" {
     }
     export interface IValidationInfo {
         readonly fieldName: string;
-        readonly errors: string[];
+        errors: string[];
     }
     export interface IErrorNotification {
         getIsHasErrors(): boolean;
@@ -179,33 +178,65 @@ declare module "jriapp_shared/int" {
         new (): IWeakMap;
     }
 }
-declare module "jriapp_shared/errors" {
-    export class BaseError {
-        private _message;
-        constructor(message?: string);
-        toString(): string;
-        readonly isDummy: boolean;
-        readonly message: string;
+declare module "jriapp_shared/utils/checks" {
+    import { IThenable } from "jriapp_shared/utils/ideferred";
+    export class Checks {
+        static readonly undefined: any;
+        static isHasProp(obj: any, prop: string): boolean;
+        static isNull(a: any): a is void;
+        static isUndefined(a: any): a is void;
+        static isNt(a: any): a is void;
+        static isObject(a: any): boolean;
+        static isSimpleObject(a: any): boolean;
+        static isString(a: any): a is string;
+        static isFunc(a: any): a is Function;
+        static isBoolean(a: any): a is boolean;
+        static isDate(a: any): a is Date;
+        static isNumber(a: any): a is Number;
+        static isNumeric(a: any): a is Number;
+        static isBoolString(a: any): boolean;
+        static isGuid<T>(a: any): boolean;
+        static isArray<T>(a: any): a is Array<T>;
+        static isThenable(a: any): a is IThenable<any>;
     }
-    export class DummyError extends BaseError {
-        private _origError;
-        constructor(originalError: any);
-        readonly isDummy: boolean;
-        readonly origError: any;
+}
+declare module "jriapp_shared/utils/strUtils" {
+    export class StringUtils {
+        private static ERR_STRING_FORMAT_INVALID;
+        static endsWith(str: string, suffix: string): boolean;
+        static startsWith(str: string, prefix: string): boolean;
+        static fastTrim(str: string): string;
+        static trim(str: string, chars?: string): string;
+        static ltrim(str: string, chars?: string): string;
+        static rtrim(str: string, chars?: string): string;
+        static format(format_str: string, ...args: any[]): string;
+        static formatNumber(num: any, decimals?: number, dec_point?: string, thousands_sep?: string): string;
+        static stripNonNumeric(str: string): string;
+        static padLeft(val: string, len: number, pad: string): string;
+        static fastPadLeft(val: string, pad: string): string;
+        static trimQuotes(val: string): string;
+        static trimBrackets(val: string): string;
     }
-    export class AbortError extends BaseError {
-        private _reason;
-        constructor(reason?: string);
-        readonly isDummy: boolean;
-        readonly reason: string;
-    }
-    export class AggregateError extends BaseError {
-        private _errors;
-        constructor(errors?: any[]);
-        readonly errors: any[];
-        readonly count: number;
-        readonly message: string;
-        toString(): string;
+}
+declare module "jriapp_shared/utils/sysutils" {
+    import { ISubmittable, IErrorNotification, IEditable } from "jriapp_shared/int";
+    export class SysUtils {
+        static isBaseObj: (obj: any) => boolean;
+        static isBinding: (obj: any) => boolean;
+        static isPropBag: (obj: any) => boolean;
+        static isCollection: (obj: any) => boolean;
+        static getItemByProp: (obj: any, prop: string) => any;
+        static isValidationError: (obj: any) => boolean;
+        static isEditable(obj: any): obj is IEditable;
+        static isSubmittable(obj: any): obj is ISubmittable;
+        static isErrorNotification(obj: any): obj is IErrorNotification;
+        static getErrorNotification(obj: any): IErrorNotification;
+        static getEditable(obj: any): IEditable;
+        static getSubmittable(obj: any): ISubmittable;
+        static getPathParts(path: string): string[];
+        static getProp(obj: any, prop: string): any;
+        static setProp(obj: any, prop: string, val: any): void;
+        static resolvePath(obj: any, path: string): any;
     }
 }
 declare module "jriapp_shared/utils/arrhelper" {
@@ -224,45 +255,6 @@ declare module "jriapp_shared/utils/arrhelper" {
         static remove(array: any[], obj: any): number;
         static removeIndex(array: any[], index: number): boolean;
         static insert(array: any[], obj: any, pos: number): void;
-    }
-}
-declare module "jriapp_shared/utils/strutils" {
-    export class StringUtils {
-        private static ERR_STRING_FORMAT_INVALID;
-        static endsWith(str: string, suffix: string): boolean;
-        static startsWith(str: string, prefix: string): boolean;
-        static fastTrim(str: string): string;
-        static trim(str: string, chars?: string): string;
-        static ltrim(str: string, chars?: string): string;
-        static rtrim(str: string, chars?: string): string;
-        static format(format_str: string, ...args: any[]): string;
-        static formatNumber(num: any, decimals?: number, dec_point?: string, thousands_sep?: string): string;
-        static stripNonNumeric(str: string): string;
-        static padLeft(val: string, len: number, pad: string): string;
-        static fastPadLeft(val: string, pad: string): string;
-        static trimQuotes(val: string): string;
-        static trimBrackets(val: string): string;
-    }
-}
-declare module "jriapp_shared/utils/checks" {
-    import { IThenable } from "jriapp_shared/utils/ideferred";
-    export class Checks {
-        static readonly undefined: any;
-        static isHasProp(obj: any, prop: string): boolean;
-        static isNull(a: any): a is void;
-        static isUndefined(a: any): a is void;
-        static isNt(a: any): a is void;
-        static isObject(a: any): boolean;
-        static isSimpleObject(a: any): boolean;
-        static isString(a: any): a is string;
-        static isFunc(a: any): a is Function;
-        static isBoolean(a: any): a is boolean;
-        static isDate(a: any): a is Date;
-        static isNumber(a: any): a is Number;
-        static isNumeric(a: any): a is Number;
-        static isBoolString(a: any): boolean;
-        static isArray<T>(a: any): a is Array<T>;
-        static isThenable(a: any): a is IThenable<any>;
     }
 }
 declare module "jriapp_shared/utils/coreutils" {
@@ -409,25 +401,41 @@ declare module "jriapp_shared/lang" {
     export let ERRS: IErrors;
     export let STRS: ILocaleText;
 }
-declare module "jriapp_shared/utils/sysutils" {
-    import { ISubmittable, IErrorNotification, IEditable } from "jriapp_shared/int";
-    export class SysUtils {
-        static isBaseObj: (obj: any) => boolean;
-        static isBinding: (obj: any) => boolean;
-        static isPropBag: (obj: any) => boolean;
-        static isCollection: (obj: any) => boolean;
-        static getItemByProp: (obj: any, prop: string) => any;
-        static isValidationError: (obj: any) => boolean;
-        static isEditable(obj: any): obj is IEditable;
-        static isSubmittable(obj: any): obj is ISubmittable;
-        static isErrorNotification(obj: any): obj is IErrorNotification;
-        static getErrorNotification(obj: any): IErrorNotification;
-        static getEditable(obj: any): IEditable;
-        static getSubmittable(obj: any): ISubmittable;
-        static getPathParts(path: string): string[];
-        static getProp(obj: any, prop: string): any;
-        static setProp(obj: any, prop: string, val: any): void;
-        static resolvePath(obj: any, path: string): any;
+declare module "jriapp_shared/errors" {
+    import { IValidationInfo } from "jriapp_shared/int";
+    export class BaseError {
+        private _message;
+        constructor(message?: string);
+        toString(): string;
+        readonly isDummy: boolean;
+        readonly message: string;
+    }
+    export class DummyError extends BaseError {
+        private _origError;
+        constructor(originalError: any);
+        readonly isDummy: boolean;
+        readonly origError: any;
+    }
+    export class AbortError extends BaseError {
+        private _reason;
+        constructor(reason?: string);
+        readonly isDummy: boolean;
+        readonly reason: string;
+    }
+    export class AggregateError extends BaseError {
+        private _errors;
+        constructor(errors?: any[]);
+        readonly errors: any[];
+        readonly count: number;
+        readonly message: string;
+        toString(): string;
+    }
+    export class ValidationError extends BaseError {
+        private _validations;
+        private _item;
+        constructor(validations: IValidationInfo[], item: any);
+        readonly item: any;
+        readonly validations: IValidationInfo[];
     }
 }
 declare module "jriapp_shared/utils/error" {
@@ -505,7 +513,6 @@ declare module "jriapp_shared/utils/basebag" {
     import { BaseObject } from "jriapp_shared/object";
     export class BasePropBag extends BaseObject implements IPropertyBag {
         _isHasProp(prop: string): boolean;
-        onBagPropChanged(name: string): void;
         getProp(name: string): any;
         setProp(name: string, val: any): void;
         readonly isPropertyBag: boolean;
@@ -585,6 +592,62 @@ declare module "jriapp_shared/utils/debounce" {
         destroy(): void;
         readonly interval: number;
         readonly IsDestroyed: boolean;
+    }
+}
+declare module "jriapp_shared/utils/jsonbag" {
+    import { IEditable, IValidationInfo, IErrorNotification, TEventHandler, IPropertyBag } from "jriapp_shared/int";
+    import { BasePropBag } from "jriapp_shared/utils/basebag";
+    export interface IBagErrors {
+        [fieldName: string]: string[];
+    }
+    export interface IFieldValidateArgs<TBag extends IPropertyBag> {
+        bag: TBag;
+        readonly fieldName: string;
+        readonly errors: string[];
+    }
+    export interface IBagValidateArgs<TBag extends IPropertyBag> {
+        readonly bag: TBag;
+        readonly result: IValidationInfo[];
+    }
+    export class JsonBag extends BasePropBag implements IEditable, IErrorNotification {
+        private _json;
+        private _jsonChanged;
+        private _val;
+        private _saveVal;
+        private _debounce;
+        private _errors;
+        constructor(json: string, jsonChanged: (json: string) => void);
+        destroy(): void;
+        protected _getEventNames(): string[];
+        protected onChanged(): void;
+        resetJson(json?: string): void;
+        updateJson(): boolean;
+        protected _validateBag(): IValidationInfo[];
+        protected _validateField(fieldName: string): IValidationInfo;
+        protected _onErrorsChanged(): void;
+        protected _addErrors(errors: IValidationInfo[]): void;
+        protected _addError(fieldName: string, errors: string[], ignoreChangeErrors?: boolean): void;
+        protected _removeError(fieldName: string, ignoreChangeErrors?: boolean): boolean;
+        protected _removeAllErrors(): void;
+        addOnValidateBag(fn: TEventHandler<IPropertyBag, IBagValidateArgs<IPropertyBag>>, nmspace?: string, context?: any): void;
+        removeOnValidateBag(nmspace?: string): void;
+        addOnValidateField(fn: TEventHandler<IPropertyBag, IFieldValidateArgs<IPropertyBag>>, nmspace?: string, context?: any): void;
+        removeOnValidateField(nmspace?: string): void;
+        getIsHasErrors(): boolean;
+        addOnErrorsChanged(fn: TEventHandler<JsonBag, any>, nmspace?: string, context?: any): void;
+        removeOnErrorsChanged(nmspace?: string): void;
+        getFieldErrors(fieldName: string): IValidationInfo[];
+        getAllErrors(): IValidationInfo[];
+        getIErrorNotification(): IErrorNotification;
+        beginEdit(): boolean;
+        endEdit(): boolean;
+        cancelEdit(): boolean;
+        readonly isEditing: boolean;
+        getProp(name: string): any;
+        setProp(name: string, val: any): void;
+        readonly val: any;
+        readonly json: string;
+        toString(): string;
     }
 }
 declare module "jriapp_shared/collection/const" {
@@ -714,7 +777,7 @@ declare module "jriapp_shared/collection/int" {
         _onAttach(): void;
         _setIsDetached(v: boolean): void;
         _setIsCached(v: boolean): void;
-        raiseErrorsChanged(args: any): void;
+        raiseErrorsChanged(): void;
         readonly isCanSubmit: boolean;
         readonly status: ITEM_STATUS;
         readonly isNew: boolean;
@@ -746,10 +809,14 @@ declare module "jriapp_shared/collection/int" {
         items: TItem[];
         newItems: TItem[];
     }
-    export interface ICollValidateArgs<TItem extends ICollectionItem> {
-        item: TItem;
-        fieldName: string;
+    export interface ICollValidateFieldArgs<TItem extends ICollectionItem> {
+        readonly item: TItem;
+        readonly fieldName: string;
         errors: string[];
+    }
+    export interface ICollValidateItemArgs<TItem extends ICollectionItem> {
+        readonly item: TItem;
+        result: IValidationInfo[];
     }
     export interface ICollItemStatusArgs<TItem extends ICollectionItem> {
         item: TItem;
@@ -797,8 +864,8 @@ declare module "jriapp_shared/collection/int" {
         removeOnCollChanged(nmspace?: string): void;
         addOnFill(fn: TEventHandler<ICollection<TItem>, ICollFillArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnFill(nmspace?: string): void;
-        addOnValidate(fn: TEventHandler<ICollection<TItem>, ICollValidateArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnValidate(nmspace?: string): void;
+        addOnValidateField(fn: TEventHandler<ICollection<TItem>, ICollValidateFieldArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
+        removeOnValidateField(nmspace?: string): void;
         addOnItemDeleting(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnItemDeleting(nmspace?: string): void;
         addOnItemAdding(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
@@ -862,7 +929,8 @@ declare module "jriapp_shared/collection/int" {
         isLoading: boolean;
     }
     export interface ICollection<TItem extends ICollectionItem> extends ISimpleCollection<TItem>, IEditableCollection<TItem>, ICollectionEvents<TItem> {
-        options: ICollectionOptions;
+        readonly options: ICollectionOptions;
+        readonly uniqueID: string;
     }
     export interface IValueUtils {
         valueToDate(val: string, dtcnv: DATE_CONVERSION, serverTZ: number): Date;
@@ -887,7 +955,7 @@ declare module "jriapp_shared/collection/int" {
         onBeforeEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void;
         onEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void;
         onCommitChanges(item: TItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS): void;
-        validateItem(item: TItem): IValidationInfo;
+        validateItem(item: TItem): IValidationInfo[];
         validateItemField(item: TItem, fieldName: string): IValidationInfo;
         addErrors(item: TItem, errors: IValidationInfo[]): void;
         addError(item: TItem, fieldName: string, errors: string[]): void;
@@ -938,7 +1006,7 @@ declare module "jriapp_shared/utils/utils" {
     import { SysUtils } from "jriapp_shared/utils/sysutils";
     import { AsyncUtils } from "jriapp_shared/utils/async";
     import { HttpUtils } from "jriapp_shared/utils/http";
-    import { StringUtils } from "jriapp_shared/utils/strutils";
+    import { StringUtils } from "jriapp_shared/utils/strUtils";
     import { Checks } from "jriapp_shared/utils/checks";
     import { ArrayHelper } from "jriapp_shared/utils/arrhelper";
     import { ITaskQueue } from "jriapp_shared/utils/ideferred";
@@ -989,22 +1057,6 @@ declare module "jriapp_shared/collection/utils" {
     export function fn_traverseField<T>(fld: IFieldInfo, fn: TraveseFieldCB<T>, parent_res?: T): void;
     export function fn_traverseFields<T>(flds: IFieldInfo[], fn: TraveseFieldCB<T>, parent_res?: T): void;
 }
-declare module "jriapp_shared/collection/validation" {
-    import { IValidationInfo } from "jriapp_shared/int";
-    import { BaseError } from "jriapp_shared/errors";
-    export class ValidationError extends BaseError {
-        private _errors;
-        private _item;
-        constructor(errorInfo: IValidationInfo[], item: any);
-        readonly item: any;
-        readonly errors: IValidationInfo[];
-    }
-    export class Validations {
-        private static _dtRangeToDate(str);
-        static checkNumRange(num: number, range: string): void;
-        static checkDateRange(dt: Date, range: string): void;
-    }
-}
 declare module "jriapp_shared/collection/base" {
     import { SORT_ORDER, ITEM_STATUS, COLL_CHANGE_REASON, COLL_CHANGE_OPER } from "jriapp_shared/collection/const";
     import { IFieldInfo } from "jriapp_shared/collection/int";
@@ -1012,8 +1064,9 @@ declare module "jriapp_shared/collection/base" {
     import { IIndexer, IValidationInfo, TEventHandler, TPropChangedHandler, IBaseObject, TPriority } from "jriapp_shared/int";
     import { BaseObject } from "jriapp_shared/object";
     import { WaitQueue } from "jriapp_shared/utils/waitqueue";
-    import { ICollectionItem, ICollection, ICollectionOptions, IPermissions, IInternalCollMethods, ICollChangedArgs, ICancellableArgs, ICollFillArgs, ICollEndEditArgs, ICollItemArgs, ICollItemStatusArgs, ICollValidateArgs, ICurrentChangingArgs, ICommitChangesArgs, IItemAddedArgs, IPageChangingArgs, IErrorsList, IErrors } from "jriapp_shared/collection/int";
+    import { ICollectionItem, ICollection, ICollectionOptions, IPermissions, IInternalCollMethods, ICollChangedArgs, ICancellableArgs, ICollFillArgs, ICollEndEditArgs, ICollItemArgs, ICollItemStatusArgs, ICollValidateFieldArgs, ICollValidateItemArgs, ICurrentChangingArgs, ICommitChangesArgs, IItemAddedArgs, IPageChangingArgs, IErrorsList, IErrors } from "jriapp_shared/collection/int";
     export class BaseCollection<TItem extends ICollectionItem> extends BaseObject implements ICollection<TItem> {
+        private _objId;
         protected _options: ICollectionOptions;
         protected _isLoading: boolean;
         protected _EditingItem: TItem;
@@ -1027,7 +1080,6 @@ declare module "jriapp_shared/collection/base" {
         protected _fieldMap: IIndexer<IFieldInfo>;
         protected _fieldInfos: IFieldInfo[];
         protected _errors: IErrorsList;
-        protected _ignoreChangeErrors: boolean;
         protected _pkInfo: IFieldInfo[];
         protected _isUpdating: boolean;
         protected _waitQueue: WaitQueue;
@@ -1047,8 +1099,10 @@ declare module "jriapp_shared/collection/base" {
         removeOnCollChanged(nmspace?: string): void;
         addOnFill(fn: TEventHandler<ICollection<TItem>, ICollFillArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnFill(nmspace?: string): void;
-        addOnValidate(fn: TEventHandler<ICollection<TItem>, ICollValidateArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnValidate(nmspace?: string): void;
+        addOnValidateField(fn: TEventHandler<ICollection<TItem>, ICollValidateFieldArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
+        removeOnValidateField(nmspace?: string): void;
+        addOnValidateItem(fn: TEventHandler<ICollection<TItem>, ICollValidateItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
+        removeOnValidateItem(nmspace?: string): void;
         addOnItemDeleting(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnItemDeleting(nmspace?: string): void;
         addOnItemAdding(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
@@ -1102,11 +1156,11 @@ declare module "jriapp_shared/collection/base" {
         protected _onBeforeEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void;
         protected _onEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void;
         protected _onCommitChanges(item: TItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS): void;
-        protected _validateItem(item: TItem): IValidationInfo;
+        protected _validateItem(item: TItem): IValidationInfo[];
         protected _validateItemField(item: TItem, fieldName: string): IValidationInfo;
         protected _addErrors(item: TItem, errors: IValidationInfo[]): void;
-        protected _addError(item: TItem, fieldName: string, errors: string[]): void;
-        protected _removeError(item: TItem, fieldName: string): void;
+        protected _addError(item: TItem, fieldName: string, errors: string[], ignoreChangeErrors?: boolean): void;
+        protected _removeError(item: TItem, fieldName: string, ignoreChangeErrors?: boolean): void;
         protected _removeAllErrors(item: TItem): void;
         protected _getErrors(item: TItem): IErrors;
         protected _onErrorsChanged(item: TItem): void;
@@ -1152,6 +1206,16 @@ declare module "jriapp_shared/collection/base" {
         readonly isLoading: boolean;
         isUpdating: boolean;
         readonly permissions: IPermissions;
+        readonly uniqueID: string;
+    }
+}
+declare module "jriapp_shared/collection/validation" {
+    import { IFieldInfo } from "jriapp_shared/collection/int";
+    export class Validations {
+        private static _dtRangeToDate(str);
+        private static checkNumRange(num, range);
+        private static checkDateRange(dt, range);
+        static checkField(fieldInfo: IFieldInfo, value: any, isNew: boolean): string[];
     }
 }
 declare module "jriapp_shared/collection/aspect" {
@@ -1177,21 +1241,20 @@ declare module "jriapp_shared/collection/aspect" {
         _setIsCached(v: boolean): void;
         constructor(collection: BaseCollection<TItem>);
         protected _getEventNames(): string[];
-        protected _onErrorsChanged(args: any): void;
+        protected _onErrorsChanged(): void;
         protected _beginEdit(): boolean;
         protected _endEdit(): boolean;
         protected _cancelEdit(): boolean;
-        protected _validate(): IValidationInfo;
         protected _skipValidate(fieldInfo: IFieldInfo, val: any): boolean;
+        protected _validateItem(): IValidationInfo[];
         protected _validateField(fieldName: string): IValidationInfo;
-        protected _validateAll(): IValidationInfo[];
-        protected _checkVal(fieldInfo: IFieldInfo, val: any): any;
+        protected _validateFields(): IValidationInfo[];
         protected _resetIsNew(): void;
         protected _fakeDestroy(): void;
         handleError(error: any, source: any): boolean;
         _onAttaching(): void;
         _onAttach(): void;
-        raiseErrorsChanged(args: any): void;
+        raiseErrorsChanged(): void;
         getFieldInfo(fieldName: string): IFieldInfo;
         getFieldNames(): string[];
         getErrorString(): string;
@@ -1207,8 +1270,10 @@ declare module "jriapp_shared/collection/aspect" {
         getFieldErrors(fieldName: string): IValidationInfo[];
         getAllErrors(): IValidationInfo[];
         getIErrorNotification(): IErrorNotification;
+        private _delCustomVal(entry);
+        setCustomVal(name: string, val: any, isOwnVal?: boolean): void;
+        getCustomVal(name: string): any;
         destroy(): void;
-        private _delCustomVal(old);
         toString(): string;
         item: TItem;
         readonly isCanSubmit: boolean;
@@ -1222,8 +1287,6 @@ declare module "jriapp_shared/collection/aspect" {
         readonly isHasChanges: boolean;
         readonly isCached: boolean;
         readonly isDetached: boolean;
-        setCustomVal(name: string, val: any, isOwnVal?: boolean): void;
-        getCustomVal(name: string): any;
     }
 }
 declare module "jriapp_shared/collection/item" {
@@ -1282,16 +1345,23 @@ declare module "jriapp_shared/collection/list" {
     }
 }
 declare module "jriapp_shared/utils/anylist" {
-    import { IPropertyBag } from "jriapp_shared/int";
+    import { IPropertyBag, IValidationInfo } from "jriapp_shared/int";
     import { CollectionItem } from "jriapp_shared/collection/item";
     import { IListItem, ListItemAspect, BaseList } from "jriapp_shared/collection/list";
+    export { ICollValidateFieldArgs } from "jriapp_shared/collection/int";
     export interface IAnyVal {
         val: any;
     }
-    export class AnyValListItem extends CollectionItem<ListItemAspect<AnyValListItem, IAnyVal>> implements IListItem, IPropertyBag, IAnyVal {
-        constructor(aspect: ListItemAspect<AnyValListItem, IAnyVal>);
+    export class AnyItemAspect<TItem extends IListItem, TObj> extends ListItemAspect<TItem, TObj> {
+        constructor(coll: BaseList<TItem, TObj>, obj?: TObj);
+        _validateField(name: string): IValidationInfo;
+        protected _validateFields(): IValidationInfo[];
+        _setProp(name: string, val: any): void;
+        _getProp(name: string): any;
+    }
+    export class AnyValListItem extends CollectionItem<AnyItemAspect<AnyValListItem, IAnyVal>> implements IListItem, IPropertyBag, IAnyVal {
+        constructor(aspect: AnyItemAspect<AnyValListItem, IAnyVal>);
         val: any;
-        onBagPropChanged(name: string): void;
         _isHasProp(prop: string): boolean;
         getProp(name: string): any;
         setProp(name: string, val: any): void;
@@ -1305,37 +1375,17 @@ declare module "jriapp_shared/utils/anylist" {
         private _debounce;
         constructor(onChanged: (arr: any[]) => void);
         destroy(): void;
+        protected createItem(obj?: IAnyVal): AnyValListItem;
         protected onChanged(): void;
         setValues(values: any[]): void;
         toString(): string;
     }
 }
-declare module "jriapp_shared/utils/jsonbag" {
-    import { IEditable } from "jriapp_shared/int";
+declare module "jriapp_shared/utils/jsonarray" {
+    import { IValidationInfo, TEventHandler, IPropertyBag } from "jriapp_shared/int";
     import { BaseObject } from "jriapp_shared/object";
-    import { BasePropBag } from "jriapp_shared/utils/basebag";
-    import { AnyList } from "jriapp_shared/utils/anylist";
-    export class JsonBag extends BasePropBag implements IEditable {
-        private _json;
-        private _jsonChanged;
-        private _val;
-        private _saveVal;
-        private _debounce;
-        constructor(json: string, jsonChanged: (json: string) => void);
-        destroy(): void;
-        protected onChanged(): void;
-        resetJson(json?: string): void;
-        updateJson(): boolean;
-        beginEdit(): boolean;
-        endEdit(): boolean;
-        cancelEdit(): boolean;
-        readonly isEditing: boolean;
-        getProp(name: string): any;
-        setProp(name: string, val: any): void;
-        readonly val: any;
-        readonly json: string;
-        toString(): string;
-    }
+    import { JsonBag, IFieldValidateArgs, IBagValidateArgs } from "jriapp_shared/utils/jsonbag";
+    import { AnyList, AnyValListItem } from "jriapp_shared/utils/anylist";
     export class JsonArray extends BaseObject {
         private _owner;
         private _pathToArray;
@@ -1343,7 +1393,14 @@ declare module "jriapp_shared/utils/jsonbag" {
         private _objId;
         constructor(owner: JsonBag, pathToArray: string);
         destroy(): void;
+        protected _getEventNames(): string[];
         protected updateArray(arr: any[]): void;
+        addOnValidateBag(fn: TEventHandler<IPropertyBag, IBagValidateArgs<IPropertyBag>>, nmspace?: string, context?: any): void;
+        removeOnValidateBag(nmspace?: string): void;
+        addOnValidateField(fn: TEventHandler<IPropertyBag, IFieldValidateArgs<IPropertyBag>>, nmspace?: string, context?: any): void;
+        removeOnValidateField(nmspace?: string): void;
+        protected _validateBag(bag: AnyValListItem): IValidationInfo[];
+        protected _validateField(bag: AnyValListItem, fieldName: string): IValidationInfo;
         getArray(): any[];
         readonly pathToArray: string;
         readonly owner: JsonBag;
@@ -1387,6 +1444,7 @@ declare module "jriapp_shared" {
     export * from "jriapp_shared/object";
     export * from "jriapp_shared/utils/basebag";
     export * from "jriapp_shared/utils/jsonbag";
+    export * from "jriapp_shared/utils/jsonarray";
     export { createWeakMap } from "jriapp_shared/utils/weakmap";
     export { STRS as LocaleSTRS, ERRS as LocaleERRS } from "jriapp_shared/lang";
     export { BaseCollection } from "jriapp_shared/collection/base";
@@ -1394,7 +1452,7 @@ declare module "jriapp_shared" {
     export { ItemAspect } from "jriapp_shared/collection/aspect";
     export { ListItemAspect, IListItem, BaseList, IListItemAspectConstructor, IListItemConstructor } from "jriapp_shared/collection/list";
     export { BaseDictionary } from "jriapp_shared/collection/dictionary";
-    export { ValidationError } from "jriapp_shared/collection/validation";
+    export { ValidationError } from "jriapp_shared/errors";
     export * from "jriapp_shared/utils/ideferred";
     export { Utils } from "jriapp_shared/utils/utils";
     export { WaitQueue, IWaitQueueItem } from "jriapp_shared/utils/waitqueue";

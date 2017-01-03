@@ -6,7 +6,7 @@ import * as COMMON from "common";
 import * as DEMODB from "../demo/demoDB";
 import * as AUTOCOMPLETE from "autocomplete";
 
-var utils = RIAPP.Utils, $ = RIAPP.$;
+var utils = RIAPP.Utils, $ = uiMOD.$;
 
 export class ProductAutoComplete extends AUTOCOMPLETE.AutoCompleteElView {
     private _lastLoadedID: number;

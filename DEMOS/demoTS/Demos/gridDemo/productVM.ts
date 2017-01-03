@@ -9,7 +9,7 @@ import { DemoApplication } from "./app";
 import { TestInvokeCommand } from "./commands";
 import { RowStateProvider, OptionStateProvider, OptionTextProvider } from "./states";
 
-var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = RIAPP.$;
+var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = uiMOD.$;
 
 
 export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implements uiMOD.ITabsEvents {
@@ -90,23 +90,44 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
         this._dbSet.isSubmitOnDelete = true;
 
         //example of using custom validation on client (in addition to a built-in validation)
-        this._dbSet.addOnValidate(function (sender, args) {
-            var item = args.item;
-            if (!args.fieldName) { //full item validation
+        const validations = [{
+            fieldName: <string>null, fn: (item: DEMODB.Product, errors: string[]) => {
                 if (!!item.SellEndDate) { //check it must be after Start Date
                     if (item.SellEndDate < item.SellStartDate) {
-                        args.errors.push('End Date must be after Start Date');
+                        errors.push('End Date must be after Start Date');
                     }
                 }
             }
-            else //validation of field value
-            {
-                if (args.fieldName == "Weight") {
-                    if (args.item.Weight > 20000) {
-                        args.errors.push('Weight must be less than 20000');
-                    }
+        },
+        {
+            fieldName: "Weight", fn: (item: DEMODB.Product, errors: string[]) => {
+                if (item.Weight > 20000) {
+                    errors.push('Weight must be less than 20000');
                 }
             }
+        }];
+
+        //example of using custom validation on client (in addition to a built-in validation)
+        this._dbSet.addOnValidateField(function (sender, args) {
+            var item = args.item;
+            validations.filter((val) => {
+                return args.fieldName === val.fieldName;
+            }).forEach((val) => {
+                val.fn(item, args.errors);
+            });
+        }, self.uniqueID);
+
+        this._dbSet.addOnValidateItem(function (sender, args) {
+            var item = args.item;
+            validations.filter((val) => {
+                return !val.fieldName;
+            }).forEach((val) => {
+                let errors: string[] = [];
+                val.fn(item, errors);
+                if (errors.length > 0) {
+                    args.result.push({ fieldName: null, errors: errors });
+                }
+            });
         }, self.uniqueID);
 
         //adds new product - uses dialog to enter the data

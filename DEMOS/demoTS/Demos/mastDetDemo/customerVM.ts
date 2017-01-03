@@ -7,7 +7,7 @@ import * as DEMODB from "../demo/demoDB";
 import { DemoApplication } from "./app";
 import { OrderVM } from "./orderVM";
 
-var utils = RIAPP.Utils, $ = RIAPP.$;
+var utils = RIAPP.Utils, $ = uiMOD.$;
 
 export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
     private _dataGrid: uiMOD.DataGrid;
@@ -38,7 +38,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
         }, self.uniqueID);
 
         //example of using custom validation on client (in addition to a built-in validation)
-        this._dbSet.addOnValidate(function (sender, args) {
+        this._dbSet.addOnValidateField(function (sender, args) {
             var item = args.item;
             //check complex property value
             if (args.fieldName == "ComplexProp.ComplexProp.Phone") {

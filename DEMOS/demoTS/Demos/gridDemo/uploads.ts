@@ -5,7 +5,7 @@ import * as uiMOD from "jriapp_ui";
 import * as DEMODB from "../demo/demoDB";
 import { BaseUploadVM } from "./baseUpload";
 
-var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = RIAPP.$;
+var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = uiMOD.$;
 
 
 //helper function to get html DOM element  inside template's instance

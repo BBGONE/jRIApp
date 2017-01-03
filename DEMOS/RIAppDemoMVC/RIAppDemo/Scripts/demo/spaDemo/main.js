@@ -1477,9 +1477,9 @@ define("domainModel", ["require", "exports", "jriapp", "jriapp_db"], function (r
     }(dbMOD.DbContext));
     exports.DbContext = DbContext;
 });
-define("addressVM", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
+define("addressVM", ["require", "exports", "jriapp", "jriapp_ui"], function (require, exports, RIAPP, uiMOD) {
     "use strict";
-    var utils = RIAPP.Utils, $ = RIAPP.$;
+    var utils = RIAPP.Utils, $ = uiMOD.$;
     var AddressVM = (function (_super) {
         __extends(AddressVM, _super);
         function AddressVM(orderVM) {
@@ -1563,9 +1563,9 @@ define("addressVM", ["require", "exports", "jriapp"], function (require, exports
     }(RIAPP.ViewModel));
     exports.AddressVM = AddressVM;
 });
-define("productVM", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
+define("productVM", ["require", "exports", "jriapp", "jriapp_ui"], function (require, exports, RIAPP, uiMOD) {
     "use strict";
-    var utils = RIAPP.Utils, $ = RIAPP.$;
+    var utils = RIAPP.Utils, $ = uiMOD.$;
     var ProductVM = (function (_super) {
         __extends(ProductVM, _super);
         function ProductVM(orderDetailVM) {
@@ -1643,9 +1643,9 @@ define("productVM", ["require", "exports", "jriapp"], function (require, exports
     }(RIAPP.ViewModel));
     exports.ProductVM = ProductVM;
 });
-define("orderDetVM", ["require", "exports", "jriapp", "productVM"], function (require, exports, RIAPP, productVM_1) {
+define("orderDetVM", ["require", "exports", "jriapp", "jriapp_ui", "productVM"], function (require, exports, RIAPP, uiMOD, productVM_1) {
     "use strict";
-    var utils = RIAPP.Utils, $ = RIAPP.$;
+    var utils = RIAPP.Utils, $ = uiMOD.$;
     var OrderDetailVM = (function (_super) {
         __extends(OrderDetailVM, _super);
         function OrderDetailVM(orderVM) {
@@ -1735,9 +1735,9 @@ define("orderDetVM", ["require", "exports", "jriapp", "productVM"], function (re
     }(RIAPP.ViewModel));
     exports.OrderDetailVM = OrderDetailVM;
 });
-define("orderVM", ["require", "exports", "jriapp", "domainModel", "gridEvents", "addressVM", "orderDetVM"], function (require, exports, RIAPP, DEMODB, gridEvents_1, addressVM_1, orderDetVM_1) {
+define("orderVM", ["require", "exports", "jriapp", "jriapp_ui", "domainModel", "gridEvents", "addressVM", "orderDetVM"], function (require, exports, RIAPP, uiMOD, DEMODB, gridEvents_1, addressVM_1, orderDetVM_1) {
     "use strict";
-    var utils = RIAPP.Utils, $ = RIAPP.$;
+    var utils = RIAPP.Utils, $ = uiMOD.$;
     var OrderVM = (function (_super) {
         __extends(OrderVM, _super);
         function OrderVM(customerVM) {
@@ -2263,9 +2263,9 @@ define("routes", ["require", "exports", "jriapp", "animation"], function (requir
     }(RIAPP.BaseObject));
     exports.AddressRoute = AddressRoute;
 });
-define("custAddressVM", ["require", "exports", "jriapp", "jriapp_db", "addAddressVM"], function (require, exports, RIAPP, dbMOD, addAddressVM_1) {
+define("custAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "addAddressVM"], function (require, exports, RIAPP, dbMOD, uiMOD, addAddressVM_1) {
     "use strict";
-    var utils = RIAPP.Utils, $ = RIAPP.$;
+    var utils = RIAPP.Utils, $ = uiMOD.$;
     var CustomerAddressVM = (function (_super) {
         __extends(CustomerAddressVM, _super);
         function CustomerAddressVM(customerVM) {
@@ -2433,9 +2433,9 @@ define("custAddressVM", ["require", "exports", "jriapp", "jriapp_db", "addAddres
     }(RIAPP.ViewModel));
     exports.CustomerAddressVM = CustomerAddressVM;
 });
-define("customerVM", ["require", "exports", "jriapp", "jriapp_db", "gridEvents", "routes", "custAddressVM", "orderVM"], function (require, exports, RIAPP, dbMOD, gridEvents_2, routes_1, custAddressVM_1, orderVM_1) {
+define("customerVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "gridEvents", "routes", "custAddressVM", "orderVM"], function (require, exports, RIAPP, dbMOD, uiMOD, gridEvents_2, routes_1, custAddressVM_1, orderVM_1) {
     "use strict";
-    var utils = RIAPP.Utils, $ = RIAPP.$;
+    var utils = RIAPP.Utils, $ = uiMOD.$;
     var CustomerVM = (function (_super) {
         __extends(CustomerVM, _super);
         function CustomerVM(app) {
@@ -2762,7 +2762,7 @@ define("app", ["require", "exports", "jriapp", "domainModel", "common", "custome
 });
 define("addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "common", "routes"], function (require, exports, RIAPP, dbMOD, uiMOD, COMMON, routes_2) {
     "use strict";
-    var utils = RIAPP.Utils, $ = RIAPP.$;
+    var utils = RIAPP.Utils, $ = uiMOD.$;
     var AddAddressVM = (function (_super) {
         __extends(AddAddressVM, _super);
         function AddAddressVM(customerAddressVM) {

@@ -2,7 +2,7 @@
 import * as dbMOD from "jriapp_db";
 import * as uiMOD from "jriapp_ui";
 
-var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = RIAPP.$;
+var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = uiMOD.$;
 
 export class BaseUploadVM extends RIAPP.BaseObject {
     private _uploadUrl: string;

@@ -1516,9 +1516,9 @@ define("gridDemo/commands", ["require", "exports", "jriapp"], function (require,
     }(RIAPP.BaseCommand));
     exports.ResetCommand = ResetCommand;
 });
-define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/demoDB", "gridDemo/commands"], function (require, exports, RIAPP, dbMOD, DEMODB, commands_1) {
+define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "demo/demoDB", "gridDemo/commands"], function (require, exports, RIAPP, dbMOD, uiMOD, DEMODB, commands_1) {
     "use strict";
-    var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = RIAPP.$;
+    var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = uiMOD.$;
     var ProductsFilter = (function (_super) {
         __extends(ProductsFilter, _super);
         function ProductsFilter(app) {
@@ -1783,7 +1783,7 @@ define("gridDemo/states", ["require", "exports"], function (require, exports) {
 });
 define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "common", "gridDemo/filters", "gridDemo/commands", "gridDemo/states"], function (require, exports, RIAPP, dbMOD, uiMOD, COMMON, filters_1, commands_2, states_1) {
     "use strict";
-    var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = RIAPP.$;
+    var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = uiMOD.$;
     var ProductViewModel = (function (_super) {
         __extends(ProductViewModel, _super);
         function ProductViewModel(app) {
@@ -1827,22 +1827,41 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
                     }, 0);
             }, self.uniqueID);
             this._dbSet.isSubmitOnDelete = true;
-            this._dbSet.addOnValidate(function (sender, args) {
+            var validations = [{
+                    fieldName: null, fn: function (item, errors) {
+                        if (!!item.SellEndDate) {
+                            if (item.SellEndDate < item.SellStartDate) {
+                                errors.push('End Date must be after Start Date');
+                            }
+                        }
+                    }
+                },
+                {
+                    fieldName: "Weight", fn: function (item, errors) {
+                        if (item.Weight > 20000) {
+                            errors.push('Weight must be less than 20000');
+                        }
+                    }
+                }];
+            this._dbSet.addOnValidateField(function (sender, args) {
                 var item = args.item;
-                if (!args.fieldName) {
-                    if (!!item.SellEndDate) {
-                        if (item.SellEndDate < item.SellStartDate) {
-                            args.errors.push('End Date must be after Start Date');
-                        }
+                validations.filter(function (val) {
+                    return args.fieldName === val.fieldName;
+                }).forEach(function (val) {
+                    val.fn(item, args.errors);
+                });
+            }, self.uniqueID);
+            this._dbSet.addOnValidateItem(function (sender, args) {
+                var item = args.item;
+                validations.filter(function (val) {
+                    return !val.fieldName;
+                }).forEach(function (val) {
+                    var errors = [];
+                    val.fn(item, errors);
+                    if (errors.length > 0) {
+                        args.result.push({ fieldName: null, errors: errors });
                     }
-                }
-                else {
-                    if (args.fieldName == "Weight") {
-                        if (args.item.Weight > 20000) {
-                            args.errors.push('Weight must be less than 20000');
-                        }
-                    }
-                }
+                });
             }, self.uniqueID);
             this._addNewCommand = new RIAPP.TCommand(function (sender, param) {
                 var item = self._dbSet.addNew();
@@ -2130,9 +2149,9 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
     }(RIAPP.ViewModel));
     exports.ProductViewModel = ProductViewModel;
 });
-define("gridDemo/baseUpload", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
+define("gridDemo/baseUpload", ["require", "exports", "jriapp", "jriapp_ui"], function (require, exports, RIAPP, uiMOD) {
     "use strict";
-    var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = RIAPP.$;
+    var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = uiMOD.$;
     var BaseUploadVM = (function (_super) {
         __extends(BaseUploadVM, _super);
         function BaseUploadVM(url) {
@@ -2268,7 +2287,7 @@ define("gridDemo/baseUpload", ["require", "exports", "jriapp"], function (requir
 });
 define("gridDemo/uploads", ["require", "exports", "jriapp", "jriapp_ui", "gridDemo/baseUpload"], function (require, exports, RIAPP, uiMOD, baseUpload_1) {
     "use strict";
-    var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = RIAPP.$;
+    var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = uiMOD.$;
     var fn_getTemplateElement = function (template, name) {
         var t = template;
         var els = t.findElByDataName(name);
@@ -2535,7 +2554,7 @@ define("gridDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "common",
 });
 define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], function (require, exports, RIAPP, uiMOD) {
     "use strict";
-    var utils = RIAPP.Utils, $ = RIAPP.$, DOM = RIAPP.DOM, doc = RIAPP.DOM.document, head = RIAPP.DOM.queryOne(doc, "head");
+    var utils = RIAPP.Utils, $ = uiMOD.$, DOM = RIAPP.DOM, doc = RIAPP.DOM.document, head = RIAPP.DOM.queryOne(doc, "head");
     var drag = null;
     var ID = "id";
     var PX = "px";
@@ -2882,9 +2901,9 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
     }
     exports.initModule = initModule;
 });
-define("gridDemo/main", ["require", "exports", "jriapp", "common", "gridDemo/app", "gridDemo/resizableGrid"], function (require, exports, RIAPP, COMMON, app_1, ResizableGrid) {
+define("gridDemo/main", ["require", "exports", "jriapp", "jriapp_ui", "common", "gridDemo/app", "gridDemo/resizableGrid"], function (require, exports, RIAPP, uiMOD, COMMON, app_1, ResizableGrid) {
     "use strict";
-    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = RIAPP.$;
+    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = uiMOD.$;
     var styles = ["lsize", 'msize', 'ssize', 'nsize'];
     var SizeConverter = (function (_super) {
         __extends(SizeConverter, _super);

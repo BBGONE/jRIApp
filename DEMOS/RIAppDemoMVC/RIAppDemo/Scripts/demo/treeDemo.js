@@ -3,9 +3,9 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "common"], function (require, exports, RIAPP, dbMOD, FOLDERBROWSER_SVC, COMMON) {
+define(["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "./folderBrowserSvc", "common"], function (require, exports, RIAPP, dbMOD, uiMOD, FOLDERBROWSER_SVC, COMMON) {
     "use strict";
-    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, infoType = "BASE_ROOT", $ = RIAPP.$;
+    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, infoType = "BASE_ROOT", $ = uiMOD.$;
     var ExProps = (function (_super) {
         __extends(ExProps, _super);
         function ExProps(item, dbContext) {

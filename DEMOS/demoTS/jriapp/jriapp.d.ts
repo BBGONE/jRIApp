@@ -358,7 +358,7 @@ declare module "jriapp/content" {
 }
 declare module "jriapp/defaults" {
     import { BaseObject } from "jriapp_shared";
-    import { ISvcStore, IDatepicker, ButtonCss } from "jriapp/int";
+    import { ButtonCss } from "jriapp/int";
     export class Defaults extends BaseObject {
         private _imagesPath;
         private _dateFormat;
@@ -367,13 +367,11 @@ declare module "jriapp/defaults" {
         private _decimalPoint;
         private _thousandSep;
         private _decPrecision;
-        private _svcStore;
-        constructor(typeStore: ISvcStore);
+        constructor();
         toString(): string;
         dateFormat: string;
         timeFormat: string;
         dateTimeFormat: string;
-        readonly datepicker: IDatepicker;
         imagesPath: string;
         decimalPoint: string;
         thousandSep: string;
@@ -687,13 +685,6 @@ declare module "jriapp/bootstrap" {
     }
     export const bootstrap: Bootstrap;
 }
-declare module "jriapp/utils/jquery" {
-    export const $: JQueryStatic;
-    export class JQueryUtils {
-        static $: JQueryStatic;
-        static destroy$Plugin($el: JQuery, name: string): void;
-    }
-}
 declare module "jriapp/utils/viewchecks" {
     import { IElView } from "jriapp/int";
     export class ViewChecks {
@@ -814,25 +805,6 @@ declare module "jriapp/binding" {
         converterParam: any;
         readonly isSourceFixed: boolean;
         isDisabled: boolean;
-    }
-}
-declare module "jriapp/datepicker" {
-    import { BaseObject } from "jriapp_shared";
-    import { IDatepicker } from "jriapp/int";
-    export class Datepicker extends BaseObject implements IDatepicker {
-        private _datepickerRegion;
-        private _dateFormat;
-        constructor();
-        toString(): string;
-        attachTo($el: any, options?: {
-            dateFormat?: string;
-        }): void;
-        detachFrom($el: any): void;
-        parseDate(str: string): Date;
-        formatDate(date: Date): string;
-        dateFormat: string;
-        datepickerRegion: string;
-        readonly datePickerFn: any;
     }
 }
 declare module "jriapp/template" {
@@ -989,13 +961,11 @@ declare module "jriapp" {
     export { Promise } from "jriapp_shared/utils/deferred";
     export { KEYS, BINDING_MODE, BindTo } from "jriapp/const";
     export { IAppOptions, IApplication, TBindingMode, ITemplate, ITemplateEvents, IBinding, IBindingInfo, IBindingOptions, IConverter, IContentFactory, IDatepicker, IElView, ITooltipService, ISelectable, ISelectableProvider, ILifeTimeScope, ITemplateGroupInfo, ITemplateGroupInfoEx, ITemplateInfo, ITemplateLoaderInfo, IViewOptions } from "jriapp/int";
-    export { JQueryUtils, $ } from "jriapp/utils/jquery";
     export { DomUtils as DOM } from "jriapp/utils/dom";
     export { ViewChecks } from "jriapp/utils/viewchecks";
     export { BaseConverter } from "jriapp/converter";
     export { bootstrap } from "jriapp/bootstrap";
     export { Binding } from "jriapp/binding";
-    export { Datepicker } from "jriapp/datepicker";
     export { createTemplate, ITemplateOptions } from "jriapp/template";
     export { LifeTimeScope } from "jriapp/utils/lifetime";
     export { PropWatcher } from "jriapp/utils/propwatcher";

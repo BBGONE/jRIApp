@@ -28,7 +28,88 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             item.addOnPropertyChange("Data", function (s, a) {
                 _this.resetJson(item.Data);
             }, null, null, 1);
+            this.initCustomerValidations();
         }
+        CustomerBag.prototype.initCustomerValidations = function () {
+            var validations = [{
+                    fieldName: null, fn: function (bag, errors) {
+                        if (!bag.getProp("[Level1->Level2->Phone]") && !bag.getProp("[Level1->Level2->EmailAddress]")) {
+                            errors.push('at least Phone or Email address must be filled');
+                        }
+                    }
+                },
+                {
+                    fieldName: "[Title]", fn: function (bag, errors) {
+                        if (!bag.getProp("[Title]")) {
+                            errors.push('Title must be filled');
+                        }
+                    }
+                },
+                {
+                    fieldName: "[Level1->FirstName]", fn: function (bag, errors) {
+                        if (!bag.getProp("[Level1->FirstName]")) {
+                            errors.push('First name must be filled');
+                        }
+                    }
+                },
+                {
+                    fieldName: "[Level1->LastName]", fn: function (bag, errors) {
+                        if (!bag.getProp("[Level1->LastName]")) {
+                            errors.push('Last name must be filled');
+                        }
+                    }
+                }];
+            this.addOnValidateBag(function (s, args) {
+                var bag = args.bag;
+                validations.forEach(function (val) {
+                    var errors = [];
+                    val.fn(bag, errors);
+                    if (errors.length > 0)
+                        args.result.push({ fieldName: val.fieldName, errors: errors });
+                });
+            });
+            this.addOnValidateField(function (s, args) {
+                var bag = args.bag;
+                validations.filter(function (val) {
+                    return args.fieldName === val.fieldName;
+                }).forEach(function (val) {
+                    val.fn(bag, args.errors);
+                });
+            });
+        };
+        CustomerBag.prototype.initAddressValidations = function (addresses) {
+            var validations = [{
+                    fieldName: "[City]", fn: function (bag, errors) {
+                        if (!bag.getProp("[City]")) {
+                            errors.push('City must be filled');
+                        }
+                    }
+                },
+                {
+                    fieldName: "[Line1]", fn: function (bag, errors) {
+                        if (!bag.getProp("[Line1]")) {
+                            errors.push('Line1 name must be filled');
+                        }
+                    }
+                }];
+            addresses.addOnValidateBag(function (s, args) {
+                var bag = args.bag;
+                validations.forEach(function (val) {
+                    var errors = [];
+                    val.fn(bag, errors);
+                    if (errors.length > 0)
+                        args.result.push({ fieldName: val.fieldName, errors: errors });
+                });
+            });
+            addresses.addOnValidateField(function (s, args) {
+                var bag = args.bag;
+                validations.filter(function (val) {
+                    return args.fieldName === val.fieldName;
+                }).forEach(function (val) {
+                    val.fn(bag, args.errors);
+                });
+            });
+        };
         CustomerBag.prototype.destroy = function () {
             if (this._isDestroyed)
                 return;
@@ -45,6 +126,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
                     return void 0;
                 if (!this._addresses) {
                     this._addresses = new RIAPP.JsonArray(this, "Addresses");
+                    this.initAddressValidations(this._addresses);
                 }
                 return this._addresses.list;
             },
@@ -71,6 +153,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             this._dbSet.isSubmitOnDelete = true;
             this._addNewCommand = new RIAPP.TCommand(function (sender, param) {
                 var item = self._dbSet.addNew();
+                item.Data = JSON.stringify({});
             });
             this._addNewAddrCommand = new RIAPP.TCommand(function (sender, param) {
                 var curCustomer = self.currentItem.Customer;

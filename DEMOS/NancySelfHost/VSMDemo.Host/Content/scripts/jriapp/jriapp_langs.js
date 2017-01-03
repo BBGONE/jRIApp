@@ -1,4 +1,4 @@
-define("jriapp_ru", ["require", "exports", "jriapp/utils/jquery", "jriapp_shared/lang", "jriapp/bootstrap"], function (require, exports, jquery_1, lang_1, bootstrap_1) {
+define("jriapp_ru", ["require", "exports", "jriapp_shared/lang", "jriapp/bootstrap"], function (require, exports, lang_1, bootstrap_1) {
     "use strict";
     var PAGER = {
         firstText: "<<",
@@ -32,8 +32,11 @@ define("jriapp_ru", ["require", "exports", "jriapp/utils/jquery", "jriapp_shared
     };
     var _STRS = { PAGER: PAGER, VALIDATE: VALIDATE, TEXT: TEXT };
     lang_1.assign(lang_1.STRS, _STRS);
-    bootstrap_1.bootstrap.addOnInitialize(function (bootstrap, args) {
-        jquery_1.$.datepicker.regional["ru"] = {
+    bootstrap_1.bootstrap.addOnInitialize(function (boot, args) {
+        var datepicker = boot.getSvc("IDatepicker");
+        if (!datepicker)
+            throw new Error("IDatepicker service is not registered");
+        $.datepicker.regional["ru"] = {
             closeText: "Закрыть",
             prevText: "&#x3c;Пред",
             nextText: "След&#x3e;",
@@ -49,7 +52,7 @@ define("jriapp_ru", ["require", "exports", "jriapp/utils/jquery", "jriapp_shared
             firstDay: 1,
             isRTL: false
         };
-        bootstrap.defaults.datepicker.datepickerRegion = "ru";
+        datepicker.datepickerRegion = "ru";
     });
     exports.moduleKey = "ru";
 });

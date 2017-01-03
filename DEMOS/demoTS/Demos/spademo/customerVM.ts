@@ -10,7 +10,7 @@ import { MainRoute, CustDetRoute } from "./routes";
 import { CustomerAddressVM } from "./custAddressVM";
 import { OrderVM } from "./orderVM";
 
-var utils = RIAPP.Utils, $ = RIAPP.$;
+var utils = RIAPP.Utils, $ = uiMOD.$;
 
 export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
     private _dbSet: DEMODB.CustomerDb;

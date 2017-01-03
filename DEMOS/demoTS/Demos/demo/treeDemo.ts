@@ -5,7 +5,7 @@ import * as uiMOD from "jriapp_ui";
 import * as FOLDERBROWSER_SVC from "./folderBrowserSvc";
 import * as COMMON from "common";
 
-var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, infoType = "BASE_ROOT", $ = RIAPP.$;
+var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, infoType = "BASE_ROOT", $ = uiMOD.$;
 
 export interface IMainOptions extends RIAPP.IAppOptions {
     service_url: string;

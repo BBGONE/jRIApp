@@ -3,9 +3,9 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", "jriapp", "./demoDB", "common"], function (require, exports, RIAPP, DEMODB, COMMON) {
+define(["require", "exports", "jriapp", "jriapp_ui", "./demoDB", "common"], function (require, exports, RIAPP, uiMOD, DEMODB, COMMON) {
     "use strict";
-    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = RIAPP.$;
+    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = uiMOD.$;
     var RadioValueConverter = (function (_super) {
         __extends(RadioValueConverter, _super);
         function RadioValueConverter() {

@@ -8,7 +8,7 @@ import { DemoApplication } from "./app";
 import { OrderVM } from "./orderVM";
 import { ProductVM } from "./productVM";
 
-var utils = RIAPP.Utils, $ = RIAPP.$;
+var utils = RIAPP.Utils, $ = uiMOD.$;
 
 export class OrderDetailVM extends RIAPP.ViewModel<DemoApplication> {
     private _orderVM: OrderVM;

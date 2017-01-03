@@ -7,7 +7,7 @@ import * as DEMODB from "./domainModel";
 import { DemoApplication } from "./app";
 import { OrderVM } from "./orderVM";
 
-var utils = RIAPP.Utils, $ = RIAPP.$;
+var utils = RIAPP.Utils, $ = uiMOD.$;
 
 export class AddressVM extends RIAPP.ViewModel<DemoApplication> {
     private _orderVM: OrderVM;

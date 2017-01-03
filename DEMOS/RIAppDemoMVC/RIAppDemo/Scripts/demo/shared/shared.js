@@ -5,7 +5,7 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], function (require, exports, RIAPP, dbMOD, uiMOD) {
     "use strict";
-    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = RIAPP.$;
+    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = uiMOD.$;
     function addTextQuery(query, fldName, val) {
         var tmp;
         if (!!val) {
@@ -361,7 +361,7 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             this._isOpen = false;
             this._createGridDataSource();
             this._template = this._createTemplate();
-            this._$dropDown = RIAPP.$(RIAPP.DOM.document.createElement("div"));
+            this._$dropDown = uiMOD.$(RIAPP.DOM.document.createElement("div"));
             this._$dropDown.css({
                 "position": "absolute",
                 "left": "-2000px",
@@ -389,11 +389,11 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             }
             this._btnOk = findElemInTemplate(template, 'btnOk');
             this._btnCancel = findElemInTemplate(template, 'btnCancel');
-            RIAPP.$(this._btnOk).click(function () {
+            uiMOD.$(this._btnOk).click(function () {
                 self._updateSelection();
                 self._hide();
             });
-            RIAPP.$(this._btnCancel).click(function () {
+            uiMOD.$(this._btnCancel).click(function () {
                 self._hide();
             });
         };
@@ -465,7 +465,7 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             this._$dropDown.position({
                 my: "left top",
                 at: "left bottom",
-                of: RIAPP.$(this.el),
+                of: uiMOD.$(this.el),
                 offset: "0 0"
             });
         };
@@ -493,7 +493,7 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
                     self._updateSelection();
                     self._hide();
                 }, this.uniqueID);
-                RIAPP.$(RIAPP.DOM.document).on('keyup.' + this.uniqueID, function (e) {
+                uiMOD.$(RIAPP.DOM.document).on('keyup.' + this.uniqueID, function (e) {
                     e.stopPropagation();
                     if (bootstrap.currentSelectable === self._lookupGrid)
                         self._onKeyPress(e.which);
@@ -618,9 +618,9 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
     exports.initModule = initModule;
     ;
 });
-define("header", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
+define("header", ["require", "exports", "jriapp", "jriapp_ui"], function (require, exports, RIAPP, uiMOD) {
     "use strict";
-    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = RIAPP.$;
+    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = uiMOD.$;
     exports.topPanel = "#demoHeader";
     exports.contentPanel = "#demoContent";
     var HeaderVM = (function (_super) {

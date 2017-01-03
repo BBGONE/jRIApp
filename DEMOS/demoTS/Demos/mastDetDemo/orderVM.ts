@@ -9,7 +9,7 @@ import { CustomerVM } from "./customerVM";
 import { OrderDetailVM } from "./orderDetVM";
 import { AddressVM } from "./addressVM";
 
-var utils = RIAPP.Utils, $ = RIAPP.$;
+var utils = RIAPP.Utils, $ = uiMOD.$;
 
 export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.ITabsEvents {
     private _customerVM: CustomerVM;

@@ -3,7 +3,7 @@ import * as dbMOD from "jriapp_db";
 import * as uiMOD from "jriapp_ui";
 import * as COMMON from "common";
 
-const utils = RIAPP.Utils, $ = RIAPP.$, DOM = RIAPP.DOM, doc = RIAPP.DOM.document, head = RIAPP.DOM.queryOne<Element>(doc, "head");
+const utils = RIAPP.Utils, $ = uiMOD.$, DOM = RIAPP.DOM, doc = RIAPP.DOM.document, head = RIAPP.DOM.queryOne<Element>(doc, "head");
 let drag: HTMLElement = null;	//reference to the current grip that is being dragged
 
 //common strings for packing

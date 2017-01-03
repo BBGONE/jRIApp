@@ -8,7 +8,7 @@ import { DemoApplication } from "./app";
 import { CustomerAddressVM } from "./custAddressVM";
 import { AddressRoute } from "./routes";
 
-var utils = RIAPP.Utils, $ = RIAPP.$;
+var utils = RIAPP.Utils, $ = uiMOD.$;
 
 export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RIAPP.ISubmittable {
     private _customerAddressVM: CustomerAddressVM;

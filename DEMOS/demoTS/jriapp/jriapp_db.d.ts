@@ -805,7 +805,6 @@ declare module "jriapp_db/dataview" {
         private _fn_sort;
         private _fn_itemsProvider;
         private _isAddingNew;
-        private _objId;
         private _refreshDebounce;
         constructor(options: IDataViewOptions<TItem>);
         protected _getEventNames(): string[];

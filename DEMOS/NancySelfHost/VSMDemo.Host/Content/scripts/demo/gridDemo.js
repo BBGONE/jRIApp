@@ -5,7 +5,7 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 define(["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "./demoDB", "common", "header", "./states"], function (require, exports, RIAPP, dbMOD, uiMOD, DEMODB, COMMON, HEADER, states_1) {
     "use strict";
-    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = RIAPP.$;
+    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = uiMOD.$;
     var ResetCommand = (function (_super) {
         __extends(ResetCommand, _super);
         function ResetCommand() {
@@ -302,22 +302,41 @@ define(["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "./demoDB", "c
                 }
             }, self.uniqueID);
             this._dbSet.isSubmitOnDelete = true;
-            this._dbSet.addOnValidate(function (sender, args) {
+            var validations = [{
+                    fieldName: null, fn: function (item, errors) {
+                        if (!!item.SellEndDate) {
+                            if (item.SellEndDate < item.SellStartDate) {
+                                errors.push('End Date must be after Start Date');
+                            }
+                        }
+                    }
+                },
+                {
+                    fieldName: "Weight", fn: function (item, errors) {
+                        if (item.Weight > 20000) {
+                            errors.push('Weight must be less than 20000');
+                        }
+                    }
+                }];
+            this._dbSet.addOnValidateField(function (sender, args) {
                 var item = args.item;
-                if (!args.fieldName) {
-                    if (!!item.SellEndDate) {
-                        if (item.SellEndDate < item.SellStartDate) {
-                            args.errors.push('End Date must be after Start Date');
-                        }
+                validations.filter(function (val) {
+                    return args.fieldName === val.fieldName;
+                }).forEach(function (val) {
+                    val.fn(item, args.errors);
+                });
+            }, self.uniqueID);
+            this._dbSet.addOnValidateItem(function (sender, args) {
+                var item = args.item;
+                validations.filter(function (val) {
+                    return !val.fieldName;
+                }).forEach(function (val) {
+                    var errors = [];
+                    val.fn(item, errors);
+                    if (errors.length > 0) {
+                        args.result.push({ fieldName: null, errors: errors });
                     }
-                }
-                else {
-                    if (args.fieldName == "Weight") {
-                        if (args.item.Weight > 20000) {
-                            args.errors.push('Weight must be less than 20000');
-                        }
-                    }
-                }
+                });
             }, self.uniqueID);
             this._addNewCommand = new RIAPP.TCommand(function (sender, param) {
                 var item = self._dbSet.addNew();

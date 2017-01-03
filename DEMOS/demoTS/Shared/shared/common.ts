@@ -6,7 +6,7 @@ import * as RIAPP from "jriapp";
 import * as dbMOD from "jriapp_db";
 import * as uiMOD from "jriapp_ui";
 
-const bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = RIAPP.$;
+const bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = uiMOD.$;
 
 export interface IGridEvents<TItem extends RIAPP.ICollectionItem> {
     regFocusGridFunc(doFocus: () => void): void;

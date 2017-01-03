@@ -33,6 +33,96 @@ export class CustomerBag extends RIAPP.JsonBag {
         item.addOnPropertyChange("Data", (s, a) => {
             this.resetJson(item.Data);
         }, null, null, RIAPP.TPriority.AboveNormal);
+
+        this.initCustomerValidations();
+    }
+    private initCustomerValidations(): void {
+        const validations = [{
+            fieldName: <string>null, fn: (bag: RIAPP.IPropertyBag, errors: string[]) => {
+                if (!bag.getProp("[Level1->Level2->Phone]") && !bag.getProp("[Level1->Level2->EmailAddress]")) {
+                    errors.push('at least Phone or Email address must be filled');
+                }
+            }
+        },
+        {
+            fieldName: "[Title]", fn: (bag: RIAPP.IPropertyBag, errors: string[]) => {
+                if (!bag.getProp("[Title]")) {
+                    errors.push('Title must be filled');
+                }
+            }
+        },
+        {
+            fieldName: "[Level1->FirstName]", fn: (bag: RIAPP.IPropertyBag, errors: string[]) => {
+                if (!bag.getProp("[Level1->FirstName]")) {
+                    errors.push('First name must be filled');
+                }
+            }
+        },
+        {
+            fieldName: "[Level1->LastName]", fn: (bag: RIAPP.IPropertyBag, errors: string[]) => {
+                if (!bag.getProp("[Level1->LastName]")) {
+                    errors.push('Last name must be filled');
+                }
+            }
+        }];
+
+        //perform all validations
+        this.addOnValidateBag((s, args) => {
+            var bag = args.bag;
+            validations.forEach((val) => {
+                let errors: string[] = [];
+                val.fn(bag, errors);
+                if (errors.length > 0)
+                    args.result.push({ fieldName: val.fieldName, errors: errors });
+            });
+        });
+
+        //validate only specific field
+        this.addOnValidateField((s, args) => {
+            var bag = args.bag;
+            validations.filter((val) => {
+                return args.fieldName === val.fieldName;
+            }).forEach((val) => {
+                val.fn(bag, args.errors);
+            });
+        });
+    }
+    private initAddressValidations(addresses: RIAPP.JsonArray): void {
+        const validations = [{
+            fieldName: "[City]", fn: (bag: RIAPP.IPropertyBag, errors: string[]) => {
+                if (!bag.getProp("[City]")) {
+                    errors.push('City must be filled');
+                }
+            }
+        },
+        {
+            fieldName: "[Line1]", fn: (bag: RIAPP.IPropertyBag, errors: string[]) => {
+                if (!bag.getProp("[Line1]")) {
+                    errors.push('Line1 name must be filled');
+                }
+            }
+        }];
+
+        //perform all validations
+        addresses.addOnValidateBag((s, args) => {
+            var bag = args.bag;
+            validations.forEach((val) => {
+                let errors: string[] = [];
+                val.fn(bag, errors);
+                if (errors.length > 0)
+                    args.result.push({ fieldName: val.fieldName, errors: errors });
+            });
+        });
+
+        //validate only specific field
+        addresses.addOnValidateField((s, args) => {
+            var bag = args.bag;
+            validations.filter((val) => {
+                return args.fieldName === val.fieldName;
+            }).forEach((val) => {
+                val.fn(bag, args.errors);
+            });
+        });
     }
 
     destroy() {
@@ -50,6 +140,7 @@ export class CustomerBag extends RIAPP.JsonBag {
             return void 0;
         if (!this._addresses) {
             this._addresses = new RIAPP.JsonArray(this, "Addresses");
+            this.initAddressValidations(this._addresses);
         }
         return this._addresses.list;
     }
@@ -90,6 +181,7 @@ export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
             //grid will show the edit dialog, because we set grid options isHandleAddNew:true
             //see the options for the grid on the HTML demo page
             var item = self._dbSet.addNew();
+            item.Data = JSON.stringify({});
             //P.S. - grids editor options also has submitOnOK:true, which means
             //on clicking OK button all changes are submitted to the service
         });

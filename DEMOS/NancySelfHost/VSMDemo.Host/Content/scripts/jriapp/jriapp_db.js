@@ -3057,7 +3057,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
     }(jriapp_shared_7.BaseObject));
     exports.DbContext = DbContext;
 });
-define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/utils", "jriapp_shared/collection/validation", "jriapp_shared/collection/aspect", "jriapp_db/const", "jriapp_db/error"], function (require, exports, jriapp_shared_8, utils_4, validation_1, aspect_1, const_6, error_2) {
+define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriapp_shared/errors", "jriapp_shared/collection/utils", "jriapp_shared/collection/aspect", "jriapp_db/const", "jriapp_db/error"], function (require, exports, jriapp_shared_8, errors_1, utils_4, aspect_1, const_6, error_2) {
     "use strict";
     var utils = jriapp_shared_8.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, valUtils = utils_4.valueUtils, sys = utils.sys;
     var ENTITYASPECT_EVENTS = {
@@ -3373,14 +3373,18 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             return coreUtils.getValue(this._vals, fieldName);
         };
         EntityAspect.prototype._setFieldVal = function (fieldName, val) {
-            var validation_error, error, dbSetName = this.dbSetName, dbSet = this.dbSet, oldV = this._getFieldVal(fieldName), newV = val, fieldInfo = this.getFieldInfo(fieldName), res = false;
+            var dbSetName = this.dbSetName, dbSet = this.dbSet, oldV = this._getFieldVal(fieldName), newV = val, fieldInfo = this.getFieldInfo(fieldName), res = false;
             if (!fieldInfo)
                 throw new Error(strUtils.format(jriapp_shared_8.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, dbSetName, fieldName));
             if (!this.isEditing && !this.isUpdating)
                 this.beginEdit();
             try {
-                newV = this._checkVal(fieldInfo, newV);
+                if (fieldInfo.dataType === 1 && fieldInfo.isNullable && !newV)
+                    newV = null;
                 if (oldV !== newV) {
+                    if (fieldInfo.isReadOnly && !(this.isNew && fieldInfo.allowClientDefault)) {
+                        throw new Error(jriapp_shared_8.LocaleERRS.ERR_FIELD_READONLY);
+                    }
                     if (this._fldChanging(fieldName, fieldInfo, oldV, newV)) {
                         coreUtils.setValue(this._vals, fieldName, newV, false);
                         if (!(fieldInfo.fieldType === 1 || fieldInfo.fieldType === 6)) {
@@ -3393,23 +3397,24 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                         this._onFieldChanged(fieldName, fieldInfo);
                         res = true;
                     }
-                }
-                dbSet._getInternal().removeError(this.item, fieldName);
-                validation_error = this._validateField(fieldName);
-                if (!!validation_error) {
-                    throw new validation_1.ValidationError([validation_error], this);
+                    dbSet._getInternal().removeError(this.item, fieldName);
+                    var validation_info = this._validateField(fieldName);
+                    if (!!validation_info) {
+                        throw new errors_1.ValidationError([validation_info], this);
+                    }
                 }
             }
             catch (ex) {
+                var error = void 0;
                 if (sys.isValidationError(ex)) {
                     error = ex;
                 }
                 else {
-                    error = new validation_1.ValidationError([
+                    error = new errors_1.ValidationError([
                         { fieldName: fieldName, errors: [ex.message] }
                     ], this);
                 }
-                dbSet._getInternal().addError(this.item, fieldName, error.errors[0].errors);
+                dbSet._getInternal().addError(this.item, fieldName, error.validations[0].errors);
                 throw error;
             }
             return res;
@@ -3606,7 +3611,6 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             if (!!opts.fn_filter && !checks.isFunc(opts.fn_filter))
                 throw new Error(jriapp_shared_9.LocaleERRS.ERR_DATAVIEW_FILTER_INVALID);
             this._refreshDebounce = new jriapp_shared_9.Debounce();
-            this._objId = coreUtils.getNewID("dvw");
             this._dataSource = opts.dataSource;
             this._fn_filter = !opts.fn_filter ? null : opts.fn_filter;
             this._fn_sort = opts.fn_sort;
@@ -3803,12 +3807,12 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             var self = this, ds = this._dataSource;
             if (!ds)
                 return;
-            ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self, 1);
+            ds.addOnCollChanged(self._onDSCollectionChanged, self.uniqueID, self, 1);
             ds.addOnBeginEdit(function (sender, args) {
                 if (!!self._itemsByKey[args.item._key]) {
                     self._onEditing(args.item, true, false);
                 }
-            }, self._objId, null, 1);
+            }, self.uniqueID, null, 1);
             ds.addOnEndEdit(function (sender, args) {
                 var isOk, item = args.item, canFilter = !!self._fn_filter;
                 if (!!self._itemsByKey[item._key]) {
@@ -3827,18 +3831,18 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                         }
                     }
                 }
-            }, self._objId, null, 1);
+            }, self.uniqueID, null, 1);
             ds.addOnErrorsChanged(function (sender, args) {
                 if (!!self._itemsByKey[args.item._key]) {
                     self._onErrorsChanged(args.item);
                 }
-            }, self._objId, null, 1);
-            ds.addOnStatusChanged(self._onDSStatusChanged, self._objId, self, 1);
+            }, self.uniqueID, null, 1);
+            ds.addOnStatusChanged(self._onDSStatusChanged, self.uniqueID, self, 1);
             ds.addOnItemDeleting(function (sender, args) {
                 if (!!self._itemsByKey[args.item._key]) {
                     self._onItemDeleting(args);
                 }
-            }, self._objId, null, 1);
+            }, self.uniqueID, null, 1);
             ds.addOnItemAdded(function (sender, args) {
                 if (self._isAddingNew) {
                     if (!self._itemsByKey[args.item._key]) {
@@ -3848,18 +3852,18 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                     self._onEditing(args.item, true, false);
                     self._onItemAdded(args.item);
                 }
-            }, self._objId, null, 1);
+            }, self.uniqueID, null, 1);
             ds.addOnItemAdding(function (sender, args) {
                 if (self._isAddingNew) {
                     self._onItemAdding(args.item);
                 }
-            }, self._objId, null, 1);
+            }, self.uniqueID, null, 1);
         };
         DataView.prototype._unbindDS = function () {
             var self = this, ds = this._dataSource;
             if (!ds)
                 return;
-            ds.removeNSHandlers(self._objId);
+            ds.removeNSHandlers(self.uniqueID);
         };
         DataView.prototype._checkCurrentChanging = function (newCurrent) {
             var ds = this._dataSource, item;
