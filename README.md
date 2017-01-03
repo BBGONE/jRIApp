@@ -38,7 +38,9 @@ and the code is not overengineered.</li>
 Also, it can work with JSON to bind values extracted from it to the UI controls - it's an easy path to work with NOSQL DB. 
 </li>
 <li>Classes for using the data service can be used without using the whole framework. They can be used in React, Angular.js and
-any other framework no different as when using them with this framework. They are 158 kb.(minified)</li>
+any other framework no different as when using them with this framework.<br/> 
+They are 169KB (when minified or 40KB gzipped) and they are not dependenent on JQuery.
+</li>
 </ul>
 <br/>
 The client side of framework is split into 5 bundles:<br/>
@@ -74,7 +76,7 @@ If that's not enough (<i>sometimes it is</i>), entities allow to set custom valu
 So with this set of options nobody who uses this framework will ever have a roadblock to bind some values, because anyone can always expose the data in the needed context.
 <br/>
 <br/>
-The full framework minified size is 380KB (or 85,5 kb gzipped).
+The full framework minified size is 398KB (or 90KB gzipped).
 </p>
 <p>
 	<b>The framework contains the docs which at present for the old version of the framework (it can be used anyway)</b>
