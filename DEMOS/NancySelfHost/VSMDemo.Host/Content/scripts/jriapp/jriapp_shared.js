@@ -3028,7 +3028,14 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 utils.arr.insert(this._items, item, pos);
             }
             this._itemsByKey[item._key] = item;
-            this._onCollectionChanged({ changeType: 1, reason: 0, oper: 2, items: [item], pos: [pos] });
+            this._onCollectionChanged({
+                changeType: 1,
+                reason: 0,
+                oper: 2,
+                items: [item],
+                pos: [pos],
+                new_key: item._key
+            });
             item._aspect._onAttach();
             this.raisePropertyChanged(int_2.PROP_NAME.count);
             this._onCurrentChanging(item);
@@ -3038,7 +3045,14 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         };
         BaseCollection.prototype._onRemoved = function (item, pos) {
             try {
-                this._onCollectionChanged({ changeType: 0, reason: 0, oper: 3, items: [item], pos: [pos] });
+                this._onCollectionChanged({
+                    changeType: 0,
+                    reason: 0,
+                    oper: 3,
+                    items: [item],
+                    pos: [pos],
+                    old_key: item._key
+                });
             }
             finally {
                 this.raisePropertyChanged(int_2.PROP_NAME.count);
@@ -3224,7 +3238,13 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             this._itemsByKey = {};
             this._errors = {};
             if (oper !== 1)
-                this._onCollectionChanged({ changeType: 2, reason: reason, oper: oper, items: [], pos: [] });
+                this._onCollectionChanged({
+                    changeType: 2,
+                    reason: reason,
+                    oper: oper,
+                    items: [],
+                    pos: []
+                });
             this.raiseEvent(COLL_EVENTS.cleared, { reason: reason });
             this._onCountChanged();
         };
@@ -3500,7 +3520,13 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 self._setIsLoading(true);
                 try {
                     self._items.sort(sortFn);
-                    self._onCollectionChanged({ changeType: 2, reason: 2, oper: 5, items: [], pos: [] });
+                    self._onCollectionChanged({
+                        changeType: 2,
+                        reason: 2,
+                        oper: 5,
+                        items: [],
+                        pos: []
+                    });
                 }
                 finally {
                     self._setIsLoading(false);
@@ -4210,6 +4236,13 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(ItemAspect.prototype, "isNotEdited", {
+            get: function () {
+                return this._notEdited;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ItemAspect.prototype, "isDeleted", {
             get: function () { return false; },
             enumerable: true,
@@ -4341,12 +4374,12 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
         __extends(ListItemAspect, _super);
         function ListItemAspect(coll, obj) {
             _super.call(this, coll);
-            var self = this;
-            this._isNew = !obj ? true : false;
-            if (!!obj)
-                this._vals = obj;
-            else
+            var self = this, isNew = !obj;
+            this._isNew = isNew;
+            if (isNew)
                 this._vals = fn_initVals(coll, obj);
+            else
+                this._vals = obj;
         }
         ListItemAspect.prototype._setProp = function (name, val) {
             var error;
@@ -4531,7 +4564,11 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
     var AnyItemAspect = (function (_super) {
         __extends(AnyItemAspect, _super);
         function AnyItemAspect(coll, obj) {
-            _super.call(this, coll, obj);
+            var isNew = !obj, objVal = obj || { val: {} };
+            if (!objVal.val)
+                objVal.val = {};
+            _super.call(this, coll, objVal);
+            this._isNew = isNew;
         }
         AnyItemAspect.prototype._validateField = function (name) {
             var internal = this.collection._getInternal();
@@ -4634,9 +4671,10 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
                 _this._saveVal = JSON.stringify(a.item.val);
             });
             this.addOnEndEdit(function (s, a) {
+                var item = a.item;
                 if (a.isCanceled) {
                     _this._saveVal = null;
-                    a.item.raisePropertyChanged("[*]");
+                    item.raisePropertyChanged("[*]");
                     return;
                 }
                 var oldVal = _this._saveVal, newVal = JSON.parse(JSON.stringify(a.item.val));
@@ -4666,10 +4704,7 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
             _super.prototype.destroy.call(this);
         };
         AnyList.prototype.createItem = function (obj) {
-            var objVal = obj || { val: {} };
-            if (!objVal.val)
-                objVal.val = {};
-            var aspect = new AnyItemAspect(this, objVal);
+            var aspect = new AnyItemAspect(this, obj);
             var item = new this._itemType(aspect);
             aspect.key = this._getNewKey(item);
             aspect.item = item;

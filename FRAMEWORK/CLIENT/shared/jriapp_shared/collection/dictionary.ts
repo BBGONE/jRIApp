@@ -46,11 +46,11 @@ export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TIte
     //override
     protected _onItemAdded(item: TItem) {
         super._onItemAdded(item);
-        let key = (<any>item)[this._keyName], self = this;
+        const key = (<any>item)[this._keyName], self = this;
         if (checks.isNt(key))
             throw new Error(strUtils.format(ERRS.ERR_DICTKEY_IS_EMPTY, this.keyName));
 
-        let oldkey = item._key, newkey = "" + key;
+        const oldkey = item._key, newkey = "" + key;
         if (oldkey !== newkey) {
             delete self._itemsByKey[oldkey];
             item._aspect.key = newkey;

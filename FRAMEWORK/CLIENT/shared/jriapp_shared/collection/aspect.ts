@@ -468,6 +468,9 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     get isNew(): boolean {
         return false;
     }
+    get isNotEdited(): boolean {
+        return this._notEdited;
+    }
     get isDeleted(): boolean { return false; }
     get key(): string { return this._key; }
     set key(v: string) {

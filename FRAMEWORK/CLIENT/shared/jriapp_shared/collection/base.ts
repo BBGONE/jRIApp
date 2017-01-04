@@ -360,7 +360,14 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
             utils.arr.insert(this._items, item, pos);
         }
         this._itemsByKey[item._key] = item;
-        this._onCollectionChanged({ changeType: COLL_CHANGE_TYPE.Add, reason: COLL_CHANGE_REASON.None, oper: COLL_CHANGE_OPER.Attach, items: [item], pos: [pos] });
+        this._onCollectionChanged({
+            changeType: COLL_CHANGE_TYPE.Add,
+            reason: COLL_CHANGE_REASON.None,
+            oper: COLL_CHANGE_OPER.Attach,
+            items: [item],
+            pos: [pos],
+            new_key: item._key
+        });
         item._aspect._onAttach();
         this.raisePropertyChanged(PROP_NAME.count);
         this._onCurrentChanging(item);
@@ -370,7 +377,14 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     }
     protected _onRemoved(item: TItem, pos: number) {
         try {
-            this._onCollectionChanged({ changeType: COLL_CHANGE_TYPE.Remove, reason: COLL_CHANGE_REASON.None, oper: COLL_CHANGE_OPER.Remove, items: [item], pos: [pos] });
+            this._onCollectionChanged({
+                changeType: COLL_CHANGE_TYPE.Remove,
+                reason: COLL_CHANGE_REASON.None,
+                oper: COLL_CHANGE_OPER.Remove,
+                items: [item],
+                pos: [pos],
+                old_key: item._key
+            });
         }
         finally {
             this.raisePropertyChanged(PROP_NAME.count);
@@ -558,7 +572,13 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         this._itemsByKey = {};
         this._errors = {};
         if (oper !== COLL_CHANGE_OPER.Fill)
-            this._onCollectionChanged({ changeType: COLL_CHANGE_TYPE.Reset, reason: reason, oper: oper, items: [], pos: [] });
+            this._onCollectionChanged({
+                changeType: COLL_CHANGE_TYPE.Reset,
+                reason: reason,
+                oper: oper,
+                items: [],
+                pos: []
+            });
         this.raiseEvent(COLL_EVENTS.cleared, { reason: reason });
         this._onCountChanged();
     }
@@ -839,7 +859,13 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
             self._setIsLoading(true);
             try {
                 self._items.sort(sortFn);
-                self._onCollectionChanged({ changeType: COLL_CHANGE_TYPE.Reset, reason: COLL_CHANGE_REASON.Sorting, oper: COLL_CHANGE_OPER.Sort, items: [], pos: [] });
+                self._onCollectionChanged({
+                    changeType: COLL_CHANGE_TYPE.Reset,
+                    reason: COLL_CHANGE_REASON.Sorting,
+                    oper: COLL_CHANGE_OPER.Sort,
+                    items: [],
+                    pos: []
+                });
             } finally {
                 self._setIsLoading(false);
                 deferred.resolve();

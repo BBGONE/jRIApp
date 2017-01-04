@@ -47,12 +47,12 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
 
     constructor(coll: BaseList<TItem, TObj>, obj?: TObj) {
         super(coll);
-        const self = this;
-        this._isNew = !obj ? true : false;
-        if (!!obj)
-            this._vals = <any>obj;
-        else
+        const self = this, isNew = !obj;
+        this._isNew = isNew;
+        if (isNew)
             this._vals = fn_initVals(coll, obj);
+        else
+            this._vals = <any>obj;
     }
     _setProp(name: string, val: any) {
         let error: ValidationError;

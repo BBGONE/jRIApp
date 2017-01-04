@@ -1279,6 +1279,7 @@ declare module "jriapp_shared/collection/aspect" {
         readonly isCanSubmit: boolean;
         readonly status: ITEM_STATUS;
         readonly isNew: boolean;
+        readonly isNotEdited: boolean;
         readonly isDeleted: boolean;
         key: string;
         readonly collection: BaseCollection<TItem>;
@@ -1352,15 +1353,15 @@ declare module "jriapp_shared/utils/anylist" {
     export interface IAnyVal {
         val: any;
     }
-    export class AnyItemAspect<TItem extends IListItem, TObj> extends ListItemAspect<TItem, TObj> {
-        constructor(coll: BaseList<TItem, TObj>, obj?: TObj);
+    export class AnyItemAspect extends ListItemAspect<AnyValListItem, IAnyVal> {
+        constructor(coll: BaseList<AnyValListItem, IAnyVal>, obj?: IAnyVal);
         _validateField(name: string): IValidationInfo;
         protected _validateFields(): IValidationInfo[];
         _setProp(name: string, val: any): void;
         _getProp(name: string): any;
     }
-    export class AnyValListItem extends CollectionItem<AnyItemAspect<AnyValListItem, IAnyVal>> implements IListItem, IPropertyBag, IAnyVal {
-        constructor(aspect: AnyItemAspect<AnyValListItem, IAnyVal>);
+    export class AnyValListItem extends CollectionItem<AnyItemAspect> implements IListItem, IPropertyBag, IAnyVal {
+        constructor(aspect: AnyItemAspect);
         val: any;
         _isHasProp(prop: string): boolean;
         getProp(name: string): any;

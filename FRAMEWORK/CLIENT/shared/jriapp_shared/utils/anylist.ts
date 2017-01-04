@@ -18,9 +18,13 @@ export interface IAnyVal {
     val: any;
 }
 
-export class AnyItemAspect<TItem extends IListItem, TObj> extends ListItemAspect<TItem, TObj> {
-    constructor(coll: BaseList<TItem, TObj>, obj?: TObj) {
-        super(coll, obj);
+export class AnyItemAspect extends ListItemAspect<AnyValListItem, IAnyVal> {
+    constructor(coll: BaseList<AnyValListItem, IAnyVal>, obj?: IAnyVal) {
+        const isNew = !obj, objVal: IAnyVal = obj || { val: {} };
+        if (!objVal.val)
+            objVal.val = {};
+        super(coll, objVal);
+        this._isNew = isNew;
     }
     //override and made public
     _validateField(name: string): IValidationInfo {
@@ -45,8 +49,8 @@ export class AnyItemAspect<TItem extends IListItem, TObj> extends ListItemAspect
 }
 
 
-export class AnyValListItem extends CollectionItem<AnyItemAspect<AnyValListItem, IAnyVal>> implements IListItem, IPropertyBag, IAnyVal {
-    constructor(aspect: AnyItemAspect<AnyValListItem, IAnyVal>) {
+export class AnyValListItem extends CollectionItem<AnyItemAspect> implements IListItem, IPropertyBag, IAnyVal {
+    constructor(aspect: AnyItemAspect) {
         super(aspect);
     }
     get val(): any { return <any>this._aspect._getProp('val'); }
@@ -117,11 +121,14 @@ export class AnyList extends BaseList<AnyValListItem, IAnyVal> {
         });
 
         this.addOnEndEdit((s, a) => {
+            const item = a.item;
             if (a.isCanceled) {
                 this._saveVal = null;
-                a.item.raisePropertyChanged("[*]");
+                item.raisePropertyChanged("[*]");
                 return;
             }
+            //on endEdit reset isNew property to false
+            //a.item._aspect._resetIsNew();
             const oldVal = this._saveVal, newVal = JSON.parse(JSON.stringify(a.item.val));
             this._saveVal = null;
 
@@ -153,10 +160,7 @@ export class AnyList extends BaseList<AnyValListItem, IAnyVal> {
     }
     //override
     protected createItem(obj?: IAnyVal): AnyValListItem {
-        const objVal = obj || { val: {} };
-        if (!objVal.val)
-            objVal.val = {};
-        const aspect = new AnyItemAspect<AnyValListItem, IAnyVal>(this, objVal);
+        const aspect = new AnyItemAspect(this, obj);
         const item = new this._itemType(aspect);
         aspect.key = this._getNewKey(item);
         aspect.item = item;
