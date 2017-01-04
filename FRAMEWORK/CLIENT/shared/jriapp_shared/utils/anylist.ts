@@ -20,11 +20,9 @@ export interface IAnyVal {
 
 export class AnyItemAspect extends ListItemAspect<AnyValListItem, IAnyVal> {
     constructor(coll: BaseList<AnyValListItem, IAnyVal>, obj?: IAnyVal) {
-        const isNew = !obj, objVal: IAnyVal = obj || { val: {} };
-        if (!objVal.val)
-            objVal.val = {};
-        super(coll, objVal);
-        this._isNew = isNew;
+        super(coll, obj);
+        if (!this._vals["val"])
+            this._vals["val"] = {};
     }
     //override and made public
     _validateField(name: string): IValidationInfo {
@@ -122,14 +120,13 @@ export class AnyList extends BaseList<AnyValListItem, IAnyVal> {
 
         this.addOnEndEdit((s, a) => {
             const item = a.item;
+
             if (a.isCanceled) {
                 this._saveVal = null;
                 item.raisePropertyChanged("[*]");
                 return;
             }
-            //on endEdit reset isNew property to false
-            //a.item._aspect._resetIsNew();
-            const oldVal = this._saveVal, newVal = JSON.parse(JSON.stringify(a.item.val));
+            const oldVal = this._saveVal, newVal = JSON.parse(JSON.stringify(item.val));
             this._saveVal = null;
 
             if (oldVal !== newVal) {

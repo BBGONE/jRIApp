@@ -62,6 +62,16 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     protected _onErrorsChanged() {
         this.raiseEvent(ITEM_EVENTS.errors_changed, {});
     }
+    //sets all fields to null
+    protected _initVals(): void {
+        const self = this, fieldInfos = this._collection.getFieldInfos();
+        fn_traverseFields<void>(fieldInfos, (fld, fullName) => {
+            if (fld.fieldType === FIELD_TYPE.Object)
+                coreUtils.setValue(self._vals, fullName, {}, false);
+            else
+                coreUtils.setValue(self._vals, fullName, null, false);
+        });
+    }
     protected _beginEdit(): boolean {
         if (this.isDetached)
             throw new Error("Invalid operation. The item is detached");

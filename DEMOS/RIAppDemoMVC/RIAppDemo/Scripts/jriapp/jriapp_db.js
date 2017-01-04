@@ -3090,18 +3090,11 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
         __extends(EntityAspect, _super);
         function EntityAspect(dbSet, row, names) {
             _super.call(this, dbSet);
-            var self = this;
             this._srvKey = null;
             this._isRefreshing = false;
             this._origVals = null;
             this._savedStatus = null;
-            var fieldInfos = this.dbSet.getFieldInfos();
-            utils_4.fn_traverseFields(fieldInfos, function (fld, fullName) {
-                if (fld.fieldType === 5)
-                    coreUtils.setValue(self._vals, fullName, {}, false);
-                else
-                    coreUtils.setValue(self._vals, fullName, null, false);
-            });
+            this._initVals();
             this._initRowInfo(row, names);
         }
         EntityAspect.prototype._initRowInfo = function (row, names) {

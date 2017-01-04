@@ -1242,6 +1242,7 @@ declare module "jriapp_shared/collection/aspect" {
         constructor(collection: BaseCollection<TItem>);
         protected _getEventNames(): string[];
         protected _onErrorsChanged(): void;
+        protected _initVals(): void;
         protected _beginEdit(): boolean;
         protected _endEdit(): boolean;
         protected _cancelEdit(): boolean;

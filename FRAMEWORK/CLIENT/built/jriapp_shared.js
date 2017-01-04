@@ -3835,6 +3835,15 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         ItemAspect.prototype._onErrorsChanged = function () {
             this.raiseEvent(int_3.ITEM_EVENTS.errors_changed, {});
         };
+        ItemAspect.prototype._initVals = function () {
+            var self = this, fieldInfos = this._collection.getFieldInfos();
+            utils_6.fn_traverseFields(fieldInfos, function (fld, fullName) {
+                if (fld.fieldType === 5)
+                    coreUtils.setValue(self._vals, fullName, {}, false);
+                else
+                    coreUtils.setValue(self._vals, fullName, null, false);
+            });
+        };
         ItemAspect.prototype._beginEdit = function () {
             if (this.isDetached)
                 throw new Error("Invalid operation. The item is detached");
@@ -4356,28 +4365,13 @@ define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/ob
 define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/collection/base", "jriapp_shared/collection/aspect", "jriapp_shared/errors"], function (require, exports, utils_7, lang_7, int_5, utils_8, base_1, aspect_1, errors_7) {
     "use strict";
     var utils = utils_7.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, ERROR = utils.err;
-    function fn_initVals(coll, obj) {
-        var vals = obj || {};
-        if (!!obj) {
-            var fieldInfos = coll.getFieldInfos();
-            utils_8.fn_traverseFields(fieldInfos, function (fld, fullName) {
-                if (fld.fieldType === 5)
-                    coreUtils.setValue(vals, fullName, {}, false);
-                else
-                    coreUtils.setValue(vals, fullName, null, false);
-            });
-        }
-        return vals;
-    }
-    ;
     var ListItemAspect = (function (_super) {
         __extends(ListItemAspect, _super);
         function ListItemAspect(coll, obj) {
             _super.call(this, coll);
-            var self = this, isNew = !obj;
-            this._isNew = isNew;
-            if (isNew)
-                this._vals = fn_initVals(coll, obj);
+            this._isNew = !obj;
+            if (this._isNew)
+                this._initVals();
             else
                 this._vals = obj;
         }
@@ -4564,11 +4558,9 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
     var AnyItemAspect = (function (_super) {
         __extends(AnyItemAspect, _super);
         function AnyItemAspect(coll, obj) {
-            var isNew = !obj, objVal = obj || { val: {} };
-            if (!objVal.val)
-                objVal.val = {};
-            _super.call(this, coll, objVal);
-            this._isNew = isNew;
+            _super.call(this, coll, obj);
+            if (!this._vals["val"])
+                this._vals["val"] = {};
         }
         AnyItemAspect.prototype._validateField = function (name) {
             var internal = this.collection._getInternal();
@@ -4677,7 +4669,7 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
                     item.raisePropertyChanged("[*]");
                     return;
                 }
-                var oldVal = _this._saveVal, newVal = JSON.parse(JSON.stringify(a.item.val));
+                var oldVal = _this._saveVal, newVal = JSON.parse(JSON.stringify(item.val));
                 _this._saveVal = null;
                 if (oldVal !== newVal) {
                     _this.onChanged();

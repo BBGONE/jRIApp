@@ -7,7 +7,7 @@ import {
 } from "jriapp_shared";
 import { ValidationError } from "jriapp_shared/errors";
 import { ICancellableArgs, IFieldInfo } from "jriapp_shared/collection/int";
-import { valueUtils, fn_traverseFields } from "jriapp_shared/collection/utils";
+import { valueUtils } from "jriapp_shared/collection/utils";
 import { ItemAspect } from "jriapp_shared/collection/aspect";
 import { FLAGS, REFRESH_MODE, PROP_NAME } from "./const";
 import { DbContext } from "./dbcontext";
@@ -60,19 +60,11 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
 
     constructor(dbSet: DbSet<TItem, TDbContext>, row: IRowData, names: IFieldName[]) {
         super(dbSet);
-        let self = this;
         this._srvKey = null;
         this._isRefreshing = false;
         this._origVals = null;
         this._savedStatus = null;
-        let fieldInfos = this.dbSet.getFieldInfos();
-        fn_traverseFields<void>(fieldInfos, (fld, fullName) => {
-            if (fld.fieldType === FIELD_TYPE.Object)
-                coreUtils.setValue(self._vals, fullName, {}, false);
-            else
-                coreUtils.setValue(self._vals, fullName, null, false);
-        });
-
+        this._initVals();
         this._initRowInfo(row, names);
     }
     protected _initRowInfo(row: IRowData, names: IFieldName[]) {
@@ -84,7 +76,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         this._processValues("", row.v, names);
     }
     protected _processValues(path: string, values: any[], names: IFieldName[]) {
-        let self = this, stz = self.serverTimezone;
+        const self = this, stz = self.serverTimezone;
         values.forEach(function (value, index) {
             let name: IFieldName = names[index], fieldName = path + name.n, fld = self.dbSet.getFieldInfo(fieldName), val: any;
             if (!fld)
@@ -102,7 +94,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         });
     }
     protected _onFieldChanged(fieldName: string, fieldInfo: IFieldInfo) {
-        let self = this;
+        const self = this;
         if (this._isDestroyCalled)
             return;
         self.item.raisePropertyChanged(fieldName);

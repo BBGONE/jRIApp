@@ -10,7 +10,7 @@ import {
 import {
     ICollectionItem, IPropInfo, PROP_NAME
 } from "./int";
-import { fn_traverseFields, fn_traverseField } from "./utils";
+import { fn_traverseField } from "./utils";
 import { BaseCollection } from "./base";
 import { ItemAspect } from "./aspect";
 import { ValidationError } from "../errors";
@@ -27,30 +27,14 @@ export interface IListItemConstructor<TItem extends IListItem, TObj> {
     new (aspect: ListItemAspect<TItem, TObj>): TItem;
 }
 
-function fn_initVals(coll: BaseList < IListItem, any >, obj ?: any): any {
-    let vals = obj || {};
-    if (!!obj) {
-        //if no object then set all values to nulls
-        const fieldInfos = coll.getFieldInfos();
-        fn_traverseFields(fieldInfos, (fld, fullName) => {
-            if (fld.fieldType === FIELD_TYPE.Object)
-                coreUtils.setValue(vals, fullName, {}, false);
-            else
-                coreUtils.setValue(vals, fullName, null, false);
-        });
-    }
-    return vals;
-};
-
 export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TItem> {
     protected _isNew: boolean;
 
     constructor(coll: BaseList<TItem, TObj>, obj?: TObj) {
         super(coll);
-        const self = this, isNew = !obj;
-        this._isNew = isNew;
-        if (isNew)
-            this._vals = fn_initVals(coll, obj);
+        this._isNew = !obj;
+        if (this._isNew)
+            this._initVals();
         else
             this._vals = <any>obj;
     }
@@ -99,7 +83,6 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
     get vals(): IIndexer<any> { return this._vals; }
     get isNew(): boolean { return this._isNew; }
 }
-
 export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TItem> {
     protected _itemType: IListItemConstructor<TItem, TObj>;
 
