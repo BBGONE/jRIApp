@@ -3692,6 +3692,13 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
 define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/utils"], function (require, exports, lang_6, utils_4) {
     "use strict";
     var utils = utils_4.Utils, checks = utils.check, strUtils = utils.str;
+    function fn_toArray(index) {
+        var keys = Object.keys(index), result = [];
+        for (var i = 0, len = keys.length; i < len; i += 1) {
+            result.push(index[keys[i]]);
+        }
+        return result;
+    }
     var Validations = (function () {
         function Validations() {
         }
@@ -3800,6 +3807,22 @@ define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_sha
                     res.push(strUtils.format(lang_6.ERRS.ERR_PARAM_INVALID, "dataType", fieldInfo.dataType));
             }
             return res;
+        };
+        Validations.distinct = function (vals) {
+            if (!vals)
+                return [];
+            var index = {};
+            vals.forEach(function (val) {
+                var name = !val.fieldName ? "*" : val.fieldName;
+                var test = index[name];
+                if (!!test) {
+                    test.errors = test.errors.concat(val.errors);
+                }
+                else {
+                    index[name] = val;
+                }
+            });
+            return fn_toArray(index);
         };
         return Validations;
     }());
@@ -3930,32 +3953,17 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         };
         ItemAspect.prototype._validateFields = function () {
             var self = this, fieldInfos = this.collection.getFieldInfos();
-            var result = [];
+            var fldVals = [];
             utils_6.fn_traverseFields(fieldInfos, function (fld, fullName) {
                 if (fld.fieldType !== 5) {
                     var fieldValidation = self._validateField(fullName);
                     if (!!fieldValidation && fieldValidation.errors.length > 0) {
-                        result.push(fieldValidation);
+                        fldVals.push(fieldValidation);
                     }
                 }
             });
-            var customValidation = self._validateItem(), toAppend = [];
-            customValidation.forEach(function (validation) {
-                var fieldValidation = result.filter(function (test) {
-                    return test.fieldName === validation.fieldName;
-                });
-                if (fieldValidation.length > 0) {
-                    fieldValidation[0].errors = fieldValidation[0].errors.concat(validation.errors);
-                }
-                else {
-                    if (validation.errors.length > 0)
-                        toAppend.push(validation);
-                }
-            });
-            if (toAppend.length > 0) {
-                result = utils.arr.merge([result, toAppend]);
-            }
-            return result;
+            var itemVals = self._validateItem();
+            return validation_1.Validations.distinct(fldVals.concat(itemVals));
         };
         ItemAspect.prototype._resetIsNew = function () {
         };
@@ -4552,7 +4560,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
     }(base_1.BaseCollection));
     exports.BaseList = BaseList;
 });
-define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/debounce", "jriapp_shared/collection/item", "jriapp_shared/collection/list", "jriapp_shared/errors"], function (require, exports, coreutils_7, sysutils_5, strutils_6, debounce_2, item_1, list_1, errors_8) {
+define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/debounce", "jriapp_shared/collection/item", "jriapp_shared/collection/validation", "jriapp_shared/collection/list", "jriapp_shared/errors"], function (require, exports, coreutils_7, sysutils_5, strutils_6, debounce_2, item_1, validation_2, list_1, errors_8) {
     "use strict";
     var coreUtils = coreutils_7.CoreUtils, strUtils = strutils_6.StringUtils, sys = sysutils_5.SysUtils;
     var AnyItemAspect = (function (_super) {
@@ -4563,11 +4571,10 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
                 this._vals["val"] = {};
         }
         AnyItemAspect.prototype._validateField = function (name) {
-            var internal = this.collection._getInternal();
-            return internal.validateItemField(this.item, name);
+            return this.collection._getInternal().validateItemField(this.item, name);
         };
         AnyItemAspect.prototype._validateFields = function () {
-            return this._validateItem();
+            return validation_2.Validations.distinct(this._validateItem());
         };
         AnyItemAspect.prototype._setProp = function (name, val) {
             if (this._getProp(name) !== val) {

@@ -1211,11 +1211,13 @@ declare module "jriapp_shared/collection/base" {
 }
 declare module "jriapp_shared/collection/validation" {
     import { IFieldInfo } from "jriapp_shared/collection/int";
+    import { IValidationInfo } from "jriapp_shared/int";
     export class Validations {
         private static _dtRangeToDate(str);
         private static checkNumRange(num, range);
         private static checkDateRange(dt, range);
         static checkField(fieldInfo: IFieldInfo, value: any, isNew: boolean): string[];
+        static distinct(vals: IValidationInfo[]): IValidationInfo[];
     }
 }
 declare module "jriapp_shared/collection/aspect" {
