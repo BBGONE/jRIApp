@@ -1070,7 +1070,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             coreUtils.forEachProp(errors, function (fieldName, err) {
                 res.push({ fieldName: fieldName, errors: err });
             });
-            this._addErrors(item, res);
+            this.errors.addErrors(item, res);
             return item;
         };
         DbSet.prototype._getChanges = function () {
@@ -3131,14 +3131,15 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             }
         };
         EntityAspect.prototype._getValueChange = function (fullName, fieldInfo, changedOnly) {
-            var self = this, dbSet = self.dbSet, res, i, len, tmp;
+            var self = this, dbSet = self.dbSet;
+            var res = null;
             if (fn_isNotSubmittable(fieldInfo))
-                return null;
+                return res;
             if (fieldInfo.fieldType === 5) {
                 res = { fieldName: fieldInfo.fieldName, val: null, orig: null, flags: 0, nested: [] };
-                len = fieldInfo.nested.length;
-                for (i = 0; i < len; i += 1) {
-                    tmp = self._getValueChange(fullName + "." + fieldInfo.nested[i].fieldName, fieldInfo.nested[i], changedOnly);
+                var len = fieldInfo.nested.length;
+                for (var i = 0; i < len; i += 1) {
+                    var tmp = self._getValueChange(fullName + "." + fieldInfo.nested[i].fieldName, fieldInfo.nested[i], changedOnly);
                     if (!!tmp) {
                         res.nested.push(tmp);
                     }
@@ -3234,7 +3235,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             this._saveVals = null;
             this.setStatus(this._savedStatus);
             this._savedStatus = null;
-            dbSet._getInternal().removeAllErrors(this.item);
+            dbSet.errors.removeAllErrors(this.item);
             changes.forEach(function (v) {
                 var fld = self.dbSet.getFieldInfo(v.fieldName);
                 if (!fld)
@@ -3390,7 +3391,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                         this._onFieldChanged(fieldName, fieldInfo);
                         res = true;
                     }
-                    dbSet._getInternal().removeError(this.item, fieldName);
+                    dbSet.errors.removeError(this.item, fieldName);
                     var validation_info = this._validateField(fieldName);
                     if (!!validation_info) {
                         throw new errors_1.ValidationError([validation_info], this);
@@ -3407,7 +3408,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                         { fieldName: fieldName, errors: [ex.message] }
                     ], this);
                 }
-                dbSet._getInternal().addError(this.item, fieldName, error.validations[0].errors);
+                dbSet.errors.addError(this.item, fieldName, error.validations[0].errors);
                 throw error;
             }
             return res;
@@ -3415,7 +3416,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
         EntityAspect.prototype._acceptChanges = function (rowInfo) {
             if (this.getIsDestroyed())
                 return;
-            var oldStatus = this.status, dbSet = this.dbSet, internal = dbSet._getInternal();
+            var oldStatus = this.status, dbSet = this.dbSet, internal = dbSet._getInternal(), errors = dbSet.errors;
             if (oldStatus !== 0) {
                 internal.onCommitChanges(this.item, true, false, oldStatus);
                 if (oldStatus === 3) {
@@ -3427,7 +3428,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 if (!!this._saveVals)
                     this._saveVals = coreUtils.clone(this._vals);
                 this.setStatus(0);
-                internal.removeAllErrors(this.item);
+                errors.removeAllErrors(this.item);
                 if (!!rowInfo) {
                     this._refreshValues(rowInfo, 3);
                 }
@@ -3470,7 +3471,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
         EntityAspect.prototype.rejectChanges = function () {
             if (this.getIsDestroyed())
                 return;
-            var self = this, oldStatus = self.status, dbSet = self.dbSet, internal = dbSet._getInternal();
+            var self = this, oldStatus = self.status, dbSet = self.dbSet, internal = dbSet._getInternal(), errors = dbSet.errors;
             if (oldStatus !== 0) {
                 internal.onCommitChanges(self.item, true, true, oldStatus);
                 if (oldStatus === 1) {
@@ -3487,7 +3488,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                     }
                 }
                 self.setStatus(0);
-                internal.removeAllErrors(this.item);
+                errors.removeAllErrors(this.item);
                 changes.forEach(function (v) {
                     fn_traverseChanges(v, function (fullName, vc) {
                         self._onFieldChanged(fullName, dbSet.getFieldInfo(fullName));
@@ -3827,7 +3828,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             }, self.uniqueID, null, 1);
             ds.addOnErrorsChanged(function (sender, args) {
                 if (!!self._itemsByKey[args.item._key]) {
-                    self._onErrorsChanged(args.item);
+                    self._getInternal().onErrorsChanged(args);
                 }
             }, self.uniqueID, null, 1);
             ds.addOnStatusChanged(self._onDSStatusChanged, self.uniqueID, self, 1);
@@ -3881,13 +3882,6 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
         DataView.prototype._getStrValue = function (val, fieldInfo) {
             return this._dataSource._getInternal().getStrValue(val, fieldInfo);
         };
-        DataView.prototype._getErrors = function (item) {
-            return this._dataSource._getInternal().getErrors(item);
-        };
-        DataView.prototype.getItemsWithErrors = function () {
-            var ds = this._dataSource;
-            return ds.getItemsWithErrors();
-        };
         DataView.prototype.appendItems = function (items) {
             if (this._isDestroyCalled)
                 return [];
@@ -3915,7 +3909,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                 throw new Error(jriapp_shared_9.LocaleERRS.ERR_ITEM_IS_NOTFOUND);
             }
             delete this._itemsByKey[item._key];
-            delete this._errors[item._key];
+            this.errors.removeAllErrors(item);
             this.totalCount = this.totalCount - 1;
             this._onRemoved(item, oldPos);
             var test = this.getItemByPos(oldPos), curPos = this._currentPos;
@@ -3933,9 +3927,6 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
         DataView.prototype.sortLocal = function (fieldNames, sortOrder) {
             var _this = this;
             return _async.delay(function () { _this.fn_sort = _this._getSortFn(fieldNames, sortOrder); });
-        };
-        DataView.prototype.getIsHasErrors = function () {
-            return this._dataSource.getIsHasErrors();
         };
         DataView.prototype.clear = function () {
             this._clear(0, 0);
@@ -3959,6 +3950,13 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             this._fn_sort = null;
             _super.prototype.destroy.call(this);
         };
+        Object.defineProperty(DataView.prototype, "errors", {
+            get: function () {
+                return this._dataSource.errors;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(DataView.prototype, "dataSource", {
             get: function () { return this._dataSource; },
             enumerable: true,

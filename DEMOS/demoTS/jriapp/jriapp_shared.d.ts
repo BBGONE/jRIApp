@@ -896,8 +896,6 @@ declare module "jriapp_shared/collection/int" {
         cancelEdit(): void;
         endEdit(): void;
         addNew(): TItem;
-        getItemsWithErrors(): TItem[];
-        getIsHasErrors(): boolean;
         isEditing: boolean;
         isUpdating: boolean;
         permissions: IPermissions;
@@ -955,15 +953,10 @@ declare module "jriapp_shared/collection/int" {
         onBeforeEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void;
         onEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void;
         onCommitChanges(item: TItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS): void;
-        validateItem(item: TItem): IValidationInfo[];
-        validateItemField(item: TItem, fieldName: string): IValidationInfo;
-        addErrors(item: TItem, errors: IValidationInfo[]): void;
-        addError(item: TItem, fieldName: string, errors: string[]): void;
-        removeError(item: TItem, fieldName: string): void;
-        removeAllErrors(item: TItem): void;
-        getErrors(item: TItem): IErrors;
-        onErrorsChanged(item: TItem): void;
         onItemDeleting(args: ICancellableArgs<TItem>): boolean;
+        onErrorsChanged(args: ICollItemArgs<TItem>): void;
+        validateItemField(args: ICollValidateFieldArgs<TItem>): IValidationInfo;
+        validateItem(args: ICollValidateItemArgs<TItem>): IValidationInfo[];
     }
 }
 declare module "jriapp_shared/utils/logger" {
@@ -1064,7 +1057,22 @@ declare module "jriapp_shared/collection/base" {
     import { IIndexer, IValidationInfo, TEventHandler, TPropChangedHandler, IBaseObject, TPriority } from "jriapp_shared/int";
     import { BaseObject } from "jriapp_shared/object";
     import { WaitQueue } from "jriapp_shared/utils/waitqueue";
-    import { ICollectionItem, ICollection, ICollectionOptions, IPermissions, IInternalCollMethods, ICollChangedArgs, ICancellableArgs, ICollFillArgs, ICollEndEditArgs, ICollItemArgs, ICollItemStatusArgs, ICollValidateFieldArgs, ICollValidateItemArgs, ICurrentChangingArgs, ICommitChangesArgs, IItemAddedArgs, IPageChangingArgs, IErrorsList, IErrors } from "jriapp_shared/collection/int";
+    import { ICollectionItem, ICollection, ICollectionOptions, IPermissions, IInternalCollMethods, ICollChangedArgs, ICancellableArgs, ICollFillArgs, ICollEndEditArgs, ICollItemArgs, ICollItemStatusArgs, ICollValidateFieldArgs, ICollValidateItemArgs, ICurrentChangingArgs, ICommitChangesArgs, IItemAddedArgs, IPageChangingArgs, IErrors } from "jriapp_shared/collection/int";
+    export class Errors<TItem extends ICollectionItem> {
+        private _errors;
+        private _owner;
+        constructor(owner: BaseCollection<TItem>);
+        clear(): void;
+        validateItem(item: TItem): IValidationInfo[];
+        validateItemField(item: TItem, fieldName: string): IValidationInfo;
+        addErrors(item: TItem, errors: IValidationInfo[]): void;
+        addError(item: TItem, fieldName: string, errors: string[], ignoreChangeErrors?: boolean): void;
+        removeError(item: TItem, fieldName: string, ignoreChangeErrors?: boolean): void;
+        removeAllErrors(item: TItem): void;
+        getErrors(item: TItem): IErrors;
+        onErrorsChanged(item: TItem): void;
+        getItemsWithErrors(): TItem[];
+    }
     export class BaseCollection<TItem extends ICollectionItem> extends BaseObject implements ICollection<TItem> {
         private _objId;
         protected _options: ICollectionOptions;
@@ -1079,7 +1087,7 @@ declare module "jriapp_shared/collection/base" {
         protected _newKey: number;
         protected _fieldMap: IIndexer<IFieldInfo>;
         protected _fieldInfos: IFieldInfo[];
-        protected _errors: IErrorsList;
+        protected _errors: Errors<TItem>;
         protected _pkInfo: IFieldInfo[];
         protected _isUpdating: boolean;
         protected _waitQueue: WaitQueue;
@@ -1158,12 +1166,6 @@ declare module "jriapp_shared/collection/base" {
         protected _onCommitChanges(item: TItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS): void;
         protected _validateItem(item: TItem): IValidationInfo[];
         protected _validateItemField(item: TItem, fieldName: string): IValidationInfo;
-        protected _addErrors(item: TItem, errors: IValidationInfo[]): void;
-        protected _addError(item: TItem, fieldName: string, errors: string[], ignoreChangeErrors?: boolean): void;
-        protected _removeError(item: TItem, fieldName: string, ignoreChangeErrors?: boolean): void;
-        protected _removeAllErrors(item: TItem): void;
-        protected _getErrors(item: TItem): IErrors;
-        protected _onErrorsChanged(item: TItem): void;
         protected _onItemDeleting(args: ICancellableArgs<TItem>): boolean;
         protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER): void;
         _setIsLoading(v: boolean): void;
@@ -1186,13 +1188,13 @@ declare module "jriapp_shared/collection/base" {
         goTo(pos: number): boolean;
         forEach(callback: (item: TItem) => void, thisObj?: any): void;
         removeItem(item: TItem): void;
-        getIsHasErrors(): boolean;
         sort(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any>;
         sortLocal(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any>;
         clear(): void;
         destroy(): void;
         waitForNotLoading(callback: () => void, groupName: string): void;
         toString(): string;
+        readonly errors: Errors<TItem>;
         readonly options: ICollectionOptions;
         readonly items: TItem[];
         currentItem: TItem;
