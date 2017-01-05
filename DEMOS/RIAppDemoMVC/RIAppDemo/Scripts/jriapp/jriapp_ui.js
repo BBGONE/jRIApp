@@ -412,6 +412,9 @@ define("jriapp_ui/utils/eventbag", ["require", "exports", "jriapp_shared"], func
             this._dic = null;
             this._onChange = onChange;
         }
+        EventBag.prototype._isHasProp = function (prop) {
+            return true;
+        };
         EventBag.prototype.getProp = function (name) {
             if (!this._dic)
                 return null;
@@ -459,6 +462,13 @@ define("jriapp_ui/utils/eventbag", ["require", "exports", "jriapp_shared"], func
                 this.raisePropertyChanged(name);
             }
         };
+        Object.defineProperty(EventBag.prototype, "isPropertyBag", {
+            get: function () {
+                return true;
+            },
+            enumerable: true,
+            configurable: true
+        });
         EventBag.prototype.trigger = function (eventName, args) {
             if (!this._dic)
                 return;
@@ -480,7 +490,7 @@ define("jriapp_ui/utils/eventbag", ["require", "exports", "jriapp_shared"], func
             _super.prototype.destroy.call(this);
         };
         return EventBag;
-    }(jriapp_shared_5.BasePropBag));
+    }(jriapp_shared_5.BaseObject));
     exports.EventBag = EventBag;
 });
 define("jriapp_ui/utils/propbag", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_6) {
@@ -492,6 +502,10 @@ define("jriapp_ui/utils/propbag", ["require", "exports", "jriapp_shared"], funct
             _super.call(this);
             this._el = el;
         }
+        PropertyBag.prototype._isHasProp = function (prop) {
+            var propName = strUtils.trimBrackets(prop);
+            return (propName in this._el);
+        };
         PropertyBag.prototype.getProp = function (name) {
             var propName = strUtils.trimBrackets(name);
             return this._el[propName];
@@ -504,11 +518,18 @@ define("jriapp_ui/utils/propbag", ["require", "exports", "jriapp_shared"], funct
                 this.raisePropertyChanged(name);
             }
         };
+        Object.defineProperty(PropertyBag.prototype, "isPropertyBag", {
+            get: function () {
+                return true;
+            },
+            enumerable: true,
+            configurable: true
+        });
         PropertyBag.prototype.toString = function () {
             return "PropertyBag";
         };
         return PropertyBag;
-    }(jriapp_shared_6.BasePropBag));
+    }(jriapp_shared_6.BaseObject));
     exports.PropertyBag = PropertyBag;
 });
 define("jriapp_ui/utils/cssbag", ["require", "exports", "jriapp_shared", "jriapp/utils/dom"], function (require, exports, jriapp_shared_7, dom_3) {
@@ -520,6 +541,12 @@ define("jriapp_ui/utils/cssbag", ["require", "exports", "jriapp_shared", "jriapp
             _super.call(this);
             this._el = el;
         }
+        CSSBag.prototype._isHasProp = function (prop) {
+            return true;
+        };
+        CSSBag.prototype.getProp = function (name) {
+            return checks.undefined;
+        };
         CSSBag.prototype.setProp = function (name, val) {
             if (val === checks.undefined)
                 return;
@@ -538,11 +565,18 @@ define("jriapp_ui/utils/cssbag", ["require", "exports", "jriapp_shared", "jriapp
             }
             dom.setClass([this._el], cssName, !val);
         };
+        Object.defineProperty(CSSBag.prototype, "isPropertyBag", {
+            get: function () {
+                return true;
+            },
+            enumerable: true,
+            configurable: true
+        });
         CSSBag.prototype.toString = function () {
             return "CSSBag";
         };
         return CSSBag;
-    }(jriapp_shared_7.BasePropBag));
+    }(jriapp_shared_7.BaseObject));
     exports.CSSBag = CSSBag;
 });
 define("jriapp_ui/utils/tooltip", ["require", "exports", "jriapp_ui/utils/jquery", "jriapp/utils/dom"], function (require, exports, jquery_1, dom_4) {

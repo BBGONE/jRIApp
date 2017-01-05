@@ -90,7 +90,7 @@ declare module "jriapp_ui/utils/jquery" {
     }
 }
 declare module "jriapp_ui/utils/eventbag" {
-    import { BasePropBag } from "jriapp_shared";
+    import { BaseObject, IPropertyBag } from "jriapp_shared";
     import { ICommand } from "jriapp/mvvm";
     export const enum EVENT_CHANGE_TYPE {
         None = 0,
@@ -104,33 +104,40 @@ declare module "jriapp_ui/utils/eventbag" {
         oldVal: ICommand;
         newVal: ICommand;
     }
-    export class EventBag extends BasePropBag {
+    export class EventBag extends BaseObject implements IPropertyBag {
         private _dic;
         private _onChange;
         constructor(onChange: (sender: EventBag, args: IEventChangedArgs) => void);
+        _isHasProp(prop: string): boolean;
         getProp(name: string): ICommand;
         setProp(name: string, command: ICommand): void;
+        readonly isPropertyBag: boolean;
         trigger(eventName: string, args?: any): void;
         toString(): string;
         destroy(): void;
     }
 }
 declare module "jriapp_ui/utils/propbag" {
-    import { BasePropBag } from "jriapp_shared";
-    export class PropertyBag extends BasePropBag {
+    import { BaseObject, IPropertyBag } from "jriapp_shared";
+    export class PropertyBag extends BaseObject implements IPropertyBag {
         private _el;
         constructor(el: HTMLElement);
+        _isHasProp(prop: string): boolean;
         getProp(name: string): any;
         setProp(name: string, val: any): void;
+        readonly isPropertyBag: boolean;
         toString(): string;
     }
 }
 declare module "jriapp_ui/utils/cssbag" {
-    import { BasePropBag } from "jriapp_shared";
-    export class CSSBag extends BasePropBag {
+    import { BaseObject, IPropertyBag } from "jriapp_shared";
+    export class CSSBag extends BaseObject implements IPropertyBag {
         private _el;
         constructor(el: Element);
+        _isHasProp(prop: string): boolean;
+        getProp(name: string): any;
         setProp(name: string, val: any): void;
+        readonly isPropertyBag: boolean;
         toString(): string;
     }
 }

@@ -1,17 +1,22 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    IIndexer, BasePropBag, Utils
+    IIndexer, Utils, BaseObject, IPropertyBag
 } from "jriapp_shared";
 
 const utils = Utils, strUtils = utils.str;
 
 // wraps HTMLElement to get or change property using data binding
-export class PropertyBag extends BasePropBag {
+export class PropertyBag extends BaseObject implements IPropertyBag {
     private _el: IIndexer<any>;
 
     constructor(el: HTMLElement) {
         super();
         this._el = el;
+    }
+    //override
+    _isHasProp(prop: string) {
+        const propName = strUtils.trimBrackets(prop);
+        return (propName in this._el);
     }
     //implement IPropertyBag
     getProp(name: string): any {
@@ -26,6 +31,10 @@ export class PropertyBag extends BasePropBag {
             this.raisePropertyChanged(name);
         }
     }
+    get isPropertyBag() {
+        return true;
+    }
+
     toString() {
         return "PropertyBag";
     }

@@ -1,7 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { IEditable, IValidationInfo, IErrorNotification, TEventHandler, IPropertyBag } from "../int";
 import { BaseObject } from "../object";
-import { BasePropBag } from "./basebag";
 import { CoreUtils } from "./coreutils";
 import { StringUtils } from "./strutils";
 import { SysUtils } from "./sysutils";
@@ -33,7 +32,7 @@ export interface IBagValidateArgs<TBag extends IPropertyBag> {
 }
 
 //used for accessing json (it parses json into a value and then getProp && setProp can be used to get or set values)
-export class JsonBag extends BasePropBag implements IEditable, IErrorNotification {
+export class JsonBag extends BaseObject implements IEditable, IErrorNotification, IPropertyBag {
     private _json: string = void 0;
     private _jsonChanged: (json: string) => void;
     private _val: any = {};
@@ -62,6 +61,33 @@ export class JsonBag extends BasePropBag implements IEditable, IErrorNotificatio
         const base_events = super._getEventNames();
         return [BAG_EVENTS.validate_bag, BAG_EVENTS.validate_field].concat(base_events);
     }
+    //override
+    _isHasProp(prop: string) {
+        //first check for indexed property name
+        if (strUtils.startsWith(prop, "[")) {
+            return true;
+        }
+        return super._isHasProp(prop);
+    }
+    addOnValidateBag(fn: TEventHandler<IPropertyBag, IBagValidateArgs<IPropertyBag>>, nmspace?: string, context?: any) {
+        this._addHandler(BAG_EVENTS.validate_bag, fn, nmspace, context);
+    }
+    removeOnValidateBag(nmspace?: string) {
+        this._removeHandler(BAG_EVENTS.validate_bag, nmspace);
+    }
+    addOnValidateField(fn: TEventHandler<IPropertyBag, IFieldValidateArgs<IPropertyBag>>, nmspace?: string, context?: any) {
+        this._addHandler(BAG_EVENTS.validate_field, fn, nmspace, context);
+    }
+    removeOnValidateField(nmspace?: string) {
+        this._removeHandler(BAG_EVENTS.validate_field, nmspace);
+    }
+    addOnErrorsChanged(fn: TEventHandler<JsonBag, any>, nmspace?: string, context?: any) {
+        this._addHandler(BAG_EVENTS.errors_changed, fn, nmspace, context);
+    }
+    removeOnErrorsChanged(nmspace?: string) {
+        this._removeHandler(BAG_EVENTS.errors_changed, nmspace);
+    }
+
     protected onChanged() {
         this._debounce.enque(() => {
             if (!!this._jsonChanged) {
@@ -152,26 +178,8 @@ export class JsonBag extends BasePropBag implements IEditable, IErrorNotificatio
         this._errors = {};
         this._onErrorsChanged();
     }
-    addOnValidateBag(fn: TEventHandler<IPropertyBag, IBagValidateArgs<IPropertyBag>>, nmspace?: string, context?: any) {
-        this._addHandler(BAG_EVENTS.validate_bag, fn, nmspace, context);
-    }
-    removeOnValidateBag(nmspace?: string) {
-        this._removeHandler(BAG_EVENTS.validate_bag, nmspace);
-    }
-    addOnValidateField(fn: TEventHandler<IPropertyBag, IFieldValidateArgs<IPropertyBag>>, nmspace?: string, context?: any) {
-        this._addHandler(BAG_EVENTS.validate_field, fn, nmspace, context);
-    }
-    removeOnValidateField(nmspace?: string) {
-        this._removeHandler(BAG_EVENTS.validate_field, nmspace);
-    }
     getIsHasErrors() {
         return !!this._errors && Object.keys(this._errors).length > 0;
-    }
-    addOnErrorsChanged(fn: TEventHandler<JsonBag, any>, nmspace?: string, context?: any) {
-        this._addHandler(BAG_EVENTS.errors_changed, fn, nmspace, context);
-    }
-    removeOnErrorsChanged(nmspace?: string) {
-        this._removeHandler(BAG_EVENTS.errors_changed, nmspace);
     }
     getFieldErrors(fieldName: string): IValidationInfo[] {
         const bagErrors = this._errors;
@@ -248,7 +256,7 @@ export class JsonBag extends BasePropBag implements IEditable, IErrorNotificatio
         return !!this._saveVal;
     }
 
-    //override
+    //implements IPropertyBag
     getProp(name: string): any {
         const fieldName = strUtils.trimBrackets(name);
         return coreUtils.getValue(this._val, fieldName, '->');
@@ -279,6 +287,9 @@ export class JsonBag extends BasePropBag implements IEditable, IErrorNotificatio
                 throw error;
             }
         }
+    }
+    get isPropertyBag() {
+        return true;
     }
 
     get val(): any {

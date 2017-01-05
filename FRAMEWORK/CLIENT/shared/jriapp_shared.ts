@@ -3,7 +3,6 @@ export * from "./jriapp_shared/const";
 export * from "./jriapp_shared/int";
 export * from "./jriapp_shared/errors";
 export * from "./jriapp_shared/object";
-export * from "./jriapp_shared/utils/basebag";
 export * from "./jriapp_shared/utils/jsonbag";
 export * from "./jriapp_shared/utils/jsonarray";
 export { createWeakMap } from "./jriapp_shared/utils/weakmap";

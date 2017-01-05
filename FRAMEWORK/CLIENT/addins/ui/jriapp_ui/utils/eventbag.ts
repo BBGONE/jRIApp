@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    Utils, IIndexer, BasePropBag
+    Utils, IIndexer, BaseObject, IPropertyBag
 } from "jriapp_shared";
 import { ICommand } from "jriapp/mvvm";
 
@@ -15,7 +15,7 @@ export interface IEventChangedArgs {
 }
 
 //dispatches events through commands that can be attached by the data binding
-export class EventBag extends BasePropBag {
+export class EventBag extends BaseObject implements IPropertyBag {
     private _dic: IIndexer<ICommand>;
     private _onChange: (sender: EventBag, args: IEventChangedArgs) => void;
 
@@ -23,6 +23,10 @@ export class EventBag extends BasePropBag {
         super();
         this._dic = null;
         this._onChange = onChange;
+    }
+    //override
+    _isHasProp(prop: string) {
+        return true;
     }
    //implement IPropertyBag
     getProp(name: string): ICommand {
@@ -75,6 +79,10 @@ export class EventBag extends BasePropBag {
             this.raisePropertyChanged(name);
         }
     }
+    get isPropertyBag() {
+        return true;
+    }
+
     trigger(eventName: string, args?: any) {
         if (!this._dic)
             return;

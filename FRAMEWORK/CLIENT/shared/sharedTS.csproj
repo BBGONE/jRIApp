@@ -55,7 +55,6 @@
     <TypeScriptCompile Include="jriapp_shared\utils\error.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\eventhelper.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\http.ts" />
-    <TypeScriptCompile Include="jriapp_shared\utils\basebag.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\jsonarray.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\jsonbag.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\lazy.ts" />

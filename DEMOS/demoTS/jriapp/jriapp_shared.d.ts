@@ -508,17 +508,6 @@ declare module "jriapp_shared/object" {
         destroy(): void;
     }
 }
-declare module "jriapp_shared/utils/basebag" {
-    import { IPropertyBag } from "jriapp_shared/int";
-    import { BaseObject } from "jriapp_shared/object";
-    export class BasePropBag extends BaseObject implements IPropertyBag {
-        _isHasProp(prop: string): boolean;
-        getProp(name: string): any;
-        setProp(name: string, val: any): void;
-        readonly isPropertyBag: boolean;
-        toString(): string;
-    }
-}
 declare module "jriapp_shared/utils/queue" {
     export interface IQueue {
         cancel: (taskId: number) => void;
@@ -596,7 +585,7 @@ declare module "jriapp_shared/utils/debounce" {
 }
 declare module "jriapp_shared/utils/jsonbag" {
     import { IEditable, IValidationInfo, IErrorNotification, TEventHandler, IPropertyBag } from "jriapp_shared/int";
-    import { BasePropBag } from "jriapp_shared/utils/basebag";
+    import { BaseObject } from "jriapp_shared/object";
     export interface IBagErrors {
         [fieldName: string]: string[];
     }
@@ -609,7 +598,7 @@ declare module "jriapp_shared/utils/jsonbag" {
         readonly bag: TBag;
         readonly result: IValidationInfo[];
     }
-    export class JsonBag extends BasePropBag implements IEditable, IErrorNotification {
+    export class JsonBag extends BaseObject implements IEditable, IErrorNotification, IPropertyBag {
         private _json;
         private _jsonChanged;
         private _val;
@@ -619,6 +608,13 @@ declare module "jriapp_shared/utils/jsonbag" {
         constructor(json: string, jsonChanged: (json: string) => void);
         destroy(): void;
         protected _getEventNames(): string[];
+        _isHasProp(prop: string): boolean;
+        addOnValidateBag(fn: TEventHandler<IPropertyBag, IBagValidateArgs<IPropertyBag>>, nmspace?: string, context?: any): void;
+        removeOnValidateBag(nmspace?: string): void;
+        addOnValidateField(fn: TEventHandler<IPropertyBag, IFieldValidateArgs<IPropertyBag>>, nmspace?: string, context?: any): void;
+        removeOnValidateField(nmspace?: string): void;
+        addOnErrorsChanged(fn: TEventHandler<JsonBag, any>, nmspace?: string, context?: any): void;
+        removeOnErrorsChanged(nmspace?: string): void;
         protected onChanged(): void;
         resetJson(json?: string): void;
         updateJson(): boolean;
@@ -629,13 +625,7 @@ declare module "jriapp_shared/utils/jsonbag" {
         protected _addError(fieldName: string, errors: string[], ignoreChangeErrors?: boolean): void;
         protected _removeError(fieldName: string, ignoreChangeErrors?: boolean): boolean;
         protected _removeAllErrors(): void;
-        addOnValidateBag(fn: TEventHandler<IPropertyBag, IBagValidateArgs<IPropertyBag>>, nmspace?: string, context?: any): void;
-        removeOnValidateBag(nmspace?: string): void;
-        addOnValidateField(fn: TEventHandler<IPropertyBag, IFieldValidateArgs<IPropertyBag>>, nmspace?: string, context?: any): void;
-        removeOnValidateField(nmspace?: string): void;
         getIsHasErrors(): boolean;
-        addOnErrorsChanged(fn: TEventHandler<JsonBag, any>, nmspace?: string, context?: any): void;
-        removeOnErrorsChanged(nmspace?: string): void;
         getFieldErrors(fieldName: string): IValidationInfo[];
         getAllErrors(): IValidationInfo[];
         getIErrorNotification(): IErrorNotification;
@@ -645,6 +635,7 @@ declare module "jriapp_shared/utils/jsonbag" {
         readonly isEditing: boolean;
         getProp(name: string): any;
         setProp(name: string, val: any): void;
+        readonly isPropertyBag: boolean;
         readonly val: any;
         readonly json: string;
         toString(): string;
@@ -1448,7 +1439,6 @@ declare module "jriapp_shared" {
     export * from "jriapp_shared/int";
     export * from "jriapp_shared/errors";
     export * from "jriapp_shared/object";
-    export * from "jriapp_shared/utils/basebag";
     export * from "jriapp_shared/utils/jsonbag";
     export * from "jriapp_shared/utils/jsonarray";
     export { createWeakMap } from "jriapp_shared/utils/weakmap";

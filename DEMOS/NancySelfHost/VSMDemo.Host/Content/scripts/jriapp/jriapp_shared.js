@@ -1397,39 +1397,6 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
     }());
     exports.BaseObject = BaseObject;
 });
-define("jriapp_shared/utils/basebag", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/strUtils"], function (require, exports, object_1, strutils_3) {
-    "use strict";
-    var strUtils = strutils_3.StringUtils;
-    var BasePropBag = (function (_super) {
-        __extends(BasePropBag, _super);
-        function BasePropBag() {
-            _super.apply(this, arguments);
-        }
-        BasePropBag.prototype._isHasProp = function (prop) {
-            if (strUtils.startsWith(prop, "[")) {
-                return true;
-            }
-            return _super.prototype._isHasProp.call(this, prop);
-        };
-        BasePropBag.prototype.getProp = function (name) {
-            return void 0;
-        };
-        BasePropBag.prototype.setProp = function (name, val) {
-        };
-        Object.defineProperty(BasePropBag.prototype, "isPropertyBag", {
-            get: function () {
-                return true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        BasePropBag.prototype.toString = function () {
-            return "BasePropBag";
-        };
-        return BasePropBag;
-    }(object_1.BaseObject));
-    exports.BasePropBag = BasePropBag;
-});
 define("jriapp_shared/utils/queue", ["require", "exports", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/error"], function (require, exports, checks_5, arrhelper_2, error_2) {
     "use strict";
     var checks = checks_5.Checks, arrHelper = arrhelper_2.ArrayHelper, error = error_2.ERROR;
@@ -1836,9 +1803,9 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
     }());
     exports.Debounce = Debounce;
 });
-define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/utils/basebag", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/debounce", "jriapp_shared/errors"], function (require, exports, basebag_1, coreutils_3, strutils_4, sysutils_3, checks_7, debounce_1, errors_3) {
+define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/debounce", "jriapp_shared/errors"], function (require, exports, object_1, coreutils_3, strutils_3, sysutils_3, checks_7, debounce_1, errors_3) {
     "use strict";
-    var coreUtils = coreutils_3.CoreUtils, strUtils = strutils_4.StringUtils, checks = checks_7.Checks, sys = sysutils_3.SysUtils;
+    var coreUtils = coreutils_3.CoreUtils, strUtils = strutils_3.StringUtils, checks = checks_7.Checks, sys = sysutils_3.SysUtils;
     var BAG_EVENTS = {
         errors_changed: "errors_changed",
         validate_bag: "validate_bag",
@@ -1869,6 +1836,30 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/util
         JsonBag.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
             return [BAG_EVENTS.validate_bag, BAG_EVENTS.validate_field].concat(base_events);
+        };
+        JsonBag.prototype._isHasProp = function (prop) {
+            if (strUtils.startsWith(prop, "[")) {
+                return true;
+            }
+            return _super.prototype._isHasProp.call(this, prop);
+        };
+        JsonBag.prototype.addOnValidateBag = function (fn, nmspace, context) {
+            this._addHandler(BAG_EVENTS.validate_bag, fn, nmspace, context);
+        };
+        JsonBag.prototype.removeOnValidateBag = function (nmspace) {
+            this._removeHandler(BAG_EVENTS.validate_bag, nmspace);
+        };
+        JsonBag.prototype.addOnValidateField = function (fn, nmspace, context) {
+            this._addHandler(BAG_EVENTS.validate_field, fn, nmspace, context);
+        };
+        JsonBag.prototype.removeOnValidateField = function (nmspace) {
+            this._removeHandler(BAG_EVENTS.validate_field, nmspace);
+        };
+        JsonBag.prototype.addOnErrorsChanged = function (fn, nmspace, context) {
+            this._addHandler(BAG_EVENTS.errors_changed, fn, nmspace, context);
+        };
+        JsonBag.prototype.removeOnErrorsChanged = function (nmspace) {
+            this._removeHandler(BAG_EVENTS.errors_changed, nmspace);
         };
         JsonBag.prototype.onChanged = function () {
             var _this = this;
@@ -1960,26 +1951,8 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/util
             this._errors = {};
             this._onErrorsChanged();
         };
-        JsonBag.prototype.addOnValidateBag = function (fn, nmspace, context) {
-            this._addHandler(BAG_EVENTS.validate_bag, fn, nmspace, context);
-        };
-        JsonBag.prototype.removeOnValidateBag = function (nmspace) {
-            this._removeHandler(BAG_EVENTS.validate_bag, nmspace);
-        };
-        JsonBag.prototype.addOnValidateField = function (fn, nmspace, context) {
-            this._addHandler(BAG_EVENTS.validate_field, fn, nmspace, context);
-        };
-        JsonBag.prototype.removeOnValidateField = function (nmspace) {
-            this._removeHandler(BAG_EVENTS.validate_field, nmspace);
-        };
         JsonBag.prototype.getIsHasErrors = function () {
             return !!this._errors && Object.keys(this._errors).length > 0;
-        };
-        JsonBag.prototype.addOnErrorsChanged = function (fn, nmspace, context) {
-            this._addHandler(BAG_EVENTS.errors_changed, fn, nmspace, context);
-        };
-        JsonBag.prototype.removeOnErrorsChanged = function (nmspace) {
-            this._removeHandler(BAG_EVENTS.errors_changed, nmspace);
         };
         JsonBag.prototype.getFieldErrors = function (fieldName) {
             var bagErrors = this._errors;
@@ -2085,6 +2058,13 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/util
                 }
             }
         };
+        Object.defineProperty(JsonBag.prototype, "isPropertyBag", {
+            get: function () {
+                return true;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(JsonBag.prototype, "val", {
             get: function () {
                 return this._val;
@@ -2103,7 +2083,7 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/util
             return "JsonBag";
         };
         return JsonBag;
-    }(basebag_1.BasePropBag));
+    }(object_1.BaseObject));
     exports.JsonBag = JsonBag;
 });
 define("jriapp_shared/collection/const", ["require", "exports"], function (require, exports) {
@@ -2328,13 +2308,13 @@ define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/s
     }());
     exports.HttpUtils = HttpUtils;
 });
-define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug", "jriapp_shared/utils/error", "jriapp_shared/utils/logger", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/async", "jriapp_shared/utils/http", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/deferred"], function (require, exports, coreutils_5, debug_3, error_3, logger_1, sysutils_4, async_2, http_1, strutils_5, checks_9, arrhelper_4, deferred_4) {
+define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug", "jriapp_shared/utils/error", "jriapp_shared/utils/logger", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/async", "jriapp_shared/utils/http", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/deferred"], function (require, exports, coreutils_5, debug_3, error_3, logger_1, sysutils_4, async_2, http_1, strutils_4, checks_9, arrhelper_4, deferred_4) {
     "use strict";
     var Utils = (function () {
         function Utils() {
         }
         Utils.check = checks_9.Checks;
-        Utils.str = strutils_5.StringUtils;
+        Utils.str = strutils_4.StringUtils;
         Utils.arr = arrhelper_4.ArrayHelper;
         Utils.http = http_1.HttpUtils;
         Utils.core = coreutils_5.CoreUtils;
@@ -4576,9 +4556,9 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
     }(base_1.BaseCollection));
     exports.BaseList = BaseList;
 });
-define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/debounce", "jriapp_shared/collection/item", "jriapp_shared/collection/validation", "jriapp_shared/collection/list", "jriapp_shared/errors"], function (require, exports, coreutils_7, sysutils_5, strutils_6, debounce_2, item_1, validation_2, list_1, errors_8) {
+define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/debounce", "jriapp_shared/collection/item", "jriapp_shared/collection/validation", "jriapp_shared/collection/list", "jriapp_shared/errors"], function (require, exports, coreutils_7, sysutils_5, strutils_5, debounce_2, item_1, validation_2, list_1, errors_8) {
     "use strict";
-    var coreUtils = coreutils_7.CoreUtils, strUtils = strutils_6.StringUtils, sys = sysutils_5.SysUtils;
+    var coreUtils = coreutils_7.CoreUtils, strUtils = strutils_5.StringUtils, sys = sysutils_5.SysUtils;
     var AnyItemAspect = (function (_super) {
         __extends(AnyItemAspect, _super);
         function AnyItemAspect(coll, obj) {
@@ -5039,7 +5019,7 @@ define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/c
     }());
     exports.Lazy = Lazy;
 });
-define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/utils/basebag", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/jsonarray", "jriapp_shared/utils/weakmap", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/errors", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, const_5, int_6, errors_9, object_7, basebag_2, jsonbag_1, jsonarray_1, weakmap_1, lang_9, base_3, item_2, aspect_2, list_3, dictionary_1, errors_10, ideferred_1, utils_10, waitqueue_2, debounce_3, lazy_1) {
+define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/jsonarray", "jriapp_shared/utils/weakmap", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/errors", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, const_5, int_6, errors_9, object_7, jsonbag_1, jsonarray_1, weakmap_1, lang_9, base_3, item_2, aspect_2, list_3, dictionary_1, errors_10, ideferred_1, utils_10, waitqueue_2, debounce_3, lazy_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -5048,7 +5028,6 @@ define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_sh
     __export(int_6);
     __export(errors_9);
     __export(object_7);
-    __export(basebag_2);
     __export(jsonbag_1);
     __export(jsonarray_1);
     exports.createWeakMap = weakmap_1.createWeakMap;
