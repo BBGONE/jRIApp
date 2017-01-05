@@ -101,12 +101,12 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
             throw new Error("Invalid operation. The item is detached");
         if (!this.isEditing)
             return false;
-        const coll = this.collection, self = this, internal = coll._getInternal();
+        const coll = this.collection, self = this, errors = coll.errors;
         //revalidate all
-        internal.removeAllErrors(this.item);
+        errors.removeAllErrors(this.item);
         const validations: IValidationInfo[] = this._validateFields();
         if (validations.length > 0) {
-            internal.addErrors(self.item, validations);
+            errors.addErrors(self.item, validations);
         }
         if (this.getIsHasErrors()) {
             return false;
@@ -122,7 +122,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         const coll = this.collection, self = this, item = self.item, changes = this._saveVals;
         this._vals = this._saveVals;
         this._saveVals = null;
-        coll._getInternal().removeAllErrors(item);
+        coll.errors.removeAllErrors(item);
         //refresh User interface when values restored
         coll.getFieldNames().forEach(function (name) {
             if (changes[name] !== self._vals[name]) {
@@ -135,15 +135,15 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         return false;
     }
     protected _validateItem(): IValidationInfo[] {
-        return this.collection._getInternal().validateItem(this.item);
+        return this.collection.errors.validateItem(this.item);
     }
     protected _validateField(fieldName: string): IValidationInfo {
-        const fieldInfo = this.getFieldInfo(fieldName), internal = this.collection._getInternal();
+        const fieldInfo = this.getFieldInfo(fieldName), errors = this.collection.errors;
         const value = coreUtils.getValue(this._vals, fieldName);
         if (this._skipValidate(fieldInfo, value))
             return null;
         const standardErrors: string[] = Validations.checkField(fieldInfo, value, this.isNew);
-        const customValidation: IValidationInfo = internal.validateItemField(this.item, fieldName);
+        const customValidation: IValidationInfo = errors.validateItemField(this.item, fieldName);
 
         let result = { fieldName: fieldName, errors: <string[]>[] };
         if (standardErrors.length > 0) {
@@ -204,7 +204,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         return this.collection.getFieldNames();
     }
     getErrorString(): string {
-        const itemErrors = this.collection._getInternal().getErrors(this.item);
+        const itemErrors = this.collection.errors.getErrors(this.item);
         if (!itemErrors)
             return "";
         let res: string[] = [];
@@ -287,7 +287,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         return true;
     }
     getIsHasErrors() {
-        let res = !!this.collection._getInternal().getErrors(this.item);
+        let res = !!this.collection.errors.getErrors(this.item);
         if (!res && !!this._valueBag) {
             coreUtils.forEachProp(this._valueBag, (name, obj) => {
                 const errNotification = sys.getErrorNotification(obj.val);
@@ -307,7 +307,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     }
     getFieldErrors(fieldName: string): IValidationInfo[] {
         let res: IValidationInfo[] = [];
-        const itemErrors = this.collection._getInternal().getErrors(this.item);
+        const itemErrors = this.collection.errors.getErrors(this.item);
         if (!itemErrors)
             return res;
         let name = fieldName;
@@ -331,7 +331,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
             });
         }
 
-        const itemErrors = this.collection._getInternal().getErrors(this.item);
+        const itemErrors = this.collection.errors.getErrors(this.item);
         if (!itemErrors)
             return res;
         coreUtils.forEachProp(itemErrors, function (name) {

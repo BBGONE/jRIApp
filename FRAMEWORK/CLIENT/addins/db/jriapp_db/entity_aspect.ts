@@ -105,22 +105,23 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         }
     }
     protected _getValueChange(fullName: string, fieldInfo: IFieldInfo, changedOnly: boolean): IValueChange {
-        let self = this, dbSet = self.dbSet, res: IValueChange, i: number, len: number, tmp: IValueChange;
+        const self = this, dbSet = self.dbSet;
+        let res: IValueChange = null;
         if (fn_isNotSubmittable(fieldInfo))
-            return <IValueChange>null;
+            return res;
 
         if (fieldInfo.fieldType === FIELD_TYPE.Object) {
             res = { fieldName: fieldInfo.fieldName, val: null, orig: null, flags: FLAGS.None, nested: [] };
-            len = fieldInfo.nested.length;
-            for (i = 0; i < len; i += 1) {
-                tmp = self._getValueChange(fullName + "." + fieldInfo.nested[i].fieldName, fieldInfo.nested[i], changedOnly);
+            let len = fieldInfo.nested.length;
+            for (let i = 0; i < len; i += 1) {
+                let tmp = self._getValueChange(fullName + "." + fieldInfo.nested[i].fieldName, fieldInfo.nested[i], changedOnly);
                 if (!!tmp) {
                     res.nested.push(tmp);
                 }
             }
         }
         else {
-            let newVal = dbSet._getInternal().getStrValue(coreUtils.getValue(self._vals, fullName), fieldInfo),
+            const newVal = dbSet._getInternal().getStrValue(coreUtils.getValue(self._vals, fullName), fieldInfo),
                 oldV = self._origVals === null ? newVal : dbSet._getInternal().getStrValue(coreUtils.getValue(self._origVals, fullName), fieldInfo),
                 isChanged = (oldV !== newVal);
             if (isChanged)
@@ -214,9 +215,9 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         this._saveVals = null;
         this.setStatus(this._savedStatus);
         this._savedStatus = null;
-        dbSet._getInternal().removeAllErrors(this.item);
+        dbSet.errors.removeAllErrors(this.item);
         changes.forEach(function (v) {
-            let fld = self.dbSet.getFieldInfo(v.fieldName);
+            const fld = self.dbSet.getFieldInfo(v.fieldName);
             if (!fld)
                 throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, v.fieldName));
             self._onFieldChanged(v.fieldName, fld);
@@ -374,7 +375,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
                     this._onFieldChanged(fieldName, fieldInfo);
                     res = true;
                 }
-                dbSet._getInternal().removeError(this.item, fieldName);
+                dbSet.errors.removeError(this.item, fieldName);
                 const validation_info = this._validateField(fieldName);
                 if (!!validation_info) {
                     throw new ValidationError([validation_info], this);
@@ -390,7 +391,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
                     { fieldName: fieldName, errors: [ex.message] }
                 ], this);
             }
-            dbSet._getInternal().addError(this.item, fieldName, error.validations[0].errors);
+            dbSet.errors.addError(this.item, fieldName, error.validations[0].errors);
             throw error;
         }
         return res;
@@ -398,7 +399,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
     _acceptChanges(rowInfo?: IRowInfo): void {
         if (this.getIsDestroyed())
             return;
-        const oldStatus = this.status, dbSet = this.dbSet, internal = dbSet._getInternal();
+        const oldStatus = this.status, dbSet = this.dbSet, internal = dbSet._getInternal(),  errors = dbSet.errors;
         if (oldStatus !== ITEM_STATUS.None) {
             internal.onCommitChanges(this.item, true, false, oldStatus);
             if (oldStatus === ITEM_STATUS.Deleted) {
@@ -410,7 +411,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
             if (!!this._saveVals)
                 this._saveVals = coreUtils.clone(this._vals);
             this.setStatus(ITEM_STATUS.None);
-            internal.removeAllErrors(this.item);
+            errors.removeAllErrors(this.item);
             if (!!rowInfo) {
                 this._refreshValues(rowInfo, REFRESH_MODE.CommitChanges);
             }
@@ -453,7 +454,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
     rejectChanges(): void {
         if (this.getIsDestroyed())
             return;
-        const self = this, oldStatus = self.status, dbSet = self.dbSet, internal = dbSet._getInternal();
+        const self = this, oldStatus = self.status, dbSet = self.dbSet, internal = dbSet._getInternal(), errors = dbSet.errors;
         if (oldStatus !== ITEM_STATUS.None) {
             internal.onCommitChanges(self.item, true, true, oldStatus);
             if (oldStatus === ITEM_STATUS.Added) {
@@ -471,7 +472,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
                 }
             }
             self.setStatus(ITEM_STATUS.None);
-            internal.removeAllErrors(this.item);
+            errors.removeAllErrors(this.item);
             changes.forEach(function (v) {
                 fn_traverseChanges(v, (fullName, vc) => {
                     self._onFieldChanged(fullName, dbSet.getFieldInfo(fullName));

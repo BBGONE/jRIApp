@@ -27,7 +27,7 @@ export class AnyItemAspect extends ListItemAspect<AnyValListItem, IAnyVal> {
     }
     //override and made public
     _validateField(name: string): IValidationInfo {
-        return this.collection._getInternal().validateItemField(this.item, name);
+        return this.collection.errors.validateItemField(this.item, name);
     }
     //override
     protected _validateFields(): IValidationInfo[] {
@@ -66,14 +66,13 @@ export class AnyValListItem extends CollectionItem<AnyItemAspect> implements ILi
         return coreUtils.getValue(this.val, fieldName, '->');
     }
     setProp(name: string, val: any): void {
-        const coll = this._aspect.collection, internal = coll._getInternal();
-        const old = this.getProp(name);
+        const coll = this._aspect.collection, errors = coll.errors, old = this.getProp(name);
         if (old !== val) {
             try {
                 const fieldName = strUtils.trimBrackets(name);
                 coreUtils.setValue(this.val, fieldName, val, false, '->');
                 this.raisePropertyChanged(name);
-                internal.removeError(this, name);
+                errors.removeError(this, name);
                 const validation: IValidationInfo = this._aspect._validateField(name);
                 if (!!validation && validation.errors.length > 0) {
                     throw new ValidationError([validation], this);
@@ -88,7 +87,7 @@ export class AnyValListItem extends CollectionItem<AnyItemAspect> implements ILi
                         { fieldName: name, errors: [ex.message] }
                     ], this);
                 }
-                internal.addError(this, name, error.validations[0].errors);
+                errors.addError(this, name, error.validations[0].errors);
                 throw error;
             }
         }

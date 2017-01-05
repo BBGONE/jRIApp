@@ -2736,6 +2736,85 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         cleared: "cleared",
         commit_changes: "commit_changes"
     };
+    var Errors = (function () {
+        function Errors(owner) {
+            this._errors = {};
+            this._owner = owner;
+        }
+        Errors.prototype.clear = function () {
+            this._errors = {};
+        };
+        Errors.prototype.validateItem = function (item) {
+            var args = { item: item, result: [] };
+            return this._owner._getInternal().validateItem(args);
+        };
+        Errors.prototype.validateItemField = function (item, fieldName) {
+            var args = { item: item, fieldName: fieldName, errors: [] };
+            return this._owner._getInternal().validateItemField(args);
+        };
+        Errors.prototype.addErrors = function (item, errors) {
+            var _this = this;
+            errors.forEach(function (err) {
+                _this.addError(item, err.fieldName, err.errors, true);
+            });
+            this.onErrorsChanged(item);
+        };
+        Errors.prototype.addError = function (item, fieldName, errors, ignoreChangeErrors) {
+            if (!fieldName)
+                fieldName = "*";
+            if (!(checks.isArray(errors) && errors.length > 0)) {
+                this.removeError(item, fieldName, ignoreChangeErrors);
+                return;
+            }
+            if (!this._errors[item._key])
+                this._errors[item._key] = {};
+            var itemErrors = this._errors[item._key];
+            itemErrors[fieldName] = errors;
+            if (!ignoreChangeErrors)
+                this.onErrorsChanged(item);
+        };
+        Errors.prototype.removeError = function (item, fieldName, ignoreChangeErrors) {
+            var itemErrors = this._errors[item._key];
+            if (!itemErrors)
+                return;
+            if (!fieldName)
+                fieldName = "*";
+            if (!itemErrors[fieldName])
+                return;
+            delete itemErrors[fieldName];
+            if (Object.keys(itemErrors).length === 0) {
+                delete this._errors[item._key];
+            }
+            if (!ignoreChangeErrors)
+                this.onErrorsChanged(item);
+        };
+        Errors.prototype.removeAllErrors = function (item) {
+            var itemErrors = this._errors[item._key];
+            if (!itemErrors)
+                return;
+            delete this._errors[item._key];
+            this.onErrorsChanged(item);
+        };
+        Errors.prototype.getErrors = function (item) {
+            return this._errors[item._key];
+        };
+        Errors.prototype.onErrorsChanged = function (item) {
+            var args = { item: item };
+            this._owner._getInternal().onErrorsChanged(args);
+            item._aspect.raiseErrorsChanged();
+        };
+        Errors.prototype.getItemsWithErrors = function () {
+            var _this = this;
+            var res = [];
+            coreUtils.forEachProp(this._errors, function (key) {
+                var item = _this._owner.getItemByKey(key);
+                res.push(item);
+            });
+            return res;
+        };
+        return Errors;
+    }());
+    exports.Errors = Errors;
     var BaseCollection = (function (_super) {
         __extends(BaseCollection, _super);
         function BaseCollection() {
@@ -2755,7 +2834,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             this._newKey = 0;
             this._fieldMap = {};
             this._fieldInfos = [];
-            this._errors = {};
+            this._errors = new Errors(this);
             this._pkInfo = null;
             this._waitQueue = new waitqueue_1.WaitQueue(this);
             this._internal = {
@@ -2774,32 +2853,25 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 onCommitChanges: function (item, isBegin, isRejected, status) {
                     self._onCommitChanges(item, isBegin, isRejected, status);
                 },
-                validateItem: function (item) {
-                    return self._validateItem(item);
-                },
-                validateItemField: function (item, fieldName) {
-                    return self._validateItemField(item, fieldName);
-                },
-                addErrors: function (item, errors) {
-                    self._addErrors(item, errors);
-                },
-                addError: function (item, fieldName, errors) {
-                    self._addError(item, fieldName, errors);
-                },
-                removeError: function (item, fieldName) {
-                    self._removeError(item, fieldName);
-                },
-                removeAllErrors: function (item) {
-                    self._removeAllErrors(item);
-                },
-                getErrors: function (item) {
-                    return self._getErrors(item);
-                },
-                onErrorsChanged: function (item) {
-                    self._onErrorsChanged(item);
-                },
                 onItemDeleting: function (args) {
                     return self._onItemDeleting(args);
+                },
+                onErrorsChanged: function (args) {
+                    self.raiseEvent(COLL_EVENTS.errors_changed, args);
+                },
+                validateItemField: function (args) {
+                    self.raiseEvent(COLL_EVENTS.validate_field, args);
+                    if (!!args.errors && args.errors.length > 0)
+                        return { fieldName: args.fieldName, errors: args.errors };
+                    else
+                        return null;
+                },
+                validateItem: function (args) {
+                    self.raiseEvent(COLL_EVENTS.validate_item, args);
+                    if (!!args.result && args.result.length > 0)
+                        return args.result;
+                    else
+                        return [];
                 }
             };
         }
@@ -3172,57 +3244,6 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             else
                 return null;
         };
-        BaseCollection.prototype._addErrors = function (item, errors) {
-            var self = this;
-            errors.forEach(function (err) {
-                self._addError(item, err.fieldName, err.errors, true);
-            });
-            this._onErrorsChanged(item);
-        };
-        BaseCollection.prototype._addError = function (item, fieldName, errors, ignoreChangeErrors) {
-            if (!fieldName)
-                fieldName = "*";
-            if (!(checks.isArray(errors) && errors.length > 0)) {
-                this._removeError(item, fieldName, ignoreChangeErrors);
-                return;
-            }
-            if (!this._errors[item._key])
-                this._errors[item._key] = {};
-            var itemErrors = this._errors[item._key];
-            itemErrors[fieldName] = errors;
-            if (!ignoreChangeErrors)
-                this._onErrorsChanged(item);
-        };
-        BaseCollection.prototype._removeError = function (item, fieldName, ignoreChangeErrors) {
-            var itemErrors = this._errors[item._key];
-            if (!itemErrors)
-                return;
-            if (!fieldName)
-                fieldName = "*";
-            if (!itemErrors[fieldName])
-                return;
-            delete itemErrors[fieldName];
-            if (Object.keys(itemErrors).length === 0) {
-                delete this._errors[item._key];
-            }
-            if (!ignoreChangeErrors)
-                this._onErrorsChanged(item);
-        };
-        BaseCollection.prototype._removeAllErrors = function (item) {
-            var itemErrors = this._errors[item._key];
-            if (!itemErrors)
-                return;
-            delete this._errors[item._key];
-            this._onErrorsChanged(item);
-        };
-        BaseCollection.prototype._getErrors = function (item) {
-            return this._errors[item._key];
-        };
-        BaseCollection.prototype._onErrorsChanged = function (item) {
-            var args = { item: item };
-            this.raiseEvent(COLL_EVENTS.errors_changed, args);
-            item._aspect.raiseErrorsChanged();
-        };
         BaseCollection.prototype._onItemDeleting = function (args) {
             this.raiseEvent(COLL_EVENTS.item_deleting, args);
             return !args.isCancel;
@@ -3236,7 +3257,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             this._destroyItems();
             this._items = [];
             this._itemsByKey = {};
-            this._errors = {};
+            this._errors.clear();
             if (oper !== 1)
                 this._onCollectionChanged({
                     changeType: 2,
@@ -3326,12 +3347,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             }
         };
         BaseCollection.prototype.getItemsWithErrors = function () {
-            var self = this, res = [];
-            coreUtils.forEachProp(this._errors, function (key) {
-                var item = self.getItemByKey(key);
-                res.push(item);
-            });
-            return res;
+            return this._errors.getItemsWithErrors();
         };
         BaseCollection.prototype.addNew = function () {
             var item, isHandled;
@@ -3484,7 +3500,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 }
                 this._onRemoved(item, oldPos);
                 delete this._itemsByKey[key];
-                delete this._errors[key];
+                this._errors.removeAllErrors(item);
                 item._aspect._setIsDetached(true);
                 var test = this.getItemByPos(oldPos), curPos = this._currentPos;
                 if (curPos === oldPos) {
@@ -3503,11 +3519,6 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                     item.destroy();
                 }
             }
-        };
-        BaseCollection.prototype.getIsHasErrors = function () {
-            if (!this._errors)
-                return false;
-            return (Object.keys(this._errors).length > 0);
         };
         BaseCollection.prototype.sort = function (fieldNames, sortOrder) {
             return this.sortLocal(fieldNames, sortOrder);
@@ -3567,6 +3578,11 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         BaseCollection.prototype.toString = function () {
             return "Collection";
         };
+        Object.defineProperty(BaseCollection.prototype, "errors", {
+            get: function () { return this._errors; },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(BaseCollection.prototype, "options", {
             get: function () { return this._options; },
             enumerable: true,
@@ -3898,11 +3914,11 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                 throw new Error("Invalid operation. The item is detached");
             if (!this.isEditing)
                 return false;
-            var coll = this.collection, self = this, internal = coll._getInternal();
-            internal.removeAllErrors(this.item);
+            var coll = this.collection, self = this, errors = coll.errors;
+            errors.removeAllErrors(this.item);
             var validations = this._validateFields();
             if (validations.length > 0) {
-                internal.addErrors(self.item, validations);
+                errors.addErrors(self.item, validations);
             }
             if (this.getIsHasErrors()) {
                 return false;
@@ -3918,7 +3934,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             var coll = this.collection, self = this, item = self.item, changes = this._saveVals;
             this._vals = this._saveVals;
             this._saveVals = null;
-            coll._getInternal().removeAllErrors(item);
+            coll.errors.removeAllErrors(item);
             coll.getFieldNames().forEach(function (name) {
                 if (changes[name] !== self._vals[name]) {
                     item.raisePropertyChanged(name);
@@ -3930,15 +3946,15 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             return false;
         };
         ItemAspect.prototype._validateItem = function () {
-            return this.collection._getInternal().validateItem(this.item);
+            return this.collection.errors.validateItem(this.item);
         };
         ItemAspect.prototype._validateField = function (fieldName) {
-            var fieldInfo = this.getFieldInfo(fieldName), internal = this.collection._getInternal();
+            var fieldInfo = this.getFieldInfo(fieldName), errors = this.collection.errors;
             var value = coreUtils.getValue(this._vals, fieldName);
             if (this._skipValidate(fieldInfo, value))
                 return null;
             var standardErrors = validation_1.Validations.checkField(fieldInfo, value, this.isNew);
-            var customValidation = internal.validateItemField(this.item, fieldName);
+            var customValidation = errors.validateItemField(this.item, fieldName);
             var result = { fieldName: fieldName, errors: [] };
             if (standardErrors.length > 0) {
                 result.errors = standardErrors;
@@ -3991,7 +4007,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             return this.collection.getFieldNames();
         };
         ItemAspect.prototype.getErrorString = function () {
-            var itemErrors = this.collection._getInternal().getErrors(this.item);
+            var itemErrors = this.collection.errors.getErrors(this.item);
             if (!itemErrors)
                 return "";
             var res = [];
@@ -4074,7 +4090,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             return true;
         };
         ItemAspect.prototype.getIsHasErrors = function () {
-            var res = !!this.collection._getInternal().getErrors(this.item);
+            var res = !!this.collection.errors.getErrors(this.item);
             if (!res && !!this._valueBag) {
                 coreUtils.forEachProp(this._valueBag, function (name, obj) {
                     var errNotification = sys.getErrorNotification(obj.val);
@@ -4094,7 +4110,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         };
         ItemAspect.prototype.getFieldErrors = function (fieldName) {
             var res = [];
-            var itemErrors = this.collection._getInternal().getErrors(this.item);
+            var itemErrors = this.collection.errors.getErrors(this.item);
             if (!itemErrors)
                 return res;
             var name = fieldName;
@@ -4117,7 +4133,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                     }
                 });
             }
-            var itemErrors = this.collection._getInternal().getErrors(this.item);
+            var itemErrors = this.collection.errors.getErrors(this.item);
             if (!itemErrors)
                 return res;
             coreUtils.forEachProp(itemErrors, function (name) {
@@ -4385,7 +4401,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
         }
         ListItemAspect.prototype._setProp = function (name, val) {
             var error;
-            var coll = this.collection, item = this.item, fieldInfo = this.getFieldInfo(name), internal = coll._getInternal();
+            var coll = this.collection, item = this.item, fieldInfo = this.getFieldInfo(name), errors = coll.errors;
             if (this._getProp(name) !== val) {
                 try {
                     if (fieldInfo.isReadOnly && !(this.isNew && fieldInfo.allowClientDefault)) {
@@ -4393,7 +4409,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                     }
                     coreUtils.setValue(this._vals, name, val, false);
                     item.raisePropertyChanged(name);
-                    internal.removeError(item, name);
+                    errors.removeError(item, name);
                     var validation_info = this._validateField(name);
                     if (!!validation_info && validation_info.errors.length > 0) {
                         throw new errors_7.ValidationError([validation_info], this);
@@ -4408,7 +4424,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                             { fieldName: name, errors: [ex.message] }
                         ], this);
                     }
-                    internal.addError(item, name, error.validations[0].errors);
+                    errors.addError(item, name, error.validations[0].errors);
                     throw error;
                 }
             }
@@ -4571,7 +4587,7 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
                 this._vals["val"] = {};
         }
         AnyItemAspect.prototype._validateField = function (name) {
-            return this.collection._getInternal().validateItemField(this.item, name);
+            return this.collection.errors.validateItemField(this.item, name);
         };
         AnyItemAspect.prototype._validateFields = function () {
             return validation_2.Validations.distinct(this._validateItem());
@@ -4610,14 +4626,13 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
             return coreUtils.getValue(this.val, fieldName, '->');
         };
         AnyValListItem.prototype.setProp = function (name, val) {
-            var coll = this._aspect.collection, internal = coll._getInternal();
-            var old = this.getProp(name);
+            var coll = this._aspect.collection, errors = coll.errors, old = this.getProp(name);
             if (old !== val) {
                 try {
                     var fieldName = strUtils.trimBrackets(name);
                     coreUtils.setValue(this.val, fieldName, val, false, '->');
                     this.raisePropertyChanged(name);
-                    internal.removeError(this, name);
+                    errors.removeError(this, name);
                     var validation = this._aspect._validateField(name);
                     if (!!validation && validation.errors.length > 0) {
                         throw new errors_8.ValidationError([validation], this);
@@ -4633,7 +4648,7 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
                             { fieldName: name, errors: [ex.message] }
                         ], this);
                     }
-                    internal.addError(this, name, error.validations[0].errors);
+                    errors.addError(this, name, error.validations[0].errors);
                     throw error;
                 }
             }

@@ -791,8 +791,8 @@ declare module "jriapp_db/int" {
 declare module "jriapp_db/dataview" {
     import { SORT_ORDER, COLL_CHANGE_REASON, COLL_CHANGE_OPER } from "jriapp_shared/collection/const";
     import { IPromise, TEventHandler } from "jriapp_shared";
-    import { ICollection, ICollectionItem, ICollChangedArgs, ICollItemStatusArgs, IErrors, IPermissions, IFieldInfo } from "jriapp_shared/collection/int";
-    import { BaseCollection } from "jriapp_shared/collection/base";
+    import { ICollection, ICollectionItem, ICollChangedArgs, ICollItemStatusArgs, IPermissions, IFieldInfo } from "jriapp_shared/collection/int";
+    import { BaseCollection, Errors } from "jriapp_shared/collection/base";
     export interface IDataViewOptions<TItem extends ICollectionItem> {
         dataSource: ICollection<TItem>;
         fn_filter?: (item: TItem) => boolean;
@@ -828,16 +828,14 @@ declare module "jriapp_db/dataview" {
         protected _onPageChanged(): void;
         protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER): void;
         _getStrValue(val: any, fieldInfo: IFieldInfo): string;
-        _getErrors(item: TItem): IErrors;
-        getItemsWithErrors(): TItem[];
         appendItems(items: TItem[]): TItem[];
         addNew(): TItem;
         removeItem(item: TItem): void;
         sortLocal(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any>;
-        getIsHasErrors(): boolean;
         clear(): void;
         refresh(): void;
         destroy(): void;
+        readonly errors: Errors<TItem>;
         readonly dataSource: ICollection<TItem>;
         isPagingEnabled: boolean;
         readonly permissions: IPermissions;

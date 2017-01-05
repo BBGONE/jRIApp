@@ -636,7 +636,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         coreUtils.forEachProp(errors, (fieldName, err) => {
             res.push({ fieldName: fieldName, errors: err });
         });
-        this._addErrors(item, res);
+        this.errors.addErrors(item, res);
         return item;
     }
     protected _getChanges(): IRowInfo[] {

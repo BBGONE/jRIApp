@@ -47,6 +47,85 @@ const COLL_EVENTS = {
     commit_changes: "commit_changes"
 };
 
+export class Errors<TItem extends ICollectionItem> {
+    private _errors: IErrorsList;
+    private _owner: BaseCollection<TItem>;
+
+    constructor(owner: BaseCollection<TItem>) {
+        this._errors = {};
+        this._owner = owner;
+    }
+    clear(): void {
+        this._errors = {};
+    }
+    validateItem(item: TItem): IValidationInfo[] {
+        const args: ICollValidateItemArgs<TItem> = { item: item, result: [] };
+        return this._owner._getInternal().validateItem(args);
+    }
+    validateItemField(item: TItem, fieldName: string): IValidationInfo {
+        const args: ICollValidateFieldArgs<TItem> = { item: item, fieldName: fieldName, errors: <string[]>[] };
+        return this._owner._getInternal().validateItemField(args);
+    }
+    addErrors(item: TItem, errors: IValidationInfo[]): void {
+        errors.forEach((err) => {
+            this.addError(item, err.fieldName, err.errors, true);
+        });
+        this.onErrorsChanged(item);
+    }
+    addError(item: TItem, fieldName: string, errors: string[], ignoreChangeErrors?: boolean): void {
+        if (!fieldName)
+            fieldName = "*";
+        if (!(checks.isArray(errors) && errors.length > 0)) {
+            this.removeError(item, fieldName, ignoreChangeErrors);
+            return;
+        }
+        if (!this._errors[item._key])
+            this._errors[item._key] = {};
+        const itemErrors = this._errors[item._key];
+        itemErrors[fieldName] = errors;
+        if (!ignoreChangeErrors)
+            this.onErrorsChanged(item);
+    }
+    removeError(item: TItem, fieldName: string, ignoreChangeErrors?: boolean): void {
+        const itemErrors = this._errors[item._key];
+        if (!itemErrors)
+            return;
+        if (!fieldName)
+            fieldName = "*";
+        if (!itemErrors[fieldName])
+            return;
+        delete itemErrors[fieldName];
+        if (Object.keys(itemErrors).length === 0) {
+            delete this._errors[item._key];
+        }
+        if (!ignoreChangeErrors)
+            this.onErrorsChanged(item);
+    }
+    removeAllErrors(item: TItem): void {
+        const itemErrors = this._errors[item._key];
+        if (!itemErrors)
+            return;
+        delete this._errors[item._key];
+        this.onErrorsChanged(item);
+    }
+    getErrors(item: TItem): IErrors {
+        return this._errors[item._key];
+    }
+    onErrorsChanged(item: TItem): void {
+        const args: ICollItemArgs<TItem> = { item: item };
+        this._owner._getInternal().onErrorsChanged(args);
+        item._aspect.raiseErrorsChanged();
+    }
+    getItemsWithErrors(): TItem[] {
+        const res: TItem[] = [];
+        coreUtils.forEachProp(this._errors, (key) => {
+            const item = this._owner.getItemByKey(key);
+            res.push(item);
+        });
+        return res;
+    }
+}
+
 export class BaseCollection<TItem extends ICollectionItem> extends BaseObject implements ICollection<TItem> {
     private _objId: string;
     protected _options: ICollectionOptions;
@@ -61,7 +140,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     protected _newKey: number;
     protected _fieldMap: IIndexer<IFieldInfo>;
     protected _fieldInfos: IFieldInfo[];
-    protected _errors: IErrorsList;
+    protected _errors: Errors<TItem>;
     protected _pkInfo: IFieldInfo[];
     protected _isUpdating: boolean;
     protected _waitQueue: WaitQueue;
@@ -86,7 +165,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         this._newKey = 0;
         this._fieldMap = {};
         this._fieldInfos = [];
-        this._errors = {};
+        this._errors = new Errors(this);
         this._pkInfo = null;
         this._waitQueue = new WaitQueue(this);
         this._internal = {
@@ -105,32 +184,25 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
             onCommitChanges: (item: TItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS) => {
                 self._onCommitChanges(item, isBegin, isRejected, status);
             },
-            validateItem: (item: TItem) => {
-                return self._validateItem(item);
-            },
-            validateItemField: (item: TItem, fieldName: string) => {
-                return self._validateItemField(item, fieldName);
-            },
-            addErrors: (item: TItem, errors: IValidationInfo[]) => {
-                self._addErrors(item, errors);
-            },
-            addError: (item: TItem, fieldName: string, errors: string[]) => {
-                self._addError(item, fieldName, errors);
-            },
-            removeError: (item: TItem, fieldName: string) => {
-                self._removeError(item, fieldName);
-            },
-            removeAllErrors: (item: TItem) => {
-                self._removeAllErrors(item);
-            },
-            getErrors: (item: TItem) => {
-                return self._getErrors(item);
-            },
-            onErrorsChanged: (item: TItem) => {
-                self._onErrorsChanged(item);
-            },
             onItemDeleting: (args: ICancellableArgs<TItem>) => {
                 return self._onItemDeleting(args);
+            },
+            onErrorsChanged: (args: ICollItemArgs<TItem>) => {
+                self.raiseEvent(COLL_EVENTS.errors_changed, args);
+            },
+            validateItemField: (args: ICollValidateFieldArgs<TItem>) => {
+                self.raiseEvent(COLL_EVENTS.validate_field, args);
+                if (!!args.errors && args.errors.length > 0)
+                    return <IValidationInfo>{ fieldName: args.fieldName, errors: args.errors };
+                else
+                    return <IValidationInfo>null;
+            },
+            validateItem: (args: ICollValidateItemArgs<TItem>) => {
+                self.raiseEvent(COLL_EVENTS.validate_item, args);
+                if (!!args.result && args.result.length > 0)
+                    return args.result;
+                else
+                    return <IValidationInfo[]>[];
             }
         };
     }
@@ -506,57 +578,6 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         else
             return null;
     }
-    protected _addErrors(item: TItem, errors: IValidationInfo[]): void {
-        const self = this;
-        errors.forEach(function (err) {
-            self._addError(item, err.fieldName, err.errors, true);
-        });
-        this._onErrorsChanged(item);
-    }
-    protected _addError(item: TItem, fieldName: string, errors: string[], ignoreChangeErrors?: boolean): void {
-        if (!fieldName)
-            fieldName = "*";
-        if (!(checks.isArray(errors) && errors.length > 0)) {
-            this._removeError(item, fieldName, ignoreChangeErrors);
-            return;
-        }
-        if (!this._errors[item._key])
-            this._errors[item._key] = {};
-        const itemErrors = this._errors[item._key];
-        itemErrors[fieldName] = errors;
-        if (!ignoreChangeErrors)
-            this._onErrorsChanged(item);
-    }
-    protected _removeError(item: TItem, fieldName: string, ignoreChangeErrors?: boolean): void {
-        const itemErrors = this._errors[item._key];
-        if (!itemErrors)
-            return;
-        if (!fieldName)
-            fieldName = "*";
-        if (!itemErrors[fieldName])
-            return;
-        delete itemErrors[fieldName];
-        if (Object.keys(itemErrors).length === 0) {
-            delete this._errors[item._key];
-        }
-        if (!ignoreChangeErrors)
-            this._onErrorsChanged(item);
-    }
-    protected _removeAllErrors(item: TItem): void {
-        const itemErrors = this._errors[item._key];
-        if (!itemErrors)
-            return;
-        delete this._errors[item._key];
-        this._onErrorsChanged(item);
-    }
-    protected _getErrors(item: TItem): IErrors {
-        return this._errors[item._key];
-    }
-    protected _onErrorsChanged(item: TItem): void {
-        const args: ICollItemArgs<TItem> = { item: item };
-        this.raiseEvent(COLL_EVENTS.errors_changed, args);
-        item._aspect.raiseErrorsChanged();
-    }
     protected _onItemDeleting(args: ICancellableArgs<TItem>): boolean {
         this.raiseEvent(COLL_EVENTS.item_deleting, args);
         return !args.isCancel;
@@ -570,7 +591,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         this._destroyItems();
         this._items = [];
         this._itemsByKey = {};
-        this._errors = {};
+        this._errors.clear();
         if (oper !== COLL_CHANGE_OPER.Fill)
             this._onCollectionChanged({
                 changeType: COLL_CHANGE_TYPE.Reset,
@@ -664,12 +685,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         }
     }
     getItemsWithErrors(): TItem[] {
-        const self = this, res: TItem[] = [];
-        coreUtils.forEachProp(this._errors, function (key) {
-            let item = self.getItemByKey(key);
-            res.push(item);
-        });
-        return res;
+        return this._errors.getItemsWithErrors();
     }
     addNew() {
         let item: TItem, isHandled: boolean;
@@ -819,7 +835,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
             }
             this._onRemoved(item, oldPos);
             delete this._itemsByKey[key];
-            delete this._errors[key];
+            this._errors.removeAllErrors(item);
             item._aspect._setIsDetached(true);
 
             const test = this.getItemByPos(oldPos), curPos = this._currentPos;
@@ -842,11 +858,6 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
                 item.destroy();
             }
         }
-    }
-    getIsHasErrors(): boolean {
-        if (!this._errors)
-            return false;
-        return (Object.keys(this._errors).length > 0);
     }
     sort(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any> {
         return this.sortLocal(fieldNames, sortOrder);
@@ -906,6 +917,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     toString() {
         return "Collection";
     }
+    get errors() { return this._errors; }
     get options() { return this._options; }
     get items() { return this._items; }
     get currentItem() { return this.getItemByPos(this._currentPos); }

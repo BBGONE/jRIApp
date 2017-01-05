@@ -165,8 +165,6 @@ export interface IEditableCollection<TItem extends ICollectionItem> {
     cancelEdit(): void;
     endEdit(): void;
     addNew(): TItem;
-    getItemsWithErrors(): TItem[];
-    getIsHasErrors(): boolean;
     isEditing: boolean;
     isUpdating: boolean;
     permissions: IPermissions;
@@ -231,13 +229,8 @@ export interface IInternalCollMethods<TItem extends ICollectionItem> {
     onBeforeEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void;
     onEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void;
     onCommitChanges(item: TItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS): void;
-    validateItem(item: TItem): IValidationInfo[];
-    validateItemField(item: TItem, fieldName: string): IValidationInfo;
-    addErrors(item: TItem, errors: IValidationInfo[]): void;
-    addError(item: TItem, fieldName: string, errors: string[]): void;
-    removeError(item: TItem, fieldName: string): void;
-    removeAllErrors(item: TItem): void;
-    getErrors(item: TItem): IErrors;
-    onErrorsChanged(item: TItem): void;
     onItemDeleting(args: ICancellableArgs<TItem>): boolean;
+    onErrorsChanged(args: ICollItemArgs<TItem>): void;
+    validateItemField(args: ICollValidateFieldArgs<TItem>): IValidationInfo;
+    validateItem(args: ICollValidateItemArgs<TItem>): IValidationInfo[];
 }

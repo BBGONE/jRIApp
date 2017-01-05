@@ -41,7 +41,7 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
     _setProp(name: string, val: any) {
         let error: ValidationError;
         const coll = this.collection, item = this.item, fieldInfo = this.getFieldInfo(name),
-            internal = coll._getInternal();
+            errors = coll.errors;
         if (this._getProp(name) !== val) {
             try {
                 if (fieldInfo.isReadOnly && !(this.isNew && fieldInfo.allowClientDefault)) {
@@ -49,7 +49,7 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
                 }
                 coreUtils.setValue(this._vals, name, val, false);
                 item.raisePropertyChanged(name);
-                internal.removeError(item, name);
+                errors.removeError(item, name);
                 const validation_info = this._validateField(name);
                 if (!!validation_info && validation_info.errors.length > 0) {
                     throw new ValidationError([validation_info], this);
@@ -63,7 +63,7 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
                         { fieldName: name, errors: [ex.message] }
                     ], this);
                 }
-                internal.addError(item, name, error.validations[0].errors);
+                errors.addError(item, name, error.validations[0].errors);
                 throw error;
             }
         }

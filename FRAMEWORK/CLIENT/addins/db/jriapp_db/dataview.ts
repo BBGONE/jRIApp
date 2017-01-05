@@ -11,7 +11,7 @@ import {
     ICollection, ICollectionItem, ICollChangedArgs, ICollItemStatusArgs,
     IErrors, IPermissions, IFieldInfo
 } from "jriapp_shared/collection/int";
-import { BaseCollection } from "jriapp_shared/collection/base";
+import { BaseCollection, Errors } from "jriapp_shared/collection/base";
 import { PROP_NAME } from "./const";
 
 const utils = Utils, _async = utils.defer, checks = utils.check,
@@ -292,7 +292,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         }, self.uniqueID, null, TPriority.AboveNormal);
         ds.addOnErrorsChanged(function (sender, args) {
             if (!!self._itemsByKey[args.item._key]) {
-                self._onErrorsChanged(args.item);
+                self._getInternal().onErrorsChanged(args);
             }
         }, self.uniqueID, null, TPriority.AboveNormal);
         ds.addOnStatusChanged(self._onDSStatusChanged, self.uniqueID, self, TPriority.AboveNormal);
@@ -346,13 +346,6 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
     _getStrValue(val: any, fieldInfo: IFieldInfo): string {
         return (<BaseCollection<TItem>>this._dataSource)._getInternal().getStrValue(val, fieldInfo);
     }
-    _getErrors(item: TItem): IErrors {
-        return (<BaseCollection<TItem>>this._dataSource)._getInternal().getErrors(item);
-    }
-    getItemsWithErrors() {
-        let ds = this._dataSource;
-        return ds.getItemsWithErrors();
-    }
     appendItems(items: TItem[]) {
         if (this._isDestroyCalled)
             return [];
@@ -379,7 +372,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
             throw new Error(ERRS.ERR_ITEM_IS_NOTFOUND);
         }
         delete this._itemsByKey[item._key];
-        delete this._errors[item._key];
+        this.errors.removeAllErrors(item);
         this.totalCount = this.totalCount - 1;
         this._onRemoved(item, oldPos);
         let test = this.getItemByPos(oldPos), curPos = this._currentPos;
@@ -398,9 +391,6 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
     }
     sortLocal(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any> {
         return _async.delay(() => { this.fn_sort = this._getSortFn(fieldNames, sortOrder); });
-    }
-    getIsHasErrors() {
-        return this._dataSource.getIsHasErrors();
     }
     clear() {
         this._clear(COLL_CHANGE_REASON.None, COLL_CHANGE_OPER.None);
@@ -422,6 +412,9 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         this._fn_filter = null;
         this._fn_sort = null;
         super.destroy();
+    }
+    get errors() {
+        return (<BaseCollection<TItem>>this._dataSource).errors;
     }
     get dataSource() { return this._dataSource; }
     get isPagingEnabled() { return this._options.enablePaging; }
