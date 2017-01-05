@@ -24,7 +24,6 @@ interface ICustomVal
     isOwnIt: boolean;
 }
 
-
 export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implements IItemAspect<TItem> {
     private _key: string;
     private _item: TItem;
@@ -162,35 +161,20 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     }
     protected _validateFields(): IValidationInfo[] {
         const self = this, fieldInfos = this.collection.getFieldInfos();
-        let result: IValidationInfo[] = [];
+        let fldVals: IValidationInfo[] = [];
+        //revalidate all fields one by one
         fn_traverseFields(fieldInfos, (fld, fullName) => {
             if (fld.fieldType !== FIELD_TYPE.Object) {
                 const fieldValidation: IValidationInfo = self._validateField(fullName);
                 if (!!fieldValidation && fieldValidation.errors.length > 0) {
-                    result.push(fieldValidation);
+                    fldVals.push(fieldValidation);
                 }
             }
         });
-        //raise validation event for custom validation
-        const customValidation: IValidationInfo[] = self._validateItem(), toAppend: IValidationInfo[] = [];
-        customValidation.forEach((validation) => {
-           let fieldValidation = result.filter((test) => {
-                return test.fieldName === validation.fieldName;
-            });
-           if (fieldValidation.length > 0) {
-               fieldValidation[0].errors = fieldValidation[0].errors.concat(validation.errors);
-           }
-           else
-           {
-               if (validation.errors.length > 0)
-                   toAppend.push(validation);
-           }
-        });
-
-        if (toAppend.length > 0) {
-            result = utils.arr.merge([result, toAppend]);
-        }
-        return result;
+   
+        //raise validation event for the whole item validation
+        const itemVals: IValidationInfo[] = self._validateItem();
+        return Validations.distinct(fldVals.concat(itemVals));
     }
     protected _resetIsNew() {
         //can reset isNew on all items in the collection

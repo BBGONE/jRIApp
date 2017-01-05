@@ -7,6 +7,7 @@ import { Debounce } from "./debounce";
 import { COLL_CHANGE_TYPE } from "../collection/const";
 import { ICollChangedArgs, ICollectionItem, ICollValidateFieldArgs } from "../collection/int";
 import { CollectionItem } from "../collection/item";
+import { Validations } from "../collection/validation";
 import { IListItem, ListItemAspect, BaseList } from "../collection/list";
 import { ValidationError } from "../errors";
 
@@ -26,14 +27,13 @@ export class AnyItemAspect extends ListItemAspect<AnyValListItem, IAnyVal> {
     }
     //override and made public
     _validateField(name: string): IValidationInfo {
-        const internal = this.collection._getInternal();
-        return internal.validateItemField(this.item, name);
+        return this.collection._getInternal().validateItemField(this.item, name);
     }
     //override
     protected _validateFields(): IValidationInfo[] {
-        return this._validateItem();
+        return Validations.distinct(this._validateItem());
     }
-    //override
+    //override List's methods
     _setProp(name: string, val: any) {
         if (this._getProp(name) !== val) {
             coreUtils.setValue(this._vals, name, val, false);

@@ -3,8 +3,19 @@ import { FIELD_TYPE, DATA_TYPE, ITEM_STATUS } from "./const";
 import { IFieldInfo } from "./int";
 import { ERRS, STRS } from "../lang";
 import { Utils } from "../utils/utils";
+import { IIndexer, IValidationInfo } from "../int";
+
 
 const utils = Utils, checks = utils.check, strUtils = utils.str;
+
+function fn_toArray(index: IIndexer<IValidationInfo>): IValidationInfo[] {
+    const keys = Object.keys(index), result: IValidationInfo[] = [];
+    for (let i = 0, len = keys.length; i < len; i += 1) {
+        result.push(index[keys[i]]);
+    }
+    return result;
+}
+
 
 export class Validations {
     private static _dtRangeToDate(str: string) {
@@ -117,5 +128,23 @@ export class Validations {
         }
 
         return res;
+    }
+    static distinct(vals: IValidationInfo[]): IValidationInfo[] {
+        if (!vals)
+            return [];
+
+        const index: IIndexer<IValidationInfo> = {};
+        vals.forEach((val) => {
+            const name = !val.fieldName ? "*" : val.fieldName;
+            let test = index[name];
+            if (!!test) {
+                test.errors = test.errors.concat(val.errors);
+            }
+            else {
+                index[name] = val;
+            }
+        });
+
+        return fn_toArray(index);
     }
 }
