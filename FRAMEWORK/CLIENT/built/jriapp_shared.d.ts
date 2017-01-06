@@ -766,25 +766,28 @@ declare module "jriapp_shared/collection/int" {
         deleteItem(): boolean;
         _onAttaching(): void;
         _onAttach(): void;
-        _setIsDetached(v: boolean): void;
+        _setItem(v: TItem): void;
+        _setKey(v: string): void;
+        _setIsAttached(v: boolean): void;
         _setIsCached(v: boolean): void;
         raiseErrorsChanged(): void;
-        readonly isCanSubmit: boolean;
+        readonly item: TItem;
+        readonly key: string;
+        readonly collection: ICollection<TItem>;
         readonly status: ITEM_STATUS;
+        readonly isUpdating: boolean;
+        readonly isEditing: boolean;
+        readonly isCanSubmit: boolean;
+        readonly isHasChanges: boolean;
         readonly isNew: boolean;
         readonly isDeleted: boolean;
-        readonly collection: ICollection<TItem>;
-        readonly isUpdating: boolean;
-        readonly isHasChanges: boolean;
-        readonly isEditing: boolean;
-        readonly isDetached: boolean;
+        readonly isEdited: boolean;
         readonly isCached: boolean;
-        key: string;
-        item: TItem;
+        readonly isDetached: boolean;
     }
     export interface ICollectionItem extends IBaseObject {
         readonly _aspect: IItemAspect<ICollectionItem>;
-        _key: string;
+        readonly _key: string;
     }
     export interface ICollChangedArgs<TItem extends ICollectionItem> {
         changeType: COLL_CHANGE_TYPE;
@@ -1148,7 +1151,7 @@ declare module "jriapp_shared/collection/base" {
         protected _onPageChanging(): boolean;
         protected _onPageChanged(): void;
         protected _setCurrentItem(v: TItem): void;
-        protected _destroyItems(): void;
+        protected _destroyItems(items: TItem[]): void;
         _isHasProp(prop: string): boolean;
         protected _getEditingItem(): TItem;
         protected _getStrValue(val: any, fieldInfo: IFieldInfo): string;
@@ -1228,15 +1231,12 @@ declare module "jriapp_shared/collection/aspect" {
         protected _status: ITEM_STATUS;
         protected _saveVals: IIndexer<any>;
         protected _vals: IIndexer<any>;
-        protected _notEdited: boolean;
-        private _isCached;
-        private _isDetached;
+        private _flags;
         private _valueBag;
-        _setIsDetached(v: boolean): void;
-        _setIsCached(v: boolean): void;
         constructor(collection: BaseCollection<TItem>);
         protected _getEventNames(): string[];
         protected _onErrorsChanged(): void;
+        protected _setIsEdited(v: boolean): void;
         protected _initVals(): void;
         protected _beginEdit(): boolean;
         protected _endEdit(): boolean;
@@ -1245,9 +1245,14 @@ declare module "jriapp_shared/collection/aspect" {
         protected _validateItem(): IValidationInfo[];
         protected _validateField(fieldName: string): IValidationInfo;
         protected _validateFields(): IValidationInfo[];
-        protected _resetIsNew(): void;
+        protected _resetStatus(): void;
         protected _fakeDestroy(): void;
+        private _delCustomVal(entry);
         handleError(error: any, source: any): boolean;
+        _setItem(v: TItem): void;
+        _setKey(v: string): void;
+        _setIsAttached(v: boolean): void;
+        _setIsCached(v: boolean): void;
         _onAttaching(): void;
         _onAttach(): void;
         raiseErrorsChanged(): void;
@@ -1266,22 +1271,21 @@ declare module "jriapp_shared/collection/aspect" {
         getFieldErrors(fieldName: string): IValidationInfo[];
         getAllErrors(): IValidationInfo[];
         getIErrorNotification(): IErrorNotification;
-        private _delCustomVal(entry);
         setCustomVal(name: string, val: any, isOwnVal?: boolean): void;
         getCustomVal(name: string): any;
         destroy(): void;
         toString(): string;
-        item: TItem;
-        readonly isCanSubmit: boolean;
-        readonly status: ITEM_STATUS;
-        readonly isNew: boolean;
-        readonly isNotEdited: boolean;
-        readonly isDeleted: boolean;
-        key: string;
+        readonly item: TItem;
+        readonly key: string;
         readonly collection: BaseCollection<TItem>;
+        readonly status: ITEM_STATUS;
         readonly isUpdating: boolean;
         readonly isEditing: boolean;
+        readonly isCanSubmit: boolean;
         readonly isHasChanges: boolean;
+        readonly isNew: boolean;
+        readonly isDeleted: boolean;
+        readonly isEdited: boolean;
         readonly isCached: boolean;
         readonly isDetached: boolean;
     }
@@ -1295,7 +1299,7 @@ declare module "jriapp_shared/collection/item" {
         constructor(aspect: TAspect);
         protected _fakeDestroy(): void;
         readonly _aspect: TAspect;
-        _key: string;
+        readonly _key: string;
         destroy(): void;
         toString(): string;
     }
@@ -1315,15 +1319,13 @@ declare module "jriapp_shared/collection/list" {
         new (aspect: ListItemAspect<TItem, TObj>): TItem;
     }
     export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TItem> {
-        protected _isNew: boolean;
         constructor(coll: BaseList<TItem, TObj>, obj?: TObj);
         _setProp(name: string, val: any): void;
         _getProp(name: string): any;
-        _resetIsNew(): void;
+        _resetStatus(): void;
         toString(): string;
         readonly list: BaseList<TItem, TObj>;
         readonly vals: IIndexer<any>;
-        readonly isNew: boolean;
     }
     export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TItem> {
         protected _itemType: IListItemConstructor<TItem, TObj>;
@@ -1336,8 +1338,8 @@ declare module "jriapp_shared/collection/list" {
         destroy(): void;
         fillItems(objArray: TObj[], clearAll?: boolean): void;
         toArray(): TObj[];
-        getNewObjects(): TItem[];
-        resetNewObjects(): void;
+        getNewItems(): TItem[];
+        resetStatus(): void;
         toString(): string;
     }
 }

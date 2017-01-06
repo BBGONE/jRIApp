@@ -505,9 +505,10 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
             self._onCurrentChanged();
         }
     }
-    protected _destroyItems() {
-        this._items.forEach(function (item) {
-            item._aspect._setIsDetached(true);
+    //it is overriden in DataView class!!!
+    protected _destroyItems(items: TItem[]) {
+        items.forEach(function (item) {
+            item._aspect._setIsAttached(false);
             item.destroy();
         });
     }
@@ -588,10 +589,11 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         this._EditingItem = null;
         this._newKey = 0;
         this.currentItem = null;
-        this._destroyItems();
+        const oldItems = this._items;
         this._items = [];
         this._itemsByKey = {};
         this._errors.clear();
+        this._destroyItems(oldItems);
         if (oper !== COLL_CHANGE_OPER.Fill)
             this._onCollectionChanged({
                 changeType: COLL_CHANGE_TYPE.Reset,
@@ -836,7 +838,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
             this._onRemoved(item, oldPos);
             delete this._itemsByKey[key];
             this._errors.removeAllErrors(item);
-            item._aspect._setIsDetached(true);
+            item._aspect._setIsAttached(false);
 
             const test = this.getItemByPos(oldPos), curPos = this._currentPos;
 

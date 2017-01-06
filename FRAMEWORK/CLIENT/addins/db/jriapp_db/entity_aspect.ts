@@ -67,11 +67,20 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         this._initVals();
         this._initRowInfo(row, names);
     }
+    _setIsRefreshing(v: boolean) {
+        if (this._isRefreshing !== v) {
+            this._isRefreshing = v;
+            this.raisePropertyChanged(PROP_NAME.isRefreshing);
+        }
+    }
+    protected _setSrvKey(v: string) {
+        this._srvKey = v;
+    }
     protected _initRowInfo(row: IRowData, names: IFieldName[]) {
         if (!row)
             return;
-        this._srvKey = row.k;
-        this.key = row.k;
+        this._setSrvKey(row.k);
+        this._setKey(row.k);
 
         this._processValues("", row.v, names);
     }
@@ -213,7 +222,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         const self = this, changes = this._getValueChanges(true), isNew = this.isNew, dbSet = this.dbSet;
         this._vals = this._saveVals;
         this._saveVals = null;
-        this.setStatus(this._savedStatus);
+        this._setStatus(this._savedStatus);
         this._savedStatus = null;
         dbSet.errors.removeAllErrors(this.item);
         changes.forEach(function (v) {
@@ -224,10 +233,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         });
         return true;
     }
-    protected getDbSet() {
-        return this.dbSet;
-    }
-    protected setStatus(v: ITEM_STATUS) {
+    protected _setStatus(v: ITEM_STATUS) {
         if (this._status !== v) {
             const oldStatus = this._status;
             this._status = v;
@@ -238,10 +244,9 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
             this.dbSet._getInternal().onItemStatusChanged(this.item, oldStatus);
         }
     }
-    protected getSrvKey(): string { return this._srvKey; }
-    _updateKeys(srvKey: string) {
-        this._srvKey = srvKey;
-        this.key = srvKey;
+    _updateKeys(key: string) {
+        this._setSrvKey(key);
+        this._setKey(key);
     }
     _checkCanRefresh() {
         if (this.key === null || this.status === ITEM_STATUS.Added) {
@@ -315,7 +320,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
                 let changes = this._getValueChanges(true);
                 if (changes.length === 0) {
                     this._origVals = null;
-                    this.setStatus(ITEM_STATUS.None);
+                    this._setStatus(ITEM_STATUS.None);
                 }
             }
         }
@@ -324,7 +329,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         let res: IRowInfo = {
             values: this._getValueChanges(false),
             changeType: this.status,
-            serverKey: this.getSrvKey(),
+            serverKey: this.srvKey,
             clientKey: this.key,
             error: null
         };
@@ -368,7 +373,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
                     if (!(fieldInfo.fieldType === FIELD_TYPE.ClientOnly || fieldInfo.fieldType === FIELD_TYPE.ServerCalculated)) {
                         switch (this.status) {
                             case ITEM_STATUS.None:
-                                this.setStatus(ITEM_STATUS.Updated);
+                                this._setStatus(ITEM_STATUS.Updated);
                                 break;
                         }
                     }
@@ -410,7 +415,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
             this._origVals = null;
             if (!!this._saveVals)
                 this._saveVals = coreUtils.clone(this._vals);
-            this.setStatus(ITEM_STATUS.None);
+            this._setStatus(ITEM_STATUS.None);
             errors.removeAllErrors(this.item);
             if (!!rowInfo) {
                 this._refreshValues(rowInfo, REFRESH_MODE.CommitChanges);
@@ -444,7 +449,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
             dbSet.removeItem(this.item);
         }
         else {
-            this.setStatus(ITEM_STATUS.Deleted);
+            this._setStatus(ITEM_STATUS.Deleted);
         }
         return true;
     }
@@ -471,7 +476,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
                     self._saveVals = coreUtils.clone(self._vals);
                 }
             }
-            self.setStatus(ITEM_STATUS.None);
+            self._setStatus(ITEM_STATUS.None);
             errors.removeAllErrors(this.item);
             changes.forEach(function (v) {
                 fn_traverseChanges(v, (fullName, vc) => {
@@ -517,18 +522,11 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
     toString() {
         return this.dbSetName + "EntityAspect";
     }
+    get srvKey(): string { return this._srvKey; }
     get entityType() { return this.dbSet.entityType; }
     get isCanSubmit(): boolean { return true; }
-    get isNew(): boolean { return this._status === ITEM_STATUS.Added; }
-    get isDeleted(): boolean { return this._status === ITEM_STATUS.Deleted; }
     get dbSetName() { return this.dbSet.dbSetName; }
     get serverTimezone() { return this.dbSet.dbContext.serverTimezone; }
     get dbSet() { return <DbSet<TItem, TDbContext>>this.collection; }
     get isRefreshing(): boolean { return this._isRefreshing; }
-    set isRefreshing(v: boolean) {
-        if (this._isRefreshing !== v) {
-            this._isRefreshing = v;
-            this.raisePropertyChanged(PROP_NAME.isRefreshing);
-        }
-    }
 }

@@ -156,10 +156,9 @@ export class AnyList extends BaseList<AnyValListItem, IAnyVal> {
     }
     //override
     protected createItem(obj?: IAnyVal): AnyValListItem {
-        const aspect = new AnyItemAspect(this, obj);
-        const item = new this._itemType(aspect);
-        aspect.key = this._getNewKey(item);
-        aspect.item = item;
+        const aspect = new AnyItemAspect(this, obj), item = new this._itemType(aspect);
+        aspect._setKey(this._getNewKey(item));
+        aspect._setItem(item);
         return item;
     }
     protected onChanged() {

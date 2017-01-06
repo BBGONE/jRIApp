@@ -5,7 +5,7 @@ import { Utils } from "../utils/utils";
 import { ERRS } from "../lang";
 
 import {
-    COLL_CHANGE_REASON, COLL_CHANGE_TYPE, COLL_CHANGE_OPER
+    COLL_CHANGE_REASON, COLL_CHANGE_TYPE, COLL_CHANGE_OPER, ITEM_STATUS
 } from "./const";
 import {
     ICollectionItem, IPropInfo, PROP_NAME
@@ -28,12 +28,12 @@ export interface IListItemConstructor<TItem extends IListItem, TObj> {
 }
 
 export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TItem> {
-    protected _isNew: boolean;
-
     constructor(coll: BaseList<TItem, TObj>, obj?: TObj) {
         super(coll);
-        this._isNew = !obj;
-        if (this._isNew)
+        const isNew = !obj;
+        if (isNew)
+            this._status = ITEM_STATUS.Added;
+        if (isNew)
             this._initVals();
         else
             this._vals = <any>obj;
@@ -71,8 +71,8 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
     _getProp(name: string): any {
         return coreUtils.getValue(this._vals, name);
     }
-    _resetIsNew(): void {
-        this._isNew = false;
+    _resetStatus(): void {
+        this._status = ITEM_STATUS.None;
     }
     toString(): string {
         if (!this.item)
@@ -81,8 +81,8 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
     }
     get list(): BaseList<TItem, TObj> { return <BaseList<TItem, TObj>>this.collection; }
     get vals(): IIndexer<any> { return this._vals; }
-    get isNew(): boolean { return this._isNew; }
 }
+
 export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TItem> {
     protected _itemType: IListItemConstructor<TItem, TObj>;
 
@@ -130,10 +130,9 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
         return key;
     }
     protected createItem(obj?: TObj): TItem {
-        const aspect = new ListItemAspect<TItem, TObj>(this, obj);
-        const item = new this._itemType(aspect);
-        aspect.key = this._getNewKey(item);
-        aspect.item = item;
+        const aspect = new ListItemAspect<TItem, TObj>(this, obj), item = new this._itemType(aspect);
+        aspect._setKey(this._getNewKey(item));
+        aspect._setItem(item);
         return item;
     }
     destroy() {
@@ -148,7 +147,8 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
         if (!objArray)
             objArray = [];
         try {
-            if (!!clearAll) this.clear();
+            if (!!clearAll)
+                this.clear();
             objArray.forEach(function (obj) {
                 const item = self.createItem(obj), oldItem = self._itemsByKey[item._key];
                 if (!oldItem) {
@@ -157,6 +157,7 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
                     newItems.push(item);
                     positions.push(self._items.length - 1);
                     items.push(item);
+                    item._aspect._setIsAttached(true);
                 }
                 else {
                     items.push(oldItem);
@@ -188,14 +189,14 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
             return <TObj>coreUtils.clone(item._aspect.vals);
         });
     }
-    getNewObjects() {
+    getNewItems() {
         return this._items.filter(function (item) {
             return item._aspect.isNew;
         });
     }
-    resetNewObjects() {
+    resetStatus() {
         this._items.forEach(function (item) {
-            item._aspect._resetIsNew();
+            item._aspect._resetStatus();
         });
     }
     toString() {

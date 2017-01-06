@@ -15,8 +15,7 @@ export class CollectionItem<TAspect extends ItemAspect<ICollectionItem>> extends
         this.removeNSHandlers();
     }
     get _aspect() { return this.__aspect; }
-    get _key(): string { return !!this.__aspect ? this.__aspect.key : null; }
-    set _key(v: string) { if (!this.__aspect) return; this.__aspect.key = v; }
+    get _key(): string { return !this.__aspect ? null : this.__aspect.key; }
     destroy() {
         if (this._isDestroyed)
             return;

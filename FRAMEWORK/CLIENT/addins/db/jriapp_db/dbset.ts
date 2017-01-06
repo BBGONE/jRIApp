@@ -528,7 +528,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
                 self._itemsByKey[item._key] = item;
                 newItems.push(item);
                 items.push(item);
-                item._aspect._setIsDetached(false);
+                item._aspect._setIsAttached(true);
             }
             else {
                 items.push(oldItem);
@@ -572,7 +572,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
             self._itemsByKey[item._key] = item;
             positions.push(index);
             items.push(item);
-            item._aspect._setIsDetached(false);
+            item._aspect._setIsAttached(true);
         });
 
         if (items.length > 0) {
@@ -724,7 +724,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
                 return res;
             }
             else {
-                let isOK = fld.fieldType === FIELD_TYPE.None || fld.fieldType === FIELD_TYPE.RowTimeStamp || fld.fieldType === FIELD_TYPE.ServerCalculated;
+                const isOK = fld.fieldType === FIELD_TYPE.None || fld.fieldType === FIELD_TYPE.RowTimeStamp || fld.fieldType === FIELD_TYPE.ServerCalculated;
                 if (isOK) {
                     arr.push({
                         n: fld.fieldName, p: null
@@ -736,11 +736,11 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         return names;
     }
     protected createEntity(row: IRowData, fieldNames: IFieldName[]) {
-        let aspect = new EntityAspect<TItem, TDbContext>(this, row, fieldNames);
-        let item = new this.entityType(aspect);
-        aspect.item = item;
-        if (!row)
-            aspect.key = this._getNewKey(item);
+        const aspect = new EntityAspect<TItem, TDbContext>(this, row, fieldNames), item = new this.entityType(aspect),
+            isNew = !row;
+        aspect._setItem(item);
+        if (isNew)
+            aspect._setKey(this._getNewKey(item));
         return item;
     }
     _getInternal(): IInternalDbSetMethods<TItem> {

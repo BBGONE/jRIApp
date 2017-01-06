@@ -29,7 +29,7 @@ export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TIte
             throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "keyName", keyName));
         super(itemType, props);
         this._keyName = keyName;
-        let keyFld = this.getFieldInfo(keyName);
+        const keyFld = this.getFieldInfo(keyName);
         if (!keyFld)
             throw new Error(strUtils.format(ERRS.ERR_DICTKEY_IS_NOTFOUND, keyName));
         keyFld.isPrimaryKey = 1;
@@ -53,7 +53,7 @@ export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TIte
         const oldkey = item._key, newkey = "" + key;
         if (oldkey !== newkey) {
             delete self._itemsByKey[oldkey];
-            item._aspect.key = newkey;
+            item._aspect._setKey(newkey);
             self._itemsByKey[item._key] = item;
             self._onCollectionChanged({
                 changeType: COLL_CHANGE_TYPE.Remap,

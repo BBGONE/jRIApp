@@ -31,17 +31,9 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     protected _status: ITEM_STATUS;
     protected _saveVals: IIndexer<any>;
     protected _vals: IIndexer<any>;
-    protected _notEdited: boolean;
-    private _isCached: boolean;
-    private _isDetached: boolean;
+    private _flags: number;
     private _valueBag: IIndexer<ICustomVal>;
     
-    _setIsDetached(v: boolean) {
-        this._isDetached = v;
-    }
-    _setIsCached(v: boolean) {
-        this._isCached = v;
-    }
     constructor(collection: BaseCollection<TItem>) {
         super();
         this._key = null;
@@ -50,9 +42,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         this._status = ITEM_STATUS.None;
         this._saveVals = null;
         this._vals = {};
-        this._notEdited = true;
-        this._isCached = false;
-        this._isDetached = false;
+        this._flags = 0;
     }
     protected _getEventNames() {
         const base_events = super._getEventNames();
@@ -60,6 +50,12 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     }
     protected _onErrorsChanged() {
         this.raiseEvent(ITEM_EVENTS.errors_changed, {});
+    }
+    protected _setIsEdited(v: boolean) {
+        if (v)
+            this._flags |= (1 << 3);
+        else
+            this._flags &= ~(1 << 3);
     }
     //sets all fields to null
     protected _initVals(): void {
@@ -176,7 +172,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         const itemVals: IValidationInfo[] = self._validateItem();
         return Validations.distinct(fldVals.concat(itemVals));
     }
-    protected _resetIsNew() {
+    protected _resetStatus() {
         //can reset isNew on all items in the collection
         //the list descendant does it
     }
@@ -184,15 +180,53 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         this.raiseEvent(ITEM_EVENTS.destroyed, {});
         this.removeNSHandlers();
     }
-    public handleError(error: any, source: any): boolean {
+    private _delCustomVal(entry: ICustomVal) {
+        const coll = this.collection;
+        if (!!entry) {
+            const val = entry.val;
+
+            if (sys.isEditable(val) && val.isEditing) {
+                val.cancelEdit();
+            }
+
+            const errNotification = sys.getErrorNotification(val);
+            if (!!errNotification) {
+                errNotification.removeOnErrorsChanged(coll.uniqueID);
+            }
+
+            if (entry.isOwnIt && sys.isBaseObj(val)) {
+                val.destroy();
+            }
+        }
+    }
+    handleError(error: any, source: any): boolean {
         if (!this._collection)
             return super.handleError(error, source);
         else
             return this._collection.handleError(error, source);
     }
+    _setItem(v: TItem) {
+        this._item = v;
+    }
+    _setKey(v: string) {
+        this._key = v;
+    }
+    _setIsAttached(v: boolean) {
+        if (v)
+            this._flags |= 1;
+        else
+            this._flags &= ~(1);
+    }
+    _setIsCached(v: boolean) {
+        if (v)
+            this._flags |= (1 << 2);
+        else
+            this._flags &= ~(1 << 2);
+    }
     _onAttaching(): void {
     }
     _onAttach(): void {
+        this._setIsAttached(true);
     }
     raiseErrorsChanged(): void {
         this._onErrorsChanged();
@@ -252,7 +286,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         if (!customEndEdit || !this._endEdit())
             return false;
         internal.onEditing(item, false, false);
-        this._notEdited = false;
+        this._setIsEdited(true);
         return true;
     }
     cancelEdit(): boolean {
@@ -269,7 +303,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         if (!this._cancelEdit())
             return false;
         internal.onEditing(item, false, true);
-        if (isNew && this._notEdited && !this.getIsDestroyCalled()) {
+        if (isNew && !this.isEdited && !this.getIsDestroyCalled()) {
             this.destroy();
         }
         return true;
@@ -346,25 +380,6 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     getIErrorNotification(): IErrorNotification {
         return this;
     }
-    private _delCustomVal(entry: ICustomVal) {
-        const coll = this.collection;
-        if (!!entry) {
-            const val = entry.val;
-
-            if (sys.isEditable(val) && val.isEditing) {
-                val.cancelEdit();
-            }
-
-            const errNotification = sys.getErrorNotification(val);
-            if (!!errNotification) {
-                errNotification.removeOnErrorsChanged(coll.uniqueID);
-            }
-
-            if (entry.isOwnIt && sys.isBaseObj(val)) {
-                val.destroy();
-            }
-        }
-    }
     // can be used to store any user object
     setCustomVal(name: string, val: any, isOwnVal: boolean = true): void {
         if (this.getIsDestroyCalled())
@@ -418,7 +433,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         const coll = this._collection, item = this._item;
         if (!!item) {
             this.cancelEdit();
-            if (this._isCached) {
+            if (this.isCached) {
                 try {
                     this._fakeDestroy();
                 }
@@ -443,8 +458,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         this._key = null;
         this._saveVals = null;
         this._vals = {};
-        this._isCached = false;
-        this._isDetached = true;
+        this._flags = 0;
         this._collection = null;
         super.destroy(); 
     }
@@ -454,27 +468,15 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     get item(): TItem {
         return this._item;
     }
-    set item(v: TItem) {
-        this._item = v;
-    }
-    get isCanSubmit(): boolean { return false; }
-    get status(): ITEM_STATUS { return this._status; }
-    get isNew(): boolean {
-        return false;
-    }
-    get isNotEdited(): boolean {
-        return this._notEdited;
-    }
-    get isDeleted(): boolean { return false; }
-    get key(): string { return this._key; }
-    set key(v: string) {
-        if (v !== null)
-            v = "" + v;
-        this._key = v;
+    get key(): string {
+        return this._key;
     }
     get collection(): BaseCollection<TItem> { return this._collection; }
+    get status(): ITEM_STATUS {
+        return this._status;
+    }
     get isUpdating(): boolean {
-        let coll = this.collection;
+        const coll = this.collection;
         if (!coll)
             return false;
         return coll.isUpdating;
@@ -483,7 +485,26 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         const coll = this._collection, editingItem = !coll ? <TItem>null : coll._getInternal().getEditingItem();
         return !!editingItem && editingItem._aspect === this;
     }
-    get isHasChanges(): boolean { return this._status !== ITEM_STATUS.None; }
-    get isCached(): boolean { return this._isCached; }
-    get isDetached(): boolean { return this._isDetached; }
+    get isCanSubmit(): boolean {
+        return false;
+    }
+    get isHasChanges(): boolean {
+        return this._status !== ITEM_STATUS.None;
+    }
+    get isNew(): boolean {
+        return this._status === ITEM_STATUS.Added;
+    }
+    get isDeleted(): boolean {
+        return this._status === ITEM_STATUS.Deleted;
+    }
+    get isEdited(): boolean {
+        return !!(this._flags & (1 << 3));
+    }
+    get isCached(): boolean {
+        return !!(this._flags & (1 << 2));
+    }
+    get isDetached(): boolean {
+        //opposite of attached!
+        return !(this._flags & 1);
+    }
 }

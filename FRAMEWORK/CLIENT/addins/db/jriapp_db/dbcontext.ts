@@ -615,12 +615,12 @@ export class DbContext extends BaseObject {
             item: item,
             dbSet: item._aspect.dbSet,
             fn_onStart: function () {
-                context.item._aspect.isRefreshing = true;
+                context.item._aspect._setIsRefreshing(true);
                 context.dbSet._setIsLoading(true);
             },
             fn_onEnd: function () {
                 context.dbSet._setIsLoading(false);
-                context.item._aspect.isRefreshing = false;
+                context.item._aspect._setIsRefreshing(false);
             },
             fn_onErr: function (ex: any) {
                 try {

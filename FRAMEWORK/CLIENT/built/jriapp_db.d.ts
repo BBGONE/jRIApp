@@ -538,6 +538,8 @@ declare module "jriapp_db/entity_aspect" {
         private _origVals;
         private _savedStatus;
         constructor(dbSet: DbSet<TItem, TDbContext>, row: IRowData, names: IFieldName[]);
+        _setIsRefreshing(v: boolean): void;
+        protected _setSrvKey(v: string): void;
         protected _initRowInfo(row: IRowData, names: IFieldName[]): void;
         protected _processValues(path: string, values: any[], names: IFieldName[]): void;
         protected _onFieldChanged(fieldName: string, fieldInfo: IFieldInfo): void;
@@ -548,10 +550,8 @@ declare module "jriapp_db/entity_aspect" {
         protected _beginEdit(): boolean;
         protected _endEdit(): boolean;
         protected _cancelEdit(): boolean;
-        protected getDbSet(): DbSet<TItem, TDbContext>;
-        protected setStatus(v: ITEM_STATUS): void;
-        protected getSrvKey(): string;
-        _updateKeys(srvKey: string): void;
+        protected _setStatus(v: ITEM_STATUS): void;
+        _updateKeys(key: string): void;
         _checkCanRefresh(): void;
         _refreshValue(val: any, fullName: string, refreshMode: REFRESH_MODE): void;
         _refreshValues(rowInfo: IRowInfo, refreshMode: REFRESH_MODE): void;
@@ -573,14 +573,13 @@ declare module "jriapp_db/entity_aspect" {
         refresh(): IPromise<TItem>;
         destroy(): void;
         toString(): string;
+        readonly srvKey: string;
         readonly entityType: IEntityConstructor<TItem>;
         readonly isCanSubmit: boolean;
-        readonly isNew: boolean;
-        readonly isDeleted: boolean;
         readonly dbSetName: string;
         readonly serverTimezone: number;
         readonly dbSet: DbSet<TItem, TDbContext>;
-        isRefreshing: boolean;
+        readonly isRefreshing: boolean;
     }
 }
 declare module "jriapp_db/int" {
@@ -808,7 +807,7 @@ declare module "jriapp_db/dataview" {
         private _refreshDebounce;
         constructor(options: IDataViewOptions<TItem>);
         protected _getEventNames(): string[];
-        protected _destroyItems(): void;
+        protected _destroyItems(items: TItem[]): void;
         addOnViewRefreshed(fn: TEventHandler<DataView<TItem>, any>, nmspace?: string): void;
         removeOnViewRefreshed(nmspace?: string): void;
         protected _filterForPaging(items: TItem[]): TItem[];

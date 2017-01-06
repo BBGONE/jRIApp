@@ -66,26 +66,29 @@ export interface IItemAspect<TItem extends ICollectionItem> extends IBaseObject,
     deleteItem(): boolean;
     _onAttaching(): void;
     _onAttach(): void;
-    _setIsDetached(v: boolean): void;
+    _setItem(v: TItem): void;
+    _setKey(v: string): void;
+    _setIsAttached(v: boolean): void;
     _setIsCached(v: boolean): void;
     raiseErrorsChanged(): void;
-    readonly isCanSubmit: boolean;
+    readonly item: TItem;
+    readonly key: string;
+    readonly collection: ICollection<TItem>;
     readonly status: ITEM_STATUS;
+    readonly isUpdating: boolean;
+    readonly isEditing: boolean;
+    readonly isCanSubmit: boolean;
+    readonly isHasChanges: boolean;
     readonly isNew: boolean;
     readonly isDeleted: boolean;
-    readonly collection: ICollection<TItem>;
-    readonly isUpdating: boolean;
-    readonly isHasChanges: boolean;
-    readonly isEditing: boolean;
-    readonly isDetached: boolean;
+    readonly isEdited: boolean;
     readonly isCached: boolean;
-    key: string;
-    item: TItem;
+    readonly isDetached: boolean;
 }
 
 export interface ICollectionItem extends IBaseObject {
     readonly _aspect: IItemAspect<ICollectionItem>;
-    _key: string;
+    readonly _key: string;
 }
 
 export interface ICollChangedArgs<TItem extends ICollectionItem> {
