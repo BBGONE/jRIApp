@@ -201,9 +201,7 @@ export class Row extends BaseObject {
     get columns() { return this._grid.columns; }
     get uniqueID() { return this._objId; }
     get itemKey() {
-        if (!this._item)
-            return null;
-        return this._item._key;
+        return (!this._item)? null : this._item._key;
     }
     get isCurrent() {
         return this.grid.currentItem === this.item;

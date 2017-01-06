@@ -123,9 +123,7 @@ export class DetailsRow extends BaseObject {
     get cell() { return this._cell; }
     get uniqueID() { return this._objId; }
     get itemKey() {
-        if (!this._item)
-            return null;
-        return this._item._key;
+        return (!this._item)? null : this._item._key;
     }
     get parentRow() { return this._parentRow; }
     set parentRow(v) {

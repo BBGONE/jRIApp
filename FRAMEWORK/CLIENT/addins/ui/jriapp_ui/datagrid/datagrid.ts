@@ -689,8 +689,8 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         }
     }
     protected _onItemStatusChanged(item: ICollectionItem, oldStatus: ITEM_STATUS) {
-        let newStatus: ITEM_STATUS = item._aspect.status, ds = this.dataSource;
-        let row = this._rowMap[item._key];
+        const newStatus: ITEM_STATUS = item._aspect.status, ds = this.dataSource;
+        const row = this._rowMap[item._key];
         if (!row)
             return;
         if (newStatus === ITEM_STATUS.Deleted) {
@@ -708,7 +708,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         }
     }
     protected _onDSErrorsChanged(sender: any, args: ICollItemArgs<ICollectionItem>) {
-        let row = this._rowMap[args.item._key];
+        const row = this._rowMap[args.item._key];
         if (!row)
             return;
         row.updateErrorState();
@@ -906,8 +906,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         }
     }
     protected _createRowForItem(parent: Node, item: ICollectionItem, prepend: boolean) {
-        const self = this, tr = doc.createElement("tr");
-        const gridRow = new Row(self, { tr: tr, item: item });
+        const self = this, tr = doc.createElement("tr"), gridRow = new Row(self, { tr: tr, item: item });
         self._rowMap[item._key] = gridRow;
         self._rows.push(gridRow);
         self._addNodeToParent(parent, gridRow.tr, prepend); 

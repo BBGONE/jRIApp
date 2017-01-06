@@ -291,6 +291,10 @@ td.ria-row-selector input[type="checkbox"] {
         box-sizing: border-box;
     }
 
+    .ria-stackpanel .ria-item-deleted {
+        display: none !important;
+    }
+
 .ria-horizontal-panel .ria-stackpanel-item {
     display: inline-block;
     margin: 3px 1px 1px 1px;

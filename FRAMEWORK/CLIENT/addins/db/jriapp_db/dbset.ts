@@ -834,7 +834,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         });
 
         fetchedItems.forEach(function (item) {
-            let oldItem = self._itemsByKey[item._key];
+            const oldItem = self._itemsByKey[item._key];
             if (!oldItem) {
                 self._items.push(item);
                 positions.push(self._items.length - 1);

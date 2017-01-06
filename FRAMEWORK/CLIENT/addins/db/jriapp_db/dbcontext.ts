@@ -131,7 +131,7 @@ export class DbContext extends BaseObject {
         this.addOnPropertyChange(PROP_NAME.isSubmiting, (s, a) => { self.raisePropertyChanged(PROP_NAME.isBusy); });
     }
     protected _getEventNames() {
-        let base_events = super._getEventNames();
+        const base_events = super._getEventNames();
         return [DBCTX_EVENTS.submit_err].concat(base_events);
     }
     protected _initDbSets() {
@@ -139,13 +139,13 @@ export class DbContext extends BaseObject {
             throw new Error(ERRS.ERR_DOMAIN_CONTEXT_INITIALIZED);
     }
     protected _initAssociations(associations: IAssociationInfo[]) {
-        let self = this;
+        const self = this;
         associations.forEach(function (assoc) {
             self._initAssociation(assoc);
         });
     }
     protected _initMethods(methods: IQueryInfo[]) {
-        let self = this;
+        const self = this;
         methods.forEach(function (info) {
             if (info.isQuery)
                 self._queryInf[info.methodName] = info;
@@ -156,7 +156,7 @@ export class DbContext extends BaseObject {
         });
     }
     protected _updatePermissions(info: IPermissionsInfo) {
-        let self = this;
+        const self = this;
         this._serverTimezone = info.serverTimezone;
         info.permissions.forEach(function (perms) {
             self.getDbSet(perms.dbSetName)._getInternal().updatePermissions(perms);
@@ -234,12 +234,12 @@ export class DbContext extends BaseObject {
     protected _getMethodParams(methodInfo: IQueryInfo, args: { [paramName: string]: any; }): IInvokeRequest {
         let self = this, methodName: string = methodInfo.methodName,
             data: IInvokeRequest = { methodName: methodName, paramInfo: { parameters: [] } };
-        let i: number, parameterInfos = methodInfo.parameters, len = parameterInfos.length, pinfo: IQueryParamInfo, val: any, value: any;
+        let parameterInfos = methodInfo.parameters, len = parameterInfos.length, pinfo: IQueryParamInfo;
         if (!args)
             args = {};
-        for (i = 0; i < len; i += 1) {
+        for (let i = 0; i < len; i += 1) {
             pinfo = parameterInfos[i];
-            val = args[pinfo.name];
+            let val = args[pinfo.name];
             if (!pinfo.isNullable && !pinfo.isArray && !(pinfo.dataType === DATA_TYPE.String || pinfo.dataType === DATA_TYPE.Binary) && checks.isNt(val)) {
                 throw new Error(strUtils.format(ERRS.ERR_SVC_METH_PARAM_INVALID, pinfo.name, val, methodInfo.methodName));
             }
@@ -249,7 +249,7 @@ export class DbContext extends BaseObject {
             if (pinfo.isArray && !checks.isNt(val) && !checks.isArray(val)) {
                 val = [val];
             }
-            value = null;
+            let value: string = null;
             //byte arrays are optimized for serialization
             if (pinfo.dataType === DATA_TYPE.Binary && checks.isArray(val)) {
                 value = JSON.stringify(val);
@@ -313,8 +313,8 @@ export class DbContext extends BaseObject {
         }
     }
     protected _loadFromCache(query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
-        let self = this, defer = _async.createDeferred<IQueryResult<IEntityItem>>();
-        setTimeout(() => {
+        const self = this, defer = _async.createDeferred<IQueryResult<IEntityItem>>();
+        utils.queue.enque(() => {
             if (self.getIsDestroyCalled()) {
                 defer.reject(new AbortError());
                 return;
@@ -326,11 +326,11 @@ export class DbContext extends BaseObject {
             } catch (ex) {
                 defer.reject(ex);
             }
-        }, 0);
+        });
         return defer.promise();
     }
     protected _loadSubsets(res: IQueryResponse, isClearAll: boolean) {
-        let self = this, isHasSubsets = checks.isArray(res.subsets) && res.subsets.length > 0;
+        const self = this, isHasSubsets = checks.isArray(res.subsets) && res.subsets.length > 0;
         if (!isHasSubsets)
             return;
         res.subsets.forEach(function (subset) {
@@ -339,7 +339,7 @@ export class DbContext extends BaseObject {
         });
     }
     protected _onLoaded(res: IQueryResponse, query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
-        let self = this, defer = _async.createDeferred<IQueryResult<IEntityItem>>();
+        const self = this, defer = _async.createDeferred<IQueryResult<IEntityItem>>();
         setTimeout(() => {
             if (self.getIsDestroyCalled()) {
                 defer.reject(new AbortError());
@@ -374,7 +374,7 @@ export class DbContext extends BaseObject {
         return defer.promise();
     }
     protected _dataSaved(res: IChangeSet) {
-        let self = this, submitted: IEntityItem[] = [], notvalid: IEntityItem[] = [];
+        const self = this, submitted: IEntityItem[] = [], notvalid: IEntityItem[] = [];
         try {
             try {
                 __checkError(res.error, DATA_OPER.Submit);
@@ -435,11 +435,7 @@ export class DbContext extends BaseObject {
     protected _onDataOperError(ex: any, oper: DATA_OPER): boolean {
         if (ERROR.checkIsDummy(ex))
             return true;
-        let er: any;
-        if (ex instanceof DataOperationError)
-            er = ex;
-        else
-            er = new DataOperationError(ex, oper);
+        let er: any = (ex instanceof DataOperationError) ?  ex : new DataOperationError(ex, oper);
         return this.handleError(er, this);
     }
     protected _onSubmitError(error: any) {
@@ -577,8 +573,7 @@ export class DbContext extends BaseObject {
         fn_onErr: (ex: any) => void;
         fn_onOK: (res: IRefreshRowInfo) => void;
     }) {
-        let self = this;
-        const operType = DATA_OPER.Refresh;
+        const self = this, operType = DATA_OPER.Refresh;
         args.fn_onStart();
         try {
             let request: IRefreshRowInfo = {
@@ -727,9 +722,9 @@ export class DbContext extends BaseObject {
         fn_onErr: (ex: any) => void;
         fn_onOk: () => void;
     }): void {
-        let self = this, changeSet: IChangeSet;
+        const self = this;
         args.fn_onStart();
-        changeSet = self._getChanges();
+        let changeSet = self._getChanges();
 
         if (changeSet.dbSets.length === 0) {
             args.fn_onOk();

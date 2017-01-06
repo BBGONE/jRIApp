@@ -68,7 +68,7 @@ export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TIte
     }
     //override
     protected _onRemoved(item: TItem, pos: number) {
-        let key = (<any>item)[this._keyName];
+        const key = (<any>item)[this._keyName];
         super._onRemoved(item, pos);
         this.raisePropertyChanged("[" + key + "]");
     }

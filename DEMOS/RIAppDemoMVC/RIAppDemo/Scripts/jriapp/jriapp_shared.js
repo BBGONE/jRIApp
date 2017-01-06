@@ -3139,12 +3139,12 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             }
             if (!v._key)
                 throw new Error(lang_5.ERRS.ERR_ITEM_IS_DETACHED);
-            var oldItem, pos, item = self.getItemByKey(v._key);
+            var item = self.getItemByKey(v._key);
             if (!item) {
                 throw new Error(lang_5.ERRS.ERR_ITEM_IS_NOTFOUND);
             }
-            oldItem = self.getItemByPos(oldPos);
-            pos = self._items.indexOf(v);
+            var oldItem = self.getItemByPos(oldPos);
+            var pos = self._items.indexOf(v);
             if (pos < 0) {
                 throw new Error(lang_5.ERRS.ERR_ITEM_IS_NOTFOUND);
             }

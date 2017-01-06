@@ -479,7 +479,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     protected _onPageChanged() {
     }
     protected _setCurrentItem(v: TItem) {
-        let self = this, oldPos = self._currentPos;
+        const self = this, oldPos = self._currentPos;
         if (!v) {
             if (oldPos !== -1) {
                 self._onCurrentChanging(null);
@@ -490,12 +490,12 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         }
         if (!v._key)
             throw new Error(ERRS.ERR_ITEM_IS_DETACHED);
-        let oldItem: TItem, pos: number, item = self.getItemByKey(v._key);
+        const item = self.getItemByKey(v._key);
         if (!item) {
             throw new Error(ERRS.ERR_ITEM_IS_NOTFOUND);
         }
-        oldItem = self.getItemByPos(oldPos);
-        pos = self._items.indexOf(v);
+        const oldItem = self.getItemByPos(oldPos);
+        let pos = self._items.indexOf(v);
         if (pos < 0) {
             throw new Error(ERRS.ERR_ITEM_IS_NOTFOUND);
         }

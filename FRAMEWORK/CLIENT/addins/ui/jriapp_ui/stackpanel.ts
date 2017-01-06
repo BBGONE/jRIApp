@@ -22,7 +22,8 @@ const css = {
     stackpanel: "ria-stackpanel",
     item: "ria-stackpanel-item",
     horizontal: "ria-horizontal-panel",
-    currentItem: "ria-current-item"
+    currentItem: "ria-current-item",
+    itemDeleted: "ria-item-deleted"
 };
 
 const PROP_NAME = {
@@ -252,10 +253,10 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         if (!obj)
             return;
         if (newStatus === ITEM_STATUS.Deleted) {
-            $(obj.el).hide();
+            dom.addClass([obj.el], css.itemDeleted);
         }
         else if (oldStatus === ITEM_STATUS.Deleted) {
-            $(obj.el).show();
+            dom.removeClass([obj.el], css.itemDeleted);
         }
     }
     protected _createTemplate(item: ICollectionItem) {
@@ -324,7 +325,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         delete self._itemMap[key];
         mappedItem.template.destroy();
         mappedItem.template = null;
-        $(mappedItem.el).remove();
+        dom.removeNode(mappedItem.el);
     }
     protected _removeItem(item: ICollectionItem) {
         this._removeItemByKey(item._key);

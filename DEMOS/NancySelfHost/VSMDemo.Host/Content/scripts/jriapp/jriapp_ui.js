@@ -1761,7 +1761,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             ds.removeNSHandlers(self._objId);
         };
         ListBox.prototype._addOption = function (item, first) {
-            var key = (!item ? "" : item._key);
+            var key = !item ? "" : item._key;
             if (!!this._keyMap[key]) {
                 return null;
             }
@@ -4296,9 +4296,7 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_shared", "j
         });
         Object.defineProperty(Row.prototype, "itemKey", {
             get: function () {
-                if (!this._item)
-                    return null;
-                return this._item._key;
+                return (!this._item) ? null : this._item._key;
             },
             enumerable: true,
             configurable: true
@@ -4618,9 +4616,7 @@ define("jriapp_ui/datagrid/rows/details", ["require", "exports", "jriapp_shared"
         });
         Object.defineProperty(DetailsRow.prototype, "itemKey", {
             get: function () {
-                if (!this._item)
-                    return null;
-                return this._item._key;
+                return (!this._item) ? null : this._item._key;
             },
             enumerable: true,
             configurable: true
@@ -5594,8 +5590,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             }
         };
         DataGrid.prototype._createRowForItem = function (parent, item, prepend) {
-            var self = this, tr = doc.createElement("tr");
-            var gridRow = new row_1.Row(self, { tr: tr, item: item });
+            var self = this, tr = doc.createElement("tr"), gridRow = new row_1.Row(self, { tr: tr, item: item });
             self._rowMap[item._key] = gridRow;
             self._rows.push(gridRow);
             self._addNodeToParent(parent, gridRow.tr, prepend);
@@ -6608,7 +6603,8 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
         stackpanel: "ria-stackpanel",
         item: "ria-stackpanel-item",
         horizontal: "ria-horizontal-panel",
-        currentItem: "ria-current-item"
+        currentItem: "ria-current-item",
+        itemDeleted: "ria-item-deleted"
     };
     var PROP_NAME = {
         dataSource: "dataSource",
@@ -6804,10 +6800,10 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             if (!obj)
                 return;
             if (newStatus === 3) {
-                $(obj.el).hide();
+                dom.addClass([obj.el], css.itemDeleted);
             }
             else if (oldStatus === 3) {
-                $(obj.el).show();
+                dom.removeClass([obj.el], css.itemDeleted);
             }
         };
         StackPanel.prototype._createTemplate = function (item) {
@@ -6875,7 +6871,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             delete self._itemMap[key];
             mappedItem.template.destroy();
             mappedItem.template = null;
-            $(mappedItem.el).remove();
+            dom.removeNode(mappedItem.el);
         };
         StackPanel.prototype._removeItem = function (item) {
             this._removeItemByKey(item._key);

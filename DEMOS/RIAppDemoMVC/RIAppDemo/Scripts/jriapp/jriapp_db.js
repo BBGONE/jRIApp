@@ -372,10 +372,10 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
             return res[0];
         };
         DataCache.prototype.reindexCache = function () {
-            var self = this, page;
+            var self = this;
             this._itemsByKey = {};
             for (var i = 0; i < this._cache.length; i += 1) {
-                page = this._cache[i];
+                var page = this._cache[i];
                 page.items.forEach(function (item) {
                     if (!item.getIsDestroyCalled())
                         self._itemsByKey[item._key] = item;
@@ -424,19 +424,17 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
             return { start: start, end: end, cnt: cnt };
         };
         DataCache.prototype.fillCache = function (start, items) {
-            var item, keyMap = this._itemsByKey;
-            var i, j, k, len = items.length, pageIndex, page, pageSize = this.pageSize;
-            for (i = 0; i < this.loadPageCount; i += 1) {
-                pageIndex = start + i;
-                page = this.getCachedPage(pageIndex);
+            var keyMap = this._itemsByKey, len = items.length, pageSize = this.pageSize;
+            for (var i = 0; i < this.loadPageCount; i += 1) {
+                var pageIndex = start + i, page = this.getCachedPage(pageIndex);
                 if (!page) {
                     page = { items: [], pageIndex: pageIndex };
                     this._cache.push(page);
                 }
-                for (j = 0; j < pageSize; j += 1) {
-                    k = (i * pageSize) + j;
+                for (var j = 0; j < pageSize; j += 1) {
+                    var k = (i * pageSize) + j;
                     if (k < len) {
-                        item = items[k];
+                        var item = items[k];
                         if (!!keyMap[item._key]) {
                             continue;
                         }
@@ -451,11 +449,11 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
             }
         };
         DataCache.prototype.clear = function () {
-            var i, j, items, item, dbSet = this._query.dbSet;
-            for (i = 0; i < this._cache.length; i += 1) {
-                items = this._cache[i].items;
-                for (j = 0; j < items.length; j += 1) {
-                    item = items[j];
+            var dbSet = this._query.dbSet;
+            for (var i = 0; i < this._cache.length; i += 1) {
+                var items = this._cache[i].items;
+                for (var j = 0; j < items.length; j += 1) {
+                    var item = items[j];
                     if (!!item) {
                         item._aspect._setIsCached(false);
                         if (!!item._key && !dbSet.getItemByKey(item._key))
@@ -470,10 +468,9 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
             var page = this.getCachedPage(pageIndex), dbSet = this._query.dbSet;
             if (!page)
                 return;
-            var j, items, item, index = this._cache.indexOf(page);
-            items = page.items;
-            for (j = 0; j < items.length; j += 1) {
-                item = items[j];
+            var index = this._cache.indexOf(page), items = page.items;
+            for (var j = 0; j < items.length; j += 1) {
+                var item = items[j];
                 if (!!item) {
                     item._aspect._setIsCached(false);
                     if (!!item._key) {
@@ -496,8 +493,8 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
             return this._itemsByKey[key];
         };
         DataCache.prototype.getPageByItem = function (item) {
-            item = this._itemsByKey[item._key];
-            if (!item)
+            var test = this._itemsByKey[item._key];
+            if (!test)
                 return -1;
             for (var i = 0; i < this._cache.length; i += 1) {
                 if (this._cache[i].items.indexOf(item) > -1) {
@@ -518,9 +515,9 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
         };
         Object.defineProperty(DataCache.prototype, "_pageCount", {
             get: function () {
-                var rowCount = this.totalCount, rowPerPage = this.pageSize, result;
+                var rowCount = this.totalCount, rowPerPage = this.pageSize, result = 0;
                 if ((rowCount === 0) || (rowPerPage === 0)) {
-                    return 0;
+                    return result;
                 }
                 if ((rowCount % rowPerPage) === 0) {
                     result = (rowCount / rowPerPage);
@@ -2380,12 +2377,12 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         };
         DbContext.prototype._getMethodParams = function (methodInfo, args) {
             var self = this, methodName = methodInfo.methodName, data = { methodName: methodName, paramInfo: { parameters: [] } };
-            var i, parameterInfos = methodInfo.parameters, len = parameterInfos.length, pinfo, val, value;
+            var parameterInfos = methodInfo.parameters, len = parameterInfos.length, pinfo;
             if (!args)
                 args = {};
-            for (i = 0; i < len; i += 1) {
+            for (var i = 0; i < len; i += 1) {
                 pinfo = parameterInfos[i];
-                val = args[pinfo.name];
+                var val = args[pinfo.name];
                 if (!pinfo.isNullable && !pinfo.isArray && !(pinfo.dataType === 1 || pinfo.dataType === 10) && checks.isNt(val)) {
                     throw new Error(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_SVC_METH_PARAM_INVALID, pinfo.name, val, methodInfo.methodName));
                 }
@@ -2395,7 +2392,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 if (pinfo.isArray && !checks.isNt(val) && !checks.isArray(val)) {
                     val = [val];
                 }
-                value = null;
+                var value = null;
                 if (pinfo.dataType === 10 && checks.isArray(val)) {
                     value = JSON.stringify(val);
                 }
@@ -2455,7 +2452,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         };
         DbContext.prototype._loadFromCache = function (query, reason) {
             var self = this, defer = _async.createDeferred();
-            setTimeout(function () {
+            utils.queue.enque(function () {
                 if (self.getIsDestroyCalled()) {
                     defer.reject(new jriapp_shared_7.AbortError());
                     return;
@@ -2468,7 +2465,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 catch (ex) {
                     defer.reject(ex);
                 }
-            }, 0);
+            });
             return defer.promise();
         };
         DbContext.prototype._loadSubsets = function (res, isClearAll) {
@@ -2570,11 +2567,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         DbContext.prototype._onDataOperError = function (ex, oper) {
             if (ERROR.checkIsDummy(ex))
                 return true;
-            var er;
-            if (ex instanceof error_1.DataOperationError)
-                er = ex;
-            else
-                er = new error_1.DataOperationError(ex, oper);
+            var er = (ex instanceof error_1.DataOperationError) ? ex : new error_1.DataOperationError(ex, oper);
             return this.handleError(er, this);
         };
         DbContext.prototype._onSubmitError = function (error) {
@@ -2683,8 +2676,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             }
         };
         DbContext.prototype._loadRefresh = function (args) {
-            var self = this;
-            var operType = 4;
+            var self = this, operType = 4;
             args.fn_onStart();
             try {
                 var request = {
@@ -2818,9 +2810,9 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             return deferred.promise();
         };
         DbContext.prototype._submitChanges = function (args) {
-            var self = this, changeSet;
+            var self = this;
             args.fn_onStart();
-            changeSet = self._getChanges();
+            var changeSet = self._getChanges();
             if (changeSet.dbSets.length === 0) {
                 args.fn_onOk();
                 return;
@@ -3884,7 +3876,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             return item;
         };
         DataView.prototype.removeItem = function (item) {
-            if (item._key === null) {
+            if (!item._key) {
                 throw new Error(jriapp_shared_9.LocaleERRS.ERR_ITEM_IS_DETACHED);
             }
             if (!this._itemsByKey[item._key])

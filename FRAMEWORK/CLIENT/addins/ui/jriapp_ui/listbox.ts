@@ -357,7 +357,7 @@ export class ListBox extends BaseObject {
         ds.removeNSHandlers(self._objId);
     }
     private _addOption(item: ICollectionItem, first: boolean): IMappedItem {
-        const key = (!item ? "" : item._key);
+        const key = !item ? "" : item._key;
         if (!!this._keyMap[key]) {
             return null;
         }
