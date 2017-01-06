@@ -976,7 +976,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                     self._itemsByKey[item._key] = item;
                     newItems.push(item);
                     items.push(item);
-                    item._aspect._setIsDetached(false);
+                    item._aspect._setIsAttached(true);
                 }
                 else {
                     items.push(oldItem);
@@ -1012,7 +1012,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 self._itemsByKey[item._key] = item;
                 positions.push(index);
                 items.push(item);
-                item._aspect._setIsDetached(false);
+                item._aspect._setIsAttached(true);
             });
             if (items.length > 0) {
                 this._onCountChanged();
@@ -1167,11 +1167,10 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             return names;
         };
         DbSet.prototype.createEntity = function (row, fieldNames) {
-            var aspect = new entity_aspect_1.EntityAspect(this, row, fieldNames);
-            var item = new this.entityType(aspect);
-            aspect.item = item;
-            if (!row)
-                aspect.key = this._getNewKey(item);
+            var aspect = new entity_aspect_1.EntityAspect(this, row, fieldNames), item = new this.entityType(aspect), isNew = !row;
+            aspect._setItem(item);
+            if (isNew)
+                aspect._setKey(this._getNewKey(item));
             return item;
         };
         DbSet.prototype._getInternal = function () {
@@ -2718,12 +2717,12 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 item: item,
                 dbSet: item._aspect.dbSet,
                 fn_onStart: function () {
-                    context.item._aspect.isRefreshing = true;
+                    context.item._aspect._setIsRefreshing(true);
                     context.dbSet._setIsLoading(true);
                 },
                 fn_onEnd: function () {
                     context.dbSet._setIsLoading(false);
-                    context.item._aspect.isRefreshing = false;
+                    context.item._aspect._setIsRefreshing(false);
                 },
                 fn_onErr: function (ex) {
                     try {
@@ -3097,11 +3096,20 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             this._initVals();
             this._initRowInfo(row, names);
         }
+        EntityAspect.prototype._setIsRefreshing = function (v) {
+            if (this._isRefreshing !== v) {
+                this._isRefreshing = v;
+                this.raisePropertyChanged(const_6.PROP_NAME.isRefreshing);
+            }
+        };
+        EntityAspect.prototype._setSrvKey = function (v) {
+            this._srvKey = v;
+        };
         EntityAspect.prototype._initRowInfo = function (row, names) {
             if (!row)
                 return;
-            this._srvKey = row.k;
-            this.key = row.k;
+            this._setSrvKey(row.k);
+            this._setKey(row.k);
             this._processValues("", row.v, names);
         };
         EntityAspect.prototype._processValues = function (path, values, names) {
@@ -3233,7 +3241,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             var self = this, changes = this._getValueChanges(true), isNew = this.isNew, dbSet = this.dbSet;
             this._vals = this._saveVals;
             this._saveVals = null;
-            this.setStatus(this._savedStatus);
+            this._setStatus(this._savedStatus);
             this._savedStatus = null;
             dbSet.errors.removeAllErrors(this.item);
             changes.forEach(function (v) {
@@ -3244,10 +3252,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             });
             return true;
         };
-        EntityAspect.prototype.getDbSet = function () {
-            return this.dbSet;
-        };
-        EntityAspect.prototype.setStatus = function (v) {
+        EntityAspect.prototype._setStatus = function (v) {
             if (this._status !== v) {
                 var oldStatus = this._status;
                 this._status = v;
@@ -3258,10 +3263,9 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 this.dbSet._getInternal().onItemStatusChanged(this.item, oldStatus);
             }
         };
-        EntityAspect.prototype.getSrvKey = function () { return this._srvKey; };
-        EntityAspect.prototype._updateKeys = function (srvKey) {
-            this._srvKey = srvKey;
-            this.key = srvKey;
+        EntityAspect.prototype._updateKeys = function (key) {
+            this._setSrvKey(key);
+            this._setKey(key);
         };
         EntityAspect.prototype._checkCanRefresh = function () {
             if (this.key === null || this.status === 1) {
@@ -3333,7 +3337,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                     var changes = this._getValueChanges(true);
                     if (changes.length === 0) {
                         this._origVals = null;
-                        this.setStatus(0);
+                        this._setStatus(0);
                     }
                 }
             }
@@ -3342,7 +3346,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             var res = {
                 values: this._getValueChanges(false),
                 changeType: this.status,
-                serverKey: this.getSrvKey(),
+                serverKey: this.srvKey,
                 clientKey: this.key,
                 error: null
             };
@@ -3384,7 +3388,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                         if (!(fieldInfo.fieldType === 1 || fieldInfo.fieldType === 6)) {
                             switch (this.status) {
                                 case 0:
-                                    this.setStatus(2);
+                                    this._setStatus(2);
                                     break;
                             }
                         }
@@ -3427,7 +3431,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 this._origVals = null;
                 if (!!this._saveVals)
                     this._saveVals = coreUtils.clone(this._vals);
-                this.setStatus(0);
+                this._setStatus(0);
                 errors.removeAllErrors(this.item);
                 if (!!rowInfo) {
                     this._refreshValues(rowInfo, 3);
@@ -3461,7 +3465,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 dbSet.removeItem(this.item);
             }
             else {
-                this.setStatus(3);
+                this._setStatus(3);
             }
             return true;
         };
@@ -3487,7 +3491,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                         self._saveVals = coreUtils.clone(self._vals);
                     }
                 }
-                self.setStatus(0);
+                self._setStatus(0);
                 errors.removeAllErrors(this.item);
                 changes.forEach(function (v) {
                     fn_traverseChanges(v, function (fullName, vc) {
@@ -3531,6 +3535,11 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
         EntityAspect.prototype.toString = function () {
             return this.dbSetName + "EntityAspect";
         };
+        Object.defineProperty(EntityAspect.prototype, "srvKey", {
+            get: function () { return this._srvKey; },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(EntityAspect.prototype, "entityType", {
             get: function () { return this.dbSet.entityType; },
             enumerable: true,
@@ -3538,16 +3547,6 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
         });
         Object.defineProperty(EntityAspect.prototype, "isCanSubmit", {
             get: function () { return true; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(EntityAspect.prototype, "isNew", {
-            get: function () { return this._status === 1; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(EntityAspect.prototype, "isDeleted", {
-            get: function () { return this._status === 3; },
             enumerable: true,
             configurable: true
         });
@@ -3568,12 +3567,6 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
         });
         Object.defineProperty(EntityAspect.prototype, "isRefreshing", {
             get: function () { return this._isRefreshing; },
-            set: function (v) {
-                if (this._isRefreshing !== v) {
-                    this._isRefreshing = v;
-                    this.raisePropertyChanged(const_6.PROP_NAME.isRefreshing);
-                }
-            },
             enumerable: true,
             configurable: true
         });
@@ -3620,7 +3613,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             var base_events = _super.prototype._getEventNames.call(this);
             return [VIEW_EVENTS.refreshed].concat(base_events);
         };
-        DataView.prototype._destroyItems = function () {
+        DataView.prototype._destroyItems = function (items) {
         };
         DataView.prototype.addOnViewRefreshed = function (fn, nmspace) {
             this._addHandler(VIEW_EVENTS.refreshed, fn, nmspace);
@@ -3684,17 +3677,11 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                 clear: true,
                 isAppend: false
             }, data);
-            var self = this, arr, newItems = [], positions = [], items = [];
-            var isClearAll = !!data.clear;
+            var self = this, newItems = [], positions = [], items = [], isClearAll = !!data.clear;
             if (!!isClearAll) {
                 this._clear(data.reason, 1);
             }
-            if (this.isPagingEnabled && !data.isAppend) {
-                arr = this._filterForPaging(data.items);
-            }
-            else {
-                arr = data.items;
-            }
+            var arr = (this.isPagingEnabled && !data.isAppend) ? this._filterForPaging(data.items) : data.items;
             arr.forEach(function (item) {
                 var oldItem = self._itemsByKey[item._key];
                 if (!oldItem) {
@@ -3735,7 +3722,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             return newItems;
         };
         DataView.prototype._onDSCollectionChanged = function (sender, args) {
-            var self = this, item, items = args.items;
+            var self = this;
             switch (args.changeType) {
                 case 2:
                     this._refresh(0);
@@ -3743,9 +3730,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                 case 1:
                     {
                         if (!this._isAddingNew) {
-                            if (!!self._fn_filter) {
-                                items = items.filter(self._fn_filter);
-                            }
+                            var items = (!self._fn_filter) ? args.items : args.items.filter(self._fn_filter);
                             if (items.length > 0) {
                                 self.appendItems(items);
                             }
@@ -3754,7 +3739,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                     break;
                 case 0:
                     {
-                        items.forEach(function (item) {
+                        args.items.forEach(function (item) {
                             var key = item._key;
                             item = self._itemsByKey[key];
                             if (!!item) {
@@ -3765,7 +3750,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                     break;
                 case 3:
                     {
-                        item = self._itemsByKey[args.old_key];
+                        var item = self._itemsByKey[args.old_key];
                         if (!!item) {
                             delete self._itemsByKey[args.old_key];
                             self._itemsByKey[args.new_key] = item;
@@ -3778,11 +3763,11 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             }
         };
         DataView.prototype._onDSStatusChanged = function (sender, args) {
-            var self = this, item = args.item, key = args.key, oldStatus = args.oldStatus, isOk, canFilter = !!self._fn_filter;
+            var self = this, item = args.item, key = args.key, oldStatus = args.oldStatus, canFilter = !!self._fn_filter;
             if (!!self._itemsByKey[key]) {
                 self._onItemStatusChanged(item, oldStatus);
                 if (canFilter) {
-                    isOk = self._fn_filter(item);
+                    var isOk = self._fn_filter(item);
                     if (!isOk) {
                         self.removeItem(item);
                     }
@@ -3790,7 +3775,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             }
             else {
                 if (canFilter) {
-                    isOk = self._fn_filter(item);
+                    var isOk = self._fn_filter(item);
                     if (isOk) {
                         self.appendItems([item]);
                     }
@@ -3860,9 +3845,9 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             ds.removeNSHandlers(self.uniqueID);
         };
         DataView.prototype._checkCurrentChanging = function (newCurrent) {
-            var ds = this._dataSource, item;
+            var ds = this._dataSource;
             try {
-                item = ds._getInternal().getEditingItem();
+                var item = ds._getInternal().getEditingItem();
                 if (!!item && newCurrent !== item)
                     ds.endEdit();
             }
@@ -3888,7 +3873,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             return this._fillItems({ items: items, reason: 0, clear: false, isAppend: true });
         };
         DataView.prototype.addNew = function () {
-            var item;
+            var item = null;
             this._isAddingNew = true;
             try {
                 item = this._dataSource.addNew();

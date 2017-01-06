@@ -3154,9 +3154,9 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 self._onCurrentChanged();
             }
         };
-        BaseCollection.prototype._destroyItems = function () {
-            this._items.forEach(function (item) {
-                item._aspect._setIsDetached(true);
+        BaseCollection.prototype._destroyItems = function (items) {
+            items.forEach(function (item) {
+                item._aspect._setIsAttached(false);
                 item.destroy();
             });
         };
@@ -3234,10 +3234,11 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             this._EditingItem = null;
             this._newKey = 0;
             this.currentItem = null;
-            this._destroyItems();
+            var oldItems = this._items;
             this._items = [];
             this._itemsByKey = {};
             this._errors.clear();
+            this._destroyItems(oldItems);
             if (oper !== 1)
                 this._onCollectionChanged({
                     changeType: 2,
@@ -3481,7 +3482,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 this._onRemoved(item, oldPos);
                 delete this._itemsByKey[key];
                 this._errors.removeAllErrors(item);
-                item._aspect._setIsDetached(true);
+                item._aspect._setIsAttached(false);
                 var test = this.getItemByPos(oldPos), curPos = this._currentPos;
                 if (curPos === oldPos) {
                     if (!test) {
@@ -3837,22 +3838,20 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             this._status = 0;
             this._saveVals = null;
             this._vals = {};
-            this._notEdited = true;
-            this._isCached = false;
-            this._isDetached = false;
+            this._flags = 0;
         }
-        ItemAspect.prototype._setIsDetached = function (v) {
-            this._isDetached = v;
-        };
-        ItemAspect.prototype._setIsCached = function (v) {
-            this._isCached = v;
-        };
         ItemAspect.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
             return [int_3.ITEM_EVENTS.errors_changed].concat(base_events);
         };
         ItemAspect.prototype._onErrorsChanged = function () {
             this.raiseEvent(int_3.ITEM_EVENTS.errors_changed, {});
+        };
+        ItemAspect.prototype._setIsEdited = function (v) {
+            if (v)
+                this._flags |= (1 << 3);
+            else
+                this._flags &= ~(1 << 3);
         };
         ItemAspect.prototype._initVals = function () {
             var self = this, fieldInfos = this._collection.getFieldInfos();
@@ -3961,11 +3960,27 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             var itemVals = self._validateItem();
             return validation_1.Validations.distinct(fldVals.concat(itemVals));
         };
-        ItemAspect.prototype._resetIsNew = function () {
+        ItemAspect.prototype._resetStatus = function () {
         };
         ItemAspect.prototype._fakeDestroy = function () {
             this.raiseEvent(int_3.ITEM_EVENTS.destroyed, {});
             this.removeNSHandlers();
+        };
+        ItemAspect.prototype._delCustomVal = function (entry) {
+            var coll = this.collection;
+            if (!!entry) {
+                var val = entry.val;
+                if (sys.isEditable(val) && val.isEditing) {
+                    val.cancelEdit();
+                }
+                var errNotification = sys.getErrorNotification(val);
+                if (!!errNotification) {
+                    errNotification.removeOnErrorsChanged(coll.uniqueID);
+                }
+                if (entry.isOwnIt && sys.isBaseObj(val)) {
+                    val.destroy();
+                }
+            }
         };
         ItemAspect.prototype.handleError = function (error, source) {
             if (!this._collection)
@@ -3973,9 +3988,28 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             else
                 return this._collection.handleError(error, source);
         };
+        ItemAspect.prototype._setItem = function (v) {
+            this._item = v;
+        };
+        ItemAspect.prototype._setKey = function (v) {
+            this._key = v;
+        };
+        ItemAspect.prototype._setIsAttached = function (v) {
+            if (v)
+                this._flags |= 1;
+            else
+                this._flags &= ~(1);
+        };
+        ItemAspect.prototype._setIsCached = function (v) {
+            if (v)
+                this._flags |= (1 << 2);
+            else
+                this._flags &= ~(1 << 2);
+        };
         ItemAspect.prototype._onAttaching = function () {
         };
         ItemAspect.prototype._onAttach = function () {
+            this._setIsAttached(true);
         };
         ItemAspect.prototype.raiseErrorsChanged = function () {
             this._onErrorsChanged();
@@ -4035,7 +4069,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             if (!customEndEdit || !this._endEdit())
                 return false;
             internal.onEditing(item, false, false);
-            this._notEdited = false;
+            this._setIsEdited(true);
             return true;
         };
         ItemAspect.prototype.cancelEdit = function () {
@@ -4052,7 +4086,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             if (!this._cancelEdit())
                 return false;
             internal.onEditing(item, false, true);
-            if (isNew && this._notEdited && !this.getIsDestroyCalled()) {
+            if (isNew && !this.isEdited && !this.getIsDestroyCalled()) {
                 this.destroy();
             }
             return true;
@@ -4128,22 +4162,6 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         ItemAspect.prototype.getIErrorNotification = function () {
             return this;
         };
-        ItemAspect.prototype._delCustomVal = function (entry) {
-            var coll = this.collection;
-            if (!!entry) {
-                var val = entry.val;
-                if (sys.isEditable(val) && val.isEditing) {
-                    val.cancelEdit();
-                }
-                var errNotification = sys.getErrorNotification(val);
-                if (!!errNotification) {
-                    errNotification.removeOnErrorsChanged(coll.uniqueID);
-                }
-                if (entry.isOwnIt && sys.isBaseObj(val)) {
-                    val.destroy();
-                }
-            }
-        };
         ItemAspect.prototype.setCustomVal = function (name, val, isOwnVal) {
             var _this = this;
             if (isOwnVal === void 0) { isOwnVal = true; }
@@ -4192,7 +4210,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             var coll = this._collection, item = this._item;
             if (!!item) {
                 this.cancelEdit();
-                if (this._isCached) {
+                if (this.isCached) {
                     try {
                         this._fakeDestroy();
                     }
@@ -4214,8 +4232,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             this._key = null;
             this._saveVals = null;
             this._vals = {};
-            this._isCached = false;
-            this._isDetached = true;
+            this._flags = 0;
             this._collection = null;
             _super.prototype.destroy.call(this);
         };
@@ -4226,53 +4243,25 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             get: function () {
                 return this._item;
             },
-            set: function (v) {
-                this._item = v;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ItemAspect.prototype, "isCanSubmit", {
-            get: function () { return false; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ItemAspect.prototype, "status", {
-            get: function () { return this._status; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ItemAspect.prototype, "isNew", {
-            get: function () {
-                return false;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ItemAspect.prototype, "isNotEdited", {
-            get: function () {
-                return this._notEdited;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ItemAspect.prototype, "isDeleted", {
-            get: function () { return false; },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(ItemAspect.prototype, "key", {
-            get: function () { return this._key; },
-            set: function (v) {
-                if (v !== null)
-                    v = "" + v;
-                this._key = v;
+            get: function () {
+                return this._key;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(ItemAspect.prototype, "collection", {
             get: function () { return this._collection; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ItemAspect.prototype, "status", {
+            get: function () {
+                return this._status;
+            },
             enumerable: true,
             configurable: true
         });
@@ -4294,18 +4283,52 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(ItemAspect.prototype, "isCanSubmit", {
+            get: function () {
+                return false;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ItemAspect.prototype, "isHasChanges", {
-            get: function () { return this._status !== 0; },
+            get: function () {
+                return this._status !== 0;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ItemAspect.prototype, "isNew", {
+            get: function () {
+                return this._status === 1;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ItemAspect.prototype, "isDeleted", {
+            get: function () {
+                return this._status === 3;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ItemAspect.prototype, "isEdited", {
+            get: function () {
+                return !!(this._flags & (1 << 3));
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(ItemAspect.prototype, "isCached", {
-            get: function () { return this._isCached; },
+            get: function () {
+                return !!(this._flags & (1 << 2));
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(ItemAspect.prototype, "isDetached", {
-            get: function () { return this._isDetached; },
+            get: function () {
+                return !(this._flags & 1);
+            },
             enumerable: true,
             configurable: true
         });
@@ -4331,9 +4354,7 @@ define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/ob
             configurable: true
         });
         Object.defineProperty(CollectionItem.prototype, "_key", {
-            get: function () { return !!this.__aspect ? this.__aspect.key : null; },
-            set: function (v) { if (!this.__aspect)
-                return; this.__aspect.key = v; },
+            get: function () { return !this.__aspect ? null : this.__aspect.key; },
             enumerable: true,
             configurable: true
         });
@@ -4373,8 +4394,10 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
         __extends(ListItemAspect, _super);
         function ListItemAspect(coll, obj) {
             _super.call(this, coll);
-            this._isNew = !obj;
-            if (this._isNew)
+            var isNew = !obj;
+            if (isNew)
+                this._status = 1;
+            if (isNew)
                 this._initVals();
             else
                 this._vals = obj;
@@ -4412,8 +4435,8 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
         ListItemAspect.prototype._getProp = function (name) {
             return coreUtils.getValue(this._vals, name);
         };
-        ListItemAspect.prototype._resetIsNew = function () {
-            this._isNew = false;
+        ListItemAspect.prototype._resetStatus = function () {
+            this._status = 0;
         };
         ListItemAspect.prototype.toString = function () {
             if (!this.item)
@@ -4427,11 +4450,6 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
         });
         Object.defineProperty(ListItemAspect.prototype, "vals", {
             get: function () { return this._vals; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ListItemAspect.prototype, "isNew", {
-            get: function () { return this._isNew; },
             enumerable: true,
             configurable: true
         });
@@ -4481,10 +4499,9 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
             return key;
         };
         BaseList.prototype.createItem = function (obj) {
-            var aspect = new ListItemAspect(this, obj);
-            var item = new this._itemType(aspect);
-            aspect.key = this._getNewKey(item);
-            aspect.item = item;
+            var aspect = new ListItemAspect(this, obj), item = new this._itemType(aspect);
+            aspect._setKey(this._getNewKey(item));
+            aspect._setItem(item);
             return item;
         };
         BaseList.prototype.destroy = function () {
@@ -4509,6 +4526,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                         newItems.push(item);
                         positions.push(self._items.length - 1);
                         items.push(item);
+                        item._aspect._setIsAttached(true);
                     }
                     else {
                         items.push(oldItem);
@@ -4539,14 +4557,14 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                 return coreUtils.clone(item._aspect.vals);
             });
         };
-        BaseList.prototype.getNewObjects = function () {
+        BaseList.prototype.getNewItems = function () {
             return this._items.filter(function (item) {
                 return item._aspect.isNew;
             });
         };
-        BaseList.prototype.resetNewObjects = function () {
+        BaseList.prototype.resetStatus = function () {
             this._items.forEach(function (item) {
-                item._aspect._resetIsNew();
+                item._aspect._resetStatus();
             });
         };
         BaseList.prototype.toString = function () {
@@ -4698,10 +4716,9 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
             _super.prototype.destroy.call(this);
         };
         AnyList.prototype.createItem = function (obj) {
-            var aspect = new AnyItemAspect(this, obj);
-            var item = new this._itemType(aspect);
-            aspect.key = this._getNewKey(item);
-            aspect.item = item;
+            var aspect = new AnyItemAspect(this, obj), item = new this._itemType(aspect);
+            aspect._setKey(this._getNewKey(item));
+            aspect._setItem(item);
             return item;
         };
         AnyList.prototype.onChanged = function () {
@@ -4937,7 +4954,7 @@ define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_sha
             var oldkey = item._key, newkey = "" + key;
             if (oldkey !== newkey) {
                 delete self._itemsByKey[oldkey];
-                item._aspect.key = newkey;
+                item._aspect._setKey(newkey);
                 self._itemsByKey[item._key] = item;
                 self._onCollectionChanged({
                     changeType: 3,
