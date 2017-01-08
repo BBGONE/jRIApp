@@ -152,6 +152,10 @@ declare module "jriapp_ui/utils/tooltip" {
     };
     export function createToolTipSvc(): ITooltipService;
 }
+declare module "jriapp_ui/utils/datepicker" {
+    import { IDatepicker } from "jriapp";
+    export function createDatepickerSvc(): IDatepicker;
+}
 declare module "jriapp_ui/baseview" {
     import { BaseObject, IPropertyBag, IValidationInfo } from "jriapp_shared";
     import { IElView, IApplication, IViewOptions } from "jriapp/int";
@@ -1755,25 +1759,6 @@ declare module "jriapp_ui/radio" {
         readonly name: string;
     }
 }
-declare module "jriapp_ui/utils/datepicker" {
-    import { BaseObject } from "jriapp_shared";
-    import { IDatepicker } from "jriapp";
-    export class Datepicker extends BaseObject implements IDatepicker {
-        private _datepickerRegion;
-        private _dateFormat;
-        constructor();
-        toString(): string;
-        attachTo(el: any, options?: {
-            dateFormat?: string;
-        }, onSelect?: (dateText?: string) => void): void;
-        detachFrom(el: any): void;
-        parseDate(str: string): Date;
-        formatDate(date: Date): string;
-        dateFormat: string;
-        datepickerRegion: string;
-        readonly datePickerFn: any;
-    }
-}
 declare module "jriapp_ui/content/all" {
     export { css as contentCSS } from "jriapp_ui/content/int";
     export { BasicContent } from "jriapp_ui/content/basic";
@@ -1814,7 +1799,6 @@ declare module "jriapp_ui" {
     export { TextAreaElView, ITextAreaOptions } from "jriapp_ui/textarea";
     export { TextBoxElView, ITextBoxOptions, TKeyPressArgs } from "jriapp_ui/textbox";
     export { DblClick } from "jriapp_ui/utils/dblclick";
-    export { Datepicker } from "jriapp_ui/utils/datepicker";
     export { JQueryUtils, $ } from "jriapp_ui/utils/jquery";
     export * from "jriapp_ui/content/all";
 }

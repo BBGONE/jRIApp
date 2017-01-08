@@ -1,4 +1,4 @@
-define("jriapp_ru", ["require", "exports", "jriapp_shared/lang", "jriapp/bootstrap"], function (require, exports, lang_1, bootstrap_1) {
+define("jriapp_ru", ["require", "exports", "jriapp_shared/lang", "jriapp/bootstrap", "jriapp/const"], function (require, exports, lang_1, bootstrap_1, const_1) {
     "use strict";
     var PAGER = {
         firstText: "<<",
@@ -33,7 +33,7 @@ define("jriapp_ru", ["require", "exports", "jriapp_shared/lang", "jriapp/bootstr
     var _STRS = { PAGER: PAGER, VALIDATE: VALIDATE, TEXT: TEXT };
     lang_1.assign(lang_1.STRS, _STRS);
     bootstrap_1.bootstrap.addOnInitialize(function (boot, args) {
-        var datepicker = boot.getSvc("IDatepicker");
+        var datepicker = boot.getSvc(const_1.DATEPICKER_SVC);
         if (!datepicker)
             throw new Error("IDatepicker service is not registered");
         $.datepicker.regional["ru"] = {

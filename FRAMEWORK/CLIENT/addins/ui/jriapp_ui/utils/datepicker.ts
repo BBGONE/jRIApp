@@ -14,7 +14,11 @@ const PROP_NAME = {
     datepickerRegion: "datepickerRegion"
 };
 
-export class Datepicker extends BaseObject implements IDatepicker {
+export function createDatepickerSvc(): IDatepicker {
+    return new Datepicker();
+}
+
+class Datepicker extends BaseObject implements IDatepicker {
     private _datepickerRegion: string;
     private _dateFormat: string;
 
@@ -22,7 +26,7 @@ export class Datepicker extends BaseObject implements IDatepicker {
         super();
         this._dateFormat = null;
         this._datepickerRegion = "";
-        if (!(<any>$).datepicker) {
+        if (!$.datepicker) {
             throw new Error(ERRS.ERR_JQUERY_DATEPICKER_NOTFOUND);
         }
         this.dateFormat = "dd.mm.yy";
@@ -92,5 +96,3 @@ export class Datepicker extends BaseObject implements IDatepicker {
         return (<any>$).datepicker;
     }
 }
-
-boot.registerSvc("IDatepicker", new Datepicker());

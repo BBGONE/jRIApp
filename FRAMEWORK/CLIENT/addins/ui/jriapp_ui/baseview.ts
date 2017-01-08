@@ -4,7 +4,7 @@ import {
 } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { ViewChecks } from "jriapp/utils/viewchecks";
-import { TOOLTIP_SVC, DATA_ATTR } from "jriapp/const";
+import { TOOLTIP_SVC, DATEPICKER_SVC, DATA_ATTR } from "jriapp/const";
 import { ITooltipService, IElView, IElViewStore,IApplication, IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 import { TAction, TCommand, ICommand, Command, TPredicate } from "jriapp/mvvm";
@@ -12,6 +12,7 @@ import { EventBag, EVENT_CHANGE_TYPE, IEventChangedArgs } from "./utils/eventbag
 import { PropertyBag } from "./utils/propbag";
 import { CSSBag } from "./utils/cssbag";
 import { createToolTipSvc } from "./utils/tooltip";
+import { createDatepickerSvc } from "./utils/datepicker";
 
 export { IEventChangedArgs, EVENT_CHANGE_TYPE };
 
@@ -23,9 +24,10 @@ viewChecks.isElView = function (obj: any): boolean {
 };
 
 boot.registerSvc(TOOLTIP_SVC, createToolTipSvc());
+boot.registerSvc(DATEPICKER_SVC, createDatepickerSvc());
 
 export function fn_addToolTip(el: Element, tip: string, isError?: boolean, pos?: string) {
-    let svc = boot.getSvc<ITooltipService>(TOOLTIP_SVC);
+    const svc = boot.getSvc<ITooltipService>(TOOLTIP_SVC);
     svc.addToolTip(el, tip, isError, pos);
 }
 

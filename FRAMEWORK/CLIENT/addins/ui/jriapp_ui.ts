@@ -41,7 +41,6 @@ export { TextAreaElView, ITextAreaOptions } from "./jriapp_ui/textarea";
 export { TextBoxElView, ITextBoxOptions, TKeyPressArgs } from "./jriapp_ui/textbox";
 
 export { DblClick } from "./jriapp_ui/utils/dblclick";
-export { Datepicker } from "./jriapp_ui/utils/datepicker";
 export { JQueryUtils, $ } from "./jriapp_ui/utils/jquery";
 export * from "./jriapp_ui/content/all";
 

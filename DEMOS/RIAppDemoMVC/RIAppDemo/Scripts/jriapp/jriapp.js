@@ -6,6 +6,7 @@ var __extends = (this && this.__extends) || function (d, b) {
 define("jriapp/const", ["require", "exports"], function (require, exports) {
     "use strict";
     exports.TOOLTIP_SVC = "tooltipSVC";
+    exports.DATEPICKER_SVC = "IDatepicker";
     exports.STORE_KEY = {
         SVC: "svc.",
         CONVERTER: "cnv.",
@@ -3898,6 +3899,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.3.9";
+    exports.VERSION = "1.3.10";
     bootstrap_7.Bootstrap._initFramework();
 });

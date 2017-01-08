@@ -1,5 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 export const TOOLTIP_SVC = "tooltipSVC";
+export const DATEPICKER_SVC = "IDatepicker";
 
 export const STORE_KEY = {
     SVC: "svc.",

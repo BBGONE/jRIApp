@@ -3,6 +3,7 @@
 /// <reference path="jriapp_shared.d.ts" />
 declare module "jriapp/const" {
     export const TOOLTIP_SVC: string;
+    export const DATEPICKER_SVC: string;
     export const STORE_KEY: {
         SVC: string;
         CONVERTER: string;
