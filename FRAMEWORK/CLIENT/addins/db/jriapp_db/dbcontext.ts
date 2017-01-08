@@ -644,14 +644,14 @@ export class DbContext extends BaseObject {
         return this._queryInf[name];
     }
     protected _onDbSetHasChangesChanged(eSet: DbSet<IEntityItem, DbContext>): void {
-        let old = this._isHasChanges, test: DbSet<IEntityItem, DbContext>;
+        const old = this._isHasChanges;
         this._isHasChanges = false;
         if (eSet.isHasChanges) {
             this._isHasChanges = true;
         }
         else {
             for (let i = 0, len = this._dbSets.arrDbSets.length; i < len; i += 1) {
-                test = this._dbSets.arrDbSets[i];
+                let test = this._dbSets.arrDbSets[i];
                 if (test.isHasChanges) {
                     this._isHasChanges = true;
                     break;

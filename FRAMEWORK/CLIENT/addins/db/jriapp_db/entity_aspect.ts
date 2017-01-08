@@ -54,24 +54,16 @@ export interface IEntityAspectConstructor<TItem extends IEntityItem, TDbContext 
 
 export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContext> extends ItemAspect<TItem> {
     private _srvKey: string;
-    private _isRefreshing: boolean;
     private _origVals: IIndexer<any>;
     private _savedStatus: ITEM_STATUS;
 
     constructor(dbSet: DbSet<TItem, TDbContext>, row: IRowData, names: IFieldName[]) {
         super(dbSet);
         this._srvKey = null;
-        this._isRefreshing = false;
         this._origVals = null;
         this._savedStatus = null;
         this._initVals();
         this._initRowInfo(row, names);
-    }
-    _setIsRefreshing(v: boolean) {
-        if (this._isRefreshing !== v) {
-            this._isRefreshing = v;
-            this.raisePropertyChanged(PROP_NAME.isRefreshing);
-        }
     }
     protected _setSrvKey(v: string) {
         this._srvKey = v;
@@ -254,7 +246,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         }
     }
     _refreshValue(val: any, fullName: string, refreshMode: REFRESH_MODE) {
-        let self = this, fld = self.dbSet.getFieldInfo(fullName);
+        const self = this, fld = self.dbSet.getFieldInfo(fullName);
         if (!fld)
             throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fullName));
         let stz = self.serverTimezone, newVal: any, oldVal: any, oldValOrig: any, dataType = fld.dataType, dcnv = fld.dateConversion;
@@ -303,7 +295,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         }
     }
     _refreshValues(rowInfo: IRowInfo, refreshMode: REFRESH_MODE) {
-        let self = this, oldStatus = this.status;
+        const self = this, oldStatus = this.status;
         if (!this._isDestroyed) {
             if (!refreshMode) {
                 refreshMode = REFRESH_MODE.RefreshCurrent;
@@ -317,7 +309,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
             });
 
             if (oldStatus === ITEM_STATUS.Updated) {
-                let changes = this._getValueChanges(true);
+                const changes = this._getValueChanges(true);
                 if (changes.length === 0) {
                     this._origVals = null;
                     this._setStatus(ITEM_STATUS.None);
@@ -506,7 +498,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         return promise;
     }
     refresh(): IPromise<TItem> {
-        let dbxt = this.dbSet.dbContext;
+        const dbxt = this.dbSet.dbContext;
         return dbxt._getInternal().refreshItem(this.item);
     }
     destroy() {
@@ -528,5 +520,4 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
     get dbSetName() { return this.dbSet.dbSetName; }
     get serverTimezone() { return this.dbSet.dbContext.serverTimezone; }
     get dbSet() { return <DbSet<TItem, TDbContext>>this.collection; }
-    get isRefreshing(): boolean { return this._isRefreshing; }
 }

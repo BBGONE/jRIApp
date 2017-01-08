@@ -2177,7 +2177,8 @@ define("jriapp_shared/collection/int", ["require", "exports"], function (require
         pageSize: "pageSize",
         pageIndex: "pageIndex",
         isUpdating: "isUpdating",
-        isLoading: "isLoading"
+        isLoading: "isLoading",
+        isRefreshing: "isRefreshing"
     };
     exports.ITEM_EVENTS = {
         errors_changed: "errors_changed",
@@ -4006,6 +4007,15 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             else
                 this._flags &= ~(1 << 2);
         };
+        ItemAspect.prototype._setIsRefreshing = function (v) {
+            if (this.isRefreshing !== v) {
+                if (v)
+                    this._flags |= (1 << 4);
+                else
+                    this._flags &= ~(1 << 4);
+                this.raisePropertyChanged(int_3.PROP_NAME.isRefreshing);
+            }
+        };
         ItemAspect.prototype._onAttaching = function () {
         };
         ItemAspect.prototype._onAttach = function () {
@@ -4328,6 +4338,13 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         Object.defineProperty(ItemAspect.prototype, "isDetached", {
             get: function () {
                 return !(this._flags & 1);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ItemAspect.prototype, "isRefreshing", {
+            get: function () {
+                return !!(this._flags & (1 << 4));
             },
             enumerable: true,
             configurable: true

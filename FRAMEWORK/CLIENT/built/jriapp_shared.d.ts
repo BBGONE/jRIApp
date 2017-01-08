@@ -725,6 +725,7 @@ declare module "jriapp_shared/collection/int" {
         pageIndex: string;
         isUpdating: string;
         isLoading: string;
+        isRefreshing: string;
     };
     export const ITEM_EVENTS: {
         errors_changed: string;
@@ -1253,6 +1254,7 @@ declare module "jriapp_shared/collection/aspect" {
         _setKey(v: string): void;
         _setIsAttached(v: boolean): void;
         _setIsCached(v: boolean): void;
+        _setIsRefreshing(v: boolean): void;
         _onAttaching(): void;
         _onAttach(): void;
         raiseErrorsChanged(): void;
@@ -1288,6 +1290,7 @@ declare module "jriapp_shared/collection/aspect" {
         readonly isEdited: boolean;
         readonly isCached: boolean;
         readonly isDetached: boolean;
+        readonly isRefreshing: boolean;
     }
 }
 declare module "jriapp_shared/collection/item" {

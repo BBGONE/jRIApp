@@ -18,7 +18,8 @@ export const PROP_NAME = {
     pageSize: "pageSize",
     pageIndex: "pageIndex",
     isUpdating: "isUpdating",
-    isLoading: "isLoading"
+    isLoading: "isLoading",
+    isRefreshing: "isRefreshing"
 };
 
 export const ITEM_EVENTS = {

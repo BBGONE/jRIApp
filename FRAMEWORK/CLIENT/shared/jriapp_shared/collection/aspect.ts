@@ -223,6 +223,15 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         else
             this._flags &= ~(1 << 2);
     }
+    _setIsRefreshing(v: boolean) {
+        if (this.isRefreshing !== v) {
+            if (v)
+                this._flags |= (1 << 4);
+            else
+                this._flags &= ~(1 << 4);
+            this.raisePropertyChanged(PROP_NAME.isRefreshing);
+        }
+    }
     _onAttaching(): void {
     }
     _onAttach(): void {
@@ -506,5 +515,8 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     get isDetached(): boolean {
         //opposite of attached!
         return !(this._flags & 1);
+    }
+    get isRefreshing(): boolean {
+        return !!(this._flags & (1 << 4));
     }
 }

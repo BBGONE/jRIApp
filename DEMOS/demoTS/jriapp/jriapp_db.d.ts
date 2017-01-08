@@ -534,11 +534,9 @@ declare module "jriapp_db/entity_aspect" {
     }
     export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContext> extends ItemAspect<TItem> {
         private _srvKey;
-        private _isRefreshing;
         private _origVals;
         private _savedStatus;
         constructor(dbSet: DbSet<TItem, TDbContext>, row: IRowData, names: IFieldName[]);
-        _setIsRefreshing(v: boolean): void;
         protected _setSrvKey(v: string): void;
         protected _initRowInfo(row: IRowData, names: IFieldName[]): void;
         protected _processValues(path: string, values: any[], names: IFieldName[]): void;
@@ -579,7 +577,6 @@ declare module "jriapp_db/entity_aspect" {
         readonly dbSetName: string;
         readonly serverTimezone: number;
         readonly dbSet: DbSet<TItem, TDbContext>;
-        readonly isRefreshing: boolean;
     }
 }
 declare module "jriapp_db/int" {

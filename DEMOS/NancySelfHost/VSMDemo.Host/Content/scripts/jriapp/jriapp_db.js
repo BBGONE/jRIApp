@@ -2742,14 +2742,14 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             return this._queryInf[name];
         };
         DbContext.prototype._onDbSetHasChangesChanged = function (eSet) {
-            var old = this._isHasChanges, test;
+            var old = this._isHasChanges;
             this._isHasChanges = false;
             if (eSet.isHasChanges) {
                 this._isHasChanges = true;
             }
             else {
                 for (var i = 0, len = this._dbSets.arrDbSets.length; i < len; i += 1) {
-                    test = this._dbSets.arrDbSets[i];
+                    var test = this._dbSets.arrDbSets[i];
                     if (test.isHasChanges) {
                         this._isHasChanges = true;
                         break;
@@ -3048,7 +3048,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
     }(jriapp_shared_7.BaseObject));
     exports.DbContext = DbContext;
 });
-define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriapp_shared/errors", "jriapp_shared/collection/utils", "jriapp_shared/collection/aspect", "jriapp_db/const", "jriapp_db/error"], function (require, exports, jriapp_shared_8, errors_1, utils_4, aspect_1, const_6, error_2) {
+define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriapp_shared/errors", "jriapp_shared/collection/utils", "jriapp_shared/collection/aspect", "jriapp_db/error"], function (require, exports, jriapp_shared_8, errors_1, utils_4, aspect_1, error_2) {
     "use strict";
     var utils = jriapp_shared_8.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, valUtils = utils_4.valueUtils, sys = utils.sys;
     var ENTITYASPECT_EVENTS = {
@@ -3082,18 +3082,11 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
         function EntityAspect(dbSet, row, names) {
             _super.call(this, dbSet);
             this._srvKey = null;
-            this._isRefreshing = false;
             this._origVals = null;
             this._savedStatus = null;
             this._initVals();
             this._initRowInfo(row, names);
         }
-        EntityAspect.prototype._setIsRefreshing = function (v) {
-            if (this._isRefreshing !== v) {
-                this._isRefreshing = v;
-                this.raisePropertyChanged(const_6.PROP_NAME.isRefreshing);
-            }
-        };
         EntityAspect.prototype._setSrvKey = function (v) {
             this._srvKey = v;
         };
@@ -3557,11 +3550,6 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(EntityAspect.prototype, "isRefreshing", {
-            get: function () { return this._isRefreshing; },
-            enumerable: true,
-            configurable: true
-        });
         return EntityAspect;
     }(aspect_1.ItemAspect));
     exports.EntityAspect = EntityAspect;
@@ -3569,7 +3557,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
 define("jriapp_db/int", ["require", "exports"], function (require, exports) {
     "use strict";
 });
-define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/base", "jriapp_db/const"], function (require, exports, jriapp_shared_9, base_2, const_7) {
+define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/base", "jriapp_db/const"], function (require, exports, jriapp_shared_9, base_2, const_6) {
     "use strict";
     var utils = jriapp_shared_9.Utils, _async = utils.defer, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr, ERROR = utils.err, sys = utils.sys;
     var VIEW_EVENTS = {
@@ -3944,7 +3932,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             set: function (v) {
                 if (this._options.enablePaging !== v) {
                     this._options.enablePaging = v;
-                    this.raisePropertyChanged(const_7.PROP_NAME.isPagingEnabled);
+                    this.raisePropertyChanged(const_6.PROP_NAME.isPagingEnabled);
                     this._refresh(0);
                 }
             },
@@ -3993,7 +3981,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
     }(base_2.BaseCollection));
     exports.DataView = DataView;
 });
-define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jriapp_db/const", "jriapp_db/dataview"], function (require, exports, jriapp_shared_10, const_8, dataview_1) {
+define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jriapp_db/const", "jriapp_db/dataview"], function (require, exports, jriapp_shared_10, const_7, dataview_1) {
     "use strict";
     var utils = jriapp_shared_10.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
     var ChildDataView = (function (_super) {
@@ -4021,7 +4009,7 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
             this._setParent = function (v) {
                 if (parentItem !== v) {
                     parentItem = v;
-                    self.raisePropertyChanged(const_8.PROP_NAME.parentItem);
+                    self.raisePropertyChanged(const_7.PROP_NAME.parentItem);
                 }
                 if (self.getIsDestroyCalled())
                     return;
@@ -4211,7 +4199,7 @@ define("jriapp_db/complexprop", ["require", "exports", "jriapp_shared"], functio
     }(BaseComplexProperty));
     exports.ChildComplexProperty = ChildComplexProperty;
 });
-define("jriapp_db", ["require", "exports", "jriapp_db/dbset", "jriapp_db/dataview", "jriapp_db/child_dataview", "jriapp_db/association", "jriapp_db/const", "jriapp_db/dbcontext", "jriapp_db/dbsets", "jriapp_db/dataquery", "jriapp_db/entity_aspect", "jriapp_db/error", "jriapp_db/complexprop"], function (require, exports, dbset_1, dataview_2, child_dataview_1, association_2, const_9, dbcontext_1, dbsets_1, dataquery_2, entity_aspect_2, error_3, complexprop_1) {
+define("jriapp_db", ["require", "exports", "jriapp_db/dbset", "jriapp_db/dataview", "jriapp_db/child_dataview", "jriapp_db/association", "jriapp_db/const", "jriapp_db/dbcontext", "jriapp_db/dbsets", "jriapp_db/dataquery", "jriapp_db/entity_aspect", "jriapp_db/error", "jriapp_db/complexprop"], function (require, exports, dbset_1, dataview_2, child_dataview_1, association_2, const_8, dbcontext_1, dbsets_1, dataquery_2, entity_aspect_2, error_3, complexprop_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -4220,10 +4208,10 @@ define("jriapp_db", ["require", "exports", "jriapp_db/dbset", "jriapp_db/datavie
     __export(dataview_2);
     __export(child_dataview_1);
     __export(association_2);
-    exports.REFRESH_MODE = const_9.REFRESH_MODE;
-    exports.DELETE_ACTION = const_9.DELETE_ACTION;
-    exports.DATA_OPER = const_9.DATA_OPER;
-    exports.FLAGS = const_9.FLAGS;
+    exports.REFRESH_MODE = const_8.REFRESH_MODE;
+    exports.DELETE_ACTION = const_8.DELETE_ACTION;
+    exports.DATA_OPER = const_8.DATA_OPER;
+    exports.FLAGS = const_8.FLAGS;
     __export(dbcontext_1);
     __export(dbsets_1);
     __export(dataquery_2);

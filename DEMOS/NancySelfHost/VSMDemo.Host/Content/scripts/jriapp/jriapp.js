@@ -3234,7 +3234,7 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
 });
 define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/utils/sloader"], function (require, exports, jriapp_shared_17, sloader_2) {
     "use strict";
-    var utils = jriapp_shared_17.Utils, coreUtils = utils.core, strUtils = utils.str, defer = utils.defer, arr = utils.arr, resolvedPromise = defer.resolve(void 0, true), CSSPrefix = "css!";
+    var utils = jriapp_shared_17.Utils, coreUtils = utils.core, strUtils = utils.str, _async = utils.defer, arr = utils.arr, resolvedPromise = _async.resolve(void 0, true), CSSPrefix = "css!";
     var _moduleLoader = null;
     function create() {
         if (!_moduleLoader)
@@ -3262,14 +3262,10 @@ define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/u
             }
         }
         if (resolved === cnt) {
-            if (!err)
-                return resolvedPromise;
-            else {
-                return defer.createDeferred().reject(err);
-            }
+            return !err ? resolvedPromise : _async.reject(err);
         }
         else {
-            return defer.whenAll(loads.map(function (load) {
+            return _async.whenAll(loads.map(function (load) {
                 return load.defered.promise();
             }));
         }
@@ -3290,7 +3286,7 @@ define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/u
                         name: name,
                         err: null,
                         state: 1,
-                        defered: defer.createDeferred(true)
+                        defered: _async.createDeferred(true)
                     };
                 });
                 require(forLoad, function () {
@@ -3333,7 +3329,7 @@ define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/u
                         name: name,
                         err: null,
                         state: 1,
-                        defered: defer.createDeferred(true)
+                        defered: _async.createDeferred(true)
                     };
                 });
                 cssLoader.loadStyles(urls).then(function () {
@@ -3906,6 +3902,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.3.7";
+    exports.VERSION = "1.3.8";
     bootstrap_7.Bootstrap._initFramework();
 });

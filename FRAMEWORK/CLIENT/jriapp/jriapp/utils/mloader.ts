@@ -7,8 +7,8 @@ import {
 } from "../int";
 import { createCssLoader as createCSSLoader } from "./sloader";
 
-const utils = Utils, coreUtils = utils.core, strUtils = utils.str, defer = utils.defer,
-    arr = utils.arr, resolvedPromise = defer.resolve<void>(void 0, true),
+const utils = Utils, coreUtils = utils.core, strUtils = utils.str, _async = utils.defer,
+    arr = utils.arr, resolvedPromise = _async.resolve<void>(void 0, true),
     CSSPrefix = "css!";
 
 let _moduleLoader: IModuleLoader = null;
@@ -46,14 +46,10 @@ function whenAll(loads: IModuleLoad[]): IPromise<any> {
     }
 
     if (resolved === cnt) {
-        if (!err)
-            return resolvedPromise;
-        else {
-            return defer.createDeferred<void>().reject(err);
-        }
+        return !err ? resolvedPromise : _async.reject(err); 
     }
     else {
-        return defer.whenAll(loads.map((load) => {
+        return _async.whenAll(loads.map((load) => {
             return load.defered.promise();
         }));
     }
@@ -83,7 +79,7 @@ class ModuleLoader implements IModuleLoader {
                     name: name,
                     err: null,
                     state: LOAD_STATE.LOADING,
-                    defered: defer.createDeferred<any>(true)
+                    defered: _async.createDeferred<any>(true)
                 };
             });
 
@@ -133,7 +129,7 @@ class ModuleLoader implements IModuleLoader {
                     name: name,
                     err: null,
                     state: LOAD_STATE.LOADING,
-                    defered: defer.createDeferred<any>(true)
+                    defered: _async.createDeferred<any>(true)
                 };
             });
 
