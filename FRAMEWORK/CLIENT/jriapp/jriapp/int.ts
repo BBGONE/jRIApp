@@ -32,8 +32,8 @@ export interface ILifeTimeScope extends IBaseObject {
 export interface IDatepicker {
     datepickerRegion: string;
     dateFormat: string;
-    attachTo($el: any, options?: any): void;
-    detachFrom($el: any): void;
+    attachTo(el: HTMLElement, options?: any, onSelect?: (dateText?: string) => void): void;
+    detachFrom(el: HTMLElement): void;
     parseDate(str: string): Date;
     formatDate(date: Date): string;
 }

@@ -207,7 +207,7 @@ class Deferred<T> implements IStatefulDeferred<T> {
             return this._promise;
         }
 
-        let cb = new Callback(this._dispatcher, successCB, errorCB);
+        const cb = new Callback(this._dispatcher, successCB, errorCB);
 
         switch (this._state) {
             case PromiseState.Pending:

@@ -54,5 +54,4 @@ define("jriapp_ru", ["require", "exports", "jriapp_shared/lang", "jriapp/bootstr
         };
         datepicker.datepickerRegion = "ru";
     });
-    exports.moduleKey = "ru";
 });

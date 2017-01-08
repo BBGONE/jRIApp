@@ -50,6 +50,8 @@ export { BaseColumn as DataGridColumn } from "./columns/base";
 
 export { ROW_POSITION, COLUMN_TYPE, ROW_ACTION } from "./const";
 export { IDataGridAnimation, DefaultAnimation } from "./animation";
+import { $ } from "../utils/jquery";
+
 
 const utils = Utils, checks = utils.check, strUtils = utils.str,
     coreUtils = utils.core, ERROR = utils.err, sys = utils.sys,

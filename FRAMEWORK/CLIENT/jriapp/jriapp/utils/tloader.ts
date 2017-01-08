@@ -43,7 +43,7 @@ export class TemplateLoader extends BaseObject {
         super.destroy();
     }
     protected _getEventNames() {
-        let base_events = super._getEventNames();
+        const base_events = super._getEventNames();
         return ["loaded"].concat(base_events);
     }
     addOnLoaded(fn: (sender: TemplateLoader, args: { html: string; app: IApplication; }) => void, nmspace?: string) {
@@ -135,7 +135,7 @@ export class TemplateLoader extends BaseObject {
             return () => {
                 //it prevents double loading
                 if (!group.promise) {
-                   //start loading only if no another loading in progress
+                    //start loading only if no another loading in progress
                     group.promise = self.loadTemplatesAsync(group.fn_loader, group.app);
                 }
 
@@ -179,8 +179,9 @@ export class TemplateLoader extends BaseObject {
                 return deferred.promise();
             };
         }
-        else
+        else {
             return loader.fn_loader;
+        }
     }
     public registerTemplateGroup(groupName: string, group: ITemplateGroupInfoEx): void {
         const self = this, group2: ITemplateGroupInfoEx = coreUtils.extend({

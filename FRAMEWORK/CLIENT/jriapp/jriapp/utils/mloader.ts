@@ -8,8 +8,7 @@ import {
 import { createCssLoader as createCSSLoader } from "./sloader";
 
 const utils = Utils, coreUtils = utils.core, strUtils = utils.str, _async = utils.defer,
-    arr = utils.arr, resolvedPromise = _async.resolve<void>(void 0, true),
-    CSSPrefix = "css!";
+    arr = utils.arr, CSSPrefix = "css!";
 
 let _moduleLoader: IModuleLoader = null;
 
@@ -32,7 +31,7 @@ interface IModuleLoad {
 
 function whenAll(loads: IModuleLoad[]): IPromise<any> {
     if (!loads || loads.length === 0)
-        return resolvedPromise;
+        return _async.resolve<void>(void 0, true);
     if (loads.length === 1)
         return loads[0].defered.promise();
 
@@ -46,7 +45,7 @@ function whenAll(loads: IModuleLoad[]): IPromise<any> {
     }
 
     if (resolved === cnt) {
-        return !err ? resolvedPromise : _async.reject(err); 
+        return !err ? _async.resolve<void>(void 0, true) : _async.reject(err); 
     }
     else {
         return _async.whenAll(loads.map((load) => {

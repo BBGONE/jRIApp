@@ -12,6 +12,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "thirdparty", "thirdparty", "{F4893B6B-075F-4A50-B0DE-79CB5CD79821}"
 	ProjectSection(SolutionItems) = preProject
 		thirdparty\jquery.d.ts = thirdparty\jquery.d.ts
+		thirdparty\jqueryui.d.ts = thirdparty\jqueryui.d.ts
 		thirdparty\moment.d.ts = thirdparty\moment.d.ts
 		thirdparty\qtip2.d.ts = thirdparty\qtip2.d.ts
 		thirdparty\require.d.ts = thirdparty\require.d.ts

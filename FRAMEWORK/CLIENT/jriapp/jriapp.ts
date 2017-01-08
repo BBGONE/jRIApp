@@ -1,6 +1,4 @@
-﻿/// <reference path="../thirdparty/jquery.d.ts" />
-/// <reference path="../thirdparty/moment.d.ts" />
-/// <reference path="../thirdparty/qtip2.d.ts" />
+﻿/// <reference path="../thirdparty/moment.d.ts" />
 /// <reference path="../thirdparty/require.d.ts" />
 /// <reference path="../built/jriapp_shared.d.ts" />
 
@@ -37,6 +35,6 @@ export {
 
 export { Application } from "./jriapp/app";
 
-export const VERSION = "1.3.8";
+export const VERSION = "1.3.9";
 
 Bootstrap._initFramework();

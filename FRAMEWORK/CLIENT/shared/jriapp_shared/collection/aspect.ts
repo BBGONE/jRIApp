@@ -18,6 +18,14 @@ import { Validations } from "./validation";
 const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check,
     sys = utils.sys, ERROR = utils.err;
 
+const enum AspectFlags
+{
+    IsAttached = 0,
+    isCached = 1,
+    IsEdited = 2,
+    isRefreshing = 3
+}
+
 interface ICustomVal
 {
     val: any;
@@ -53,9 +61,9 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     }
     protected _setIsEdited(v: boolean) {
         if (v)
-            this._flags |= (1 << 3);
+            this._flags |= (1 << AspectFlags.IsEdited);
         else
-            this._flags &= ~(1 << 3);
+            this._flags &= ~(1 << AspectFlags.IsEdited);
     }
     //sets all fields to null
     protected _initVals(): void {
@@ -219,16 +227,16 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     }
     _setIsCached(v: boolean) {
         if (v)
-            this._flags |= (1 << 2);
+            this._flags |= (1 << AspectFlags.isCached);
         else
-            this._flags &= ~(1 << 2);
+            this._flags &= ~(1 << AspectFlags.isCached);
     }
     _setIsRefreshing(v: boolean) {
         if (this.isRefreshing !== v) {
             if (v)
-                this._flags |= (1 << 4);
+                this._flags |= (1 << AspectFlags.isRefreshing);
             else
-                this._flags &= ~(1 << 4);
+                this._flags &= ~(1 << AspectFlags.isRefreshing);
             this.raisePropertyChanged(PROP_NAME.isRefreshing);
         }
     }
@@ -507,16 +515,16 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         return this._status === ITEM_STATUS.Deleted;
     }
     get isEdited(): boolean {
-        return !!(this._flags & (1 << 3));
+        return !!(this._flags & (1 << AspectFlags.IsEdited));
     }
     get isCached(): boolean {
-        return !!(this._flags & (1 << 2));
+        return !!(this._flags & (1 << AspectFlags.isCached));
     }
     get isDetached(): boolean {
         //opposite of attached!
-        return !(this._flags & 1);
+        return !(this._flags & (1 << AspectFlags.IsAttached));
     }
     get isRefreshing(): boolean {
-        return !!(this._flags & (1 << 4));
+        return !!(this._flags & (1 << AspectFlags.isRefreshing));
     }
 }

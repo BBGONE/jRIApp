@@ -8,8 +8,7 @@ import { IStylesLoader } from "../int";
 import { PathHelper } from "./path";
 
 const _async = AsyncUtils, utils = Utils, dom = DomUtils, arrHelper = utils.arr,
-    resolvedPromise = _async.resolve<void>(void 0, true),
-    doc = dom.document, head = doc.head || doc.getElementsByTagName("head")[0];
+      doc = dom.document, head = doc.head || doc.getElementsByTagName("head")[0];
 let _stylesLoader: IStylesLoader = null;
 export const frameworkCss = "jriapp.css";
 
@@ -21,7 +20,7 @@ export function createCssLoader(): IStylesLoader {
 
 function whenAll(promises: IStatefulPromise<any>[]): IStatefulPromise<any> {
     if (!promises)
-        return resolvedPromise;
+        return _async.resolve<void>(void 0, true);
     if (promises.length === 1)
         return promises[0];
     let resolved = 0, cnt = promises.length;
@@ -31,12 +30,7 @@ function whenAll(promises: IStatefulPromise<any>[]): IStatefulPromise<any> {
         }
     }
 
-    if (resolved === cnt) {
-        return resolvedPromise;
-    }
-    else {
-        return _async.whenAll(promises);
-    }
+    return (resolved === cnt) ? _async.resolve<void>(void 0, true): _async.whenAll(promises);
 }
 
 function createLink(url: string) {

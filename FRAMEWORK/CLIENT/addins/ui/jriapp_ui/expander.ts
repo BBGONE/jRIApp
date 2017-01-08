@@ -1,6 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { IViewOptions } from "jriapp/int";
-import { $ } from "./utils/jquery";
 import { bootstrap } from "jriapp/bootstrap";
 import { AnchorElView, IAncorOptions } from "./anchor";
 

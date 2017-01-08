@@ -30,14 +30,21 @@ export class Datepicker extends BaseObject implements IDatepicker {
     toString() {
         return "Datepicker";
     }
-    attachTo($el: any, options?: { dateFormat?: string; }) {
+    attachTo(el: any, options?: { dateFormat?: string; }, onSelect?: (dateText?: string) => void) {
+        const $el = $(el);
         if (!!options)
             $el.datepicker(options);
         else
             $el.datepicker();
+
+        if (!!onSelect) {
+            $el.datepicker("option", "onSelect", (dateText: string) => {
+                onSelect(dateText);
+            });
+        }
     }
-    detachFrom($el: any) {
-        JQueryUtils.destroy$Plugin($el, "datepicker");
+    detachFrom(el: any) {
+        JQueryUtils.destroy$Plugin($(el), "datepicker");
     }
     parseDate(str: string): Date {
         return this.datePickerFn.parseDate(this.dateFormat, str);

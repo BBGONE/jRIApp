@@ -1,6 +1,4 @@
-/// <reference path="../thirdparty/jquery.d.ts" />
 /// <reference path="../thirdparty/moment.d.ts" />
-/// <reference path="../thirdparty/qtip2.d.ts" />
 /// <reference path="../thirdparty/require.d.ts" />
 /// <reference path="jriapp_shared.d.ts" />
 declare module "jriapp/const" {
@@ -79,8 +77,8 @@ declare module "jriapp/int" {
     export interface IDatepicker {
         datepickerRegion: string;
         dateFormat: string;
-        attachTo($el: any, options?: any): void;
-        detachFrom($el: any): void;
+        attachTo(el: HTMLElement, options?: any, onSelect?: (dateText?: string) => void): void;
+        detachFrom(el: HTMLElement): void;
         parseDate(str: string): Date;
         formatDate(date: Date): string;
     }

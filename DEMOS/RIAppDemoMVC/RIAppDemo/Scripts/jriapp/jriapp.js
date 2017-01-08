@@ -732,8 +732,9 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
                     return deferred.promise();
                 };
             }
-            else
+            else {
                 return loader.fn_loader;
+            }
         };
         TemplateLoader.prototype.registerTemplateGroup = function (groupName, group) {
             var self = this, group2 = coreUtils.extend({
@@ -1280,7 +1281,7 @@ define("jriapp/utils/path", ["require", "exports", "jriapp_shared", "jriapp/util
 });
 define("jriapp/utils/sloader", ["require", "exports", "jriapp_shared", "jriapp_shared/utils/async", "jriapp/utils/dom", "jriapp/utils/path"], function (require, exports, jriapp_shared_10, async_1, dom_2, path_1) {
     "use strict";
-    var _async = async_1.AsyncUtils, utils = jriapp_shared_10.Utils, dom = dom_2.DomUtils, arrHelper = utils.arr, resolvedPromise = _async.resolve(void 0, true), doc = dom.document, head = doc.head || doc.getElementsByTagName("head")[0];
+    var _async = async_1.AsyncUtils, utils = jriapp_shared_10.Utils, dom = dom_2.DomUtils, arrHelper = utils.arr, doc = dom.document, head = doc.head || doc.getElementsByTagName("head")[0];
     var _stylesLoader = null;
     exports.frameworkCss = "jriapp.css";
     function createCssLoader() {
@@ -1291,7 +1292,7 @@ define("jriapp/utils/sloader", ["require", "exports", "jriapp_shared", "jriapp_s
     exports.createCssLoader = createCssLoader;
     function whenAll(promises) {
         if (!promises)
-            return resolvedPromise;
+            return _async.resolve(void 0, true);
         if (promises.length === 1)
             return promises[0];
         var resolved = 0, cnt = promises.length;
@@ -1300,12 +1301,7 @@ define("jriapp/utils/sloader", ["require", "exports", "jriapp_shared", "jriapp_s
                 ++resolved;
             }
         }
-        if (resolved === cnt) {
-            return resolvedPromise;
-        }
-        else {
-            return _async.whenAll(promises);
-        }
+        return (resolved === cnt) ? _async.resolve(void 0, true) : _async.whenAll(promises);
     }
     function createLink(url) {
         var link = doc.createElement("link");
@@ -3234,7 +3230,7 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
 });
 define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/utils/sloader"], function (require, exports, jriapp_shared_17, sloader_2) {
     "use strict";
-    var utils = jriapp_shared_17.Utils, coreUtils = utils.core, strUtils = utils.str, _async = utils.defer, arr = utils.arr, resolvedPromise = _async.resolve(void 0, true), CSSPrefix = "css!";
+    var utils = jriapp_shared_17.Utils, coreUtils = utils.core, strUtils = utils.str, _async = utils.defer, arr = utils.arr, CSSPrefix = "css!";
     var _moduleLoader = null;
     function create() {
         if (!_moduleLoader)
@@ -3250,7 +3246,7 @@ define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/u
     })(LOAD_STATE || (LOAD_STATE = {}));
     function whenAll(loads) {
         if (!loads || loads.length === 0)
-            return resolvedPromise;
+            return _async.resolve(void 0, true);
         if (loads.length === 1)
             return loads[0].defered.promise();
         var cnt = loads.length, resolved = 0, err = null;
@@ -3262,7 +3258,7 @@ define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/u
             }
         }
         if (resolved === cnt) {
-            return !err ? resolvedPromise : _async.reject(err);
+            return !err ? _async.resolve(void 0, true) : _async.reject(err);
         }
         else {
             return _async.whenAll(loads.map(function (load) {
@@ -3902,6 +3898,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.3.8";
+    exports.VERSION = "1.3.9";
     bootstrap_7.Bootstrap._initFramework();
 });

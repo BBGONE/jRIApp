@@ -50,7 +50,6 @@ export class DetailsRow extends BaseObject {
         const self = this;
         this._item = null;
         this._cell.item = null;
-        //don't use global.$(this._el).remove() here - or it will remove all jQuery plugins!
         dom.removeNode(this.tr);
         if (!row || row.getIsDestroyCalled()) {
             this._parentRow = null;

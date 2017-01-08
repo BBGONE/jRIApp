@@ -1,4 +1,6 @@
 ﻿/// <reference path="../../built/jriapp.d.ts" />
+/// <reference path="../../thirdparty/jquery.d.ts" />
+/// <reference path="../../thirdparty/jqueryui.d.ts" />
 /** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { IPagerText, IValidateText, IText, ILocaleText, STRS, assign } from "jriapp_shared/lang";
 import { bootstrap } from "jriapp/bootstrap";
@@ -46,7 +48,7 @@ bootstrap.addOnInitialize((boot, args) => {
     if (!datepicker)
         throw new Error("IDatepicker service is not registered");
 
-    (<any>$).datepicker.regional["ru"] = {
+    $.datepicker.regional["ru"] = {
         closeText: "Закрыть",
         prevText: "&#x3c;Пред",
         nextText: "След&#x3e;",
@@ -64,4 +66,3 @@ bootstrap.addOnInitialize((boot, args) => {
     };
     datepicker.datepickerRegion = "ru";
 });
-export const moduleKey = "ru";

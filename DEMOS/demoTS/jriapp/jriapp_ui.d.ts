@@ -1,5 +1,8 @@
 /// <reference path="jriapp.d.ts" />
 /// <reference path="jriapp_shared.d.ts" />
+/// <reference path="../thirdparty/jquery.d.ts" />
+/// <reference path="../thirdparty/jqueryui.d.ts" />
+/// <reference path="../thirdparty/qtip2.d.ts" />
 declare module "jriapp_ui/content/int" {
     import { IContentOptions, ITemplateInfo } from "jriapp/int";
     export const css: {
@@ -82,13 +85,6 @@ declare module "jriapp_ui/content/template" {
         readonly app: IApplication;
     }
 }
-declare module "jriapp_ui/utils/jquery" {
-    export const $: JQueryStatic;
-    export class JQueryUtils {
-        static $: JQueryStatic;
-        static destroy$Plugin($el: JQuery, name: string): void;
-    }
-}
 declare module "jriapp_ui/utils/eventbag" {
     import { BaseObject, IPropertyBag } from "jriapp_shared";
     import { ICommand } from "jriapp/mvvm";
@@ -139,6 +135,13 @@ declare module "jriapp_ui/utils/cssbag" {
         setProp(name: string, val: any): void;
         readonly isPropertyBag: boolean;
         toString(): string;
+    }
+}
+declare module "jriapp_ui/utils/jquery" {
+    export const $: JQueryStatic;
+    export class JQueryUtils {
+        static $: JQueryStatic;
+        static destroy$Plugin($el: JQuery, name: string): void;
     }
 }
 declare module "jriapp_ui/utils/tooltip" {
@@ -1673,7 +1676,7 @@ declare module "jriapp_ui/busy" {
         private _delay;
         private _timeOut;
         private _loaderPath;
-        private _$loader;
+        private _img;
         private _isBusy;
         constructor(options: IBusyViewOptions);
         destroy(): void;
@@ -1760,10 +1763,10 @@ declare module "jriapp_ui/utils/datepicker" {
         private _dateFormat;
         constructor();
         toString(): string;
-        attachTo($el: any, options?: {
+        attachTo(el: any, options?: {
             dateFormat?: string;
-        }): void;
-        detachFrom($el: any): void;
+        }, onSelect?: (dateText?: string) => void): void;
+        detachFrom(el: any): void;
         parseDate(str: string): Date;
         formatDate(date: Date): string;
         dateFormat: string;

@@ -3829,6 +3829,13 @@ define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_sha
 define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/utils", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/errors", "jriapp_shared/collection/validation"], function (require, exports, object_4, utils_5, int_3, utils_6, errors_6, validation_1) {
     "use strict";
     var utils = utils_5.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, sys = utils.sys, ERROR = utils.err;
+    var AspectFlags;
+    (function (AspectFlags) {
+        AspectFlags[AspectFlags["IsAttached"] = 0] = "IsAttached";
+        AspectFlags[AspectFlags["isCached"] = 1] = "isCached";
+        AspectFlags[AspectFlags["IsEdited"] = 2] = "IsEdited";
+        AspectFlags[AspectFlags["isRefreshing"] = 3] = "isRefreshing";
+    })(AspectFlags || (AspectFlags = {}));
     var ItemAspect = (function (_super) {
         __extends(ItemAspect, _super);
         function ItemAspect(collection) {
@@ -3850,9 +3857,9 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         };
         ItemAspect.prototype._setIsEdited = function (v) {
             if (v)
-                this._flags |= (1 << 3);
+                this._flags |= (1 << 2);
             else
-                this._flags &= ~(1 << 3);
+                this._flags &= ~(1 << 2);
         };
         ItemAspect.prototype._initVals = function () {
             var self = this, fieldInfos = this._collection.getFieldInfos();
@@ -4003,16 +4010,16 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         };
         ItemAspect.prototype._setIsCached = function (v) {
             if (v)
-                this._flags |= (1 << 2);
+                this._flags |= (1 << 1);
             else
-                this._flags &= ~(1 << 2);
+                this._flags &= ~(1 << 1);
         };
         ItemAspect.prototype._setIsRefreshing = function (v) {
             if (this.isRefreshing !== v) {
                 if (v)
-                    this._flags |= (1 << 4);
+                    this._flags |= (1 << 3);
                 else
-                    this._flags &= ~(1 << 4);
+                    this._flags &= ~(1 << 3);
                 this.raisePropertyChanged(int_3.PROP_NAME.isRefreshing);
             }
         };
@@ -4323,28 +4330,28 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         });
         Object.defineProperty(ItemAspect.prototype, "isEdited", {
             get: function () {
-                return !!(this._flags & (1 << 3));
+                return !!(this._flags & (1 << 2));
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(ItemAspect.prototype, "isCached", {
             get: function () {
-                return !!(this._flags & (1 << 2));
+                return !!(this._flags & (1 << 1));
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(ItemAspect.prototype, "isDetached", {
             get: function () {
-                return !(this._flags & 1);
+                return !(this._flags & (1 << 0));
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(ItemAspect.prototype, "isRefreshing", {
             get: function () {
-                return !!(this._flags & (1 << 4));
+                return !!(this._flags & (1 << 3));
             },
             enumerable: true,
             configurable: true

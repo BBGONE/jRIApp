@@ -2,7 +2,6 @@
 import {
     Utils, BaseObject, IPropertyBag, IValidationInfo, IIndexer, LocaleERRS as ERRS, LocaleSTRS as STRS
 } from "jriapp_shared";
-import { $ } from "./utils/jquery";
 import { DomUtils } from "jriapp/utils/dom";
 import { ViewChecks } from "jriapp/utils/viewchecks";
 import { TOOLTIP_SVC, DATA_ATTR } from "jriapp/const";
