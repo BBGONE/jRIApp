@@ -4004,9 +4004,9 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         };
         ItemAspect.prototype._setIsAttached = function (v) {
             if (v)
-                this._flags |= 1;
+                this._flags |= (1 << 0);
             else
-                this._flags &= ~(1);
+                this._flags &= ~(1 << 0);
         };
         ItemAspect.prototype._setIsCached = function (v) {
             if (v)

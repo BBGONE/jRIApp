@@ -221,9 +221,9 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     }
     _setIsAttached(v: boolean) {
         if (v)
-            this._flags |= 1;
+            this._flags |= (1 << AspectFlags.IsAttached);
         else
-            this._flags &= ~(1);
+            this._flags &= ~(1 << AspectFlags.IsAttached);
     }
     _setIsCached(v: boolean) {
         if (v)
