@@ -594,7 +594,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         return result;
     }
     protected _commitChanges(rows: IRowInfo[]): void {
-        let self = this;
+        const self = this;
 
         rows.forEach(function (rowInfo) {
             let key = rowInfo.clientKey, item: TItem = self._itemsByKey[key];
@@ -819,7 +819,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
 
         const fetchedItems = data.rows.map(function (row) {
             //row.key already a string value generated on server (no need to convert to string)
-            let key = row.k;
+            const key = row.k;
             if (!key)
                 throw new Error(ERRS.ERR_KEY_IS_EMPTY);
 
@@ -841,6 +841,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
                 self._itemsByKey[item._key] = item;
                 newItems.push(item);
                 items.push(item);
+                item._aspect._setIsAttached(true);
             }
             else {
                 items.push(oldItem);
@@ -926,7 +927,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         }
     }
     acceptChanges() {
-        let csh = this._changeCache;
+        const csh = this._changeCache;
         coreUtils.forEachProp(csh, function (key) {
             let item = csh[key];
             item._aspect.acceptChanges();

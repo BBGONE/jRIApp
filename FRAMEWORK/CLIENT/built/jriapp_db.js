@@ -1257,6 +1257,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                     self._itemsByKey[item._key] = item;
                     newItems.push(item);
                     items.push(item);
+                    item._aspect._setIsAttached(true);
                 }
                 else {
                     items.push(oldItem);
@@ -2457,9 +2458,9 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                     defer.reject(new jriapp_shared_7.AbortError());
                     return;
                 }
-                var operType = 2, dbSet = query.dbSet, queryRes;
+                var operType = 2, dbSet = query.dbSet;
                 try {
-                    queryRes = dbSet._getInternal().fillFromCache({ reason: reason, query: query });
+                    var queryRes = dbSet._getInternal().fillFromCache({ reason: reason, query: query });
                     defer.resolve(queryRes);
                 }
                 catch (ex) {
@@ -2479,22 +2480,22 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         };
         DbContext.prototype._onLoaded = function (res, query, reason) {
             var self = this, defer = _async.createDeferred();
-            setTimeout(function () {
+            utils.queue.enque(function () {
                 if (self.getIsDestroyCalled()) {
                     defer.reject(new jriapp_shared_7.AbortError());
                     return;
                 }
-                var operType = 2, dbSetName, dbSet, loadRes;
+                var operType = 2;
                 try {
                     if (checks.isNt(res))
                         throw new Error(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_UNEXPECTED_SVC_ERROR, "null result"));
-                    dbSetName = res.dbSetName;
-                    dbSet = self.getDbSet(dbSetName);
+                    var dbSetName = res.dbSetName;
+                    var dbSet = self.getDbSet(dbSetName);
                     if (checks.isNt(dbSet))
                         throw new Error(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_DBSET_NAME_INVALID, dbSetName));
                     __checkError(res.error, operType);
                     var isClearAll_1 = (!!query && query.isClearPrevData);
-                    loadRes = dbSet._getInternal().fillFromService({
+                    var loadRes = dbSet._getInternal().fillFromService({
                         res: res,
                         reason: reason,
                         query: query,
@@ -2505,7 +2506,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 catch (ex) {
                     defer.reject(ex);
                 }
-            }, 0);
+            });
             return defer.promise();
         };
         DbContext.prototype._dataSaved = function (res) {

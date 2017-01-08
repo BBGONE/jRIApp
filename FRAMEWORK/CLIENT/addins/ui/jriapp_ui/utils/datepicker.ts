@@ -93,6 +93,6 @@ class Datepicker extends BaseObject implements IDatepicker {
         }
     }
     get datePickerFn() {
-        return (<any>$).datepicker;
+        return $.datepicker;
     }
 }

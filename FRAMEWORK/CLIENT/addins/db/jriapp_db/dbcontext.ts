@@ -319,9 +319,9 @@ export class DbContext extends BaseObject {
                 defer.reject(new AbortError());
                 return;
             }
-            let operType = DATA_OPER.Query, dbSet = query.dbSet, queryRes: IQueryResult<IEntityItem>;
+            const operType = DATA_OPER.Query, dbSet = query.dbSet;
             try {
-                queryRes = dbSet._getInternal().fillFromCache({ reason: reason, query: query });
+                let queryRes = dbSet._getInternal().fillFromCache({ reason: reason, query: query });
                 defer.resolve(queryRes);
             } catch (ex) {
                 defer.reject(ex);
@@ -334,31 +334,30 @@ export class DbContext extends BaseObject {
         if (!isHasSubsets)
             return;
         res.subsets.forEach(function (subset) {
-            let dbSet = self.getDbSet(subset.dbSetName);
+            const dbSet = self.getDbSet(subset.dbSetName);
             dbSet.fillData(subset, !isClearAll);
         });
     }
     protected _onLoaded(res: IQueryResponse, query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
         const self = this, defer = _async.createDeferred<IQueryResult<IEntityItem>>();
-        setTimeout(() => {
+        utils.queue.enque(() => {
             if (self.getIsDestroyCalled()) {
                 defer.reject(new AbortError());
                 return;
             }
 
-            let operType = DATA_OPER.Query, dbSetName: string, dbSet: DbSet<IEntityItem, DbContext>,
-                loadRes: IQueryResult<IEntityItem>;
+            let operType = DATA_OPER.Query;
             try {
                 if (checks.isNt(res))
                     throw new Error(strUtils.format(ERRS.ERR_UNEXPECTED_SVC_ERROR, "null result"));
-                dbSetName = res.dbSetName;
-                dbSet = self.getDbSet(dbSetName);
+                let dbSetName = res.dbSetName;
+                let dbSet = self.getDbSet(dbSetName);
                 if (checks.isNt(dbSet))
                     throw new Error(strUtils.format(ERRS.ERR_DBSET_NAME_INVALID, dbSetName));
                 __checkError(res.error, operType);
                 let isClearAll = (!!query && query.isClearPrevData);
 
-                loadRes = dbSet._getInternal().fillFromService(
+                let loadRes = dbSet._getInternal().fillFromService(
                     {
                         res: res,
                         reason: reason,
@@ -369,7 +368,7 @@ export class DbContext extends BaseObject {
             } catch (ex) {
                 defer.reject(ex);
             }
-        }, 0);
+        });
 
         return defer.promise();
     }
