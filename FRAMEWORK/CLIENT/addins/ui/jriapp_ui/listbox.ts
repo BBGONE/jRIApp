@@ -81,6 +81,7 @@ export class ListBox extends BaseObject {
     private _stDebounce: Debounce;
     private _changeDebounce: Debounce;
     private _fn_checkChanges: () => void;
+    private _isDSFilled: boolean;
    
     constructor(options: IListBoxConstructorOptions) {
         super();
@@ -98,6 +99,7 @@ export class ListBox extends BaseObject {
         this._el = options.el;
         this._options = options;
         this._objId = coreUtils.getNewID("lst");
+        this._isDSFilled = false;
         dom.events.on(this.el, "change", function (e) {
             e.stopPropagation();
             if (self._isRefreshing)
@@ -144,6 +146,7 @@ export class ListBox extends BaseObject {
         this._options = <any>{};
         this._textProvider = null;
         this._stateProvider = null;
+        this._isDSFilled = false;
         super.destroy();
     }
     protected _getEventNames() {
@@ -465,17 +468,23 @@ export class ListBox extends BaseObject {
         try {
             this._clear();
             this._addOption(null, false);
+            let cnt = 0;
             if (!!ds) {
                 ds.forEach(function (item) {
                     self._addOption(item, false);
+                    ++cnt;
                 });
             }
-            if (!checks.isNt(this._selectedValue) && !this.getByValue(this._selectedValue)) {
+
+            if (this._isDSFilled && !checks.isNt(this._selectedValue) && !this.getByValue(this._selectedValue)) {
                 this.selectedValue = null;
             }
             else {
                 self.updateSelected(this._selectedValue);
             }
+
+            if (cnt > 0)
+                this._isDSFilled = true;
 
         } finally {
             self._isRefreshing = false;
@@ -549,6 +558,7 @@ export class ListBox extends BaseObject {
         return !el.disabled;
     }
     protected _setDataSource(v: ICollection<ICollectionItem>) {
+        this._isDSFilled = false;
         this.setChanges();
         this._unbindDS();
         this._options.dataSource = v;

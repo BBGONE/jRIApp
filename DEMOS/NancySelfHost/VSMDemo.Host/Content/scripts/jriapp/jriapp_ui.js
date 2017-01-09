@@ -1615,6 +1615,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             this._el = options.el;
             this._options = options;
             this._objId = coreUtils.getNewID("lst");
+            this._isDSFilled = false;
             dom.events.on(this.el, "change", function (e) {
                 e.stopPropagation();
                 if (self._isRefreshing)
@@ -1659,6 +1660,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             this._options = {};
             this._textProvider = null;
             this._stateProvider = null;
+            this._isDSFilled = false;
             _super.prototype.destroy.call(this);
         };
         ListBox.prototype._getEventNames = function () {
@@ -1964,17 +1966,21 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             try {
                 this._clear();
                 this._addOption(null, false);
+                var cnt_1 = 0;
                 if (!!ds) {
                     ds.forEach(function (item) {
                         self._addOption(item, false);
+                        ++cnt_1;
                     });
                 }
-                if (!checks.isNt(this._selectedValue) && !this.getByValue(this._selectedValue)) {
+                if (this._isDSFilled && !checks.isNt(this._selectedValue) && !this.getByValue(this._selectedValue)) {
                     this.selectedValue = null;
                 }
                 else {
                     self.updateSelected(this._selectedValue);
                 }
+                if (cnt_1 > 0)
+                    this._isDSFilled = true;
             }
             finally {
                 self._isRefreshing = false;
@@ -2047,6 +2053,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         };
         ListBox.prototype._setDataSource = function (v) {
             var _this = this;
+            this._isDSFilled = false;
             this.setChanges();
             this._unbindDS();
             this._options.dataSource = v;

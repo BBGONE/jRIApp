@@ -408,6 +408,7 @@ declare module "jriapp_ui/listbox" {
         private _stDebounce;
         private _changeDebounce;
         private _fn_checkChanges;
+        private _isDSFilled;
         constructor(options: IListBoxConstructorOptions);
         destroy(): void;
         protected _getEventNames(): string[];
