@@ -2696,6 +2696,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
 define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/utils", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/errors"], function (require, exports, object_3, lang_5, waitqueue_1, utils_2, int_2, utils_3, errors_5) {
     "use strict";
     var utils = utils_2.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, sys = utils.sys;
+    var _foreachField = utils_3.fn_traverseFields;
     sys.isCollection = function (obj) { return (!!obj && obj instanceof BaseCollection); };
     var COLL_EVENTS = {
         begin_edit: "begin_edit",
@@ -2881,6 +2882,14 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             var base_events = _super.prototype._getEventNames.call(this);
             var events = Object.keys(COLL_EVENTS).map(function (key, i, arr) { return COLL_EVENTS[key]; });
             return events.concat(base_events);
+        };
+        BaseCollection.prototype._initVals = function (vals) {
+            _foreachField(this.getFieldInfos(), function (fld, fullName) {
+                if (fld.fieldType === 5)
+                    coreUtils.setValue(vals, fullName, {}, false);
+                else
+                    coreUtils.setValue(vals, fullName, null, false);
+            });
         };
         BaseCollection.prototype.addOnClearing = function (fn, nmspace, context, priority) {
             this._addHandler(COLL_EVENTS.clearing, fn, nmspace, context, priority);
@@ -3155,7 +3164,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 self._onCurrentChanged();
             }
         };
-        BaseCollection.prototype._destroyItems = function (items) {
+        BaseCollection.prototype._clearItems = function (items) {
             items.forEach(function (item) {
                 item._aspect._setIsAttached(false);
                 item.destroy();
@@ -3239,7 +3248,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             this._items = [];
             this._itemsByKey = {};
             this._errors.clear();
-            this._destroyItems(oldItems);
+            this._clearItems(oldItems);
             if (oper !== 1)
                 this._onCollectionChanged({
                     changeType: 2,
@@ -3845,8 +3854,9 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             this._collection = collection;
             this._status = 0;
             this._saveVals = null;
-            this._vals = {};
+            this._vals = null;
             this._flags = 0;
+            this._valueBag = null;
         }
         ItemAspect.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
@@ -3860,15 +3870,6 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                 this._flags |= (1 << 2);
             else
                 this._flags &= ~(1 << 2);
-        };
-        ItemAspect.prototype._initVals = function () {
-            var self = this, fieldInfos = this._collection.getFieldInfos();
-            utils_6.fn_traverseFields(fieldInfos, function (fld, fullName) {
-                if (fld.fieldType === 5)
-                    coreUtils.setValue(self._vals, fullName, {}, false);
-                else
-                    coreUtils.setValue(self._vals, fullName, null, false);
-            });
         };
         ItemAspect.prototype._beginEdit = function () {
             if (this.isDetached)
@@ -4421,10 +4422,16 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
             var isNew = !obj;
             if (isNew)
                 this._status = 1;
-            if (isNew)
-                this._initVals();
-            else
+            if (isNew) {
+                this._vals = {};
+                coll._initVals(this._vals);
+            }
+            else {
                 this._vals = obj;
+            }
+            var item = new coll.itemType(this);
+            this._setItem(item);
+            this._setKey(coll._getNewKey(this._vals, isNew));
         }
         ListItemAspect.prototype._setProp = function (name, val) {
             var error;
@@ -4517,16 +4524,14 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
         BaseList.prototype._createNew = function () {
             return this.createItem(null);
         };
-        BaseList.prototype._getNewKey = function (item) {
+        BaseList.prototype.createItem = function (obj) {
+            var aspect = new ListItemAspect(this, obj);
+            return aspect.item;
+        };
+        BaseList.prototype._getNewKey = function (vals, isNew) {
             var key = "clkey_" + this._newKey;
             this._newKey += 1;
             return key;
-        };
-        BaseList.prototype.createItem = function (obj) {
-            var aspect = new ListItemAspect(this, obj), item = new this._itemType(aspect);
-            aspect._setKey(this._getNewKey(item));
-            aspect._setItem(item);
-            return item;
         };
         BaseList.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -4591,6 +4596,13 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                 item._aspect._resetStatus();
             });
         };
+        Object.defineProperty(BaseList.prototype, "itemType", {
+            get: function () {
+                return this._itemType;
+            },
+            enumerable: true,
+            configurable: true
+        });
         BaseList.prototype.toString = function () {
             return "BaseList";
         };
@@ -4628,8 +4640,8 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
     exports.AnyItemAspect = AnyItemAspect;
     var AnyValListItem = (function (_super) {
         __extends(AnyValListItem, _super);
-        function AnyValListItem(aspect) {
-            _super.call(this, aspect);
+        function AnyValListItem() {
+            _super.apply(this, arguments);
         }
         Object.defineProperty(AnyValListItem.prototype, "val", {
             get: function () { return this._aspect._getProp('val'); },
@@ -4740,10 +4752,8 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
             _super.prototype.destroy.call(this);
         };
         AnyList.prototype.createItem = function (obj) {
-            var aspect = new AnyItemAspect(this, obj), item = new this._itemType(aspect);
-            aspect._setKey(this._getNewKey(item));
-            aspect._setItem(item);
-            return item;
+            var aspect = new AnyItemAspect(this, obj);
+            return aspect.item;
         };
         AnyList.prototype.onChanged = function () {
             var _this = this;
@@ -4961,11 +4971,11 @@ define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_sha
                 throw new Error(strUtils.format(lang_8.ERRS.ERR_DICTKEY_IS_NOTFOUND, keyName));
             keyFld.isPrimaryKey = 1;
         }
-        BaseDictionary.prototype._getNewKey = function (item) {
-            if (!item || item._aspect.isNew) {
-                return _super.prototype._getNewKey.call(this, item);
+        BaseDictionary.prototype._getNewKey = function (vals, isNew) {
+            if (isNew) {
+                return _super.prototype._getNewKey.call(this, vals, isNew);
             }
-            var key = item[this._keyName];
+            var key = vals[this._keyName];
             if (checks.isNt(key))
                 throw new Error(strUtils.format(lang_8.ERRS.ERR_DICTKEY_IS_EMPTY, this.keyName));
             return "" + key;
