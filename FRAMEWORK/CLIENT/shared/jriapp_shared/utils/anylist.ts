@@ -48,9 +48,6 @@ export class AnyItemAspect extends ListItemAspect<AnyValListItem, IAnyVal> {
 
 
 export class AnyValListItem extends CollectionItem<AnyItemAspect> implements IListItem, IPropertyBag, IAnyVal {
-    constructor(aspect: AnyItemAspect) {
-        super(aspect);
-    }
     get val(): any { return <any>this._aspect._getProp('val'); }
     set val(v: any) { this._aspect._setProp('val', v); }
     //override
@@ -156,10 +153,8 @@ export class AnyList extends BaseList<AnyValListItem, IAnyVal> {
     }
     //override
     protected createItem(obj?: IAnyVal): AnyValListItem {
-        const aspect = new AnyItemAspect(this, obj), item = new this._itemType(aspect);
-        aspect._setKey(this._getNewKey(item));
-        aspect._setItem(item);
-        return item;
+        const aspect = new AnyItemAspect(this, obj);
+        return aspect.item;
     }
     protected onChanged() {
         this._debounce.enque(() => {

@@ -34,11 +34,12 @@ export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TIte
             throw new Error(strUtils.format(ERRS.ERR_DICTKEY_IS_NOTFOUND, keyName));
         keyFld.isPrimaryKey = 1;
     }
-    protected _getNewKey(item: TItem) {
-        if (!item || item._aspect.isNew) {
-            return super._getNewKey(item);
+    //override
+    _getNewKey(vals: any, isNew: boolean) {
+        if (isNew) {
+            return super._getNewKey(vals, isNew);
         }
-        let key = (<any>item)[this._keyName];
+        let key = vals[this._keyName];
         if (checks.isNt(key))
             throw new Error(strUtils.format(ERRS.ERR_DICTKEY_IS_EMPTY, this.keyName));
         return "" + key;

@@ -1090,6 +1090,7 @@ declare module "jriapp_shared/collection/base" {
         constructor();
         static getEmptyFieldInfo(fieldName: string): IFieldInfo;
         protected _getEventNames(): string[];
+        _initVals(vals: any): void;
         addOnClearing(fn: TEventHandler<ICollection<TItem>, {
             reason: COLL_CHANGE_REASON;
         }>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
@@ -1152,7 +1153,7 @@ declare module "jriapp_shared/collection/base" {
         protected _onPageChanging(): boolean;
         protected _onPageChanged(): void;
         protected _setCurrentItem(v: TItem): void;
-        protected _destroyItems(items: TItem[]): void;
+        protected _clearItems(items: TItem[]): void;
         _isHasProp(prop: string): boolean;
         protected _getEditingItem(): TItem;
         protected _getStrValue(val: any, fieldInfo: IFieldInfo): string;
@@ -1238,7 +1239,6 @@ declare module "jriapp_shared/collection/aspect" {
         protected _getEventNames(): string[];
         protected _onErrorsChanged(): void;
         protected _setIsEdited(v: boolean): void;
-        protected _initVals(): void;
         protected _beginEdit(): boolean;
         protected _endEdit(): boolean;
         protected _cancelEdit(): boolean;
@@ -1331,18 +1331,19 @@ declare module "jriapp_shared/collection/list" {
         readonly vals: IIndexer<any>;
     }
     export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TItem> {
-        protected _itemType: IListItemConstructor<TItem, TObj>;
+        private _itemType;
         constructor(itemType: IListItemConstructor<TItem, TObj>, props: IPropInfo[]);
         private _updateFieldMap(props);
         protected _attach(item: TItem): number;
         protected _createNew(): TItem;
-        protected _getNewKey(item: TItem): string;
         protected createItem(obj?: TObj): TItem;
+        _getNewKey(vals: any, isNew: boolean): string;
         destroy(): void;
         fillItems(objArray: TObj[], clearAll?: boolean): void;
         toArray(): TObj[];
         getNewItems(): TItem[];
         resetStatus(): void;
+        readonly itemType: IListItemConstructor<TItem, TObj>;
         toString(): string;
     }
 }
@@ -1362,7 +1363,6 @@ declare module "jriapp_shared/utils/anylist" {
         _getProp(name: string): any;
     }
     export class AnyValListItem extends CollectionItem<AnyItemAspect> implements IListItem, IPropertyBag, IAnyVal {
-        constructor(aspect: AnyItemAspect);
         val: any;
         _isHasProp(prop: string): boolean;
         getProp(name: string): any;
@@ -1419,7 +1419,7 @@ declare module "jriapp_shared/collection/dictionary" {
     export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TItem, TObj> {
         private _keyName;
         constructor(itemType: IListItemConstructor<TItem, TObj>, keyName: string, props: IPropInfo[]);
-        protected _getNewKey(item: TItem): string;
+        _getNewKey(vals: any, isNew: boolean): string;
         protected _onItemAdded(item: TItem): void;
         protected _onRemoved(item: TItem, pos: number): void;
         readonly keyName: string;

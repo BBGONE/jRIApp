@@ -8,7 +8,10 @@ import {
 import { IFieldInfo } from "jriapp_shared/collection/int";
 import { valueUtils } from "jriapp_shared/collection/utils";
 import { PROP_NAME } from "./const";
-import { IEntityItem, IQueryInfo, IFilterInfo, ISortInfo, IQueryResult, IEntityConstructor } from "./int";
+import {
+    IEntityItem, IQueryInfo, IFilterInfo, ISortInfo, IQueryResult,
+    IEntityConstructor, ICachedPage
+} from "./int";
 import { DataCache } from "./datacache";
 import { DbSet } from "./dbset";
 import { DbContext } from "./dbcontext";
@@ -19,8 +22,8 @@ const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = uti
 export interface IInternalQueryMethods<TItem extends IEntityItem> {
     clearCache(): void;
     getCache(): DataCache;
-    reindexCache(): void;
     isPageCached(pageIndex: number): boolean;
+    updateCache(items: IEntityItem[]): void;
     getQueryInfo(): IQueryInfo;
 }
 
@@ -40,7 +43,7 @@ export class DataQuery<TItem extends IEntityItem> extends BaseObject {
     private _cacheInvalidated: boolean;
     private _internal: IInternalQueryMethods<TItem>;
     private _isPagingEnabled: boolean;
-
+     
     constructor(dbSet: DbSet<TItem, DbContext>, queryInfo: IQueryInfo) {
         super();
         let self = this;
@@ -61,26 +64,23 @@ export class DataQuery<TItem extends IEntityItem> extends BaseObject {
         this._internal = {
             clearCache: () => {
                 self._clearCache();
-           },
+            },
             getCache: () => {
                 return self._getCache();
-           },
-            reindexCache: () => {
-                self._reindexCache();
-           },
+            },
             isPageCached: (pageIndex: number) => {
                 return self._isPageCached(pageIndex);
-           },
+            },
+            updateCache: (items: IEntityItem[]) => {
+                self._updateCache(items);
+            },
             getQueryInfo: () => {
                 return self.__queryInfo;
-           }
-       };
+            }
+        };
    }
     private _addSort(fieldName: string, sortOrder: SORT_ORDER) {
-        let ord = SORT_ORDER.ASC;
-        if (!checks.isNt(sortOrder))
-            ord = sortOrder;
-
+        let ord = !checks.isNt(sortOrder) ? sortOrder : SORT_ORDER.ASC;
         let sortItem = { fieldName: fieldName, sortOrder: ord };
         this._sortInfo.sortItems.push(sortItem);
         this._cacheInvalidated = true;
@@ -149,18 +149,26 @@ export class DataQuery<TItem extends IEntityItem> extends BaseObject {
        }
         return this._dataCache;
    }
-    private _reindexCache(): void {
-        if (!this._dataCache) {
-            return;
-       }
-        this._dataCache.reindexCache();
-   }
     private _isPageCached(pageIndex: number): boolean {
         if (!this._dataCache) {
             return false;
        }
         return this._dataCache.hasPage(pageIndex);
-   }
+    }
+    private _updateCache(items: IEntityItem[]): void {
+        if (!this._dataCache) {
+            return;
+        }
+        const pageIndex = this.pageIndex;
+        const page = this._dataCache.getPage(pageIndex);
+        if (!!page) {
+            page.items = items;
+            page.items.forEach(function (item) {
+                item._aspect._setIsCached(true);
+            });
+            this._dataCache.reindex();
+        }
+    }
     _getInternal(): IInternalQueryMethods<TItem> {
         return this._internal;
     }

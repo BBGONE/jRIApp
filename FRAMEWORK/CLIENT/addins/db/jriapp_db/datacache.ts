@@ -4,50 +4,57 @@ import {
 } from "jriapp_shared";
 import { PROP_NAME } from "./const";
 import { DataQuery } from "./dataquery";
-import { IEntityItem } from "./int";
+import { IEntityItem, ICachedPage } from "./int";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str;
-export interface ICachedPage { items: IEntityItem[]; pageIndex: number; }
 
 export class DataCache extends BaseObject {
     private _query: DataQuery<IEntityItem>;
-    private _cache: ICachedPage[];
+    private _pages: ICachedPage[];
     private _totalCount: number;
     private _itemsByKey: { [key: string]: IEntityItem; };
-
+    
     constructor(query: DataQuery<IEntityItem>) {
         super();
         this._query = query;
-        this._cache = [];
+        this._pages = [];
         this._totalCount = 0;
         this._itemsByKey = {};
     }
-    getCachedPage(pageIndex: number): ICachedPage {
-        const res: ICachedPage[] = this._cache.filter(function (page: ICachedPage) {
-            return page.pageIndex === pageIndex;
-        });
-        if (res.length === 0)
-            return null;
-        if (res.length !== 1)
-            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "res.length === 1"));
-        return res[0];
-    }
-    //reset items key index
-    reindexCache() {
-        const self = this;
-        this._itemsByKey = {};
-        for (let i = 0; i < this._cache.length; i += 1) {
-            let page = this._cache[i];
-            page.items.forEach(function (item) {
-                if (!item.getIsDestroyCalled())
-                    self._itemsByKey[item._key] = item;
-            });
+    private _fillPage(pageIndex: number, items: IEntityItem[]) {
+        let page = this.getPage(pageIndex);
+        if (!page) {
+            page = { items: [], pageIndex: pageIndex };
+            this._pages.push(page);
+        }
+        else {
+            page.items = [];
+        }
+
+        for (let j = 0, len = items.length; j < len; j += 1) {
+            let item = items[j];
+            page.items.push(item);
+            item._aspect._setIsCached(true);
         }
     }
-    getPrevCachedPageIndex(currentPageIndex: number) {
-        let pageIndex = -1, cachePageIndex: number;
-        for (let i = 0; i < this._cache.length; i += 1) {
-            cachePageIndex = this._cache[i].pageIndex;
+    //reset items key index
+    reindex() {
+        let keyMap: { [key: string]: IEntityItem; } = {};
+        for (let i = 0; i < this._pages.length; i += 1) {
+            let page = this._pages[i];
+            page.items.forEach(function (item) {
+                if (!item.getIsDestroyCalled()) {
+                    keyMap[item._key] = item;
+                    item._aspect._setIsCached(true);
+                }
+            });
+        }
+        this._itemsByKey = keyMap;
+    }
+    getPrevPageIndex(currentPageIndex: number) {
+        let pageIndex = -1;
+        for (let i = 0; i < this._pages.length; i += 1) {
+            let cachePageIndex = this._pages[i].pageIndex;
             if (cachePageIndex > pageIndex && cachePageIndex < currentPageIndex)
                 pageIndex = cachePageIndex;
         }
@@ -56,7 +63,7 @@ export class DataCache extends BaseObject {
     getNextRange(pageIndex: number) {
         let half = Math.floor(((this.loadPageCount - 1) / 2));
         let above = (pageIndex + half) + ((this.loadPageCount - 1) % 2);
-        let below = (pageIndex - half), prev = this.getPrevCachedPageIndex(pageIndex);
+        let below = (pageIndex - half), prev = this.getPrevPageIndex(pageIndex);
         if (below < 0) {
             above += (0 - below);
             below = 0;
@@ -89,35 +96,26 @@ export class DataCache extends BaseObject {
         let end = above;
         return { start: start, end: end, cnt: cnt };
     }
-    fillCache(start: number, items: IEntityItem[]) {
-        let keyMap = this._itemsByKey, len = items.length, pageSize = this.pageSize;
-        for (let i = 0; i < this.loadPageCount; i += 1) {
-            let pageIndex = start + i, page = this.getCachedPage(pageIndex);
-            if (!page) {
-                page = { items: [], pageIndex: pageIndex };
-                this._cache.push(page);
-            }
-            for (let j = 0; j < pageSize; j += 1) {
-                let k = (i * pageSize) + j;
-                if (k < len) {
-                    let item = items[k];
-                    if (!!keyMap[item._key]) {
-                        continue;
-                    }
-                    page.items.push(item);
-                    keyMap[item._key] = item;
-                    item._aspect._setIsCached(true);
-                }
-                else {
-                    return;
-                }
-            }
-        }
+    getPage(pageIndex: number): ICachedPage {
+        const res: ICachedPage[] = this._pages.filter(function (page: ICachedPage) {
+            return page.pageIndex === pageIndex;
+        });
+        if (res.length === 0)
+            return null;
+        if (res.length !== 1)
+            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "res.length === 1"));
+        return res[0];
+    }
+    getPageItems(pageIndex: number): IEntityItem[] {
+        const page = this.getPage(pageIndex);
+        if (!page)
+            return [];
+        return page.items;
     }
     clear() {
-        let dbSet = this._query.dbSet;
-        for (let i = 0; i < this._cache.length; i += 1) {
-            let items = this._cache[i].items;
+        const dbSet = this._query.dbSet;
+        for (let i = 0; i < this._pages.length; i += 1) {
+            let items = this._pages[i].items;
             for (let j = 0; j < items.length; j += 1) {
                 let item = items[j];
                 if (!!item) {
@@ -127,14 +125,31 @@ export class DataCache extends BaseObject {
                 }
             }
         }
-        this._cache = [];
+        this._pages = [];
         this._itemsByKey = {};
     }
-    clearCacheForPage(pageIndex: number) {
-        let page: ICachedPage = this.getCachedPage(pageIndex), dbSet = this._query.dbSet;
+    fill(startIndex: number, items: IEntityItem[]) {
+        const len = items.length, pageSize = this.pageSize;
+        for (let i = 0; i < this.loadPageCount; i += 1) {
+            let pageItems: IEntityItem[] = [];
+            for (let j = 0; j < pageSize; j += 1) {
+                let k = (i * pageSize) + j;
+                if (k < len) {
+                    pageItems.push(items[k]);
+                }
+                else {
+                    return;
+                }
+            }
+            this._fillPage(startIndex + i, pageItems);
+        }
+        this.reindex();
+    }
+    deletePage(pageIndex: number) {
+        const page: ICachedPage = this.getPage(pageIndex), dbSet = this._query.dbSet;
         if (!page)
             return;
-        let index = this._cache.indexOf(page), items = page.items;
+        const index = this._pages.indexOf(page), items = page.items;
         for (let j = 0; j < items.length; j += 1) {
             let item = items[j];
             if (!!item) {
@@ -146,11 +161,11 @@ export class DataCache extends BaseObject {
                 }
             }
         }
-        this._cache.splice(index, 1);
+        this._pages.splice(index, 1);
     }
     hasPage(pageIndex: number) {
-        for (let i = 0; i < this._cache.length; i += 1) {
-            if (this._cache[i].pageIndex === pageIndex)
+        for (let i = 0; i < this._pages.length; i += 1) {
+            if (this._pages[i].pageIndex === pageIndex)
                 return true;
         }
         return false;
@@ -162,9 +177,9 @@ export class DataCache extends BaseObject {
         let test = this._itemsByKey[item._key];
         if (!test)
             return -1;
-        for (let i = 0; i < this._cache.length; i += 1) {
-            if (this._cache[i].items.indexOf(item) > -1) {
-                return this._cache[i].pageIndex;
+        for (let i = 0; i < this._pages.length; i += 1) {
+            if (this._pages[i].items.indexOf(item) > -1) {
+                return this._pages[i].pageIndex;
             }
         }
         return -1;
@@ -206,5 +221,5 @@ export class DataCache extends BaseObject {
             this.raisePropertyChanged(PROP_NAME.totalCount);
         }
     }
-    get cacheSize() { return this._cache.length; }
+    get cacheSize() { return this._pages.length; }
 }

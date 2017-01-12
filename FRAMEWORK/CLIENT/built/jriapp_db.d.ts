@@ -52,8 +52,8 @@ declare module "jriapp_db/dataquery" {
     export interface IInternalQueryMethods<TItem extends IEntityItem> {
         clearCache(): void;
         getCache(): DataCache;
-        reindexCache(): void;
         isPageCached(pageIndex: number): boolean;
+        updateCache(items: IEntityItem[]): void;
         getQueryInfo(): IQueryInfo;
     }
     export class DataQuery<TItem extends IEntityItem> extends BaseObject {
@@ -78,8 +78,8 @@ declare module "jriapp_db/dataquery" {
         private _resetCacheInvalidated();
         private _clearCache();
         private _getCache();
-        private _reindexCache();
         private _isPageCached(pageIndex);
+        private _updateCache(items);
         _getInternal(): IInternalQueryMethods<TItem>;
         where(fieldName: string, operand: FILTER_TYPE, value: any, checkFieldName?: boolean): this;
         and(fieldName: string, operand: FILTER_TYPE, value: any, checkFieldName?: boolean): this;
@@ -115,28 +115,26 @@ declare module "jriapp_db/dataquery" {
 declare module "jriapp_db/datacache" {
     import { BaseObject } from "jriapp_shared";
     import { DataQuery } from "jriapp_db/dataquery";
-    import { IEntityItem } from "jriapp_db/int";
-    export interface ICachedPage {
-        items: IEntityItem[];
-        pageIndex: number;
-    }
+    import { IEntityItem, ICachedPage } from "jriapp_db/int";
     export class DataCache extends BaseObject {
         private _query;
-        private _cache;
+        private _pages;
         private _totalCount;
         private _itemsByKey;
         constructor(query: DataQuery<IEntityItem>);
-        getCachedPage(pageIndex: number): ICachedPage;
-        reindexCache(): void;
-        getPrevCachedPageIndex(currentPageIndex: number): number;
+        private _fillPage(pageIndex, items);
+        reindex(): void;
+        getPrevPageIndex(currentPageIndex: number): number;
         getNextRange(pageIndex: number): {
             start: number;
             end: number;
             cnt: number;
         };
-        fillCache(start: number, items: IEntityItem[]): void;
+        getPage(pageIndex: number): ICachedPage;
+        getPageItems(pageIndex: number): IEntityItem[];
         clear(): void;
-        clearCacheForPage(pageIndex: number): void;
+        fill(startIndex: number, items: IEntityItem[]): void;
+        deletePage(pageIndex: number): void;
         hasPage(pageIndex: number): boolean;
         getItemByKey(key: string): IEntityItem;
         getPageByItem(item: IEntityItem): number;
@@ -147,6 +145,18 @@ declare module "jriapp_db/datacache" {
         readonly loadPageCount: number;
         totalCount: number;
         readonly cacheSize: number;
+    }
+}
+declare module "jriapp_db/utils" {
+    import { IFieldInfo } from "jriapp_shared/collection/int";
+    import { IRowData } from "jriapp_db/int";
+    export class RowDataHelper {
+        private _fields;
+        private _pkFlds;
+        private _getStrValue;
+        constructor(fields: IFieldInfo[], pkFlds: IFieldInfo[], getStrValue: (val: any, fieldInfo: IFieldInfo) => string);
+        private processRowData(rowData, keys, fld, name, arr);
+        processRowsData(data: any[]): IRowData[];
     }
 }
 declare module "jriapp_db/dbset" {
@@ -219,7 +229,8 @@ declare module "jriapp_db/dbset" {
         protected _doCalculatedField(opts: IDbSetConstuctorOptions, fieldInfo: IFieldInfo): ICalcFieldImpl<TItem>;
         protected _refreshValues(path: string, item: IEntityItem, values: any[], names: IFieldName[], rm: REFRESH_MODE): void;
         protected _setCurrentItem(v: TItem): void;
-        protected _getNewKey(item: TItem): string;
+        _getNewKey(): string;
+        _applyFieldVals(vals: any, path: string, values: any[], names: IFieldName[]): void;
         protected _createNew(): TItem;
         protected _clearChangeCache(): void;
         protected _onPageChanging(): boolean;
@@ -235,7 +246,7 @@ declare module "jriapp_db/dbset" {
         protected _getChildToParentNames(childFieldName: string): string[];
         protected _afterFill(result: IQueryResult<TItem>, isClearAll?: boolean): void;
         protected _fillFromService(info: IFillFromServiceArgs): IQueryResult<TItem>;
-        protected _fillFromCache(info: IFillFromCacheArgs): IQueryResult<TItem>;
+        protected _fillFromCache(args: IFillFromCacheArgs): IQueryResult<TItem>;
         protected _commitChanges(rows: IRowInfo[]): void;
         protected _setItemInvalid(row: IRowInfo): TItem;
         protected _getChanges(): IRowInfo[];
@@ -249,17 +260,17 @@ declare module "jriapp_db/dbset" {
         protected _getPKFields(): IFieldInfo[];
         protected _getNames(): IFieldName[];
         protected createEntity(row: IRowData, fieldNames: IFieldName[]): TItem;
+        fillData(data: {
+            names: IFieldName[];
+            rows: IRowData[];
+        }, isAppendData?: boolean): IQueryResult<TItem>;
+        fillItems<TObj>(data: TObj[], isAppend?: boolean): IQueryResult<TItem>;
         _getInternal(): IInternalDbSetMethods<TItem>;
         addOnLoaded(fn: TEventHandler<DbSet<TItem, TDbContext>, IDbSetLoadedArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnLoaded(nmspace?: string): void;
         waitForNotBusy(callback: () => void, groupName: string): void;
         getFieldInfo(fieldName: string): IFieldInfo;
         sort(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any>;
-        fillData(data: {
-            names: IFieldName[];
-            rows: IRowData[];
-        }, isAppendData?: boolean): IQueryResult<TItem>;
-        fillItems<TObj>(data: TObj[], isAppend?: boolean): IQueryResult<TItem>;
         acceptChanges(): void;
         rejectChanges(): void;
         deleteOnSubmit(item: TItem): void;
@@ -536,10 +547,7 @@ declare module "jriapp_db/entity_aspect" {
         private _srvKey;
         private _origVals;
         private _savedStatus;
-        constructor(dbSet: DbSet<TItem, TDbContext>, row: IRowData, names: IFieldName[]);
-        protected _setSrvKey(v: string): void;
-        protected _initRowInfo(row: IRowData, names: IFieldName[]): void;
-        protected _processValues(path: string, values: any[], names: IFieldName[]): void;
+        constructor(dbSet: DbSet<TItem, TDbContext>, vals: any, key: string);
         protected _onFieldChanged(fieldName: string, fieldInfo: IFieldInfo): void;
         protected _getValueChange(fullName: string, fieldInfo: IFieldInfo, changedOnly: boolean): IValueChange;
         protected _getValueChanges(changedOnly: boolean): IValueChange[];
@@ -560,6 +568,7 @@ declare module "jriapp_db/entity_aspect" {
         _clearFieldVal(fieldName: string): void;
         _getFieldVal(fieldName: string): any;
         _setFieldVal(fieldName: string, val: any): boolean;
+        _setSrvKey(v: string): void;
         _acceptChanges(rowInfo?: IRowInfo): void;
         _onAttaching(): void;
         _onAttach(): void;
@@ -594,6 +603,10 @@ declare module "jriapp_db/int" {
     }
     export interface IEntityConstructor<TItem extends IEntityItem> {
         new (aspect: EntityAspect<TItem, DbContext>): TItem;
+    }
+    export interface ICachedPage {
+        items: IEntityItem[];
+        pageIndex: number;
     }
     export interface IQueryParamInfo {
         readonly dataType: DATA_TYPE;
@@ -804,7 +817,7 @@ declare module "jriapp_db/dataview" {
         private _refreshDebounce;
         constructor(options: IDataViewOptions<TItem>);
         protected _getEventNames(): string[];
-        protected _destroyItems(items: TItem[]): void;
+        protected _clearItems(items: TItem[]): void;
         addOnViewRefreshed(fn: TEventHandler<DataView<TItem>, any>, nmspace?: string): void;
         removeOnViewRefreshed(nmspace?: string): void;
         protected _filterForPaging(items: TItem[]): TItem[];

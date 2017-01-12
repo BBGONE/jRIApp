@@ -67,7 +67,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         return [VIEW_EVENTS.refreshed].concat(base_events);
     }
     //override
-    protected _destroyItems(items: TItem[]) {
+    protected _clearItems(items: TItem[]) {
         //noop
     }
     addOnViewRefreshed(fn: TEventHandler<DataView<TItem>, any>, nmspace?: string) {

@@ -69,6 +69,7 @@
     <TypeScriptCompile Include="db\jriapp_db\entity_aspect.ts" />
     <TypeScriptCompile Include="db\jriapp_db\error.ts" />
     <TypeScriptCompile Include="db\jriapp_db\int.ts" />
+    <TypeScriptCompile Include="db\jriapp_db\utils.ts" />
     <TypeScriptCompile Include="langs\jriapp_ru.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\anchor.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\block.ts" />

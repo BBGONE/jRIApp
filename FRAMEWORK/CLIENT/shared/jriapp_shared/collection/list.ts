@@ -33,10 +33,16 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
         const isNew = !obj;
         if (isNew)
             this._status = ITEM_STATUS.Added;
-        if (isNew)
-            this._initVals();
-        else
+        if (isNew) {
+            this._vals = {};
+            coll._initVals(this._vals);
+        }
+        else {
             this._vals = <any>obj;
+        }
+        let item = new coll.itemType(this);
+        this._setItem(item);
+        this._setKey(coll._getNewKey(this._vals, isNew));
     }
     _setProp(name: string, val: any) {
         let error: ValidationError;
@@ -84,7 +90,7 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
 }
 
 export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TItem> {
-    protected _itemType: IListItemConstructor<TItem, TObj>;
+    private _itemType: IListItemConstructor<TItem, TObj>;
 
     constructor(itemType: IListItemConstructor<TItem, TObj>, props: IPropInfo[]) {
         super();
@@ -100,7 +106,7 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
         self._fieldMap = {};
         self._fieldInfos = [];
         props.forEach(function (prop) {
-            let fldInfo = BaseCollection.getEmptyFieldInfo(prop.name);
+            const fldInfo = BaseCollection.getEmptyFieldInfo(prop.name);
             fldInfo.dataType = prop.dtype;
             self._fieldMap[prop.name] = fldInfo;
             self._fieldInfos.push(fldInfo);
@@ -122,18 +128,15 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
     protected _createNew(): TItem {
         return this.createItem(null);
     }
-    //the item parameter is not used here, but can be used in descendants
-    protected _getNewKey(item: TItem) {
+    protected createItem(obj?: TObj): TItem {
+        const aspect = new ListItemAspect<TItem, TObj>(this, obj);
+        return aspect.item;
+    }
+    _getNewKey(vals: any, isNew: boolean) {
         //client side item ID
         const key = "clkey_" + this._newKey;
         this._newKey += 1;
         return key;
-    }
-    protected createItem(obj?: TObj): TItem {
-        const aspect = new ListItemAspect<TItem, TObj>(this, obj), item = new this._itemType(aspect);
-        aspect._setKey(this._getNewKey(item));
-        aspect._setItem(item);
-        return item;
     }
     destroy() {
         if (this._isDestroyed)
@@ -198,6 +201,9 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
         this._items.forEach(function (item) {
             item._aspect._resetStatus();
         });
+    }
+    get itemType(): IListItemConstructor<TItem, TObj> {
+        return this._itemType;
     }
     toString() {
         return "BaseList";

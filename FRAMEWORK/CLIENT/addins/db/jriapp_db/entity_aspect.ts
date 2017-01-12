@@ -57,42 +57,22 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
     private _origVals: IIndexer<any>;
     private _savedStatus: ITEM_STATUS;
 
-    constructor(dbSet: DbSet<TItem, TDbContext>, row: IRowData, names: IFieldName[]) {
+    constructor(dbSet: DbSet<TItem, TDbContext>, vals: any, key: string) {
         super(dbSet);
         this._srvKey = null;
         this._origVals = null;
         this._savedStatus = null;
-        this._initVals();
-        this._initRowInfo(row, names);
-    }
-    protected _setSrvKey(v: string) {
-        this._srvKey = v;
-    }
-    protected _initRowInfo(row: IRowData, names: IFieldName[]) {
-        if (!row)
-            return;
-        this._setSrvKey(row.k);
-        this._setKey(row.k);
-
-        this._processValues("", row.v, names);
-    }
-    protected _processValues(path: string, values: any[], names: IFieldName[]) {
-        const self = this, stz = self.serverTimezone;
-        values.forEach(function (value, index) {
-            let name: IFieldName = names[index], fieldName = path + name.n, fld = self.dbSet.getFieldInfo(fieldName), val: any;
-            if (!fld)
-                throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fieldName));
-
-            if (fld.fieldType === FIELD_TYPE.Object) {
-                //for object fields the value should be an array of values - recursive processing
-                self._processValues(fieldName + ".", <any[]>value, name.p);
-            }
-            else {
-                //for other fields the value is a string, which is parsed to a typed value
-                val = valUtils.parseValue(value, fld.dataType, fld.dateConversion, stz);
-                coreUtils.setValue(self._vals, fieldName, val, false);
-            }
-        });
+        this._vals = vals;
+        const item = new dbSet.entityType(this);
+        this._setItem(item);
+        if (!key) {
+            this._setKey(dbSet._getNewKey());
+            this._status = ITEM_STATUS.Added;
+        }
+        else {
+            this._setSrvKey(key);
+            this._setKey(key);
+        }
     }
     protected _onFieldChanged(fieldName: string, fieldInfo: IFieldInfo) {
         const self = this;
@@ -334,7 +314,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         return this.dbSet._getInternal().getNavFieldVal(fieldName, this.item);
     }
     _setNavFieldVal(fieldName: string, value: any) {
-        let dbSet = this.dbSet
+        const dbSet = this.dbSet
         dbSet._getInternal().setNavFieldVal(fieldName, this.item, value)
     }
     _clearFieldVal(fieldName: string) {
@@ -393,6 +373,9 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         }
         return res;
     }
+    _setSrvKey(v: string) {
+        this._srvKey = v;
+    }
     _acceptChanges(rowInfo?: IRowInfo): void {
         if (this.getIsDestroyed())
             return;
@@ -400,8 +383,10 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         if (oldStatus !== ITEM_STATUS.None) {
             internal.onCommitChanges(this.item, true, false, oldStatus);
             if (oldStatus === ITEM_STATUS.Deleted) {
-                if (!this.getIsDestroyCalled())
-                    this.destroy();
+                if (!this.getIsDestroyCalled()) {
+                   this._setIsCached(false);
+                   this.destroy();
+                }
                 return;
             }
             this._origVals = null;
@@ -506,9 +491,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
             return;
         this._isDestroyCalled = true;
         this.cancelEdit();
-        if (!this.isCached) {
-            this.rejectChanges();
-        }
+        this.rejectChanges();
         super.destroy();
     }
     toString() {

@@ -49,8 +49,9 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         this._collection = collection;
         this._status = ITEM_STATUS.None;
         this._saveVals = null;
-        this._vals = {};
+        this._vals = null;
         this._flags = 0;
+        this._valueBag = null;
     }
     protected _getEventNames() {
         const base_events = super._getEventNames();
@@ -64,16 +65,6 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
             this._flags |= (1 << AspectFlags.IsEdited);
         else
             this._flags &= ~(1 << AspectFlags.IsEdited);
-    }
-    //sets all fields to null
-    protected _initVals(): void {
-        const self = this, fieldInfos = this._collection.getFieldInfos();
-        fn_traverseFields<void>(fieldInfos, (fld, fullName) => {
-            if (fld.fieldType === FIELD_TYPE.Object)
-                coreUtils.setValue(self._vals, fullName, {}, false);
-            else
-                coreUtils.setValue(self._vals, fullName, null, false);
-        });
     }
     protected _beginEdit(): boolean {
         if (this.isDetached)
