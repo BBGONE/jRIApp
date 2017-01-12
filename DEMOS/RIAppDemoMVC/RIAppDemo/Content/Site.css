@@ -254,6 +254,15 @@ table th {
   box-shadow: 0 0 0 3px rgba(255,255,125,.5);
 }
 
+.ria-table-header .ria-col-ex, td.ria-data-cell {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+}
+
+
 /* CUSTOM CHECKBOX STYLE */
 label.ria-row-selector, 
 label.ria-checkbox {

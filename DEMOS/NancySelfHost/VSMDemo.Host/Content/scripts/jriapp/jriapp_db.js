@@ -471,14 +471,16 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
         DataCache.prototype.fill = function (startIndex, items) {
             var len = items.length, pageSize = this.pageSize;
             for (var i = 0; i < this.loadPageCount; i += 1) {
-                var pageItems = [];
+                var pageItems = [], pgstart = (i * pageSize);
+                if (pgstart >= len)
+                    break;
                 for (var j = 0; j < pageSize; j += 1) {
-                    var k = (i * pageSize) + j;
+                    var k = pgstart + j;
                     if (k < len) {
                         pageItems.push(items[k]);
                     }
                     else {
-                        return;
+                        break;
                     }
                 }
                 this._fillPage(startIndex + i, pageItems);

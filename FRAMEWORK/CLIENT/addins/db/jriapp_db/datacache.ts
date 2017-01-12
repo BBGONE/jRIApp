@@ -131,14 +131,16 @@ export class DataCache extends BaseObject {
     fill(startIndex: number, items: IEntityItem[]) {
         const len = items.length, pageSize = this.pageSize;
         for (let i = 0; i < this.loadPageCount; i += 1) {
-            let pageItems: IEntityItem[] = [];
+            let pageItems: IEntityItem[] = [], pgstart = (i * pageSize);
+            if (pgstart >= len)
+                break;
             for (let j = 0; j < pageSize; j += 1) {
-                let k = (i * pageSize) + j;
+                let k = pgstart + j;
                 if (k < len) {
                     pageItems.push(items[k]);
                 }
                 else {
-                    return;
+                    break;
                 }
             }
             this._fillPage(startIndex + i, pageItems);
