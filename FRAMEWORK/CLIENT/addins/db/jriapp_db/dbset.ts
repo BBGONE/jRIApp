@@ -676,7 +676,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         return res;
     }
     protected _addToChanged(item: TItem): void {
-        if (!item._key)
+        if (item._aspect.isDetached)
             return;
         if (!this._changeCache[item._key]) {
             this._changeCache[item._key] = item;

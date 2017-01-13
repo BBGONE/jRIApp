@@ -119,10 +119,9 @@ declare module "jriapp_db/datacache" {
     export class DataCache extends BaseObject {
         private _query;
         private _pages;
-        private _totalCount;
         private _itemsByKey;
+        private _totalCount;
         constructor(query: DataQuery<IEntityItem>);
-        private _fillPage(pageIndex, items);
         reindex(): void;
         getPrevPageIndex(currentPageIndex: number): number;
         getNextRange(pageIndex: number): {
@@ -130,9 +129,10 @@ declare module "jriapp_db/datacache" {
             end: number;
             cnt: number;
         };
+        clear(): void;
         getPage(pageIndex: number): ICachedPage;
         getPageItems(pageIndex: number): IEntityItem[];
-        clear(): void;
+        setPageItems(pageIndex: number, items: IEntityItem[]): void;
         fill(startIndex: number, items: IEntityItem[]): void;
         deletePage(pageIndex: number): void;
         hasPage(pageIndex: number): boolean;

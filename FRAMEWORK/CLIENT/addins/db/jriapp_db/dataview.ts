@@ -355,9 +355,6 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         return item;
     }
     removeItem(item: TItem) {
-        if (!item._key) {
-            throw new Error(ERRS.ERR_ITEM_IS_DETACHED);
-        }
         if (!this._itemsByKey[item._key])
             return;
         const oldPos = arrHelper.remove(this._items, item);

@@ -498,7 +498,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
             }
             return;
         }
-        if (!v._key)
+        if (v._aspect.isDetached)
             throw new Error(ERRS.ERR_ITEM_IS_DETACHED);
         const item = self.getItemByKey(v._key);
         if (!item) {

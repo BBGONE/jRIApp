@@ -167,14 +167,10 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             if (!this._dataCache) {
                 return;
             }
-            var pageIndex = this.pageIndex;
-            var page = this._dataCache.getPage(pageIndex);
+            var pageIndex = this.pageIndex, cache = this._dataCache;
+            var page = cache.getPage(pageIndex);
             if (!!page) {
-                page.items = items;
-                page.items.forEach(function (item) {
-                    item._aspect._setIsCached(true);
-                });
-                this._dataCache.reindex();
+                cache.setPageItems(page.pageIndex, items);
             }
         };
         DataQuery.prototype._getInternal = function () {
@@ -357,51 +353,33 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
 });
 define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db/const"], function (require, exports, jriapp_shared_2, const_2) {
     "use strict";
-    var utils = jriapp_shared_2.Utils, checks = utils.check, strUtils = utils.str;
+    var utils = jriapp_shared_2.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
     var DataCache = (function (_super) {
         __extends(DataCache, _super);
         function DataCache(query) {
             _super.call(this);
             this._query = query;
-            this._pages = [];
-            this._totalCount = 0;
+            this._pages = {};
             this._itemsByKey = {};
+            this._totalCount = 0;
         }
-        DataCache.prototype._fillPage = function (pageIndex, items) {
-            var page = this.getPage(pageIndex);
-            if (!page) {
-                page = { items: [], pageIndex: pageIndex };
-                this._pages.push(page);
-            }
-            else {
-                page.items = [];
-            }
-            for (var j = 0, len = items.length; j < len; j += 1) {
-                var item = items[j];
-                page.items.push(item);
-                item._aspect._setIsCached(true);
-            }
-        };
         DataCache.prototype.reindex = function () {
             var keyMap = {};
-            for (var i = 0; i < this._pages.length; i += 1) {
-                var page = this._pages[i];
+            coreUtils.forEachProp(this._pages, function (index, page) {
                 page.items.forEach(function (item) {
-                    if (!item.getIsDestroyCalled()) {
-                        keyMap[item._key] = item;
-                        item._aspect._setIsCached(true);
-                    }
+                    keyMap[item._key] = item;
+                    item._aspect._setIsCached(true);
                 });
-            }
+            });
             this._itemsByKey = keyMap;
         };
         DataCache.prototype.getPrevPageIndex = function (currentPageIndex) {
             var pageIndex = -1;
-            for (var i = 0; i < this._pages.length; i += 1) {
-                var cachePageIndex = this._pages[i].pageIndex;
+            coreUtils.forEachProp(this._pages, function (index, page) {
+                var cachePageIndex = page.pageIndex;
                 if (cachePageIndex > pageIndex && cachePageIndex < currentPageIndex)
                     pageIndex = cachePageIndex;
-            }
+            });
             return pageIndex;
         };
         DataCache.prototype.getNextRange = function (pageIndex) {
@@ -436,15 +414,22 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
             var end = above;
             return { start: start, end: end, cnt: cnt };
         };
-        DataCache.prototype.getPage = function (pageIndex) {
-            var res = this._pages.filter(function (page) {
-                return page.pageIndex === pageIndex;
+        DataCache.prototype.clear = function () {
+            var dbSet = this._query.dbSet;
+            coreUtils.forEachProp(this._pages, function (index, page) {
+                var items = page.items;
+                for (var j = 0; j < items.length; j += 1) {
+                    var item = items[j];
+                    item._aspect._setIsCached(false);
+                    if (!dbSet.getItemByKey(item._key))
+                        item.destroy();
+                }
             });
-            if (res.length === 0)
-                return null;
-            if (res.length !== 1)
-                throw new Error(strUtils.format(jriapp_shared_2.LocaleERRS.ERR_ASSERTION_FAILED, "res.length === 1"));
-            return res[0];
+            this._pages = {};
+            this._itemsByKey = {};
+        };
+        DataCache.prototype.getPage = function (pageIndex) {
+            return this._pages[pageIndex];
         };
         DataCache.prototype.getPageItems = function (pageIndex) {
             var page = this.getPage(pageIndex);
@@ -452,21 +437,16 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
                 return [];
             return page.items;
         };
-        DataCache.prototype.clear = function () {
-            var dbSet = this._query.dbSet;
-            for (var i = 0; i < this._pages.length; i += 1) {
-                var items = this._pages[i].items;
-                for (var j = 0; j < items.length; j += 1) {
-                    var item = items[j];
-                    if (!!item) {
-                        item._aspect._setIsCached(false);
-                        if (!!item._key && !dbSet.getItemByKey(item._key))
-                            item.destroy();
-                    }
-                }
+        DataCache.prototype.setPageItems = function (pageIndex, items) {
+            this.deletePage(pageIndex);
+            var page = { items: items, pageIndex: pageIndex };
+            this._pages[pageIndex] = page;
+            var keyMap = this._itemsByKey;
+            for (var j = 0, len = items.length; j < len; j += 1) {
+                var item = items[j];
+                keyMap[item._key] = item;
+                item._aspect._setIsCached(true);
             }
-            this._pages = [];
-            this._itemsByKey = {};
         };
         DataCache.prototype.fill = function (startIndex, items) {
             var len = items.length, pageSize = this.pageSize;
@@ -483,34 +463,23 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
                         break;
                     }
                 }
-                this._fillPage(startIndex + i, pageItems);
+                this.setPageItems(startIndex + i, pageItems);
             }
-            this.reindex();
         };
         DataCache.prototype.deletePage = function (pageIndex) {
-            var page = this.getPage(pageIndex), dbSet = this._query.dbSet;
+            var page = this.getPage(pageIndex);
             if (!page)
                 return;
-            var index = this._pages.indexOf(page), items = page.items;
+            var items = page.items;
             for (var j = 0; j < items.length; j += 1) {
                 var item = items[j];
-                if (!!item) {
-                    item._aspect._setIsCached(false);
-                    if (!!item._key) {
-                        delete this._itemsByKey[item._key];
-                        if (!dbSet.getItemByKey(item._key))
-                            item.destroy();
-                    }
-                }
+                item._aspect._setIsCached(false);
+                delete this._itemsByKey[item._key];
             }
-            this._pages.splice(index, 1);
+            delete this._pages[pageIndex];
         };
         DataCache.prototype.hasPage = function (pageIndex) {
-            for (var i = 0; i < this._pages.length; i += 1) {
-                if (this._pages[i].pageIndex === pageIndex)
-                    return true;
-            }
-            return false;
+            return !!this.getPage(pageIndex);
         };
         DataCache.prototype.getItemByKey = function (key) {
             return this._itemsByKey[key];
@@ -519,9 +488,11 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
             var test = this._itemsByKey[item._key];
             if (!test)
                 return -1;
-            for (var i = 0; i < this._pages.length; i += 1) {
-                if (this._pages[i].items.indexOf(item) > -1) {
-                    return this._pages[i].pageIndex;
+            var indexes = Object.keys(this._pages);
+            for (var i = 0; i < indexes.length; i += 1) {
+                var page = this._pages[indexes[i]];
+                if (page.items.indexOf(item) > -1) {
+                    return page.pageIndex;
                 }
             }
             return -1;
@@ -578,7 +549,10 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
             configurable: true
         });
         Object.defineProperty(DataCache.prototype, "cacheSize", {
-            get: function () { return this._pages.length; },
+            get: function () {
+                var indexes = Object.keys(this._pages);
+                return indexes.length;
+            },
             enumerable: true,
             configurable: true
         });
@@ -1167,7 +1141,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             return res;
         };
         DbSet.prototype._addToChanged = function (item) {
-            if (!item._key)
+            if (item._aspect.isDetached)
                 return;
             if (!this._changeCache[item._key]) {
                 this._changeCache[item._key] = item;
@@ -3895,9 +3869,6 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             return item;
         };
         DataView.prototype.removeItem = function (item) {
-            if (!item._key) {
-                throw new Error(jriapp_shared_10.LocaleERRS.ERR_ITEM_IS_DETACHED);
-            }
             if (!this._itemsByKey[item._key])
                 return;
             var oldPos = arrHelper.remove(this._items, item);

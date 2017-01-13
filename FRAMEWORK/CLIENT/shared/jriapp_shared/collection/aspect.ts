@@ -178,6 +178,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     protected _fakeDestroy() {
         this.raiseEvent(ITEM_EVENTS.destroyed, {});
         this.removeNSHandlers();
+        this._setIsAttached(false);
     }
     private _delCustomVal(entry: ICustomVal) {
         const coll = this.collection;
@@ -463,7 +464,6 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
                 coll.removeItem(item);
             }
         }
-        this._key = null;
         this._saveVals = null;
         this._vals = {};
         this._flags = 0;

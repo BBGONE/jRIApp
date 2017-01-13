@@ -159,14 +159,10 @@ export class DataQuery<TItem extends IEntityItem> extends BaseObject {
         if (!this._dataCache) {
             return;
         }
-        const pageIndex = this.pageIndex;
-        const page = this._dataCache.getPage(pageIndex);
+        const pageIndex = this.pageIndex, cache = this._dataCache;
+        const page = cache.getPage(pageIndex);
         if (!!page) {
-            page.items = items;
-            page.items.forEach(function (item) {
-                item._aspect._setIsCached(true);
-            });
-            this._dataCache.reindex();
+            cache.setPageItems(page.pageIndex, items);
         }
     }
     _getInternal(): IInternalQueryMethods<TItem> {

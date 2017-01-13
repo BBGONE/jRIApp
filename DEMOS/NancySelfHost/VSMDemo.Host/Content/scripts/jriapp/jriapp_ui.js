@@ -6928,8 +6928,6 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             self.el.appendChild(docFr);
         };
         StackPanel.prototype._appendItem = function (parent, item) {
-            if (!item._key)
-                return;
             var self = this, item_el = doc.createElement(this._item_tag);
             dom.addClass([item_el], css.item);
             item_el.setAttribute(const_25.DATA_ATTR.DATA_EVENT_SCOPE, this.uniqueID);

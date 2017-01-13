@@ -3147,7 +3147,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 }
                 return;
             }
-            if (!v._key)
+            if (v._aspect.isDetached)
                 throw new Error(lang_5.ERRS.ERR_ITEM_IS_DETACHED);
             var item = self.getItemByKey(v._key);
             if (!item) {
@@ -3974,6 +3974,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         ItemAspect.prototype._fakeDestroy = function () {
             this.raiseEvent(int_3.ITEM_EVENTS.destroyed, {});
             this.removeNSHandlers();
+            this._setIsAttached(false);
         };
         ItemAspect.prototype._delCustomVal = function (entry) {
             var coll = this.collection;
@@ -4247,7 +4248,6 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                     coll.removeItem(item);
                 }
             }
-            this._key = null;
             this._saveVals = null;
             this._vals = {};
             this._flags = 0;

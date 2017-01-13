@@ -1,63 +1,44 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    BaseObject, LocaleERRS as ERRS, Utils
+    BaseObject, LocaleERRS as ERRS, Utils, IIndexer
 } from "jriapp_shared";
 import { PROP_NAME } from "./const";
 import { DataQuery } from "./dataquery";
 import { IEntityItem, ICachedPage } from "./int";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str;
+const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
 
 export class DataCache extends BaseObject {
     private _query: DataQuery<IEntityItem>;
-    private _pages: ICachedPage[];
-    private _totalCount: number;
+    private _pages: IIndexer<ICachedPage>;
     private _itemsByKey: { [key: string]: IEntityItem; };
+    private _totalCount: number;
     
     constructor(query: DataQuery<IEntityItem>) {
         super();
         this._query = query;
-        this._pages = [];
-        this._totalCount = 0;
+        this._pages = {};
         this._itemsByKey = {};
-    }
-    private _fillPage(pageIndex: number, items: IEntityItem[]) {
-        let page = this.getPage(pageIndex);
-        if (!page) {
-            page = { items: [], pageIndex: pageIndex };
-            this._pages.push(page);
-        }
-        else {
-            page.items = [];
-        }
-
-        for (let j = 0, len = items.length; j < len; j += 1) {
-            let item = items[j];
-            page.items.push(item);
-            item._aspect._setIsCached(true);
-        }
+        this._totalCount = 0;
     }
     //reset items key index
     reindex() {
         let keyMap: { [key: string]: IEntityItem; } = {};
-        for (let i = 0; i < this._pages.length; i += 1) {
-            let page = this._pages[i];
+        coreUtils.forEachProp(this._pages, (index, page) => {
             page.items.forEach(function (item) {
-                if (!item.getIsDestroyCalled()) {
-                    keyMap[item._key] = item;
-                    item._aspect._setIsCached(true);
-                }
+                keyMap[item._key] = item;
+                item._aspect._setIsCached(true);
             });
-        }
+        });
         this._itemsByKey = keyMap;
     }
     getPrevPageIndex(currentPageIndex: number) {
         let pageIndex = -1;
-        for (let i = 0; i < this._pages.length; i += 1) {
-            let cachePageIndex = this._pages[i].pageIndex;
+        coreUtils.forEachProp(this._pages, (index, page) => {
+            let cachePageIndex = page.pageIndex;
             if (cachePageIndex > pageIndex && cachePageIndex < currentPageIndex)
                 pageIndex = cachePageIndex;
-        }
+        });
         return pageIndex;
     }
     getNextRange(pageIndex: number) {
@@ -96,15 +77,22 @@ export class DataCache extends BaseObject {
         let end = above;
         return { start: start, end: end, cnt: cnt };
     }
-    getPage(pageIndex: number): ICachedPage {
-        const res: ICachedPage[] = this._pages.filter(function (page: ICachedPage) {
-            return page.pageIndex === pageIndex;
+    clear() {
+        const dbSet = this._query.dbSet;
+        coreUtils.forEachProp(this._pages, (index, page) => {
+            let items = page.items;
+            for (let j = 0; j < items.length; j += 1) {
+                let item = items[j];
+                item._aspect._setIsCached(false);
+                if (!dbSet.getItemByKey(item._key))
+                    item.destroy();
+            }
         });
-        if (res.length === 0)
-            return null;
-        if (res.length !== 1)
-            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "res.length === 1"));
-        return res[0];
+        this._pages = {};
+        this._itemsByKey = {};
+    }
+    getPage(pageIndex: number): ICachedPage {
+        return this._pages[pageIndex];
     }
     getPageItems(pageIndex: number): IEntityItem[] {
         const page = this.getPage(pageIndex);
@@ -112,21 +100,18 @@ export class DataCache extends BaseObject {
             return [];
         return page.items;
     }
-    clear() {
-        const dbSet = this._query.dbSet;
-        for (let i = 0; i < this._pages.length; i += 1) {
-            let items = this._pages[i].items;
-            for (let j = 0; j < items.length; j += 1) {
-                let item = items[j];
-                if (!!item) {
-                    item._aspect._setIsCached(false);
-                    if (!!item._key && !dbSet.getItemByKey(item._key))
-                        item.destroy();
-                }
-            }
+    setPageItems(pageIndex: number, items: IEntityItem[]) {
+        this.deletePage(pageIndex);
+        //create new page
+        const page = { items: items, pageIndex: pageIndex };
+        this._pages[pageIndex] = page;
+
+        let keyMap = this._itemsByKey;
+        for (let j = 0, len = items.length; j < len; j += 1) {
+            let item = items[j];
+            keyMap[item._key] = item;
+            item._aspect._setIsCached(true);
         }
-        this._pages = [];
-        this._itemsByKey = {};
     }
     fill(startIndex: number, items: IEntityItem[]) {
         const len = items.length, pageSize = this.pageSize;
@@ -143,34 +128,23 @@ export class DataCache extends BaseObject {
                     break;
                 }
             }
-            this._fillPage(startIndex + i, pageItems);
+            this.setPageItems(startIndex + i, pageItems);
         }
-        this.reindex();
     }
     deletePage(pageIndex: number) {
-        const page: ICachedPage = this.getPage(pageIndex), dbSet = this._query.dbSet;
+        const page: ICachedPage = this.getPage(pageIndex);
         if (!page)
             return;
-        const index = this._pages.indexOf(page), items = page.items;
+        const items = page.items;
         for (let j = 0; j < items.length; j += 1) {
             let item = items[j];
-            if (!!item) {
-                item._aspect._setIsCached(false);
-                if (!!item._key) {
-                    delete this._itemsByKey[item._key];
-                    if (!dbSet.getItemByKey(item._key))
-                        item.destroy();
-                }
-            }
+            item._aspect._setIsCached(false);
+            delete this._itemsByKey[item._key];
         }
-        this._pages.splice(index, 1);
+        delete this._pages[pageIndex];
     }
     hasPage(pageIndex: number) {
-        for (let i = 0; i < this._pages.length; i += 1) {
-            if (this._pages[i].pageIndex === pageIndex)
-                return true;
-        }
-        return false;
+        return !!this.getPage(pageIndex);
     }
     getItemByKey(key: string) {
         return this._itemsByKey[key];
@@ -179,9 +153,11 @@ export class DataCache extends BaseObject {
         let test = this._itemsByKey[item._key];
         if (!test)
             return -1;
-        for (let i = 0; i < this._pages.length; i += 1) {
-            if (this._pages[i].items.indexOf(item) > -1) {
-                return this._pages[i].pageIndex;
+        const indexes = Object.keys(this._pages);
+        for (let i = 0; i < indexes.length; i += 1) {
+            let page = this._pages[indexes[i]];
+            if (page.items.indexOf(item) > -1) {
+                return page.pageIndex;
             }
         }
         return -1;
@@ -223,5 +199,8 @@ export class DataCache extends BaseObject {
             this.raisePropertyChanged(PROP_NAME.totalCount);
         }
     }
-    get cacheSize() { return this._pages.length; }
+    get cacheSize() {
+        let indexes = Object.keys(this._pages);
+        return indexes.length;
+    }
 }

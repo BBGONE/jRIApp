@@ -275,8 +275,6 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         self.el.appendChild(docFr);
     }
     protected _appendItem(parent: Node, item: ICollectionItem) {
-        if (!item._key)
-            return;
         const self = this, item_el = doc.createElement(this._item_tag);
         dom.addClass([item_el], css.item);
         item_el.setAttribute(DATA_ATTR.DATA_EVENT_SCOPE, this.uniqueID);
