@@ -25,6 +25,7 @@ sys.getItemByProp = (obj: any, prop: string) => {
 
 export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TItem, TObj>{
     private _keyName: string;
+
     constructor(itemType: IListItemConstructor<TItem, TObj>, keyName: string, props: IPropInfo[]) {
         if (!keyName)
             throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "keyName", keyName));
@@ -38,10 +39,15 @@ export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TIte
     //override
     protected createItem(obj?: TObj): TItem {
         const isNew = !obj;
-        let vals: any = isNew ? collUtils.initVals(this.getFieldInfos(), {}) : obj;
-        let key = isNew ? this._getNewKey() : ("" + vals[this._keyName]);
-        if (checks.isNt(key))
-            throw new Error(strUtils.format(ERRS.ERR_DICTKEY_IS_EMPTY, this.keyName));
+        let vals: any = isNew ? collUtils.initVals(this.getFieldInfos(), {}) : obj, key: string;
+        if (isNew) {
+            key = this._getNewKey();
+        }
+        else {
+            if (checks.isNt(vals[this._keyName]))
+                throw new Error(strUtils.format(ERRS.ERR_DICTKEY_IS_EMPTY, this._keyName));
+            key = "" + vals[this._keyName];
+        }
         const aspect = new ListItemAspect<TItem, TObj>(this, vals, key, isNew);
         return aspect.item;
     }
@@ -50,7 +56,7 @@ export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TIte
         super._onItemAdded(item);
         const key = (<any>item)[this._keyName], self = this;
         if (checks.isNt(key))
-            throw new Error(strUtils.format(ERRS.ERR_DICTKEY_IS_EMPTY, this.keyName));
+            throw new Error(strUtils.format(ERRS.ERR_DICTKEY_IS_EMPTY, this._keyName));
 
         const oldkey = item._key, newkey = "" + key;
         if (oldkey !== newkey) {

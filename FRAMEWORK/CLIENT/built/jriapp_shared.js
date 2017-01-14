@@ -5005,10 +5005,15 @@ define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_sha
         }
         BaseDictionary.prototype.createItem = function (obj) {
             var isNew = !obj;
-            var vals = isNew ? collUtils.initVals(this.getFieldInfos(), {}) : obj;
-            var key = isNew ? this._getNewKey() : ("" + vals[this._keyName]);
-            if (checks.isNt(key))
-                throw new Error(strUtils.format(lang_8.ERRS.ERR_DICTKEY_IS_EMPTY, this.keyName));
+            var vals = isNew ? collUtils.initVals(this.getFieldInfos(), {}) : obj, key;
+            if (isNew) {
+                key = this._getNewKey();
+            }
+            else {
+                if (checks.isNt(vals[this._keyName]))
+                    throw new Error(strUtils.format(lang_8.ERRS.ERR_DICTKEY_IS_EMPTY, this._keyName));
+                key = "" + vals[this._keyName];
+            }
             var aspect = new list_2.ListItemAspect(this, vals, key, isNew);
             return aspect.item;
         };
@@ -5016,7 +5021,7 @@ define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_sha
             _super.prototype._onItemAdded.call(this, item);
             var key = item[this._keyName], self = this;
             if (checks.isNt(key))
-                throw new Error(strUtils.format(lang_8.ERRS.ERR_DICTKEY_IS_EMPTY, this.keyName));
+                throw new Error(strUtils.format(lang_8.ERRS.ERR_DICTKEY_IS_EMPTY, this._keyName));
             var oldkey = item._key, newkey = "" + key;
             if (oldkey !== newkey) {
                 delete self._itemsByKey[oldkey];
