@@ -2498,7 +2498,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
             ':' + pad(dt.getSeconds()) +
             '.' + (dt.getMilliseconds() / 1000).toFixed(3).slice(2, 5) + 'Z';
     }
-    exports.valueUtils = {
+    exports.ValueUtils = {
         valueToDate: function (val, dtcnv, serverTZ) {
             if (!val)
                 return null;
@@ -2562,7 +2562,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
                 return res;
             function conv(v) {
                 if (checks.isDate(v))
-                    return exports.valueUtils.dateToValue(v, dtcnv, serverTZ);
+                    return exports.ValueUtils.dateToValue(v, dtcnv, serverTZ);
                 else if (checks.isArray(v))
                     return JSON.stringify(v);
                 else if (checks.isString(v))
@@ -2602,7 +2602,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
                 case 7:
                 case 8:
                     if (checks.isDate(v)) {
-                        res = exports.valueUtils.dateToValue(v, dtcnv, serverTZ);
+                        res = exports.ValueUtils.dateToValue(v, dtcnv, serverTZ);
                         isOK = true;
                     }
                     break;
@@ -2644,7 +2644,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
                 case 6:
                 case 7:
                 case 8:
-                    res = exports.valueUtils.valueToDate(v, dtcnv, serverTZ);
+                    res = exports.ValueUtils.valueToDate(v, dtcnv, serverTZ);
                     break;
                 case 10:
                     res = JSON.parse(v);
@@ -2655,14 +2655,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
             return res;
         }
     };
-    function fn_getPropertyByName(name, props) {
-        var arrProps = props.filter(function (f) { return f.fieldName === name; });
-        if (!arrProps || arrProps.length !== 1)
-            throw new Error(strUtils.format(lang_4.ERRS.ERR_ASSERTION_FAILED, "arrProps.length === 1"));
-        return arrProps[0];
-    }
-    exports.fn_getPropertyByName = fn_getPropertyByName;
-    function _fn_traverseField(fldName, fld, fn, parent_res) {
+    function _traverseField(fldName, fld, fn, parent_res) {
         if (fld.fieldType === 5) {
             var res = fn(fld, fldName, parent_res);
             if (!!fld.nested && fld.nested.length > 0) {
@@ -2670,7 +2663,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
                 for (var i = 0; i < len; i += 1) {
                     nestedFld = fld.nested[i];
                     if (nestedFld.fieldType === 5) {
-                        _fn_traverseField(fldName + "." + nestedFld.fieldName, nestedFld, fn, res);
+                        _traverseField(fldName + "." + nestedFld.fieldName, nestedFld, fn, res);
                     }
                     else {
                         fn(nestedFld, fldName + "." + nestedFld.fieldName, res);
@@ -2682,21 +2675,68 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
             fn(fld, fldName, parent_res);
         }
     }
-    function fn_traverseField(fld, fn, parent_res) {
-        _fn_traverseField(fld.fieldName, fld, fn, parent_res);
-    }
-    exports.fn_traverseField = fn_traverseField;
-    function fn_traverseFields(flds, fn, parent_res) {
-        for (var i = 0; i < flds.length; i += 1) {
-            fn_traverseField(flds[i], fn, parent_res);
+    exports.CollUtils = {
+        getObjectField: function (name, flds) {
+            var arrFlds = flds.filter(function (f) { return f.fieldName === name; });
+            if (!arrFlds || arrFlds.length !== 1)
+                throw new Error(strUtils.format(lang_4.ERRS.ERR_ASSERTION_FAILED, "arrFlds.length === 1"));
+            return arrFlds[0];
+        },
+        traverseField: function (fld, fn, parent_res) {
+            _traverseField(fld.fieldName, fld, fn, parent_res);
+        },
+        traverseFields: function (flds, fn, parent_res) {
+            for (var i = 0; i < flds.length; i += 1) {
+                _traverseField(flds[i].fieldName, flds[i], fn, parent_res);
+            }
+        },
+        initVals: function (flds, vals) {
+            exports.CollUtils.traverseFields(flds, function (fld, fullName) {
+                if (fld.fieldType === 5)
+                    coreUtils.setValue(vals, fullName, {});
+                else
+                    coreUtils.setValue(vals, fullName, null);
+            });
+            return vals;
+        },
+        copyVals: function (flds, from, to) {
+            exports.CollUtils.traverseFields(flds, function (fld, fullName) {
+                if (fld.fieldType === 5) {
+                    coreUtils.setValue(to, fullName, {});
+                }
+                else {
+                    if (!(fld.fieldType === 3 || fld.fieldType === 2)) {
+                        var value = coreUtils.getValue(from, fullName);
+                        coreUtils.setValue(to, fullName, value);
+                    }
+                }
+            });
+            return to;
+        },
+        objToVals: function (flds, obj) {
+            var vals = exports.CollUtils.initVals(flds, {});
+            if (!obj)
+                return vals;
+            return exports.CollUtils.copyVals(flds, obj, vals);
+        },
+        cloneVals: function (flds, vals) {
+            var res = {};
+            exports.CollUtils.traverseFields(flds, function (fld, fullName) {
+                if (fld.fieldType === 5) {
+                    coreUtils.setValue(res, fullName, {});
+                }
+                else {
+                    var value = coreUtils.getValue(vals, fullName);
+                    coreUtils.setValue(res, fullName, value);
+                }
+            });
+            return res;
         }
-    }
-    exports.fn_traverseFields = fn_traverseFields;
+    };
 });
 define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/utils", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/errors"], function (require, exports, object_3, lang_5, waitqueue_1, utils_2, int_2, utils_3, errors_5) {
     "use strict";
-    var utils = utils_2.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, sys = utils.sys;
-    var _foreachField = utils_3.fn_traverseFields;
+    var utils = utils_2.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, sys = utils.sys, valUtils = utils_3.ValueUtils, collUtils = utils_3.CollUtils;
     sys.isCollection = function (obj) { return (!!obj && obj instanceof BaseCollection); };
     var COLL_EVENTS = {
         begin_edit: "begin_edit",
@@ -2882,14 +2922,6 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             var base_events = _super.prototype._getEventNames.call(this);
             var events = Object.keys(COLL_EVENTS).map(function (key, i, arr) { return COLL_EVENTS[key]; });
             return events.concat(base_events);
-        };
-        BaseCollection.prototype._initVals = function (vals) {
-            _foreachField(this.getFieldInfos(), function (fld, fullName) {
-                if (fld.fieldType === 5)
-                    coreUtils.setValue(vals, fullName, {}, false);
-                else
-                    coreUtils.setValue(vals, fullName, null, false);
-            });
         };
         BaseCollection.prototype.addOnClearing = function (fn, nmspace, context, priority) {
             this._addHandler(COLL_EVENTS.clearing, fn, nmspace, context, priority);
@@ -3182,7 +3214,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         };
         BaseCollection.prototype._getStrValue = function (val, fieldInfo) {
             var dcnv = fieldInfo.dateConversion, stz = coreUtils.get_timeZoneOffset();
-            return utils_3.valueUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
+            return utils_3.ValueUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
         };
         BaseCollection.prototype._onBeforeEditing = function (item, isBegin, isCanceled) {
             if (this._isUpdating)
@@ -3308,7 +3340,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             }
             if (fld.fieldType === 5) {
                 for (var i = 1; i < parts.length; i += 1) {
-                    fld = utils_3.fn_getPropertyByName(parts[i], fld.nested);
+                    fld = collUtils.getObjectField(parts[i], fld.nested);
                 }
                 return fld;
             }
@@ -3837,7 +3869,7 @@ define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_sha
 });
 define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/utils", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/errors", "jriapp_shared/collection/validation"], function (require, exports, object_4, utils_5, int_3, utils_6, errors_6, validation_1) {
     "use strict";
-    var utils = utils_5.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, sys = utils.sys, ERROR = utils.err;
+    var utils = utils_5.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, sys = utils.sys, ERROR = utils.err, collUtils = utils_6.CollUtils;
     var AspectFlags;
     (function (AspectFlags) {
         AspectFlags[AspectFlags["IsAttached"] = 0] = "IsAttached";
@@ -3893,7 +3925,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                     ERROR.reThrow(ex, isHandled);
                 }
             }
-            this._saveVals = coreUtils.clone(this._vals);
+            this._saveVals = collUtils.cloneVals(this.collection.getFieldInfos(), this._vals);
             this.collection.currentItem = this.item;
             return true;
         };
@@ -3956,18 +3988,17 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                 return null;
         };
         ItemAspect.prototype._validateFields = function () {
-            var self = this, fieldInfos = this.collection.getFieldInfos();
-            var fldVals = [];
-            utils_6.fn_traverseFields(fieldInfos, function (fld, fullName) {
+            var self = this, fieldInfos = this.collection.getFieldInfos(), res = [];
+            collUtils.traverseFields(fieldInfos, function (fld, fullName) {
                 if (fld.fieldType !== 5) {
                     var fieldValidation = self._validateField(fullName);
                     if (!!fieldValidation && fieldValidation.errors.length > 0) {
-                        fldVals.push(fieldValidation);
+                        res.push(fieldValidation);
                     }
                 }
             });
             var itemVals = self._validateItem();
-            return validation_1.Validations.distinct(fldVals.concat(itemVals));
+            return validation_1.Validations.distinct(res.concat(itemVals));
         };
         ItemAspect.prototype._resetStatus = function () {
         };
@@ -4257,6 +4288,13 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         ItemAspect.prototype.toString = function () {
             return "ItemAspect";
         };
+        Object.defineProperty(ItemAspect.prototype, "vals", {
+            get: function () {
+                return collUtils.copyVals(this.collection.getFieldInfos(), this._vals, {});
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ItemAspect.prototype, "item", {
             get: function () {
                 return this._item;
@@ -4414,24 +4452,17 @@ define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/ob
 });
 define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/collection/base", "jriapp_shared/collection/aspect", "jriapp_shared/errors"], function (require, exports, utils_7, lang_7, int_5, utils_8, base_1, aspect_1, errors_7) {
     "use strict";
-    var utils = utils_7.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, ERROR = utils.err;
+    var utils = utils_7.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, ERROR = utils.err, collUtils = utils_8.CollUtils;
     var ListItemAspect = (function (_super) {
         __extends(ListItemAspect, _super);
-        function ListItemAspect(coll, obj) {
+        function ListItemAspect(coll, vals, key, isNew) {
             _super.call(this, coll);
-            var isNew = !obj;
             if (isNew)
                 this._status = 1;
-            if (isNew) {
-                this._vals = {};
-                coll._initVals(this._vals);
-            }
-            else {
-                this._vals = obj;
-            }
+            this._vals = vals;
             var item = new coll.itemType(this);
             this._setItem(item);
-            this._setKey(coll._getNewKey(this._vals, isNew));
+            this._setKey(key);
         }
         ListItemAspect.prototype._setProp = function (name, val) {
             var error;
@@ -4479,11 +4510,6 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(ListItemAspect.prototype, "vals", {
-            get: function () { return this._vals; },
-            enumerable: true,
-            configurable: true
-        });
         return ListItemAspect;
     }(aspect_1.ItemAspect));
     exports.ListItemAspect = ListItemAspect;
@@ -4506,7 +4532,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                 fldInfo.dataType = prop.dtype;
                 self._fieldMap[prop.name] = fldInfo;
                 self._fieldInfos.push(fldInfo);
-                utils_8.fn_traverseField(fldInfo, function (fld, fullName) {
+                collUtils.traverseField(fldInfo, function (fld, fullName) {
                     fld.dependents = null;
                     fld.fullName = fullName;
                 });
@@ -4525,7 +4551,10 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
             return this.createItem(null);
         };
         BaseList.prototype.createItem = function (obj) {
-            var aspect = new ListItemAspect(this, obj);
+            var isNew = !obj;
+            var vals = isNew ? collUtils.initVals(this.getFieldInfos(), {}) : obj;
+            var key = this._getNewKey(vals, isNew);
+            var aspect = new ListItemAspect(this, vals, key, isNew);
             return aspect.item;
         };
         BaseList.prototype._getNewKey = function (vals, isNew) {
@@ -4581,11 +4610,6 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
             }
             this.moveFirst();
         };
-        BaseList.prototype.toArray = function () {
-            return this.items.map(function (item, index, arr) {
-                return coreUtils.clone(item._aspect.vals);
-            });
-        };
         BaseList.prototype.getNewItems = function () {
             return this._items.filter(function (item) {
                 return item._aspect.isNew;
@@ -4596,6 +4620,14 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                 item._aspect._resetStatus();
             });
         };
+        BaseList.prototype.toArray = function () {
+            return this.items.map(function (item, index, arr) {
+                return item._aspect.vals;
+            });
+        };
+        BaseList.prototype.toString = function () {
+            return "BaseList";
+        };
         Object.defineProperty(BaseList.prototype, "itemType", {
             get: function () {
                 return this._itemType;
@@ -4603,9 +4635,6 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
             enumerable: true,
             configurable: true
         });
-        BaseList.prototype.toString = function () {
-            return "BaseList";
-        };
         return BaseList;
     }(base_1.BaseCollection));
     exports.BaseList = BaseList;
@@ -4615,10 +4644,8 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
     var coreUtils = coreutils_7.CoreUtils, strUtils = strutils_5.StringUtils, sys = sysutils_5.SysUtils;
     var AnyItemAspect = (function (_super) {
         __extends(AnyItemAspect, _super);
-        function AnyItemAspect(coll, obj) {
-            _super.call(this, coll, obj);
-            if (!this._vals["val"])
-                this._vals["val"] = {};
+        function AnyItemAspect() {
+            _super.apply(this, arguments);
         }
         AnyItemAspect.prototype._validateField = function (name) {
             return this.collection.errors.validateItemField(this.item, name);
@@ -4752,7 +4779,12 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
             _super.prototype.destroy.call(this);
         };
         AnyList.prototype.createItem = function (obj) {
-            var aspect = new AnyItemAspect(this, obj);
+            var isNew = !obj;
+            var vals = isNew ? { val: {} } : obj;
+            if (!vals.val)
+                vals.val = {};
+            var key = this._getNewKey(vals, isNew);
+            var aspect = new AnyItemAspect(this, vals, key, isNew);
             return aspect.item;
         };
         AnyList.prototype.onChanged = function () {

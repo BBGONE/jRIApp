@@ -147,18 +147,6 @@ declare module "jriapp_db/datacache" {
         readonly cacheSize: number;
     }
 }
-declare module "jriapp_db/utils" {
-    import { IFieldInfo } from "jriapp_shared/collection/int";
-    import { IRowData } from "jriapp_db/int";
-    export class RowDataHelper {
-        private _fields;
-        private _pkFlds;
-        private _getStrValue;
-        constructor(fields: IFieldInfo[], pkFlds: IFieldInfo[], getStrValue: (val: any, fieldInfo: IFieldInfo) => string);
-        private processRowData(rowData, keys, fld, name, arr);
-        processRowsData(data: any[]): IRowData[];
-    }
-}
 declare module "jriapp_db/dbset" {
     import { SORT_ORDER, COLL_CHANGE_REASON, ITEM_STATUS } from "jriapp_shared/collection/const";
     import { TEventHandler, IBaseObject, IPromise, TPriority } from "jriapp_shared";
@@ -229,8 +217,8 @@ declare module "jriapp_db/dbset" {
         protected _doCalculatedField(opts: IDbSetConstuctorOptions, fieldInfo: IFieldInfo): ICalcFieldImpl<TItem>;
         protected _refreshValues(path: string, item: IEntityItem, values: any[], names: IFieldName[], rm: REFRESH_MODE): void;
         protected _setCurrentItem(v: TItem): void;
-        _getNewKey(): string;
-        _applyFieldVals(vals: any, path: string, values: any[], names: IFieldName[]): void;
+        protected _applyFieldVals(vals: any, path: string, values: any[], names: IFieldName[]): void;
+        protected _getNewKey(): string;
         protected _createNew(): TItem;
         protected _clearChangeCache(): void;
         protected _onPageChanging(): boolean;
@@ -259,13 +247,14 @@ declare module "jriapp_db/dbset" {
         protected _destroyQuery(): void;
         protected _getPKFields(): IFieldInfo[];
         protected _getNames(): IFieldName[];
-        protected createEntity(row: IRowData, fieldNames: IFieldName[]): TItem;
+        protected createEntityFromObj(obj: any): TItem;
+        protected createEntityFromData(row: IRowData, fieldNames: IFieldName[]): TItem;
+        _getInternal(): IInternalDbSetMethods<TItem>;
         fillData(data: {
             names: IFieldName[];
             rows: IRowData[];
-        }, isAppendData?: boolean): IQueryResult<TItem>;
+        }, isAppend?: boolean): IQueryResult<TItem>;
         fillItems<TObj>(data: TObj[], isAppend?: boolean): IQueryResult<TItem>;
-        _getInternal(): IInternalDbSetMethods<TItem>;
         addOnLoaded(fn: TEventHandler<DbSet<TItem, TDbContext>, IDbSetLoadedArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnLoaded(nmspace?: string): void;
         waitForNotBusy(callback: () => void, groupName: string): void;
@@ -547,7 +536,7 @@ declare module "jriapp_db/entity_aspect" {
         private _srvKey;
         private _origVals;
         private _savedStatus;
-        constructor(dbSet: DbSet<TItem, TDbContext>, vals: any, key: string);
+        constructor(dbSet: DbSet<TItem, TDbContext>, vals: any, key: string, isNew: boolean);
         protected _onFieldChanged(fieldName: string, fieldInfo: IFieldInfo): void;
         protected _getValueChange(fullName: string, fieldInfo: IFieldInfo, changedOnly: boolean): IValueChange;
         protected _getValueChanges(changedOnly: boolean): IValueChange[];

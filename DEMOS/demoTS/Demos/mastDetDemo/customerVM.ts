@@ -156,11 +156,14 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
         query.pageSize = 50;
         query.orderBy('ComplexProp.LastName').thenBy('ComplexProp.MiddleName').thenBy('ComplexProp.FirstName');
         let res = query.load();
+        
+        //for testing of fillItems method
         /*
-        //for testing 
         res.then((data) => {
             setTimeout(() => {
-                self.dbSet.fillItems(data.fetchedItems);
+                self.dbSet.fillItems(self.dbSet.items.map((item, index, arr) => {
+                    return item._aspect.vals;
+                }));
             }, 2000);
         });
         */
