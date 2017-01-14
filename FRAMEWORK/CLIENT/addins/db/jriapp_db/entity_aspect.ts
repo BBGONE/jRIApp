@@ -7,7 +7,7 @@ import {
 } from "jriapp_shared";
 import { ValidationError } from "jriapp_shared/errors";
 import { ICancellableArgs, IFieldInfo } from "jriapp_shared/collection/int";
-import { valueUtils } from "jriapp_shared/collection/utils";
+import { ValueUtils, CollUtils } from "jriapp_shared/collection/utils";
 import { ItemAspect } from "jriapp_shared/collection/aspect";
 import { FLAGS, REFRESH_MODE, PROP_NAME } from "./const";
 import { DbContext } from "./dbcontext";
@@ -16,7 +16,7 @@ import { DbSet } from "./dbset";
 import { SubmitError } from "./error";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
-    valUtils = valueUtils, sys = utils.sys;
+    valUtils = ValueUtils, collUtils = CollUtils, sys = utils.sys;
 
 const ENTITYASPECT_EVENTS = {
     destroyed: "destroyed"
@@ -57,7 +57,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
     private _origVals: IIndexer<any>;
     private _savedStatus: ITEM_STATUS;
 
-    constructor(dbSet: DbSet<TItem, TDbContext>, vals: any, key: string) {
+    constructor(dbSet: DbSet<TItem, TDbContext>, vals: any, key: string, isNew: boolean) {
         super(dbSet);
         this._srvKey = null;
         this._origVals = null;
@@ -65,8 +65,8 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         this._vals = vals;
         const item = new dbSet.entityType(this);
         this._setItem(item);
-        if (!key) {
-            this._setKey(dbSet._getNewKey());
+        if (isNew) {
+            this._setKey(key);
             this._status = ITEM_STATUS.Added;
         }
         else {
@@ -161,7 +161,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
     }
     protected _fldChanging(fieldName: string, fieldInfo: IFieldInfo, oldV: any, newV: any) {
         if (!this._origVals) {
-            this._origVals = coreUtils.clone(this._vals);
+            this._origVals = collUtils.cloneVals(this.dbSet.getFieldInfos(), this._vals); //coreUtils.clone(this._vals);
         }
         return true;
     }
@@ -391,7 +391,7 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
             }
             this._origVals = null;
             if (!!this._saveVals)
-                this._saveVals = coreUtils.clone(this._vals);
+                this._saveVals = collUtils.cloneVals(this.dbSet.getFieldInfos(), this._vals); //coreUtils.clone(this._vals);
             this._setStatus(ITEM_STATUS.None);
             errors.removeAllErrors(this.item);
             if (!!rowInfo) {
@@ -447,10 +447,10 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
 
             const changes = self._getValueChanges(true);
             if (!!self._origVals) {
-                self._vals = coreUtils.clone(self._origVals);
+                self._vals = collUtils.cloneVals(self.dbSet.getFieldInfos(), self._origVals); //coreUtils.clone(self._origVals);
                 self._origVals = null;
                 if (!!self._saveVals) {
-                    self._saveVals = coreUtils.clone(self._vals);
+                    self._saveVals = collUtils.cloneVals(self.dbSet.getFieldInfos(), self._vals); //coreUtils.clone(self._vals);
                 }
             }
             self._setStatus(ITEM_STATUS.None);

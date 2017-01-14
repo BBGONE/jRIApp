@@ -772,6 +772,7 @@ declare module "jriapp_shared/collection/int" {
         _setIsAttached(v: boolean): void;
         _setIsCached(v: boolean): void;
         raiseErrorsChanged(): void;
+        readonly vals: any;
         readonly item: TItem;
         readonly key: string;
         readonly collection: ICollection<TItem>;
@@ -1039,11 +1040,17 @@ declare module "jriapp_shared/utils/waitqueue" {
 declare module "jriapp_shared/collection/utils" {
     import { IFieldInfo } from "jriapp_shared/collection/int";
     import { IValueUtils } from "jriapp_shared/collection/int";
-    export let valueUtils: IValueUtils;
-    export function fn_getPropertyByName(name: string, props: IFieldInfo[]): IFieldInfo;
+    export const ValueUtils: IValueUtils;
     export type TraveseFieldCB<T> = (fld: IFieldInfo, name: string, parent_res?: T) => T;
-    export function fn_traverseField<T>(fld: IFieldInfo, fn: TraveseFieldCB<T>, parent_res?: T): void;
-    export function fn_traverseFields<T>(flds: IFieldInfo[], fn: TraveseFieldCB<T>, parent_res?: T): void;
+    export const CollUtils: {
+        getObjectField: (name: string, flds: IFieldInfo[]) => IFieldInfo;
+        traverseField: <T>(fld: IFieldInfo, fn: TraveseFieldCB<T>, parent_res?: T) => void;
+        traverseFields: <T>(flds: IFieldInfo[], fn: TraveseFieldCB<T>, parent_res?: T) => void;
+        initVals: (flds: IFieldInfo[], vals: any) => any;
+        copyVals: (flds: IFieldInfo[], from: any, to: any) => any;
+        objToVals: (flds: IFieldInfo[], obj: any) => any;
+        cloneVals: (flds: IFieldInfo[], vals: any) => any;
+    };
 }
 declare module "jriapp_shared/collection/base" {
     import { SORT_ORDER, ITEM_STATUS, COLL_CHANGE_REASON, COLL_CHANGE_OPER } from "jriapp_shared/collection/const";
@@ -1090,7 +1097,6 @@ declare module "jriapp_shared/collection/base" {
         constructor();
         static getEmptyFieldInfo(fieldName: string): IFieldInfo;
         protected _getEventNames(): string[];
-        _initVals(vals: any): void;
         addOnClearing(fn: TEventHandler<ICollection<TItem>, {
             reason: COLL_CHANGE_REASON;
         }>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
@@ -1277,6 +1283,7 @@ declare module "jriapp_shared/collection/aspect" {
         getCustomVal(name: string): any;
         destroy(): void;
         toString(): string;
+        readonly vals: any;
         readonly item: TItem;
         readonly key: string;
         readonly collection: BaseCollection<TItem>;
@@ -1308,7 +1315,6 @@ declare module "jriapp_shared/collection/item" {
     }
 }
 declare module "jriapp_shared/collection/list" {
-    import { IIndexer } from "jriapp_shared/int";
     import { ICollectionItem, IPropInfo } from "jriapp_shared/collection/int";
     import { BaseCollection } from "jriapp_shared/collection/base";
     import { ItemAspect } from "jriapp_shared/collection/aspect";
@@ -1322,13 +1328,12 @@ declare module "jriapp_shared/collection/list" {
         new (aspect: ListItemAspect<TItem, TObj>): TItem;
     }
     export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TItem> {
-        constructor(coll: BaseList<TItem, TObj>, obj?: TObj);
+        constructor(coll: BaseList<TItem, TObj>, vals: TObj, key: string, isNew: boolean);
         _setProp(name: string, val: any): void;
         _getProp(name: string): any;
         _resetStatus(): void;
         toString(): string;
         readonly list: BaseList<TItem, TObj>;
-        readonly vals: IIndexer<any>;
     }
     export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TItem> {
         private _itemType;
@@ -1337,14 +1342,14 @@ declare module "jriapp_shared/collection/list" {
         protected _attach(item: TItem): number;
         protected _createNew(): TItem;
         protected createItem(obj?: TObj): TItem;
-        _getNewKey(vals: any, isNew: boolean): string;
+        protected _getNewKey(vals: any, isNew: boolean): string;
         destroy(): void;
         fillItems(objArray: TObj[], clearAll?: boolean): void;
-        toArray(): TObj[];
         getNewItems(): TItem[];
         resetStatus(): void;
-        readonly itemType: IListItemConstructor<TItem, TObj>;
+        toArray(): TObj[];
         toString(): string;
+        readonly itemType: IListItemConstructor<TItem, TObj>;
     }
 }
 declare module "jriapp_shared/utils/anylist" {
@@ -1356,7 +1361,6 @@ declare module "jriapp_shared/utils/anylist" {
         val: any;
     }
     export class AnyItemAspect extends ListItemAspect<AnyValListItem, IAnyVal> {
-        constructor(coll: BaseList<AnyValListItem, IAnyVal>, obj?: IAnyVal);
         _validateField(name: string): IValidationInfo;
         protected _validateFields(): IValidationInfo[];
         _setProp(name: string, val: any): void;

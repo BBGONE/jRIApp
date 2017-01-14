@@ -6,7 +6,7 @@ import {
     IPromise, BaseObject, Utils, LocaleERRS as ERRS
 } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
-import { valueUtils } from "jriapp_shared/collection/utils";
+import { ValueUtils } from "jriapp_shared/collection/utils";
 import { PROP_NAME } from "./const";
 import {
     IEntityItem, IQueryInfo, IFilterInfo, ISortInfo, IQueryResult,
@@ -17,7 +17,7 @@ import { DbSet } from "./dbset";
 import { DbContext } from "./dbcontext";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr,
-    valUtils = valueUtils;
+    valUtils = ValueUtils;
 
 export interface IInternalQueryMethods<TItem extends IEntityItem> {
     clearCache(): void;

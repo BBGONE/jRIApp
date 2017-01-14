@@ -12,7 +12,7 @@ import {
 } from "jriapp_shared/collection/int";
 import { BaseCollection } from "jriapp_shared/collection/base";
 import {
-    valueUtils, fn_traverseField, fn_traverseFields, fn_getPropertyByName
+    ValueUtils, CollUtils
 } from "jriapp_shared/collection/utils";
 import {
     IFieldName, IEntityItem, IEntityConstructor, IValueChange, IRowInfo, ITrackAssoc, IQueryResponse,
@@ -24,10 +24,9 @@ import { DataCache } from "./datacache";
 import { DataQuery } from "./dataquery";
 import { DbContext } from "./dbcontext";
 import { EntityAspect } from "./entity_aspect";
-import { RowDataHelper } from "./utils";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err,
-    valUtils = valueUtils;
+    valUtils = ValueUtils, colUtils = CollUtils;
 
 
 export interface IFillFromServiceArgs {
@@ -116,12 +115,12 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         this._ignorePageChanged = false;
         fieldInfos.forEach(function (f) {
             self._fieldMap[f.fieldName] = f;
-            fn_traverseField(f, (fld, fullName) => {
+            colUtils.traverseField(f, (fld, fullName) => {
                 fld.dependents = [];
                 fld.fullName = fullName;
             });
         });
-        fn_traverseFields(fieldInfos, (fld, fullName) => {
+        colUtils.traverseFields(fieldInfos, (fld, fullName) => {
             if (fld.fieldType === FIELD_TYPE.Navigation) {
                 //navigation fields can NOT be on nested fields
                 coreUtils.setValue(self._navfldMap, fullName, self._doNavigationField(opts, fld), true);
@@ -330,13 +329,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         }
         super._setCurrentItem(v);
     }
-    _getNewKey() {
-        //client's item ID
-        let key = "clkey_" + this._newKey;
-        this._newKey += 1;
-        return key;
-    }
-    _applyFieldVals(vals: any, path: string, values: any[], names: IFieldName[]) {
+    protected _applyFieldVals(vals: any, path: string, values: any[], names: IFieldName[]) {
         const self = this, stz = self.dbContext.serverTimezone;
         values.forEach(function (value, index) {
             const name: IFieldName = names[index], fieldName = path + name.n,
@@ -355,9 +348,15 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
             }
         });
     }
+    protected _getNewKey() {
+        //client's item ID
+        let key = "clkey_" + this._newKey;
+        this._newKey += 1;
+        return key;
+    }
     //override
     protected _createNew(): TItem {
-        return this.createEntity(null, null);
+        return this.createEntityFromData(null, null);
     }
     protected _clearChangeCache() {
         const old = this._changeCount;
@@ -515,7 +514,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
             }
 
             if (!item) {
-                item = self.createEntity(row, fieldNames);
+                item = self.createEntityFromData(row, fieldNames);
             }
             else {
                 self._refreshValues("", item, row.v, fieldNames, REFRESH_MODE.RefreshCurrent);
@@ -731,7 +730,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
     }
     protected _getNames(): IFieldName[] {
         const self = this, fieldInfos = this.getFieldInfos(), names: IFieldName[] = [];
-        fn_traverseFields(fieldInfos, (fld, fullName, arr) => {
+        colUtils.traverseFields(fieldInfos, (fld, fullName, arr) => {
             if (fld.fieldType === FIELD_TYPE.Object) {
                 let res: any[] = [];
                 arr.push({
@@ -751,22 +750,41 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         }, names);
         return names;
     }
-    protected createEntity(row: IRowData, fieldNames: IFieldName[]) {
-        let vals: any = {};
-        this._initVals(vals);
+    protected createEntityFromObj(obj: any): TItem {
+        const isNew = !obj;
+        let vals: any = colUtils.objToVals(this.getFieldInfos(), obj), key: string;
+        if (isNew) {
+            key = this._getNewKey();
+        }
+        else {
+            const pkFlds = this._getPKFields(), pkVals: string[] = [];
+            for (let i = 0; i < pkFlds.length; i += 1) {
+                let fld = pkFlds[i], val = coreUtils.getValue(vals, fld.fieldName), strval = this._getStrValue(val, fld);
+                pkVals.push(strval);
+            }
+            key = pkVals.join(";");
+        }
+        const aspect = new EntityAspect<TItem, TDbContext>(this, vals, key, isNew);
+        return aspect.item;
+    }
+    protected createEntityFromData(row: IRowData, fieldNames: IFieldName[]): TItem {
+        let vals: any = colUtils.initVals(this.getFieldInfos(), {});
         if (!!row) {
             this._applyFieldVals(vals, "", row.v, fieldNames);
         }
-        const aspect = new EntityAspect<TItem, TDbContext>(this, vals, !row ? null : row.k);
+        const aspect = new EntityAspect<TItem, TDbContext>(this, vals, !row ? this._getNewKey() : row.k, !row);
         return aspect.item;
+    }
+    _getInternal(): IInternalDbSetMethods<TItem> {
+        return <IInternalDbSetMethods<TItem>>this._internal;
     }
     fillData(data: {
         names: IFieldName[];
         rows: IRowData[];
-    }, isAppendData?: boolean): IQueryResult<TItem> {
+    }, isAppend?: boolean): IQueryResult<TItem> {
         const self = this, reason = COLL_CHANGE_REASON.None;
         let newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [], query = this.query;
-        const isClearAll = !isAppendData;
+        const isClearAll = !isAppend;
         if (isClearAll)
             self._clear(reason, COLL_CHANGE_OPER.Fill);
 
@@ -778,7 +796,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
 
             let item = self._itemsByKey[key];
             if (!item) {
-                item = self.createEntity(row, data.names);
+                item = self.createEntityFromData(row, data.names);
             }
             else {
                 self._refreshValues("", item, row.v, data.names, REFRESH_MODE.RefreshCurrent);
@@ -823,20 +841,50 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
     }
     //manually fill items for an array of objects
     fillItems<TObj>(data: TObj[], isAppend?: boolean): IQueryResult<TItem> {
-        const self = this, fieldInfos = this.getFieldInfos(), pkFlds = self._getPKFields();
-        const dataHelper = new RowDataHelper(fieldInfos, pkFlds, (v, f) => self._getStrValue(v, f));
-        try {
-            const rows = dataHelper.processRowsData(data), names = self._getNames();
-            self._destroyQuery();
-            return self.fillData({ names: names, rows: rows }, !!isAppend);
+        const self = this, reason = COLL_CHANGE_REASON.None;
+        let newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [], query = this.query;
+        const isClearAll = !isAppend;
+        if (isClearAll)
+            self._clear(reason, COLL_CHANGE_OPER.Fill);
+
+        const fetchedItems = data.map(function (obj) {
+            return self.createEntityFromObj(obj);
+        });
+
+        fetchedItems.forEach(function (item) {
+            const oldItem = self._itemsByKey[item._key];
+            if (!oldItem) {
+                self._items.push(item);
+                positions.push(self._items.length - 1);
+                self._itemsByKey[item._key] = item;
+                newItems.push(item);
+                items.push(item);
+                item._aspect._setIsAttached(true);
+            }
+            else {
+                items.push(oldItem);
+            }
+        });
+
+        if (newItems.length > 0) {
+            this._onCountChanged();
         }
-        catch (err) {
-            self.handleError(err, self);
-            ERROR.throwDummy(err);
-        }
-    }
-    _getInternal(): IInternalDbSetMethods<TItem> {
-        return <IInternalDbSetMethods<TItem>>this._internal;
+
+        this.totalCount = fetchedItems.length;
+
+        const result: IQueryResult<TItem> = {
+            newItems: {
+                items: newItems,
+                pos: positions
+            },
+            fetchedItems: fetchedItems,
+            items: items,
+            reason: COLL_CHANGE_REASON.None,
+            outOfBandData: null
+        };
+
+        this._afterFill(result, isClearAll);
+        return result;
     }
     addOnLoaded(fn: TEventHandler<DbSet<TItem, TDbContext>, IDbSetLoadedArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
         this._addHandler(DBSET_EVENTS.loaded, fn, nmspace, context, priority);
@@ -865,7 +913,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
 
         if (fld.fieldType === FIELD_TYPE.Object) {
             for (let i = 1; i < parts.length; i += 1) {
-                fld = fn_getPropertyByName(parts[i], fld.nested);
+                fld = colUtils.getObjectField(parts[i], fld.nested);
             }
             return fld;
         }

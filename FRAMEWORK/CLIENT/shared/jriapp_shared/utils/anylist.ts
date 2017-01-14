@@ -20,11 +20,6 @@ export interface IAnyVal {
 }
 
 export class AnyItemAspect extends ListItemAspect<AnyValListItem, IAnyVal> {
-    constructor(coll: BaseList<AnyValListItem, IAnyVal>, obj?: IAnyVal) {
-        super(coll, obj);
-        if (!this._vals["val"])
-            this._vals["val"] = {};
-    }
     //override and made public
     _validateField(name: string): IValidationInfo {
         return this.collection.errors.validateItemField(this.item, name);
@@ -153,7 +148,12 @@ export class AnyList extends BaseList<AnyValListItem, IAnyVal> {
     }
     //override
     protected createItem(obj?: IAnyVal): AnyValListItem {
-        const aspect = new AnyItemAspect(this, obj);
+        const isNew = !obj;
+        let vals: any = isNew ? { val: {} } : obj;
+        if (!vals.val)
+            vals.val = {};
+        let key = this._getNewKey(vals, isNew);
+        const aspect = new AnyItemAspect(this, vals, key, isNew);
         return aspect.item;
     }
     protected onChanged() {

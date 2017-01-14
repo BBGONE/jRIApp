@@ -10,12 +10,13 @@ import {
 import {
     ICollectionItem, IPropInfo, PROP_NAME
 } from "./int";
-import { fn_traverseField } from "./utils";
+import { CollUtils } from "./utils";
 import { BaseCollection } from "./base";
 import { ItemAspect } from "./aspect";
 import { ValidationError } from "../errors";
 
-const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, ERROR = utils.err;
+const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, ERROR = utils.err,
+    collUtils = CollUtils;
 
 export interface IListItem extends ICollectionItem {
     readonly _aspect: ListItemAspect<IListItem, any>;
@@ -28,21 +29,14 @@ export interface IListItemConstructor<TItem extends IListItem, TObj> {
 }
 
 export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TItem> {
-    constructor(coll: BaseList<TItem, TObj>, obj?: TObj) {
+    constructor(coll: BaseList<TItem, TObj>, vals: TObj, key: string, isNew: boolean) {
         super(coll);
-        const isNew = !obj;
         if (isNew)
             this._status = ITEM_STATUS.Added;
-        if (isNew) {
-            this._vals = {};
-            coll._initVals(this._vals);
-        }
-        else {
-            this._vals = <any>obj;
-        }
+        this._vals = <any>vals;
         let item = new coll.itemType(this);
         this._setItem(item);
-        this._setKey(coll._getNewKey(this._vals, isNew));
+        this._setKey(key);
     }
     _setProp(name: string, val: any) {
         let error: ValidationError;
@@ -86,7 +80,6 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
         return this.item.toString() + "Aspect";
     }
     get list(): BaseList<TItem, TObj> { return <BaseList<TItem, TObj>>this.collection; }
-    get vals(): IIndexer<any> { return this._vals; }
 }
 
 export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TItem> {
@@ -110,7 +103,7 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
             fldInfo.dataType = prop.dtype;
             self._fieldMap[prop.name] = fldInfo;
             self._fieldInfos.push(fldInfo);
-            fn_traverseField(fldInfo, (fld, fullName) => {
+            collUtils.traverseField(fldInfo, (fld, fullName) => {
                 fld.dependents = null;
                 fld.fullName = fullName;
             });
@@ -129,10 +122,13 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
         return this.createItem(null);
     }
     protected createItem(obj?: TObj): TItem {
-        const aspect = new ListItemAspect<TItem, TObj>(this, obj);
+        const isNew = !obj;
+        let vals: any = isNew ? collUtils.initVals(this.getFieldInfos(), {}) : obj;
+        let key = this._getNewKey(vals, isNew);
+        const aspect = new ListItemAspect<TItem, TObj>(this, vals, key, isNew);
         return aspect.item;
     }
-    _getNewKey(vals: any, isNew: boolean) {
+    protected _getNewKey(vals: any, isNew: boolean) {
         //client side item ID
         const key = "clkey_" + this._newKey;
         this._newKey += 1;
@@ -187,11 +183,6 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
         }
         this.moveFirst();
     }
-    toArray() {
-        return this.items.map((item, index, arr) => {
-            return <TObj>coreUtils.clone(item._aspect.vals);
-        });
-    }
     getNewItems() {
         return this._items.filter(function (item) {
             return item._aspect.isNew;
@@ -202,10 +193,15 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
             item._aspect._resetStatus();
         });
     }
-    get itemType(): IListItemConstructor<TItem, TObj> {
-        return this._itemType;
+    toArray(): TObj[] {
+        return this.items.map((item, index, arr) => {
+            return <TObj>item._aspect.vals;
+        });
     }
     toString() {
         return "BaseList";
+    }
+    get itemType(): IListItemConstructor<TItem, TObj> {
+        return this._itemType;
     }
 }

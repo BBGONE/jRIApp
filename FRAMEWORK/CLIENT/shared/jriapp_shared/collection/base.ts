@@ -19,11 +19,12 @@ import { ICollectionItem, ICollection, ICollectionOptions, IPermissions, IIntern
     ICollValidateFieldArgs, ICollValidateItemArgs, ICurrentChangingArgs, ICommitChangesArgs, IItemAddedArgs, IPageChangingArgs,
     IErrorsList, IErrors, PROP_NAME
 } from "./int";
-import { valueUtils, fn_getPropertyByName, fn_traverseFields } from "./utils";
+import { ValueUtils, CollUtils } from "./utils";
 import { ValidationError } from "../errors";
 
-const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, sys = utils.sys;
-const _foreachField = fn_traverseFields;
+const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, sys = utils.sys,
+    valUtils = ValueUtils, collUtils = CollUtils;
+
 
 //REPLACE DUMMY IMPLEMENTATIONS
 sys.isCollection = (obj) => { return (!!obj && obj instanceof BaseCollection); };
@@ -233,14 +234,6 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         const base_events = super._getEventNames();
         const events = Object.keys(COLL_EVENTS).map((key, i, arr) => { return <string>(<any>COLL_EVENTS)[key]; });
         return events.concat(base_events);
-    }
-    _initVals(vals: any) {
-        _foreachField<void>(this.getFieldInfos(), (fld, fullName) => {
-            if (fld.fieldType === FIELD_TYPE.Object)
-                coreUtils.setValue(vals, fullName, {}, false);
-            else
-                coreUtils.setValue(vals, fullName, null, false);
-        });
     }
     addOnClearing(fn: TEventHandler<ICollection<TItem>, { reason: COLL_CHANGE_REASON; }>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
         this._addHandler(COLL_EVENTS.clearing, fn, nmspace, context, priority);
@@ -536,7 +529,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     }
     protected _getStrValue(val: any, fieldInfo: IFieldInfo): string {
         let dcnv = fieldInfo.dateConversion, stz = coreUtils.get_timeZoneOffset();
-        return valueUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
+        return ValueUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
     }
     protected _onBeforeEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void {
         if (this._isUpdating)
@@ -666,7 +659,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
 
         if (fld.fieldType === FIELD_TYPE.Object) {
             for (let i = 1; i < parts.length; i += 1) {
-                fld = fn_getPropertyByName(parts[i], fld.nested);
+                fld = collUtils.getObjectField(parts[i], fld.nested);
             }
             return fld;
         }

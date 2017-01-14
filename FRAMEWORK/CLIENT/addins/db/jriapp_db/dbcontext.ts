@@ -7,7 +7,7 @@ import {
     BaseObject, Utils, WaitQueue, Lazy, IPromiseState, IStatefulPromise, IAbortablePromise,
     PromiseState, IDeferred
 } from "jriapp_shared";
-import { valueUtils } from "jriapp_shared/collection/utils";
+import { ValueUtils } from "jriapp_shared/collection/utils";
 import {
     IEntityItem, IRefreshRowInfo, IQueryResult, IQueryInfo, IAssociationInfo, IAssocConstructorOptions,
     IPermissionsInfo, IPermissions, IInvokeRequest, IInvokeResponse, IQueryRequest, IQueryResponse, ITrackAssoc,
@@ -24,7 +24,7 @@ import {
 } from "./error";
 
 const utils = Utils, http = utils.http, checks = utils.check, strUtils = utils.str,
-    coreUtils = utils.core, ERROR = utils.err, valUtils = valueUtils, _async = utils.defer;
+    coreUtils = utils.core, ERROR = utils.err, valUtils = ValueUtils, _async = utils.defer;
 
 const DATA_SVC_METH = {
     Invoke: "invoke",

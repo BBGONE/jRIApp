@@ -11,12 +11,12 @@ import { Utils } from "../utils/utils";
 
 import { ICollectionItem, IItemAspect, ICancellableArgs, PROP_NAME, ITEM_EVENTS } from "./int";
 import { BaseCollection } from "./base";
-import { fn_traverseFields } from "./utils";
+import { CollUtils } from "./utils";
 import { ValidationError } from "../errors";
 import { Validations } from "./validation";
 
 const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check,
-    sys = utils.sys, ERROR = utils.err;
+    sys = utils.sys, ERROR = utils.err, collUtils = CollUtils;
 
 const enum AspectFlags
 {
@@ -87,7 +87,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
                 ERROR.reThrow(ex, isHandled);
             }
         }
-        this._saveVals = coreUtils.clone(this._vals);
+        this._saveVals = collUtils.cloneVals(this.collection.getFieldInfos(), this._vals); // coreUtils.clone(this._vals);
         this.collection.currentItem = this.item;
         return true;
     }
@@ -155,21 +155,21 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
             return null;
     }
     protected _validateFields(): IValidationInfo[] {
-        const self = this, fieldInfos = this.collection.getFieldInfos();
-        let fldVals: IValidationInfo[] = [];
+        const self = this, fieldInfos = this.collection.getFieldInfos(),
+            res: IValidationInfo[] = [];
         //revalidate all fields one by one
-        fn_traverseFields(fieldInfos, (fld, fullName) => {
+        collUtils.traverseFields(fieldInfos, (fld, fullName) => {
             if (fld.fieldType !== FIELD_TYPE.Object) {
                 const fieldValidation: IValidationInfo = self._validateField(fullName);
                 if (!!fieldValidation && fieldValidation.errors.length > 0) {
-                    fldVals.push(fieldValidation);
+                    res.push(fieldValidation);
                 }
             }
         });
    
         //raise validation event for the whole item validation
         const itemVals: IValidationInfo[] = self._validateItem();
-        return Validations.distinct(fldVals.concat(itemVals));
+        return Validations.distinct(res.concat(itemVals));
     }
     protected _resetStatus() {
         //can reset isNew on all items in the collection
@@ -472,6 +472,10 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     }
     toString() {
         return "ItemAspect";
+    }
+    //cloned values of this item without Navigation && Calculated Fields
+    get vals(): any {
+        return collUtils.copyVals(this.collection.getFieldInfos(), this._vals, {});
     }
     get item(): TItem {
         return this._item;

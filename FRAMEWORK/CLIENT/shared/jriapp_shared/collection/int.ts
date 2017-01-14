@@ -72,6 +72,7 @@ export interface IItemAspect<TItem extends ICollectionItem> extends IBaseObject,
     _setIsAttached(v: boolean): void;
     _setIsCached(v: boolean): void;
     raiseErrorsChanged(): void;
+    readonly vals: any;
     readonly item: TItem;
     readonly key: string;
     readonly collection: ICollection<TItem>;

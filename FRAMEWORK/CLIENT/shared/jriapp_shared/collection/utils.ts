@@ -24,7 +24,7 @@ function dateToString(dt: Date) {
         '.' + (dt.getMilliseconds() / 1000).toFixed(3).slice(2, 5) + 'Z';
 }
 
-export let valueUtils: IValueUtils = {
+export const ValueUtils: IValueUtils = {
     valueToDate: function (val: string, dtcnv: DATE_CONVERSION, serverTZ: number): Date {
         if (!val)
             return null;
@@ -95,7 +95,7 @@ export let valueUtils: IValueUtils = {
 
         function conv(v: any): string {
             if (checks.isDate(v))
-                return valueUtils.dateToValue(v, dtcnv, serverTZ);
+                return ValueUtils.dateToValue(v, dtcnv, serverTZ);
             else if (checks.isArray(v))
                 return JSON.stringify(v);
             else if (checks.isString(v))
@@ -134,7 +134,7 @@ export let valueUtils: IValueUtils = {
             case DATA_TYPE.Date:
             case DATA_TYPE.Time:
                 if (checks.isDate(v)) {
-                    res = valueUtils.dateToValue(v, dtcnv, serverTZ);
+                    res = ValueUtils.dateToValue(v, dtcnv, serverTZ);
                     isOK = true;
                 }
                 break;
@@ -178,7 +178,7 @@ export let valueUtils: IValueUtils = {
             case DATA_TYPE.DateTime:
             case DATA_TYPE.Date:
             case DATA_TYPE.Time:
-                res = valueUtils.valueToDate(v, dtcnv, serverTZ);
+                res = ValueUtils.valueToDate(v, dtcnv, serverTZ);
                 break;
             case DATA_TYPE.Binary:
                 res = JSON.parse(v);
@@ -191,16 +191,9 @@ export let valueUtils: IValueUtils = {
     }
 };
 
-export function fn_getPropertyByName(name: string, props: IFieldInfo[]): IFieldInfo {
-    let arrProps = props.filter((f) => { return f.fieldName === name; });
-    if (!arrProps || arrProps.length !== 1)
-        throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "arrProps.length === 1"));
-    return arrProps[0];
-}
-
 export type TraveseFieldCB<T> = (fld: IFieldInfo, name: string, parent_res?: T) => T;
 
-function _fn_traverseField<T>(fldName: string, fld: IFieldInfo, fn: TraveseFieldCB<T>, parent_res?: T): void {
+function _traverseField<T>(fldName: string, fld: IFieldInfo, fn: TraveseFieldCB<T>, parent_res?: T): void {
     if (fld.fieldType === FIELD_TYPE.Object) {
         let res = fn(fld, fldName, parent_res);
 
@@ -210,7 +203,7 @@ function _fn_traverseField<T>(fldName: string, fld: IFieldInfo, fn: TraveseField
             for (let i = 0; i < len; i += 1) {
                 nestedFld = fld.nested[i];
                 if (nestedFld.fieldType === FIELD_TYPE.Object) {
-                    _fn_traverseField(fldName + "." + nestedFld.fieldName, nestedFld, fn, res);
+                    _traverseField(fldName + "." + nestedFld.fieldName, nestedFld, fn, res);
                 }
                 else {
                     fn(nestedFld, fldName + "." + nestedFld.fieldName, res);
@@ -223,12 +216,61 @@ function _fn_traverseField<T>(fldName: string, fld: IFieldInfo, fn: TraveseField
     }
 }
 
-export function fn_traverseField<T>(fld: IFieldInfo, fn: TraveseFieldCB<T>, parent_res?: T): void {
-    _fn_traverseField(fld.fieldName, fld, fn, parent_res);
-}
-
-export function fn_traverseFields<T>(flds: IFieldInfo[], fn: TraveseFieldCB<T>, parent_res?: T): void {
-    for (let i = 0; i < flds.length; i += 1) {
-        fn_traverseField<T>(flds[i], fn, parent_res);
+export const CollUtils = {
+    getObjectField: function (name: string, flds: IFieldInfo[]): IFieldInfo {
+        let arrFlds = flds.filter((f) => { return f.fieldName === name; });
+        if (!arrFlds || arrFlds.length !== 1)
+            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "arrFlds.length === 1"));
+        return arrFlds[0];
+    },
+    traverseField: function <T>(fld: IFieldInfo, fn: TraveseFieldCB<T>, parent_res?: T): void {
+        _traverseField(fld.fieldName, fld, fn, parent_res);
+    },
+    traverseFields: function <T>(flds: IFieldInfo[], fn: TraveseFieldCB<T>, parent_res?: T): void {
+        for (let i = 0; i < flds.length; i += 1) {
+            _traverseField(flds[i].fieldName, flds[i], fn, parent_res);
+        }
+    },
+    initVals: function (flds: IFieldInfo[], vals: any): any {
+        CollUtils.traverseFields(flds, (fld, fullName) => {
+            if (fld.fieldType === FIELD_TYPE.Object)
+                coreUtils.setValue(vals, fullName, {});
+            else
+                coreUtils.setValue(vals, fullName, null);
+        });
+        return vals;
+    },
+    copyVals: function (flds: IFieldInfo[], from: any, to: any): any {
+        CollUtils.traverseFields(flds, (fld, fullName) => {
+            if (fld.fieldType === FIELD_TYPE.Object) {
+                coreUtils.setValue(to, fullName, {});
+            }
+            else {
+                if (!(fld.fieldType === FIELD_TYPE.Navigation || fld.fieldType === FIELD_TYPE.Calculated)) {
+                    const value = coreUtils.getValue(from, fullName);
+                    coreUtils.setValue(to, fullName, value);
+                }
+            }
+        });
+        return to;
+    },
+    objToVals: function (flds: IFieldInfo[], obj: any): any {
+        let vals = CollUtils.initVals(flds, {});
+        if (!obj)
+            return vals;
+        return CollUtils.copyVals(flds, obj, vals);
+    },
+    cloneVals: function (flds: IFieldInfo[], vals: any): any {
+        let res = {};
+        CollUtils.traverseFields(flds, (fld, fullName) => {
+            if (fld.fieldType === FIELD_TYPE.Object) {
+                coreUtils.setValue(res, fullName, {});
+            }
+            else {
+                let value = coreUtils.getValue(vals, fullName);
+                coreUtils.setValue(res, fullName, value);
+            }
+        });
+        return res;
     }
 }
