@@ -162,7 +162,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
         res.then((data) => {
             setTimeout(() => {
                 self.dbSet.fillItems(self.dbSet.items.map((item, index, arr) => {
-                    return item._aspect.vals;
+                    return item._aspect.obj;
                 }));
             }, 2000);
         });

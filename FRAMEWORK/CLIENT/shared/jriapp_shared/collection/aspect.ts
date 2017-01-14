@@ -474,7 +474,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         return "ItemAspect";
     }
     //cloned values of this item without Navigation && Calculated Fields
-    get vals(): any {
+    get obj(): any {
         return collUtils.copyVals(this.collection.getFieldInfos(), this._vals, {});
     }
     get item(): TItem {

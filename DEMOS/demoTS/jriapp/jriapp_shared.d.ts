@@ -772,7 +772,7 @@ declare module "jriapp_shared/collection/int" {
         _setIsAttached(v: boolean): void;
         _setIsCached(v: boolean): void;
         raiseErrorsChanged(): void;
-        readonly vals: any;
+        readonly obj: any;
         readonly item: TItem;
         readonly key: string;
         readonly collection: ICollection<TItem>;
@@ -1283,7 +1283,7 @@ declare module "jriapp_shared/collection/aspect" {
         getCustomVal(name: string): any;
         destroy(): void;
         toString(): string;
-        readonly vals: any;
+        readonly obj: any;
         readonly item: TItem;
         readonly key: string;
         readonly collection: BaseCollection<TItem>;
@@ -1342,7 +1342,7 @@ declare module "jriapp_shared/collection/list" {
         protected _attach(item: TItem): number;
         protected _createNew(): TItem;
         protected createItem(obj?: TObj): TItem;
-        protected _getNewKey(vals: any, isNew: boolean): string;
+        protected _getNewKey(): string;
         destroy(): void;
         fillItems(objArray: TObj[], clearAll?: boolean): void;
         getNewItems(): TItem[];
@@ -1423,7 +1423,7 @@ declare module "jriapp_shared/collection/dictionary" {
     export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TItem, TObj> {
         private _keyName;
         constructor(itemType: IListItemConstructor<TItem, TObj>, keyName: string, props: IPropInfo[]);
-        _getNewKey(vals: any, isNew: boolean): string;
+        protected createItem(obj?: TObj): TItem;
         protected _onItemAdded(item: TItem): void;
         protected _onRemoved(item: TItem, pos: number): void;
         readonly keyName: string;

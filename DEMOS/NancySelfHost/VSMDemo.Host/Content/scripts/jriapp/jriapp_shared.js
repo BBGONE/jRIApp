@@ -3214,7 +3214,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         };
         BaseCollection.prototype._getStrValue = function (val, fieldInfo) {
             var dcnv = fieldInfo.dateConversion, stz = coreUtils.get_timeZoneOffset();
-            return utils_3.ValueUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
+            return valUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
         };
         BaseCollection.prototype._onBeforeEditing = function (item, isBegin, isCanceled) {
             if (this._isUpdating)
@@ -4288,7 +4288,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         ItemAspect.prototype.toString = function () {
             return "ItemAspect";
         };
-        Object.defineProperty(ItemAspect.prototype, "vals", {
+        Object.defineProperty(ItemAspect.prototype, "obj", {
             get: function () {
                 return collUtils.copyVals(this.collection.getFieldInfos(), this._vals, {});
             },
@@ -4553,11 +4553,11 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
         BaseList.prototype.createItem = function (obj) {
             var isNew = !obj;
             var vals = isNew ? collUtils.initVals(this.getFieldInfos(), {}) : obj;
-            var key = this._getNewKey(vals, isNew);
+            var key = this._getNewKey();
             var aspect = new ListItemAspect(this, vals, key, isNew);
             return aspect.item;
         };
-        BaseList.prototype._getNewKey = function (vals, isNew) {
+        BaseList.prototype._getNewKey = function () {
             var key = "clkey_" + this._newKey;
             this._newKey += 1;
             return key;
@@ -4622,7 +4622,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
         };
         BaseList.prototype.toArray = function () {
             return this.items.map(function (item, index, arr) {
-                return item._aspect.vals;
+                return item._aspect.obj;
             });
         };
         BaseList.prototype.toString = function () {
@@ -4783,7 +4783,7 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
             var vals = isNew ? { val: {} } : obj;
             if (!vals.val)
                 vals.val = {};
-            var key = this._getNewKey(vals, isNew);
+            var key = this._getNewKey();
             var aspect = new AnyItemAspect(this, vals, key, isNew);
             return aspect.item;
         };
@@ -4978,9 +4978,9 @@ define("jriapp_shared/utils/weakmap", ["require", "exports", "jriapp_shared/util
         return WeakMap;
     }());
 });
-define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/list"], function (require, exports, utils_9, lang_8, base_2, list_2) {
+define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/utils", "jriapp_shared/collection/base", "jriapp_shared/collection/list"], function (require, exports, utils_9, lang_8, utils_10, base_2, list_2) {
     "use strict";
-    var utils = utils_9.Utils, strUtils = utils.str, checks = utils.check, sys = utils.sys;
+    var utils = utils_9.Utils, strUtils = utils.str, checks = utils.check, sys = utils.sys, collUtils = utils_10.CollUtils;
     sys.getItemByProp = function (obj, prop) {
         if (obj instanceof BaseDictionary) {
             return obj.getItemByKey(prop);
@@ -5003,14 +5003,14 @@ define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_sha
                 throw new Error(strUtils.format(lang_8.ERRS.ERR_DICTKEY_IS_NOTFOUND, keyName));
             keyFld.isPrimaryKey = 1;
         }
-        BaseDictionary.prototype._getNewKey = function (vals, isNew) {
-            if (isNew) {
-                return _super.prototype._getNewKey.call(this, vals, isNew);
-            }
-            var key = vals[this._keyName];
+        BaseDictionary.prototype.createItem = function (obj) {
+            var isNew = !obj;
+            var vals = isNew ? collUtils.initVals(this.getFieldInfos(), {}) : obj;
+            var key = isNew ? this._getNewKey() : ("" + vals[this._keyName]);
             if (checks.isNt(key))
                 throw new Error(strUtils.format(lang_8.ERRS.ERR_DICTKEY_IS_EMPTY, this.keyName));
-            return "" + key;
+            var aspect = new list_2.ListItemAspect(this, vals, key, isNew);
+            return aspect.item;
         };
         BaseDictionary.prototype._onItemAdded = function (item) {
             _super.prototype._onItemAdded.call(this, item);
@@ -5102,7 +5102,7 @@ define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/c
     }());
     exports.Lazy = Lazy;
 });
-define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/jsonarray", "jriapp_shared/utils/weakmap", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/errors", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, const_5, int_6, errors_9, object_7, jsonbag_1, jsonarray_1, weakmap_1, lang_9, base_3, item_2, aspect_2, list_3, dictionary_1, errors_10, ideferred_1, utils_10, waitqueue_2, debounce_3, lazy_1) {
+define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/jsonarray", "jriapp_shared/utils/weakmap", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/errors", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, const_5, int_6, errors_9, object_7, jsonbag_1, jsonarray_1, weakmap_1, lang_9, base_3, item_2, aspect_2, list_3, dictionary_1, errors_10, ideferred_1, utils_11, waitqueue_2, debounce_3, lazy_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -5124,7 +5124,7 @@ define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_sh
     exports.BaseDictionary = dictionary_1.BaseDictionary;
     exports.ValidationError = errors_10.ValidationError;
     __export(ideferred_1);
-    exports.Utils = utils_10.Utils;
+    exports.Utils = utils_11.Utils;
     exports.WaitQueue = waitqueue_2.WaitQueue;
     exports.Debounce = debounce_3.Debounce;
     exports.Lazy = lazy_1.Lazy;

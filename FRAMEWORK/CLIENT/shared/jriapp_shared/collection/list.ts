@@ -124,11 +124,11 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
     protected createItem(obj?: TObj): TItem {
         const isNew = !obj;
         let vals: any = isNew ? collUtils.initVals(this.getFieldInfos(), {}) : obj;
-        let key = this._getNewKey(vals, isNew);
+        let key = this._getNewKey();
         const aspect = new ListItemAspect<TItem, TObj>(this, vals, key, isNew);
         return aspect.item;
     }
-    protected _getNewKey(vals: any, isNew: boolean) {
+    protected _getNewKey() {
         //client side item ID
         const key = "clkey_" + this._newKey;
         this._newKey += 1;
@@ -195,7 +195,7 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
     }
     toArray(): TObj[] {
         return this.items.map((item, index, arr) => {
-            return <TObj>item._aspect.vals;
+            return <TObj>item._aspect.obj;
         });
     }
     toString() {

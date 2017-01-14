@@ -5,10 +5,11 @@ import {
     COLL_CHANGE_REASON, COLL_CHANGE_TYPE, COLL_CHANGE_OPER
 } from "./const";
 import { IPropInfo, ICollectionItem } from "./int";
+import { CollUtils } from "./utils";
 import { BaseCollection } from "./base";
-import { BaseList, IListItem, IListItemConstructor } from "./list";
+import { BaseList, IListItem, IListItemConstructor, ListItemAspect } from "./list";
 
-const utils = Utils, strUtils = utils.str, checks = utils.check, sys = utils.sys;
+const utils = Utils, strUtils = utils.str, checks = utils.check, sys = utils.sys, collUtils = CollUtils;
 
 sys.getItemByProp = (obj: any, prop: string) => {
     if (obj instanceof BaseDictionary) {
@@ -35,14 +36,14 @@ export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TIte
         keyFld.isPrimaryKey = 1;
     }
     //override
-    _getNewKey(vals: any, isNew: boolean) {
-        if (isNew) {
-            return super._getNewKey(vals, isNew);
-        }
-        let key = vals[this._keyName];
+    protected createItem(obj?: TObj): TItem {
+        const isNew = !obj;
+        let vals: any = isNew ? collUtils.initVals(this.getFieldInfos(), {}) : obj;
+        let key = isNew ? this._getNewKey() : ("" + vals[this._keyName]);
         if (checks.isNt(key))
             throw new Error(strUtils.format(ERRS.ERR_DICTKEY_IS_EMPTY, this.keyName));
-        return "" + key;
+        const aspect = new ListItemAspect<TItem, TObj>(this, vals, key, isNew);
+        return aspect.item;
     }
     //override
     protected _onItemAdded(item: TItem) {

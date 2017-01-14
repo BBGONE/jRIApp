@@ -152,7 +152,7 @@ export class AnyList extends BaseList<AnyValListItem, IAnyVal> {
         let vals: any = isNew ? { val: {} } : obj;
         if (!vals.val)
             vals.val = {};
-        let key = this._getNewKey(vals, isNew);
+        let key = this._getNewKey();
         const aspect = new AnyItemAspect(this, vals, key, isNew);
         return aspect.item;
     }

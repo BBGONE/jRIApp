@@ -528,8 +528,8 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         return this._EditingItem;
     }
     protected _getStrValue(val: any, fieldInfo: IFieldInfo): string {
-        let dcnv = fieldInfo.dateConversion, stz = coreUtils.get_timeZoneOffset();
-        return ValueUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
+        const dcnv = fieldInfo.dateConversion, stz = coreUtils.get_timeZoneOffset();
+        return valUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
     }
     protected _onBeforeEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void {
         if (this._isUpdating)
