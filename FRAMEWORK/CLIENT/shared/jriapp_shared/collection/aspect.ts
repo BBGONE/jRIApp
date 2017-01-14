@@ -87,7 +87,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
                 ERROR.reThrow(ex, isHandled);
             }
         }
-        this._saveVals = collUtils.cloneVals(this.collection.getFieldInfos(), this._vals); // coreUtils.clone(this._vals);
+        this._saveVals = collUtils.cloneVals(this.collection.getFieldInfos(), this._vals);
         this.collection.currentItem = this.item;
         return true;
     }
@@ -473,7 +473,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     toString() {
         return "ItemAspect";
     }
-    //cloned values of this item without Navigation && Calculated Fields
+    //cloned values of this item
     get obj(): any {
         return collUtils.copyVals(this.collection.getFieldInfos(), this._vals, {});
     }

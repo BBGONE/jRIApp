@@ -2692,10 +2692,14 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
         },
         initVals: function (flds, vals) {
             exports.CollUtils.traverseFields(flds, function (fld, fullName) {
-                if (fld.fieldType === 5)
+                if (fld.fieldType === 5) {
                     coreUtils.setValue(vals, fullName, {});
-                else
-                    coreUtils.setValue(vals, fullName, null);
+                }
+                else {
+                    if (!(fld.fieldType === 3 || fld.fieldType === 2)) {
+                        coreUtils.setValue(vals, fullName, null);
+                    }
+                }
             });
             return vals;
         },
@@ -2720,17 +2724,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
             return exports.CollUtils.copyVals(flds, obj, vals);
         },
         cloneVals: function (flds, vals) {
-            var res = {};
-            exports.CollUtils.traverseFields(flds, function (fld, fullName) {
-                if (fld.fieldType === 5) {
-                    coreUtils.setValue(res, fullName, {});
-                }
-                else {
-                    var value = coreUtils.getValue(vals, fullName);
-                    coreUtils.setValue(res, fullName, value);
-                }
-            });
-            return res;
+            return exports.CollUtils.copyVals(flds, vals, {});
         }
     };
 });

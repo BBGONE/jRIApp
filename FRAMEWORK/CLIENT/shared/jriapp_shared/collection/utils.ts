@@ -233,10 +233,14 @@ export const CollUtils = {
     },
     initVals: function (flds: IFieldInfo[], vals: any): any {
         CollUtils.traverseFields(flds, (fld, fullName) => {
-            if (fld.fieldType === FIELD_TYPE.Object)
+            if (fld.fieldType === FIELD_TYPE.Object) {
                 coreUtils.setValue(vals, fullName, {});
-            else
-                coreUtils.setValue(vals, fullName, null);
+            }
+            else {
+                if (!(fld.fieldType === FIELD_TYPE.Navigation || fld.fieldType === FIELD_TYPE.Calculated)) {
+                    coreUtils.setValue(vals, fullName, null);
+                }
+            }
         });
         return vals;
     },
@@ -261,16 +265,6 @@ export const CollUtils = {
         return CollUtils.copyVals(flds, obj, vals);
     },
     cloneVals: function (flds: IFieldInfo[], vals: any): any {
-        let res = {};
-        CollUtils.traverseFields(flds, (fld, fullName) => {
-            if (fld.fieldType === FIELD_TYPE.Object) {
-                coreUtils.setValue(res, fullName, {});
-            }
-            else {
-                let value = coreUtils.getValue(vals, fullName);
-                coreUtils.setValue(res, fullName, value);
-            }
-        });
-        return res;
+        return CollUtils.copyVals(flds, vals, {});
     }
 }
