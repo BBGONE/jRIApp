@@ -409,15 +409,24 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         return valUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
     }
     protected _getKeyValue(vals: any): string {
-        const pkFlds = this._pkFields, pkVals: string[] = [];
-        for (let i = 0; i < pkFlds.length; i += 1) {
-            let fld = pkFlds[i], val = coreUtils.getValue(vals, fld.fieldName);
+        const pkFlds = this._pkFields, len = pkFlds.length;
+        if (len === 1) {
+            let val = coreUtils.getValue(vals, pkFlds[0].fieldName);
             if (checks.isNt(val))
-                throw new Error(`Empty key field value for: ${fld.fieldName}`);
-            let strval = this._getStrValue(val, fld);
-            pkVals.push(strval);
+                throw new Error(`Empty key field value for: ${pkFlds[0].fieldName}`);
+            return this._getStrValue(val, pkFlds[0]);
         }
-        return pkVals.join(";");
+        else {
+            let pkVals: string[] = [];
+            for (let i = 0; i < len; i += 1) {
+                let val = coreUtils.getValue(vals, pkFlds[i].fieldName);
+                if (checks.isNt(val))
+                    throw new Error(`Empty key field value for: ${pkFlds[i].fieldName}`);
+                let strval = this._getStrValue(val, pkFlds[i]);
+                pkVals.push(strval);
+            }
+            return pkVals.join(";");
+        }
     }
     protected _getCalcFieldVal(fieldName: string, item: TItem): any {
         try {

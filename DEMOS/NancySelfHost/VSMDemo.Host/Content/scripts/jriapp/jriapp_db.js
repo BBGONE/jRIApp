@@ -864,15 +864,24 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             return valUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
         };
         DbSet.prototype._getKeyValue = function (vals) {
-            var pkFlds = this._pkFields, pkVals = [];
-            for (var i = 0; i < pkFlds.length; i += 1) {
-                var fld = pkFlds[i], val = coreUtils.getValue(vals, fld.fieldName);
+            var pkFlds = this._pkFields, len = pkFlds.length;
+            if (len === 1) {
+                var val = coreUtils.getValue(vals, pkFlds[0].fieldName);
                 if (checks.isNt(val))
-                    throw new Error("Empty key field value for: " + fld.fieldName);
-                var strval = this._getStrValue(val, fld);
-                pkVals.push(strval);
+                    throw new Error("Empty key field value for: " + pkFlds[0].fieldName);
+                return this._getStrValue(val, pkFlds[0]);
             }
-            return pkVals.join(";");
+            else {
+                var pkVals = [];
+                for (var i = 0; i < len; i += 1) {
+                    var val = coreUtils.getValue(vals, pkFlds[i].fieldName);
+                    if (checks.isNt(val))
+                        throw new Error("Empty key field value for: " + pkFlds[i].fieldName);
+                    var strval = this._getStrValue(val, pkFlds[i]);
+                    pkVals.push(strval);
+                }
+                return pkVals.join(";");
+            }
         };
         DbSet.prototype._getCalcFieldVal = function (fieldName, item) {
             try {
