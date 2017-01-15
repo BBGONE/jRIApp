@@ -581,6 +581,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             this._navfldMap = {};
             this._calcfldMap = {};
             this._fieldInfos = fieldInfos;
+            this._pkFields = colUtils.getPKFields(fieldInfos);
             this._pageDebounce = new jriapp_shared_3.Debounce(400);
             this._trackAssoc = {};
             this._trackAssocMap = {};
@@ -862,6 +863,17 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             var dcnv = fieldInfo.dateConversion, stz = this.dbContext.serverTimezone;
             return valUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
         };
+        DbSet.prototype._getKeyValue = function (vals) {
+            var pkFlds = this._pkFields, pkVals = [];
+            for (var i = 0; i < pkFlds.length; i += 1) {
+                var fld = pkFlds[i], val = coreUtils.getValue(vals, fld.fieldName);
+                if (checks.isNt(val))
+                    throw new Error("Empty key field value for: " + fld.fieldName);
+                var strval = this._getStrValue(val, fld);
+                pkVals.push(strval);
+            }
+            return pkVals.join(";");
+        };
         DbSet.prototype._getCalcFieldVal = function (fieldName, item) {
             try {
                 var val = coreUtils.getValue(this._calcfldMap, fieldName);
@@ -1136,18 +1148,6 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 query.destroy();
             }
         };
-        DbSet.prototype._getPKFields = function () {
-            var fieldInfos = this.getFieldInfos(), pkFlds = [];
-            for (var i = 0, len = fieldInfos.length; i < len; i += 1) {
-                var fld = fieldInfos[i];
-                if (fld.isPrimaryKey > 0) {
-                    pkFlds.push(fld);
-                }
-            }
-            return pkFlds.sort(function (f1, f2) {
-                return f1.isPrimaryKey - f2.isPrimaryKey;
-            });
-        };
         DbSet.prototype._getNames = function () {
             var self = this, fieldInfos = this.getFieldInfos(), names = [];
             colUtils.traverseFields(fieldInfos, function (fld, fullName, arr) {
@@ -1171,19 +1171,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             return names;
         };
         DbSet.prototype.createEntityFromObj = function (obj) {
-            var isNew = !obj;
-            var vals = colUtils.objToVals(this.getFieldInfos(), obj), key;
-            if (isNew) {
-                key = this._getNewKey();
-            }
-            else {
-                var pkFlds = this._getPKFields(), pkVals = [];
-                for (var i = 0; i < pkFlds.length; i += 1) {
-                    var fld = pkFlds[i], val = coreUtils.getValue(vals, fld.fieldName), strval = this._getStrValue(val, fld);
-                    pkVals.push(strval);
-                }
-                key = pkVals.join(";");
-            }
+            var isNew = !obj, vals = colUtils.objToVals(this.getFieldInfos(), obj), key = isNew ? this._getNewKey() : this._getKeyValue(vals);
             var aspect = new entity_aspect_1.EntityAspect(this, vals, key, isNew);
             return aspect.item;
         };
@@ -1307,7 +1295,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             });
         };
         DbSet.prototype.getFieldInfo = function (fieldName) {
-            var assoc, parentDB, parts = fieldName.split(".");
+            var parts = fieldName.split(".");
             var fld = this._fieldMap[parts[0]];
             if (parts.length === 1) {
                 return fld;
@@ -1319,9 +1307,9 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 return fld;
             }
             else if (fld.fieldType === 3) {
-                assoc = this._childAssocMap[fld.fieldName];
+                var assoc = this._childAssocMap[fld.fieldName];
                 if (!!assoc) {
-                    parentDB = this.dbContext.getDbSet(assoc.parentDbSetName);
+                    var parentDB = this.dbContext.getDbSet(assoc.parentDbSetName);
                     return parentDB.getFieldInfo(parts.slice(1).join("."));
                 }
             }

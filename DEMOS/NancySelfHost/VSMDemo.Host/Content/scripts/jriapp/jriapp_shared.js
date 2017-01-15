@@ -2690,6 +2690,18 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
                 _traverseField(flds[i].fieldName, flds[i], fn, parent_res);
             }
         },
+        getPKFields: function (fieldInfos) {
+            var pkFlds = [];
+            for (var i = 0, len = fieldInfos.length; i < len; i += 1) {
+                var fld = fieldInfos[i];
+                if (fld.isPrimaryKey > 0) {
+                    pkFlds.push(fld);
+                }
+            }
+            return pkFlds.sort(function (f1, f2) {
+                return f1.isPrimaryKey - f2.isPrimaryKey;
+            });
+        },
         initVals: function (flds, vals) {
             exports.CollUtils.traverseFields(flds, function (fld, fullName) {
                 if (fld.fieldType === 5) {

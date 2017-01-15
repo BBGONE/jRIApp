@@ -231,6 +231,19 @@ export const CollUtils = {
             _traverseField(flds[i].fieldName, flds[i], fn, parent_res);
         }
     },
+    getPKFields(fieldInfos: IFieldInfo[]): IFieldInfo[] {
+        const pkFlds: IFieldInfo[] = [];
+        for (let i = 0, len = fieldInfos.length; i < len; i += 1) {
+            let fld = fieldInfos[i];
+            if (fld.isPrimaryKey > 0) {
+                pkFlds.push(fld);
+            }
+        }
+
+        return pkFlds.sort((f1, f2) => {
+            return f1.isPrimaryKey - f2.isPrimaryKey;
+        });
+    },
     initVals: function (flds: IFieldInfo[], vals: any): any {
         CollUtils.traverseFields(flds, (fld, fullName) => {
             if (fld.fieldType === FIELD_TYPE.Object) {

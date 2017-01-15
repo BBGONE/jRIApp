@@ -84,6 +84,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
     protected _query: DataQuery<TItem>;
     private _pageDebounce: Debounce;
     private _dbSetName: string;
+    private _pkFields: IFieldInfo[];
  
     constructor(opts: IDbSetConstuctorOptions) {
         super();
@@ -99,6 +100,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         this._navfldMap = {};
         this._calcfldMap = {};
         this._fieldInfos = fieldInfos;
+        this._pkFields = colUtils.getPKFields(fieldInfos);
         this._pageDebounce = new Debounce(400);
         //association infos maped by name
         //we should track changes in navigation properties for this associations
@@ -402,9 +404,20 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         }
         calcDef.getFunc = getFunc;
     }
-    protected _getStrValue(val: any, fieldInfo: IFieldInfo) {
+    protected _getStrValue(val: any, fieldInfo: IFieldInfo): string {
         const dcnv = fieldInfo.dateConversion, stz = this.dbContext.serverTimezone;
         return valUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
+    }
+    protected _getKeyValue(vals: any): string {
+        const pkFlds = this._pkFields, pkVals: string[] = [];
+        for (let i = 0; i < pkFlds.length; i += 1) {
+            let fld = pkFlds[i], val = coreUtils.getValue(vals, fld.fieldName);
+            if (checks.isNt(val))
+                throw new Error(`Empty key field value for: ${fld.fieldName}`);
+            let strval = this._getStrValue(val, fld);
+            pkVals.push(strval);
+        }
+        return pkVals.join(";");
     }
     protected _getCalcFieldVal(fieldName: string, item: TItem): any {
         try {
@@ -715,19 +728,6 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
             query.destroy();
         }
     }
-    protected _getPKFields(): IFieldInfo[] {
-        const fieldInfos = this.getFieldInfos(), pkFlds: IFieldInfo[] = [];
-        for (let i = 0, len = fieldInfos.length; i < len; i += 1) {
-            let fld = fieldInfos[i];
-            if (fld.isPrimaryKey > 0) {
-                pkFlds.push(fld);
-            }
-        }
-
-       return pkFlds.sort((f1, f2) => {
-            return f1.isPrimaryKey - f2.isPrimaryKey;
-        });
-    }
     protected _getNames(): IFieldName[] {
         const self = this, fieldInfos = this.getFieldInfos(), names: IFieldName[] = [];
         colUtils.traverseFields(fieldInfos, (fld, fullName, arr) => {
@@ -751,19 +751,8 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         return names;
     }
     protected createEntityFromObj(obj: any): TItem {
-        const isNew = !obj;
-        let vals: any = colUtils.objToVals(this.getFieldInfos(), obj), key: string;
-        if (isNew) {
-            key = this._getNewKey();
-        }
-        else {
-            const pkFlds = this._getPKFields(), pkVals: string[] = [];
-            for (let i = 0; i < pkFlds.length; i += 1) {
-                let fld = pkFlds[i], val = coreUtils.getValue(vals, fld.fieldName), strval = this._getStrValue(val, fld);
-                pkVals.push(strval);
-            }
-            key = pkVals.join(";");
-        }
+        const isNew = !obj, vals: any = colUtils.objToVals(this.getFieldInfos(), obj),
+            key = isNew ? this._getNewKey() : this._getKeyValue(vals);
         const aspect = new EntityAspect<TItem, TDbContext>(this, vals, key, isNew);
         return aspect.item;
     }
@@ -778,6 +767,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
     _getInternal(): IInternalDbSetMethods<TItem> {
         return <IInternalDbSetMethods<TItem>>this._internal;
     }
+    //manually fill items from row data (in wire format)
     fillData(data: {
         names: IFieldName[];
         rows: IRowData[];
@@ -905,7 +895,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         });
     }
     getFieldInfo(fieldName: string): IFieldInfo {
-        let assoc: IAssociationInfo, parentDB: DbSet<IEntityItem, DbContext>, parts = fieldName.split(".");
+        const parts = fieldName.split(".");
         let fld = this._fieldMap[parts[0]];
         if (parts.length === 1) {
             return fld;
@@ -919,9 +909,9 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         }
         else if (fld.fieldType === FIELD_TYPE.Navigation) {
             //for example Customer.Name
-            assoc = this._childAssocMap[fld.fieldName];
+            let assoc = this._childAssocMap[fld.fieldName];
             if (!!assoc) {
-                parentDB = this.dbContext.getDbSet(assoc.parentDbSetName);
+                let parentDB = this.dbContext.getDbSet(assoc.parentDbSetName);
                 return parentDB.getFieldInfo(parts.slice(1).join("."));
             }
         }

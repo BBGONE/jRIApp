@@ -209,6 +209,7 @@ declare module "jriapp_db/dbset" {
         protected _query: DataQuery<TItem>;
         private _pageDebounce;
         private _dbSetName;
+        private _pkFields;
         constructor(opts: IDbSetConstuctorOptions);
         handleError(error: any, source: any): boolean;
         protected _getEventNames(): string[];
@@ -226,6 +227,7 @@ declare module "jriapp_db/dbset" {
         protected _onPageSizeChanged(): void;
         protected _defineCalculatedField(fullName: string, getFunc: (item: TItem) => any): void;
         protected _getStrValue(val: any, fieldInfo: IFieldInfo): string;
+        protected _getKeyValue(vals: any): string;
         protected _getCalcFieldVal(fieldName: string, item: TItem): any;
         protected _getNavFieldVal(fieldName: string, item: TItem): any;
         protected _setNavFieldVal(fieldName: string, item: TItem, value: any): void;
@@ -245,7 +247,6 @@ declare module "jriapp_db/dbset" {
         protected _onRemoved(item: TItem, pos: number): void;
         protected _onLoaded(items: TItem[]): void;
         protected _destroyQuery(): void;
-        protected _getPKFields(): IFieldInfo[];
         protected _getNames(): IFieldName[];
         protected createEntityFromObj(obj: any): TItem;
         protected createEntityFromData(row: IRowData, fieldNames: IFieldName[]): TItem;

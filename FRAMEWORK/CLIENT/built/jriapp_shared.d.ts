@@ -1046,6 +1046,7 @@ declare module "jriapp_shared/collection/utils" {
         getObjectField: (name: string, flds: IFieldInfo[]) => IFieldInfo;
         traverseField: <T>(fld: IFieldInfo, fn: TraveseFieldCB<T>, parent_res?: T) => void;
         traverseFields: <T>(flds: IFieldInfo[], fn: TraveseFieldCB<T>, parent_res?: T) => void;
+        getPKFields(fieldInfos: IFieldInfo[]): IFieldInfo[];
         initVals: (flds: IFieldInfo[], vals: any) => any;
         copyVals: (flds: IFieldInfo[], from: any, to: any) => any;
         objToVals: (flds: IFieldInfo[], obj: any) => any;
