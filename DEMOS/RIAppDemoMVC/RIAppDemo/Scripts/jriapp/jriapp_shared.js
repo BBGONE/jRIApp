@@ -2718,10 +2718,10 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
             return to;
         },
         objToVals: function (flds, obj) {
-            var vals = exports.CollUtils.initVals(flds, {});
             if (!obj)
-                return vals;
-            return exports.CollUtils.copyVals(flds, obj, vals);
+                return exports.CollUtils.initVals(flds, {});
+            else
+                return exports.CollUtils.copyVals(flds, obj, {});
         },
         cloneVals: function (flds, vals) {
             return exports.CollUtils.copyVals(flds, vals, {});

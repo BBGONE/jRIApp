@@ -259,10 +259,10 @@ export const CollUtils = {
         return to;
     },
     objToVals: function (flds: IFieldInfo[], obj: any): any {
-        let vals = CollUtils.initVals(flds, {});
         if (!obj)
-            return vals;
-        return CollUtils.copyVals(flds, obj, vals);
+            return CollUtils.initVals(flds, {});
+        else
+            return CollUtils.copyVals(flds, obj, {});
     },
     cloneVals: function (flds: IFieldInfo[], vals: any): any {
         return CollUtils.copyVals(flds, vals, {});
