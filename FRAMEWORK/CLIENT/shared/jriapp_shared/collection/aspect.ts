@@ -21,9 +21,8 @@ const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = util
 const enum AspectFlags
 {
     IsAttached = 0,
-    isCached = 1,
-    IsEdited = 2,
-    isRefreshing = 3
+    IsEdited = 1,
+    isRefreshing = 2
 }
 
 interface ICustomVal
@@ -175,11 +174,6 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         //can reset isNew on all items in the collection
         //the list descendant does it
     }
-    protected _fakeDestroy() {
-        this.raiseEvent(ITEM_EVENTS.destroyed, {});
-        this.removeNSHandlers();
-        this._setIsAttached(false);
-    }
     private _delCustomVal(entry: ICustomVal) {
         const coll = this.collection;
         if (!!entry) {
@@ -216,12 +210,6 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
             this._flags |= (1 << AspectFlags.IsAttached);
         else
             this._flags &= ~(1 << AspectFlags.IsAttached);
-    }
-    _setIsCached(v: boolean) {
-        if (v)
-            this._flags |= (1 << AspectFlags.isCached);
-        else
-            this._flags &= ~(1 << AspectFlags.isCached);
     }
     _setIsRefreshing(v: boolean) {
         if (this.isRefreshing !== v) {
@@ -442,16 +430,6 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         const coll = this._collection, item = this._item;
         if (!!item) {
             this.cancelEdit();
-            if (this.isCached) {
-                try {
-                    this._fakeDestroy();
-                }
-                finally {
-                    this._isDestroyCalled = false;
-                }
-                return;
-            }
-
             if (!!this._valueBag) {
                 utils.core.forEachProp(this._valueBag, (name) => {
                     self._delCustomVal(self._valueBag[name]);
@@ -511,9 +489,6 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     }
     get isEdited(): boolean {
         return !!(this._flags & (1 << AspectFlags.IsEdited));
-    }
-    get isCached(): boolean {
-        return !!(this._flags & (1 << AspectFlags.isCached));
     }
     get isDetached(): boolean {
         //opposite of attached!

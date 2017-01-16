@@ -384,7 +384,6 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
             internal.onCommitChanges(this.item, true, false, oldStatus);
             if (oldStatus === ITEM_STATUS.Deleted) {
                 if (!this.getIsDestroyCalled()) {
-                   this._setIsCached(false);
                    this.destroy();
                 }
                 return;

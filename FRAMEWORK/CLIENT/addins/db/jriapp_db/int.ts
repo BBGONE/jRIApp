@@ -23,7 +23,12 @@ export interface IEntityItem extends ICollectionItem {
 export interface IEntityConstructor<TItem extends IEntityItem> {
     new (aspect: EntityAspect<TItem, DbContext>): TItem;
 }
-export interface ICachedPage { items: IEntityItem[]; pageIndex: number; }
+
+export interface IKV {
+    key: string;
+    val: any;
+}
+export interface ICachedPage { items: IKV[]; pageIndex: number; }
 
 export interface IQueryParamInfo {
     readonly dataType: DATA_TYPE;

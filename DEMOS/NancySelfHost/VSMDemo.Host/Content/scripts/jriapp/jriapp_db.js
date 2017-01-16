@@ -366,9 +366,8 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
         DataCache.prototype.reindex = function () {
             var keyMap = {};
             coreUtils.forEachProp(this._pages, function (index, page) {
-                page.items.forEach(function (item) {
-                    keyMap[item._key] = item;
-                    item._aspect._setIsCached(true);
+                page.items.forEach(function (kv) {
+                    keyMap[kv.key] = kv;
                 });
             });
             this._itemsByKey = keyMap;
@@ -415,16 +414,6 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
             return { start: start, end: end, cnt: cnt };
         };
         DataCache.prototype.clear = function () {
-            var dbSet = this._query.dbSet;
-            coreUtils.forEachProp(this._pages, function (index, page) {
-                var items = page.items;
-                for (var j = 0; j < items.length; j += 1) {
-                    var item = items[j];
-                    item._aspect._setIsCached(false);
-                    if (!dbSet.getItemByKey(item._key))
-                        item.destroy();
-                }
-            });
             this._pages = {};
             this._itemsByKey = {};
         };
@@ -443,9 +432,8 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
             this._pages[pageIndex] = page;
             var keyMap = this._itemsByKey;
             for (var j = 0, len = items.length; j < len; j += 1) {
-                var item = items[j];
-                keyMap[item._key] = item;
-                item._aspect._setIsCached(true);
+                var kv = items[j];
+                keyMap[kv.key] = kv;
             }
         };
         DataCache.prototype.fill = function (startIndex, items) {
@@ -472,30 +460,16 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
                 return;
             var items = page.items;
             for (var j = 0; j < items.length; j += 1) {
-                var item = items[j];
-                item._aspect._setIsCached(false);
-                delete this._itemsByKey[item._key];
+                var kv = items[j];
+                delete this._itemsByKey[kv.key];
             }
             delete this._pages[pageIndex];
         };
         DataCache.prototype.hasPage = function (pageIndex) {
             return !!this.getPage(pageIndex);
         };
-        DataCache.prototype.getItemByKey = function (key) {
+        DataCache.prototype.getByKey = function (key) {
             return this._itemsByKey[key];
-        };
-        DataCache.prototype.getPageByItem = function (item) {
-            var test = this._itemsByKey[item._key];
-            if (!test)
-                return -1;
-            var indexes = Object.keys(this._pages);
-            for (var i = 0; i < indexes.length; i += 1) {
-                var page = this._pages[indexes[i]];
-                if (page.items.indexOf(item) > -1) {
-                    return page.pageIndex;
-                }
-            }
-            return -1;
         };
         DataCache.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -832,7 +806,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             }
             var query = this.query;
             if (!!query) {
-                query._getInternal().updateCache(this._items);
+                query._getInternal().updateCache(this._items.map(function (item) { return { key: item._key, val: item._aspect.obj }; }));
             }
             return res;
         };
@@ -971,7 +945,10 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                     throw new Error(jriapp_shared_3.LocaleERRS.ERR_KEY_IS_EMPTY);
                 var item = self._itemsByKey[key];
                 if (!item && !!dataCache) {
-                    item = dataCache.getItemByKey(key);
+                    var kv = dataCache.getByKey(key);
+                    if (!!kv) {
+                        item = self.createEntityFromObj(kv.val, kv.key);
+                    }
                 }
                 if (!item) {
                     item = self.createEntityFromData(row, fieldNames);
@@ -989,8 +966,8 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 if (query.loadPageCount > 1 && isPagingEnabled) {
                     if (query.isIncludeTotalCount && !checks.isNt(res.totalCount))
                         dataCache.totalCount = res.totalCount;
-                    dataCache.fill(res.pageIndex, fetchedItems);
-                    arr = dataCache.getPageItems(query.pageIndex);
+                    dataCache.fill(res.pageIndex, fetchedItems.map(function (item) { return { key: item._key, val: item._aspect.obj }; }));
+                    arr = dataCache.getPageItems(query.pageIndex).map(function (kv) { return self.createEntityFromObj(kv.val, kv.key); });
                 }
             }
             arr.forEach(function (item) {
@@ -1030,7 +1007,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_ASSERTION_FAILED, "query is not null"));
             if (query.getIsDestroyCalled())
                 throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_ASSERTION_FAILED, "query not destroyed"));
-            var dataCache = query._getInternal().getCache(), arr = dataCache.getPageItems(query.pageIndex);
+            var dataCache = query._getInternal().getCache(), arr = dataCache.getPageItems(query.pageIndex).map(function (kv) { return self.createEntityFromObj(kv.val, kv.key); });
             this._clear(args.reason, 1);
             this._items = arr;
             arr.forEach(function (item, index) {
@@ -1179,9 +1156,9 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             }, names);
             return names;
         };
-        DbSet.prototype.createEntityFromObj = function (obj) {
-            var isNew = !obj, vals = colUtils.objToVals(this.getFieldInfos(), obj), key = isNew ? this._getNewKey() : this._getKeyValue(vals);
-            var aspect = new entity_aspect_1.EntityAspect(this, vals, key, isNew);
+        DbSet.prototype.createEntityFromObj = function (obj, key) {
+            var isNew = !obj, vals = colUtils.objToVals(this.getFieldInfos(), obj), _key = isNew ? this._getNewKey() : (!key ? this._getKeyValue(vals) : key);
+            var aspect = new entity_aspect_1.EntityAspect(this, vals, _key, isNew);
             return aspect.item;
         };
         DbSet.prototype.createEntityFromData = function (row, fieldNames) {
@@ -3411,7 +3388,6 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 internal.onCommitChanges(this.item, true, false, oldStatus);
                 if (oldStatus === 3) {
                     if (!this.getIsDestroyCalled()) {
-                        this._setIsCached(false);
                         this.destroy();
                     }
                     return;

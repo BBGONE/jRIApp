@@ -70,7 +70,6 @@ export interface IItemAspect<TItem extends ICollectionItem> extends IBaseObject,
     _setItem(v: TItem): void;
     _setKey(v: string): void;
     _setIsAttached(v: boolean): void;
-    _setIsCached(v: boolean): void;
     raiseErrorsChanged(): void;
     readonly obj: any;
     readonly item: TItem;
@@ -84,7 +83,6 @@ export interface IItemAspect<TItem extends ICollectionItem> extends IBaseObject,
     readonly isNew: boolean;
     readonly isDeleted: boolean;
     readonly isEdited: boolean;
-    readonly isCached: boolean;
     readonly isDetached: boolean;
 }
 

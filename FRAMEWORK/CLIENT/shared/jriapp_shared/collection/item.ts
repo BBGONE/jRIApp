@@ -10,10 +10,6 @@ export class CollectionItem<TAspect extends ItemAspect<ICollectionItem>> extends
         super();
         this.__aspect = aspect;
     }
-    protected _fakeDestroy() {
-        this.raiseEvent(ITEM_EVENTS.destroyed, {});
-        this.removeNSHandlers();
-    }
     get _aspect() { return this.__aspect; }
     get _key(): string { return !this.__aspect ? null : this.__aspect.key; }
     destroy() {
@@ -26,19 +22,9 @@ export class CollectionItem<TAspect extends ItemAspect<ICollectionItem>> extends
             if (!aspect.getIsDestroyCalled()) {
                 aspect.destroy();
             }
-
-            if (aspect.isCached) {
-                try {
-                    this._fakeDestroy();
-                }
-                finally {
-                    this._isDestroyCalled = false;
-                }
-            }
-            else {
-                super.destroy();
-            }
         }
+
+        super.destroy();
     }
     toString() {
         return "CollectionItem";

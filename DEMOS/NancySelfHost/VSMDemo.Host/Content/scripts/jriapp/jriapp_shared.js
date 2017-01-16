@@ -3880,9 +3880,8 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
     var AspectFlags;
     (function (AspectFlags) {
         AspectFlags[AspectFlags["IsAttached"] = 0] = "IsAttached";
-        AspectFlags[AspectFlags["isCached"] = 1] = "isCached";
-        AspectFlags[AspectFlags["IsEdited"] = 2] = "IsEdited";
-        AspectFlags[AspectFlags["isRefreshing"] = 3] = "isRefreshing";
+        AspectFlags[AspectFlags["IsEdited"] = 1] = "IsEdited";
+        AspectFlags[AspectFlags["isRefreshing"] = 2] = "isRefreshing";
     })(AspectFlags || (AspectFlags = {}));
     var ItemAspect = (function (_super) {
         __extends(ItemAspect, _super);
@@ -3906,9 +3905,9 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         };
         ItemAspect.prototype._setIsEdited = function (v) {
             if (v)
-                this._flags |= (1 << 2);
+                this._flags |= (1 << 1);
             else
-                this._flags &= ~(1 << 2);
+                this._flags &= ~(1 << 1);
         };
         ItemAspect.prototype._beginEdit = function () {
             if (this.isDetached)
@@ -4009,11 +4008,6 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         };
         ItemAspect.prototype._resetStatus = function () {
         };
-        ItemAspect.prototype._fakeDestroy = function () {
-            this.raiseEvent(int_3.ITEM_EVENTS.destroyed, {});
-            this.removeNSHandlers();
-            this._setIsAttached(false);
-        };
         ItemAspect.prototype._delCustomVal = function (entry) {
             var coll = this.collection;
             if (!!entry) {
@@ -4048,18 +4042,12 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             else
                 this._flags &= ~(1 << 0);
         };
-        ItemAspect.prototype._setIsCached = function (v) {
-            if (v)
-                this._flags |= (1 << 1);
-            else
-                this._flags &= ~(1 << 1);
-        };
         ItemAspect.prototype._setIsRefreshing = function (v) {
             if (this.isRefreshing !== v) {
                 if (v)
-                    this._flags |= (1 << 3);
+                    this._flags |= (1 << 2);
                 else
-                    this._flags &= ~(1 << 3);
+                    this._flags &= ~(1 << 2);
                 this.raisePropertyChanged(int_3.PROP_NAME.isRefreshing);
             }
         };
@@ -4267,15 +4255,6 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             var coll = this._collection, item = this._item;
             if (!!item) {
                 this.cancelEdit();
-                if (this.isCached) {
-                    try {
-                        this._fakeDestroy();
-                    }
-                    finally {
-                        this._isDestroyCalled = false;
-                    }
-                    return;
-                }
                 if (!!this._valueBag) {
                     utils.core.forEachProp(this._valueBag, function (name) {
                         self._delCustomVal(self._valueBag[name]);
@@ -4376,13 +4355,6 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         });
         Object.defineProperty(ItemAspect.prototype, "isEdited", {
             get: function () {
-                return !!(this._flags & (1 << 2));
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ItemAspect.prototype, "isCached", {
-            get: function () {
                 return !!(this._flags & (1 << 1));
             },
             enumerable: true,
@@ -4397,7 +4369,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         });
         Object.defineProperty(ItemAspect.prototype, "isRefreshing", {
             get: function () {
-                return !!(this._flags & (1 << 3));
+                return !!(this._flags & (1 << 2));
             },
             enumerable: true,
             configurable: true
@@ -4406,7 +4378,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
     }(object_4.BaseObject));
     exports.ItemAspect = ItemAspect;
 });
-define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/object", "jriapp_shared/collection/int"], function (require, exports, object_5, int_4) {
+define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/object"], function (require, exports, object_5) {
     "use strict";
     var CollectionItem = (function (_super) {
         __extends(CollectionItem, _super);
@@ -4414,10 +4386,6 @@ define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/ob
             _super.call(this);
             this.__aspect = aspect;
         }
-        CollectionItem.prototype._fakeDestroy = function () {
-            this.raiseEvent(int_4.ITEM_EVENTS.destroyed, {});
-            this.removeNSHandlers();
-        };
         Object.defineProperty(CollectionItem.prototype, "_aspect", {
             get: function () { return this.__aspect; },
             enumerable: true,
@@ -4437,18 +4405,8 @@ define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/ob
                 if (!aspect.getIsDestroyCalled()) {
                     aspect.destroy();
                 }
-                if (aspect.isCached) {
-                    try {
-                        this._fakeDestroy();
-                    }
-                    finally {
-                        this._isDestroyCalled = false;
-                    }
-                }
-                else {
-                    _super.prototype.destroy.call(this);
-                }
             }
+            _super.prototype.destroy.call(this);
         };
         CollectionItem.prototype.toString = function () {
             return "CollectionItem";
@@ -4457,7 +4415,7 @@ define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/ob
     }(object_5.BaseObject));
     exports.CollectionItem = CollectionItem;
 });
-define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/collection/base", "jriapp_shared/collection/aspect", "jriapp_shared/errors"], function (require, exports, utils_7, lang_7, int_5, utils_8, base_1, aspect_1, errors_7) {
+define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/collection/base", "jriapp_shared/collection/aspect", "jriapp_shared/errors"], function (require, exports, utils_7, lang_7, int_4, utils_8, base_1, aspect_1, errors_7) {
     "use strict";
     var utils = utils_7.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, ERROR = utils.err, collUtils = utils_8.CollUtils;
     var ListItemAspect = (function (_super) {
@@ -4598,7 +4556,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                     }
                 });
                 if (newItems.length > 0) {
-                    this.raisePropertyChanged(int_5.PROP_NAME.count);
+                    this.raisePropertyChanged(int_4.PROP_NAME.count);
                 }
             }
             finally {
@@ -5114,13 +5072,13 @@ define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/c
     }());
     exports.Lazy = Lazy;
 });
-define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/jsonarray", "jriapp_shared/utils/weakmap", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/errors", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, const_5, int_6, errors_9, object_7, jsonbag_1, jsonarray_1, weakmap_1, lang_9, base_3, item_2, aspect_2, list_3, dictionary_1, errors_10, ideferred_1, utils_11, waitqueue_2, debounce_3, lazy_1) {
+define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/jsonarray", "jriapp_shared/utils/weakmap", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/errors", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, const_5, int_5, errors_9, object_7, jsonbag_1, jsonarray_1, weakmap_1, lang_9, base_3, item_2, aspect_2, list_3, dictionary_1, errors_10, ideferred_1, utils_11, waitqueue_2, debounce_3, lazy_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
     }
     __export(const_5);
-    __export(int_6);
+    __export(int_5);
     __export(errors_9);
     __export(object_7);
     __export(jsonbag_1);

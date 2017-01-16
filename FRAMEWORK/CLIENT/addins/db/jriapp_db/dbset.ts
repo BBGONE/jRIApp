@@ -377,7 +377,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         }
         const query = this.query;
         if (!!query) {
-            query._getInternal().updateCache(this._items);
+            query._getInternal().updateCache(this._items.map((item) => { return { key: item._key, val: item._aspect.obj }; }));
         }
         return res;
     }
@@ -532,7 +532,10 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
 
             let item = self._itemsByKey[key];
             if (!item && !!dataCache) {
-                item = <TItem>dataCache.getItemByKey(key);
+                let kv = dataCache.getByKey(key);
+                if (!!kv) {
+                    item = self.createEntityFromObj(kv.val, kv.key);
+                }
             }
 
             if (!item) {
@@ -555,8 +558,8 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
             if (query.loadPageCount > 1 && isPagingEnabled) {
                 if (query.isIncludeTotalCount && !checks.isNt(res.totalCount))
                     dataCache.totalCount = res.totalCount;
-                dataCache.fill(res.pageIndex, fetchedItems);
-                arr = <TItem[]>dataCache.getPageItems(query.pageIndex);
+                dataCache.fill(res.pageIndex, fetchedItems.map((item) => { return { key: item._key, val: item._aspect.obj }; }));
+                arr = dataCache.getPageItems(query.pageIndex).map((kv) => { return self.createEntityFromObj(kv.val, kv.key); });
             }
         }
 
@@ -601,7 +604,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         if (query.getIsDestroyCalled())
             throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "query not destroyed"));
         const dataCache = query._getInternal().getCache(),
-            arr = <TItem[]>dataCache.getPageItems(query.pageIndex);
+            arr = dataCache.getPageItems(query.pageIndex).map((kv) => { return self.createEntityFromObj(kv.val, kv.key); });
 
         this._clear(args.reason, COLL_CHANGE_OPER.Fill);
         this._items = arr;
@@ -759,10 +762,10 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         }, names);
         return names;
     }
-    protected createEntityFromObj(obj: any): TItem {
+    protected createEntityFromObj(obj: any, key?: string): TItem {
         const isNew = !obj, vals: any = colUtils.objToVals(this.getFieldInfos(), obj),
-            key = isNew ? this._getNewKey() : this._getKeyValue(vals);
-        const aspect = new EntityAspect<TItem, TDbContext>(this, vals, key, isNew);
+            _key = isNew ? this._getNewKey() : (!key ? this._getKeyValue(vals) : key);
+        const aspect = new EntityAspect<TItem, TDbContext>(this, vals, _key, isNew);
         return aspect.item;
     }
     protected createEntityFromData(row: IRowData, fieldNames: IFieldName[]): TItem {

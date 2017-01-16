@@ -770,7 +770,6 @@ declare module "jriapp_shared/collection/int" {
         _setItem(v: TItem): void;
         _setKey(v: string): void;
         _setIsAttached(v: boolean): void;
-        _setIsCached(v: boolean): void;
         raiseErrorsChanged(): void;
         readonly obj: any;
         readonly item: TItem;
@@ -784,7 +783,6 @@ declare module "jriapp_shared/collection/int" {
         readonly isNew: boolean;
         readonly isDeleted: boolean;
         readonly isEdited: boolean;
-        readonly isCached: boolean;
         readonly isDetached: boolean;
     }
     export interface ICollectionItem extends IBaseObject {
@@ -1044,8 +1042,8 @@ declare module "jriapp_shared/collection/utils" {
     export type TraveseFieldCB<T> = (fld: IFieldInfo, name: string, parent_res?: T) => T;
     export const CollUtils: {
         getObjectField: (name: string, flds: IFieldInfo[]) => IFieldInfo;
-        traverseField: <T>(fld: IFieldInfo, fn: (fld: IFieldInfo, name: string, parent_res?: T) => T, parent_res?: T) => void;
-        traverseFields: <T>(flds: IFieldInfo[], fn: (fld: IFieldInfo, name: string, parent_res?: T) => T, parent_res?: T) => void;
+        traverseField: <T>(fld: IFieldInfo, fn: TraveseFieldCB<T>, parent_res?: T) => void;
+        traverseFields: <T>(flds: IFieldInfo[], fn: TraveseFieldCB<T>, parent_res?: T) => void;
         getPKFields(fieldInfos: IFieldInfo[]): IFieldInfo[];
         initVals: (flds: IFieldInfo[], vals: any) => any;
         copyVals: (flds: IFieldInfo[], from: any, to: any) => any;
@@ -1254,13 +1252,11 @@ declare module "jriapp_shared/collection/aspect" {
         protected _validateField(fieldName: string): IValidationInfo;
         protected _validateFields(): IValidationInfo[];
         protected _resetStatus(): void;
-        protected _fakeDestroy(): void;
         private _delCustomVal(entry);
         handleError(error: any, source: any): boolean;
         _setItem(v: TItem): void;
         _setKey(v: string): void;
         _setIsAttached(v: boolean): void;
-        _setIsCached(v: boolean): void;
         _setIsRefreshing(v: boolean): void;
         _onAttaching(): void;
         _onAttach(): void;
@@ -1296,7 +1292,6 @@ declare module "jriapp_shared/collection/aspect" {
         readonly isNew: boolean;
         readonly isDeleted: boolean;
         readonly isEdited: boolean;
-        readonly isCached: boolean;
         readonly isDetached: boolean;
         readonly isRefreshing: boolean;
     }
@@ -1308,7 +1303,6 @@ declare module "jriapp_shared/collection/item" {
     export class CollectionItem<TAspect extends ItemAspect<ICollectionItem>> extends BaseObject implements ICollectionItem {
         private __aspect;
         constructor(aspect: TAspect);
-        protected _fakeDestroy(): void;
         readonly _aspect: TAspect;
         readonly _key: string;
         destroy(): void;

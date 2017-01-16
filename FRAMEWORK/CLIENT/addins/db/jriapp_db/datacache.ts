@@ -4,14 +4,15 @@ import {
 } from "jriapp_shared";
 import { PROP_NAME } from "./const";
 import { DataQuery } from "./dataquery";
-import { IEntityItem, ICachedPage } from "./int";
+import { IEntityItem, ICachedPage, IKV } from "./int";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+
 
 export class DataCache extends BaseObject {
     private _query: DataQuery<IEntityItem>;
     private _pages: IIndexer<ICachedPage>;
-    private _itemsByKey: { [key: string]: IEntityItem; };
+    private _itemsByKey: { [key: string]: IKV; };
     private _totalCount: number;
     
     constructor(query: DataQuery<IEntityItem>) {
@@ -23,11 +24,10 @@ export class DataCache extends BaseObject {
     }
     //reset items key index
     reindex() {
-        let keyMap: { [key: string]: IEntityItem; } = {};
+        let keyMap: { [key: string]: IKV; } = {};
         coreUtils.forEachProp(this._pages, (index, page) => {
-            page.items.forEach(function (item) {
-                keyMap[item._key] = item;
-                item._aspect._setIsCached(true);
+            page.items.forEach(function (kv) {
+                keyMap[kv.key] = kv;
             });
         });
         this._itemsByKey = keyMap;
@@ -78,45 +78,33 @@ export class DataCache extends BaseObject {
         return { start: start, end: end, cnt: cnt };
     }
     clear() {
-        const dbSet = this._query.dbSet;
-        coreUtils.forEachProp(this._pages, (index, page) => {
-            let items = page.items;
-            for (let j = 0; j < items.length; j += 1) {
-                let item = items[j];
-                item._aspect._setIsCached(false);
-                if (!dbSet.getItemByKey(item._key))
-                    item.destroy();
-            }
-        });
         this._pages = {};
         this._itemsByKey = {};
     }
     getPage(pageIndex: number): ICachedPage {
         return this._pages[pageIndex];
     }
-    getPageItems(pageIndex: number): IEntityItem[] {
+    getPageItems(pageIndex: number): IKV[] {
         const page = this.getPage(pageIndex);
         if (!page)
             return [];
         return page.items;
     }
-    setPageItems(pageIndex: number, items: IEntityItem[]) {
+    setPageItems(pageIndex: number, items: IKV[]) {
         this.deletePage(pageIndex);
         //create new page
         const page = { items: items, pageIndex: pageIndex };
         this._pages[pageIndex] = page;
-
         let keyMap = this._itemsByKey;
         for (let j = 0, len = items.length; j < len; j += 1) {
-            let item = items[j];
-            keyMap[item._key] = item;
-            item._aspect._setIsCached(true);
+            let kv = items[j];
+            keyMap[kv.key] = kv;
         }
     }
-    fill(startIndex: number, items: IEntityItem[]) {
+    fill(startIndex: number, items: IKV[]) {
         const len = items.length, pageSize = this.pageSize;
         for (let i = 0; i < this.loadPageCount; i += 1) {
-            let pageItems: IEntityItem[] = [], pgstart = (i * pageSize);
+            let pageItems: any[] = [], pgstart = (i * pageSize);
             if (pgstart >= len)
                 break;
             for (let j = 0; j < pageSize; j += 1) {
@@ -137,30 +125,16 @@ export class DataCache extends BaseObject {
             return;
         const items = page.items;
         for (let j = 0; j < items.length; j += 1) {
-            let item = items[j];
-            item._aspect._setIsCached(false);
-            delete this._itemsByKey[item._key];
+            let kv = items[j];
+            delete this._itemsByKey[kv.key];
         }
         delete this._pages[pageIndex];
     }
-    hasPage(pageIndex: number) {
+    hasPage(pageIndex: number): boolean {
         return !!this.getPage(pageIndex);
     }
-    getItemByKey(key: string) {
+    getByKey(key: string): IKV {
         return this._itemsByKey[key];
-    }
-    getPageByItem(item: IEntityItem) {
-        let test = this._itemsByKey[item._key];
-        if (!test)
-            return -1;
-        const indexes = Object.keys(this._pages);
-        for (let i = 0; i < indexes.length; i += 1) {
-            let page = this._pages[indexes[i]];
-            if (page.items.indexOf(item) > -1) {
-                return page.pageIndex;
-            }
-        }
-        return -1;
     }
     destroy() {
         if (this._isDestroyed)
