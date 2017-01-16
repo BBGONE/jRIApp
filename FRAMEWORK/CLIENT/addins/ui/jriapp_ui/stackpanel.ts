@@ -245,9 +245,6 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
                 throw new Error(strUtils.format(ERRS.ERR_COLLECTION_CHANGETYPE_INVALID, args.changeType));
         }
     }
-    protected _onDSClearing() {
-        this._clearContent();
-    }
     protected _onItemStatusChanged(item: ICollectionItem, oldStatus: ITEM_STATUS) {
         const newStatus = item._aspect.status, obj = this._itemMap[item._key];
         if (!obj)
@@ -290,7 +287,6 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         if (!ds)
             return;
         ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self);
-        ds.addOnClearing(self._onDSClearing, self._objId, self);
         ds.addOnCurrentChanged(self._onDSCurrentChanged, self._objId, self);
         ds.addOnStatusChanged(function (sender, args) {
             self._onItemStatusChanged(args.item, args.oldStatus);

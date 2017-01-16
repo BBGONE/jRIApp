@@ -5410,9 +5410,6 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 }
             }
         };
-        DataGrid.prototype._onDSClearing = function () {
-            this._clearGrid();
-        };
         DataGrid.prototype._onDSCollectionChanged = function (sender, args) {
             var self = this;
             switch (args.changeType) {
@@ -5530,7 +5527,6 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 oldCurrent = coll.currentItem;
             };
             ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self);
-            ds.addOnClearing(self._onDSClearing, self._objId, self);
             ds.addOnCurrentChanged(function () {
                 self._updateCurrent();
             }, self._objId, self);
@@ -6899,9 +6895,6 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
                     throw new Error(strUtils.format(jriapp_shared_32.LocaleERRS.ERR_COLLECTION_CHANGETYPE_INVALID, args.changeType));
             }
         };
-        StackPanel.prototype._onDSClearing = function () {
-            this._clearContent();
-        };
         StackPanel.prototype._onItemStatusChanged = function (item, oldStatus) {
             var newStatus = item._aspect.status, obj = this._itemMap[item._key];
             if (!obj)
@@ -6943,7 +6936,6 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             if (!ds)
                 return;
             ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self);
-            ds.addOnClearing(self._onDSClearing, self._objId, self);
             ds.addOnCurrentChanged(self._onDSCurrentChanged, self._objId, self);
             ds.addOnStatusChanged(function (sender, args) {
                 self._onItemStatusChanged(args.item, args.oldStatus);

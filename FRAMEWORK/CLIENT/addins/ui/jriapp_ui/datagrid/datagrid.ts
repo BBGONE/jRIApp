@@ -608,9 +608,6 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             }
         }
     }
-    protected _onDSClearing() {
-        this._clearGrid();
-    }
     protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>) {
         const self = this;
         switch (args.changeType) {
@@ -729,7 +726,6 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         };
 
         ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self);
-        ds.addOnClearing(self._onDSClearing, self._objId, self);
         ds.addOnCurrentChanged(() => {
             self._updateCurrent();
         }, self._objId, self);
