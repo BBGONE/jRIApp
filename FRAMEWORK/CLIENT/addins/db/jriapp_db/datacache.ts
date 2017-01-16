@@ -104,7 +104,7 @@ export class DataCache extends BaseObject {
     fill(startIndex: number, items: IKV[]) {
         const len = items.length, pageSize = this.pageSize;
         for (let i = 0; i < this.loadPageCount; i += 1) {
-            let pageItems: any[] = [], pgstart = (i * pageSize);
+            let pageItems: IKV[] = [], pgstart = (i * pageSize);
             if (pgstart >= len)
                 break;
             for (let j = 0; j < pageSize; j += 1) {
