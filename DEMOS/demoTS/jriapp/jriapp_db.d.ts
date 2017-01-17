@@ -45,7 +45,7 @@ declare module "jriapp_db/dataquery" {
     import { FILTER_TYPE, SORT_ORDER } from "jriapp_shared/collection/const";
     import { IPromise, BaseObject } from "jriapp_shared";
     import { IFieldInfo } from "jriapp_shared/collection/int";
-    import { IEntityItem, IQueryInfo, IFilterInfo, ISortInfo, IQueryResult, IEntityConstructor, IKV } from "jriapp_db/int";
+    import { IEntityItem, IQueryInfo, IFilterInfo, ISortInfo, IQueryResult, IEntityConstructor } from "jriapp_db/int";
     import { DataCache } from "jriapp_db/datacache";
     import { DbSet } from "jriapp_db/dbset";
     import { DbContext } from "jriapp_db/dbcontext";
@@ -53,7 +53,7 @@ declare module "jriapp_db/dataquery" {
         clearCache(): void;
         getCache(): DataCache;
         isPageCached(pageIndex: number): boolean;
-        updateCache(items: IKV[]): void;
+        updateCache(items: IEntityItem[]): void;
         getQueryInfo(): IQueryInfo;
     }
     export class DataQuery<TItem extends IEntityItem> extends BaseObject {
@@ -115,15 +115,14 @@ declare module "jriapp_db/dataquery" {
 declare module "jriapp_db/datacache" {
     import { BaseObject } from "jriapp_shared";
     import { DataQuery } from "jriapp_db/dataquery";
-    import { IEntityItem, ICachedPage, IKV } from "jriapp_db/int";
+    import { IEntityItem, ICachedPage } from "jriapp_db/int";
     export class DataCache extends BaseObject {
         private _query;
         private _pages;
         private _itemsByKey;
         private _totalCount;
         constructor(query: DataQuery<IEntityItem>);
-        reindex(): void;
-        getPrevPageIndex(currentPageIndex: number): number;
+        private _getPrevPageIndex(currentPageIndex);
         getNextRange(pageIndex: number): {
             start: number;
             end: number;
@@ -131,12 +130,12 @@ declare module "jriapp_db/datacache" {
         };
         clear(): void;
         getPage(pageIndex: number): ICachedPage;
-        getPageItems(pageIndex: number): IKV[];
-        setPageItems(pageIndex: number, items: IKV[]): void;
-        fill(startIndex: number, items: IKV[]): void;
+        getPageItems(pageIndex: number): IEntityItem[];
+        setPageItems(pageIndex: number, items: IEntityItem[]): void;
+        fill(startIndex: number, items: IEntityItem[]): void;
         deletePage(pageIndex: number): void;
         hasPage(pageIndex: number): boolean;
-        getByKey(key: string): IKV;
+        getItemByKey(key: string): IEntityItem;
         destroy(): void;
         toString(): string;
         readonly _pageCount: number;
@@ -247,8 +246,8 @@ declare module "jriapp_db/dbset" {
         protected _onLoaded(items: TItem[]): void;
         protected _destroyQuery(): void;
         protected _getNames(): IFieldName[];
-        protected createEntityFromObj(obj: any, key?: string): TItem;
-        protected createEntityFromData(row: IRowData, fieldNames: IFieldName[]): TItem;
+        createEntityFromObj(obj: any, key?: string): TItem;
+        createEntityFromData(row: IRowData, fieldNames: IFieldName[]): TItem;
         _getInternal(): IInternalDbSetMethods<TItem>;
         fillData(data: {
             names: IFieldName[];
@@ -598,7 +597,7 @@ declare module "jriapp_db/int" {
         val: any;
     }
     export interface ICachedPage {
-        items: IKV[];
+        kvs: IKV[];
         pageIndex: number;
     }
     export interface IQueryParamInfo {

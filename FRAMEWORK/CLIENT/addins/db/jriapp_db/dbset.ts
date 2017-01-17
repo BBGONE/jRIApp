@@ -377,7 +377,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         }
         const query = this.query;
         if (!!query) {
-            query._getInternal().updateCache(this._items.map((item) => { return { key: item._key, val: item._aspect.obj }; }));
+            query._getInternal().updateCache(this._items);
         }
         return res;
     }
@@ -532,10 +532,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
 
             let item = self._itemsByKey[key];
             if (!item && !!dataCache) {
-                let kv = dataCache.getByKey(key);
-                if (!!kv) {
-                    item = self.createEntityFromObj(kv.val, kv.key);
-                }
+                item = <TItem>dataCache.getItemByKey(key);
             }
 
             if (!item) {
@@ -558,8 +555,8 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
             if (query.loadPageCount > 1 && isPagingEnabled) {
                 if (query.isIncludeTotalCount && !checks.isNt(res.totalCount))
                     dataCache.totalCount = res.totalCount;
-                dataCache.fill(res.pageIndex, fetchedItems.map((item) => { return { key: item._key, val: item._aspect.obj }; }));
-                arr = dataCache.getPageItems(query.pageIndex).map((kv) => { return self.createEntityFromObj(kv.val, kv.key); });
+                dataCache.fill(res.pageIndex, fetchedItems);
+                arr = <TItem[]>dataCache.getPageItems(query.pageIndex);
             }
         }
 
@@ -604,7 +601,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         if (query.getIsDestroyCalled())
             throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "query not destroyed"));
         const dataCache = query._getInternal().getCache(),
-            arr = dataCache.getPageItems(query.pageIndex).map((kv) => { return self.createEntityFromObj(kv.val, kv.key); });
+            arr = <TItem[]>dataCache.getPageItems(query.pageIndex);
 
         this._clear(args.reason, COLL_CHANGE_OPER.Fill);
         this._items = arr;
@@ -762,13 +759,13 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         }, names);
         return names;
     }
-    protected createEntityFromObj(obj: any, key?: string): TItem {
+    createEntityFromObj(obj: any, key?: string): TItem {
         const isNew = !obj, vals: any = colUtils.objToVals(this.getFieldInfos(), obj),
             _key = isNew ? this._getNewKey() : (!key ? this._getKeyValue(vals) : key);
         const aspect = new EntityAspect<TItem, TDbContext>(this, vals, _key, isNew);
         return aspect.item;
     }
-    protected createEntityFromData(row: IRowData, fieldNames: IFieldName[]): TItem {
+    createEntityFromData(row: IRowData, fieldNames: IFieldName[]): TItem {
         let vals: any = colUtils.initVals(this.getFieldInfos(), {});
         if (!!row) {
             this._applyFieldVals(vals, "", row.v, fieldNames);
@@ -785,7 +782,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         rows: IRowData[];
     }, isAppend?: boolean): IQueryResult<TItem> {
         const self = this, reason = COLL_CHANGE_REASON.None;
-        let newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [], query = this.query;
+        let newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];
         const isClearAll = !isAppend;
         if (isClearAll)
             self._clear(reason, COLL_CHANGE_OPER.Fill);
@@ -844,7 +841,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
     //manually fill items for an array of objects
     fillItems<TObj>(data: TObj[], isAppend?: boolean): IQueryResult<TItem> {
         const self = this, reason = COLL_CHANGE_REASON.None;
-        let newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [], query = this.query;
+        let newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];
         const isClearAll = !isAppend;
         if (isClearAll)
             self._clear(reason, COLL_CHANGE_OPER.Fill);

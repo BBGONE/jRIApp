@@ -22,17 +22,19 @@ export class DataCache extends BaseObject {
         this._itemsByKey = {};
         this._totalCount = 0;
     }
+    /*
     //reset items key index
     reindex() {
         let keyMap: { [key: string]: IKV; } = {};
         coreUtils.forEachProp(this._pages, (index, page) => {
-            page.items.forEach(function (kv) {
+            page.kvs.forEach(function (kv) {
                 keyMap[kv.key] = kv;
             });
         });
         this._itemsByKey = keyMap;
     }
-    getPrevPageIndex(currentPageIndex: number) {
+    */
+    private _getPrevPageIndex(currentPageIndex: number) {
         let pageIndex = -1;
         coreUtils.forEachProp(this._pages, (index, page) => {
             let cachePageIndex = page.pageIndex;
@@ -44,7 +46,7 @@ export class DataCache extends BaseObject {
     getNextRange(pageIndex: number) {
         let half = Math.floor(((this.loadPageCount - 1) / 2));
         let above = (pageIndex + half) + ((this.loadPageCount - 1) % 2);
-        let below = (pageIndex - half), prev = this.getPrevPageIndex(pageIndex);
+        let below = (pageIndex - half), prev = this._getPrevPageIndex(pageIndex);
         if (below < 0) {
             above += (0 - below);
             below = 0;
@@ -84,27 +86,29 @@ export class DataCache extends BaseObject {
     getPage(pageIndex: number): ICachedPage {
         return this._pages[pageIndex];
     }
-    getPageItems(pageIndex: number): IKV[] {
+    getPageItems(pageIndex: number): IEntityItem[] {
         const page = this.getPage(pageIndex);
         if (!page)
             return [];
-        return page.items;
+        const dbSet = this._query.dbSet;
+        return page.kvs.map((kv) => { return dbSet.createEntityFromObj(kv.val, kv.key); });
     }
-    setPageItems(pageIndex: number, items: IKV[]) {
+    setPageItems(pageIndex: number, items: IEntityItem[]) {
+        const kvs = items.map((item) => { return { key: item._key, val: item._aspect.obj }; });
         this.deletePage(pageIndex);
         //create new page
-        const page = { items: items, pageIndex: pageIndex };
+        const page: ICachedPage = { kvs: kvs, pageIndex: pageIndex };
         this._pages[pageIndex] = page;
         let keyMap = this._itemsByKey;
-        for (let j = 0, len = items.length; j < len; j += 1) {
-            let kv = items[j];
+        for (let j = 0, len = kvs.length; j < len; j += 1) {
+            let kv = kvs[j];
             keyMap[kv.key] = kv;
         }
     }
-    fill(startIndex: number, items: IKV[]) {
+    fill(startIndex: number, items: IEntityItem[]) {
         const len = items.length, pageSize = this.pageSize;
         for (let i = 0; i < this.loadPageCount; i += 1) {
-            let pageItems: IKV[] = [], pgstart = (i * pageSize);
+            let pageItems: IEntityItem[] = [], pgstart = (i * pageSize);
             if (pgstart >= len)
                 break;
             for (let j = 0; j < pageSize; j += 1) {
@@ -123,9 +127,9 @@ export class DataCache extends BaseObject {
         const page: ICachedPage = this.getPage(pageIndex);
         if (!page)
             return;
-        const items = page.items;
-        for (let j = 0; j < items.length; j += 1) {
-            let kv = items[j];
+        const kvs = page.kvs;
+        for (let j = 0; j < kvs.length; j += 1) {
+            let kv = kvs[j];
             delete this._itemsByKey[kv.key];
         }
         delete this._pages[pageIndex];
@@ -133,8 +137,11 @@ export class DataCache extends BaseObject {
     hasPage(pageIndex: number): boolean {
         return !!this.getPage(pageIndex);
     }
-    getByKey(key: string): IKV {
-        return this._itemsByKey[key];
+    getItemByKey(key: string): IEntityItem {
+        const kv = this._itemsByKey[key];
+        if (!kv)
+            return null;
+        return this._query.dbSet.createEntityFromObj(kv.val, kv.key);
     }
     destroy() {
         if (this._isDestroyed)

@@ -10,7 +10,7 @@ import { ValueUtils } from "jriapp_shared/collection/utils";
 import { PROP_NAME } from "./const";
 import {
     IEntityItem, IQueryInfo, IFilterInfo, ISortInfo, IQueryResult,
-    IEntityConstructor, ICachedPage, IKV
+    IEntityConstructor, ICachedPage
 } from "./int";
 import { DataCache } from "./datacache";
 import { DbSet } from "./dbset";
@@ -23,7 +23,7 @@ export interface IInternalQueryMethods<TItem extends IEntityItem> {
     clearCache(): void;
     getCache(): DataCache;
     isPageCached(pageIndex: number): boolean;
-    updateCache(items: IKV[]): void;
+    updateCache(items: IEntityItem[]): void;
     getQueryInfo(): IQueryInfo;
 }
 
@@ -71,7 +71,7 @@ export class DataQuery<TItem extends IEntityItem> extends BaseObject {
             isPageCached: (pageIndex: number) => {
                 return self._isPageCached(pageIndex);
             },
-            updateCache: (items: IKV[]) => {
+            updateCache: (items: IEntityItem[]) => {
                 self._updateCache(items);
             },
             getQueryInfo: () => {
@@ -155,7 +155,7 @@ export class DataQuery<TItem extends IEntityItem> extends BaseObject {
        }
         return this._dataCache.hasPage(pageIndex);
     }
-    private _updateCache(items: IKV[]): void {
+    private _updateCache(items: IEntityItem[]): void {
         if (!this._dataCache) {
             return;
         }

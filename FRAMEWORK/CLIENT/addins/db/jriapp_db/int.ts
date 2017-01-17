@@ -28,7 +28,10 @@ export interface IKV {
     key: string;
     val: any;
 }
-export interface ICachedPage { items: IKV[]; pageIndex: number; }
+export interface ICachedPage {
+    kvs: IKV[];
+    pageIndex: number;
+}
 
 export interface IQueryParamInfo {
     readonly dataType: DATA_TYPE;
