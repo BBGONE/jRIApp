@@ -512,8 +512,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
     protected _fillFromService(info: IFillFromServiceArgs): IQueryResult<TItem> {
         let self = this, res = info.res, fieldNames = res.names, rows = res.rows || [], rowCount = rows.length,
             newItems: TItem[] = [], positions: number[] = [], arr: TItem[] = [], fetchedItems: TItem[] = [],
-            isPagingEnabled = this.isPagingEnabled, query = info.query, isClearAll = true, items: TItem[] = [],
-            dataCache: DataCache;
+            isPagingEnabled = this.isPagingEnabled, query = info.query, isClearAll = true, items: TItem[] = [];
 
         if (!!query && !query.getIsDestroyCalled()) {
             isClearAll = query.isClearPrevData;
@@ -521,7 +520,6 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
                 query._getInternal().clearCache();
             if (isClearAll)
                 this._clear(info.reason, COLL_CHANGE_OPER.Fill);
-            dataCache = query._getInternal().getCache();
         }
 
         fetchedItems = rows.map(function (row) {
@@ -531,10 +529,6 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
                 throw new Error(ERRS.ERR_KEY_IS_EMPTY);
 
             let item = self._itemsByKey[key];
-            if (!item && !!dataCache) {
-                item = <TItem>dataCache.getItemByKey(key);
-            }
-
             if (!item) {
                 item = self.createEntityFromData(row, fieldNames);
             }
@@ -553,6 +547,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
             }
 
             if (query.loadPageCount > 1 && isPagingEnabled) {
+                let dataCache = query._getInternal().getCache();
                 if (query.isIncludeTotalCount && !checks.isNt(res.totalCount))
                     dataCache.totalCount = res.totalCount;
                 dataCache.fill(res.pageIndex, fetchedItems);
@@ -783,6 +778,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
     }, isAppend?: boolean): IQueryResult<TItem> {
         const self = this, reason = COLL_CHANGE_REASON.None;
         let newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];
+        this._destroyQuery();
         const isClearAll = !isAppend;
         if (isClearAll)
             self._clear(reason, COLL_CHANGE_OPER.Fill);
@@ -842,6 +838,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
     fillItems<TObj>(data: TObj[], isAppend?: boolean): IQueryResult<TItem> {
         const self = this, reason = COLL_CHANGE_REASON.None;
         let newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];
+        this._destroyQuery();
         const isClearAll = !isAppend;
         if (isClearAll)
             self._clear(reason, COLL_CHANGE_OPER.Fill);

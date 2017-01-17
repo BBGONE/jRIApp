@@ -415,13 +415,19 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
             var page = this.getPage(pageIndex);
             if (!page)
                 return [];
-            var dbSet = this._query.dbSet;
-            return page.kvs.map(function (kv) { return dbSet.createEntityFromObj(kv.val, kv.key); });
+            var dbSet = this._query.dbSet, keyMap = this._itemsByKey;
+            return page.keys.map(function (key) {
+                var kv = keyMap[key];
+                if (!kv)
+                    return null;
+                else
+                    return dbSet.createEntityFromObj(kv.val, kv.key);
+            }).filter(function (item) { return !!item; });
         };
         DataCache.prototype.setPageItems = function (pageIndex, items) {
             var kvs = items.map(function (item) { return { key: item._key, val: item._aspect.obj }; });
             this.deletePage(pageIndex);
-            var page = { kvs: kvs, pageIndex: pageIndex };
+            var page = { keys: kvs.map(function (kv) { return kv.key; }), pageIndex: pageIndex };
             this._pages[pageIndex] = page;
             var keyMap = this._itemsByKey;
             for (var j = 0, len = kvs.length; j < len; j += 1) {
@@ -451,10 +457,9 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
             var page = this.getPage(pageIndex);
             if (!page)
                 return;
-            var kvs = page.kvs;
-            for (var j = 0; j < kvs.length; j += 1) {
-                var kv = kvs[j];
-                delete this._itemsByKey[kv.key];
+            var keys = page.keys;
+            for (var j = 0; j < keys.length; j += 1) {
+                delete this._itemsByKey[keys[j]];
             }
             delete this._pages[pageIndex];
         };
@@ -926,23 +931,19 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             }
         };
         DbSet.prototype._fillFromService = function (info) {
-            var self = this, res = info.res, fieldNames = res.names, rows = res.rows || [], rowCount = rows.length, newItems = [], positions = [], arr = [], fetchedItems = [], isPagingEnabled = this.isPagingEnabled, query = info.query, isClearAll = true, items = [], dataCache;
+            var self = this, res = info.res, fieldNames = res.names, rows = res.rows || [], rowCount = rows.length, newItems = [], positions = [], arr = [], fetchedItems = [], isPagingEnabled = this.isPagingEnabled, query = info.query, isClearAll = true, items = [];
             if (!!query && !query.getIsDestroyCalled()) {
                 isClearAll = query.isClearPrevData;
                 if (query.isClearCacheOnEveryLoad)
                     query._getInternal().clearCache();
                 if (isClearAll)
                     this._clear(info.reason, 1);
-                dataCache = query._getInternal().getCache();
             }
             fetchedItems = rows.map(function (row) {
                 var key = row.k;
                 if (!key)
                     throw new Error(jriapp_shared_3.LocaleERRS.ERR_KEY_IS_EMPTY);
                 var item = self._itemsByKey[key];
-                if (!item && !!dataCache) {
-                    item = dataCache.getItemByKey(key);
-                }
                 if (!item) {
                     item = self.createEntityFromData(row, fieldNames);
                 }
@@ -957,6 +958,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                     this.totalCount = res.totalCount;
                 }
                 if (query.loadPageCount > 1 && isPagingEnabled) {
+                    var dataCache = query._getInternal().getCache();
                     if (query.isIncludeTotalCount && !checks.isNt(res.totalCount))
                         dataCache.totalCount = res.totalCount;
                     dataCache.fill(res.pageIndex, fetchedItems);
@@ -1168,6 +1170,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         DbSet.prototype.fillData = function (data, isAppend) {
             var self = this, reason = 0;
             var newItems = [], positions = [], items = [];
+            this._destroyQuery();
             var isClearAll = !isAppend;
             if (isClearAll)
                 self._clear(reason, 1);
@@ -1218,6 +1221,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         DbSet.prototype.fillItems = function (data, isAppend) {
             var self = this, reason = 0;
             var newItems = [], positions = [], items = [];
+            this._destroyQuery();
             var isClearAll = !isAppend;
             if (isClearAll)
                 self._clear(reason, 1);

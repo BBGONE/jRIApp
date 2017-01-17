@@ -29,7 +29,7 @@ export interface IKV {
     val: any;
 }
 export interface ICachedPage {
-    kvs: IKV[];
+    keys: string[];
     pageIndex: number;
 }
 

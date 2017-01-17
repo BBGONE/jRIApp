@@ -597,7 +597,7 @@ declare module "jriapp_db/int" {
         val: any;
     }
     export interface ICachedPage {
-        kvs: IKV[];
+        keys: string[];
         pageIndex: number;
     }
     export interface IQueryParamInfo {
