@@ -1743,7 +1743,7 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
         function Debounce(interval) {
             if (interval === void 0) { interval = 0; }
             this._timer = null;
-            this._interval = !interval ? 0 : interval;
+            this._interval = interval;
             this._fn = null;
         }
         Debounce.prototype.enque = function (fn) {
@@ -1753,6 +1753,10 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
             if (!fn)
                 throw new Error("Debounce: Invalid operation");
             this._fn = fn;
+            if (!!this._interval && !!this._timer) {
+                clearTimeout(this._timer);
+                this._timer = null;
+            }
             if (!this._timer) {
                 var callback = function () {
                     var fn = _this._fn;

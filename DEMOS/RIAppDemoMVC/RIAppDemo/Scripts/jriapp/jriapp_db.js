@@ -82,8 +82,8 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
                 isPageCached: function (pageIndex) {
                     return self._isPageCached(pageIndex);
                 },
-                updateCache: function (items) {
-                    self._updateCache(items);
+                updateCache: function (pageIndex, items) {
+                    self._updateCache(pageIndex, items);
                 },
                 getQueryInfo: function () {
                     return self.__queryInfo;
@@ -163,15 +163,12 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             }
             return this._dataCache.hasPage(pageIndex);
         };
-        DataQuery.prototype._updateCache = function (items) {
-            if (!this._dataCache) {
+        DataQuery.prototype._updateCache = function (pageIndex, items) {
+            var cache = this._dataCache;
+            if (!cache) {
                 return;
             }
-            var pageIndex = this.pageIndex, cache = this._dataCache;
-            var page = cache.getPage(pageIndex);
-            if (!!page) {
-                cache.setPageItems(page.pageIndex, items);
-            }
+            cache.setPageItems(pageIndex, items);
         };
         DataQuery.prototype._getInternal = function () {
             return this._internal;
@@ -416,17 +413,17 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
             if (!page)
                 return [];
             var dbSet = this._query.dbSet, keyMap = this._itemsByKey;
-            return page.keys.map(function (key) {
+            var res = page.keys.map(function (key) {
                 var kv = keyMap[key];
-                if (!kv)
-                    return null;
-                else
-                    return dbSet.createEntityFromObj(kv.val, kv.key);
+                return (!kv) ? null : dbSet.createEntityFromObj(kv.val, kv.key);
             }).filter(function (item) { return !!item; });
+            return res;
         };
         DataCache.prototype.setPageItems = function (pageIndex, items) {
-            var kvs = items.map(function (item) { return { key: item._key, val: item._aspect.obj }; });
             this.deletePage(pageIndex);
+            if (items.length === 0)
+                return;
+            var kvs = items.map(function (item) { return { key: item._key, val: item._aspect.obj }; });
             var page = { keys: kvs.map(function (kv) { return kv.key; }), pageIndex: pageIndex };
             this._pages[pageIndex] = page;
             var keyMap = this._itemsByKey;
@@ -557,6 +554,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             this._calcfldMap = {};
             this._fieldInfos = fieldInfos;
             this._pkFields = colUtils.getPKFields(fieldInfos);
+            this._isPageFilled = false;
             this._pageDebounce = new jriapp_shared_3.Debounce(400);
             this._trackAssoc = {};
             this._trackAssocMap = {};
@@ -790,12 +788,9 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         DbSet.prototype._createNew = function () {
             return this.createEntityFromData(null, null);
         };
-        DbSet.prototype._clearChangeCache = function () {
-            var old = this._changeCount;
-            this._changeCache = {};
-            this._changeCount = 0;
-            if (old !== this._changeCount)
-                this.raisePropertyChanged(const_3.PROP_NAME.isHasChanges);
+        DbSet.prototype._clear = function (reason, oper) {
+            _super.prototype._clear.call(this, reason, oper);
+            this._isPageFilled = false;
         };
         DbSet.prototype._onPageChanging = function () {
             var res = _super.prototype._onPageChanging.call(this);
@@ -806,13 +801,14 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 this.rejectChanges();
             }
             var query = this.query;
-            if (!!query) {
-                query._getInternal().updateCache(this._items);
+            if (!!query && query.loadPageCount > 1 && this._isPageFilled) {
+                query._getInternal().updateCache(this.pageIndex, this._items);
             }
             return res;
         };
         DbSet.prototype._onPageChanged = function () {
             var self = this;
+            this._isPageFilled = false;
             this.cancelEdit();
             _super.prototype._onPageChanged.call(this);
             if (this._ignorePageChanged)
@@ -912,8 +908,9 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         DbSet.prototype._getChildToParentNames = function (childFieldName) { return this._trackAssocMap[childFieldName]; };
         DbSet.prototype._afterFill = function (result, isClearAll) {
             var self = this;
-            if (!checks.isNt(result.fetchedItems))
+            if (!checks.isNt(result.fetchedItems)) {
                 this._onLoaded(result.fetchedItems);
+            }
             this._onCollectionChanged({
                 changeType: !isClearAll ? 1 : 2,
                 reason: result.reason,
@@ -926,6 +923,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 newItems: result.newItems.items,
                 reason: result.reason
             });
+            this._isPageFilled = true;
             if (!!isClearAll) {
                 self.moveFirst();
             }

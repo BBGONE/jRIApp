@@ -1042,8 +1042,8 @@ declare module "jriapp_shared/collection/utils" {
     export type TraveseFieldCB<T> = (fld: IFieldInfo, name: string, parent_res?: T) => T;
     export const CollUtils: {
         getObjectField: (name: string, flds: IFieldInfo[]) => IFieldInfo;
-        traverseField: <T>(fld: IFieldInfo, fn: TraveseFieldCB<T>, parent_res?: T) => void;
-        traverseFields: <T>(flds: IFieldInfo[], fn: TraveseFieldCB<T>, parent_res?: T) => void;
+        traverseField: <T>(fld: IFieldInfo, fn: (fld: IFieldInfo, name: string, parent_res?: T) => T, parent_res?: T) => void;
+        traverseFields: <T>(flds: IFieldInfo[], fn: (fld: IFieldInfo, name: string, parent_res?: T) => T, parent_res?: T) => void;
         getPKFields(fieldInfos: IFieldInfo[]): IFieldInfo[];
         initVals: (flds: IFieldInfo[], vals: any) => any;
         copyVals: (flds: IFieldInfo[], from: any, to: any) => any;

@@ -10,7 +10,7 @@ export class Debounce implements IDisposable {
 
     constructor(interval: number = 0) {
         this._timer = null;
-        this._interval = !interval ? 0 : interval;
+        this._interval = interval;
         this._fn = null;
     }
     enque(fn: TFunc) {
@@ -22,6 +22,12 @@ export class Debounce implements IDisposable {
         //the last wins
         this._fn = fn;
 
+
+        if (!!this._interval && !!this._timer) {
+            clearTimeout(this._timer);
+            this._timer = null;
+        }
+ 
         if (!this._timer) {
             const callback = () => {
                 const fn = this._fn;

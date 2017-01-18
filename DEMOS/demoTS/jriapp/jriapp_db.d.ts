@@ -53,7 +53,7 @@ declare module "jriapp_db/dataquery" {
         clearCache(): void;
         getCache(): DataCache;
         isPageCached(pageIndex: number): boolean;
-        updateCache(items: IEntityItem[]): void;
+        updateCache(pageIndex: number, items: IEntityItem[]): void;
         getQueryInfo(): IQueryInfo;
     }
     export class DataQuery<TItem extends IEntityItem> extends BaseObject {
@@ -79,7 +79,7 @@ declare module "jriapp_db/dataquery" {
         private _clearCache();
         private _getCache();
         private _isPageCached(pageIndex);
-        private _updateCache(items);
+        private _updateCache(pageIndex, items);
         _getInternal(): IInternalQueryMethods<TItem>;
         where(fieldName: string, operand: FILTER_TYPE, value: any, checkFieldName?: boolean): this;
         and(fieldName: string, operand: FILTER_TYPE, value: any, checkFieldName?: boolean): this;
@@ -146,7 +146,7 @@ declare module "jriapp_db/datacache" {
     }
 }
 declare module "jriapp_db/dbset" {
-    import { SORT_ORDER, COLL_CHANGE_REASON, ITEM_STATUS } from "jriapp_shared/collection/const";
+    import { SORT_ORDER, COLL_CHANGE_REASON, COLL_CHANGE_OPER, ITEM_STATUS } from "jriapp_shared/collection/const";
     import { TEventHandler, IBaseObject, IPromise, TPriority } from "jriapp_shared";
     import { IInternalCollMethods, IFieldInfo } from "jriapp_shared/collection/int";
     import { BaseCollection } from "jriapp_shared/collection/base";
@@ -208,6 +208,7 @@ declare module "jriapp_db/dbset" {
         private _pageDebounce;
         private _dbSetName;
         private _pkFields;
+        private _isPageFilled;
         constructor(opts: IDbSetConstuctorOptions);
         handleError(error: any, source: any): boolean;
         protected _getEventNames(): string[];
@@ -219,7 +220,7 @@ declare module "jriapp_db/dbset" {
         protected _applyFieldVals(vals: any, path: string, values: any[], names: IFieldName[]): void;
         protected _getNewKey(): string;
         protected _createNew(): TItem;
-        protected _clearChangeCache(): void;
+        protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER): void;
         protected _onPageChanging(): boolean;
         protected _onPageChanged(): void;
         protected _onPageSizeChanged(): void;

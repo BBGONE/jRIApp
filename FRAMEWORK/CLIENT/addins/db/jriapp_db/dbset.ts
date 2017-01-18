@@ -85,6 +85,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
     private _pageDebounce: Debounce;
     private _dbSetName: string;
     private _pkFields: IFieldInfo[];
+    private _isPageFilled: boolean;
  
     constructor(opts: IDbSetConstuctorOptions) {
         super();
@@ -101,6 +102,8 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         this._calcfldMap = {};
         this._fieldInfos = fieldInfos;
         this._pkFields = colUtils.getPKFields(fieldInfos);
+        this._isPageFilled = false;
+        //used when page index is changed
         this._pageDebounce = new Debounce(400);
         //association infos maped by name
         //we should track changes in navigation properties for this associations
@@ -360,12 +363,19 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
     protected _createNew(): TItem {
         return this.createEntityFromData(null, null);
     }
+    /*
+    //not used
     protected _clearChangeCache() {
         const old = this._changeCount;
         this._changeCache = {};
         this._changeCount = 0;
         if (old !== this._changeCount)
             this.raisePropertyChanged(PROP_NAME.isHasChanges);
+    }
+    */
+    protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER) {
+        super._clear(reason, oper);
+        this._isPageFilled = false;
     }
     protected _onPageChanging() {
         const res = super._onPageChanging();
@@ -375,14 +385,16 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         if (this.isHasChanges) {
             this.rejectChanges();
         }
+
         const query = this.query;
-        if (!!query) {
-            query._getInternal().updateCache(this._items);
+        if (!!query && query.loadPageCount > 1 && this._isPageFilled) {
+            query._getInternal().updateCache(this.pageIndex, this._items);
         }
         return res;
     }
     protected _onPageChanged() {
         const self = this;
+        this._isPageFilled = false;
         this.cancelEdit();
         super._onPageChanged();
         if (this._ignorePageChanged)
@@ -487,9 +499,10 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
     protected _getChildToParentNames(childFieldName: string): string[] { return this._trackAssocMap[childFieldName]; }
     protected _afterFill(result: IQueryResult<TItem>, isClearAll?: boolean) {
         const self = this;
-
-        if (!checks.isNt(result.fetchedItems))
+        //fetchedItems is null when loaded from the data cache
+        if (!checks.isNt(result.fetchedItems)) {
             this._onLoaded(result.fetchedItems);
+        }
 
         this._onCollectionChanged({
             changeType: !isClearAll ? COLL_CHANGE_TYPE.Add : COLL_CHANGE_TYPE.Reset,
@@ -504,6 +517,8 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
             newItems: result.newItems.items,
             reason: result.reason
         });
+
+        this._isPageFilled = true;
 
         if (!!isClearAll) {
             self.moveFirst();
@@ -722,6 +737,8 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         this._removeFromChanged(item._key);
         super._onRemoved(item, pos);
     }
+    //reports the items returned from the server 
+    //if loadPageCount > 1 includes ALL! the items for all pages
     protected _onLoaded(items: TItem[]) {
         this.raiseEvent(DBSET_EVENTS.loaded, { items: items });
     }
@@ -771,7 +788,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
     _getInternal(): IInternalDbSetMethods<TItem> {
         return <IInternalDbSetMethods<TItem>>this._internal;
     }
-    //manually fill items from row data (in wire format)
+    //fill items from row data (in wire format)
     fillData(data: {
         names: IFieldName[];
         rows: IRowData[];

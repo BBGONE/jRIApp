@@ -23,7 +23,7 @@ export interface IInternalQueryMethods<TItem extends IEntityItem> {
     clearCache(): void;
     getCache(): DataCache;
     isPageCached(pageIndex: number): boolean;
-    updateCache(items: IEntityItem[]): void;
+    updateCache(pageIndex: number, items: IEntityItem[]): void;
     getQueryInfo(): IQueryInfo;
 }
 
@@ -71,8 +71,8 @@ export class DataQuery<TItem extends IEntityItem> extends BaseObject {
             isPageCached: (pageIndex: number) => {
                 return self._isPageCached(pageIndex);
             },
-            updateCache: (items: IEntityItem[]) => {
-                self._updateCache(items);
+            updateCache: (pageIndex: number, items: IEntityItem[]) => {
+                self._updateCache(pageIndex, items);
             },
             getQueryInfo: () => {
                 return self.__queryInfo;
@@ -155,15 +155,12 @@ export class DataQuery<TItem extends IEntityItem> extends BaseObject {
        }
         return this._dataCache.hasPage(pageIndex);
     }
-    private _updateCache(items: IEntityItem[]): void {
-        if (!this._dataCache) {
+    private _updateCache(pageIndex: number, items: IEntityItem[]): void {
+        const cache = this._dataCache;
+        if (!cache) {
             return;
         }
-        const pageIndex = this.pageIndex, cache = this._dataCache;
-        const page = cache.getPage(pageIndex);
-        if (!!page) {
-            cache.setPageItems(page.pageIndex, items);
-        }
+        cache.setPageItems(pageIndex, items);
     }
     _getInternal(): IInternalQueryMethods<TItem> {
         return this._internal;

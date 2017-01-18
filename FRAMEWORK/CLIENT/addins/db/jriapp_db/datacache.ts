@@ -91,17 +91,17 @@ export class DataCache extends BaseObject {
         if (!page)
             return [];
         const dbSet = this._query.dbSet, keyMap = this._itemsByKey;
-        return page.keys.map((key) => {
+        let res = page.keys.map((key) => {
             const kv = keyMap[key];
-            if (!kv)
-                return <IEntityItem>null;
-            else
-                return dbSet.createEntityFromObj(kv.val, kv.key);
+            return (!kv) ? <IEntityItem>null : dbSet.createEntityFromObj(kv.val, kv.key);
         }).filter((item) => { return !!item; });
+        return res;
     }
     setPageItems(pageIndex: number, items: IEntityItem[]) {
-        const kvs = items.map((item) => { return { key: item._key, val: item._aspect.obj }; });
         this.deletePage(pageIndex);
+        if (items.length === 0)
+            return;
+        const kvs = items.map((item) => { return { key: item._key, val: item._aspect.obj }; });
         //create new page
         const page: ICachedPage = { keys: kvs.map((kv) => kv.key), pageIndex: pageIndex };
         this._pages[pageIndex] = page;
