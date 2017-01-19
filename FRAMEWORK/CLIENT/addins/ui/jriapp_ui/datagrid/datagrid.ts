@@ -482,12 +482,12 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         else
             return row;
     }
-    protected _removeRow(row: Row): void {
+    protected _removeRow(row: Row): number {
         if (this._isRowExpanded(row)) {
             this.collapseDetails();
         }
         if (this._rows.length === 0)
-            return;
+            return -1;
         const rowkey = row.itemKey, i = utils.arr.remove(this._rows, row);
         try {
             if (i > -1) {
@@ -500,6 +500,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             if (!!this._rowMap[rowkey])
                 delete this._rowMap[rowkey];
         }
+        return i;
     }
     protected _expandDetails(parentRow: Row, expanded: boolean): void {
         if (!this._options.details)
@@ -627,12 +628,22 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 break;
             case COLL_CHANGE_TYPE.Remove:
                 {
+                    let rowpos = -1;
                     args.items.forEach(function (item) {
                         const row = self._rowMap[item._key];
                         if (!!row) {
-                            self._removeRow(row);
+                            rowpos = self._removeRow(row);
                         }
                     });
+                    //positioning the row after deletion
+                    const rowlen = this._rows.length;
+                    if (rowpos > -1 && rowlen > 0) {
+                        if (rowpos < rowlen)
+                            this.currentRow = this._rows[rowpos];
+                        else
+                            this.currentRow = this._rows[rowlen-1];
+                    }
+                    
                     self._updateTableDisplay();
                 }
                 break;
@@ -906,7 +917,10 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     protected _createRowForItem(parent: Node, item: ICollectionItem, prepend: boolean) {
         const self = this, tr = doc.createElement("tr"), gridRow = new Row(self, { tr: tr, item: item });
         self._rowMap[item._key] = gridRow;
-        self._rows.push(gridRow);
+        if (!prepend)
+            self._rows.push(gridRow);
+        else
+            self._rows.unshift(gridRow);
         self._addNodeToParent(parent, gridRow.tr, prepend); 
         return gridRow;
     }

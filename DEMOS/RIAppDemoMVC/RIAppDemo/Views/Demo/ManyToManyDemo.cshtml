@@ -172,7 +172,7 @@
 <div id="demoContent" style="opacity:0;" data-bind="{this.isBusy,to=dbContext.isBusy}" data-view="name=busy">
     <div id="leftPanel">
         <div style="height: 97%; vertical-align: top;">
-            <table data-name="gridCustomers" data-bind="{this.dataSource,to=dbSet,source=customerVM}" data-view="options={wrapCss:customerTableWrap,isHandleAddNew:true,editor:{templateID:customerEditTemplate,width:550,height:650,submitOnOK:true,title:'Customer editing'}}">
+            <table data-name="gridCustomers" data-bind="{this.dataSource,to=dbSet,source=customerVM}" data-view="options={wrapCss:customerTableWrap,isPrependAllRows:true,isHandleAddNew:true,editor:{templateID:customerEditTemplate,width:550,height:650,submitOnOK:true,title:'Customer editing'}}">
                 <thead>
                 <tr>
                     <th data-column="width:50px,type:row_actions"/>

@@ -1253,7 +1253,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         protected _onRowSelectionChanged(row: Row): void;
         protected _resetColumnsSort(): void;
         protected _getLastRow(): Row;
-        protected _removeRow(row: Row): void;
+        protected _removeRow(row: Row): number;
         protected _expandDetails(parentRow: Row, expanded: boolean): void;
         protected _parseColumnAttr(column_attr: string, content_attr: string): IColumnInfo;
         protected _findUndeleted(row: Row, isUp: boolean): Row;

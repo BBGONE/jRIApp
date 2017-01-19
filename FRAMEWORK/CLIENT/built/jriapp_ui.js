@@ -5294,7 +5294,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 this.collapseDetails();
             }
             if (this._rows.length === 0)
-                return;
+                return -1;
             var rowkey = row.itemKey, i = utils.arr.remove(this._rows, row);
             try {
                 if (i > -1) {
@@ -5307,6 +5307,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 if (!!this._rowMap[rowkey])
                     delete this._rowMap[rowkey];
             }
+            return i;
         };
         DataGrid.prototype._expandDetails = function (parentRow, expanded) {
             if (!this._options.details)
@@ -5429,12 +5430,20 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                     break;
                 case 0:
                     {
+                        var rowpos_1 = -1;
                         args.items.forEach(function (item) {
                             var row = self._rowMap[item._key];
                             if (!!row) {
-                                self._removeRow(row);
+                                rowpos_1 = self._removeRow(row);
                             }
                         });
+                        var rowlen = this._rows.length;
+                        if (rowpos_1 > -1 && rowlen > 0) {
+                            if (rowpos_1 < rowlen)
+                                this.currentRow = this._rows[rowpos_1];
+                            else
+                                this.currentRow = this._rows[rowlen - 1];
+                        }
                         self._updateTableDisplay();
                     }
                     break;
@@ -5695,7 +5704,10 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
         DataGrid.prototype._createRowForItem = function (parent, item, prepend) {
             var self = this, tr = doc.createElement("tr"), gridRow = new row_1.Row(self, { tr: tr, item: item });
             self._rowMap[item._key] = gridRow;
-            self._rows.push(gridRow);
+            if (!prepend)
+                self._rows.push(gridRow);
+            else
+                self._rows.unshift(gridRow);
             self._addNodeToParent(parent, gridRow.tr, prepend);
             return gridRow;
         };
