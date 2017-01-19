@@ -22,6 +22,13 @@ namespace RIAPP.DataService.Utils.CodeGen
         {
             get { return _dotNet2TS.ServiceContainer; }
         }
+        private static string TrimEnd(string s)
+        {
+            if (!string.IsNullOrEmpty(s))
+                return s.TrimEnd('\r', '\n', '\t', ' ');
+
+            return string.Empty;
+        }
 
         public string CreateComplexType(DbSetInfo dbSetInfo, Field fieldInfo, int level)
         {
@@ -35,12 +42,13 @@ namespace RIAPP.DataService.Utils.CodeGen
                 //to prevent names collision the type name is a three part name
                 typeName = string.Format("{0}_{1}{2}", dbSetInfo.dbSetName, fieldInfo.fieldName, level);
             }
-
+            string interfaceName= string.Format("I{0}", typeName);
             fieldInfo._TypeScriptDataType = typeName;
 
             var sbProperties = new StringBuilder();
             var sbFieldsDef = new StringBuilder();
             var sbFieldsInit = new StringBuilder();
+            var sbInterfaceFields = new StringBuilder();
 
             Action<Field> AddProperty = f =>
             {
@@ -54,6 +62,9 @@ namespace RIAPP.DataService.Utils.CodeGen
                         f._FullName, dataType);
                     sbProperties.AppendLine();
                 }
+
+                sbInterfaceFields.AppendFormat("\t{0}{1}: {2};", f.isReadOnly ? "readonly " : "", f.fieldName, dataType);
+                sbInterfaceFields.AppendLine();
             };
 
             Action<Field> AddCalculatedProperty = f =>
@@ -62,18 +73,25 @@ namespace RIAPP.DataService.Utils.CodeGen
                 sbProperties.AppendFormat("\tget {0}(): {2} {{ return this.getEntity()._getCalcFieldVal('{1}'); }}",
                     f.fieldName, f._FullName, dataType);
                 sbProperties.AppendLine();
+
+                sbInterfaceFields.AppendFormat("\treadonly {0}: {1};", f.fieldName, dataType);
+                sbInterfaceFields.AppendLine();
             };
 
             Action<Field, string> AddComplexProperty = (f, dataType) =>
             {
+                string interfName = string.Format("I{0}", dataType);
                 sbProperties.AppendFormat(
-                    "\tget {0}(): {1} {{ if (!this._{0}) {{this._{0} = new {1}('{0}', this);}} return this._{0}; }}",
-                    f.fieldName, dataType);
+                    "\tget {0}(): {2} {{ if (!this._{0}) {{this._{0} = new {1}('{0}', this);}} return this._{0}; }}",
+                    f.fieldName, dataType, interfName);
                 sbProperties.AppendLine();
                 sbFieldsDef.AppendFormat("\tprivate _{0}: {1};", f.fieldName, dataType);
                 sbFieldsDef.AppendLine();
                 sbFieldsInit.AppendFormat("\t\tthis._{0} = null;", f.fieldName);
                 sbFieldsInit.AppendLine();
+
+                sbInterfaceFields.AppendFormat("\treadonly {0}: {1};", f.fieldName, interfName);
+                sbInterfaceFields.AppendLine();
             };
 
             fieldInfo.nested.ForEach(f =>
@@ -102,10 +120,12 @@ namespace RIAPP.DataService.Utils.CodeGen
                 templateName = "ChildComplexProperty.txt";
 
             Dictionary<string, Func<string>> dic = new Dictionary<string, Func<string>>();
-            dic.Add("PROPERTIES", () => sbProperties.ToString());
+            dic.Add("PROPERTIES", () => TrimEnd(sbProperties.ToString()));
             dic.Add("TYPE_NAME", () => typeName);
             dic.Add("FIELDS_DEF", () => sbFieldsDef.ToString());
             dic.Add("FIELDS_INIT", () => sbFieldsInit.ToString());
+            dic.Add("INTERFACE_NAME", () => interfaceName);
+            dic.Add("INTERFACE_FIELDS", () =>  TrimEnd(sbInterfaceFields.ToString()));
 
             string complexType = new CodeGenTemplate(templateName).ProcessTemplate(dic);
 

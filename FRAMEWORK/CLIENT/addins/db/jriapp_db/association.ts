@@ -12,7 +12,7 @@ import {
 import { DELETE_ACTION } from "./const";
 import { IAssocConstructorOptions, IEntityItem } from "./int";
 import { DbContext } from "./dbcontext";
-import { DbSet } from "./dbset";
+import { TDbSet } from "./dbset";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr;
 
@@ -21,8 +21,8 @@ export class Association extends BaseObject {
     private _name: string;
     private _dbContext: DbContext;
     private _onDeleteAction: DELETE_ACTION;
-    private _parentDS: DbSet<IEntityItem, DbContext>;
-    private _childDS: DbSet<IEntityItem, DbContext>;
+    private _parentDS: TDbSet;
+    private _childDS: TDbSet;
     private _parentFldInfos: IFieldInfo[];
     private _childFldInfos: IFieldInfo[];
     private _parentToChildrenName: string;
@@ -430,7 +430,7 @@ export class Association extends BaseObject {
                 self._notifyChildrenChanged([fkey]);
         }
     }
-    protected _getItemKey(finf: IFieldInfo[], ds: DbSet<IEntityItem, DbContext>, item: IEntityItem): string {
+    protected _getItemKey(finf: IFieldInfo[], ds: TDbSet, item: IEntityItem): string {
         let arr: string[] = [], val: any, strval: string, internal = ds._getInternal();
         for (let i = 0, len = finf.length; i < len; i += 1) {
             val = (<any>item)[finf[i].fieldName];
@@ -630,11 +630,11 @@ export class Association extends BaseObject {
         return this._name;
     }
     get name() { return this._name; }
-    get parentToChildrenName() { return this._parentToChildrenName; }
-    get childToParentName() { return this._childToParentName; }
-    get parentDS() { return this._parentDS; }
-    get childDS() { return this._childDS; }
-    get parentFldInfos() { return this._parentFldInfos; }
-    get childFldInfos() { return this._childFldInfos; }
-    get onDeleteAction() { return this._onDeleteAction; }
+    get parentToChildrenName(): string { return this._parentToChildrenName; }
+    get childToParentName(): string { return this._childToParentName; }
+    get parentDS(): TDbSet { return this._parentDS; }
+    get childDS(): TDbSet { return this._childDS; }
+    get parentFldInfos(): IFieldInfo[] { return this._parentFldInfos; }
+    get childFldInfos(): IFieldInfo[] { return this._childFldInfos; }
+    get onDeleteAction(): DELETE_ACTION { return this._onDeleteAction; }
 }

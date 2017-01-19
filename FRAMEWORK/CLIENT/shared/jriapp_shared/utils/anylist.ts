@@ -19,7 +19,11 @@ export interface IAnyVal {
     val: any;
 }
 
-export class AnyItemAspect extends ListItemAspect<AnyValListItem, IAnyVal> {
+export interface IAnyValItem extends IAnyVal, IListItem, IPropertyBag {
+    readonly _aspect: AnyItemAspect;
+}
+
+export class AnyItemAspect extends ListItemAspect<IAnyValItem, IAnyVal> {
     //override and made public
     _validateField(name: string): IValidationInfo {
         return this.collection.errors.validateItemField(this.item, name);
@@ -42,7 +46,7 @@ export class AnyItemAspect extends ListItemAspect<AnyValListItem, IAnyVal> {
 }
 
 
-export class AnyValListItem extends CollectionItem<AnyItemAspect> implements IListItem, IPropertyBag, IAnyVal {
+export class AnyValListItem extends CollectionItem<AnyItemAspect> implements IAnyValItem {
     get val(): any { return <any>this._aspect._getProp('val'); }
     set val(v: any) { this._aspect._setProp('val', v); }
     //override
@@ -95,13 +99,13 @@ export class AnyValListItem extends CollectionItem<AnyItemAspect> implements ILi
     }
 }
 
-export class AnyList extends BaseList<AnyValListItem, IAnyVal> {
+export class AnyList extends BaseList<IAnyValItem, IAnyVal> {
     private _onChanged: (arr: any[]) => void;
     private _saveVal: string = null;
     private _debounce: Debounce;
 
     constructor(onChanged: (arr: any[]) => void) {
-        super(AnyValListItem, [{ name: 'val', dtype: 0 }]);
+        super([{ name: 'val', dtype: 0 }]);
         this._onChanged = onChanged;
         this._debounce = new Debounce();
 
@@ -137,7 +141,6 @@ export class AnyList extends BaseList<AnyValListItem, IAnyVal> {
             }
         });
     }
-
     destroy() {
         if (this._isDestroyed)
             return;
@@ -147,7 +150,12 @@ export class AnyList extends BaseList<AnyValListItem, IAnyVal> {
         super.destroy();
     }
     //override
-    protected createItem(obj?: IAnyVal): AnyValListItem {
+    protected _initItemFactory(): void {
+        const itemType = AnyValListItem;
+        this._itemFactory = (aspect: AnyItemAspect) => { return new itemType(aspect); };
+    }
+    //override
+    protected createItem(obj?: IAnyVal): IAnyValItem {
         const isNew = !obj;
         let vals: any = isNew ? { val: {} } : obj;
         if (!vals.val)

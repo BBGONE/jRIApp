@@ -819,15 +819,15 @@ declare module "jriapp/template" {
     export function createTemplate(dataContext?: any, templEvents?: ITemplateEvents): ITemplate;
 }
 declare module "jriapp/utils/propwatcher" {
-    import { BaseObject } from "jriapp_shared";
+    import { IBaseObject, BaseObject } from "jriapp_shared";
     export class PropWatcher extends BaseObject {
         private _objId;
         private _objs;
         constructor();
         static create(): PropWatcher;
-        addPropWatch(obj: BaseObject, prop: string, fn_onChange: (prop: string) => void): void;
-        addWatch(obj: BaseObject, props: string[], fn_onChange: (prop: string) => void): void;
-        removeWatch(obj: BaseObject): void;
+        addPropWatch(obj: IBaseObject, prop: string, fn_onChange: (prop: string) => void): void;
+        addWatch(obj: IBaseObject, props: string[], fn_onChange: (prop: string) => void): void;
+        removeWatch(obj: IBaseObject): void;
         destroy(): void;
         toString(): string;
         readonly uniqueID: string;

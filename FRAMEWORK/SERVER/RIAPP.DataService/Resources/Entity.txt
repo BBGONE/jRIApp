@@ -1,7 +1,7 @@
-﻿class extends RIAPP.CollectionItem<dbMOD.EntityAspect<{{ENTITY_INTERFACE}}, DbContext>> implements {{ENTITY_INTERFACE}} 
+﻿class extends RIAPP.CollectionItem<dbMOD.EntityAspect<{{ENTITY_INTERFACE}}, {{VALS_INTERFACE}}, DbContext>> implements {{ENTITY_INTERFACE}} 
 		{
 		{{FIELDS_DEF}}
-		constructor(aspect: dbMOD.EntityAspect<{{ENTITY_INTERFACE}}, DbContext>) {
+		constructor(aspect: dbMOD.EntityAspect<{{ENTITY_INTERFACE}}, {{VALS_INTERFACE}}, DbContext>) {
 			super(aspect);
 		{{FIELDS_INIT}}
 		}

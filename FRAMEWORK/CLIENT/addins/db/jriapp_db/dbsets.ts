@@ -3,11 +3,9 @@ import { BaseObject, LocaleERRS as ERRS, Utils, Lazy, IIndexer } from "jriapp_sh
 import { PROP_NAME } from "./const";
 import { IEntityItem } from "./int";
 import { DbContext } from "./dbcontext";
-import { DbSet, IDbSetConstructor } from "./dbset";
+import { DbSet, IDbSetConstructor, TDbSet } from "./dbset";
 
 const utils = Utils, strUtils = utils.str;
-
-export type TDbSet = DbSet<IEntityItem, DbContext>;
 
 export class DbSets extends BaseObject {
     private _dbContext: DbContext;
@@ -27,11 +25,11 @@ export class DbSets extends BaseObject {
             self._dbContext._getInternal().onDbSetHasChangesChanged(sender);
         });
     }
-    protected _createDbSet(name: string, dbSetType: IDbSetConstructor<IEntityItem>) {
+    protected _createDbSet(name: string, dbSetType: IDbSetConstructor<IEntityItem, any>) {
         const self = this, dbContext = this._dbContext;
         if (!!self._dbSets[name])
             throw new Error(utils.str.format("DbSet: {0} is already created", name));
-        self._dbSets[name] = new Lazy<DbSet<IEntityItem,DbContext>>(() => {
+        self._dbSets[name] = new Lazy<TDbSet>(() => {
             const res = new dbSetType(dbContext);
             self._dbSetCreated(res);
             return res;

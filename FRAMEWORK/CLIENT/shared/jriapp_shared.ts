@@ -13,7 +13,7 @@ export { BaseCollection } from "./jriapp_shared/collection/base";
 export { CollectionItem } from "./jriapp_shared/collection/item";
 export { ItemAspect } from "./jriapp_shared/collection/aspect";
 export {
-    ListItemAspect, IListItem, BaseList, IListItemAspectConstructor, IListItemConstructor
+    ListItemAspect, IListItem, BaseList, IListItemAspectConstructor, TItemFactory
 } from "./jriapp_shared/collection/list";
 export { BaseDictionary } from "./jriapp_shared/collection/dictionary";
 export { ValidationError } from "./jriapp_shared/errors";

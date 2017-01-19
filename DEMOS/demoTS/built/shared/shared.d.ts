@@ -14,7 +14,7 @@ declare module "common" {
         onRowExpanded(item: TItem): void;
         onRowCollapsed(item: TItem): void;
     }
-    export function addTextQuery(query: dbMOD.TDataQuery, fldName: string, val: any): dbMOD.DataQuery<dbMOD.IEntityItem>;
+    export function addTextQuery(query: dbMOD.TDataQuery, fldName: string, val: any): dbMOD.TDataQuery;
     export interface IDLinkOptions extends RIAPP.IViewOptions {
         baseUri?: string;
     }

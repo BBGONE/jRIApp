@@ -3,7 +3,7 @@ import { BaseObject } from "../object";
 import { ICollectionItem, ITEM_EVENTS } from "./int";
 import { ItemAspect } from "./aspect";
 
-export class CollectionItem<TAspect extends ItemAspect<ICollectionItem>> extends BaseObject implements ICollectionItem {
+export class CollectionItem<TAspect extends ItemAspect<ICollectionItem, any>> extends BaseObject implements ICollectionItem {
     private __aspect: TAspect;
 
     constructor(aspect: TAspect) {

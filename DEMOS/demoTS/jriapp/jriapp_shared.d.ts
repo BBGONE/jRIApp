@@ -475,6 +475,7 @@ declare module "jriapp_shared/utils/eventhelper" {
         static removeNS(ev: IIndexer<IEventList>, ns?: string): void;
         static add(ev: IIndexer<IEventList>, name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         static remove(ev: IIndexer<IEventList>, name?: string, nmspace?: string): void;
+        static count(ev: IIndexer<IEventList>, name: string): number;
         static raise(sender: any, ev: IIndexer<IEventList>, name: string, args: any): void;
         static raiseProp(sender: any, ev: IIndexer<IEventList>, prop: string, args: any): void;
     }
@@ -490,6 +491,7 @@ declare module "jriapp_shared/object" {
         protected _removeHandler(name?: string, nmspace?: string): void;
         protected readonly _isDestroyed: boolean;
         protected _isDestroyCalled: boolean;
+        protected _canRaiseEvent(name: string): boolean;
         _isHasProp(prop: string): boolean;
         handleError(error: any, source: any): boolean;
         addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
@@ -760,7 +762,7 @@ declare module "jriapp_shared/collection/int" {
         canDeleteRow: boolean;
         canRefreshRow: boolean;
     }
-    export interface IItemAspect<TItem extends ICollectionItem> extends IBaseObject, IErrorNotification, IEditable, ISubmittable {
+    export interface IItemAspect<TItem extends ICollectionItem, TObj> extends IBaseObject, IErrorNotification, IEditable, ISubmittable {
         getFieldInfo(fieldName: string): IFieldInfo;
         getFieldNames(): string[];
         getErrorString(): string;
@@ -771,7 +773,7 @@ declare module "jriapp_shared/collection/int" {
         _setKey(v: string): void;
         _setIsAttached(v: boolean): void;
         raiseErrorsChanged(): void;
-        readonly obj: any;
+        readonly vals: TObj;
         readonly item: TItem;
         readonly key: string;
         readonly collection: ICollection<TItem>;
@@ -786,7 +788,7 @@ declare module "jriapp_shared/collection/int" {
         readonly isDetached: boolean;
     }
     export interface ICollectionItem extends IBaseObject {
-        readonly _aspect: IItemAspect<ICollectionItem>;
+        readonly _aspect: IItemAspect<ICollectionItem, any>;
         readonly _key: string;
     }
     export interface ICollChangedArgs<TItem extends ICollectionItem> {
@@ -1231,7 +1233,7 @@ declare module "jriapp_shared/collection/aspect" {
     import { BaseObject } from "jriapp_shared/object";
     import { ICollectionItem, IItemAspect } from "jriapp_shared/collection/int";
     import { BaseCollection } from "jriapp_shared/collection/base";
-    export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implements IItemAspect<TItem> {
+    export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject implements IItemAspect<TItem, TObj> {
         private _key;
         private _item;
         private _collection;
@@ -1271,7 +1273,7 @@ declare module "jriapp_shared/collection/aspect" {
         cancelEdit(): boolean;
         deleteItem(): boolean;
         getIsHasErrors(): boolean;
-        addOnErrorsChanged(fn: TEventHandler<ItemAspect<TItem>, any>, nmspace?: string, context?: any): void;
+        addOnErrorsChanged(fn: TEventHandler<ItemAspect<TItem, TObj>, any>, nmspace?: string, context?: any): void;
         removeOnErrorsChanged(nmspace?: string): void;
         getFieldErrors(fieldName: string): IValidationInfo[];
         getAllErrors(): IValidationInfo[];
@@ -1280,7 +1282,7 @@ declare module "jriapp_shared/collection/aspect" {
         getCustomVal(name: string): any;
         destroy(): void;
         toString(): string;
-        readonly obj: any;
+        readonly vals: TObj;
         readonly item: TItem;
         readonly key: string;
         readonly collection: BaseCollection<TItem>;
@@ -1300,7 +1302,7 @@ declare module "jriapp_shared/collection/item" {
     import { BaseObject } from "jriapp_shared/object";
     import { ICollectionItem } from "jriapp_shared/collection/int";
     import { ItemAspect } from "jriapp_shared/collection/aspect";
-    export class CollectionItem<TAspect extends ItemAspect<ICollectionItem>> extends BaseObject implements ICollectionItem {
+    export class CollectionItem<TAspect extends ItemAspect<ICollectionItem, any>> extends BaseObject implements ICollectionItem {
         private __aspect;
         constructor(aspect: TAspect);
         readonly _aspect: TAspect;
@@ -1319,10 +1321,8 @@ declare module "jriapp_shared/collection/list" {
     export interface IListItemAspectConstructor<TItem extends IListItem, TObj> {
         new (coll: BaseList<TItem, TObj>, obj?: TObj): ListItemAspect<TItem, TObj>;
     }
-    export interface IListItemConstructor<TItem extends IListItem, TObj> {
-        new (aspect: ListItemAspect<TItem, TObj>): TItem;
-    }
-    export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TItem> {
+    export type TItemFactory<TItem extends IListItem, TObj> = (aspect: ListItemAspect<TItem, TObj>) => TItem;
+    export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TItem, TObj> {
         constructor(coll: BaseList<TItem, TObj>, vals: TObj, key: string, isNew: boolean);
         _setProp(name: string, val: any): void;
         _getProp(name: string): any;
@@ -1331,9 +1331,10 @@ declare module "jriapp_shared/collection/list" {
         readonly list: BaseList<TItem, TObj>;
     }
     export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TItem> {
-        private _itemType;
-        constructor(itemType: IListItemConstructor<TItem, TObj>, props: IPropInfo[]);
+        protected _itemFactory: TItemFactory<TItem, TObj>;
+        constructor(props: IPropInfo[]);
         private _updateFieldMap(props);
+        protected _initItemFactory(): void;
         protected _attach(item: TItem): number;
         protected _createNew(): TItem;
         protected createItem(obj?: TObj): TItem;
@@ -1344,7 +1345,7 @@ declare module "jriapp_shared/collection/list" {
         resetStatus(): void;
         toArray(): TObj[];
         toString(): string;
-        readonly itemType: IListItemConstructor<TItem, TObj>;
+        readonly itemFactory: TItemFactory<TItem, TObj>;
     }
 }
 declare module "jriapp_shared/utils/anylist" {
@@ -1355,13 +1356,16 @@ declare module "jriapp_shared/utils/anylist" {
     export interface IAnyVal {
         val: any;
     }
-    export class AnyItemAspect extends ListItemAspect<AnyValListItem, IAnyVal> {
+    export interface IAnyValItem extends IAnyVal, IListItem, IPropertyBag {
+        readonly _aspect: AnyItemAspect;
+    }
+    export class AnyItemAspect extends ListItemAspect<IAnyValItem, IAnyVal> {
         _validateField(name: string): IValidationInfo;
         protected _validateFields(): IValidationInfo[];
         _setProp(name: string, val: any): void;
         _getProp(name: string): any;
     }
-    export class AnyValListItem extends CollectionItem<AnyItemAspect> implements IListItem, IPropertyBag, IAnyVal {
+    export class AnyValListItem extends CollectionItem<AnyItemAspect> implements IAnyValItem {
         val: any;
         _isHasProp(prop: string): boolean;
         getProp(name: string): any;
@@ -1370,13 +1374,14 @@ declare module "jriapp_shared/utils/anylist" {
         readonly list: AnyList;
         toString(): string;
     }
-    export class AnyList extends BaseList<AnyValListItem, IAnyVal> {
+    export class AnyList extends BaseList<IAnyValItem, IAnyVal> {
         private _onChanged;
         private _saveVal;
         private _debounce;
         constructor(onChanged: (arr: any[]) => void);
         destroy(): void;
-        protected createItem(obj?: IAnyVal): AnyValListItem;
+        protected _initItemFactory(): void;
+        protected createItem(obj?: IAnyVal): IAnyValItem;
         protected onChanged(): void;
         setValues(values: any[]): void;
         toString(): string;
@@ -1386,7 +1391,7 @@ declare module "jriapp_shared/utils/jsonarray" {
     import { IValidationInfo, TEventHandler, IPropertyBag } from "jriapp_shared/int";
     import { BaseObject } from "jriapp_shared/object";
     import { JsonBag, IFieldValidateArgs, IBagValidateArgs } from "jriapp_shared/utils/jsonbag";
-    import { AnyList, AnyValListItem } from "jriapp_shared/utils/anylist";
+    import { AnyList, IAnyValItem } from "jriapp_shared/utils/anylist";
     export class JsonArray extends BaseObject {
         private _owner;
         private _pathToArray;
@@ -1400,8 +1405,8 @@ declare module "jriapp_shared/utils/jsonarray" {
         removeOnValidateBag(nmspace?: string): void;
         addOnValidateField(fn: TEventHandler<IPropertyBag, IFieldValidateArgs<IPropertyBag>>, nmspace?: string, context?: any): void;
         removeOnValidateField(nmspace?: string): void;
-        protected _validateBag(bag: AnyValListItem): IValidationInfo[];
-        protected _validateField(bag: AnyValListItem, fieldName: string): IValidationInfo;
+        protected _validateBag(bag: IAnyValItem): IValidationInfo[];
+        protected _validateField(bag: IAnyValItem, fieldName: string): IValidationInfo;
         getArray(): any[];
         readonly pathToArray: string;
         readonly owner: JsonBag;
@@ -1414,10 +1419,10 @@ declare module "jriapp_shared/utils/weakmap" {
 }
 declare module "jriapp_shared/collection/dictionary" {
     import { IPropInfo } from "jriapp_shared/collection/int";
-    import { BaseList, IListItem, IListItemConstructor } from "jriapp_shared/collection/list";
+    import { BaseList, IListItem } from "jriapp_shared/collection/list";
     export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TItem, TObj> {
         private _keyName;
-        constructor(itemType: IListItemConstructor<TItem, TObj>, keyName: string, props: IPropInfo[]);
+        constructor(keyName: string, props: IPropInfo[]);
         protected createItem(obj?: TObj): TItem;
         protected _onItemAdded(item: TItem): void;
         protected _onRemoved(item: TItem, pos: number): void;
@@ -1450,7 +1455,7 @@ declare module "jriapp_shared" {
     export { BaseCollection } from "jriapp_shared/collection/base";
     export { CollectionItem } from "jriapp_shared/collection/item";
     export { ItemAspect } from "jriapp_shared/collection/aspect";
-    export { ListItemAspect, IListItem, BaseList, IListItemAspectConstructor, IListItemConstructor } from "jriapp_shared/collection/list";
+    export { ListItemAspect, IListItem, BaseList, IListItemAspectConstructor, TItemFactory } from "jriapp_shared/collection/list";
     export { BaseDictionary } from "jriapp_shared/collection/dictionary";
     export { ValidationError } from "jriapp_shared/errors";
     export * from "jriapp_shared/utils/ideferred";

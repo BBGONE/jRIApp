@@ -60,7 +60,7 @@ export interface IPermissions {
     canRefreshRow: boolean;
 }
 
-export interface IItemAspect<TItem extends ICollectionItem> extends IBaseObject, IErrorNotification, IEditable, ISubmittable {
+export interface IItemAspect<TItem extends ICollectionItem, TObj> extends IBaseObject, IErrorNotification, IEditable, ISubmittable {
     getFieldInfo(fieldName: string): IFieldInfo;
     getFieldNames(): string[];
     getErrorString(): string;
@@ -71,7 +71,7 @@ export interface IItemAspect<TItem extends ICollectionItem> extends IBaseObject,
     _setKey(v: string): void;
     _setIsAttached(v: boolean): void;
     raiseErrorsChanged(): void;
-    readonly obj: any;
+    readonly vals: TObj;
     readonly item: TItem;
     readonly key: string;
     readonly collection: ICollection<TItem>;
@@ -87,7 +87,7 @@ export interface IItemAspect<TItem extends ICollectionItem> extends IBaseObject,
 }
 
 export interface ICollectionItem extends IBaseObject {
-    readonly _aspect: IItemAspect<ICollectionItem>;
+    readonly _aspect: IItemAspect<ICollectionItem, any>;
     readonly _key: string;
 }
 

@@ -11,7 +11,7 @@ import { ValueUtils, CollUtils } from "jriapp_shared/collection/utils";
 import { ItemAspect } from "jriapp_shared/collection/aspect";
 import { FLAGS, REFRESH_MODE, PROP_NAME } from "./const";
 import { DbContext } from "./dbcontext";
-import { IEntityItem, IEntityConstructor, IRowData, IFieldName, IValueChange, IRowInfo } from "./int";
+import { IEntityItem, IRowData, IFieldName, IValueChange, IRowInfo } from "./int";
 import { DbSet } from "./dbset";
 import { SubmitError } from "./error";
 
@@ -48,22 +48,22 @@ function fn_traverseChanges(val: IValueChange, fn: (name: string, val: IValueCha
     _fn_traverseChanges(val.fieldName, val, fn);
 }
 
-export interface IEntityAspectConstructor<TItem extends IEntityItem, TDbContext extends DbContext> {
-    new (dbSet: DbSet<TItem, TDbContext>, row: IRowData, names: IFieldName[]): EntityAspect<TItem, TDbContext>;
+export interface IEntityAspectConstructor<TItem extends IEntityItem, TObj, TDbContext extends DbContext> {
+    new (dbSet: DbSet<TItem, TObj, TDbContext>, row: IRowData, names: IFieldName[]): EntityAspect<TItem, TObj, TDbContext>;
 }
 
-export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContext> extends ItemAspect<TItem> {
+export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends DbContext> extends ItemAspect<TItem, TObj> {
     private _srvKey: string;
     private _origVals: IIndexer<any>;
     private _savedStatus: ITEM_STATUS;
 
-    constructor(dbSet: DbSet<TItem, TDbContext>, vals: any, key: string, isNew: boolean) {
+    constructor(dbSet: DbSet<TItem, TObj, TDbContext>, vals: TObj, key: string, isNew: boolean) {
         super(dbSet);
         this._srvKey = null;
         this._origVals = null;
         this._savedStatus = null;
         this._vals = vals;
-        const item = new dbSet.entityType(this);
+        const item = dbSet.itemFactory(this);
         this._setItem(item);
         if (isNew) {
             this._setKey(key);
@@ -497,9 +497,8 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         return this.dbSetName + "EntityAspect";
     }
     get srvKey(): string { return this._srvKey; }
-    get entityType() { return this.dbSet.entityType; }
     get isCanSubmit(): boolean { return true; }
     get dbSetName() { return this.dbSet.dbSetName; }
     get serverTimezone() { return this.dbSet.dbContext.serverTimezone; }
-    get dbSet() { return <DbSet<TItem, TDbContext>>this.collection; }
+    get dbSet() { return <DbSet<TItem, TObj, TDbContext>>this.collection; }
 }

@@ -1,4 +1,10 @@
-﻿export interface {{ENTITY_INTERFACE}}  extends dbMOD.IEntityItem
+﻿export interface {{VALS_NAME}}
 {
-{{INTERFACE_FIELDS}}              
+{{VALS_FIELDS}}              
+}
+
+export interface {{ENTITY_NAME}} extends {{VALS_NAME}}, dbMOD.IEntityItem
+{
+	readonly _aspect: dbMOD.EntityAspect<{{ENTITY_NAME}}, {{VALS_NAME}}, DbContext>;
+{{ENTITY_FIELDS}}              
 }

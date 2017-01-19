@@ -3,7 +3,7 @@ import { IValidationInfo, TEventHandler, IPropertyBag } from "../int";
 import { BaseObject } from "../object";
 import { JsonBag, IFieldValidateArgs, IBagValidateArgs } from "./jsonbag";
 import { CoreUtils } from "./coreutils";
-import { AnyList, AnyValListItem, IAnyVal, ICollValidateFieldArgs } from "./anylist";
+import { AnyList, IAnyValItem, IAnyVal, ICollValidateFieldArgs } from "./anylist";
 import { ValidationError } from "../errors";
 
 const coreUtils = CoreUtils;
@@ -61,7 +61,7 @@ export class JsonArray extends BaseObject {
         this._removeHandler(BAG_EVENTS.validate_field, nmspace);
     }
     //error Notification Implementation
-    protected _validateBag(bag: AnyValListItem): IValidationInfo[] {
+    protected _validateBag(bag: IAnyValItem): IValidationInfo[] {
         const args: IBagValidateArgs<IPropertyBag> = {
             bag: bag,
             result: []
@@ -72,7 +72,7 @@ export class JsonArray extends BaseObject {
         else
             return [];
     }
-    protected _validateField(bag: AnyValListItem, fieldName: string): IValidationInfo {
+    protected _validateField(bag: IAnyValItem, fieldName: string): IValidationInfo {
         const args: IFieldValidateArgs<IPropertyBag> = {
             bag: bag,
             fieldName: fieldName,

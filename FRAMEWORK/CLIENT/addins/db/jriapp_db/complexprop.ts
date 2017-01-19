@@ -37,7 +37,7 @@ export class BaseComplexProperty extends BaseObject implements IErrorNotificatio
     getFullPath(name: string): string {
         throw new Error("Not Implemented");
    }
-    getEntity(): EntityAspect<IEntityItem, DbContext> {
+    getEntity(): EntityAspect<IEntityItem, any, DbContext> {
         throw new Error("Not Implemented");
    }
     getPropertyByName(name: string): IFieldInfo {
@@ -49,7 +49,7 @@ export class BaseComplexProperty extends BaseObject implements IErrorNotificatio
     getIsHasErrors(): boolean {
         return this.getEntity().getIsHasErrors();
    }
-    addOnErrorsChanged(fn: TEventHandler<EntityAspect<IEntityItem, DbContext>, any>, nmspace?: string, context?: any): void {
+    addOnErrorsChanged(fn: TEventHandler<EntityAspect<IEntityItem, any, DbContext>, any>, nmspace?: string, context?: any): void {
         this.getEntity().addOnErrorsChanged(fn, nmspace, context);
    }
     removeOnErrorsChanged(nmspace?: string): void {
@@ -68,9 +68,9 @@ export class BaseComplexProperty extends BaseObject implements IErrorNotificatio
 }
 
 export class RootComplexProperty extends BaseComplexProperty {
-    private _entity: EntityAspect<IEntityItem, DbContext>;
+    private _entity: EntityAspect<IEntityItem, any, DbContext>;
 
-    constructor(name: string, owner: EntityAspect<IEntityItem, DbContext>) {
+    constructor(name: string, owner: EntityAspect<IEntityItem, any, DbContext>) {
         super(name);
         this._entity = owner;
    }

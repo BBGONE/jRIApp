@@ -162,6 +162,11 @@ export class EventHelper
             }
         }
     }
+    static count(ev: IIndexer<IEventList>, name: string): number {
+        if (!ev)
+            return 0;
+        return (!name) ? 0 : evList.toArray(ev[name]).length;
+    }
     static raise(sender: any, ev: IIndexer<IEventList>, name: string, args: any): void {
         if (!ev)
             return;

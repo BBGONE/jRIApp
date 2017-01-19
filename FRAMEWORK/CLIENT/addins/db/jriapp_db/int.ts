@@ -18,11 +18,10 @@ export interface IFieldName {
 }
 
 export interface IEntityItem extends ICollectionItem {
-    readonly _aspect: EntityAspect<IEntityItem, DbContext>;
+    readonly _aspect: EntityAspect<IEntityItem, any, DbContext>;
 }
-export interface IEntityConstructor<TItem extends IEntityItem> {
-    new (aspect: EntityAspect<TItem, DbContext>): TItem;
-}
+
+export type TItemFactory<TItem extends IEntityItem, TObj> = (aspect: EntityAspect<TItem, TObj, DbContext>) => TItem;
 
 export interface IKV {
     key: string;
@@ -112,8 +111,8 @@ export interface IDbSetConstuctorOptions {
     parentAssoc: IAssociationInfo[];
 }
 
-export interface IDbSetLoadedArgs<TItem extends IEntityItem> {
-    items: TItem[];
+export interface IDbSetLoadedArgs<TObj> {
+    vals: TObj[];
 }
 
 export interface IAssocConstructorOptions {

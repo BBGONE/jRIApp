@@ -1,6 +1,11 @@
-﻿export class {{LIST_NAME}} extends RIAPP.BaseList<{{ITEM_TYPE_NAME}},{{INTERFACE_NAME}}> {
+﻿export class {{LIST_NAME}} extends RIAPP.BaseList<{{INTERFACE_NAME}}, {{VALS_NAME}}> {
 	constructor() {
-		super({{ITEM_TYPE_NAME}},{{PROP_INFOS}});
+		super({{PROP_INFOS}});
+	}
+	//override
+	protected _initItemFactory(): void {
+		const itemType = {{ITEM_TYPE_NAME}};
+		this._itemFactory = (aspect: RIAPP.ListItemAspect<{{INTERFACE_NAME}}, {{VALS_NAME}}>) => { return new itemType(aspect); };
 	}
 	toString() {
 		return '{{LIST_NAME}}';

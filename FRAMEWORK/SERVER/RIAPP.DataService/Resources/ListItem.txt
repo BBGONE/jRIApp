@@ -1,4 +1,9 @@
-﻿export class {{LIST_ITEM_NAME}} extends RIAPP.CollectionItem<RIAPP.ListItemAspect<{{LIST_ITEM_NAME}}, {{INTERFACE_NAME}}>> implements RIAPP.IListItem, {{INTERFACE_NAME}} {
+﻿export interface {{INTERFACE_NAME}} extends {{VALS_NAME}}, RIAPP.IListItem
+{
+	readonly _aspect: RIAPP.ListItemAspect<{{INTERFACE_NAME}}, {{VALS_NAME}}>;
+}
+
+class {{LIST_ITEM_NAME}} extends RIAPP.CollectionItem<RIAPP.ListItemAspect<{{INTERFACE_NAME}}, {{VALS_NAME}}>> implements {{INTERFACE_NAME}} {
 {{ITEM_PROPS}}
 	toString() {
 		return '{{LIST_ITEM_NAME}}';

@@ -230,11 +230,6 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(DataQuery.prototype, "entityType", {
-            get: function () { return this._dbSet.entityType; },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(DataQuery.prototype, "dbSet", {
             get: function () { return this._dbSet; },
             enumerable: true,
@@ -423,7 +418,7 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
             this.deletePage(pageIndex);
             if (items.length === 0)
                 return;
-            var kvs = items.map(function (item) { return { key: item._key, val: item._aspect.obj }; });
+            var kvs = items.map(function (item) { return { key: item._key, val: item._aspect.vals }; });
             var page = { keys: kvs.map(function (kv) { return kv.key; }), pageIndex: pageIndex };
             this._pages[pageIndex] = page;
             var keyMap = this._itemsByKey;
@@ -548,7 +543,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             this._options.enablePaging = dbSetInfo.enablePaging;
             this._options.pageSize = dbSetInfo.pageSize;
             this._query = null;
-            this._entityType = null;
+            this._itemFactory = null;
             this._isSubmitOnDelete = false;
             this._navfldMap = {};
             this._calcfldMap = {};
@@ -690,15 +685,17 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                     self._trackAssoc[assocName] = assocs[0];
                     result.setFunc = function (v) {
                         var entity = this, i, len, assoc = self.dbContext.getAssociation(assocName);
-                        if (!!v && !(v instanceof assoc.parentDS.entityType)) {
-                            throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_PARAM_INVALID_TYPE, "value", assoc.parentDS.dbSetName));
-                        }
-                        if (!!v && !!v._aspect && v._aspect.isNew) {
-                            entity._aspect._setFieldVal(fieldInfo.fieldName, v._key);
-                        }
-                        else if (!!v) {
-                            for (i = 0, len = assoc.childFldInfos.length; i < len; i += 1) {
-                                entity[assoc.childFldInfos[i].fieldName] = v[assoc.parentFldInfos[i].fieldName];
+                        if (!!v) {
+                            if ((v._aspect.dbSetName !== assoc.parentDS.dbSetName)) {
+                                throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_PARAM_INVALID_TYPE, "value", assoc.parentDS.dbSetName));
+                            }
+                            if (v._aspect.isNew) {
+                                entity._aspect._setFieldVal(fieldInfo.fieldName, v._key);
+                            }
+                            else {
+                                for (i = 0, len = assoc.childFldInfos.length; i < len; i += 1) {
+                                    entity[assoc.childFldInfos[i].fieldName] = v[assoc.parentFldInfos[i].fieldName];
+                                }
                             }
                         }
                         else {
@@ -758,12 +755,6 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                     item._aspect._refreshValue(value, fieldName, rm);
                 }
             });
-        };
-        DbSet.prototype._setCurrentItem = function (v) {
-            if (!!v && !(v instanceof this._entityType)) {
-                throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_PARAM_INVALID_TYPE, "currentItem", this.dbSetName));
-            }
-            _super.prototype._setCurrentItem.call(this, v);
         };
         DbSet.prototype._applyFieldVals = function (vals, path, values, names) {
             var self = this, stz = self.dbContext.serverTimezone;
@@ -1118,7 +1109,10 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             _super.prototype._onRemoved.call(this, item, pos);
         };
         DbSet.prototype._onLoaded = function (items) {
-            this.raiseEvent(DBSET_EVENTS.loaded, { items: items });
+            if (this._canRaiseEvent(DBSET_EVENTS.loaded)) {
+                var vals = items.map(function (item) { return item._aspect.vals; });
+                this.raiseEvent(DBSET_EVENTS.loaded, { vals: vals });
+            }
         };
         DbSet.prototype._destroyQuery = function () {
             var query = this._query;
@@ -1379,8 +1373,8 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(DbSet.prototype, "entityType", {
-            get: function () { return this._entityType; },
+        Object.defineProperty(DbSet.prototype, "itemFactory", {
+            get: function () { return this._itemFactory; },
             enumerable: true,
             configurable: true
         });
@@ -3071,7 +3065,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             this._origVals = null;
             this._savedStatus = null;
             this._vals = vals;
-            var item = new dbSet.entityType(this);
+            var item = dbSet.itemFactory(this);
             this._setItem(item);
             if (isNew) {
                 this._setKey(key);
@@ -3494,11 +3488,6 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
         };
         Object.defineProperty(EntityAspect.prototype, "srvKey", {
             get: function () { return this._srvKey; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(EntityAspect.prototype, "entityType", {
-            get: function () { return this.dbSet.entityType; },
             enumerable: true,
             configurable: true
         });

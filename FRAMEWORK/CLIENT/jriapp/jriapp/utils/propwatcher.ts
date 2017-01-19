@@ -1,13 +1,13 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    BaseObject, Utils
+    IBaseObject, BaseObject, Utils
 } from "jriapp_shared";
 
 const coreUtils = Utils.core;
 
 export class PropWatcher extends BaseObject {
     private _objId: string;
-    private _objs: BaseObject[];
+    private _objs: IBaseObject[];
     constructor() {
         super();
         this._objId = coreUtils.getNewID("prw");
@@ -16,7 +16,7 @@ export class PropWatcher extends BaseObject {
     static create() {
         return new PropWatcher();
     }
-    addPropWatch(obj: BaseObject, prop: string, fn_onChange: (prop: string) => void) {
+    addPropWatch(obj: IBaseObject, prop: string, fn_onChange: (prop: string) => void) {
         let self = this;
         obj.addOnPropertyChange(prop, function (s, a) {
             fn_onChange(a.property);
@@ -25,7 +25,7 @@ export class PropWatcher extends BaseObject {
         if (self._objs.indexOf(obj) < 0)
             self._objs.push(obj);
     }
-    addWatch(obj: BaseObject, props: string[], fn_onChange: (prop: string) => void) {
+    addWatch(obj: IBaseObject, props: string[], fn_onChange: (prop: string) => void) {
         let self = this;
         obj.addOnPropertyChange("*", function (s, a) {
             if (props.indexOf(a.property) > -1) {
@@ -36,7 +36,7 @@ export class PropWatcher extends BaseObject {
         if (self._objs.indexOf(obj) < 0)
             self._objs.push(obj);
     }
-    removeWatch(obj: BaseObject) {
+    removeWatch(obj: IBaseObject) {
         obj.removeNSHandlers(this.uniqueID);
     }
     destroy() {

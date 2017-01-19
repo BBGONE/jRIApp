@@ -24,17 +24,16 @@ export interface IListItem extends ICollectionItem {
 export interface IListItemAspectConstructor<TItem extends IListItem, TObj> {
     new (coll: BaseList<TItem, TObj>, obj?: TObj): ListItemAspect<TItem, TObj>;
 }
-export interface IListItemConstructor<TItem extends IListItem, TObj> {
-    new (aspect: ListItemAspect<TItem, TObj>): TItem;
-}
 
-export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TItem> {
+export type TItemFactory<TItem extends IListItem, TObj> = (aspect: ListItemAspect<TItem, TObj>) => TItem;
+
+export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TItem, TObj> {
     constructor(coll: BaseList<TItem, TObj>, vals: TObj, key: string, isNew: boolean) {
         super(coll);
         if (isNew)
             this._status = ITEM_STATUS.Added;
         this._vals = <any>vals;
-        let item = new coll.itemType(this);
+        let item = coll.itemFactory(this);
         this._setItem(item);
         this._setKey(key);
     }
@@ -83,11 +82,11 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
 }
 
 export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TItem> {
-    private _itemType: IListItemConstructor<TItem, TObj>;
+    protected _itemFactory: TItemFactory<TItem, TObj>;
 
-    constructor(itemType: IListItemConstructor<TItem, TObj>, props: IPropInfo[]) {
+    constructor(props: IPropInfo[]) {
         super();
-        this._itemType = itemType;
+        this._initItemFactory();
         if (!!props)
             this._updateFieldMap(props);
     }
@@ -109,6 +108,9 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
             });
         });
     }
+    protected _initItemFactory(): void {
+       //noop
+	}
     protected _attach(item: TItem) {
         try {
             this.endEdit();
@@ -138,7 +140,7 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        this._itemType = null;
+        this._itemFactory = null;
         super.destroy();
     }
     fillItems(objArray: TObj[], clearAll?: boolean) {
@@ -183,25 +185,25 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
         }
         this.moveFirst();
     }
-    getNewItems() {
+    getNewItems(): TItem[] {
         return this._items.filter(function (item) {
             return item._aspect.isNew;
         });
     }
-    resetStatus() {
+    resetStatus(): void {
         this._items.forEach(function (item) {
             item._aspect._resetStatus();
         });
     }
     toArray(): TObj[] {
         return this.items.map((item, index, arr) => {
-            return <TObj>item._aspect.obj;
+            return <TObj>item._aspect.vals;
         });
     }
-    toString() {
+    toString(): string {
         return "BaseList";
     }
-    get itemType(): IListItemConstructor<TItem, TObj> {
-        return this._itemType;
+    get itemFactory(): TItemFactory<TItem, TObj> {
+        return this._itemFactory;
     }
 }

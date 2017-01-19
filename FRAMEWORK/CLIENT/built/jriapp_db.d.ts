@@ -45,7 +45,7 @@ declare module "jriapp_db/dataquery" {
     import { FILTER_TYPE, SORT_ORDER } from "jriapp_shared/collection/const";
     import { IPromise, BaseObject } from "jriapp_shared";
     import { IFieldInfo } from "jriapp_shared/collection/int";
-    import { IEntityItem, IQueryInfo, IFilterInfo, ISortInfo, IQueryResult, IEntityConstructor } from "jriapp_db/int";
+    import { IEntityItem, IQueryInfo, IFilterInfo, ISortInfo, IQueryResult } from "jriapp_db/int";
     import { DataCache } from "jriapp_db/datacache";
     import { DbSet } from "jriapp_db/dbset";
     import { DbContext } from "jriapp_db/dbcontext";
@@ -56,7 +56,7 @@ declare module "jriapp_db/dataquery" {
         updateCache(pageIndex: number, items: IEntityItem[]): void;
         getQueryInfo(): IQueryInfo;
     }
-    export class DataQuery<TItem extends IEntityItem> extends BaseObject {
+    export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
         private _dbSet;
         private __queryInfo;
         private _filterInfo;
@@ -72,7 +72,7 @@ declare module "jriapp_db/dataquery" {
         private _cacheInvalidated;
         private _internal;
         private _isPagingEnabled;
-        constructor(dbSet: DbSet<TItem, DbContext>, queryInfo: IQueryInfo);
+        constructor(dbSet: DbSet<TItem, TObj, DbContext>, queryInfo: IQueryInfo);
         private _addSort(fieldName, sortOrder);
         private _addFilterItem(fieldName, operand, value, checkFieldName?);
         private _resetCacheInvalidated();
@@ -94,8 +94,7 @@ declare module "jriapp_db/dataquery" {
         destroy(): void;
         toString(): string;
         readonly serverTimezone: number;
-        readonly entityType: IEntityConstructor<TItem>;
-        readonly dbSet: DbSet<TItem, DbContext>;
+        readonly dbSet: DbSet<TItem, TObj, DbContext>;
         readonly dbSetName: string;
         readonly queryName: string;
         readonly filterInfo: IFilterInfo;
@@ -110,18 +109,18 @@ declare module "jriapp_db/dataquery" {
         isClearCacheOnEveryLoad: boolean;
         readonly isCacheValid: boolean;
     }
-    export type TDataQuery = DataQuery<IEntityItem>;
+    export type TDataQuery = DataQuery<IEntityItem, any>;
 }
 declare module "jriapp_db/datacache" {
     import { BaseObject } from "jriapp_shared";
-    import { DataQuery } from "jriapp_db/dataquery";
+    import { TDataQuery } from "jriapp_db/dataquery";
     import { IEntityItem, ICachedPage } from "jriapp_db/int";
     export class DataCache extends BaseObject {
         private _query;
         private _pages;
         private _itemsByKey;
         private _totalCount;
-        constructor(query: DataQuery<IEntityItem>);
+        constructor(query: TDataQuery);
         private _getPrevPageIndex(currentPageIndex);
         getNextRange(pageIndex: number): {
             start: number;
@@ -150,25 +149,25 @@ declare module "jriapp_db/dbset" {
     import { TEventHandler, IBaseObject, IPromise, TPriority } from "jriapp_shared";
     import { IInternalCollMethods, IFieldInfo } from "jriapp_shared/collection/int";
     import { BaseCollection } from "jriapp_shared/collection/base";
-    import { IFieldName, IEntityItem, IEntityConstructor, IRowInfo, ITrackAssoc, IQueryResponse, IPermissions, IDbSetConstuctorOptions, ICalcFieldImpl, INavFieldImpl, IQueryResult, IRowData, IDbSetLoadedArgs } from "jriapp_db/int";
+    import { IFieldName, IEntityItem, TItemFactory, IRowInfo, ITrackAssoc, IQueryResponse, IPermissions, IDbSetConstuctorOptions, ICalcFieldImpl, INavFieldImpl, IQueryResult, IRowData, IDbSetLoadedArgs } from "jriapp_db/int";
     import { REFRESH_MODE } from "jriapp_db/const";
-    import { DataQuery } from "jriapp_db/dataquery";
+    import { DataQuery, TDataQuery } from "jriapp_db/dataquery";
     import { DbContext } from "jriapp_db/dbcontext";
     export interface IFillFromServiceArgs {
         res: IQueryResponse;
         reason: COLL_CHANGE_REASON;
-        query: DataQuery<IEntityItem>;
+        query: TDataQuery;
         onFillEnd: () => void;
     }
     export interface IFillFromCacheArgs {
         reason: COLL_CHANGE_REASON;
-        query: DataQuery<IEntityItem>;
+        query: TDataQuery;
     }
-    export interface IInternalDbSetMethods<TItem extends IEntityItem> extends IInternalCollMethods<TItem> {
+    export interface IInternalDbSetMethods<TItem extends IEntityItem, TObj> extends IInternalCollMethods<TItem> {
         getCalcFieldVal(fieldName: string, item: IEntityItem): any;
         getNavFieldVal(fieldName: string, item: IEntityItem): any;
         setNavFieldVal(fieldName: string, item: IEntityItem, value: any): void;
-        beforeLoad(query: DataQuery<TItem>, oldQuery: DataQuery<TItem>): void;
+        beforeLoad(query: DataQuery<TItem, TObj>, oldQuery: DataQuery<TItem, TObj>): void;
         updatePermissions(perms: IPermissions): void;
         getChildToParentNames(childFieldName: string): string[];
         fillFromService(info: IFillFromServiceArgs): IQueryResult<TItem>;
@@ -181,10 +180,10 @@ declare module "jriapp_db/dbset" {
         removeFromChanged(key: string): void;
         onItemStatusChanged(item: TItem, oldStatus: ITEM_STATUS): void;
     }
-    export interface IDbSetConstructor<TItem extends IEntityItem> {
-        new (dbContext: DbContext): DbSet<TItem, DbContext>;
+    export interface IDbSetConstructor<TItem extends IEntityItem, TObj> {
+        new (dbContext: DbContext): DbSet<TItem, TObj, DbContext>;
     }
-    export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> extends BaseCollection<TItem> {
+    export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext> extends BaseCollection<TItem> {
         private _dbContext;
         private _isSubmitOnDelete;
         private _trackAssoc;
@@ -202,9 +201,9 @@ declare module "jriapp_db/dbset" {
         protected _itemsByKey: {
             [key: string]: TItem;
         };
-        protected _entityType: IEntityConstructor<TItem>;
+        protected _itemFactory: TItemFactory<TItem, TObj>;
         protected _ignorePageChanged: boolean;
-        protected _query: DataQuery<TItem>;
+        protected _query: DataQuery<TItem, TObj>;
         private _pageDebounce;
         private _dbSetName;
         private _pkFields;
@@ -216,7 +215,6 @@ declare module "jriapp_db/dbset" {
         protected _doNavigationField(opts: IDbSetConstuctorOptions, fieldInfo: IFieldInfo): INavFieldImpl<TItem>;
         protected _doCalculatedField(opts: IDbSetConstuctorOptions, fieldInfo: IFieldInfo): ICalcFieldImpl<TItem>;
         protected _refreshValues(path: string, item: IEntityItem, values: any[], names: IFieldName[], rm: REFRESH_MODE): void;
-        protected _setCurrentItem(v: TItem): void;
         protected _applyFieldVals(vals: any, path: string, values: any[], names: IFieldName[]): void;
         protected _getNewKey(): string;
         protected _createNew(): TItem;
@@ -230,7 +228,7 @@ declare module "jriapp_db/dbset" {
         protected _getCalcFieldVal(fieldName: string, item: TItem): any;
         protected _getNavFieldVal(fieldName: string, item: TItem): any;
         protected _setNavFieldVal(fieldName: string, item: TItem, value: any): void;
-        protected _beforeLoad(query: DataQuery<TItem>, oldQuery: DataQuery<TItem>): void;
+        protected _beforeLoad(query: DataQuery<TItem, TObj>, oldQuery: DataQuery<TItem, TObj>): void;
         protected _updatePermissions(perms: IPermissions): void;
         protected _getChildToParentNames(childFieldName: string): string[];
         protected _afterFill(result: IQueryResult<TItem>, isClearAll?: boolean): void;
@@ -247,15 +245,15 @@ declare module "jriapp_db/dbset" {
         protected _onLoaded(items: TItem[]): void;
         protected _destroyQuery(): void;
         protected _getNames(): IFieldName[];
-        createEntityFromObj(obj: any, key?: string): TItem;
+        createEntityFromObj(obj: TObj, key?: string): TItem;
         createEntityFromData(row: IRowData, fieldNames: IFieldName[]): TItem;
-        _getInternal(): IInternalDbSetMethods<TItem>;
+        _getInternal(): IInternalDbSetMethods<TItem, TObj>;
         fillData(data: {
             names: IFieldName[];
             rows: IRowData[];
         }, isAppend?: boolean): IQueryResult<TItem>;
-        fillItems<TObj>(data: TObj[], isAppend?: boolean): IQueryResult<TItem>;
-        addOnLoaded(fn: TEventHandler<DbSet<TItem, TDbContext>, IDbSetLoadedArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
+        fillItems(data: TObj[], isAppend?: boolean): IQueryResult<TItem>;
+        addOnLoaded(fn: TEventHandler<DbSet<TItem, TObj, TDbContext>, IDbSetLoadedArgs<TObj>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         removeOnLoaded(nmspace?: string): void;
         waitForNotBusy(callback: () => void, groupName: string): void;
         getFieldInfo(fieldName: string): IFieldInfo;
@@ -264,36 +262,35 @@ declare module "jriapp_db/dbset" {
         rejectChanges(): void;
         deleteOnSubmit(item: TItem): void;
         clear(): void;
-        createQuery(name: string): DataQuery<TItem>;
+        createQuery(name: string): DataQuery<TItem, TObj>;
         destroy(): void;
         toString(): string;
         readonly items: TItem[];
         readonly dbContext: TDbContext;
         readonly dbSetName: string;
-        readonly entityType: IEntityConstructor<TItem>;
-        readonly query: DataQuery<TItem>;
+        readonly itemFactory: TItemFactory<TItem, TObj>;
+        readonly query: DataQuery<TItem, TObj>;
         readonly isHasChanges: boolean;
         readonly cacheSize: number;
         isSubmitOnDelete: boolean;
         readonly isBusy: boolean;
     }
-    export type TDbSet = DbSet<IEntityItem, DbContext>;
+    export type TDbSet = DbSet<IEntityItem, any, DbContext>;
 }
 declare module "jriapp_db/dbsets" {
     import { BaseObject } from "jriapp_shared";
     import { IEntityItem } from "jriapp_db/int";
     import { DbContext } from "jriapp_db/dbcontext";
-    import { DbSet, IDbSetConstructor } from "jriapp_db/dbset";
-    export type TDbSet = DbSet<IEntityItem, DbContext>;
+    import { DbSet, IDbSetConstructor, TDbSet } from "jriapp_db/dbset";
     export class DbSets extends BaseObject {
         private _dbContext;
         private _dbSets;
         private _arrDbSets;
         constructor(dbContext: DbContext);
         protected _dbSetCreated(dbSet: TDbSet): void;
-        protected _createDbSet(name: string, dbSetType: IDbSetConstructor<IEntityItem>): void;
+        protected _createDbSet(name: string, dbSetType: IDbSetConstructor<IEntityItem, any>): void;
         readonly dbSetNames: string[];
-        readonly arrDbSets: DbSet<IEntityItem, DbContext>[];
+        readonly arrDbSets: DbSet<IEntityItem, any, DbContext>[];
         getDbSet(name: string): TDbSet;
         destroy(): void;
     }
@@ -304,8 +301,7 @@ declare module "jriapp_db/association" {
     import { ICollChangedArgs, IFieldInfo } from "jriapp_shared/collection/int";
     import { DELETE_ACTION } from "jriapp_db/const";
     import { IAssocConstructorOptions, IEntityItem } from "jriapp_db/int";
-    import { DbContext } from "jriapp_db/dbcontext";
-    import { DbSet } from "jriapp_db/dbset";
+    import { TDbSet } from "jriapp_db/dbset";
     export class Association extends BaseObject {
         private _objId;
         private _name;
@@ -344,7 +340,7 @@ declare module "jriapp_db/association" {
         protected _storeChildFKey(item: IEntityItem): void;
         protected _checkChildFKey(item: IEntityItem): void;
         protected _onChildStatusChanged(item: IEntityItem, oldStatus: ITEM_STATUS): void;
-        protected _getItemKey(finf: IFieldInfo[], ds: DbSet<IEntityItem, DbContext>, item: IEntityItem): string;
+        protected _getItemKey(finf: IFieldInfo[], ds: TDbSet, item: IEntityItem): string;
         protected _resetChildMap(): void;
         protected _resetParentMap(): void;
         protected _unMapChildItem(item: IEntityItem): string;
@@ -367,8 +363,8 @@ declare module "jriapp_db/association" {
         readonly name: string;
         readonly parentToChildrenName: string;
         readonly childToParentName: string;
-        readonly parentDS: DbSet<IEntityItem, DbContext>;
-        readonly childDS: DbSet<IEntityItem, DbContext>;
+        readonly parentDS: TDbSet;
+        readonly childDS: TDbSet;
         readonly parentFldInfos: IFieldInfo[];
         readonly childFldInfos: IFieldInfo[];
         readonly onDeleteAction: DELETE_ACTION;
@@ -404,16 +400,16 @@ declare module "jriapp_db/dbcontext" {
     import { IIndexer, IVoidPromise, IBaseObject, TEventHandler, BaseObject, IStatefulPromise, IAbortablePromise } from "jriapp_shared";
     import { IEntityItem, IRefreshRowInfo, IQueryResult, IQueryInfo, IAssociationInfo, IPermissionsInfo, IInvokeRequest, IQueryResponse, IChangeSet } from "jriapp_db/int";
     import { DATA_OPER } from "jriapp_db/const";
-    import { DbSet } from "jriapp_db/dbset";
+    import { DbSet, TDbSet } from "jriapp_db/dbset";
     import { DbSets } from "jriapp_db/dbsets";
     import { Association } from "jriapp_db/association";
-    import { DataQuery } from "jriapp_db/dataquery";
+    import { TDataQuery } from "jriapp_db/dataquery";
     export interface IInternalDbxtMethods {
         onItemRefreshed(res: IRefreshRowInfo, item: IEntityItem): void;
         refreshItem(item: IEntityItem): IStatefulPromise<IEntityItem>;
         getQueryInfo(name: string): IQueryInfo;
-        onDbSetHasChangesChanged(eSet: DbSet<IEntityItem, DbContext>): void;
-        load(query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
+        onDbSetHasChangesChanged(eSet: TDbSet): void;
+        load(query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
     }
     export class DbContext extends BaseObject {
         private _requestHeaders;
@@ -448,9 +444,9 @@ declare module "jriapp_db/dbcontext" {
             result: any;
             error: any;
         }) => void): void;
-        protected _loadFromCache(query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
+        protected _loadFromCache(query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
         protected _loadSubsets(res: IQueryResponse, isClearAll: boolean): void;
-        protected _onLoaded(res: IQueryResponse, query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
+        protected _onLoaded(res: IQueryResponse, query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
         protected _dataSaved(res: IChangeSet): void;
         protected _getChanges(): IChangeSet;
         protected _getUrl(action: string): string;
@@ -459,13 +455,13 @@ declare module "jriapp_db/dbcontext" {
         protected waitForNotBusy(callback: () => void): void;
         protected waitForNotSubmiting(callback: () => void): void;
         protected _loadInternal(context: {
-            query: DataQuery<IEntityItem>;
+            query: TDataQuery;
             reason: COLL_CHANGE_REASON;
             loadPageCount: number;
             pageIndex: number;
             isPagingEnabled: boolean;
             dbSetName: string;
-            dbSet: DbSet<IEntityItem, DbContext>;
+            dbSet: TDbSet;
             fn_onStart: () => void;
             fn_onEnd: () => void;
             fn_onOK: (res: IQueryResult<IEntityItem>) => void;
@@ -474,7 +470,7 @@ declare module "jriapp_db/dbcontext" {
         protected _onItemRefreshed(res: IRefreshRowInfo, item: IEntityItem): void;
         protected _loadRefresh(args: {
             item: IEntityItem;
-            dbSet: DbSet<IEntityItem, DbContext>;
+            dbSet: TDbSet;
             fn_onStart: () => void;
             fn_onEnd: () => void;
             fn_onErr: (ex: any) => void;
@@ -482,8 +478,8 @@ declare module "jriapp_db/dbcontext" {
         }): void;
         protected _refreshItem(item: IEntityItem): IStatefulPromise<IEntityItem>;
         protected _getQueryInfo(name: string): IQueryInfo;
-        protected _onDbSetHasChangesChanged(eSet: DbSet<IEntityItem, DbContext>): void;
-        protected _load(query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
+        protected _onDbSetHasChangesChanged(eSet: TDbSet): void;
+        protected _load(query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
         protected _submitChanges(args: {
             fn_onStart: () => void;
             fn_onEnd: () => void;
@@ -500,10 +496,10 @@ declare module "jriapp_db/dbcontext" {
             isHandled: boolean;
         }>, nmspace?: string, context?: IBaseObject): void;
         removeOnSubmitError(nmspace?: string): void;
-        getDbSet(name: string): DbSet<IEntityItem, DbContext>;
+        getDbSet(name: string): DbSet<IEntityItem, any, DbContext>;
         getAssociation(name: string): Association;
         submitChanges(): IVoidPromise;
-        load(query: DataQuery<IEntityItem>): IStatefulPromise<IQueryResult<IEntityItem>>;
+        load(query: TDataQuery): IStatefulPromise<IQueryResult<IEntityItem>>;
         acceptChanges(): void;
         rejectChanges(): void;
         abortRequests(reason?: string, operType?: DATA_OPER): void;
@@ -527,16 +523,16 @@ declare module "jriapp_db/entity_aspect" {
     import { ItemAspect } from "jriapp_shared/collection/aspect";
     import { REFRESH_MODE } from "jriapp_db/const";
     import { DbContext } from "jriapp_db/dbcontext";
-    import { IEntityItem, IEntityConstructor, IRowData, IFieldName, IValueChange, IRowInfo } from "jriapp_db/int";
+    import { IEntityItem, IRowData, IFieldName, IValueChange, IRowInfo } from "jriapp_db/int";
     import { DbSet } from "jriapp_db/dbset";
-    export interface IEntityAspectConstructor<TItem extends IEntityItem, TDbContext extends DbContext> {
-        new (dbSet: DbSet<TItem, TDbContext>, row: IRowData, names: IFieldName[]): EntityAspect<TItem, TDbContext>;
+    export interface IEntityAspectConstructor<TItem extends IEntityItem, TObj, TDbContext extends DbContext> {
+        new (dbSet: DbSet<TItem, TObj, TDbContext>, row: IRowData, names: IFieldName[]): EntityAspect<TItem, TObj, TDbContext>;
     }
-    export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContext> extends ItemAspect<TItem> {
+    export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends DbContext> extends ItemAspect<TItem, TObj> {
         private _srvKey;
         private _origVals;
         private _savedStatus;
-        constructor(dbSet: DbSet<TItem, TDbContext>, vals: any, key: string, isNew: boolean);
+        constructor(dbSet: DbSet<TItem, TObj, TDbContext>, vals: TObj, key: string, isNew: boolean);
         protected _onFieldChanged(fieldName: string, fieldInfo: IFieldInfo): void;
         protected _getValueChange(fullName: string, fieldInfo: IFieldInfo, changedOnly: boolean): IValueChange;
         protected _getValueChanges(changedOnly: boolean): IValueChange[];
@@ -570,11 +566,10 @@ declare module "jriapp_db/entity_aspect" {
         destroy(): void;
         toString(): string;
         readonly srvKey: string;
-        readonly entityType: IEntityConstructor<TItem>;
         readonly isCanSubmit: boolean;
         readonly dbSetName: string;
         readonly serverTimezone: number;
-        readonly dbSet: DbSet<TItem, TDbContext>;
+        readonly dbSet: DbSet<TItem, TObj, TDbContext>;
     }
 }
 declare module "jriapp_db/int" {
@@ -588,11 +583,9 @@ declare module "jriapp_db/int" {
         p: IFieldName[];
     }
     export interface IEntityItem extends ICollectionItem {
-        readonly _aspect: EntityAspect<IEntityItem, DbContext>;
+        readonly _aspect: EntityAspect<IEntityItem, any, DbContext>;
     }
-    export interface IEntityConstructor<TItem extends IEntityItem> {
-        new (aspect: EntityAspect<TItem, DbContext>): TItem;
-    }
+    export type TItemFactory<TItem extends IEntityItem, TObj> = (aspect: EntityAspect<TItem, TObj, DbContext>) => TItem;
     export interface IKV {
         key: string;
         val: any;
@@ -673,8 +666,8 @@ declare module "jriapp_db/int" {
         childAssoc: IAssociationInfo[];
         parentAssoc: IAssociationInfo[];
     }
-    export interface IDbSetLoadedArgs<TItem extends IEntityItem> {
-        items: TItem[];
+    export interface IDbSetLoadedArgs<TObj> {
+        vals: TObj[];
     }
     export interface IAssocConstructorOptions {
         dbContext: DbContext;
@@ -887,10 +880,10 @@ declare module "jriapp_db/complexprop" {
         getFieldInfo(): IFieldInfo;
         getProperties(): IFieldInfo[];
         getFullPath(name: string): string;
-        getEntity(): EntityAspect<IEntityItem, DbContext>;
+        getEntity(): EntityAspect<IEntityItem, any, DbContext>;
         getPropertyByName(name: string): IFieldInfo;
         getIsHasErrors(): boolean;
-        addOnErrorsChanged(fn: TEventHandler<EntityAspect<IEntityItem, DbContext>, any>, nmspace?: string, context?: any): void;
+        addOnErrorsChanged(fn: TEventHandler<EntityAspect<IEntityItem, any, DbContext>, any>, nmspace?: string, context?: any): void;
         removeOnErrorsChanged(nmspace?: string): void;
         getFieldErrors(fieldName: string): IValidationInfo[];
         getAllErrors(): IValidationInfo[];
@@ -898,13 +891,13 @@ declare module "jriapp_db/complexprop" {
     }
     export class RootComplexProperty extends BaseComplexProperty {
         private _entity;
-        constructor(name: string, owner: EntityAspect<IEntityItem, DbContext>);
+        constructor(name: string, owner: EntityAspect<IEntityItem, any, DbContext>);
         _getFullPath(path: string): string;
         setValue(fullName: string, value: any): void;
         getValue(fullName: string): any;
         getFieldInfo(): IFieldInfo;
         getProperties(): IFieldInfo[];
-        getEntity(): EntityAspect<IEntityItem, DbContext>;
+        getEntity(): EntityAspect<IEntityItem, any, DbContext>;
         getFullPath(name: string): string;
     }
     export class ChildComplexProperty extends BaseComplexProperty {
@@ -918,11 +911,11 @@ declare module "jriapp_db/complexprop" {
         getParent(): BaseComplexProperty;
         getRootProperty(): RootComplexProperty;
         getFullPath(name: string): string;
-        getEntity(): EntityAspect<IEntityItem, DbContext>;
+        getEntity(): EntityAspect<IEntityItem, any, DbContext>;
     }
 }
 declare module "jriapp_db" {
-    export { IFieldName, IEntityItem, IPermissions, IQueryResult, IDbSetLoadedArgs, IErrorInfo, IMetadata, IDbSetConstuctorOptions, IEntityConstructor, IValidationErrorInfo, IPermissionsInfo, IFilterInfo, ISortInfo, IRowData } from "jriapp_db/int";
+    export { IFieldName, IEntityItem, IPermissions, IQueryResult, IDbSetLoadedArgs, IErrorInfo, IMetadata, IDbSetConstuctorOptions, IValidationErrorInfo, IPermissionsInfo, IFilterInfo, ISortInfo, IRowData, TItemFactory } from "jriapp_db/int";
     export { DbSet, TDbSet, IDbSetConstructor, IInternalDbSetMethods } from "jriapp_db/dbset";
     export * from "jriapp_db/dataview";
     export * from "jriapp_db/child_dataview";

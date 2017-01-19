@@ -31,7 +31,7 @@ interface ICustomVal
     isOwnIt: boolean;
 }
 
-export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implements IItemAspect<TItem> {
+export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject implements IItemAspect<TItem, TObj> {
     private _key: string;
     private _item: TItem;
     private _collection: BaseCollection<TItem>;
@@ -330,7 +330,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         }
         return res;
     }
-    addOnErrorsChanged(fn: TEventHandler<ItemAspect<TItem>, any>, nmspace?: string, context?: any) {
+    addOnErrorsChanged(fn: TEventHandler<ItemAspect<TItem, TObj>, any>, nmspace?: string, context?: any) {
         this._addHandler(ITEM_EVENTS.errors_changed, fn, nmspace, context);
     }
     removeOnErrorsChanged(nmspace?: string) {
@@ -452,7 +452,7 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
         return "ItemAspect";
     }
     //cloned values of this item
-    get obj(): any {
+    get vals(): TObj {
         return collUtils.copyVals(this.collection.getFieldInfos(), this._vals, {});
     }
     get item(): TItem {

@@ -53,10 +53,6 @@
     <TypeScriptCompile Include="mastDetDemo\orderVM.ts" />
     <TypeScriptCompile Include="mastDetDemo\prodAutocomplete.ts" />
     <TypeScriptCompile Include="mastDetDemo\productVM.ts" />
-    <TypeScriptCompile Include="nancydemo\main.ts" />
-    <TypeScriptCompile Include="nancydemo\demoDB.ts" />
-    <TypeScriptCompile Include="nancydemo\gridDemo.ts" />
-    <TypeScriptCompile Include="nancydemo\states.ts" />
     <TypeScriptCompile Include="spademo\addAddressVM.ts" />
     <TypeScriptCompile Include="spademo\addressVM.ts" />
     <TypeScriptCompile Include="spademo\animation.ts" />
@@ -78,9 +74,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="spademo\tsconfig.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="nancydemo\tsconfig.json" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="gridDemo\tsconfig.json" />

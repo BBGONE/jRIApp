@@ -3,19 +3,19 @@ import {
     BaseObject, LocaleERRS as ERRS, Utils, IIndexer
 } from "jriapp_shared";
 import { PROP_NAME } from "./const";
-import { DataQuery } from "./dataquery";
+import { TDataQuery } from "./dataquery";
 import { IEntityItem, ICachedPage, IKV } from "./int";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
 
 
 export class DataCache extends BaseObject {
-    private _query: DataQuery<IEntityItem>;
+    private _query: TDataQuery;
     private _pages: IIndexer<ICachedPage>;
     private _itemsByKey: { [key: string]: IKV; };
     private _totalCount: number;
     
-    constructor(query: DataQuery<IEntityItem>) {
+    constructor(query: TDataQuery) {
         super();
         this._query = query;
         this._pages = {};
@@ -101,7 +101,7 @@ export class DataCache extends BaseObject {
         this.deletePage(pageIndex);
         if (items.length === 0)
             return;
-        const kvs = items.map((item) => { return { key: item._key, val: item._aspect.obj }; });
+        const kvs = items.map((item) => { return { key: item._key, val: item._aspect.vals }; });
         //create new page
         const page: ICachedPage = { keys: kvs.map((kv) => kv.key), pageIndex: pageIndex };
         this._pages[pageIndex] = page;

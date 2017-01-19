@@ -9,8 +9,7 @@ import { IFieldInfo } from "jriapp_shared/collection/int";
 import { ValueUtils } from "jriapp_shared/collection/utils";
 import { PROP_NAME } from "./const";
 import {
-    IEntityItem, IQueryInfo, IFilterInfo, ISortInfo, IQueryResult,
-    IEntityConstructor, ICachedPage
+    IEntityItem, IQueryInfo, IFilterInfo, ISortInfo, IQueryResult, ICachedPage
 } from "./int";
 import { DataCache } from "./datacache";
 import { DbSet } from "./dbset";
@@ -27,8 +26,8 @@ export interface IInternalQueryMethods<TItem extends IEntityItem> {
     getQueryInfo(): IQueryInfo;
 }
 
-export class DataQuery<TItem extends IEntityItem> extends BaseObject {
-    private _dbSet: DbSet<TItem, DbContext>;
+export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
+    private _dbSet: DbSet<TItem, TObj, DbContext>;
     private __queryInfo: IQueryInfo;
     private _filterInfo: IFilterInfo;
     private _sortInfo: ISortInfo;
@@ -43,8 +42,8 @@ export class DataQuery<TItem extends IEntityItem> extends BaseObject {
     private _cacheInvalidated: boolean;
     private _internal: IInternalQueryMethods<TItem>;
     private _isPagingEnabled: boolean;
-     
-    constructor(dbSet: DbSet<TItem, DbContext>, queryInfo: IQueryInfo) {
+
+    constructor(dbSet: DbSet<TItem, TObj, DbContext>, queryInfo: IQueryInfo) {
         super();
         let self = this;
         this._dbSet = dbSet;
@@ -216,7 +215,6 @@ export class DataQuery<TItem extends IEntityItem> extends BaseObject {
         return "DataQuery";
    }
     get serverTimezone() { return this._dbSet.dbContext.serverTimezone; }
-    get entityType() { return this._dbSet.entityType; }
     get dbSet() { return this._dbSet; }
     get dbSetName() { return this._dbSet.dbSetName; }
     get queryName() { return this.__queryInfo.methodName; }
@@ -272,4 +270,4 @@ export class DataQuery<TItem extends IEntityItem> extends BaseObject {
     get isCacheValid() { return !!this._dataCache && !this._cacheInvalidated; }
 }
 
-export type TDataQuery = DataQuery<IEntityItem>;
+export type TDataQuery = DataQuery<IEntityItem, any>;

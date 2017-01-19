@@ -16,7 +16,7 @@ export interface IGridEvents<TItem extends RIAPP.ICollectionItem> {
     onRowCollapsed(item: TItem): void;
 }
 
-export function addTextQuery(query: dbMOD.TDataQuery, fldName: string, val: any): dbMOD.DataQuery<dbMOD.IEntityItem> {
+export function addTextQuery(query: dbMOD.TDataQuery, fldName: string, val: any): dbMOD.TDataQuery {
     var tmp: string;
     if (!!val) {
         if (utils.str.startsWith(val, '%') && utils.str.endsWith(val, '%')) {

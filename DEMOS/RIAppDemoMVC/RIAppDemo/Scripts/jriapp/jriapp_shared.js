@@ -1194,6 +1194,11 @@ define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/
                 }
             }
         };
+        EventHelper.count = function (ev, name) {
+            if (!ev)
+                return 0;
+            return (!name) ? 0 : evList.toArray(ev[name]).length;
+        };
         EventHelper.raise = function (sender, ev, name, args) {
             if (!ev)
                 return;
@@ -1285,6 +1290,9 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
             enumerable: true,
             configurable: true
         });
+        BaseObject.prototype._canRaiseEvent = function (name) {
+            return evHelper.count(this._events, name) > 0;
+        };
         BaseObject.prototype._isHasProp = function (prop) {
             return checks.isHasProp(this, prop);
         };
@@ -4278,7 +4286,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         ItemAspect.prototype.toString = function () {
             return "ItemAspect";
         };
-        Object.defineProperty(ItemAspect.prototype, "obj", {
+        Object.defineProperty(ItemAspect.prototype, "vals", {
             get: function () {
                 return collUtils.copyVals(this.collection.getFieldInfos(), this._vals, {});
             },
@@ -4429,7 +4437,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
             if (isNew)
                 this._status = 1;
             this._vals = vals;
-            var item = new coll.itemType(this);
+            var item = coll.itemFactory(this);
             this._setItem(item);
             this._setKey(key);
         }
@@ -4484,9 +4492,9 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
     exports.ListItemAspect = ListItemAspect;
     var BaseList = (function (_super) {
         __extends(BaseList, _super);
-        function BaseList(itemType, props) {
+        function BaseList(props) {
             _super.call(this);
-            this._itemType = itemType;
+            this._initItemFactory();
             if (!!props)
                 this._updateFieldMap(props);
         }
@@ -4506,6 +4514,8 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                     fld.fullName = fullName;
                 });
             });
+        };
+        BaseList.prototype._initItemFactory = function () {
         };
         BaseList.prototype._attach = function (item) {
             try {
@@ -4535,7 +4545,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
-            this._itemType = null;
+            this._itemFactory = null;
             _super.prototype.destroy.call(this);
         };
         BaseList.prototype.fillItems = function (objArray, clearAll) {
@@ -4591,15 +4601,15 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
         };
         BaseList.prototype.toArray = function () {
             return this.items.map(function (item, index, arr) {
-                return item._aspect.obj;
+                return item._aspect.vals;
             });
         };
         BaseList.prototype.toString = function () {
             return "BaseList";
         };
-        Object.defineProperty(BaseList.prototype, "itemType", {
+        Object.defineProperty(BaseList.prototype, "itemFactory", {
             get: function () {
-                return this._itemType;
+                return this._itemFactory;
             },
             enumerable: true,
             configurable: true
@@ -4707,7 +4717,7 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
         __extends(AnyList, _super);
         function AnyList(onChanged) {
             var _this = this;
-            _super.call(this, AnyValListItem, [{ name: 'val', dtype: 0 }]);
+            _super.call(this, [{ name: 'val', dtype: 0 }]);
             this._saveVal = null;
             this._onChanged = onChanged;
             this._debounce = new debounce_2.Debounce();
@@ -4746,6 +4756,10 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
             this._debounce.destroy();
             this._onChanged = null;
             _super.prototype.destroy.call(this);
+        };
+        AnyList.prototype._initItemFactory = function () {
+            var itemType = AnyValListItem;
+            this._itemFactory = function (aspect) { return new itemType(aspect); };
         };
         AnyList.prototype.createItem = function (obj) {
             var isNew = !obj;
@@ -4962,10 +4976,10 @@ define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_sha
     };
     var BaseDictionary = (function (_super) {
         __extends(BaseDictionary, _super);
-        function BaseDictionary(itemType, keyName, props) {
+        function BaseDictionary(keyName, props) {
             if (!keyName)
                 throw new Error(strUtils.format(lang_8.ERRS.ERR_PARAM_INVALID, "keyName", keyName));
-            _super.call(this, itemType, props);
+            _super.call(this, props);
             this._keyName = keyName;
             var keyFld = this.getFieldInfo(keyName);
             if (!keyFld)

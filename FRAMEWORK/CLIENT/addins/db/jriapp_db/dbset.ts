@@ -15,13 +15,13 @@ import {
     ValueUtils, CollUtils
 } from "jriapp_shared/collection/utils";
 import {
-    IFieldName, IEntityItem, IEntityConstructor, IValueChange, IRowInfo, ITrackAssoc, IQueryResponse,
+    IFieldName, IEntityItem, TItemFactory, IValueChange, IRowInfo, ITrackAssoc, IQueryResponse,
     IPermissions, IDbSetConstuctorOptions, IAssociationInfo, IDbSetInfo, ICalcFieldImpl, INavFieldImpl,
     IQueryResult, IQueryRequest, IQueryParamInfo, IRowData, IDbSetLoadedArgs
 } from "./int";
 import { PROP_NAME, REFRESH_MODE } from "./const";
 import { DataCache } from "./datacache";
-import { DataQuery } from "./dataquery";
+import { DataQuery, TDataQuery } from "./dataquery";
 import { DbContext } from "./dbcontext";
 import { EntityAspect } from "./entity_aspect";
 
@@ -32,20 +32,20 @@ const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = uti
 export interface IFillFromServiceArgs {
     res: IQueryResponse;
     reason: COLL_CHANGE_REASON;
-    query: DataQuery<IEntityItem>;
+    query: TDataQuery;
     onFillEnd: () => void;
 }
 
 export interface IFillFromCacheArgs {
     reason: COLL_CHANGE_REASON;
-    query: DataQuery<IEntityItem>;
+    query: TDataQuery;
 }
 
-export interface IInternalDbSetMethods<TItem extends IEntityItem> extends IInternalCollMethods<TItem> {
+export interface IInternalDbSetMethods<TItem extends IEntityItem, TObj> extends IInternalCollMethods<TItem> {
     getCalcFieldVal(fieldName: string, item: IEntityItem): any;
     getNavFieldVal(fieldName: string, item: IEntityItem): any;
     setNavFieldVal(fieldName: string, item: IEntityItem, value: any): void;
-    beforeLoad(query: DataQuery<TItem>, oldQuery: DataQuery<TItem>): void;
+    beforeLoad(query: DataQuery<TItem, TObj>, oldQuery: DataQuery<TItem, TObj>): void;
     updatePermissions(perms: IPermissions): void;
     getChildToParentNames(childFieldName: string): string[];
     fillFromService(info: IFillFromServiceArgs): IQueryResult<TItem>;
@@ -63,11 +63,11 @@ const DBSET_EVENTS = {
     loaded: "loaded"
 };
 
-export interface IDbSetConstructor<TItem extends IEntityItem> {
-    new (dbContext: DbContext): DbSet<TItem, DbContext>;
+export interface IDbSetConstructor<TItem extends IEntityItem, TObj> {
+    new (dbContext: DbContext): DbSet<TItem, TObj, DbContext>;
 }
 
-export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> extends BaseCollection<TItem> {
+export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext> extends BaseCollection<TItem> {
     private _dbContext: TDbContext;
     private _isSubmitOnDelete: boolean;
     private _trackAssoc: { [name: string]: IAssociationInfo; };
@@ -79,9 +79,9 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
     protected _navfldMap: { [fieldName: string]: INavFieldImpl<TItem>; };
     protected _calcfldMap: { [fieldName: string]: ICalcFieldImpl<TItem>; };
     protected _itemsByKey: { [key: string]: TItem; };
-    protected _entityType: IEntityConstructor<TItem>;
+    protected _itemFactory: TItemFactory<TItem, TObj>;
     protected _ignorePageChanged: boolean;
-    protected _query: DataQuery<TItem>;
+    protected _query: DataQuery<TItem, TObj>;
     private _pageDebounce: Debounce;
     private _dbSetName: string;
     private _pkFields: IFieldInfo[];
@@ -96,7 +96,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         this._options.enablePaging = dbSetInfo.enablePaging;
         this._options.pageSize = dbSetInfo.pageSize;
         this._query = null;
-        this._entityType = null;
+        this._itemFactory = null;
         this._isSubmitOnDelete = false;
         this._navfldMap = {};
         this._calcfldMap = {};
@@ -148,7 +148,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
             setNavFieldVal: (fieldName: string, item: TItem, value: any) => {
                 self._setNavFieldVal(fieldName, item, value);
             },
-            beforeLoad: (query: DataQuery<TItem>, oldQuery: DataQuery<TItem>) => {
+            beforeLoad: (query: DataQuery<TItem, TObj>, oldQuery: DataQuery<TItem, TObj>) => {
                 self._beforeLoad(query, oldQuery);
             },
             updatePermissions: (perms: IPermissions) => {
@@ -256,15 +256,19 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
 
                 result.setFunc = function (v) {
                     let entity: TItem = this, i: number, len: number, assoc = self.dbContext.getAssociation(assocName);
-                    if (!!v && !(v instanceof assoc.parentDS.entityType)) {
-                        throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID_TYPE, "value", assoc.parentDS.dbSetName));
-                    }
-                    if (!!v && !!v._aspect && (<IEntityItem>v)._aspect.isNew) {
-                        entity._aspect._setFieldVal(fieldInfo.fieldName, (<IEntityItem>v)._key);
-                    }
-                    else if (!!v) {
-                        for (i = 0, len = assoc.childFldInfos.length; i < len; i += 1) {
-                            (<any>entity)[assoc.childFldInfos[i].fieldName] = v[assoc.parentFldInfos[i].fieldName];
+                    if (!!v)
+                    {
+                        if (((<IEntityItem>v)._aspect.dbSetName !== assoc.parentDS.dbSetName)) {
+                            throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID_TYPE, "value", assoc.parentDS.dbSetName));
+                        }
+
+                        if ((<IEntityItem>v)._aspect.isNew) {
+                            entity._aspect._setFieldVal(fieldInfo.fieldName, (<IEntityItem>v)._key);
+                        }
+                        else {
+                            for (i = 0, len = assoc.childFldInfos.length; i < len; i += 1) {
+                                (<any>entity)[assoc.childFldInfos[i].fieldName] = v[assoc.parentFldInfos[i].fieldName];
+                            }
                         }
                     }
                     else {
@@ -327,12 +331,6 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
                 item._aspect._refreshValue(value, fieldName, rm);
             }
         });
-    }
-    protected _setCurrentItem(v: TItem) {
-        if (!!v && !(v instanceof this._entityType)) {
-            throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID_TYPE, "currentItem", this.dbSetName));
-        }
-        super._setCurrentItem(v);
     }
     protected _applyFieldVals(vals: any, path: string, values: any[], names: IFieldName[]) {
         const self = this, stz = self.dbContext.serverTimezone;
@@ -458,7 +456,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         let val: INavFieldImpl<TItem> = coreUtils.getValue(this._navfldMap, fieldName);
         val.setFunc.call(item, value);
     }
-    protected _beforeLoad(query: DataQuery<TItem>, oldQuery: DataQuery<TItem>): void {
+    protected _beforeLoad(query: DataQuery<TItem, TObj>, oldQuery: DataQuery<TItem, TObj>): void {
         if (!!query && oldQuery !== query) {
             this._query = query;
             this._query.pageIndex = 0;
@@ -737,10 +735,12 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         this._removeFromChanged(item._key);
         super._onRemoved(item, pos);
     }
-    //reports the items returned from the server 
-    //if loadPageCount > 1 includes ALL! the items for all pages
+    //reports ALL the values returned from the server (it is not not triggered when loaded from the Data Cache)
     protected _onLoaded(items: TItem[]) {
-        this.raiseEvent(DBSET_EVENTS.loaded, { items: items });
+        if (this._canRaiseEvent(DBSET_EVENTS.loaded)) {
+            let vals = items.map((item) => <TObj>item._aspect.vals);
+            this.raiseEvent(DBSET_EVENTS.loaded, { vals: vals });
+        }
     }
     protected _destroyQuery(): void {
         const query = this._query;
@@ -771,10 +771,10 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         }, names);
         return names;
     }
-    createEntityFromObj(obj: any, key?: string): TItem {
+    createEntityFromObj(obj: TObj, key?: string): TItem {
         const isNew = !obj, vals: any = colUtils.objToVals(this.getFieldInfos(), obj),
             _key = isNew ? this._getNewKey() : (!key ? this._getKeyValue(vals) : key);
-        const aspect = new EntityAspect<TItem, TDbContext>(this, vals, _key, isNew);
+        const aspect = new EntityAspect<TItem, TObj, TDbContext>(this, vals, _key, isNew);
         return aspect.item;
     }
     createEntityFromData(row: IRowData, fieldNames: IFieldName[]): TItem {
@@ -782,11 +782,11 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         if (!!row) {
             this._applyFieldVals(vals, "", row.v, fieldNames);
         }
-        const aspect = new EntityAspect<TItem, TDbContext>(this, vals, !row ? this._getNewKey() : row.k, !row);
+        const aspect = new EntityAspect<TItem, TObj, TDbContext>(this, vals, !row ? this._getNewKey() : row.k, !row);
         return aspect.item;
     }
-    _getInternal(): IInternalDbSetMethods<TItem> {
-        return <IInternalDbSetMethods<TItem>>this._internal;
+    _getInternal(): IInternalDbSetMethods<TItem, TObj> {
+        return <IInternalDbSetMethods<TItem, TObj>>this._internal;
     }
     //fill items from row data (in wire format)
     fillData(data: {
@@ -852,7 +852,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         return result;
     }
     //manually fill items for an array of objects
-    fillItems<TObj>(data: TObj[], isAppend?: boolean): IQueryResult<TItem> {
+    fillItems(data: TObj[], isAppend?: boolean): IQueryResult<TItem> {
         const self = this, reason = COLL_CHANGE_REASON.None;
         let newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];
         this._destroyQuery();
@@ -899,7 +899,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         this._afterFill(result, isClearAll);
         return result;
     }
-    addOnLoaded(fn: TEventHandler<DbSet<TItem, TDbContext>, IDbSetLoadedArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+    addOnLoaded(fn: TEventHandler<DbSet<TItem, TObj, TDbContext>, IDbSetLoadedArgs<TObj>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
         this._addHandler(DBSET_EVENTS.loaded, fn, nmspace, context, priority);
     }
     removeOnLoaded(nmspace?: string) {
@@ -982,12 +982,12 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         this._destroyQuery();
         super.clear();
     }
-    createQuery(name: string): DataQuery<TItem> {
+    createQuery(name: string): DataQuery<TItem, TObj> {
         let queryInfo = this.dbContext._getInternal().getQueryInfo(name);
         if (!queryInfo) {
             throw new Error(strUtils.format(ERRS.ERR_QUERY_NAME_NOTFOUND, name));
         }
-        return new DataQuery<TItem>(this, queryInfo);
+        return new DataQuery<TItem, TObj>(this, queryInfo);
     }
     destroy() {
         if (this._isDestroyed)
@@ -1008,13 +1008,13 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
     toString() {
         return this.dbSetName;
     }
-    get items() { return this._items; }
+    get items(): TItem[] { return this._items; }
     get dbContext(): TDbContext {
         return this._dbContext;
     }
-    get dbSetName() { return this._dbSetName; }
-    get entityType() { return this._entityType; }
-    get query() { return this._query; }
+    get dbSetName(): string { return this._dbSetName; }
+    get itemFactory(): TItemFactory<TItem, TObj> { return this._itemFactory; }
+    get query(): DataQuery<TItem, TObj> { return this._query; }
     get isHasChanges(): boolean { return this._changeCount > 0; }
     get cacheSize(): number {
         let query = this._query, dataCache: DataCache;
@@ -1031,7 +1031,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
             this.raisePropertyChanged(PROP_NAME.isSubmitOnDelete);
         }
     }
-    get isBusy() { return this.isLoading || this.dbContext.isSubmiting; }
+    get isBusy(): boolean { return this.isLoading || this.dbContext.isSubmiting; }
 }
 
-export type TDbSet = DbSet<IEntityItem, DbContext>;
+export type TDbSet = DbSet<IEntityItem, any, DbContext>;

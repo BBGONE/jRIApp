@@ -69,6 +69,9 @@ export class BaseObject implements IBaseObject {
         }
         this._obj_state = !v ? ObjState.None : ObjState.DestroyCalled;
     }
+    protected _canRaiseEvent(name: string): boolean {
+        return evHelper.count(this._events, name) > 0;
+    }
     _isHasProp(prop: string): boolean {
         return checks.isHasProp(this, prop);
     }

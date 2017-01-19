@@ -14,7 +14,7 @@ import {
     IChangeSet, IRowInfo, IQueryParamInfo, IRowData, ISubset
 } from "./int";
 import { PROP_NAME, DATA_OPER, REFRESH_MODE } from "./const";
-import { DbSet } from "./dbset";
+import { DbSet, TDbSet } from "./dbset";
 import { DbSets } from "./dbsets";
 import { Association } from "./association";
 import { DataQuery, TDataQuery } from "./dataquery";
@@ -60,8 +60,8 @@ export interface IInternalDbxtMethods {
     onItemRefreshed(res: IRefreshRowInfo, item: IEntityItem): void;
     refreshItem(item: IEntityItem): IStatefulPromise<IEntityItem>;
     getQueryInfo(name: string): IQueryInfo;
-    onDbSetHasChangesChanged(eSet: DbSet<IEntityItem, DbContext>): void;
-    load(query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
+    onDbSetHasChangesChanged(eSet: TDbSet): void;
+    load(query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
 }
 
 interface IRequestPromise {
@@ -121,10 +121,10 @@ export class DbContext extends BaseObject {
             getQueryInfo: (name: string) => {
                 return self._getQueryInfo(name);
             },
-            onDbSetHasChangesChanged: (eSet: DbSet<IEntityItem, DbContext>) => {
+            onDbSetHasChangesChanged: (eSet: TDbSet) => {
                 self._onDbSetHasChangesChanged(eSet);
             },
-            load: (query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON) => {
+            load: (query: TDataQuery, reason: COLL_CHANGE_REASON) => {
                 return self._load(query, reason);
             }
         };
@@ -312,7 +312,7 @@ export class DbContext extends BaseObject {
             ERROR.throwDummy(ex);
         }
     }
-    protected _loadFromCache(query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
+    protected _loadFromCache(query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
         const self = this, defer = _async.createDeferred<IQueryResult<IEntityItem>>();
         utils.queue.enque(() => {
             if (self.getIsDestroyCalled()) {
@@ -338,7 +338,7 @@ export class DbContext extends BaseObject {
             dbSet.fillData(subset, !isClearAll);
         });
     }
-    protected _onLoaded(res: IQueryResponse, query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
+    protected _onLoaded(res: IQueryResponse, query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
         const self = this, defer = _async.createDeferred<IQueryResult<IEntityItem>>();
         utils.queue.enque(() => {
             if (self.getIsDestroyCalled()) {
@@ -469,13 +469,13 @@ export class DbContext extends BaseObject {
         });
     }
     protected _loadInternal(context: {
-        query: DataQuery<IEntityItem>;
+        query: TDataQuery;
         reason: COLL_CHANGE_REASON;
         loadPageCount: number;
         pageIndex: number;
         isPagingEnabled: boolean;
         dbSetName: string;
-        dbSet: DbSet<IEntityItem, DbContext>;
+        dbSet: TDbSet;
         fn_onStart: () => void;
         fn_onEnd: () => void;
         fn_onOK: (res: IQueryResult<IEntityItem>) => void;
@@ -566,7 +566,7 @@ export class DbContext extends BaseObject {
     }
     protected _loadRefresh(args: {
         item: IEntityItem;
-        dbSet: DbSet<IEntityItem, DbContext>;
+        dbSet: TDbSet;
         fn_onStart: () => void;
         fn_onEnd: () => void;
         fn_onErr: (ex: any) => void;
@@ -642,7 +642,7 @@ export class DbContext extends BaseObject {
     protected _getQueryInfo(name: string): IQueryInfo {
         return this._queryInf[name];
     }
-    protected _onDbSetHasChangesChanged(eSet: DbSet<IEntityItem, DbContext>): void {
+    protected _onDbSetHasChangesChanged(eSet: TDbSet): void {
         const old = this._isHasChanges;
         this._isHasChanges = false;
         if (eSet.isHasChanges) {
@@ -661,7 +661,7 @@ export class DbContext extends BaseObject {
             this.raisePropertyChanged(PROP_NAME.isHasChanges);
         }
     }
-    protected _load(query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
+    protected _load(query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
         if (!query) {
             throw new Error(ERRS.ERR_DB_LOAD_NO_QUERY);
         }
@@ -879,7 +879,7 @@ export class DbContext extends BaseObject {
 
         return submitState.promise;
     }
-    load(query: DataQuery<IEntityItem>): IStatefulPromise<IQueryResult<IEntityItem>> {
+    load(query: TDataQuery): IStatefulPromise<IQueryResult<IEntityItem>> {
         return this._load(query, COLL_CHANGE_REASON.None);
     }
     acceptChanges(): void {

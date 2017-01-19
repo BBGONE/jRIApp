@@ -7,7 +7,7 @@ import {
 import { IPropInfo, ICollectionItem } from "./int";
 import { CollUtils } from "./utils";
 import { BaseCollection } from "./base";
-import { BaseList, IListItem, IListItemConstructor, ListItemAspect } from "./list";
+import { BaseList, IListItem, ListItemAspect } from "./list";
 
 const utils = Utils, strUtils = utils.str, checks = utils.check, sys = utils.sys, collUtils = CollUtils;
 
@@ -26,10 +26,10 @@ sys.getItemByProp = (obj: any, prop: string) => {
 export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TItem, TObj>{
     private _keyName: string;
 
-    constructor(itemType: IListItemConstructor<TItem, TObj>, keyName: string, props: IPropInfo[]) {
+    constructor(keyName: string, props: IPropInfo[]) {
         if (!keyName)
             throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "keyName", keyName));
-        super(itemType, props);
+        super(props);
         this._keyName = keyName;
         const keyFld = this.getFieldInfo(keyName);
         if (!keyFld)
