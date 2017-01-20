@@ -1,5 +1,5 @@
 ﻿/*
-	Generated from: /RIAppDemoServiceEF/code?lang=ts on 2017-01-19 at 11:01
+	Generated from: /RIAppDemoServiceEF/code?lang=ts on 2017-01-20 at 14:50
 	Don't make manual changes here, because they will be lost when this db interface will be regenerated!
 */
 
@@ -92,11 +92,13 @@ export interface ISvcMethods {
 }
 
 //******BEGIN LISTS REGION******
+export type TTestModelItemAspect = RIAPP.ListItemAspect<TestModelListItem, IClientTestModel>;
+
 export interface TestModelListItem extends IClientTestModel, RIAPP.IListItem {
-    readonly _aspect: RIAPP.ListItemAspect<TestModelListItem, IClientTestModel>;
+    readonly _aspect: TTestModelItemAspect;
 }
 
-class _TestModelListItem extends RIAPP.CollectionItem<RIAPP.ListItemAspect<TestModelListItem, IClientTestModel>> implements TestModelListItem {
+class _TestModelListItem extends RIAPP.CollectionItem<TTestModelItemAspect> implements TestModelListItem {
     get Key(): string { return <string>this._aspect._getProp('Key'); }
     set Key(v: string) { this._aspect._setProp('Key', v); }
     get SomeProperty1(): string { return <string>this._aspect._getProp('SomeProperty1'); }
@@ -121,8 +123,7 @@ export class TestDictionary extends RIAPP.BaseDictionary<TestModelListItem, ICli
     }
     //override
     protected _initItemFactory(): void {
-        const itemType = _TestModelListItem;
-        this._itemFactory = (aspect: RIAPP.ListItemAspect<TestModelListItem, IClientTestModel>) => { return new itemType(aspect); };
+        this._itemFactory = (aspect: TTestModelItemAspect) => { return new _TestModelListItem(aspect); };
     }
     findItem(key: string): TestModelListItem {
         return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -138,19 +139,20 @@ export class TestList extends RIAPP.BaseList<TestModelListItem, IClientTestModel
     }
     //override
     protected _initItemFactory(): void {
-        const itemType = _TestModelListItem;
-        this._itemFactory = (aspect: RIAPP.ListItemAspect<TestModelListItem, IClientTestModel>) => { return new itemType(aspect); };
+        this._itemFactory = (aspect: TTestModelItemAspect) => { return new _TestModelListItem(aspect); };
     }
     toString() {
         return 'TestList';
     }
 }
 
+export type TKeyValItemAspect = RIAPP.ListItemAspect<KeyValListItem, IKeyVal>;
+
 export interface KeyValListItem extends IKeyVal, RIAPP.IListItem {
-    readonly _aspect: RIAPP.ListItemAspect<KeyValListItem, IKeyVal>;
+    readonly _aspect: TKeyValItemAspect;
 }
 
-class _KeyValListItem extends RIAPP.CollectionItem<RIAPP.ListItemAspect<KeyValListItem, IKeyVal>> implements KeyValListItem {
+class _KeyValListItem extends RIAPP.CollectionItem<TKeyValItemAspect> implements KeyValListItem {
     get key(): number { return <number>this._aspect._getProp('key'); }
     set key(v: number) { this._aspect._setProp('key', v); }
     get val(): string { return <string>this._aspect._getProp('val'); }
@@ -167,8 +169,7 @@ export class KeyValDictionary extends RIAPP.BaseDictionary<KeyValListItem, IKeyV
     }
     //override
     protected _initItemFactory(): void {
-        const itemType = _KeyValListItem;
-        this._itemFactory = (aspect: RIAPP.ListItemAspect<KeyValListItem, IKeyVal>) => { return new itemType(aspect); };
+        this._itemFactory = (aspect: TKeyValItemAspect) => { return new _KeyValListItem(aspect); };
     }
     findItem(key: number): KeyValListItem {
         return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -178,11 +179,13 @@ export class KeyValDictionary extends RIAPP.BaseDictionary<KeyValListItem, IKeyV
     }
 }
 
+export type TStrKeyValItemAspect = RIAPP.ListItemAspect<StrKeyValListItem, IStrKeyVal>;
+
 export interface StrKeyValListItem extends IStrKeyVal, RIAPP.IListItem {
-    readonly _aspect: RIAPP.ListItemAspect<StrKeyValListItem, IStrKeyVal>;
+    readonly _aspect: TStrKeyValItemAspect;
 }
 
-class _StrKeyValListItem extends RIAPP.CollectionItem<RIAPP.ListItemAspect<StrKeyValListItem, IStrKeyVal>> implements StrKeyValListItem {
+class _StrKeyValListItem extends RIAPP.CollectionItem<TStrKeyValItemAspect> implements StrKeyValListItem {
     get key(): string { return <string>this._aspect._getProp('key'); }
     set key(v: string) { this._aspect._setProp('key', v); }
     get val(): string { return <string>this._aspect._getProp('val'); }
@@ -199,8 +202,7 @@ export class StrKeyValDictionary extends RIAPP.BaseDictionary<StrKeyValListItem,
     }
     //override
     protected _initItemFactory(): void {
-        const itemType = _StrKeyValListItem;
-        this._itemFactory = (aspect: RIAPP.ListItemAspect<StrKeyValListItem, IStrKeyVal>) => { return new itemType(aspect); };
+        this._itemFactory = (aspect: TStrKeyValItemAspect) => { return new _StrKeyValListItem(aspect); };
     }
     findItem(key: string): StrKeyValListItem {
         return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -210,11 +212,13 @@ export class StrKeyValDictionary extends RIAPP.BaseDictionary<StrKeyValListItem,
     }
 }
 
+export type TRadioValItemAspect = RIAPP.ListItemAspect<RadioValListItem, IRadioVal>;
+
 export interface RadioValListItem extends IRadioVal, RIAPP.IListItem {
-    readonly _aspect: RIAPP.ListItemAspect<RadioValListItem, IRadioVal>;
+    readonly _aspect: TRadioValItemAspect;
 }
 
-class _RadioValListItem extends RIAPP.CollectionItem<RIAPP.ListItemAspect<RadioValListItem, IRadioVal>> implements RadioValListItem {
+class _RadioValListItem extends RIAPP.CollectionItem<TRadioValItemAspect> implements RadioValListItem {
     get key(): string { return <string>this._aspect._getProp('key'); }
     set key(v: string) { this._aspect._setProp('key', v); }
     get value(): string { return <string>this._aspect._getProp('value'); }
@@ -233,8 +237,7 @@ export class RadioValDictionary extends RIAPP.BaseDictionary<RadioValListItem, I
     }
     //override
     protected _initItemFactory(): void {
-        const itemType = _RadioValListItem;
-        this._itemFactory = (aspect: RIAPP.ListItemAspect<RadioValListItem, IRadioVal>) => { return new itemType(aspect); };
+        this._itemFactory = (aspect: TRadioValItemAspect) => { return new _RadioValListItem(aspect); };
     }
     findItem(key: string): RadioValListItem {
         return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -244,11 +247,13 @@ export class RadioValDictionary extends RIAPP.BaseDictionary<RadioValListItem, I
     }
 }
 
+export type THistoryItemItemAspect = RIAPP.ListItemAspect<HistoryItemListItem, IHistoryItem>;
+
 export interface HistoryItemListItem extends IHistoryItem, RIAPP.IListItem {
-    readonly _aspect: RIAPP.ListItemAspect<HistoryItemListItem, IHistoryItem>;
+    readonly _aspect: THistoryItemItemAspect;
 }
 
-class _HistoryItemListItem extends RIAPP.CollectionItem<RIAPP.ListItemAspect<HistoryItemListItem, IHistoryItem>> implements HistoryItemListItem {
+class _HistoryItemListItem extends RIAPP.CollectionItem<THistoryItemItemAspect> implements HistoryItemListItem {
     get radioValue(): string { return <string>this._aspect._getProp('radioValue'); }
     set radioValue(v: string) { this._aspect._setProp('radioValue', v); }
     get time(): Date { return <Date>this._aspect._getProp('time'); }
@@ -265,8 +270,7 @@ export class HistoryList extends RIAPP.BaseList<HistoryItemListItem, IHistoryIte
     }
     //override
     protected _initItemFactory(): void {
-        const itemType = _HistoryItemListItem;
-        this._itemFactory = (aspect: RIAPP.ListItemAspect<HistoryItemListItem, IHistoryItem>) => { return new itemType(aspect); };
+        this._itemFactory = (aspect: THistoryItemItemAspect) => { return new _HistoryItemListItem(aspect); };
     }
     toString() {
         return 'HistoryList';
@@ -337,9 +341,38 @@ export interface IAddress {
     readonly ModifiedDate: Date;
 }
 
+export type TAddressAspect = dbMOD.EntityAspect<Address, IAddress, DbContext>;
+
 export interface Address extends IAddress, dbMOD.IEntityItem {
-    readonly _aspect: dbMOD.EntityAspect<Address, IAddress, DbContext>;
+    readonly _aspect: TAddressAspect;
     readonly CustomerAddresses: CustomerAddress[];
+}
+
+class AddressEntity extends RIAPP.CollectionItem<TAddressAspect> implements Address {
+
+    constructor(aspect: TAddressAspect) {
+        super(aspect);
+
+    }
+    toString() {
+        return 'AddressEntity';
+    }
+    get AddressID(): number { return this._aspect._getFieldVal('AddressID'); }
+    get AddressLine1(): string { return this._aspect._getFieldVal('AddressLine1'); }
+    set AddressLine1(v: string) { this._aspect._setFieldVal('AddressLine1', v); }
+    get AddressLine2(): string { return this._aspect._getFieldVal('AddressLine2'); }
+    set AddressLine2(v: string) { this._aspect._setFieldVal('AddressLine2', v); }
+    get City(): string { return this._aspect._getFieldVal('City'); }
+    set City(v: string) { this._aspect._setFieldVal('City', v); }
+    get StateProvince(): string { return this._aspect._getFieldVal('StateProvince'); }
+    set StateProvince(v: string) { this._aspect._setFieldVal('StateProvince', v); }
+    get CountryRegion(): string { return this._aspect._getFieldVal('CountryRegion'); }
+    set CountryRegion(v: string) { this._aspect._setFieldVal('CountryRegion', v); }
+    get PostalCode(): string { return this._aspect._getFieldVal('PostalCode'); }
+    set PostalCode(v: string) { this._aspect._setFieldVal('PostalCode', v); }
+    get rowguid(): string { return this._aspect._getFieldVal('rowguid'); }
+    get ModifiedDate(): Date { return this._aspect._getFieldVal('ModifiedDate'); }
+    get CustomerAddresses(): CustomerAddress[] { return this._aspect._getNavFieldVal('CustomerAddresses'); }
 }
 
 export class AddressDb extends dbMOD.DbSet<Address, IAddress, DbContext>
@@ -356,33 +389,7 @@ export class AddressDb extends dbMOD.DbSet<Address, IAddress, DbContext>
         this._initItemFactory();
     }
     protected _initItemFactory(): void {
-        const itemType = class extends RIAPP.CollectionItem<dbMOD.EntityAspect<Address, IAddress, DbContext>> implements Address {
-
-            constructor(aspect: dbMOD.EntityAspect<Address, IAddress, DbContext>) {
-                super(aspect);
-
-            }
-            toString() {
-                return 'AddressEntity';
-            }
-            get AddressID(): number { return this._aspect._getFieldVal('AddressID'); }
-            get AddressLine1(): string { return this._aspect._getFieldVal('AddressLine1'); }
-            set AddressLine1(v: string) { this._aspect._setFieldVal('AddressLine1', v); }
-            get AddressLine2(): string { return this._aspect._getFieldVal('AddressLine2'); }
-            set AddressLine2(v: string) { this._aspect._setFieldVal('AddressLine2', v); }
-            get City(): string { return this._aspect._getFieldVal('City'); }
-            set City(v: string) { this._aspect._setFieldVal('City', v); }
-            get StateProvince(): string { return this._aspect._getFieldVal('StateProvince'); }
-            set StateProvince(v: string) { this._aspect._setFieldVal('StateProvince', v); }
-            get CountryRegion(): string { return this._aspect._getFieldVal('CountryRegion'); }
-            set CountryRegion(v: string) { this._aspect._setFieldVal('CountryRegion', v); }
-            get PostalCode(): string { return this._aspect._getFieldVal('PostalCode'); }
-            set PostalCode(v: string) { this._aspect._setFieldVal('PostalCode', v); }
-            get rowguid(): string { return this._aspect._getFieldVal('rowguid'); }
-            get ModifiedDate(): Date { return this._aspect._getFieldVal('ModifiedDate'); }
-            get CustomerAddresses(): CustomerAddress[] { return this._aspect._getNavFieldVal('CustomerAddresses'); }
-        };
-        this._itemFactory = (aspect: dbMOD.EntityAspect<Address, IAddress, DbContext>) => { return new itemType(aspect); };
+        this._itemFactory = (aspect: TAddressAspect) => { return new AddressEntity(aspect); };
     }
     findEntity(addressID: number): Address {
         return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -411,9 +418,28 @@ export interface IAddressInfo {
     readonly CountryRegion: string;
 }
 
+export type TAddressInfoAspect = dbMOD.EntityAspect<AddressInfo, IAddressInfo, DbContext>;
+
 export interface AddressInfo extends IAddressInfo, dbMOD.IEntityItem {
-    readonly _aspect: dbMOD.EntityAspect<AddressInfo, IAddressInfo, DbContext>;
+    readonly _aspect: TAddressInfoAspect;
     readonly CustomerAddresses: CustomerAddress[];
+}
+
+class AddressInfoEntity extends RIAPP.CollectionItem<TAddressInfoAspect> implements AddressInfo {
+
+    constructor(aspect: TAddressInfoAspect) {
+        super(aspect);
+
+    }
+    toString() {
+        return 'AddressInfoEntity';
+    }
+    get AddressID(): number { return this._aspect._getFieldVal('AddressID'); }
+    get AddressLine1(): string { return this._aspect._getFieldVal('AddressLine1'); }
+    get City(): string { return this._aspect._getFieldVal('City'); }
+    get StateProvince(): string { return this._aspect._getFieldVal('StateProvince'); }
+    get CountryRegion(): string { return this._aspect._getFieldVal('CountryRegion'); }
+    get CustomerAddresses(): CustomerAddress[] { return this._aspect._getNavFieldVal('CustomerAddresses'); }
 }
 
 export class AddressInfoDb extends dbMOD.DbSet<AddressInfo, IAddressInfo, DbContext>
@@ -430,23 +456,7 @@ export class AddressInfoDb extends dbMOD.DbSet<AddressInfo, IAddressInfo, DbCont
         this._initItemFactory();
     }
     protected _initItemFactory(): void {
-        const itemType = class extends RIAPP.CollectionItem<dbMOD.EntityAspect<AddressInfo, IAddressInfo, DbContext>> implements AddressInfo {
-
-            constructor(aspect: dbMOD.EntityAspect<AddressInfo, IAddressInfo, DbContext>) {
-                super(aspect);
-
-            }
-            toString() {
-                return 'AddressInfoEntity';
-            }
-            get AddressID(): number { return this._aspect._getFieldVal('AddressID'); }
-            get AddressLine1(): string { return this._aspect._getFieldVal('AddressLine1'); }
-            get City(): string { return this._aspect._getFieldVal('City'); }
-            get StateProvince(): string { return this._aspect._getFieldVal('StateProvince'); }
-            get CountryRegion(): string { return this._aspect._getFieldVal('CountryRegion'); }
-            get CustomerAddresses(): CustomerAddress[] { return this._aspect._getNavFieldVal('CustomerAddresses'); }
-        };
-        this._itemFactory = (aspect: dbMOD.EntityAspect<AddressInfo, IAddressInfo, DbContext>) => { return new itemType(aspect); };
+        this._itemFactory = (aspect: TAddressInfoAspect) => { return new AddressInfoEntity(aspect); };
     }
     findEntity(addressID: number): AddressInfo {
         return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -475,9 +485,41 @@ export interface ICustomer {
     AddressCount: number;
 }
 
+export type TCustomerAspect = dbMOD.EntityAspect<Customer, ICustomer, DbContext>;
+
 export interface Customer extends ICustomer, dbMOD.IEntityItem {
-    readonly _aspect: dbMOD.EntityAspect<Customer, ICustomer, DbContext>;
+    readonly _aspect: TCustomerAspect;
     readonly CustomerAddresses: CustomerAddress[];
+}
+
+class CustomerEntity extends RIAPP.CollectionItem<TCustomerAspect> implements Customer {
+    private _ComplexProp: Customer_ComplexProp;
+    constructor(aspect: TCustomerAspect) {
+        super(aspect);
+        this._ComplexProp = null;
+    }
+    toString() {
+        return 'CustomerEntity';
+    }
+    get CustomerID(): number { return this._aspect._getFieldVal('CustomerID'); }
+    get NameStyle(): boolean { return this._aspect._getFieldVal('NameStyle'); }
+    set NameStyle(v: boolean) { this._aspect._setFieldVal('NameStyle', v); }
+    get Title(): string { return this._aspect._getFieldVal('Title'); }
+    set Title(v: string) { this._aspect._setFieldVal('Title', v); }
+    get Suffix(): string { return this._aspect._getFieldVal('Suffix'); }
+    set Suffix(v: string) { this._aspect._setFieldVal('Suffix', v); }
+    get CompanyName(): string { return this._aspect._getFieldVal('CompanyName'); }
+    set CompanyName(v: string) { this._aspect._setFieldVal('CompanyName', v); }
+    get SalesPerson(): string { return this._aspect._getFieldVal('SalesPerson'); }
+    set SalesPerson(v: string) { this._aspect._setFieldVal('SalesPerson', v); }
+    get PasswordHash(): string { return this._aspect._getFieldVal('PasswordHash'); }
+    get PasswordSalt(): string { return this._aspect._getFieldVal('PasswordSalt'); }
+    get rowguid(): string { return this._aspect._getFieldVal('rowguid'); }
+    get ModifiedDate(): Date { return this._aspect._getFieldVal('ModifiedDate'); }
+    get ComplexProp(): ICustomer_ComplexProp { if (!this._ComplexProp) { this._ComplexProp = new Customer_ComplexProp('ComplexProp', this._aspect); } return this._ComplexProp; }
+    get AddressCount(): number { return this._aspect._getFieldVal('AddressCount'); }
+    set AddressCount(v: number) { this._aspect._setFieldVal('AddressCount', v); }
+    get CustomerAddresses(): CustomerAddress[] { return this._aspect._getNavFieldVal('CustomerAddresses'); }
 }
 
 export class CustomerDb extends dbMOD.DbSet<Customer, ICustomer, DbContext>
@@ -494,36 +536,7 @@ export class CustomerDb extends dbMOD.DbSet<Customer, ICustomer, DbContext>
         this._initItemFactory();
     }
     protected _initItemFactory(): void {
-        const itemType = class extends RIAPP.CollectionItem<dbMOD.EntityAspect<Customer, ICustomer, DbContext>> implements Customer {
-            private _ComplexProp: Customer_ComplexProp;
-            constructor(aspect: dbMOD.EntityAspect<Customer, ICustomer, DbContext>) {
-                super(aspect);
-                this._ComplexProp = null;
-            }
-            toString() {
-                return 'CustomerEntity';
-            }
-            get CustomerID(): number { return this._aspect._getFieldVal('CustomerID'); }
-            get NameStyle(): boolean { return this._aspect._getFieldVal('NameStyle'); }
-            set NameStyle(v: boolean) { this._aspect._setFieldVal('NameStyle', v); }
-            get Title(): string { return this._aspect._getFieldVal('Title'); }
-            set Title(v: string) { this._aspect._setFieldVal('Title', v); }
-            get Suffix(): string { return this._aspect._getFieldVal('Suffix'); }
-            set Suffix(v: string) { this._aspect._setFieldVal('Suffix', v); }
-            get CompanyName(): string { return this._aspect._getFieldVal('CompanyName'); }
-            set CompanyName(v: string) { this._aspect._setFieldVal('CompanyName', v); }
-            get SalesPerson(): string { return this._aspect._getFieldVal('SalesPerson'); }
-            set SalesPerson(v: string) { this._aspect._setFieldVal('SalesPerson', v); }
-            get PasswordHash(): string { return this._aspect._getFieldVal('PasswordHash'); }
-            get PasswordSalt(): string { return this._aspect._getFieldVal('PasswordSalt'); }
-            get rowguid(): string { return this._aspect._getFieldVal('rowguid'); }
-            get ModifiedDate(): Date { return this._aspect._getFieldVal('ModifiedDate'); }
-            get ComplexProp(): ICustomer_ComplexProp { if (!this._ComplexProp) { this._ComplexProp = new Customer_ComplexProp('ComplexProp', this._aspect); } return this._ComplexProp; }
-            get AddressCount(): number { return this._aspect._getFieldVal('AddressCount'); }
-            set AddressCount(v: number) { this._aspect._setFieldVal('AddressCount', v); }
-            get CustomerAddresses(): CustomerAddress[] { return this._aspect._getNavFieldVal('CustomerAddresses'); }
-        };
-        this._itemFactory = (aspect: dbMOD.EntityAspect<Customer, ICustomer, DbContext>) => { return new itemType(aspect); };
+        this._itemFactory = (aspect: TCustomerAspect) => { return new CustomerEntity(aspect); };
     }
     findEntity(customerID: number): Customer {
         return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -549,11 +562,38 @@ export interface ICustomerAddress {
     readonly ModifiedDate: Date;
 }
 
+export type TCustomerAddressAspect = dbMOD.EntityAspect<CustomerAddress, ICustomerAddress, DbContext>;
+
 export interface CustomerAddress extends ICustomerAddress, dbMOD.IEntityItem {
-    readonly _aspect: dbMOD.EntityAspect<CustomerAddress, ICustomerAddress, DbContext>;
+    readonly _aspect: TCustomerAddressAspect;
     Customer: Customer;
     Address: Address;
     AddressInfo: AddressInfo;
+}
+
+class CustomerAddressEntity extends RIAPP.CollectionItem<TCustomerAddressAspect> implements CustomerAddress {
+
+    constructor(aspect: TCustomerAddressAspect) {
+        super(aspect);
+
+    }
+    toString() {
+        return 'CustomerAddressEntity';
+    }
+    get CustomerID(): number { return this._aspect._getFieldVal('CustomerID'); }
+    set CustomerID(v: number) { this._aspect._setFieldVal('CustomerID', v); }
+    get AddressID(): number { return this._aspect._getFieldVal('AddressID'); }
+    set AddressID(v: number) { this._aspect._setFieldVal('AddressID', v); }
+    get AddressType(): string { return this._aspect._getFieldVal('AddressType'); }
+    set AddressType(v: string) { this._aspect._setFieldVal('AddressType', v); }
+    get rowguid(): string { return this._aspect._getFieldVal('rowguid'); }
+    get ModifiedDate(): Date { return this._aspect._getFieldVal('ModifiedDate'); }
+    get Customer(): Customer { return this._aspect._getNavFieldVal('Customer'); }
+    set Customer(v: Customer) { this._aspect._setNavFieldVal('Customer', v); }
+    get Address(): Address { return this._aspect._getNavFieldVal('Address'); }
+    set Address(v: Address) { this._aspect._setNavFieldVal('Address', v); }
+    get AddressInfo(): AddressInfo { return this._aspect._getNavFieldVal('AddressInfo'); }
+    set AddressInfo(v: AddressInfo) { this._aspect._setNavFieldVal('AddressInfo', v); }
 }
 
 export class CustomerAddressDb extends dbMOD.DbSet<CustomerAddress, ICustomerAddress, DbContext>
@@ -570,31 +610,7 @@ export class CustomerAddressDb extends dbMOD.DbSet<CustomerAddress, ICustomerAdd
         this._initItemFactory();
     }
     protected _initItemFactory(): void {
-        const itemType = class extends RIAPP.CollectionItem<dbMOD.EntityAspect<CustomerAddress, ICustomerAddress, DbContext>> implements CustomerAddress {
-
-            constructor(aspect: dbMOD.EntityAspect<CustomerAddress, ICustomerAddress, DbContext>) {
-                super(aspect);
-
-            }
-            toString() {
-                return 'CustomerAddressEntity';
-            }
-            get CustomerID(): number { return this._aspect._getFieldVal('CustomerID'); }
-            set CustomerID(v: number) { this._aspect._setFieldVal('CustomerID', v); }
-            get AddressID(): number { return this._aspect._getFieldVal('AddressID'); }
-            set AddressID(v: number) { this._aspect._setFieldVal('AddressID', v); }
-            get AddressType(): string { return this._aspect._getFieldVal('AddressType'); }
-            set AddressType(v: string) { this._aspect._setFieldVal('AddressType', v); }
-            get rowguid(): string { return this._aspect._getFieldVal('rowguid'); }
-            get ModifiedDate(): Date { return this._aspect._getFieldVal('ModifiedDate'); }
-            get Customer(): Customer { return this._aspect._getNavFieldVal('Customer'); }
-            set Customer(v: Customer) { this._aspect._setNavFieldVal('Customer', v); }
-            get Address(): Address { return this._aspect._getNavFieldVal('Address'); }
-            set Address(v: Address) { this._aspect._setNavFieldVal('Address', v); }
-            get AddressInfo(): AddressInfo { return this._aspect._getNavFieldVal('AddressInfo'); }
-            set AddressInfo(v: AddressInfo) { this._aspect._setNavFieldVal('AddressInfo', v); }
-        };
-        this._itemFactory = (aspect: dbMOD.EntityAspect<CustomerAddress, ICustomerAddress, DbContext>) => { return new itemType(aspect); };
+        this._itemFactory = (aspect: TCustomerAddressAspect) => { return new CustomerAddressEntity(aspect); };
     }
     findEntity(customerID: number, addressID: number): CustomerAddress {
         return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -621,9 +637,27 @@ export interface ICustomerJSON {
     readonly rowguid: string;
 }
 
+export type TCustomerJSONAspect = dbMOD.EntityAspect<CustomerJSON, ICustomerJSON, DbContext>;
+
 export interface CustomerJSON extends ICustomerJSON, dbMOD.IEntityItem {
-    readonly _aspect: dbMOD.EntityAspect<CustomerJSON, ICustomerJSON, DbContext>;
+    readonly _aspect: TCustomerJSONAspect;
     readonly Customer: any;
+}
+
+class CustomerJSONEntity extends RIAPP.CollectionItem<TCustomerJSONAspect> implements CustomerJSON {
+
+    constructor(aspect: TCustomerJSONAspect) {
+        super(aspect);
+
+    }
+    toString() {
+        return 'CustomerJSONEntity';
+    }
+    get CustomerID(): number { return this._aspect._getFieldVal('CustomerID'); }
+    get Data(): string { return this._aspect._getFieldVal('Data'); }
+    set Data(v: string) { this._aspect._setFieldVal('Data', v); }
+    get rowguid(): string { return this._aspect._getFieldVal('rowguid'); }
+    get Customer(): any { return this._aspect._getCalcFieldVal('Customer'); }
 }
 
 export class CustomerJSONDb extends dbMOD.DbSet<CustomerJSON, ICustomerJSON, DbContext>
@@ -640,22 +674,7 @@ export class CustomerJSONDb extends dbMOD.DbSet<CustomerJSON, ICustomerJSON, DbC
         this._initItemFactory();
     }
     protected _initItemFactory(): void {
-        const itemType = class extends RIAPP.CollectionItem<dbMOD.EntityAspect<CustomerJSON, ICustomerJSON, DbContext>> implements CustomerJSON {
-
-            constructor(aspect: dbMOD.EntityAspect<CustomerJSON, ICustomerJSON, DbContext>) {
-                super(aspect);
-
-            }
-            toString() {
-                return 'CustomerJSONEntity';
-            }
-            get CustomerID(): number { return this._aspect._getFieldVal('CustomerID'); }
-            get Data(): string { return this._aspect._getFieldVal('Data'); }
-            set Data(v: string) { this._aspect._setFieldVal('Data', v); }
-            get rowguid(): string { return this._aspect._getFieldVal('rowguid'); }
-            get Customer(): any { return this._aspect._getCalcFieldVal('Customer'); }
-        };
-        this._itemFactory = (aspect: dbMOD.EntityAspect<CustomerJSON, ICustomerJSON, DbContext>) => { return new itemType(aspect); };
+        this._itemFactory = (aspect: TCustomerJSONAspect) => { return new CustomerJSONEntity(aspect); };
     }
     findEntity(customerID: number): CustomerJSON {
         return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -674,9 +693,26 @@ export interface ILookUpProduct {
     Name: string;
 }
 
-export interface LookUpProduct extends ILookUpProduct, dbMOD.IEntityItem {
-    readonly _aspect: dbMOD.EntityAspect<LookUpProduct, ILookUpProduct, DbContext>;
+export type TLookUpProductAspect = dbMOD.EntityAspect<LookUpProduct, ILookUpProduct, DbContext>;
 
+export interface LookUpProduct extends ILookUpProduct, dbMOD.IEntityItem {
+    readonly _aspect: TLookUpProductAspect;
+
+}
+
+class LookUpProductEntity extends RIAPP.CollectionItem<TLookUpProductAspect> implements LookUpProduct {
+
+    constructor(aspect: TLookUpProductAspect) {
+        super(aspect);
+
+    }
+    toString() {
+        return 'LookUpProductEntity';
+    }
+    get ProductID(): number { return this._aspect._getFieldVal('ProductID'); }
+    set ProductID(v: number) { this._aspect._setFieldVal('ProductID', v); }
+    get Name(): string { return this._aspect._getFieldVal('Name'); }
+    set Name(v: string) { this._aspect._setFieldVal('Name', v); }
 }
 
 export class LookUpProductDb extends dbMOD.DbSet<LookUpProduct, ILookUpProduct, DbContext>
@@ -693,21 +729,7 @@ export class LookUpProductDb extends dbMOD.DbSet<LookUpProduct, ILookUpProduct, 
         this._initItemFactory();
     }
     protected _initItemFactory(): void {
-        const itemType = class extends RIAPP.CollectionItem<dbMOD.EntityAspect<LookUpProduct, ILookUpProduct, DbContext>> implements LookUpProduct {
-
-            constructor(aspect: dbMOD.EntityAspect<LookUpProduct, ILookUpProduct, DbContext>) {
-                super(aspect);
-
-            }
-            toString() {
-                return 'LookUpProductEntity';
-            }
-            get ProductID(): number { return this._aspect._getFieldVal('ProductID'); }
-            set ProductID(v: number) { this._aspect._setFieldVal('ProductID', v); }
-            get Name(): string { return this._aspect._getFieldVal('Name'); }
-            set Name(v: string) { this._aspect._setFieldVal('Name', v); }
-        };
-        this._itemFactory = (aspect: dbMOD.EntityAspect<LookUpProduct, ILookUpProduct, DbContext>) => { return new itemType(aspect); };
+        this._itemFactory = (aspect: TLookUpProductAspect) => { return new LookUpProductEntity(aspect); };
     }
     findEntity(productID: number): LookUpProduct {
         return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -740,10 +762,54 @@ export interface IProduct {
     ThumbnailPhotoFileName: string;
 }
 
+export type TProductAspect = dbMOD.EntityAspect<Product, IProduct, DbContext>;
+
 export interface Product extends IProduct, dbMOD.IEntityItem {
-    readonly _aspect: dbMOD.EntityAspect<Product, IProduct, DbContext>;
+    readonly _aspect: TProductAspect;
     readonly IsActive: boolean;
     readonly SalesOrderDetails: SalesOrderDetail[];
+}
+
+class ProductEntity extends RIAPP.CollectionItem<TProductAspect> implements Product {
+
+    constructor(aspect: TProductAspect) {
+        super(aspect);
+
+    }
+    toString() {
+        return 'ProductEntity';
+    }
+    get ProductID(): number { return this._aspect._getFieldVal('ProductID'); }
+    get Name(): string { return this._aspect._getFieldVal('Name'); }
+    set Name(v: string) { this._aspect._setFieldVal('Name', v); }
+    get ProductNumber(): string { return this._aspect._getFieldVal('ProductNumber'); }
+    set ProductNumber(v: string) { this._aspect._setFieldVal('ProductNumber', v); }
+    get Color(): string { return this._aspect._getFieldVal('Color'); }
+    set Color(v: string) { this._aspect._setFieldVal('Color', v); }
+    get StandardCost(): number { return this._aspect._getFieldVal('StandardCost'); }
+    set StandardCost(v: number) { this._aspect._setFieldVal('StandardCost', v); }
+    get ListPrice(): number { return this._aspect._getFieldVal('ListPrice'); }
+    set ListPrice(v: number) { this._aspect._setFieldVal('ListPrice', v); }
+    get Size(): string { return this._aspect._getFieldVal('Size'); }
+    set Size(v: string) { this._aspect._setFieldVal('Size', v); }
+    get Weight(): number { return this._aspect._getFieldVal('Weight'); }
+    set Weight(v: number) { this._aspect._setFieldVal('Weight', v); }
+    get ProductCategoryID(): number { return this._aspect._getFieldVal('ProductCategoryID'); }
+    set ProductCategoryID(v: number) { this._aspect._setFieldVal('ProductCategoryID', v); }
+    get ProductModelID(): number { return this._aspect._getFieldVal('ProductModelID'); }
+    set ProductModelID(v: number) { this._aspect._setFieldVal('ProductModelID', v); }
+    get SellStartDate(): Date { return this._aspect._getFieldVal('SellStartDate'); }
+    set SellStartDate(v: Date) { this._aspect._setFieldVal('SellStartDate', v); }
+    get SellEndDate(): Date { return this._aspect._getFieldVal('SellEndDate'); }
+    set SellEndDate(v: Date) { this._aspect._setFieldVal('SellEndDate', v); }
+    get DiscontinuedDate(): Date { return this._aspect._getFieldVal('DiscontinuedDate'); }
+    set DiscontinuedDate(v: Date) { this._aspect._setFieldVal('DiscontinuedDate', v); }
+    get rowguid(): string { return this._aspect._getFieldVal('rowguid'); }
+    get ModifiedDate(): Date { return this._aspect._getFieldVal('ModifiedDate'); }
+    get IsActive(): boolean { return this._aspect._getCalcFieldVal('IsActive'); }
+    get ThumbnailPhotoFileName(): string { return this._aspect._getFieldVal('ThumbnailPhotoFileName'); }
+    set ThumbnailPhotoFileName(v: string) { this._aspect._setFieldVal('ThumbnailPhotoFileName', v); }
+    get SalesOrderDetails(): SalesOrderDetail[] { return this._aspect._getNavFieldVal('SalesOrderDetails'); }
 }
 
 export class ProductDb extends dbMOD.DbSet<Product, IProduct, DbContext>
@@ -760,48 +826,7 @@ export class ProductDb extends dbMOD.DbSet<Product, IProduct, DbContext>
         this._initItemFactory();
     }
     protected _initItemFactory(): void {
-        const itemType = class extends RIAPP.CollectionItem<dbMOD.EntityAspect<Product, IProduct, DbContext>> implements Product {
-
-            constructor(aspect: dbMOD.EntityAspect<Product, IProduct, DbContext>) {
-                super(aspect);
-
-            }
-            toString() {
-                return 'ProductEntity';
-            }
-            get ProductID(): number { return this._aspect._getFieldVal('ProductID'); }
-            get Name(): string { return this._aspect._getFieldVal('Name'); }
-            set Name(v: string) { this._aspect._setFieldVal('Name', v); }
-            get ProductNumber(): string { return this._aspect._getFieldVal('ProductNumber'); }
-            set ProductNumber(v: string) { this._aspect._setFieldVal('ProductNumber', v); }
-            get Color(): string { return this._aspect._getFieldVal('Color'); }
-            set Color(v: string) { this._aspect._setFieldVal('Color', v); }
-            get StandardCost(): number { return this._aspect._getFieldVal('StandardCost'); }
-            set StandardCost(v: number) { this._aspect._setFieldVal('StandardCost', v); }
-            get ListPrice(): number { return this._aspect._getFieldVal('ListPrice'); }
-            set ListPrice(v: number) { this._aspect._setFieldVal('ListPrice', v); }
-            get Size(): string { return this._aspect._getFieldVal('Size'); }
-            set Size(v: string) { this._aspect._setFieldVal('Size', v); }
-            get Weight(): number { return this._aspect._getFieldVal('Weight'); }
-            set Weight(v: number) { this._aspect._setFieldVal('Weight', v); }
-            get ProductCategoryID(): number { return this._aspect._getFieldVal('ProductCategoryID'); }
-            set ProductCategoryID(v: number) { this._aspect._setFieldVal('ProductCategoryID', v); }
-            get ProductModelID(): number { return this._aspect._getFieldVal('ProductModelID'); }
-            set ProductModelID(v: number) { this._aspect._setFieldVal('ProductModelID', v); }
-            get SellStartDate(): Date { return this._aspect._getFieldVal('SellStartDate'); }
-            set SellStartDate(v: Date) { this._aspect._setFieldVal('SellStartDate', v); }
-            get SellEndDate(): Date { return this._aspect._getFieldVal('SellEndDate'); }
-            set SellEndDate(v: Date) { this._aspect._setFieldVal('SellEndDate', v); }
-            get DiscontinuedDate(): Date { return this._aspect._getFieldVal('DiscontinuedDate'); }
-            set DiscontinuedDate(v: Date) { this._aspect._setFieldVal('DiscontinuedDate', v); }
-            get rowguid(): string { return this._aspect._getFieldVal('rowguid'); }
-            get ModifiedDate(): Date { return this._aspect._getFieldVal('ModifiedDate'); }
-            get IsActive(): boolean { return this._aspect._getCalcFieldVal('IsActive'); }
-            get ThumbnailPhotoFileName(): string { return this._aspect._getFieldVal('ThumbnailPhotoFileName'); }
-            set ThumbnailPhotoFileName(v: string) { this._aspect._setFieldVal('ThumbnailPhotoFileName', v); }
-            get SalesOrderDetails(): SalesOrderDetail[] { return this._aspect._getNavFieldVal('SalesOrderDetails'); }
-        };
-        this._itemFactory = (aspect: dbMOD.EntityAspect<Product, IProduct, DbContext>) => { return new itemType(aspect); };
+        this._itemFactory = (aspect: TProductAspect) => { return new ProductEntity(aspect); };
     }
     findEntity(productID: number): Product {
         return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -835,9 +860,31 @@ export interface IProductCategory {
     ModifiedDate: Date;
 }
 
-export interface ProductCategory extends IProductCategory, dbMOD.IEntityItem {
-    readonly _aspect: dbMOD.EntityAspect<ProductCategory, IProductCategory, DbContext>;
+export type TProductCategoryAspect = dbMOD.EntityAspect<ProductCategory, IProductCategory, DbContext>;
 
+export interface ProductCategory extends IProductCategory, dbMOD.IEntityItem {
+    readonly _aspect: TProductCategoryAspect;
+
+}
+
+class ProductCategoryEntity extends RIAPP.CollectionItem<TProductCategoryAspect> implements ProductCategory {
+
+    constructor(aspect: TProductCategoryAspect) {
+        super(aspect);
+
+    }
+    toString() {
+        return 'ProductCategoryEntity';
+    }
+    get ProductCategoryID(): number { return this._aspect._getFieldVal('ProductCategoryID'); }
+    get ParentProductCategoryID(): number { return this._aspect._getFieldVal('ParentProductCategoryID'); }
+    set ParentProductCategoryID(v: number) { this._aspect._setFieldVal('ParentProductCategoryID', v); }
+    get Name(): string { return this._aspect._getFieldVal('Name'); }
+    set Name(v: string) { this._aspect._setFieldVal('Name', v); }
+    get rowguid(): string { return this._aspect._getFieldVal('rowguid'); }
+    set rowguid(v: string) { this._aspect._setFieldVal('rowguid', v); }
+    get ModifiedDate(): Date { return this._aspect._getFieldVal('ModifiedDate'); }
+    set ModifiedDate(v: Date) { this._aspect._setFieldVal('ModifiedDate', v); }
 }
 
 export class ProductCategoryDb extends dbMOD.DbSet<ProductCategory, IProductCategory, DbContext>
@@ -854,26 +901,7 @@ export class ProductCategoryDb extends dbMOD.DbSet<ProductCategory, IProductCate
         this._initItemFactory();
     }
     protected _initItemFactory(): void {
-        const itemType = class extends RIAPP.CollectionItem<dbMOD.EntityAspect<ProductCategory, IProductCategory, DbContext>> implements ProductCategory {
-
-            constructor(aspect: dbMOD.EntityAspect<ProductCategory, IProductCategory, DbContext>) {
-                super(aspect);
-
-            }
-            toString() {
-                return 'ProductCategoryEntity';
-            }
-            get ProductCategoryID(): number { return this._aspect._getFieldVal('ProductCategoryID'); }
-            get ParentProductCategoryID(): number { return this._aspect._getFieldVal('ParentProductCategoryID'); }
-            set ParentProductCategoryID(v: number) { this._aspect._setFieldVal('ParentProductCategoryID', v); }
-            get Name(): string { return this._aspect._getFieldVal('Name'); }
-            set Name(v: string) { this._aspect._setFieldVal('Name', v); }
-            get rowguid(): string { return this._aspect._getFieldVal('rowguid'); }
-            set rowguid(v: string) { this._aspect._setFieldVal('rowguid', v); }
-            get ModifiedDate(): Date { return this._aspect._getFieldVal('ModifiedDate'); }
-            set ModifiedDate(v: Date) { this._aspect._setFieldVal('ModifiedDate', v); }
-        };
-        this._itemFactory = (aspect: dbMOD.EntityAspect<ProductCategory, IProductCategory, DbContext>) => { return new itemType(aspect); };
+        this._itemFactory = (aspect: TProductCategoryAspect) => { return new ProductCategoryEntity(aspect); };
     }
     findEntity(productCategoryID: number): ProductCategory {
         return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -892,9 +920,25 @@ export interface IProductModel {
     Name: string;
 }
 
-export interface ProductModel extends IProductModel, dbMOD.IEntityItem {
-    readonly _aspect: dbMOD.EntityAspect<ProductModel, IProductModel, DbContext>;
+export type TProductModelAspect = dbMOD.EntityAspect<ProductModel, IProductModel, DbContext>;
 
+export interface ProductModel extends IProductModel, dbMOD.IEntityItem {
+    readonly _aspect: TProductModelAspect;
+
+}
+
+class ProductModelEntity extends RIAPP.CollectionItem<TProductModelAspect> implements ProductModel {
+
+    constructor(aspect: TProductModelAspect) {
+        super(aspect);
+
+    }
+    toString() {
+        return 'ProductModelEntity';
+    }
+    get ProductModelID(): number { return this._aspect._getFieldVal('ProductModelID'); }
+    get Name(): string { return this._aspect._getFieldVal('Name'); }
+    set Name(v: string) { this._aspect._setFieldVal('Name', v); }
 }
 
 export class ProductModelDb extends dbMOD.DbSet<ProductModel, IProductModel, DbContext>
@@ -911,20 +955,7 @@ export class ProductModelDb extends dbMOD.DbSet<ProductModel, IProductModel, DbC
         this._initItemFactory();
     }
     protected _initItemFactory(): void {
-        const itemType = class extends RIAPP.CollectionItem<dbMOD.EntityAspect<ProductModel, IProductModel, DbContext>> implements ProductModel {
-
-            constructor(aspect: dbMOD.EntityAspect<ProductModel, IProductModel, DbContext>) {
-                super(aspect);
-
-            }
-            toString() {
-                return 'ProductModelEntity';
-            }
-            get ProductModelID(): number { return this._aspect._getFieldVal('ProductModelID'); }
-            get Name(): string { return this._aspect._getFieldVal('Name'); }
-            set Name(v: string) { this._aspect._setFieldVal('Name', v); }
-        };
-        this._itemFactory = (aspect: dbMOD.EntityAspect<ProductModel, IProductModel, DbContext>) => { return new itemType(aspect); };
+        this._itemFactory = (aspect: TProductModelAspect) => { return new ProductModelEntity(aspect); };
     }
     findEntity(productModelID: number): ProductModel {
         return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -942,9 +973,24 @@ export interface ISalesInfo {
     SalesPerson: string;
 }
 
-export interface SalesInfo extends ISalesInfo, dbMOD.IEntityItem {
-    readonly _aspect: dbMOD.EntityAspect<SalesInfo, ISalesInfo, DbContext>;
+export type TSalesInfoAspect = dbMOD.EntityAspect<SalesInfo, ISalesInfo, DbContext>;
 
+export interface SalesInfo extends ISalesInfo, dbMOD.IEntityItem {
+    readonly _aspect: TSalesInfoAspect;
+
+}
+
+class SalesInfoEntity extends RIAPP.CollectionItem<TSalesInfoAspect> implements SalesInfo {
+
+    constructor(aspect: TSalesInfoAspect) {
+        super(aspect);
+
+    }
+    toString() {
+        return 'SalesInfoEntity';
+    }
+    get SalesPerson(): string { return this._aspect._getFieldVal('SalesPerson'); }
+    set SalesPerson(v: string) { this._aspect._setFieldVal('SalesPerson', v); }
 }
 
 export class SalesInfoDb extends dbMOD.DbSet<SalesInfo, ISalesInfo, DbContext>
@@ -961,19 +1007,7 @@ export class SalesInfoDb extends dbMOD.DbSet<SalesInfo, ISalesInfo, DbContext>
         this._initItemFactory();
     }
     protected _initItemFactory(): void {
-        const itemType = class extends RIAPP.CollectionItem<dbMOD.EntityAspect<SalesInfo, ISalesInfo, DbContext>> implements SalesInfo {
-
-            constructor(aspect: dbMOD.EntityAspect<SalesInfo, ISalesInfo, DbContext>) {
-                super(aspect);
-
-            }
-            toString() {
-                return 'SalesInfoEntity';
-            }
-            get SalesPerson(): string { return this._aspect._getFieldVal('SalesPerson'); }
-            set SalesPerson(v: string) { this._aspect._setFieldVal('SalesPerson', v); }
-        };
-        this._itemFactory = (aspect: dbMOD.EntityAspect<SalesInfo, ISalesInfo, DbContext>) => { return new itemType(aspect); };
+        this._itemFactory = (aspect: TSalesInfoAspect) => { return new SalesInfoEntity(aspect); };
     }
     findEntity(salesPerson: string): SalesInfo {
         return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -999,10 +1033,39 @@ export interface ISalesOrderDetail {
     readonly ModifiedDate: Date;
 }
 
+export type TSalesOrderDetailAspect = dbMOD.EntityAspect<SalesOrderDetail, ISalesOrderDetail, DbContext>;
+
 export interface SalesOrderDetail extends ISalesOrderDetail, dbMOD.IEntityItem {
-    readonly _aspect: dbMOD.EntityAspect<SalesOrderDetail, ISalesOrderDetail, DbContext>;
+    readonly _aspect: TSalesOrderDetailAspect;
     SalesOrderHeader: SalesOrderHeader;
     Product: Product;
+}
+
+class SalesOrderDetailEntity extends RIAPP.CollectionItem<TSalesOrderDetailAspect> implements SalesOrderDetail {
+
+    constructor(aspect: TSalesOrderDetailAspect) {
+        super(aspect);
+
+    }
+    toString() {
+        return 'SalesOrderDetailEntity';
+    }
+    get SalesOrderID(): number { return this._aspect._getFieldVal('SalesOrderID'); }
+    set SalesOrderID(v: number) { this._aspect._setFieldVal('SalesOrderID', v); }
+    get SalesOrderDetailID(): number { return this._aspect._getFieldVal('SalesOrderDetailID'); }
+    get OrderQty(): number { return this._aspect._getFieldVal('OrderQty'); }
+    set OrderQty(v: number) { this._aspect._setFieldVal('OrderQty', v); }
+    get ProductID(): number { return this._aspect._getFieldVal('ProductID'); }
+    set ProductID(v: number) { this._aspect._setFieldVal('ProductID', v); }
+    get UnitPrice(): number { return this._aspect._getFieldVal('UnitPrice'); }
+    get UnitPriceDiscount(): number { return this._aspect._getFieldVal('UnitPriceDiscount'); }
+    get LineTotal(): number { return this._aspect._getFieldVal('LineTotal'); }
+    get rowguid(): string { return this._aspect._getFieldVal('rowguid'); }
+    get ModifiedDate(): Date { return this._aspect._getFieldVal('ModifiedDate'); }
+    get SalesOrderHeader(): SalesOrderHeader { return this._aspect._getNavFieldVal('SalesOrderHeader'); }
+    set SalesOrderHeader(v: SalesOrderHeader) { this._aspect._setNavFieldVal('SalesOrderHeader', v); }
+    get Product(): Product { return this._aspect._getNavFieldVal('Product'); }
+    set Product(v: Product) { this._aspect._setNavFieldVal('Product', v); }
 }
 
 export class SalesOrderDetailDb extends dbMOD.DbSet<SalesOrderDetail, ISalesOrderDetail, DbContext>
@@ -1019,33 +1082,7 @@ export class SalesOrderDetailDb extends dbMOD.DbSet<SalesOrderDetail, ISalesOrde
         this._initItemFactory();
     }
     protected _initItemFactory(): void {
-        const itemType = class extends RIAPP.CollectionItem<dbMOD.EntityAspect<SalesOrderDetail, ISalesOrderDetail, DbContext>> implements SalesOrderDetail {
-
-            constructor(aspect: dbMOD.EntityAspect<SalesOrderDetail, ISalesOrderDetail, DbContext>) {
-                super(aspect);
-
-            }
-            toString() {
-                return 'SalesOrderDetailEntity';
-            }
-            get SalesOrderID(): number { return this._aspect._getFieldVal('SalesOrderID'); }
-            set SalesOrderID(v: number) { this._aspect._setFieldVal('SalesOrderID', v); }
-            get SalesOrderDetailID(): number { return this._aspect._getFieldVal('SalesOrderDetailID'); }
-            get OrderQty(): number { return this._aspect._getFieldVal('OrderQty'); }
-            set OrderQty(v: number) { this._aspect._setFieldVal('OrderQty', v); }
-            get ProductID(): number { return this._aspect._getFieldVal('ProductID'); }
-            set ProductID(v: number) { this._aspect._setFieldVal('ProductID', v); }
-            get UnitPrice(): number { return this._aspect._getFieldVal('UnitPrice'); }
-            get UnitPriceDiscount(): number { return this._aspect._getFieldVal('UnitPriceDiscount'); }
-            get LineTotal(): number { return this._aspect._getFieldVal('LineTotal'); }
-            get rowguid(): string { return this._aspect._getFieldVal('rowguid'); }
-            get ModifiedDate(): Date { return this._aspect._getFieldVal('ModifiedDate'); }
-            get SalesOrderHeader(): SalesOrderHeader { return this._aspect._getNavFieldVal('SalesOrderHeader'); }
-            set SalesOrderHeader(v: SalesOrderHeader) { this._aspect._setNavFieldVal('SalesOrderHeader', v); }
-            get Product(): Product { return this._aspect._getNavFieldVal('Product'); }
-            set Product(v: Product) { this._aspect._setNavFieldVal('Product', v); }
-        };
-        this._itemFactory = (aspect: dbMOD.EntityAspect<SalesOrderDetail, ISalesOrderDetail, DbContext>) => { return new itemType(aspect); };
+        this._itemFactory = (aspect: TSalesOrderDetailAspect) => { return new SalesOrderDetailEntity(aspect); };
     }
     findEntity(salesOrderID: number, salesOrderDetailID: number): SalesOrderDetail {
         return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -1084,12 +1121,65 @@ export interface ISalesOrderHeader {
     readonly ModifiedDate: Date;
 }
 
+export type TSalesOrderHeaderAspect = dbMOD.EntityAspect<SalesOrderHeader, ISalesOrderHeader, DbContext>;
+
 export interface SalesOrderHeader extends ISalesOrderHeader, dbMOD.IEntityItem {
-    readonly _aspect: dbMOD.EntityAspect<SalesOrderHeader, ISalesOrderHeader, DbContext>;
+    readonly _aspect: TSalesOrderHeaderAspect;
     readonly SalesOrderDetails: SalesOrderDetail[];
     Customer: Customer;
     Address: Address;
     Address1: Address;
+}
+
+class SalesOrderHeaderEntity extends RIAPP.CollectionItem<TSalesOrderHeaderAspect> implements SalesOrderHeader {
+
+    constructor(aspect: TSalesOrderHeaderAspect) {
+        super(aspect);
+
+    }
+    toString() {
+        return 'SalesOrderHeaderEntity';
+    }
+    get SalesOrderID(): number { return this._aspect._getFieldVal('SalesOrderID'); }
+    get RevisionNumber(): number { return this._aspect._getFieldVal('RevisionNumber'); }
+    get OrderDate(): Date { return this._aspect._getFieldVal('OrderDate'); }
+    set OrderDate(v: Date) { this._aspect._setFieldVal('OrderDate', v); }
+    get DueDate(): Date { return this._aspect._getFieldVal('DueDate'); }
+    set DueDate(v: Date) { this._aspect._setFieldVal('DueDate', v); }
+    get ShipDate(): Date { return this._aspect._getFieldVal('ShipDate'); }
+    set ShipDate(v: Date) { this._aspect._setFieldVal('ShipDate', v); }
+    get Status(): number { return this._aspect._getFieldVal('Status'); }
+    get OnlineOrderFlag(): boolean { return this._aspect._getFieldVal('OnlineOrderFlag'); }
+    set OnlineOrderFlag(v: boolean) { this._aspect._setFieldVal('OnlineOrderFlag', v); }
+    get SalesOrderNumber(): string { return this._aspect._getFieldVal('SalesOrderNumber'); }
+    get PurchaseOrderNumber(): string { return this._aspect._getFieldVal('PurchaseOrderNumber'); }
+    get AccountNumber(): string { return this._aspect._getFieldVal('AccountNumber'); }
+    set AccountNumber(v: string) { this._aspect._setFieldVal('AccountNumber', v); }
+    get CustomerID(): number { return this._aspect._getFieldVal('CustomerID'); }
+    set CustomerID(v: number) { this._aspect._setFieldVal('CustomerID', v); }
+    get ShipToAddressID(): number { return this._aspect._getFieldVal('ShipToAddressID'); }
+    set ShipToAddressID(v: number) { this._aspect._setFieldVal('ShipToAddressID', v); }
+    get BillToAddressID(): number { return this._aspect._getFieldVal('BillToAddressID'); }
+    set BillToAddressID(v: number) { this._aspect._setFieldVal('BillToAddressID', v); }
+    get ShipMethod(): string { return this._aspect._getFieldVal('ShipMethod'); }
+    set ShipMethod(v: string) { this._aspect._setFieldVal('ShipMethod', v); }
+    get CreditCardApprovalCode(): string { return this._aspect._getFieldVal('CreditCardApprovalCode'); }
+    set CreditCardApprovalCode(v: string) { this._aspect._setFieldVal('CreditCardApprovalCode', v); }
+    get SubTotal(): number { return this._aspect._getFieldVal('SubTotal'); }
+    get TaxAmt(): number { return this._aspect._getFieldVal('TaxAmt'); }
+    get Freight(): number { return this._aspect._getFieldVal('Freight'); }
+    get TotalDue(): number { return this._aspect._getFieldVal('TotalDue'); }
+    get Comment(): string { return this._aspect._getFieldVal('Comment'); }
+    set Comment(v: string) { this._aspect._setFieldVal('Comment', v); }
+    get rowguid(): string { return this._aspect._getFieldVal('rowguid'); }
+    get ModifiedDate(): Date { return this._aspect._getFieldVal('ModifiedDate'); }
+    get SalesOrderDetails(): SalesOrderDetail[] { return this._aspect._getNavFieldVal('SalesOrderDetails'); }
+    get Customer(): Customer { return this._aspect._getNavFieldVal('Customer'); }
+    set Customer(v: Customer) { this._aspect._setNavFieldVal('Customer', v); }
+    get Address(): Address { return this._aspect._getNavFieldVal('Address'); }
+    set Address(v: Address) { this._aspect._setNavFieldVal('Address', v); }
+    get Address1(): Address { return this._aspect._getNavFieldVal('Address1'); }
+    set Address1(v: Address) { this._aspect._setNavFieldVal('Address1', v); }
 }
 
 export class SalesOrderHeaderDb extends dbMOD.DbSet<SalesOrderHeader, ISalesOrderHeader, DbContext>
@@ -1106,57 +1196,7 @@ export class SalesOrderHeaderDb extends dbMOD.DbSet<SalesOrderHeader, ISalesOrde
         this._initItemFactory();
     }
     protected _initItemFactory(): void {
-        const itemType = class extends RIAPP.CollectionItem<dbMOD.EntityAspect<SalesOrderHeader, ISalesOrderHeader, DbContext>> implements SalesOrderHeader {
-
-            constructor(aspect: dbMOD.EntityAspect<SalesOrderHeader, ISalesOrderHeader, DbContext>) {
-                super(aspect);
-
-            }
-            toString() {
-                return 'SalesOrderHeaderEntity';
-            }
-            get SalesOrderID(): number { return this._aspect._getFieldVal('SalesOrderID'); }
-            get RevisionNumber(): number { return this._aspect._getFieldVal('RevisionNumber'); }
-            get OrderDate(): Date { return this._aspect._getFieldVal('OrderDate'); }
-            set OrderDate(v: Date) { this._aspect._setFieldVal('OrderDate', v); }
-            get DueDate(): Date { return this._aspect._getFieldVal('DueDate'); }
-            set DueDate(v: Date) { this._aspect._setFieldVal('DueDate', v); }
-            get ShipDate(): Date { return this._aspect._getFieldVal('ShipDate'); }
-            set ShipDate(v: Date) { this._aspect._setFieldVal('ShipDate', v); }
-            get Status(): number { return this._aspect._getFieldVal('Status'); }
-            get OnlineOrderFlag(): boolean { return this._aspect._getFieldVal('OnlineOrderFlag'); }
-            set OnlineOrderFlag(v: boolean) { this._aspect._setFieldVal('OnlineOrderFlag', v); }
-            get SalesOrderNumber(): string { return this._aspect._getFieldVal('SalesOrderNumber'); }
-            get PurchaseOrderNumber(): string { return this._aspect._getFieldVal('PurchaseOrderNumber'); }
-            get AccountNumber(): string { return this._aspect._getFieldVal('AccountNumber'); }
-            set AccountNumber(v: string) { this._aspect._setFieldVal('AccountNumber', v); }
-            get CustomerID(): number { return this._aspect._getFieldVal('CustomerID'); }
-            set CustomerID(v: number) { this._aspect._setFieldVal('CustomerID', v); }
-            get ShipToAddressID(): number { return this._aspect._getFieldVal('ShipToAddressID'); }
-            set ShipToAddressID(v: number) { this._aspect._setFieldVal('ShipToAddressID', v); }
-            get BillToAddressID(): number { return this._aspect._getFieldVal('BillToAddressID'); }
-            set BillToAddressID(v: number) { this._aspect._setFieldVal('BillToAddressID', v); }
-            get ShipMethod(): string { return this._aspect._getFieldVal('ShipMethod'); }
-            set ShipMethod(v: string) { this._aspect._setFieldVal('ShipMethod', v); }
-            get CreditCardApprovalCode(): string { return this._aspect._getFieldVal('CreditCardApprovalCode'); }
-            set CreditCardApprovalCode(v: string) { this._aspect._setFieldVal('CreditCardApprovalCode', v); }
-            get SubTotal(): number { return this._aspect._getFieldVal('SubTotal'); }
-            get TaxAmt(): number { return this._aspect._getFieldVal('TaxAmt'); }
-            get Freight(): number { return this._aspect._getFieldVal('Freight'); }
-            get TotalDue(): number { return this._aspect._getFieldVal('TotalDue'); }
-            get Comment(): string { return this._aspect._getFieldVal('Comment'); }
-            set Comment(v: string) { this._aspect._setFieldVal('Comment', v); }
-            get rowguid(): string { return this._aspect._getFieldVal('rowguid'); }
-            get ModifiedDate(): Date { return this._aspect._getFieldVal('ModifiedDate'); }
-            get SalesOrderDetails(): SalesOrderDetail[] { return this._aspect._getNavFieldVal('SalesOrderDetails'); }
-            get Customer(): Customer { return this._aspect._getNavFieldVal('Customer'); }
-            set Customer(v: Customer) { this._aspect._setNavFieldVal('Customer', v); }
-            get Address(): Address { return this._aspect._getNavFieldVal('Address'); }
-            set Address(v: Address) { this._aspect._setNavFieldVal('Address', v); }
-            get Address1(): Address { return this._aspect._getNavFieldVal('Address1'); }
-            set Address1(v: Address) { this._aspect._setNavFieldVal('Address1', v); }
-        };
-        this._itemFactory = (aspect: dbMOD.EntityAspect<SalesOrderHeader, ISalesOrderHeader, DbContext>) => { return new itemType(aspect); };
+        this._itemFactory = (aspect: TSalesOrderHeaderAspect) => { return new SalesOrderHeaderEntity(aspect); };
     }
     findEntity(salesOrderID: number): SalesOrderHeader {
         return this.findByPK(RIAPP.Utils.arr.fromList(arguments));

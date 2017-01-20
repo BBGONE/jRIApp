@@ -5,6 +5,67 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports, RIAPP, dbMOD) {
     "use strict";
+    var FileSystemObjectEntity = (function (_super) {
+        __extends(FileSystemObjectEntity, _super);
+        function FileSystemObjectEntity(aspect) {
+            _super.call(this, aspect);
+        }
+        FileSystemObjectEntity.prototype.toString = function () {
+            return 'FileSystemObjectEntity';
+        };
+        Object.defineProperty(FileSystemObjectEntity.prototype, "Key", {
+            get: function () { return this._aspect._getFieldVal('Key'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(FileSystemObjectEntity.prototype, "ParentKey", {
+            get: function () { return this._aspect._getFieldVal('ParentKey'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(FileSystemObjectEntity.prototype, "Name", {
+            get: function () { return this._aspect._getFieldVal('Name'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(FileSystemObjectEntity.prototype, "Level", {
+            get: function () { return this._aspect._getFieldVal('Level'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(FileSystemObjectEntity.prototype, "HasSubDirs", {
+            get: function () { return this._aspect._getFieldVal('HasSubDirs'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(FileSystemObjectEntity.prototype, "IsFolder", {
+            get: function () { return this._aspect._getFieldVal('IsFolder'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(FileSystemObjectEntity.prototype, "fullPath", {
+            get: function () { return this._aspect._getCalcFieldVal('fullPath'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(FileSystemObjectEntity.prototype, "ExtraProps", {
+            get: function () { return this._aspect._getCalcFieldVal('ExtraProps'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(FileSystemObjectEntity.prototype, "Parent", {
+            get: function () { return this._aspect._getNavFieldVal('Parent'); },
+            set: function (v) { this._aspect._setNavFieldVal('Parent', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(FileSystemObjectEntity.prototype, "Children", {
+            get: function () { return this._aspect._getNavFieldVal('Children'); },
+            enumerable: true,
+            configurable: true
+        });
+        return FileSystemObjectEntity;
+    }(RIAPP.CollectionItem));
     var FileSystemObjectDb = (function (_super) {
         __extends(FileSystemObjectDb, _super);
         function FileSystemObjectDb(dbContext) {
@@ -19,68 +80,7 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
             this._initItemFactory();
         }
         FileSystemObjectDb.prototype._initItemFactory = function () {
-            var itemType = (function (_super) {
-                __extends(class_1, _super);
-                function class_1(aspect) {
-                    _super.call(this, aspect);
-                }
-                class_1.prototype.toString = function () {
-                    return 'FileSystemObjectEntity';
-                };
-                Object.defineProperty(class_1.prototype, "Key", {
-                    get: function () { return this._aspect._getFieldVal('Key'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_1.prototype, "ParentKey", {
-                    get: function () { return this._aspect._getFieldVal('ParentKey'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_1.prototype, "Name", {
-                    get: function () { return this._aspect._getFieldVal('Name'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_1.prototype, "Level", {
-                    get: function () { return this._aspect._getFieldVal('Level'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_1.prototype, "HasSubDirs", {
-                    get: function () { return this._aspect._getFieldVal('HasSubDirs'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_1.prototype, "IsFolder", {
-                    get: function () { return this._aspect._getFieldVal('IsFolder'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_1.prototype, "fullPath", {
-                    get: function () { return this._aspect._getCalcFieldVal('fullPath'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_1.prototype, "ExtraProps", {
-                    get: function () { return this._aspect._getCalcFieldVal('ExtraProps'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_1.prototype, "Parent", {
-                    get: function () { return this._aspect._getNavFieldVal('Parent'); },
-                    set: function (v) { this._aspect._setNavFieldVal('Parent', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_1.prototype, "Children", {
-                    get: function () { return this._aspect._getNavFieldVal('Children'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                return class_1;
-            }(RIAPP.CollectionItem));
-            this._itemFactory = function (aspect) { return new itemType(aspect); };
+            this._itemFactory = function (aspect) { return new FileSystemObjectEntity(aspect); };
         };
         FileSystemObjectDb.prototype.findEntity = function (key) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));

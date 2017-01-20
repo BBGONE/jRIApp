@@ -71,8 +71,7 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
             _super.call(this, 'Key', [{ name: 'Key', dtype: 1 }, { name: 'SomeProperty1', dtype: 1 }, { name: 'SomeProperty2', dtype: 10 }, { name: 'SomeProperty3', dtype: 0 }, { name: 'MoreComplexProperty', dtype: 0 }, { name: 'EnumProperty', dtype: 0 }]);
         }
         TestDictionary.prototype._initItemFactory = function () {
-            var itemType = _TestModelListItem;
-            this._itemFactory = function (aspect) { return new itemType(aspect); };
+            this._itemFactory = function (aspect) { return new _TestModelListItem(aspect); };
         };
         TestDictionary.prototype.findItem = function (key) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -89,8 +88,7 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
             _super.call(this, [{ name: 'Key', dtype: 1 }, { name: 'SomeProperty1', dtype: 1 }, { name: 'SomeProperty2', dtype: 10 }, { name: 'SomeProperty3', dtype: 0 }, { name: 'MoreComplexProperty', dtype: 0 }, { name: 'EnumProperty', dtype: 0 }]);
         }
         TestList.prototype._initItemFactory = function () {
-            var itemType = _TestModelListItem;
-            this._itemFactory = function (aspect) { return new itemType(aspect); };
+            this._itemFactory = function (aspect) { return new _TestModelListItem(aspect); };
         };
         TestList.prototype.toString = function () {
             return 'TestList';
@@ -126,8 +124,7 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
             _super.call(this, 'key', [{ name: 'key', dtype: 3 }, { name: 'val', dtype: 1 }]);
         }
         KeyValDictionary.prototype._initItemFactory = function () {
-            var itemType = _KeyValListItem;
-            this._itemFactory = function (aspect) { return new itemType(aspect); };
+            this._itemFactory = function (aspect) { return new _KeyValListItem(aspect); };
         };
         KeyValDictionary.prototype.findItem = function (key) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -166,8 +163,7 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
             _super.call(this, 'key', [{ name: 'key', dtype: 1 }, { name: 'val', dtype: 1 }]);
         }
         StrKeyValDictionary.prototype._initItemFactory = function () {
-            var itemType = _StrKeyValListItem;
-            this._itemFactory = function (aspect) { return new itemType(aspect); };
+            this._itemFactory = function (aspect) { return new _StrKeyValListItem(aspect); };
         };
         StrKeyValDictionary.prototype.findItem = function (key) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -212,8 +208,7 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
             _super.call(this, 'key', [{ name: 'key', dtype: 1 }, { name: 'value', dtype: 1 }, { name: 'comment', dtype: 1 }]);
         }
         RadioValDictionary.prototype._initItemFactory = function () {
-            var itemType = _RadioValListItem;
-            this._itemFactory = function (aspect) { return new itemType(aspect); };
+            this._itemFactory = function (aspect) { return new _RadioValListItem(aspect); };
         };
         RadioValDictionary.prototype.findItem = function (key) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -252,8 +247,7 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
             _super.call(this, [{ name: 'radioValue', dtype: 1 }, { name: 'time', dtype: 6 }]);
         }
         HistoryList.prototype._initItemFactory = function () {
-            var itemType = _HistoryItemListItem;
-            this._itemFactory = function (aspect) { return new itemType(aspect); };
+            this._itemFactory = function (aspect) { return new _HistoryItemListItem(aspect); };
         };
         HistoryList.prototype.toString = function () {
             return 'HistoryList';
@@ -326,6 +320,72 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
         return Customer_ComplexProp;
     }(dbMOD.RootComplexProperty));
     exports.Customer_ComplexProp = Customer_ComplexProp;
+    var AddressEntity = (function (_super) {
+        __extends(AddressEntity, _super);
+        function AddressEntity(aspect) {
+            _super.call(this, aspect);
+        }
+        AddressEntity.prototype.toString = function () {
+            return 'AddressEntity';
+        };
+        Object.defineProperty(AddressEntity.prototype, "AddressID", {
+            get: function () { return this._aspect._getFieldVal('AddressID'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressEntity.prototype, "AddressLine1", {
+            get: function () { return this._aspect._getFieldVal('AddressLine1'); },
+            set: function (v) { this._aspect._setFieldVal('AddressLine1', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressEntity.prototype, "AddressLine2", {
+            get: function () { return this._aspect._getFieldVal('AddressLine2'); },
+            set: function (v) { this._aspect._setFieldVal('AddressLine2', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressEntity.prototype, "City", {
+            get: function () { return this._aspect._getFieldVal('City'); },
+            set: function (v) { this._aspect._setFieldVal('City', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressEntity.prototype, "StateProvince", {
+            get: function () { return this._aspect._getFieldVal('StateProvince'); },
+            set: function (v) { this._aspect._setFieldVal('StateProvince', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressEntity.prototype, "CountryRegion", {
+            get: function () { return this._aspect._getFieldVal('CountryRegion'); },
+            set: function (v) { this._aspect._setFieldVal('CountryRegion', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressEntity.prototype, "PostalCode", {
+            get: function () { return this._aspect._getFieldVal('PostalCode'); },
+            set: function (v) { this._aspect._setFieldVal('PostalCode', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressEntity.prototype, "rowguid", {
+            get: function () { return this._aspect._getFieldVal('rowguid'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressEntity.prototype, "ModifiedDate", {
+            get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressEntity.prototype, "CustomerAddresses", {
+            get: function () { return this._aspect._getNavFieldVal('CustomerAddresses'); },
+            enumerable: true,
+            configurable: true
+        });
+        return AddressEntity;
+    }(RIAPP.CollectionItem));
     var AddressDb = (function (_super) {
         __extends(AddressDb, _super);
         function AddressDb(dbContext) {
@@ -340,73 +400,7 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
             this._initItemFactory();
         }
         AddressDb.prototype._initItemFactory = function () {
-            var itemType = (function (_super) {
-                __extends(class_1, _super);
-                function class_1(aspect) {
-                    _super.call(this, aspect);
-                }
-                class_1.prototype.toString = function () {
-                    return 'AddressEntity';
-                };
-                Object.defineProperty(class_1.prototype, "AddressID", {
-                    get: function () { return this._aspect._getFieldVal('AddressID'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_1.prototype, "AddressLine1", {
-                    get: function () { return this._aspect._getFieldVal('AddressLine1'); },
-                    set: function (v) { this._aspect._setFieldVal('AddressLine1', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_1.prototype, "AddressLine2", {
-                    get: function () { return this._aspect._getFieldVal('AddressLine2'); },
-                    set: function (v) { this._aspect._setFieldVal('AddressLine2', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_1.prototype, "City", {
-                    get: function () { return this._aspect._getFieldVal('City'); },
-                    set: function (v) { this._aspect._setFieldVal('City', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_1.prototype, "StateProvince", {
-                    get: function () { return this._aspect._getFieldVal('StateProvince'); },
-                    set: function (v) { this._aspect._setFieldVal('StateProvince', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_1.prototype, "CountryRegion", {
-                    get: function () { return this._aspect._getFieldVal('CountryRegion'); },
-                    set: function (v) { this._aspect._setFieldVal('CountryRegion', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_1.prototype, "PostalCode", {
-                    get: function () { return this._aspect._getFieldVal('PostalCode'); },
-                    set: function (v) { this._aspect._setFieldVal('PostalCode', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_1.prototype, "rowguid", {
-                    get: function () { return this._aspect._getFieldVal('rowguid'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_1.prototype, "ModifiedDate", {
-                    get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_1.prototype, "CustomerAddresses", {
-                    get: function () { return this._aspect._getNavFieldVal('CustomerAddresses'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                return class_1;
-            }(RIAPP.CollectionItem));
-            this._itemFactory = function (aspect) { return new itemType(aspect); };
+            this._itemFactory = function (aspect) { return new AddressEntity(aspect); };
         };
         AddressDb.prototype.findEntity = function (addressID) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -425,6 +419,46 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
         return AddressDb;
     }(dbMOD.DbSet));
     exports.AddressDb = AddressDb;
+    var AddressInfoEntity = (function (_super) {
+        __extends(AddressInfoEntity, _super);
+        function AddressInfoEntity(aspect) {
+            _super.call(this, aspect);
+        }
+        AddressInfoEntity.prototype.toString = function () {
+            return 'AddressInfoEntity';
+        };
+        Object.defineProperty(AddressInfoEntity.prototype, "AddressID", {
+            get: function () { return this._aspect._getFieldVal('AddressID'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressInfoEntity.prototype, "AddressLine1", {
+            get: function () { return this._aspect._getFieldVal('AddressLine1'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressInfoEntity.prototype, "City", {
+            get: function () { return this._aspect._getFieldVal('City'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressInfoEntity.prototype, "StateProvince", {
+            get: function () { return this._aspect._getFieldVal('StateProvince'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressInfoEntity.prototype, "CountryRegion", {
+            get: function () { return this._aspect._getFieldVal('CountryRegion'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressInfoEntity.prototype, "CustomerAddresses", {
+            get: function () { return this._aspect._getNavFieldVal('CustomerAddresses'); },
+            enumerable: true,
+            configurable: true
+        });
+        return AddressInfoEntity;
+    }(RIAPP.CollectionItem));
     var AddressInfoDb = (function (_super) {
         __extends(AddressInfoDb, _super);
         function AddressInfoDb(dbContext) {
@@ -439,47 +473,7 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
             this._initItemFactory();
         }
         AddressInfoDb.prototype._initItemFactory = function () {
-            var itemType = (function (_super) {
-                __extends(class_2, _super);
-                function class_2(aspect) {
-                    _super.call(this, aspect);
-                }
-                class_2.prototype.toString = function () {
-                    return 'AddressInfoEntity';
-                };
-                Object.defineProperty(class_2.prototype, "AddressID", {
-                    get: function () { return this._aspect._getFieldVal('AddressID'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_2.prototype, "AddressLine1", {
-                    get: function () { return this._aspect._getFieldVal('AddressLine1'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_2.prototype, "City", {
-                    get: function () { return this._aspect._getFieldVal('City'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_2.prototype, "StateProvince", {
-                    get: function () { return this._aspect._getFieldVal('StateProvince'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_2.prototype, "CountryRegion", {
-                    get: function () { return this._aspect._getFieldVal('CountryRegion'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_2.prototype, "CustomerAddresses", {
-                    get: function () { return this._aspect._getNavFieldVal('CustomerAddresses'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                return class_2;
-            }(RIAPP.CollectionItem));
-            this._itemFactory = function (aspect) { return new itemType(aspect); };
+            this._itemFactory = function (aspect) { return new AddressInfoEntity(aspect); };
         };
         AddressInfoDb.prototype.findEntity = function (addressID) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -493,6 +487,90 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
         return AddressInfoDb;
     }(dbMOD.DbSet));
     exports.AddressInfoDb = AddressInfoDb;
+    var CustomerEntity = (function (_super) {
+        __extends(CustomerEntity, _super);
+        function CustomerEntity(aspect) {
+            _super.call(this, aspect);
+            this._ComplexProp = null;
+        }
+        CustomerEntity.prototype.toString = function () {
+            return 'CustomerEntity';
+        };
+        Object.defineProperty(CustomerEntity.prototype, "CustomerID", {
+            get: function () { return this._aspect._getFieldVal('CustomerID'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerEntity.prototype, "NameStyle", {
+            get: function () { return this._aspect._getFieldVal('NameStyle'); },
+            set: function (v) { this._aspect._setFieldVal('NameStyle', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerEntity.prototype, "Title", {
+            get: function () { return this._aspect._getFieldVal('Title'); },
+            set: function (v) { this._aspect._setFieldVal('Title', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerEntity.prototype, "Suffix", {
+            get: function () { return this._aspect._getFieldVal('Suffix'); },
+            set: function (v) { this._aspect._setFieldVal('Suffix', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerEntity.prototype, "CompanyName", {
+            get: function () { return this._aspect._getFieldVal('CompanyName'); },
+            set: function (v) { this._aspect._setFieldVal('CompanyName', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerEntity.prototype, "SalesPerson", {
+            get: function () { return this._aspect._getFieldVal('SalesPerson'); },
+            set: function (v) { this._aspect._setFieldVal('SalesPerson', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerEntity.prototype, "PasswordHash", {
+            get: function () { return this._aspect._getFieldVal('PasswordHash'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerEntity.prototype, "PasswordSalt", {
+            get: function () { return this._aspect._getFieldVal('PasswordSalt'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerEntity.prototype, "rowguid", {
+            get: function () { return this._aspect._getFieldVal('rowguid'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerEntity.prototype, "ModifiedDate", {
+            get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerEntity.prototype, "ComplexProp", {
+            get: function () { if (!this._ComplexProp) {
+                this._ComplexProp = new Customer_ComplexProp('ComplexProp', this._aspect);
+            } return this._ComplexProp; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerEntity.prototype, "AddressCount", {
+            get: function () { return this._aspect._getFieldVal('AddressCount'); },
+            set: function (v) { this._aspect._setFieldVal('AddressCount', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerEntity.prototype, "CustomerAddresses", {
+            get: function () { return this._aspect._getNavFieldVal('CustomerAddresses'); },
+            enumerable: true,
+            configurable: true
+        });
+        return CustomerEntity;
+    }(RIAPP.CollectionItem));
     var CustomerDb = (function (_super) {
         __extends(CustomerDb, _super);
         function CustomerDb(dbContext) {
@@ -507,91 +585,7 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
             this._initItemFactory();
         }
         CustomerDb.prototype._initItemFactory = function () {
-            var itemType = (function (_super) {
-                __extends(class_3, _super);
-                function class_3(aspect) {
-                    _super.call(this, aspect);
-                    this._ComplexProp = null;
-                }
-                class_3.prototype.toString = function () {
-                    return 'CustomerEntity';
-                };
-                Object.defineProperty(class_3.prototype, "CustomerID", {
-                    get: function () { return this._aspect._getFieldVal('CustomerID'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_3.prototype, "NameStyle", {
-                    get: function () { return this._aspect._getFieldVal('NameStyle'); },
-                    set: function (v) { this._aspect._setFieldVal('NameStyle', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_3.prototype, "Title", {
-                    get: function () { return this._aspect._getFieldVal('Title'); },
-                    set: function (v) { this._aspect._setFieldVal('Title', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_3.prototype, "Suffix", {
-                    get: function () { return this._aspect._getFieldVal('Suffix'); },
-                    set: function (v) { this._aspect._setFieldVal('Suffix', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_3.prototype, "CompanyName", {
-                    get: function () { return this._aspect._getFieldVal('CompanyName'); },
-                    set: function (v) { this._aspect._setFieldVal('CompanyName', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_3.prototype, "SalesPerson", {
-                    get: function () { return this._aspect._getFieldVal('SalesPerson'); },
-                    set: function (v) { this._aspect._setFieldVal('SalesPerson', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_3.prototype, "PasswordHash", {
-                    get: function () { return this._aspect._getFieldVal('PasswordHash'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_3.prototype, "PasswordSalt", {
-                    get: function () { return this._aspect._getFieldVal('PasswordSalt'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_3.prototype, "rowguid", {
-                    get: function () { return this._aspect._getFieldVal('rowguid'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_3.prototype, "ModifiedDate", {
-                    get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_3.prototype, "ComplexProp", {
-                    get: function () { if (!this._ComplexProp) {
-                        this._ComplexProp = new Customer_ComplexProp('ComplexProp', this._aspect);
-                    } return this._ComplexProp; },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_3.prototype, "AddressCount", {
-                    get: function () { return this._aspect._getFieldVal('AddressCount'); },
-                    set: function (v) { this._aspect._setFieldVal('AddressCount', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_3.prototype, "CustomerAddresses", {
-                    get: function () { return this._aspect._getNavFieldVal('CustomerAddresses'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                return class_3;
-            }(RIAPP.CollectionItem));
-            this._itemFactory = function (aspect) { return new itemType(aspect); };
+            this._itemFactory = function (aspect) { return new CustomerEntity(aspect); };
         };
         CustomerDb.prototype.findEntity = function (customerID) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -608,6 +602,62 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
         return CustomerDb;
     }(dbMOD.DbSet));
     exports.CustomerDb = CustomerDb;
+    var CustomerAddressEntity = (function (_super) {
+        __extends(CustomerAddressEntity, _super);
+        function CustomerAddressEntity(aspect) {
+            _super.call(this, aspect);
+        }
+        CustomerAddressEntity.prototype.toString = function () {
+            return 'CustomerAddressEntity';
+        };
+        Object.defineProperty(CustomerAddressEntity.prototype, "CustomerID", {
+            get: function () { return this._aspect._getFieldVal('CustomerID'); },
+            set: function (v) { this._aspect._setFieldVal('CustomerID', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerAddressEntity.prototype, "AddressID", {
+            get: function () { return this._aspect._getFieldVal('AddressID'); },
+            set: function (v) { this._aspect._setFieldVal('AddressID', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerAddressEntity.prototype, "AddressType", {
+            get: function () { return this._aspect._getFieldVal('AddressType'); },
+            set: function (v) { this._aspect._setFieldVal('AddressType', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerAddressEntity.prototype, "rowguid", {
+            get: function () { return this._aspect._getFieldVal('rowguid'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerAddressEntity.prototype, "ModifiedDate", {
+            get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerAddressEntity.prototype, "Customer", {
+            get: function () { return this._aspect._getNavFieldVal('Customer'); },
+            set: function (v) { this._aspect._setNavFieldVal('Customer', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerAddressEntity.prototype, "Address", {
+            get: function () { return this._aspect._getNavFieldVal('Address'); },
+            set: function (v) { this._aspect._setNavFieldVal('Address', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerAddressEntity.prototype, "AddressInfo", {
+            get: function () { return this._aspect._getNavFieldVal('AddressInfo'); },
+            set: function (v) { this._aspect._setNavFieldVal('AddressInfo', v); },
+            enumerable: true,
+            configurable: true
+        });
+        return CustomerAddressEntity;
+    }(RIAPP.CollectionItem));
     var CustomerAddressDb = (function (_super) {
         __extends(CustomerAddressDb, _super);
         function CustomerAddressDb(dbContext) {
@@ -622,63 +672,7 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
             this._initItemFactory();
         }
         CustomerAddressDb.prototype._initItemFactory = function () {
-            var itemType = (function (_super) {
-                __extends(class_4, _super);
-                function class_4(aspect) {
-                    _super.call(this, aspect);
-                }
-                class_4.prototype.toString = function () {
-                    return 'CustomerAddressEntity';
-                };
-                Object.defineProperty(class_4.prototype, "CustomerID", {
-                    get: function () { return this._aspect._getFieldVal('CustomerID'); },
-                    set: function (v) { this._aspect._setFieldVal('CustomerID', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_4.prototype, "AddressID", {
-                    get: function () { return this._aspect._getFieldVal('AddressID'); },
-                    set: function (v) { this._aspect._setFieldVal('AddressID', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_4.prototype, "AddressType", {
-                    get: function () { return this._aspect._getFieldVal('AddressType'); },
-                    set: function (v) { this._aspect._setFieldVal('AddressType', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_4.prototype, "rowguid", {
-                    get: function () { return this._aspect._getFieldVal('rowguid'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_4.prototype, "ModifiedDate", {
-                    get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_4.prototype, "Customer", {
-                    get: function () { return this._aspect._getNavFieldVal('Customer'); },
-                    set: function (v) { this._aspect._setNavFieldVal('Customer', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_4.prototype, "Address", {
-                    get: function () { return this._aspect._getNavFieldVal('Address'); },
-                    set: function (v) { this._aspect._setNavFieldVal('Address', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_4.prototype, "AddressInfo", {
-                    get: function () { return this._aspect._getNavFieldVal('AddressInfo'); },
-                    set: function (v) { this._aspect._setNavFieldVal('AddressInfo', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                return class_4;
-            }(RIAPP.CollectionItem));
-            this._itemFactory = function (aspect) { return new itemType(aspect); };
+            this._itemFactory = function (aspect) { return new CustomerAddressEntity(aspect); };
         };
         CustomerAddressDb.prototype.findEntity = function (customerID, addressID) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -697,6 +691,37 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
         return CustomerAddressDb;
     }(dbMOD.DbSet));
     exports.CustomerAddressDb = CustomerAddressDb;
+    var CustomerJSONEntity = (function (_super) {
+        __extends(CustomerJSONEntity, _super);
+        function CustomerJSONEntity(aspect) {
+            _super.call(this, aspect);
+        }
+        CustomerJSONEntity.prototype.toString = function () {
+            return 'CustomerJSONEntity';
+        };
+        Object.defineProperty(CustomerJSONEntity.prototype, "CustomerID", {
+            get: function () { return this._aspect._getFieldVal('CustomerID'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerJSONEntity.prototype, "Data", {
+            get: function () { return this._aspect._getFieldVal('Data'); },
+            set: function (v) { this._aspect._setFieldVal('Data', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerJSONEntity.prototype, "rowguid", {
+            get: function () { return this._aspect._getFieldVal('rowguid'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerJSONEntity.prototype, "Customer", {
+            get: function () { return this._aspect._getCalcFieldVal('Customer'); },
+            enumerable: true,
+            configurable: true
+        });
+        return CustomerJSONEntity;
+    }(RIAPP.CollectionItem));
     var CustomerJSONDb = (function (_super) {
         __extends(CustomerJSONDb, _super);
         function CustomerJSONDb(dbContext) {
@@ -711,38 +736,7 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
             this._initItemFactory();
         }
         CustomerJSONDb.prototype._initItemFactory = function () {
-            var itemType = (function (_super) {
-                __extends(class_5, _super);
-                function class_5(aspect) {
-                    _super.call(this, aspect);
-                }
-                class_5.prototype.toString = function () {
-                    return 'CustomerJSONEntity';
-                };
-                Object.defineProperty(class_5.prototype, "CustomerID", {
-                    get: function () { return this._aspect._getFieldVal('CustomerID'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_5.prototype, "Data", {
-                    get: function () { return this._aspect._getFieldVal('Data'); },
-                    set: function (v) { this._aspect._setFieldVal('Data', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_5.prototype, "rowguid", {
-                    get: function () { return this._aspect._getFieldVal('rowguid'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_5.prototype, "Customer", {
-                    get: function () { return this._aspect._getCalcFieldVal('Customer'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                return class_5;
-            }(RIAPP.CollectionItem));
-            this._itemFactory = function (aspect) { return new itemType(aspect); };
+            this._itemFactory = function (aspect) { return new CustomerJSONEntity(aspect); };
         };
         CustomerJSONDb.prototype.findEntity = function (customerID) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -757,6 +751,28 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
         return CustomerJSONDb;
     }(dbMOD.DbSet));
     exports.CustomerJSONDb = CustomerJSONDb;
+    var LookUpProductEntity = (function (_super) {
+        __extends(LookUpProductEntity, _super);
+        function LookUpProductEntity(aspect) {
+            _super.call(this, aspect);
+        }
+        LookUpProductEntity.prototype.toString = function () {
+            return 'LookUpProductEntity';
+        };
+        Object.defineProperty(LookUpProductEntity.prototype, "ProductID", {
+            get: function () { return this._aspect._getFieldVal('ProductID'); },
+            set: function (v) { this._aspect._setFieldVal('ProductID', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(LookUpProductEntity.prototype, "Name", {
+            get: function () { return this._aspect._getFieldVal('Name'); },
+            set: function (v) { this._aspect._setFieldVal('Name', v); },
+            enumerable: true,
+            configurable: true
+        });
+        return LookUpProductEntity;
+    }(RIAPP.CollectionItem));
     var LookUpProductDb = (function (_super) {
         __extends(LookUpProductDb, _super);
         function LookUpProductDb(dbContext) {
@@ -771,29 +787,7 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
             this._initItemFactory();
         }
         LookUpProductDb.prototype._initItemFactory = function () {
-            var itemType = (function (_super) {
-                __extends(class_6, _super);
-                function class_6(aspect) {
-                    _super.call(this, aspect);
-                }
-                class_6.prototype.toString = function () {
-                    return 'LookUpProductEntity';
-                };
-                Object.defineProperty(class_6.prototype, "ProductID", {
-                    get: function () { return this._aspect._getFieldVal('ProductID'); },
-                    set: function (v) { this._aspect._setFieldVal('ProductID', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_6.prototype, "Name", {
-                    get: function () { return this._aspect._getFieldVal('Name'); },
-                    set: function (v) { this._aspect._setFieldVal('Name', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                return class_6;
-            }(RIAPP.CollectionItem));
-            this._itemFactory = function (aspect) { return new itemType(aspect); };
+            this._itemFactory = function (aspect) { return new LookUpProductEntity(aspect); };
         };
         LookUpProductDb.prototype.findEntity = function (productID) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -807,6 +801,119 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
         return LookUpProductDb;
     }(dbMOD.DbSet));
     exports.LookUpProductDb = LookUpProductDb;
+    var ProductEntity = (function (_super) {
+        __extends(ProductEntity, _super);
+        function ProductEntity(aspect) {
+            _super.call(this, aspect);
+        }
+        ProductEntity.prototype.toString = function () {
+            return 'ProductEntity';
+        };
+        Object.defineProperty(ProductEntity.prototype, "ProductID", {
+            get: function () { return this._aspect._getFieldVal('ProductID'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "Name", {
+            get: function () { return this._aspect._getFieldVal('Name'); },
+            set: function (v) { this._aspect._setFieldVal('Name', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "ProductNumber", {
+            get: function () { return this._aspect._getFieldVal('ProductNumber'); },
+            set: function (v) { this._aspect._setFieldVal('ProductNumber', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "Color", {
+            get: function () { return this._aspect._getFieldVal('Color'); },
+            set: function (v) { this._aspect._setFieldVal('Color', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "StandardCost", {
+            get: function () { return this._aspect._getFieldVal('StandardCost'); },
+            set: function (v) { this._aspect._setFieldVal('StandardCost', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "ListPrice", {
+            get: function () { return this._aspect._getFieldVal('ListPrice'); },
+            set: function (v) { this._aspect._setFieldVal('ListPrice', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "Size", {
+            get: function () { return this._aspect._getFieldVal('Size'); },
+            set: function (v) { this._aspect._setFieldVal('Size', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "Weight", {
+            get: function () { return this._aspect._getFieldVal('Weight'); },
+            set: function (v) { this._aspect._setFieldVal('Weight', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "ProductCategoryID", {
+            get: function () { return this._aspect._getFieldVal('ProductCategoryID'); },
+            set: function (v) { this._aspect._setFieldVal('ProductCategoryID', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "ProductModelID", {
+            get: function () { return this._aspect._getFieldVal('ProductModelID'); },
+            set: function (v) { this._aspect._setFieldVal('ProductModelID', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "SellStartDate", {
+            get: function () { return this._aspect._getFieldVal('SellStartDate'); },
+            set: function (v) { this._aspect._setFieldVal('SellStartDate', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "SellEndDate", {
+            get: function () { return this._aspect._getFieldVal('SellEndDate'); },
+            set: function (v) { this._aspect._setFieldVal('SellEndDate', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "DiscontinuedDate", {
+            get: function () { return this._aspect._getFieldVal('DiscontinuedDate'); },
+            set: function (v) { this._aspect._setFieldVal('DiscontinuedDate', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "rowguid", {
+            get: function () { return this._aspect._getFieldVal('rowguid'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "ModifiedDate", {
+            get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "IsActive", {
+            get: function () { return this._aspect._getCalcFieldVal('IsActive'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "ThumbnailPhotoFileName", {
+            get: function () { return this._aspect._getFieldVal('ThumbnailPhotoFileName'); },
+            set: function (v) { this._aspect._setFieldVal('ThumbnailPhotoFileName', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "SalesOrderDetails", {
+            get: function () { return this._aspect._getNavFieldVal('SalesOrderDetails'); },
+            enumerable: true,
+            configurable: true
+        });
+        return ProductEntity;
+    }(RIAPP.CollectionItem));
     var ProductDb = (function (_super) {
         __extends(ProductDb, _super);
         function ProductDb(dbContext) {
@@ -821,120 +928,7 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
             this._initItemFactory();
         }
         ProductDb.prototype._initItemFactory = function () {
-            var itemType = (function (_super) {
-                __extends(class_7, _super);
-                function class_7(aspect) {
-                    _super.call(this, aspect);
-                }
-                class_7.prototype.toString = function () {
-                    return 'ProductEntity';
-                };
-                Object.defineProperty(class_7.prototype, "ProductID", {
-                    get: function () { return this._aspect._getFieldVal('ProductID'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "Name", {
-                    get: function () { return this._aspect._getFieldVal('Name'); },
-                    set: function (v) { this._aspect._setFieldVal('Name', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "ProductNumber", {
-                    get: function () { return this._aspect._getFieldVal('ProductNumber'); },
-                    set: function (v) { this._aspect._setFieldVal('ProductNumber', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "Color", {
-                    get: function () { return this._aspect._getFieldVal('Color'); },
-                    set: function (v) { this._aspect._setFieldVal('Color', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "StandardCost", {
-                    get: function () { return this._aspect._getFieldVal('StandardCost'); },
-                    set: function (v) { this._aspect._setFieldVal('StandardCost', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "ListPrice", {
-                    get: function () { return this._aspect._getFieldVal('ListPrice'); },
-                    set: function (v) { this._aspect._setFieldVal('ListPrice', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "Size", {
-                    get: function () { return this._aspect._getFieldVal('Size'); },
-                    set: function (v) { this._aspect._setFieldVal('Size', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "Weight", {
-                    get: function () { return this._aspect._getFieldVal('Weight'); },
-                    set: function (v) { this._aspect._setFieldVal('Weight', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "ProductCategoryID", {
-                    get: function () { return this._aspect._getFieldVal('ProductCategoryID'); },
-                    set: function (v) { this._aspect._setFieldVal('ProductCategoryID', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "ProductModelID", {
-                    get: function () { return this._aspect._getFieldVal('ProductModelID'); },
-                    set: function (v) { this._aspect._setFieldVal('ProductModelID', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "SellStartDate", {
-                    get: function () { return this._aspect._getFieldVal('SellStartDate'); },
-                    set: function (v) { this._aspect._setFieldVal('SellStartDate', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "SellEndDate", {
-                    get: function () { return this._aspect._getFieldVal('SellEndDate'); },
-                    set: function (v) { this._aspect._setFieldVal('SellEndDate', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "DiscontinuedDate", {
-                    get: function () { return this._aspect._getFieldVal('DiscontinuedDate'); },
-                    set: function (v) { this._aspect._setFieldVal('DiscontinuedDate', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "rowguid", {
-                    get: function () { return this._aspect._getFieldVal('rowguid'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "ModifiedDate", {
-                    get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "IsActive", {
-                    get: function () { return this._aspect._getCalcFieldVal('IsActive'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "ThumbnailPhotoFileName", {
-                    get: function () { return this._aspect._getFieldVal('ThumbnailPhotoFileName'); },
-                    set: function (v) { this._aspect._setFieldVal('ThumbnailPhotoFileName', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "SalesOrderDetails", {
-                    get: function () { return this._aspect._getNavFieldVal('SalesOrderDetails'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                return class_7;
-            }(RIAPP.CollectionItem));
-            this._itemFactory = function (aspect) { return new itemType(aspect); };
+            this._itemFactory = function (aspect) { return new ProductEntity(aspect); };
         };
         ProductDb.prototype.findEntity = function (productID) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -956,6 +950,45 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
         return ProductDb;
     }(dbMOD.DbSet));
     exports.ProductDb = ProductDb;
+    var ProductCategoryEntity = (function (_super) {
+        __extends(ProductCategoryEntity, _super);
+        function ProductCategoryEntity(aspect) {
+            _super.call(this, aspect);
+        }
+        ProductCategoryEntity.prototype.toString = function () {
+            return 'ProductCategoryEntity';
+        };
+        Object.defineProperty(ProductCategoryEntity.prototype, "ProductCategoryID", {
+            get: function () { return this._aspect._getFieldVal('ProductCategoryID'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductCategoryEntity.prototype, "ParentProductCategoryID", {
+            get: function () { return this._aspect._getFieldVal('ParentProductCategoryID'); },
+            set: function (v) { this._aspect._setFieldVal('ParentProductCategoryID', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductCategoryEntity.prototype, "Name", {
+            get: function () { return this._aspect._getFieldVal('Name'); },
+            set: function (v) { this._aspect._setFieldVal('Name', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductCategoryEntity.prototype, "rowguid", {
+            get: function () { return this._aspect._getFieldVal('rowguid'); },
+            set: function (v) { this._aspect._setFieldVal('rowguid', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductCategoryEntity.prototype, "ModifiedDate", {
+            get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
+            set: function (v) { this._aspect._setFieldVal('ModifiedDate', v); },
+            enumerable: true,
+            configurable: true
+        });
+        return ProductCategoryEntity;
+    }(RIAPP.CollectionItem));
     var ProductCategoryDb = (function (_super) {
         __extends(ProductCategoryDb, _super);
         function ProductCategoryDb(dbContext) {
@@ -970,46 +1003,7 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
             this._initItemFactory();
         }
         ProductCategoryDb.prototype._initItemFactory = function () {
-            var itemType = (function (_super) {
-                __extends(class_8, _super);
-                function class_8(aspect) {
-                    _super.call(this, aspect);
-                }
-                class_8.prototype.toString = function () {
-                    return 'ProductCategoryEntity';
-                };
-                Object.defineProperty(class_8.prototype, "ProductCategoryID", {
-                    get: function () { return this._aspect._getFieldVal('ProductCategoryID'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_8.prototype, "ParentProductCategoryID", {
-                    get: function () { return this._aspect._getFieldVal('ParentProductCategoryID'); },
-                    set: function (v) { this._aspect._setFieldVal('ParentProductCategoryID', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_8.prototype, "Name", {
-                    get: function () { return this._aspect._getFieldVal('Name'); },
-                    set: function (v) { this._aspect._setFieldVal('Name', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_8.prototype, "rowguid", {
-                    get: function () { return this._aspect._getFieldVal('rowguid'); },
-                    set: function (v) { this._aspect._setFieldVal('rowguid', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_8.prototype, "ModifiedDate", {
-                    get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
-                    set: function (v) { this._aspect._setFieldVal('ModifiedDate', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                return class_8;
-            }(RIAPP.CollectionItem));
-            this._itemFactory = function (aspect) { return new itemType(aspect); };
+            this._itemFactory = function (aspect) { return new ProductCategoryEntity(aspect); };
         };
         ProductCategoryDb.prototype.findEntity = function (productCategoryID) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -1023,6 +1017,27 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
         return ProductCategoryDb;
     }(dbMOD.DbSet));
     exports.ProductCategoryDb = ProductCategoryDb;
+    var ProductModelEntity = (function (_super) {
+        __extends(ProductModelEntity, _super);
+        function ProductModelEntity(aspect) {
+            _super.call(this, aspect);
+        }
+        ProductModelEntity.prototype.toString = function () {
+            return 'ProductModelEntity';
+        };
+        Object.defineProperty(ProductModelEntity.prototype, "ProductModelID", {
+            get: function () { return this._aspect._getFieldVal('ProductModelID'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductModelEntity.prototype, "Name", {
+            get: function () { return this._aspect._getFieldVal('Name'); },
+            set: function (v) { this._aspect._setFieldVal('Name', v); },
+            enumerable: true,
+            configurable: true
+        });
+        return ProductModelEntity;
+    }(RIAPP.CollectionItem));
     var ProductModelDb = (function (_super) {
         __extends(ProductModelDb, _super);
         function ProductModelDb(dbContext) {
@@ -1037,28 +1052,7 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
             this._initItemFactory();
         }
         ProductModelDb.prototype._initItemFactory = function () {
-            var itemType = (function (_super) {
-                __extends(class_9, _super);
-                function class_9(aspect) {
-                    _super.call(this, aspect);
-                }
-                class_9.prototype.toString = function () {
-                    return 'ProductModelEntity';
-                };
-                Object.defineProperty(class_9.prototype, "ProductModelID", {
-                    get: function () { return this._aspect._getFieldVal('ProductModelID'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_9.prototype, "Name", {
-                    get: function () { return this._aspect._getFieldVal('Name'); },
-                    set: function (v) { this._aspect._setFieldVal('Name', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                return class_9;
-            }(RIAPP.CollectionItem));
-            this._itemFactory = function (aspect) { return new itemType(aspect); };
+            this._itemFactory = function (aspect) { return new ProductModelEntity(aspect); };
         };
         ProductModelDb.prototype.findEntity = function (productModelID) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -1072,6 +1066,22 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
         return ProductModelDb;
     }(dbMOD.DbSet));
     exports.ProductModelDb = ProductModelDb;
+    var SalesInfoEntity = (function (_super) {
+        __extends(SalesInfoEntity, _super);
+        function SalesInfoEntity(aspect) {
+            _super.call(this, aspect);
+        }
+        SalesInfoEntity.prototype.toString = function () {
+            return 'SalesInfoEntity';
+        };
+        Object.defineProperty(SalesInfoEntity.prototype, "SalesPerson", {
+            get: function () { return this._aspect._getFieldVal('SalesPerson'); },
+            set: function (v) { this._aspect._setFieldVal('SalesPerson', v); },
+            enumerable: true,
+            configurable: true
+        });
+        return SalesInfoEntity;
+    }(RIAPP.CollectionItem));
     var SalesInfoDb = (function (_super) {
         __extends(SalesInfoDb, _super);
         function SalesInfoDb(dbContext) {
@@ -1086,23 +1096,7 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
             this._initItemFactory();
         }
         SalesInfoDb.prototype._initItemFactory = function () {
-            var itemType = (function (_super) {
-                __extends(class_10, _super);
-                function class_10(aspect) {
-                    _super.call(this, aspect);
-                }
-                class_10.prototype.toString = function () {
-                    return 'SalesInfoEntity';
-                };
-                Object.defineProperty(class_10.prototype, "SalesPerson", {
-                    get: function () { return this._aspect._getFieldVal('SalesPerson'); },
-                    set: function (v) { this._aspect._setFieldVal('SalesPerson', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                return class_10;
-            }(RIAPP.CollectionItem));
-            this._itemFactory = function (aspect) { return new itemType(aspect); };
+            this._itemFactory = function (aspect) { return new SalesInfoEntity(aspect); };
         };
         SalesInfoDb.prototype.findEntity = function (salesPerson) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -1116,6 +1110,76 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
         return SalesInfoDb;
     }(dbMOD.DbSet));
     exports.SalesInfoDb = SalesInfoDb;
+    var SalesOrderDetailEntity = (function (_super) {
+        __extends(SalesOrderDetailEntity, _super);
+        function SalesOrderDetailEntity(aspect) {
+            _super.call(this, aspect);
+        }
+        SalesOrderDetailEntity.prototype.toString = function () {
+            return 'SalesOrderDetailEntity';
+        };
+        Object.defineProperty(SalesOrderDetailEntity.prototype, "SalesOrderID", {
+            get: function () { return this._aspect._getFieldVal('SalesOrderID'); },
+            set: function (v) { this._aspect._setFieldVal('SalesOrderID', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderDetailEntity.prototype, "SalesOrderDetailID", {
+            get: function () { return this._aspect._getFieldVal('SalesOrderDetailID'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderDetailEntity.prototype, "OrderQty", {
+            get: function () { return this._aspect._getFieldVal('OrderQty'); },
+            set: function (v) { this._aspect._setFieldVal('OrderQty', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderDetailEntity.prototype, "ProductID", {
+            get: function () { return this._aspect._getFieldVal('ProductID'); },
+            set: function (v) { this._aspect._setFieldVal('ProductID', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderDetailEntity.prototype, "UnitPrice", {
+            get: function () { return this._aspect._getFieldVal('UnitPrice'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderDetailEntity.prototype, "UnitPriceDiscount", {
+            get: function () { return this._aspect._getFieldVal('UnitPriceDiscount'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderDetailEntity.prototype, "LineTotal", {
+            get: function () { return this._aspect._getFieldVal('LineTotal'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderDetailEntity.prototype, "rowguid", {
+            get: function () { return this._aspect._getFieldVal('rowguid'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderDetailEntity.prototype, "ModifiedDate", {
+            get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderDetailEntity.prototype, "SalesOrderHeader", {
+            get: function () { return this._aspect._getNavFieldVal('SalesOrderHeader'); },
+            set: function (v) { this._aspect._setNavFieldVal('SalesOrderHeader', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderDetailEntity.prototype, "Product", {
+            get: function () { return this._aspect._getNavFieldVal('Product'); },
+            set: function (v) { this._aspect._setNavFieldVal('Product', v); },
+            enumerable: true,
+            configurable: true
+        });
+        return SalesOrderDetailEntity;
+    }(RIAPP.CollectionItem));
     var SalesOrderDetailDb = (function (_super) {
         __extends(SalesOrderDetailDb, _super);
         function SalesOrderDetailDb(dbContext) {
@@ -1130,77 +1194,7 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
             this._initItemFactory();
         }
         SalesOrderDetailDb.prototype._initItemFactory = function () {
-            var itemType = (function (_super) {
-                __extends(class_11, _super);
-                function class_11(aspect) {
-                    _super.call(this, aspect);
-                }
-                class_11.prototype.toString = function () {
-                    return 'SalesOrderDetailEntity';
-                };
-                Object.defineProperty(class_11.prototype, "SalesOrderID", {
-                    get: function () { return this._aspect._getFieldVal('SalesOrderID'); },
-                    set: function (v) { this._aspect._setFieldVal('SalesOrderID', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_11.prototype, "SalesOrderDetailID", {
-                    get: function () { return this._aspect._getFieldVal('SalesOrderDetailID'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_11.prototype, "OrderQty", {
-                    get: function () { return this._aspect._getFieldVal('OrderQty'); },
-                    set: function (v) { this._aspect._setFieldVal('OrderQty', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_11.prototype, "ProductID", {
-                    get: function () { return this._aspect._getFieldVal('ProductID'); },
-                    set: function (v) { this._aspect._setFieldVal('ProductID', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_11.prototype, "UnitPrice", {
-                    get: function () { return this._aspect._getFieldVal('UnitPrice'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_11.prototype, "UnitPriceDiscount", {
-                    get: function () { return this._aspect._getFieldVal('UnitPriceDiscount'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_11.prototype, "LineTotal", {
-                    get: function () { return this._aspect._getFieldVal('LineTotal'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_11.prototype, "rowguid", {
-                    get: function () { return this._aspect._getFieldVal('rowguid'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_11.prototype, "ModifiedDate", {
-                    get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_11.prototype, "SalesOrderHeader", {
-                    get: function () { return this._aspect._getNavFieldVal('SalesOrderHeader'); },
-                    set: function (v) { this._aspect._setNavFieldVal('SalesOrderHeader', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_11.prototype, "Product", {
-                    get: function () { return this._aspect._getNavFieldVal('Product'); },
-                    set: function (v) { this._aspect._setNavFieldVal('Product', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                return class_11;
-            }(RIAPP.CollectionItem));
-            this._itemFactory = function (aspect) { return new itemType(aspect); };
+            this._itemFactory = function (aspect) { return new SalesOrderDetailEntity(aspect); };
         };
         SalesOrderDetailDb.prototype.findEntity = function (salesOrderID, salesOrderDetailID) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -1214,6 +1208,160 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
         return SalesOrderDetailDb;
     }(dbMOD.DbSet));
     exports.SalesOrderDetailDb = SalesOrderDetailDb;
+    var SalesOrderHeaderEntity = (function (_super) {
+        __extends(SalesOrderHeaderEntity, _super);
+        function SalesOrderHeaderEntity(aspect) {
+            _super.call(this, aspect);
+        }
+        SalesOrderHeaderEntity.prototype.toString = function () {
+            return 'SalesOrderHeaderEntity';
+        };
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "SalesOrderID", {
+            get: function () { return this._aspect._getFieldVal('SalesOrderID'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "RevisionNumber", {
+            get: function () { return this._aspect._getFieldVal('RevisionNumber'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "OrderDate", {
+            get: function () { return this._aspect._getFieldVal('OrderDate'); },
+            set: function (v) { this._aspect._setFieldVal('OrderDate', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "DueDate", {
+            get: function () { return this._aspect._getFieldVal('DueDate'); },
+            set: function (v) { this._aspect._setFieldVal('DueDate', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "ShipDate", {
+            get: function () { return this._aspect._getFieldVal('ShipDate'); },
+            set: function (v) { this._aspect._setFieldVal('ShipDate', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "Status", {
+            get: function () { return this._aspect._getFieldVal('Status'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "OnlineOrderFlag", {
+            get: function () { return this._aspect._getFieldVal('OnlineOrderFlag'); },
+            set: function (v) { this._aspect._setFieldVal('OnlineOrderFlag', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "SalesOrderNumber", {
+            get: function () { return this._aspect._getFieldVal('SalesOrderNumber'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "PurchaseOrderNumber", {
+            get: function () { return this._aspect._getFieldVal('PurchaseOrderNumber'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "AccountNumber", {
+            get: function () { return this._aspect._getFieldVal('AccountNumber'); },
+            set: function (v) { this._aspect._setFieldVal('AccountNumber', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "CustomerID", {
+            get: function () { return this._aspect._getFieldVal('CustomerID'); },
+            set: function (v) { this._aspect._setFieldVal('CustomerID', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "ShipToAddressID", {
+            get: function () { return this._aspect._getFieldVal('ShipToAddressID'); },
+            set: function (v) { this._aspect._setFieldVal('ShipToAddressID', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "BillToAddressID", {
+            get: function () { return this._aspect._getFieldVal('BillToAddressID'); },
+            set: function (v) { this._aspect._setFieldVal('BillToAddressID', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "ShipMethod", {
+            get: function () { return this._aspect._getFieldVal('ShipMethod'); },
+            set: function (v) { this._aspect._setFieldVal('ShipMethod', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "CreditCardApprovalCode", {
+            get: function () { return this._aspect._getFieldVal('CreditCardApprovalCode'); },
+            set: function (v) { this._aspect._setFieldVal('CreditCardApprovalCode', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "SubTotal", {
+            get: function () { return this._aspect._getFieldVal('SubTotal'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "TaxAmt", {
+            get: function () { return this._aspect._getFieldVal('TaxAmt'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "Freight", {
+            get: function () { return this._aspect._getFieldVal('Freight'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "TotalDue", {
+            get: function () { return this._aspect._getFieldVal('TotalDue'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "Comment", {
+            get: function () { return this._aspect._getFieldVal('Comment'); },
+            set: function (v) { this._aspect._setFieldVal('Comment', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "rowguid", {
+            get: function () { return this._aspect._getFieldVal('rowguid'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "ModifiedDate", {
+            get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "SalesOrderDetails", {
+            get: function () { return this._aspect._getNavFieldVal('SalesOrderDetails'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "Customer", {
+            get: function () { return this._aspect._getNavFieldVal('Customer'); },
+            set: function (v) { this._aspect._setNavFieldVal('Customer', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "Address", {
+            get: function () { return this._aspect._getNavFieldVal('Address'); },
+            set: function (v) { this._aspect._setNavFieldVal('Address', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "Address1", {
+            get: function () { return this._aspect._getNavFieldVal('Address1'); },
+            set: function (v) { this._aspect._setNavFieldVal('Address1', v); },
+            enumerable: true,
+            configurable: true
+        });
+        return SalesOrderHeaderEntity;
+    }(RIAPP.CollectionItem));
     var SalesOrderHeaderDb = (function (_super) {
         __extends(SalesOrderHeaderDb, _super);
         function SalesOrderHeaderDb(dbContext) {
@@ -1228,161 +1376,7 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
             this._initItemFactory();
         }
         SalesOrderHeaderDb.prototype._initItemFactory = function () {
-            var itemType = (function (_super) {
-                __extends(class_12, _super);
-                function class_12(aspect) {
-                    _super.call(this, aspect);
-                }
-                class_12.prototype.toString = function () {
-                    return 'SalesOrderHeaderEntity';
-                };
-                Object.defineProperty(class_12.prototype, "SalesOrderID", {
-                    get: function () { return this._aspect._getFieldVal('SalesOrderID'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "RevisionNumber", {
-                    get: function () { return this._aspect._getFieldVal('RevisionNumber'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "OrderDate", {
-                    get: function () { return this._aspect._getFieldVal('OrderDate'); },
-                    set: function (v) { this._aspect._setFieldVal('OrderDate', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "DueDate", {
-                    get: function () { return this._aspect._getFieldVal('DueDate'); },
-                    set: function (v) { this._aspect._setFieldVal('DueDate', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "ShipDate", {
-                    get: function () { return this._aspect._getFieldVal('ShipDate'); },
-                    set: function (v) { this._aspect._setFieldVal('ShipDate', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "Status", {
-                    get: function () { return this._aspect._getFieldVal('Status'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "OnlineOrderFlag", {
-                    get: function () { return this._aspect._getFieldVal('OnlineOrderFlag'); },
-                    set: function (v) { this._aspect._setFieldVal('OnlineOrderFlag', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "SalesOrderNumber", {
-                    get: function () { return this._aspect._getFieldVal('SalesOrderNumber'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "PurchaseOrderNumber", {
-                    get: function () { return this._aspect._getFieldVal('PurchaseOrderNumber'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "AccountNumber", {
-                    get: function () { return this._aspect._getFieldVal('AccountNumber'); },
-                    set: function (v) { this._aspect._setFieldVal('AccountNumber', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "CustomerID", {
-                    get: function () { return this._aspect._getFieldVal('CustomerID'); },
-                    set: function (v) { this._aspect._setFieldVal('CustomerID', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "ShipToAddressID", {
-                    get: function () { return this._aspect._getFieldVal('ShipToAddressID'); },
-                    set: function (v) { this._aspect._setFieldVal('ShipToAddressID', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "BillToAddressID", {
-                    get: function () { return this._aspect._getFieldVal('BillToAddressID'); },
-                    set: function (v) { this._aspect._setFieldVal('BillToAddressID', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "ShipMethod", {
-                    get: function () { return this._aspect._getFieldVal('ShipMethod'); },
-                    set: function (v) { this._aspect._setFieldVal('ShipMethod', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "CreditCardApprovalCode", {
-                    get: function () { return this._aspect._getFieldVal('CreditCardApprovalCode'); },
-                    set: function (v) { this._aspect._setFieldVal('CreditCardApprovalCode', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "SubTotal", {
-                    get: function () { return this._aspect._getFieldVal('SubTotal'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "TaxAmt", {
-                    get: function () { return this._aspect._getFieldVal('TaxAmt'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "Freight", {
-                    get: function () { return this._aspect._getFieldVal('Freight'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "TotalDue", {
-                    get: function () { return this._aspect._getFieldVal('TotalDue'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "Comment", {
-                    get: function () { return this._aspect._getFieldVal('Comment'); },
-                    set: function (v) { this._aspect._setFieldVal('Comment', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "rowguid", {
-                    get: function () { return this._aspect._getFieldVal('rowguid'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "ModifiedDate", {
-                    get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "SalesOrderDetails", {
-                    get: function () { return this._aspect._getNavFieldVal('SalesOrderDetails'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "Customer", {
-                    get: function () { return this._aspect._getNavFieldVal('Customer'); },
-                    set: function (v) { this._aspect._setNavFieldVal('Customer', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "Address", {
-                    get: function () { return this._aspect._getNavFieldVal('Address'); },
-                    set: function (v) { this._aspect._setNavFieldVal('Address', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "Address1", {
-                    get: function () { return this._aspect._getNavFieldVal('Address1'); },
-                    set: function (v) { this._aspect._setNavFieldVal('Address1', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                return class_12;
-            }(RIAPP.CollectionItem));
-            this._itemFactory = function (aspect) { return new itemType(aspect); };
+            this._itemFactory = function (aspect) { return new SalesOrderHeaderEntity(aspect); };
         };
         SalesOrderHeaderDb.prototype.findEntity = function (salesOrderID) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));

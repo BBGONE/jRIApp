@@ -4,8 +4,7 @@
 	}
 	//override
 	protected _initItemFactory(): void {
-		const itemType = {{ITEM_TYPE_NAME}};
-		this._itemFactory = (aspect: RIAPP.ListItemAspect<{{INTERFACE_NAME}}, {{VALS_NAME}}>) => { return new itemType(aspect); };
+		this._itemFactory = (aspect: {{ASPECT_NAME}}) => { return new {{ITEM_TYPE_NAME}}(aspect); };
 	}
 	toString() {
 		return '{{LIST_NAME}}';

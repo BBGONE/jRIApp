@@ -1,4 +1,4 @@
-﻿export class {{DBSET_TYPE}} extends dbMOD.DbSet<{{ENTITY_INTERFACE}}, {{VALS_INTERFACE}}, DbContext>
+﻿export class {{DBSET_TYPE}} extends dbMOD.DbSet<{{INTERFACE_NAME}}, {{VALS_NAME}}, DbContext>
 {
 	constructor(dbContext: DbContext) {
 		var opts: dbMOD.IDbSetConstuctorOptions = {
@@ -12,10 +12,9 @@
 		this._initItemFactory();
 	}
 	protected _initItemFactory(): void {
-		const itemType = {{ENTITY}};
-		this._itemFactory = (aspect: dbMOD.EntityAspect<{{ENTITY_INTERFACE}}, {{VALS_INTERFACE}}, DbContext>) => { return new itemType(aspect); };
+		this._itemFactory = (aspect: {{ASPECT_NAME}}) => { return new {{ENTITY_NAME}}(aspect); };
 	}
-	findEntity({{PK_VALS}}): {{ENTITY_INTERFACE}} {
+	findEntity({{PK_VALS}}): {{INTERFACE_NAME}} {
 		return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
 	}
 	toString(): string {

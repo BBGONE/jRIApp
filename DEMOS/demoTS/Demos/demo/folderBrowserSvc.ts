@@ -1,5 +1,5 @@
 ﻿/*
-	Generated from: /FolderBrowserService/code?lang=ts on 2017-01-19 at 11:02
+	Generated from: /FolderBrowserService/code?lang=ts on 2017-01-20 at 14:52
 	Don't make manual changes here, because they will be lost when this db interface will be regenerated!
 */
 
@@ -18,12 +18,36 @@ export interface IFileSystemObject {
     readonly IsFolder: boolean;
 }
 
+export type TFileSystemObjectAspect = dbMOD.EntityAspect<FileSystemObject, IFileSystemObject, DbContext>;
+
 export interface FileSystemObject extends IFileSystemObject, dbMOD.IEntityItem {
-    readonly _aspect: dbMOD.EntityAspect<FileSystemObject, IFileSystemObject, DbContext>;
+    readonly _aspect: TFileSystemObjectAspect;
     readonly fullPath: string;
     readonly ExtraProps: any;
     Parent: FileSystemObject;
     readonly Children: FileSystemObject[];
+}
+
+class FileSystemObjectEntity extends RIAPP.CollectionItem<TFileSystemObjectAspect> implements FileSystemObject {
+
+    constructor(aspect: TFileSystemObjectAspect) {
+        super(aspect);
+
+    }
+    toString() {
+        return 'FileSystemObjectEntity';
+    }
+    get Key(): string { return this._aspect._getFieldVal('Key'); }
+    get ParentKey(): string { return this._aspect._getFieldVal('ParentKey'); }
+    get Name(): string { return this._aspect._getFieldVal('Name'); }
+    get Level(): number { return this._aspect._getFieldVal('Level'); }
+    get HasSubDirs(): boolean { return this._aspect._getFieldVal('HasSubDirs'); }
+    get IsFolder(): boolean { return this._aspect._getFieldVal('IsFolder'); }
+    get fullPath(): string { return this._aspect._getCalcFieldVal('fullPath'); }
+    get ExtraProps(): any { return this._aspect._getCalcFieldVal('ExtraProps'); }
+    get Parent(): FileSystemObject { return this._aspect._getNavFieldVal('Parent'); }
+    set Parent(v: FileSystemObject) { this._aspect._setNavFieldVal('Parent', v); }
+    get Children(): FileSystemObject[] { return this._aspect._getNavFieldVal('Children'); }
 }
 
 export class FileSystemObjectDb extends dbMOD.DbSet<FileSystemObject, IFileSystemObject, DbContext>
@@ -40,28 +64,7 @@ export class FileSystemObjectDb extends dbMOD.DbSet<FileSystemObject, IFileSyste
         this._initItemFactory();
     }
     protected _initItemFactory(): void {
-        const itemType = class extends RIAPP.CollectionItem<dbMOD.EntityAspect<FileSystemObject, IFileSystemObject, DbContext>> implements FileSystemObject {
-
-            constructor(aspect: dbMOD.EntityAspect<FileSystemObject, IFileSystemObject, DbContext>) {
-                super(aspect);
-
-            }
-            toString() {
-                return 'FileSystemObjectEntity';
-            }
-            get Key(): string { return this._aspect._getFieldVal('Key'); }
-            get ParentKey(): string { return this._aspect._getFieldVal('ParentKey'); }
-            get Name(): string { return this._aspect._getFieldVal('Name'); }
-            get Level(): number { return this._aspect._getFieldVal('Level'); }
-            get HasSubDirs(): boolean { return this._aspect._getFieldVal('HasSubDirs'); }
-            get IsFolder(): boolean { return this._aspect._getFieldVal('IsFolder'); }
-            get fullPath(): string { return this._aspect._getCalcFieldVal('fullPath'); }
-            get ExtraProps(): any { return this._aspect._getCalcFieldVal('ExtraProps'); }
-            get Parent(): FileSystemObject { return this._aspect._getNavFieldVal('Parent'); }
-            set Parent(v: FileSystemObject) { this._aspect._setNavFieldVal('Parent', v); }
-            get Children(): FileSystemObject[] { return this._aspect._getNavFieldVal('Children'); }
-        };
-        this._itemFactory = (aspect: dbMOD.EntityAspect<FileSystemObject, IFileSystemObject, DbContext>) => { return new itemType(aspect); };
+        this._itemFactory = (aspect: TFileSystemObjectAspect) => { return new FileSystemObjectEntity(aspect); };
     }
     findEntity(key: string): FileSystemObject {
         return this.findByPK(RIAPP.Utils.arr.fromList(arguments));

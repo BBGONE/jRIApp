@@ -1,12 +1,12 @@
-﻿class extends RIAPP.CollectionItem<dbMOD.EntityAspect<{{ENTITY_INTERFACE}}, {{VALS_INTERFACE}}, DbContext>> implements {{ENTITY_INTERFACE}} 
+﻿class {{ENTITY_NAME}} extends RIAPP.CollectionItem<{{ASPECT_NAME}}> implements {{INTERFACE_NAME}} 
 		{
 		{{FIELDS_DEF}}
-		constructor(aspect: dbMOD.EntityAspect<{{ENTITY_INTERFACE}}, {{VALS_INTERFACE}}, DbContext>) {
+		constructor(aspect: {{ASPECT_NAME}}) {
 			super(aspect);
 		{{FIELDS_INIT}}
 		}
 		toString() {
-			return '{{ENTITY_TYPE}}';
+			return '{{ENTITY_NAME}}';
 		}         
 {{ENTITY_FIELDS}}              
-		}
+}
