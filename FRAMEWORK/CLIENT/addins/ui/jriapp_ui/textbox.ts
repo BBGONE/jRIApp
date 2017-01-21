@@ -21,21 +21,21 @@ export class TextBoxElView extends InputElView {
     constructor(options: ITextBoxOptions) {
         super(options);
         const self = this;
-        dom.events.on(this.el, "change", function (e) {
+        dom.events.on(this.el, "change", (e) => {
             e.stopPropagation();
             self.raisePropertyChanged(PROP_NAME.value);
         }, this.uniqueID);
 
-        dom.events.on(this.el, "keypress", function (e) {
+        dom.events.on(this.el, "keypress", (e) => {
             e.stopPropagation();
-            const args: TKeyPressArgs = { keyCode: e.which, value: (<any>e.target).value, isCancel: false };
+            const args: TKeyPressArgs = { keyCode: e.which, value: (<HTMLInputElement>e.target).value, isCancel: false };
             self.raiseEvent(TXTBOX_EVENTS.keypress, args);
             if (args.isCancel)
                 e.preventDefault();
         }, this.uniqueID);
 
         if (!!options.updateOnKeyUp) {
-            dom.events.on(this.el, "keyup", function (e) {
+            dom.events.on(this.el, "keyup", (e) => {
                 e.stopPropagation();
                 self.raisePropertyChanged(PROP_NAME.value);
             }, this.uniqueID);

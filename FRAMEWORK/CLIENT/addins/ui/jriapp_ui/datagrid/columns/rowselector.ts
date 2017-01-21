@@ -27,16 +27,16 @@ export class RowSelectorColumn extends BaseColumn {
         label.appendChild(doc.createElement("span"));
         this.col.appendChild(label);
         this._chk = chk;
-        dom.events.on(chk, "change", function (e) {
+        dom.events.on(chk, "change", (e) => {
             e.stopPropagation();
             self.raisePropertyChanged(PROP_NAME.checked);
             self.grid.selectRows(this.checked);
         }, this.uniqueID);
 
         //delegated click event from the cell's checkbox
-        dom.events.on(this.grid.table, "click", function (e) {
+        dom.events.on(this.grid.table, "click", (e) => {
             e.stopPropagation();
-            const chk = <HTMLInputElement>this, cell = <RowSelectorCell>dom.getData(chk, "cell");
+            const chk = <HTMLInputElement>e.target, cell = <RowSelectorCell>dom.getData(chk, "cell");
             if (!!cell && !cell.getIsDestroyCalled()) {
                 cell.row.isSelected = cell.checked;
             } 

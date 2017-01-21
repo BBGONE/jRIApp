@@ -29,14 +29,14 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
             return;
         this._isDestroyCalled = true;
         const td = this.td, btns = dom.queryAll<HTMLElement>(td, actionsSelector);
-        btns.forEach(function (img) {
+        btns.forEach((img) => {
             dom.removeData(img);
         });
         super.destroy();
     }
     private _setupButtons(buttons: HTMLElement[]) {
         const self = this;
-        buttons.forEach(function (btn) {
+        buttons.forEach((btn) => {
             dom.setData(btn, "cell", self);
             const name = btn.getAttribute(DATA_ATTR.DATA_NAME);
             fn_addToolTip(btn, STRS.TEXT[txtMap[name]]);

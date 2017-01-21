@@ -17,10 +17,11 @@ export class CheckBoxElView extends InputElView {
         this._checked = null;
         chk.checked = false;
 
-        dom.events.on(this.el, "change", function (e) {
+        dom.events.on(this.el, "change", (e) => {
             e.stopPropagation();
-            if (self.checked !== this.checked)
-                self.checked = this.checked;
+            const chk = <HTMLInputElement>self.el;
+            if (self.checked !== chk.checked)
+                self.checked = chk.checked;
         }, this.uniqueID);
 
         this._updateState();

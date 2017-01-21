@@ -162,29 +162,29 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         const self = this;
         //doc.addEventListener
         //when clicked outside any Selectable set _currentSelectable = null
-        dom.events.on(doc, "click", function (e) {
+        dom.events.on(doc, "click", (e) => {
             e.stopPropagation();
             self.currentSelectable = null;
         }, this._objId);
-        dom.events.on(doc, "keydown", function (e) {
+        dom.events.on(doc, "keydown", (e) => {
             e.stopPropagation();
             if (!!self._currentSelectable) {
                 self._currentSelectable.getISelectable().onKeyDown(e.which, e);
             }
         }, this._objId);
-        dom.events.on(doc, "keyup", function (e) {
+        dom.events.on(doc, "keyup", (e) => {
             e.stopPropagation();
             if (!!self._currentSelectable) {
                 self._currentSelectable.getISelectable().onKeyUp(e.which, e);
             }
         }, this._objId);
 
-        dom.events.on(win, "beforeunload", function () {
+        dom.events.on(win, "beforeunload", () => {
             self.raiseEvent(GLOB_EVENTS.unload, {});
         }, this._objId);
 
         //this is a way to attach for correct work in firefox
-        win.onerror = function(msg: any, url: string, linenumber: number) {
+        win.onerror = (msg: any, url: string, linenumber: number) => {
             if (!!msg && msg.toString().indexOf(DUMY_ERROR) > -1) {
                 return true;
             }
@@ -199,7 +199,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     }
     private _processTemplates(root: HTMLElement | HTMLDocument, app: IApplication = null): void {
         const self = this, templates = dom.queryAll<HTMLElement>(root, _TEMPLATE_SELECTOR);
-        templates.forEach(function (el) {
+        templates.forEach((el) => {
             const name = el.getAttribute("id");
             if (!name)
                 throw new Error(ERRS.ERR_TEMPLATE_HAS_NO_ID);
@@ -216,9 +216,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             res = strUtils.fastTrim(html);
 
         const loader = {
-            fn_loader: function (): IPromise<string> {
-                return deferred.promise();
-            }
+            fn_loader: () => deferred.promise()
         };
 
         //template already loaded, register function which returns the template immediately
@@ -239,10 +237,11 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
 
         if ((name === GLOB_EVENTS.load && isReady) || (name === GLOB_EVENTS.initialized && isIntialized)) {
             //when already is ready, immediately raise the event
-            setTimeout(function () { fn.apply(self, [self, {}]); }, 0);
-            return;
+            utils.queue.enque(() => { fn.apply(self, [self, {}]); });
         }
-        super._addHandler(name, fn, nmspace, context, priority);
+        else {
+            super._addHandler(name, fn, nmspace, context, priority);
+        }
     }
     private _init(): IPromise<Bootstrap> {
         const self = this;
@@ -289,7 +288,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     }
     private _trackSelectable(selectable: ISelectableProvider): void {
         const self = this, isel = selectable.getISelectable(), el = isel.getContainerEl();
-        dom.events.on(el, "click", function (e) {
+        dom.events.on(el, "click", (e) => {
             e.stopPropagation();
             const target = e.target;
             if (dom.isContained(target, el))

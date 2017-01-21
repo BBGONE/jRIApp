@@ -39,7 +39,7 @@ export class CommandElView extends BaseElView {
         args = args || this._commandParam || {};
         if (!!self.command && self.command.canExecute(self, args)) {
             if (isAsync) {
-                setTimeout(function () {
+                utils.queue.enque(() => {
                     if (self.getIsDestroyCalled())
                         return;
                     //repeat the check after timeout
@@ -50,7 +50,7 @@ export class CommandElView extends BaseElView {
                     catch (ex) {
                         self.handleError(ex, self);
                     }
-                }, 0);
+                });
             }
             else {
                 self.command.execute(self, args);

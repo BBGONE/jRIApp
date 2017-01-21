@@ -18,6 +18,62 @@ export interface INamespaceMap {
 
 export type TEventList = INamespaceMap;
 
+class EventWrapper {
+    private _ev: Event;
+    private _target: TDomElement;
+
+    constructor(ev: Event, target: TDomElement) {
+        this._ev = ev;
+        this._target = target;
+    }
+    get type() {
+        return this._ev.type;
+    }
+    get target() {
+        return this._target;
+    }
+    get bubbles() {
+        return this._ev.bubbles;
+    }
+    get defaultPrevented() {
+        return this._ev.defaultPrevented;
+    }
+    get cancelable() {
+        return this._ev.cancelable;
+    }
+    get isTrusted() {
+        return this._ev.isTrusted;
+    }
+    get returnValue() {
+        return this._ev.returnValue;
+    }
+    set returnValue(v: boolean) {
+        this._ev.returnValue = v;
+    }
+    get timeStamp() {
+        return this._ev.timeStamp;
+    }
+    get currentTarget() {
+        return this._ev.currentTarget;
+    }
+    get originalEvent() {
+        return this._ev;
+    }
+    get AT_TARGET() {
+        return this._ev.AT_TARGET;
+    }
+    get BUBBLING_PHASE() {
+        return this._ev.BUBBLING_PHASE;
+    }
+    get CAPTURING_PHASE() {
+        return this._ev.CAPTURING_PHASE;
+    }
+
+    preventDefault() { this._ev.preventDefault(); }
+    stopPropagation() { this._ev.stopPropagation(); }
+    stopImmediatePropagation() { this._ev.stopImmediatePropagation(); }
+}
+
 class EventHelper {
     static Node(handler: THandlerFunc, name: string, useCapture?: boolean): TEventNode {
         return { fn: handler, name: name, useCapture: useCapture };
@@ -116,9 +172,11 @@ class EventHelper {
             // go up to the parent node
             while (!!target && target !== root) {
                 if (fn_match(target)) {
-                    listener.apply(target, [event]);
+                    const eventCopy = new EventWrapper(event, target);
+                    listener.apply(target, [eventCopy]);
                     return;
                 }
+                
                 target = (<Element><any>target).parentElement;
             }
         };

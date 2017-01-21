@@ -123,7 +123,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         this._$dlgEl = null;
         this._result = null;
         this._currentSelectable = null;
-        this._fn_submitOnOK = function () {
+        this._fn_submitOnOK = () => {
             let submittable = sys.getSubmittable(self._dataContext);
             if (!submittable || !submittable.isCanSubmit) {
                 //signals immediatly
@@ -138,7 +138,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             title: options.title,
             autoOpen: false,
             modal: true,
-            close: function (event, ui) {
+            close: (event, ui) => {
                 self._onClose();
             },
             buttons: self._getButtons()
@@ -210,7 +210,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
                 'id': self._objId + "_Refresh",
                 'text': STRS.TEXT.txtRefresh,
                 'class': "btn btn-info",
-                'click': function () {
+                'click': () => {
                     self._onRefresh();
                 }
             },
@@ -218,7 +218,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
                 'id': self._objId + "_Ok",
                 'text': STRS.TEXT.txtOk,
                 'class': "btn btn-info",
-                'click': function () {
+                'click': () => {
                     self._onOk();
                 }
             },
@@ -226,7 +226,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
                 'id': self._objId + "_Cancel",
                 'text': STRS.TEXT.txtCancel,
                 'class': "btn btn-info",
-                'click': function () {
+                'click': () => {
                     self._onCancel();
                 }
             }
@@ -253,7 +253,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     }
     protected _disableButtons(isDisable: boolean) {
         let btns = this._getAllButtons();
-        btns.forEach(function ($btn) {
+        btns.forEach(($btn) => {
             $btn.prop("disabled", !!isDisable);
         });
     }
@@ -281,14 +281,14 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
                 let title = this.title;
                 this.title = STRS.TEXT.txtSubmitting;
                 let promise = this._fn_submitOnOK();
-                promise.always(function () {
+                promise.always(() => {
                     self._disableButtons(false);
                     self.title = title;
                 });
-                promise.then(function () {
+                promise.then(() => {
                     self._result = "ok";
                     self.hide();
-                }, function () {
+                }, (err: any) => {
                     //resume editing if fn_onEndEdit callback returns false in isOk argument
                     if (!!self._editable) {
                         if (!self._editable.beginEdit()) {
@@ -347,7 +347,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         }
         let csel = this._currentSelectable;
         this._currentSelectable = null;
-        setTimeout(function () { boot.currentSelectable = csel; csel = null; }, 0);
+        utils.queue.enque(() => { boot.currentSelectable = csel; csel = null; });
     }
     protected _onShow() {
         this._currentSelectable = boot.currentSelectable;
@@ -475,7 +475,7 @@ export class DialogVM extends ViewModel<IApplication> {
     createDialog(name: string, options: IDialogConstructorOptions): () => DataEditDialog {
         let self = this;
         //the map stores functions those create dialogs (aka factories)
-        this._factories[name] = function () {
+        this._factories[name] = () => {
             let dialog = self._dialogs[name];
             if (!dialog) {
                 dialog = new DataEditDialog(options);
@@ -507,7 +507,7 @@ export class DialogVM extends ViewModel<IApplication> {
             return;
         this._isDestroyCalled = true;
         let self = this, keys = Object.keys(this._dialogs);
-        keys.forEach(function (key: string) {
+        keys.forEach((key: string) => {
             self._dialogs[key].destroy();
         });
         this._factories = {};

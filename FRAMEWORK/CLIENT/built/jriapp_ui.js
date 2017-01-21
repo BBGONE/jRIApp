@@ -1327,8 +1327,9 @@ define("jriapp_ui/checkbox", ["require", "exports", "jriapp_shared", "jriapp/uti
             chk.checked = false;
             dom.events.on(this.el, "change", function (e) {
                 e.stopPropagation();
-                if (self.checked !== this.checked)
-                    self.checked = this.checked;
+                var chk = self.el;
+                if (self.checked !== chk.checked)
+                    self.checked = chk.checked;
             }, this.uniqueID);
             this._updateState();
         }
@@ -2938,7 +2939,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
                     promise.then(function () {
                         self._result = "ok";
                         self.hide();
-                    }, function () {
+                    }, function (err) {
                         if (!!self._editable) {
                             if (!self._editable.beginEdit()) {
                                 self._result = "cancel";
@@ -2996,7 +2997,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
             }
             var csel = this._currentSelectable;
             this._currentSelectable = null;
-            setTimeout(function () { boot.currentSelectable = csel; csel = null; }, 0);
+            utils.queue.enque(function () { boot.currentSelectable = csel; csel = null; });
         };
         DataEditDialog.prototype._onShow = function () {
             this._currentSelectable = boot.currentSelectable;
@@ -3567,7 +3568,7 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_shared"
             }, this.uniqueID);
             dom.events.on(this.grid.table, "click", function (e) {
                 e.stopPropagation();
-                var td = this, cell = dom.getData(td, "cell");
+                var td = e.target, cell = dom.getData(td, "cell");
                 if (!!cell) {
                     boot.currentSelectable = grid;
                     grid._getInternal().setCurrentColumn(self);
@@ -3905,7 +3906,7 @@ define("jriapp_ui/datagrid/columns/actions", ["require", "exports", "jriapp/cons
             dom.addClass([this.col], const_9.css.rowActions);
             dom.events.on(this.grid.table, "click", function (e) {
                 e.stopPropagation();
-                var btn = this, name = btn.getAttribute(const_8.DATA_ATTR.DATA_NAME), cell = dom.getData(btn, "cell");
+                var btn = e.target, name = btn.getAttribute(const_8.DATA_ATTR.DATA_NAME), cell = dom.getData(btn, "cell");
                 self.grid.currentRow = cell.row;
                 switch (name) {
                     case "img_ok":
@@ -4096,6 +4097,7 @@ define("jriapp_ui/datagrid/columns/rowselector", ["require", "exports", "jriapp_
     var RowSelectorColumn = (function (_super) {
         __extends(RowSelectorColumn, _super);
         function RowSelectorColumn(grid, options) {
+            var _this = this;
             _super.call(this, grid, options);
             var self = this;
             dom.addClass([this.col], const_13.css.rowSelector);
@@ -4112,11 +4114,11 @@ define("jriapp_ui/datagrid/columns/rowselector", ["require", "exports", "jriapp_
             dom.events.on(chk, "change", function (e) {
                 e.stopPropagation();
                 self.raisePropertyChanged(const_13.PROP_NAME.checked);
-                self.grid.selectRows(this.checked);
+                self.grid.selectRows(_this.checked);
             }, this.uniqueID);
             dom.events.on(this.grid.table, "click", function (e) {
                 e.stopPropagation();
-                var chk = this, cell = dom.getData(chk, "cell");
+                var chk = e.target, cell = dom.getData(chk, "cell");
                 if (!!cell && !cell.getIsDestroyCalled()) {
                     cell.row.isSelected = cell.checked;
                 }
@@ -4283,8 +4285,7 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_shared", "j
             }
         };
         Row.prototype._onBeginEdit = function () {
-            var self = this;
-            self._cells.forEach(function (cell) {
+            this._cells.forEach(function (cell) {
                 if (cell instanceof data_1.DataCell) {
                     cell._beginEdit();
                 }
@@ -4293,8 +4294,7 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_shared", "j
                 this._actionsCell.update();
         };
         Row.prototype._onEndEdit = function (isCanceled) {
-            var self = this;
-            self._cells.forEach(function (cell) {
+            this._cells.forEach(function (cell) {
                 if (cell instanceof data_1.DataCell) {
                     cell._endEdit(isCanceled);
                 }
@@ -6238,10 +6238,9 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/const"
             this._pageDebounce = new jriapp_shared_31.Debounce();
             this._dsDebounce = new jriapp_shared_31.Debounce();
             dom.events.on(this._el, "click", function (e) {
-                var _this = this;
                 e.preventDefault();
                 self._pageDebounce.enque(function () {
-                    var a = _this, page = parseInt(a.getAttribute("data-page"), 10);
+                    var a = e.target, page = parseInt(a.getAttribute("data-page"), 10);
                     self.currentPage = page;
                     self._dsDebounce.enque(function () {
                         if (!!self.dataSource) {
@@ -6779,7 +6778,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             dom.events.on(this._el, "click", function (e) {
                 e.stopPropagation();
                 boot.currentSelectable = self;
-                var el = this, mappedItem = dom.getData(el, "data");
+                var el = e.target, mappedItem = dom.getData(el, "data");
                 self._onItemClicked(mappedItem.el, mappedItem.item);
             }, {
                 nmspace: this.uniqueID,
@@ -7198,13 +7197,13 @@ define("jriapp_ui/tabs", ["require", "exports", "jriapp_shared", "jriapp_ui/util
             };
             tabOpts = coreUtils.extend(tabOpts, self._tabOpts);
             $el.tabs(tabOpts);
-            setTimeout(function () {
+            utils.queue.enque(function () {
                 if (self.getIsDestroyCalled())
                     return;
                 self._tabsCreated = true;
                 self._onTabsCreated();
                 self.raisePropertyChanged(PROP_NAME.tabIndex);
-            }, 0);
+            });
         };
         TabsElView.prototype._destroyTabs = function () {
             var $el = jquery_6.$(this.el);
@@ -7293,7 +7292,7 @@ define("jriapp_ui/command", ["require", "exports", "jriapp_shared", "jriapp/util
             args = args || this._commandParam || {};
             if (!!self.command && self.command.canExecute(self, args)) {
                 if (isAsync) {
-                    setTimeout(function () {
+                    utils.queue.enque(function () {
                         if (self.getIsDestroyCalled())
                             return;
                         try {
@@ -7303,7 +7302,7 @@ define("jriapp_ui/command", ["require", "exports", "jriapp_shared", "jriapp/util
                         catch (ex) {
                             self.handleError(ex, self);
                         }
-                    }, 0);
+                    });
                 }
                 else {
                     self.command.execute(self, args);

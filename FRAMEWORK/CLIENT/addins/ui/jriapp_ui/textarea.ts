@@ -22,28 +22,28 @@ export class TextAreaElView extends BaseElView {
         if (!!options.wrap) {
             this.wrap = options.wrap;
         }
-        dom.events.on(this.el, "change", function (e) {
+        dom.events.on(this.el, "change", (e) => {
             e.stopPropagation();
             self.raisePropertyChanged(PROP_NAME.value);
         }, this.uniqueID);
 
-        dom.events.on(this.el, "keypress", function (e) {
+        dom.events.on(this.el, "keypress", (e) => {
             e.stopPropagation();
-            const args: TKeyPressArgs = { keyCode: e.which, value: (<any>e.target).value, isCancel: false };
+            const args: TKeyPressArgs = { keyCode: e.which, value: (<HTMLTextAreaElement>e.target).value, isCancel: false };
             self.raiseEvent(TXTAREA_EVENTS.keypress, args);
             if (args.isCancel)
                 e.preventDefault();
         }, this.uniqueID);
 
         if (!!options.updateOnKeyUp) {
-            dom.events.on(this.el, "keyup", function (e) {
+            dom.events.on(this.el, "keyup", (e) => {
                 e.stopPropagation();
                 self.raisePropertyChanged(PROP_NAME.value);
             }, this.uniqueID);
         }
     }
     protected _getEventNames() {
-        let base_events = super._getEventNames();
+        const base_events = super._getEventNames();
         return [TXTAREA_EVENTS.keypress].concat(base_events);
     }
     addOnKeyPress(fn: (sender: TextAreaElView, args: TKeyPressArgs) => void, nmspace?: string) {

@@ -1,10 +1,23 @@
 ﻿@using RIAPP.DataService.Mvc.Utils
-@model RIAppDemo.Models.MasterDetailDemo
 @{
     Layout = "~/Views/Shared/_LayoutDemo.cshtml";
 }
 @{
     ViewBag.Title = "Master-Details Demo";
+}
+@{ 
+    string BindGridCustomers = "{this.dataSource,to=dbSet,source=customerVM}{this.grid,to=grid,mode=BackWay,source=customerVM}";
+    string OptionsGridCustomers = @"options={wrapCss:customerTableWrap,
+isHandleAddNew:true,
+editor:{templateID:customerEditTemplate,width:500,height:550,title:'Customer editing'},
+details:{templateID:customerDetailsTemplate}}";
+    string BindTableCustOrders = "{this.dataSource,to=dbSet,source=customerVM.ordersVM}{this.grid,to=grid,mode=BackWay,source=customerVM.ordersVM}";
+    string OptionsTableCustOrders = @"options={isUseScrollIntoDetails:false,
+isHandleAddNew:true,
+editor:{templateID:orderEditTemplate,width:650,height:550,title:'Order editing'},
+details:{templateID:orderDetailsTemplate}}";
+    string BindAddNewOrder = "{this.command,to=addNewCommand,source=customerVM.ordersVM}";
+    string OptionsAddNewOrder = "options={tip:This is not a Real World example how to add an order!!!}";
 }
 
 <style type="text/css">
@@ -101,7 +114,7 @@
 
 <div id="demoContent" style="opacity:0;" data-bind="{this.isBusy,to=dbContext.isBusy}" data-view="name=busy">
     <div style="height: 85%; vertical-align: top;">
-        <table data-name="gridCustomers" data-bind="@Model.BindGridCustomers" data-view="@Model.OptionsGridCustomers">
+        <table data-name="gridCustomers" data-bind="@BindGridCustomers" data-view="@OptionsGridCustomers">
             <thead>
             <tr>
                 <th data-column="width:35px,type:row_expander"></th>
@@ -297,7 +310,7 @@
                     world it should never be done in this way.<br/>
                     It is here just to show you the capabilties you have with the framework to manage
                     master-details.
-                    <table style="font-size: 9pt; margin-bottom: 3px;" data-name="tblOrders" data-bind="@Model.BindTableCustOrders" data-view="@Model.OptionsTableCustOrders">
+                    <table style="font-size: 9pt; margin-bottom: 3px;" data-name="tblOrders" data-bind="@BindTableCustOrders" data-view="@OptionsTableCustOrders">
                         <thead>
                         <tr>
                             <th data-column="width:20px,type:row_expander"></th>
@@ -313,7 +326,7 @@
                         </thead>
                         <tbody></tbody>
                     </table>
-                    <button class="btn btn-info btn-small" data-bind="@Model.BindAddNewOrder" data-view="@Model.OptionsAddNewOrder">
+                    <button class="btn btn-info btn-small" data-bind="@BindAddNewOrder" data-view="@OptionsAddNewOrder">
                         <i class="icon-plus"></i>&nbsp;New Order
                     </button>
                 </div>

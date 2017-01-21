@@ -626,9 +626,7 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
             this._waitQueue.enQueue({
                 prop: PROP_NAME.isLoading,
                 groupName: null,
-                predicate: function (val) {
-                    return !val;
-                },
+                predicate: function (val) { return !val; },
                 action: callback,
                 actionArgs: callbackArgs
             });
@@ -762,10 +760,7 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
             });
         };
         TemplateLoader.prototype.loadTemplates = function (url) {
-            var self = this;
-            this.loadTemplatesAsync(function () {
-                return http.getAjax(url);
-            }, null);
+            this.loadTemplatesAsync(function () { return http.getAjax(url); }, null);
         };
         Object.defineProperty(TemplateLoader.prototype, "isLoading", {
             get: function () {
@@ -781,6 +776,110 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
 define("jriapp/utils/domevents", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_7) {
     "use strict";
     var utils = jriapp_shared_7.Utils, checks = utils.check, arrHelper = utils.arr, strUtils = utils.str, debug = utils.debug, ERRS = jriapp_shared_7.LocaleERRS;
+    var EventWrapper = (function () {
+        function EventWrapper(ev, target) {
+            this._ev = ev;
+            this._target = target;
+        }
+        Object.defineProperty(EventWrapper.prototype, "type", {
+            get: function () {
+                return this._ev.type;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(EventWrapper.prototype, "target", {
+            get: function () {
+                return this._target;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(EventWrapper.prototype, "bubbles", {
+            get: function () {
+                return this._ev.bubbles;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(EventWrapper.prototype, "defaultPrevented", {
+            get: function () {
+                return this._ev.defaultPrevented;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(EventWrapper.prototype, "cancelable", {
+            get: function () {
+                return this._ev.cancelable;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(EventWrapper.prototype, "isTrusted", {
+            get: function () {
+                return this._ev.isTrusted;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(EventWrapper.prototype, "returnValue", {
+            get: function () {
+                return this._ev.returnValue;
+            },
+            set: function (v) {
+                this._ev.returnValue = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(EventWrapper.prototype, "timeStamp", {
+            get: function () {
+                return this._ev.timeStamp;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(EventWrapper.prototype, "currentTarget", {
+            get: function () {
+                return this._ev.currentTarget;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(EventWrapper.prototype, "originalEvent", {
+            get: function () {
+                return this._ev;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(EventWrapper.prototype, "AT_TARGET", {
+            get: function () {
+                return this._ev.AT_TARGET;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(EventWrapper.prototype, "BUBBLING_PHASE", {
+            get: function () {
+                return this._ev.BUBBLING_PHASE;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(EventWrapper.prototype, "CAPTURING_PHASE", {
+            get: function () {
+                return this._ev.CAPTURING_PHASE;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        EventWrapper.prototype.preventDefault = function () { this._ev.preventDefault(); };
+        EventWrapper.prototype.stopPropagation = function () { this._ev.stopPropagation(); };
+        EventWrapper.prototype.stopImmediatePropagation = function () { this._ev.stopImmediatePropagation(); };
+        return EventWrapper;
+    }());
     var EventHelper = (function () {
         function EventHelper() {
         }
@@ -867,7 +966,8 @@ define("jriapp/utils/domevents", ["require", "exports", "jriapp_shared"], functi
                 var target = event.target;
                 while (!!target && target !== root) {
                     if (fn_match(target)) {
-                        listener.apply(target, [event]);
+                        var eventCopy = new EventWrapper(event, target);
+                        listener.apply(target, [eventCopy]);
                         return;
                     }
                     target = target.parentElement;
@@ -1544,9 +1644,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
         Bootstrap.prototype._processTemplate = function (name, html, app) {
             var self = this, deferred = _async.createDeferred(true), res = strUtils.fastTrim(html);
             var loader = {
-                fn_loader: function () {
-                    return deferred.promise();
-                }
+                fn_loader: function () { return deferred.promise(); }
             };
             self.templateLoader.registerTemplateLoader(!app ? name : (app.appName + "." + name), loader);
             deferred.resolve(res);
@@ -1561,10 +1659,11 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
             var self = this, isReady = self._bootState === 3;
             var isIntialized = (self._bootState === 2 || self._bootState === 3);
             if ((name === GLOB_EVENTS.load && isReady) || (name === GLOB_EVENTS.initialized && isIntialized)) {
-                setTimeout(function () { fn.apply(self, [self, {}]); }, 0);
-                return;
+                utils.queue.enque(function () { fn.apply(self, [self, {}]); });
             }
-            _super.prototype._addHandler.call(this, name, fn, nmspace, context, priority);
+            else {
+                _super.prototype._addHandler.call(this, name, fn, nmspace, context, priority);
+            }
         };
         Bootstrap.prototype._init = function () {
             var self = this;
@@ -3521,8 +3620,7 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/con
                 if (!isDataFormBind) {
                     self._updDataFormAttr(bindElems);
                 }
-                var forms_2 = self._getOnlyDataFormElems(bindElems);
-                var needBinding = bindElems.filter(function (bindElem) {
+                var forms_2 = self._getOnlyDataFormElems(bindElems), needBinding = bindElems.filter(function (bindElem) {
                     return !viewChecks.isInNestedForm(scope, forms_2, bindElem.el);
                 });
                 needBinding.forEach(function (bindElem) {
@@ -3760,9 +3858,7 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/const", "jr
             return promise;
         };
         Application.prototype.loadTemplates = function (url) {
-            return this.loadTemplatesAsync(function () {
-                return utils.http.getAjax(url);
-            });
+            return this.loadTemplatesAsync(function () { return utils.http.getAjax(url); });
         };
         Application.prototype.loadTemplatesAsync = function (fn_loader) {
             return boot.templateLoader.loadTemplatesAsync(fn_loader, this);
@@ -3899,6 +3995,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.4.3";
+    exports.VERSION = "1.4.4";
     bootstrap_7.Bootstrap._initFramework();
 });

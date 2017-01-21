@@ -41,7 +41,7 @@ export class TabsElView extends BaseElView implements ITabs {
     }
     protected _createTabs() {
         let $el = $(this.el), self = this, tabOpts = {
-            activate: function (e: any, tab: any) {
+            activate: (e: any, tab: any) => {
                 if (!!self._tabsEvents) {
                     self._tabsEvents.onTabSelected(self);
                 }
@@ -50,13 +50,13 @@ export class TabsElView extends BaseElView implements ITabs {
         };
         tabOpts = coreUtils.extend(tabOpts, self._tabOpts);
         (<any>$el).tabs(tabOpts);
-        setTimeout(() => {
+        utils.queue.enque(() => {
             if (self.getIsDestroyCalled())
                 return;
             self._tabsCreated = true;
             self._onTabsCreated();
             self.raisePropertyChanged(PROP_NAME.tabIndex);
-       }, 0);
+       });
    }
     protected _destroyTabs() {
         const $el = $(this.el);

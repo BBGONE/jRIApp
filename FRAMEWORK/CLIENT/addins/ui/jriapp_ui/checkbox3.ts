@@ -18,7 +18,7 @@ export class CheckBoxThreeStateElView extends InputElView {
         chk.checked = false;
         chk.indeterminate = this._checked === null;
 
-        dom.events.on(this.el, "click", function (e) {
+        dom.events.on(this.el, "click", (e) => {
             e.stopPropagation();
             if (self.checked === null)
                 self.checked = true;

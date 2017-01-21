@@ -18,11 +18,9 @@ export class CoreUtils {
         return (prefix === "*") ? id.toString(36) : (prefix + "_" + id.toString(36));
     }
 
-    static get_timeZoneOffset = (function () {
+    static get_timeZoneOffset = (() => {
         const dt = new Date(), tz = dt.getTimezoneOffset();
-        return function () {
-            return tz;
-        }
+        return () => tz;
     })();
     static hasProp = checks.isHasProp;
     static setValue(root: any, namePath: string, val: any, checkOverwrite: boolean = false, separator = "."): void {
@@ -186,7 +184,7 @@ export class CoreUtils {
     //caches the result of function invocation
     static memoize<T>(callback: () => T): () => T {
         let value: T;
-        return function () {
+        return () => {
             if (!!callback) {
                 value = callback();
                 callback = checks.undefined;

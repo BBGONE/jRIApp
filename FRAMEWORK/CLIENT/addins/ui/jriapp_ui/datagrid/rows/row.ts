@@ -72,7 +72,7 @@ export class Row extends BaseObject {
         this._createCells();
         if (!!this._item) {
             if (!!this.isHasStateField) {
-                this._item.addOnPropertyChange(this._grid.options.rowStateField, function (s, a) {
+                this._item.addOnPropertyChange(this._grid.options.rowStateField, (s, a) => {
                     fn_state(self);
                 }, this._objId);
             }
@@ -117,8 +117,7 @@ export class Row extends BaseObject {
         }
     }
     _onBeginEdit() {
-        let self = this;
-        self._cells.forEach(function (cell) {
+        this._cells.forEach((cell) => {
             if (cell instanceof DataCell) {
                 (<DataCell>cell)._beginEdit();
             }
@@ -127,8 +126,7 @@ export class Row extends BaseObject {
             this._actionsCell.update();
     }
     _onEndEdit(isCanceled: boolean) {
-        let self = this;
-        self._cells.forEach(function (cell) {
+        this._cells.forEach((cell) => {
             if (cell instanceof DataCell) {
                 (<DataCell>cell)._endEdit(isCanceled);
             }

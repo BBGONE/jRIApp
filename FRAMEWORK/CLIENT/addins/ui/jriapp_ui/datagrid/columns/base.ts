@@ -60,7 +60,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         this._grid._getInternal().getHeader().appendChild(col);
 
         //a click on column itself
-        dom.events.on(this._col, "click", function (e) {
+        dom.events.on(this._col, "click", (e) => {
             e.stopPropagation();
             boot.currentSelectable = grid;
             grid._getInternal().setCurrentColumn(self);
@@ -68,9 +68,9 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         }, this.uniqueID);
 
         //a click on any cell
-        dom.events.on(this.grid.table, "click", function (e) {
+        dom.events.on(this.grid.table, "click", (e) => {
             e.stopPropagation();
-            const td = <HTMLElement>this, cell = <BaseCell<BaseColumn>>dom.getData(td, "cell");
+            const td = <HTMLElement>e.target, cell = <BaseCell<BaseColumn>>dom.getData(td, "cell");
             if (!!cell) {
                 boot.currentSelectable = grid;
                 grid._getInternal().setCurrentColumn(self);

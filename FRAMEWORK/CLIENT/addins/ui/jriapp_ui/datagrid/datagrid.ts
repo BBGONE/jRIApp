@@ -463,7 +463,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this.raiseEvent(GRID_EVENTS.row_selected, { row: row });
     }
     protected _resetColumnsSort(): void {
-        this.columns.forEach(function (col) {
+        this.columns.forEach((col) => {
             if (col instanceof DataColumn) {
                 (<DataColumn>col).sortOrder = null;
             }
@@ -629,7 +629,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             case COLL_CHANGE_TYPE.Remove:
                 {
                     let rowpos = -1;
-                    args.items.forEach(function (item) {
+                    args.items.forEach((item) => {
                         const row = self._rowMap[item._key];
                         if (!!row) {
                             rowpos = self._removeRow(row);
@@ -740,14 +740,14 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         ds.addOnCurrentChanged(() => {
             self._updateCurrent();
         }, self._objId, self);
-        ds.addOnBeginEdit(function (sender, args) {
+        ds.addOnBeginEdit((sender, args) => {
             self._onItemEdit(args.item, true, false);
         }, self._objId);
-        ds.addOnEndEdit(function (sender, args) {
+        ds.addOnEndEdit((sender, args) => {
             self._onItemEdit(args.item, false, args.isCanceled);
         }, self._objId);
         ds.addOnErrorsChanged(self._onDSErrorsChanged, self._objId, self);
-        ds.addOnStatusChanged(function (sender, args) {
+        ds.addOnStatusChanged((sender, args) => {
             self._onItemStatusChanged(args.item, args.oldStatus);
         }, self._objId);
         ds.addOnItemAdded(self._onItemAdded, self._objId, self);
@@ -771,7 +771,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         const rows = this._rows;
         this._rows = [];
         this._rowMap = {};
-        rows.forEach(function (row) {
+        rows.forEach((row) => {
             row.isDetached = true;
             row.destroy();
         });
@@ -823,7 +823,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             cellInfos.push({ th: th, colInfo: attr });
         }
 
-        cellInfos.forEach(function (cellInfo) {
+        cellInfos.forEach((cellInfo) => {
             let col = self._createColumn(cellInfo);
             if (!!col)
                 self._columns.push(col);
@@ -891,7 +891,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             return;
         this._clearGrid();
         const docFr = doc.createDocumentFragment(), oldTbody = this._tBodyEl, newTbody = doc.createElement("tbody");
-        ds.items.forEach(function (item, index) {
+        ds.items.forEach((item, index) => {
             self._createRowForItem(docFr, item, false);
         });
         newTbody.appendChild(docFr);
@@ -969,13 +969,13 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         if (this.getIsDestroyCalled())
             return;
         let width = 0, header = this._header;
-        this._columns.forEach(function (col) {
+        this._columns.forEach((col) => {
             width += col.width;
         });
 
         header.style.width = (width + "px");
 
-        this._columns.forEach(function (col) {
+        this._columns.forEach((col) => {
             col.updateWidth();
         });
     }
@@ -991,7 +991,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         return promise;
     }
     selectRows(isSelect: boolean) {
-        this._rows.forEach(function (row) {
+        this._rows.forEach((row) => {
             if (row.isDeleted)
                 return;
             row.isSelected = isSelect;
@@ -1013,7 +1013,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     }
     getSelectedRows() {
         const res: Row[] = [];
-        this._rows.forEach(function (row) {
+        this._rows.forEach((row) => {
             if (row.isDeleted)
                 return;
             if (row.isSelected) {
@@ -1291,7 +1291,7 @@ export class DataGridElView extends BaseElView {
     }
     private _bindGridEvents() {
         const self = this;
-        this._grid.addOnRowStateChanged(function (s, args) {
+        this._grid.addOnRowStateChanged((s, args) => {
             if (!!self._stateProvider) {
                 args.css = self._stateProvider.getCSS(args.row.item, args.val);
             }

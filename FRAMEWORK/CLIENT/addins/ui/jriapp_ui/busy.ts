@@ -60,7 +60,7 @@ export class BusyElView extends BaseElView {
     }
     get isBusy() { return this._isBusy; }
     set isBusy(v) {
-        const self = this, fn = function () {
+        const self = this, fn = () => {
             self._timeOut = null;
             self._img.style.display = "";
             $(self._img).position({

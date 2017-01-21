@@ -35,7 +35,7 @@ export class AnchorElView extends CommandElView {
             this.glyph = options.glyph;
 
         dom.addClass([this.el], css.commandLink);
-        dom.events.on(this.el, "click", function (e) {
+        dom.events.on(this.el, "click", (e) => {
             self._onClick(e);
         }, this.uniqueID);
     }

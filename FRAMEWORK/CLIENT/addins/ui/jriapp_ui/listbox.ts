@@ -100,7 +100,7 @@ export class ListBox extends BaseObject {
         this._options = options;
         this._objId = coreUtils.getNewID("lst");
         this._isDSFilled = false;
-        dom.events.on(this.el, "change", function (e) {
+        dom.events.on(this.el, "change", (e) => {
             e.stopPropagation();
             if (self._isRefreshing)
                 return;
@@ -212,14 +212,14 @@ export class ListBox extends BaseObject {
                     break;
                 case COLL_CHANGE_TYPE.Add:
                     {
-                        args.items.forEach(function (item) {
+                        args.items.forEach((item) => {
                             self._addOption(item, item._aspect.isNew);
                         });
                     }
                     break;
                 case COLL_CHANGE_TYPE.Remove:
                     {
-                        args.items.forEach(function (item) {
+                        args.items.forEach((item) => {
                             self._removeOption(item);
                         });
                         if (!!self._textProvider)
@@ -340,16 +340,16 @@ export class ListBox extends BaseObject {
         if (!ds)
             return;
         ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self);
-        ds.addOnBeginEdit(function (sender, args) {
+        ds.addOnBeginEdit((sender, args) => {
             self._onEdit(args.item, true, false);
         }, self._objId);
-        ds.addOnEndEdit(function (sender, args) {
+        ds.addOnEndEdit((sender, args) => {
             self._onEdit(args.item, false, args.isCanceled);
         }, self._objId);
-        ds.addOnStatusChanged(function (sender, args) {
+        ds.addOnStatusChanged((sender, args) => {
             self._onStatusChanged(args.item, args.oldStatus);
         }, self._objId);
-        ds.addOnCommitChanges(function (sender, args) {
+        ds.addOnCommitChanges((sender, args) => {
             self._onCommitChanges(args.item, args.isBegin, args.isRejected, args.status);
         }, self._objId);
     }
@@ -470,7 +470,7 @@ export class ListBox extends BaseObject {
             this._addOption(null, false);
             let cnt = 0;
             if (!!ds) {
-                ds.forEach(function (item) {
+                ds.forEach((item) => {
                     self._addOption(item, false);
                     ++cnt;
                 });
@@ -531,7 +531,7 @@ export class ListBox extends BaseObject {
         if (!!this._fn_checkChanges)
             return;
         const self = this, prevVal = fn_Str(self.selectedValue), prevItem = self.selectedItem;
-        this._fn_checkChanges = function () {
+        this._fn_checkChanges = () => {
             //reset function
             self._fn_checkChanges = null;
             const newVal = fn_Str(self.selectedValue), newItem = self.selectedItem;
@@ -702,7 +702,7 @@ export class ListBoxElView extends BaseElView {
         super(options);
         const self = this;
         self._listBox = new ListBox(<IListBoxConstructorOptions>options);
-        self._listBox.addOnPropertyChange("*", function (sender, args) {
+        self._listBox.addOnPropertyChange("*", (sender, args) => {
             switch (args.property) {
                 case PROP_NAME.dataSource:
                 case PROP_NAME.isEnabled:

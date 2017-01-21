@@ -15,7 +15,7 @@ export class ButtonElView extends CommandElView {
         super(options);
         const self = this;
         this._isButton = this.el.tagName.toLowerCase() === "button";
-        dom.events.on(this.el, "click", function (e) {
+        dom.events.on(this.el, "click", (e) => {
             self._onClick(e);
         }, this.uniqueID);
     }

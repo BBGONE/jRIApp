@@ -110,10 +110,10 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
             }
         };
 
-        dom.events.on(this._el, "click", function (e) {
+        dom.events.on(this._el, "click", (e) => {
             e.stopPropagation();
             boot.currentSelectable = self;
-            const el = <HTMLElement>this, mappedItem: IMappedItem = dom.getData(el, "data");
+            const el = <HTMLElement>e.target, mappedItem: IMappedItem = dom.getData(el, "data");
             self._onItemClicked(mappedItem.el, mappedItem.item);
         }, {
                 nmspace: this.uniqueID,
@@ -263,7 +263,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
     }
     protected _appendItems(newItems: ICollectionItem[]) {
      const self = this, docFr = doc.createDocumentFragment();
-        newItems.forEach(function (item) {
+        newItems.forEach((item) => {
             //a row for item already exists
             if (!!self._itemMap[item._key])
                 return;
@@ -288,7 +288,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
             return;
         ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self);
         ds.addOnCurrentChanged(self._onDSCurrentChanged, self._objId, self);
-        ds.addOnStatusChanged(function (sender, args) {
+        ds.addOnStatusChanged((sender, args) => {
             self._onItemStatusChanged(args.item, args.oldStatus);
         }, self._objId);
     }
@@ -308,7 +308,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         if (keys.length === 0)
             return;
         self._el.innerHTML = "";
-        keys.forEach(function (key) {
+        keys.forEach((key) => {
             self._removeItemByKey(key);
         });
     }
@@ -330,7 +330,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         if (!ds)
             return;
         const docFr = doc.createDocumentFragment();
-        ds.forEach(function (item) {
+        ds.forEach((item) => {
             self._appendItem(docFr, item);
         });
         self.el.appendChild(docFr);
@@ -454,7 +454,7 @@ export class StackPanelElView extends BaseElView {
         const self = this;
         this._panelEvents = null;
         this._panel = new StackPanel(<IStackPanelConstructorOptions>options);
-        this._panel.addOnItemClicked(function (sender, args) {
+        this._panel.addOnItemClicked((sender, args) => {
             if (!!self._panelEvents) {
                 self._panelEvents.onItemClicked(args.item);
             }

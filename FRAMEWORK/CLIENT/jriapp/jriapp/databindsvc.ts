@@ -66,7 +66,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
     }
     private _getBindableElements(scope: Document | HTMLElement): IBindableElement[] {
         let self = this, result: IBindableElement[] = [], allElems = dom.queryAll<HTMLElement>(scope, "*");
-        allElems.forEach(function (el) {
+        allElems.forEach((el) => {
             let res = self._toBindableElement(el);
             if (!!res)
                 result.push(res);
@@ -87,7 +87,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
         let reqArr = attr.split(",");
 
         let hashMap: IIndexer<any> = {};
-        reqArr.forEach(function (name) {
+        reqArr.forEach((name) => {
             if (!name)
                 return;
             name = strUtils.fastTrim(name);
@@ -105,7 +105,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
     }
     private _updDataFormAttr(bindElems: IBindableElement[]): void {
         //mark all dataforms for easier checking that the element is a dataform
-        bindElems.forEach(function (bindElem) {
+        bindElems.forEach((bindElem) => {
             if (!bindElem.dataForm && viewChecks.isDataForm(bindElem.el)) {
                 bindElem.el.setAttribute(DATA_ATTR.DATA_FORM, "yes");
                 bindElem.dataForm = "yes";
@@ -156,7 +156,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
                 return !viewChecks.isInNestedForm(templateEl, forms, bindElem.el);
             });
 
-            needBinding.forEach(function (bindElem) {
+            needBinding.forEach((bindElem) => {
                 let elView = self._elViewFactory.getOrCreateElView(bindElem.el);
                 self._bindElView(elView, bindElem, lftm, true, null);
             });
@@ -204,13 +204,11 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
             }
 
             //select all dataforms inside the scope
-            const forms = self._getOnlyDataFormElems(bindElems);
-
-            const needBinding = bindElems.filter((bindElem) => {
+            const forms = self._getOnlyDataFormElems(bindElems), needBinding = bindElems.filter((bindElem) => {
                 return !viewChecks.isInNestedForm(scope, forms, bindElem.el);
             });
 
-            needBinding.forEach(function (bindElem) {
+            needBinding.forEach((bindElem) => {
                 let elView = self._elViewFactory.getOrCreateElView(bindElem.el);
                 self._bindElView(elView, bindElem, lftm, isInsideTemplate, defaultDataContext);
             });

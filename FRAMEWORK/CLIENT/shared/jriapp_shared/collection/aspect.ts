@@ -118,7 +118,7 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         this._saveVals = null;
         coll.errors.removeAllErrors(item);
         //refresh User interface when values restored
-        coll.getFieldNames().forEach(function (name) {
+        coll.getFieldNames().forEach((name) => {
             if (changes[name] !== self._vals[name]) {
                 item.raisePropertyChanged(name);
             }
@@ -239,7 +239,7 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         if (!itemErrors)
             return "";
         let res: string[] = [];
-        coreUtils.forEachProp(itemErrors, function (name) {
+        coreUtils.forEachProp(itemErrors, (name) => {
             res.push(strUtils.format("{0}: {1}", name, itemErrors[name]));
         });
         return res.join("|");
@@ -365,7 +365,7 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         const itemErrors = this.collection.errors.getErrors(this.item);
         if (!itemErrors)
             return res;
-        coreUtils.forEachProp(itemErrors, function (name) {
+        coreUtils.forEachProp(itemErrors, (name) => {
             let fieldName: string = null;
             if (name !== "*") {
                 fieldName = name;

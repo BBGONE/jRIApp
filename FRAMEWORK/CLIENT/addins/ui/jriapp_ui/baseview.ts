@@ -19,7 +19,7 @@ export { IEventChangedArgs, EVENT_CHANGE_TYPE };
 const utils = Utils, coreUtils = utils.core, dom = DomUtils, checks = utils.check,
     boot = bootstrap, viewChecks = ViewChecks;
 
-viewChecks.isElView = function (obj: any): boolean {
+viewChecks.isElView = (obj: any) => {
     return !!obj && obj instanceof BaseElView;
 };
 
@@ -121,7 +121,7 @@ export class BaseElView extends BaseObject implements IElView {
         const self = this;
         if (this.getIsDestroyCalled())
             return;
-        dom.events.on(this.el, name, function (e) {
+        dom.events.on(this.el, name, (e) => {
             e.stopPropagation();
             if (!!self._eventStore)
                 self._eventStore.trigger(name, e);
@@ -137,9 +137,9 @@ export class BaseElView extends BaseObject implements IElView {
     }
     protected _getErrorTipInfo(errors: IValidationInfo[]) {
         const tip = ["<b>", STRS.VALIDATE.errorInfo, "</b>", "<br/>"];
-        errors.forEach(function (info) {
+        errors.forEach((info) => {
             let res = "";
-            info.errors.forEach(function (str) {
+            info.errors.forEach((str) => {
                 res = res + " " + str;
             });
             tip.push(res);

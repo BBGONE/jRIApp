@@ -17,9 +17,9 @@ export class ActionsColumn extends BaseColumn {
         super(grid, options);
         const self = this, opts: IActionsColumnInfo = this.options;
         dom.addClass([this.col], css.rowActions);
-        dom.events.on(this.grid.table, "click", function (e) {
+        dom.events.on(this.grid.table, "click", (e) => {
             e.stopPropagation();
-            const btn: HTMLElement = this, name = btn.getAttribute(DATA_ATTR.DATA_NAME),
+            const btn = <HTMLElement>e.target, name = btn.getAttribute(DATA_ATTR.DATA_NAME),
                 cell = <ActionsCell>dom.getData(btn, "cell");
             self.grid.currentRow = cell.row;
             switch (name) {

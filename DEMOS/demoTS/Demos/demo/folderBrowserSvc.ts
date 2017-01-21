@@ -3,7 +3,7 @@
 	Don't make manual changes here, because they will be lost when this db interface will be regenerated!
 */
 
-import * as RIAPP from "jriapp";
+import * as RIAPP from "jriapp_shared";
 import * as dbMOD from "jriapp_db";
 
 export interface ISvcMethods {

@@ -253,9 +253,7 @@ export class Application extends BaseObject implements IApplication {
     }
     //loads a group of templates from the server
     loadTemplates(url: string): IPromise<any> {
-        return this.loadTemplatesAsync(function () {
-            return utils.http.getAjax(url);
-        });
+        return this.loadTemplatesAsync(() => utils.http.getAjax(url));
     }
     //loads a group of templates from the server
     loadTemplatesAsync(fn_loader: () => IPromise<string>): IPromise<any> {

@@ -28,13 +28,13 @@ export const css = {
     error: "ria-form-error"
 };
 
-viewChecks.setIsInsideTemplate = function (elView: BaseElView) {
+viewChecks.setIsInsideTemplate = (elView: BaseElView) => {
     if (!!elView && elView instanceof DataFormElView) {
         (<DataFormElView>elView).form.isInsideTemplate = true;
     }
 };
 
-viewChecks.isDataForm = function (el: HTMLElement): boolean {
+viewChecks.isDataForm = (el: HTMLElement) => {
     if (!el) {
         return false;
     }
@@ -52,7 +52,7 @@ viewChecks.isDataForm = function (el: HTMLElement): boolean {
     }
 };
 
-viewChecks.isInsideDataForm = function (el: HTMLElement): boolean {
+viewChecks.isInsideDataForm = (el: HTMLElement) => {
     if (!el) {
         return false;
     }
@@ -71,7 +71,7 @@ viewChecks.isInsideDataForm = function (el: HTMLElement): boolean {
 };
 
 //check if the element inside of any dataform in the forms array
-viewChecks.isInNestedForm = function (root: any, forms: HTMLElement[], el: HTMLElement): boolean {
+viewChecks.isInNestedForm = (root: any, forms: HTMLElement[], el: HTMLElement) => {
     let i: number, oNode: HTMLElement, len = forms.length;
     if (len === 0) {
         return false;
@@ -102,7 +102,7 @@ viewChecks.isInNestedForm = function (root: any, forms: HTMLElement[], el: HTMLE
        in case of dataforms nesting, element's parent dataform can be nested dataform
        this function returns element dataform
 */
-viewChecks.getParentDataForm = function (rootForm: HTMLElement, el: HTMLElement): HTMLElement {
+viewChecks.getParentDataForm = (rootForm: HTMLElement, el: HTMLElement) => {
     if (!el)
         return null;
     let parent = el.parentElement, attr: string, opts: any[];
@@ -178,7 +178,7 @@ export class DataForm extends BaseObject {
         //subscribe for parent's destroy event
         if (!!parent) {
             self._parentDataForm = this.app.viewFactory.getOrCreateElView(parent);
-            self._parentDataForm.addOnDestroyed(function (sender, args) {
+            self._parentDataForm.addOnDestroyed((sender, args) => {
                 //destroy itself if parent form is destroyed
                 if (!self._isDestroyCalled)
                     self.destroy();
@@ -216,7 +216,7 @@ export class DataForm extends BaseObject {
         //select all dataforms inside the scope
         const forms = utils.arr.fromList<HTMLElement>(this._el.querySelectorAll(DataForm._DATA_FORM_SELECTOR));
 
-        contentElements.forEach(function (el) {
+        contentElements.forEach((el) => {
             //check if the element inside a nested dataform
             if (viewChecks.isInNestedForm(self._el, forms, el))
                 return;
@@ -253,13 +253,13 @@ export class DataForm extends BaseObject {
     private _updateCreatedContent() {
         let dctx: any = this._dataContext, self = this;
         try {
-            this._content.forEach(function (content) {
+            this._content.forEach((content) => {
                 content.dataContext = dctx;
                 content.isEditing = self.isEditing;
             });
 
             let bindings = this._getBindings();
-            bindings.forEach(function (binding) {
+            bindings.forEach((binding) => {
                 if (!binding.isSourceFixed)
                     binding.source = dctx;
             });
@@ -312,7 +312,7 @@ export class DataForm extends BaseObject {
             this._errNotification = sys.getErrorNotification(dataContext);
         }
 
-        dataContext.addOnDestroyed(function (s, a) {
+        dataContext.addOnDestroyed((s, a) => {
             self.dataContext = null;
         }, self._objId);
 
@@ -340,7 +340,7 @@ export class DataForm extends BaseObject {
         this._errNotification = null;
     }
     private _clearContent() {
-        this._content.forEach(function (content) {
+        this._content.forEach((content) => {
             content.destroy();
         });
         this._content = [];
@@ -458,7 +458,7 @@ export class DataFormElView extends BaseElView {
         const self = this;
         this._form = new DataForm(options);
         this._errorGliph = null;
-        this._form.addOnPropertyChange("*", function (form, args) {
+        this._form.addOnPropertyChange("*", (form, args) => {
             switch (args.property) {
                 case PROP_NAME.validationErrors:
                     self.validationErrors = form.validationErrors;
@@ -471,12 +471,12 @@ export class DataFormElView extends BaseElView {
     }
     protected _getErrorTipInfo(errors: IValidationInfo[]) {
         const tip = ["<b>", STRS.VALIDATE.errorInfo, "</b>", "<ul>"];
-        errors.forEach(function (info) {
+        errors.forEach((info) => {
             let fieldName = info.fieldName, res = "";
             if (!!fieldName) {
                 res = STRS.VALIDATE.errorField + " " + fieldName
             }
-            info.errors.forEach(function (str) {
+            info.errors.forEach((str) => {
                 if (!!res)
                     res = res + " -> " + str;
                 else

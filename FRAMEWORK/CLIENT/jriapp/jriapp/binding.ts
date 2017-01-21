@@ -303,7 +303,7 @@ export class Binding extends BaseObject implements IBinding {
         }
     }
     private _getTgtChangedFn(self: Binding, obj: any, prop: string, restPath: string[], lvl: number) {
-        const fn = function (sender: any, args: any) {
+        const fn = (sender: any, args: any) => {
             const val = sys.getProp(obj, prop);
             if (restPath.length > 0) {
                 self._setPathItem(null, BindTo.Target, lvl, restPath);
@@ -315,7 +315,7 @@ export class Binding extends BaseObject implements IBinding {
         return fn;
     }
     private _getSrcChangedFn(self: Binding, obj: any, prop: string, restPath: string[], lvl: number) {
-        const fn = function (sender: any, args: any) {
+        const fn = (sender: any, args: any) => {
             const val = sys.getProp(obj, prop);
             if (restPath.length > 0) {
                 self._setPathItem(null, BindTo.Source, lvl, restPath);
@@ -523,7 +523,7 @@ export class Binding extends BaseObject implements IBinding {
         }
         else {
             self._setPathItem(null, BindTo.Target, 0, self._tgtPath);
-            utils.queue.enque(function () {
+            utils.queue.enque(() => {
                 if (self.getIsDestroyCalled())
                     return;
                 //rebind after the target is destroyed
@@ -544,7 +544,7 @@ export class Binding extends BaseObject implements IBinding {
         }
         else {
             self._setPathItem(null, BindTo.Source, 0, self._srcPath);
-            utils.queue.enque(function () {
+            utils.queue.enque(() => {
                 if (self.getIsDestroyCalled())
                     return;
                 //rebind after the source is destroyed
@@ -643,7 +643,7 @@ export class Binding extends BaseObject implements IBinding {
             return;
         this._isDestroyCalled = true;
         const self = this;
-        coreUtils.forEachProp(this._pathItems, function (key, old) {
+        coreUtils.forEachProp(this._pathItems, (key, old) => {
             self._cleanUp(old);
         });
         this._pathItems = {};

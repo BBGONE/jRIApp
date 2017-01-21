@@ -56,9 +56,7 @@ export class TemplateLoader extends BaseObject {
         this._waitQueue.enQueue({
             prop: PROP_NAME.isLoading,
             groupName: null,
-            predicate: function (val: any) {
-                return !val;
-            },
+            predicate: (val: any) => !val,
             action: callback,
             actionArgs: callbackArgs
         });
@@ -143,7 +141,7 @@ export class TemplateLoader extends BaseObject {
 
                 group.promise.then(() => {
                     group.promise = null;
-                    group.names.forEach(function (name) {
+                    group.names.forEach((name) => {
                         if (!!group.app) {
                             name = group.app.appName + "." + name;
                         }
@@ -213,10 +211,7 @@ export class TemplateLoader extends BaseObject {
         });
     }
     public loadTemplates(url: string) {
-        const self = this;
-        this.loadTemplatesAsync(function () {
-            return http.getAjax(url);
-        }, null);
+        this.loadTemplatesAsync(() => http.getAjax(url), null);
     }
     get isLoading() {
         return this._promises.length > 0;

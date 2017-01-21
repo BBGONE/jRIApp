@@ -683,9 +683,7 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
         CoreUtils.ERR_OBJ_ALREADY_REGISTERED = "an Object with the name: {0} is already registered and can not be overwritten";
         CoreUtils.get_timeZoneOffset = (function () {
             var dt = new Date(), tz = dt.getTimezoneOffset();
-            return function () {
-                return tz;
-            };
+            return function () { return tz; };
         })();
         CoreUtils.hasProp = checks.isHasProp;
         return CoreUtils;
@@ -3324,7 +3322,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             var self = this, mult = 1;
             if (sortOrder === 1)
                 mult = -1;
-            var fn_sort = function (a, b) {
+            return function (a, b) {
                 var res = 0, i, len, af, bf, fieldName;
                 for (i = 0, len = fieldNames.length; i < len; i += 1) {
                     fieldName = fieldNames[i];
@@ -3349,7 +3347,6 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 }
                 return res;
             };
-            return fn_sort;
         };
         BaseCollection.prototype.getFieldInfo = function (fieldName) {
             var parts = fieldName.split(".");
@@ -3609,9 +3606,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             this._waitQueue.enQueue({
                 prop: int_2.PROP_NAME.isLoading,
                 groupName: groupName,
-                predicate: function (val) {
-                    return !val;
-                },
+                predicate: function (val) { return !val; },
                 action: callback,
                 actionArgs: [],
                 lastWins: !!groupName

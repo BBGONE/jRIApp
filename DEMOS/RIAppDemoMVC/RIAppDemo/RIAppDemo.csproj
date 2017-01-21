@@ -136,7 +136,6 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Models\MasterDetailDemo.cs" />
     <Compile Include="Models\SSEMessage.cs" />
     <Compile Include="Models\SPATemplate.cs" />
     <Compile Include="Models\UploadedFile.cs" />

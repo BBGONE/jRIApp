@@ -43,12 +43,12 @@ export class DataColumn extends BaseColumn {
     }
     _getInitContentFn(): (content: IExternallyCachable) => void {
         const self = this;
-        return function (content: IExternallyCachable) {
-            content.addOnObjectCreated(function (sender, args) {
+        return (content: IExternallyCachable) => {
+            content.addOnObjectCreated((sender, args) => {
                 self._cacheObject(args.objectKey, args.object);
                 args.isCachedExternally = !!self._getCachedObject(args.objectKey);
             });
-            content.addOnObjectNeeded(function (sender, args) {
+            content.addOnObjectNeeded((sender, args) => {
                 args.object = self._getCachedObject(args.objectKey);
             });
         };
@@ -58,7 +58,7 @@ export class DataColumn extends BaseColumn {
             return;
         this._isDestroyCalled = true;
         const self = this;
-        utils.core.forEachProp(self._objCache, function (key) {
+        utils.core.forEachProp(self._objCache, (key) => {
             self._objCache[key].destroy();
         });
         self._objCache = null;

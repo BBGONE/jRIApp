@@ -359,12 +359,12 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         if (!!this._pkInfo)
             return this._pkInfo;
         let fldMap = this._fieldMap, pk: IFieldInfo[] = [];
-        coreUtils.forEachProp(fldMap, function (fldName) {
+        coreUtils.forEachProp(fldMap, (fldName) => {
             if (fldMap[fldName].isPrimaryKey > 0) {
                 pk.push(fldMap[fldName]);
             }
         });
-        pk.sort(function (a, b) {
+        pk.sort((a, b) => {
             return a.isPrimaryKey - b.isPrimaryKey;
         });
         this._pkInfo = pk;
@@ -510,7 +510,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     }
     //it is overriden in DataView class!!!
     protected _clearItems(items: TItem[]) {
-        items.forEach(function (item) {
+        items.forEach((item) => {
             item._aspect._setIsAttached(false);
             item.destroy();
         });
@@ -621,7 +621,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         let self = this, mult = 1;
         if (sortOrder === SORT_ORDER.DESC)
             mult = -1;
-        let fn_sort = function (a: any, b: any): number {
+        return (a: any, b: any) => {
             let res = 0, i: number, len: number, af: any, bf: any, fieldName: string;
             for (i = 0, len = fieldNames.length; i < len; i += 1) {
                 fieldName = fieldNames[i];
@@ -648,7 +648,6 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
             }
             return res;
         };
-        return fn_sort;
     }
     getFieldInfo(fieldName: string): IFieldInfo {
         const parts = fieldName.split(".");
@@ -911,9 +910,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         this._waitQueue.enQueue({
             prop: PROP_NAME.isLoading,
             groupName: groupName,
-            predicate: function (val: any) {
-                return !val;
-            },
+            predicate: (val: any) => !val,
             action: callback,
             actionArgs: [],
             lastWins: !!groupName
