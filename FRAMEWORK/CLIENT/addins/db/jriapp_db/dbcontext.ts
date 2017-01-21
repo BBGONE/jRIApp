@@ -140,15 +140,16 @@ export class DbContext extends BaseObject {
     }
     protected _initAssociations(associations: IAssociationInfo[]) {
         const self = this;
-        associations.forEach(function (assoc) {
+        associations.forEach((assoc) => {
             self._initAssociation(assoc);
         });
     }
     protected _initMethods(methods: IQueryInfo[]) {
         const self = this;
-        methods.forEach(function (info) {
-            if (info.isQuery)
+        methods.forEach((info) => {
+            if (info.isQuery) {
                 self._queryInf[info.methodName] = info;
+            }
             else {
                 //service method info
                 self._initMethod(info);
@@ -156,10 +157,11 @@ export class DbContext extends BaseObject {
         });
     }
     protected _updatePermissions(info: IPermissionsInfo) {
-        const self = this;
         this._serverTimezone = info.serverTimezone;
-        info.permissions.forEach(function (perms) {
-            self.getDbSet(perms.dbSetName)._getInternal().updatePermissions(perms);
+        info.permissions.forEach((perms) => {
+            const dbSet = this.findDbSet(perms.dbSetName);
+            if (!!dbSet)
+                dbSet._getInternal().updatePermissions(perms);
         });
     }
     protected _initAssociation(assoc: IAssociationInfo) {
@@ -168,12 +170,8 @@ export class DbContext extends BaseObject {
             parentName: assoc.parentDbSetName,
             childName: assoc.childDbSetName,
             onDeleteAction: assoc.onDeleteAction,
-            parentKeyFields: assoc.fieldRels.map(function (f) {
-                return f.parentField;
-            }),
-            childKeyFields: assoc.fieldRels.map(function (f) {
-                return f.childField;
-            }),
+            parentKeyFields: assoc.fieldRels.map((f) => f.parentField),
+            childKeyFields: assoc.fieldRels.map((f) => f.childField),
             parentToChildrenName: assoc.parentToChildrenName,
             childToParentName: assoc.childToParentName,
             name: assoc.name
@@ -189,7 +187,7 @@ export class DbContext extends BaseObject {
         const self = this;
         //function expects method parameters
         this._svcMethods[methodInfo.methodName] = function (args: { [paramName: string]: any; }) {
-            const deferred = _async.createDeferred<any>(), callback = function (res: { result: any; error: any; }) {
+            const deferred = _async.createDeferred<any>(), callback = (res: { result: any; error: any; }) => {
                 if (!res.error) {
                     deferred.resolve(res.result);
                 }
@@ -212,7 +210,7 @@ export class DbContext extends BaseObject {
         };
     }
     protected _addRequestPromise(req: IAbortablePromise<any>, operType: DATA_OPER, name?: string) {
-        let self = this, item: IRequestPromise = { req: req, operType: operType, name: name },
+        const self = this, item: IRequestPromise = { req: req, operType: operType, name: name },
             cnt = self._requests.length, _isBusy = cnt > 0;
 
         self._requests.push(item);
@@ -228,18 +226,17 @@ export class DbContext extends BaseObject {
             self.raisePropertyChanged(PROP_NAME.isBusy);
     }
     protected _tryAbortRequest(operType: DATA_OPER, name: string) {
-        let reqs = this._requests.filter((req) => { return req.operType === operType && req.name === name; });
+        const reqs = this._requests.filter((req) => { return req.operType === operType && req.name === name; });
         reqs.forEach((r) => { r.req.abort(); });
     }
     protected _getMethodParams(methodInfo: IQueryInfo, args: { [paramName: string]: any; }): IInvokeRequest {
-        let self = this, methodName: string = methodInfo.methodName,
-            data: IInvokeRequest = { methodName: methodName, paramInfo: { parameters: [] } };
-        let parameterInfos = methodInfo.parameters, len = parameterInfos.length, pinfo: IQueryParamInfo;
+        const self = this, methodName: string = methodInfo.methodName,
+            data: IInvokeRequest = { methodName: methodName, paramInfo: { parameters: [] } },
+            paramInfos = methodInfo.parameters, len = paramInfos.length;
         if (!args)
             args = {};
         for (let i = 0; i < len; i += 1) {
-            pinfo = parameterInfos[i];
-            let val = args[pinfo.name];
+            let pinfo: IQueryParamInfo = paramInfos[i], val = args[pinfo.name];
             if (!pinfo.isNullable && !pinfo.isArray && !(pinfo.dataType === DATA_TYPE.String || pinfo.dataType === DATA_TYPE.Binary) && checks.isNt(val)) {
                 throw new Error(strUtils.format(ERRS.ERR_SVC_METH_PARAM_INVALID, pinfo.name, val, methodInfo.methodName));
             }
@@ -255,15 +252,16 @@ export class DbContext extends BaseObject {
                 value = JSON.stringify(val);
             }
             else if (checks.isArray(val)) {
-                let arr = new Array(val.length);
+                let arr: string[] = [];
                 for (let k = 0; k < val.length; k += 1) {
                     //first convert all values to string
-                    arr[k] = valUtils.stringifyValue(val[k], pinfo.dateConversion, pinfo.dataType, self.serverTimezone);
+                    arr.push(valUtils.stringifyValue(val[k], pinfo.dateConversion, pinfo.dataType, self.serverTimezone));
                 }
                 value = JSON.stringify(arr);
             }
-            else
+            else {
                 value = valUtils.stringifyValue(val, pinfo.dateConversion, pinfo.dataType, self.serverTimezone);
+            }
 
             data.paramInfo.parameters.push({ name: pinfo.name, value: value });
         }
@@ -271,8 +269,7 @@ export class DbContext extends BaseObject {
         return data;
     }
     protected _invokeMethod(methodInfo: IQueryInfo, data: IInvokeRequest, callback: (res: { result: any; error: any; }) => void) {
-        let self = this, operType = DATA_OPER.Invoke, postData: string, invokeUrl: string;
-        let fn_onComplete = function (res: IInvokeResponse) {
+        const self = this, operType = DATA_OPER.Invoke, fn_onComplete = (res: IInvokeResponse) => {
             if (self.getIsDestroyCalled())
                 return;
             try {
@@ -290,16 +287,15 @@ export class DbContext extends BaseObject {
         };
 
         try {
-            postData = JSON.stringify(data);
-            invokeUrl = this._getUrl(DATA_SVC_METH.Invoke);
-            let req_promise = http.postAjax(invokeUrl, postData, self.requestHeaders);
+            const postData = JSON.stringify(data), invokeUrl = this._getUrl(DATA_SVC_METH.Invoke),
+                req_promise = http.postAjax(invokeUrl, postData, self.requestHeaders);
             self._addRequestPromise(req_promise, operType);
 
-            req_promise.then(function (res: string) {
+            req_promise.then((res: string) => {
                 return _async.parseJSON(res);
-            }).then(function (res: IInvokeResponse) { //success
+            }).then((res: IInvokeResponse) => { //success
                 fn_onComplete(res);
-            }, function (err) { //error
+            }, (err) => { //error
                 fn_onComplete({ result: null, error: err });
             });
         }
@@ -321,7 +317,7 @@ export class DbContext extends BaseObject {
             }
             const operType = DATA_OPER.Query, dbSet = query.dbSet;
             try {
-                let queryRes = dbSet._getInternal().fillFromCache({ reason: reason, query: query });
+                const queryRes = dbSet._getInternal().fillFromCache({ reason: reason, query: query });
                 defer.resolve(queryRes);
             } catch (ex) {
                 defer.reject(ex);
@@ -329,16 +325,16 @@ export class DbContext extends BaseObject {
         });
         return defer.promise();
     }
-    protected _loadSubsets(res: IQueryResponse, isClearAll: boolean) {
-        const self = this, isHasSubsets = checks.isArray(res.subsets) && res.subsets.length > 0;
+    protected _loadSubsets(response: IQueryResponse, isClearAll: boolean) {
+        const self = this, isHasSubsets = checks.isArray(response.subsets) && response.subsets.length > 0;
         if (!isHasSubsets)
             return;
-        res.subsets.forEach(function (subset) {
-            const dbSet = self.getDbSet(subset.dbSetName);
-            dbSet.fillData(subset, !isClearAll);
+        response.subsets.forEach(function (loadResult) {
+            const dbSet = self.getDbSet(loadResult.dbSetName);
+            dbSet.fillData(loadResult, !isClearAll);
         });
     }
-    protected _onLoaded(res: IQueryResponse, query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
+    protected _onLoaded(response: IQueryResponse, query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
         const self = this, defer = _async.createDeferred<IQueryResult<IEntityItem>>();
         utils.queue.enque(() => {
             if (self.getIsDestroyCalled()) {
@@ -346,23 +342,21 @@ export class DbContext extends BaseObject {
                 return;
             }
 
-            let operType = DATA_OPER.Query;
+            const operType = DATA_OPER.Query;
             try {
-                if (checks.isNt(res))
+                if (checks.isNt(response))
                     throw new Error(strUtils.format(ERRS.ERR_UNEXPECTED_SVC_ERROR, "null result"));
-                let dbSetName = res.dbSetName;
-                let dbSet = self.getDbSet(dbSetName);
+                const dbSetName = response.dbSetName, dbSet = self.getDbSet(dbSetName);
                 if (checks.isNt(dbSet))
                     throw new Error(strUtils.format(ERRS.ERR_DBSET_NAME_INVALID, dbSetName));
-                __checkError(res.error, operType);
-                let isClearAll = (!!query && query.isClearPrevData);
-
-                let loadRes = dbSet._getInternal().fillFromService(
+                __checkError(response.error, operType);
+                const isClearAll = (!!query && query.isClearPrevData),
+                    loadRes = dbSet._getInternal().fillFromService(
                     {
-                        res: res,
+                        res: response,
                         reason: reason,
                         query: query,
-                        onFillEnd: () => { self._loadSubsets(res, isClearAll); }
+                        onFillEnd: () => { self._loadSubsets(response, isClearAll); }
                     });
                 defer.resolve(loadRes);
             } catch (ex) {
@@ -372,23 +366,24 @@ export class DbContext extends BaseObject {
 
         return defer.promise();
     }
-    protected _dataSaved(res: IChangeSet) {
-        const self = this, submitted: IEntityItem[] = [], notvalid: IEntityItem[] = [];
+    protected _dataSaved(changes: IChangeSet) {
+        const self = this;
         try {
             try {
-                __checkError(res.error, DATA_OPER.Submit);
+                __checkError(changes.error, DATA_OPER.Submit);
             }
             catch (ex) {
-                res.dbSets.forEach(function (jsDB) {
-                    let eSet = self._dbSets.getDbSet(jsDB.dbSetName);
-                    jsDB.rows.forEach(function (row) {
-                        let item = eSet.getItemByKey(row.clientKey);
+                let submitted: IEntityItem[] = [], notvalid: IEntityItem[] = [];
+                changes.dbSets.forEach((jsDB) => {
+                    const dbSet = self._dbSets.getDbSet(jsDB.dbSetName);
+                    jsDB.rows.forEach((row) => {
+                        const item = dbSet.getItemByKey(row.clientKey);
                         if (!item) {
                             throw new Error(strUtils.format(ERRS.ERR_KEY_IS_NOTFOUND, row.clientKey));
                         }
                         submitted.push(item);
                         if (!!row.invalid) {
-                            eSet._getInternal().setItemInvalid(row);
+                            dbSet._getInternal().setItemInvalid(row);
                             notvalid.push(item);
                         }
                     });
@@ -396,7 +391,7 @@ export class DbContext extends BaseObject {
                 throw new SubmitError(ex, submitted, notvalid);
             }
 
-            res.dbSets.forEach(function (jsDB) {
+            changes.dbSets.forEach((jsDB) => {
                 self._dbSets.getDbSet(jsDB.dbSetName)._getInternal().commitChanges(jsDB.rows);
             });
         }
@@ -404,21 +399,21 @@ export class DbContext extends BaseObject {
             if (ERROR.checkIsDummy(ex)) {
                 ERROR.throwDummy(ex);
             }
-            this._onSubmitError(ex);
+            self._onSubmitError(ex);
             ERROR.throwDummy(ex);
         }
     }
     protected _getChanges(): IChangeSet {
-        let changeSet: IChangeSet = { dbSets: [], error: null, trackAssocs: [] };
-        this._dbSets.arrDbSets.forEach(function (eSet) {
-            eSet.endEdit();
-            let changes: IRowInfo[] = eSet._getInternal().getChanges();
+        const changeSet: IChangeSet = { dbSets: [], error: null, trackAssocs: [] };
+        this._dbSets.arrDbSets.forEach(function (dbSet) {
+            dbSet.endEdit();
+            const changes: IRowInfo[] = dbSet._getInternal().getChanges();
             if (changes.length === 0)
                 return;
-            //it needs to apply updates in parent-child relationship order on the server
+            //it is needed to apply updates in parent-child relationship order on the server
             //and provides child to parent map of the keys for the new entities
-            let trackAssoc: ITrackAssoc[] = eSet._getInternal().getTrackAssocInfo();
-            let jsDB = { dbSetName: eSet.dbSetName, rows: changes };
+            const trackAssoc: ITrackAssoc[] = dbSet._getInternal().getTrackAssocInfo(),
+                jsDB = { dbSetName: dbSet.dbSetName, rows: changes };
             changeSet.dbSets.push(jsDB);
             changeSet.trackAssocs = changeSet.trackAssocs.concat(trackAssoc);
         });
@@ -434,11 +429,11 @@ export class DbContext extends BaseObject {
     protected _onDataOperError(ex: any, oper: DATA_OPER): boolean {
         if (ERROR.checkIsDummy(ex))
             return true;
-        let er: any = (ex instanceof DataOperationError) ?  ex : new DataOperationError(ex, oper);
-        return this.handleError(er, this);
+        const err: DataOperationError = (ex instanceof DataOperationError) ? ex : new DataOperationError(ex, oper);
+        return this.handleError(err, this);
     }
     protected _onSubmitError(error: any) {
-        let args = { error: error, isHandled: false };
+        const args = { error: error, isHandled: false };
         this.raiseEvent(DBCTX_EVENTS.submit_err, args);
         if (!args.isHandled) {
             this.rejectChanges();
@@ -489,7 +484,7 @@ export class DbContext extends BaseObject {
             pageIndex = context.pageIndex;
 
         context.fn_onStart();
-        //restore pageIndex
+        //restore pageIndex if it was changed while loading
         context.query.pageIndex = pageIndex;
         context.dbSet._getInternal().beforeLoad(context.query, oldQuery);
         //sync pageIndex
@@ -497,7 +492,7 @@ export class DbContext extends BaseObject {
 
         if (loadPageCount > 1 && isPagingEnabled) {
             if (context.query._getInternal().isPageCached(pageIndex)) {
-                let loadPromise = self._loadFromCache(context.query, context.reason);
+                const loadPromise = self._loadFromCache(context.query, context.reason);
                 loadPromise.then((loadRes) => {
                     if (self.getIsDestroyCalled())
                         return;
@@ -528,11 +523,11 @@ export class DbContext extends BaseObject {
             queryName: context.query.queryName
         };
 
-        let req_promise = http.postAjax(self._getUrl(DATA_SVC_METH.Query), JSON.stringify(requestInfo), self.requestHeaders);
+        const req_promise = http.postAjax(self._getUrl(DATA_SVC_METH.Query), JSON.stringify(requestInfo), self.requestHeaders);
         self._addRequestPromise(req_promise, DATA_OPER.Query, requestInfo.dbSetName);
-        req_promise.then(function (res: string) {
+        req_promise.then((res: string) => {
             return _async.parseJSON(res);
-        }).then(function (response: IQueryResponse) {
+        }).then((response: IQueryResponse) => {
             return self._onLoaded(response, context.query, context.reason);
         }).then((loadRes) => {
             if (self.getIsDestroyCalled())
@@ -553,8 +548,9 @@ export class DbContext extends BaseObject {
                 item.destroy();
                 throw new Error(ERRS.ERR_ITEM_DELETED_BY_ANOTHER_USER);
             }
-            else
+            else {
                 item._aspect._refreshValues(res.rowInfo, REFRESH_MODE.MergeIntoCurrent);
+            }
         }
         catch (ex) {
             if (ERROR.checkIsDummy(ex)) {
@@ -608,15 +604,15 @@ export class DbContext extends BaseObject {
         const context = {
             item: item,
             dbSet: item._aspect.dbSet,
-            fn_onStart: function () {
+            fn_onStart: () => {
                 context.item._aspect._setIsRefreshing(true);
                 context.dbSet._setIsLoading(true);
             },
-            fn_onEnd: function () {
+            fn_onEnd: () => {
                 context.dbSet._setIsLoading(false);
                 context.item._aspect._setIsRefreshing(false);
             },
-            fn_onErr: function (ex: any) {
+            fn_onErr: (ex: any) => {
                 try {
                     context.fn_onEnd();
                     self._onDataOperError(ex, DATA_OPER.Refresh);
@@ -625,7 +621,7 @@ export class DbContext extends BaseObject {
                     deferred.reject();
                 }
             },
-            fn_onOK: function (res: IRefreshRowInfo) {
+            fn_onOK: (res: IRefreshRowInfo) => {
                 try {
                     self._onItemRefreshed(res, item);
                     context.fn_onEnd();
@@ -642,10 +638,10 @@ export class DbContext extends BaseObject {
     protected _getQueryInfo(name: string): IQueryInfo {
         return this._queryInf[name];
     }
-    protected _onDbSetHasChangesChanged(eSet: TDbSet): void {
+    protected _onDbSetHasChangesChanged(dbSet: TDbSet): void {
         const old = this._isHasChanges;
         this._isHasChanges = false;
-        if (eSet.isHasChanges) {
+        if (dbSet.isHasChanges) {
             this._isHasChanges = true;
         }
         else {
@@ -676,13 +672,13 @@ export class DbContext extends BaseObject {
             isPagingEnabled: query.isPagingEnabled,
             dbSetName: query.dbSetName,
             dbSet: self.getDbSet(query.dbSetName),
-            fn_onStart: function () {
+            fn_onStart: () => {
                 context.dbSet._setIsLoading(true);
             },
-            fn_onEnd: function () {
+            fn_onEnd: () => {
                 context.dbSet._setIsLoading(false);
             },
-            fn_onOK: function (res: IQueryResult<IEntityItem>) {
+            fn_onOK: (res: IQueryResult<IEntityItem>) => {
                 try {
                     context.fn_onEnd();
                 }
@@ -690,7 +686,7 @@ export class DbContext extends BaseObject {
                     deferred.resolve(res);
                 }
             },
-            fn_onErr: function (ex: any) {
+            fn_onErr: (ex: any) => {
                 try {
                     context.fn_onEnd();
                     self._onDataOperError(ex, DATA_OPER.Query);
@@ -723,18 +719,18 @@ export class DbContext extends BaseObject {
     }): void {
         const self = this;
         args.fn_onStart();
-        let changeSet = self._getChanges();
+        const changeSet = self._getChanges();
 
         if (changeSet.dbSets.length === 0) {
             args.fn_onOk();
             return;
         }
 
-        let req_promise = http.postAjax(self._getUrl(DATA_SVC_METH.Submit), JSON.stringify(changeSet), self.requestHeaders);
+        const req_promise = http.postAjax(self._getUrl(DATA_SVC_METH.Submit), JSON.stringify(changeSet), self.requestHeaders);
         self._addRequestPromise(req_promise, DATA_OPER.Submit);
         req_promise.then((res: string) => {
             return _async.parseJSON(res);
-        }).then(function (res: IChangeSet) {
+        }).then((res: IChangeSet) => {
             if (self.getIsDestroyCalled())
                 return;
             self._dataSaved(res);
@@ -796,12 +792,12 @@ export class DbContext extends BaseObject {
             return deferred.reject(ex);
         }
 
-        let ajax_promise = http.getAjax(loadUrl, self.requestHeaders);
-        let res_promise = ajax_promise.then((permissions: string) => {
-            if (self.getIsDestroyCalled())
-                return;
-            self._updatePermissions(JSON.parse(permissions));
-        });
+        const ajax_promise = http.getAjax(loadUrl, self.requestHeaders),
+            res_promise = ajax_promise.then((permissions: string) => {
+                if (self.getIsDestroyCalled())
+                    return;
+                self._updatePermissions(JSON.parse(permissions));
+            });
 
         deferred.resolve(res_promise);
         this._addRequestPromise(ajax_promise, operType);
@@ -815,6 +811,9 @@ export class DbContext extends BaseObject {
     }
     getDbSet(name: string) {
         return this._dbSets.getDbSet(name);
+    }
+    findDbSet(name: string) {
+        return this._dbSets.findDbSet(name);
     }
     getAssociation(name: string): Association {
         const name2 = "get" + name, fn = this._assoc[name2];
@@ -834,7 +833,7 @@ export class DbContext extends BaseObject {
         this._pendingSubmit = submitState;
 
         const context = {
-            fn_onStart: function () {
+            fn_onStart: () => {
                 if (!self._isSubmiting) {
                     self._isSubmiting = true;
                     self.raisePropertyChanged(PROP_NAME.isSubmiting);
@@ -842,13 +841,13 @@ export class DbContext extends BaseObject {
                 //allow to post new submit
                 self._pendingSubmit = null;
             },
-            fn_onEnd: function () {
+            fn_onEnd: () => {
                 if (self._isSubmiting) {
                     self._isSubmiting = false;
                     self.raisePropertyChanged(PROP_NAME.isSubmiting);
                 }
             },
-            fn_onErr: function (ex: any) {
+            fn_onErr: (ex: any) => {
                 try {
                     context.fn_onEnd();
                     self._onSubmitError(ex);
@@ -857,7 +856,7 @@ export class DbContext extends BaseObject {
                     deferred.reject();
                 }
             },
-            fn_onOk: function () {
+            fn_onOk: () => {
                 try {
                     context.fn_onEnd();
                 }
@@ -883,25 +882,25 @@ export class DbContext extends BaseObject {
         return this._load(query, COLL_CHANGE_REASON.None);
     }
     acceptChanges(): void {
-        this._dbSets.arrDbSets.forEach(function (eSet) {
-            eSet.acceptChanges();
+        this._dbSets.arrDbSets.forEach((dbSet) => {
+            dbSet.acceptChanges();
         });
     }
     rejectChanges(): void {
-        this._dbSets.arrDbSets.forEach(function (eSet) {
-            eSet.rejectChanges();
+        this._dbSets.arrDbSets.forEach((dbSet) => {
+            dbSet.rejectChanges();
         });
     }
     abortRequests(reason?: string, operType?: DATA_OPER): void {
         if (checks.isNt(operType))
             operType = DATA_OPER.None;
-        let arr = this._requests.filter((a) => {
+        let arr: IRequestPromise[] = this._requests.filter((a) => {
             return operType === DATA_OPER.None ? true : (a.operType === operType);
         });
 
         for (let i = 0; i < arr.length; i += 1) {
-            let item = arr[i];
-            item.req.abort(reason);
+            let promise = arr[i];
+            promise.req.abort(reason);
         }
     }
     destroy() {
@@ -911,7 +910,7 @@ export class DbContext extends BaseObject {
         this.abortRequests();
         this._waitQueue.destroy();
         this._waitQueue = null;
-        this._arrAssoc.forEach(function (assoc) {
+        this._arrAssoc.forEach((assoc) => {
             assoc.destroy();
         });
         this._arrAssoc = [];

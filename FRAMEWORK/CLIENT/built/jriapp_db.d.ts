@@ -291,6 +291,7 @@ declare module "jriapp_db/dbsets" {
         protected _createDbSet(name: string, dbSetType: IDbSetConstructor<IEntityItem, any>): void;
         readonly dbSetNames: string[];
         readonly arrDbSets: DbSet<IEntityItem, any, DbContext>[];
+        findDbSet(name: string): TDbSet;
         getDbSet(name: string): TDbSet;
         destroy(): void;
     }
@@ -445,9 +446,9 @@ declare module "jriapp_db/dbcontext" {
             error: any;
         }) => void): void;
         protected _loadFromCache(query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
-        protected _loadSubsets(res: IQueryResponse, isClearAll: boolean): void;
-        protected _onLoaded(res: IQueryResponse, query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
-        protected _dataSaved(res: IChangeSet): void;
+        protected _loadSubsets(response: IQueryResponse, isClearAll: boolean): void;
+        protected _onLoaded(response: IQueryResponse, query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
+        protected _dataSaved(changes: IChangeSet): void;
         protected _getChanges(): IChangeSet;
         protected _getUrl(action: string): string;
         protected _onDataOperError(ex: any, oper: DATA_OPER): boolean;
@@ -478,7 +479,7 @@ declare module "jriapp_db/dbcontext" {
         }): void;
         protected _refreshItem(item: IEntityItem): IStatefulPromise<IEntityItem>;
         protected _getQueryInfo(name: string): IQueryInfo;
-        protected _onDbSetHasChangesChanged(eSet: TDbSet): void;
+        protected _onDbSetHasChangesChanged(dbSet: TDbSet): void;
         protected _load(query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
         protected _submitChanges(args: {
             fn_onStart: () => void;
@@ -497,6 +498,7 @@ declare module "jriapp_db/dbcontext" {
         }>, nmspace?: string, context?: IBaseObject): void;
         removeOnSubmitError(nmspace?: string): void;
         getDbSet(name: string): DbSet<IEntityItem, any, DbContext>;
+        findDbSet(name: string): DbSet<IEntityItem, any, DbContext>;
         getAssociation(name: string): Association;
         submitChanges(): IVoidPromise;
         load(query: TDataQuery): IStatefulPromise<IQueryResult<IEntityItem>>;

@@ -41,11 +41,17 @@ export class DbSets extends BaseObject {
     get arrDbSets() {
         return this._arrDbSets;
     }
-    getDbSet(name: string): TDbSet {
+    findDbSet(name: string): TDbSet {
         const res = this._dbSets[name];
         if (!res)
-            throw new Error(strUtils.format(ERRS.ERR_DBSET_NAME_INVALID, name));
+            return null;
         return res.Value;
+    }
+    getDbSet(name: string): TDbSet {
+        const dbSet = this.findDbSet(name);
+        if (!dbSet)
+            throw new Error(strUtils.format(ERRS.ERR_DBSET_NAME_INVALID, name));
+        return dbSet;
     }
     destroy() {
         if (this._isDestroyed)
