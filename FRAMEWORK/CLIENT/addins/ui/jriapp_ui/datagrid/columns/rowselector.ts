@@ -30,7 +30,7 @@ export class RowSelectorColumn extends BaseColumn {
         dom.events.on(chk, "change", (e) => {
             e.stopPropagation();
             self.raisePropertyChanged(PROP_NAME.checked);
-            self.grid.selectRows(this.checked);
+            self.grid.selectRows(chk.checked);
         }, this.uniqueID);
 
         //delegated click event from the cell's checkbox

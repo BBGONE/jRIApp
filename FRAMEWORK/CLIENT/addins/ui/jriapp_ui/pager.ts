@@ -91,8 +91,8 @@ export class Pager extends BaseObject {
         this._dsDebounce = new Debounce();
         dom.events.on(this._el, "click", (e) => {
             e.preventDefault();
+            const a = <HTMLElement>e.target, page = parseInt(a.getAttribute("data-page"), 10);
             self._pageDebounce.enque(() => {
-                const a = <HTMLElement>e.target, page = parseInt(a.getAttribute("data-page"), 10);
                 self.currentPage = page;
                 self._dsDebounce.enque(() => {
                     if (!!self.dataSource) {

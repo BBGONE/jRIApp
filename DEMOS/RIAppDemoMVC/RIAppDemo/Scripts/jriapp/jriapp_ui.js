@@ -4097,7 +4097,6 @@ define("jriapp_ui/datagrid/columns/rowselector", ["require", "exports", "jriapp_
     var RowSelectorColumn = (function (_super) {
         __extends(RowSelectorColumn, _super);
         function RowSelectorColumn(grid, options) {
-            var _this = this;
             _super.call(this, grid, options);
             var self = this;
             dom.addClass([this.col], const_13.css.rowSelector);
@@ -4114,7 +4113,7 @@ define("jriapp_ui/datagrid/columns/rowselector", ["require", "exports", "jriapp_
             dom.events.on(chk, "change", function (e) {
                 e.stopPropagation();
                 self.raisePropertyChanged(const_13.PROP_NAME.checked);
-                self.grid.selectRows(_this.checked);
+                self.grid.selectRows(chk.checked);
             }, this.uniqueID);
             dom.events.on(this.grid.table, "click", function (e) {
                 e.stopPropagation();
@@ -6239,8 +6238,8 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/const"
             this._dsDebounce = new jriapp_shared_31.Debounce();
             dom.events.on(this._el, "click", function (e) {
                 e.preventDefault();
+                var a = e.target, page = parseInt(a.getAttribute("data-page"), 10);
                 self._pageDebounce.enque(function () {
-                    var a = e.target, page = parseInt(a.getAttribute("data-page"), 10);
                     self.currentPage = page;
                     self._dsDebounce.enque(function () {
                         if (!!self.dataSource) {
