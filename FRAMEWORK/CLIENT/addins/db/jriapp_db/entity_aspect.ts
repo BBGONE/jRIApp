@@ -27,24 +27,25 @@ function fn_isNotSubmittable(fieldInfo: IFieldInfo) {
     return (fieldInfo.fieldType === FIELD_TYPE.ClientOnly || fieldInfo.fieldType === FIELD_TYPE.Navigation || fieldInfo.fieldType === FIELD_TYPE.Calculated || fieldInfo.fieldType === FIELD_TYPE.ServerCalculated);
 }
 
-function fn_traverseChanges(val: IValueChange, fn: (name: string, val: IValueChange) => void): void {
-    function _fn_traverseChanges(name: string, val: IValueChange, fn: (name: string, val: IValueChange) => void) {
-        if (!!val.nested && val.nested.length > 0) {
-            let prop: IValueChange, i: number, len = val.nested.length;
-            for (i = 0; i < len; i += 1) {
-                prop = val.nested[i];
-                if (!!prop.nested && prop.nested.length > 0) {
-                    _fn_traverseChanges(name + "." + prop.fieldName, prop, fn);
-                }
-                else {
-                    fn(name + "." + prop.fieldName, prop);
-                }
+function _fn_traverseChanges(name: string, val: IValueChange, fn: (name: string, val: IValueChange) => void) {
+    if (!!val.nested && val.nested.length > 0) {
+        const len = val.nested.length;
+        for (let i = 0; i < len; i += 1) {
+            let prop: IValueChange = val.nested[i];
+            if (!!prop.nested && prop.nested.length > 0) {
+                _fn_traverseChanges(name + "." + prop.fieldName, prop, fn);
+            }
+            else {
+                fn(name + "." + prop.fieldName, prop);
             }
         }
-        else {
-            fn(name, val);
-        }
     }
+    else {
+        fn(name, val);
+    }
+}
+
+function fn_traverseChanges(val: IValueChange, fn: (name: string, val: IValueChange) => void): void {
     _fn_traverseChanges(val.fieldName, val, fn);
 }
 
@@ -76,11 +77,11 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
     }
     protected _onFieldChanged(fieldName: string, fieldInfo: IFieldInfo) {
         const self = this;
-        if (this._isDestroyCalled)
+        if (self._isDestroyCalled)
             return;
         self.item.raisePropertyChanged(fieldName);
         if (!!fieldInfo.dependents && fieldInfo.dependents.length > 0) {
-            fieldInfo.dependents.forEach(function (d) {
+            fieldInfo.dependents.forEach((d) => {
                 self.item.raisePropertyChanged(d);
             });
         }
@@ -197,7 +198,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         this._setStatus(this._savedStatus);
         this._savedStatus = null;
         dbSet.errors.removeAllErrors(this.item);
-        changes.forEach(function (v) {
+        changes.forEach((v) => {
             const fld = self.dbSet.getFieldInfo(v.fieldName);
             if (!fld)
                 throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, v.fieldName));
@@ -280,7 +281,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
             if (!refreshMode) {
                 refreshMode = REFRESH_MODE.RefreshCurrent;
             }
-            rowInfo.values.forEach(function (val) {
+            rowInfo.values.forEach((val) => {
                 fn_traverseChanges(val, (fullName, vc) => {
                     if (!((vc.flags & FLAGS.Refreshed) === FLAGS.Refreshed))
                         return;
@@ -314,8 +315,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         return this.dbSet._getInternal().getNavFieldVal(fieldName, this.item);
     }
     _setNavFieldVal(fieldName: string, value: any) {
-        const dbSet = this.dbSet
-        dbSet._getInternal().setNavFieldVal(fieldName, this.item, value)
+        this.dbSet._getInternal().setNavFieldVal(fieldName, this.item, value)
     }
     _clearFieldVal(fieldName: string) {
         coreUtils.setValue(this._vals, fieldName, null, false);
@@ -454,7 +454,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
             }
             self._setStatus(ITEM_STATUS.None);
             errors.removeAllErrors(this.item);
-            changes.forEach(function (v) {
+            changes.forEach((v) => {
                 fn_traverseChanges(v, (fullName, vc) => {
                     self._onFieldChanged(fullName, dbSet.getFieldInfo(fullName));
                 });
@@ -463,11 +463,11 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         }
     }
     submitChanges(): IVoidPromise {
-        function removeHandler() {
+        const removeHandler = () => {
             dbxt.removeOnSubmitError(uniqueID);
         }
-        let dbxt = this.dbSet.dbContext, uniqueID = coreUtils.uuid();
-        dbxt.addOnSubmitError(function (sender, args) {
+        const dbxt = this.dbSet.dbContext, uniqueID = coreUtils.uuid();
+        dbxt.addOnSubmitError((sender, args) => {
             if (args.error instanceof SubmitError) {
                 let submitErr: SubmitError = args.error;
                 if (submitErr.notValidated.length > 0) {
@@ -477,7 +477,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
             }
         }, uniqueID);
 
-        let promise = dbxt.submitChanges();
+        const promise = dbxt.submitChanges();
         promise.then(removeHandler, removeHandler);
         return promise;
     }

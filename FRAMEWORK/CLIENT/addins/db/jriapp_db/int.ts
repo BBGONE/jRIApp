@@ -226,5 +226,5 @@ export interface ICalcFieldImpl<TItem extends IEntityItem> {
 
 export interface INavFieldImpl<TItem extends IEntityItem> {
     getFunc: (item: TItem) => any;
-    setFunc: (v: any) => void;
+    setFunc: (v: any, item: TItem) => void;
 }

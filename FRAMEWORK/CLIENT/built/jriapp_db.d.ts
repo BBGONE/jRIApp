@@ -782,7 +782,7 @@ declare module "jriapp_db/int" {
     }
     export interface INavFieldImpl<TItem extends IEntityItem> {
         getFunc: (item: TItem) => any;
-        setFunc: (v: any) => void;
+        setFunc: (v: any, item: TItem) => void;
     }
 }
 declare module "jriapp_db/dataview" {

@@ -590,10 +590,10 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
             return parseFloat(num.toFixed(decimals));
         };
         CoreUtils.clone = function (obj, target) {
-            var res;
             if (!obj) {
                 return obj;
             }
+            var res;
             if (checks.isArray(obj)) {
                 res = [];
                 for (var i = 0, len = obj.length; i < len; i += 1) {
@@ -609,7 +609,7 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
                 }
             }
             else {
-                return obj;
+                res = obj;
             }
             return res;
         };

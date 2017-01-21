@@ -97,14 +97,10 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
             throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, this.dbSetName, fieldName));
 
         if (!!fld) {
-            vals = tmpVals.map(function (v) {
-                return valUtils.stringifyValue(v, fld.dateConversion, fld.dataType, stz);
-            });
+            vals = tmpVals.map((v) => valUtils.stringifyValue(v, fld.dateConversion, fld.dataType, stz));
         }
         else {
-            vals = tmpVals.map(function (v) {
-                return valUtils.stringifyValue(v, DATE_CONVERSION.None, checks.isDate(v) ? DATA_TYPE.Date : DATA_TYPE.None, stz);
-            });
+            vals = tmpVals.map((v) => valUtils.stringifyValue(v, DATE_CONVERSION.None, checks.isDate(v) ? DATA_TYPE.Date : DATA_TYPE.None, stz));
         }
 
         switch (operand) {

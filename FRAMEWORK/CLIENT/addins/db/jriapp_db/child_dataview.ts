@@ -35,25 +35,25 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
             oldFilter = opts.fn_filter;
 
         opts.dataSource = <ICollection<TItem>><any>assoc.childDS;
-        opts.fn_itemsProvider = function (ds) {
+        opts.fn_itemsProvider = (ds) => {
             if (!parentItem) {
                 return [];
             }
             return <TItem[]>assoc.getChildItems(parentItem);
         };
-        opts.fn_filter = function (item) {
+        opts.fn_filter = (item) => {
             const isPC = assoc.isParentChild(parentItem, item);
             return isPC && (!oldFilter ? true : oldFilter(item));
         };
         super(opts);
         const self = this;
 
-        this._getParent = function () {
+        this._getParent = () => {
             if (self.getIsDestroyCalled())
                 return null;
             return parentItem;
         };
-        this._setParent = function (v: IEntityItem) {
+        this._setParent = (v: IEntityItem) => {
             if (parentItem !== v) {
                 parentItem = v;
                 self.raisePropertyChanged(PROP_NAME.parentItem);

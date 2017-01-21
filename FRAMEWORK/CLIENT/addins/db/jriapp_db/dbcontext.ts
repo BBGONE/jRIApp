@@ -34,7 +34,7 @@ const DATA_SVC_METH = {
     Refresh: "refresh"
 };
 
-function __checkError(svcError: { name: string; message?: string; }, oper: DATA_OPER) {
+function fn_checkError(svcError: { name: string; message?: string; }, oper: DATA_OPER) {
     if (!svcError)
         return;
     if (ERROR.checkIsDummy(svcError))
@@ -186,7 +186,7 @@ export class DbContext extends BaseObject {
     protected _initMethod(methodInfo: IQueryInfo) {
         const self = this;
         //function expects method parameters
-        this._svcMethods[methodInfo.methodName] = function (args: { [paramName: string]: any; }) {
+        this._svcMethods[methodInfo.methodName] = (args: { [paramName: string]: any; }) => {
             const deferred = _async.createDeferred<any>(), callback = (res: { result: any; error: any; }) => {
                 if (!res.error) {
                     deferred.resolve(res.result);
@@ -275,7 +275,7 @@ export class DbContext extends BaseObject {
             try {
                 if (!res)
                     throw new Error(strUtils.format(ERRS.ERR_UNEXPECTED_SVC_ERROR, "operation result is empty"));
-                __checkError(res.error, operType);
+                fn_checkError(res.error, operType);
                 callback({ result: res.result, error: null });
             } catch (ex) {
                 if (ERROR.checkIsDummy(ex)) {
@@ -329,7 +329,7 @@ export class DbContext extends BaseObject {
         const self = this, isHasSubsets = checks.isArray(response.subsets) && response.subsets.length > 0;
         if (!isHasSubsets)
             return;
-        response.subsets.forEach(function (loadResult) {
+        response.subsets.forEach((loadResult) => {
             const dbSet = self.getDbSet(loadResult.dbSetName);
             dbSet.fillData(loadResult, !isClearAll);
         });
@@ -349,7 +349,7 @@ export class DbContext extends BaseObject {
                 const dbSetName = response.dbSetName, dbSet = self.getDbSet(dbSetName);
                 if (checks.isNt(dbSet))
                     throw new Error(strUtils.format(ERRS.ERR_DBSET_NAME_INVALID, dbSetName));
-                __checkError(response.error, operType);
+                fn_checkError(response.error, operType);
                 const isClearAll = (!!query && query.isClearPrevData),
                     loadRes = dbSet._getInternal().fillFromService(
                     {
@@ -370,7 +370,7 @@ export class DbContext extends BaseObject {
         const self = this;
         try {
             try {
-                __checkError(changes.error, DATA_OPER.Submit);
+                fn_checkError(changes.error, DATA_OPER.Submit);
             }
             catch (ex) {
                 let submitted: IEntityItem[] = [], notvalid: IEntityItem[] = [];
@@ -405,7 +405,7 @@ export class DbContext extends BaseObject {
     }
     protected _getChanges(): IChangeSet {
         const changeSet: IChangeSet = { dbSets: [], error: null, trackAssocs: [] };
-        this._dbSets.arrDbSets.forEach(function (dbSet) {
+        this._dbSets.arrDbSets.forEach((dbSet) => {
             dbSet.endEdit();
             const changes: IRowInfo[] = dbSet._getInternal().getChanges();
             if (changes.length === 0)
@@ -444,7 +444,7 @@ export class DbContext extends BaseObject {
         this._waitQueue.enQueue({
             prop: PROP_NAME.isBusy,
             groupName: null,
-            predicate: function (val: any) {
+            predicate: (val: any) => {
                 return !val;
             },
             action: callback,
@@ -454,7 +454,7 @@ export class DbContext extends BaseObject {
     protected waitForNotSubmiting(callback: () => void) {
         this._waitQueue.enQueue({
             prop: PROP_NAME.isSubmiting,
-            predicate: function (val: any) {
+            predicate: (val: any) => {
                 return !val;
             },
             action: callback,
@@ -542,7 +542,7 @@ export class DbContext extends BaseObject {
     protected _onItemRefreshed(res: IRefreshRowInfo, item: IEntityItem): void {
         const operType = DATA_OPER.Refresh;
         try {
-            __checkError(res.error, operType);
+            fn_checkError(res.error, operType);
             if (!res.rowInfo) {
                 item._aspect.dbSet.removeItem(item);
                 item.destroy();

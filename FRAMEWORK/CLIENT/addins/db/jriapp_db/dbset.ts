@@ -28,6 +28,21 @@ import { EntityAspect } from "./entity_aspect";
 const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err,
     valUtils = ValueUtils, colUtils = CollUtils;
 
+function doFieldDependences(dbSet: TDbSet, info: IFieldInfo) {
+    if (!info.dependentOn)
+        return;
+    const deps: string[] = info.dependentOn.split(",");
+    deps.forEach((depOn) => {
+        let depOnFld = dbSet.getFieldInfo(depOn);
+        if (!depOnFld)
+            throw new Error(strUtils.format(ERRS.ERR_CALC_FIELD_DEFINE, depOn));
+        if (info === depOnFld)
+            throw new Error(strUtils.format(ERRS.ERR_CALC_FIELD_SELF_DEPEND, depOn));
+        if (depOnFld.dependents.indexOf(info.fullName) < 0) {
+            depOnFld.dependents.push(info.fullName);
+        }
+    });
+}
 
 export interface IFillFromServiceArgs {
     res: IQueryResponse;
@@ -118,7 +133,7 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
         this._changeCount = 0;
         this._changeCache = {};
         this._ignorePageChanged = false;
-        fieldInfos.forEach(function (f) {
+        fieldInfos.forEach((f) => {
             self._fieldMap[f.fieldName] = f;
             colUtils.traverseField(f, (fld, fullName) => {
                 fld.dependents = [];
@@ -219,13 +234,16 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
         }
     }
     protected _doNavigationField(opts: IDbSetConstuctorOptions, fieldInfo: IFieldInfo): INavFieldImpl<TItem> {
-        let self = this, isChild = true, result: INavFieldImpl<TItem> = { getFunc: (item) => { throw new Error("Function is not implemented"); }, setFunc: function (v: any) { throw new Error("Function is not implemented"); } };
-        let assocs = opts.childAssoc.filter(function (a) {
+        let self = this, isChild = true, result: INavFieldImpl<TItem> = {
+            getFunc: (item) => { throw new Error("Function is not implemented"); },
+            setFunc: (v: any, item: TItem) => { throw new Error("Function is not implemented"); }
+        };
+        let assocs = opts.childAssoc.filter((a) => {
             return a.childToParentName === fieldInfo.fieldName;
         });
 
         if (assocs.length === 0) {
-            assocs = opts.parentAssoc.filter(function (a) {
+            assocs = opts.parentAssoc.filter((a) => {
                 return a.parentToChildrenName === fieldInfo.fieldName;
             });
             isChild = false;
@@ -233,29 +251,28 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
 
         if (assocs.length !== 1)
             throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID_TYPE, "assocs", "Array"));
-        let assocName = assocs[0].name;
+        const assocName = assocs[0].name;
         fieldInfo.isReadOnly = true;
         if (isChild) {
             fieldInfo.isReadOnly = false;
             self._childAssocMap[assocs[0].childToParentName] = assocs[0];
-            assocs[0].fieldRels.forEach(function (frel) {
-                let chf = self.getFieldInfo(frel.childField);
-                if (!fieldInfo.isReadOnly && chf.isReadOnly) {
+            assocs[0].fieldRels.forEach((frel) => {
+                const childFld = self.getFieldInfo(frel.childField);
+                if (!fieldInfo.isReadOnly && childFld.isReadOnly) {
                     fieldInfo.isReadOnly = true;
                 }
             });
             //this property should return parent
-            result.getFunc = function (item: TItem) {
-                let assoc = self.dbContext.getAssociation(assocName);
+            result.getFunc = (item: TItem) => {
+                const assoc = self.dbContext.getAssociation(assocName);
                 return assoc.getParentItem(item);
             };
 
             if (!fieldInfo.isReadOnly) {
                 //should track this association for new items parent - child relationship changes
                 self._trackAssoc[assocName] = assocs[0];
-
-                result.setFunc = function (v) {
-                    let entity: TItem = this, i: number, len: number, assoc = self.dbContext.getAssociation(assocName);
+                result.setFunc = (v: any, item: TItem) => {
+                    const assoc = self.dbContext.getAssociation(assocName);
                     if (!!v)
                     {
                         if (((<IEntityItem>v)._aspect.dbSetName !== assoc.parentDS.dbSetName)) {
@@ -263,21 +280,21 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
                         }
 
                         if ((<IEntityItem>v)._aspect.isNew) {
-                            entity._aspect._setFieldVal(fieldInfo.fieldName, (<IEntityItem>v)._key);
+                            item._aspect._setFieldVal(fieldInfo.fieldName, (<IEntityItem>v)._key);
                         }
                         else {
-                            for (i = 0, len = assoc.childFldInfos.length; i < len; i += 1) {
-                                (<any>entity)[assoc.childFldInfos[i].fieldName] = v[assoc.parentFldInfos[i].fieldName];
+                            for (let i = 0, len = assoc.childFldInfos.length; i < len; i += 1) {
+                                (<any>item)[assoc.childFldInfos[i].fieldName] = v[assoc.parentFldInfos[i].fieldName];
                             }
                         }
                     }
                     else {
-                        let oldKey = entity._aspect._getFieldVal(fieldInfo.fieldName);
+                        const oldKey = item._aspect._getFieldVal(fieldInfo.fieldName);
                         if (!!oldKey) {
-                            entity._aspect._setFieldVal(fieldInfo.fieldName, null);
+                            item._aspect._setFieldVal(fieldInfo.fieldName, null);
                         }
-                        for (i = 0, len = assoc.childFldInfos.length; i < len; i += 1) {
-                            (<any>entity)[assoc.childFldInfos[i].fieldName] = null;
+                        for (let i = 0, len = assoc.childFldInfos.length; i < len; i += 1) {
+                            (<any>item)[assoc.childFldInfos[i].fieldName] = null;
                         }
                     }
                 };
@@ -286,38 +303,25 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
         else {
             self._parentAssocMap[assocs[0].parentToChildrenName] = assocs[0];
             //returns items children
-            result.getFunc = function (item: TItem) {
+            result.getFunc = (item: TItem) => {
                 return self.dbContext.getAssociation(assocName).getChildItems(item);
             };
         }
         return result;
     }
     protected _doCalculatedField(opts: IDbSetConstuctorOptions, fieldInfo: IFieldInfo): ICalcFieldImpl<TItem> {
-        let self = this, result: ICalcFieldImpl<TItem> = { getFunc: (item) => { throw new Error(strUtils.format("Calculated field:'{0}' is not initialized", fieldInfo.fieldName)); } };
-        function doDependences(info: IFieldInfo) {
-            if (!info.dependentOn)
-                return;
-            let deps: string[] = info.dependentOn.split(",");
-            deps.forEach(function (depOn) {
-                let depOnFld = self.getFieldInfo(depOn);
-                if (!depOnFld)
-                    throw new Error(strUtils.format(ERRS.ERR_CALC_FIELD_DEFINE, depOn));
-                if (info === depOnFld)
-                    throw new Error(strUtils.format(ERRS.ERR_CALC_FIELD_SELF_DEPEND, depOn));
-                if (depOnFld.dependents.indexOf(info.fullName) < 0) {
-                    depOnFld.dependents.push(info.fullName);
-                }
-            });
+        const self = this, result: ICalcFieldImpl<TItem> = {
+            getFunc: (item) => { throw new Error(strUtils.format("Calculated field:'{0}' is not initialized", fieldInfo.fieldName)); }
         };
         fieldInfo.isReadOnly = true;
         if (!!fieldInfo.dependentOn) {
-            doDependences(fieldInfo);
+            doFieldDependences(self, fieldInfo);
         }
         return result;
     }
     protected _refreshValues(path: string, item: IEntityItem, values: any[], names: IFieldName[], rm: REFRESH_MODE): void {
-        let self = this;
-        values.forEach(function (value, index) {
+        const self = this;
+        values.forEach((value, index) => {
             let name: IFieldName = names[index], fieldName = path + name.n, fld = self.getFieldInfo(fieldName);
             if (!fld)
                 throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fieldName));
@@ -334,7 +338,7 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
     }
     protected _applyFieldVals(vals: any, path: string, values: any[], names: IFieldName[]) {
         const self = this, stz = self.dbContext.serverTimezone;
-        values.forEach(function (value, index) {
+        values.forEach((value, index) => {
             const name: IFieldName = names[index], fieldName = path + name.n,
                 fld = self.getFieldInfo(fieldName);
             if (!fld)
@@ -346,7 +350,7 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
             }
             else {
                 //for other fields the value is a string, which is parsed to a typed value
-                let val = valUtils.parseValue(value, fld.dataType, fld.dateConversion, stz);
+                const val = valUtils.parseValue(value, fld.dataType, fld.dateConversion, stz);
                 coreUtils.setValue(vals, fieldName, val, false);
             }
         });
@@ -454,7 +458,7 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
     }
     protected _setNavFieldVal(fieldName: string, item: TItem, value: any): void {
         let val: INavFieldImpl<TItem> = coreUtils.getValue(this._navfldMap, fieldName);
-        val.setFunc.call(item, value);
+        val.setFunc.call(item, value, item);
     }
     protected _beforeLoad(query: DataQuery<TItem, TObj>, oldQuery: DataQuery<TItem, TObj>): void {
         if (!!query && oldQuery !== query) {
@@ -524,8 +528,7 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
     }
     protected _fillFromService(info: IFillFromServiceArgs): IQueryResult<TItem> {
         let self = this, res = info.res, fieldNames = res.names, rows = res.rows || [], rowCount = rows.length,
-            newItems: TItem[] = [], positions: number[] = [], arr: TItem[] = [], fetchedItems: TItem[] = [],
-            isPagingEnabled = this.isPagingEnabled, query = info.query, isClearAll = true, items: TItem[] = [];
+            isPagingEnabled = this.isPagingEnabled, query = info.query, isClearAll = true;
 
         if (!!query && !query.getIsDestroyCalled()) {
             isClearAll = query.isClearPrevData;
@@ -535,7 +538,7 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
                 this._clear(info.reason, COLL_CHANGE_OPER.Fill);
         }
 
-        fetchedItems = rows.map(function (row) {
+        const fetchedItems = rows.map((row) => {
             //row.key already a string value generated on server (no need to convert to string)
             const key = row.k;
             if (!key)
@@ -552,7 +555,7 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
             return item;
         });
 
-        arr = fetchedItems;
+        let arr = fetchedItems;
     
         if (!!query && !query.getIsDestroyCalled()) {
             if (query.isIncludeTotalCount && !checks.isNt(res.totalCount)) {
@@ -560,7 +563,7 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
             }
 
             if (query.loadPageCount > 1 && isPagingEnabled) {
-                let dataCache = query._getInternal().getCache();
+                const dataCache = query._getInternal().getCache();
                 if (query.isIncludeTotalCount && !checks.isNt(res.totalCount))
                     dataCache.totalCount = res.totalCount;
                 dataCache.fill(res.pageIndex, fetchedItems);
@@ -568,7 +571,8 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
             }
         }
 
-        arr.forEach(function (item) {
+        let newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];
+        arr.forEach((item) => {
             const oldItem = self._itemsByKey[item._key] 
             if (!oldItem) {
                 self._items.push(item);
@@ -603,7 +607,7 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
         return result;
     }
     protected _fillFromCache(args: IFillFromCacheArgs): IQueryResult<TItem> {
-        const self = this, positions: number[] = [], items: TItem[] = [], query = args.query;
+        const self = this, query = args.query;
         if (!query)
             throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "query is not null"));
         if (query.getIsDestroyCalled())
@@ -614,7 +618,8 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
         this._clear(args.reason, COLL_CHANGE_OPER.Fill);
         this._items = arr;
 
-        arr.forEach(function (item, index) {
+        let positions: number[] = [], items: TItem[] = [];
+        arr.forEach((item, index) => {
             self._itemsByKey[item._key] = item;
             positions.push(index);
             items.push(item);
@@ -641,12 +646,12 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
     }
     protected _commitChanges(rows: IRowInfo[]): void {
         const self = this;
-        rows.forEach(function (rowInfo) {
-            let key = rowInfo.clientKey, item: TItem = self._itemsByKey[key];
+        rows.forEach((rowInfo) => {
+            const key = rowInfo.clientKey, item: TItem = self._itemsByKey[key];
             if (!item) {
                 throw new Error(strUtils.format(ERRS.ERR_KEY_IS_NOTFOUND, key));
             }
-            let itemStatus = item._aspect.status;
+            const itemStatus = item._aspect.status;
             item._aspect._acceptChanges(rowInfo);
             if (itemStatus === ITEM_STATUS.Added) {
                 //on insert
@@ -686,15 +691,15 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
     }
     protected _getChanges(): IRowInfo[] {
         const changes: IRowInfo[] = [], csh = this._changeCache;
-        coreUtils.forEachProp(csh, function (key, item) {
+        coreUtils.forEachProp(csh, (key, item) => {
             changes.push(item._aspect._getRowInfo());
         });
         return changes;
     }
     protected _getTrackAssocInfo(): ITrackAssoc[] {
         const self = this, res: ITrackAssoc[] = [], csh = this._changeCache, trackAssoc = self._trackAssoc;
-        coreUtils.forEachProp(csh, function (key, item) {
-            coreUtils.forEachProp(trackAssoc, function (assocName, assocInfo) {
+        coreUtils.forEachProp(csh, (key, item) => {
+            coreUtils.forEachProp(trackAssoc, (assocName, assocInfo) => {
                 const parentKey = item._aspect._getFieldVal(assocInfo.childToParentName),
                     childKey = item._key;
                 if (!!parentKey && !!childKey) {
@@ -794,13 +799,12 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
         rows: IRowData[];
     }, isAppend?: boolean): IQueryResult<TItem> {
         const self = this, reason = COLL_CHANGE_REASON.None;
-        let newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];
         this._destroyQuery();
         const isClearAll = !isAppend;
         if (isClearAll)
             self._clear(reason, COLL_CHANGE_OPER.Fill);
 
-        const fetchedItems = data.rows.map(function (row) {
+        const fetchedItems = data.rows.map((row) => {
             //row.key already a string value generated on server (no need to convert to string)
             const key = row.k;
             if (!key)
@@ -816,7 +820,8 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
             return item;
         });
 
-        fetchedItems.forEach(function (item) {
+        let newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];
+        fetchedItems.forEach((item) => {
             const oldItem = self._itemsByKey[item._key];
             if (!oldItem) {
                 self._items.push(item);
@@ -854,17 +859,17 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
     //manually fill items for an array of objects
     fillItems(data: TObj[], isAppend?: boolean): IQueryResult<TItem> {
         const self = this, reason = COLL_CHANGE_REASON.None;
-        let newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];
         this._destroyQuery();
         const isClearAll = !isAppend;
         if (isClearAll)
             self._clear(reason, COLL_CHANGE_OPER.Fill);
 
-        const fetchedItems = data.map(function (obj) {
+        const fetchedItems = data.map((obj) => {
             return self.createEntityFromObj(obj);
         });
 
-        fetchedItems.forEach(function (item) {
+        let newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];
+        fetchedItems.forEach((item) => {
             const oldItem = self._itemsByKey[item._key];
             if (!oldItem) {
                 self._items.push(item);
@@ -909,7 +914,7 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
         this._waitQueue.enQueue({
             prop: PROP_NAME.isBusy,
             groupName: groupName,
-            predicate: function (val: any) {
+            predicate: (val: any) => {
                 return !val;
             },
             action: callback,
@@ -962,16 +967,16 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
     }
     acceptChanges() {
         const csh = this._changeCache;
-        coreUtils.forEachProp(csh, function (key) {
-            let item = csh[key];
+        coreUtils.forEachProp(csh, (key) => {
+            const item = csh[key];
             item._aspect.acceptChanges();
         });
         this._changeCount = 0;
     }
     rejectChanges() {
         let csh = this._changeCache;
-        coreUtils.forEachProp(csh, function (key) {
-            let item = csh[key];
+        coreUtils.forEachProp(csh, (key) => {
+            const item = csh[key];
             item._aspect.rejectChanges();
         });
     }

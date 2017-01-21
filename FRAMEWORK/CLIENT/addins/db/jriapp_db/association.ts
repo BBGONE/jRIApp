@@ -61,10 +61,10 @@ export class Association extends BaseObject {
         this._onDeleteAction = opts.onDeleteAction;
         this._parentDS = opts.dbContext.getDbSet(opts.parentName);
         this._childDS = opts.dbContext.getDbSet(opts.childName);
-        this._parentFldInfos = opts.parentKeyFields.map(function (name) {
+        this._parentFldInfos = opts.parentKeyFields.map((name) => {
             return self._parentDS.getFieldInfo(name);
         });
-        this._childFldInfos = opts.childKeyFields.map(function (name) {
+        this._childFldInfos = opts.childKeyFields.map((name) => {
             return self._childDS.getFieldInfo(name);
         });
         this._parentToChildrenName = opts.parentToChildrenName;
@@ -93,21 +93,21 @@ export class Association extends BaseObject {
         const self = this, ds = this._parentDS;
         if (!ds)
             return;
-        ds.addOnCollChanged(function (sender, args) {
+        ds.addOnCollChanged((sender, args) => {
             self._onParentCollChanged(args);
         }, self._objId, null, TPriority.High);
-        ds.addOnBeginEdit(function (sender, args) {
+        ds.addOnBeginEdit((sender, args) => {
             self._onParentEdit(args.item, true, false);
         }, self._objId, null, TPriority.High);
-        ds.addOnEndEdit(function (sender, args) {
+        ds.addOnEndEdit((sender, args) => {
             self._onParentEdit(args.item, false, args.isCanceled);
         }, self._objId, null, TPriority.High);
-        ds.addOnItemDeleting(function (sender, args) {
+        ds.addOnItemDeleting((sender, args) => {
         }, self._objId, null, TPriority.High);
-        ds.addOnStatusChanged(function (sender, args) {
+        ds.addOnStatusChanged((sender, args) => {
             self._onParentStatusChanged(args.item, args.oldStatus);
         }, self._objId, null, TPriority.High);
-        ds.addOnCommitChanges(function (sender, args) {
+        ds.addOnCommitChanges((sender, args) => {
             self._onParentCommitChanges(args.item, args.isBegin, args.isRejected, args.status);
         }, self._objId, null, TPriority.High);
     }
@@ -115,19 +115,19 @@ export class Association extends BaseObject {
         const self = this, ds = this._childDS;
         if (!ds)
             return;
-        ds.addOnCollChanged(function (sender, args) {
+        ds.addOnCollChanged((sender, args) => {
             self._onChildCollChanged(args);
         }, self._objId, null, TPriority.High);
-        ds.addOnBeginEdit(function (sender, args) {
+        ds.addOnBeginEdit((sender, args) => {
             self._onChildEdit(args.item, true, false);
         }, self._objId, null, TPriority.High);
-        ds.addOnEndEdit(function (sender, args) {
+        ds.addOnEndEdit((sender, args) => {
             self._onChildEdit(args.item, false, args.isCanceled);
         }, self._objId, null, TPriority.High);
-        ds.addOnStatusChanged(function (sender, args) {
+        ds.addOnStatusChanged((sender, args) => {
             self._onChildStatusChanged(args.item, args.oldStatus);
         }, self._objId, null, TPriority.High);
-        ds.addOnCommitChanges(function (sender, args) {
+        ds.addOnCommitChanges((sender, args) => {
             self._onChildCommitChanges(args.item, args.isBegin, args.isRejected, args.status);
         }, self._objId, null, TPriority.High);
     }
@@ -141,7 +141,7 @@ export class Association extends BaseObject {
                 changed = self._mapParentItems(args.items);
                 break;
             case COLL_CHANGE_TYPE.Remove:
-                args.items.forEach(function (item) {
+                args.items.forEach((item) => {
                     let key = self._unMapParentItem(item);
                     if (!!key) {
                         changedKeys[key] = null;
@@ -236,17 +236,17 @@ export class Association extends BaseObject {
                     //nothing
                     break;
                 case DELETE_ACTION.Cascade:
-                    children.forEach(function (child) {
+                    children.forEach((child) => {
                         child._aspect.deleteItem();
                     });
                     break;
                 case DELETE_ACTION.SetNulls:
-                    children.forEach(function (child) {
+                    children.forEach((child) => {
                         let isEdit = child._aspect.isEditing;
                         if (!isEdit)
                             child._aspect.beginEdit();
                         try {
-                            self._childFldInfos.forEach(function (f) {
+                            self._childFldInfos.forEach((f) => {
                                 (<any>child)[f.fieldName] = null;
                             });
                             if (!isEdit)
@@ -312,7 +312,7 @@ export class Association extends BaseObject {
         let self = this;
         if (changed_pkeys.length > 0 || changed_ckeys.length > 0) {
             //parentToChildren
-            changed_pkeys.forEach(function (key) {
+            changed_pkeys.forEach((key) => {
                 let res = self._changed[key] || { children: {}, parent: null };
                 let arr = self._childMap[key];
                 if (!!arr) {
@@ -323,7 +323,7 @@ export class Association extends BaseObject {
                 self._changed[key] = res;
             });
             //childrenToParent
-            changed_ckeys.forEach(function (key) {
+            changed_ckeys.forEach((key) => {
                 let res = self._changed[key] || { children: {}, parent: null };
                 let item = self._parentMap[key];
                 if (!!item) {

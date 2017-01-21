@@ -22,18 +22,6 @@ export class DataCache extends BaseObject {
         this._itemsByKey = {};
         this._totalCount = 0;
     }
-    /*
-    //reset items key index
-    reindex() {
-        let keyMap: { [key: string]: IKV; } = {};
-        coreUtils.forEachProp(this._pages, (index, page) => {
-            page.kvs.forEach(function (kv) {
-                keyMap[kv.key] = kv;
-            });
-        });
-        this._itemsByKey = keyMap;
-    }
-    */
     private _getPrevPageIndex(currentPageIndex: number) {
         let pageIndex = -1;
         coreUtils.forEachProp(this._pages, (index, page) => {

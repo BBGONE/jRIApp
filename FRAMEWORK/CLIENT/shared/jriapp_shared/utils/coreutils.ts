@@ -126,10 +126,11 @@ export class CoreUtils {
         return parseFloat(num.toFixed(decimals));
     }
     static clone(obj: any, target?: any): any {
-        let res: any;
         if (!obj) {
             return obj;
         }
+
+        let res: any;
 
         if (checks.isArray(obj)) {
             res = [];
@@ -147,7 +148,7 @@ export class CoreUtils {
             }
         }
         else {
-            return obj;
+           res = obj;
         }
 
         return res;
