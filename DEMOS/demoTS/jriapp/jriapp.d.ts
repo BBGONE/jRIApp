@@ -422,11 +422,15 @@ declare module "jriapp/utils/domevents" {
     }
     export type TEventList = INamespaceMap;
     export type TDomElement = Element | Document | Window;
-    export type TEventsArgsOrNamespace = {
+    export type TEventsArgs = {
         nmspace?: string;
         useCapture?: boolean;
-        matchElement?: (el: Element) => boolean;
-    } | string;
+    };
+    export type TEventsDelegateArgs = {
+        nmspace: string;
+        matchElement: (el: Element) => boolean;
+    };
+    export type TEventsArgsOrNamespace = TEventsArgs | string;
     export class DomEvents {
         private static getEvents(el);
         static on(el: TDomElement, type: "MSContentZoom", listener: (ev: UIEvent) => any, args?: TEventsArgsOrNamespace): void;
@@ -526,7 +530,7 @@ declare module "jriapp/utils/domevents" {
         static on(el: TDomElement, type: "webkitfullscreenchange", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
         static on(el: TDomElement, type: "webkitfullscreenerror", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
         static on(el: TDomElement, type: "wheel", listener: (ev: WheelEvent) => any, args?: TEventsArgsOrNamespace): void;
-        static on(el: TDomElement, type: string, listener: EventListenerOrEventListenerObject, args?: TEventsArgsOrNamespace): void;
+        static on(el: TDomElement, type: string, listener: EventListenerOrEventListenerObject, args?: TEventsArgsOrNamespace | TEventsDelegateArgs): void;
         static off(el: TDomElement, type?: string, nmspace?: string, useCapture?: boolean): void;
         static offNS(el: TDomElement, nmspace?: string): void;
     }

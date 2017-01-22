@@ -18,7 +18,7 @@ export interface INamespaceMap {
 
 export type TEventList = INamespaceMap;
 
-class EventWrapper {
+class EventWrap {
     private _ev: Event;
     private _target: TDomElement;
 
@@ -49,6 +49,18 @@ class EventWrapper {
     }
     set returnValue(v: boolean) {
         this._ev.returnValue = v;
+    }
+    get srcElement() {
+        return this._ev.srcElement;
+    }
+    get eventPhase() {
+        return this._ev.eventPhase;
+    }
+    get cancelBubble() {
+        return this._ev.cancelBubble;
+    }
+    set cancelBubble(v: boolean) {
+        this._ev.cancelBubble = v;
     }
     get timeStamp() {
         return this._ev.timeStamp;
@@ -172,7 +184,7 @@ class EventHelper {
             // go up to the parent node
             while (!!target && target !== root) {
                 if (fn_match(target)) {
-                    const eventCopy = new EventWrapper(event, target);
+                    const eventCopy = new EventWrap(event, target);
                     listener.apply(target, [eventCopy]);
                     return;
                 }
@@ -190,12 +202,23 @@ const weakmap: IWeakMap = createWeakMap();
 
 export type TDomElement = Element | Document | Window;
 
-export type TEventsArgsOrNamespace = {
+export type TEventsArgs = {
     nmspace?: string;
     useCapture?: boolean;
-    //used for delegation to match the element (instead of selector)
-    matchElement?: (el: Element) => boolean;
-} | string;
+};
+
+//used for delegation to match the element
+export type TEventsDelegateArgs = {
+    nmspace: string;
+    matchElement: (el: Element) => boolean;
+};
+
+export type TEventsArgsOrNamespace = TEventsArgs | string;
+
+function isDelegateArgs(a: any): a is TEventsDelegateArgs {
+    if (!a) return false;
+    return checks.isFunc(a.matchElement);
+}
 
 export class DomEvents {
     private static getEvents(el: Element): IIndexer<TEventList> {
@@ -298,9 +321,9 @@ export class DomEvents {
     static on(el: TDomElement, type: "webkitfullscreenchange", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
     static on(el: TDomElement, type: "webkitfullscreenerror", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
     static on(el: TDomElement, type: "wheel", listener: (ev: WheelEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, type: string, listener: EventListenerOrEventListenerObject, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, type: string, listener: EventListenerOrEventListenerObject, args?: TEventsArgsOrNamespace | TEventsDelegateArgs): void;
     //on implementation
-    static on(el: TDomElement, type: string, listener: THandlerFunc, args?: TEventsArgsOrNamespace): void {
+    static on(el: TDomElement, type: string, listener: THandlerFunc, args?: TEventsArgsOrNamespace | TEventsDelegateArgs): void {
         let events: TEventList = weakmap.get(el), ns: string, useCapture: boolean;
         if (!events) {
             events = <any>{};
@@ -311,13 +334,12 @@ export class DomEvents {
             if (checks.isString(args)) {
                 ns = args;
             }
+            else if (isDelegateArgs(args)) {
+                ns = args.nmspace;
+                listener = helper.getDelegateListener(el, args.matchElement, listener);
+            }
             else {
                 ns = args.nmspace, useCapture = args.useCapture;
-                let matchElement = args.matchElement;
-                //if use delegation
-                if (checks.isFunc(matchElement)) {
-                    listener = helper.getDelegateListener(el, matchElement, listener);
-                }
             }
         }
 

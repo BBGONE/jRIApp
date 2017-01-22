@@ -776,54 +776,54 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
 define("jriapp/utils/domevents", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_7) {
     "use strict";
     var utils = jriapp_shared_7.Utils, checks = utils.check, arrHelper = utils.arr, strUtils = utils.str, debug = utils.debug, ERRS = jriapp_shared_7.LocaleERRS;
-    var EventWrapper = (function () {
-        function EventWrapper(ev, target) {
+    var EventWrap = (function () {
+        function EventWrap(ev, target) {
             this._ev = ev;
             this._target = target;
         }
-        Object.defineProperty(EventWrapper.prototype, "type", {
+        Object.defineProperty(EventWrap.prototype, "type", {
             get: function () {
                 return this._ev.type;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(EventWrapper.prototype, "target", {
+        Object.defineProperty(EventWrap.prototype, "target", {
             get: function () {
                 return this._target;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(EventWrapper.prototype, "bubbles", {
+        Object.defineProperty(EventWrap.prototype, "bubbles", {
             get: function () {
                 return this._ev.bubbles;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(EventWrapper.prototype, "defaultPrevented", {
+        Object.defineProperty(EventWrap.prototype, "defaultPrevented", {
             get: function () {
                 return this._ev.defaultPrevented;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(EventWrapper.prototype, "cancelable", {
+        Object.defineProperty(EventWrap.prototype, "cancelable", {
             get: function () {
                 return this._ev.cancelable;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(EventWrapper.prototype, "isTrusted", {
+        Object.defineProperty(EventWrap.prototype, "isTrusted", {
             get: function () {
                 return this._ev.isTrusted;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(EventWrapper.prototype, "returnValue", {
+        Object.defineProperty(EventWrap.prototype, "returnValue", {
             get: function () {
                 return this._ev.returnValue;
             },
@@ -833,52 +833,76 @@ define("jriapp/utils/domevents", ["require", "exports", "jriapp_shared"], functi
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(EventWrapper.prototype, "timeStamp", {
+        Object.defineProperty(EventWrap.prototype, "srcElement", {
+            get: function () {
+                return this._ev.srcElement;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(EventWrap.prototype, "eventPhase", {
+            get: function () {
+                return this._ev.eventPhase;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(EventWrap.prototype, "cancelBubble", {
+            get: function () {
+                return this._ev.cancelBubble;
+            },
+            set: function (v) {
+                this._ev.cancelBubble = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(EventWrap.prototype, "timeStamp", {
             get: function () {
                 return this._ev.timeStamp;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(EventWrapper.prototype, "currentTarget", {
+        Object.defineProperty(EventWrap.prototype, "currentTarget", {
             get: function () {
                 return this._ev.currentTarget;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(EventWrapper.prototype, "originalEvent", {
+        Object.defineProperty(EventWrap.prototype, "originalEvent", {
             get: function () {
                 return this._ev;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(EventWrapper.prototype, "AT_TARGET", {
+        Object.defineProperty(EventWrap.prototype, "AT_TARGET", {
             get: function () {
                 return this._ev.AT_TARGET;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(EventWrapper.prototype, "BUBBLING_PHASE", {
+        Object.defineProperty(EventWrap.prototype, "BUBBLING_PHASE", {
             get: function () {
                 return this._ev.BUBBLING_PHASE;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(EventWrapper.prototype, "CAPTURING_PHASE", {
+        Object.defineProperty(EventWrap.prototype, "CAPTURING_PHASE", {
             get: function () {
                 return this._ev.CAPTURING_PHASE;
             },
             enumerable: true,
             configurable: true
         });
-        EventWrapper.prototype.preventDefault = function () { this._ev.preventDefault(); };
-        EventWrapper.prototype.stopPropagation = function () { this._ev.stopPropagation(); };
-        EventWrapper.prototype.stopImmediatePropagation = function () { this._ev.stopImmediatePropagation(); };
-        return EventWrapper;
+        EventWrap.prototype.preventDefault = function () { this._ev.preventDefault(); };
+        EventWrap.prototype.stopPropagation = function () { this._ev.stopPropagation(); };
+        EventWrap.prototype.stopImmediatePropagation = function () { this._ev.stopImmediatePropagation(); };
+        return EventWrap;
     }());
     var EventHelper = (function () {
         function EventHelper() {
@@ -966,7 +990,7 @@ define("jriapp/utils/domevents", ["require", "exports", "jriapp_shared"], functi
                 var target = event.target;
                 while (!!target && target !== root) {
                     if (fn_match(target)) {
-                        var eventCopy = new EventWrapper(event, target);
+                        var eventCopy = new EventWrap(event, target);
                         listener.apply(target, [eventCopy]);
                         return;
                     }
@@ -979,6 +1003,11 @@ define("jriapp/utils/domevents", ["require", "exports", "jriapp_shared"], functi
     }());
     var helper = EventHelper;
     var weakmap = jriapp_shared_7.createWeakMap();
+    function isDelegateArgs(a) {
+        if (!a)
+            return false;
+        return checks.isFunc(a.matchElement);
+    }
     var DomEvents = (function () {
         function DomEvents() {
         }
@@ -995,12 +1024,12 @@ define("jriapp/utils/domevents", ["require", "exports", "jriapp_shared"], functi
                 if (checks.isString(args)) {
                     ns = args;
                 }
+                else if (isDelegateArgs(args)) {
+                    ns = args.nmspace;
+                    listener = helper.getDelegateListener(el, args.matchElement, listener);
+                }
                 else {
                     ns = args.nmspace, useCapture = args.useCapture;
-                    var matchElement = args.matchElement;
-                    if (checks.isFunc(matchElement)) {
-                        listener = helper.getDelegateListener(el, matchElement, listener);
-                    }
                 }
             }
             helper.add(events, type, listener, ns, useCapture);
@@ -3995,6 +4024,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.4.5";
+    exports.VERSION = "1.4.6";
     bootstrap_7.Bootstrap._initFramework();
 });
