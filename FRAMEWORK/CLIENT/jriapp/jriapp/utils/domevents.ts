@@ -6,7 +6,6 @@ import {
 const utils = Utils, checks = utils.check, arrHelper = utils.arr,
     strUtils = utils.str, debug = utils.debug, ERRS = LocaleERRS;
 
-export type THandlerFunc = (evt: Event) => void;
 //stores listener and event name
 export type TEventNode = { fn: THandlerFunc; name: string; useCapture?: boolean };
 
@@ -18,7 +17,7 @@ export interface INamespaceMap {
 
 export type TEventList = INamespaceMap;
 
-class EventWrap {
+export class EventWrap {
     private _ev: Event;
     private _target: TDomElement;
 
@@ -220,6 +219,8 @@ function isDelegateArgs(a: any): a is TEventsDelegateArgs {
     return checks.isFunc(a.matchElement);
 }
 
+export type THandlerFunc = (evt: Event | EventWrap) => void;
+
 export class DomEvents {
     private static getEvents(el: Element): IIndexer<TEventList> {
         return weakmap.get(el);
@@ -321,7 +322,8 @@ export class DomEvents {
     static on(el: TDomElement, type: "webkitfullscreenchange", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
     static on(el: TDomElement, type: "webkitfullscreenerror", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
     static on(el: TDomElement, type: "wheel", listener: (ev: WheelEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, type: string, listener: EventListenerOrEventListenerObject, args?: TEventsArgsOrNamespace | TEventsDelegateArgs): void;
+    static on(el: TDomElement, type: string, listener: (ev: EventWrap) => any, args: TEventsDelegateArgs): void;
+    static on(el: TDomElement, type: string, listener: EventListenerOrEventListenerObject, args?: TEventsArgsOrNamespace): void;
     //on implementation
     static on(el: TDomElement, type: string, listener: THandlerFunc, args?: TEventsArgsOrNamespace | TEventsDelegateArgs): void {
         let events: TEventList = weakmap.get(el), ns: string, useCapture: boolean;

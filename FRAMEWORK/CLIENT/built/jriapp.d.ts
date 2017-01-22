@@ -410,7 +410,6 @@ declare module "jriapp/utils/tloader" {
     }
 }
 declare module "jriapp/utils/domevents" {
-    export type THandlerFunc = (evt: Event) => void;
     export type TEventNode = {
         fn: THandlerFunc;
         name: string;
@@ -421,6 +420,30 @@ declare module "jriapp/utils/domevents" {
         [ns: string]: TEventNodeArray;
     }
     export type TEventList = INamespaceMap;
+    export class EventWrap {
+        private _ev;
+        private _target;
+        constructor(ev: Event, target: TDomElement);
+        readonly type: string;
+        readonly target: TDomElement;
+        readonly bubbles: boolean;
+        readonly defaultPrevented: boolean;
+        readonly cancelable: boolean;
+        readonly isTrusted: boolean;
+        returnValue: boolean;
+        readonly srcElement: Element;
+        readonly eventPhase: number;
+        cancelBubble: boolean;
+        readonly timeStamp: number;
+        readonly currentTarget: EventTarget;
+        readonly originalEvent: Event;
+        readonly AT_TARGET: number;
+        readonly BUBBLING_PHASE: number;
+        readonly CAPTURING_PHASE: number;
+        preventDefault(): void;
+        stopPropagation(): void;
+        stopImmediatePropagation(): void;
+    }
     export type TDomElement = Element | Document | Window;
     export type TEventsArgs = {
         nmspace?: string;
@@ -431,6 +454,7 @@ declare module "jriapp/utils/domevents" {
         matchElement: (el: Element) => boolean;
     };
     export type TEventsArgsOrNamespace = TEventsArgs | string;
+    export type THandlerFunc = (evt: Event | EventWrap) => void;
     export class DomEvents {
         private static getEvents(el);
         static on(el: TDomElement, type: "MSContentZoom", listener: (ev: UIEvent) => any, args?: TEventsArgsOrNamespace): void;
@@ -530,7 +554,8 @@ declare module "jriapp/utils/domevents" {
         static on(el: TDomElement, type: "webkitfullscreenchange", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
         static on(el: TDomElement, type: "webkitfullscreenerror", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
         static on(el: TDomElement, type: "wheel", listener: (ev: WheelEvent) => any, args?: TEventsArgsOrNamespace): void;
-        static on(el: TDomElement, type: string, listener: EventListenerOrEventListenerObject, args?: TEventsArgsOrNamespace | TEventsDelegateArgs): void;
+        static on(el: TDomElement, type: string, listener: (ev: EventWrap) => any, args: TEventsDelegateArgs): void;
+        static on(el: TDomElement, type: string, listener: EventListenerOrEventListenerObject, args?: TEventsArgsOrNamespace): void;
         static off(el: TDomElement, type?: string, nmspace?: string, useCapture?: boolean): void;
         static offNS(el: TDomElement, nmspace?: string): void;
     }

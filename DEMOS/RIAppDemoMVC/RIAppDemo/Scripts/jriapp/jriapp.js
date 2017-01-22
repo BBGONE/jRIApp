@@ -904,6 +904,7 @@ define("jriapp/utils/domevents", ["require", "exports", "jriapp_shared"], functi
         EventWrap.prototype.stopImmediatePropagation = function () { this._ev.stopImmediatePropagation(); };
         return EventWrap;
     }());
+    exports.EventWrap = EventWrap;
     var EventHelper = (function () {
         function EventHelper() {
         }
@@ -4024,6 +4025,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.4.6";
+    exports.VERSION = "1.4.7";
     bootstrap_7.Bootstrap._initFramework();
 });
