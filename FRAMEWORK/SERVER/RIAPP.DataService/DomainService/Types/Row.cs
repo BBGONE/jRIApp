@@ -11,6 +11,11 @@ namespace RIAPP.DataService.DomainService.Types
             k = string.Empty;
         }
 
+        public Row(int cnt)
+        {
+            v = new object[cnt];
+            k = string.Empty;
+        }
 
         /// <summary>
         ///     array of row values, each value in its string form

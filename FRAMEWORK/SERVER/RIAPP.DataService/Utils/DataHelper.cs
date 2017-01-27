@@ -59,21 +59,21 @@ namespace RIAPP.DataService.Utils
         }
 
         /// <summary>
-        ///     extracts field value from entity, and converts value to a serialized form
+        /// extracts field value from entity, and converts value to a serialized form
         /// </summary>
         protected virtual bool SerializeField(object fieldOwner, Field fieldInfo, bool optional, out object val)
         {
             val = null;
             var enityType = fieldOwner.GetType();
             var pinfo = enityType.GetProperty(fieldInfo.fieldName);
-            if (pinfo == null && !optional)
-                throw new Exception(string.Format(ErrorStrings.ERR_PROPERTY_IS_MISSING, enityType.Name,
-                    fieldInfo.fieldName));
-
             if (pinfo == null)
             {
+                if (!optional)
+                    throw new Exception(string.Format(ErrorStrings.ERR_PROPERTY_IS_MISSING, enityType.Name,
+                        fieldInfo.fieldName));
                 return false;
             }
+
             if (fieldInfo.fieldType == FieldType.Object)
             {
                 var propValue = pinfo.GetValue(fieldOwner, null);

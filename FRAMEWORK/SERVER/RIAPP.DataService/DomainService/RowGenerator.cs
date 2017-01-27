@@ -49,9 +49,8 @@ namespace RIAPP.DataService.DomainService
 
         private Row CreateRow(object entity)
         {
-            var row = new Row();
+            var row = new Row(fieldCnt);
             var pk = new string[pkInfos.Length];
-            row.v = new object[fieldCnt];
             for (var i = 0; i < fieldCnt; ++i)
             {
                 var fieldInfo = fieldInfos[i];
