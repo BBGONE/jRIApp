@@ -69,24 +69,21 @@ namespace RIAPP.DataService.Utils
             if (pinfo == null)
             {
                 if (!optional)
-                    throw new Exception(string.Format(ErrorStrings.ERR_PROPERTY_IS_MISSING, enityType.Name,
-                        fieldInfo.fieldName));
+                    throw new Exception(string.Format(ErrorStrings.ERR_PROPERTY_IS_MISSING, enityType.Name, fieldInfo.fieldName));
                 return false;
             }
 
+            var propValue = pinfo.GetValue(fieldOwner, null);
             if (fieldInfo.fieldType == FieldType.Object)
             {
-                var propValue = pinfo.GetValue(fieldOwner, null);
                 val = this.SerializeObjectField(propValue, fieldInfo);
             }
             else
             {
-                var fieldValue = pinfo.GetValue(fieldOwner, null);
-                val = this.valueConverter.SerializeField(pinfo.PropertyType, fieldInfo, fieldValue);
+                val = this.valueConverter.SerializeField(pinfo.PropertyType, fieldInfo, propValue);
             }
             return true;
         }
-
 
         public object GetValue(object obj, string propertyName, bool throwErrors)
         {

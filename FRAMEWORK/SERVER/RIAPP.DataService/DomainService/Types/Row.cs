@@ -7,14 +7,14 @@ namespace RIAPP.DataService.DomainService.Types
     {
         public Row()
         {
-            v = new object[0];
-            k = string.Empty;
+            this.v = new object[0];
+            this.k = string.Empty;
         }
 
-        public Row(int cnt)
+        public Row(object[] v, string k)
         {
-            v = new object[cnt];
-            k = string.Empty;
+            this.v = v;
+            this.k = k;
         }
 
         /// <summary>

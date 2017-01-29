@@ -10,7 +10,6 @@ namespace RIAPP.DataService.DomainService
         private readonly IDataHelper _dataHelper;
         private readonly IEnumerable<object> _dataSource;
         private readonly DbSetInfo _dbSetInfo;
-        private readonly int fieldCnt;
         private readonly Field[] fieldInfos;
         private readonly Field[] pkInfos;
 
@@ -20,7 +19,6 @@ namespace RIAPP.DataService.DomainService
             _dataSource = dataSource;
             _dataHelper = dataHelper;
             fieldInfos = _dbSetInfo.GetInResultFields();
-            fieldCnt = fieldInfos.Length;
             pkInfos = _dbSetInfo.GetPKFields();
         }
 
@@ -49,8 +47,9 @@ namespace RIAPP.DataService.DomainService
 
         private Row CreateRow(object entity)
         {
-            var row = new Row(fieldCnt);
-            var pk = new string[pkInfos.Length];
+            int fieldCnt = fieldInfos.Length;
+            string[] pk = new string[pkInfos.Length];
+            object[] v = new object[fieldCnt];
             for (var i = 0; i < fieldCnt; ++i)
             {
                 var fieldInfo = fieldInfos[i];
@@ -60,14 +59,13 @@ namespace RIAPP.DataService.DomainService
                 if (keyIndex > -1)
                 {
                     if (fv == null)
-                        throw new Exception(string.Format("Primary Key Field \"{0}\" Has a NULL Value",
-                            fieldInfo._FullName));
+                        throw new Exception(string.Format("Primary Key Field \"{0}\" Has a NULL Value", fieldInfo._FullName));
                     pk[keyIndex] = fv.ToString();
                 }
-                row.v[i] = fv;
+                v[i] = fv;
             }
-            row.k = string.Join(";", pk);
-            return row;
+            string k = string.Join(";", pk);
+            return new Row(v, k);
         }
     }
 }
