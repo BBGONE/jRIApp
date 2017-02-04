@@ -5,24 +5,24 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], function (require, exports, RIAPP, dbMOD) {
     "use strict";
+    var TestEnum;
     (function (TestEnum) {
         TestEnum[TestEnum["None"] = 0] = "None";
         TestEnum[TestEnum["OK"] = 1] = "OK";
         TestEnum[TestEnum["Error"] = 2] = "Error";
         TestEnum[TestEnum["Loading"] = 3] = "Loading";
-    })(exports.TestEnum || (exports.TestEnum = {}));
-    var TestEnum = exports.TestEnum;
+    })(TestEnum = exports.TestEnum || (exports.TestEnum = {}));
+    var TestEnum2;
     (function (TestEnum2) {
         TestEnum2[TestEnum2["None"] = 0] = "None";
         TestEnum2[TestEnum2["One"] = 1] = "One";
         TestEnum2[TestEnum2["Two"] = 2] = "Two";
         TestEnum2[TestEnum2["Three"] = 3] = "Three";
-    })(exports.TestEnum2 || (exports.TestEnum2 = {}));
-    var TestEnum2 = exports.TestEnum2;
+    })(TestEnum2 = exports.TestEnum2 || (exports.TestEnum2 = {}));
     var _TestModelListItem = (function (_super) {
         __extends(_TestModelListItem, _super);
         function _TestModelListItem() {
-            _super.apply(this, arguments);
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         Object.defineProperty(_TestModelListItem.prototype, "Key", {
             get: function () { return this._aspect._getProp('Key'); },
@@ -68,7 +68,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var TestDictionary = (function (_super) {
         __extends(TestDictionary, _super);
         function TestDictionary() {
-            _super.call(this, 'Key', [{ name: 'Key', dtype: 1 }, { name: 'SomeProperty1', dtype: 1 }, { name: 'SomeProperty2', dtype: 10 }, { name: 'SomeProperty3', dtype: 0 }, { name: 'MoreComplexProperty', dtype: 0 }, { name: 'EnumProperty', dtype: 0 }]);
+            return _super.call(this, 'Key', [{ name: 'Key', dtype: 1 }, { name: 'SomeProperty1', dtype: 1 }, { name: 'SomeProperty2', dtype: 10 }, { name: 'SomeProperty3', dtype: 0 }, { name: 'MoreComplexProperty', dtype: 0 }, { name: 'EnumProperty', dtype: 0 }]) || this;
         }
         TestDictionary.prototype._initItemFactory = function () {
             this._itemFactory = function (aspect) { return new _TestModelListItem(aspect); };
@@ -85,7 +85,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var TestList = (function (_super) {
         __extends(TestList, _super);
         function TestList() {
-            _super.call(this, [{ name: 'Key', dtype: 1 }, { name: 'SomeProperty1', dtype: 1 }, { name: 'SomeProperty2', dtype: 10 }, { name: 'SomeProperty3', dtype: 0 }, { name: 'MoreComplexProperty', dtype: 0 }, { name: 'EnumProperty', dtype: 0 }]);
+            return _super.call(this, [{ name: 'Key', dtype: 1 }, { name: 'SomeProperty1', dtype: 1 }, { name: 'SomeProperty2', dtype: 10 }, { name: 'SomeProperty3', dtype: 0 }, { name: 'MoreComplexProperty', dtype: 0 }, { name: 'EnumProperty', dtype: 0 }]) || this;
         }
         TestList.prototype._initItemFactory = function () {
             this._itemFactory = function (aspect) { return new _TestModelListItem(aspect); };
@@ -99,7 +99,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var _KeyValListItem = (function (_super) {
         __extends(_KeyValListItem, _super);
         function _KeyValListItem() {
-            _super.apply(this, arguments);
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         Object.defineProperty(_KeyValListItem.prototype, "key", {
             get: function () { return this._aspect._getProp('key'); },
@@ -121,7 +121,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var KeyValDictionary = (function (_super) {
         __extends(KeyValDictionary, _super);
         function KeyValDictionary() {
-            _super.call(this, 'key', [{ name: 'key', dtype: 3 }, { name: 'val', dtype: 1 }]);
+            return _super.call(this, 'key', [{ name: 'key', dtype: 3 }, { name: 'val', dtype: 1 }]) || this;
         }
         KeyValDictionary.prototype._initItemFactory = function () {
             this._itemFactory = function (aspect) { return new _KeyValListItem(aspect); };
@@ -138,7 +138,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var _StrKeyValListItem = (function (_super) {
         __extends(_StrKeyValListItem, _super);
         function _StrKeyValListItem() {
-            _super.apply(this, arguments);
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         Object.defineProperty(_StrKeyValListItem.prototype, "key", {
             get: function () { return this._aspect._getProp('key'); },
@@ -160,7 +160,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var StrKeyValDictionary = (function (_super) {
         __extends(StrKeyValDictionary, _super);
         function StrKeyValDictionary() {
-            _super.call(this, 'key', [{ name: 'key', dtype: 1 }, { name: 'val', dtype: 1 }]);
+            return _super.call(this, 'key', [{ name: 'key', dtype: 1 }, { name: 'val', dtype: 1 }]) || this;
         }
         StrKeyValDictionary.prototype._initItemFactory = function () {
             this._itemFactory = function (aspect) { return new _StrKeyValListItem(aspect); };
@@ -177,7 +177,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var _RadioValListItem = (function (_super) {
         __extends(_RadioValListItem, _super);
         function _RadioValListItem() {
-            _super.apply(this, arguments);
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         Object.defineProperty(_RadioValListItem.prototype, "key", {
             get: function () { return this._aspect._getProp('key'); },
@@ -205,7 +205,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var RadioValDictionary = (function (_super) {
         __extends(RadioValDictionary, _super);
         function RadioValDictionary() {
-            _super.call(this, 'key', [{ name: 'key', dtype: 1 }, { name: 'value', dtype: 1 }, { name: 'comment', dtype: 1 }]);
+            return _super.call(this, 'key', [{ name: 'key', dtype: 1 }, { name: 'value', dtype: 1 }, { name: 'comment', dtype: 1 }]) || this;
         }
         RadioValDictionary.prototype._initItemFactory = function () {
             this._itemFactory = function (aspect) { return new _RadioValListItem(aspect); };
@@ -222,7 +222,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var _HistoryItemListItem = (function (_super) {
         __extends(_HistoryItemListItem, _super);
         function _HistoryItemListItem() {
-            _super.apply(this, arguments);
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         Object.defineProperty(_HistoryItemListItem.prototype, "radioValue", {
             get: function () { return this._aspect._getProp('radioValue'); },
@@ -244,7 +244,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var HistoryList = (function (_super) {
         __extends(HistoryList, _super);
         function HistoryList() {
-            _super.call(this, [{ name: 'radioValue', dtype: 1 }, { name: 'time', dtype: 6 }]);
+            return _super.call(this, [{ name: 'radioValue', dtype: 1 }, { name: 'time', dtype: 6 }]) || this;
         }
         HistoryList.prototype._initItemFactory = function () {
             this._itemFactory = function (aspect) { return new _HistoryItemListItem(aspect); };
@@ -258,7 +258,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var Customer_ComplexProp1 = (function (_super) {
         __extends(Customer_ComplexProp1, _super);
         function Customer_ComplexProp1(name, parent) {
-            _super.call(this, name, parent);
+            return _super.call(this, name, parent) || this;
         }
         Object.defineProperty(Customer_ComplexProp1.prototype, "EmailAddress", {
             get: function () { return this.getValue('ComplexProp.ComplexProp.EmailAddress'); },
@@ -281,8 +281,9 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var Customer_ComplexProp = (function (_super) {
         __extends(Customer_ComplexProp, _super);
         function Customer_ComplexProp(name, owner) {
-            _super.call(this, name, owner);
-            this._ComplexProp = null;
+            var _this = _super.call(this, name, owner) || this;
+            _this._ComplexProp = null;
+            return _this;
         }
         Object.defineProperty(Customer_ComplexProp.prototype, "FirstName", {
             get: function () { return this.getValue('ComplexProp.FirstName'); },
@@ -323,7 +324,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var AddressEntity = (function (_super) {
         __extends(AddressEntity, _super);
         function AddressEntity(aspect) {
-            _super.call(this, aspect);
+            return _super.call(this, aspect) || this;
         }
         AddressEntity.prototype.toString = function () {
             return 'AddressEntity';
@@ -389,6 +390,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var AddressDb = (function (_super) {
         __extends(AddressDb, _super);
         function AddressDb(dbContext) {
+            var _this = this;
             var opts = {
                 dbContext: dbContext,
                 dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "Address" },
@@ -396,8 +398,9 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
                 parentAssoc: ([{ "name": "CustAddrToAddress", "parentDbSetName": "Address", "childDbSetName": "CustomerAddress", "childToParentName": "Address", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "AddressID" }] }, { "name": "OrdersToBillAddr", "parentDbSetName": "Address", "childDbSetName": "SalesOrderHeader", "childToParentName": "Address1", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "BillToAddressID" }] }, { "name": "OrdersToShipAddr", "parentDbSetName": "Address", "childDbSetName": "SalesOrderHeader", "childToParentName": "Address", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "ShipToAddressID" }] }])
             };
             opts.dbSetInfo.fieldInfos = ([{ "fieldName": "AddressID", "isPrimaryKey": 1, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "AddressLine1", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 60, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "AddressLine2", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 60, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "City", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 30, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "StateProvince", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "CountryRegion", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "PostalCode", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 15, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "rowguid", "isPrimaryKey": 0, "dataType": 9, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 4, "dependentOn": "", "nested": null }, { "fieldName": "ModifiedDate", "isPrimaryKey": 0, "dataType": 6, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "CustomerAddresses", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "", "nested": null }]);
-            _super.call(this, opts);
-            this._initItemFactory();
+            _this = _super.call(this, opts) || this;
+            _this._initItemFactory();
+            return _this;
         }
         AddressDb.prototype._initItemFactory = function () {
             this._itemFactory = function (aspect) { return new AddressEntity(aspect); };
@@ -422,7 +425,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var AddressInfoEntity = (function (_super) {
         __extends(AddressInfoEntity, _super);
         function AddressInfoEntity(aspect) {
-            _super.call(this, aspect);
+            return _super.call(this, aspect) || this;
         }
         AddressInfoEntity.prototype.toString = function () {
             return 'AddressInfoEntity';
@@ -462,6 +465,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var AddressInfoDb = (function (_super) {
         __extends(AddressInfoDb, _super);
         function AddressInfoDb(dbContext) {
+            var _this = this;
             var opts = {
                 dbContext: dbContext,
                 dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "AddressInfo" },
@@ -469,8 +473,9 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
                 parentAssoc: ([{ "name": "CustAddrToAddress2", "parentDbSetName": "AddressInfo", "childDbSetName": "CustomerAddress", "childToParentName": "AddressInfo", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "AddressID" }] }])
             };
             opts.dbSetInfo.fieldInfos = ([{ "fieldName": "AddressID", "isPrimaryKey": 1, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "AddressLine1", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": true, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 200, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "City", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": true, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 30, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "StateProvince", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": true, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "CountryRegion", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": true, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "CustomerAddresses", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "", "nested": null }]);
-            _super.call(this, opts);
-            this._initItemFactory();
+            _this = _super.call(this, opts) || this;
+            _this._initItemFactory();
+            return _this;
         }
         AddressInfoDb.prototype._initItemFactory = function () {
             this._itemFactory = function (aspect) { return new AddressInfoEntity(aspect); };
@@ -490,8 +495,9 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var CustomerEntity = (function (_super) {
         __extends(CustomerEntity, _super);
         function CustomerEntity(aspect) {
-            _super.call(this, aspect);
-            this._ComplexProp = null;
+            var _this = _super.call(this, aspect) || this;
+            _this._ComplexProp = null;
+            return _this;
         }
         CustomerEntity.prototype.toString = function () {
             return 'CustomerEntity';
@@ -574,6 +580,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var CustomerDb = (function (_super) {
         __extends(CustomerDb, _super);
         function CustomerDb(dbContext) {
+            var _this = this;
             var opts = {
                 dbContext: dbContext,
                 dbSetInfo: { "fieldInfos": [], "enablePaging": true, "pageSize": 25, "dbSetName": "Customer" },
@@ -581,8 +588,9 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
                 parentAssoc: ([{ "name": "CustAddrToCustomer", "parentDbSetName": "Customer", "childDbSetName": "CustomerAddress", "childToParentName": "Customer", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "CustomerID", "childField": "CustomerID" }] }, { "name": "OrdersToCustomer", "parentDbSetName": "Customer", "childDbSetName": "SalesOrderHeader", "childToParentName": "Customer", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "CustomerID", "childField": "CustomerID" }] }])
             };
             opts.dbSetInfo.fieldInfos = ([{ "fieldName": "CustomerID", "isPrimaryKey": 1, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "NameStyle", "isPrimaryKey": 0, "dataType": 2, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Title", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Suffix", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 10, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "CompanyName", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 128, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "SalesPerson", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 256, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "PasswordHash", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 128, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "PasswordSalt", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 10, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "rowguid", "isPrimaryKey": 0, "dataType": 9, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 36, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 4, "dependentOn": "", "nested": null }, { "fieldName": "ModifiedDate", "isPrimaryKey": 0, "dataType": 6, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ComplexProp", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 5, "dependentOn": "", "nested": [{ "fieldName": "FirstName", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "MiddleName", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "LastName", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Name", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 2, "dependentOn": "ComplexProp.FirstName,ComplexProp.MiddleName,ComplexProp.LastName", "nested": null }, { "fieldName": "ComplexProp", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 5, "dependentOn": "", "nested": [{ "fieldName": "EmailAddress", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "^[_a-z0-9-]+(\\.[_a-z0-9-]+)*@[a-z0-9-]+(\\.[a-z0-9-]+)*(\\.[a-z]{2,4})$", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Phone", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 25, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }] }] }, { "fieldName": "AddressCount", "isPrimaryKey": 0, "dataType": 3, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 6, "dependentOn": "", "nested": null }, { "fieldName": "CustomerAddresses", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "", "nested": null }]);
-            _super.call(this, opts);
-            this._initItemFactory();
+            _this = _super.call(this, opts) || this;
+            _this._initItemFactory();
+            return _this;
         }
         CustomerDb.prototype._initItemFactory = function () {
             this._itemFactory = function (aspect) { return new CustomerEntity(aspect); };
@@ -605,7 +613,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var CustomerAddressEntity = (function (_super) {
         __extends(CustomerAddressEntity, _super);
         function CustomerAddressEntity(aspect) {
-            _super.call(this, aspect);
+            return _super.call(this, aspect) || this;
         }
         CustomerAddressEntity.prototype.toString = function () {
             return 'CustomerAddressEntity';
@@ -661,6 +669,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var CustomerAddressDb = (function (_super) {
         __extends(CustomerAddressDb, _super);
         function CustomerAddressDb(dbContext) {
+            var _this = this;
             var opts = {
                 dbContext: dbContext,
                 dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "CustomerAddress" },
@@ -668,8 +677,9 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
                 parentAssoc: ([])
             };
             opts.dbSetInfo.fieldInfos = ([{ "fieldName": "CustomerID", "isPrimaryKey": 1, "dataType": 3, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "AddressID", "isPrimaryKey": 2, "dataType": 3, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "AddressType", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "rowguid", "isPrimaryKey": 0, "dataType": 9, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 16, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 4, "dependentOn": "", "nested": null }, { "fieldName": "ModifiedDate", "isPrimaryKey": 0, "dataType": 6, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Customer", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "CustomerID", "nested": null }, { "fieldName": "Address", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "AddressID", "nested": null }, { "fieldName": "AddressInfo", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "AddressID", "nested": null }]);
-            _super.call(this, opts);
-            this._initItemFactory();
+            _this = _super.call(this, opts) || this;
+            _this._initItemFactory();
+            return _this;
         }
         CustomerAddressDb.prototype._initItemFactory = function () {
             this._itemFactory = function (aspect) { return new CustomerAddressEntity(aspect); };
@@ -694,7 +704,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var CustomerJSONEntity = (function (_super) {
         __extends(CustomerJSONEntity, _super);
         function CustomerJSONEntity(aspect) {
-            _super.call(this, aspect);
+            return _super.call(this, aspect) || this;
         }
         CustomerJSONEntity.prototype.toString = function () {
             return 'CustomerJSONEntity';
@@ -725,6 +735,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var CustomerJSONDb = (function (_super) {
         __extends(CustomerJSONDb, _super);
         function CustomerJSONDb(dbContext) {
+            var _this = this;
             var opts = {
                 dbContext: dbContext,
                 dbSetInfo: { "fieldInfos": [], "enablePaging": true, "pageSize": 25, "dbSetName": "CustomerJSON" },
@@ -732,8 +743,9 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
                 parentAssoc: ([])
             };
             opts.dbSetInfo.fieldInfos = ([{ "fieldName": "CustomerID", "isPrimaryKey": 1, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Data", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": false, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "rowguid", "isPrimaryKey": 0, "dataType": 9, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 16, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 4, "dependentOn": "", "nested": null }, { "fieldName": "Customer", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 2, "dependentOn": "Data", "nested": null }]);
-            _super.call(this, opts);
-            this._initItemFactory();
+            _this = _super.call(this, opts) || this;
+            _this._initItemFactory();
+            return _this;
         }
         CustomerJSONDb.prototype._initItemFactory = function () {
             this._itemFactory = function (aspect) { return new CustomerJSONEntity(aspect); };
@@ -754,7 +766,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var LookUpProductEntity = (function (_super) {
         __extends(LookUpProductEntity, _super);
         function LookUpProductEntity(aspect) {
-            _super.call(this, aspect);
+            return _super.call(this, aspect) || this;
         }
         LookUpProductEntity.prototype.toString = function () {
             return 'LookUpProductEntity';
@@ -776,6 +788,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var LookUpProductDb = (function (_super) {
         __extends(LookUpProductDb, _super);
         function LookUpProductDb(dbContext) {
+            var _this = this;
             var opts = {
                 dbContext: dbContext,
                 dbSetInfo: { "fieldInfos": [], "enablePaging": true, "pageSize": 25, "dbSetName": "LookUpProduct" },
@@ -783,8 +796,9 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
                 parentAssoc: ([])
             };
             opts.dbSetInfo.fieldInfos = ([{ "fieldName": "ProductID", "isPrimaryKey": 1, "dataType": 3, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Name", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }]);
-            _super.call(this, opts);
-            this._initItemFactory();
+            _this = _super.call(this, opts) || this;
+            _this._initItemFactory();
+            return _this;
         }
         LookUpProductDb.prototype._initItemFactory = function () {
             this._itemFactory = function (aspect) { return new LookUpProductEntity(aspect); };
@@ -804,7 +818,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var ProductEntity = (function (_super) {
         __extends(ProductEntity, _super);
         function ProductEntity(aspect) {
-            _super.call(this, aspect);
+            return _super.call(this, aspect) || this;
         }
         ProductEntity.prototype.toString = function () {
             return 'ProductEntity';
@@ -917,6 +931,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var ProductDb = (function (_super) {
         __extends(ProductDb, _super);
         function ProductDb(dbContext) {
+            var _this = this;
             var opts = {
                 dbContext: dbContext,
                 dbSetInfo: { "fieldInfos": [], "enablePaging": true, "pageSize": 25, "dbSetName": "Product" },
@@ -924,8 +939,9 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
                 parentAssoc: ([{ "name": "OrdDetailsToProduct", "parentDbSetName": "Product", "childDbSetName": "SalesOrderDetail", "childToParentName": "Product", "parentToChildrenName": "SalesOrderDetails", "onDeleteAction": 0, "fieldRels": [{ "parentField": "ProductID", "childField": "ProductID" }] }])
             };
             opts.dbSetInfo.fieldInfos = ([{ "fieldName": "ProductID", "isPrimaryKey": 1, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Name", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ProductNumber", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 25, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Color", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 15, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "StandardCost", "isPrimaryKey": 0, "dataType": 4, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ListPrice", "isPrimaryKey": 0, "dataType": 4, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "100,5000", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Size", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 5, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Weight", "isPrimaryKey": 0, "dataType": 4, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 5, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ProductCategoryID", "isPrimaryKey": 0, "dataType": 3, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ProductModelID", "isPrimaryKey": 0, "dataType": 3, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "SellStartDate", "isPrimaryKey": 0, "dataType": 7, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "2000-01-01,2015-01-01", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "SellEndDate", "isPrimaryKey": 0, "dataType": 7, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "DiscontinuedDate", "isPrimaryKey": 0, "dataType": 7, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "rowguid", "isPrimaryKey": 0, "dataType": 9, "isNullable": false, "isReadOnly": true, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 16, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 4, "dependentOn": "", "nested": null }, { "fieldName": "ModifiedDate", "isPrimaryKey": 0, "dataType": 6, "isNullable": false, "isReadOnly": true, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "IsActive", "isPrimaryKey": 0, "dataType": 2, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 2, "dependentOn": "SellEndDate", "nested": null }, { "fieldName": "ThumbnailPhotoFileName", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 256, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "SalesOrderDetails", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "", "nested": null }]);
-            _super.call(this, opts);
-            this._initItemFactory();
+            _this = _super.call(this, opts) || this;
+            _this._initItemFactory();
+            return _this;
         }
         ProductDb.prototype._initItemFactory = function () {
             this._itemFactory = function (aspect) { return new ProductEntity(aspect); };
@@ -953,7 +969,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var ProductCategoryEntity = (function (_super) {
         __extends(ProductCategoryEntity, _super);
         function ProductCategoryEntity(aspect) {
-            _super.call(this, aspect);
+            return _super.call(this, aspect) || this;
         }
         ProductCategoryEntity.prototype.toString = function () {
             return 'ProductCategoryEntity';
@@ -992,6 +1008,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var ProductCategoryDb = (function (_super) {
         __extends(ProductCategoryDb, _super);
         function ProductCategoryDb(dbContext) {
+            var _this = this;
             var opts = {
                 dbContext: dbContext,
                 dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "ProductCategory" },
@@ -999,8 +1016,9 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
                 parentAssoc: ([])
             };
             opts.dbSetInfo.fieldInfos = ([{ "fieldName": "ProductCategoryID", "isPrimaryKey": 1, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ParentProductCategoryID", "isPrimaryKey": 0, "dataType": 3, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Name", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "rowguid", "isPrimaryKey": 0, "dataType": 9, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 16, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 4, "dependentOn": "", "nested": null }, { "fieldName": "ModifiedDate", "isPrimaryKey": 0, "dataType": 6, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }]);
-            _super.call(this, opts);
-            this._initItemFactory();
+            _this = _super.call(this, opts) || this;
+            _this._initItemFactory();
+            return _this;
         }
         ProductCategoryDb.prototype._initItemFactory = function () {
             this._itemFactory = function (aspect) { return new ProductCategoryEntity(aspect); };
@@ -1020,7 +1038,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var ProductModelEntity = (function (_super) {
         __extends(ProductModelEntity, _super);
         function ProductModelEntity(aspect) {
-            _super.call(this, aspect);
+            return _super.call(this, aspect) || this;
         }
         ProductModelEntity.prototype.toString = function () {
             return 'ProductModelEntity';
@@ -1041,6 +1059,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var ProductModelDb = (function (_super) {
         __extends(ProductModelDb, _super);
         function ProductModelDb(dbContext) {
+            var _this = this;
             var opts = {
                 dbContext: dbContext,
                 dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "ProductModel" },
@@ -1048,8 +1067,9 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
                 parentAssoc: ([])
             };
             opts.dbSetInfo.fieldInfos = ([{ "fieldName": "ProductModelID", "isPrimaryKey": 1, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Name", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }]);
-            _super.call(this, opts);
-            this._initItemFactory();
+            _this = _super.call(this, opts) || this;
+            _this._initItemFactory();
+            return _this;
         }
         ProductModelDb.prototype._initItemFactory = function () {
             this._itemFactory = function (aspect) { return new ProductModelEntity(aspect); };
@@ -1069,7 +1089,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var SalesInfoEntity = (function (_super) {
         __extends(SalesInfoEntity, _super);
         function SalesInfoEntity(aspect) {
-            _super.call(this, aspect);
+            return _super.call(this, aspect) || this;
         }
         SalesInfoEntity.prototype.toString = function () {
             return 'SalesInfoEntity';
@@ -1085,6 +1105,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var SalesInfoDb = (function (_super) {
         __extends(SalesInfoDb, _super);
         function SalesInfoDb(dbContext) {
+            var _this = this;
             var opts = {
                 dbContext: dbContext,
                 dbSetInfo: { "fieldInfos": [], "enablePaging": true, "pageSize": 25, "dbSetName": "SalesInfo" },
@@ -1092,8 +1113,9 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
                 parentAssoc: ([])
             };
             opts.dbSetInfo.fieldInfos = ([{ "fieldName": "SalesPerson", "isPrimaryKey": 1, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }]);
-            _super.call(this, opts);
-            this._initItemFactory();
+            _this = _super.call(this, opts) || this;
+            _this._initItemFactory();
+            return _this;
         }
         SalesInfoDb.prototype._initItemFactory = function () {
             this._itemFactory = function (aspect) { return new SalesInfoEntity(aspect); };
@@ -1113,7 +1135,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var SalesOrderDetailEntity = (function (_super) {
         __extends(SalesOrderDetailEntity, _super);
         function SalesOrderDetailEntity(aspect) {
-            _super.call(this, aspect);
+            return _super.call(this, aspect) || this;
         }
         SalesOrderDetailEntity.prototype.toString = function () {
             return 'SalesOrderDetailEntity';
@@ -1183,6 +1205,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var SalesOrderDetailDb = (function (_super) {
         __extends(SalesOrderDetailDb, _super);
         function SalesOrderDetailDb(dbContext) {
+            var _this = this;
             var opts = {
                 dbContext: dbContext,
                 dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "SalesOrderDetail" },
@@ -1190,8 +1213,9 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
                 parentAssoc: ([])
             };
             opts.dbSetInfo.fieldInfos = ([{ "fieldName": "SalesOrderID", "isPrimaryKey": 1, "dataType": 3, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "SalesOrderDetailID", "isPrimaryKey": 2, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "OrderQty", "isPrimaryKey": 0, "dataType": 3, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 2, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ProductID", "isPrimaryKey": 0, "dataType": 3, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "UnitPrice", "isPrimaryKey": 0, "dataType": 4, "isNullable": true, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "UnitPriceDiscount", "isPrimaryKey": 0, "dataType": 4, "isNullable": true, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "LineTotal", "isPrimaryKey": 0, "dataType": 4, "isNullable": false, "isReadOnly": true, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 17, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "rowguid", "isPrimaryKey": 0, "dataType": 9, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 16, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ModifiedDate", "isPrimaryKey": 0, "dataType": 6, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "SalesOrderHeader", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "SalesOrderID", "nested": null }, { "fieldName": "Product", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "ProductID", "nested": null }]);
-            _super.call(this, opts);
-            this._initItemFactory();
+            _this = _super.call(this, opts) || this;
+            _this._initItemFactory();
+            return _this;
         }
         SalesOrderDetailDb.prototype._initItemFactory = function () {
             this._itemFactory = function (aspect) { return new SalesOrderDetailEntity(aspect); };
@@ -1211,7 +1235,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var SalesOrderHeaderEntity = (function (_super) {
         __extends(SalesOrderHeaderEntity, _super);
         function SalesOrderHeaderEntity(aspect) {
-            _super.call(this, aspect);
+            return _super.call(this, aspect) || this;
         }
         SalesOrderHeaderEntity.prototype.toString = function () {
             return 'SalesOrderHeaderEntity';
@@ -1365,6 +1389,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var SalesOrderHeaderDb = (function (_super) {
         __extends(SalesOrderHeaderDb, _super);
         function SalesOrderHeaderDb(dbContext) {
+            var _this = this;
             var opts = {
                 dbContext: dbContext,
                 dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "SalesOrderHeader" },
@@ -1372,8 +1397,9 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
                 parentAssoc: ([{ "name": "OrdDetailsToOrder", "parentDbSetName": "SalesOrderHeader", "childDbSetName": "SalesOrderDetail", "childToParentName": "SalesOrderHeader", "parentToChildrenName": "SalesOrderDetails", "onDeleteAction": 1, "fieldRels": [{ "parentField": "SalesOrderID", "childField": "SalesOrderID" }] }])
             };
             opts.dbSetInfo.fieldInfos = ([{ "fieldName": "SalesOrderID", "isPrimaryKey": 1, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "RevisionNumber", "isPrimaryKey": 0, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "OrderDate", "isPrimaryKey": 0, "dataType": 7, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "DueDate", "isPrimaryKey": 0, "dataType": 7, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ShipDate", "isPrimaryKey": 0, "dataType": 7, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Status", "isPrimaryKey": 0, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "OnlineOrderFlag", "isPrimaryKey": 0, "dataType": 2, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "SalesOrderNumber", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 25, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "PurchaseOrderNumber", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 25, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "AccountNumber", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 15, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "CustomerID", "isPrimaryKey": 0, "dataType": 3, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ShipToAddressID", "isPrimaryKey": 0, "dataType": 3, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "BillToAddressID", "isPrimaryKey": 0, "dataType": 3, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ShipMethod", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "CreditCardApprovalCode", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 15, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "SubTotal", "isPrimaryKey": 0, "dataType": 4, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "TaxAmt", "isPrimaryKey": 0, "dataType": 4, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Freight", "isPrimaryKey": 0, "dataType": 4, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "TotalDue", "isPrimaryKey": 0, "dataType": 4, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Comment", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 0, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "rowguid", "isPrimaryKey": 0, "dataType": 9, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 16, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ModifiedDate", "isPrimaryKey": 0, "dataType": 6, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "SalesOrderDetails", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "", "nested": null }, { "fieldName": "Customer", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "CustomerID", "nested": null }, { "fieldName": "Address", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "ShipToAddressID", "nested": null }, { "fieldName": "Address1", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "BillToAddressID", "nested": null }]);
-            _super.call(this, opts);
-            this._initItemFactory();
+            _this = _super.call(this, opts) || this;
+            _this._initItemFactory();
+            return _this;
         }
         SalesOrderHeaderDb.prototype._initItemFactory = function () {
             this._itemFactory = function (aspect) { return new SalesOrderHeaderEntity(aspect); };
@@ -1393,19 +1419,20 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var DbSets = (function (_super) {
         __extends(DbSets, _super);
         function DbSets(dbContext) {
-            _super.call(this, dbContext);
-            this._createDbSet("Address", AddressDb);
-            this._createDbSet("AddressInfo", AddressInfoDb);
-            this._createDbSet("Customer", CustomerDb);
-            this._createDbSet("CustomerAddress", CustomerAddressDb);
-            this._createDbSet("CustomerJSON", CustomerJSONDb);
-            this._createDbSet("LookUpProduct", LookUpProductDb);
-            this._createDbSet("Product", ProductDb);
-            this._createDbSet("ProductCategory", ProductCategoryDb);
-            this._createDbSet("ProductModel", ProductModelDb);
-            this._createDbSet("SalesInfo", SalesInfoDb);
-            this._createDbSet("SalesOrderDetail", SalesOrderDetailDb);
-            this._createDbSet("SalesOrderHeader", SalesOrderHeaderDb);
+            var _this = _super.call(this, dbContext) || this;
+            _this._createDbSet("Address", AddressDb);
+            _this._createDbSet("AddressInfo", AddressInfoDb);
+            _this._createDbSet("Customer", CustomerDb);
+            _this._createDbSet("CustomerAddress", CustomerAddressDb);
+            _this._createDbSet("CustomerJSON", CustomerJSONDb);
+            _this._createDbSet("LookUpProduct", LookUpProductDb);
+            _this._createDbSet("Product", ProductDb);
+            _this._createDbSet("ProductCategory", ProductCategoryDb);
+            _this._createDbSet("ProductModel", ProductModelDb);
+            _this._createDbSet("SalesInfo", SalesInfoDb);
+            _this._createDbSet("SalesOrderDetail", SalesOrderDetailDb);
+            _this._createDbSet("SalesOrderHeader", SalesOrderHeaderDb);
+            return _this;
         }
         Object.defineProperty(DbSets.prototype, "Address", {
             get: function () { return this.getDbSet("Address"); },
@@ -1473,7 +1500,7 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     var DbContext = (function (_super) {
         __extends(DbContext, _super);
         function DbContext() {
-            _super.apply(this, arguments);
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         DbContext.prototype._initDbSets = function () {
             _super.prototype._initDbSets.call(this);
@@ -1508,16 +1535,17 @@ define("addressVM", ["require", "exports", "jriapp", "jriapp_ui"], function (req
     var AddressVM = (function (_super) {
         __extends(AddressVM, _super);
         function AddressVM(orderVM) {
-            _super.call(this, orderVM.app);
-            var self = this;
-            this._orderVM = orderVM;
-            this._dbSet = this.dbSets.Address;
-            this._orderVM.dbSet.addOnFill(function (sender, args) {
+            var _this = _super.call(this, orderVM.app) || this;
+            var self = _this;
+            _this._orderVM = orderVM;
+            _this._dbSet = _this.dbSets.Address;
+            _this._orderVM.dbSet.addOnFill(function (sender, args) {
                 self.loadAddressesForOrders(args.items);
             }, self.uniqueID);
-            this._dbSet.addOnPropertyChange('currentItem', function (sender, args) {
+            _this._dbSet.addOnPropertyChange('currentItem', function (sender, args) {
                 self._onCurrentChanged();
             }, self.uniqueID);
+            return _this;
         }
         AddressVM.prototype._onCurrentChanged = function () {
             this.raisePropertyChanged('currentItem');
@@ -1594,19 +1622,20 @@ define("productVM", ["require", "exports", "jriapp", "jriapp_ui"], function (req
     var ProductVM = (function (_super) {
         __extends(ProductVM, _super);
         function ProductVM(orderDetailVM) {
-            _super.call(this, orderDetailVM.app);
-            var self = this;
-            this._orderDetailVM = orderDetailVM;
-            this._dbSet = this.dbSets.Product;
-            this._customerDbSet.addOnCleared(function (s, a) {
+            var _this = _super.call(this, orderDetailVM.app) || this;
+            var self = _this;
+            _this._orderDetailVM = orderDetailVM;
+            _this._dbSet = _this.dbSets.Product;
+            _this._customerDbSet.addOnCleared(function (s, a) {
                 self.clear();
             }, self.uniqueID);
-            this._orderDetailVM.dbSet.addOnFill(function (sender, args) {
+            _this._orderDetailVM.dbSet.addOnFill(function (sender, args) {
                 self.loadProductsForOrderDetails(args.items);
             }, self.uniqueID);
-            this._dbSet.addOnPropertyChange('currentItem', function (sender, args) {
+            _this._dbSet.addOnPropertyChange('currentItem', function (sender, args) {
                 self._onCurrentChanged();
             }, self.uniqueID);
+            return _this;
         }
         ProductVM.prototype._onCurrentChanged = function () {
             this.raisePropertyChanged('currentItem');
@@ -1674,18 +1703,19 @@ define("orderDetVM", ["require", "exports", "jriapp", "jriapp_ui", "productVM"],
     var OrderDetailVM = (function (_super) {
         __extends(OrderDetailVM, _super);
         function OrderDetailVM(orderVM) {
-            _super.call(this, orderVM.app);
-            var self = this;
-            this._dbSet = this.dbSets.SalesOrderDetail;
-            this._orderVM = orderVM;
-            this._currentOrder = null;
-            this._orderVM.dbSet.addOnCleared(function (s, a) {
+            var _this = _super.call(this, orderVM.app) || this;
+            var self = _this;
+            _this._dbSet = _this.dbSets.SalesOrderDetail;
+            _this._orderVM = orderVM;
+            _this._currentOrder = null;
+            _this._orderVM.dbSet.addOnCleared(function (s, a) {
                 self.clear();
             }, self.uniqueID);
-            this._dbSet.addOnPropertyChange('currentItem', function (sender, args) {
+            _this._dbSet.addOnPropertyChange('currentItem', function (sender, args) {
                 self._onCurrentChanged();
             }, self.uniqueID);
-            this._productVM = new productVM_1.ProductVM(this);
+            _this._productVM = new productVM_1.ProductVM(_this);
+            return _this;
         }
         OrderDetailVM.prototype._onCurrentChanged = function () {
             this.raisePropertyChanged('currentItem');
@@ -1766,19 +1796,19 @@ define("orderVM", ["require", "exports", "jriapp", "jriapp_ui", "domainModel", "
     var OrderVM = (function (_super) {
         __extends(OrderVM, _super);
         function OrderVM(customerVM) {
-            _super.call(this, customerVM.app);
-            var self = this;
-            this._customerVM = customerVM;
-            this._dbSet = this.dbSets.SalesOrderHeader;
-            this._currentCustomer = null;
-            this._gridEvents = new gridEvents_1.OrderGridEvents(this);
-            this._selectedTabIndex = null;
-            this._orderStatuses = new DEMODB.KeyValDictionary();
-            this._orderStatuses.fillItems([{ key: 0, val: 'New Order' }, { key: 1, val: 'Status 1' },
+            var _this = _super.call(this, customerVM.app) || this;
+            var self = _this;
+            _this._customerVM = customerVM;
+            _this._dbSet = _this.dbSets.SalesOrderHeader;
+            _this._currentCustomer = null;
+            _this._gridEvents = new gridEvents_1.OrderGridEvents(_this);
+            _this._selectedTabIndex = null;
+            _this._orderStatuses = new DEMODB.KeyValDictionary();
+            _this._orderStatuses.fillItems([{ key: 0, val: 'New Order' }, { key: 1, val: 'Status 1' },
                 { key: 2, val: 'Status 2' }, { key: 3, val: 'Status 3' },
                 { key: 4, val: 'Status 4' }, { key: 5, val: 'Completed Order' }], true);
-            this._tabs = null;
-            this._customerVM.addHandler('row_expanded', function (sender, args) {
+            _this._tabs = null;
+            _this._customerVM.addHandler('row_expanded', function (sender, args) {
                 if (args.isExpanded) {
                     self.currentCustomer = args.customer;
                 }
@@ -1786,27 +1816,28 @@ define("orderVM", ["require", "exports", "jriapp", "jriapp_ui", "domainModel", "
                     self.currentCustomer = null;
                 }
             }, self.uniqueID);
-            this._dbSet.addOnPropertyChange('currentItem', function (sender, args) {
+            _this._dbSet.addOnPropertyChange('currentItem', function (sender, args) {
                 self._onCurrentChanged();
             }, self.uniqueID);
-            this._dbSet.addOnItemDeleting(function (sender, args) {
+            _this._dbSet.addOnItemDeleting(function (sender, args) {
                 if (!confirm('Are you sure that you want to delete the order?'))
                     args.isCancel = true;
             }, self.uniqueID);
-            this._dbSet.addOnItemAdded(function (sender, args) {
+            _this._dbSet.addOnItemAdded(function (sender, args) {
                 var item = args.item;
                 item.Customer = self.currentCustomer;
                 item.OrderDate = moment().toDate();
                 item.DueDate = moment().add(7, 'days').toDate();
                 item.OnlineOrderFlag = false;
             }, self.uniqueID);
-            this._addNewCommand = new RIAPP.Command(function (sender, param) {
+            _this._addNewCommand = new RIAPP.Command(function (sender, param) {
                 self._dbSet.addNew();
             }, self, function (sender, param) {
                 return true;
             });
-            this._addressVM = new addressVM_1.AddressVM(this);
-            this._orderDetailVM = new orderDetVM_1.OrderDetailVM(this);
+            _this._addressVM = new addressVM_1.AddressVM(_this);
+            _this._orderDetailVM = new orderDetVM_1.OrderDetailVM(_this);
+            return _this;
         }
         OrderVM.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
@@ -1948,9 +1979,10 @@ define("gridEvents", ["require", "exports", "jriapp"], function (require, export
     var CustomerGridEvents = (function (_super) {
         __extends(CustomerGridEvents, _super);
         function CustomerGridEvents(customerVM) {
-            _super.call(this);
-            this._customerVM = customerVM;
-            this._doFocus = null;
+            var _this = _super.call(this) || this;
+            _this._customerVM = customerVM;
+            _this._doFocus = null;
+            return _this;
         }
         CustomerGridEvents.prototype.regFocusGridFunc = function (doFocus) {
             this._doFocus = doFocus;
@@ -1984,9 +2016,10 @@ define("gridEvents", ["require", "exports", "jriapp"], function (require, export
     var OrderGridEvents = (function (_super) {
         __extends(OrderGridEvents, _super);
         function OrderGridEvents(orderVM) {
-            _super.call(this);
-            this._orderVM = orderVM;
-            this._doFocus = null;
+            var _this = _super.call(this) || this;
+            _this._orderVM = orderVM;
+            _this._doFocus = null;
+            return _this;
         }
         OrderGridEvents.prototype.regFocusGridFunc = function (doFocus) {
             this._doFocus = doFocus;
@@ -2024,11 +2057,12 @@ define("animation", ["require", "exports", "jriapp"], function (require, exports
     var FadeAnimation = (function (_super) {
         __extends(FadeAnimation, _super);
         function FadeAnimation(isAnimateFirstShow, duration) {
-            _super.call(this);
-            this._$animatedEl = null;
-            this._effect = 'fade';
-            this._duration = !!duration ? duration : 1000;
-            this._isAnimateFirstShow = !!isAnimateFirstShow;
+            var _this = _super.call(this) || this;
+            _this._$animatedEl = null;
+            _this._effect = 'fade';
+            _this._duration = !!duration ? duration : 1000;
+            _this._isAnimateFirstShow = !!isAnimateFirstShow;
+            return _this;
         }
         FadeAnimation.prototype.beforeShow = function (template, isFirstShow) {
         };
@@ -2082,11 +2116,12 @@ define("animation", ["require", "exports", "jriapp"], function (require, exports
     var SlideAnimation = (function (_super) {
         __extends(SlideAnimation, _super);
         function SlideAnimation(isAnimateFirstShow, duration) {
-            _super.call(this);
-            this._$animatedEl = null;
-            this._effect = 'slide';
-            this._duration = !!duration ? duration : 1000;
-            this._isAnimateFirstShow = !!isAnimateFirstShow;
+            var _this = _super.call(this) || this;
+            _this._$animatedEl = null;
+            _this._effect = 'slide';
+            _this._duration = !!duration ? duration : 1000;
+            _this._isAnimateFirstShow = !!isAnimateFirstShow;
+            return _this;
         }
         SlideAnimation.prototype.beforeShow = function (template, isFirstShow) {
         };
@@ -2146,11 +2181,12 @@ define("routes", ["require", "exports", "jriapp", "animation"], function (requir
     var MainRoute = (function (_super) {
         __extends(MainRoute, _super);
         function MainRoute() {
-            _super.call(this);
-            this._custTemplName = 'SPAcustTemplate';
-            this._custDetTemplName = 'SPAcustDetailTemplate';
-            this._viewName = this._custTemplName;
-            this._animation = new ANIMATION.FadeAnimation(true);
+            var _this = _super.call(this) || this;
+            _this._custTemplName = 'SPAcustTemplate';
+            _this._custDetTemplName = 'SPAcustDetailTemplate';
+            _this._viewName = _this._custTemplName;
+            _this._animation = new ANIMATION.FadeAnimation(true);
+            return _this;
         }
         MainRoute.prototype.goToAllCust = function () {
             this.viewName = this.custTemplName;
@@ -2199,11 +2235,12 @@ define("routes", ["require", "exports", "jriapp", "animation"], function (requir
     var CustDetRoute = (function (_super) {
         __extends(CustDetRoute, _super);
         function CustDetRoute() {
-            _super.call(this);
-            this._infoTemplName = 'customerInfo';
-            this._adrTemplName = 'customerAddr';
-            this._viewName = this._infoTemplName;
-            this._animation = new ANIMATION.SlideAnimation(false);
+            var _this = _super.call(this) || this;
+            _this._infoTemplName = 'customerInfo';
+            _this._adrTemplName = 'customerAddr';
+            _this._viewName = _this._infoTemplName;
+            _this._animation = new ANIMATION.SlideAnimation(false);
+            return _this;
         }
         CustDetRoute.prototype.goToCustInfo = function () {
             this.viewName = this.infoTemplName;
@@ -2252,10 +2289,11 @@ define("routes", ["require", "exports", "jriapp", "animation"], function (requir
     var AddressRoute = (function (_super) {
         __extends(AddressRoute, _super);
         function AddressRoute() {
-            _super.call(this);
-            this._linkAdrTemplate = 'linkAdrTemplate';
-            this._newAdrTemplate = 'newAdrTemplate';
-            this._viewName = this._linkAdrTemplate;
+            var _this = _super.call(this) || this;
+            _this._linkAdrTemplate = 'linkAdrTemplate';
+            _this._newAdrTemplate = 'newAdrTemplate';
+            _this._viewName = _this._linkAdrTemplate;
+            return _this;
         }
         AddressRoute.prototype.goToLinkAdr = function () {
             this.viewName = this.linkAdrTemplate;
@@ -2294,24 +2332,24 @@ define("custAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui
     var CustomerAddressVM = (function (_super) {
         __extends(CustomerAddressVM, _super);
         function CustomerAddressVM(customerVM) {
-            _super.call(this, customerVM.app);
-            var self = this;
-            this._customerVM = customerVM;
-            this._addAddressVM = null;
-            this._currentCustomer = self._customerVM.currentItem;
-            this._addressesDb = this.dbSets.Address;
-            this._custAdressDb = this.dbSets.CustomerAddress;
-            this._custAdressDb.addOnItemDeleting(function (sender, args) {
+            var _this = _super.call(this, customerVM.app) || this;
+            var self = _this;
+            _this._customerVM = customerVM;
+            _this._addAddressVM = null;
+            _this._currentCustomer = self._customerVM.currentItem;
+            _this._addressesDb = _this.dbSets.Address;
+            _this._custAdressDb = _this.dbSets.CustomerAddress;
+            _this._custAdressDb.addOnItemDeleting(function (sender, args) {
                 if (!confirm('Are you sure that you want to unlink Address from this customer?'))
                     args.isCancel = true;
             }, self.uniqueID);
-            this._custAdressDb.addOnBeginEdit(function (sender, args) {
+            _this._custAdressDb.addOnBeginEdit(function (sender, args) {
                 var item = args.item;
                 var address = item.Address;
                 if (!!address)
                     address._aspect.beginEdit();
             }, self.uniqueID);
-            this._custAdressDb.addOnEndEdit(function (sender, args) {
+            _this._custAdressDb.addOnEndEdit(function (sender, args) {
                 var item = args.item;
                 var address = item.Address;
                 if (!args.isCanceled) {
@@ -2323,12 +2361,12 @@ define("custAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui
                         address._aspect.cancelEdit();
                 }
             }, self.uniqueID);
-            this._addressesDb.addOnItemDeleting(function (sender, args) {
+            _this._addressesDb.addOnItemDeleting(function (sender, args) {
                 if (!confirm('Are you sure that you want to delete the Customer\'s Address?'))
                     args.isCancel = true;
             }, self.uniqueID);
-            this._addressesView = new dbMOD.DataView({
-                dataSource: this._addressesDb,
+            _this._addressesView = new dbMOD.DataView({
+                dataSource: _this._addressesDb,
                 fn_sort: function (a, b) { return a.AddressID - b.AddressID; },
                 fn_filter: function (item) {
                     if (!self._currentCustomer)
@@ -2348,13 +2386,14 @@ define("custAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui
                     });
                 }
             });
-            this._custAdressView.addOnViewRefreshed(function (s, a) {
+            _this._custAdressView.addOnViewRefreshed(function (s, a) {
                 self._addressesView.refresh();
             }, self.uniqueID);
-            this._customerVM.addOnPropertyChange('currentItem', function (sender, args) {
+            _this._customerVM.addOnPropertyChange('currentItem', function (sender, args) {
                 self._currentCustomer = self._customerVM.currentItem;
                 self.raisePropertyChanged('currentCustomer');
             }, self.uniqueID);
+            return _this;
         }
         CustomerAddressVM.prototype._loadAddresses = function (addressIDs, isClearTable) {
             var query = this._addressesDb.createReadAddressByIdsQuery({ addressIDs: addressIDs });
@@ -2464,14 +2503,14 @@ define("customerVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", 
     var CustomerVM = (function (_super) {
         __extends(CustomerVM, _super);
         function CustomerVM(app) {
-            _super.call(this, app);
-            var self = this;
-            this._dbSet = this.dbSets.Customer;
-            this._dbSet.isSubmitOnDelete = true;
-            this._propWatcher = new RIAPP.PropWatcher();
-            this._uiMainRoute = new routes_1.MainRoute();
-            this._uiCustDetRoute = new routes_1.CustDetRoute();
-            this._uiMainRoute.addOnPropertyChange('viewName', function (sender, a) {
+            var _this = _super.call(this, app) || this;
+            var self = _this;
+            _this._dbSet = _this.dbSets.Customer;
+            _this._dbSet.isSubmitOnDelete = true;
+            _this._propWatcher = new RIAPP.PropWatcher();
+            _this._uiMainRoute = new routes_1.MainRoute();
+            _this._uiCustDetRoute = new routes_1.CustDetRoute();
+            _this._uiMainRoute.addOnPropertyChange('viewName', function (sender, a) {
                 self._uiCustDetRoute.reset();
                 if (sender.viewName == sender.custTemplName) {
                     setTimeout(function () {
@@ -2481,81 +2520,82 @@ define("customerVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", 
                     }, 0);
                 }
             });
-            this._gridEvents = new gridEvents_2.CustomerGridEvents(this);
-            this._dbSet.addOnItemDeleting(function (sender, args) {
+            _this._gridEvents = new gridEvents_2.CustomerGridEvents(_this);
+            _this._dbSet.addOnItemDeleting(function (sender, args) {
                 if (!confirm('Are you sure that you want to delete customer?'))
                     args.isCancel = true;
             }, self.uniqueID);
-            this._dbSet.addOnPageIndexChanged(function (sender, args) {
+            _this._dbSet.addOnPageIndexChanged(function (sender, args) {
                 self.raiseEvent('page_changed', {});
             }, self.uniqueID);
-            this._dbSet.addOnItemAdded(function (s, args) {
+            _this._dbSet.addOnItemAdded(function (s, args) {
                 args.item.NameStyle = false;
                 args.item.ComplexProp.LastName = "Dummy1";
                 args.item.ComplexProp.FirstName = "Dummy2";
             });
-            this._editCommand = new RIAPP.Command(function (sender, param) {
+            _this._editCommand = new RIAPP.Command(function (sender, param) {
                 self.currentItem._aspect.beginEdit();
             }, self, function (sender, param) {
                 return !!self.currentItem;
             });
-            this._endEditCommand = new RIAPP.Command(function (sender, param) {
+            _this._endEditCommand = new RIAPP.Command(function (sender, param) {
                 if (self.currentItem._aspect.endEdit())
                     self.dbContext.submitChanges();
             }, self, function (sender, param) {
                 return !!self.currentItem;
             });
-            this._cancelEditCommand = new RIAPP.Command(function (sender, param) {
+            _this._cancelEditCommand = new RIAPP.Command(function (sender, param) {
                 self.currentItem._aspect.cancelEdit();
                 self.dbContext.rejectChanges();
             }, self, function (sender, param) {
                 return !!self.currentItem;
             });
-            this._addNewCommand = new RIAPP.Command(function (sender, param) {
+            _this._addNewCommand = new RIAPP.Command(function (sender, param) {
                 self._dbSet.addNew();
             }, self, function (sender, param) {
                 return true;
             });
-            this._saveCommand = new RIAPP.Command(function (sender, param) {
+            _this._saveCommand = new RIAPP.Command(function (sender, param) {
                 self.dbContext.submitChanges();
             }, self, function (s, p) {
                 return self.dbContext.isHasChanges;
             });
-            this._undoCommand = new RIAPP.Command(function (sender, param) {
+            _this._undoCommand = new RIAPP.Command(function (sender, param) {
                 self.dbContext.rejectChanges();
             }, self, function (s, p) {
                 return self.dbContext.isHasChanges;
             });
-            this._loadCommand = new RIAPP.Command(function (sender, args) {
+            _this._loadCommand = new RIAPP.Command(function (sender, args) {
                 self.load();
             }, self, null);
-            this._switchViewCommand = new RIAPP.Command(function (sender, param) {
+            _this._switchViewCommand = new RIAPP.Command(function (sender, param) {
                 self.uiMainRoute.viewName = param;
             }, self, null);
-            this._switchDetViewCommand = new RIAPP.Command(function (sender, param) {
+            _this._switchDetViewCommand = new RIAPP.Command(function (sender, param) {
                 self.uiCustDetRoute.viewName = param;
             }, self, null);
-            this._propWatcher.addPropWatch(self.dbContext, 'isHasChanges', function (prop) {
+            _this._propWatcher.addPropWatch(self.dbContext, 'isHasChanges', function (prop) {
                 self._saveCommand.raiseCanExecuteChanged();
                 self._undoCommand.raiseCanExecuteChanged();
             });
-            this._propWatcher.addPropWatch(this._dbSet, 'currentItem', function (prop) {
+            _this._propWatcher.addPropWatch(_this._dbSet, 'currentItem', function (prop) {
                 self._editCommand.raiseCanExecuteChanged();
                 self._endEditCommand.raiseCanExecuteChanged();
                 self._cancelEditCommand.raiseCanExecuteChanged();
                 self._onCurrentChanged();
             });
-            this._dbSet.addOnCleared(function (s, a) {
+            _this._dbSet.addOnCleared(function (s, a) {
                 self.dbSets.CustomerAddress.clear();
                 self.dbSets.Address.clear();
             }, self.uniqueID);
             var custAssoc = self.dbContext.associations.getCustAddrToCustomer();
-            this._custAdressView = new dbMOD.ChildDataView({
+            _this._custAdressView = new dbMOD.ChildDataView({
                 association: custAssoc,
                 fn_sort: function (a, b) { return a.AddressID - b.AddressID; }
             });
-            this._ordersVM = new orderVM_1.OrderVM(this);
-            this._customerAddressVM = new custAddressVM_1.CustomerAddressVM(this);
+            _this._ordersVM = new orderVM_1.OrderVM(_this);
+            _this._customerAddressVM = new custAddressVM_1.CustomerAddressVM(_this);
+            return _this;
         }
         CustomerVM.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
@@ -2705,11 +2745,12 @@ define("app", ["require", "exports", "jriapp", "domainModel", "common", "custome
     var DemoApplication = (function (_super) {
         __extends(DemoApplication, _super);
         function DemoApplication(options) {
-            _super.call(this, options);
-            var self = this;
-            this._dbContext = null;
-            this._errorVM = null;
-            this._customerVM = null;
+            var _this = _super.call(this, options) || this;
+            var self = _this;
+            _this._dbContext = null;
+            _this._errorVM = null;
+            _this._customerVM = null;
+            return _this;
         }
         DemoApplication.prototype.onStartUp = function () {
             var self = this, options = self.options;
@@ -2791,17 +2832,17 @@ define("addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"
     var AddAddressVM = (function (_super) {
         __extends(AddAddressVM, _super);
         function AddAddressVM(customerAddressVM) {
-            _super.call(this, customerAddressVM.app);
-            var self = this;
-            this._customerAddressVM = customerAddressVM;
-            this._addressInfosDb = this.dbContext.dbSets.AddressInfo;
-            this._currentCustomer = self._customerAddressVM.currentCustomer;
-            this._searchToolTip = 'enter any address part then press search button';
-            this._newAddress = null;
-            this._dataGrid = null;
-            this._searchString = null;
-            this._uiAddressRoute = new routes_2.AddressRoute();
-            this._dialogVM = new uiMOD.DialogVM(self.app);
+            var _this = _super.call(this, customerAddressVM.app) || this;
+            var self = _this;
+            _this._customerAddressVM = customerAddressVM;
+            _this._addressInfosDb = _this.dbContext.dbSets.AddressInfo;
+            _this._currentCustomer = self._customerAddressVM.currentCustomer;
+            _this._searchToolTip = 'enter any address part then press search button';
+            _this._newAddress = null;
+            _this._dataGrid = null;
+            _this._searchString = null;
+            _this._uiAddressRoute = new routes_2.AddressRoute();
+            _this._dialogVM = new uiMOD.DialogVM(self.app);
             var dialogOptions = {
                 templateID: 'addAddressTemplate',
                 width: 950,
@@ -2841,9 +2882,9 @@ define("addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"
                     return 1;
                 }
             };
-            this._dialogVM.createDialog('addressDialog', dialogOptions);
-            this._addressInfosView = new dbMOD.DataView({
-                dataSource: this._addressInfosDb,
+            _this._dialogVM.createDialog('addressDialog', dialogOptions);
+            _this._addressInfosView = new dbMOD.DataView({
+                dataSource: _this._addressInfosDb,
                 fn_sort: function (a, b) { return a.AddressID - b.AddressID; },
                 fn_filter: function (item) {
                     return !item.CustomerAddresses.some(function (CustAdr) {
@@ -2851,21 +2892,21 @@ define("addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"
                     });
                 }
             });
-            this._addressInfosView.isPagingEnabled = true;
-            this._addressInfosView.pageSize = 50;
-            this._addressInfosView.addOnPropertyChange('currentItem', function (sender, args) {
+            _this._addressInfosView.isPagingEnabled = true;
+            _this._addressInfosView.pageSize = 50;
+            _this._addressInfosView.addOnPropertyChange('currentItem', function (sender, args) {
                 self.raisePropertyChanged('currentAddressInfo');
                 self._linkCommand.raiseCanExecuteChanged();
             }, self.uniqueID);
-            this._customerAddressVM.addOnPropertyChange('currentCustomer', function (sender, args) {
+            _this._customerAddressVM.addOnPropertyChange('currentCustomer', function (sender, args) {
                 self._currentCustomer = self._customerAddressVM.currentCustomer;
                 self.raisePropertyChanged('customer');
                 self._addNewCommand.raiseCanExecuteChanged();
             }, self.uniqueID);
-            this.custAdressView.addOnPropertyChange('currentItem', function (sender, args) {
+            _this.custAdressView.addOnPropertyChange('currentItem', function (sender, args) {
                 self._unLinkCommand.raiseCanExecuteChanged();
             }, self.uniqueID);
-            this._addNewCommand = new RIAPP.Command(function (sender, param) {
+            _this._addNewCommand = new RIAPP.Command(function (sender, param) {
                 try {
                     var opts = utils.core.merge(param, { width: 950, height: 600 });
                     var dialog = self._dialogVM.showDialog('addressDialog', self);
@@ -2878,22 +2919,23 @@ define("addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"
             }, self, function (sender, param) {
                 return !!self.customer;
             });
-            this._execSearchCommand = new RIAPP.Command(function (sender, args) {
+            _this._execSearchCommand = new RIAPP.Command(function (sender, args) {
                 self.loadAddressInfos();
             }, self, null);
-            this._addNewAddressCommand = new RIAPP.Command(function (sender, args) {
+            _this._addNewAddressCommand = new RIAPP.Command(function (sender, args) {
                 self._addNewAddress();
             }, self, null);
-            this._linkCommand = new RIAPP.Command(function (sender, args) {
+            _this._linkCommand = new RIAPP.Command(function (sender, args) {
                 self._linkAddress();
             }, self, function (s, a) {
                 return !!self._addressInfosView.currentItem;
             });
-            this._unLinkCommand = new RIAPP.Command(function (sender, args) {
+            _this._unLinkCommand = new RIAPP.Command(function (sender, args) {
                 self._unLinkAddress();
             }, self, function (s, a) {
                 return !!self.custAdressView.currentItem;
             });
+            return _this;
         }
         AddAddressVM.prototype._addGrid = function (grid) {
             var self = this;
@@ -3129,8 +3171,8 @@ define("gridElView", ["require", "exports", "jriapp", "jriapp_ui"], function (re
     var GridElView = (function (_super) {
         __extends(GridElView, _super);
         function GridElView(options) {
-            _super.call(this, options);
-            var self = this, grid = self.grid;
+            var _this = _super.call(this, options) || this;
+            var self = _this, grid = self.grid;
             if (!!grid) {
                 grid.addOnPageChanged(function (s, a) {
                     self._onGridPageChanged();
@@ -3142,6 +3184,7 @@ define("gridElView", ["require", "exports", "jriapp", "jriapp_ui"], function (re
                     self._onGridRowExpanded(a.collapsedRow, a.expandedRow, a.isExpanded);
                 }, self.uniqueID);
             }
+            return _this;
         }
         GridElView.prototype._onGridPageChanged = function () {
             if (!!this._myGridEvents) {
@@ -3208,13 +3251,14 @@ define("prodAutocomplete", ["require", "exports", "autocomplete"], function (req
     var ProductAutoComplete = (function (_super) {
         __extends(ProductAutoComplete, _super);
         function ProductAutoComplete(options) {
-            _super.call(this, options);
-            var self = this;
-            this._lastLoadedID = null;
-            this._lookupSource = this._getDbContext().getDbSet('Product');
-            this._lookupSource.addOnCollChanged(function (sender, args) {
+            var _this = _super.call(this, options) || this;
+            var self = _this;
+            _this._lastLoadedID = null;
+            _this._lookupSource = _this._getDbContext().getDbSet('Product');
+            _this._lookupSource.addOnCollChanged(function (sender, args) {
                 self._updateValue();
             }, self.uniqueID);
+            return _this;
         }
         ProductAutoComplete.prototype._updateSelection = function () {
             if (!!this.dataContext) {

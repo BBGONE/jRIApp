@@ -23,6 +23,7 @@ define("jriapp/const", ["require", "exports"], function (require, exports) {
         DATA_FORM: "data-form",
         DATA_REQUIRE: "data-require"
     };
+    var KEYS;
     (function (KEYS) {
         KEYS[KEYS["backspace"] = 8] = "backspace";
         KEYS[KEYS["tab"] = 9] = "tab";
@@ -38,22 +39,21 @@ define("jriapp/const", ["require", "exports"], function (require, exports) {
         KEYS[KEYS["right"] = 39] = "right";
         KEYS[KEYS["down"] = 40] = "down";
         KEYS[KEYS["del"] = 127] = "del";
-    })(exports.KEYS || (exports.KEYS = {}));
-    var KEYS = exports.KEYS;
+    })(KEYS = exports.KEYS || (exports.KEYS = {}));
     exports.ELVIEW_NM = { DataForm: "dataform" };
     exports.LOADER_GIF = { Small: "loader2.gif", Default: "loader.gif" };
+    var BindTo;
     (function (BindTo) {
         BindTo[BindTo["Source"] = 0] = "Source";
         BindTo[BindTo["Target"] = 1] = "Target";
-    })(exports.BindTo || (exports.BindTo = {}));
-    var BindTo = exports.BindTo;
+    })(BindTo = exports.BindTo || (exports.BindTo = {}));
+    var BINDING_MODE;
     (function (BINDING_MODE) {
         BINDING_MODE[BINDING_MODE["OneTime"] = 0] = "OneTime";
         BINDING_MODE[BINDING_MODE["OneWay"] = 1] = "OneWay";
         BINDING_MODE[BINDING_MODE["TwoWay"] = 2] = "TwoWay";
         BINDING_MODE[BINDING_MODE["BackWay"] = 3] = "BackWay";
-    })(exports.BINDING_MODE || (exports.BINDING_MODE = {}));
-    var BINDING_MODE = exports.BINDING_MODE;
+    })(BINDING_MODE = exports.BINDING_MODE || (exports.BINDING_MODE = {}));
 });
 define("jriapp/int", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -61,12 +61,12 @@ define("jriapp/int", ["require", "exports"], function (require, exports) {
     var ButtonCss = (function () {
         function ButtonCss() {
         }
-        ButtonCss.Edit = "jriapp-actions jriapp-edit";
-        ButtonCss.Delete = "jriapp-actions jriapp-delete";
-        ButtonCss.OK = "jriapp-actions jriapp-ok";
-        ButtonCss.Cancel = "jriapp-actions jriapp-cancel";
         return ButtonCss;
     }());
+    ButtonCss.Edit = "jriapp-actions jriapp-edit";
+    ButtonCss.Delete = "jriapp-actions jriapp-delete";
+    ButtonCss.OK = "jriapp-actions jriapp-ok";
+    ButtonCss.Cancel = "jriapp-actions jriapp-cancel";
     exports.ButtonCss = ButtonCss;
 });
 define("jriapp/utils/lifetime", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_1) {
@@ -75,8 +75,9 @@ define("jriapp/utils/lifetime", ["require", "exports", "jriapp_shared"], functio
     var LifeTimeScope = (function (_super) {
         __extends(LifeTimeScope, _super);
         function LifeTimeScope() {
-            _super.call(this);
-            this._objs = [];
+            var _this = _super.call(this) || this;
+            _this._objs = [];
+            return _this;
         }
         LifeTimeScope.create = function () {
             return new LifeTimeScope();
@@ -339,9 +340,10 @@ define("jriapp/elview", ["require", "exports", "jriapp_shared", "jriapp/const", 
     var ElViewFactory = (function (_super) {
         __extends(ElViewFactory, _super);
         function ElViewFactory(register) {
-            _super.call(this);
-            this._store = new ElViewStore();
-            this._register = createElViewRegister(register);
+            var _this = _super.call(this) || this;
+            _this._store = new ElViewStore();
+            _this._register = createElViewRegister(register);
+            return _this;
         }
         ElViewFactory.prototype.destroy = function () {
             if (!this._store)
@@ -476,14 +478,15 @@ define("jriapp/defaults", ["require", "exports", "jriapp_shared", "jriapp/int"],
     var Defaults = (function (_super) {
         __extends(Defaults, _super);
         function Defaults() {
-            _super.call(this);
-            this._dateFormat = "DD.MM.YYYY";
-            this._dateTimeFormat = "DD.MM.YYYY HH:mm:ss";
-            this._timeFormat = "HH:mm:ss";
-            this._imagesPath = "";
-            this._decimalPoint = ",";
-            this._thousandSep = " ";
-            this._decPrecision = 2;
+            var _this = _super.call(this) || this;
+            _this._dateFormat = "DD.MM.YYYY";
+            _this._dateTimeFormat = "DD.MM.YYYY HH:mm:ss";
+            _this._timeFormat = "HH:mm:ss";
+            _this._imagesPath = "";
+            _this._decimalPoint = ",";
+            _this._thousandSep = " ";
+            _this._decPrecision = 2;
+            return _this;
         }
         Defaults.prototype.toString = function () {
             return "Defaults";
@@ -591,12 +594,13 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
     var TemplateLoader = (function (_super) {
         __extends(TemplateLoader, _super);
         function TemplateLoader() {
-            _super.call(this);
-            var self = this;
-            this._templateLoaders = {};
-            this._templateGroups = {};
-            this._promises = [];
-            this._waitQueue = new jriapp_shared_6.WaitQueue(self);
+            var _this = _super.call(this) || this;
+            var self = _this;
+            _this._templateLoaders = {};
+            _this._templateGroups = {};
+            _this._promises = [];
+            _this._waitQueue = new jriapp_shared_6.WaitQueue(self);
+            return _this;
         }
         TemplateLoader.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -1287,12 +1291,12 @@ define("jriapp/utils/dom", ["require", "exports", "jriapp_shared", "jriapp/utils
         DomUtils.removeClass = function (elems, css) {
             DomUtils.setClass(elems || [], css, true);
         };
-        DomUtils.window = win;
-        DomUtils.document = doc;
-        DomUtils.ready = _checkDOMReady;
-        DomUtils.events = domevents_1.DomEvents;
         return DomUtils;
     }());
+    DomUtils.window = win;
+    DomUtils.document = doc;
+    DomUtils.ready = _checkDOMReady;
+    DomUtils.events = domevents_1.DomEvents;
     exports.DomUtils = DomUtils;
 });
 define("jriapp/utils/path", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/int"], function (require, exports, jriapp_shared_9, dom_1, int_2) {
@@ -1405,9 +1409,9 @@ define("jriapp/utils/path", ["require", "exports", "jriapp_shared", "jriapp/util
             }
             return res;
         };
-        PathHelper._anchor = doc.createElement("a");
         return PathHelper;
     }());
+    PathHelper._anchor = doc.createElement("a");
     exports.PathHelper = PathHelper;
 });
 define("jriapp/utils/sloader", ["require", "exports", "jriapp_shared", "jriapp_shared/utils/async", "jriapp/utils/dom", "jriapp/utils/path"], function (require, exports, jriapp_shared_10, async_1, dom_2, path_1) {
@@ -1552,6 +1556,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
         curSelectable: "currentSelectable",
         isReady: "isReady"
     };
+    var BootstrapState;
     (function (BootstrapState) {
         BootstrapState[BootstrapState["None"] = 0] = "None";
         BootstrapState[BootstrapState["Initializing"] = 1] = "Initializing";
@@ -1559,32 +1564,31 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
         BootstrapState[BootstrapState["Ready"] = 3] = "Ready";
         BootstrapState[BootstrapState["Error"] = 4] = "Error";
         BootstrapState[BootstrapState["Destroyed"] = 5] = "Destroyed";
-    })(exports.BootstrapState || (exports.BootstrapState = {}));
-    var BootstrapState = exports.BootstrapState;
+    })(BootstrapState = exports.BootstrapState || (exports.BootstrapState = {}));
     var Bootstrap = (function (_super) {
         __extends(Bootstrap, _super);
         function Bootstrap() {
-            _super.call(this);
-            var self = this;
+            var _this = _super.call(this) || this;
+            var self = _this;
             if (!!exports.bootstrap)
                 throw new Error(ERRS.ERR_GLOBAL_SINGLTON);
-            this._bootState = 0;
-            this._appInst = null;
-            this._currentSelectable = null;
-            this._objId = coreUtils.getNewID("app");
-            this._exports = {};
-            this._moduleInits = [];
-            this._templateLoader = null;
-            this._templateLoader = new tloader_1.TemplateLoader();
-            this._templateLoader.addOnLoaded(function (s, a) {
+            _this._bootState = 0;
+            _this._appInst = null;
+            _this._currentSelectable = null;
+            _this._objId = coreUtils.getNewID("app");
+            _this._exports = {};
+            _this._moduleInits = [];
+            _this._templateLoader = null;
+            _this._templateLoader = new tloader_1.TemplateLoader();
+            _this._templateLoader.addOnLoaded(function (s, a) {
                 self._onTemplateLoaded(a.html, a.app);
             });
-            this._templateLoader.addOnError(function (s, a) {
+            _this._templateLoader.addOnError(function (s, a) {
                 return self.handleError(a.error, a.source);
             });
-            this._elViewRegister = elview_1.createElViewRegister(null);
-            this._contentFactory = content_1.createContentFactoryList();
-            this._internal = {
+            _this._elViewRegister = elview_1.createElViewRegister(null);
+            _this._contentFactory = content_1.createContentFactoryList();
+            _this._internal = {
                 initialize: function () {
                     return self._initialize();
                 },
@@ -1613,10 +1617,11 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
                     return self._getConverter(name);
                 }
             };
-            this._defaults = new defaults_1.Defaults();
-            this.defaults.imagesPath = path_2.PathHelper.getFrameworkImgPath();
+            _this._defaults = new defaults_1.Defaults();
+            _this.defaults.imagesPath = path_2.PathHelper.getFrameworkImgPath();
             stylesLoader.loadOwnStyle();
-            ERROR.addHandler("*", this);
+            ERROR.addHandler("*", _this);
+            return _this;
         }
         Bootstrap._initFramework = function () {
             dom.ready(function () {
@@ -1981,15 +1986,15 @@ define("jriapp/utils/viewchecks", ["require", "exports"], function (require, exp
     var ViewChecks = (function () {
         function ViewChecks() {
         }
-        ViewChecks.isElView = function (obj) { return false; };
-        ViewChecks.isTemplateElView = function (obj) { return false; };
-        ViewChecks.setIsInsideTemplate = function (elView) { };
-        ViewChecks.isDataForm = function (el) { return false; };
-        ViewChecks.isInsideDataForm = function (el) { return false; };
-        ViewChecks.isInNestedForm = function (root, forms, el) { return false; };
-        ViewChecks.getParentDataForm = function (rootForm, el) { return null; };
         return ViewChecks;
     }());
+    ViewChecks.isElView = function (obj) { return false; };
+    ViewChecks.isTemplateElView = function (obj) { return false; };
+    ViewChecks.setIsInsideTemplate = function (elView) { };
+    ViewChecks.isDataForm = function (el) { return false; };
+    ViewChecks.isInsideDataForm = function (el) { return false; };
+    ViewChecks.isInNestedForm = function (root, forms, el) { return false; };
+    ViewChecks.getParentDataForm = function (rootForm, el) { return null; };
     exports.ViewChecks = ViewChecks;
 });
 define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/bootstrap"], function (require, exports, jriapp_shared_12, bootstrap_2) {
@@ -2341,7 +2346,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
     var Binding = (function (_super) {
         __extends(Binding, _super);
         function Binding(options) {
-            _super.call(this);
+            var _this = _super.call(this) || this;
             var opts = coreUtils.extend({
                 target: null, source: null,
                 targetPath: null, sourcePath: null, mode: 1,
@@ -2364,30 +2369,31 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
             if (!sys.isBaseObj(opts.target)) {
                 throw new Error(ERRS.ERR_BIND_TARGET_INVALID);
             }
-            this._state = null;
-            this._mode = opts.mode;
-            this._converter = !opts.converter ? null : opts.converter;
-            this._converterParam = opts.converterParam;
-            this._srcPath = sys.getPathParts(opts.sourcePath);
-            this._tgtPath = sys.getPathParts(opts.targetPath);
-            if (this._tgtPath.length < 1)
+            _this._state = null;
+            _this._mode = opts.mode;
+            _this._converter = !opts.converter ? null : opts.converter;
+            _this._converterParam = opts.converterParam;
+            _this._srcPath = sys.getPathParts(opts.sourcePath);
+            _this._tgtPath = sys.getPathParts(opts.targetPath);
+            if (_this._tgtPath.length < 1)
                 throw new Error(strUtils.format(ERRS.ERR_BIND_TGTPATH_INVALID, opts.targetPath));
-            this._srcFixed = (!!opts.isSourceFixed);
-            this._pathItems = {};
-            this._objId = coreUtils.getNewID("bnd");
-            this._srcEnd = null;
-            this._tgtEnd = null;
-            this._source = null;
-            this._target = null;
-            this._umask = 0;
-            this._cntUtgt = 0;
-            this._cntUSrc = 0;
-            this._setTarget(opts.target);
-            this._setSource(opts.source);
-            this._update();
-            var err_notif = sys.getErrorNotification(this._srcEnd);
+            _this._srcFixed = (!!opts.isSourceFixed);
+            _this._pathItems = {};
+            _this._objId = coreUtils.getNewID("bnd");
+            _this._srcEnd = null;
+            _this._tgtEnd = null;
+            _this._source = null;
+            _this._target = null;
+            _this._umask = 0;
+            _this._cntUtgt = 0;
+            _this._cntUSrc = 0;
+            _this._setTarget(opts.target);
+            _this._setSource(opts.source);
+            _this._update();
+            var err_notif = sys.getErrorNotification(_this._srcEnd);
             if (!!err_notif && err_notif.getIsHasErrors())
-                this._onSrcErrChanged(err_notif);
+                _this._onSrcErrChanged(err_notif);
+            return _this;
         }
         Binding.prototype._update = function () {
             var umask = this._umask, MAX_REC = 3;
@@ -2927,15 +2933,16 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/const"
     var Template = (function (_super) {
         __extends(Template, _super);
         function Template(options) {
-            _super.call(this);
-            this._dataContext = options.dataContext;
-            this._templEvents = options.templEvents;
-            this._loadedElem = null;
-            this._lfTime = null;
-            this._templateID = null;
-            this._templElView = null;
-            this._el = doc.createElement("div");
-            this._el.className = exports.css.templateContainer;
+            var _this = _super.call(this) || this;
+            _this._dataContext = options.dataContext;
+            _this._templEvents = options.templEvents;
+            _this._loadedElem = null;
+            _this._lfTime = null;
+            _this._templateID = null;
+            _this._templElView = null;
+            _this._el = doc.createElement("div");
+            _this._el.className = exports.css.templateContainer;
+            return _this;
         }
         Template.prototype._getBindings = function () {
             if (!this._lfTime)
@@ -3182,9 +3189,10 @@ define("jriapp/utils/propwatcher", ["require", "exports", "jriapp_shared"], func
     var PropWatcher = (function (_super) {
         __extends(PropWatcher, _super);
         function PropWatcher() {
-            _super.call(this);
-            this._objId = coreUtils.getNewID("prw");
-            this._objs = [];
+            var _this = _super.call(this) || this;
+            _this._objId = coreUtils.getNewID("prw");
+            _this._objs = [];
+            return _this;
         }
         PropWatcher.create = function () {
             return new PropWatcher();
@@ -3244,11 +3252,12 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
     var TCommand = (function (_super) {
         __extends(TCommand, _super);
         function TCommand(fn_action, thisObj, fn_canExecute) {
-            _super.call(this);
-            this._objId = coreUtils.getNewID("cmd");
-            this._action = fn_action;
-            this._thisObj = !thisObj ? null : thisObj;
-            this._predicate = !fn_canExecute ? null : fn_canExecute;
+            var _this = _super.call(this) || this;
+            _this._objId = coreUtils.getNewID("cmd");
+            _this._action = fn_action;
+            _this._thisObj = !thisObj ? null : thisObj;
+            _this._predicate = !fn_canExecute ? null : fn_canExecute;
+            return _this;
         }
         TCommand.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
@@ -3311,9 +3320,10 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
     var BaseCommand = (function (_super) {
         __extends(BaseCommand, _super);
         function BaseCommand(thisObj) {
-            _super.call(this, null, thisObj, null);
-            this._action = this.Action;
-            this._predicate = this.getIsCanExecute;
+            var _this = _super.call(this, null, thisObj, null) || this;
+            _this._action = _this.Action;
+            _this._predicate = _this.getIsCanExecute;
+            return _this;
         }
         BaseCommand.prototype.canExecute = function (sender, param) {
             return this._canExecute(sender, param, this);
@@ -3329,9 +3339,10 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
     var ViewModel = (function (_super) {
         __extends(ViewModel, _super);
         function ViewModel(app) {
-            _super.call(this);
-            this._app = app;
-            this._objId = coreUtils.getNewID("vm");
+            var _this = _super.call(this) || this;
+            _this._app = app;
+            _this._objId = coreUtils.getNewID("vm");
+            return _this;
         }
         ViewModel.prototype.toString = function () {
             return "ViewModel";
@@ -3500,11 +3511,12 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/con
     var DataBindingService = (function (_super) {
         __extends(DataBindingService, _super);
         function DataBindingService(root, elViewFactory) {
-            _super.call(this);
-            this._root = root;
-            this._elViewFactory = elViewFactory;
-            this._objLifeTime = null;
-            this._mloader = mloader_1.create();
+            var _this = _super.call(this) || this;
+            _this._root = root;
+            _this._elViewFactory = elViewFactory;
+            _this._objLifeTime = null;
+            _this._mloader = mloader_1.create();
+            return _this;
         }
         DataBindingService.prototype._toBindableElement = function (el) {
             var val, allAttrs = el.attributes, attr, res = { el: el, dataView: null, dataForm: null, expressions: [] };
@@ -3708,24 +3720,24 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/const", "jr
     var Application = (function (_super) {
         __extends(Application, _super);
         function Application(options) {
-            _super.call(this);
+            var _this = _super.call(this) || this;
             if (!options) {
                 options = {};
             }
-            var self = this, moduleInits = options.modulesInits || {}, app_name = jriapp_shared_19.APP_NAME;
-            this._appName = app_name;
-            this._options = options;
+            var self = _this, moduleInits = options.modulesInits || {}, app_name = jriapp_shared_19.APP_NAME;
+            _this._appName = app_name;
+            _this._options = options;
             if (!!boot.getApp())
                 throw new Error(utils.str.format(ERRS.ERR_APP_NAME_NOT_UNIQUE, app_name));
-            this._objId = utils.core.getNewID("app");
-            this._app_state = 0;
-            this._moduleInits = moduleInits;
-            this._viewFactory = elview_2.createElViewFactory(boot.elViewRegister);
-            this._dataBindingService = databindsvc_1.createDataBindSvc(this.appRoot, this._viewFactory);
-            this._objMaps = [];
-            this._exports = {};
-            this._UC = {};
-            this._internal = {
+            _this._objId = utils.core.getNewID("app");
+            _this._app_state = 0;
+            _this._moduleInits = moduleInits;
+            _this._viewFactory = elview_2.createElViewFactory(boot.elViewRegister);
+            _this._dataBindingService = databindsvc_1.createDataBindSvc(_this.appRoot, _this._viewFactory);
+            _this._objMaps = [];
+            _this._exports = {};
+            _this._UC = {};
+            _this._internal = {
                 bindTemplateElements: function (templateEl) {
                     return self._dataBindingService.bindTemplateElements(templateEl);
                 },
@@ -3733,7 +3745,8 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/const", "jr
                     return self._dataBindingService.bindElements(scope, dctx, isDataFormBind, isInsideTemplate);
                 }
             };
-            boot._getInternal().registerApp(this);
+            boot._getInternal().registerApp(_this);
+            return _this;
         }
         Application.prototype._cleanUpObjMaps = function () {
             var self = this;

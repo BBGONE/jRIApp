@@ -9,7 +9,7 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./demoDB", "common"], func
     var RadioValueConverter = (function (_super) {
         __extends(RadioValueConverter, _super);
         function RadioValueConverter() {
-            _super.apply(this, arguments);
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         RadioValueConverter.prototype.convertToSource = function (val, param, dataContext) {
             return !!val ? param : undefined;
@@ -23,20 +23,21 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./demoDB", "common"], func
     var RadioDemoVM = (function (_super) {
         __extends(RadioDemoVM, _super);
         function RadioDemoVM(app) {
-            _super.call(this, app);
-            var self = this;
-            this._radioValue = null;
-            this._radioValues = new DEMODB.RadioValDictionary();
-            this._radioValues.fillItems([{ key: 'radioValue1', value: 'This is some text value #1', comment: 'This is some comment for value #1' },
+            var _this = _super.call(this, app) || this;
+            var self = _this;
+            _this._radioValue = null;
+            _this._radioValues = new DEMODB.RadioValDictionary();
+            _this._radioValues.fillItems([{ key: 'radioValue1', value: 'This is some text value #1', comment: 'This is some comment for value #1' },
                 { key: 'radioValue2', value: 'This is some text value #2', comment: 'This is some comment for value #2' },
                 { key: 'radioValue3', value: 'This is some text value #3', comment: 'This is some comment for value #3' },
                 { key: 'radioValue4', value: 'This is some text value #4', comment: 'This is some comment for value #4' }], false);
-            this._testDict = new DEMODB.TestDictionary();
-            this._testDict.fillItems([{ Key: 'one', SomeProperty1: 'some text one', SomeProperty2: [1, 2, 3], SomeProperty3: ['abc', 'fds'], MoreComplexProperty: null, EnumProperty: DEMODB.TestEnum.OK },
+            _this._testDict = new DEMODB.TestDictionary();
+            _this._testDict.fillItems([{ Key: 'one', SomeProperty1: 'some text one', SomeProperty2: [1, 2, 3], SomeProperty3: ['abc', 'fds'], MoreComplexProperty: null, EnumProperty: DEMODB.TestEnum.OK },
                 { Key: 'two', SomeProperty1: 'some text two', SomeProperty2: [4, 5, 3], SomeProperty3: ['abc', 'fds'], MoreComplexProperty: null, EnumProperty: DEMODB.TestEnum.Error },
                 { Key: 'thee', SomeProperty1: 'some text three', SomeProperty2: [6, 7, 8], SomeProperty3: ['abc', 'fds'], MoreComplexProperty: null, EnumProperty: DEMODB.TestEnum.OK },
                 { Key: 'four', SomeProperty1: 'some text four', SomeProperty2: [2, 5, 7], SomeProperty3: ['abc', 'fds'], MoreComplexProperty: null, EnumProperty: DEMODB.TestEnum.OK }
             ], true);
+            return _this;
         }
         RadioDemoVM.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
@@ -73,20 +74,21 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./demoDB", "common"], func
     var RadioDemo2VM = (function (_super) {
         __extends(RadioDemo2VM, _super);
         function RadioDemo2VM(app, currentValue) {
-            _super.call(this, app);
-            var self = this;
+            var _this = _super.call(this, app) || this;
+            var self = _this;
             if (!!currentValue)
-                this.radioValue = currentValue;
-            this._historyList = new DEMODB.HistoryList();
-            this._historyList.addOnPropertyChange('count', function (s, a) {
+                _this.radioValue = currentValue;
+            _this._historyList = new DEMODB.HistoryList();
+            _this._historyList.addOnPropertyChange('count', function (s, a) {
                 self._clearListCommand.raiseCanExecuteChanged();
-            }, this.uniqueID);
-            this._clearListCommand = new RIAPP.Command(function (sender, param) {
+            }, _this.uniqueID);
+            _this._clearListCommand = new RIAPP.Command(function (sender, param) {
                 self.clearList();
                 self.radioValue = null;
             }, self, function (sender, param) {
                 return self._historyList.count > 0;
             });
+            return _this;
         }
         RadioDemo2VM.prototype._onRadioValueChanged = function () {
             _super.prototype._onRadioValueChanged.call(this);
@@ -116,10 +118,11 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./demoDB", "common"], func
     var DemoApplication = (function (_super) {
         __extends(DemoApplication, _super);
         function DemoApplication(options) {
-            _super.call(this, options);
-            var self = this;
-            this._errorVM = null;
-            this._demoVM = null;
+            var _this = _super.call(this, options) || this;
+            var self = _this;
+            _this._errorVM = null;
+            _this._demoVM = null;
+            return _this;
         }
         DemoApplication.prototype.onStartUp = function () {
             var self = this;

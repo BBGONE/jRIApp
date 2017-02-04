@@ -734,7 +734,7 @@ declare module "jriapp_ui/datagrid/const" {
         colSortAsc: string;
         colSortDesc: string;
     };
-    export const actionsSelector: string;
+    export const actionsSelector = "span[data-role=\"row-action\"]";
     export const txtMap: IIndexer<string>;
     export const PROP_NAME: {
         isCurrent: string;
@@ -888,7 +888,7 @@ declare module "jriapp_ui/datagrid/columns/actions" {
 declare module "jriapp_ui/datagrid/cells/actions" {
     import { BaseCell, ICellOptions } from "jriapp_ui/datagrid/cells/base";
     import { ActionsColumn } from "jriapp_ui/datagrid/columns/actions";
-    export const editName: string, deleteName: string;
+    export const editName = "img_edit", deleteName = "img_delete";
     export class ActionsCell extends BaseCell<ActionsColumn> {
         private _isEditing;
         constructor(options: ICellOptions);

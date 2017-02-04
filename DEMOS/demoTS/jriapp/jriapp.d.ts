@@ -2,8 +2,8 @@
 /// <reference path="../thirdparty/require.d.ts" />
 /// <reference path="jriapp_shared.d.ts" />
 declare module "jriapp/const" {
-    export const TOOLTIP_SVC: string;
-    export const DATEPICKER_SVC: string;
+    export const TOOLTIP_SVC = "tooltipSVC";
+    export const DATEPICKER_SVC = "IDatepicker";
     export const STORE_KEY: {
         SVC: string;
         CONVERTER: string;
@@ -615,7 +615,7 @@ declare module "jriapp/utils/path" {
 }
 declare module "jriapp/utils/sloader" {
     import { IStylesLoader } from "jriapp/int";
-    export const frameworkCss: string;
+    export const frameworkCss = "jriapp.css";
     export function createCssLoader(): IStylesLoader;
     export interface IUrlParts {
         protocol: string;
@@ -999,5 +999,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, TemplateCommand, BaseCommand, Command, ICommand, TCommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION: string;
+    export const VERSION = "1.4.7";
 }

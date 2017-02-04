@@ -4,8 +4,8 @@ declare module "jriapp_shared/const" {
         NORMAL = 1,
         HIGH = 2,
     }
-    export const APP_NAME: string;
-    export const DUMY_ERROR: string;
+    export const APP_NAME = "app";
+    export const DUMY_ERROR = "DUMMY_ERROR";
 }
 declare module "jriapp_shared/utils/ideferred" {
     export const enum PromiseState {

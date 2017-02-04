@@ -33,11 +33,12 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
     var DownloadLinkElView = (function (_super) {
         __extends(DownloadLinkElView, _super);
         function DownloadLinkElView(options) {
-            _super.call(this, options);
-            this._baseUri = '';
+            var _this = _super.call(this, options) || this;
+            _this._baseUri = '';
             if (!!options.baseUri)
-                this._baseUri = options.baseUri;
-            this._id = '';
+                _this._baseUri = options.baseUri;
+            _this._id = '';
+            return _this;
         }
         Object.defineProperty(DownloadLinkElView.prototype, "text", {
             get: function () {
@@ -90,14 +91,15 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
     var FileImgElView = (function (_super) {
         __extends(FileImgElView, _super);
         function FileImgElView(options) {
-            _super.call(this, options);
-            this._debounce = null;
-            this._baseUri = '';
+            var _this = _super.call(this, options) || this;
+            _this._debounce = null;
+            _this._baseUri = '';
             if (!!options.baseUri)
-                this._baseUri = options.baseUri;
-            this._id = '';
-            this._src = null;
-            this._fileName = null;
+                _this._baseUri = options.baseUri;
+            _this._id = '';
+            _this._src = null;
+            _this._fileName = null;
+            return _this;
         }
         FileImgElView.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -182,13 +184,13 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
     var ErrorViewModel = (function (_super) {
         __extends(ErrorViewModel, _super);
         function ErrorViewModel(app) {
-            _super.call(this, app);
-            var self = this;
-            this._error = null;
-            this._errors = [];
-            this._message = null;
-            this._title = '';
-            this._dialogVM = new uiMOD.DialogVM(app);
+            var _this = _super.call(this, app) || this;
+            var self = _this;
+            _this._error = null;
+            _this._errors = [];
+            _this._message = null;
+            _this._title = '';
+            _this._dialogVM = new uiMOD.DialogVM(app);
             var dialogOptions = {
                 templateID: 'errorTemplate',
                 width: 500,
@@ -222,7 +224,8 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
                     self.raisePropertyChanged('message');
                 }
             };
-            this._dialogVM.createDialog('errorDialog', dialogOptions);
+            _this._dialogVM.createDialog('errorDialog', dialogOptions);
+            return _this;
         }
         ErrorViewModel.prototype.showDialog = function () {
             this._dialogVM.showDialog('errorDialog', this);
@@ -321,61 +324,62 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
     var AutoCompleteElView = (function (_super) {
         __extends(AutoCompleteElView, _super);
         function AutoCompleteElView(options) {
-            _super.call(this, options);
-            var self = this;
-            this._templateId = options.templateId;
-            this._fieldName = options.fieldName;
-            this._dbSetName = options.dbSetName;
-            this._queryName = options.queryName;
-            this._dbContextName = options.dbContext;
-            this._minTextLength = (!!options.minTextLength) ? options.minTextLength : 1;
-            this._template = null;
-            this._gridDataSource = null;
-            this._prevText = null;
-            this._selectedItem = null;
-            this._template = null;
-            this._$dropDown = null;
-            this._loadTimeout = null;
-            this._dataContext = null;
-            this._isLoading = false;
-            this._width = options.width || '200px';
-            this._height = options.height || '300px';
-            this._lookupGrid = null;
-            this._btnOk = null;
-            this._btnCancel = null;
-            this._$dlg = null;
-            var $el = $(this.el);
-            $el.on('change.' + this.uniqueID, function (e) {
+            var _this = _super.call(this, options) || this;
+            var self = _this;
+            _this._templateId = options.templateId;
+            _this._fieldName = options.fieldName;
+            _this._dbSetName = options.dbSetName;
+            _this._queryName = options.queryName;
+            _this._dbContextName = options.dbContext;
+            _this._minTextLength = (!!options.minTextLength) ? options.minTextLength : 1;
+            _this._template = null;
+            _this._gridDataSource = null;
+            _this._prevText = null;
+            _this._selectedItem = null;
+            _this._template = null;
+            _this._$dropDown = null;
+            _this._loadTimeout = null;
+            _this._dataContext = null;
+            _this._isLoading = false;
+            _this._width = options.width || '200px';
+            _this._height = options.height || '300px';
+            _this._lookupGrid = null;
+            _this._btnOk = null;
+            _this._btnCancel = null;
+            _this._$dlg = null;
+            var $el = $(_this.el);
+            $el.on('change.' + _this.uniqueID, function (e) {
                 e.stopPropagation();
                 self._onTextChange();
                 self.raisePropertyChanged('value');
             });
-            $el.on('keyup.' + this.uniqueID, function (e) {
+            $el.on('keyup.' + _this.uniqueID, function (e) {
                 e.stopPropagation();
                 self._onKeyUp(e.target.value);
                 self._onKeyPress(e.keyCode);
             });
-            $el.on('keypress.' + this.uniqueID, function (e) {
+            $el.on('keypress.' + _this.uniqueID, function (e) {
                 e.stopPropagation();
             });
-            this._isOpen = false;
-            this._createGridDataSource();
-            this._template = this._createTemplate();
-            this._$dropDown = uiMOD.$(RIAPP.DOM.document.createElement("div"));
-            this._$dropDown.css({
+            _this._isOpen = false;
+            _this._createGridDataSource();
+            _this._template = _this._createTemplate();
+            _this._$dropDown = uiMOD.$(RIAPP.DOM.document.createElement("div"));
+            _this._$dropDown.css({
                 "position": "absolute",
                 "left": "-2000px",
                 "top": "-1000px",
                 "z-index": "10000",
                 "background-color": "white",
                 "border": "1px solid gray",
-                "width": this._width,
-                "height": this._height
+                "width": _this._width,
+                "height": _this._height
             });
-            this._$dropDown.append(this._template.el);
-            this._template.el.style.height = '100%';
-            this._template.el.style.width = '100%';
-            RIAPP.DOM.document.body.appendChild(this._$dropDown.get(0));
+            _this._$dropDown.append(_this._template.el);
+            _this._template.el.style.height = '100%';
+            _this._template.el.style.width = '100%';
+            RIAPP.DOM.document.body.appendChild(_this._$dropDown.get(0));
+            return _this;
         }
         AutoCompleteElView.prototype.templateLoading = function (template) {
         };
@@ -626,20 +630,21 @@ define("header", ["require", "exports", "jriapp", "jriapp_ui"], function (requir
     var HeaderVM = (function (_super) {
         __extends(HeaderVM, _super);
         function HeaderVM(app) {
-            _super.call(this, app);
-            var self = this;
-            this._$topPanel = $(exports.topPanel);
-            this._$contentPanel = $(exports.contentPanel);
-            this._contentPanelHeight = 0;
-            if (!!this._$contentPanel)
-                this._contentPanelHeight = this._$contentPanel.height();
-            this._expanderCommand = new RIAPP.Command(function (sender, param) {
+            var _this = _super.call(this, app) || this;
+            var self = _this;
+            _this._$topPanel = $(exports.topPanel);
+            _this._$contentPanel = $(exports.contentPanel);
+            _this._contentPanelHeight = 0;
+            if (!!_this._$contentPanel)
+                _this._contentPanelHeight = _this._$contentPanel.height();
+            _this._expanderCommand = new RIAPP.Command(function (sender, param) {
                 if (sender.isExpanded) {
                     self.expand();
                 }
                 else
                     self.collapse();
             }, self, null);
+            return _this;
         }
         HeaderVM.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
@@ -693,16 +698,16 @@ define("ssevents", ["require", "exports", "jriapp"], function (require, exports,
     var SSEventsVM = (function (_super) {
         __extends(SSEventsVM, _super);
         function SSEventsVM(baseUrl, clientID) {
-            _super.call(this);
-            var self = this;
-            this._es = null;
-            this._deffered = null;
-            this._baseUrl = baseUrl;
-            this._clientID = clientID;
-            this._url = this._baseUrl + "?id=" + clientID;
-            this._closeClientUrl = this._baseUrl + "/CloseClient?id=" + clientID;
-            this._postMsgUrl = this._baseUrl + "/PostMessage";
-            this._openESCommand = new RIAPP.Command(function (sender, data) {
+            var _this = _super.call(this) || this;
+            var self = _this;
+            _this._es = null;
+            _this._deffered = null;
+            _this._baseUrl = baseUrl;
+            _this._clientID = clientID;
+            _this._url = _this._baseUrl + "?id=" + clientID;
+            _this._closeClientUrl = _this._baseUrl + "/CloseClient?id=" + clientID;
+            _this._postMsgUrl = _this._baseUrl + "/PostMessage";
+            _this._openESCommand = new RIAPP.Command(function (sender, data) {
                 self.open().then(function () {
                 }, function (res) {
                     self.handleError(res, self);
@@ -710,7 +715,7 @@ define("ssevents", ["require", "exports", "jriapp"], function (require, exports,
             }, null, function () {
                 return !self._es;
             });
-            this._closeESCommand = new RIAPP.TCommand(function (sender, data) {
+            _this._closeESCommand = new RIAPP.TCommand(function (sender, data) {
                 self.close();
             }, null, function () {
                 return !!self._es;
@@ -718,6 +723,7 @@ define("ssevents", ["require", "exports", "jriapp"], function (require, exports,
             bootstrap.addOnUnLoad(function (s, a) {
                 self.close();
             });
+            return _this;
         }
         SSEventsVM.isSupported = function () {
             try {
@@ -869,20 +875,20 @@ define("websocket", ["require", "exports", "jriapp"], function (require, exports
     var WebSocketsVM = (function (_super) {
         __extends(WebSocketsVM, _super);
         function WebSocketsVM(url) {
-            _super.call(this);
-            var self = this;
-            this._ws = null;
-            this._clientID = null;
-            this._deffered = null;
-            this._url = url;
-            this._openWsCommand = new RIAPP.TCommand(function (sender, data) {
+            var _this = _super.call(this) || this;
+            var self = _this;
+            _this._ws = null;
+            _this._clientID = null;
+            _this._deffered = null;
+            _this._url = url;
+            _this._openWsCommand = new RIAPP.TCommand(function (sender, data) {
                 self.open().then(function () { }, function (res) {
                     self.handleError(res, self);
                 });
             }, null, function () {
                 return !self._ws;
             });
-            this._closeWsCommand = new RIAPP.TCommand(function (sender, data) {
+            _this._closeWsCommand = new RIAPP.TCommand(function (sender, data) {
                 self.close();
             }, null, function () {
                 return !!self._ws;
@@ -890,6 +896,7 @@ define("websocket", ["require", "exports", "jriapp"], function (require, exports
             bootstrap.addOnUnLoad(function (s, a) {
                 self.close();
             });
+            return _this;
         }
         WebSocketsVM.createUrl = function (port, svcName, isSSL) {
             svcName = !!svcName ? svcName : "PollingService";

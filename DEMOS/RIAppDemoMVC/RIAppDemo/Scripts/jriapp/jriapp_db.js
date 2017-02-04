@@ -5,26 +5,27 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 define("jriapp_db/const", ["require", "exports"], function (require, exports) {
     "use strict";
+    var FLAGS;
     (function (FLAGS) {
         FLAGS[FLAGS["None"] = 0] = "None";
         FLAGS[FLAGS["Changed"] = 1] = "Changed";
         FLAGS[FLAGS["Setted"] = 2] = "Setted";
         FLAGS[FLAGS["Refreshed"] = 4] = "Refreshed";
-    })(exports.FLAGS || (exports.FLAGS = {}));
-    var FLAGS = exports.FLAGS;
+    })(FLAGS = exports.FLAGS || (exports.FLAGS = {}));
+    var REFRESH_MODE;
     (function (REFRESH_MODE) {
         REFRESH_MODE[REFRESH_MODE["NONE"] = 0] = "NONE";
         REFRESH_MODE[REFRESH_MODE["RefreshCurrent"] = 1] = "RefreshCurrent";
         REFRESH_MODE[REFRESH_MODE["MergeIntoCurrent"] = 2] = "MergeIntoCurrent";
         REFRESH_MODE[REFRESH_MODE["CommitChanges"] = 3] = "CommitChanges";
-    })(exports.REFRESH_MODE || (exports.REFRESH_MODE = {}));
-    var REFRESH_MODE = exports.REFRESH_MODE;
+    })(REFRESH_MODE = exports.REFRESH_MODE || (exports.REFRESH_MODE = {}));
+    var DELETE_ACTION;
     (function (DELETE_ACTION) {
         DELETE_ACTION[DELETE_ACTION["NoAction"] = 0] = "NoAction";
         DELETE_ACTION[DELETE_ACTION["Cascade"] = 1] = "Cascade";
         DELETE_ACTION[DELETE_ACTION["SetNulls"] = 2] = "SetNulls";
-    })(exports.DELETE_ACTION || (exports.DELETE_ACTION = {}));
-    var DELETE_ACTION = exports.DELETE_ACTION;
+    })(DELETE_ACTION = exports.DELETE_ACTION || (exports.DELETE_ACTION = {}));
+    var DATA_OPER;
     (function (DATA_OPER) {
         DATA_OPER[DATA_OPER["None"] = 0] = "None";
         DATA_OPER[DATA_OPER["Submit"] = 1] = "Submit";
@@ -32,8 +33,7 @@ define("jriapp_db/const", ["require", "exports"], function (require, exports) {
         DATA_OPER[DATA_OPER["Invoke"] = 3] = "Invoke";
         DATA_OPER[DATA_OPER["Refresh"] = 4] = "Refresh";
         DATA_OPER[DATA_OPER["Init"] = 5] = "Init";
-    })(exports.DATA_OPER || (exports.DATA_OPER = {}));
-    var DATA_OPER = exports.DATA_OPER;
+    })(DATA_OPER = exports.DATA_OPER || (exports.DATA_OPER = {}));
     exports.PROP_NAME = {
         isHasChanges: "isHasChanges",
         isSubmitOnDelete: "isSubmitOnDelete",
@@ -56,23 +56,23 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
     var DataQuery = (function (_super) {
         __extends(DataQuery, _super);
         function DataQuery(dbSet, queryInfo) {
-            _super.call(this);
-            var self = this;
-            this._dbSet = dbSet;
-            this.__queryInfo = queryInfo;
-            this._filterInfo = { filterItems: [] };
-            this._sortInfo = { sortItems: [] };
-            this._isIncludeTotalCount = true;
-            this._isClearPrevData = true;
-            this._pageSize = dbSet.pageSize;
-            this._pageIndex = dbSet.pageIndex;
-            this._params = {};
-            this._loadPageCount = 1;
-            this._isClearCacheOnEveryLoad = true;
-            this._dataCache = null;
-            this._cacheInvalidated = false;
-            this._isPagingEnabled = dbSet.isPagingEnabled;
-            this._internal = {
+            var _this = _super.call(this) || this;
+            var self = _this;
+            _this._dbSet = dbSet;
+            _this.__queryInfo = queryInfo;
+            _this._filterInfo = { filterItems: [] };
+            _this._sortInfo = { sortItems: [] };
+            _this._isIncludeTotalCount = true;
+            _this._isClearPrevData = true;
+            _this._pageSize = dbSet.pageSize;
+            _this._pageIndex = dbSet.pageIndex;
+            _this._params = {};
+            _this._loadPageCount = 1;
+            _this._isClearCacheOnEveryLoad = true;
+            _this._dataCache = null;
+            _this._cacheInvalidated = false;
+            _this._isPagingEnabled = dbSet.isPagingEnabled;
+            _this._internal = {
                 clearCache: function () {
                     self._clearCache();
                 },
@@ -89,6 +89,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
                     return self.__queryInfo;
                 }
             };
+            return _this;
         }
         DataQuery.prototype._addSort = function (fieldName, sortOrder) {
             var ord = !checks.isNt(sortOrder) ? sortOrder : 0;
@@ -345,11 +346,12 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
     var DataCache = (function (_super) {
         __extends(DataCache, _super);
         function DataCache(query) {
-            _super.call(this);
-            this._query = query;
-            this._pages = {};
-            this._itemsByKey = {};
-            this._totalCount = 0;
+            var _this = _super.call(this) || this;
+            _this._query = query;
+            _this._pages = {};
+            _this._itemsByKey = {};
+            _this._totalCount = 0;
+            return _this;
         }
         DataCache.prototype._getPrevPageIndex = function (currentPageIndex) {
             var pageIndex = -1;
@@ -547,28 +549,28 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
     var DbSet = (function (_super) {
         __extends(DbSet, _super);
         function DbSet(opts) {
-            _super.call(this);
-            var self = this, dbContext = opts.dbContext, dbSetInfo = opts.dbSetInfo, fieldInfos = dbSetInfo.fieldInfos;
-            this._dbContext = dbContext;
-            this._dbSetName = dbSetInfo.dbSetName;
-            this._options.enablePaging = dbSetInfo.enablePaging;
-            this._options.pageSize = dbSetInfo.pageSize;
-            this._query = null;
-            this._itemFactory = null;
-            this._isSubmitOnDelete = false;
-            this._navfldMap = {};
-            this._calcfldMap = {};
-            this._fieldInfos = fieldInfos;
-            this._pkFields = colUtils.getPKFields(fieldInfos);
-            this._isPageFilled = false;
-            this._pageDebounce = new jriapp_shared_3.Debounce(400);
-            this._trackAssoc = {};
-            this._trackAssocMap = {};
-            this._childAssocMap = {};
-            this._parentAssocMap = {};
-            this._changeCount = 0;
-            this._changeCache = {};
-            this._ignorePageChanged = false;
+            var _this = _super.call(this) || this;
+            var self = _this, dbContext = opts.dbContext, dbSetInfo = opts.dbSetInfo, fieldInfos = dbSetInfo.fieldInfos;
+            _this._dbContext = dbContext;
+            _this._dbSetName = dbSetInfo.dbSetName;
+            _this._options.enablePaging = dbSetInfo.enablePaging;
+            _this._options.pageSize = dbSetInfo.pageSize;
+            _this._query = null;
+            _this._itemFactory = null;
+            _this._isSubmitOnDelete = false;
+            _this._navfldMap = {};
+            _this._calcfldMap = {};
+            _this._fieldInfos = fieldInfos;
+            _this._pkFields = colUtils.getPKFields(fieldInfos);
+            _this._isPageFilled = false;
+            _this._pageDebounce = new jriapp_shared_3.Debounce(400);
+            _this._trackAssoc = {};
+            _this._trackAssocMap = {};
+            _this._childAssocMap = {};
+            _this._parentAssocMap = {};
+            _this._changeCount = 0;
+            _this._changeCache = {};
+            _this._ignorePageChanged = false;
             fieldInfos.forEach(function (f) {
                 self._fieldMap[f.fieldName] = f;
                 colUtils.traverseField(f, function (fld, fullName) {
@@ -585,7 +587,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 }
             });
             self._mapAssocFields();
-            Object.freeze(this._perms);
+            Object.freeze(_this._perms);
             var internalObj = {
                 getCalcFieldVal: function (fieldName, item) {
                     return self._getCalcFieldVal(fieldName, item);
@@ -633,11 +635,12 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                     self._onItemStatusChanged(item, oldStatus);
                 }
             };
-            coreUtils.merge(internalObj, this._internal);
-            this.dbContext.addOnPropertyChange(const_3.PROP_NAME.isSubmiting, function (s, a) {
+            coreUtils.merge(internalObj, _this._internal);
+            _this.dbContext.addOnPropertyChange(const_3.PROP_NAME.isSubmiting, function (s, a) {
                 self.raisePropertyChanged(const_3.PROP_NAME.isBusy);
-            }, this.dbSetName);
-            this.addOnPropertyChange(const_3.PROP_NAME.isLoading, function (s, a) { self.raisePropertyChanged(const_3.PROP_NAME.isBusy); });
+            }, _this.dbSetName);
+            _this.addOnPropertyChange(const_3.PROP_NAME.isLoading, function (s, a) { self.raisePropertyChanged(const_3.PROP_NAME.isBusy); });
+            return _this;
         }
         DbSet.prototype.handleError = function (error, source) {
             if (!this._dbContext)
@@ -1428,10 +1431,11 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared", "jriapp_db/co
     var DbSets = (function (_super) {
         __extends(DbSets, _super);
         function DbSets(dbContext) {
-            _super.call(this);
-            this._dbContext = dbContext;
-            this._arrDbSets = [];
-            this._dbSets = {};
+            var _this = _super.call(this) || this;
+            _this._dbContext = dbContext;
+            _this._arrDbSets = [];
+            _this._dbSets = {};
+            return _this;
         }
         DbSets.prototype._dbSetCreated = function (dbSet) {
             var self = this;
@@ -1498,9 +1502,9 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
     var Association = (function (_super) {
         __extends(Association, _super);
         function Association(options) {
-            _super.call(this);
-            var self = this;
-            this._objId = coreUtils.getNewID("ass");
+            var _this = _super.call(this) || this;
+            var self = _this;
+            _this._objId = coreUtils.getNewID("ass");
             var opts = coreUtils.extend({
                 dbContext: null,
                 parentName: "",
@@ -1509,35 +1513,36 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
                 childKeyFields: [],
                 parentToChildrenName: null,
                 childToParentName: null,
-                name: this._objId,
+                name: _this._objId,
                 onDeleteAction: 0
             }, options);
-            this._name = opts.name;
-            this._dbContext = opts.dbContext;
-            this._onDeleteAction = opts.onDeleteAction;
-            this._parentDS = opts.dbContext.getDbSet(opts.parentName);
-            this._childDS = opts.dbContext.getDbSet(opts.childName);
-            this._parentFldInfos = opts.parentKeyFields.map(function (name) {
+            _this._name = opts.name;
+            _this._dbContext = opts.dbContext;
+            _this._onDeleteAction = opts.onDeleteAction;
+            _this._parentDS = opts.dbContext.getDbSet(opts.parentName);
+            _this._childDS = opts.dbContext.getDbSet(opts.childName);
+            _this._parentFldInfos = opts.parentKeyFields.map(function (name) {
                 return self._parentDS.getFieldInfo(name);
             });
-            this._childFldInfos = opts.childKeyFields.map(function (name) {
+            _this._childFldInfos = opts.childKeyFields.map(function (name) {
                 return self._childDS.getFieldInfo(name);
             });
-            this._parentToChildrenName = opts.parentToChildrenName;
-            this._childToParentName = opts.childToParentName;
-            this._parentMap = {};
-            this._childMap = {};
-            this._bindParentDS();
-            var changed1 = this._mapParentItems(this._parentDS.items);
-            this._bindChildDS();
-            var changed2 = this._mapChildren(this._childDS.items);
-            this._saveParentFKey = null;
-            this._saveChildFKey = null;
-            this._debounce = new jriapp_shared_5.Debounce();
-            this._changed = {};
-            this._notifyBound = self._notify.bind(self);
+            _this._parentToChildrenName = opts.parentToChildrenName;
+            _this._childToParentName = opts.childToParentName;
+            _this._parentMap = {};
+            _this._childMap = {};
+            _this._bindParentDS();
+            var changed1 = _this._mapParentItems(_this._parentDS.items);
+            _this._bindChildDS();
+            var changed2 = _this._mapChildren(_this._childDS.items);
+            _this._saveParentFKey = null;
+            _this._saveChildFKey = null;
+            _this._debounce = new jriapp_shared_5.Debounce();
+            _this._changed = {};
+            _this._notifyBound = self._notify.bind(self);
             self._notifyParentChanged(changed1);
             self._notifyChildrenChanged(changed2);
+            return _this;
         }
         Association.prototype.handleError = function (error, source) {
             if (!this._dbContext)
@@ -2118,6 +2123,7 @@ define("jriapp_db/error", ["require", "exports", "jriapp_shared"], function (req
     var DataOperationError = (function (_super) {
         __extends(DataOperationError, _super);
         function DataOperationError(originalError, operationName) {
+            var _this = this;
             var message;
             if (originalError instanceof Error)
                 message = originalError.message;
@@ -2125,9 +2131,10 @@ define("jriapp_db/error", ["require", "exports", "jriapp_shared"], function (req
                 message = originalError.message;
             if (!message)
                 message = "" + originalError;
-            _super.call(this, message);
-            this._origError = originalError;
-            this._operationName = operationName;
+            _this = _super.call(this, message) || this;
+            _this._origError = originalError;
+            _this._operationName = operationName;
+            return _this;
         }
         Object.defineProperty(DataOperationError.prototype, "operationName", {
             get: function () { return this._operationName; },
@@ -2147,7 +2154,7 @@ define("jriapp_db/error", ["require", "exports", "jriapp_shared"], function (req
     var AccessDeniedError = (function (_super) {
         __extends(AccessDeniedError, _super);
         function AccessDeniedError() {
-            _super.apply(this, arguments);
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         return AccessDeniedError;
     }(DataOperationError));
@@ -2155,7 +2162,7 @@ define("jriapp_db/error", ["require", "exports", "jriapp_shared"], function (req
     var ConcurrencyError = (function (_super) {
         __extends(ConcurrencyError, _super);
         function ConcurrencyError() {
-            _super.apply(this, arguments);
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         return ConcurrencyError;
     }(DataOperationError));
@@ -2163,7 +2170,7 @@ define("jriapp_db/error", ["require", "exports", "jriapp_shared"], function (req
     var SvcValidationError = (function (_super) {
         __extends(SvcValidationError, _super);
         function SvcValidationError() {
-            _super.apply(this, arguments);
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         return SvcValidationError;
     }(DataOperationError));
@@ -2171,18 +2178,20 @@ define("jriapp_db/error", ["require", "exports", "jriapp_shared"], function (req
     var SubmitError = (function (_super) {
         __extends(SubmitError, _super);
         function SubmitError(origError, allSubmitted, notValidated) {
+            var _this = this;
             var message = origError.message || ("" + origError);
-            _super.call(this, origError, 1);
-            this._origError = origError;
-            this._allSubmitted = allSubmitted || [];
-            this._notValidated = notValidated || [];
-            if (this._notValidated.length > 0) {
+            _this = _super.call(this, origError, 1) || this;
+            _this._origError = origError;
+            _this._allSubmitted = allSubmitted || [];
+            _this._notValidated = notValidated || [];
+            if (_this._notValidated.length > 0) {
                 var res_1 = [message + ":"];
-                this._notValidated.forEach(function (item) {
+                _this._notValidated.forEach(function (item) {
                     res_1.push(strUtils.format("item key:{0} errors:{1}", item._key, item._aspect.getErrorString()));
                 });
                 message = res_1.join("\r\n");
             }
+            return _this;
         }
         Object.defineProperty(SubmitError.prototype, "allSubmitted", {
             get: function () { return this._allSubmitted; },
@@ -2232,23 +2241,23 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
     var DbContext = (function (_super) {
         __extends(DbContext, _super);
         function DbContext() {
-            _super.call(this);
-            var self = this;
-            this._initState = null;
-            this._requestHeaders = {};
-            this._requests = [];
-            this._dbSets = null;
-            this._svcMethods = {};
-            this._assoc = {};
-            this._arrAssoc = [];
-            this._queryInf = {};
-            this._serviceUrl = null;
-            this._isSubmiting = false;
-            this._isHasChanges = false;
-            this._pendingSubmit = null;
-            this._serverTimezone = coreUtils.get_timeZoneOffset();
-            this._waitQueue = new jriapp_shared_7.WaitQueue(this);
-            this._internal = {
+            var _this = _super.call(this) || this;
+            var self = _this;
+            _this._initState = null;
+            _this._requestHeaders = {};
+            _this._requests = [];
+            _this._dbSets = null;
+            _this._svcMethods = {};
+            _this._assoc = {};
+            _this._arrAssoc = [];
+            _this._queryInf = {};
+            _this._serviceUrl = null;
+            _this._isSubmiting = false;
+            _this._isHasChanges = false;
+            _this._pendingSubmit = null;
+            _this._serverTimezone = coreUtils.get_timeZoneOffset();
+            _this._waitQueue = new jriapp_shared_7.WaitQueue(_this);
+            _this._internal = {
                 onItemRefreshed: function (res, item) {
                     self._onItemRefreshed(res, item);
                 },
@@ -2265,7 +2274,8 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                     return self._load(query, reason);
                 }
             };
-            this.addOnPropertyChange(const_5.PROP_NAME.isSubmiting, function (s, a) { self.raisePropertyChanged(const_5.PROP_NAME.isBusy); });
+            _this.addOnPropertyChange(const_5.PROP_NAME.isSubmiting, function (s, a) { self.raisePropertyChanged(const_5.PROP_NAME.isBusy); });
+            return _this;
         }
         DbContext.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
@@ -3064,21 +3074,22 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
     var EntityAspect = (function (_super) {
         __extends(EntityAspect, _super);
         function EntityAspect(dbSet, vals, key, isNew) {
-            _super.call(this, dbSet);
-            this._srvKey = null;
-            this._origVals = null;
-            this._savedStatus = null;
-            this._vals = vals;
-            var item = dbSet.itemFactory(this);
-            this._setItem(item);
+            var _this = _super.call(this, dbSet) || this;
+            _this._srvKey = null;
+            _this._origVals = null;
+            _this._savedStatus = null;
+            _this._vals = vals;
+            var item = dbSet.itemFactory(_this);
+            _this._setItem(item);
             if (isNew) {
-                this._setKey(key);
-                this._status = 1;
+                _this._setKey(key);
+                _this._status = 1;
             }
             else {
-                this._setSrvKey(key);
-                this._setKey(key);
+                _this._setSrvKey(key);
+                _this._setKey(key);
             }
+            return _this;
         }
         EntityAspect.prototype._onFieldChanged = function (fieldName, fieldInfo) {
             var self = this;
@@ -3530,7 +3541,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
     var DataView = (function (_super) {
         __extends(DataView, _super);
         function DataView(options) {
-            _super.call(this);
+            var _this = _super.call(this) || this;
             var opts = coreUtils.extend({
                 dataSource: null,
                 fn_filter: null,
@@ -3541,17 +3552,18 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                 throw new Error(jriapp_shared_9.LocaleERRS.ERR_DATAVIEW_DATASRC_INVALID);
             if (!!opts.fn_filter && !checks.isFunc(opts.fn_filter))
                 throw new Error(jriapp_shared_9.LocaleERRS.ERR_DATAVIEW_FILTER_INVALID);
-            this._refreshDebounce = new jriapp_shared_9.Debounce();
-            this._dataSource = opts.dataSource;
-            this._fn_filter = !opts.fn_filter ? null : opts.fn_filter;
-            this._fn_sort = opts.fn_sort;
-            this._fn_itemsProvider = opts.fn_itemsProvider;
-            this._isAddingNew = false;
-            var self = this, ds = this._dataSource;
+            _this._refreshDebounce = new jriapp_shared_9.Debounce();
+            _this._dataSource = opts.dataSource;
+            _this._fn_filter = !opts.fn_filter ? null : opts.fn_filter;
+            _this._fn_sort = opts.fn_sort;
+            _this._fn_itemsProvider = opts.fn_itemsProvider;
+            _this._isAddingNew = false;
+            var self = _this, ds = _this._dataSource;
             ds.getFieldNames().forEach(function (name) {
                 self._fieldMap[name] = ds.getFieldInfo(name);
             });
-            this._bindDS();
+            _this._bindDS();
+            return _this;
         }
         DataView.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
@@ -3948,6 +3960,7 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
     var ChildDataView = (function (_super) {
         __extends(ChildDataView, _super);
         function ChildDataView(options) {
+            var _this = this;
             var parentItem = !options.parentItem ? null : options.parentItem, assoc = options.association, opts = coreUtils.extend({}, options), oldFilter = opts.fn_filter;
             opts.dataSource = assoc.childDS;
             opts.fn_itemsProvider = function (ds) {
@@ -3960,14 +3973,14 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
                 var isPC = assoc.isParentChild(parentItem, item);
                 return isPC && (!oldFilter ? true : oldFilter(item));
             };
-            _super.call(this, opts);
-            var self = this;
-            this._getParent = function () {
+            _this = _super.call(this, opts) || this;
+            var self = _this;
+            _this._getParent = function () {
                 if (self.getIsDestroyCalled())
                     return null;
                 return parentItem;
             };
-            this._setParent = function (v) {
+            _this._setParent = function (v) {
                 if (parentItem !== v) {
                     parentItem = v;
                     self.raisePropertyChanged(const_7.PROP_NAME.parentItem);
@@ -3982,14 +3995,15 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
                     self._refresh(0);
                 });
             };
-            this._parentDebounce = new jriapp_shared_10.Debounce(350);
-            this._association = assoc;
+            _this._parentDebounce = new jriapp_shared_10.Debounce(350);
+            _this._association = assoc;
             if (!!parentItem) {
                 var queue = utils.defer.getTaskQueue();
                 queue.enque(function () {
                     self._refresh(0);
                 });
             }
+            return _this;
         }
         ChildDataView.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -4031,8 +4045,9 @@ define("jriapp_db/complexprop", ["require", "exports", "jriapp_shared"], functio
     var BaseComplexProperty = (function (_super) {
         __extends(BaseComplexProperty, _super);
         function BaseComplexProperty(name) {
-            _super.call(this);
-            this._name = name;
+            var _this = _super.call(this) || this;
+            _this._name = name;
+            return _this;
         }
         BaseComplexProperty.prototype._getFullPath = function (path) {
             throw new Error("Not Implemented");
@@ -4089,8 +4104,9 @@ define("jriapp_db/complexprop", ["require", "exports", "jriapp_shared"], functio
     var RootComplexProperty = (function (_super) {
         __extends(RootComplexProperty, _super);
         function RootComplexProperty(name, owner) {
-            _super.call(this, name);
-            this._entity = owner;
+            var _this = _super.call(this, name) || this;
+            _this._entity = owner;
+            return _this;
         }
         RootComplexProperty.prototype._getFullPath = function (path) {
             return this.getName() + "." + path;
@@ -4119,8 +4135,9 @@ define("jriapp_db/complexprop", ["require", "exports", "jriapp_shared"], functio
     var ChildComplexProperty = (function (_super) {
         __extends(ChildComplexProperty, _super);
         function ChildComplexProperty(name, parent) {
-            _super.call(this, name);
-            this._parent = parent;
+            var _this = _super.call(this, name) || this;
+            _this._parent = parent;
+            return _this;
         }
         ChildComplexProperty.prototype._getFullPath = function (path) {
             return this._parent._getFullPath(this.getName() + "." + path);

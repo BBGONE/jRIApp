@@ -9,18 +9,19 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
     var FolderBrowser = (function (_super) {
         __extends(FolderBrowser, _super);
         function FolderBrowser(app, options) {
-            _super.call(this, app);
-            var self = this;
+            var _this = _super.call(this, app) || this;
+            var self = _this;
             self._includeFiles = options.includeFiles;
             self._$tree = options.$tree;
-            this._infotype = null;
+            _this._infotype = null;
             self._dbSet = self.dbContext.dbSets.FileSystemObject;
             self._loadRootCommand = new RIAPP.Command(function (s, a) {
                 self.loadRootFolder();
             }, self, function (s, a) {
                 return true;
             });
-            this._createDynaTree();
+            _this._createDynaTree();
+            return _this;
         }
         FolderBrowser.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
@@ -149,13 +150,13 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
     var FolderBrowserVM = (function (_super) {
         __extends(FolderBrowserVM, _super);
         function FolderBrowserVM(app, options) {
-            _super.call(this, app);
-            var self = this;
-            this._selectedItem = null;
-            this._dialogVM = new uiMOD.DialogVM(app);
-            this._folderBrowser = null;
-            this._options = options;
-            this._infotype = null;
+            var _this = _super.call(this, app) || this;
+            var self = _this;
+            _this._selectedItem = null;
+            _this._dialogVM = new uiMOD.DialogVM(app);
+            _this._folderBrowser = null;
+            _this._options = options;
+            _this._infotype = null;
             var title = self._options.includeFiles ? 'Выбор файла' : 'Выбор папки';
             var dialogOptions = {
                 templateID: 'treeTemplate',
@@ -183,8 +184,8 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
                     }
                 }
             };
-            this._dialogVM.createDialog('folderBrowser', dialogOptions);
-            this._dialogCommand = new RIAPP.Command(function (sender, param) {
+            _this._dialogVM.createDialog('folderBrowser', dialogOptions);
+            _this._dialogCommand = new RIAPP.Command(function (sender, param) {
                 try {
                     self.showDialog();
                 }
@@ -194,6 +195,7 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
             }, self, function (sender, param) {
                 return true;
             });
+            return _this;
         }
         FolderBrowserVM.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
@@ -264,12 +266,13 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
     var DemoApplication = (function (_super) {
         __extends(DemoApplication, _super);
         function DemoApplication(options) {
-            _super.call(this, options);
-            var self = this;
-            this._errorVM = null;
-            this._fbrowserVM1 = null;
-            this._fbrowserVM2 = null;
-            this._selectedPath = null;
+            var _this = _super.call(this, options) || this;
+            var self = _this;
+            _this._errorVM = null;
+            _this._fbrowserVM1 = null;
+            _this._fbrowserVM2 = null;
+            _this._selectedPath = null;
+            return _this;
         }
         DemoApplication.prototype.onStartUp = function () {
             var self = this, options = self.options;

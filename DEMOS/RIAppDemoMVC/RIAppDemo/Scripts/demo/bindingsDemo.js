@@ -9,7 +9,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
     var UppercaseConverter = (function (_super) {
         __extends(UppercaseConverter, _super);
         function UppercaseConverter() {
-            _super.apply(this, arguments);
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         UppercaseConverter.prototype.convertToSource = function (val, param, dataContext) {
             if (utils.check.isString(val))
@@ -29,7 +29,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
     var NotConverter = (function (_super) {
         __extends(NotConverter, _super);
         function NotConverter() {
-            _super.apply(this, arguments);
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         NotConverter.prototype.convertToSource = function (val, param, dataContext) {
             return !val;
@@ -43,24 +43,25 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
     var TestObject = (function (_super) {
         __extends(TestObject, _super);
         function TestObject(initPropValue) {
-            _super.call(this);
-            var self = this;
-            this._testProperty1 = initPropValue;
-            this._testProperty2 = null;
-            this._testProperty3 = null;
-            this._boolProperty = null;
-            this._testCommand = new RIAPP.Command(function (sender, args) {
+            var _this = _super.call(this) || this;
+            var self = _this;
+            _this._testProperty1 = initPropValue;
+            _this._testProperty2 = null;
+            _this._testProperty3 = null;
+            _this._boolProperty = null;
+            _this._testCommand = new RIAPP.Command(function (sender, args) {
                 self._onTestCommandExecuted();
             }, self, function (sender, args) {
                 return self.isEnabled;
             });
-            this._month = new Date().getMonth() + 1;
-            this._months = new DEMODB.KeyValDictionary();
-            this._fillMonths();
-            this._format = 'PDF';
-            this._formatItem = null;
-            this._formats = new DEMODB.StrKeyValDictionary();
-            this._fillFormats();
+            _this._month = new Date().getMonth() + 1;
+            _this._months = new DEMODB.KeyValDictionary();
+            _this._fillMonths();
+            _this._format = 'PDF';
+            _this._formatItem = null;
+            _this._formats = new DEMODB.StrKeyValDictionary();
+            _this._fillFormats();
+            return _this;
         }
         TestObject.prototype._fillMonths = function () {
             this._months.fillItems([{ key: 1, val: 'January' }, { key: 2, val: 'February' }, { key: 3, val: 'March' },
@@ -190,9 +191,10 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
     var DemoApplication = (function (_super) {
         __extends(DemoApplication, _super);
         function DemoApplication(options) {
-            _super.call(this, options);
-            this._errorVM = null;
-            this._testObject = null;
+            var _this = _super.call(this, options) || this;
+            _this._errorVM = null;
+            _this._testObject = null;
+            return _this;
         }
         DemoApplication.prototype.onStartUp = function () {
             var self = this;

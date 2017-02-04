@@ -19,9 +19,9 @@ export class HttpUtils {
         req.open(method, url, true);
         req.responseType = "text";
         req.onload = function (e) {
-            let status = "" + this.status;
+            let status = "" + req.status;
             if (status === "200") {
-                let res: string = this.response;
+                let res: string = req.response;
                 deferred.resolve(res);
             }
             else {
@@ -32,7 +32,7 @@ export class HttpUtils {
             }
         };
         req.onerror = function (e: any) {
-            deferred.reject(new Error(strUtils.format('Error: "{0}" to load from URL: "{1}"', this.status, url)));
+            deferred.reject(new Error(strUtils.format('Error: "{0}" to load from URL: "{1}"', req.status, url)));
         };
         req.ontimeout = function () {
             deferred.reject(new Error(strUtils.format('Error: "Request Timeout" to load from URL: "{0}"', url)));

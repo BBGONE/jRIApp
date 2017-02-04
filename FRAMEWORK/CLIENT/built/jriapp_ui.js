@@ -55,22 +55,23 @@ define("jriapp_ui/content/basic", ["require", "exports", "jriapp_shared", "jriap
     var BasicContent = (function (_super) {
         __extends(BasicContent, _super);
         function BasicContent(options) {
-            _super.call(this);
+            var _this = _super.call(this) || this;
             options = coreUtils.extend({
                 parentEl: null,
                 contentOptions: null,
                 dataContext: null,
                 isEditing: false
             }, options);
-            this._el = null;
-            this._parentEl = options.parentEl;
-            this._isEditing = !!options.isEditing;
-            this._dataContext = options.dataContext;
-            this._options = options.contentOptions;
-            this._isReadOnly = !!this._options.readOnly;
-            this._lfScope = null;
-            this._target = null;
-            dom.addClass([this._parentEl], int_1.css.content);
+            _this._el = null;
+            _this._parentEl = options.parentEl;
+            _this._isEditing = !!options.isEditing;
+            _this._dataContext = options.dataContext;
+            _this._options = options.contentOptions;
+            _this._isReadOnly = !!_this._options.readOnly;
+            _this._lfScope = null;
+            _this._target = null;
+            dom.addClass([_this._parentEl], int_1.css.content);
+            return _this;
         }
         BasicContent.prototype.updateCss = function () {
             var displayInfo = this._options.displayInfo, el = this._parentEl, fieldInfo = this.getFieldInfo();
@@ -262,7 +263,7 @@ define("jriapp_ui/content/template", ["require", "exports", "jriapp_shared", "jr
     var TemplateContent = (function (_super) {
         __extends(TemplateContent, _super);
         function TemplateContent(options) {
-            _super.call(this);
+            var _this = _super.call(this) || this;
             options = coreUtils.extend({
                 parentEl: null,
                 contentOptions: null,
@@ -270,13 +271,14 @@ define("jriapp_ui/content/template", ["require", "exports", "jriapp_shared", "jr
                 isEditing: false,
                 appName: null
             }, options);
-            this._templateID = null;
-            this._parentEl = options.parentEl;
-            this._isEditing = options.isEditing;
-            this._dataContext = options.dataContext;
-            this._templateInfo = options.contentOptions.templateInfo;
-            this._template = null;
-            dom.addClass([this._parentEl], int_2.css.content);
+            _this._templateID = null;
+            _this._parentEl = options.parentEl;
+            _this._isEditing = options.isEditing;
+            _this._dataContext = options.dataContext;
+            _this._templateInfo = options.contentOptions.templateInfo;
+            _this._template = null;
+            dom.addClass([_this._parentEl], int_2.css.content);
+            return _this;
         }
         TemplateContent.prototype.getTemplateID = function () {
             if (!this._templateInfo) {
@@ -379,19 +381,20 @@ define("jriapp_ui/content/template", ["require", "exports", "jriapp_shared", "jr
 define("jriapp_ui/utils/eventbag", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_4) {
     "use strict";
     var utils = jriapp_shared_4.Utils, strUtils = utils.str;
+    var EVENT_CHANGE_TYPE;
     (function (EVENT_CHANGE_TYPE) {
         EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["None"] = 0] = "None";
         EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["Added"] = 1] = "Added";
         EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["Deleted"] = 2] = "Deleted";
         EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["Updated"] = 3] = "Updated";
-    })(exports.EVENT_CHANGE_TYPE || (exports.EVENT_CHANGE_TYPE = {}));
-    var EVENT_CHANGE_TYPE = exports.EVENT_CHANGE_TYPE;
+    })(EVENT_CHANGE_TYPE = exports.EVENT_CHANGE_TYPE || (exports.EVENT_CHANGE_TYPE = {}));
     var EventBag = (function (_super) {
         __extends(EventBag, _super);
         function EventBag(onChange) {
-            _super.call(this);
-            this._dic = null;
-            this._onChange = onChange;
+            var _this = _super.call(this) || this;
+            _this._dic = null;
+            _this._onChange = onChange;
+            return _this;
         }
         EventBag.prototype._isHasProp = function (prop) {
             return true;
@@ -480,8 +483,9 @@ define("jriapp_ui/utils/propbag", ["require", "exports", "jriapp_shared"], funct
     var PropertyBag = (function (_super) {
         __extends(PropertyBag, _super);
         function PropertyBag(el) {
-            _super.call(this);
-            this._el = el;
+            var _this = _super.call(this) || this;
+            _this._el = el;
+            return _this;
         }
         PropertyBag.prototype._isHasProp = function (prop) {
             var propName = strUtils.trimBrackets(prop);
@@ -519,8 +523,9 @@ define("jriapp_ui/utils/cssbag", ["require", "exports", "jriapp_shared", "jriapp
     var CSSBag = (function (_super) {
         __extends(CSSBag, _super);
         function CSSBag(el) {
-            _super.call(this);
-            this._el = el;
+            var _this = _super.call(this) || this;
+            _this._el = el;
+            return _this;
         }
         CSSBag.prototype._isHasProp = function (prop) {
             return true;
@@ -574,9 +579,9 @@ define("jriapp_ui/utils/jquery", ["require", "exports", "jriapp_shared"], functi
                 $el[name]("destroy");
             }
         };
-        JQueryUtils.$ = jQuery;
         return JQueryUtils;
     }());
+    JQueryUtils.$ = jQuery;
     exports.JQueryUtils = JQueryUtils;
 });
 define("jriapp_ui/utils/tooltip", ["require", "exports", "jriapp_ui/utils/jquery", "jriapp/utils/dom"], function (require, exports, jquery_1, dom_4) {
@@ -644,13 +649,14 @@ define("jriapp_ui/utils/datepicker", ["require", "exports", "jriapp_shared", "jr
     var Datepicker = (function (_super) {
         __extends(Datepicker, _super);
         function Datepicker() {
-            _super.call(this);
-            this._dateFormat = null;
-            this._datepickerRegion = "";
+            var _this = _super.call(this) || this;
+            _this._dateFormat = null;
+            _this._datepickerRegion = "";
             if (!jquery_2.$.datepicker) {
                 throw new Error(ERRS.ERR_JQUERY_DATEPICKER_NOTFOUND);
             }
-            this.dateFormat = "dd.mm.yy";
+            _this.dateFormat = "dd.mm.yy";
+            return _this;
         }
         Datepicker.prototype.toString = function () {
             return "Datepicker";
@@ -731,7 +737,6 @@ define("jriapp_ui/utils/datepicker", ["require", "exports", "jriapp_shared", "jr
 });
 define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/utils/viewchecks", "jriapp/const", "jriapp/bootstrap", "jriapp_ui/utils/eventbag", "jriapp_ui/utils/propbag", "jriapp_ui/utils/cssbag", "jriapp_ui/utils/tooltip", "jriapp_ui/utils/datepicker"], function (require, exports, jriapp_shared_9, dom_5, viewchecks_1, const_1, bootstrap_3, eventbag_1, propbag_1, cssbag_1, tooltip_1, datepicker_1) {
     "use strict";
-    exports.EVENT_CHANGE_TYPE = eventbag_1.EVENT_CHANGE_TYPE;
     var utils = jriapp_shared_9.Utils, coreUtils = utils.core, dom = dom_5.DomUtils, checks = utils.check, boot = bootstrap_3.bootstrap, viewChecks = viewchecks_1.ViewChecks;
     viewChecks.isElView = function (obj) {
         return !!obj && obj instanceof BaseElView;
@@ -784,22 +789,23 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
     var BaseElView = (function (_super) {
         __extends(BaseElView, _super);
         function BaseElView(options) {
-            _super.call(this);
+            var _this = _super.call(this) || this;
             var el = options.el;
-            this._el = el;
-            this._toolTip = options.tip;
-            this._eventStore = null;
-            this._props = null;
-            this._classes = null;
-            this._display = null;
-            this._css = options.css;
-            this._objId = coreUtils.getNewID("elv");
-            this._errors = null;
-            if (!!this._css) {
-                dom.addClass([el], this._css);
+            _this._el = el;
+            _this._toolTip = options.tip;
+            _this._eventStore = null;
+            _this._props = null;
+            _this._classes = null;
+            _this._display = null;
+            _this._css = options.css;
+            _this._objId = coreUtils.getNewID("elv");
+            _this._errors = null;
+            if (!!_this._css) {
+                dom.addClass([el], _this._css);
             }
-            this._applyToolTip();
-            this._getStore().setElView(el, this);
+            _this._applyToolTip();
+            _this._getStore().setElView(el, _this);
+            return _this;
         }
         BaseElView.prototype._getStore = function () {
             return boot.getApp().viewFactory.store;
@@ -1028,7 +1034,7 @@ define("jriapp_ui/input", ["require", "exports", "jriapp_ui/baseview"], function
     var InputElView = (function (_super) {
         __extends(InputElView, _super);
         function InputElView() {
-            _super.apply(this, arguments);
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         InputElView.prototype.toString = function () {
             return "InputElView";
@@ -1076,25 +1082,26 @@ define("jriapp_ui/textbox", ["require", "exports", "jriapp/utils/dom", "jriapp/b
     var TextBoxElView = (function (_super) {
         __extends(TextBoxElView, _super);
         function TextBoxElView(options) {
-            _super.call(this, options);
-            var self = this;
-            dom.events.on(this.el, "change", function (e) {
+            var _this = _super.call(this, options) || this;
+            var self = _this;
+            dom.events.on(_this.el, "change", function (e) {
                 e.stopPropagation();
                 self.raisePropertyChanged(baseview_2.PROP_NAME.value);
-            }, this.uniqueID);
-            dom.events.on(this.el, "keypress", function (e) {
+            }, _this.uniqueID);
+            dom.events.on(_this.el, "keypress", function (e) {
                 e.stopPropagation();
                 var args = { keyCode: e.which, value: e.target.value, isCancel: false };
                 self.raiseEvent(TXTBOX_EVENTS.keypress, args);
                 if (args.isCancel)
                     e.preventDefault();
-            }, this.uniqueID);
+            }, _this.uniqueID);
             if (!!options.updateOnKeyUp) {
-                dom.events.on(this.el, "keyup", function (e) {
+                dom.events.on(_this.el, "keyup", function (e) {
                     e.stopPropagation();
                     self.raisePropertyChanged(baseview_2.PROP_NAME.value);
-                }, this.uniqueID);
+                }, _this.uniqueID);
             }
+            return _this;
         }
         TextBoxElView.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
@@ -1133,7 +1140,7 @@ define("jriapp_ui/content/string", ["require", "exports", "jriapp_ui/textbox", "
     var StringContent = (function (_super) {
         __extends(StringContent, _super);
         function StringContent() {
-            _super.apply(this, arguments);
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         Object.defineProperty(StringContent.prototype, "_allowedKeys", {
             get: function () {
@@ -1162,9 +1169,9 @@ define("jriapp_ui/content/string", ["require", "exports", "jriapp_ui/textbox", "
         StringContent.prototype.toString = function () {
             return "StringContent";
         };
-        StringContent.__allowedKeys = null;
         return StringContent;
     }(basic_1.BasicContent));
+    StringContent.__allowedKeys = null;
     exports.StringContent = StringContent;
 });
 define("jriapp_ui/textarea", ["require", "exports", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp_ui/baseview"], function (require, exports, dom_7, bootstrap_5, baseview_3) {
@@ -1176,28 +1183,29 @@ define("jriapp_ui/textarea", ["require", "exports", "jriapp/utils/dom", "jriapp/
     var TextAreaElView = (function (_super) {
         __extends(TextAreaElView, _super);
         function TextAreaElView(options) {
-            _super.call(this, options);
-            var self = this;
+            var _this = _super.call(this, options) || this;
+            var self = _this;
             if (!!options.wrap) {
-                this.wrap = options.wrap;
+                _this.wrap = options.wrap;
             }
-            dom.events.on(this.el, "change", function (e) {
+            dom.events.on(_this.el, "change", function (e) {
                 e.stopPropagation();
                 self.raisePropertyChanged(baseview_3.PROP_NAME.value);
-            }, this.uniqueID);
-            dom.events.on(this.el, "keypress", function (e) {
+            }, _this.uniqueID);
+            dom.events.on(_this.el, "keypress", function (e) {
                 e.stopPropagation();
                 var args = { keyCode: e.which, value: e.target.value, isCancel: false };
                 self.raiseEvent(TXTAREA_EVENTS.keypress, args);
                 if (args.isCancel)
                     e.preventDefault();
-            }, this.uniqueID);
+            }, _this.uniqueID);
             if (!!options.updateOnKeyUp) {
-                dom.events.on(this.el, "keyup", function (e) {
+                dom.events.on(_this.el, "keyup", function (e) {
                     e.stopPropagation();
                     self.raisePropertyChanged(baseview_3.PROP_NAME.value);
-                }, this.uniqueID);
+                }, _this.uniqueID);
             }
+            return _this;
         }
         TextAreaElView.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
@@ -1264,10 +1272,12 @@ define("jriapp_ui/content/multyline", ["require", "exports", "jriapp_shared", "j
     var MultyLineContent = (function (_super) {
         __extends(MultyLineContent, _super);
         function MultyLineContent(options) {
+            var _this = this;
             if (options.contentOptions.name !== NAME) {
                 throw new Error(strUtils.format(jriapp_shared_10.LocaleERRS.ERR_ASSERTION_FAILED, strUtils.format("contentOptions.name === '{0}'", NAME)));
             }
-            _super.call(this, options);
+            _this = _super.call(this, options) || this;
+            return _this;
         }
         Object.defineProperty(MultyLineContent.prototype, "_allowedKeys", {
             get: function () {
@@ -1310,9 +1320,9 @@ define("jriapp_ui/content/multyline", ["require", "exports", "jriapp_shared", "j
         MultyLineContent.prototype.toString = function () {
             return "MultyLineContent";
         };
-        MultyLineContent.__allowedKeys = null;
         return MultyLineContent;
     }(basic_2.BasicContent));
+    MultyLineContent.__allowedKeys = null;
     exports.MultyLineContent = MultyLineContent;
 });
 define("jriapp_ui/checkbox", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp_ui/baseview", "jriapp_ui/input"], function (require, exports, jriapp_shared_11, dom_9, bootstrap_6, baseview_4, input_2) {
@@ -1321,17 +1331,18 @@ define("jriapp_ui/checkbox", ["require", "exports", "jriapp_shared", "jriapp/uti
     var CheckBoxElView = (function (_super) {
         __extends(CheckBoxElView, _super);
         function CheckBoxElView(options) {
-            _super.call(this, options);
-            var self = this, chk = this.el;
-            this._checked = null;
+            var _this = _super.call(this, options) || this;
+            var self = _this, chk = _this.el;
+            _this._checked = null;
             chk.checked = false;
-            dom.events.on(this.el, "change", function (e) {
+            dom.events.on(_this.el, "change", function (e) {
                 e.stopPropagation();
                 var chk = self.el;
                 if (self.checked !== chk.checked)
                     self.checked = chk.checked;
-            }, this.uniqueID);
-            this._updateState();
+            }, _this.uniqueID);
+            _this._updateState();
+            return _this;
         }
         CheckBoxElView.prototype._updateState = function () {
             dom.setClass([this.el], baseview_4.css.checkedNull, !checks.isNt(this.checked));
@@ -1367,16 +1378,17 @@ define("jriapp_ui/content/bool", ["require", "exports", "jriapp/utils/dom", "jri
     var BoolContent = (function (_super) {
         __extends(BoolContent, _super);
         function BoolContent(options) {
-            _super.call(this, options);
-            this._target = this.createTargetElement();
-            var bindingInfo = this._options.bindingInfo;
+            var _this = _super.call(this, options) || this;
+            _this._target = _this.createTargetElement();
+            var bindingInfo = _this._options.bindingInfo;
             if (!!bindingInfo) {
-                this.updateCss();
-                this._lfScope = new lifetime_2.LifeTimeScope();
-                var options_1 = this.getBindingOption(bindingInfo, this._target, this._dataContext, "checked");
+                _this.updateCss();
+                _this._lfScope = new lifetime_2.LifeTimeScope();
+                var options_1 = _this.getBindingOption(bindingInfo, _this._target, _this._dataContext, "checked");
                 options_1.mode = 2;
-                this._lfScope.addObj(this.app.bind(options_1));
+                _this._lfScope.addObj(_this.app.bind(options_1));
             }
+            return _this;
         }
         BoolContent.prototype.cleanUp = function () {
         };
@@ -1440,7 +1452,7 @@ define("jriapp_ui/content/number", ["require", "exports", "jriapp/bootstrap", "j
     var NumberContent = (function (_super) {
         __extends(NumberContent, _super);
         function NumberContent() {
-            _super.apply(this, arguments);
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         Object.defineProperty(NumberContent.prototype, "_allowedKeys", {
             get: function () {
@@ -1498,9 +1510,9 @@ define("jriapp_ui/content/number", ["require", "exports", "jriapp/bootstrap", "j
         NumberContent.prototype.toString = function () {
             return "NumberContent";
         };
-        NumberContent.__allowedKeys = null;
         return NumberContent;
     }(basic_4.BasicContent));
+    NumberContent.__allowedKeys = null;
     exports.NumberContent = NumberContent;
 });
 define("jriapp_ui/content/date", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp_ui/content/basic"], function (require, exports, jriapp_shared_12, dom_11, basic_5) {
@@ -1510,10 +1522,12 @@ define("jriapp_ui/content/date", ["require", "exports", "jriapp_shared", "jriapp
     var DateContent = (function (_super) {
         __extends(DateContent, _super);
         function DateContent(options) {
+            var _this = this;
             if (options.contentOptions.name !== NAME) {
                 throw new Error(strUtils.format(jriapp_shared_12.LocaleERRS.ERR_ASSERTION_FAILED, strUtils.format("contentOptions.name === '{0}'", NAME)));
             }
-            _super.call(this, options);
+            _this = _super.call(this, options) || this;
+            return _this;
         }
         DateContent.prototype.getBindingOption = function (bindingInfo, tgt, dctx, targetPath) {
             var options = _super.prototype.getBindingOption.call(this, bindingInfo, tgt, dctx, targetPath);
@@ -1547,7 +1561,7 @@ define("jriapp_ui/content/datetime", ["require", "exports", "jriapp/bootstrap", 
     var DateTimeContent = (function (_super) {
         __extends(DateTimeContent, _super);
         function DateTimeContent() {
-            _super.apply(this, arguments);
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         DateTimeContent.prototype.getBindingOption = function (bindingInfo, tgt, dctx, targetPath) {
             var options = _super.prototype.getBindingOption.call(this, bindingInfo, tgt, dctx, targetPath);
@@ -1602,8 +1616,8 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
     var ListBox = (function (_super) {
         __extends(ListBox, _super);
         function ListBox(options) {
-            _super.call(this);
-            var self = this;
+            var _this = _super.call(this) || this;
+            var self = _this;
             options = coreUtils.extend({
                 el: null,
                 dataSource: null,
@@ -1613,35 +1627,36 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             }, options);
             if (!!options.dataSource && !sys.isCollection(options.dataSource))
                 throw new Error(jriapp_shared_13.LocaleERRS.ERR_LISTBOX_DATASRC_INVALID);
-            this._el = options.el;
-            this._options = options;
-            this._objId = coreUtils.getNewID("lst");
-            this._isDSFilled = false;
-            dom.events.on(this.el, "change", function (e) {
+            _this._el = options.el;
+            _this._options = options;
+            _this._objId = coreUtils.getNewID("lst");
+            _this._isDSFilled = false;
+            dom.events.on(_this.el, "change", function (e) {
                 e.stopPropagation();
                 if (self._isRefreshing)
                     return;
                 self._onChanged();
-            }, this._objId);
-            this._textProvider = null;
-            this._stateProvider = null;
-            this._isRefreshing = false;
-            this._selectedValue = null;
-            this._dsDebounce = new jriapp_shared_13.Debounce();
-            this._stDebounce = new jriapp_shared_13.Debounce();
-            this._txtDebounce = new jriapp_shared_13.Debounce();
-            this._changeDebounce = new jriapp_shared_13.Debounce();
-            this._keyMap = {};
-            this._valMap = {};
-            this._savedVal = checks.undefined;
-            this._fn_state = function (data) {
+            }, _this._objId);
+            _this._textProvider = null;
+            _this._stateProvider = null;
+            _this._isRefreshing = false;
+            _this._selectedValue = null;
+            _this._dsDebounce = new jriapp_shared_13.Debounce();
+            _this._stDebounce = new jriapp_shared_13.Debounce();
+            _this._txtDebounce = new jriapp_shared_13.Debounce();
+            _this._changeDebounce = new jriapp_shared_13.Debounce();
+            _this._keyMap = {};
+            _this._valMap = {};
+            _this._savedVal = checks.undefined;
+            _this._fn_state = function (data) {
                 if (!data || !data.item || data.item.getIsDestroyCalled())
                     return;
                 var item = data.item, path = self.statePath, val = !path ? null : sys.resolvePath(item, path), spr = self._stateProvider;
                 data.op.className = !spr ? "" : spr.getCSS(item, data.op.index, val);
             };
-            var ds = this._options.dataSource;
-            this._setDataSource(ds);
+            var ds = _this._options.dataSource;
+            _this._setDataSource(ds);
+            return _this;
         }
         ListBox.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -2237,8 +2252,8 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
     var ListBoxElView = (function (_super) {
         __extends(ListBoxElView, _super);
         function ListBoxElView(options) {
-            _super.call(this, options);
-            var self = this;
+            var _this = _super.call(this, options) || this;
+            var self = _this;
             self._listBox = new ListBox(options);
             self._listBox.addOnPropertyChange("*", function (sender, args) {
                 switch (args.property) {
@@ -2254,6 +2269,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                         break;
                 }
             }, self.uniqueID);
+            return _this;
         }
         ListBoxElView.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -2365,7 +2381,7 @@ define("jriapp_ui/span", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/b
     var SpanElView = (function (_super) {
         __extends(SpanElView, _super);
         function SpanElView() {
-            _super.apply(this, arguments);
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         SpanElView.prototype.toString = function () {
             return "SpanElView";
@@ -2434,20 +2450,22 @@ define("jriapp_ui/content/listbox", ["require", "exports", "jriapp_shared", "jri
     var LookupContent = (function (_super) {
         __extends(LookupContent, _super);
         function LookupContent(options) {
+            var _this = this;
             if (options.contentOptions.name !== "lookup") {
                 throw new Error(strUtils.format(jriapp_shared_14.LocaleERRS.ERR_ASSERTION_FAILED, "contentOptions.name === 'lookup'"));
             }
-            _super.call(this, options);
-            this._spanView = null;
-            this._listBoxElView = null;
-            this._isListBoxCachedExternally = false;
-            this._valBinding = null;
-            this._listBinding = null;
-            this._value = null;
-            this._objId = coreUtils.getNewID("lkup");
-            if (!!this._options.initContentFn) {
-                this._options.initContentFn(this);
+            _this = _super.call(this, options) || this;
+            _this._spanView = null;
+            _this._listBoxElView = null;
+            _this._isListBoxCachedExternally = false;
+            _this._valBinding = null;
+            _this._listBinding = null;
+            _this._value = null;
+            _this._objId = coreUtils.getNewID("lkup");
+            if (!!_this._options.initContentFn) {
+                _this._options.initContentFn(_this);
             }
+            return _this;
         }
         LookupContent.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
@@ -2722,11 +2740,11 @@ define("jriapp_ui/content/factory", ["require", "exports", "jriapp_shared", "jri
 define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/utils/jquery", "jriapp/utils/dom", "jriapp/template", "jriapp/bootstrap", "jriapp/mvvm"], function (require, exports, jriapp_shared_16, jquery_3, dom_14, template_3, bootstrap_12, mvvm_1) {
     "use strict";
     var utils = jriapp_shared_16.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, sys = utils.sys, doc = dom_14.DomUtils.document, ERROR = utils.err, boot = bootstrap_12.bootstrap;
+    var DIALOG_ACTION;
     (function (DIALOG_ACTION) {
         DIALOG_ACTION[DIALOG_ACTION["Default"] = 0] = "Default";
         DIALOG_ACTION[DIALOG_ACTION["StayOpen"] = 1] = "StayOpen";
-    })(exports.DIALOG_ACTION || (exports.DIALOG_ACTION = {}));
-    var DIALOG_ACTION = exports.DIALOG_ACTION;
+    })(DIALOG_ACTION = exports.DIALOG_ACTION || (exports.DIALOG_ACTION = {}));
     ;
     var DLG_EVENTS = {
         close: "close",
@@ -2744,8 +2762,8 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
     var DataEditDialog = (function (_super) {
         __extends(DataEditDialog, _super);
         function DataEditDialog(options) {
-            _super.call(this);
-            var self = this;
+            var _this = _super.call(this) || this;
+            var self = _this;
             options = coreUtils.extend({
                 dataContext: null,
                 templateID: null,
@@ -2762,32 +2780,32 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
                 fn_OnTemplateCreated: null,
                 fn_OnTemplateDestroy: null
             }, options);
-            this._objId = coreUtils.getNewID("dlg");
-            this._dataContext = options.dataContext;
-            this._templateID = options.templateID;
-            this._submitOnOK = options.submitOnOK;
-            this._canRefresh = options.canRefresh;
-            this._canCancel = options.canCancel;
-            this._fn_OnClose = options.fn_OnClose;
-            this._fn_OnOK = options.fn_OnOK;
-            this._fn_OnShow = options.fn_OnShow;
-            this._fn_OnCancel = options.fn_OnCancel;
-            this._fn_OnTemplateCreated = options.fn_OnTemplateCreated;
-            this._fn_OnTemplateDestroy = options.fn_OnTemplateDestroy;
-            this._editable = null;
-            this._template = null;
-            this._$dlgEl = null;
-            this._result = null;
-            this._currentSelectable = null;
-            this._fn_submitOnOK = function () {
+            _this._objId = coreUtils.getNewID("dlg");
+            _this._dataContext = options.dataContext;
+            _this._templateID = options.templateID;
+            _this._submitOnOK = options.submitOnOK;
+            _this._canRefresh = options.canRefresh;
+            _this._canCancel = options.canCancel;
+            _this._fn_OnClose = options.fn_OnClose;
+            _this._fn_OnOK = options.fn_OnOK;
+            _this._fn_OnShow = options.fn_OnShow;
+            _this._fn_OnCancel = options.fn_OnCancel;
+            _this._fn_OnTemplateCreated = options.fn_OnTemplateCreated;
+            _this._fn_OnTemplateDestroy = options.fn_OnTemplateDestroy;
+            _this._editable = null;
+            _this._template = null;
+            _this._$dlgEl = null;
+            _this._result = null;
+            _this._currentSelectable = null;
+            _this._fn_submitOnOK = function () {
                 var submittable = sys.getSubmittable(self._dataContext);
                 if (!submittable || !submittable.isCanSubmit) {
                     return utils.defer.createDeferred().resolve();
                 }
                 return submittable.submitChanges();
             };
-            this._updateIsEditable();
-            this._options = {
+            _this._updateIsEditable();
+            _this._options = {
                 width: options.width,
                 height: options.height,
                 title: options.title,
@@ -2798,8 +2816,9 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
                 },
                 buttons: self._getButtons()
             };
-            this._deferred = utils.defer.createDeferred();
-            this._createDialog();
+            _this._deferred = utils.defer.createDeferred();
+            _this._createDialog();
+            return _this;
         }
         DataEditDialog.prototype.addOnClose = function (fn, nmspace, context) {
             this._addHandler(DLG_EVENTS.close, fn, nmspace, context);
@@ -3153,9 +3172,10 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
     var DialogVM = (function (_super) {
         __extends(DialogVM, _super);
         function DialogVM(app) {
-            _super.call(this, app);
-            this._factories = {};
-            this._dialogs = {};
+            var _this = _super.call(this, app) || this;
+            _this._factories = {};
+            _this._dialogs = {};
+            return _this;
         }
         DialogVM.prototype.createDialog = function (name, options) {
             var self = this;
@@ -3213,14 +3233,15 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
     var DynaContentElView = (function (_super) {
         __extends(DynaContentElView, _super);
         function DynaContentElView(options) {
-            _super.call(this, options);
-            this._dataContext = null;
-            this._prevTemplateID = null;
-            this._templateID = null;
-            this._template = null;
-            this._animation = null;
-            this._tDebounce = new jriapp_shared_17.Debounce();
-            this._dsDebounce = new jriapp_shared_17.Debounce();
+            var _this = _super.call(this, options) || this;
+            _this._dataContext = null;
+            _this._prevTemplateID = null;
+            _this._templateID = null;
+            _this._template = null;
+            _this._animation = null;
+            _this._tDebounce = new jriapp_shared_17.Debounce();
+            _this._dsDebounce = new jriapp_shared_17.Debounce();
+            return _this;
         }
         DynaContentElView.prototype.templateLoading = function (template) {
             if (this.getIsDestroyCalled())
@@ -3438,19 +3459,19 @@ define("jriapp_ui/datagrid/const", ["require", "exports"], function (require, ex
         ROW_ACTIONS: "row_actions",
         ROW_SELECTOR: "row_selector"
     };
+    var ROW_POSITION;
     (function (ROW_POSITION) {
         ROW_POSITION[ROW_POSITION["Up"] = 0] = "Up";
         ROW_POSITION[ROW_POSITION["Bottom"] = 1] = "Bottom";
         ROW_POSITION[ROW_POSITION["Details"] = 2] = "Details";
-    })(exports.ROW_POSITION || (exports.ROW_POSITION = {}));
-    var ROW_POSITION = exports.ROW_POSITION;
+    })(ROW_POSITION = exports.ROW_POSITION || (exports.ROW_POSITION = {}));
+    var ROW_ACTION;
     (function (ROW_ACTION) {
         ROW_ACTION[ROW_ACTION["OK"] = 0] = "OK";
         ROW_ACTION[ROW_ACTION["EDIT"] = 1] = "EDIT";
         ROW_ACTION[ROW_ACTION["CANCEL"] = 2] = "CANCEL";
         ROW_ACTION[ROW_ACTION["DELETE"] = 3] = "DELETE";
-    })(exports.ROW_ACTION || (exports.ROW_ACTION = {}));
-    var ROW_ACTION = exports.ROW_ACTION;
+    })(ROW_ACTION = exports.ROW_ACTION || (exports.ROW_ACTION = {}));
     exports.css = {
         container: "ria-table-container",
         dataTable: "ria-data-table",
@@ -3501,8 +3522,9 @@ define("jriapp_ui/datagrid/animation", ["require", "exports", "jriapp_shared", "
     var DefaultAnimation = (function (_super) {
         __extends(DefaultAnimation, _super);
         function DefaultAnimation() {
-            _super.call(this);
-            this._$el = null;
+            var _this = _super.call(this) || this;
+            _this._$el = null;
+            return _this;
         }
         DefaultAnimation.prototype.beforeShow = function (el) {
             this.stop();
@@ -3546,27 +3568,27 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_shared"
     var BaseColumn = (function (_super) {
         __extends(BaseColumn, _super);
         function BaseColumn(grid, options) {
-            _super.call(this);
-            var self = this;
-            this._grid = grid;
-            this._th = options.th;
-            this._options = options.colInfo;
-            this._isSelected = false;
-            this._objId = utils.core.getNewID("th");
+            var _this = _super.call(this) || this;
+            var self = _this;
+            _this._grid = grid;
+            _this._th = options.th;
+            _this._options = options.colInfo;
+            _this._isSelected = false;
+            _this._objId = utils.core.getNewID("th");
             var col = doc.createElement("div");
-            this._col = col;
+            _this._col = col;
             dom.addClass([col], const_3.css.column);
-            if (!!this._options.colCellCss) {
-                dom.addClass([col], this._options.colCellCss);
+            if (!!_this._options.colCellCss) {
+                dom.addClass([col], _this._options.colCellCss);
             }
-            this._grid._getInternal().getHeader().appendChild(col);
-            dom.events.on(this._col, "click", function (e) {
+            _this._grid._getInternal().getHeader().appendChild(col);
+            dom.events.on(_this._col, "click", function (e) {
                 e.stopPropagation();
                 boot.currentSelectable = grid;
                 grid._getInternal().setCurrentColumn(self);
                 self._onColumnClicked();
-            }, this.uniqueID);
-            dom.events.on(this.grid.table, "click", function (e) {
+            }, _this.uniqueID);
+            dom.events.on(_this.grid.table, "click", function (e) {
                 e.stopPropagation();
                 var td = e.target, cell = dom.getData(td, "cell");
                 if (!!cell) {
@@ -3575,26 +3597,27 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_shared"
                     cell.click();
                 }
             }, {
-                nmspace: this.uniqueID,
+                nmspace: _this.uniqueID,
                 matchElement: function (el) {
                     var attr = el.getAttribute(const_2.DATA_ATTR.DATA_EVENT_SCOPE), tag = el.tagName.toLowerCase();
                     return self.uniqueID === attr && tag === "td";
                 }
             });
-            if (!!this._options.width) {
-                this._th.style.width = this._options.width;
+            if (!!_this._options.width) {
+                _this._th.style.width = _this._options.width;
             }
-            if (!!this._options.templateID) {
-                this._template = template_5.createTemplate(null, this);
-                this._template.templateID = this._options.templateID;
-                dom.append(col, [this._template.el]);
+            if (!!_this._options.templateID) {
+                _this._template = template_5.createTemplate(null, _this);
+                _this._template.templateID = _this._options.templateID;
+                dom.append(col, [_this._template.el]);
             }
-            else if (!!this._options.title) {
-                col.innerHTML = this._options.title;
+            else if (!!_this._options.title) {
+                col.innerHTML = _this._options.title;
             }
-            if (!!this._options.tip) {
-                baseview_8.fn_addToolTip(col, this._options.tip, false, "bottom center");
+            if (!!_this._options.tip) {
+                baseview_8.fn_addToolTip(col, _this._options.tip, false, "bottom center");
             }
+            return _this;
         }
         BaseColumn.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -3690,8 +3713,9 @@ define("jriapp_ui/datagrid/columns/expander", ["require", "exports", "jriapp/uti
     var ExpanderColumn = (function (_super) {
         __extends(ExpanderColumn, _super);
         function ExpanderColumn(grid, options) {
-            _super.call(this, grid, options);
-            dom.addClass([this.col], const_4.css.rowExpander);
+            var _this = _super.call(this, grid, options) || this;
+            dom.addClass([_this.col], const_4.css.rowExpander);
+            return _this;
         }
         ExpanderColumn.prototype.toString = function () {
             return "ExpanderColumn";
@@ -3706,13 +3730,14 @@ define("jriapp_ui/datagrid/cells/expander", ["require", "exports", "jriapp/utils
     var ExpanderCell = (function (_super) {
         __extends(ExpanderCell, _super);
         function ExpanderCell(options) {
-            _super.call(this, options);
-            var self = this;
-            this._click.add(function () {
+            var _this = _super.call(this, options) || this;
+            var self = _this;
+            _this._click.add(function () {
                 self._onCellClicked(self.row);
             });
-            dom.addClass([this.td], const_5.css.rowCollapsed);
-            dom.addClass([this.td], const_5.css.rowExpander);
+            dom.addClass([_this.td], const_5.css.rowCollapsed);
+            dom.addClass([_this.td], const_5.css.rowExpander);
+            return _this;
         }
         ExpanderCell.prototype._onCellClicked = function (row) {
             var clicked_row = row || this.row;
@@ -3744,14 +3769,15 @@ define("jriapp_ui/datagrid/columns/data", ["require", "exports", "jriapp_shared"
     var DataColumn = (function (_super) {
         __extends(DataColumn, _super);
         function DataColumn(grid, options) {
-            _super.call(this, grid, options);
-            this._objCache = {};
+            var _this = _super.call(this, grid, options) || this;
+            _this._objCache = {};
             var colClass = const_6.css.dataColumn;
-            this._sortOrder = null;
-            if (this.isSortable) {
+            _this._sortOrder = null;
+            if (_this.isSortable) {
                 colClass += (" " + const_6.css.colSortable);
             }
-            dom.addClass([this.col], colClass);
+            dom.addClass([_this.col], colClass);
+            return _this;
         }
         DataColumn.prototype._onColumnClicked = function () {
             if (this.isSortable && !!this.sortMemberName) {
@@ -3826,17 +3852,18 @@ define("jriapp_ui/datagrid/cells/data", ["require", "exports", "jriapp_shared", 
     var DataCell = (function (_super) {
         __extends(DataCell, _super);
         function DataCell(options) {
-            _super.call(this, options);
-            var self = this;
-            this._content = null;
-            this._click.interval = 350;
-            this._click.add(function () {
+            var _this = _super.call(this, options) || this;
+            var self = _this;
+            _this._content = null;
+            _this._click.interval = 350;
+            _this._click.add(function () {
                 self._onCellClicked(self.row);
             }, function () {
                 self._onDblClicked(self.row);
             });
-            dom.addClass([this.td], const_7.css.dataCell);
-            this._initContent();
+            dom.addClass([_this.td], const_7.css.dataCell);
+            _this._initContent();
+            return _this;
         }
         DataCell.prototype._initContent = function () {
             var contentOptions = this.column.options.content;
@@ -3901,10 +3928,10 @@ define("jriapp_ui/datagrid/columns/actions", ["require", "exports", "jriapp/cons
     var ActionsColumn = (function (_super) {
         __extends(ActionsColumn, _super);
         function ActionsColumn(grid, options) {
-            _super.call(this, grid, options);
-            var self = this, opts = this.options;
-            dom.addClass([this.col], const_9.css.rowActions);
-            dom.events.on(this.grid.table, "click", function (e) {
+            var _this = _super.call(this, grid, options) || this;
+            var self = _this, opts = _this.options;
+            dom.addClass([_this.col], const_9.css.rowActions);
+            dom.events.on(_this.grid.table, "click", function (e) {
                 e.stopPropagation();
                 var btn = e.target, name = btn.getAttribute(const_8.DATA_ATTR.DATA_NAME), cell = dom.getData(btn, "cell");
                 self.grid.currentRow = cell.row;
@@ -3923,13 +3950,13 @@ define("jriapp_ui/datagrid/columns/actions", ["require", "exports", "jriapp/cons
                         break;
                 }
             }, {
-                nmspace: this.uniqueID,
+                nmspace: _this.uniqueID,
                 matchElement: function (el) {
                     var attr = el.getAttribute(const_8.DATA_ATTR.DATA_EVENT_SCOPE), tag = el.tagName.toLowerCase();
                     return self.uniqueID === attr && tag === "span";
                 }
             });
-            this.grid.addOnRowAction(function (sender, args) {
+            _this.grid.addOnRowAction(function (sender, args) {
                 switch (args.action) {
                     case 0:
                         self._onOk(args.row.actionsCell);
@@ -3944,7 +3971,8 @@ define("jriapp_ui/datagrid/columns/actions", ["require", "exports", "jriapp/cons
                         self._onDelete(args.row.actionsCell);
                         break;
                 }
-            }, this.uniqueID);
+            }, _this.uniqueID);
+            return _this;
         }
         ActionsColumn.prototype._onOk = function (cell) {
             if (!cell.row)
@@ -3995,10 +4023,11 @@ define("jriapp_ui/datagrid/cells/actions", ["require", "exports", "jriapp_shared
     var ActionsCell = (function (_super) {
         __extends(ActionsCell, _super);
         function ActionsCell(options) {
-            _super.call(this, options);
-            this._isEditing = false;
-            dom.addClass([this.td], [const_11.css.rowActions, const_11.css.nobr].join(" "));
-            this._createButtons(this.row.isEditing);
+            var _this = _super.call(this, options) || this;
+            _this._isEditing = false;
+            dom.addClass([_this.td], [const_11.css.rowActions, const_11.css.nobr].join(" "));
+            _this._createButtons(_this.row.isEditing);
+            return _this;
         }
         ActionsCell.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -4097,9 +4126,9 @@ define("jriapp_ui/datagrid/columns/rowselector", ["require", "exports", "jriapp_
     var RowSelectorColumn = (function (_super) {
         __extends(RowSelectorColumn, _super);
         function RowSelectorColumn(grid, options) {
-            _super.call(this, grid, options);
-            var self = this;
-            dom.addClass([this.col], const_13.css.rowSelector);
+            var _this = _super.call(this, grid, options) || this;
+            var self = _this;
+            dom.addClass([_this.col], const_13.css.rowSelector);
             var label = doc.createElement("label");
             var chk = doc.createElement("input");
             chk.type = "checkbox";
@@ -4108,26 +4137,27 @@ define("jriapp_ui/datagrid/columns/rowselector", ["require", "exports", "jriapp_
             label.className = const_13.css.rowSelector;
             label.appendChild(chk);
             label.appendChild(doc.createElement("span"));
-            this.col.appendChild(label);
-            this._chk = chk;
+            _this.col.appendChild(label);
+            _this._chk = chk;
             dom.events.on(chk, "change", function (e) {
                 e.stopPropagation();
                 self.raisePropertyChanged(const_13.PROP_NAME.checked);
                 self.grid.selectRows(chk.checked);
-            }, this.uniqueID);
-            dom.events.on(this.grid.table, "click", function (e) {
+            }, _this.uniqueID);
+            dom.events.on(_this.grid.table, "click", function (e) {
                 e.stopPropagation();
                 var chk = e.target, cell = dom.getData(chk, "cell");
                 if (!!cell && !cell.getIsDestroyCalled()) {
                     cell.row.isSelected = cell.checked;
                 }
             }, {
-                nmspace: this.uniqueID,
+                nmspace: _this.uniqueID,
                 matchElement: function (el) {
                     var attr = el.getAttribute(const_12.DATA_ATTR.DATA_EVENT_SCOPE), tag = el.tagName.toLowerCase();
                     return self.uniqueID === attr && tag === "input";
                 }
             });
+            return _this;
         }
         RowSelectorColumn.prototype.toString = function () {
             return "RowSelectorColumn";
@@ -4167,20 +4197,21 @@ define("jriapp_ui/datagrid/cells/rowselector", ["require", "exports", "jriapp/ut
     var RowSelectorCell = (function (_super) {
         __extends(RowSelectorCell, _super);
         function RowSelectorCell(options) {
-            _super.call(this, options);
-            dom.addClass([this.td], const_15.css.rowSelector);
+            var _this = _super.call(this, options) || this;
+            dom.addClass([_this.td], const_15.css.rowSelector);
             var label = doc.createElement("label");
             var chk = doc.createElement("input");
             chk.type = "checkbox";
             chk.checked = false;
             chk.className = const_15.css.rowSelector;
             label.className = const_15.css.rowSelector;
-            chk.setAttribute(const_14.DATA_ATTR.DATA_EVENT_SCOPE, this.column.uniqueID);
+            chk.setAttribute(const_14.DATA_ATTR.DATA_EVENT_SCOPE, _this.column.uniqueID);
             label.appendChild(chk);
             label.appendChild(doc.createElement("span"));
-            this.td.appendChild(label);
-            this._chk = chk;
-            dom.setData(chk, "cell", this);
+            _this.td.appendChild(label);
+            _this._chk = chk;
+            dom.setData(chk, "cell", _this);
+            return _this;
         }
         Object.defineProperty(RowSelectorCell.prototype, "checked", {
             get: function () {
@@ -4219,33 +4250,34 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_shared", "j
     var Row = (function (_super) {
         __extends(Row, _super);
         function Row(grid, options) {
-            _super.call(this);
-            var self = this, item = options.item, tr = options.tr;
-            this._grid = grid;
-            this._tr = tr;
-            this._item = item;
-            this._cells = [];
-            this._objId = utils.core.getNewID("tr");
-            this._expanderCell = null;
-            this._actionsCell = null;
-            this._rowSelectorCell = null;
-            this._isDeleted = false;
-            this._isSelected = false;
-            this._isDetached = false;
-            this._stateCss = null;
-            this._isDeleted = item._aspect.isDeleted;
-            if (this._isDeleted) {
+            var _this = _super.call(this) || this;
+            var self = _this, item = options.item, tr = options.tr;
+            _this._grid = grid;
+            _this._tr = tr;
+            _this._item = item;
+            _this._cells = [];
+            _this._objId = utils.core.getNewID("tr");
+            _this._expanderCell = null;
+            _this._actionsCell = null;
+            _this._rowSelectorCell = null;
+            _this._isDeleted = false;
+            _this._isSelected = false;
+            _this._isDetached = false;
+            _this._stateCss = null;
+            _this._isDeleted = item._aspect.isDeleted;
+            if (_this._isDeleted) {
                 dom.addClass([tr], const_16.css.rowDeleted);
             }
-            this._createCells();
-            if (!!this._item) {
-                if (!!this.isHasStateField) {
-                    this._item.addOnPropertyChange(this._grid.options.rowStateField, function (s, a) {
+            _this._createCells();
+            if (!!_this._item) {
+                if (!!_this.isHasStateField) {
+                    _this._item.addOnPropertyChange(_this._grid.options.rowStateField, function (s, a) {
                         fn_state(self);
-                    }, this._objId);
+                    }, _this._objId);
                 }
                 fn_state(self);
             }
+            return _this;
         }
         Row.prototype._createCells = function () {
             var self = this, cols = self.columns, len = cols.length;
@@ -4500,24 +4532,25 @@ define("jriapp_ui/datagrid/cells/base", ["require", "exports", "jriapp_shared", 
     var BaseCell = (function (_super) {
         __extends(BaseCell, _super);
         function BaseCell(options) {
-            _super.call(this);
+            var _this = _super.call(this) || this;
             options = utils.core.extend({
                 row: null,
                 td: null,
                 column: null,
                 num: 0
             }, options);
-            this._row = options.row;
-            this._td = options.td;
-            this._column = options.column;
-            this._num = options.num;
-            this._td.setAttribute(const_17.DATA_ATTR.DATA_EVENT_SCOPE, this._column.uniqueID);
-            dom.setData(this._td, "cell", this);
-            if (!!this._column.options.rowCellCss) {
-                dom.addClass([this._td], this._column.options.rowCellCss);
+            _this._row = options.row;
+            _this._td = options.td;
+            _this._column = options.column;
+            _this._num = options.num;
+            _this._td.setAttribute(const_17.DATA_ATTR.DATA_EVENT_SCOPE, _this._column.uniqueID);
+            dom.setData(_this._td, "cell", _this);
+            if (!!_this._column.options.rowCellCss) {
+                dom.addClass([_this._td], _this._column.options.rowCellCss);
             }
-            this._click = new dblclick_1.DblClick();
-            this._row.tr.appendChild(this._td);
+            _this._click = new dblclick_1.DblClick();
+            _this._row.tr.appendChild(_this._td);
+            return _this;
         }
         BaseCell.prototype._onCellClicked = function (row) {
         };
@@ -4593,21 +4626,22 @@ define("jriapp_ui/datagrid/rows/details", ["require", "exports", "jriapp_shared"
     var DetailsRow = (function (_super) {
         __extends(DetailsRow, _super);
         function DetailsRow(options) {
-            _super.call(this);
-            var self = this, tr = options.tr;
-            this._grid = options.grid;
-            this._tr = tr;
-            this._item = null;
-            this._cell = null;
-            this._parentRow = null;
-            this._isFirstShow = true;
-            this._objId = coreUtils.getNewID("drow");
-            this._createCell(options.details_id);
+            var _this = _super.call(this) || this;
+            var self = _this, tr = options.tr;
+            _this._grid = options.grid;
+            _this._tr = tr;
+            _this._item = null;
+            _this._cell = null;
+            _this._parentRow = null;
+            _this._isFirstShow = true;
+            _this._objId = coreUtils.getNewID("drow");
+            _this._createCell(options.details_id);
             dom.addClass([tr], const_18.css.rowDetails);
-            this._grid.addOnRowExpanded(function (sender, args) {
+            _this._grid.addOnRowExpanded(function (sender, args) {
                 if (!args.isExpanded && !!args.collapsedRow)
                     self._setParentRow(null);
-            }, this._objId);
+            }, _this._objId);
+            return _this;
         }
         DetailsRow.prototype._createCell = function (details_id) {
             var td = document.createElement("td");
@@ -4754,16 +4788,17 @@ define("jriapp_ui/datagrid/cells/details", ["require", "exports", "jriapp_shared
     var DetailsCell = (function (_super) {
         __extends(DetailsCell, _super);
         function DetailsCell(options) {
-            _super.call(this);
-            this._row = options.row;
-            this._td = options.td;
+            var _this = _super.call(this) || this;
+            _this._row = options.row;
+            _this._td = options.td;
             if (!options.details_id)
-                return;
-            this._td.colSpan = this.grid.columns.length;
-            this._row.tr.appendChild(this._td);
-            this._template = template_6.createTemplate(null, null);
-            this._template.templateID = options.details_id;
-            this._td.appendChild(this._template.el);
+                return _this;
+            _this._td.colSpan = _this.grid.columns.length;
+            _this._row.tr.appendChild(_this._td);
+            _this._template = template_6.createTemplate(null, null);
+            _this._template.templateID = options.details_id;
+            _this._td.appendChild(_this._template.el);
+            return _this;
         }
         DetailsCell.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -4820,13 +4855,14 @@ define("jriapp_ui/datagrid/rows/fillspace", ["require", "exports", "jriapp_share
     var FillSpaceRow = (function (_super) {
         __extends(FillSpaceRow, _super);
         function FillSpaceRow(options) {
-            _super.call(this);
-            var self = this, tr = options.tr;
-            this._grid = options.grid;
-            this._tr = tr;
-            this._cell = null;
-            this._createCell();
+            var _this = _super.call(this) || this;
+            var self = _this, tr = options.tr;
+            _this._grid = options.grid;
+            _this._tr = tr;
+            _this._cell = null;
+            _this._createCell();
             dom.addClass([tr], const_19.css.fillVSpace);
+            return _this;
         }
         FillSpaceRow.prototype._createCell = function () {
             var td = document.createElement("td");
@@ -4885,14 +4921,15 @@ define("jriapp_ui/datagrid/cells/fillspace", ["require", "exports", "jriapp_shar
     var FillSpaceCell = (function (_super) {
         __extends(FillSpaceCell, _super);
         function FillSpaceCell(options) {
-            _super.call(this);
-            this._row = options.row;
-            this._td = options.td;
-            this._td.colSpan = this.grid.columns.length;
-            this._row.tr.appendChild(this._td);
-            this._div = doc.createElement("div");
-            this._div.className = const_20.css.fillVSpace;
-            this._td.appendChild(this._div);
+            var _this = _super.call(this) || this;
+            _this._row = options.row;
+            _this._td = options.td;
+            _this._td.colSpan = _this.grid.columns.length;
+            _this._row.tr.appendChild(_this._td);
+            _this._div = doc.createElement("div");
+            _this._div.className = const_20.css.fillVSpace;
+            _this._td.appendChild(_this._div);
+            return _this;
         }
         FillSpaceCell.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -5005,8 +5042,8 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
     var DataGrid = (function (_super) {
         __extends(DataGrid, _super);
         function DataGrid(options) {
-            _super.call(this);
-            var self = this;
+            var _this = _super.call(this) || this;
+            var self = _this;
             options = coreUtils.merge(options, {
                 el: null,
                 dataSource: null,
@@ -5025,32 +5062,32 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             });
             if (!!options.dataSource && !sys.isCollection(options.dataSource))
                 throw new Error(jriapp_shared_30.LocaleERRS.ERR_GRID_DATASRC_INVALID);
-            this._options = options;
-            var table = this._options.el;
-            this._table = table;
+            _this._options = options;
+            var table = _this._options.el;
+            _this._table = table;
             dom.addClass([table], const_22.css.dataTable);
-            this._name = table.getAttribute(const_21.DATA_ATTR.DATA_NAME);
-            this._objId = coreUtils.getNewID("grd");
-            this._rowMap = {};
-            this._rows = [];
-            this._columns = [];
-            this._expandedRow = null;
-            this._details = null;
-            this._fillSpace = null;
-            this._expanderCol = null;
-            this._actionsCol = null;
-            this._rowSelectorCol = null;
-            this._currentColumn = null;
-            this._editingRow = null;
-            this._dialog = null;
-            this._header = null;
-            this._wrapper = null;
-            this._contaner = null;
-            this._wrapTable();
-            this._scrollDebounce = new jriapp_shared_30.Debounce();
-            this._dsDebounce = new jriapp_shared_30.Debounce();
-            this._pageDebounce = new jriapp_shared_30.Debounce();
-            this._selectable = {
+            _this._name = table.getAttribute(const_21.DATA_ATTR.DATA_NAME);
+            _this._objId = coreUtils.getNewID("grd");
+            _this._rowMap = {};
+            _this._rows = [];
+            _this._columns = [];
+            _this._expandedRow = null;
+            _this._details = null;
+            _this._fillSpace = null;
+            _this._expanderCol = null;
+            _this._actionsCol = null;
+            _this._rowSelectorCol = null;
+            _this._currentColumn = null;
+            _this._editingRow = null;
+            _this._dialog = null;
+            _this._header = null;
+            _this._wrapper = null;
+            _this._contaner = null;
+            _this._wrapTable();
+            _this._scrollDebounce = new jriapp_shared_30.Debounce();
+            _this._dsDebounce = new jriapp_shared_30.Debounce();
+            _this._pageDebounce = new jriapp_shared_30.Debounce();
+            _this._selectable = {
                 getContainerEl: function () {
                     return self._contaner;
                 },
@@ -5064,9 +5101,9 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                     self._onKeyUp(key, event);
                 }
             };
-            this._updateCurrent = function () { };
+            _this._updateCurrent = function () { };
             var tw = table.offsetWidth;
-            this._internal = {
+            _this._internal = {
                 isRowExpanded: function (row) {
                     return self._isRowExpanded(row);
                 },
@@ -5113,11 +5150,12 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                     }
                 }
             };
-            this._createColumns();
-            boot._getInternal().trackSelectable(this);
-            _gridCreated(this);
-            var ds = this._options.dataSource;
-            this._setDataSource(ds);
+            _this._createColumns();
+            boot._getInternal().trackSelectable(_this);
+            _gridCreated(_this);
+            var ds = _this._options.dataSource;
+            _this._setDataSource(ds);
+            return _this;
         }
         DataGrid.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
@@ -6101,17 +6139,18 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
     var DataGridElView = (function (_super) {
         __extends(DataGridElView, _super);
         function DataGridElView(options) {
-            _super.call(this, options);
-            this._stateProvider = null;
-            this._stateDebounce = new jriapp_shared_30.Debounce();
-            this._options = options;
+            var _this = _super.call(this, options) || this;
+            _this._stateProvider = null;
+            _this._stateDebounce = new jriapp_shared_30.Debounce();
+            _this._options = options;
             var opts = coreUtils.extend({
-                el: this.el,
+                el: _this.el,
                 dataSource: null,
                 animation: null
             }, options);
-            this._grid = new DataGrid(opts);
-            this._bindGridEvents();
+            _this._grid = new DataGrid(opts);
+            _this._bindGridEvents();
+            return _this;
         }
         DataGridElView.prototype.toString = function () {
             return "DataGridElView";
@@ -6210,7 +6249,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/const"
     var Pager = (function (_super) {
         __extends(Pager, _super);
         function Pager(options) {
-            _super.call(this);
+            var _this = _super.call(this) || this;
             options = coreUtils.extend({
                 el: null,
                 dataSource: null,
@@ -6223,20 +6262,20 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/const"
                 hideOnSinglePage: true,
                 sliderSize: 25
             }, options);
-            var self = this;
-            this._display = null;
+            var self = _this;
+            _this._display = null;
             if (!!options.dataSource && !sys.isCollection(options.dataSource))
                 throw new Error(jriapp_shared_31.LocaleERRS.ERR_PAGER_DATASRC_INVALID);
-            this._options = options;
-            this._el = options.el;
-            dom.addClass([this._el], css.pager);
-            this._objId = coreUtils.getNewID("pgr");
-            this._rowsPerPage = 0;
-            this._rowCount = 0;
-            this._currentPage = 1;
-            this._pageDebounce = new jriapp_shared_31.Debounce();
-            this._dsDebounce = new jriapp_shared_31.Debounce();
-            dom.events.on(this._el, "click", function (e) {
+            _this._options = options;
+            _this._el = options.el;
+            dom.addClass([_this._el], css.pager);
+            _this._objId = coreUtils.getNewID("pgr");
+            _this._rowsPerPage = 0;
+            _this._rowCount = 0;
+            _this._currentPage = 1;
+            _this._pageDebounce = new jriapp_shared_31.Debounce();
+            _this._dsDebounce = new jriapp_shared_31.Debounce();
+            dom.events.on(_this._el, "click", function (e) {
                 e.preventDefault();
                 var a = e.target, page = parseInt(a.getAttribute("data-page"), 10);
                 self._pageDebounce.enque(function () {
@@ -6248,13 +6287,14 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/const"
                     });
                 });
             }, {
-                nmspace: this._objId,
+                nmspace: _this._objId,
                 matchElement: function (el) {
                     var attr = el.getAttribute(const_24.DATA_ATTR.DATA_EVENT_SCOPE), tag = el.tagName.toLowerCase();
                     return self._objId === attr && tag === "a";
                 }
             });
-            this._bindDS();
+            _this._bindDS();
+            return _this;
         }
         Pager.prototype._createElement = function (tag) {
             return doc.createElement(tag);
@@ -6671,8 +6711,9 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/const"
     var PagerElView = (function (_super) {
         __extends(PagerElView, _super);
         function PagerElView(options) {
-            _super.call(this, options);
-            this._pager = new Pager(options);
+            var _this = _super.call(this, options) || this;
+            _this._pager = new Pager(options);
+            return _this;
         }
         PagerElView.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -6732,8 +6773,8 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
     var StackPanel = (function (_super) {
         __extends(StackPanel, _super);
         function StackPanel(options) {
-            _super.call(this);
-            var self = this;
+            var _this = _super.call(this) || this;
+            var self = _this;
             options = coreUtils.extend({
                 el: null,
                 dataSource: null,
@@ -6744,23 +6785,23 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
                 throw new Error(jriapp_shared_32.LocaleERRS.ERR_STACKPNL_DATASRC_INVALID);
             if (!options.templateID)
                 throw new Error(jriapp_shared_32.LocaleERRS.ERR_STACKPNL_TEMPLATE_INVALID);
-            this._options = options;
-            this._el = options.el;
+            _this._options = options;
+            _this._el = options.el;
             dom.addClass([options.el], css.stackpanel);
             var eltag = options.el.tagName.toLowerCase();
             if (eltag === "ul" || eltag === "ol")
-                this._item_tag = "li";
+                _this._item_tag = "li";
             else
-                this._item_tag = "div";
-            if (this.orientation === HORIZONTAL) {
+                _this._item_tag = "div";
+            if (_this.orientation === HORIZONTAL) {
                 dom.addClass([options.el], css.horizontal);
             }
-            this._debounce = new jriapp_shared_32.Debounce();
-            this._objId = coreUtils.getNewID("pnl");
-            this._isKeyNavigation = false;
-            this._currentItem = null;
-            this._itemMap = {};
-            this._selectable = {
+            _this._debounce = new jriapp_shared_32.Debounce();
+            _this._objId = coreUtils.getNewID("pnl");
+            _this._isKeyNavigation = false;
+            _this._currentItem = null;
+            _this._itemMap = {};
+            _this._selectable = {
                 getContainerEl: function () {
                     return self._getContainerEl();
                 },
@@ -6774,21 +6815,22 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
                     self._onKeyUp(key, event);
                 }
             };
-            dom.events.on(this._el, "click", function (e) {
+            dom.events.on(_this._el, "click", function (e) {
                 e.stopPropagation();
                 boot.currentSelectable = self;
                 var el = e.target, mappedItem = dom.getData(el, "data");
                 self._onItemClicked(mappedItem.el, mappedItem.item);
             }, {
-                nmspace: this.uniqueID,
+                nmspace: _this.uniqueID,
                 matchElement: function (el) {
                     var attr = el.getAttribute(const_25.DATA_ATTR.DATA_EVENT_SCOPE), tag = el.tagName.toLowerCase();
                     return self.uniqueID === attr && tag === self._item_tag;
                 }
             });
-            boot._getInternal().trackSelectable(this);
-            var ds = this._options.dataSource;
-            this._setDataSource(ds);
+            boot._getInternal().trackSelectable(_this);
+            var ds = _this._options.dataSource;
+            _this._setDataSource(ds);
+            return _this;
         }
         StackPanel.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
@@ -7109,15 +7151,16 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
     var StackPanelElView = (function (_super) {
         __extends(StackPanelElView, _super);
         function StackPanelElView(options) {
-            _super.call(this, options);
-            var self = this;
-            this._panelEvents = null;
-            this._panel = new StackPanel(options);
-            this._panel.addOnItemClicked(function (sender, args) {
+            var _this = _super.call(this, options) || this;
+            var self = _this;
+            _this._panelEvents = null;
+            _this._panel = new StackPanel(options);
+            _this._panel.addOnItemClicked(function (sender, args) {
                 if (!!self._panelEvents) {
                     self._panelEvents.onItemClicked(args.item);
                 }
-            }, this.uniqueID);
+            }, _this.uniqueID);
+            return _this;
         }
         StackPanelElView.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -7179,11 +7222,12 @@ define("jriapp_ui/tabs", ["require", "exports", "jriapp_shared", "jriapp_ui/util
     var TabsElView = (function (_super) {
         __extends(TabsElView, _super);
         function TabsElView(options) {
-            _super.call(this, options);
-            this._tabOpts = options;
-            this._tabsEvents = null;
-            this._tabsCreated = false;
-            this._createTabs();
+            var _this = _super.call(this, options) || this;
+            _this._tabOpts = options;
+            _this._tabsEvents = null;
+            _this._tabsCreated = false;
+            _this._createTabs();
+            return _this;
         }
         TabsElView.prototype._createTabs = function () {
             var $el = jquery_6.$(this.el), self = this, tabOpts = {
@@ -7272,13 +7316,14 @@ define("jriapp_ui/command", ["require", "exports", "jriapp_shared", "jriapp/util
     var CommandElView = (function (_super) {
         __extends(CommandElView, _super);
         function CommandElView(options) {
-            _super.call(this, options);
-            this._command = null;
-            this._commandParam = null;
-            this._preventDefault = !!options.preventDefault;
-            this._stopPropagation = !!options.stopPropagation;
-            this._disabled = ("disabled" in this.el) ? checks.undefined : false;
-            dom.setClass([this.el], baseview_14.css.disabled, this.isEnabled);
+            var _this = _super.call(this, options) || this;
+            _this._command = null;
+            _this._commandParam = null;
+            _this._preventDefault = !!options.preventDefault;
+            _this._stopPropagation = !!options.stopPropagation;
+            _this._disabled = ("disabled" in _this.el) ? checks.undefined : false;
+            dom.setClass([_this.el], baseview_14.css.disabled, _this.isEnabled);
+            return _this;
         }
         CommandElView.prototype._onCanExecuteChanged = function (cmd, args) {
             this.isEnabled = cmd.canExecute(this, this._commandParam);
@@ -7408,9 +7453,10 @@ define("jriapp_ui/template", ["require", "exports", "jriapp_shared", "jriapp/uti
     var TemplateElView = (function (_super) {
         __extends(TemplateElView, _super);
         function TemplateElView(options) {
-            _super.call(this, options);
-            this._template = null;
-            this._isEnabled = true;
+            var _this = _super.call(this, options) || this;
+            _this._template = null;
+            _this._isEnabled = true;
+            return _this;
         }
         TemplateElView.prototype.templateLoading = function (template) {
         };
@@ -7567,29 +7613,30 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
     var DataForm = (function (_super) {
         __extends(DataForm, _super);
         function DataForm(options) {
-            _super.call(this);
-            var self = this;
-            this._el = options.el;
-            this._objId = coreUtils.getNewID("frm");
-            this._dataContext = null;
-            dom.addClass([this._el], exports.css.dataform);
-            this._isEditing = false;
-            this._content = [];
-            this._lfTime = null;
-            this._contentCreated = false;
-            this._editable = null;
-            this._errNotification = null;
-            this._parentDataForm = null;
-            this._errors = null;
-            this._contentPromise = null;
-            var parent = viewChecks.getParentDataForm(null, this._el);
+            var _this = _super.call(this) || this;
+            var self = _this;
+            _this._el = options.el;
+            _this._objId = coreUtils.getNewID("frm");
+            _this._dataContext = null;
+            dom.addClass([_this._el], exports.css.dataform);
+            _this._isEditing = false;
+            _this._content = [];
+            _this._lfTime = null;
+            _this._contentCreated = false;
+            _this._editable = null;
+            _this._errNotification = null;
+            _this._parentDataForm = null;
+            _this._errors = null;
+            _this._contentPromise = null;
+            var parent = viewChecks.getParentDataForm(null, _this._el);
             if (!!parent) {
-                self._parentDataForm = this.app.viewFactory.getOrCreateElView(parent);
+                self._parentDataForm = _this.app.viewFactory.getOrCreateElView(parent);
                 self._parentDataForm.addOnDestroyed(function (sender, args) {
                     if (!self._isDestroyCalled)
                         self.destroy();
                 }, self._objId);
             }
+            return _this;
         }
         DataForm.prototype._getBindings = function () {
             if (!this._lfTime)
@@ -7855,19 +7902,19 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             enumerable: true,
             configurable: true
         });
-        DataForm._DATA_FORM_SELECTOR = ["*[", const_26.DATA_ATTR.DATA_FORM, "]"].join("");
-        DataForm._DATA_CONTENT_SELECTOR = ["*[", const_26.DATA_ATTR.DATA_CONTENT, "]:not([", const_26.DATA_ATTR.DATA_COLUMN, "])"].join("");
         return DataForm;
     }(jriapp_shared_36.BaseObject));
+    DataForm._DATA_FORM_SELECTOR = ["*[", const_26.DATA_ATTR.DATA_FORM, "]"].join("");
+    DataForm._DATA_CONTENT_SELECTOR = ["*[", const_26.DATA_ATTR.DATA_CONTENT, "]:not([", const_26.DATA_ATTR.DATA_COLUMN, "])"].join("");
     exports.DataForm = DataForm;
     var DataFormElView = (function (_super) {
         __extends(DataFormElView, _super);
         function DataFormElView(options) {
-            _super.call(this, options);
-            var self = this;
-            this._form = new DataForm(options);
-            this._errorGliph = null;
-            this._form.addOnPropertyChange("*", function (form, args) {
+            var _this = _super.call(this, options) || this;
+            var self = _this;
+            _this._form = new DataForm(options);
+            _this._errorGliph = null;
+            _this._form.addOnPropertyChange("*", function (form, args) {
                 switch (args.property) {
                     case PROP_NAME.validationErrors:
                         self.validationErrors = form.validationErrors;
@@ -7876,7 +7923,8 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
                         self.raisePropertyChanged(args.property);
                         break;
                 }
-            }, this.uniqueID);
+            }, _this.uniqueID);
+            return _this;
         }
         DataFormElView.prototype._getErrorTipInfo = function (errors) {
             var tip = ["<b>", jriapp_shared_36.LocaleSTRS.VALIDATE.errorInfo, "</b>", "<ul>"];
@@ -7966,14 +8014,14 @@ define("jriapp_ui/datepicker", ["require", "exports", "jriapp/const", "jriapp/bo
     var DatePickerElView = (function (_super) {
         __extends(DatePickerElView, _super);
         function DatePickerElView(options) {
-            var _this = this;
-            _super.call(this, options);
+            var _this = _super.call(this, options) || this;
             var datepicker = boot.getSvc(const_27.DATEPICKER_SVC);
             if (!datepicker)
                 throw new Error("IDatepicker service is not registered");
-            datepicker.attachTo(this.el, options.datepicker, function () {
+            datepicker.attachTo(_this.el, options.datepicker, function () {
                 _this.raisePropertyChanged("value");
             });
+            return _this;
         }
         DatePickerElView.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -7999,20 +8047,21 @@ define("jriapp_ui/anchor", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
     var AnchorElView = (function (_super) {
         __extends(AnchorElView, _super);
         function AnchorElView(options) {
-            _super.call(this, options);
-            var self = this;
-            this._imageSrc = null;
-            this._image = null;
-            this._span = null;
-            this._glyph = null;
+            var _this = _super.call(this, options) || this;
+            var self = _this;
+            _this._imageSrc = null;
+            _this._image = null;
+            _this._span = null;
+            _this._glyph = null;
             if (!!options.imageSrc)
-                this.imageSrc = options.imageSrc;
+                _this.imageSrc = options.imageSrc;
             if (!!options.glyph)
-                this.glyph = options.glyph;
-            dom.addClass([this.el], baseview_16.css.commandLink);
-            dom.events.on(this.el, "click", function (e) {
+                _this.glyph = options.glyph;
+            dom.addClass([_this.el], baseview_16.css.commandLink);
+            dom.events.on(_this.el, "click", function (e) {
                 self._onClick(e);
-            }, this.uniqueID);
+            }, _this.uniqueID);
+            return _this;
         }
         AnchorElView.prototype._onClick = function (e) {
             if (this.stopPropagation)
@@ -8155,7 +8204,7 @@ define("jriapp_ui/block", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/
     var BlockElView = (function (_super) {
         __extends(BlockElView, _super);
         function BlockElView() {
-            _super.apply(this, arguments);
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         BlockElView.prototype.toString = function () {
             return "BlockElView";
@@ -8201,24 +8250,25 @@ define("jriapp_ui/busy", ["require", "exports", "jriapp_shared", "jriapp_ui/util
     var BusyElView = (function (_super) {
         __extends(BusyElView, _super);
         function BusyElView(options) {
-            _super.call(this, options);
+            var _this = _super.call(this, options) || this;
             var img;
             if (!!options.img)
                 img = options.img;
             else
                 img = const_28.LOADER_GIF.Default;
-            this._delay = 400;
-            this._timeOut = null;
+            _this._delay = 400;
+            _this._timeOut = null;
             if (!checks.isNt(options.delay))
-                this._delay = parseInt("" + options.delay);
-            this._loaderPath = bootstrap_23.bootstrap.getImagePath(img);
-            this._img = new Image();
-            this._img.style.position = "absolute";
-            this._img.style.display = "none";
-            this._img.style.zIndex = "10000";
-            this._img.src = this._loaderPath;
-            this.el.appendChild(this._img);
-            this._isBusy = false;
+                _this._delay = parseInt("" + options.delay);
+            _this._loaderPath = bootstrap_23.bootstrap.getImagePath(img);
+            _this._img = new Image();
+            _this._img.style.position = "absolute";
+            _this._img.style.display = "none";
+            _this._img.style.zIndex = "10000";
+            _this._img.src = _this._loaderPath;
+            _this.el.appendChild(_this._img);
+            _this._isBusy = false;
+            return _this;
         }
         BusyElView.prototype.destroy = function () {
             if (this._isDestroyed)
@@ -8292,12 +8342,13 @@ define("jriapp_ui/button", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
     var ButtonElView = (function (_super) {
         __extends(ButtonElView, _super);
         function ButtonElView(options) {
-            _super.call(this, options);
-            var self = this;
-            this._isButton = this.el.tagName.toLowerCase() === "button";
-            dom.events.on(this.el, "click", function (e) {
+            var _this = _super.call(this, options) || this;
+            var self = _this;
+            _this._isButton = _this.el.tagName.toLowerCase() === "button";
+            dom.events.on(_this.el, "click", function (e) {
                 self._onClick(e);
-            }, this.uniqueID);
+            }, _this.uniqueID);
+            return _this;
         }
         ButtonElView.prototype._onClick = function (e) {
             if (this.stopPropagation)
@@ -8373,19 +8424,20 @@ define("jriapp_ui/checkbox3", ["require", "exports", "jriapp_shared", "jriapp/ut
     var CheckBoxThreeStateElView = (function (_super) {
         __extends(CheckBoxThreeStateElView, _super);
         function CheckBoxThreeStateElView(options) {
-            _super.call(this, options);
-            var self = this, chk = this.el;
-            this._checked = null;
+            var _this = _super.call(this, options) || this;
+            var self = _this, chk = _this.el;
+            _this._checked = null;
             chk.checked = false;
-            chk.indeterminate = this._checked === null;
-            dom.events.on(this.el, "click", function (e) {
+            chk.indeterminate = _this._checked === null;
+            dom.events.on(_this.el, "click", function (e) {
                 e.stopPropagation();
                 if (self.checked === null)
                     self.checked = true;
                 else
                     self.checked = !self.checked ? null : false;
-            }, this.uniqueID);
-            this._updateState();
+            }, _this.uniqueID);
+            _this._updateState();
+            return _this;
         }
         CheckBoxThreeStateElView.prototype._updateState = function () {
             dom.setClass([this.el], baseview_20.css.checkedNull, !checks.isNt(this.checked));
@@ -8425,14 +8477,16 @@ define("jriapp_ui/expander", ["require", "exports", "jriapp/bootstrap", "jriapp_
     var ExpanderElView = (function (_super) {
         __extends(ExpanderElView, _super);
         function ExpanderElView(options) {
+            var _this = this;
             var expandedsrc = options.expandedsrc || bootstrap_26.bootstrap.getImagePath(COLLAPSE_IMG);
             var collapsedsrc = options.collapsedsrc || bootstrap_26.bootstrap.getImagePath(EXPAND_IMG);
             var isExpanded = !!options.isExpanded;
             options.imageSrc = null;
-            _super.call(this, options);
-            this._expandedsrc = expandedsrc;
-            this._collapsedsrc = collapsedsrc;
-            this.isExpanded = isExpanded;
+            _this = _super.call(this, options) || this;
+            _this._expandedsrc = expandedsrc;
+            _this._collapsedsrc = collapsedsrc;
+            _this.isExpanded = isExpanded;
+            return _this;
         }
         ExpanderElView.prototype.refresh = function () {
             if (this.getIsDestroyCalled())
@@ -8477,7 +8531,7 @@ define("jriapp_ui/hidden", ["require", "exports", "jriapp/bootstrap", "jriapp_ui
     var HiddenElView = (function (_super) {
         __extends(HiddenElView, _super);
         function HiddenElView() {
-            _super.apply(this, arguments);
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         HiddenElView.prototype.toString = function () {
             return "HiddenElView";
@@ -8492,7 +8546,7 @@ define("jriapp_ui/img", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/ba
     var ImgElView = (function (_super) {
         __extends(ImgElView, _super);
         function ImgElView(options) {
-            _super.call(this, options);
+            return _super.call(this, options) || this;
         }
         ImgElView.prototype.toString = function () {
             return "ImgElView";
@@ -8520,7 +8574,7 @@ define("jriapp_ui/radio", ["require", "exports", "jriapp_shared", "jriapp/bootst
     var RadioElView = (function (_super) {
         __extends(RadioElView, _super);
         function RadioElView() {
-            _super.apply(this, arguments);
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         RadioElView.prototype.toString = function () {
             return "RadioElView";

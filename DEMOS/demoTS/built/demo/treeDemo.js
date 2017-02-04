@@ -9,14 +9,14 @@ define(["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "./folderBrows
     var ExProps = (function (_super) {
         __extends(ExProps, _super);
         function ExProps(item, dbContext) {
-            _super.call(this);
-            var self = this;
-            this._item = item;
-            this._dbContext = dbContext;
-            this._childView = null;
+            var _this = _super.call(this) || this;
+            var self = _this;
+            _this._item = item;
+            _this._dbContext = dbContext;
+            _this._childView = null;
             if (item.HasSubDirs)
-                this._childView = this.createChildView();
-            this._dbSet = item._aspect.dbSet;
+                _this._childView = _this.createChildView();
+            _this._dbSet = item._aspect.dbSet;
             self._toggleCommand = new RIAPP.Command(function (s, a) {
                 if (!self.childView)
                     return;
@@ -46,6 +46,7 @@ define(["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "./folderBrows
                     }, 350);
                 }
             }, self, null);
+            return _this;
         }
         ExProps.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
@@ -149,8 +150,8 @@ define(["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "./folderBrows
     var FolderBrowser = (function (_super) {
         __extends(FolderBrowser, _super);
         function FolderBrowser(app, options) {
-            _super.call(this, app);
-            var self = this;
+            var _this = _super.call(this, app) || this;
+            var self = _this;
             self._dbSet = self.dbContext.dbSets.FileSystemObject;
             self._collapseCommand = new RIAPP.Command(function (s, a) {
                 self.collapse();
@@ -175,7 +176,8 @@ define(["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "./folderBrows
                 }
                 return res;
             });
-            this._rootView = this.createDataView();
+            _this._rootView = _this.createDataView();
+            return _this;
         }
         FolderBrowser.prototype._onItemClicked = function (item) {
             alert("clicked item: " + item.fullPath);
@@ -280,10 +282,11 @@ define(["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "./folderBrows
     var DemoApplication = (function (_super) {
         __extends(DemoApplication, _super);
         function DemoApplication(options) {
-            _super.call(this, options);
-            var self = this;
-            this._errorVM = null;
-            this._fbrowserVM = null;
+            var _this = _super.call(this, options) || this;
+            var self = _this;
+            _this._errorVM = null;
+            _this._fbrowserVM = null;
+            return _this;
         }
         DemoApplication.prototype.onStartUp = function () {
             var self = this, options = self.options;
