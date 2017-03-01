@@ -36,7 +36,6 @@ export class DataCell extends BaseCell<DataColumn> {
                 throw new Error(utils.str.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, "", contentOptions.fieldName));
             }
         }
-        const self = this;
         contentOptions.initContentFn = null;
         try {
             const contentType = boot.contentFactory.getContentType(contentOptions);

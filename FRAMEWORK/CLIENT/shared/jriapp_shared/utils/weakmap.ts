@@ -1,8 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { CoreUtils } from "./coreutils";
 import { IWeakMap, WeakMapConstructor } from "../int";
 
-const core = CoreUtils, undefined: any = void 0;
+const _undefined: any = void 0;
 let counter = (new Date().getTime()) % 1e9; 
 
 export function createWeakMap(): IWeakMap {
@@ -30,13 +29,13 @@ class WeakMap implements IWeakMap {
     }
     get(key: any): any {
         const entry: any[] = key[this._name];
-        return (!entry ? undefined : (entry[0] === key ? entry[1] : undefined)); 
+        return (!entry ? _undefined : (entry[0] === key ? entry[1] : _undefined)); 
     }
     delete(key: any): boolean {
         const entry: any[] = key[this._name];
         if (!entry) return false;
         const hasValue = (entry[0] === key);
-        entry[0] = entry[1] = undefined;
+        entry[0] = entry[1] = _undefined;
         return hasValue; 
     }
     has(key: any): boolean {

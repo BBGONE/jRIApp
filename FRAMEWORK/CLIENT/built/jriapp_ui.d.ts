@@ -26,7 +26,7 @@ declare module "jriapp_ui/content/int" {
 declare module "jriapp_ui/content/basic" {
     import { IBaseObject, BaseObject } from "jriapp_shared";
     import { IFieldInfo } from "jriapp_shared/collection/int";
-    import { IApplication, IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IElView, IViewOptions, IBindingInfo, IBindingOptions } from "jriapp/int";
+    import { IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IElView, IViewOptions, IBindingInfo, IBindingOptions, IApplication } from "jriapp/int";
     import { Binding } from "jriapp/binding";
     export class BasicContent extends BaseObject implements IContent {
         protected _parentEl: HTMLElement;
@@ -69,7 +69,6 @@ declare module "jriapp_ui/content/template" {
         private _templateInfo;
         private _isEditing;
         private _dataContext;
-        private _isDisabled;
         private _templateID;
         constructor(options: IConstructorContentOptions);
         private getTemplateID();
@@ -347,7 +346,7 @@ declare module "jriapp_ui/content/number" {
 }
 declare module "jriapp_ui/content/date" {
     import { IBaseObject } from "jriapp_shared";
-    import { IConstructorContentOptions, IBindingInfo, IBindingOptions, IElView } from "jriapp/int";
+    import { IConstructorContentOptions, IBindingInfo, IElView, IBindingOptions } from "jriapp/int";
     import { BasicContent } from "jriapp_ui/content/basic";
     export class DateContent extends BasicContent {
         constructor(options: IConstructorContentOptions);
@@ -673,23 +672,6 @@ declare module "jriapp_ui/dynacontent" {
         animation: IDynaContentAnimation;
     }
 }
-declare module "jriapp_ui/utils/dblclick" {
-    import { IDisposable } from "jriapp_shared";
-    export class DblClick implements IDisposable {
-        private _isDestroyed;
-        private _timer;
-        private _interval;
-        private _fn_OnClick;
-        private _fn_OnDblClick;
-        constructor(interval?: number);
-        click(): void;
-        add(fn_OnClick: () => any, fn_OnDblClick?: () => any): void;
-        destroy(): void;
-        getIsDestroyed(): boolean;
-        getIsDestroyCalled(): boolean;
-        interval: number;
-    }
-}
 declare module "jriapp_ui/datagrid/const" {
     import { IIndexer } from "jriapp_shared";
     export const COLUMN_TYPE: {
@@ -767,6 +749,23 @@ declare module "jriapp_ui/datagrid/animation" {
         hide(onEnd: () => void): void;
         stop(): void;
         destroy(): void;
+    }
+}
+declare module "jriapp_ui/utils/dblclick" {
+    import { IDisposable } from "jriapp_shared";
+    export class DblClick implements IDisposable {
+        private _isDestroyed;
+        private _timer;
+        private _interval;
+        private _fn_OnClick;
+        private _fn_OnDblClick;
+        constructor(interval?: number);
+        click(): void;
+        add(fn_OnClick: () => any, fn_OnDblClick?: () => any): void;
+        destroy(): void;
+        getIsDestroyed(): boolean;
+        getIsDestroyCalled(): boolean;
+        interval: number;
     }
 }
 declare module "jriapp_ui/datagrid/columns/base" {
@@ -1021,6 +1020,30 @@ declare module "jriapp_ui/datagrid/cells/base" {
         readonly num: number;
     }
 }
+declare module "jriapp_ui/datagrid/cells/details" {
+    import { BaseObject } from "jriapp_shared";
+    import { ITemplate } from "jriapp/int";
+    import { ICollectionItem } from "jriapp_shared/collection/int";
+    import { DetailsRow } from "jriapp_ui/datagrid/rows/details";
+    import { DataGrid } from "jriapp_ui/datagrid/datagrid";
+    export class DetailsCell extends BaseObject {
+        private _row;
+        private _td;
+        private _template;
+        constructor(options: {
+            row: DetailsRow;
+            td: HTMLTableCellElement;
+            details_id: string;
+        });
+        destroy(): void;
+        toString(): string;
+        readonly td: HTMLTableCellElement;
+        readonly row: DetailsRow;
+        readonly grid: DataGrid;
+        item: ICollectionItem;
+        readonly template: ITemplate;
+    }
+}
 declare module "jriapp_ui/datagrid/rows/details" {
     import { BaseObject } from "jriapp_shared";
     import { ICollectionItem } from "jriapp_shared/collection/int";
@@ -1059,28 +1082,25 @@ declare module "jriapp_ui/datagrid/rows/details" {
         parentRow: Row;
     }
 }
-declare module "jriapp_ui/datagrid/cells/details" {
+declare module "jriapp_ui/datagrid/cells/fillspace" {
     import { BaseObject } from "jriapp_shared";
-    import { ITemplate } from "jriapp/int";
-    import { ICollectionItem } from "jriapp_shared/collection/int";
-    import { DetailsRow } from "jriapp_ui/datagrid/rows/details";
+    import { FillSpaceRow } from "jriapp_ui/datagrid/rows/fillspace";
     import { DataGrid } from "jriapp_ui/datagrid/datagrid";
-    export class DetailsCell extends BaseObject {
+    export class FillSpaceCell extends BaseObject {
         private _row;
         private _td;
-        private _template;
+        private _div;
         constructor(options: {
-            row: DetailsRow;
+            row: FillSpaceRow;
             td: HTMLTableCellElement;
-            details_id: string;
         });
         destroy(): void;
         toString(): string;
         readonly td: HTMLTableCellElement;
-        readonly row: DetailsRow;
+        readonly row: FillSpaceRow;
         readonly grid: DataGrid;
-        item: ICollectionItem;
-        readonly template: ITemplate;
+        readonly div: HTMLElement;
+        height: number;
     }
 }
 declare module "jriapp_ui/datagrid/rows/fillspace" {
@@ -1103,27 +1123,6 @@ declare module "jriapp_ui/datagrid/rows/fillspace" {
         readonly tr: HTMLTableRowElement;
         readonly grid: DataGrid;
         readonly cell: FillSpaceCell;
-        height: number;
-    }
-}
-declare module "jriapp_ui/datagrid/cells/fillspace" {
-    import { BaseObject } from "jriapp_shared";
-    import { FillSpaceRow } from "jriapp_ui/datagrid/rows/fillspace";
-    import { DataGrid } from "jriapp_ui/datagrid/datagrid";
-    export class FillSpaceCell extends BaseObject {
-        private _row;
-        private _td;
-        private _div;
-        constructor(options: {
-            row: FillSpaceRow;
-            td: HTMLTableCellElement;
-        });
-        destroy(): void;
-        toString(): string;
-        readonly td: HTMLTableCellElement;
-        readonly row: FillSpaceRow;
-        readonly grid: DataGrid;
-        readonly div: HTMLElement;
         height: number;
     }
 }
@@ -1369,9 +1368,9 @@ declare module "jriapp_ui/pager" {
         constructor(options: IPagerConstructorOptions);
         protected _createElement(tag: string): HTMLElement;
         protected render(): void;
-        protected _onPageSizeChanged(ds: ICollection<ICollectionItem>, args?: any): void;
-        protected _onPageIndexChanged(ds: ICollection<ICollectionItem>, args?: any): void;
-        protected _onTotalCountChanged(ds: ICollection<ICollectionItem>, args?: any): void;
+        protected _onPageSizeChanged(ds: ICollection<ICollectionItem>): void;
+        protected _onPageIndexChanged(ds: ICollection<ICollectionItem>): void;
+        protected _onTotalCountChanged(ds: ICollection<ICollectionItem>): void;
         destroy(): void;
         protected _bindDS(): void;
         protected _unbindDS(): void;
@@ -1448,7 +1447,7 @@ declare module "jriapp_ui/stackpanel" {
         protected _onKeyDown(key: number, event: Event): void;
         protected _onKeyUp(key: number, event: Event): void;
         protected _updateCurrent(item: ICollectionItem, withScroll: boolean): void;
-        protected _onDSCurrentChanged(sender: any, args: any): void;
+        protected _onDSCurrentChanged(): void;
         protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>): void;
         protected _onItemStatusChanged(item: ICollectionItem, oldStatus: ITEM_STATUS): void;
         protected _createTemplate(item: ICollectionItem): ITemplate;
@@ -1570,7 +1569,7 @@ declare module "jriapp_ui/template" {
 }
 declare module "jriapp_ui/dataform" {
     import { IBaseObject, IValidationInfo, BaseObject } from "jriapp_shared";
-    import { IApplication, IViewOptions } from "jriapp/int";
+    import { IViewOptions, IApplication } from "jriapp/int";
     import { BaseElView } from "jriapp_ui/baseview";
     export const css: {
         dataform: string;
@@ -1594,12 +1593,11 @@ declare module "jriapp_ui/dataform" {
         private _contentPromise;
         constructor(options: IViewOptions);
         private _getBindings();
-        private _getElViews();
         private _createContent();
         private _updateCreatedContent();
         private _updateContent();
-        private _onDSErrorsChanged(sender?, args?);
-        _onIsEditingChanged(sender: any, args: any): void;
+        private _onDSErrorsChanged();
+        _onIsEditingChanged(): void;
         private _bindDS();
         private _unbindDS();
         private _clearContent();

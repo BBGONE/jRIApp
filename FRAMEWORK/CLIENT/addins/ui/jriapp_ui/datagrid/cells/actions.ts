@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { LocaleERRS as ERRS, LocaleSTRS as STRS, Utils } from "jriapp_shared";
+import { LocaleSTRS as STRS, Utils } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { DATA_ATTR, } from "jriapp/const";
 import { ButtonCss } from "jriapp/int";

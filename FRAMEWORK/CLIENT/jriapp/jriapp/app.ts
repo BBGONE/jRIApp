@@ -1,18 +1,15 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    APP_NAME, IIndexer, IErrorHandler, TEventHandler, IPromise, IVoidPromise,
-    IBaseObject, IThenable, DummyError, LocaleERRS, BaseObject, Utils
+    APP_NAME, IIndexer, TEventHandler, IPromise,
+    IBaseObject, IThenable, LocaleERRS, BaseObject, Utils
 } from "jriapp_shared";
-import { DATA_ATTR, STORE_KEY } from "./const";
+import { STORE_KEY } from "./const";
 import {
-    IElViewStore, IElViewFactory, IElView, IViewType, IApplication,
-    IExports, ILifeTimeScope, IBindableElement, IBindingOptions, IAppOptions, IInternalAppMethods,
-    TFactoryGetter, IConverter, IContentOptions, ITemplate, ITemplateEvents,
-    ITemplateGroupInfo, ITemplateGroupInfoEx, IContentFactory, IDataBindingService,
-    IBinding, IElViewRegister
+    IElViewFactory, IViewType, IApplication,
+    IBindingOptions, IAppOptions, IInternalAppMethods,
+    IConverter, ITemplateGroupInfo, ITemplateGroupInfoEx, IDataBindingService, IBinding
 } from "./int";
 import { bootstrap } from "./bootstrap";
-import { LifeTimeScope } from "./utils/lifetime";
 import { DomUtils } from "./utils/dom";
 import { createElViewFactory } from "./elview";
 import { createDataBindSvc } from "./databindsvc";
@@ -157,7 +154,7 @@ export class Application extends BaseObject implements IApplication {
     registerObject(name: string, obj: any): void {
         let self = this, name2 = STORE_KEY.OBJECT + name;
         if (sys.isBaseObj(obj)) {
-            (<IBaseObject>obj).addOnDestroyed((s, a) => {
+            (<IBaseObject>obj).addOnDestroyed(() => {
                 boot._getInternal().unregisterObject(self, name2);
             }, self.uniqueID);
         }
@@ -230,7 +227,7 @@ export class Application extends BaseObject implements IApplication {
 
         this._app_state = AppState.Starting;
 
-        let promise = deferred.promise().then((app) => {
+        const promise = deferred.promise().then(() => {
             self._app_state = AppState.Started;
             return self;
         }, (err) => {

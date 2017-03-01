@@ -5,9 +5,8 @@ import {
 } from "jriapp_shared";
 import { DATA_ATTR } from "./const";
 import {
-    IElViewFactory, IElView, IViewType, IApplication, IExports, ILifeTimeScope,
-    IBindableElement, IConverter,
-    IBindingOptions, IBindingInfo, IDataBindingService, IModuleLoader
+    IElViewFactory, IElView, ILifeTimeScope,
+    IBindableElement, IBindingOptions, IBindingInfo, IDataBindingService, IModuleLoader
 } from "./int";
 import { bootstrap } from "./bootstrap";
 import { LifeTimeScope } from "./utils/lifetime";
@@ -18,7 +17,7 @@ import { ViewChecks } from "./utils/viewchecks";
 import { Parser } from "./utils/parser";
 
 const utils = Utils, viewChecks = ViewChecks, dom = DomUtils, doc = dom.document,
-    strUtils = utils.str, sys = utils.sys, checks = utils.check, boot = bootstrap, ERRS = LocaleERRS, parser = Parser;
+    strUtils = utils.str, boot = bootstrap, ERRS = LocaleERRS, parser = Parser;
 
 export function createDataBindSvc(root: Document | HTMLElement, elViewFactory: IElViewFactory): IDataBindingService {
     return new DataBindingService(root, elViewFactory);
@@ -97,9 +96,9 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
         return Object.keys(hashMap);
     }
     private _getOnlyDataFormElems(bindElems: IBindableElement[]): HTMLElement[] {
-        return bindElems.filter((bindElem, index, arr) => {
+        return bindElems.filter((bindElem) => {
             return !!bindElem.dataForm;
-        }).map((bindElem, index, arr) => {
+        }).map((bindElem) => {
             return bindElem.el;
         });
     }

@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { BaseObject } from "../object";
-import { ICollectionItem, ITEM_EVENTS } from "./int";
+import { ICollectionItem } from "./int";
 import { ItemAspect } from "./aspect";
 
 export class CollectionItem<TAspect extends ItemAspect<ICollectionItem, any>> extends BaseObject implements ICollectionItem {
@@ -10,13 +10,14 @@ export class CollectionItem<TAspect extends ItemAspect<ICollectionItem, any>> ex
         super();
         this.__aspect = aspect;
     }
-    get _aspect() { return this.__aspect; }
+    get _aspect(): TAspect { return this.__aspect; }
     get _key(): string { return !this.__aspect ? null : this.__aspect.key; }
-    destroy() {
-        if (this._isDestroyed)
+    destroy(): void {
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
-        const aspect = this.__aspect;
+        const aspect: TAspect = this.__aspect;
         
         if (!!aspect) {
             if (!aspect.getIsDestroyCalled()) {
@@ -26,7 +27,7 @@ export class CollectionItem<TAspect extends ItemAspect<ICollectionItem, any>> ex
 
         super.destroy();
     }
-    toString() {
+    toString(): string {
         return "CollectionItem";
     }
 }

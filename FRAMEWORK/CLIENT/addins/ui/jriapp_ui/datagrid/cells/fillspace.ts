@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { BaseObject, Utils } from "jriapp_shared";
+import { BaseObject } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { css } from "../const";
 import { FillSpaceRow } from "../rows/fillspace";
@@ -31,14 +31,14 @@ export class FillSpaceCell extends BaseObject {
         this._div = null;
         super.destroy();
     }
-    toString() {
+    toString(): string {
         return "FillSpaceCell";
     }
-    get td() { return this._td; }
-    get row() { return this._row; }
-    get grid() { return this._row.grid; }
-    get div() { return this._div; }
-    get height() { return this._div.offsetHeight; }
+    get td(): HTMLTableCellElement { return this._td; }
+    get row(): FillSpaceRow { return this._row; }
+    get grid(): DataGrid { return this._row.grid; }
+    get div(): HTMLElement { return this._div; }
+    get height(): number { return this._div.offsetHeight; }
     set height(v) {
         this._div.style.height = (!v ? 0 : v) + "px";
     }

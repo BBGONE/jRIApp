@@ -1,17 +1,16 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    BaseObject, Utils, IIndexer, IErrorHandler, LocaleERRS, createWeakMap, IWeakMap
+    BaseObject, Utils, IIndexer, LocaleERRS, createWeakMap, IWeakMap
 } from "jriapp_shared";
-import { DATA_ATTR, STORE_KEY } from "./const";
+import { DATA_ATTR } from "./const";
 import {
-    IElViewStore, IElView, IViewType, IApplication, IExports, IViewOptions,
+    IElViewStore, IElView, IViewType, IExports, IViewOptions,
     IElViewFactory, IElViewRegister
 } from "./int";
 import { bootstrap } from "./bootstrap";
-import { LifeTimeScope } from "./utils/lifetime";
 import { Parser } from "./utils/parser";
 
-const utils = Utils, parser = Parser, ERROR = utils.err, ERRS = LocaleERRS;
+const utils = Utils, parser = Parser, ERRS = LocaleERRS;
 
 export function createElViewFactory(register: IElViewRegister): IElViewFactory {
     return new ElViewFactory(register);

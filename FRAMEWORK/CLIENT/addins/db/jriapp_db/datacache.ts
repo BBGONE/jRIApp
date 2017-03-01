@@ -1,12 +1,10 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import {
-    BaseObject, LocaleERRS as ERRS, Utils, IIndexer
-} from "jriapp_shared";
+import { BaseObject, Utils, IIndexer } from "jriapp_shared";
 import { PROP_NAME } from "./const";
 import { TDataQuery } from "./dataquery";
 import { IEntityItem, ICachedPage, IKV } from "./int";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+const utils = Utils, checks = utils.check, coreUtils = utils.core;
 
 
 export class DataCache extends BaseObject {

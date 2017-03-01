@@ -1,11 +1,10 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    FIELD_TYPE, DATE_CONVERSION, DATA_TYPE, SORT_ORDER,
-    COLL_CHANGE_REASON, COLL_CHANGE_TYPE, COLL_CHANGE_OPER, ITEM_STATUS
+    FIELD_TYPE, SORT_ORDER, COLL_CHANGE_REASON, COLL_CHANGE_TYPE, COLL_CHANGE_OPER, ITEM_STATUS
 } from "jriapp_shared/collection/const";
 import {
     IIndexer, IValidationInfo, TEventHandler, IBaseObject,
-    IPromise, TPriority, LocaleERRS as ERRS, BaseObject, Debounce, Utils
+    IPromise, TPriority, LocaleERRS as ERRS, Debounce, Utils
 } from "jriapp_shared";
 import {
     IInternalCollMethods, IFieldInfo
@@ -15,9 +14,9 @@ import {
     ValueUtils, CollUtils
 } from "jriapp_shared/collection/utils";
 import {
-    IFieldName, IEntityItem, TItemFactory, IValueChange, IRowInfo, ITrackAssoc, IQueryResponse,
-    IPermissions, IDbSetConstuctorOptions, IAssociationInfo, IDbSetInfo, ICalcFieldImpl, INavFieldImpl,
-    IQueryResult, IQueryRequest, IQueryParamInfo, IRowData, IDbSetLoadedArgs
+    IFieldName, IEntityItem, TItemFactory, IRowInfo, ITrackAssoc, IQueryResponse,
+    IPermissions, IDbSetConstuctorOptions, IAssociationInfo, ICalcFieldImpl, INavFieldImpl,
+    IQueryResult, IRowData, IDbSetLoadedArgs
 } from "./int";
 import { PROP_NAME, REFRESH_MODE } from "./const";
 import { DataCache } from "./datacache";
@@ -204,7 +203,9 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
         this.dbContext.addOnPropertyChange(PROP_NAME.isSubmiting, (s, a) => {
             self.raisePropertyChanged(PROP_NAME.isBusy);
         }, this.dbSetName);
-        this.addOnPropertyChange(PROP_NAME.isLoading, (s, a) => { self.raisePropertyChanged(PROP_NAME.isBusy); });
+        this.addOnPropertyChange(PROP_NAME.isLoading, (s, a) => {
+            self.raisePropertyChanged(PROP_NAME.isBusy);
+        });
     }
     public handleError(error: any, source: any): boolean {
         if (!this._dbContext)
@@ -527,7 +528,7 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
         }
     }
     protected _fillFromService(info: IFillFromServiceArgs): IQueryResult<TItem> {
-        let self = this, res = info.res, fieldNames = res.names, rows = res.rows || [], rowCount = rows.length,
+        let self = this, res = info.res, fieldNames = res.names, rows = res.rows || [],
             isPagingEnabled = this.isPagingEnabled, query = info.query, isClearAll = true;
 
         if (!!query && !query.getIsDestroyCalled()) {
@@ -755,7 +756,7 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
         }
     }
     protected _getNames(): IFieldName[] {
-        const self = this, fieldInfos = this.getFieldInfos(), names: IFieldName[] = [];
+        const fieldInfos = this.getFieldInfos(), names: IFieldName[] = [];
         colUtils.traverseFields(fieldInfos, (fld, fullName, arr) => {
             if (fld.fieldType === FIELD_TYPE.Object) {
                 let res: any[] = [];

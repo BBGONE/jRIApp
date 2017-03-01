@@ -1,7 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { Utils } from "jriapp_shared";
-import { DATA_ATTR } from "jriapp/const";
-import { ITemplate, ITemplateEvents, IElView, IViewOptions } from "jriapp/int";
+import { ITemplate, ITemplateEvents, IViewOptions } from "jriapp/int";
 import { ViewChecks } from "jriapp/utils/viewchecks";
 import { bootstrap } from "jriapp/bootstrap";
 import { CommandElView } from "./command";
@@ -62,17 +61,17 @@ export class TemplateElView extends CommandElView implements ITemplateEvents {
         }
         this.raisePropertyChanged(PROP_NAME.template);
     }
-    toString() {
+    toString(): string {
         return "TemplateElView";
     }
-    get isEnabled() { return this._isEnabled; }
+    get isEnabled(): boolean { return this._isEnabled; }
     set isEnabled(v: boolean) {
         if (this._isEnabled !== v) {
             this._isEnabled = v;
             this.raisePropertyChanged(PROP_NAME.isEnabled);
         }
     }
-    get template() {
+    get template(): ITemplate {
         return this._template;
     }
 };

@@ -11,16 +11,16 @@ const INDEX_PROP_RX = /(\b\w+\b)?\s*(\[.*?\])/gi, trimQuotsRX = /^(['"])+|(['"])
 
 export class SysUtils {
     //DUMMY implementations
-    static isBaseObj: (obj: any) => boolean = (obj) => { return false; };
-    static isBinding: (obj: any) => boolean = (obj) => { return false; };
+    static isBaseObj: (obj: any) => boolean = () => { return false; };
+    static isBinding: (obj: any) => boolean = () => { return false; };
     static isPropBag: (obj: any) => boolean = (obj) => {
         return !!obj && obj.isPropertyBag;
     };
 
     //DUMMY implementations collection
-    static isCollection: (obj: any) => boolean = (obj) => { return false; };
-    static getItemByProp: (obj: any, prop: string) => any = (obj, prop) => { return null; };
-    static isValidationError: (obj: any) => boolean = (obj) => { return false; };
+    static isCollection: (obj: any) => boolean = () => { return false; };
+    static getItemByProp: (obj: any, prop: string) => any = () => { return null; };
+    static isValidationError: (obj: any) => boolean = () => { return false; };
 
     //System  Helper functions
     static isEditable(obj: any): obj is IEditable {

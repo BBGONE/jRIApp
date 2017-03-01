@@ -1,13 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { BaseObject, Debounce, Utils } from "jriapp_shared";
-import {
-    COLL_CHANGE_REASON, ITEM_STATUS, COLL_CHANGE_TYPE
-} from "jriapp_shared/collection/const";
-import {
-    ICollection, ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollItemAddedArgs
-} from "jriapp_shared/collection/int";
+import { BaseObject, Utils } from "jriapp_shared";
+import { ICollectionItem } from "jriapp_shared/collection/int";
 import { DomUtils } from "jriapp/utils/dom";
-import { DblClick } from "../../utils/dblclick";
 import { css, ROW_POSITION, PROP_NAME } from "../const";
 import { BaseCell } from "../cells/base";
 import { ExpanderCell } from "../cells/expander";
@@ -15,9 +9,8 @@ import { DataCell } from "../cells/data";
 import { ActionsCell } from "../cells/actions";
 import { RowSelectorCell } from "../cells/rowselector";
 
-import { BaseColumn, IColumnInfo } from "../columns/base";
+import { BaseColumn } from "../columns/base";
 import { ExpanderColumn } from "../columns/expander";
-import { DataColumn } from "../columns/data";
 import { ActionsColumn } from "../columns/actions";
 import { RowSelectorColumn } from "../columns/rowselector";
 
@@ -72,7 +65,7 @@ export class Row extends BaseObject {
         this._createCells();
         if (!!this._item) {
             if (!!this.isHasStateField) {
-                this._item.addOnPropertyChange(this._grid.options.rowStateField, (s, a) => {
+                this._item.addOnPropertyChange(this._grid.options.rowStateField, () => {
                     fn_state(self);
                 }, this._objId);
             }

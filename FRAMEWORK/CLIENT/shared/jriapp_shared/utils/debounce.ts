@@ -1,6 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { IDisposable, TFunc } from "../int";
-import { ITaskQueue } from "./ideferred";
 import { getTaskQueue } from "./deferred";
 
 export class Debounce implements IDisposable {

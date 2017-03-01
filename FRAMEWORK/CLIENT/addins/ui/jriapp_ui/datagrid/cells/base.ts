@@ -5,7 +5,6 @@ import { DATA_ATTR } from "jriapp/const";
 import { ICollectionItem } from "jriapp_shared/collection/int";
 
 import { DblClick } from "../../utils/dblclick";
-import { css } from "../const";
 import { Row } from "../rows/row";
 import { BaseColumn } from "../columns/base";
 import { DataGrid } from "../datagrid"
@@ -73,14 +72,14 @@ export class BaseCell<TColumn extends BaseColumn> extends BaseObject {
         this._column = null;
         super.destroy();
     }
-    toString() {
+    toString(): string {
         return "BaseCell";
     }
-    get td() { return this._td; }
-    get row() { return this._row; }
-    get column() { return this._column; }
-    get grid() { return this._row.grid; }
-    get item() { return this._row.item; }
-    get uniqueID() { return this._row.uniqueID + "_" + this._num; }
-    get num() { return this._num; }
+    get td(): HTMLTableCellElement { return this._td; }
+    get row(): Row { return this._row; }
+    get column(): TColumn { return this._column; }
+    get grid(): DataGrid { return this._row.grid; }
+    get item(): ICollectionItem { return this._row.item; }
+    get uniqueID(): string { return this._row.uniqueID + "_" + this._num; }
+    get num(): number { return this._num; }
 }

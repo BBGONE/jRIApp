@@ -5,20 +5,14 @@ import {
 import { DomUtils } from "jriapp/utils/dom";
 import { BINDING_MODE } from "jriapp/const";
 import {
-    IExternallyCachable, IBinding, IBindingOptions,
-    IConstructorContentOptions, IContentFactory, IContentConstructor, IContent, IContentOptions, IElView
+    IExternallyCachable, IBinding, IBindingOptions, IConstructorContentOptions, IElView
 } from "jriapp/int";
-import {
-    ICollection, ICollectionItem
-} from "jriapp_shared/collection/int";
-import { bootstrap } from "jriapp/bootstrap";
 import { ListBoxElView } from "../listbox";
 import { SpanElView } from "../span";
 import { BasicContent } from "./basic";
 
-const utils = Utils, dom = DomUtils, doc = dom.document, checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
-    sys = utils.sys;
-    
+const utils = Utils, dom = DomUtils, doc = dom.document, strUtils = utils.str, coreUtils = utils.core,
+    sys = utils.sys;    
 
 const PROP_NAME = {
     dataSource: "dataSource",
@@ -90,13 +84,14 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         this._removeHandler(LOOKUP_EVENTS.obj_needed, nmspace);
     }
     protected getListBoxElView(): ListBoxElView {
-        if (!!this._listBoxElView)
+        if (!!this._listBoxElView) {
             return this._listBoxElView;
+        }
 
         const lookUpOptions: ILookupOptions = this._options.options, objectKey = "listBoxElView";
 
         let args1: TObjNeededArgs = { objectKey: objectKey, object: null };
-        //try get externally externally cached listBox
+        // try get externally externally cached listBox
         this.raiseEvent(LOOKUP_EVENTS.obj_needed, args1);
         if (!!args1.object) {
             this._isListBoxCachedExternally = true;
@@ -106,10 +101,10 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
             this._listBoxElView.listBox.addOnRefreshed(this.onListRefreshed, this.uniqueID, this);
             return this._listBoxElView;
         }
-        //IF NO ELEMENT VIEW in THE CACHE - proceed creating new ElView
+        // IF NO ELEMENT VIEW in THE CACHE - proceed creating new ElView
         const listBoxElView = this.createListBoxElView(lookUpOptions);
         const args2: TObjCreatedArgs = { objectKey: objectKey, object: listBoxElView, isCachedExternally: false };
-        //this allows to cache listBox externally
+        // this allows to cache listBox externally
         this.raiseEvent(LOOKUP_EVENTS.obj_created, args2);
         this._isListBoxCachedExternally = args2.isCachedExternally;
         this._listBoxElView = listBoxElView;
@@ -152,7 +147,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         return this._spanView;
     }
     protected createTargetElement(): IElView {
-        let tgt: IElView, el: HTMLElement, selectView: ListBoxElView, spanView: SpanElView;
+        let tgt: IElView, selectView: ListBoxElView, spanView: SpanElView;
         if (this.isEditing && this.getIsCanBeEdited()) {
             selectView = this.getListBoxElView();
             this._listBinding = this.bindToList(selectView);
@@ -224,8 +219,9 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         this._parentEl.appendChild(this._el);
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         this.cleanUp();
         if (!!this._listBoxElView) {

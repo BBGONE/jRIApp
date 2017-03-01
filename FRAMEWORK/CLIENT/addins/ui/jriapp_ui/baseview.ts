@@ -1,13 +1,13 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    Utils, BaseObject, IPropertyBag, IValidationInfo, IIndexer, LocaleERRS as ERRS, LocaleSTRS as STRS
+    Utils, BaseObject, IPropertyBag, IValidationInfo, LocaleSTRS as STRS
 } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { ViewChecks } from "jriapp/utils/viewchecks";
 import { TOOLTIP_SVC, DATEPICKER_SVC, DATA_ATTR } from "jriapp/const";
 import { ITooltipService, IElView, IElViewStore,IApplication, IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
-import { TAction, TCommand, ICommand, Command, TPredicate } from "jriapp/mvvm";
+import { ICommand } from "jriapp/mvvm";
 import { EventBag, EVENT_CHANGE_TYPE, IEventChangedArgs } from "./utils/eventbag";
 import { PropertyBag } from "./utils/propbag";
 import { CSSBag } from "./utils/cssbag";
@@ -123,8 +123,9 @@ export class BaseElView extends BaseObject implements IElView {
             return;
         dom.events.on(this.el, name, (e) => {
             e.stopPropagation();
-            if (!!self._eventStore)
+            if (!!self._eventStore) {
                 self._eventStore.trigger(name, e);
+            }
         }, this.uniqueID);
     }
     protected _onEventDeleted(name: string, oldVal: ICommand) {
@@ -154,11 +155,10 @@ export class BaseElView extends BaseObject implements IElView {
         if (!el) {
             return;
         }
-       if (!!errors && errors.length > 0) {
+        if (!!errors && errors.length > 0) {
             fn_addToolTip(el, this._getErrorTipInfo(errors), true);
             this._setFieldError(true);
-        }
-        else {
+        } else {
             this._setToolTip(el, this.toolTip);
             this._setFieldError(false);
         }
@@ -167,8 +167,9 @@ export class BaseElView extends BaseObject implements IElView {
         fn_addToolTip(el, tip, isError);
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         this._getStore().setElView(this.el, null);
         dom.events.offNS(this.el, this.uniqueID);
@@ -190,18 +191,18 @@ export class BaseElView extends BaseObject implements IElView {
         this._css = null;
         super.destroy();
     }
-    toString() {
+    toString(): string {
         return "BaseElView";
     }
     get el(): HTMLElement {
         return this._el;
     }
     get uniqueID(): string { return this._objId; }
-    get isVisible() {
+    get isVisible(): boolean {
         const v = this.el.style.display;
         return !(v === "none");
     }
-    set isVisible(v) {
+    set isVisible(v: boolean) {
         v = !!v;
         if (v !== this.isVisible) {
             if (!v) {
@@ -237,8 +238,9 @@ export class BaseElView extends BaseObject implements IElView {
     //stores commands for data binding to the HtmlElement's events
     get events(): IPropertyBag {
         if (!this._eventStore) {
-            if (this.getIsDestroyCalled())
+            if (this.getIsDestroyCalled()) {
                 return null;
+            }
 
             this._eventStore = new EventBag((s, a) => {
                 this._onEventChanged(a);
@@ -249,8 +251,9 @@ export class BaseElView extends BaseObject implements IElView {
     //exposes All HTML Element properties for data binding directly to them
     get props(): IPropertyBag {
         if (!this._props) {
-            if (this.getIsDestroyCalled())
+            if (this.getIsDestroyCalled()) {
                 return checks.undefined;
+            }
             this._props = new PropertyBag(this.el);
         }
         return this._props;
@@ -268,11 +271,13 @@ export class BaseElView extends BaseObject implements IElView {
     set css(v: string) {
         let arr: string[] = [];
         if (this._css !== v) {
-            if (!!this._css)
+            if (!!this._css) {
                 arr.push("-" + this._css);
+            }
             this._css = v;
-            if (!!this._css)
+            if (!!this._css) {
                 arr.push("+" + this._css);
+            }
 
             dom.setClasses([this._el], arr);
             this.raisePropertyChanged(PROP_NAME.css);

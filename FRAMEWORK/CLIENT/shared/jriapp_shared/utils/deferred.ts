@@ -1,10 +1,10 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    IStatefulDeferred, IStatefulPromise, IPromiseState, IThenable, ITaskQueue, PromiseState,
+    IStatefulDeferred, IStatefulPromise, IThenable, ITaskQueue, PromiseState,
     IPromise, IAbortablePromise, IDeferredErrorCB, IDeferredSuccessCB, IErrorCB, IVoidErrorCB,
     ISuccessCB, IAbortable, IDeferred
 } from "./ideferred";
-import { AbortError, AggregateError } from "../errors";
+import { AbortError } from "../errors";
 import { Checks } from "./checks";
 import { ArrayHelper } from "./arrhelper";
 import { createQueue, IQueue } from "./queue";
@@ -306,7 +306,7 @@ export class Promise<T> implements IStatefulPromise<T> {
     always<TP>(errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
     always(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
 
-    always<TP>(errorCB?: any): any {
+    always(errorCB?: any): any {
         return this._deferred._then(errorCB, errorCB);
     }
 
@@ -405,7 +405,7 @@ export class AbortablePromise<T> implements IAbortablePromise<T> {
     always<TP>(errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
     always(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
 
-    always<TP>(errorCB?: any): any {
+    always(errorCB?: any): any {
         return this._deferred.promise().always(errorCB);
     }
 

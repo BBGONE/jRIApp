@@ -1,19 +1,13 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import {
-    BaseObject, Utils, Debounce, LocaleERRS as ERRS
-} from "jriapp_shared";
-import {
-    COLL_CHANGE_REASON
-} from "jriapp_shared/collection/const";
-import {
-    ICollection
-} from "jriapp_shared/collection/int";
+import { Utils, Debounce } from "jriapp_shared";
+import { COLL_CHANGE_REASON } from "jriapp_shared/collection/const";
+import { ICollection } from "jriapp_shared/collection/int";
 import { PROP_NAME } from "./const";
 import { IEntityItem } from "./int";
 import { Association } from "./association";
 import { DataView, IDataViewOptions } from "./dataview";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+const utils = Utils, coreUtils = utils.core;
 
 export interface IChildDataViewOptions<TItem extends IEntityItem> {
     association: Association;
@@ -35,7 +29,7 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
             oldFilter = opts.fn_filter;
 
         opts.dataSource = <ICollection<TItem>><any>assoc.childDS;
-        opts.fn_itemsProvider = (ds) => {
+        opts.fn_itemsProvider = () => {
             if (!parentItem) {
                 return [];
             }

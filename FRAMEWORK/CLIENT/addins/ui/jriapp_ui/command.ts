@@ -44,22 +44,22 @@ export class CommandElView extends BaseElView {
                         return;
                     //repeat the check after timeout
                     try {
-                        if (!!self.command && self.command.canExecute(self, args))
+                        if (!!self.command && self.command.canExecute(self, args)) {
                             self.command.execute(self, args);
-                    }
-                    catch (ex) {
+                        }
+                    } catch (ex) {
                         self.handleError(ex, self);
                     }
                 });
-            }
-            else {
+            } else {
                 self.command.execute(self, args);
             }
         }
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         if (sys.isBaseObj(this._command)) {
             (<IBaseObject><any>this._command).removeNSHandlers(this.uniqueID);
@@ -68,30 +68,32 @@ export class CommandElView extends BaseElView {
         this._commandParam = null;
         super.destroy();
     }
-    toString() {
+    toString(): string {
         return "CommandElView";
     }
-    get isEnabled() {
+    get isEnabled(): boolean {
         let el: any = this.el;
-        if (this._disabled === checks.undefined)
+        if (this._disabled === checks.undefined) {
             return !el.disabled;
-        else
+        } else {
             return !this._disabled;
+        }
     }
     set isEnabled(v: boolean) {
         let el: any = this.el;
         if (v !== this.isEnabled) {
-            if (this._disabled === checks.undefined)
+            if (this._disabled === checks.undefined) {
                 el.disabled = !v;
-            else
+            } else {
                 this._disabled = !v;
+            }
 
             dom.setClass([this.el], css.disabled, !!v);
             this.raisePropertyChanged(PROP_NAME.isEnabled);
         }
     }
-    get command() { return this._command; }
-    set command(v) {
+    get command(): ICommand { return this._command; }
+    set command(v: ICommand) {
         let self = this;
         if (v !== this._command) {
             if (sys.isBaseObj(this._command)) {
@@ -101,8 +103,7 @@ export class CommandElView extends BaseElView {
             if (!!this._command) {
                 this._command.addOnCanExecuteChanged(self._onCanExecuteChanged, this.uniqueID, self);
                 self.isEnabled = this._command.canExecute(self, this.commandParam || {});
-            }
-            else {
+            } else {
                 self.isEnabled = false;
             }
             this._onCommandChanged();

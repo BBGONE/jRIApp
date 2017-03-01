@@ -3,8 +3,7 @@ import { IValidationInfo, TEventHandler, IPropertyBag } from "../int";
 import { BaseObject } from "../object";
 import { JsonBag, IFieldValidateArgs, IBagValidateArgs } from "./jsonbag";
 import { CoreUtils } from "./coreutils";
-import { AnyList, IAnyValItem, IAnyVal, ICollValidateFieldArgs } from "./anylist";
-import { ValidationError } from "../errors";
+import { AnyList, IAnyValItem } from "./anylist";
 
 const coreUtils = CoreUtils;
 

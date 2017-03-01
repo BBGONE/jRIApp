@@ -52,7 +52,7 @@ define("jriapp_db/const", ["require", "exports"], function (require, exports) {
 });
 define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/utils", "jriapp_db/const", "jriapp_db/datacache"], function (require, exports, jriapp_shared_1, utils_1, const_1, datacache_1) {
     "use strict";
-    var utils = jriapp_shared_1.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr, valUtils = utils_1.ValueUtils;
+    var utils = jriapp_shared_1.Utils, checks = utils.check, strUtils = utils.str, arrHelper = utils.arr, valUtils = utils_1.ValueUtils;
     var DataQuery = (function (_super) {
         __extends(DataQuery, _super);
         function DataQuery(dbSet, queryInfo) {
@@ -342,7 +342,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
 });
 define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db/const"], function (require, exports, jriapp_shared_2, const_2) {
     "use strict";
-    var utils = jriapp_shared_2.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+    var utils = jriapp_shared_2.Utils, checks = utils.check, coreUtils = utils.core;
     var DataCache = (function (_super) {
         __extends(DataCache, _super);
         function DataCache(query) {
@@ -639,7 +639,9 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             _this.dbContext.addOnPropertyChange(const_3.PROP_NAME.isSubmiting, function (s, a) {
                 self.raisePropertyChanged(const_3.PROP_NAME.isBusy);
             }, _this.dbSetName);
-            _this.addOnPropertyChange(const_3.PROP_NAME.isLoading, function (s, a) { self.raisePropertyChanged(const_3.PROP_NAME.isBusy); });
+            _this.addOnPropertyChange(const_3.PROP_NAME.isLoading, function (s, a) {
+                self.raisePropertyChanged(const_3.PROP_NAME.isBusy);
+            });
             return _this;
         }
         DbSet.prototype.handleError = function (error, source) {
@@ -923,7 +925,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             }
         };
         DbSet.prototype._fillFromService = function (info) {
-            var self = this, res = info.res, fieldNames = res.names, rows = res.rows || [], rowCount = rows.length, isPagingEnabled = this.isPagingEnabled, query = info.query, isClearAll = true;
+            var self = this, res = info.res, fieldNames = res.names, rows = res.rows || [], isPagingEnabled = this.isPagingEnabled, query = info.query, isClearAll = true;
             if (!!query && !query.getIsDestroyCalled()) {
                 isClearAll = query.isClearPrevData;
                 if (query.isClearCacheOnEveryLoad)
@@ -1127,7 +1129,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             }
         };
         DbSet.prototype._getNames = function () {
-            var self = this, fieldInfos = this.getFieldInfos(), names = [];
+            var fieldInfos = this.getFieldInfos(), names = [];
             colUtils.traverseFields(fieldInfos, function (fld, fullName, arr) {
                 if (fld.fieldType === 5) {
                     var res = [];
@@ -1498,7 +1500,7 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared", "jriapp_db/co
 });
 define("jriapp_db/association", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_5) {
     "use strict";
-    var utils = jriapp_shared_5.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr;
+    var utils = jriapp_shared_5.Utils, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr;
     var Association = (function (_super) {
         __extends(Association, _super);
         function Association(options) {
@@ -2274,7 +2276,9 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                     return self._load(query, reason);
                 }
             };
-            _this.addOnPropertyChange(const_5.PROP_NAME.isSubmiting, function (s, a) { self.raisePropertyChanged(const_5.PROP_NAME.isBusy); });
+            _this.addOnPropertyChange(const_5.PROP_NAME.isSubmiting, function () {
+                self.raisePropertyChanged(const_5.PROP_NAME.isBusy);
+            });
             return _this;
         }
         DbContext.prototype._getEventNames = function () {
@@ -2343,7 +2347,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 };
                 try {
                     var data = self._getMethodParams(methodInfo, args);
-                    self._invokeMethod(methodInfo, data, callback);
+                    self._invokeMethod(data, callback);
                 }
                 catch (ex) {
                     if (!ERROR.checkIsDummy(ex)) {
@@ -2405,7 +2409,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             }
             return data;
         };
-        DbContext.prototype._invokeMethod = function (methodInfo, data, callback) {
+        DbContext.prototype._invokeMethod = function (data, callback) {
             var self = this, operType = 3, fn_onComplete = function (res) {
                 if (self.getIsDestroyCalled())
                     return;
@@ -2450,7 +2454,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                     defer.reject(new jriapp_shared_7.AbortError());
                     return;
                 }
-                var operType = 2, dbSet = query.dbSet;
+                var dbSet = query.dbSet;
                 try {
                     var queryRes = dbSet._getInternal().fillFromCache({ reason: reason, query: query });
                     defer.resolve(queryRes);
@@ -3045,9 +3049,6 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
 define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriapp_shared/errors", "jriapp_shared/collection/utils", "jriapp_shared/collection/aspect", "jriapp_db/error"], function (require, exports, jriapp_shared_8, errors_1, utils_4, aspect_1, error_2) {
     "use strict";
     var utils = jriapp_shared_8.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, valUtils = utils_4.ValueUtils, collUtils = utils_4.CollUtils, sys = utils.sys;
-    var ENTITYASPECT_EVENTS = {
-        destroyed: "destroyed"
-    };
     function fn_isNotSubmittable(fieldInfo) {
         return (fieldInfo.fieldType === 1 || fieldInfo.fieldType === 3 || fieldInfo.fieldType === 2 || fieldInfo.fieldType === 6);
     }
@@ -3202,7 +3203,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
         EntityAspect.prototype._cancelEdit = function () {
             if (!this.isEditing)
                 return false;
-            var self = this, changes = this._getValueChanges(true), isNew = this.isNew, dbSet = this.dbSet;
+            var self = this, changes = this._getValueChanges(true), dbSet = this.dbSet;
             this._vals = this._saveVals;
             this._saveVals = null;
             this._setStatus(this._savedStatus);
@@ -3461,7 +3462,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 self._setStatus(0);
                 errors.removeAllErrors(this.item);
                 changes.forEach(function (v) {
-                    fn_traverseChanges(v, function (fullName, vc) {
+                    fn_traverseChanges(v, function (fullName) {
                         self._onFieldChanged(fullName, dbSet.getFieldInfo(fullName));
                     });
                 });
@@ -3956,14 +3957,14 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
 });
 define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jriapp_db/const", "jriapp_db/dataview"], function (require, exports, jriapp_shared_10, const_7, dataview_1) {
     "use strict";
-    var utils = jriapp_shared_10.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+    var utils = jriapp_shared_10.Utils, coreUtils = utils.core;
     var ChildDataView = (function (_super) {
         __extends(ChildDataView, _super);
         function ChildDataView(options) {
             var _this = this;
             var parentItem = !options.parentItem ? null : options.parentItem, assoc = options.association, opts = coreUtils.extend({}, options), oldFilter = opts.fn_filter;
             opts.dataSource = assoc.childDS;
-            opts.fn_itemsProvider = function (ds) {
+            opts.fn_itemsProvider = function () {
                 if (!parentItem) {
                     return [];
                 }
@@ -4041,7 +4042,7 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
 });
 define("jriapp_db/complexprop", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_11) {
     "use strict";
-    var utils = jriapp_shared_11.Utils, checks = utils.check, strUtils = utils.str;
+    var utils = jriapp_shared_11.Utils, strUtils = utils.str;
     var BaseComplexProperty = (function (_super) {
         __extends(BaseComplexProperty, _super);
         function BaseComplexProperty(name) {

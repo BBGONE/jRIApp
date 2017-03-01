@@ -49,7 +49,7 @@ declare module "jriapp_db/dataquery" {
     import { DataCache } from "jriapp_db/datacache";
     import { DbSet } from "jriapp_db/dbset";
     import { DbContext } from "jriapp_db/dbcontext";
-    export interface IInternalQueryMethods<TItem extends IEntityItem> {
+    export interface IInternalQueryMethods {
         clearCache(): void;
         getCache(): DataCache;
         isPageCached(pageIndex: number): boolean;
@@ -80,7 +80,7 @@ declare module "jriapp_db/dataquery" {
         private _getCache();
         private _isPageCached(pageIndex);
         private _updateCache(pageIndex, items);
-        _getInternal(): IInternalQueryMethods<TItem>;
+        _getInternal(): IInternalQueryMethods;
         where(fieldName: string, operand: FILTER_TYPE, value: any, checkFieldName?: boolean): this;
         and(fieldName: string, operand: FILTER_TYPE, value: any, checkFieldName?: boolean): this;
         orderBy(fieldName: string, sortOrder?: SORT_ORDER): this;
@@ -281,7 +281,7 @@ declare module "jriapp_db/dbsets" {
     import { BaseObject } from "jriapp_shared";
     import { IEntityItem } from "jriapp_db/int";
     import { DbContext } from "jriapp_db/dbcontext";
-    import { DbSet, IDbSetConstructor, TDbSet } from "jriapp_db/dbset";
+    import { IDbSetConstructor, TDbSet } from "jriapp_db/dbset";
     export class DbSets extends BaseObject {
         private _dbContext;
         private _dbSets;
@@ -290,7 +290,7 @@ declare module "jriapp_db/dbsets" {
         protected _dbSetCreated(dbSet: TDbSet): void;
         protected _createDbSet(name: string, dbSetType: IDbSetConstructor<IEntityItem, any>): void;
         readonly dbSetNames: string[];
-        readonly arrDbSets: DbSet<IEntityItem, any, DbContext>[];
+        readonly arrDbSets: TDbSet[];
         findDbSet(name: string): TDbSet;
         getDbSet(name: string): TDbSet;
         destroy(): void;
@@ -401,7 +401,7 @@ declare module "jriapp_db/dbcontext" {
     import { IIndexer, IVoidPromise, IBaseObject, TEventHandler, BaseObject, IStatefulPromise, IAbortablePromise } from "jriapp_shared";
     import { IEntityItem, IRefreshRowInfo, IQueryResult, IQueryInfo, IAssociationInfo, IPermissionsInfo, IInvokeRequest, IQueryResponse, IChangeSet } from "jriapp_db/int";
     import { DATA_OPER } from "jriapp_db/const";
-    import { DbSet, TDbSet } from "jriapp_db/dbset";
+    import { TDbSet } from "jriapp_db/dbset";
     import { DbSets } from "jriapp_db/dbsets";
     import { Association } from "jriapp_db/association";
     import { TDataQuery } from "jriapp_db/dataquery";
@@ -441,7 +441,7 @@ declare module "jriapp_db/dbcontext" {
         protected _getMethodParams(methodInfo: IQueryInfo, args: {
             [paramName: string]: any;
         }): IInvokeRequest;
-        protected _invokeMethod(methodInfo: IQueryInfo, data: IInvokeRequest, callback: (res: {
+        protected _invokeMethod(data: IInvokeRequest, callback: (res: {
             result: any;
             error: any;
         }) => void): void;
@@ -497,8 +497,8 @@ declare module "jriapp_db/dbcontext" {
             isHandled: boolean;
         }>, nmspace?: string, context?: IBaseObject): void;
         removeOnSubmitError(nmspace?: string): void;
-        getDbSet(name: string): DbSet<IEntityItem, any, DbContext>;
-        findDbSet(name: string): DbSet<IEntityItem, any, DbContext>;
+        getDbSet(name: string): TDbSet;
+        findDbSet(name: string): TDbSet;
         getAssociation(name: string): Association;
         submitChanges(): IVoidPromise;
         load(query: TDataQuery): IStatefulPromise<IQueryResult<IEntityItem>>;
@@ -788,7 +788,7 @@ declare module "jriapp_db/int" {
 declare module "jriapp_db/dataview" {
     import { SORT_ORDER, COLL_CHANGE_REASON, COLL_CHANGE_OPER } from "jriapp_shared/collection/const";
     import { IPromise, TEventHandler } from "jriapp_shared";
-    import { ICollection, ICollectionItem, ICollChangedArgs, ICollItemStatusArgs, IPermissions, IFieldInfo } from "jriapp_shared/collection/int";
+    import { ICollection, ICollectionItem, ICollChangedArgs, ICollItemStatusArgs, IFieldInfo, IPermissions } from "jriapp_shared/collection/int";
     import { BaseCollection, Errors } from "jriapp_shared/collection/base";
     export interface IDataViewOptions<TItem extends ICollectionItem> {
         dataSource: ICollection<TItem>;

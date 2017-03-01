@@ -3,12 +3,12 @@ import { Utils, BaseObject, IBaseObject, LocaleERRS as ERRS, TEventHandler, Debo
 import { DomUtils } from "jriapp/utils/dom";
 import {DATA_ATTR, KEYS } from "jriapp/const";
 import {
-    IApplication, ITemplate, ITemplateEvents, ISelectable,  IViewOptions, ISelectableProvider
+    ITemplate, ISelectable,  IViewOptions, ISelectableProvider
 } from "jriapp/int";
 import { createTemplate } from "jriapp/template";
 import { BaseElView } from "./baseview";
 import {
-    COLL_CHANGE_REASON, ITEM_STATUS, COLL_CHANGE_TYPE
+    ITEM_STATUS, COLL_CHANGE_TYPE
 } from "jriapp_shared/collection/const";
 import {
     ICollection, ICollectionItem, ICollChangedArgs
@@ -16,7 +16,7 @@ import {
 import { bootstrap } from "jriapp";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, sys = utils.sys,
-    checks = utils.check, strUtils = utils.str, coreUtils = utils.core, boot = bootstrap;
+    strUtils = utils.str, coreUtils = utils.core, boot = bootstrap;
 
 const css = {
     stackpanel: "ria-stackpanel",
@@ -206,7 +206,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
             this.raisePropertyChanged(PROP_NAME.currentItem);
         }
     }
-    protected _onDSCurrentChanged(sender: any, args: any): void {
+    protected _onDSCurrentChanged(): void {
         const ds = this.dataSource, cur = ds.currentItem;
         if (!cur)
             this._updateCurrent(null, false);

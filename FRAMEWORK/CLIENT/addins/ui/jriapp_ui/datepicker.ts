@@ -6,11 +6,6 @@ import { TextBoxElView, ITextBoxOptions } from "./textbox";
 
 const boot = bootstrap;
 
-const PROP_NAME = {
-    dateFormat: "dateFormat",
-    datepickerRegion: "datepickerRegion"
-};
-
 export interface IDatePickerOptions extends ITextBoxOptions {
     datepicker?: any;
 }

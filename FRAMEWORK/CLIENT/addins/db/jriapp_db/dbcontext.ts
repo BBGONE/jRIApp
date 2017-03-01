@@ -1,23 +1,20 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import {
-    FIELD_TYPE, DATE_CONVERSION, DATA_TYPE, SORT_ORDER, COLL_CHANGE_REASON
-} from "jriapp_shared/collection/const";
+import { DATA_TYPE, COLL_CHANGE_REASON } from "jriapp_shared/collection/const";
 import {
     IIndexer, IVoidPromise, AbortError, IBaseObject, TEventHandler, LocaleERRS as ERRS,
-    BaseObject, Utils, WaitQueue, Lazy, IPromiseState, IStatefulPromise, IAbortablePromise,
-    PromiseState, IDeferred
+    BaseObject, Utils, WaitQueue, Lazy, IStatefulPromise, IAbortablePromise, PromiseState
 } from "jriapp_shared";
 import { ValueUtils } from "jriapp_shared/collection/utils";
 import {
     IEntityItem, IRefreshRowInfo, IQueryResult, IQueryInfo, IAssociationInfo, IAssocConstructorOptions,
-    IPermissionsInfo, IPermissions, IInvokeRequest, IInvokeResponse, IQueryRequest, IQueryResponse, ITrackAssoc,
-    IChangeSet, IRowInfo, IQueryParamInfo, IRowData, ISubset
+    IPermissionsInfo, IInvokeRequest, IInvokeResponse, IQueryRequest, IQueryResponse, ITrackAssoc,
+    IChangeSet, IRowInfo, IQueryParamInfo
 } from "./int";
 import { PROP_NAME, DATA_OPER, REFRESH_MODE } from "./const";
-import { DbSet, TDbSet } from "./dbset";
+import { TDbSet } from "./dbset";
 import { DbSets } from "./dbsets";
 import { Association } from "./association";
-import { DataQuery, TDataQuery } from "./dataquery";
+import { TDataQuery } from "./dataquery";
 import {
     AccessDeniedError, ConcurrencyError, SvcValidationError,
     DataOperationError, SubmitError
@@ -128,7 +125,9 @@ export class DbContext extends BaseObject {
                 return self._load(query, reason);
             }
         };
-        this.addOnPropertyChange(PROP_NAME.isSubmiting, (s, a) => { self.raisePropertyChanged(PROP_NAME.isBusy); });
+        this.addOnPropertyChange(PROP_NAME.isSubmiting, () => {
+            self.raisePropertyChanged(PROP_NAME.isBusy);
+        });
     }
     protected _getEventNames() {
         const base_events = super._getEventNames();
@@ -198,7 +197,7 @@ export class DbContext extends BaseObject {
 
             try {
                 const data = self._getMethodParams(methodInfo, args);
-                self._invokeMethod(methodInfo, data, callback);
+                self._invokeMethod(data, callback);
             } catch (ex) {
                 if (!ERROR.checkIsDummy(ex)) {
                     self.handleError(ex, self);
@@ -268,7 +267,7 @@ export class DbContext extends BaseObject {
 
         return data;
     }
-    protected _invokeMethod(methodInfo: IQueryInfo, data: IInvokeRequest, callback: (res: { result: any; error: any; }) => void) {
+    protected _invokeMethod(data: IInvokeRequest, callback: (res: { result: any; error: any; }) => void) {
         const self = this, operType = DATA_OPER.Invoke, fn_onComplete = (res: IInvokeResponse) => {
             if (self.getIsDestroyCalled())
                 return;
@@ -315,7 +314,7 @@ export class DbContext extends BaseObject {
                 defer.reject(new AbortError());
                 return;
             }
-            const operType = DATA_OPER.Query, dbSet = query.dbSet;
+            const dbSet = query.dbSet;
             try {
                 const queryRes = dbSet._getInternal().fillFromCache({ reason: reason, query: query });
                 defer.resolve(queryRes);
@@ -809,10 +808,10 @@ export class DbContext extends BaseObject {
     removeOnSubmitError(nmspace?: string): void {
         this._removeHandler(DBCTX_EVENTS.submit_err, nmspace);
     }
-    getDbSet(name: string) {
+    getDbSet(name: string): TDbSet {
         return this._dbSets.getDbSet(name);
     }
-    findDbSet(name: string) {
+    findDbSet(name: string): TDbSet {
         return this._dbSets.findDbSet(name);
     }
     getAssociation(name: string): Association {

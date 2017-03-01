@@ -2,8 +2,7 @@
 import { IViewOptions } from "jriapp/int";
 import { DomUtils } from "jriapp/utils/dom";
 import { bootstrap } from "jriapp/bootstrap";
-import { css, PROP_NAME, IEventChangedArgs, EVENT_CHANGE_TYPE } from "./baseview";
-import { ICommand } from "jriapp/mvvm";
+import { PROP_NAME } from "./baseview";
 import { CommandElView } from "./command";
 
 const boot = bootstrap, dom = DomUtils;
@@ -36,10 +35,11 @@ export class ButtonElView extends CommandElView {
         const x = this.value;
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
-            if (this._isButton)
+            if (this._isButton) {
                 (<HTMLButtonElement>this.el).textContent = v;
-            else
+            } else {
                 (<HTMLInputElement>this.el).value = v;
+            }
 
             this.raisePropertyChanged(PROP_NAME.value);
         }
@@ -62,10 +62,11 @@ export class ButtonElView extends CommandElView {
         const x = this.html;
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
-            if (this._isButton)
+            if (this._isButton) {
                 (<HTMLButtonElement>this.el).innerHTML = v;
-            else
+            } else {
                 (<HTMLInputElement>this.el).value = v;
+            }
             this.raisePropertyChanged(PROP_NAME.html);
         }
     }

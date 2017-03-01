@@ -1,8 +1,8 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IIndexer, LocaleERRS, Utils, createWeakMap, IWeakMap, TFunc } from "jriapp_shared";
+import { IIndexer, Utils, createWeakMap, TFunc } from "jriapp_shared";
 import { DomEvents } from "./domevents";
 
-const ERRS = LocaleERRS, arrHelper = Utils.arr, win = window, doc = win.document, queue = Utils.queue,
+const arrHelper = Utils.arr, win = window, doc = win.document, queue = Utils.queue,
     hasClassList = (!!window.document.documentElement.classList), weakmap = createWeakMap();
 
 export type TCheckDOMReady  = (closure: TFunc) => void;

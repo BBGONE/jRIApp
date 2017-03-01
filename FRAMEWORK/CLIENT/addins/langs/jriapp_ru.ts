@@ -44,7 +44,7 @@ let _STRS: ILocaleText = { PAGER: PAGER, VALIDATE: VALIDATE, TEXT: TEXT };
 
 assign(STRS, _STRS);
 
-bootstrap.addOnInitialize((boot, args) => {
+bootstrap.addOnInitialize((boot) => {
     let datepicker = boot.getSvc<IDatepicker>(DATEPICKER_SVC);
     if (!datepicker)
         throw new Error("IDatepicker service is not registered");

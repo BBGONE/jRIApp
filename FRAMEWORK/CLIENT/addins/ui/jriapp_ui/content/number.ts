@@ -6,7 +6,6 @@ import { IBindingOptions, IBindingInfo }  from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 import { TextBoxElView } from "../textbox";
 
-import { css } from "./int";
 import { BasicContent } from "./basic";
 
 export class NumberContent extends BasicContent {
@@ -17,7 +16,7 @@ export class NumberContent extends BasicContent {
         }
         return NumberContent.__allowedKeys;
     }
-    protected getBindingOption(bindingInfo: IBindingInfo, tgt: IBaseObject, dctx: any, targetPath: string) {
+    protected getBindingOption(bindingInfo: IBindingInfo, tgt: IBaseObject, dctx: any, targetPath: string): IBindingOptions {
         const options = super.getBindingOption(bindingInfo, tgt, dctx, targetPath), finf = this.getFieldInfo();
         switch (finf.dataType) {
             case DATA_TYPE.Integer:

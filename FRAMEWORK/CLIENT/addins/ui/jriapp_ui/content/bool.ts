@@ -1,7 +1,4 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import {
-    Utils,
-} from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { BINDING_MODE } from "jriapp/const";
 import { IElView, IConstructorContentOptions } from "jriapp/int";

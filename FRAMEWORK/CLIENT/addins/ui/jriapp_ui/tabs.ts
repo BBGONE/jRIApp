@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { Utils, IPropertyBag } from "jriapp_shared";
+import { Utils } from "jriapp_shared";
 import { $, JQueryUtils } from "./utils/jquery";
 import { IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
@@ -41,7 +41,7 @@ export class TabsElView extends BaseElView implements ITabs {
     }
     protected _createTabs() {
         let $el = $(this.el), self = this, tabOpts = {
-            activate: (e: any, tab: any) => {
+            activate: () => {
                 if (!!self._tabsEvents) {
                     self._tabsEvents.onTabSelected(self);
                 }
@@ -68,7 +68,7 @@ export class TabsElView extends BaseElView implements ITabs {
 
    }
     protected _onTabsCreated() {
-       const self = this, $el = $(self.el);
+       const self = this;
         if (!!self._tabsEvents) {
             self._tabsEvents.addTabs(self);
        }

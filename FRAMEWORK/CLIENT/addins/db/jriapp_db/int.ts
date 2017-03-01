@@ -3,14 +3,11 @@ import {
     DATE_CONVERSION, FILTER_TYPE, DATA_TYPE, SORT_ORDER, COLL_CHANGE_REASON
 } from "jriapp_shared/collection/const";
 import {
-    ICollectionItem, IPermissions as ICollPermissions,
-    ICollectionOptions, IFieldInfo
+    ICollectionItem, IPermissions as ICollPermissions, IFieldInfo
 } from "jriapp_shared/collection/int";
 import { DELETE_ACTION } from "./const";
 import { EntityAspect } from "./entity_aspect";
 import { DbContext } from "./dbcontext";
-import { DbSet } from "./dbset";
-import { DataQuery, TDataQuery } from "./dataquery";
 
 export interface IFieldName {
     n: string; //field's name

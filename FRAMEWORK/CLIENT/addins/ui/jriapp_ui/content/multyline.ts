@@ -2,13 +2,10 @@
 import { LocaleERRS as ERRS, Utils } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
 import { KEYS } from "jriapp/const";
-import {
-    IApplication, IElView, IConstructorContentOptions
-} from "jriapp/int";
+import { IElView, IConstructorContentOptions } from "jriapp/int";
 import { DomUtils } from "jriapp/utils/dom";
 import { TextAreaElView } from "../textarea";
 
-import { css } from "./int";
 import { BasicContent } from "./basic";
 
 const utils = Utils, NAME = "multyline", strUtils = utils.str, dom = DomUtils, document = dom.document;

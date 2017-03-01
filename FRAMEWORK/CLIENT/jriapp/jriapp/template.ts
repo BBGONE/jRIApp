@@ -1,12 +1,8 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import {
-    BaseObject, Utils, IErrorHandler, IBaseObject, LocaleERRS,
-    IPromise, IVoidPromise
-} from "jriapp_shared";
+import { BaseObject, Utils, LocaleERRS, IPromise } from "jriapp_shared";
 import { DATA_ATTR } from "./const";
 import {
-    ITemplate, ILifeTimeScope, ITemplateEvents,
-    IApplication, IElView, IViewOptions
+    ITemplate, ILifeTimeScope, ITemplateEvents, IApplication, IElView
 } from "./int";
 import { bootstrap } from "./bootstrap";
 import { Binding } from "binding";
@@ -14,9 +10,9 @@ import { ViewChecks } from "./utils/viewchecks";
 import { DomUtils } from "./utils/dom";
 
 const utils = Utils, _async = utils.defer, dom = DomUtils, viewChecks = ViewChecks,
-    doc = dom.document, coreUtils = utils.core, checks = utils.check, strUtils = utils.str,
-    arrHelper = utils.arr, sys = utils.sys, boot = bootstrap, ERRS = LocaleERRS, ERROR = utils.err,
-    win = dom.window;
+    doc = dom.document, checks = utils.check, strUtils = utils.str,
+    arrHelper = utils.arr, sys = utils.sys, boot = bootstrap, ERRS = LocaleERRS, ERROR = utils.err;
+    
 
 export const css = {
     templateContainer: "ria-template-container",
@@ -256,7 +252,7 @@ class Template extends BaseObject implements ITemplate {
     }
     findElViewsByDataName(name: string): IElView[] {
         //first return elements with the needed data attributes those are inside template
-        const self = this, els = this.findElByDataName(name), res: IElView[] = [],
+        const els = this.findElByDataName(name), res: IElView[] = [],
             viewStore = boot.getApp().viewFactory.store;
         els.forEach((el) => {
             const elView = viewStore.getElView(el);

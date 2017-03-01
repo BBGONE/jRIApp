@@ -1,5 +1,4 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { Utils } from "jriapp_shared";
 import { DATA_ATTR } from "jriapp/const";
 import { DomUtils } from "jriapp/utils/dom";
 import { css, ROW_ACTION } from "../const";
@@ -15,7 +14,7 @@ export interface IActionsColumnInfo extends IColumnInfo {
 export class ActionsColumn extends BaseColumn {
     constructor(grid: DataGrid, options: ICellInfo) {
         super(grid, options);
-        const self = this, opts: IActionsColumnInfo = this.options;
+        const self = this;
         dom.addClass([this.col], css.rowActions);
         dom.events.on(this.grid.table, "click", (e) => {
             e.stopPropagation();

@@ -2,8 +2,7 @@
 import { DATA_TYPE } from "jriapp_shared/collection/const";
 import { LocaleERRS as ERRS, Utils } from "jriapp_shared";
 import {
-    IContentFactory, IContentFactoryList, IContentOptions,
-    IContentConstructor, IConstructorContentOptions, TFactoryGetter, IContent
+    IContentFactory, IContentOptions, IContentConstructor
 } from "jriapp/int";
 import { BasicContent } from "./basic";
 import { TemplateContent } from "./template";
@@ -47,10 +46,7 @@ class ContentFactory implements IContentFactory {
                 res = BasicContent;
                 break;
             case DATA_TYPE.String:
-                if (options.name === "multyline")
-                    res = MultyLineContent;
-                else
-                    res = StringContent;
+                res = (options.name === "multyline") ? MultyLineContent : StringContent;
                 break;
             case DATA_TYPE.Bool:
                 res = BoolContent;
@@ -67,10 +63,7 @@ class ContentFactory implements IContentFactory {
                 res = DateTimeContent;
                 break;
             case DATA_TYPE.Date:
-                if (options.name === "datepicker")
-                    res = DateContent;
-                else
-                    res = DateTimeContent;
+                res = (options.name === "datepicker") ? DateContent : DateTimeContent;
                 break;
             case DATA_TYPE.Guid:
             case DATA_TYPE.Binary:
@@ -85,16 +78,17 @@ class ContentFactory implements IContentFactory {
                 throw new Error(ERRS.ERR_BINDING_CONTENT_NOT_FOUND);
             else
                 return this._nextFactory.getContentType(options);
-        }
-        else {
+        } else {
             return res;
         }
     }
     isExternallyCachable(contentType: IContentConstructor): boolean {
-        if (LookupContent === contentType)
+        if (LookupContent === contentType) {
             return true;
-        if (!this._nextFactory)
+        }
+        if (!this._nextFactory) {
             return false;
+        }
         return this._nextFactory.isExternallyCachable(contentType);
     }
 }

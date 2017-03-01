@@ -1,10 +1,8 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { Utils } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
-import { css, PROP_NAME, IEventChangedArgs, EVENT_CHANGE_TYPE } from "./baseview";
-import { ICommand } from "jriapp/mvvm";
+import { css, PROP_NAME } from "./baseview";
 import { CommandElView } from "./command";
 
 const dom = DomUtils, boot = bootstrap;
@@ -39,17 +37,20 @@ export class AnchorElView extends CommandElView {
             self._onClick(e);
         }, this.uniqueID);
     }
-    protected _onClick(e: Event) {
-        if (this.stopPropagation)
+    protected _onClick(e: Event): void {
+        if (this.stopPropagation) {
             e.stopPropagation();
-        if (this.preventDefault)
+        }
+        if (this.preventDefault) {
             e.preventDefault();
+        }
         this.invokeCommand(null, true);
     }
-    protected _updateImage(src: string) {
-        let el = this.el, self = this;
-        if (this._imageSrc === src)
+    protected _updateImage(src: string): void {
+        let el = this.el;
+        if (this._imageSrc === src) {
             return;
+        }
         this._imageSrc = src;
 
         if (!!this._image && !src) {
@@ -68,11 +69,12 @@ export class AnchorElView extends CommandElView {
             this._image.src = src;
         }
     }
-    protected _updateGlyph(glyph: string) {
+    protected _updateGlyph(glyph: string): void {
         let el = this.el;
 
-        if (this._glyph === glyph)
+        if (this._glyph === glyph) {
             return;
+        }
         let oldGlyph = this._glyph;
         this._glyph = glyph;
 
@@ -94,7 +96,7 @@ export class AnchorElView extends CommandElView {
             dom.addClass([this._span], glyph);
         }
     }
-    destroy() {
+    destroy(): void {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
@@ -103,29 +105,29 @@ export class AnchorElView extends CommandElView {
         this.glyph = null;
         super.destroy();
     }
-    toString() {
+    toString(): string {
         return "AnchorElView";
     }
-    get imageSrc() { return this._imageSrc; }
-    set imageSrc(v) {
+    get imageSrc(): string { return this._imageSrc; }
+    set imageSrc(v: string) {
         let x = this._imageSrc;
         if (x !== v) {
             this._updateImage(v);
             this.raisePropertyChanged(PROP_NAME.imageSrc);
         }
     }
-    get glyph() { return this._glyph; }
-    set glyph(v) {
+    get glyph(): string { return this._glyph; }
+    set glyph(v: string) {
         let x = this._glyph;
         if (x !== v) {
             this._updateGlyph(v);
             this.raisePropertyChanged(PROP_NAME.glyph);
         }
     }
-    get html() {
+    get html(): string {
         return this.el.innerHTML;
     }
-    set html(v) {
+    set html(v: string) {
         let x = this.el.innerHTML;
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
@@ -133,10 +135,10 @@ export class AnchorElView extends CommandElView {
             this.raisePropertyChanged(PROP_NAME.html);
         }
     }
-    get text() {
+    get text(): string {
         return this.el.textContent;
     }
-    set text(v) {
+    set text(v: string) {
         let x = this.el.textContent;
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
@@ -147,7 +149,7 @@ export class AnchorElView extends CommandElView {
     get href(): string {
         return (<HTMLAnchorElement>this.el).href;
     }
-    set href(v) {
+    set href(v: string) {
         let x = this.href;
         v = (!v) ? "" : ("" + v);
         if (x !== v) {

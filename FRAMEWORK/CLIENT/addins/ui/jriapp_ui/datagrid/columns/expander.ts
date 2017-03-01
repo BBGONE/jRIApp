@@ -1,5 +1,4 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { Utils } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { css } from "../const";
 import { BaseColumn, ICellInfo } from "./base";

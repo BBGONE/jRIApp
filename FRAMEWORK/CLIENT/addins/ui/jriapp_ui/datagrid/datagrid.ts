@@ -1,12 +1,12 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    TEventHandler, IIndexer, TPriority, LocaleERRS as ERRS, LocaleSTRS as STRS, BaseObject,
+    TEventHandler, IIndexer, LocaleERRS as ERRS, BaseObject,
     Debounce, Utils, IPromise
 } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { DATA_ATTR, KEYS } from "jriapp/const";
 import {
-    IApplication, ISelectableProvider, ISelectable, IViewOptions
+    ISelectableProvider, ISelectable, IViewOptions
 } from "jriapp/int";
 import {
     Parser
@@ -18,7 +18,6 @@ import {
 import {
     ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollection, ICollItemAddedArgs
 } from "jriapp_shared/collection/int";
-import { DblClick } from "../utils/dblclick";
 import { BaseElView } from "../baseview";
 import { parseContentAttr } from "../content/int";
 import { IDialogConstructorOptions, DataEditDialog } from "../dialog";
@@ -27,12 +26,6 @@ import { css, ROW_POSITION, COLUMN_TYPE, ROW_ACTION, PROP_NAME } from "./const";
 import { IDataGridAnimation, DefaultAnimation } from "./animation";
 
 import { BaseCell } from "./cells/base";
-import { ExpanderCell } from "./cells/expander";
-import { DataCell } from "./cells/data";
-import { ActionsCell } from "./cells/actions";
-import { DetailsCell } from "./cells/details";
-import { RowSelectorCell } from "./cells/rowselector";
-import { FillSpaceCell } from "./cells/fillspace";
 
 import { Row } from "./rows/row";
 import { DetailsRow } from "./rows/details";
@@ -53,8 +46,7 @@ export { IDataGridAnimation, DefaultAnimation } from "./animation";
 import { $ } from "../utils/jquery";
 
 
-const utils = Utils, checks = utils.check, strUtils = utils.str,
-    coreUtils = utils.core, ERROR = utils.err, sys = utils.sys,
+const utils = Utils, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err, sys = utils.sys,
     dom = DomUtils, parser = Parser, doc = dom.document, win = dom.window, boot = bootstrap;
 
 let _columnWidthInterval: number, _gridsCount: number = 0;
@@ -315,7 +307,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     }
     protected _getEventNames() {
         let base_events = super._getEventNames();
-        let events = Object.keys(GRID_EVENTS).map((key, i, arr) => { return <string>(<any>GRID_EVENTS)[key]; });
+        let events = Object.keys(GRID_EVENTS).map((key) => { return <string>(<any>GRID_EVENTS)[key]; });
         return events.concat(base_events);
     }
     addOnRowExpanded(fn: TEventHandler<DataGrid, { collapsedRow: Row; expandedRow: Row; isExpanded: boolean; }>, nmspace?: string, context?: any) {
@@ -731,7 +723,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         }
         let oldCurrent: ICollectionItem = null;
         this._updateCurrent = () => {
-            const coll = this.dataSource, cur: ICollectionItem = !coll ? null : coll.currentItem;
+            const coll = this.dataSource;
             self._onDSCurrentChanged(oldCurrent, coll.currentItem);
             oldCurrent = coll.currentItem;
         };
@@ -777,7 +769,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         });
     }
     protected _wrapTable() {
-        const self = this, options = this._options;
+        const options = this._options;
         const wrapper = doc.createElement("div"), container = doc.createElement("div"),
             header = doc.createElement("div");
         dom.addClass([wrapper], css.wrapDiv);
@@ -983,7 +975,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         return this._selectable;
     }
     sortByColumn(column: DataColumn): IPromise<any> {
-        const self = this, ds = this.dataSource;
+        const ds = this.dataSource;
         if (!ds)
             return;
         const sorts = column.sortMemberName.split(";");
@@ -1291,13 +1283,13 @@ export class DataGridElView extends BaseElView {
     }
     private _bindGridEvents() {
         const self = this;
-        this._grid.addOnRowStateChanged((s, args) => {
+        this._grid.addOnRowStateChanged((sender, args) => {
             if (!!self._stateProvider) {
                 args.css = self._stateProvider.getCSS(args.row.item, args.val);
             }
         }, this.uniqueID);
     }
-    get dataSource() {
+    get dataSource(): ICollection<ICollectionItem> {
         return this.grid.dataSource;
     }
     set dataSource(v) {
@@ -1306,8 +1298,8 @@ export class DataGridElView extends BaseElView {
             this.raisePropertyChanged(PROP_NAME.dataSource);
         }
     }
-    get grid() { return this._grid; }
-    get stateProvider() { return this._stateProvider; }
+    get grid(): DataGrid { return this._grid; }
+    get stateProvider(): IRowStateProvider { return this._stateProvider; }
     set stateProvider(v: IRowStateProvider) {
         if (v !== this._stateProvider) {
             this._stateProvider = v;
@@ -1322,7 +1314,7 @@ export class DataGridElView extends BaseElView {
             this.raisePropertyChanged(PROP_NAME.stateProvider);
         }
     }
-    get animation() {
+    get animation(): IDataGridAnimation {
         return this._grid.options.animation;
     }
     set animation(v) {

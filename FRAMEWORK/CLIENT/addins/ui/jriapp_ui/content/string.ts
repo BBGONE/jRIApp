@@ -3,7 +3,6 @@ import { KEYS } from "jriapp/const";
 import { IFieldInfo } from "jriapp_shared/collection/int";
 import { TextBoxElView } from "../textbox";
 
-import { css } from "./int";
 import { BasicContent } from "./basic";
 
 export class StringContent extends BasicContent {

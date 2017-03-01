@@ -195,7 +195,7 @@ declare module "jriapp_shared/utils/checks" {
         static isNumber(a: any): a is Number;
         static isNumeric(a: any): a is Number;
         static isBoolString(a: any): boolean;
-        static isGuid<T>(a: any): boolean;
+        static isGuid(a: any): boolean;
         static isArray<T>(a: any): a is Array<T>;
         static isThenable(a: any): a is IThenable<any>;
     }
@@ -237,24 +237,6 @@ declare module "jriapp_shared/utils/sysutils" {
         static getProp(obj: any, prop: string): any;
         static setProp(obj: any, prop: string, val: any): void;
         static resolvePath(obj: any, path: string): any;
-    }
-}
-declare module "jriapp_shared/utils/arrhelper" {
-    export interface IArrayLikeList<T> {
-        length: number;
-        [index: number]: T;
-    }
-    export class ArrayHelper {
-        static clone<T>(arr: T[]): T[];
-        static fromList<T extends U, U>(list: IArrayLikeList<U>): T[];
-        static fromList<T>(list: IArrayLikeList<any>): T[];
-        static fromList<T>(list: IArrayLikeList<T>): T[];
-        static merge<T>(arrays: Array<Array<T>>): Array<T>;
-        static distinct(arr: string[]): string[];
-        static distinct(arr: number[]): number[];
-        static remove(array: any[], obj: any): number;
-        static removeIndex(array: any[], index: number): boolean;
-        static insert(array: any[], obj: any, pos: number): void;
     }
 }
 declare module "jriapp_shared/utils/coreutils" {
@@ -508,6 +490,24 @@ declare module "jriapp_shared/object" {
         getIsDestroyed(): boolean;
         getIsDestroyCalled(): boolean;
         destroy(): void;
+    }
+}
+declare module "jriapp_shared/utils/arrhelper" {
+    export interface IArrayLikeList<T> {
+        length: number;
+        [index: number]: T;
+    }
+    export class ArrayHelper {
+        static clone<T>(arr: T[]): T[];
+        static fromList<T extends U, U>(list: IArrayLikeList<U>): T[];
+        static fromList<T>(list: IArrayLikeList<any>): T[];
+        static fromList<T>(list: IArrayLikeList<T>): T[];
+        static merge<T>(arrays: Array<Array<T>>): Array<T>;
+        static distinct(arr: string[]): string[];
+        static distinct(arr: number[]): number[];
+        static remove(array: any[], obj: any): number;
+        static removeIndex(array: any[], index: number): boolean;
+        static insert(array: any[], obj: any, pos: number): void;
     }
 }
 declare module "jriapp_shared/utils/queue" {

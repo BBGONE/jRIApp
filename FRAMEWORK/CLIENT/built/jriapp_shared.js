@@ -425,66 +425,19 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/uti
         };
         return SysUtils;
     }());
-    SysUtils.isBaseObj = function (obj) { return false; };
-    SysUtils.isBinding = function (obj) { return false; };
+    SysUtils.isBaseObj = function () { return false; };
+    SysUtils.isBinding = function () { return false; };
     SysUtils.isPropBag = function (obj) {
         return !!obj && obj.isPropertyBag;
     };
-    SysUtils.isCollection = function (obj) { return false; };
-    SysUtils.getItemByProp = function (obj, prop) { return null; };
-    SysUtils.isValidationError = function (obj) { return false; };
+    SysUtils.isCollection = function () { return false; };
+    SysUtils.getItemByProp = function () { return null; };
+    SysUtils.isValidationError = function () { return false; };
     exports.SysUtils = SysUtils;
 });
-define("jriapp_shared/utils/arrhelper", ["require", "exports"], function (require, exports) {
+define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/checks"], function (require, exports, strutils_1, checks_2) {
     "use strict";
-    var ArrayHelper = (function () {
-        function ArrayHelper() {
-        }
-        ArrayHelper.clone = function (arr) {
-            if (arr.length === 1) {
-                return [arr[0]];
-            }
-            else {
-                return Array.apply(null, arr);
-            }
-        };
-        ArrayHelper.fromList = function (list) {
-            return [].slice.call(list);
-        };
-        ArrayHelper.merge = function (arrays) {
-            return [].concat.apply([], arrays);
-        };
-        ArrayHelper.distinct = function (arr) {
-            var o = {}, i, l = arr.length, r = [];
-            for (i = 0; i < l; i += 1)
-                o["" + arr[i]] = arr[i];
-            var k = Object.keys(o);
-            for (i = 0, l = k.length; i < l; i += 1)
-                r.push(o[k[i]]);
-            return r;
-        };
-        ArrayHelper.remove = function (array, obj) {
-            var i = array.indexOf(obj);
-            if (i > -1) {
-                array.splice(i, 1);
-            }
-            return i;
-        };
-        ArrayHelper.removeIndex = function (array, index) {
-            var isOk = index > -1 && array.length > index;
-            array.splice(index, 1);
-            return isOk;
-        };
-        ArrayHelper.insert = function (array, obj, pos) {
-            array.splice(pos, 0, obj);
-        };
-        return ArrayHelper;
-    }());
-    exports.ArrayHelper = ArrayHelper;
-});
-define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/checks"], function (require, exports, arrhelper_1, strutils_1, checks_2) {
-    "use strict";
-    var checks = checks_2.Checks, strUtils = strutils_1.StringUtils, arrHelper = arrhelper_1.ArrayHelper;
+    var checks = checks_2.Checks, strUtils = strutils_1.StringUtils;
     var UUID_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split("");
     var NEWID_MAP = {};
     var CoreUtils = (function () {
@@ -1408,16 +1361,63 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
     }());
     exports.BaseObject = BaseObject;
 });
-define("jriapp_shared/utils/queue", ["require", "exports", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/error"], function (require, exports, checks_5, arrhelper_2, error_2) {
+define("jriapp_shared/utils/arrhelper", ["require", "exports"], function (require, exports) {
     "use strict";
-    var checks = checks_5.Checks, arrHelper = arrhelper_2.ArrayHelper, error = error_2.ERROR;
+    var ArrayHelper = (function () {
+        function ArrayHelper() {
+        }
+        ArrayHelper.clone = function (arr) {
+            if (arr.length === 1) {
+                return [arr[0]];
+            }
+            else {
+                return Array.apply(null, arr);
+            }
+        };
+        ArrayHelper.fromList = function (list) {
+            return [].slice.call(list);
+        };
+        ArrayHelper.merge = function (arrays) {
+            return [].concat.apply([], arrays);
+        };
+        ArrayHelper.distinct = function (arr) {
+            var o = {}, i, l = arr.length, r = [];
+            for (i = 0; i < l; i += 1)
+                o["" + arr[i]] = arr[i];
+            var k = Object.keys(o);
+            for (i = 0, l = k.length; i < l; i += 1)
+                r.push(o[k[i]]);
+            return r;
+        };
+        ArrayHelper.remove = function (array, obj) {
+            var i = array.indexOf(obj);
+            if (i > -1) {
+                array.splice(i, 1);
+            }
+            return i;
+        };
+        ArrayHelper.removeIndex = function (array, index) {
+            var isOk = index > -1 && array.length > index;
+            array.splice(index, 1);
+            return isOk;
+        };
+        ArrayHelper.insert = function (array, obj, pos) {
+            array.splice(pos, 0, obj);
+        };
+        return ArrayHelper;
+    }());
+    exports.ArrayHelper = ArrayHelper;
+});
+define("jriapp_shared/utils/queue", ["require", "exports", "jriapp_shared/utils/error"], function (require, exports, error_2) {
+    "use strict";
+    var error = error_2.ERROR;
     var MAX_NUM = 99999900000, win = window;
     function createQueue(interval) {
         if (interval === void 0) { interval = 0; }
-        var _rafQueue = [], _rafQueueMap = {}, _timer = null, _newTaskId = 1;
+        var _tasks = [], _taskMap = {}, _timer = null, _newTaskId = 1;
         var res = {
             cancel: function (taskId) {
-                var task = _rafQueueMap[taskId];
+                var task = _taskMap[taskId];
                 if (!!task) {
                     task.func = null;
                 }
@@ -1425,13 +1425,14 @@ define("jriapp_shared/utils/queue", ["require", "exports", "jriapp_shared/utils/
             enque: function (func) {
                 var taskId = _newTaskId;
                 _newTaskId += 1;
-                var task = { taskId: taskId, func: func }, len = _rafQueue.push(task);
-                _rafQueueMap[taskId] = task;
+                var task = { taskId: taskId, func: func };
+                _tasks.push(task);
+                _taskMap[taskId] = task;
                 if (!_timer) {
                     _timer = win.setTimeout(function () {
-                        var arr = _rafQueue;
+                        var arr = _tasks;
                         _timer = null;
-                        _rafQueue = [];
+                        _tasks = [];
                         if (_newTaskId > MAX_NUM)
                             _newTaskId = 1;
                         try {
@@ -1447,9 +1448,9 @@ define("jriapp_shared/utils/queue", ["require", "exports", "jriapp_shared/utils/
                             });
                         }
                         finally {
-                            _rafQueueMap = {};
-                            for (var i = 0; i < _rafQueue.length; i += 1) {
-                                _rafQueueMap[_rafQueue[i].taskId] = _rafQueue[i];
+                            _taskMap = {};
+                            for (var i = 0; i < _tasks.length; i += 1) {
+                                _taskMap[_tasks[i].taskId] = _tasks[i];
                             }
                             ;
                         }
@@ -1462,9 +1463,9 @@ define("jriapp_shared/utils/queue", ["require", "exports", "jriapp_shared/utils/
     }
     exports.createQueue = createQueue;
 });
-define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/errors", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/queue"], function (require, exports, errors_2, checks_6, arrhelper_3, queue_1) {
+define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/errors", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/queue"], function (require, exports, errors_2, checks_5, arrhelper_1, queue_1) {
     "use strict";
-    var checks = checks_6.Checks, arrHelper = arrhelper_3.ArrayHelper;
+    var checks = checks_5.Checks, arrHelper = arrhelper_1.ArrayHelper;
     var taskQueue = null;
     function createDefer(isSync) {
         return new Promise(null, (!isSync ? fn_enque : fn_exec)).deferred();
@@ -1818,9 +1819,9 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
     }());
     exports.Debounce = Debounce;
 });
-define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/debounce", "jriapp_shared/errors"], function (require, exports, object_1, coreutils_3, strutils_3, sysutils_3, checks_7, debounce_1, errors_3) {
+define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/debounce", "jriapp_shared/errors"], function (require, exports, object_1, coreutils_3, strutils_3, sysutils_3, checks_6, debounce_1, errors_3) {
     "use strict";
-    var coreUtils = coreutils_3.CoreUtils, strUtils = strutils_3.StringUtils, checks = checks_7.Checks, sys = sysutils_3.SysUtils;
+    var coreUtils = coreutils_3.CoreUtils, strUtils = strutils_3.StringUtils, checks = checks_6.Checks, sys = sysutils_3.SysUtils;
     var BAG_EVENTS = {
         errors_changed: "errors_changed",
         validate_bag: "validate_bag",
@@ -2219,9 +2220,9 @@ define("jriapp_shared/utils/logger", ["require", "exports"], function (require, 
     }());
     exports.LOGGER = LOGGER;
 });
-define("jriapp_shared/utils/async", ["require", "exports", "jriapp_shared/utils/deferred", "jriapp_shared/utils/checks"], function (require, exports, deferred_2, checks_8) {
+define("jriapp_shared/utils/async", ["require", "exports", "jriapp_shared/utils/deferred", "jriapp_shared/utils/checks"], function (require, exports, deferred_2, checks_7) {
     "use strict";
-    var checks = checks_8.Checks, _whenAll = deferred_2.whenAll, _race = deferred_2.race, _getTaskQueue = deferred_2.getTaskQueue, _createDefer = deferred_2.createDefer;
+    var checks = checks_7.Checks, _whenAll = deferred_2.whenAll, _race = deferred_2.race, _getTaskQueue = deferred_2.getTaskQueue, _createDefer = deferred_2.createDefer;
     var AsyncUtils = (function () {
         function AsyncUtils() {
         }
@@ -2325,16 +2326,16 @@ define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/s
     HttpUtils.ajaxTimeOut = 600;
     exports.HttpUtils = HttpUtils;
 });
-define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug", "jriapp_shared/utils/error", "jriapp_shared/utils/logger", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/async", "jriapp_shared/utils/http", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/deferred"], function (require, exports, coreutils_5, debug_3, error_3, logger_1, sysutils_4, async_2, http_1, strutils_4, checks_9, arrhelper_4, deferred_4) {
+define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug", "jriapp_shared/utils/error", "jriapp_shared/utils/logger", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/async", "jriapp_shared/utils/http", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/deferred"], function (require, exports, coreutils_5, debug_3, error_3, logger_1, sysutils_4, async_2, http_1, strutils_4, checks_8, arrhelper_2, deferred_4) {
     "use strict";
     var Utils = (function () {
         function Utils() {
         }
         return Utils;
     }());
-    Utils.check = checks_9.Checks;
+    Utils.check = checks_8.Checks;
     Utils.str = strutils_4.StringUtils;
-    Utils.arr = arrhelper_4.ArrayHelper;
+    Utils.arr = arrhelper_2.ArrayHelper;
     Utils.http = http_1.HttpUtils;
     Utils.core = coreutils_5.CoreUtils;
     Utils.defer = async_2.AsyncUtils;
@@ -3327,7 +3328,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             return this._internal;
         };
         BaseCollection.prototype._getSortFn = function (fieldNames, sortOrder) {
-            var self = this, mult = 1;
+            var mult = 1;
             if (sortOrder === 1)
                 mult = -1;
             return function (a, b) {
@@ -4414,8 +4415,9 @@ define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/ob
             configurable: true
         });
         CollectionItem.prototype.destroy = function () {
-            if (this._isDestroyed)
+            if (this._isDestroyed) {
                 return;
+            }
             this._isDestroyCalled = true;
             var aspect = this.__aspect;
             if (!!aspect) {
@@ -4923,9 +4925,9 @@ define("jriapp_shared/utils/jsonarray", ["require", "exports", "jriapp_shared/ob
     }(object_6.BaseObject));
     exports.JsonArray = JsonArray;
 });
-define("jriapp_shared/utils/weakmap", ["require", "exports", "jriapp_shared/utils/coreutils"], function (require, exports, coreutils_9) {
+define("jriapp_shared/utils/weakmap", ["require", "exports"], function (require, exports) {
     "use strict";
-    var core = coreutils_9.CoreUtils, undefined = void 0;
+    var _undefined = void 0;
     var counter = (new Date().getTime()) % 1e9;
     function createWeakMap() {
         var win = window;
@@ -4949,14 +4951,14 @@ define("jriapp_shared/utils/weakmap", ["require", "exports", "jriapp_shared/util
         };
         WeakMap.prototype.get = function (key) {
             var entry = key[this._name];
-            return (!entry ? undefined : (entry[0] === key ? entry[1] : undefined));
+            return (!entry ? _undefined : (entry[0] === key ? entry[1] : _undefined));
         };
         WeakMap.prototype.delete = function (key) {
             var entry = key[this._name];
             if (!entry)
                 return false;
             var hasValue = (entry[0] === key);
-            entry[0] = entry[1] = undefined;
+            entry[0] = entry[1] = _undefined;
             return hasValue;
         };
         WeakMap.prototype.has = function (key) {
@@ -5049,9 +5051,9 @@ define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_sha
     }(list_2.BaseList));
     exports.BaseDictionary = BaseDictionary;
 });
-define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/checks"], function (require, exports, checks_10) {
+define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/checks"], function (require, exports, checks_9) {
     "use strict";
-    var checks = checks_10.Checks;
+    var checks = checks_9.Checks;
     var Lazy = (function () {
         function Lazy(factory) {
             this._val = null;

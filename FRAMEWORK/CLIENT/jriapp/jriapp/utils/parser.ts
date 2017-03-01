@@ -1,7 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import {
-    BaseObject, Utils, LocaleERRS as ERRS
-} from "jriapp_shared";
+import { Utils, LocaleERRS as ERRS } from "jriapp_shared";
 
 
 const checks = Utils.check, strUtils = Utils.str, coreUtils = Utils.core, sys = Utils.sys;

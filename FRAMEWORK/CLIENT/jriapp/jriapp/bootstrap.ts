@@ -3,11 +3,9 @@ import {
     DUMY_ERROR, IIndexer, IBaseObject, IPromise,
     TEventHandler, TPriority, LocaleERRS, BaseObject, Utils
 } from "jriapp_shared";
-import { BindTo, TOOLTIP_SVC, STORE_KEY } from "./const";
-import { IApplication, ISelectable, ISelectableProvider, IExports, IConverter, ISvcStore,
-    IUnResolvedBindingArgs, IStylesLoader, IContentFactory,
-    IContentFactoryList, TFactoryGetter, IContentConstructor, IContentOptions, IElViewRegister
-} from "./int";
+import { STORE_KEY } from "./const";
+import { IApplication, ISelectableProvider, IExports, IConverter, ISvcStore,
+    IContentFactoryList, IElViewRegister, IStylesLoader } from "./int";
 import { createElViewRegister } from "./elview";
 import { createContentFactoryList } from "./content";
 import { Defaults } from "defaults";
@@ -16,9 +14,9 @@ import { createCssLoader } from "./utils/sloader";
 import { PathHelper } from "./utils/path";
 import { DomUtils } from "./utils/dom";
 import { Promise } from "jriapp_shared/utils/deferred";
-import { createQueue, IQueue } from "jriapp_shared/utils/queue";
+import { createQueue } from "jriapp_shared/utils/queue";
 
-const utils = Utils, dom = DomUtils, win = dom.window, doc = win.document, arrHelper = utils.arr,
+const utils = Utils, dom = DomUtils, win = dom.window, doc = win.document,
     _async = utils.defer, coreUtils = utils.core, strUtils = utils.str, ERROR = utils.err,
     ERRS = LocaleERRS;
 
@@ -53,7 +51,7 @@ const utils = Utils, dom = DomUtils, win = dom.window, doc = win.document, arrHe
 })();
 
 const _TEMPLATE_SELECTOR = 'script[type="text/html"]';
-const stylesLoader = createCssLoader();
+const stylesLoader: IStylesLoader = createCssLoader();
 
 const GLOB_EVENTS = {
     load: "load",
@@ -116,9 +114,13 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         this._templateLoader = null;
         this._templateLoader = new TemplateLoader();
         this._templateLoader.addOnLoaded((s, a) => {
+            if (!s)
+                throw new Error("Invalid operation");
             self._onTemplateLoaded(a.html, a.app);
         });
         this._templateLoader.addOnError((s, a) => {
+            if (!s)
+                throw new Error("Invalid operation");
             return self.handleError(a.error, a.source);
         });
         this._elViewRegister = createElViewRegister(null);
@@ -225,7 +227,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     }
     protected _getEventNames(): string[] {
         const base_events = super._getEventNames(),
-            events = Object.keys(GLOB_EVENTS).map((key, i, arr) => {
+            events = Object.keys(GLOB_EVENTS).map((key) => {
                 return <string>(<any>GLOB_EVENTS)[key];
             });
         return events.concat(base_events);
@@ -245,7 +247,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     }
     private _init(): IPromise<Bootstrap> {
         const self = this;
-        const promise  = self.stylesLoader.whenAllLoaded().then(() => {
+        const promise: IPromise<Bootstrap> = self.stylesLoader.whenAllLoaded().then(() => {
             if (self._bootState !== BootstrapState.None)
                 throw new Error("Invalid operation: bootState !== BootstrapState.None");
 
@@ -296,7 +298,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         }, isel.getUniqueID());
     }
     private _untrackSelectable(selectable: ISelectableProvider): void {
-        const self = this, isel = selectable.getISelectable(),
+        const isel = selectable.getISelectable(),
             el = isel.getContainerEl();
         dom.events.off(el, "click", isel.getUniqueID());
         if (this.currentSelectable === selectable)
@@ -349,7 +351,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         const self = this;
 
         self.init(() => {
-            self.addOnLoad((s, a) => {
+            self.addOnLoad(() => {
                 setTimeout(() => {
                     try {
                         onLoad(self);
@@ -388,7 +390,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     }
     init(onInit: (bootstrap: Bootstrap) => void): void {
         const self = this;
-        self.addOnInitialize((s, a) => {
+        self.addOnInitialize(() => {
             setTimeout(() => {
                 try {
                     onInit(self);
@@ -450,7 +452,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         const name2 = STORE_KEY.SVC + name;
         return this._registerObject(this, name2, obj);
     }
-    unregisterSvc(name: string, obj: any) {
+    unregisterSvc(name: string) {
         const name2 = STORE_KEY.SVC + name;
         return this._unregisterObject(this, name2);
     }
@@ -459,18 +461,19 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         const name2 = STORE_KEY.SVC + name;
         return this._getObject(this, name2);
     }
-    registerConverter(name: string, obj: IConverter) {
+    registerConverter(name: string, obj: IConverter): void {
         let name2 = STORE_KEY.CONVERTER + name;
         if (!this._getObject(this, name2)) {
             this._registerObject(this, name2, obj);
         }
-        else
+        else {
             throw new Error(strUtils.format(ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
+        }
     }
-    registerElView(name: string, elViewType: any) {
+    registerElView(name: string, elViewType: any): void {
         this._elViewRegister.registerElView(name, elViewType);
     }
-    getImagePath(imageName: string) {
+    getImagePath(imageName: string): string {
         let images = this.defaults.imagesPath;
         return images + imageName;
     }
@@ -482,11 +485,11 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     toString() {
         return "JRIApp Bootstrap";
     }
-    get stylesLoader() { return stylesLoader; }
-    get elViewRegister() { return this._elViewRegister; }
-    get contentFactory() { return this._contentFactory; }
-    get templateLoader() { return this._templateLoader; }
-    get currentSelectable() {
+    get stylesLoader(): IStylesLoader { return stylesLoader; }
+    get elViewRegister(): IElViewRegister { return this._elViewRegister; }
+    get contentFactory(): IContentFactoryList { return this._contentFactory; }
+    get templateLoader(): TemplateLoader { return this._templateLoader; }
+    get currentSelectable(): ISelectableProvider {
         return this._currentSelectable;
     }
     set currentSelectable(v: ISelectableProvider) {

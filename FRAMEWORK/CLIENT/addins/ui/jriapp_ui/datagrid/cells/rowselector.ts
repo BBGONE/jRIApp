@@ -1,11 +1,8 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { Utils } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { DATA_ATTR } from "jriapp/const";
-import { IContent, IBindingInfo, IContentOptions } from "jriapp/int";
-import { BoolContent } from "../../content/bool";
 
-import { css, PROP_NAME } from "../const";
+import { css } from "../const";
 import { BaseCell, ICellOptions } from "./base";
 import { RowSelectorColumn } from "../columns/rowselector";
 

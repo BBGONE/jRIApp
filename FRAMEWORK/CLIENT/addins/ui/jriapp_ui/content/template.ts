@@ -1,8 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { BaseObject, LocaleERRS as ERRS, Utils } from "jriapp_shared";
 import {
-    IContent, ITemplateEvents, IApplication, ITemplate, ITemplateInfo,
-    IConstructorContentOptions
+    IContent, IApplication, ITemplate, ITemplateInfo, IConstructorContentOptions
 } from "jriapp/int";
 import { DomUtils } from "jriapp/utils/dom";
 import { bootstrap } from "jriapp/bootstrap";
@@ -18,7 +17,6 @@ export class TemplateContent extends BaseObject implements IContent {
     private _templateInfo: ITemplateInfo;
     private _isEditing: boolean;
     private _dataContext: any;
-    private _isDisabled: boolean;
     private _templateID: string;
 
     constructor(options: IConstructorContentOptions) {

@@ -3,8 +3,7 @@ import {
    LocaleERRS
 } from "jriapp_shared";
 import {
-    IContentFactory, IContentFactoryList, IConstructorContentOptions,
-    TFactoryGetter, IContent, IContentOptions, IContentConstructor
+    IContentFactory, IContentFactoryList, TFactoryGetter, IContentOptions, IContentConstructor
 } from "./int";
 
 const ERRS = LocaleERRS;

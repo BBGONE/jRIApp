@@ -1,12 +1,9 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { FIELD_TYPE, DATA_TYPE, ITEM_STATUS } from "./const";
+import { FIELD_TYPE, ITEM_STATUS } from "./const";
 import { IFieldInfo } from "./int";
 import { IVoidPromise } from "../utils/ideferred";
-import {
-    IIndexer, IValidationInfo, TEventHandler, IErrorNotification, IBaseObject
-} from "../int";
+import { IIndexer, IValidationInfo, TEventHandler, IErrorNotification } from "../int";
 import { BaseObject } from "../object";
-import { ERRS } from "../lang";
 import { Utils } from "../utils/utils";
 
 import { ICollectionItem, IItemAspect, ICancellableArgs, PROP_NAME, ITEM_EVENTS } from "./int";

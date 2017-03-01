@@ -1,12 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import {
-    IBaseObject, LocaleERRS as ERRS, Utils
-} from "jriapp_shared";
-import {
-    IApplication, IConstructorContentOptions, IBindingInfo, IBindingOptions, IElView
-} from "jriapp/int";
+import { IBaseObject, LocaleERRS as ERRS, Utils } from "jriapp_shared";
+import { IConstructorContentOptions, IBindingInfo, IElView, IBindingOptions } from "jriapp/int";
 import { DomUtils } from "jriapp/utils/dom";
-import { css } from "./int";
 import { BasicContent } from "./basic";
 
 const utils = Utils, strUtils = utils.str, doc = DomUtils.document;
@@ -20,7 +15,7 @@ export class DateContent extends BasicContent {
         }
         super(options);
     }
-    protected getBindingOption(bindingInfo: IBindingInfo, tgt: IBaseObject, dctx: any, targetPath: string) {
+    protected getBindingOption(bindingInfo: IBindingInfo, tgt: IBaseObject, dctx: any, targetPath: string): IBindingOptions {
         let options = super.getBindingOption(bindingInfo, tgt, dctx, targetPath);
         options.converter = this.app.getConverter("dateConverter");
         return options;
@@ -32,8 +27,7 @@ export class DateContent extends BasicContent {
             el.setAttribute("type", "text");
             info.options = this._options.options;
             info.name = NAME;
-        }
-        else {
+        } else {
             el = doc.createElement("span");
         }
         this.updateCss();

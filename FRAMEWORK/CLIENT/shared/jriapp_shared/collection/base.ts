@@ -15,7 +15,7 @@ import { WaitQueue } from "../utils/waitqueue";
 import { Utils } from "../utils/utils";
 
 import { ICollectionItem, ICollection, ICollectionOptions, IPermissions, IInternalCollMethods, ICollChangedArgs,
-    ICancellableArgs, ICollFillArgs, ICollEndEditArgs, ICollItemAddedArgs, ICollectionEvents, ICollItemArgs, ICollItemStatusArgs,
+    ICancellableArgs, ICollFillArgs, ICollEndEditArgs, ICollItemArgs, ICollItemStatusArgs,
     ICollValidateFieldArgs, ICollValidateItemArgs, ICurrentChangingArgs, ICommitChangesArgs, IItemAddedArgs, IPageChangingArgs,
     IErrorsList, IErrors, PROP_NAME
 } from "./int";
@@ -618,7 +618,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         return this._internal;
     }
     _getSortFn(fieldNames: string[], sortOrder: SORT_ORDER): (a: any, b: any) => number {
-        let self = this, mult = 1;
+        let mult = 1;
         if (sortOrder === SORT_ORDER.DESC)
             mult = -1;
         return (a: any, b: any) => {

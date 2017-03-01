@@ -2,7 +2,7 @@
 import { IViewOptions } from "jriapp/int";
 import { DomUtils } from "jriapp/utils/dom";
 import { bootstrap } from "jriapp/bootstrap";
-import { css, PROP_NAME } from "./baseview";
+import { PROP_NAME } from "./baseview";
 import { InputElView } from "./input";
 
 const dom = DomUtils;

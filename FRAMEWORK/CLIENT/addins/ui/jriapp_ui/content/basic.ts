@@ -7,8 +7,8 @@ import { IFieldInfo } from "jriapp_shared/collection/int";
 import { DomUtils } from "jriapp/utils/dom";
 import { BINDING_MODE } from "jriapp/const";
 import {
-    IApplication, IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IElView, IViewOptions,
-    IBindingInfo, IBindingOptions, IBinding
+    IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IElView,
+    IViewOptions, IBindingInfo, IBindingOptions, IApplication
 } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 import { Binding, getBindingOptions } from "jriapp/binding";
@@ -17,7 +17,7 @@ import { LifeTimeScope } from "jriapp/utils/lifetime";
 import { css } from "./int";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, coreUtils = utils.core,
-    checks = utils.check, boot = bootstrap, sys = utils.sys;
+   boot = bootstrap, sys = utils.sys;
 
 export class BasicContent extends BaseObject implements IContent {
     protected _parentEl: HTMLElement;
@@ -63,8 +63,7 @@ export class BasicContent extends BaseObject implements IContent {
             if (!!fieldInfo && !fieldInfo.isNullable) {
                 dom.addClass([el], css.required);
             }
-        }
-        else {
+        } else {
             if (!!displayInfo) {
                 if (!!displayInfo.displayCss) {
                     dom.addClass([el], displayInfo.displayCss);
@@ -82,8 +81,9 @@ export class BasicContent extends BaseObject implements IContent {
         if (this._isReadOnly)
             return false;
         let finf = this.getFieldInfo();
-        if (!finf)
+        if (!finf) {
             return false;
+        }
         const editable = sys.getEditable(this._dataContext);
         return !!editable && !finf.isReadOnly && finf.fieldType !== FIELD_TYPE.Calculated;
     }
@@ -93,29 +93,31 @@ export class BasicContent extends BaseObject implements IContent {
             el = doc.createElement("input");
             el.setAttribute("type", "text");
             info.options = this._options.options;
-        }
-        else {
+        } else {
             el = doc.createElement("span");
         }
         this.updateCss();
         this._el = el;
         return this.getElementView(this._el, info);
     }
-    protected getBindingOption(bindingInfo: IBindingInfo, target: IBaseObject, dataContext: any, targetPath: string) {
-        let options = getBindingOptions(bindingInfo, target, dataContext);
+    protected getBindingOption(bindingInfo: IBindingInfo, target: IBaseObject, dataContext: any, targetPath: string): IBindingOptions {
+        let options: IBindingOptions = getBindingOptions(bindingInfo, target, dataContext);
 
-        if (this.isEditing && this.getIsCanBeEdited())
+        if (this.isEditing && this.getIsCanBeEdited()) {
             options.mode = BINDING_MODE.TwoWay;
-        else
+        } else {
             options.mode = BINDING_MODE.OneWay;
+        }
 
-        if (!!targetPath)
+        if (!!targetPath) {
             options.targetPath = targetPath;
+        }
         return options;
     }
     protected getBindings(): Binding[] {
-        if (!this._lfScope)
+        if (!this._lfScope) {
             return [];
+        }
         let arr = this._lfScope.getObjs(), res: Binding[] = [];
         for (let i = 0, len = arr.length; i < len; i += 1) {
             if (sys.isBinding(arr[i]))
@@ -127,8 +129,9 @@ export class BasicContent extends BaseObject implements IContent {
         let binding: Binding, bindings = this.getBindings();
         for (let i = 0, len = bindings.length; i < len; i += 1) {
             binding = bindings[i];
-            if (!binding.isSourceFixed)
+            if (!binding.isSourceFixed) {
                 binding.source = this._dataContext;
+            }
         }
     }
     protected cleanUp() {
@@ -159,8 +162,9 @@ export class BasicContent extends BaseObject implements IContent {
             if (!!bindingInfo) {
                 this._target = this.createTargetElement();
                 this._lfScope = new LifeTimeScope();
-                if (!!this._target)
+                if (!!this._target) {
                     this._lfScope.addObj(this._target);
+                }
                 let options = this.getBindingOption(bindingInfo, this._target, this._dataContext, "value");
                 this._parentEl.appendChild(this._el);
                 this._lfScope.addObj(this.app.bind(options));
@@ -208,7 +212,7 @@ export class BasicContent extends BaseObject implements IContent {
             this.updateBindingSource();
         }
     }
-    get app() {
+    get app(): IApplication {
         return boot.getApp();
     }
 }

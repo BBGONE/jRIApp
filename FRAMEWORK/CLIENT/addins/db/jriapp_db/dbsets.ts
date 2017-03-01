@@ -3,7 +3,7 @@ import { BaseObject, LocaleERRS as ERRS, Utils, Lazy, IIndexer } from "jriapp_sh
 import { PROP_NAME } from "./const";
 import { IEntityItem } from "./int";
 import { DbContext } from "./dbcontext";
-import { DbSet, IDbSetConstructor, TDbSet } from "./dbset";
+import { IDbSetConstructor, TDbSet } from "./dbset";
 
 const utils = Utils, strUtils = utils.str;
 
@@ -35,10 +35,10 @@ export class DbSets extends BaseObject {
             return res;
         });
     }
-    get dbSetNames() {
+    get dbSetNames(): string[] {
         return Object.keys(this._dbSets);
     }
-    get arrDbSets() {
+    get arrDbSets(): TDbSet[] {
         return this._arrDbSets;
     }
     findDbSet(name: string): TDbSet {

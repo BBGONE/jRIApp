@@ -1,24 +1,18 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import {
-    FIELD_TYPE, FILTER_TYPE, SORT_ORDER, DATE_CONVERSION, DATA_TYPE
-} from "jriapp_shared/collection/const";
-import {
-    IPromise, BaseObject, Utils, LocaleERRS as ERRS
-} from "jriapp_shared";
+import { FILTER_TYPE, SORT_ORDER, DATE_CONVERSION, DATA_TYPE } from "jriapp_shared/collection/const";
+import { IPromise, BaseObject, Utils, LocaleERRS as ERRS } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
 import { ValueUtils } from "jriapp_shared/collection/utils";
 import { PROP_NAME } from "./const";
-import {
-    IEntityItem, IQueryInfo, IFilterInfo, ISortInfo, IQueryResult, ICachedPage
-} from "./int";
+import { IEntityItem, IQueryInfo, IFilterInfo, ISortInfo, IQueryResult } from "./int";
 import { DataCache } from "./datacache";
 import { DbSet } from "./dbset";
 import { DbContext } from "./dbcontext";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr,
+const utils = Utils, checks = utils.check, strUtils = utils.str, arrHelper = utils.arr,
     valUtils = ValueUtils;
 
-export interface IInternalQueryMethods<TItem extends IEntityItem> {
+export interface IInternalQueryMethods {
     clearCache(): void;
     getCache(): DataCache;
     isPageCached(pageIndex: number): boolean;
@@ -40,7 +34,7 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
     private _isClearCacheOnEveryLoad: boolean;
     private _dataCache: DataCache;
     private _cacheInvalidated: boolean;
-    private _internal: IInternalQueryMethods<TItem>;
+    private _internal: IInternalQueryMethods;
     private _isPagingEnabled: boolean;
 
     constructor(dbSet: DbSet<TItem, TObj, DbContext>, queryInfo: IQueryInfo) {
@@ -157,7 +151,7 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
         }
         cache.setPageItems(pageIndex, items);
     }
-    _getInternal(): IInternalQueryMethods<TItem> {
+    _getInternal(): IInternalQueryMethods {
         return this._internal;
     }
     where(fieldName: string, operand: FILTER_TYPE, value: any, checkFieldName = true) {

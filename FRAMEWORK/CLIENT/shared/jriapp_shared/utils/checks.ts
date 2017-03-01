@@ -2,9 +2,6 @@
 import {
    IThenable
 } from "./ideferred";
-import {
-    IBaseObject, IEditable, ISubmittable, IErrorNotification, IPropertyBag
-} from "../int";
 
 const GUID_RX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -60,7 +57,7 @@ export class Checks {
         if (Checks.isNt(a)) return false;
         return (a === "true" || a === "false");
     }
-    static isGuid<T>(a: any): boolean {
+    static isGuid(a: any): boolean {
         return Checks.isString(a) && GUID_RX.test(a);
     }
     static isArray<T>(a: any): a is Array<T> {

@@ -288,7 +288,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
                 promise.then(() => {
                     self._result = "ok";
                     self.hide();
-                }, (err: any) => {
+                }, () => {
                     //resume editing if fn_onEndEdit callback returns false in isOk argument
                     if (!!self._editable) {
                         if (!self._editable.beginEdit()) {

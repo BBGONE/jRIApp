@@ -1,15 +1,15 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    FIELD_TYPE, DATE_CONVERSION, DATA_TYPE, SORT_ORDER, ITEM_STATUS
+    FIELD_TYPE,DATA_TYPE, ITEM_STATUS
 } from "jriapp_shared/collection/const";
 import {
-    IIndexer, IValidationInfo, IVoidPromise, IPromise, LocaleERRS as ERRS, Utils
+    IIndexer, IVoidPromise, IPromise, LocaleERRS as ERRS, Utils
 } from "jriapp_shared";
 import { ValidationError } from "jriapp_shared/errors";
 import { ICancellableArgs, IFieldInfo } from "jriapp_shared/collection/int";
 import { ValueUtils, CollUtils } from "jriapp_shared/collection/utils";
 import { ItemAspect } from "jriapp_shared/collection/aspect";
-import { FLAGS, REFRESH_MODE, PROP_NAME } from "./const";
+import { FLAGS, REFRESH_MODE } from "./const";
 import { DbContext } from "./dbcontext";
 import { IEntityItem, IRowData, IFieldName, IValueChange, IRowInfo } from "./int";
 import { DbSet } from "./dbset";
@@ -17,10 +17,6 @@ import { SubmitError } from "./error";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
     valUtils = ValueUtils, collUtils = CollUtils, sys = utils.sys;
-
-const ENTITYASPECT_EVENTS = {
-    destroyed: "destroyed"
-};
 
 //don't submit these types of fields to the server
 function fn_isNotSubmittable(fieldInfo: IFieldInfo) {
@@ -192,7 +188,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
     protected _cancelEdit() {
         if (!this.isEditing)
             return false;
-        const self = this, changes = this._getValueChanges(true), isNew = this.isNew, dbSet = this.dbSet;
+        const self = this, changes = this._getValueChanges(true), dbSet = this.dbSet;
         this._vals = this._saveVals;
         this._saveVals = null;
         this._setStatus(this._savedStatus);
@@ -455,7 +451,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
             self._setStatus(ITEM_STATUS.None);
             errors.removeAllErrors(this.item);
             changes.forEach((v) => {
-                fn_traverseChanges(v, (fullName, vc) => {
+                fn_traverseChanges(v, (fullName) => {
                     self._onFieldChanged(fullName, dbSet.getFieldInfo(fullName));
                 });
             });

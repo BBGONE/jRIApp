@@ -2,7 +2,6 @@
 import {
     Utils, BaseObject, IIndexer, TPriority, LocaleERRS as ERRS, Debounce
 } from "jriapp_shared";
-import { bootstrap } from "jriapp/bootstrap";
 import {
     COLL_CHANGE_TYPE, ITEM_STATUS
 } from "jriapp_shared/collection/const";
@@ -14,7 +13,7 @@ import { IAssocConstructorOptions, IEntityItem } from "./int";
 import { DbContext } from "./dbcontext";
 import { TDbSet } from "./dbset";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr;
+const utils = Utils, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr;
 
 export class Association extends BaseObject {
     private _objId: string;

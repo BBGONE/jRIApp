@@ -6,11 +6,10 @@ import {
 import { BINDING_MODE, BindTo } from "./const";
 import {
     IBindingInfo, IBindingOptions,
-    IBinding, IConverter, IApplication, IElView
+    IBinding, IConverter, IElView
 } from "./int";
 import { ViewChecks } from "./utils/viewchecks";
 import { Parser } from "./utils/parser";
-import { baseConverter } from "./converter";
 import { bootstrap } from "./bootstrap";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
@@ -292,7 +291,7 @@ export class Binding extends BaseObject implements IBinding {
                 break;
         }
     }
-    private _onSrcErrChanged(err_notif: IErrorNotification, args?: any) {
+    private _onSrcErrChanged(err_notif: IErrorNotification) {
         let errors: IValidationInfo[] = [], tgt = this._tgtEnd, src = this._srcEnd, srcPath = this._srcPath;
         if (!!tgt && viewChecks.isElView(tgt)) {
             if (!!src && srcPath.length > 0) {
@@ -303,7 +302,7 @@ export class Binding extends BaseObject implements IBinding {
         }
     }
     private _getTgtChangedFn(self: Binding, obj: any, prop: string, restPath: string[], lvl: number) {
-        const fn = (sender: any, args: any) => {
+        return () => {
             const val = sys.getProp(obj, prop);
             if (restPath.length > 0) {
                 self._setPathItem(null, BindTo.Target, lvl, restPath);
@@ -312,10 +311,9 @@ export class Binding extends BaseObject implements IBinding {
             self._parseTgt(val, restPath, lvl);
             self._update();
         };
-        return fn;
     }
     private _getSrcChangedFn(self: Binding, obj: any, prop: string, restPath: string[], lvl: number) {
-        const fn = (sender: any, args: any) => {
+        return () => {
             const val = sys.getProp(obj, prop);
             if (restPath.length > 0) {
                 self._setPathItem(null, BindTo.Source, lvl, restPath);
@@ -323,7 +321,6 @@ export class Binding extends BaseObject implements IBinding {
             self._parseSrc(val, restPath, lvl);
             self._update();
         };
-        return fn;
     }
     private _addOnPropChanged(obj: IBaseObject, prop: string, fn: (s:any, a: any) => void) {
         obj.addOnPropertyChange(prop, fn, this._objId);
@@ -512,7 +509,7 @@ export class Binding extends BaseObject implements IBinding {
             }
         }
     }
-    private _onTgtDestroyed(sender: any, args: any) {
+    private _onTgtDestroyed(sender: any) {
         const self = this;
         if (self.getIsDestroyCalled())
             return;
@@ -532,7 +529,7 @@ export class Binding extends BaseObject implements IBinding {
             });
         }
     }
-    private _onSrcDestroyed(sender: any, args: any) {
+    private _onSrcDestroyed(sender: any) {
         const self = this;
         if (self.getIsDestroyCalled())
             return;
@@ -553,7 +550,7 @@ export class Binding extends BaseObject implements IBinding {
             });
         }
     }
-    private _updateTarget(sender?: any, args?: any) {
+    private _updateTarget() {
         if (this.getIsDestroyCalled())
             return;
         try {
@@ -566,7 +563,7 @@ export class Binding extends BaseObject implements IBinding {
             utils.err.reThrow(ex, this.handleError(ex, this));
         }
     }
-    private _updateSource(sender?: any, args?: any) {
+    private _updateSource() {
         if (this.getIsDestroyCalled())
             return;
         try {

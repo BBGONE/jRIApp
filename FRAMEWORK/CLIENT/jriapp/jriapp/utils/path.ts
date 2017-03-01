@@ -3,10 +3,9 @@ import {
     IIndexer, Utils
 } from "jriapp_shared";
 import { DomUtils } from "./dom";
-import { IJRIAppConfig, Config as config } from "../int";
+import { Config as config } from "../int";
 
-const utils = Utils, doc = DomUtils.document, head = doc.head || doc.getElementsByTagName("head")[0],
-    arrHelper = utils.arr, strUtils = utils.str;
+const utils = Utils, doc = DomUtils.document, arrHelper = utils.arr, strUtils = utils.str;
 export const frameworkJS = config.frameworkJS || "jriapp.js";
 const stylesDir = "css", imageDir = "img";
 

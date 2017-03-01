@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    BaseObject, Utils, IErrorHandler, IBaseObject
+    BaseObject, Utils, IBaseObject
 } from "jriapp_shared";
 import { ITemplate, IApplication } from "./int";
 

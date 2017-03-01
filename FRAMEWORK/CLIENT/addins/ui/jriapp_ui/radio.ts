@@ -1,8 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { Utils } from "jriapp_shared";
-import { IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
-import { css, PROP_NAME } from "./baseview";
+import { PROP_NAME } from "./baseview";
 import { CheckBoxElView } from "./checkbox";
 
 const checks = Utils.check;

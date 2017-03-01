@@ -1,14 +1,13 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { DATA_TYPE } from "jriapp_shared/collection/const";
 import { IBaseObject } from "jriapp_shared";
-import { IApplication, IBindingInfo, IBindingOptions }  from "jriapp/int";
+import { IBindingInfo, IBindingOptions }  from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 
-import { css } from "./int";
 import { BasicContent } from "./basic";
 
 export class DateTimeContent extends BasicContent {
-    protected getBindingOption(bindingInfo: IBindingInfo, tgt: IBaseObject, dctx: any, targetPath: string) {
+    protected getBindingOption(bindingInfo: IBindingInfo, tgt: IBaseObject, dctx: any, targetPath: string): IBindingOptions {
         let options = super.getBindingOption(bindingInfo, tgt, dctx, targetPath);
         options.converter = this.app.getConverter("dateTimeConverter");
         const finf = this.getFieldInfo(), defaults = bootstrap.defaults;

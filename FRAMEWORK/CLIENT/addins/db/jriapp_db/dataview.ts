@@ -1,15 +1,12 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    FIELD_TYPE, DATE_CONVERSION, DATA_TYPE, SORT_ORDER,
-    COLL_CHANGE_TYPE, COLL_CHANGE_REASON, COLL_CHANGE_OPER
+    SORT_ORDER, COLL_CHANGE_TYPE, COLL_CHANGE_REASON, COLL_CHANGE_OPER
 } from "jriapp_shared/collection/const";
 import {
-    IPromise, TEventHandler, TPriority, LocaleERRS as ERRS, BaseObject,
-    Debounce, Utils
+    IPromise, TEventHandler, TPriority, LocaleERRS as ERRS, Debounce, Utils
 } from "jriapp_shared";
 import {
-    ICollection, ICollectionItem, ICollChangedArgs, ICollItemStatusArgs,
-    IErrors, IPermissions, IFieldInfo
+    ICollection, ICollectionItem, ICollChangedArgs, ICollItemStatusArgs, IFieldInfo, IPermissions
 } from "jriapp_shared/collection/int";
 import { BaseCollection, Errors } from "jriapp_shared/collection/base";
 import { PROP_NAME } from "./const";
@@ -403,11 +400,11 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         this._fn_sort = null;
         super.destroy();
     }
-    get errors() {
+    get errors(): Errors<TItem> {
         return (<BaseCollection<TItem>>this._dataSource).errors;
     }
-    get dataSource() { return this._dataSource; }
-    get isPagingEnabled() { return this._options.enablePaging; }
+    get dataSource(): ICollection<TItem> { return this._dataSource; }
+    get isPagingEnabled(): boolean { return this._options.enablePaging; }
     set isPagingEnabled(v) {
         if (this._options.enablePaging !== v) {
             this._options.enablePaging = v;
@@ -415,7 +412,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
             this._refresh(COLL_CHANGE_REASON.None);
         }
     }
-    get permissions() { return this._dataSource.permissions; }
+    get permissions(): IPermissions { return this._dataSource.permissions; }
     get fn_filter() { return this._fn_filter; }
     set fn_filter(v: (item: TItem) => boolean) {
         if (this._fn_filter !== v) {

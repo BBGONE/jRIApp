@@ -1,9 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { BaseObject } from "jriapp_shared";
-import { DATA_ATTR } from "jriapp/const";
-import { ITemplateEvents, ITemplate } from "jriapp/int";
+import { ITemplate } from "jriapp/int";
 import { createTemplate } from "jriapp/template";
-import { bootstrap } from "jriapp/bootstrap";
 import { ICollectionItem } from "jriapp_shared/collection/int";
 
 import { DetailsRow } from "../rows/details";
@@ -41,17 +39,17 @@ export class DetailsCell extends BaseObject {
         this._td = null;
         super.destroy();
     }
-    toString() {
+    toString(): string {
         return "DetailsCell";
     }
-    get td() { return this._td; }
-    get row() { return this._row; }
-    get grid() { return this._row.grid; }
+    get td(): HTMLTableCellElement { return this._td; }
+    get row(): DetailsRow { return this._row; }
+    get grid(): DataGrid { return this._row.grid; }
     get item(): ICollectionItem {
         return this._template.dataContext;
     }
     set item(v: ICollectionItem) {
         this._template.dataContext = v;
     }
-    get template() { return this._template; }
+    get template(): ITemplate { return this._template; }
 }

@@ -5,7 +5,6 @@ import { SysUtils } from "./sysutils";
 import { StringUtils } from "./strutils";
 import { Debounce } from "./debounce";
 import { COLL_CHANGE_TYPE } from "../collection/const";
-import { ICollChangedArgs, ICollectionItem, ICollValidateFieldArgs } from "../collection/int";
 import { CollectionItem } from "../collection/item";
 import { Validations } from "../collection/validation";
 import { IListItem, ListItemAspect, BaseList } from "../collection/list";

@@ -1,6 +1,4 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { FIELD_TYPE } from "./const";
-import { IValidationInfo, IIndexer } from "../int";
 import { Utils } from "../utils/utils";
 import { ERRS } from "../lang";
 

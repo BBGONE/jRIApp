@@ -1,10 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import {
-    IPromise, LocaleERRS, BaseObject, WaitQueue, Utils
-} from "jriapp_shared";
-import {
-    IApplication, ITemplateGroupInfo, ITemplateGroupInfoEx, ITemplateLoaderInfo
-} from "../int";
+import { IPromise, LocaleERRS, BaseObject, WaitQueue, Utils } from "jriapp_shared";
+import { IApplication, ITemplateGroupInfoEx, ITemplateLoaderInfo } from "../int";
 
 const utils = Utils, checks = utils.check, coreUtils = utils.core,
     strUtils = utils.str, defer = utils.defer, ERRS = LocaleERRS, DEBUG = utils.debug,

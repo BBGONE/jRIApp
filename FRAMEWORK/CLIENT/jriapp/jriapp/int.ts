@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { BINDING_MODE, BindTo } from "./const";
 import {
-    DEBUG_LEVEL, IBaseObject, IDisposable, IIndexer, IPromise,
+    IBaseObject, IDisposable, IIndexer, IPromise,
     IVoidPromise, IValidationInfo, IErrorHandler, TEventHandler, IConfig
 } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";

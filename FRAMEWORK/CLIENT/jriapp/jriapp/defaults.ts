@@ -1,12 +1,8 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import {
-    BaseObject, Utils
-} from "jriapp_shared";
-import {
-    ISvcStore, IDatepicker, ButtonCss
-} from "./int";
+import { BaseObject, Utils } from "jriapp_shared";
+import { ButtonCss } from "./int";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str;
+const utils = Utils, strUtils = utils.str;
 
 const PROP_NAME = {
     dateFormat: "dateFormat",

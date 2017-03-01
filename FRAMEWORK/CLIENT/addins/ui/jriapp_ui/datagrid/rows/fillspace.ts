@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { BaseObject, Utils } from "jriapp_shared";
+import { BaseObject } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { css } from "../const";
 import { FillSpaceCell } from "../cells/fillspace";
@@ -14,7 +14,7 @@ export class FillSpaceRow extends BaseObject {
 
     constructor(options: { grid: DataGrid; tr: HTMLTableRowElement; }) {
         super();
-        let self = this, tr = options.tr;
+        let tr = options.tr;
         this._grid = options.grid;
         this._tr = tr;
         this._cell = null;

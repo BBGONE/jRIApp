@@ -1,22 +1,17 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    Utils, BaseObject, IBaseObject, LocaleERRS as ERRS, LocaleSTRS as STRS, Debounce
+    Utils, BaseObject, LocaleERRS as ERRS, LocaleSTRS as STRS, Debounce
 } from "jriapp_shared";
 import { DATA_ATTR } from "jriapp/const";
 import { DomUtils } from "jriapp/utils/dom";
-import { IApplication, IViewOptions } from "jriapp/int";
+import { IViewOptions } from "jriapp/int";
 import { BaseElView, fn_addToolTip } from "./baseview";
-import {
-    COLL_CHANGE_REASON, ITEM_STATUS, COLL_CHANGE_TYPE
-} from "jriapp_shared/collection/const";
-import {
-    ICollection, ICollectionItem, ICollChangedArgs
-} from "jriapp_shared/collection/int";
+import { COLL_CHANGE_REASON, COLL_CHANGE_TYPE } from "jriapp_shared/collection/const";
+import { ICollection, ICollectionItem } from "jriapp_shared/collection/int";
 import { bootstrap } from "jriapp";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, sys = utils.sys,
-    checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
-    ERROR = utils.err, boot = bootstrap, win = dom.window;
+    strUtils = utils.str, coreUtils = utils.core, boot = bootstrap;
 let _STRS = STRS.PAGER;
 
 const css = {
@@ -201,13 +196,13 @@ export class Pager extends BaseObject {
             }
         }
     }
-    protected _onPageSizeChanged(ds: ICollection<ICollectionItem>, args?: any) {
+    protected _onPageSizeChanged(ds: ICollection<ICollectionItem>) {
         this.rowsPerPage = ds.pageSize;
     }
-    protected _onPageIndexChanged(ds: ICollection<ICollectionItem>, args?: any) {
+    protected _onPageIndexChanged(ds: ICollection<ICollectionItem>) {
         this.currentPage = ds.pageIndex + 1;
     }
-    protected _onTotalCountChanged(ds: ICollection<ICollectionItem>, args?: any) {
+    protected _onTotalCountChanged(ds: ICollection<ICollectionItem>) {
         this.rowCount = ds.totalCount;
     }
     destroy() {
@@ -228,7 +223,7 @@ export class Pager extends BaseObject {
         const self = this, ds = this.dataSource;
         if (!ds)
             return;
-        ds.addOnCollChanged((s, args) => {
+        ds.addOnCollChanged((sender, args) => {
             switch (args.changeType) {
                 case COLL_CHANGE_TYPE.Reset:
                     {
@@ -268,7 +263,7 @@ export class Pager extends BaseObject {
         this.render();
     }
     protected _createLink(page: number, text: string, tip?: string) {
-        const a = this._createElement("a"), self = this;
+        const a = this._createElement("a");
         a.textContent = ("" + text);
         a.setAttribute("href", "javascript:void(0)");
 

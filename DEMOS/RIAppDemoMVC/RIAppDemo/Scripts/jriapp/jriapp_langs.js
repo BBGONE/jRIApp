@@ -32,7 +32,7 @@ define("jriapp_ru", ["require", "exports", "jriapp_shared/lang", "jriapp/bootstr
     };
     var _STRS = { PAGER: PAGER, VALIDATE: VALIDATE, TEXT: TEXT };
     lang_1.assign(lang_1.STRS, _STRS);
-    bootstrap_1.bootstrap.addOnInitialize(function (boot, args) {
+    bootstrap_1.bootstrap.addOnInitialize(function (boot) {
         var datepicker = boot.getSvc(const_1.DATEPICKER_SVC);
         if (!datepicker)
             throw new Error("IDatepicker service is not registered");

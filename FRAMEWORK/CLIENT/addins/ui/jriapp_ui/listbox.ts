@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    Utils, BaseObject, IBaseObject, LocaleERRS as ERRS, TEventHandler, Debounce
+    Utils, BaseObject, LocaleERRS as ERRS, TEventHandler, Debounce
 } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import {
@@ -14,8 +14,7 @@ import { bootstrap } from "jriapp/bootstrap";
 import { BaseElView } from "./baseview";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, sys = utils.sys,
-    checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
-    boot = bootstrap, win = DomUtils.window;
+    checks = utils.check, coreUtils = utils.core, boot = bootstrap;
 
 export interface IOptionStateProvider {
     getCSS(item: ICollectionItem, itemIndex: number, val: any): string;
@@ -151,7 +150,7 @@ export class ListBox extends BaseObject {
     }
     protected _getEventNames() {
         const base_events = super._getEventNames();
-        const events = Object.keys(LISTBOX_EVENTS).map((key, i, arr) => {
+        const events = Object.keys(LISTBOX_EVENTS).map((key) => {
             return <string>(<any>LISTBOX_EVENTS)[key];
         });
         return events.concat(base_events);
@@ -279,7 +278,7 @@ export class ListBox extends BaseObject {
         }
     }
     protected _onStatusChanged(item: ICollectionItem, oldStatus: ITEM_STATUS) {
-        const self = this, newStatus = item._aspect.status;
+        const newStatus = item._aspect.status;
         this.setChanges();
         if (newStatus === ITEM_STATUS.Deleted) {
             this._removeOption(item);

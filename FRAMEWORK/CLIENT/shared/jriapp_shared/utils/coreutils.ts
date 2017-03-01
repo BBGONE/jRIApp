@@ -1,11 +1,10 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { IIndexer } from "../int";
-import { ArrayHelper } from "./arrhelper";
 import { StringUtils } from "./strutils";
 import { Checks } from "./checks";
 
-const checks = Checks, strUtils = StringUtils, arrHelper = ArrayHelper;
-const UUID_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split("");
+const checks: typeof Checks = Checks, strUtils: typeof StringUtils = StringUtils;
+const UUID_CHARS: string[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split("");
 const NEWID_MAP: IIndexer<number> = {};
 
 //basic utils
@@ -24,7 +23,7 @@ export class CoreUtils {
     })();
     static hasProp = checks.isHasProp;
     static setValue(root: any, namePath: string, val: any, checkOverwrite: boolean = false, separator = "."): void {
-        const parts = namePath.split(separator), len = parts.length;
+        const parts: string[] = namePath.split(separator), len = parts.length;
         let parent = root;
         for (let i = 0; i < len - 1; i += 1) {
             // create a property if it doesn't exist

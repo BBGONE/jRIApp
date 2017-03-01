@@ -1,13 +1,12 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    LocaleERRS, Utils, BaseObject
+    LocaleERRS, BaseObject
 } from "jriapp_shared";
-import { IDatepicker, bootstrap, DOM } from "jriapp";
+import { IDatepicker } from "jriapp";
 import { JQueryUtils, $ } from "./jquery";
 
 
-const utils = Utils, coreUtils = utils.core, dom = DOM,
-    boot = bootstrap, ERRS = LocaleERRS;
+const ERRS = LocaleERRS;
 
 const PROP_NAME = {
     dateFormat: "dateFormat",

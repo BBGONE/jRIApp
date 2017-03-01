@@ -7,7 +7,7 @@ import { IEntityItem } from "./int";
 import { EntityAspect } from "./entity_aspect";
 import { DbContext } from "./dbcontext";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str;
+const utils = Utils, strUtils = utils.str;
 
 export class BaseComplexProperty extends BaseObject implements IErrorNotification {
     private _name: string;
