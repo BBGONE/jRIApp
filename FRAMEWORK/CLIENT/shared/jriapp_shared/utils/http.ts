@@ -31,7 +31,7 @@ export class HttpUtils {
                     deferred.reject(new Error(strUtils.format('Error: "{0}" to load from URL: "{1}"', status, url)));
             }
         };
-        req.onerror = function (e: any) {
+        req.onerror = function (e) {
             deferred.reject(new Error(strUtils.format('Error: "{0}" to load from URL: "{1}"', req.status, url)));
         };
         req.ontimeout = function () {

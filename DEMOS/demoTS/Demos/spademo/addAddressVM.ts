@@ -8,7 +8,7 @@ import { DemoApplication } from "./app";
 import { CustomerAddressVM } from "./custAddressVM";
 import { AddressRoute } from "./routes";
 
-var utils = RIAPP.Utils, $ = uiMOD.$;
+var utils = RIAPP.Utils;
 
 export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RIAPP.ISubmittable {
     private _customerAddressVM: CustomerAddressVM;
@@ -118,7 +118,7 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
         }, self.uniqueID);
 
         //add new or existing address
-        this._addNewCommand = new RIAPP.Command(function (sender: any, param: { width?: number; height?: number; }) {
+        this._addNewCommand = new RIAPP.Command(function (this: typeof self, sender: any, param: { width?: number; height?: number; }) {
             try {
                 //can override default width and height
                 //we pass the width and height in the command parameter(it is not needed - only for example)
@@ -159,7 +159,6 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
         });
     }
     protected _addGrid(grid: uiMOD.DataGrid): void {
-        var self = this;
         if (!!this._dataGrid)
             this._removeGrid();
         this._dataGrid = grid;
@@ -246,7 +245,7 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
         var item = this._addressInfosDb.findEntity(addressID);
         if (!!item) {
             //if found, try append to the view
-            var appended = this._addressInfosView.appendItems([item]);
+            this._addressInfosView.appendItems([item]);
             this._addressInfosView.currentItem = item;
             if (!!this._dataGrid)
                 this._dataGrid.scrollToCurrent(uiMOD.ROW_POSITION.Up);

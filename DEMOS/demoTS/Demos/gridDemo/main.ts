@@ -4,15 +4,12 @@
 /// <reference path="../../built/shared/shared.d.ts" />
 
 import * as RIAPP from "jriapp";
-import * as dbMOD from "jriapp_db";
-import * as uiMOD from "jriapp_ui";
 import * as COMMON from "common";
 
-import * as DEMODB from "../demo/demoDB";
 import { IMainOptions, DemoApplication } from "./app";
 import * as  ResizableGrid from "./resizableGrid";
 
-var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = uiMOD.$;
+var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core;
 const styles = ["lsize", 'msize', 'ssize', 'nsize'];
 
 /*
@@ -98,6 +95,7 @@ export function start(options: IMainOptions) {
             //the data was embedded into HTML page as json, just use it
             app.productVM.filter.modelData = options.modelData;
             app.productVM.filter.categoryData = options.categoryData;
+            return null;
         }
         else {
             return app.productVM.filter.load().then(() => {

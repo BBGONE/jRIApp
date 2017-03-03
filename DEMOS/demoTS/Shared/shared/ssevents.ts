@@ -75,7 +75,6 @@ export class SSEventsVM extends RIAPP.BaseObject {
         this.raiseEvent('message', { message: event.data, data: data });
     }
     private _close() {
-        var self = this;
         if (!!this._timeOut)
             clearTimeout(this._timeOut);
         this._timeOut = null;

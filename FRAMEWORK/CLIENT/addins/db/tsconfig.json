@@ -9,6 +9,8 @@
         "declaration": true,
         "sourceMap": false,
         "noFallthroughCasesInSwitch": true,
-        "noUnusedLocals": true
+        "noUnusedLocals": true,
+        "noImplicitThis": true,
+        "noImplicitReturns": true
     }
 }

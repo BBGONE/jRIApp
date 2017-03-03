@@ -582,37 +582,36 @@ export class Association extends BaseObject {
     }
     //get all childrens for parent item
     getChildItems(parent: IEntityItem): IEntityItem[] {
-        if (!parent)
-            return [];
-        try {
-            let fkey = this.getParentFKey(parent), arr = this._childMap[fkey];
-            if (!arr)
-                return [];
+        let arr: IEntityItem[] = [];
+        if (!parent) {
             return arr;
         }
-        catch (err) {
+        try {
+            let fkey = this.getParentFKey(parent);
+            arr = this._childMap[fkey];
+        } catch (err) {
             utils.err.reThrow(err, this.handleError(err, this));
         }
+        return (!arr) ? [] : arr;
     }
     //get the parent for child item
     getParentItem(item: IEntityItem): IEntityItem {
-        if (!item)
-            return null;
+        let obj: IEntityItem = null;
+        if (!item) {
+            return obj;
+        }
         try {
             let fkey = this.getChildFKey(item);
-            let obj = this._parentMap[fkey];
-            if (!!obj)
-                return obj;
-            else
-                return null;
-        }
-        catch (err) {
+            obj = this._parentMap[fkey];
+        } catch (err) {
             utils.err.reThrow(err, this.handleError(err, this));
         }
+        return (!obj) ? null : obj;
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         this._debounce.destroy();
         this._debounce = null;

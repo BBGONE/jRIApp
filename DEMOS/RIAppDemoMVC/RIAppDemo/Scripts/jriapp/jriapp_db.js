@@ -1,10 +1,16 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 define("jriapp_db/const", ["require", "exports"], function (require, exports) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var FLAGS;
     (function (FLAGS) {
         FLAGS[FLAGS["None"] = 0] = "None";
@@ -52,6 +58,7 @@ define("jriapp_db/const", ["require", "exports"], function (require, exports) {
 });
 define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/utils", "jriapp_db/const", "jriapp_db/datacache"], function (require, exports, jriapp_shared_1, utils_1, const_1, datacache_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_1.Utils, checks = utils.check, strUtils = utils.str, arrHelper = utils.arr, valUtils = utils_1.ValueUtils;
     var DataQuery = (function (_super) {
         __extends(DataQuery, _super);
@@ -342,6 +349,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
 });
 define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db/const"], function (require, exports, jriapp_shared_2, const_2) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_2.Utils, checks = utils.check, coreUtils = utils.core;
     var DataCache = (function (_super) {
         __extends(DataCache, _super);
@@ -527,6 +535,7 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
 });
 define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/base", "jriapp_shared/collection/utils", "jriapp_db/const", "jriapp_db/dataquery", "jriapp_db/entity_aspect"], function (require, exports, jriapp_shared_3, base_1, utils_2, const_3, dataquery_1, entity_aspect_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_3.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err, valUtils = utils_2.ValueUtils, colUtils = utils_2.CollUtils;
     function doFieldDependences(dbSet, info) {
         if (!info.dependentOn)
@@ -1429,6 +1438,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
 });
 define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared", "jriapp_db/const"], function (require, exports, jriapp_shared_4, const_4) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_4.Utils, strUtils = utils.str;
     var DbSets = (function (_super) {
         __extends(DbSets, _super);
@@ -1500,6 +1510,7 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared", "jriapp_db/co
 });
 define("jriapp_db/association", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_5) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_5.Utils, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr;
     var Association = (function (_super) {
         __extends(Association, _super);
@@ -2030,36 +2041,37 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             return fkey1 === fkey2;
         };
         Association.prototype.getChildItems = function (parent) {
-            if (!parent)
-                return [];
-            try {
-                var fkey = this.getParentFKey(parent), arr = this._childMap[fkey];
-                if (!arr)
-                    return [];
+            var arr = [];
+            if (!parent) {
                 return arr;
             }
+            try {
+                var fkey = this.getParentFKey(parent);
+                arr = this._childMap[fkey];
+            }
             catch (err) {
                 utils.err.reThrow(err, this.handleError(err, this));
             }
+            return (!arr) ? [] : arr;
         };
         Association.prototype.getParentItem = function (item) {
-            if (!item)
-                return null;
+            var obj = null;
+            if (!item) {
+                return obj;
+            }
             try {
                 var fkey = this.getChildFKey(item);
-                var obj = this._parentMap[fkey];
-                if (!!obj)
-                    return obj;
-                else
-                    return null;
+                obj = this._parentMap[fkey];
             }
             catch (err) {
                 utils.err.reThrow(err, this.handleError(err, this));
             }
+            return (!obj) ? null : obj;
         };
         Association.prototype.destroy = function () {
-            if (this._isDestroyed)
+            if (this._isDestroyed) {
                 return;
+            }
             this._isDestroyCalled = true;
             this._debounce.destroy();
             this._debounce = null;
@@ -2121,6 +2133,7 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
 });
 define("jriapp_db/error", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_6) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var strUtils = jriapp_shared_6.Utils.str;
     var DataOperationError = (function (_super) {
         __extends(DataOperationError, _super);
@@ -2211,6 +2224,7 @@ define("jriapp_db/error", ["require", "exports", "jriapp_shared"], function (req
 });
 define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/utils", "jriapp_db/const", "jriapp_db/association", "jriapp_db/error"], function (require, exports, jriapp_shared_7, utils_3, const_5, association_1, error_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_7.Utils, http = utils.http, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err, valUtils = utils_3.ValueUtils, _async = utils.defer;
     var DATA_SVC_METH = {
         Invoke: "invoke",
@@ -3048,6 +3062,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
 });
 define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriapp_shared/errors", "jriapp_shared/collection/utils", "jriapp_shared/collection/aspect", "jriapp_db/error"], function (require, exports, jriapp_shared_8, errors_1, utils_4, aspect_1, error_2) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_8.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, valUtils = utils_4.ValueUtils, collUtils = utils_4.CollUtils, sys = utils.sys;
     function fn_isNotSubmittable(fieldInfo) {
         return (fieldInfo.fieldType === 1 || fieldInfo.fieldType === 3 || fieldInfo.fieldType === 2 || fieldInfo.fieldType === 6);
@@ -3532,9 +3547,11 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
 });
 define("jriapp_db/int", ["require", "exports"], function (require, exports) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
 });
 define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/base", "jriapp_db/const"], function (require, exports, jriapp_shared_9, base_2, const_6) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_9.Utils, _async = utils.defer, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr, ERROR = utils.err, sys = utils.sys;
     var VIEW_EVENTS = {
         refreshed: "view_refreshed"
@@ -3957,6 +3974,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
 });
 define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jriapp_db/const", "jriapp_db/dataview"], function (require, exports, jriapp_shared_10, const_7, dataview_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_10.Utils, coreUtils = utils.core;
     var ChildDataView = (function (_super) {
         __extends(ChildDataView, _super);
@@ -4042,6 +4060,7 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
 });
 define("jriapp_db/complexprop", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_11) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_11.Utils, strUtils = utils.str;
     var BaseComplexProperty = (function (_super) {
         __extends(BaseComplexProperty, _super);
@@ -4183,6 +4202,7 @@ define("jriapp_db", ["require", "exports", "jriapp_db/dbset", "jriapp_db/datavie
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
     }
+    Object.defineProperty(exports, "__esModule", { value: true });
     exports.DbSet = dbset_1.DbSet;
     __export(dataview_2);
     __export(child_dataview_1);

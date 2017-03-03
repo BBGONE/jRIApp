@@ -1,13 +1,11 @@
 ﻿/// <reference path="../../built/shared/shared.d.ts" />
 import * as RIAPP from "jriapp";
-import * as dbMOD from "jriapp_db";
 import * as uiMOD from "jriapp_ui";
 import * as COMMON from "common";
 
-var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
-
 export class GridElView extends uiMOD.DataGridElView {
     private _myGridEvents: COMMON.IGridEvents<RIAPP.ICollectionItem>;
+
     constructor(options: uiMOD.IDataGridViewOptions) {
         super(options);
         var self = this, grid = self.grid;

@@ -1,10 +1,16 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], function (require, exports, RIAPP, dbMOD) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var TestEnum;
     (function (TestEnum) {
         TestEnum[TestEnum["None"] = 0] = "None";
@@ -1531,6 +1537,7 @@ define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], func
 });
 define("mastDetDemo/productVM", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var ProductVM = (function (_super) {
         __extends(ProductVM, _super);
         function ProductVM(orderDetailVM) {
@@ -1611,6 +1618,7 @@ define("mastDetDemo/productVM", ["require", "exports", "jriapp"], function (requ
 });
 define("mastDetDemo/orderDetVM", ["require", "exports", "jriapp", "jriapp_ui", "mastDetDemo/productVM"], function (require, exports, RIAPP, uiMOD, productVM_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var utils = RIAPP.Utils, $ = uiMOD.$;
     var OrderDetailVM = (function (_super) {
         __extends(OrderDetailVM, _super);
@@ -1704,6 +1712,7 @@ define("mastDetDemo/orderDetVM", ["require", "exports", "jriapp", "jriapp_ui", "
 });
 define("mastDetDemo/orderVM", ["require", "exports", "jriapp", "jriapp_ui", "demo/demoDB", "mastDetDemo/orderDetVM", "mastDetDemo/addressVM"], function (require, exports, RIAPP, uiMOD, DEMODB, orderDetVM_1, addressVM_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var utils = RIAPP.Utils, $ = uiMOD.$;
     var OrderVM = (function (_super) {
         __extends(OrderVM, _super);
@@ -1909,6 +1918,7 @@ define("mastDetDemo/orderVM", ["require", "exports", "jriapp", "jriapp_ui", "dem
 });
 define("mastDetDemo/customerVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "mastDetDemo/orderVM"], function (require, exports, RIAPP, dbMOD, uiMOD, orderVM_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var utils = RIAPP.Utils, $ = uiMOD.$;
     var CustomerVM = (function (_super) {
         __extends(CustomerVM, _super);
@@ -2104,6 +2114,7 @@ define("mastDetDemo/customerVM", ["require", "exports", "jriapp", "jriapp_db", "
 });
 define("mastDetDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "common", "mastDetDemo/customerVM"], function (require, exports, RIAPP, DEMODB, COMMON, customerVM_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var DemoApplication = (function (_super) {
         __extends(DemoApplication, _super);
         function DemoApplication(options) {
@@ -2189,6 +2200,7 @@ define("mastDetDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "commo
 });
 define("mastDetDemo/addressVM", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var AddressVM = (function (_super) {
         __extends(AddressVM, _super);
         function AddressVM(orderVM) {
@@ -2275,6 +2287,7 @@ define("mastDetDemo/addressVM", ["require", "exports", "jriapp"], function (requ
 });
 define("mastDetDemo/prodAutocomplete", ["require", "exports", "jriapp", "jriapp_ui", "autocomplete"], function (require, exports, RIAPP, uiMOD, AUTOCOMPLETE) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var utils = RIAPP.Utils, $ = uiMOD.$;
     var ProductAutoComplete = (function (_super) {
         __extends(ProductAutoComplete, _super);
@@ -2360,6 +2373,7 @@ define("mastDetDemo/prodAutocomplete", ["require", "exports", "jriapp", "jriapp_
 });
 define("mastDetDemo/main", ["require", "exports", "jriapp", "common", "autocomplete", "mastDetDemo/prodAutocomplete", "mastDetDemo/app"], function (require, exports, RIAPP, COMMON, AUTOCOMPLETE, PRODAUTOCOMPLETE, app_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var bootstrap = RIAPP.bootstrap;
     bootstrap.addOnError(function (sender, args) {
         debugger;

@@ -1,10 +1,16 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], function (require, exports, RIAPP, dbMOD) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var TestEnum;
     (function (TestEnum) {
         TestEnum[TestEnum["None"] = 0] = "None";
@@ -1529,9 +1535,9 @@ define("domainModel", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     }(dbMOD.DbContext));
     exports.DbContext = DbContext;
 });
-define("addressVM", ["require", "exports", "jriapp", "jriapp_ui"], function (require, exports, RIAPP, uiMOD) {
+define("addressVM", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
     "use strict";
-    var utils = RIAPP.Utils, $ = uiMOD.$;
+    Object.defineProperty(exports, "__esModule", { value: true });
     var AddressVM = (function (_super) {
         __extends(AddressVM, _super);
         function AddressVM(orderVM) {
@@ -1616,9 +1622,9 @@ define("addressVM", ["require", "exports", "jriapp", "jriapp_ui"], function (req
     }(RIAPP.ViewModel));
     exports.AddressVM = AddressVM;
 });
-define("productVM", ["require", "exports", "jriapp", "jriapp_ui"], function (require, exports, RIAPP, uiMOD) {
+define("productVM", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
     "use strict";
-    var utils = RIAPP.Utils, $ = uiMOD.$;
+    Object.defineProperty(exports, "__esModule", { value: true });
     var ProductVM = (function (_super) {
         __extends(ProductVM, _super);
         function ProductVM(orderDetailVM) {
@@ -1697,9 +1703,10 @@ define("productVM", ["require", "exports", "jriapp", "jriapp_ui"], function (req
     }(RIAPP.ViewModel));
     exports.ProductVM = ProductVM;
 });
-define("orderDetVM", ["require", "exports", "jriapp", "jriapp_ui", "productVM"], function (require, exports, RIAPP, uiMOD, productVM_1) {
+define("orderDetVM", ["require", "exports", "jriapp", "productVM"], function (require, exports, RIAPP, productVM_1) {
     "use strict";
-    var utils = RIAPP.Utils, $ = uiMOD.$;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var utils = RIAPP.Utils;
     var OrderDetailVM = (function (_super) {
         __extends(OrderDetailVM, _super);
         function OrderDetailVM(orderVM) {
@@ -1790,9 +1797,10 @@ define("orderDetVM", ["require", "exports", "jriapp", "jriapp_ui", "productVM"],
     }(RIAPP.ViewModel));
     exports.OrderDetailVM = OrderDetailVM;
 });
-define("orderVM", ["require", "exports", "jriapp", "jriapp_ui", "domainModel", "gridEvents", "addressVM", "orderDetVM"], function (require, exports, RIAPP, uiMOD, DEMODB, gridEvents_1, addressVM_1, orderDetVM_1) {
+define("orderVM", ["require", "exports", "jriapp", "domainModel", "gridEvents", "addressVM", "orderDetVM"], function (require, exports, RIAPP, DEMODB, gridEvents_1, addressVM_1, orderDetVM_1) {
     "use strict";
-    var utils = RIAPP.Utils, $ = uiMOD.$;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var utils = RIAPP.Utils;
     var OrderVM = (function (_super) {
         __extends(OrderVM, _super);
         function OrderVM(customerVM) {
@@ -1976,6 +1984,7 @@ define("orderVM", ["require", "exports", "jriapp", "jriapp_ui", "domainModel", "
 });
 define("gridEvents", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var CustomerGridEvents = (function (_super) {
         __extends(CustomerGridEvents, _super);
         function CustomerGridEvents(customerVM) {
@@ -2053,7 +2062,8 @@ define("gridEvents", ["require", "exports", "jriapp"], function (require, export
 });
 define("animation", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
     "use strict";
-    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var utils = RIAPP.Utils;
     var FadeAnimation = (function (_super) {
         __extends(FadeAnimation, _super);
         function FadeAnimation(isAnimateFirstShow, duration) {
@@ -2178,6 +2188,7 @@ define("animation", ["require", "exports", "jriapp"], function (require, exports
 });
 define("routes", ["require", "exports", "jriapp", "animation"], function (require, exports, RIAPP, ANIMATION) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var MainRoute = (function (_super) {
         __extends(MainRoute, _super);
         function MainRoute() {
@@ -2326,9 +2337,9 @@ define("routes", ["require", "exports", "jriapp", "animation"], function (requir
     }(RIAPP.BaseObject));
     exports.AddressRoute = AddressRoute;
 });
-define("custAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "addAddressVM"], function (require, exports, RIAPP, dbMOD, uiMOD, addAddressVM_1) {
+define("custAddressVM", ["require", "exports", "jriapp", "jriapp_db", "addAddressVM"], function (require, exports, RIAPP, dbMOD, addAddressVM_1) {
     "use strict";
-    var utils = RIAPP.Utils, $ = uiMOD.$;
+    Object.defineProperty(exports, "__esModule", { value: true });
     var CustomerAddressVM = (function (_super) {
         __extends(CustomerAddressVM, _super);
         function CustomerAddressVM(customerVM) {
@@ -2414,7 +2425,7 @@ define("custAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui
             return ca;
         };
         CustomerAddressVM.prototype.load = function (customers) {
-            var self = this, custArr = customers || [];
+            var custArr = customers || [];
             var custIDs = custArr.map(function (item) {
                 return item.CustomerID;
             });
@@ -2497,9 +2508,9 @@ define("custAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui
     }(RIAPP.ViewModel));
     exports.CustomerAddressVM = CustomerAddressVM;
 });
-define("customerVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "gridEvents", "routes", "custAddressVM", "orderVM"], function (require, exports, RIAPP, dbMOD, uiMOD, gridEvents_2, routes_1, custAddressVM_1, orderVM_1) {
+define("customerVM", ["require", "exports", "jriapp", "jriapp_db", "gridEvents", "routes", "custAddressVM", "orderVM"], function (require, exports, RIAPP, dbMOD, gridEvents_2, routes_1, custAddressVM_1, orderVM_1) {
     "use strict";
-    var utils = RIAPP.Utils, $ = uiMOD.$;
+    Object.defineProperty(exports, "__esModule", { value: true });
     var CustomerVM = (function (_super) {
         __extends(CustomerVM, _super);
         function CustomerVM(app) {
@@ -2741,12 +2752,11 @@ define("customerVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", 
 });
 define("app", ["require", "exports", "jriapp", "domainModel", "common", "customerVM"], function (require, exports, RIAPP, DEMODB, common_1, customerVM_1) {
     "use strict";
-    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
+    Object.defineProperty(exports, "__esModule", { value: true });
     var DemoApplication = (function (_super) {
         __extends(DemoApplication, _super);
         function DemoApplication(options) {
             var _this = _super.call(this, options) || this;
-            var self = _this;
             _this._dbContext = null;
             _this._errorVM = null;
             _this._customerVM = null;
@@ -2828,7 +2838,8 @@ define("app", ["require", "exports", "jriapp", "domainModel", "common", "custome
 });
 define("addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "common", "routes"], function (require, exports, RIAPP, dbMOD, uiMOD, COMMON, routes_2) {
     "use strict";
-    var utils = RIAPP.Utils, $ = uiMOD.$;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var utils = RIAPP.Utils;
     var AddAddressVM = (function (_super) {
         __extends(AddAddressVM, _super);
         function AddAddressVM(customerAddressVM) {
@@ -2938,7 +2949,6 @@ define("addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"
             return _this;
         }
         AddAddressVM.prototype._addGrid = function (grid) {
-            var self = this;
             if (!!this._dataGrid)
                 this._removeGrid();
             this._dataGrid = grid;
@@ -3012,7 +3022,7 @@ define("addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"
         AddAddressVM.prototype._checkAddressInRP = function (addressID) {
             var item = this._addressInfosDb.findEntity(addressID);
             if (!!item) {
-                var appended = this._addressInfosView.appendItems([item]);
+                this._addressInfosView.appendItems([item]);
                 this._addressInfosView.currentItem = item;
                 if (!!this._dataGrid)
                     this._dataGrid.scrollToCurrent(0);
@@ -3165,9 +3175,9 @@ define("addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"
     }(RIAPP.ViewModel));
     exports.AddAddressVM = AddAddressVM;
 });
-define("gridElView", ["require", "exports", "jriapp", "jriapp_ui"], function (require, exports, RIAPP, uiMOD) {
+define("gridElView", ["require", "exports", "jriapp_ui"], function (require, exports, uiMOD) {
     "use strict";
-    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
+    Object.defineProperty(exports, "__esModule", { value: true });
     var GridElView = (function (_super) {
         __extends(GridElView, _super);
         function GridElView(options) {
@@ -3248,6 +3258,7 @@ define("gridElView", ["require", "exports", "jriapp", "jriapp_ui"], function (re
 });
 define("prodAutocomplete", ["require", "exports", "autocomplete"], function (require, exports, AUTOCOMPLETE) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var ProductAutoComplete = (function (_super) {
         __extends(ProductAutoComplete, _super);
         function ProductAutoComplete(options) {
@@ -3332,6 +3343,7 @@ define("prodAutocomplete", ["require", "exports", "autocomplete"], function (req
 });
 define("main", ["require", "exports", "jriapp", "app", "common", "autocomplete", "gridElView", "prodAutocomplete"], function (require, exports, RIAPP, app_1, COMMON, AUTOCOMPLETE, GRIDELVIEW, PRODAUTOCOMPLETE) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     RIAPP.bootstrap.addOnError(function (sender, args) {
         debugger;
         alert(args.error.message);

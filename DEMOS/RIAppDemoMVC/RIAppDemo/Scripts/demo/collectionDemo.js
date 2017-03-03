@@ -1,11 +1,17 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-define(["require", "exports", "jriapp", "jriapp_ui", "./demoDB", "common"], function (require, exports, RIAPP, uiMOD, DEMODB, COMMON) {
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+define(["require", "exports", "jriapp", "./demoDB", "common"], function (require, exports, RIAPP, DEMODB, COMMON) {
     "use strict";
-    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = uiMOD.$;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var bootstrap = RIAPP.bootstrap;
     var RadioValueConverter = (function (_super) {
         __extends(RadioValueConverter, _super);
         function RadioValueConverter() {
@@ -24,7 +30,6 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./demoDB", "common"], func
         __extends(RadioDemoVM, _super);
         function RadioDemoVM(app) {
             var _this = _super.call(this, app) || this;
-            var self = _this;
             _this._radioValue = null;
             _this._radioValues = new DEMODB.RadioValDictionary();
             _this._radioValues.fillItems([{ key: 'radioValue1', value: 'This is some text value #1', comment: 'This is some comment for value #1' },
@@ -119,7 +124,6 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./demoDB", "common"], func
         __extends(DemoApplication, _super);
         function DemoApplication(options) {
             var _this = _super.call(this, options) || this;
-            var self = _this;
             _this._errorVM = null;
             _this._demoVM = null;
             return _this;

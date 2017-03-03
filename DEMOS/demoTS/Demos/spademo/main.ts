@@ -3,8 +3,6 @@
 /// <reference path="../../jriapp/jriapp_ui.d.ts" />
 /// <reference path="../../jriapp/jriapp_db.d.ts" />
 import * as RIAPP from "jriapp";
-import * as dbMOD from "jriapp_db";
-import * as uiMOD from "jriapp_ui";
 
 import { IMainOptions, DemoApplication } from "./app";
 import * as COMMON from "common";

@@ -1,8 +1,7 @@
 ﻿import * as RIAPP from "jriapp";
-import * as dbMOD from "jriapp_db";
 import * as uiMOD from "jriapp_ui";
 
-const bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = uiMOD.$;
+const $ = uiMOD.$;
 
 export var topPanel: string;
 export var contentPanel: string;

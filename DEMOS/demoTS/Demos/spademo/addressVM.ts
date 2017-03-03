@@ -1,13 +1,8 @@
 ﻿import * as RIAPP from "jriapp";
-import * as dbMOD from "jriapp_db";
-import * as uiMOD from "jriapp_ui";
 
-import * as COMMON from "common";
 import * as DEMODB from "./domainModel";
 import { DemoApplication } from "./app";
 import { OrderVM } from "./orderVM";
-
-var utils = RIAPP.Utils, $ = uiMOD.$;
 
 export class AddressVM extends RIAPP.ViewModel<DemoApplication> {
     private _orderVM: OrderVM;

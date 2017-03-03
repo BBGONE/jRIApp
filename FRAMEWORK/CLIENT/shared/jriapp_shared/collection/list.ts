@@ -194,7 +194,7 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
         });
     }
     toArray(): TObj[] {
-        return this.items.map((item, index, arr) => {
+        return this.items.map((item) => {
             return <TObj>item._aspect.vals;
         });
     }

@@ -1,10 +1,16 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], function (require, exports, RIAPP, dbMOD) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var TestEnum;
     (function (TestEnum) {
         TestEnum[TestEnum["None"] = 0] = "None";
@@ -1531,6 +1537,7 @@ define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], func
 });
 define("gridDemo/commands", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var TestInvokeCommand = (function (_super) {
         __extends(TestInvokeCommand, _super);
         function TestInvokeCommand() {
@@ -1568,9 +1575,10 @@ define("gridDemo/commands", ["require", "exports", "jriapp"], function (require,
     }(RIAPP.BaseCommand));
     exports.ResetCommand = ResetCommand;
 });
-define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "demo/demoDB", "gridDemo/commands"], function (require, exports, RIAPP, dbMOD, uiMOD, DEMODB, commands_1) {
+define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/demoDB", "gridDemo/commands"], function (require, exports, RIAPP, dbMOD, DEMODB, commands_1) {
     "use strict";
-    var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = uiMOD.$;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var utils = RIAPP.Utils;
     var ProductsFilter = (function (_super) {
         __extends(ProductsFilter, _super);
         function ProductsFilter(app) {
@@ -1800,6 +1808,7 @@ define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "jriapp
 });
 define("gridDemo/states", ["require", "exports"], function (require, exports) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var RowStateProvider = (function () {
         function RowStateProvider() {
         }
@@ -1836,7 +1845,8 @@ define("gridDemo/states", ["require", "exports"], function (require, exports) {
 });
 define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "common", "gridDemo/filters", "gridDemo/commands", "gridDemo/states"], function (require, exports, RIAPP, dbMOD, uiMOD, COMMON, filters_1, commands_2, states_1) {
     "use strict";
-    var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = uiMOD.$;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var utils = RIAPP.Utils;
     var ProductViewModel = (function (_super) {
         __extends(ProductViewModel, _super);
         function ProductViewModel(app) {
@@ -1916,7 +1926,7 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
                 });
             }, self.uniqueID);
             _this._addNewCommand = new RIAPP.TCommand(function (sender, param) {
-                var item = self._dbSet.addNew();
+                self._dbSet.addNew();
             });
             _this._loadCommand = new RIAPP.TCommand(function (sender, data, viewModel) {
                 viewModel.load();
@@ -2202,9 +2212,10 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
     }(RIAPP.ViewModel));
     exports.ProductViewModel = ProductViewModel;
 });
-define("gridDemo/baseUpload", ["require", "exports", "jriapp", "jriapp_ui"], function (require, exports, RIAPP, uiMOD) {
+define("gridDemo/baseUpload", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
     "use strict";
-    var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = uiMOD.$;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var utils = RIAPP.Utils;
     var BaseUploadVM = (function (_super) {
         __extends(BaseUploadVM, _super);
         function BaseUploadVM(url) {
@@ -2225,7 +2236,7 @@ define("gridDemo/baseUpload", ["require", "exports", "jriapp", "jriapp_ui"], fun
                     self.uploadFiles(self._fileEl.files);
                 }
                 catch (ex) {
-                    self.handleError(ex, this);
+                    self.handleError(ex, self);
                 }
             }, self, function (sender, param) {
                 return self._canUpload();
@@ -2247,8 +2258,6 @@ define("gridDemo/baseUpload", ["require", "exports", "jriapp", "jriapp_ui"], fun
                 self._progressDiv.show();
             };
             upload.onprogress = function (e) {
-                var progressBar = $("#progressBar");
-                var percentageDiv = $("#percentageCalc");
                 if (!!e.lengthComputable) {
                     self._progressBar.prop("max", e.total);
                     self._progressBar.prop("value", e.loaded);
@@ -2341,7 +2350,8 @@ define("gridDemo/baseUpload", ["require", "exports", "jriapp", "jriapp_ui"], fun
 });
 define("gridDemo/uploads", ["require", "exports", "jriapp", "jriapp_ui", "gridDemo/baseUpload"], function (require, exports, RIAPP, uiMOD, baseUpload_1) {
     "use strict";
-    var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = uiMOD.$;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var utils = RIAPP.Utils, $ = uiMOD.$;
     var fn_getTemplateElement = function (template, name) {
         var t = template;
         var els = t.findElByDataName(name);
@@ -2362,7 +2372,6 @@ define("gridDemo/uploads", ["require", "exports", "jriapp", "jriapp_ui", "gridDe
                 height: 250,
                 title: 'Upload product thumbnail',
                 fn_OnTemplateCreated: function (template) {
-                    var dialog = this;
                     self._fileEl = fn_getTemplateElement(template, 'files-to-upload');
                     self._formEl = fn_getTemplateElement(template, 'uploadForm');
                     self._progressBar = $(fn_getTemplateElement(template, 'progressBar'));
@@ -2408,7 +2417,7 @@ define("gridDemo/uploads", ["require", "exports", "jriapp", "jriapp_ui", "gridDe
                     self._dialogVM.showDialog('uploadDialog', self);
                 }
                 catch (ex) {
-                    self.handleError(ex, this);
+                    self.handleError(ex, self);
                 }
             }, self, function (sender, param) {
                 return true;
@@ -2434,7 +2443,7 @@ define("gridDemo/uploads", ["require", "exports", "jriapp", "jriapp_ui", "gridDe
                     }
                 }
                 catch (ex) {
-                    self.handleError(ex, this);
+                    self.handleError(ex, self);
                 }
             }, self, function (sender, param) {
                 return true;
@@ -2478,11 +2487,11 @@ define("gridDemo/uploads", ["require", "exports", "jriapp", "jriapp_ui", "gridDe
 });
 define("gridDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "common", "header", "ssevents", "websocket", "gridDemo/productVM", "gridDemo/uploads"], function (require, exports, RIAPP, DEMODB, COMMON, HEADER, SSEVENTS, WEBSOCK, productVM_1, uploads_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var DemoApplication = (function (_super) {
         __extends(DemoApplication, _super);
         function DemoApplication(options) {
             var _this = _super.call(this, options) || this;
-            var self = _this;
             _this._dbContext = null;
             _this._errorVM = null;
             _this._headerVM = null;
@@ -2496,13 +2505,6 @@ define("gridDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "common",
             var self = this, options = self.options;
             this._dbContext = new DEMODB.DbContext();
             this._dbContext.initialize({ serviceUrl: options.service_url, permissions: options.permissionInfo });
-            function toText(str) {
-                if (str === null)
-                    return '';
-                else
-                    return str;
-            }
-            ;
             this._dbContext.dbSets.Product.defineIsActiveField(function (item) {
                 return !item.SellEndDate;
             });
@@ -2610,9 +2612,9 @@ define("gridDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "common",
 });
 define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], function (require, exports, RIAPP, uiMOD) {
     "use strict";
-    var utils = RIAPP.Utils, $ = uiMOD.$, DOM = RIAPP.DOM, doc = RIAPP.DOM.document, head = RIAPP.DOM.queryOne(doc, "head");
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var utils = RIAPP.Utils, DOM = RIAPP.DOM, doc = RIAPP.DOM.document, head = RIAPP.DOM.queryOne(doc, "head");
     var drag = null;
-    var ID = "id";
     var PX = "px";
     var SIGNATURE = "JColResizer";
     var FLEX = "JCLRFlex";
@@ -2636,10 +2638,10 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
     DOM.append(head, RIAPP.DOM.fromHTML(cssRules));
     var onGripDrag = function (e) {
         if (!drag)
-            return;
+            return false;
         var gripData = DOM.getData(drag, SIGNATURE), elview = gripData.elview;
         if (elview.getIsDestroyCalled())
-            return;
+            return false;
         var data = elview.getResizeIfo();
         var table = elview.grid.table;
         var touches = e.touches;
@@ -2728,8 +2730,8 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
         var grip = this;
         var gripData = DOM.getData(grip, SIGNATURE), elview = gripData.elview;
         if (elview.getIsDestroyCalled())
-            return;
-        var data = elview.getResizeIfo(), table = elview.grid.table;
+            return false;
+        var data = elview.getResizeIfo();
         var touches = e.touches;
         gripData.ox = touches ? touches[0].pageX : e.pageX;
         gripData.l = grip.offsetLeft;
@@ -2958,9 +2960,10 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
     }
     exports.initModule = initModule;
 });
-define("gridDemo/main", ["require", "exports", "jriapp", "jriapp_ui", "common", "gridDemo/app", "gridDemo/resizableGrid"], function (require, exports, RIAPP, uiMOD, COMMON, app_1, ResizableGrid) {
+define("gridDemo/main", ["require", "exports", "jriapp", "common", "gridDemo/app", "gridDemo/resizableGrid"], function (require, exports, RIAPP, COMMON, app_1, ResizableGrid) {
     "use strict";
-    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = uiMOD.$;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core;
     var styles = ["lsize", 'msize', 'ssize', 'nsize'];
     var SizeConverter = (function (_super) {
         __extends(SizeConverter, _super);
@@ -3022,6 +3025,7 @@ define("gridDemo/main", ["require", "exports", "jriapp", "jriapp_ui", "common", 
             if (!!options.modelData && !!options.categoryData) {
                 app.productVM.filter.modelData = options.modelData;
                 app.productVM.filter.categoryData = options.categoryData;
+                return null;
             }
             else {
                 return app.productVM.filter.load().then(function () {

@@ -2,7 +2,6 @@
 import * as dbMOD from "jriapp_db";
 import * as uiMOD from "jriapp_ui";
 
-import * as COMMON from "common";
 import * as DEMODB from "./domainModel";
 import { DemoApplication } from "./app";
 import { IMyGridEvents, OrderGridEvents } from "./gridEvents";
@@ -10,7 +9,7 @@ import { CustomerVM } from "./customerVM";
 import { AddressVM } from "./addressVM";
 import { OrderDetailVM } from "./orderDetVM";
 
-var utils = RIAPP.Utils, $ = uiMOD.$;
+var utils = RIAPP.Utils;
 
 export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.ITabsEvents {
     private _customerVM: CustomerVM;

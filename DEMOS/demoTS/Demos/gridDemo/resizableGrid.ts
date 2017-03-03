@@ -1,13 +1,10 @@
 ﻿import * as RIAPP from "jriapp";
-import * as dbMOD from "jriapp_db";
 import * as uiMOD from "jriapp_ui";
-import * as COMMON from "common";
 
-const utils = RIAPP.Utils, $ = uiMOD.$, DOM = RIAPP.DOM, doc = RIAPP.DOM.document, head = RIAPP.DOM.queryOne<Element>(doc, "head");
+const utils = RIAPP.Utils, DOM = RIAPP.DOM, doc = RIAPP.DOM.document, head = RIAPP.DOM.queryOne<Element>(doc, "head");
 let drag: HTMLElement = null;	//reference to the current grip that is being dragged
 
 //common strings for packing
-let ID = "id";
 let PX = "px";
 let SIGNATURE = "JColResizer";
 let FLEX = "JCLRFlex";
@@ -85,12 +82,12 @@ DOM.append(head, RIAPP.DOM.fromHTML(cssRules));
 /**
 	 * Event handler used while dragging a grip. It checks if the next grip's position is valid and updates it. 
 */
-let onGripDrag = function (e: TouchEvent | MouseEvent) {
+let onGripDrag = function (e: TouchEvent | MouseEvent): boolean {
     if (!drag)
-        return;
+        return false;
     let gripData: IGripData = DOM.getData(drag, SIGNATURE), elview: ResizableGrid = gripData.elview;
     if (elview.getIsDestroyCalled())
-        return;
+        return false;
     let data: IResizeInfo = elview.getResizeIfo();
     let table = elview.grid.table;
     let touches = (<any>e).touches;   //touch or mouse event?
@@ -147,7 +144,7 @@ let onGripDrag = function (e: TouchEvent | MouseEvent) {
 /**
  * Event handler fired when the dragging is over, updating table layout
 */
-let onGripDragOver = function (e: TouchEvent | MouseEvent) {
+let onGripDragOver = function (e: TouchEvent | MouseEvent): void {
     DOM.events.offNS(doc, SIGNATURE);
     let dragCursor = RIAPP.DOM.queryOne(head, '#dragCursor');
     if (!!dragCursor) {
@@ -188,12 +185,12 @@ let onGripDragOver = function (e: TouchEvent | MouseEvent) {
  * Event handler fired when the grip's dragging is about to start. Its main goal is to set up events 
  * and store some values used while dragging.
  */
-let onGripMouseDown = function (e: TouchEvent | MouseEvent) {
+let onGripMouseDown = function (this: HTMLElement, e: TouchEvent | MouseEvent): boolean {
     const grip: HTMLElement = this;
     let gripData: IGripData = DOM.getData(grip, SIGNATURE), elview: ResizableGrid = gripData.elview;
     if (elview.getIsDestroyCalled())
-        return;
-    let data: IResizeInfo = elview.getResizeIfo(), table = elview.grid.table;
+        return false;
+    let data: IResizeInfo = elview.getResizeIfo();
     let touches = (<any>e).touches;   //touch or mouse event?
     gripData.ox = touches ? touches[0].pageX : (<MouseEvent>e).pageX;    //the initial position is kept
     gripData.l = grip.offsetLeft;

@@ -1,6 +1,5 @@
 ﻿import * as RIAPP from "jriapp";
 import * as dbMOD from "jriapp_db";
-import * as uiMOD from "jriapp_ui";
 
 import * as DEMODB from "../demo/demoDB";
 import * as COMMON from "common";
@@ -36,7 +35,6 @@ export class DemoApplication extends RIAPP.Application {
 
     constructor(options: IMainOptions) {
         super(options);
-        var self = this;
         this._dbContext = null;
         this._errorVM = null;
         this._headerVM = null;
@@ -49,13 +47,6 @@ export class DemoApplication extends RIAPP.Application {
         var self = this, options: IMainOptions = self.options;
         this._dbContext = new DEMODB.DbContext();
         this._dbContext.initialize({ serviceUrl: options.service_url, permissions: options.permissionInfo });
-        function toText(str: any) {
-            if (str === null)
-                return '';
-            else
-                return str;
-        };
-
         this._dbContext.dbSets.Product.defineIsActiveField(function (item) {
             return !item.SellEndDate;
         });

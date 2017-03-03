@@ -1,14 +1,10 @@
 ﻿/// <reference path="../../built/shared/shared.d.ts" />
 import * as RIAPP from "jriapp";
 import * as dbMOD from "jriapp_db";
-import * as uiMOD from "jriapp_ui";
 
 import * as DEMODB from "./domainModel";
 import { ErrorViewModel } from "common";
 import { CustomerVM } from "./customerVM";
-
-//local variables for optimization
-var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
 
 export interface IMainOptions extends RIAPP.IAppOptions {
     service_url: string;
@@ -26,7 +22,6 @@ export class DemoApplication extends RIAPP.Application {
 
     constructor(options: IMainOptions) {
         super(options);
-        var self = this;
         this._dbContext = null;
         this._errorVM = null;
         this._customerVM = null;

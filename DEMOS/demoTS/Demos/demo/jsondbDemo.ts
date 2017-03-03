@@ -4,12 +4,11 @@ import * as dbMOD from "jriapp_db";
 import * as DEMODB from "./demoDB";
 import * as COMMON from "common";
 
-const bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
+const bootstrap = RIAPP.bootstrap;
 
 export class CustomerBag extends RIAPP.JsonBag {
     private _addresses: RIAPP.JsonArray = null;
-    private _owner: DEMODB.CustomerJSON;
-
+ 
     constructor(item: DEMODB.CustomerJSON) {
         super(item.Data, (data: string) => {
             const dbSet = item._aspect.dbSet, saveIsEditing = item._aspect.isEditing;
@@ -188,7 +187,7 @@ export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
 
         this._addNewAddrCommand = new RIAPP.TCommand<any, CustomerViewModel>(function (sender, param) {
             const curCustomer = <CustomerBag>self.currentItem.Customer;
-            var item = curCustomer.Addresses.addNew();
+            curCustomer.Addresses.addNew();
         }, self, function (s, p) {
             return !!self.currentItem;
         });
@@ -272,7 +271,6 @@ export class DemoApplication extends RIAPP.Application {
 
     constructor(options: IMainOptions) {
         super(options);
-        var self = this;
         this._dbContext = null;
         this._errorVM = null;
         this._customerVM = null;

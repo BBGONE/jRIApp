@@ -1,7 +1,5 @@
 ﻿/// <reference path="../../built/shared/shared.d.ts" />
 import * as RIAPP from "jriapp";
-import * as dbMOD from "jriapp_db";
-import * as uiMOD from "jriapp_ui";
 import * as DEMODB from "./demoDB";
 import * as COMMON from "common";
 

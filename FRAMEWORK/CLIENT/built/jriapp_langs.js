@@ -1,5 +1,6 @@
 define("jriapp_ru", ["require", "exports", "jriapp_shared/lang", "jriapp/bootstrap", "jriapp/const"], function (require, exports, lang_1, bootstrap_1, const_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var PAGER = {
         firstText: "<<",
         lastText: ">>",

@@ -249,8 +249,7 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
         this._onShow();
     }
     protected _hide() {
-        var self = this;
-        if (!this._isOpen)
+      if (!this._isOpen)
             return;
         $(RIAPP.DOM.document).off('.' + this.uniqueID);
         this._$dlg.off('.' + this.uniqueID);

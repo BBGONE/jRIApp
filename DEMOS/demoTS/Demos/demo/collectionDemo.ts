@@ -1,11 +1,9 @@
 ﻿/// <reference path="../../built/shared/shared.d.ts" />
 import * as RIAPP from "jriapp";
-import * as dbMOD from "jriapp_db";
-import * as uiMOD from "jriapp_ui";
 import * as DEMODB from "./demoDB";
 import * as COMMON from "common";
 
-var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = uiMOD.$;
+var bootstrap = RIAPP.bootstrap;
 
 export class RadioValueConverter extends RIAPP.BaseConverter {
     convertToSource(val: any, param: any, dataContext: any) {
@@ -23,7 +21,6 @@ export class RadioDemoVM extends RIAPP.ViewModel<DemoApplication> {
 
     constructor(app: DemoApplication) {
         super(app);
-        var self = this;
         this._radioValue = null;
         //one property in a dictionary  must be unique and used as key (its name does not matter )
         this._radioValues = new DEMODB.RadioValDictionary();
@@ -113,7 +110,6 @@ export class DemoApplication extends RIAPP.Application {
 
     constructor(options: RIAPP.IAppOptions) {
         super(options);
-        var self = this;
         this._errorVM = null;
         this._demoVM = null;
     }

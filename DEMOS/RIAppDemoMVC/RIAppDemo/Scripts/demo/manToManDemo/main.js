@@ -1,10 +1,16 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], function (require, exports, RIAPP, dbMOD) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var TestEnum;
     (function (TestEnum) {
         TestEnum[TestEnum["None"] = 0] = "None";
@@ -1531,6 +1537,7 @@ define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], func
 });
 define("manToManDemo/custAddressVM", ["require", "exports", "jriapp", "jriapp_db", "manToManDemo/addAddressVM"], function (require, exports, RIAPP, dbMOD, addAddressVM_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var CustomerAddressVM = (function (_super) {
         __extends(CustomerAddressVM, _super);
         function CustomerAddressVM(customerVM) {
@@ -1709,6 +1716,7 @@ define("manToManDemo/custAddressVM", ["require", "exports", "jriapp", "jriapp_db
 });
 define("manToManDemo/customerVM", ["require", "exports", "jriapp", "manToManDemo/custAddressVM"], function (require, exports, RIAPP, custAddressVM_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var CustomerVM = (function (_super) {
         __extends(CustomerVM, _super);
         function CustomerVM(app) {
@@ -1852,11 +1860,11 @@ define("manToManDemo/customerVM", ["require", "exports", "jriapp", "manToManDemo
 });
 define("manToManDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "common", "manToManDemo/customerVM"], function (require, exports, RIAPP, DEMODB, COMMON, customerVM_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var DemoApplication = (function (_super) {
         __extends(DemoApplication, _super);
         function DemoApplication(options) {
             var _this = _super.call(this, options) || this;
-            var self = _this;
             _this._dbContext = null;
             _this._errorVM = null;
             _this._customerVM = null;
@@ -1938,7 +1946,8 @@ define("manToManDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "comm
 });
 define("manToManDemo/addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "common"], function (require, exports, RIAPP, dbMOD, uiMOD, COMMON) {
     "use strict";
-    var utils = RIAPP.Utils, $ = uiMOD.$;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var utils = RIAPP.Utils;
     var AddAddressVM = (function (_super) {
         __extends(AddAddressVM, _super);
         function AddAddressVM(customerAddressVM) {
@@ -2046,7 +2055,6 @@ define("manToManDemo/addAddressVM", ["require", "exports", "jriapp", "jriapp_db"
             return _this;
         }
         AddAddressVM.prototype._addGrid = function (grid) {
-            var self = this;
             if (!!this._dataGrid)
                 this._removeGrid();
             this._dataGrid = grid;
@@ -2137,7 +2145,7 @@ define("manToManDemo/addAddressVM", ["require", "exports", "jriapp", "jriapp_db"
         AddAddressVM.prototype._checkAddressInRP = function (addressID) {
             var item = this._addressInfosDb.findEntity(addressID);
             if (!!item) {
-                var appended = this._addressInfosView.appendItems([item]);
+                this._addressInfosView.appendItems([item]);
                 this._addressInfosView.currentItem = item;
                 if (!!this._dataGrid)
                     this._dataGrid.scrollToCurrent(0);
@@ -2278,6 +2286,7 @@ define("manToManDemo/addAddressVM", ["require", "exports", "jriapp", "jriapp_db"
 });
 define("manToManDemo/main", ["require", "exports", "jriapp", "common", "autocomplete", "manToManDemo/app"], function (require, exports, RIAPP, COMMON, AUTOCOMPLETE, app_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var bootstrap = RIAPP.bootstrap;
     bootstrap.addOnError(function (sender, args) {
         debugger;

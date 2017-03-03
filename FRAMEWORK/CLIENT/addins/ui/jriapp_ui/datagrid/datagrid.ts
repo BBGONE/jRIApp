@@ -977,7 +977,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     sortByColumn(column: DataColumn): IPromise<any> {
         const ds = this.dataSource;
         if (!ds)
-            return;
+            return utils.defer.reject<void>("DataGrid's datasource is not set");
         const sorts = column.sortMemberName.split(";");
         const promise = ds.sort(sorts, column.sortOrder);
         return promise;

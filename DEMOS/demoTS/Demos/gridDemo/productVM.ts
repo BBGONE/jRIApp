@@ -9,7 +9,7 @@ import { DemoApplication } from "./app";
 import { TestInvokeCommand } from "./commands";
 import { RowStateProvider, OptionStateProvider, OptionTextProvider } from "./states";
 
-var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = uiMOD.$;
+var utils = RIAPP.Utils;
 
 
 export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implements uiMOD.ITabsEvents {
@@ -134,7 +134,7 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
         this._addNewCommand = new RIAPP.TCommand<any, ProductViewModel>(function (sender, param) {
             //grid will show the edit dialog, because we set grid options isHandleAddNew:true
             //see the options for the grid on the HTML demo page
-            var item = self._dbSet.addNew();
+            self._dbSet.addNew();
             //P.S. - grids editor options also has submitOnOK:true, which means
             //on clicking OK button all changes are submitted to the service
         });

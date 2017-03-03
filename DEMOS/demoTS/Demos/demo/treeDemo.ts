@@ -1,11 +1,10 @@
 ﻿/// <reference path="../../built/shared/shared.d.ts" />
 import * as RIAPP from "jriapp";
 import * as dbMOD from "jriapp_db";
-import * as uiMOD from "jriapp_ui";
 import * as FOLDERBROWSER_SVC from "./folderBrowserSvc";
 import * as COMMON from "common";
 
-var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, infoType = "BASE_ROOT", $ = uiMOD.$;
+var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, infoType = "BASE_ROOT";
 
 export interface IMainOptions extends RIAPP.IAppOptions {
     service_url: string;
@@ -35,7 +34,7 @@ export class ExProps extends RIAPP.BaseObject {
 
     constructor(item: FOLDERBROWSER_SVC.FileSystemObject, dbContext: FOLDERBROWSER_SVC.DbContext) {
         super();
-        var self = this;
+        var self: ExProps = this;
         this._item = item;
         this._dbContext = dbContext;
         this._childView = null;
@@ -62,13 +61,12 @@ export class ExProps extends RIAPP.BaseObject {
             });
 
         self._clickCommand = new RIAPP.Command(function (s, a) {
-            if (!!this._clickTimeOut) {
-                clearTimeout(this._clickTimeOut);
-                this._clickTimeOut = null;
+            if (!!self._clickTimeOut) {
+                clearTimeout(self._clickTimeOut);
+                self._clickTimeOut = null;
                 self.raiseEvent('dblclicked', { item: self._item });
-            }
-            else {
-                this._clickTimeOut = setTimeout(function () {
+            } else {
+                self._clickTimeOut = setTimeout(function () {
                     self._clickTimeOut = null;
                     self.raiseEvent('clicked', { item: self._item });
                 }, 350);
@@ -271,7 +269,6 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        var self = this;
         super.destroy();
     }
     get dbContext() { return this.app.dbContext; }
@@ -288,7 +285,6 @@ export class DemoApplication extends RIAPP.Application {
 
     constructor(options: IMainOptions) {
         super(options);
-        var self = this;
         this._errorVM = null;
         this._fbrowserVM = null;
     }

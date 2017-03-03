@@ -1,11 +1,17 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-define(["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "./folderBrowserSvc", "common"], function (require, exports, RIAPP, dbMOD, uiMOD, FOLDERBROWSER_SVC, COMMON) {
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "common"], function (require, exports, RIAPP, dbMOD, FOLDERBROWSER_SVC, COMMON) {
     "use strict";
-    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, infoType = "BASE_ROOT", $ = uiMOD.$;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, infoType = "BASE_ROOT";
     var ExProps = (function (_super) {
         __extends(ExProps, _super);
         function ExProps(item, dbContext) {
@@ -34,13 +40,13 @@ define(["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "./folderBrows
                 return !!self.childView;
             });
             self._clickCommand = new RIAPP.Command(function (s, a) {
-                if (!!this._clickTimeOut) {
-                    clearTimeout(this._clickTimeOut);
-                    this._clickTimeOut = null;
+                if (!!self._clickTimeOut) {
+                    clearTimeout(self._clickTimeOut);
+                    self._clickTimeOut = null;
                     self.raiseEvent('dblclicked', { item: self._item });
                 }
                 else {
-                    this._clickTimeOut = setTimeout(function () {
+                    self._clickTimeOut = setTimeout(function () {
                         self._clickTimeOut = null;
                         self.raiseEvent('clicked', { item: self._item });
                     }, 350);
@@ -248,7 +254,6 @@ define(["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "./folderBrows
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
-            var self = this;
             _super.prototype.destroy.call(this);
         };
         Object.defineProperty(FolderBrowser.prototype, "dbContext", {
@@ -283,7 +288,6 @@ define(["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "./folderBrows
         __extends(DemoApplication, _super);
         function DemoApplication(options) {
             var _this = _super.call(this, options) || this;
-            var self = _this;
             _this._errorVM = null;
             _this._fbrowserVM = null;
             return _this;

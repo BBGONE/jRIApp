@@ -232,7 +232,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     }
     protected _getEventNames() {
         const base_events = super._getEventNames();
-        const events = Object.keys(COLL_EVENTS).map((key, i, arr) => { return <string>(<any>COLL_EVENTS)[key]; });
+        const events = Object.keys(COLL_EVENTS).map((key) => { return <string>(<any>COLL_EVENTS)[key]; });
         return events.concat(base_events);
     }
     addOnClearing(fn: TEventHandler<ICollection<TItem>, { reason: COLL_CHANGE_REASON; }>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {

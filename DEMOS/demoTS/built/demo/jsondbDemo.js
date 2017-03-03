@@ -1,11 +1,17 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 define(["require", "exports", "jriapp", "./demoDB", "common"], function (require, exports, RIAPP, DEMODB, COMMON) {
     "use strict";
-    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var bootstrap = RIAPP.bootstrap;
     var CustomerBag = (function (_super) {
         __extends(CustomerBag, _super);
         function CustomerBag(item) {
@@ -157,7 +163,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             });
             _this._addNewAddrCommand = new RIAPP.TCommand(function (sender, param) {
                 var curCustomer = self.currentItem.Customer;
-                var item = curCustomer.Addresses.addNew();
+                curCustomer.Addresses.addNew();
             }, self, function (s, p) {
                 return !!self.currentItem;
             });
@@ -259,7 +265,6 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
         __extends(DemoApplication, _super);
         function DemoApplication(options) {
             var _this = _super.call(this, options) || this;
-            var self = _this;
             _this._dbContext = null;
             _this._errorVM = null;
             _this._customerVM = null;

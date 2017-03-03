@@ -1,11 +1,17 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], function (require, exports, RIAPP, dbMOD, uiMOD) {
     "use strict";
-    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = uiMOD.$;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var utils = RIAPP.Utils;
     function addTextQuery(query, fldName, val) {
         var tmp;
         if (!!val) {
@@ -306,6 +312,7 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
 });
 define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], function (require, exports, RIAPP, uiMOD, COMMON) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
     function findElemViewInTemplate(template, name) {
         var arr = template.findElViewsByDataName(name);
@@ -507,7 +514,6 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             this._onShow();
         };
         AutoCompleteElView.prototype._hide = function () {
-            var self = this;
             if (!this._isOpen)
                 return;
             $(RIAPP.DOM.document).off('.' + this.uniqueID);
@@ -624,7 +630,8 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
 });
 define("header", ["require", "exports", "jriapp", "jriapp_ui"], function (require, exports, RIAPP, uiMOD) {
     "use strict";
-    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = uiMOD.$;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var $ = uiMOD.$;
     exports.topPanel = "#demoHeader";
     exports.contentPanel = "#demoContent";
     var HeaderVM = (function (_super) {
@@ -694,6 +701,7 @@ define("header", ["require", "exports", "jriapp", "jriapp_ui"], function (requir
 });
 define("ssevents", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
     var SSEventsVM = (function (_super) {
         __extends(SSEventsVM, _super);
@@ -754,7 +762,6 @@ define("ssevents", ["require", "exports", "jriapp"], function (require, exports,
             this.raiseEvent('message', { message: event.data, data: data });
         };
         SSEventsVM.prototype._close = function () {
-            var self = this;
             if (!!this._timeOut)
                 clearTimeout(this._timeOut);
             this._timeOut = null;
@@ -871,6 +878,7 @@ define("ssevents", ["require", "exports", "jriapp"], function (require, exports,
 });
 define("websocket", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
     var WebSocketsVM = (function (_super) {
         __extends(WebSocketsVM, _super);

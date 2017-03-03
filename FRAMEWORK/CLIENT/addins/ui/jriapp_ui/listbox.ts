@@ -508,8 +508,7 @@ export class ListBox extends BaseObject {
     }
     protected getByIndex(index: number): IMappedItem {
         if (index >= 0 && index < this.el.length) {
-            let op = this.el.options[index];
-            let key = op.value;
+            let op: HTMLOptionElement = <HTMLOptionElement>this.el.options[index], key = op.value;
             return this._keyMap[key];
         }
         return null;
@@ -520,15 +519,15 @@ export class ListBox extends BaseObject {
         this._isRefreshing = true;
         try {
             this.selectedIndex = index;
-        }
-        finally {
+        } finally {
             this._isRefreshing = oldRefreshing;
         }
     }
     protected setChanges(): void {
         //if already set then return
-        if (!!this._fn_checkChanges)
+        if (!!this._fn_checkChanges) {
             return;
+        }
         const self = this, prevVal = fn_Str(self.selectedValue), prevItem = self.selectedItem;
         this._fn_checkChanges = () => {
             //reset function

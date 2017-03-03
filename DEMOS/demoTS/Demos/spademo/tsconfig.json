@@ -1,13 +1,16 @@
 ﻿{
-  "compilerOptions": {
-    "module": "amd",
-    "target": "es5",
-    "noImplicitAny": true,
-    "removeComments": true,
-    "preserveConstEnums": true,
-    "outFile": "../../built/demo/spaDemo/main.js",
-    "declaration": false,
-    "sourceMap": false,
-    "noFallthroughCasesInSwitch": true
-  }
+    "compilerOptions": {
+        "module": "amd",
+        "target": "es5",
+        "noImplicitAny": true,
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "outFile": "../../built/demo/spaDemo/main.js",
+        "declaration": false,
+        "sourceMap": false,
+        "noFallthroughCasesInSwitch": true,
+        "noUnusedLocals": true,
+        "noImplicitThis": true,
+        "noImplicitReturns": true
+    }
 }

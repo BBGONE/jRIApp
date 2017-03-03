@@ -1,6 +1,5 @@
 ﻿import * as RIAPP from "jriapp";
 import * as dbMOD from "jriapp_db";
-import * as uiMOD from "jriapp_ui";
 import * as DEMODB from "../demo/demoDB";
 import * as COMMON from "common";
 import { CustomerVM } from "./customerVM";
@@ -17,7 +16,6 @@ export class DemoApplication extends RIAPP.Application {
 
     constructor(options: IMainOptions) {
         super(options);
-        var self = this;
         this._dbContext = null;
         this._errorVM = null;
         this._customerVM = null;

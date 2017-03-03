@@ -2,7 +2,7 @@
 import * as uiMOD from "jriapp_ui";
 
 //local variables for optimization
-var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
+var utils = RIAPP.Utils;
 
 export class FadeAnimation extends RIAPP.BaseObject implements uiMOD.IDynaContentAnimation {
     private _$animatedEl: JQuery;

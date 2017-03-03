@@ -1,12 +1,11 @@
 ﻿import * as RIAPP from "jriapp";
 import * as dbMOD from "jriapp_db";
-import * as uiMOD from "jriapp_ui";
 
 import * as DEMODB from "../demo/demoDB";
 import { ResetCommand } from "./commands";
 import { DemoApplication } from "./app";
 
-var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = uiMOD.$;
+var utils = RIAPP.Utils;
 
 export class ProductsFilter extends RIAPP.BaseObject {
     private _prodNumber: any;

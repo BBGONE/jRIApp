@@ -137,7 +137,6 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        var self = this;
         if (!!this._$treeRoot)
             this._$treeRoot.removeChildren();
         super.destroy();
@@ -167,7 +166,7 @@ export class FolderBrowserVM extends RIAPP.ViewModel<DemoApplication> {
 
     constructor(app: DemoApplication, options: IOptions) {
         super(app);
-        var self = this;
+        let self: FolderBrowserVM = this;
         this._selectedItem = null;
         //we defined this custom type in common.js
         this._dialogVM = new uiMOD.DialogVM(app);
@@ -182,7 +181,6 @@ export class FolderBrowserVM extends RIAPP.ViewModel<DemoApplication> {
             title: title,
             fn_OnTemplateCreated: function (template) {
                 //executed in the context of the dialog
-                var dialog = this;
                 var $tree = $(fn_getTemplateElement(template, 'tree'));
                 var options = <IFolderBrowserOptions>coreUtils.merge(self._options, { $tree: $tree });
                 self._folderBrowser = new FolderBrowser(app, options);
@@ -209,7 +207,7 @@ export class FolderBrowserVM extends RIAPP.ViewModel<DemoApplication> {
             try {
                 self.showDialog();
             } catch (ex) {
-                self.handleError(ex, this);
+                self.handleError(ex, self);
             }
         }, self, function (sender, param) {
             return true;
@@ -266,7 +264,6 @@ export class DemoApplication extends RIAPP.Application {
 
     constructor(options: IMainOptions) {
         super(options);
-        var self = this;
         this._errorVM = null;
         this._fbrowserVM1 = null;
         this._fbrowserVM2 = null;

@@ -572,21 +572,13 @@ namespace RIAppDemo.BLL.DataServices
             using (var trxScope = new TransactionScope(TransactionScopeOption.Required, topts))
             using (var conn = DBConnectionFactory.GetRIAppDemoConnection())
             {
-                var br = new BinaryReader(strm);
-                var bytes = br.ReadBytes(64*1024);
-                var fldname = "ThumbNailPhoto";
-                var bstrm = new BlobStream(conn as SqlConnection, "[SalesLT].[Product]", fldname,
-                    string.Format("WHERE [ProductID]={0}", id));
-                bstrm.InitColumn();
-                bstrm.Open();
-                while (bytes != null && bytes.Length > 0)
+                using (var bstrm = new BlobStream(conn as SqlConnection, "[SalesLT].[Product]", "ThumbNailPhoto",
+                    string.Format("WHERE [ProductID]={0}", id)))
                 {
-                    bstrm.Write(bytes, 0, bytes.Length);
-                    bytes = br.ReadBytes(64*1024);
-                    ;
+                    bstrm.InitColumn();
+                    bstrm.Open();
+                    strm.CopyTo(bstrm, 64 * 1024);
                 }
-                bstrm.Close();
-                br.Close();
                 trxScope.Complete();
             }
 
@@ -598,7 +590,7 @@ namespace RIAppDemo.BLL.DataServices
         {
             var product = DB.Products.Where(a => a.ProductID == id).FirstOrDefault();
             if (product == null)
-                throw new Exception("Product is not found");
+                throw new Exception("Product is Not Found");
 
             var topts = new TransactionOptions();
             topts.Timeout = TimeSpan.FromSeconds(60);

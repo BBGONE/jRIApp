@@ -9,16 +9,14 @@ import { DomUtils } from "jriapp/utils/dom";
 import { DATA_ATTR, ELVIEW_NM } from "jriapp/const";
 import { ViewChecks } from "jriapp/utils/viewchecks";
 import { IContent, IElView, ILifeTimeScope, IViewOptions, IApplication } from "jriapp/int";
-import {
-    Parser
-} from "jriapp/utils/parser";
+import { Parser } from "jriapp/utils/parser";
 import { bootstrap } from "jriapp/bootstrap";
 import { BaseElView, fn_addToolTip } from "./baseview";
 import { Binding } from "jriapp/binding";
 import { parseContentAttr } from "./content/int";
 
 const utils = Utils, dom = DomUtils, checks = utils.check, coreUtils = utils.core, strUtils = utils.str,
-    sys = utils.sys, parser = Parser, boot = bootstrap, viewChecks = ViewChecks;
+    sys = utils.sys, parser = Parser, boot = bootstrap, viewChecks = ViewChecks, _async = utils.defer;
 
 export const css = {
     dataform: "ria-dataform",
@@ -195,7 +193,7 @@ export class DataForm extends BaseObject {
     private _createContent(): IVoidPromise {
         const dctx: any = this._dataContext, self = this;
         if (!dctx) {
-            return;
+            return _async.reject<void>("DataForm's datacontext is not set");
         }
         const contentElements = utils.arr.fromList<HTMLElement>(this._el.querySelectorAll(DataForm._DATA_CONTENT_SELECTOR)),
             isEditing = this.isEditing;

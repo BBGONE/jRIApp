@@ -1,14 +1,10 @@
 ﻿import * as RIAPP from "jriapp";
 import * as dbMOD from "jriapp_db";
-import * as uiMOD from "jriapp_ui";
 
-import * as COMMON from "common";
 import * as DEMODB from "./domainModel";
 import { DemoApplication } from "./app";
 import { CustomerVM } from "./customerVM";
 import { AddAddressVM } from "./addAddressVM";
-
-var utils = RIAPP.Utils, $ = uiMOD.$;
 
 export class CustomerAddressVM extends RIAPP.ViewModel<DemoApplication> {
     private _customerVM: CustomerVM;
@@ -125,7 +121,7 @@ export class CustomerAddressVM extends RIAPP.ViewModel<DemoApplication> {
         return ca;
     }
     load(customers: DEMODB.Customer[]) {
-        var self = this, custArr = customers || [];
+        var custArr = customers || [];
 
         //customerIDs for all loaded customers entities (for current page only, not which in cache if query.loadPageCount>1)
         var custIDs = custArr.map(function (item) {

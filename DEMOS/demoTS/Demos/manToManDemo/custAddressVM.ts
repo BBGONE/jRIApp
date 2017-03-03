@@ -1,6 +1,5 @@
 ﻿import * as RIAPP from "jriapp";
 import * as dbMOD from "jriapp_db";
-import * as uiMOD from "jriapp_ui";
 import * as DEMODB from "../demo/demoDB";
 import { DemoApplication } from "./app";
 import { CustomerVM } from "./customerVM";

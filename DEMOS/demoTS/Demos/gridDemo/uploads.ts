@@ -5,7 +5,7 @@ import * as uiMOD from "jriapp_ui";
 import * as DEMODB from "../demo/demoDB";
 import { BaseUploadVM } from "./baseUpload";
 
-var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = uiMOD.$;
+var utils = RIAPP.Utils, $ = uiMOD.$;
 
 
 //helper function to get html DOM element  inside template's instance
@@ -35,16 +35,16 @@ export class UploadThumbnailVM extends BaseUploadVM {
             width: 450,
             height: 250,
             title: 'Upload product thumbnail',
-            fn_OnTemplateCreated: function (template) {
+            fn_OnTemplateCreated: function (this: uiMOD.DataEditDialog, template) {
                 //function executed in the context of the dialog
-                var dialog = this;
+                //var dialog = this;
                 self._fileEl = <HTMLInputElement>fn_getTemplateElement(template, 'files-to-upload');
                 self._formEl = <HTMLFormElement>fn_getTemplateElement(template, 'uploadForm');
                 self._progressBar = $(fn_getTemplateElement(template, 'progressBar'));
                 self._percentageCalc = $(fn_getTemplateElement(template, 'percentageCalc'));
                 self._progressDiv = $(fn_getTemplateElement(template, 'progressDiv'));
                 self._progressDiv.hide();
-                $(self._fileEl).on('change', function (e: JQueryEventObject) {
+                $(self._fileEl).on('change', function (this: HTMLInputElement, e: JQueryEventObject) {
                     var fileEl: HTMLInputElement = this;
                     e.stopPropagation();
                     var fileList = fileEl.files, txt = '';
@@ -56,7 +56,7 @@ export class UploadThumbnailVM extends BaseUploadVM {
                 });
 
                 var templEl = template.el, $fileEl = $(self._fileEl);
-                $fileEl.change(function (e) {
+                $fileEl.change(function (this: HTMLInputElement, e) {
                     $('input[data-name="files-input"]', templEl).val($(this).val());
                 });
                 $('*[data-name="btn-input"]', templEl).click(function (e) {
@@ -87,7 +87,7 @@ export class UploadThumbnailVM extends BaseUploadVM {
                 self.id = self._product.ProductID.toString();
                 self._dialogVM.showDialog('uploadDialog', self);
             } catch (ex) {
-                self.handleError(ex, this);
+                self.handleError(ex, self);
             }
         }, self, function (sender, param) {
             return true;
@@ -100,7 +100,7 @@ export class UploadThumbnailVM extends BaseUploadVM {
                     return;
 
                 if (param.isLoaded) {
-                    fileEl.change(function (e) {
+                    fileEl.change(function (this: HTMLInputElement, e) {
                         $('input[data-name="files-input"]', template.el).val($(this).val());
                     });
                     $('*[data-name="btn-input"]', template.el).click(function (e) {
@@ -114,7 +114,7 @@ export class UploadThumbnailVM extends BaseUploadVM {
                     $('*[data-name="btn-input"]', template.el).off('click');
                 }
             } catch (ex) {
-                self.handleError(ex, this);
+                self.handleError(ex, self);
             }
         }, self, function (sender, param) {
             return true;

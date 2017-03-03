@@ -14,12 +14,11 @@ const utils = Utils, strUtils = utils.str, checks = utils.check, sys = utils.sys
 sys.getItemByProp = (obj: any, prop: string) => {
     if (obj instanceof BaseDictionary) {
         return (<BaseDictionary<IListItem, any>>obj).getItemByKey(prop);
-    }
-    else if (obj instanceof BaseCollection) {
-        (<BaseCollection<ICollectionItem>>obj).getItemByPos(parseInt(prop, 10));
-    }
-    else
+    } else if (obj instanceof BaseCollection) {
+        return (<BaseCollection<ICollectionItem>>obj).getItemByPos(parseInt(prop, 10));
+    } else {
         return null;
+    }
 };
 
 
@@ -27,13 +26,15 @@ export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TIte
     private _keyName: string;
 
     constructor(keyName: string, props: IPropInfo[]) {
-        if (!keyName)
+        if (!keyName) {
             throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "keyName", keyName));
+        }
         super(props);
         this._keyName = keyName;
         const keyFld = this.getFieldInfo(keyName);
-        if (!keyFld)
+        if (!keyFld) {
             throw new Error(strUtils.format(ERRS.ERR_DICTKEY_IS_NOTFOUND, keyName));
+        }
         keyFld.isPrimaryKey = 1;
     }
     //override
@@ -42,8 +43,7 @@ export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TIte
         let vals: any = isNew ? collUtils.initVals(this.getFieldInfos(), {}) : obj, key: string;
         if (isNew) {
             key = this._getNewKey();
-        }
-        else {
+        } else {
             if (checks.isNt(vals[this._keyName]))
                 throw new Error(strUtils.format(ERRS.ERR_DICTKEY_IS_EMPTY, this._keyName));
             key = "" + vals[this._keyName];
@@ -55,8 +55,9 @@ export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TIte
     protected _onItemAdded(item: TItem) {
         super._onItemAdded(item);
         const key = (<any>item)[this._keyName], self = this;
-        if (checks.isNt(key))
+        if (checks.isNt(key)) {
             throw new Error(strUtils.format(ERRS.ERR_DICTKEY_IS_EMPTY, this._keyName));
+        }
 
         const oldkey = item._key, newkey = "" + key;
         if (oldkey !== newkey) {

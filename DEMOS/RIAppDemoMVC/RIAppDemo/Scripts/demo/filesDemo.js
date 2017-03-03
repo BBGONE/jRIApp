@@ -1,10 +1,16 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "common"], function (require, exports, RIAPP, uiMOD, FOLDERBROWSER_SVC, COMMON) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = uiMOD.$;
     var FolderBrowser = (function (_super) {
         __extends(FolderBrowser, _super);
@@ -107,7 +113,6 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
-            var self = this;
             if (!!this._$treeRoot)
                 this._$treeRoot.removeChildren();
             _super.prototype.destroy.call(this);
@@ -164,7 +169,6 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
                 height: 700,
                 title: title,
                 fn_OnTemplateCreated: function (template) {
-                    var dialog = this;
                     var $tree = $(fn_getTemplateElement(template, 'tree'));
                     var options = coreUtils.merge(self._options, { $tree: $tree });
                     self._folderBrowser = new FolderBrowser(app, options);
@@ -190,7 +194,7 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
                     self.showDialog();
                 }
                 catch (ex) {
-                    self.handleError(ex, this);
+                    self.handleError(ex, self);
                 }
             }, self, function (sender, param) {
                 return true;
@@ -267,7 +271,6 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
         __extends(DemoApplication, _super);
         function DemoApplication(options) {
             var _this = _super.call(this, options) || this;
-            var self = _this;
             _this._errorVM = null;
             _this._fbrowserVM1 = null;
             _this._fbrowserVM2 = null;

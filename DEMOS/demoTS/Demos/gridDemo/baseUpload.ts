@@ -1,8 +1,6 @@
 ﻿import * as RIAPP from "jriapp";
-import * as dbMOD from "jriapp_db";
-import * as uiMOD from "jriapp_ui";
 
-var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = uiMOD.$;
+var utils = RIAPP.Utils;
 
 export class BaseUploadVM extends RIAPP.BaseObject {
     private _uploadUrl: string;
@@ -36,7 +34,7 @@ export class BaseUploadVM extends RIAPP.BaseObject {
             try {
                 self.uploadFiles(self._fileEl.files);
             } catch (ex) {
-                self.handleError(ex, this);
+                self.handleError(ex, self);
             }
         }, self, function (sender, param) {
             return self._canUpload();
@@ -58,8 +56,6 @@ export class BaseUploadVM extends RIAPP.BaseObject {
         };
 
         upload.onprogress = function (e) {
-            var progressBar = $("#progressBar");
-            var percentageDiv = $("#percentageCalc");
             if (!!e.lengthComputable) {
                 self._progressBar.prop("max", e.total);
                 self._progressBar.prop("value", e.loaded);

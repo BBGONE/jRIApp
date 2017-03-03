@@ -119,8 +119,9 @@ export class BaseElView extends BaseObject implements IElView {
     }
     protected _onEventAdded(name: string, newVal: ICommand) {
         const self = this;
-        if (this.getIsDestroyCalled())
+        if (this.getIsDestroyCalled()) {
             return;
+        }
         dom.events.on(this.el, name, (e) => {
             e.stopPropagation();
             if (!!self._eventStore) {
