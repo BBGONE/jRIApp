@@ -2,6 +2,7 @@ using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace RIAppDemo.BLL.Utils
 {
@@ -389,6 +390,13 @@ namespace RIAppDemo.BLL.Utils
         public void InitColumn()
         {
             m_cmdEmptyColumn.ExecuteNonQuery();
+            m_Position = 0;
+            m_DataLength = 0;
+        }
+
+        public async Task InitColumnAsync()
+        {
+            await m_cmdEmptyColumn.ExecuteNonQueryAsync();
             m_Position = 0;
             m_DataLength = 0;
         }

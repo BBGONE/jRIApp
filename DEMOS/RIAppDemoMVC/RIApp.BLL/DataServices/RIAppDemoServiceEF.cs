@@ -179,8 +179,7 @@ namespace RIAppDemo.BLL.DataServices
                     throw new Exception("Error generated randomly for testing purposes. Don't worry! Try again.");
                 */
 
-                return
-                    string.Format("TestInvoke method invoked with<br/><br/><b>param1:</b> {0}<br/> <b>param2:</b> {1}",
+                return string.Format("TestInvoke method invoked with<br/><br/><b>param1:</b> {0}<br/> <b>param2:</b> {1}",
                         sb, param2);
             });
         }
@@ -560,63 +559,60 @@ namespace RIAppDemo.BLL.DataServices
             return fileName;
         }
 
-        public void SaveThumbnail(int id, string fileName, Stream strm)
+        public async Task SaveThumbnail(int id, string fileName, Stream strm)
         {
-            var product = DB.Products.Where(a => a.ProductID == id).FirstOrDefault();
+            var product = await DB.Products.Where(a => a.ProductID == id).FirstOrDefaultAsync();
             if (product == null)
-                throw new Exception("Product is not found");
+                throw new Exception(string.Format("Product {0} is Not Found", id));
 
-            var topts = new TransactionOptions();
-            topts.Timeout = TimeSpan.FromSeconds(60);
-            topts.IsolationLevel = IsolationLevel.Serializable;
-            using (var trxScope = new TransactionScope(TransactionScopeOption.Required, topts))
+            var topts = new TransactionOptions() { Timeout = TimeSpan.FromSeconds(60), IsolationLevel = IsolationLevel.Serializable };
+            using (var trxScope = new TransactionScope(TransactionScopeOption.Required, topts, TransactionScopeAsyncFlowOption.Enabled))
             using (var conn = DBConnectionFactory.GetRIAppDemoConnection())
             {
                 using (var bstrm = new BlobStream(conn as SqlConnection, "[SalesLT].[Product]", "ThumbNailPhoto",
                     string.Format("WHERE [ProductID]={0}", id)))
                 {
-                    bstrm.InitColumn();
+                    await bstrm.InitColumnAsync();
                     bstrm.Open();
-                    strm.CopyTo(bstrm, 64 * 1024);
+                    await strm.CopyToAsync(bstrm, 64 * 1024);
                 }
+
                 trxScope.Complete();
             }
 
             product.ThumbnailPhotoFileName = fileName;
-            DB.SaveChanges();
+            await DB.SaveChangesAsync();
         }
 
-        public void SaveThumbnail2(int id, string fileName, Func<Stream, Task> copy)
+        public async Task SaveThumbnail2(int id, string fileName, Func<Stream, Task> copy)
         {
-            var product = DB.Products.Where(a => a.ProductID == id).FirstOrDefault();
+            var product = await DB.Products.Where(a => a.ProductID == id).FirstOrDefaultAsync();
             if (product == null)
-                throw new Exception("Product is Not Found");
+                throw new Exception(string.Format("Product {0} is Not Found", id));
 
-            var topts = new TransactionOptions();
-            topts.Timeout = TimeSpan.FromSeconds(60);
-            topts.IsolationLevel = IsolationLevel.Serializable;
-            using (var trxScope = new TransactionScope(TransactionScopeOption.Required, topts))
+            var topts = new TransactionOptions() { Timeout = TimeSpan.FromSeconds(60), IsolationLevel = IsolationLevel.Serializable };
+            using (var trxScope = new TransactionScope(TransactionScopeOption.Required, topts, TransactionScopeAsyncFlowOption.Enabled))
             using (var conn = DBConnectionFactory.GetRIAppDemoConnection())
             {
-                var fldname = "ThumbNailPhoto";
-                var bstrm = new BlobStream(conn as SqlConnection, "[SalesLT].[Product]", fldname,
-                    string.Format("WHERE [ProductID]={0}", id));
-                bstrm.InitColumn();
-                bstrm.Open();
-                try
+                using (var bstrm = new BlobStream(conn as SqlConnection, "[SalesLT].[Product]", "ThumbNailPhoto",
+                    string.Format("WHERE [ProductID]={0}", id)))
                 {
-                    if (!copy(bstrm).Wait(10000))
-                        throw new Exception("Write stream timeout");
-                }
-                finally
-                {
+                    await bstrm.InitColumnAsync();
+                    bstrm.Open();
+                    Task delayTask = Task.Delay(10000);
+                    Task firstTask = await Task.WhenAny(copy(bstrm), delayTask);
+                    if (firstTask == delayTask)
+                        throw new Exception("Saving image took longer than expected");
+                    //if it's a copy task then just await for completion
+                    await firstTask;
                     bstrm.Close();
                 }
+
                 trxScope.Complete();
             }
 
             product.ThumbnailPhotoFileName = fileName;
-            DB.SaveChanges();
+            await DB.SaveChangesAsync();
         }
 
         #endregion

@@ -8,6 +8,7 @@ using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Web.Http;
 using RIAppDemo.BLL.DataServices;
+using System.Threading.Tasks;
 
 namespace RIAppDemo.Controllers
 {
@@ -50,7 +51,7 @@ namespace RIAppDemo.Controllers
         #region Public API
 
         [HttpPost]
-        public HttpResponseMessage UploadThumbnail(HttpRequestMessage request)
+        public async Task<HttpResponseMessage> UploadThumbnail(HttpRequestMessage request)
         {
             try
             {
@@ -64,7 +65,7 @@ namespace RIAppDemo.Controllers
                         var svc = ThumbnailServiceFactory.Create(User);
                         using (svc)
                         {
-                            svc.SaveThumbnail2(file.DataID, file.FileName, file.Content.CopyToAsync);
+                            await svc.SaveThumbnail2(file.DataID, file.FileName, file.Content.CopyToAsync);
                         }
                     }
                 }

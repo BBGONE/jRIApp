@@ -4,6 +4,7 @@ using System.Web.Mvc;
 using System.Web.SessionState;
 using RIAppDemo.BLL.DataServices;
 using RIAppDemo.Models;
+using System.Threading.Tasks;
 
 namespace RIAppDemo.Controllers
 {
@@ -55,7 +56,7 @@ namespace RIAppDemo.Controllers
             return new EmptyResult();
         }
 
-        public ActionResult ThumbnailUpload()
+        public async Task<ActionResult> ThumbnailUpload()
         {
             try
             {
@@ -69,7 +70,7 @@ namespace RIAppDemo.Controllers
                         var svc = ThumbnailServiceFactory.Create(User);
                         using (svc)
                         {
-                            svc.SaveThumbnail(file.DataID, file.FileName, file.Contents);
+                            await svc.SaveThumbnail(file.DataID, file.FileName, file.Contents);
                         }
                     }
                 }
