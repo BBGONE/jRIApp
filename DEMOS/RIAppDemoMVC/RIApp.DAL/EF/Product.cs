@@ -49,8 +49,6 @@ namespace RIAppDemo.DAL.EF
 
         public DateTime? DiscontinuedDate { get; set; }
 
-        public byte[] ThumbNailPhoto { get; set; }
-
         [StringLength(50)]
         public string ThumbnailPhotoFileName { get; set; }
 
