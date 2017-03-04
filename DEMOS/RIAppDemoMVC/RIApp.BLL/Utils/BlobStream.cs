@@ -2,6 +2,7 @@ using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RIAppDemo.BLL.Utils
@@ -89,7 +90,7 @@ namespace RIAppDemo.BLL.Utils
 
         public bool IsOpen { get; private set; }
 
-        public override int Read(byte[] buffer, int offset, int count)
+        protected virtual async Task<int> _Read(bool isAsync, byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             if (!IsOpen)
             {
@@ -116,7 +117,7 @@ namespace RIAppDemo.BLL.Utils
             if (m_DataLength == 0)
                 read = 0;
             else if (count > m_DataLength - m_Position)
-                read = (int) (m_DataLength - m_Position);
+                read = (int)(m_DataLength - m_Position);
             else
                 read = count;
 
@@ -137,13 +138,18 @@ namespace RIAppDemo.BLL.Utils
                 m_cmdReadText.Parameters["@offset"].Value = pos;
                 m_cmdReadText.Parameters["@length"].Value = chunk;
 
-                var obj = m_cmdReadText.ExecuteScalar();
+                object obj = null;
+                if (isAsync)
+                    obj = await m_cmdReadText.ExecuteScalarAsync(cancellationToken);
+                else
+                    obj = m_cmdReadText.ExecuteScalar();
+
                 if (obj == null)
                 {
                     m_Position = pos;
                     return cnt;
                 }
-                var res = (byte[]) obj;
+                var res = (byte[])obj;
                 Buffer.BlockCopy(res, 0, buffer, offset, res.Length);
                 offset += res.Length;
                 read -= chunk;
@@ -151,13 +157,27 @@ namespace RIAppDemo.BLL.Utils
                 cnt += res.Length;
                 m_Position = pos;
             }
+
             return cnt;
         }
 
-        public override void Write(byte[] buffer, int offset, int count)
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            var res = this._Read(false, buffer, offset, count, CancellationToken.None);
+            return res.Result;
+        }
+
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            return this._Read(true, buffer, offset, count, cancellationToken);
+        }
+
+        protected virtual async Task _Write(bool isAsync, byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             if (count == 0)
+            {
                 return;
+            }
             if (!IsOpen)
             {
                 throw new Exception("StreamIsClosed");
@@ -193,7 +213,7 @@ namespace RIAppDemo.BLL.Utils
                 }
                 else
                 {
-                    chunk = (int) append;
+                    chunk = (int)append;
                     buff = new byte[chunk];
                 }
                 var delete = 0;
@@ -207,22 +227,39 @@ namespace RIAppDemo.BLL.Utils
                     if (to_right > chunk)
                         delete = chunk;
                     else
-                        delete = (int) to_right;
+                        delete = (int)to_right;
                 }
                 else
+                {
                     delete = 0;
+                }
 
                 Buffer.BlockCopy(buffer, offset, buff, 0, chunk);
                 m_cmdUpdateText.Parameters["@offset"].Value = pos;
                 m_cmdUpdateText.Parameters["@length"].Value = delete;
                 m_cmdUpdateText.Parameters["@data"].Value = buff;
-                m_cmdUpdateText.ExecuteNonQuery();
+                if (isAsync)
+                    await m_cmdUpdateText.ExecuteNonQueryAsync(cancellationToken);
+                else
+                    m_cmdUpdateText.ExecuteNonQuery();
+
                 pos += chunk;
                 offset += chunk;
                 append -= chunk;
                 m_DataLength = m_DataLength + chunk - delete;
                 m_Position = pos;
             }
+        }
+
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            var res = this._Write(false, buffer, offset, count, CancellationToken.None);
+            res.Wait();
+        }
+
+        public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            await this._Write(false, buffer, offset, count, cancellationToken);
         }
 
         public virtual void Insert(byte[] buffer, int offset, int count)

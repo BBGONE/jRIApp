@@ -4,6 +4,7 @@ using System.Net.Mime;
 using System.Web.Mvc;
 using System.Web.SessionState;
 using RIAppDemo.BLL.DataServices;
+using System.Threading.Tasks;
 
 namespace RIAppDemo.Controllers
 {
@@ -15,7 +16,7 @@ namespace RIAppDemo.Controllers
             return new EmptyResult();
         }
 
-        public ActionResult ThumbnailDownload(int id)
+        public async Task<ActionResult> ThumbnailDownload(int id)
         {
             try
             {
@@ -23,7 +24,7 @@ namespace RIAppDemo.Controllers
                 using (svc)
                 {
                     var stream = new MemoryStream();
-                    var fileName = svc.GetThumbnail(id, stream);
+                    var fileName = await svc.GetThumbnail(id, stream);
                     if (string.IsNullOrEmpty(fileName))
                         return new HttpStatusCodeResult(400);
                     stream.Position = 0;

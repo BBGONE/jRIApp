@@ -528,34 +528,26 @@ namespace RIAppDemo.BLL.DataServices
 
         #region Helper Methods
 
-        public string GetThumbnail(int id, Stream strm)
+        public async Task<string> GetThumbnail(int id, Stream strm)
         {
-            var fileName =
-                DB.Products.Where(a => a.ProductID == id).Select(a => a.ThumbnailPhotoFileName).FirstOrDefault();
+            string fileName = DB.Products.Where(a => a.ProductID == id).Select(a => a.ThumbnailPhotoFileName).FirstOrDefault();
             if (string.IsNullOrEmpty(fileName))
                 return "";
-            var top = new TransactionOptions();
-            top.Timeout = TimeSpan.FromSeconds(60);
-            top.IsolationLevel = IsolationLevel.Serializable;
+            var topts = new TransactionOptions() { Timeout = TimeSpan.FromSeconds(60), IsolationLevel = IsolationLevel.Serializable };
 
-            using (var scope = new TransactionScope(TransactionScopeOption.Required, top))
+            using (var scope = new TransactionScope(TransactionScopeOption.Required, topts, TransactionScopeAsyncFlowOption.Enabled))
             using (var conn = DBConnectionFactory.GetRIAppDemoConnection())
             {
-                var bytes = new byte[64*1024];
-
-                var fldname = "ThumbNailPhoto";
-                var bstrm = new BlobStream(conn as SqlConnection, "[SalesLT].[Product]", fldname,
-                    string.Format("WHERE [ProductID]={0}", id));
-                bstrm.Open();
-                var cnt = bstrm.Read(bytes, 0, bytes.Length);
-                while (cnt > 0)
+                using (var bstrm = new BlobStream(conn as SqlConnection, "[SalesLT].[Product]", "ThumbNailPhoto",
+                    string.Format("WHERE [ProductID]={0}", id)))
                 {
-                    strm.Write(bytes, 0, cnt);
-                    cnt = bstrm.Read(bytes, 0, bytes.Length);
+                    bstrm.Open();
+                    await bstrm.CopyToAsync(strm, 512 * 1024);
                 }
-                bstrm.Close();
+
                 scope.Complete();
             }
+
             return fileName;
         }
 
@@ -574,14 +566,13 @@ namespace RIAppDemo.BLL.DataServices
                 {
                     await bstrm.InitColumnAsync();
                     bstrm.Open();
-                    await strm.CopyToAsync(bstrm, 64 * 1024);
+                    strm.CopyTo(bstrm, 128 * 1024);
                 }
 
+                product.ThumbnailPhotoFileName = fileName;
+                await DB.SaveChangesAsync();
                 trxScope.Complete();
             }
-
-            product.ThumbnailPhotoFileName = fileName;
-            await DB.SaveChangesAsync();
         }
 
         public async Task SaveThumbnail2(int id, string fileName, Func<Stream, Task> copy)
@@ -594,25 +585,24 @@ namespace RIAppDemo.BLL.DataServices
             using (var trxScope = new TransactionScope(TransactionScopeOption.Required, topts, TransactionScopeAsyncFlowOption.Enabled))
             using (var conn = DBConnectionFactory.GetRIAppDemoConnection())
             {
-                using (var bstrm = new BlobStream(conn as SqlConnection, "[SalesLT].[Product]", "ThumbNailPhoto",
+                using (var blobStream = new BlobStream(conn as SqlConnection, "[SalesLT].[Product]", "ThumbNailPhoto",
                     string.Format("WHERE [ProductID]={0}", id)))
+                using (var bufferedStream = new BufferedStream(blobStream, 128 * 1024))
                 {
-                    await bstrm.InitColumnAsync();
-                    bstrm.Open();
+                    await blobStream.InitColumnAsync();
+                    blobStream.Open();
                     Task delayTask = Task.Delay(10000);
-                    Task firstTask = await Task.WhenAny(copy(bstrm), delayTask);
+                    Task firstTask = await Task.WhenAny(copy(bufferedStream), delayTask);
                     if (firstTask == delayTask)
-                        throw new Exception("Saving image took longer than expected");
+                        throw new Exception("Saving Image took longer than expected");
                     //if it's a copy task then just await for completion
                     await firstTask;
-                    bstrm.Close();
                 }
 
+                product.ThumbnailPhotoFileName = fileName;
+                await DB.SaveChangesAsync();
                 trxScope.Complete();
             }
-
-            product.ThumbnailPhotoFileName = fileName;
-            await DB.SaveChangesAsync();
         }
 
         #endregion

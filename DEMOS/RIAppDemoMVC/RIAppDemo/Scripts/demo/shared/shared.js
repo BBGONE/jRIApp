@@ -98,7 +98,7 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
         __extends(FileImgElView, _super);
         function FileImgElView(options) {
             var _this = _super.call(this, options) || this;
-            _this._debounce = null;
+            _this._debounce = new RIAPP.Debounce();
             _this._baseUri = '';
             if (!!options.baseUri)
                 _this._baseUri = options.baseUri;
@@ -111,8 +111,7 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
-            clearTimeout(this._debounce);
-            this._debounce = null;
+            this._debounce.destroy();
             _super.prototype.destroy.call(this);
         };
         FileImgElView.prototype.reloadImg = function () {
@@ -149,17 +148,13 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
                     this._src = v;
                     this.raisePropertyChanged('src');
                 }
-                clearTimeout(this._debounce);
-                this._debounce = setTimeout(function () {
-                    _this._debounce = null;
-                    var img = _this.el;
+                var img = this.el;
+                img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+                this._debounce.enque(function () {
                     if (!!_this._src) {
                         img.src = _this._src;
                     }
-                    else {
-                        img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
-                    }
-                }, 100);
+                });
             },
             enumerable: true,
             configurable: true
@@ -168,10 +163,7 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
             get: function () { return this._id; },
             set: function (v) {
                 var x = this._id;
-                if (v === null)
-                    v = '';
-                else
-                    v = '' + v;
+                v = (v === null) ? '' : ('' + v);
                 if (x !== v) {
                     this._id = v;
                     if (!this._id)

@@ -93,12 +93,12 @@ export class FileImgElView extends uiMOD.BaseElView {
     private _baseUri: string;
     private _id: string;
     private _fileName: string;
-    private _debounce: number;
+    private _debounce: RIAPP.Debounce;
     private _src: string;
 
     constructor(options: IDLinkOptions) {
         super(options);
-        this._debounce = null;
+        this._debounce = new RIAPP.Debounce();
         this._baseUri = '';
         if (!!options.baseUri)
             this._baseUri = options.baseUri;
@@ -110,8 +110,7 @@ export class FileImgElView extends uiMOD.BaseElView {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        clearTimeout(this._debounce);
-        this._debounce = null;
+        this._debounce.destroy();
         super.destroy();
     }
     reloadImg(): void {
@@ -142,25 +141,20 @@ export class FileImgElView extends uiMOD.BaseElView {
             this._src = v;
             this.raisePropertyChanged('src');
         }
-        clearTimeout(this._debounce);
-        this._debounce = setTimeout(() => {
-            this._debounce = null;
-            var img = this.el;
+        var img = this.el;
+        //set empty image as a stub
+        (<HTMLImageElement>img).src = "data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+
+        this._debounce.enque(() => {
             if (!!this._src) {
                 (<HTMLImageElement>img).src = this._src;
             }
-            else {
-                (<HTMLImageElement>img).src = "data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
-            }
-        }, 100);
+        });
     }
     get id() { return this._id; }
     set id(v) {
         var x = this._id;
-        if (v === null)
-            v = '';
-        else
-            v = '' + v;
+        v = (v === null)? '': ('' + v);
         if (x !== v) {
             this._id = v;
             if (!this._id)

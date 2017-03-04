@@ -62,8 +62,7 @@ namespace RIAppDemo.Controllers
                     var filename = Path.GetFileName(file.FileName);
                     if (filename != null)
                     {
-                        var svc = ThumbnailServiceFactory.Create(User);
-                        using (svc)
+                        using (var svc = ThumbnailServiceFactory.Create(User))
                         {
                             await svc.SaveThumbnail2(file.DataID, file.FileName, file.Content.CopyToAsync);
                         }
@@ -80,23 +79,21 @@ namespace RIAppDemo.Controllers
         }
 
         [HttpGet]
-        public HttpResponseMessage DownloadThumbnail(HttpRequestMessage request, string id)
+        public async Task<HttpResponseMessage> DownloadThumbnail(HttpRequestMessage request, string id)
         {
             try
             {
-                var svc = ThumbnailServiceFactory.Create(User);
-                using (svc)
+                using (var svc = ThumbnailServiceFactory.Create(User))
                 {
                     var stream = new MemoryStream();
-                    var fileName = svc.GetThumbnail(int.Parse(id), stream);
+                    var fileName = await svc.GetThumbnail(int.Parse(id), stream);
                     if (string.IsNullOrEmpty(fileName))
                         return Request.CreateResponse(HttpStatusCode.NotFound);
                     stream.Position = 0;
                     var result = new HttpResponseMessage(HttpStatusCode.OK);
                     result.Content = new StreamContent(stream);
                     result.Content.Headers.ContentType = new MediaTypeHeaderValue(MediaTypeNames.Image.Jpeg);
-                    result.Content.Headers.Add("Content-Disposition",
-                        new[] {string.Format("attachment; filename=\"{0}\"", fileName)});
+                    result.Content.Headers.Add("Content-Disposition", new[] { string.Format("attachment; filename=\"{0}\"", fileName) });
                     return result;
                 }
             }
