@@ -37,7 +37,7 @@ export class ActionsColumn extends BaseColumn {
             }
         }, {
                 nmspace: this.uniqueID,
-                //using delegation
+                // using delegation
                 matchElement: (el) => {
                     const attr = el.getAttribute(DATA_ATTR.DATA_EVENT_SCOPE),
                         tag = el.tagName.toLowerCase();

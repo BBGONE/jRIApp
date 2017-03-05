@@ -31,7 +31,7 @@ export interface IBagValidateArgs<TBag extends IPropertyBag> {
     readonly result: IValidationInfo[];
 }
 
-//used for accessing json (it parses json into a value and then getProp && setProp can be used to get or set values)
+// used for accessing json (it parses json into a value and then getProp && setProp can be used to get or set values)
 export class JsonBag extends BaseObject implements IEditable, IErrorNotification, IPropertyBag {
     private _json: string = void 0;
     private _jsonChanged: (json: string) => void;
@@ -61,9 +61,9 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
         const base_events = super._getEventNames();
         return [BAG_EVENTS.validate_bag, BAG_EVENTS.validate_field].concat(base_events);
     }
-    //override
+    // override
     _isHasProp(prop: string) {
-        //first check for indexed property name
+        // first check for indexed property name
         if (strUtils.startsWith(prop, "[")) {
             return true;
         }
@@ -115,7 +115,7 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
         return false;
     }
 
-    //error Notification Implementation
+    // error Notification Implementation
     protected _validateBag(): IValidationInfo[] {
         const args: IBagValidateArgs<JsonBag> = {
             bag: this,
@@ -200,7 +200,7 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
         const bagErrors = this._errors;
         if (!bagErrors)
             return [];
-        let res: IValidationInfo[] = [];
+        const res: IValidationInfo[] = [];
         coreUtils.forEachProp(bagErrors, function (name) {
             let fieldName: string = null;
             if (name !== "*") {
@@ -214,10 +214,10 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
         return this;
     }
 
-    //implements IEditable
+    // implements IEditable
     beginEdit(): boolean {
         if (!this.isEditing) {
-            //clone data
+            // clone data
             this._saveVal = JSON.parse(JSON.stringify(this._val));
             return true;
         }
@@ -225,7 +225,7 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
     }
     endEdit(): boolean {
         if (this.isEditing) {
-            //revalidate all
+            // revalidate all
             this._removeAllErrors();
             const validation_infos = this._validateBag();
             if (validation_infos.length > 0) {
@@ -234,16 +234,16 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
             if (this.getIsHasErrors()) {
                 return false;
             }
-            //saved value is not needed
+            // saved value is not needed
             this._saveVal = null;
             this.updateJson();
-            return true
+            return true;
         }
         return false;
     }
     cancelEdit(): boolean {
         if (this.isEditing) {
-            //restore value from saved value
+            // restore value from saved value
             this._val = this._saveVal;
             this._saveVal = null;
             this._removeAllErrors();
@@ -256,17 +256,17 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
         return !!this._saveVal;
     }
 
-    //implements IPropertyBag
+    // implements IPropertyBag
     getProp(name: string): any {
         const fieldName = strUtils.trimBrackets(name);
-        return coreUtils.getValue(this._val, fieldName, '->');
+        return coreUtils.getValue(this._val, fieldName, "->");
     }
     setProp(name: string, val: any): void {
         const old = this.getProp(name);
         if (old !== val) {
             try {
                 const fieldName = strUtils.trimBrackets(name);
-                coreUtils.setValue(this._val, fieldName, val, false, '->');
+                coreUtils.setValue(this._val, fieldName, val, false, "->");
                 this.raisePropertyChanged(name);
                 this._removeError(name);
                 const validation_info = this._validateField(name);

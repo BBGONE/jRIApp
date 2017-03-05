@@ -12,7 +12,7 @@ export class RadioElView extends CheckBoxElView {
     }
     get value(): string { return (<HTMLInputElement>this.el).value; }
     set value(v) {
-        const strv = checks.isNt(v)? "" : ("" + v);
+        const strv = checks.isNt(v) ? "" : ("" + v);
         if (strv !== this.value) {
             (<HTMLInputElement>this.el).value = strv;
             this.raisePropertyChanged(PROP_NAME.value);

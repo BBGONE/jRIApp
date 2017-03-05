@@ -9,12 +9,11 @@ export type TCheckDOMReady  = (closure: TFunc) => void;
 
 
 const _checkDOMReady: TCheckDOMReady = (function () {
-    let funcs: TFunc[] = [], hack = (<any>doc.documentElement).doScroll
-        , domContentLoaded = 'DOMContentLoaded'
-        , isDOMloaded = (hack ? /^loaded|^c/ : /^loaded|^i|^c/).test(doc.readyState);
+    const funcs: TFunc[] = [], hack = (<any>doc.documentElement).doScroll, domContentLoaded = "DOMContentLoaded";
+    let isDOMloaded = (hack ? /^loaded|^c/ : /^loaded|^i|^c/).test(doc.readyState);
 
     if (!isDOMloaded) {
-        let callback = () => {
+        const callback = () => {
             doc.removeEventListener(domContentLoaded, <any>callback);
             isDOMloaded = true;
             let fn_onloaded: TFunc = null;
@@ -42,7 +41,7 @@ export class DomUtils {
     static readonly events = DomEvents;
 
     static getData(el: Node, key: string): any {
-        let map: any = weakmap.get(el);
+        const map: any = weakmap.get(el);
         if (!map)
             return (void 0);
         return map[key];
@@ -56,7 +55,7 @@ export class DomUtils {
         map[key] = val;
     }
     static removeData(el: Node, key?: string): void {
-        let map: any = weakmap.get(el);
+        const map: any = weakmap.get(el);
         if (!map) {
             return;
         }
@@ -78,12 +77,12 @@ export class DomUtils {
         return false;
     }
     static fromHTML(html: string): HTMLElement[] {
-        let div = doc.createElement("div");
+        const div = doc.createElement("div");
         div.innerHTML = html;
         return arrHelper.fromList<HTMLElement>(div.children);
     }
     static queryAll<T>(root: Document | Element, selector: string): T[] {
-        let res = root.querySelectorAll(selector);
+        const res = root.querySelectorAll(selector);
         return arrHelper.fromList<T>(res);
     }
     static queryOne<T extends Element>(root: Document | Element, selector: string): T {
@@ -99,7 +98,7 @@ export class DomUtils {
     static prepend(parent: Node, child: Node): void {
         if (!child)
             return;
-        let firstChild: Node = null
+        let firstChild: Node = null;
         if (!(firstChild = parent.firstChild))
             parent.appendChild(child);
         else
@@ -124,17 +123,17 @@ export class DomUtils {
         parent.insertBefore(node, refNode);
     }
     static wrap(elem: Element, wrapper: Element) {
-        let parent = elem.parentElement, nsibling = elem.nextSibling;
+        const parent = elem.parentElement, nsibling = elem.nextSibling;
         if (!parent)
             return;
         wrapper.appendChild(elem);
         (!nsibling) ? parent.appendChild(wrapper) : parent.insertBefore(wrapper, nsibling);
     }
     static unwrap(elem: Element) {
-        let wrapper = elem.parentElement;
+        const wrapper = elem.parentElement;
         if (!wrapper)
             return;
-        let parent = wrapper.parentElement, nsibling = wrapper.nextSibling;
+        const parent = wrapper.parentElement, nsibling = wrapper.nextSibling;
         if (!parent)
             return;
         parent.removeChild(wrapper);
@@ -142,13 +141,13 @@ export class DomUtils {
     }
 
     private static getClassMap(el: Element): IIndexer<number> {
-        let res: IIndexer<number> = {};
+        const res: IIndexer<number> = {};
         if (!el)
             return res;
-        let className = el.className;
+        const className = el.className;
         if (!className)
             return res;
-        let arr: string[] = className.split(" ");
+        const arr: string[] = className.split(" ");
         for (let i = 0; i < arr.length; i += 1) {
             arr[i] = arr[i].trim();
             if (!!arr[i]) {
@@ -166,7 +165,8 @@ export class DomUtils {
         if (!elems.length || !classes.length)
             return;
 
-        let toAdd: string[] = [], toRemove: string[] = [], removeAll = false;
+        const toAdd: string[] = [];
+        let toRemove: string[] = [], removeAll = false;
         classes.forEach((v: string) => {
             if (!v)
                 return;
@@ -174,16 +174,16 @@ export class DomUtils {
             let name = v.trim();
             if (!name)
                 return;
-            let op = v.charAt(0);
+            const op = v.charAt(0);
             if (op == "+" || op == "-") {
                 name = v.substr(1).trim();
             }
             if (!name)
                 return;
 
-            let arr: string[] = name.split(" ");
+            const arr: string[] = name.split(" ");
             for (let i = 0; i < arr.length; i += 1) {
-                let v2 = arr[i].trim();
+                const v2 = arr[i].trim();
                 if (!!v2) {
                     if (op != "-") {
                         toAdd.push(v2);
@@ -203,7 +203,8 @@ export class DomUtils {
         }
 
         for (let j = 0; j < elems.length; j += 1) {
-            let el = elems[j], map = DomUtils.getClassMap(el);
+            const el = elems[j];
+            let map = DomUtils.getClassMap(el);
             if (removeAll) {
                 map = {};
             }
@@ -213,7 +214,7 @@ export class DomUtils {
             for (let i = 0; i < toAdd.length; i += 1) {
                 map[toAdd[i]] = i + 1000;
             }
-            let keys = Object.keys(map);
+            const keys = Object.keys(map);
             el.className = keys.join(" ");
         }
     }
@@ -238,7 +239,7 @@ export class DomUtils {
 
         if (hasClassList && arr.length === 1) {
             for (let j = 0; j < elems.length; j += 1) {
-                let el = elems[j];
+                const el = elems[j];
                 if (remove)
                     el.classList.remove(arr[0]);
                 else
@@ -247,14 +248,14 @@ export class DomUtils {
         }
         else {
             for (let j = 0; j < elems.length; j += 1) {
-                let el = elems[j], map = DomUtils.getClassMap(el);
+                const el = elems[j], map = DomUtils.getClassMap(el);
                 for (let i = 0; i < arr.length; i += 1) {
                     if (remove)
                         delete map[arr[i]];
                     else
                         map[arr[i]] = i + 1000;
                 }
-                let keys = Object.keys(map);
+                const keys = Object.keys(map);
                 el.className = keys.join(" ");
             }
         }

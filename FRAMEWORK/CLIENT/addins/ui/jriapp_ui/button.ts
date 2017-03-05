@@ -48,7 +48,7 @@ export class ButtonElView extends CommandElView {
         return this.el.textContent;
     }
     set text(v) {
-        let x = this.el.textContent;
+        const x = this.el.textContent;
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
             this.el.textContent = v;

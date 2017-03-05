@@ -39,7 +39,7 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
 
     constructor(dbSet: DbSet<TItem, TObj, DbContext>, queryInfo: IQueryInfo) {
         super();
-        let self = this;
+        const self = this;
         this._dbSet = dbSet;
         this.__queryInfo = queryInfo;
         this._filterInfo = { filterItems: [] };
@@ -73,19 +73,20 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
         };
    }
     private _addSort(fieldName: string, sortOrder: SORT_ORDER) {
-        let ord = !checks.isNt(sortOrder) ? sortOrder : SORT_ORDER.ASC;
-        let sortItem = { fieldName: fieldName, sortOrder: ord };
+        const ord = !checks.isNt(sortOrder) ? sortOrder : SORT_ORDER.ASC;
+        const sortItem = { fieldName: fieldName, sortOrder: ord };
         this._sortInfo.sortItems.push(sortItem);
         this._cacheInvalidated = true;
    }
     private _addFilterItem(fieldName: string, operand: FILTER_TYPE, value: any[], checkFieldName = true) {
-        let fkind = FILTER_TYPE.Equals, vals: any[] = [], stz = this.serverTimezone
+        let fkind = FILTER_TYPE.Equals, vals: any[] = [];
+        const stz = this.serverTimezone;
         if (!checks.isArray(value))
             vals = [value];
         else
             vals = value;
 
-        let tmpVals = arrHelper.clone(vals);
+        const tmpVals = arrHelper.clone(vals);
         const fld = this.getFieldInfo(fieldName);
         if (!fld && checkFieldName)
             throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, this.dbSetName, fieldName));

@@ -37,7 +37,7 @@ export class Defaults extends BaseObject {
     toString() {
         return "Defaults";
    }
-    //uses moment.js format
+    // uses moment.js format
     get dateFormat() { return this._dateFormat; }
     set dateFormat(v) {
         if (this._dateFormat !== v) {
@@ -45,7 +45,7 @@ export class Defaults extends BaseObject {
             this.raisePropertyChanged(PROP_NAME.dateFormat);
        }
    }
-    //uses moment.js format
+    // uses moment.js format
     get timeFormat() { return this._timeFormat; }
     set timeFormat(v) {
         if (this._timeFormat !== v) {
@@ -60,7 +60,7 @@ export class Defaults extends BaseObject {
             this.raisePropertyChanged(PROP_NAME.dateTimeFormat);
        }
    }
-    //path to where application images are stored
+    // path to where application images are stored
     get imagesPath() { return this._imagesPath; }
     set imagesPath(v) {
         if (!v)
@@ -88,7 +88,7 @@ export class Defaults extends BaseObject {
             this.raisePropertyChanged(PROP_NAME.thousandSep);
        }
    }
-    //money decimal presision: defaults to 2
+    // money decimal presision: defaults to 2
     get decPrecision() { return this._decPrecision; }
     set decPrecision(v) {
         if (this._decPrecision !== v) {

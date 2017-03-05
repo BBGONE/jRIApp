@@ -14,7 +14,7 @@ import { ExpanderColumn } from "../columns/expander";
 import { ActionsColumn } from "../columns/actions";
 import { RowSelectorColumn } from "../columns/rowselector";
 
-import { DataGrid } from "../datagrid"
+import { DataGrid } from "../datagrid";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, sys = utils.sys;
 
@@ -79,7 +79,8 @@ export class Row extends BaseObject {
         }
     }
     private _createCell(col: BaseColumn, num: number) {
-        let self = this, td: HTMLTableCellElement = <HTMLTableCellElement>doc.createElement("td"), cell: BaseCell<BaseColumn>;
+        const self = this, td: HTMLTableCellElement = <HTMLTableCellElement>doc.createElement("td");
+        let cell: BaseCell<BaseColumn>;
 
         if (col instanceof ExpanderColumn) {
             this._expanderCell = new ExpanderCell({ row: self, td: td, column: col, num: num });
@@ -100,7 +101,7 @@ export class Row extends BaseObject {
     }
     _setState(css: string) {
         if (this._stateCss !== css) {
-            let arr: string[] = [];
+            const arr: string[] = [];
             if (!!this._stateCss)
                 arr.push("-" + this._stateCss);
             this._stateCss = css;
@@ -163,7 +164,7 @@ export class Row extends BaseObject {
         this._item._aspect.deleteItem();
     }
     updateErrorState() {
-        //TODO: add implementation to show explanation of error
+        // TODO: add implementation to show explanation of error
         const hasErrors = this._item._aspect.getIsHasErrors();
         dom.setClass([this._tr], css.rowError, !hasErrors);
     }
@@ -192,7 +193,7 @@ export class Row extends BaseObject {
     get columns() { return this._grid.columns; }
     get uniqueID() { return this._objId; }
     get itemKey() {
-        return (!this._item)? null : this._item._key;
+        return (!this._item) ? null : this._item._key;
     }
     get isCurrent() {
         return this.grid.currentItem === this.item;

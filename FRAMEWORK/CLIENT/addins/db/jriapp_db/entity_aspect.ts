@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    FIELD_TYPE,DATA_TYPE, ITEM_STATUS
+    FIELD_TYPE, DATA_TYPE, ITEM_STATUS
 } from "jriapp_shared/collection/const";
 import {
     IIndexer, IVoidPromise, IPromise, LocaleERRS as ERRS, Utils
@@ -18,7 +18,7 @@ import { SubmitError } from "./error";
 const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
     valUtils = ValueUtils, collUtils = CollUtils, sys = utils.sys;
 
-//don't submit these types of fields to the server
+// don't submit these types of fields to the server
 function fn_isNotSubmittable(fieldInfo: IFieldInfo) {
     return (fieldInfo.fieldType === FIELD_TYPE.ClientOnly || fieldInfo.fieldType === FIELD_TYPE.Navigation || fieldInfo.fieldType === FIELD_TYPE.Calculated || fieldInfo.fieldType === FIELD_TYPE.ServerCalculated);
 }
@@ -27,7 +27,7 @@ function _fn_traverseChanges(name: string, val: IValueChange, fn: (name: string,
     if (!!val.nested && val.nested.length > 0) {
         const len = val.nested.length;
         for (let i = 0; i < len; i += 1) {
-            let prop: IValueChange = val.nested[i];
+            const prop: IValueChange = val.nested[i];
             if (!!prop.nested && prop.nested.length > 0) {
                 _fn_traverseChanges(name + "." + prop.fieldName, prop, fn);
             }
@@ -90,9 +90,9 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
 
         if (fieldInfo.fieldType === FIELD_TYPE.Object) {
             res = { fieldName: fieldInfo.fieldName, val: null, orig: null, flags: FLAGS.None, nested: [] };
-            let len = fieldInfo.nested.length;
+            const len = fieldInfo.nested.length;
             for (let i = 0; i < len; i += 1) {
-                let tmp = self._getValueChange(fullName + "." + fieldInfo.nested[i].fieldName, fieldInfo.nested[i], changedOnly);
+                const tmp = self._getValueChange(fullName + "." + fieldInfo.nested[i].fieldName, fieldInfo.nested[i], changedOnly);
                 if (!!tmp) {
                     res.nested.push(tmp);
                 }
@@ -150,7 +150,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
             return self._getValueChange(fld.fieldName, fld, changedOnly);
         });
 
-        //remove nulls
+        // remove nulls
         const res2 = res.filter((vc) => {
             return !!vc;
         });
@@ -158,14 +158,16 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
     }
     protected _fldChanging(fieldName: string, fieldInfo: IFieldInfo, oldV: any, newV: any) {
         if (!this._origVals) {
-            this._origVals = collUtils.cloneVals(this.dbSet.getFieldInfos(), this._vals); //coreUtils.clone(this._vals);
+            this._origVals = collUtils.cloneVals(this.dbSet.getFieldInfos(), this._vals); // coreUtils.clone(this._vals);
         }
         return true;
     }
     protected _skipValidate(fieldInfo: IFieldInfo, val: any) {
-        let childToParentNames = this.dbSet._getInternal().getChildToParentNames(fieldInfo.fieldName), res = false;
+        const childToParentNames = this.dbSet._getInternal().getChildToParentNames(fieldInfo.fieldName);
+        let res = false;
         if (!!childToParentNames && val === null) {
-            for (let i = 0, len = childToParentNames.length; i < len; i += 1) {
+            const len = childToParentNames.length;
+            for (let i = 0; i < len; i += 1) {
                 res = !!this._getFieldVal(childToParentNames[i]);
                 if (res)
                     break;
@@ -226,7 +228,8 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         const self = this, fld = self.dbSet.getFieldInfo(fullName);
         if (!fld)
             throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fullName));
-        let stz = self.serverTimezone, newVal: any, oldVal: any, oldValOrig: any, dataType = fld.dataType, dcnv = fld.dateConversion;
+        const stz = self.serverTimezone, dataType = fld.dataType, dcnv = fld.dateConversion;
+        let newVal: any, oldVal: any, oldValOrig: any;
         newVal = valUtils.parseValue(val, dataType, dcnv, stz);
         oldVal = coreUtils.getValue(self._vals, fullName);
         switch (refreshMode) {
@@ -259,7 +262,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
                         coreUtils.setValue(self._origVals, fullName, newVal, false);
                     }
                     if (oldValOrig === checks.undefined || valUtils.compareVals(oldValOrig, oldVal, dataType)) {
-                        //unmodified
+                        // unmodified
                         if (!valUtils.compareVals(newVal, oldVal, dataType)) {
                             coreUtils.setValue(self._vals, fullName, newVal, false);
                             self._onFieldChanged(fullName, fld);
@@ -295,7 +298,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         }
     }
     _getRowInfo() {
-        let res: IRowInfo = {
+        const res: IRowInfo = {
             values: this._getValueChanges(false),
             changeType: this.status,
             serverKey: this.srvKey,
@@ -311,7 +314,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         return this.dbSet._getInternal().getNavFieldVal(fieldName, this.item);
     }
     _setNavFieldVal(fieldName: string, value: any) {
-        this.dbSet._getInternal().setNavFieldVal(fieldName, this.item, value)
+        this.dbSet._getInternal().setNavFieldVal(fieldName, this.item, value);
     }
     _clearFieldVal(fieldName: string) {
         coreUtils.setValue(this._vals, fieldName, null, false);
@@ -322,12 +325,14 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         return coreUtils.getValue(this._vals, fieldName);
     }
     _setFieldVal(fieldName: string, val: any): boolean {
-        let dbSetName = this.dbSetName, dbSet = this.dbSet,
-            oldV = this._getFieldVal(fieldName), newV = val, fieldInfo = this.getFieldInfo(fieldName), res = false;
+        const dbSetName = this.dbSetName, dbSet = this.dbSet,
+            oldV = this._getFieldVal(fieldName), fieldInfo = this.getFieldInfo(fieldName);
+        let newV = val, res = false;
         if (!fieldInfo)
             throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, dbSetName, fieldName));
         if (!this.isEditing && !this.isUpdating)
             this.beginEdit();
+            
         try {
             if (fieldInfo.dataType === DATA_TYPE.String && fieldInfo.isNullable && !newV)
                 newV = null;
@@ -386,7 +391,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
             }
             this._origVals = null;
             if (!!this._saveVals)
-                this._saveVals = collUtils.cloneVals(this.dbSet.getFieldInfos(), this._vals); //coreUtils.clone(this._vals);
+                this._saveVals = collUtils.cloneVals(this.dbSet.getFieldInfos(), this._vals); // coreUtils.clone(this._vals);
             this._setStatus(ITEM_STATUS.None);
             errors.removeAllErrors(this.item);
             if (!!rowInfo) {
@@ -412,7 +417,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         if (this.getIsDestroyCalled())
             return false;
         const oldStatus = this.status, dbSet = this.dbSet;
-        let args: ICancellableArgs<TItem> = { item: this.item, isCancel: false };
+        const args: ICancellableArgs<TItem> = { item: this.item, isCancel: false };
         dbSet._getInternal().onItemDeleting(args);
         if (args.isCancel) {
             return false;
@@ -442,10 +447,10 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
 
             const changes = self._getValueChanges(true);
             if (!!self._origVals) {
-                self._vals = collUtils.cloneVals(self.dbSet.getFieldInfos(), self._origVals); //coreUtils.clone(self._origVals);
+                self._vals = collUtils.cloneVals(self.dbSet.getFieldInfos(), self._origVals); // coreUtils.clone(self._origVals);
                 self._origVals = null;
                 if (!!self._saveVals) {
-                    self._saveVals = collUtils.cloneVals(self.dbSet.getFieldInfos(), self._vals); //coreUtils.clone(self._vals);
+                    self._saveVals = collUtils.cloneVals(self.dbSet.getFieldInfos(), self._vals); // coreUtils.clone(self._vals);
                 }
             }
             self._setStatus(ITEM_STATUS.None);
@@ -461,13 +466,13 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
     submitChanges(): IVoidPromise {
         const removeHandler = () => {
             dbxt.removeOnSubmitError(uniqueID);
-        }
+        };
         const dbxt = this.dbSet.dbContext, uniqueID = coreUtils.uuid();
         dbxt.addOnSubmitError((sender, args) => {
             if (args.error instanceof SubmitError) {
-                let submitErr: SubmitError = args.error;
+                const submitErr: SubmitError = args.error;
                 if (submitErr.notValidated.length > 0) {
-                    //don't reject changes,so the user can see errors in the edit dialog
+                    // don't reject changes,so the user can see errors in the edit dialog
                     args.isHandled = true;
                 }
             }

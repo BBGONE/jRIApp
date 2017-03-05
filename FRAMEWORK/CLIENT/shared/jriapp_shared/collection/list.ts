@@ -31,7 +31,7 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
         if (isNew)
             this._status = ITEM_STATUS.Added;
         this._vals = <any>vals;
-        let item = coll.itemFactory(this);
+        const item = coll.itemFactory(this);
         this._setItem(item);
         this._setKey(key);
     }
@@ -107,8 +107,8 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
         });
     }
     protected _initItemFactory(): void {
-       //noop
-	}
+       // noop
+    }
     protected _attach(item: TItem) {
         try {
             this.endEdit();
@@ -117,19 +117,18 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
         }
         return super._attach(item);
     }
-    //override
+    // override
     protected _createNew(): TItem {
         return this.createItem(null);
     }
     protected createItem(obj?: TObj): TItem {
-        const isNew = !obj;
-        let vals: any = isNew ? collUtils.initVals(this.getFieldInfos(), {}) : obj;
-        let key = this._getNewKey();
+        const isNew = !obj, vals: any = isNew ? collUtils.initVals(this.getFieldInfos(), {}) : obj,
+        key = this._getNewKey();
         const aspect = new ListItemAspect<TItem, TObj>(this, vals, key, isNew);
         return aspect.item;
     }
     protected _getNewKey() {
-        //client side item ID
+        // client side item ID
         const key = "clkey_" + this._newKey;
         this._newKey += 1;
         return key;

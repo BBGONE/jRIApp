@@ -16,9 +16,9 @@ function isInsideBraces(str: string) {
 
 export class Parser {
     private static _checkKeyVal(kv: { key: string; val: any; }) {
-        //key starts with this like used in binding expressions this.property
+        // key starts with this like used in binding expressions this.property
         if (kv.val === "" && strUtils.startsWith(kv.key, "this.")) {
-            kv.val = kv.key.substr(5); //extract property
+            kv.val = kv.key.substr(5); // extract property
             kv.key = "targetPath";
         }
     }
@@ -39,7 +39,7 @@ export class Parser {
         }
         parts.push(kv);
     }
-    //extract key - value pairs
+    // extract key - value pairs
     private static _getKeyVals(val: string) {
         const self = Parser;
         let i: number, ch: string, literal: string, parts: { key: string; val: any; }[] = [],
@@ -48,7 +48,7 @@ export class Parser {
 
         for (i = 0; i < val.length; i += 1) {
             ch = val.charAt(i);
-            //is this content inside '' or "" ?
+            // is this content inside '' or "" ?
             if (ch === "'" || ch === '"') {
                 if (!literal)
                     literal = ch;
@@ -56,10 +56,10 @@ export class Parser {
                     literal = null;
             }
 
-            //value inside braces
+            // value inside braces
             if (!literal && ch === "{" && !isKey) {
                 let bracePart = val.substr(i);
-                let braceParts = self.getBraceParts(bracePart, true);
+                const braceParts = self.getBraceParts(bracePart, true);
                 if (braceParts.length > 0) {
                     bracePart = braceParts[0];
                     kv.val += bracePart;
@@ -75,11 +75,11 @@ export class Parser {
                 if (!!kv.key) {
                     self._addKeyVal(kv, parts);
                     kv = { key: "", val: "" };
-                    isKey = true; //currently parsing key value
+                    isKey = true; // currently parsing key value
                 }
             }
             else if (!literal && (ch === vd1 || ch === vd2)) {
-                isKey = false; //begin parsing value
+                isKey = false; // begin parsing value
             }
             else {
                 if (isKey)
@@ -102,7 +102,7 @@ export class Parser {
         });
 
         parts = parts.filter(function (kv) {
-            return kv.val !== ""; //when key has value
+            return kv.val !== ""; // when key has value
         });
         return parts;
     }
@@ -122,13 +122,14 @@ export class Parser {
 
         throw new Error("Invalid operation");
     }
-    //extract top level braces
+    // extract top level braces
     static getBraceParts(val: string, firstOnly: boolean): string[] {
-        let i: number, s = "", ch: string, literal: string, cnt = 0, parts: string[] = [];
+        let i: number, s = "", ch: string, literal: string, cnt = 0;
+        const parts: string[] = [];
 
         for (i = 0; i < val.length; i += 1) {
             ch = val.charAt(i);
-            //is this content inside '' or "" ?
+            // is this content inside '' or "" ?
             if (ch === "'" || ch === '"') {
                 if (!literal)
                     literal = ch;
@@ -161,13 +162,13 @@ export class Parser {
     }
     static parseOption(part: string) {
         const self = Parser;
-        let res: any = {};
+        const res: any = {};
         part = strUtils.trim(part);
         if (isInsideBraces(part))
             part = trimOuterBraces(part);
-        let kvals = self._getKeyVals(part);
+        const kvals = self._getKeyVals(part);
         kvals.forEach(function (kv) {
-            let isString = checks.isString(kv.val);
+            const isString = checks.isString(kv.val);
             if (isString && isInsideBraces(kv.val))
                 res[kv.key] = self.parseOption(kv.val);
             else {
@@ -182,7 +183,7 @@ export class Parser {
     }
     static parseOptions(str: string) {
         const self = Parser;
-        let res: any[] = [];
+        const res: any[] = [];
 
         str = strUtils.trim(str);
         let parts = [str];

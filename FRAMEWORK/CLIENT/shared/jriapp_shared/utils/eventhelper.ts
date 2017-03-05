@@ -84,15 +84,14 @@ class EventList {
     static toArray(list: IEventList): TEventNode[] {
         if (!list)
             return [];
-        let res: TEventNodeArray = [], arr: TEventNodeArray, obj: INamespaceMap;
-
+        const res: TEventNodeArray = [];
         // from highest priority to the lowest
         for (let k = TPriority.High; k >= TPriority.Normal; k -= 1) {
-            obj = list[k];
+            const obj: INamespaceMap = list[k];
             if (!!obj) {
-                let ns_keys = Object.keys(obj);
+                const ns_keys = Object.keys(obj);
                 for (let i = 0; i < ns_keys.length; ++i) {
-                    arr = obj[ns_keys[i]];
+                    const arr: TEventNodeArray = obj[ns_keys[i]];
                     for (let j = 0; j < arr.length; ++j) {
                         res.push(arr[j]);
                     }
@@ -105,8 +104,7 @@ class EventList {
 
 const evList = EventList;
 
-export class EventHelper
-{
+export class EventHelper {
     static removeNS(ev: IIndexer<IEventList>, ns?: string): void {
         if (!ev)
             return;
@@ -136,7 +134,8 @@ export class EventHelper
 
         const n = name, ns = !nmspace ? "*" : "" + nmspace;
 
-        let list = ev[n], node: TEventNode = evList.Node(handler, context);
+        let list = ev[n];
+        const node: TEventNode = evList.Node(handler, context);
 
         if (!list) {
             ev[n] = list = evList.Create();
@@ -153,7 +152,7 @@ export class EventHelper
             EventHelper.removeNS(ev, ns);
         }
         else {
-            //arguments supplied is name (and optionally nmspace)
+            // arguments supplied is name (and optionally nmspace)
             if (ns === "*") {
                 delete ev[name];
             }
@@ -163,18 +162,20 @@ export class EventHelper
         }
     }
     static count(ev: IIndexer<IEventList>, name: string): number {
-        if (!ev)
+        if (!ev) {
             return 0;
+        }
         return (!name) ? 0 : evList.toArray(ev[name]).length;
     }
     static raise(sender: any, ev: IIndexer<IEventList>, name: string, args: any): void {
-        if (!ev)
+        if (!ev) {
             return;
+        }
         if (!!name) {
-            const arr = evList.toArray(ev[name]);
-            let node: TEventNode;
-            for (let i = 0; i < arr.length; i++) {
-                node = arr[i];
+            const arr = evList.toArray(ev[name]), len = arr.length;
+            
+            for (let i = 0; i < len; i++) {
+                const node: TEventNode = arr[i];
                 node.fn.apply(node.context, [sender, args]);
             }
         }
@@ -186,7 +187,7 @@ export class EventHelper
             const isAllProp = prop === "*";
 
             if (!isAllProp) {
-                //notify clients who subscribed for all properties changes
+                // notify clients who subscribed for all properties changes
                 EventHelper.raise(sender, ev, "0*", args);
             }
 

@@ -33,7 +33,7 @@ export class RowSelectorColumn extends BaseColumn {
             self.grid.selectRows(chk.checked);
         }, this.uniqueID);
 
-        //delegated click event from the cell's checkbox
+        // delegated click event from the cell's checkbox
         dom.events.on(this.grid.table, "click", (e) => {
             e.stopPropagation();
             const chk = <HTMLInputElement>e.target, cell = <RowSelectorCell>dom.getData(chk, "cell");
@@ -42,7 +42,7 @@ export class RowSelectorColumn extends BaseColumn {
             } 
         }, {
                 nmspace: this.uniqueID,
-                //using delegation
+                // using delegation
                 matchElement: (el) => {
                     const attr = el.getAttribute(DATA_ATTR.DATA_EVENT_SCOPE),
                         tag = el.tagName.toLowerCase();

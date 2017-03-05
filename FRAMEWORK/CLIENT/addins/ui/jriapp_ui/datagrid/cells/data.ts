@@ -23,13 +23,13 @@ export class DataCell extends BaseCell<DataColumn> {
         }, () => {
             self._onDblClicked(self.row);
         });
-        //adds the class
+        // adds the class
         dom.addClass([this.td], css.dataCell);
         this._initContent();
     }
-    //init cell's content
+    // init cell's content
     protected _initContent() {
-        let contentOptions = this.column.options.content;
+        const contentOptions = this.column.options.content;
         if (!contentOptions.fieldInfo && !!contentOptions.fieldName) {
             contentOptions.fieldInfo = this.item._aspect.getFieldInfo(contentOptions.fieldName);
             if (!contentOptions.fieldInfo) {
@@ -44,7 +44,7 @@ export class DataCell extends BaseCell<DataColumn> {
             }
 
             if (this.grid.isHasEditor) {
-                //disable inrow editing if the grid has an editor
+                // disable inrow editing if the grid has an editor
                 contentOptions.readOnly = true;
             }
 

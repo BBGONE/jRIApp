@@ -23,22 +23,22 @@ export interface IAnyValItem extends IAnyVal, IListItem, IPropertyBag {
 }
 
 export class AnyItemAspect extends ListItemAspect<IAnyValItem, IAnyVal> {
-    //override and made public
+    // override and made public
     _validateField(name: string): IValidationInfo {
         return this.collection.errors.validateItemField(this.item, name);
     }
-    //override
+    // override
     protected _validateFields(): IValidationInfo[] {
         return Validations.distinct(this._validateItem());
     }
-    //override List's methods
+    // override List's methods
     _setProp(name: string, val: any) {
         if (this._getProp(name) !== val) {
             coreUtils.setValue(this._vals, name, val, false);
             this.item.raisePropertyChanged(name);
         }
     }
-    //override
+    // override
     _getProp(name: string) {
         return coreUtils.getValue(this._vals, name);
     }
@@ -46,11 +46,11 @@ export class AnyItemAspect extends ListItemAspect<IAnyValItem, IAnyVal> {
 
 
 export class AnyValListItem extends CollectionItem<AnyItemAspect> implements IAnyValItem {
-    get val(): any { return <any>this._aspect._getProp('val'); }
-    set val(v: any) { this._aspect._setProp('val', v); }
-    //override
+    get val(): any { return <any>this._aspect._getProp("val"); }
+    set val(v: any) { this._aspect._setProp("val", v); }
+    // override
     _isHasProp(prop: string): boolean {
-        //first check for indexed property name
+        // first check for indexed property name
         if (strUtils.startsWith(prop, "[")) {
             return true;
         }
@@ -58,14 +58,14 @@ export class AnyValListItem extends CollectionItem<AnyItemAspect> implements IAn
     }
     getProp(name: string): any {
         const fieldName = strUtils.trimBrackets(name);
-        return coreUtils.getValue(this.val, fieldName, '->');
+        return coreUtils.getValue(this.val, fieldName, "->");
     }
     setProp(name: string, val: any): void {
         const coll = this._aspect.collection, errors = coll.errors, old = this.getProp(name);
         if (old !== val) {
             try {
                 const fieldName = strUtils.trimBrackets(name);
-                coreUtils.setValue(this.val, fieldName, val, false, '->');
+                coreUtils.setValue(this.val, fieldName, val, false, "->");
                 this.raisePropertyChanged(name);
                 errors.removeError(this, name);
                 const validation: IValidationInfo = this._aspect._validateField(name);
@@ -104,7 +104,7 @@ export class AnyList extends BaseList<IAnyValItem, IAnyVal> {
     private _debounce: Debounce;
 
     constructor(onChanged: (arr: any[]) => void) {
-        super([{ name: 'val', dtype: 0 }]);
+        super([{ name: "val", dtype: 0 }]);
         this._onChanged = onChanged;
         this._debounce = new Debounce();
 
@@ -148,18 +148,18 @@ export class AnyList extends BaseList<IAnyValItem, IAnyVal> {
         this._onChanged = null;
         super.destroy();
     }
-    //override
+    // override
     protected _initItemFactory(): void {
         const itemType = AnyValListItem;
         this._itemFactory = (aspect: AnyItemAspect) => { return new itemType(aspect); };
     }
-    //override
+    // override
     protected createItem(obj?: IAnyVal): IAnyValItem {
         const isNew = !obj;
-        let vals: any = isNew ? { val: {} } : obj;
+        const vals: any = isNew ? { val: {} } : obj;
         if (!vals.val)
             vals.val = {};
-        let key = this._getNewKey();
+        const key = this._getNewKey();
         const aspect = new AnyItemAspect(this, vals, key, isNew);
         return aspect.item;
     }

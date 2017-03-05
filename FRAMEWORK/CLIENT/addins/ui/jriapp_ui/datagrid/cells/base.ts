@@ -7,7 +7,7 @@ import { ICollectionItem } from "jriapp_shared/collection/int";
 import { DblClick } from "../../utils/dblclick";
 import { Row } from "../rows/row";
 import { BaseColumn } from "../columns/base";
-import { DataGrid } from "../datagrid"
+import { DataGrid } from "../datagrid";
 
 const utils = Utils, dom = DomUtils;
 

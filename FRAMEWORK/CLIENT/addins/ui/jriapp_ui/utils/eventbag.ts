@@ -14,7 +14,7 @@ export interface IEventChangedArgs {
     newVal: ICommand;
 }
 
-//dispatches events through commands that can be attached by the data binding
+// dispatches events through commands that can be attached by the data binding
 export class EventBag extends BaseObject implements IPropertyBag {
     private _dic: IIndexer<ICommand>;
     private _onChange: (sender: EventBag, args: IEventChangedArgs) => void;
@@ -24,11 +24,11 @@ export class EventBag extends BaseObject implements IPropertyBag {
         this._dic = null;
         this._onChange = onChange;
     }
-    //override
+    // override
     _isHasProp(prop: string) {
         return true;
     }
-   //implement IPropertyBag
+   // implement IPropertyBag
     getProp(name: string): ICommand {
         if (!this._dic)
             return null;

@@ -92,7 +92,8 @@ export class AggregateError extends BaseError {
             hashMap[str] = "";
         });
 
-        let msg = "", errs = Object.keys(hashMap);
+        let msg = "";
+        const errs = Object.keys(hashMap);
 
         errs.forEach((err) => {
             if (!!msg) {

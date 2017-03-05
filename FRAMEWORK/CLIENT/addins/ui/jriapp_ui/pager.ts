@@ -12,7 +12,7 @@ import { bootstrap } from "jriapp";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, sys = utils.sys,
     strUtils = utils.str, coreUtils = utils.core, boot = bootstrap;
-let _STRS = STRS.PAGER;
+const _STRS = STRS.PAGER;
 
 const css = {
     pager: "ria-pager",
@@ -53,7 +53,7 @@ export class Pager extends BaseObject {
     private _currentPage: number;
     private _pageDebounce: Debounce;
     private _dsDebounce: Debounce;
-    //saves old display before making display: none
+    // saves old display before making display: none
     private _display: string;
 
     constructor(options: IPagerConstructorOptions) {
@@ -97,7 +97,7 @@ export class Pager extends BaseObject {
             });
         }, {
                 nmspace: this._objId,
-                //using delegation
+                // using delegation
                 matchElement: (el) => {
                     const attr = el.getAttribute(DATA_ATTR.DATA_EVENT_SCOPE),
                         tag = el.tagName.toLowerCase();
@@ -110,7 +110,8 @@ export class Pager extends BaseObject {
         return doc.createElement(tag);
     }
     protected render() {
-        let el = this._el, rowCount: number, currentPage: number, pageCount: number;
+        const el = this._el;
+        let rowCount: number, currentPage: number, pageCount: number;
         this._clearContent();
 
         if (this.rowsPerPage <= 0) {
@@ -151,7 +152,8 @@ export class Pager extends BaseObject {
             }
 
             if (this.showNumbers) {
-                let start = 1, end = pageCount, sliderSize = this.sliderSize, half: number, above: number, below: number;
+                const sliderSize = this.sliderSize;
+                let start = 1, end = pageCount, half: number, above: number, below: number;
 
                 if (this.useSlider && (sliderSize > 0)) {
                     half = Math.floor(((sliderSize - 1) / 2));
@@ -275,7 +277,8 @@ export class Pager extends BaseObject {
         return a;
     }
     protected _createFirst() {
-        let span = this._createElement("span"), tip: string;
+        const span = this._createElement("span");
+        let tip: string;
 
         if (this.showTip) {
             tip = _STRS.firstPageTip;
@@ -286,19 +289,20 @@ export class Pager extends BaseObject {
         return span;
     }
     protected _createPrevious() {
-        let span = this._createElement("span"), previousPage = this.currentPage - 1, tip: string;
+        const span = this._createElement("span"), previousPage = this.currentPage - 1;
+        let tip: string;
 
         if (this.showTip) {
             tip = strUtils.format(_STRS.prevPageTip, previousPage);
         }
 
-        let a = this._createLink(previousPage, _STRS.previousText, tip);
+        const a = this._createLink(previousPage, _STRS.previousText, tip);
         dom.addClass([span], css.otherPage);
         span.appendChild(a);
         return span;
     }
     protected _createCurrent() {
-        let span = this._createElement("span"), currentPage = this.currentPage;
+        const span = this._createElement("span"), currentPage = this.currentPage;
 
         span.textContent = ("" + currentPage);
 
@@ -309,43 +313,47 @@ export class Pager extends BaseObject {
         return span;
     }
     protected _createOther(page: number) {
-        let span = this._createElement("span"), tip: string;
+        const span = this._createElement("span");
+        let tip: string;
 
         if (this.showTip) {
             tip = this._buildTip(page);
         }
 
-        let a = this._createLink(page, "" + page, tip);
+        const a = this._createLink(page, "" + page, tip);
         dom.addClass([span], css.otherPage);
         span.appendChild(a);
         return span;
     }
     protected _createNext() {
-        let span = this._createElement("span"), nextPage = this.currentPage + 1, tip: string;
+        const span = this._createElement("span"), nextPage = this.currentPage + 1;
+        let tip: string;
 
         if (this.showTip) {
             tip = strUtils.format(_STRS.nextPageTip, nextPage);
         }
-        let a = this._createLink(nextPage, _STRS.nextText, tip);
+        const a = this._createLink(nextPage, _STRS.nextText, tip);
         dom.addClass([span], css.otherPage);
         span.appendChild(a);
         return span;
     }
     protected _createLast() {
-        let span = this._createElement("span"), tip: string;
+        const span = this._createElement("span");
+        let tip: string;
 
         if (this.showTip) {
             tip = _STRS.lastPageTip;
         }
-        let a = this._createLink(this.pageCount, _STRS.lastText, tip);
+        const a = this._createLink(this.pageCount, _STRS.lastText, tip);
         dom.addClass([span], css.otherPage);
         span.appendChild(a);
         return span;
     }
     protected _buildTip(page: number) {
-        let rowsPerPage = this.rowsPerPage, rowCount = this.rowCount,
+        const rowsPerPage = this.rowsPerPage, rowCount = this.rowCount,
             start = (((page - 1) * rowsPerPage) + 1),
-            end = (page === this.pageCount) ? rowCount : (page * rowsPerPage), tip = "";
+            end = (page === this.pageCount) ? rowCount : (page * rowsPerPage);
+        let tip = "";
 
         if (page === this.currentPage) {
             tip = strUtils.format(_STRS.showingTip, start, end, rowCount);
@@ -374,7 +382,8 @@ export class Pager extends BaseObject {
         }
     }
     get pageCount(): number {
-        let rowCount = this.rowCount, rowsPerPage = this.rowsPerPage, result: number;
+        const rowCount = this.rowCount, rowsPerPage = this.rowsPerPage;
+        let result: number;
 
         if ((rowCount === 0) || (rowsPerPage === 0)) {
             return 0;
@@ -477,7 +486,7 @@ export class Pager extends BaseObject {
         if (v !== this.isVisible) {
             if (!v) {
                 this._display = this.el.style.display;
-                //if saved display is none, then don't store it
+                // if saved display is none, then don't store it
                 if (this._display === "none")
                     this._display = null;
                 this.el.style.display = "none";

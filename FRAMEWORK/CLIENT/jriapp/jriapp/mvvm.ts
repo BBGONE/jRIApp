@@ -35,7 +35,7 @@ export class TCommand<TParam, TThis> extends BaseObject implements ICommand {
         this._predicate = !fn_canExecute ? null : fn_canExecute;
     }
     protected _getEventNames() {
-        let base_events = super._getEventNames();
+        const base_events = super._getEventNames();
         return [CMD_EVENTS.can_execute_changed].concat(base_events);
     }
     protected _canExecute(sender: any, param: TParam, context: any): boolean {
@@ -83,8 +83,7 @@ export class TCommand<TParam, TThis> extends BaseObject implements ICommand {
     }
 }
 
-export abstract class BaseCommand<TParam, TThis> extends TCommand<TParam, TThis>
-{
+export abstract class BaseCommand<TParam, TThis> extends TCommand<TParam, TThis> {
     constructor(thisObj: TThis) {
         super(null, thisObj, null);
         this._action = this.Action;
@@ -103,7 +102,7 @@ export abstract class BaseCommand<TParam, TThis> extends TCommand<TParam, TThis>
 export type Command = TCommand<any, any>;
 export const Command: new (fn_action: TAction<any, any>, thisObj?: any, fn_canExecute?: TPredicate<any, any>) => Command = TCommand;
 
-//for strongly typed parameters
+// for strongly typed parameters
 export type TemplateCommand = TCommand<{ template: ITemplate; isLoaded: boolean; }, any>;
 export const TemplateCommand: new (fn_action: TAction<{ template: ITemplate; isLoaded: boolean; }, any>, thisObj?: any, fn_canExecute?: TPredicate<{ template: ITemplate; isLoaded: boolean; }, any>) => TemplateCommand = TCommand;
 

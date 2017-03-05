@@ -129,7 +129,7 @@ export interface ILocaleText extends IIndexer<any> {
 }
 
 
-let _ERRS: IErrors = {
+const _ERRS: IErrors = {
     ERR_OBJ_ALREADY_REGISTERED: "an Object with the name: {0} is already registered and can not be overwritten",
     ERR_APP_NEED_JQUERY: "The project is dependent on JQuery",
     ERR_ASSERTION_FAILED: 'The Assertion "{0}" failed',
@@ -208,9 +208,9 @@ let _ERRS: IErrors = {
     ERR_ASSOC_NAME_INVALID: "Invalid association name: {0}",
     ERR_DATAVIEW_DATASRC_INVALID: "TDataView datasource must not be null and should be descendant of Collection type",
     ERR_DATAVIEW_FILTER_INVALID: "TDataView fn_filter option must be valid function which accepts entity and returns boolean value"
-}
+};
 
-let PAGER: IPagerText = {
+const PAGER: IPagerText = {
     firstText: "<<",
     lastText: ">>",
     previousText: "<",
@@ -224,12 +224,12 @@ let PAGER: IPagerText = {
     showTip: "show result {0} to {1} of {2}"
 };
 
-let VALIDATE: IValidateText = {
+const VALIDATE: IValidateText = {
     errorInfo: "Validation errors:",
     errorField: "field:"
 };
 
-let TEXT: IText = {
+const TEXT: IText = {
     txtEdit: "Edit",
     txtAddNew: "Add new",
     txtDelete: "Delete",
@@ -243,7 +243,7 @@ let TEXT: IText = {
     txtField: "Field"
 };
 
-let _STRS: ILocaleText = { PAGER: PAGER, VALIDATE: VALIDATE, TEXT: TEXT };
+const _STRS: ILocaleText = { PAGER: PAGER, VALIDATE: VALIDATE, TEXT: TEXT };
 
 export let ERRS: IErrors = _ERRS;
 export let STRS: ILocaleText = _STRS;

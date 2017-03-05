@@ -26,7 +26,7 @@ const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = util
     valUtils = ValueUtils, collUtils = CollUtils;
 
 
-//REPLACE DUMMY IMPLEMENTATIONS
+// REPLACE DUMMY IMPLEMENTATIONS
 sys.isCollection = (obj) => { return (!!obj && obj instanceof BaseCollection); };
 
 const COLL_EVENTS = {
@@ -159,7 +159,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
 
         this._EditingItem = null;
         this._perms = { canAddRow: true, canEditRow: true, canDeleteRow: true, canRefreshRow: false };
-        //includes stored on server
+        // includes stored on server
         this._totalCount = 0;
         this._pageIndex = 0;
         this._items = [];
@@ -210,7 +210,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         };
     }
     static getEmptyFieldInfo(fieldName: string) {
-        let fieldInfo: IFieldInfo = {
+        const fieldInfo: IFieldInfo = {
             fieldName: fieldName,
             isPrimaryKey: 0,
             dataType: DATA_TYPE.None,
@@ -358,7 +358,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     protected _getPKFieldInfos(): IFieldInfo[] {
         if (!!this._pkInfo)
             return this._pkInfo;
-        let fldMap = this._fieldMap, pk: IFieldInfo[] = [];
+        const fldMap = this._fieldMap, pk: IFieldInfo[] = [];
         coreUtils.forEachProp(fldMap, (fldName) => {
             if (fldMap[fldName].isPrimaryKey > 0) {
                 pk.push(fldMap[fldName]);
@@ -390,7 +390,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     protected _onEditingChanged() {
         this.raisePropertyChanged(PROP_NAME.isEditing);
     }
-    //occurs when item status Changed (not used in simple collections)
+    // occurs when item status Changed (not used in simple collections)
     protected _onItemStatusChanged(item: TItem, oldStatus: ITEM_STATUS) {
         this.raiseEvent(COLL_EVENTS.status_changed, <ICollItemStatusArgs<TItem>>{ item: item, oldStatus: oldStatus, key: item._key });
     }
@@ -400,16 +400,16 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     protected _onFillEnd(args: ICollFillArgs<TItem>) {
         this.raiseEvent(COLL_EVENTS.fill, args);
     }
-    //new item is being added, but is not in the collection now
+    // new item is being added, but is not in the collection now
     protected _onItemAdding(item: TItem) {
         const args: ICancellableArgs<TItem> = { item: item, isCancel: false };
         this.raiseEvent(COLL_EVENTS.item_adding, args);
         if (args.isCancel)
             utils.err.throwDummy(new Error("operation canceled"));
     }
-    //new item has been added and now is in editing state and is currentItem
+    // new item has been added and now is in editing state and is currentItem
     protected _onItemAdded(item: TItem) {
-        let args: IItemAddedArgs<TItem> = { item: item, isAddNewHandled: false };
+        const args: IItemAddedArgs<TItem> = { item: item, isAddNewHandled: false };
         this.raiseEvent(COLL_EVENTS.item_added, args);
     }
     protected _createNew(): TItem {
@@ -498,7 +498,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
             throw new Error(ERRS.ERR_ITEM_IS_NOTFOUND);
         }
         const oldItem = self.getItemByPos(oldPos);
-        let pos = self._items.indexOf(v);
+        const pos = self._items.indexOf(v);
         if (pos < 0) {
             throw new Error(ERRS.ERR_ITEM_IS_NOTFOUND);
         }
@@ -508,16 +508,16 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
             self._onCurrentChanged();
         }
     }
-    //it is overriden in DataView class!!!
+    // it is overriden in DataView class!!!
     protected _clearItems(items: TItem[]) {
         items.forEach((item) => {
             item._aspect._setIsAttached(false);
             item.destroy();
         });
     }
-    //override
+    // override
     _isHasProp(prop: string) {
-        //first check for indexed property name
+        // first check for indexed property name
         if (strUtils.startsWith(prop, "[")) {
             const res = sys.getProp(this, prop);
             return !checks.isUndefined(res);
@@ -553,7 +553,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
             }
         }
         else {
-            let oldItem = this._EditingItem;
+            const oldItem = this._EditingItem;
             this._EditingItem = null;
             this.raiseEvent(COLL_EVENTS.end_edit, { item: item, isCanceled: isCanceled });
             this._onEditingChanged();
@@ -562,7 +562,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
             }
         }
     }
-    //used by descendants when commiting submits for items
+    // used by descendants when commiting submits for items
     protected _onCommitChanges(item: TItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS): void {
         this.raiseEvent(COLL_EVENTS.commit_changes, <ICommitChangesArgs<TItem>>{ item: item, isBegin: isBegin, isRejected: isRejected, status: status });
     }
@@ -721,7 +721,8 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     findByPK(...vals: any[]): TItem {
         if (arguments.length === 0)
             return null;
-        let self = this, pkInfo = self._getPKFieldInfos(), arr: string[] = [], key: string, values: any[] = [];
+        const self = this, pkInfo = self._getPKFieldInfos(), arr: string[] = [];
+        let key: string, values: any[] = [];
         if (vals.length === 1 && checks.isArray(vals[0])) {
             values = vals[0];
         }
@@ -730,7 +731,8 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         if (values.length !== pkInfo.length) {
             return null;
         }
-        for (let i = 0, len = pkInfo.length; i < len; i += 1) {
+        const len = pkInfo.length;
+        for (let i = 0; i < len; i += 1) {
             arr.push(self._getStrValue(values[i], pkInfo[i]));
         }
 
@@ -738,10 +740,10 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         return self.getItemByKey(key);
     }
     moveFirst(skipDeleted?: boolean): boolean {
-        let pos = 0, old = this._currentPos;
+        const pos = 0, old = this._currentPos;
         if (old === pos)
             return false;
-        let item = this.getItemByPos(pos);
+        const item = this.getItemByPos(pos);
         if (!item)
             return false;
         if (!!skipDeleted) {
@@ -755,7 +757,8 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         return true;
     }
     movePrev(skipDeleted?: boolean): boolean {
-        let pos = -1, old = this._currentPos;
+        let pos = -1;
+        const old = this._currentPos;
         let item = this.getItemByPos(old);
         if (!!item) {
             pos = old;
@@ -776,7 +779,8 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         return true;
     }
     moveNext(skipDeleted?: boolean): boolean {
-        let pos = -1, old = this._currentPos;
+        let pos = -1;
+        const old = this._currentPos;
         let item = this.getItemByPos(old);
         if (!!item) {
             pos = old;
@@ -797,10 +801,10 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         return true;
     }
     moveLast(skipDeleted?: boolean): boolean {
-        let pos = this._items.length - 1, old = this._currentPos;
+        const pos = this._items.length - 1, old = this._currentPos;
         if (old === pos)
             return false;
-        let item = this.getItemByPos(pos);
+        const item = this.getItemByPos(pos);
         if (!item)
             return false;
         if (!!skipDeleted) {
@@ -814,10 +818,10 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         return true;
     }
     goTo(pos: number): boolean {
-        let old = this._currentPos;
+        const old = this._currentPos;
         if (old === pos)
             return false;
-        let item = this.getItemByPos(pos);
+        const item = this.getItemByPos(pos);
         if (!item)
             return false;
         this._onCurrentChanging(item);
@@ -844,9 +848,9 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
 
             const test = this.getItemByPos(oldPos), curPos = this._currentPos;
 
-            //if detached item was current item
+            // if detached item was current item
             if (curPos === oldPos) {
-                if (!test) { //it was the last item
+                if (!test) { // it was the last item
                     this._currentPos = curPos - 1;
                 }
                 this._onCurrentChanged();
@@ -955,7 +959,8 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         }
     }
     get pageCount() {
-        let rowCount = this.totalCount, rowPerPage = this.pageSize, result: number;
+        const rowCount = this.totalCount, rowPerPage = this.pageSize;
+        let result: number;
 
         if ((rowCount === 0) || (rowPerPage === 0)) {
             return 0;

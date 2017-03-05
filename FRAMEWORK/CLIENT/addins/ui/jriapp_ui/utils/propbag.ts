@@ -13,12 +13,12 @@ export class PropertyBag extends BaseObject implements IPropertyBag {
         super();
         this._el = el;
     }
-    //override
+    // override
     _isHasProp(prop: string) {
         const propName = strUtils.trimBrackets(prop);
         return (propName in this._el);
     }
-    //implement IPropertyBag
+    // implement IPropertyBag
     getProp(name: string): any {
         const propName = strUtils.trimBrackets(name);
         return this._el[propName];

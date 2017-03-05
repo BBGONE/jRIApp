@@ -20,16 +20,16 @@ const utils = Utils, dom = DomUtils, win = dom.window, doc = win.document,
     _async = utils.defer, coreUtils = utils.core, strUtils = utils.str, ERROR = utils.err,
     ERRS = LocaleERRS;
 
-//Implements polyfill for requestAnimationFrame API && Promise
+// Implements polyfill for requestAnimationFrame API && Promise
 (function () {
     const win: any = dom.window;
 
-    //check if promise implemented
+    // check if promise implemented
     if (!win.Promise) {
         win.Promise = Promise;
     }
 
-    //check if requestAnimationFrame implemented
+    // check if requestAnimationFrame implemented
     if (!win.requestAnimationFrame) {
         let requestAnimationFrame = win.requestAnimationFrame || win.mozRequestAnimationFrame ||
             win.webkitRequestAnimationFrame || win.msRequestAnimationFrame;
@@ -108,7 +108,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         this._currentSelectable = null;
         this._objId = coreUtils.getNewID("app");
 
-        //exported types
+        // exported types
         this._exports = {};
         this._moduleInits = [];
         this._templateLoader = null;
@@ -156,14 +156,14 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         };
         this._defaults = new Defaults();
         this.defaults.imagesPath = PathHelper.getFrameworkImgPath();
-        //load jriapp.css (it will load only if it is not loaded yet)
+        // load jriapp.css (it will load only if it is not loaded yet)
         stylesLoader.loadOwnStyle();
         ERROR.addHandler("*", this);
     }
     private _bindGlobalEvents(): void {
         const self = this;
-        //doc.addEventListener
-        //when clicked outside any Selectable set _currentSelectable = null
+        // doc.addEventListener
+        // when clicked outside any Selectable set _currentSelectable = null
         dom.events.on(doc, "click", (e) => {
             e.stopPropagation();
             self.currentSelectable = null;
@@ -185,7 +185,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             self.raiseEvent(GLOB_EVENTS.unload, {});
         }, this._objId);
 
-        //this is a way to attach for correct work in firefox
+        // this is a way to attach for correct work in firefox
         win.onerror = (msg: any, url: string, linenumber: number) => {
             if (!!msg && msg.toString().indexOf(DUMY_ERROR) > -1) {
                 return true;
@@ -209,7 +209,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             self._processTemplate(name, html, app);
         });
     }
-    //process templates in HTML Document
+    // process templates in HTML Document
     private _processHTMLTemplates(): void {
         this._processTemplates(doc);
     }
@@ -221,7 +221,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             fn_loader: () => deferred.promise()
         };
 
-        //template already loaded, register function which returns the template immediately
+        // template already loaded, register function which returns the template immediately
         self.templateLoader.registerTemplateLoader(!app ? name : (app.appName + "." + name), loader);
         deferred.resolve(res);
     }
@@ -232,13 +232,13 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             });
         return events.concat(base_events);
     }
-    //override
+    // override
     protected _addHandler(name: string, fn: (sender: any, args: any) => void, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
         const self = this, isReady = self._bootState === BootstrapState.Ready;
         const isIntialized = (self._bootState === BootstrapState.Initialized || self._bootState === BootstrapState.Ready);
 
         if ((name === GLOB_EVENTS.load && isReady) || (name === GLOB_EVENTS.initialized && isIntialized)) {
-            //when already is ready, immediately raise the event
+            // when already is ready, immediately raise the event
             utils.queue.enque(() => { fn.apply(self, [self, {}]); });
         }
         else {
@@ -319,7 +319,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         try {
             ERROR.removeHandler(app.appName);
             this.templateLoader.unRegisterTemplateGroup(app.appName);
-            this.templateLoader.unRegisterTemplateLoader(app.appName)
+            this.templateLoader.unRegisterTemplateLoader(app.appName);
         }
         finally {
             this._appInst = null;
@@ -401,9 +401,9 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             }, 0);
         });
     }
-    //starting application - use onStartUp callback to setUp handlers on objects, create viewModels and etc.
-    //all  that we need to do before setting up databindings
-    //returns Promise
+    // starting application - use onStartUp callback to setUp handlers on objects, create viewModels and etc.
+    // all  that we need to do before setting up databindings
+    // returns Promise
     startApp<TApp extends IApplication>(appFactory: () => TApp, onStartUp?: (app: TApp) => void): IPromise<TApp> {
         const self = this, deferred = _async.createDeferred<TApp>(), promise = deferred.promise();
 
@@ -417,7 +417,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             }
         });
 
-        let res = promise.then((app) => {
+        const res = promise.then((app) => {
             return app;
         }, (err) => {
             ERROR.reThrow(err, self.handleError(err, self));
@@ -462,7 +462,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         return this._getObject(this, name2);
     }
     registerConverter(name: string, obj: IConverter): void {
-        let name2 = STORE_KEY.CONVERTER + name;
+        const name2 = STORE_KEY.CONVERTER + name;
         if (!this._getObject(this, name2)) {
             this._registerObject(this, name2, obj);
         }
@@ -474,11 +474,11 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         this._elViewRegister.registerElView(name, elViewType);
     }
     getImagePath(imageName: string): string {
-        let images = this.defaults.imagesPath;
+        const images = this.defaults.imagesPath;
         return images + imageName;
     }
-    //Loads CSS placed in Framework's styles directory (it needs just file name)
-    //if no name provided it loads jriapp.css
+    // Loads CSS placed in Framework's styles directory (it needs just file name)
+    // if no name provided it loads jriapp.css
     loadOwnStyle(name: string): IPromise<string> {
         return this.stylesLoader.loadOwnStyle(name);
     }

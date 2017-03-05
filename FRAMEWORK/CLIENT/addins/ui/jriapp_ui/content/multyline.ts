@@ -25,7 +25,8 @@ export class MultyLineContent extends BasicContent {
         super(options);
     }
     protected createTargetElement(): IElView {
-        let el: HTMLElement, info: { name: string; options: any; } = { name: null, options: null };
+        let el: HTMLElement;
+        const info: { name: string; options: any; } = { name: null, options: null };
         if (this.isEditing && this.getIsCanBeEdited()) {
             el = document.createElement("textarea");
             info.options = this._options.options;

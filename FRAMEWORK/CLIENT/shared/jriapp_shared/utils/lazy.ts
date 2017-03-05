@@ -20,7 +20,7 @@ export class Lazy<T> implements IDisposable {
             this._val = this._factory();
             if (checks.isNt(this._val))
                 throw new Error("Lazy: the value factory did'not returned an object");
-            //release the reference
+            // release the reference
             this._factory = null;
         }
 

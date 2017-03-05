@@ -5,7 +5,7 @@ import { DomUtils } from "jriapp/utils/dom";
 import { css, ROW_POSITION } from "../const";
 import { Row } from "./row";
 import { DetailsCell } from "../cells/details";
-import { DataGrid } from "../datagrid"
+import { DataGrid } from "../datagrid";
 
 const utils = Utils, coreUtils = utils.core, dom = DomUtils, document = dom.document;
 
@@ -22,7 +22,7 @@ export class DetailsRow extends BaseObject {
         super();
         const self = this, tr = options.tr;
         this._grid = options.grid;
-        this._tr =tr;
+        this._tr = tr;
         this._item = null;
         this._cell = null;
         this._parentRow = null;
@@ -63,17 +63,17 @@ export class DetailsRow extends BaseObject {
         });
     }
     private _initShow() {
-        let animation = this._grid.animation;
+        const animation = this._grid.animation;
         animation.beforeShow(this._cell.template.el);
     }
     private _show(onEnd: () => void) {
-        let animation = this._grid.animation;
+        const animation = this._grid.animation;
         this._isFirstShow = false;
         animation.beforeShow(this._cell.template.el);
         animation.show(onEnd);
     }
     private _hide(onEnd: () => void) {
-        let animation = this._grid.animation;
+        const animation = this._grid.animation;
         animation.beforeHide(this._cell.template.el);
         animation.hide(onEnd);
     }
@@ -115,11 +115,11 @@ export class DetailsRow extends BaseObject {
     get cell() { return this._cell; }
     get uniqueID() { return this._objId; }
     get itemKey() {
-        return (!this._item)? null : this._item._key;
+        return (!this._item) ? null : this._item._key;
     }
     get parentRow() { return this._parentRow; }
     set parentRow(v) {
-        let self = this;
+        const self = this;
         if (v !== this._parentRow) {
             if (!!self._parentRow) {
                 self._hide(() => {

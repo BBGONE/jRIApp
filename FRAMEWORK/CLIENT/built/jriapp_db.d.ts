@@ -41,6 +41,39 @@ declare module "jriapp_db/const" {
         isLoading: string;
     };
 }
+declare module "jriapp_db/datacache" {
+    import { BaseObject } from "jriapp_shared";
+    import { TDataQuery } from "jriapp_db/dataquery";
+    import { IEntityItem, ICachedPage } from "jriapp_db/int";
+    export class DataCache extends BaseObject {
+        private _query;
+        private _pages;
+        private _itemsByKey;
+        private _totalCount;
+        constructor(query: TDataQuery);
+        private _getPrevPageIndex(currentPageIndex);
+        getNextRange(pageIndex: number): {
+            start: number;
+            end: number;
+            cnt: number;
+        };
+        clear(): void;
+        getPage(pageIndex: number): ICachedPage;
+        getPageItems(pageIndex: number): IEntityItem[];
+        setPageItems(pageIndex: number, items: IEntityItem[]): void;
+        fill(startIndex: number, items: IEntityItem[]): void;
+        deletePage(pageIndex: number): void;
+        hasPage(pageIndex: number): boolean;
+        getItemByKey(key: string): IEntityItem;
+        destroy(): void;
+        toString(): string;
+        readonly _pageCount: number;
+        readonly pageSize: number;
+        readonly loadPageCount: number;
+        totalCount: number;
+        readonly cacheSize: number;
+    }
+}
 declare module "jriapp_db/dataquery" {
     import { FILTER_TYPE, SORT_ORDER } from "jriapp_shared/collection/const";
     import { IPromise, BaseObject } from "jriapp_shared";
@@ -110,39 +143,6 @@ declare module "jriapp_db/dataquery" {
         readonly isCacheValid: boolean;
     }
     export type TDataQuery = DataQuery<IEntityItem, any>;
-}
-declare module "jriapp_db/datacache" {
-    import { BaseObject } from "jriapp_shared";
-    import { TDataQuery } from "jriapp_db/dataquery";
-    import { IEntityItem, ICachedPage } from "jriapp_db/int";
-    export class DataCache extends BaseObject {
-        private _query;
-        private _pages;
-        private _itemsByKey;
-        private _totalCount;
-        constructor(query: TDataQuery);
-        private _getPrevPageIndex(currentPageIndex);
-        getNextRange(pageIndex: number): {
-            start: number;
-            end: number;
-            cnt: number;
-        };
-        clear(): void;
-        getPage(pageIndex: number): ICachedPage;
-        getPageItems(pageIndex: number): IEntityItem[];
-        setPageItems(pageIndex: number, items: IEntityItem[]): void;
-        fill(startIndex: number, items: IEntityItem[]): void;
-        deletePage(pageIndex: number): void;
-        hasPage(pageIndex: number): boolean;
-        getItemByKey(key: string): IEntityItem;
-        destroy(): void;
-        toString(): string;
-        readonly _pageCount: number;
-        readonly pageSize: number;
-        readonly loadPageCount: number;
-        totalCount: number;
-        readonly cacheSize: number;
-    }
 }
 declare module "jriapp_db/dbset" {
     import { SORT_ORDER, COLL_CHANGE_REASON, COLL_CHANGE_OPER, ITEM_STATUS } from "jriapp_shared/collection/const";

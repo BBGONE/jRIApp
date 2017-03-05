@@ -23,16 +23,17 @@ export class DataCache extends BaseObject {
     private _getPrevPageIndex(currentPageIndex: number) {
         let pageIndex = -1;
         coreUtils.forEachProp(this._pages, (index, page) => {
-            let cachePageIndex = page.pageIndex;
+            const cachePageIndex = page.pageIndex;
             if (cachePageIndex > pageIndex && cachePageIndex < currentPageIndex)
                 pageIndex = cachePageIndex;
         });
         return pageIndex;
     }
     getNextRange(pageIndex: number) {
-        let half = Math.floor(((this.loadPageCount - 1) / 2));
+        const half = Math.floor(((this.loadPageCount - 1) / 2));
         let above = (pageIndex + half) + ((this.loadPageCount - 1) % 2);
-        let below = (pageIndex - half), prev = this._getPrevPageIndex(pageIndex);
+        let below = (pageIndex - half);
+        const prev = this._getPrevPageIndex(pageIndex);
         if (below < 0) {
             above += (0 - below);
             below = 0;
@@ -50,7 +51,7 @@ export class DataCache extends BaseObject {
 
             above = this._pageCount - 1;
         }
-        //once again check for previous cached range
+        // once again check for previous cached range
         if (below <= prev) {
             above += (prev - below + 1);
             below += (prev - below + 1);
@@ -61,8 +62,8 @@ export class DataCache extends BaseObject {
             above += this.loadPageCount - cnt;
             cnt = above - below + 1;
         }
-        let start = below;
-        let end = above;
+        const start = below;
+        const end = above;
         return { start: start, end: end, cnt: cnt };
     }
     clear() {
@@ -77,7 +78,7 @@ export class DataCache extends BaseObject {
         if (!page)
             return [];
         const dbSet = this._query.dbSet, keyMap = this._itemsByKey;
-        let res = page.keys.map((key) => {
+        const res = page.keys.map((key) => {
             const kv = keyMap[key];
             return (!kv) ? <IEntityItem>null : dbSet.createEntityFromObj(kv.val, kv.key);
         }).filter((item) => { return !!item; });
@@ -88,23 +89,23 @@ export class DataCache extends BaseObject {
         if (items.length === 0)
             return;
         const kvs = items.map((item) => { return { key: item._key, val: item._aspect.vals }; });
-        //create new page
+        // create new page
         const page: ICachedPage = { keys: kvs.map((kv) => kv.key), pageIndex: pageIndex };
         this._pages[pageIndex] = page;
-        let keyMap = this._itemsByKey;
-        for (let j = 0, len = kvs.length; j < len; j += 1) {
-            let kv = kvs[j];
+        const keyMap = this._itemsByKey, len = kvs.length;
+        for (let j = 0; j < len; j += 1) {
+            const kv = kvs[j];
             keyMap[kv.key] = kv;
         }
     }
     fill(startIndex: number, items: IEntityItem[]) {
         const len = items.length, pageSize = this.pageSize;
         for (let i = 0; i < this.loadPageCount; i += 1) {
-            let pageItems: IEntityItem[] = [], pgstart = (i * pageSize);
+            const pageItems: IEntityItem[] = [], pgstart = (i * pageSize);
             if (pgstart >= len)
                 break;
             for (let j = 0; j < pageSize; j += 1) {
-                let k = pgstart + j;
+                const k = pgstart + j;
                 if (k < len) {
                     pageItems.push(items[k]);
                 }
@@ -145,7 +146,8 @@ export class DataCache extends BaseObject {
         return "DataCache";
     }
     get _pageCount() {
-        let rowCount = this.totalCount, rowPerPage = this.pageSize, result: number = 0;
+        const rowCount = this.totalCount, rowPerPage = this.pageSize;
+        let result: number = 0;
 
         if ((rowCount === 0) || (rowPerPage === 0)) {
             return result;
@@ -172,7 +174,7 @@ export class DataCache extends BaseObject {
         }
     }
     get cacheSize() {
-        let indexes = Object.keys(this._pages);
+        const indexes = Object.keys(this._pages);
         return indexes.length;
     }
 }

@@ -16,8 +16,8 @@ export class DataColumn extends BaseColumn {
 
     constructor(grid: DataGrid, options: ICellInfo) {
         super(grid, options);
-        //the DataCell caches here listbox (for the LookupContent)
-        //so not to create it for every cell - it is only one per column!
+        // the DataCell caches here listbox (for the LookupContent)
+        // so not to create it for every cell - it is only one per column!
         this._objCache = {};
         let colClass = css.dataColumn;
         this._sortOrder = null;

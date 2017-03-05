@@ -42,7 +42,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
 
     constructor(grid: DataGrid, options: ICellInfo) {
         super();
-        let self = this;
+        const self = this;
         this._grid = grid;
         this._th = options.th;
         this._options = options.colInfo;
@@ -59,7 +59,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
 
         this._grid._getInternal().getHeader().appendChild(col);
 
-        //a click on column itself
+        // a click on column itself
         dom.events.on(this._col, "click", (e) => {
             e.stopPropagation();
             boot.currentSelectable = grid;
@@ -67,7 +67,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
             self._onColumnClicked();
         }, this.uniqueID);
 
-        //a click on any cell
+        // a click on any cell
         dom.events.on(this.grid.table, "click", (e) => {
             e.stopPropagation();
             const td = <HTMLElement>e.target, cell = <BaseCell<BaseColumn>>dom.getData(td, "cell");
@@ -78,7 +78,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
             }
         }, {
                 nmspace: this.uniqueID,
-                //using delegation
+                // using delegation
                 matchElement: (el) => {
                     const attr = el.getAttribute(DATA_ATTR.DATA_EVENT_SCOPE),
                         tag = el.tagName.toLowerCase();
@@ -125,13 +125,13 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         super.destroy();
     }
     templateLoading(template: ITemplate): void {
-        //noop
+        // noop
     }
     templateLoaded(template: ITemplate, error?: any): void {
-        //noop
+        // noop
     }
     templateUnLoading(template: ITemplate): void {
-        //noop
+        // noop
     }
     scrollIntoView(isUp: boolean) {
         if (this.getIsDestroyCalled())

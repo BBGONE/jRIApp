@@ -15,15 +15,13 @@ import { Validations } from "./validation";
 const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check,
     sys = utils.sys, ERROR = utils.err, collUtils = CollUtils;
 
-const enum AspectFlags
-{
+const enum AspectFlags {
     IsAttached = 0,
     IsEdited = 1,
     isRefreshing = 2
 }
 
-interface ICustomVal
-{
+interface ICustomVal {
     val: any;
     isOwnIt: boolean;
 }
@@ -37,7 +35,7 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
     protected _vals: IIndexer<any>;
     private _flags: number;
     private _valueBag: IIndexer<ICustomVal>;
-    
+
     constructor(collection: BaseCollection<TItem>) {
         super();
         this._key = null;
@@ -93,7 +91,7 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         if (!this.isEditing)
             return false;
         const coll = this.collection, self = this, errors = coll.errors;
-        //revalidate all
+        // revalidate all
         errors.removeAllErrors(this.item);
         const validations: IValidationInfo[] = this._validateFields();
         if (validations.length > 0) {
@@ -114,7 +112,7 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         this._vals = this._saveVals;
         this._saveVals = null;
         coll.errors.removeAllErrors(item);
-        //refresh User interface when values restored
+        // refresh User interface when values restored
         coll.getFieldNames().forEach((name) => {
             if (changes[name] !== self._vals[name]) {
                 item.raisePropertyChanged(name);
@@ -136,24 +134,20 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         const standardErrors: string[] = Validations.checkField(fieldInfo, value, this.isNew);
         const customValidation: IValidationInfo = errors.validateItemField(this.item, fieldName);
 
-        let result = { fieldName: fieldName, errors: <string[]>[] };
+        const result = { fieldName: fieldName, errors: <string[]>[] };
         if (standardErrors.length > 0) {
             result.errors = standardErrors;
         }
-        if (!!customValidation && customValidation.errors.length > 0)
-        {
+        if (!!customValidation && customValidation.errors.length > 0) {
             result.errors = result.errors.concat(customValidation.errors);
         }
 
-        if (result.errors.length > 0)
-            return result;
-        else
-            return null;
+        return (result.errors.length > 0) ? result : null;
     }
     protected _validateFields(): IValidationInfo[] {
         const self = this, fieldInfos = this.collection.getFieldInfos(),
             res: IValidationInfo[] = [];
-        //revalidate all fields one by one
+        // revalidate all fields one by one
         collUtils.traverseFields(fieldInfos, (fld, fullName) => {
             if (fld.fieldType !== FIELD_TYPE.Object) {
                 const fieldValidation: IValidationInfo = self._validateField(fullName);
@@ -163,13 +157,13 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
             }
         });
    
-        //raise validation event for the whole item validation
+        // raise validation event for the whole item validation
         const itemVals: IValidationInfo[] = self._validateItem();
         return Validations.distinct(res.concat(itemVals));
     }
     protected _resetStatus() {
-        //can reset isNew on all items in the collection
-        //the list descendant does it
+        // can reset isNew on all items in the collection
+        // the list descendant does it
     }
     private _delCustomVal(entry: ICustomVal) {
         const coll = this.collection;
@@ -235,7 +229,7 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         const itemErrors = this.collection.errors.getErrors(this.item);
         if (!itemErrors)
             return "";
-        let res: string[] = [];
+        const res: string[] = [];
         coreUtils.forEachProp(itemErrors, (name) => {
             res.push(strUtils.format("{0}: {1}", name, itemErrors[name]));
         });
@@ -303,10 +297,10 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         return true;
     }
     deleteItem(): boolean {
-        let coll = this.collection;
+        const coll = this.collection;
         if (!this.key)
             return false;
-        let args: ICancellableArgs<TItem> = { item: this.item, isCancel: false };
+        const args: ICancellableArgs<TItem> = { item: this.item, isCancel: false };
         coll._getInternal().onItemDeleting(args);
         if (args.isCancel) {
             return false;
@@ -334,17 +328,19 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         this._removeHandler(ITEM_EVENTS.errors_changed, nmspace);
     }
     getFieldErrors(fieldName: string): IValidationInfo[] {
-        let res: IValidationInfo[] = [];
-        const itemErrors = this.collection.errors.getErrors(this.item);
+        const res: IValidationInfo[] = [], itemErrors = this.collection.errors.getErrors(this.item);
         if (!itemErrors)
             return res;
         let name = fieldName;
-        if (!fieldName)
+        if (!fieldName) {
             fieldName = "*";
-        if (!itemErrors[fieldName])
-            return [];
-        if (fieldName === "*")
+        }
+        if (!itemErrors[fieldName]) {
+            return res;
+        }
+        if (fieldName === "*") {
             name = null;
+        }
         res.push({ fieldName: name, errors: itemErrors[fieldName] });
         return res;
     }
@@ -448,7 +444,7 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
     toString() {
         return "ItemAspect";
     }
-    //cloned values of this item
+    // cloned values of this item
     get vals(): TObj {
         return collUtils.copyVals(this.collection.getFieldInfos(), this._vals, {});
     }
@@ -488,7 +484,7 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         return !!(this._flags & (1 << AspectFlags.IsEdited));
     }
     get isDetached(): boolean {
-        //opposite of attached!
+        // opposite of attached!
         return !(this._flags & (1 << AspectFlags.IsAttached));
     }
     get isRefreshing(): boolean {

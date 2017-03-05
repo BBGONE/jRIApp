@@ -4,7 +4,7 @@ import { Utils, LocaleERRS, createWeakMap, IWeakMap } from "jriapp_shared";
 const utils = Utils, checks = utils.check, arrHelper = utils.arr,
     strUtils = utils.str, debug = utils.debug, ERRS = LocaleERRS;
 
-//stores listener and event name
+// stores listener and event name
 export type TEventNode = { fn: THandlerFunc; name: string; useCapture?: boolean };
 
 export type TEventNodeArray = TEventNode[];
@@ -101,7 +101,8 @@ class EventHelper {
 
         const ns = !nmspace ? "*" : "" + nmspace;
 
-        let list = ev[ns], node: TEventNode = EventHelper.Node(handler, name, useCapture);
+        let list = ev[ns];
+        const node: TEventNode = EventHelper.Node(handler, name, useCapture);
 
         if (!list) {
             ev[ns] = list = [];
@@ -157,7 +158,7 @@ class EventHelper {
             for (let i = 0; i < ns_keys.length; ++i) {
                 arr.push(EventHelper.removeNS(ev, name, ns_keys[i]));
             }
-            //return merged array
+            // return merged array
             return arrHelper.merge(arr);
         }
         else {
@@ -172,11 +173,11 @@ class EventHelper {
             arr.push(EventHelper.getNS(ev, ns_keys[i]));
         }
 
-        //return merged array
+        // return merged array
         return arrHelper.merge(arr);
     }
     static getDelegateListener(root: TDomElement, fn_match: (el: TDomElement) => boolean, listener: THandlerFunc): (event: Event) => void {
-        let res = (event: Event): void => {
+        const res = (event: Event): void => {
             let target: TDomElement = <any>event.target;
             // go up to the parent node
             while (!!target && target !== root) {
@@ -204,7 +205,7 @@ export type TEventsArgs = {
     useCapture?: boolean;
 };
 
-//used for delegation to match the element
+// used for delegation to match the element
 export type TEventsDelegateArgs = {
     nmspace: string;
     matchElement: (el: Element) => boolean;
@@ -319,7 +320,7 @@ export class DomEvents {
     static on(el: TDomElement, ev_type: "wheel", listener: (ev: WheelEvent) => any, args?: TEventsArgsOrNamespace): void;
     static on(el: TDomElement, ev_type: string, listener: (ev: EventWrap) => any, args: TEventsDelegateArgs): void;
     static on(el: TDomElement, ev_type: string, listener: EventListenerOrEventListenerObject, args?: TEventsArgsOrNamespace): void;
-    //on implementation
+    // on implementation
     static on(el: TDomElement, ev_type: string, listener: THandlerFunc, args?: TEventsArgsOrNamespace | TEventsDelegateArgs): void {
         let events: TEventList = weakmap.get(el), ns: string, useCapture: boolean = false;
         if (!events) {
@@ -350,7 +351,7 @@ export class DomEvents {
         }
         const handlers = helper.remove(ev, ev_type, nmspace);
         for (let i = 0; i < handlers.length; i += 1) {
-            let handler = handlers[i];
+            const handler = handlers[i];
             if (checks.isNt(useCapture) || (useCapture === handler.useCapture)) {
                 el.removeEventListener(handler.name, handler.fn, handler.useCapture);
             }

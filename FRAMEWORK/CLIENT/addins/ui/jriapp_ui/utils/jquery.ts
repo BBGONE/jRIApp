@@ -12,7 +12,7 @@ export class JQueryUtils {
     static $ = jQuery;
 
     static destroy$Plugin($el: JQuery, name: string): void {
-        let plugin = $el.data(name);
+        const plugin = $el.data(name);
         if (!!plugin) {
             $el[name]("destroy");
         }

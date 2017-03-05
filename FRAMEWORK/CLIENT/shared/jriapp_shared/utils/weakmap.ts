@@ -17,7 +17,7 @@ class WeakMap implements IWeakMap {
     private _name: string;
 
     constructor() {
-        this._name = '_wm_' + (Math.random() * 1e9 >>> 0) + (counter++ + '__'); 
+        this._name = "_wm_" + (Math.random() * 1e9 >>> 0) + (counter++ + "__"); 
     }
     set(key: any, value: any): IWeakMap {
         const entry: any[] = key[this._name];

@@ -13,7 +13,7 @@ export const PROP_NAME = {
 };
 
 const COLLAPSE_IMG = "collapse.jpg", EXPAND_IMG = "expand.jpg";
-//const COLLAPSE_IMG = "icon icon-arrow-up", EXPAND_IMG = "icon  icon-arrow-down";
+// const COLLAPSE_IMG = "icon icon-arrow-up", EXPAND_IMG = "icon  icon-arrow-down";
 
 export class ExpanderElView extends AnchorElView {
     private _expandedsrc: string;
@@ -21,9 +21,9 @@ export class ExpanderElView extends AnchorElView {
     private _isExpanded: boolean;
 
     constructor(options: IExpanderOptions) {
-        let expandedsrc = options.expandedsrc || bootstrap.getImagePath(COLLAPSE_IMG);
-        let collapsedsrc = options.collapsedsrc || bootstrap.getImagePath(EXPAND_IMG);
-        let isExpanded = !!options.isExpanded;
+        const expandedsrc = options.expandedsrc || bootstrap.getImagePath(COLLAPSE_IMG);
+        const collapsedsrc = options.collapsedsrc || bootstrap.getImagePath(EXPAND_IMG);
+        const isExpanded = !!options.isExpanded;
         options.imageSrc = null;
         super(options);
         this._expandedsrc = expandedsrc;
@@ -34,7 +34,7 @@ export class ExpanderElView extends AnchorElView {
         if (this.getIsDestroyCalled())
             return;
         this.imageSrc = this._isExpanded ? this._expandedsrc : this._collapsedsrc;
-        //this.glyph = this._isExpanded ? this._expandedsrc : this._collapsedsrc;
+        // this.glyph = this._isExpanded ? this._expandedsrc : this._collapsedsrc;
     }
     protected _onCommandChanged() {
         super._onCommandChanged();
@@ -45,7 +45,7 @@ export class ExpanderElView extends AnchorElView {
             e.preventDefault();
         this.isExpanded = !this.isExpanded;
     }
-    //override
+    // override
     invokeCommand() {
         this.refresh();
         super.invokeCommand(null, true);

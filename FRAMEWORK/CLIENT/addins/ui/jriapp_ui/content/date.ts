@@ -16,12 +16,13 @@ export class DateContent extends BasicContent {
         super(options);
     }
     protected getBindingOption(bindingInfo: IBindingInfo, tgt: IBaseObject, dctx: any, targetPath: string): IBindingOptions {
-        let options = super.getBindingOption(bindingInfo, tgt, dctx, targetPath);
+        const options = super.getBindingOption(bindingInfo, tgt, dctx, targetPath);
         options.converter = this.app.getConverter("dateConverter");
         return options;
     }
     protected createTargetElement(): IElView {
-        let el: HTMLElement, info: { name: string; options: any; } = { name: null, options: null };
+        let el: HTMLElement;
+        const info: { name: string; options: any; } = { name: null, options: null };
         if (this.isEditing && this.getIsCanBeEdited()) {
             el = doc.createElement("input");
             el.setAttribute("type", "text");

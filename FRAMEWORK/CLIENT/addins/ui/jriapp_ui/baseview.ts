@@ -5,7 +5,7 @@ import {
 import { DomUtils } from "jriapp/utils/dom";
 import { ViewChecks } from "jriapp/utils/viewchecks";
 import { TOOLTIP_SVC, DATEPICKER_SVC, DATA_ATTR } from "jriapp/const";
-import { ITooltipService, IElView, IElViewStore,IApplication, IViewOptions } from "jriapp/int";
+import { ITooltipService, IElView, IElViewStore, IApplication, IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 import { ICommand } from "jriapp/mvvm";
 import { EventBag, EVENT_CHANGE_TYPE, IEventChangedArgs } from "./utils/eventbag";
@@ -79,7 +79,7 @@ export class BaseElView extends BaseObject implements IElView {
     private _eventStore: EventBag;
     private _props: IPropertyBag;
     private _classes: IPropertyBag;
-    //saves old display before making display: none
+    // saves old display before making display: none
     private _display: string;
     private _css: string;
 
@@ -89,7 +89,7 @@ export class BaseElView extends BaseObject implements IElView {
         this._el = el;
         this._toolTip = options.tip;
 
-        //lazily initialized
+        // lazily initialized
         this._eventStore = null;
         this._props = null;
         this._classes = null;
@@ -208,7 +208,7 @@ export class BaseElView extends BaseObject implements IElView {
         if (v !== this.isVisible) {
             if (!v) {
                 this._display = this.el.style.display;
-                //if saved display is none, then don't store it
+                // if saved display is none, then don't store it
                 if (this._display === "none")
                     this._display = null;
                 this.el.style.display = "none";
@@ -236,7 +236,7 @@ export class BaseElView extends BaseObject implements IElView {
             this.raisePropertyChanged(PROP_NAME.toolTip);
         }
     }
-    //stores commands for data binding to the HtmlElement's events
+    // stores commands for data binding to the HtmlElement's events
     get events(): IPropertyBag {
         if (!this._eventStore) {
             if (this.getIsDestroyCalled()) {
@@ -249,7 +249,7 @@ export class BaseElView extends BaseObject implements IElView {
         }
         return this._eventStore;
     }
-    //exposes All HTML Element properties for data binding directly to them
+    // exposes All HTML Element properties for data binding directly to them
     get props(): IPropertyBag {
         if (!this._props) {
             if (this.getIsDestroyCalled()) {
@@ -259,7 +259,7 @@ export class BaseElView extends BaseObject implements IElView {
         }
         return this._props;
     }
-    //exposes All CSS Classes for data binding directly to them
+    // exposes All CSS Classes for data binding directly to them
     get classes(): IPropertyBag {
         if (!this._classes) {
             if (this.getIsDestroyCalled())
@@ -270,7 +270,7 @@ export class BaseElView extends BaseObject implements IElView {
     }
     get css() { return this._css; }
     set css(v: string) {
-        let arr: string[] = [];
+        const arr: string[] = [];
         if (this._css !== v) {
             if (!!this._css) {
                 arr.push("-" + this._css);
@@ -289,6 +289,6 @@ export class BaseElView extends BaseObject implements IElView {
     }
 }
 
-//it is registered by two names
+// it is registered by two names
 boot.registerElView("generic", BaseElView);
 boot.registerElView("baseview", BaseElView);

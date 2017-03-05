@@ -2,12 +2,12 @@
 import { DEBUG_LEVEL } from "./const";
 import { IVoidPromise } from "./utils/ideferred";
 
-//config global variable can be used using this interface
+// config global variable can be used using this interface
 export interface IConfig {
     debugLevel?: DEBUG_LEVEL;
 }
 
-//get config variable
+// get config variable
 export const Config: IConfig = (<any>window).jriapp_config || {};
 export let DebugLevel = (!Config.debugLevel) ? DEBUG_LEVEL.NONE : Config.debugLevel;
 

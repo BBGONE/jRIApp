@@ -44,9 +44,9 @@ export class StringUtils {
     */
     static format(format_str: string, ...args: any[]): string {
         let result = "";
-        for (let i = 0; ;) {
-            let open = format_str.indexOf("{", i);
-            let close = format_str.indexOf("}", i);
+        for (let i = 0; ; ) {
+            const open = format_str.indexOf("{", i);
+            const close = format_str.indexOf("}", i);
             if ((open < 0) && (close < 0)) {
                 result += format_str.slice(i);
                 break;
@@ -67,11 +67,11 @@ export class StringUtils {
                 continue;
             }
             if (close < 0) throw new Error(StringUtils.ERR_STRING_FORMAT_INVALID + format_str);
-            let brace = format_str.substring(i, close);
-            let colonIndex = brace.indexOf(":");
-            let argNumber = parseInt((colonIndex < 0) ? brace : brace.substring(0, colonIndex), 10);
+            const brace = format_str.substring(i, close);
+            const colonIndex = brace.indexOf(":");
+            const argNumber = parseInt((colonIndex < 0) ? brace : brace.substring(0, colonIndex), 10);
             if (isNaN(argNumber)) throw new Error(StringUtils.ERR_STRING_FORMAT_INVALID + format_str);
-            let argFormat = (colonIndex < 0) ? "" : brace.substring(colonIndex + 1);
+            const argFormat = (colonIndex < 0) ? "" : brace.substring(colonIndex + 1);
             let arg = args[argNumber];
             if (arg === undefined || arg === null) {
                 arg = "";
@@ -92,14 +92,12 @@ export class StringUtils {
     **/
     static formatNumber(num: any, decimals?: number, dec_point?: string, thousands_sep?: string) {
         num = (num + "").replace(/[^0-9+-Ee.]/g, "");
-        let n = !isFinite(+num) ? 0 : +num,
-            prec = !isFinite(+decimals) ? 0 : Math.abs(decimals),
-            sep = (thousands_sep === undefined) ? "," : thousands_sep,
-            dec = (dec_point === undefined) ? "." : dec_point,
-            s = [""],
+        const n = !isFinite(+num) ? 0 : +num, dec = (dec_point === undefined) ? "." : dec_point,
+        sep = (thousands_sep === undefined) ? "," : thousands_sep;
+        let prec = !isFinite(+decimals) ? 0 : Math.abs(decimals), s = [""];
             // Fix for IE parseFloat(0.55).toFixed(0) = 0;
-            toFixedFix = function (n: number, prec: number) {
-                let k = Math.pow(10, prec);
+        const toFixedFix = function (n: number, prec: number) {
+                const k = Math.pow(10, prec);
                 return "" + Math.round(n * k) / k;
             };
 
@@ -111,7 +109,8 @@ export class StringUtils {
             s = (prec ? toFixedFix(n, prec) : "" + Math.round(n)).split(".");
         }
 
-        let i: number, s0 = "", len = s[0].length;
+        let i: number, s0 = "";
+        const len = s[0].length;
         if (len > 3) {
             for (i = 0; i < len; i += 1) {
                 s0 = s0 + s[0].charAt(i);

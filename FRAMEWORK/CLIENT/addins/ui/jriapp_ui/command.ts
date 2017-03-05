@@ -35,14 +35,14 @@ export class CommandElView extends BaseElView {
         this.raisePropertyChanged(PROP_NAME.command);
     }
     protected invokeCommand(args: any, isAsync: boolean) {
-        let self = this;
+        const self = this;
         args = args || this._commandParam || {};
         if (!!self.command && self.command.canExecute(self, args)) {
             if (isAsync) {
                 utils.queue.enque(() => {
                     if (self.getIsDestroyCalled())
                         return;
-                    //repeat the check after timeout
+                    // repeat the check after timeout
                     try {
                         if (!!self.command && self.command.canExecute(self, args)) {
                             self.command.execute(self, args);
@@ -72,7 +72,7 @@ export class CommandElView extends BaseElView {
         return "CommandElView";
     }
     get isEnabled(): boolean {
-        let el: any = this.el;
+        const el: any = this.el;
         if (this._disabled === checks.undefined) {
             return !el.disabled;
         } else {
@@ -80,7 +80,7 @@ export class CommandElView extends BaseElView {
         }
     }
     set isEnabled(v: boolean) {
-        let el: any = this.el;
+        const el: any = this.el;
         if (v !== this.isEnabled) {
             if (this._disabled === checks.undefined) {
                 el.disabled = !v;
@@ -94,7 +94,7 @@ export class CommandElView extends BaseElView {
     }
     get command(): ICommand { return this._command; }
     set command(v: ICommand) {
-        let self = this;
+        const self = this;
         if (v !== this._command) {
             if (sys.isBaseObj(this._command)) {
                 (<IBaseObject><any>this._command).removeNSHandlers(this.uniqueID);

@@ -22,7 +22,7 @@ sys.getItemByProp = (obj: any, prop: string) => {
 };
 
 
-export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TItem, TObj>{
+export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TItem, TObj> {
     private _keyName: string;
 
     constructor(keyName: string, props: IPropInfo[]) {
@@ -37,10 +37,10 @@ export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TIte
         }
         keyFld.isPrimaryKey = 1;
     }
-    //override
+    // override
     protected createItem(obj?: TObj): TItem {
-        const isNew = !obj;
-        let vals: any = isNew ? collUtils.initVals(this.getFieldInfos(), {}) : obj, key: string;
+        const isNew = !obj, vals: any = isNew ? collUtils.initVals(this.getFieldInfos(), {}) : obj;
+        let key: string;
         if (isNew) {
             key = this._getNewKey();
         } else {
@@ -51,7 +51,7 @@ export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TIte
         const aspect = new ListItemAspect<TItem, TObj>(this, vals, key, isNew);
         return aspect.item;
     }
-    //override
+    // override
     protected _onItemAdded(item: TItem) {
         super._onItemAdded(item);
         const key = (<any>item)[this._keyName], self = this;
@@ -75,7 +75,7 @@ export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TIte
         }
         this.raisePropertyChanged("[" + item._key + "]");
     }
-    //override
+    // override
     protected _onRemoved(item: TItem, pos: number) {
         const key = (<any>item)[this._keyName];
         super._onRemoved(item, pos);

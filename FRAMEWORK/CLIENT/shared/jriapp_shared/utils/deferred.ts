@@ -166,9 +166,9 @@ class Deferred<T> implements IStatefulDeferred<T> {
                     this._state = PromiseState.Resolved;
                     this._value = value;
 
-                    let i: number, stackSize = this._stack.length;
+                    const stackSize = this._stack.length;
 
-                    for (i = 0; i < stackSize; i++) {
+                    for (let i = 0; i < stackSize; i++) {
                         this._stack[i].resolve(value, false);
                     }
 
@@ -190,10 +190,8 @@ class Deferred<T> implements IStatefulDeferred<T> {
             this._state = PromiseState.Rejected;
             this._error = error;
 
-            let stackSize = this._stack.length,
-                i = 0;
-
-            for (i = 0; i < stackSize; i++) {
+            const stackSize = this._stack.length;
+            for (let i = 0; i < stackSize; i++) {
                 this._stack[i].reject(error, false);
             }
 
@@ -412,7 +410,7 @@ export class AbortablePromise<T> implements IAbortablePromise<T> {
     abort(reason?: string): void {
         if (this._aborted)
             return;
-        let self = this;
+        const self = this;
         self._deferred.reject(new AbortError(reason));
         self._aborted = true;
         setTimeout(() => { self._abortable.abort(); }, 0);

@@ -44,7 +44,7 @@ export class JsonArray extends BaseObject {
         return [BAG_EVENTS.validate_bag, BAG_EVENTS.validate_field].concat(base_events);
     }
     protected updateArray(arr: any[]): void {
-        coreUtils.setValue(this._owner.val, this._pathToArray, arr, false, '->');
+        coreUtils.setValue(this._owner.val, this._pathToArray, arr, false, "->");
         this._owner.updateJson();
     }
     addOnValidateBag(fn: TEventHandler<IPropertyBag, IBagValidateArgs<IPropertyBag>>, nmspace?: string, context?: any) {
@@ -59,7 +59,7 @@ export class JsonArray extends BaseObject {
     removeOnValidateField(nmspace?: string) {
         this._removeHandler(BAG_EVENTS.validate_field, nmspace);
     }
-    //error Notification Implementation
+    // error Notification Implementation
     protected _validateBag(bag: IAnyValItem): IValidationInfo[] {
         const args: IBagValidateArgs<IPropertyBag> = {
             bag: bag,
@@ -86,7 +86,7 @@ export class JsonArray extends BaseObject {
     getArray(): any[] {
         if (!this._owner)
             return [];
-        const res = coreUtils.getValue(this._owner.val, this._pathToArray, '->');
+        const res = coreUtils.getValue(this._owner.val, this._pathToArray, "->");
         return (!res) ? [] : res;
     }
     get pathToArray(): string {
@@ -102,13 +102,13 @@ export class JsonArray extends BaseObject {
             });
 
             this._list.addOnValidateField((s, args) => {
-                let validation_info = this._validateField(args.item, args.fieldName);
+                const validation_info = this._validateField(args.item, args.fieldName);
                 if (!!validation_info && validation_info.errors.length > 0)
                     args.errors = validation_info.errors;
             }, this._objId);
 
             this._list.addOnValidateItem((s, args) => {
-                let validation_infos = this._validateBag(args.item);
+                const validation_infos = this._validateBag(args.item);
                 args.result = validation_infos;
             }, this._objId);
 

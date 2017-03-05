@@ -41,7 +41,7 @@ export class BaseComplexProperty extends BaseObject implements IErrorNotificatio
         throw new Error("Not Implemented");
    }
     getPropertyByName(name: string): IFieldInfo {
-        let arrProps = this.getProperties().filter((f) => { return f.fieldName === name; });
+        const arrProps = this.getProperties().filter((f) => { return f.fieldName === name; });
         if (!arrProps || arrProps.length !== 1)
             throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "arrProps.length === 1"));
         return arrProps[0];
@@ -53,10 +53,10 @@ export class BaseComplexProperty extends BaseObject implements IErrorNotificatio
         this.getEntity().addOnErrorsChanged(fn, nmspace, context);
    }
     removeOnErrorsChanged(nmspace?: string): void {
-        this.getEntity().removeOnErrorsChanged(nmspace)
+        this.getEntity().removeOnErrorsChanged(nmspace);
    }
     getFieldErrors(fieldName: string): IValidationInfo[] {
-        let fullName = this.getFullPath(fieldName);
+        const fullName = this.getFullPath(fieldName);
         return this.getEntity().getFieldErrors(fullName);
    }
     getAllErrors(): IValidationInfo[] {
@@ -115,7 +115,7 @@ export class ChildComplexProperty extends BaseComplexProperty {
         return this.getEntity()._getFieldVal(fullName);
    }
     getFieldInfo(): IFieldInfo {
-        let name = this.getName();
+        const name = this.getName();
         return this._parent.getPropertyByName(name);
    }
     getProperties(): IFieldInfo[] {

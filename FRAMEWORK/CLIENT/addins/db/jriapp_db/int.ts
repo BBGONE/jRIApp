@@ -10,8 +10,8 @@ import { EntityAspect } from "./entity_aspect";
 import { DbContext } from "./dbcontext";
 
 export interface IFieldName {
-    n: string; //field's name
-    p: IFieldName[]; //for object field contains its properties, for others is null
+    n: string; // field's name
+    p: IFieldName[]; // for object field contains its properties, for others is null
 }
 
 export interface IEntityItem extends ICollectionItem {
@@ -182,7 +182,7 @@ export interface IQueryRequest {
 }
 
 export interface IRowData {
-    k: string; v: any[]; //key and values
+    k: string; v: any[]; // key and values
 }
 
 export interface IQueryItems<TItem extends IEntityItem> {
@@ -193,7 +193,7 @@ export interface IQueryItems<TItem extends IEntityItem> {
 export interface IQueryResult<TItem extends IEntityItem> {
     fetchedItems: TItem[];
     items: TItem[];
-    newItems: IQueryItems<TItem>,
+    newItems: IQueryItems<TItem>;
     reason: COLL_CHANGE_REASON;
     outOfBandData: any;
 }

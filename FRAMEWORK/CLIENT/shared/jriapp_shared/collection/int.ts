@@ -27,7 +27,7 @@ export const ITEM_EVENTS = {
     destroyed: "destroyed"
 };
 
-//--Collection interfaces
+// Collection interfaces
 export interface IFieldInfo {
     fieldName: string;
     isPrimaryKey: number;

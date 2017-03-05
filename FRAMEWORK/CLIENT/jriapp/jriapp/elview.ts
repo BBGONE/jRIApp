@@ -59,11 +59,11 @@ class ElViewStore implements IElViewStore {
 
     public destroy(): void {
     }
-    //get element view associated with HTML element(if any)
+    // get element view associated with HTML element(if any)
     getElView(el: HTMLElement): IElView {
         return this._weakmap.get(el);
     }
-    //store association of HTML element with its element View
+    // store association of HTML element with its element View
     setElView(el: HTMLElement, view?: IElView): void {
         if (!view) {
             this._weakmap.delete(el);
@@ -96,8 +96,8 @@ class ElViewFactory extends BaseObject implements IElViewFactory {
         name: string;
         options: IViewOptions;
     }): IElView {
-        let viewType: IViewType, elView: IElView, options = view_info.options;
-        let el = options.el;
+        let viewType: IViewType, elView: IElView;
+        const options = view_info.options, el = options.el;
 
         if (!!view_info.name) {
             viewType = this._register.getElViewType(view_info.name);
@@ -127,16 +127,16 @@ class ElViewFactory extends BaseObject implements IElViewFactory {
             elView = new viewType(options);
         }
         catch (e) {
-            //ensure clean up
+            // ensure clean up
             this._store.setElView(el, null);
             throw e;
         }
         return elView;
     }
-    //checks if the element already has created and attached an ElView, if no then it creates and attaches ElView for the element
+    // checks if the element already has created and attached an ElView, if no then it creates and attaches ElView for the element
     getOrCreateElView(el: HTMLElement): IElView {
         const elView = this.store.getElView(el);
-        //check if element view is already created for this element
+        // check if element view is already created for this element
         if (!!elView)
             return elView;
         const info = this.getElementViewInfo(el);

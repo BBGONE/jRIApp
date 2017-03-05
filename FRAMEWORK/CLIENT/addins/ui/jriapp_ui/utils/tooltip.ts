@@ -11,15 +11,15 @@ export const css = {
 };
 
 export function createToolTipSvc(): ITooltipService {
-    return new tooltipService();
+    return new TooltipService();
 }
 
-class tooltipService implements ITooltipService {
+class TooltipService implements ITooltipService {
     constructor() {
     }
 
     addToolTip(el: Element, tip: string, isError?: boolean, pos?: string): void {
-        let $el = $(el), options: QTip2.QTipOptions = {
+        const $el = $(el), options: QTip2.QTipOptions = {
             content: {
                 text: tip
             },

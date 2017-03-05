@@ -34,7 +34,7 @@ export interface ILookupOptions {
     statePath?: string;
 }
 
-let LOOKUP_EVENTS = {
+const LOOKUP_EVENTS = {
     obj_created: "object_created",
     obj_needed: "object_needed"
 };
@@ -68,7 +68,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         }
     }
     protected _getEventNames() {
-        let base_events = super._getEventNames();
+        const base_events = super._getEventNames();
         return [LOOKUP_EVENTS.obj_created, LOOKUP_EVENTS.obj_needed].concat(base_events);
     }
     addOnObjectCreated(fn: (sender: any, args: TObjCreatedArgs) => void, nmspace?: string) {
@@ -90,7 +90,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
 
         const lookUpOptions: ILookupOptions = this._options.options, objectKey = "listBoxElView";
 
-        let args1: TObjNeededArgs = { objectKey: objectKey, object: null };
+        const args1: TObjNeededArgs = { objectKey: objectKey, object: null };
         // try get externally externally cached listBox
         this.raiseEvent(LOOKUP_EVENTS.obj_needed, args1);
         if (!!args1.object) {
@@ -131,7 +131,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         spanView.value = this.getLookupText();
     }
     protected getLookupText() {
-        let listBoxView = this.getListBoxElView();
+        const listBoxView = this.getListBoxElView();
         return listBoxView.listBox.getText(this.value);
     }
     protected getSpanView() {
@@ -142,7 +142,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         if (!!displayInfo && !!displayInfo.displayCss) {
             dom.addClass([el], displayInfo.displayCss);
         }
-        let spanView = new SpanElView({ el: el });
+        const spanView = new SpanElView({ el: el });
         this._spanView = spanView;
         return this._spanView;
     }
@@ -193,7 +193,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         if (!this._options.fieldName)
             return null;
 
-        let options: IBindingOptions = {
+        const options: IBindingOptions = {
             target: this, source: this._dataContext,
             targetPath: PROP_NAME.value, sourcePath: this._options.fieldName,
             mode: BINDING_MODE.OneWay,
@@ -205,7 +205,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         if (!this._options.fieldName)
             return null;
 
-        let options: IBindingOptions = {
+        const options: IBindingOptions = {
             target: selectView, source: this._dataContext,
             targetPath: PROP_NAME.selectedValue, sourcePath: this._options.fieldName,
             mode: BINDING_MODE.TwoWay,

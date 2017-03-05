@@ -31,15 +31,15 @@ export class TemplateElView extends CommandElView implements ITemplateEvents {
         this._isEnabled = true;
     }
     templateLoading(template: ITemplate): void {
-        //noop
+        // noop
     }
     templateLoaded(template: ITemplate, error?: any): void {
         if (!!error)
             return;
-        let self = this;
+        const self = this;
         try {
             self._template = template;
-            let args = { template: template, isLoaded: true };
+            const args = { template: template, isLoaded: true };
             self.invokeCommand(args, false);
             this.raisePropertyChanged(PROP_NAME.template);
         }
@@ -48,9 +48,9 @@ export class TemplateElView extends CommandElView implements ITemplateEvents {
         }
     }
     templateUnLoading(template: ITemplate): void {
-        let self = this;
+        const self = this;
         try {
-            let args = { template: template, isLoaded: false };
+            const args = { template: template, isLoaded: false };
             self.invokeCommand(args, false);
         }
         catch (ex) {

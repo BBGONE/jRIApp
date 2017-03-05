@@ -30,10 +30,10 @@ function fn_reportUnResolved(bindTo: BindTo, root: any, path: string, propName: 
     debug.checkStartDebugger();
     let msg = "Unresolved data binding for ";
     if (bindTo === BindTo.Source) {
-        msg += " Source: "
+        msg += " Source: ";
     }
     else {
-        msg += " Target: "
+        msg += " Target: ";
     }
     msg += "'" + root + "'";
     msg += ", property: '" + propName + "'";
@@ -52,10 +52,10 @@ function fn_reportMaxRec(bindTo: BindTo, src: any, tgt: any, spath: string, tpat
     debug.checkStartDebugger();
     let msg = "Maximum recursion exceeded for ";
     if (bindTo === BindTo.Source) {
-        msg += "Updating Source value: "
+        msg += "Updating Source value: ";
     }
     else {
-        msg += "Updating Target value: "
+        msg += "Updating Target value: ";
     }
     msg += " source:'" + src + "'";
     msg += ", target:'" + tgt + "'";
@@ -81,7 +81,7 @@ export function getBindingOptions(
     bindInfo: IBindingInfo,
     defaultTarget: IBaseObject,
     defaultSource: any) {
-    let bindingOpts: IBindingOptions = {
+    const bindingOpts: IBindingOptions = {
         mode: BINDING_MODE.OneWay,
         converterParam: null,
         converter: null,
@@ -92,7 +92,8 @@ export function getBindingOptions(
         isSourceFixed: false
     };
 
-    let converter: IConverter, app = boot.getApp();
+    let converter: IConverter;
+    const app = boot.getApp();
 
     if (checks.isString(bindInfo.converter)) {
         converter = app.getConverter(bindInfo.converter);
@@ -101,7 +102,7 @@ export function getBindingOptions(
         converter = bindInfo.converter;
     }
 
-    let fixedSource = bindInfo.source, fixedTarget = bindInfo.target;
+    const fixedSource = bindInfo.source, fixedTarget = bindInfo.target;
 
     if (!bindInfo.sourcePath && !!bindInfo.to)
         bindingOpts.sourcePath = bindInfo.to;
@@ -118,8 +119,7 @@ export function getBindingOptions(
         bindingOpts.converter = converter;
     }
 
-    if (!fixedTarget)
-    {
+    if (!fixedTarget) {
         bindingOpts.target = defaultTarget;
     }
     else {
@@ -127,7 +127,7 @@ export function getBindingOptions(
             if (fixedTarget === "this")
                 bindingOpts.target = defaultTarget;
             else {
-                //if no fixed target, then target evaluation starts from this app
+                // if no fixed target, then target evaluation starts from this app
                 bindingOpts.target = parser.resolveSource(app, sys.getPathParts(fixedTarget));
             }
         }
@@ -137,7 +137,7 @@ export function getBindingOptions(
     }
 
     if (!fixedSource) {
-        //if source is not supplied use defaultSource parameter as source
+        // if source is not supplied use defaultSource parameter as source
         bindingOpts.source = defaultSource;
     }
     else {
@@ -147,7 +147,7 @@ export function getBindingOptions(
                 bindingOpts.source = defaultTarget;
             }
             else {
-                //source evaluation starts from this app
+                // source evaluation starts from this app
                 bindingOpts.source = parser.resolveSource(app, sys.getPathParts(fixedSource));
             }
         }
@@ -169,9 +169,9 @@ export class Binding extends BaseObject implements IBinding {
     private _srcFixed: boolean;
     private _pathItems: IIndexer<IBaseObject>;
     private _objId: string;
-    //the last object in the source path
+    // the last object in the source path
     private _srcEnd: any;
-    //the last object in the target path
+    // the last object in the target path
     private _tgtEnd: any;
     private _source: any;
     private _target: IBaseObject;
@@ -181,7 +181,7 @@ export class Binding extends BaseObject implements IBinding {
 
     constructor(options: IBindingOptions) {
         super();
-        let opts: IBindingOptions = coreUtils.extend({
+        const opts: IBindingOptions = coreUtils.extend({
             target: null, source: null,
             targetPath: null, sourcePath: null, mode: BINDING_MODE.OneWay,
             converter: null, converterParam: null, isSourceFixed: false
@@ -209,7 +209,7 @@ export class Binding extends BaseObject implements IBinding {
             throw new Error(ERRS.ERR_BIND_TARGET_INVALID);
         }
 
-        //save the state - source and target, when the binding is disabled
+        // save the state - source and target, when the binding is disabled
         this._state = null; 
         this._mode = opts.mode;
         this._converter = !opts.converter ? null : opts.converter;
@@ -225,7 +225,7 @@ export class Binding extends BaseObject implements IBinding {
         this._tgtEnd = null;
         this._source = null;
         this._target = null;
-        //a mask indicating to update update the target or the source or both
+        // a mask indicating to update update the target or the source or both
         this._umask = 0;
         this._cntUtgt = 0;
         this._cntUSrc = 0;
@@ -233,12 +233,12 @@ export class Binding extends BaseObject implements IBinding {
         this._setSource(opts.source);
         this._update();
 
-        let err_notif = sys.getErrorNotification(this._srcEnd);
+        const err_notif = sys.getErrorNotification(this._srcEnd);
         if (!!err_notif && err_notif.getIsHasErrors())
             this._onSrcErrChanged(err_notif);
     }
     private _update(): void {
-        const umask = this._umask, MAX_REC= 3;
+        const umask = this._umask, MAX_REC = 3;
         let flag = 0;
         this._umask = 0;
 
@@ -269,7 +269,7 @@ export class Binding extends BaseObject implements IBinding {
                         }
                     }
                     else {
-                        fn_reportMaxRec(BindTo.Source, this._source, this._target, this._srcPath.join("."), this._tgtPath.join("."))
+                        fn_reportMaxRec(BindTo.Source, this._source, this._target, this._srcPath.join("."), this._tgtPath.join("."));
                     }
                 }
                 break;
@@ -285,14 +285,15 @@ export class Binding extends BaseObject implements IBinding {
                         }
                     }
                     else {
-                        fn_reportMaxRec(BindTo.Target, this._source, this._target, this._srcPath.join("."), this._tgtPath.join("."))
+                        fn_reportMaxRec(BindTo.Target, this._source, this._target, this._srcPath.join("."), this._tgtPath.join("."));
                     }
                 }
                 break;
         }
     }
     private _onSrcErrChanged(err_notif: IErrorNotification) {
-        let errors: IValidationInfo[] = [], tgt = this._tgtEnd, src = this._srcEnd, srcPath = this._srcPath;
+        let errors: IValidationInfo[] = [];
+        const tgt = this._tgtEnd, src = this._srcEnd, srcPath = this._srcPath;
         if (!!tgt && viewChecks.isElView(tgt)) {
             if (!!src && srcPath.length > 0) {
                 const prop = sys.isPropBag(err_notif) ? srcPath[srcPath.length - 1] : srcPath.join(".");
@@ -307,7 +308,7 @@ export class Binding extends BaseObject implements IBinding {
             if (restPath.length > 0) {
                 self._setPathItem(null, BindTo.Target, lvl, restPath);
             }
-            //bind and trigger target update
+            // bind and trigger target update
             self._parseTgt(val, restPath, lvl);
             self._update();
         };
@@ -322,10 +323,10 @@ export class Binding extends BaseObject implements IBinding {
             self._update();
         };
     }
-    private _addOnPropChanged(obj: IBaseObject, prop: string, fn: (s:any, a: any) => void) {
+    private _addOnPropChanged(obj: IBaseObject, prop: string, fn: (s: any, a: any) => void) {
         obj.addOnPropertyChange(prop, fn, this._objId);
 
-        //for PropertyBag also listen for all property changes notification
+        // for PropertyBag also listen for all property changes notification
         if (prop !== "[*]" && sys.isPropBag(obj)) {
             obj.addOnPropertyChange("[*]", fn, this._objId);
         }
@@ -371,7 +372,7 @@ export class Binding extends BaseObject implements IBinding {
             }
 
             if (!!obj) {
-                let nextObj = sys.getProp(obj, path[0]);
+                const nextObj = sys.getProp(obj, path[0]);
                 if (!!nextObj) {
                     self._parseSrc2(nextObj, path.slice(1), lvl + 1);
                 }
@@ -383,7 +384,7 @@ export class Binding extends BaseObject implements IBinding {
         }
 
         if (!!obj && path.length === 1) {
-            const isValidProp =  (!debug.isDebugging()? true: (isBaseObj ? (<IBaseObject>obj)._isHasProp(path[0]) : checks.isHasProp(obj, path[0])));
+            const isValidProp =  (!debug.isDebugging() ? true : (isBaseObj ? (<IBaseObject>obj)._isHasProp(path[0]) : checks.isHasProp(obj, path[0])));
 
             if (isValidProp) {
                 const updateOnChange = isBaseObj && (self._mode === BINDING_MODE.OneWay || self._mode === BINDING_MODE.TwoWay);
@@ -427,7 +428,7 @@ export class Binding extends BaseObject implements IBinding {
                 this._umask |= 1;
         }
         else {
-            //if new target then update the target (not the source!)
+            // if new target then update the target (not the source!)
             if (!!self._tgtEnd)
                 this._umask |= 2;
         }
@@ -485,7 +486,7 @@ export class Binding extends BaseObject implements IBinding {
     private _setPathItem(newObj: IBaseObject, bindingTo: BindTo, lvl: number, path: string[]) {
         const len = lvl + path.length;
         for (let i = lvl; i < len; i += 1) {
-            let key = (bindingTo === BindTo.Source) ? ("s" + i) : ((bindingTo === BindTo.Target) ? ("t" + i) : null);
+            const key = (bindingTo === BindTo.Source) ? ("s" + i) : ((bindingTo === BindTo.Target) ? ("t" + i) : null);
             if (!key)
                 throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "bindingTo", bindingTo));
 
@@ -523,7 +524,7 @@ export class Binding extends BaseObject implements IBinding {
             utils.queue.enque(() => {
                 if (self.getIsDestroyCalled())
                     return;
-                //rebind after the target is destroyed
+                // rebind after the target is destroyed
                 self._parseTgt(self.target, self._tgtPath, 0);
                 self._update();
             });
@@ -534,17 +535,15 @@ export class Binding extends BaseObject implements IBinding {
         if (self.getIsDestroyCalled())
             return;
 
-        if (sender === self.source)
-        {
+        if (sender === self.source) {
             self._setSource(null);
             self._update();
-        }
-        else {
+        } else {
             self._setPathItem(null, BindTo.Source, 0, self._srcPath);
             utils.queue.enque(() => {
                 if (self.getIsDestroyCalled())
                     return;
-                //rebind after the source is destroyed
+                // rebind after the source is destroyed
                 self._parseSrc(self.source, self._srcPath, 0);
                 self._update();
             });
@@ -574,11 +573,11 @@ export class Binding extends BaseObject implements IBinding {
         }
         catch (ex) {
             if (!sys.isValidationError(ex) || !viewChecks.isElView(this._tgtEnd)) {
-                //BaseElView is notified about errors in _onSrcErrChanged event handler
-                //err_notif.addOnErrorsChanged(self._onSrcErrChanged, self._objId, self);
-                //we only need to rethrow in other cases:
-                //1) when target is not BaseElView
-                //2) when error is not ValidationError
+                // BaseElView is notified about errors in _onSrcErrChanged event handler
+                // err_notif.addOnErrorsChanged(self._onSrcErrChanged, self._objId, self);
+                // we only need to rethrow in other cases:
+                // 1) when target is not BaseElView
+                // 2) when error is not ValidationError
                 utils.err.reThrow(ex, this.handleError(ex, this));
             }
         }
@@ -597,7 +596,7 @@ export class Binding extends BaseObject implements IBinding {
                 }
                 finally {
                     this._cntUtgt -= 1;
-                    //sanity check
+                    // sanity check
                     if (this._cntUtgt < 0)
                         throw new Error("Invalid operation: this._cntUtgt = " + this._cntUtgt);
                 }
@@ -625,7 +624,7 @@ export class Binding extends BaseObject implements IBinding {
                 }
                 finally {
                     this._cntUSrc -= 1;
-                    //sanity check
+                    // sanity check
                     if (this._cntUSrc < 0)
                         throw new Error("Invalid operation: this._cntUSrc = " + this._cntUSrc);
                 }
@@ -682,7 +681,7 @@ export class Binding extends BaseObject implements IBinding {
         if (this._srcPath.length === 0)
             res = this._srcEnd;
         if (!!this._srcEnd) {
-            let prop = this._srcPath[this._srcPath.length - 1];
+            const prop = this._srcPath[this._srcPath.length - 1];
             res = sys.getProp(this._srcEnd, prop);
         }
         return res;
@@ -696,7 +695,7 @@ export class Binding extends BaseObject implements IBinding {
     get targetValue() {
         let res: any = null;
         if (!!this._tgtEnd) {
-            let prop = this._tgtPath[this._tgtPath.length - 1];
+            const prop = this._tgtPath[this._tgtPath.length - 1];
             res = sys.getProp(this._tgtEnd, prop);
         }
         return res;
@@ -719,7 +718,7 @@ export class Binding extends BaseObject implements IBinding {
         v = !!v;
         if (this.isDisabled !== v) {
             if (v) {
-                //going to disabled state
+                // going to disabled state
                 s = { source: this._source, target: this._target };
                 try {
                     this.target = null;
@@ -730,7 +729,7 @@ export class Binding extends BaseObject implements IBinding {
                 }
             }
             else {
-                //restoring from disabled state
+                // restoring from disabled state
                 s = this._state;
                 this._state = null;
                 this._setTarget(s.target);

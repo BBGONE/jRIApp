@@ -55,7 +55,7 @@ const _created_grids: IIndexer<DataGrid> = {};
 export function getDataGrids(): DataGrid[] {
     const keys = Object.keys(_created_grids), res: DataGrid[] = [];
     for (let i = 0; i < keys.length; i += 1) {
-        let grid = _created_grids[keys[i]];
+        const grid = _created_grids[keys[i]];
         res.push(grid);
     }
 
@@ -65,7 +65,7 @@ export function getDataGrids(): DataGrid[] {
 export function findDataGrid(gridName: string): DataGrid {
     const keys = Object.keys(_created_grids);
     for (let i = 0; i < keys.length; i += 1) {
-        let grid = _created_grids[keys[i]];
+        const grid = _created_grids[keys[i]];
         if (!!grid.table && grid.table.getAttribute(DATA_ATTR.DATA_NAME) === gridName)
             return grid;
     }
@@ -128,9 +128,9 @@ export interface IDataGridOptions {
     isHandleAddNew: boolean;
     details?: { templateID: string; };
     editor?: IDialogConstructorOptions;
-    //if newly created items are prepended to the table (instead of appended)
+    // if newly created items are prepended to the table (instead of appended)
     isPrependNewRows?: boolean;
-    //if all additionally added rows are prepended to the table (instead of appended)
+    // if all additionally added rows are prepended to the table (instead of appended)
     isPrependAllRows?: boolean;
 }
 
@@ -194,9 +194,9 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 animation: null,
                 isUseScrollInto: true,
                 isUseScrollIntoDetails: true,
-                containerCss: null, //div that wraps all table and header
-                wrapCss: null, //div that wraps only table without header
-                headerCss: null, //div inside which are column cells
+                containerCss: null, // div that wraps all table and header
+                wrapCss: null, // div that wraps only table without header
+                headerCss: null, // div inside which are column cells
                 rowStateField: null,
                 isCanEdit: null,
                 isCanDelete: null,
@@ -306,8 +306,8 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._setDataSource(ds);
     }
     protected _getEventNames() {
-        let base_events = super._getEventNames();
-        let events = Object.keys(GRID_EVENTS).map((key) => { return <string>(<any>GRID_EVENTS)[key]; });
+        const base_events = super._getEventNames();
+        const events = Object.keys(GRID_EVENTS).map((key) => { return <string>(<any>GRID_EVENTS)[key]; });
         return events.concat(base_events);
     }
     addOnRowExpanded(fn: TEventHandler<DataGrid, { collapsedRow: Row; expandedRow: Row; isExpanded: boolean; }>, nmspace?: string, context?: any) {
@@ -400,7 +400,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         }
     }
     protected _onKeyUp(key: number, event: Event): void {
-        let ds = this.dataSource;
+        const ds = this.dataSource;
         if (!ds)
             return;
         const currentRow = this.currentRow;
@@ -443,12 +443,12 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             this._currentColumn.isSelected = true;
     }
     protected _onRowStateChanged(row: Row, val: any): string {
-        let args = { row: row, val: val, css: <string>null };
+        const args = { row: row, val: val, css: <string>null };
         this.raiseEvent(GRID_EVENTS.row_state_changed, args);
         return args.css;
     }
     protected _onCellDblClicked(cell: BaseCell<BaseColumn>): void {
-        let args = { cell: cell };
+        const args = { cell: cell };
         this.raiseEvent(GRID_EVENTS.cell_dblclicked, args);
     }
     protected _onRowSelectionChanged(row: Row): void {
@@ -501,7 +501,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             this._details = this._createDetails();
             this._fillSpace = this._createFillSpace();
         }
-        let old = this._expandedRow;
+        const old = this._expandedRow;
         if (old === parentRow) {
             if (!!old && expanded)
                 return;
@@ -532,7 +532,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     }
     protected _parseColumnAttr(column_attr: string, content_attr: string) {
         const defaultOp: IColumnInfo = {
-            "type": COLUMN_TYPE.DATA, //default column type
+            "type": COLUMN_TYPE.DATA, // default column type
             title: null,
             sortable: false,
             sortMemberName: null,
@@ -559,8 +559,10 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             return null;
         if (!row.isDeleted)
             return row;
-        //find nearest nondeleted row (search up and down)
-        let delIndex = this.rows.indexOf(row), i = delIndex, len = this.rows.length;
+        // find nearest nondeleted row (search up and down)
+        const delIndex = this.rows.indexOf(row), len = this.rows.length;
+        let i = delIndex;
+
         if (!isUp) {
             i -= 1;
             if (i >= 0)
@@ -627,13 +629,13 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                             rowpos = self._removeRow(row);
                         }
                     });
-                    //positioning the row after deletion
+                    // positioning the row after deletion
                     const rowlen = this._rows.length;
                     if (rowpos > -1 && rowlen > 0) {
                         if (rowpos < rowlen)
                             this.currentRow = this._rows[rowpos];
                         else
-                            this.currentRow = this._rows[rowlen-1];
+                            this.currentRow = this._rows[rowlen - 1];
                     }
                     
                     self._updateTableDisplay();
@@ -685,7 +687,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         if (!row)
             return;
         this.scrollToCurrent();
-        //row.isExpanded = true;
+        // row.isExpanded = true;
         if (this._options.isHandleAddNew && !args.isAddNewHandled) {
             args.isAddNewHandled = this.showEditDialog();
         }
@@ -799,9 +801,9 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             return;
         this._header.remove();
         this._header = null;
-        //remove wrapDiv
+        // remove wrapDiv
         dom.unwrap(this.table);
-        //remove container
+        // remove container
         dom.unwrap(this.table);
         this._wrapper = null;
         this._contaner = null;
@@ -811,12 +813,12 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         const cnt = headCells.length;
 
         for (let i = 0; i < cnt; i += 1) {
-            let th = headCells[i], attr = this._parseColumnAttr(th.getAttribute(DATA_ATTR.DATA_COLUMN), th.getAttribute(DATA_ATTR.DATA_CONTENT));
+            const th = headCells[i], attr = this._parseColumnAttr(th.getAttribute(DATA_ATTR.DATA_COLUMN), th.getAttribute(DATA_ATTR.DATA_CONTENT));
             cellInfos.push({ th: th, colInfo: attr });
         }
 
         cellInfos.forEach((cellInfo) => {
-            let col = self._createColumn(cellInfo);
+            const col = self._createColumn(cellInfo);
             if (!!col)
                 self._columns.push(col);
         });
@@ -854,19 +856,20 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     }
     protected _appendItems(newItems: ICollectionItem[]) {
         const self = this, tbody = this._tBodyEl;
-        let isPrepend = self.options.isPrependAllRows, isPrependNew = self.options.isPrependNewRows;
+        let isPrepend = self.options.isPrependAllRows;
+        const isPrependNew = self.options.isPrependNewRows;
 
         if (newItems.length === 1) {
-            let item = newItems[0];
+            const item = newItems[0];
             if (!self._rowMap[item._key]) {
                 isPrepend = isPrepend || (isPrependNew && item._aspect.isNew);
                 self._createRowForItem(tbody, item, isPrepend);
             }
         }
         else {
-            const docFr = doc.createDocumentFragment();
-            for (let i = 0, k = newItems.length; i < k; i += 1) {
-                let item = newItems[i];
+            const docFr = doc.createDocumentFragment(), k = newItems.length;
+            for (let i = 0; i < k; i += 1) {
+                const item = newItems[i];
                 if (!self._rowMap[item._key]) {
                     self._createRowForItem(docFr, item, (isPrependNew && item._aspect.isNew));
                 }
@@ -960,7 +963,8 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     updateColumnsSize() {
         if (this.getIsDestroyCalled())
             return;
-        let width = 0, header = this._header;
+        let width = 0;
+        const header = this._header;
         this._columns.forEach((col) => {
             width += col.width;
         });
@@ -1017,8 +1021,8 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     showEditDialog() {
         if (!this.isHasEditor || !this._editingRow)
             return false;
-        let dialogOptions: IDialogConstructorOptions,
-            item = this._editingRow.item;
+        let dialogOptions: IDialogConstructorOptions;
+        const item = this._editingRow.item;
         if (!item._aspect.isEditing)
             item._aspect.beginEdit();
         if (!this._dialog) {
@@ -1039,14 +1043,14 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             return;
         const row = args.row,  viewport = this._wrapper;
         if (!!this._fillSpace) {
-            //reset fillspace to calculate original table height
+            // reset fillspace to calculate original table height
             this._fillSpace.height = 0;
         }
-        let animate = !!args.animate,
+        const animate = !!args.animate,
             alignBottom = (args.pos === ROW_POSITION.Bottom),
             viewPortHeight = viewport.clientHeight, viewportRect = viewport.getBoundingClientRect(),
-            rowHeight = row.height, currentScrollTop = viewport.scrollTop,
-            offsetDiff = currentScrollTop + row.rect.top - viewportRect.top;
+            rowHeight = row.height, currentScrollTop = viewport.scrollTop;
+        let offsetDiff = currentScrollTop + row.rect.top - viewportRect.top;
 
         if (alignBottom) {
             offsetDiff = Math.floor(offsetDiff + 1);
@@ -1055,18 +1059,19 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             offsetDiff = Math.floor(offsetDiff - 1);
         }
 
-        //yOffset is needed to align row at  the bottom
+        // yOffset is needed to align row at  the bottom
         let contentHeight = rowHeight;
         if (row.isExpanded) {
             contentHeight = contentHeight + this._details.height;
         }
 
         contentHeight = Math.min(viewPortHeight, contentHeight);
-        //the height of the viewport minus the row height which includes the details if expanded
-        let yOffset = viewPortHeight - contentHeight, yPos = offsetDiff, deltaY = 0;
+        // the height of the viewport minus the row height which includes the details if expanded
+        const yOffset = viewPortHeight - contentHeight;
+        let yPos = offsetDiff, deltaY = 0;
 
         if (alignBottom)
-            yPos -= yOffset
+            yPos -= yOffset;
 
         const maxScrollTop = this.table.offsetHeight - viewPortHeight + 1;
 
@@ -1079,16 +1084,16 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
 
      
         if (!!this._fillSpace) {
-            //add additional height to the table for scrolling further
+            // add additional height to the table for scrolling further
             this._fillSpace.height = deltaY;
         }
 
-        //console.log(strUtils.format("deltaY: {0} yPos: {1} ScrollTop: {2} offsetDiff: {3} (offsetDiff - yOffset): {4}",
-            //deltaY, yPos, currentScrollTop, offsetDiff, (offsetDiff - yOffset)));
+        // console.log(strUtils.format("deltaY: {0} yPos: {1} ScrollTop: {2} offsetDiff: {3} (offsetDiff - yOffset): {4}",
+            // deltaY, yPos, currentScrollTop, offsetDiff, (offsetDiff - yOffset)));
 
-        //no need for scrolling if  the row is visible inside the viewport
-        //but if the row details is expanded (args.pos === ROW_POSITION.Details) then always scroll the row to the top
-        //in order to show the details in full
+        // no need for scrolling if  the row is visible inside the viewport
+        // but if the row details is expanded (args.pos === ROW_POSITION.Details) then always scroll the row to the top
+        // in order to show the details in full
         if ((args.pos !== ROW_POSITION.Details) && (currentScrollTop < offsetDiff && currentScrollTop > (offsetDiff - yOffset)))
             return;
 
@@ -1104,7 +1109,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         boot.currentSelectable = this;
     }
     addNew() {
-        let ds = this.dataSource;
+        const ds = this.dataSource;
         try {
             ds.addNew();
             this.showEditDialog();
@@ -1161,13 +1166,13 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     get _tHeadRow(): HTMLTableRowElement {
         if (!this._tHeadEl)
             return null;
-        let trs = this._tHeadEl.rows;
+        const trs = this._tHeadEl.rows;
         if (trs.length === 0)
             return null;
         return <HTMLTableRowElement>trs[0];
     }
     get _tHeadCells() {
-        let row = this._tHeadRow;
+        const row = this._tHeadRow;
         if (!row)
             return [];
         return utils.arr.fromList<HTMLTableHeaderCellElement>(row.cells);

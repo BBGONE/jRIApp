@@ -9,8 +9,8 @@ import { IIndexer, IValidationInfo } from "../int";
 const utils = Utils, checks = utils.check, strUtils = utils.str;
 
 function fn_toArray(index: IIndexer<IValidationInfo>): IValidationInfo[] {
-    const keys = Object.keys(index), result: IValidationInfo[] = [];
-    for (let i = 0, len = keys.length; i < len; i += 1) {
+    const keys = Object.keys(index), result: IValidationInfo[] = [], len = keys.length;
+    for (let i = 0; i < len; i += 1) {
         result.push(index[keys[i]]);
     }
     return result;
@@ -19,12 +19,11 @@ function fn_toArray(index: IIndexer<IValidationInfo>): IValidationInfo[] {
 
 export class Validations {
     private static _dtRangeToDate(str: string) {
-        let dtParts = str.split("-");
-        let dt = new Date(parseInt(dtParts[0], 10), parseInt(dtParts[1], 10) - 1, parseInt(dtParts[2], 10));
+        const dtParts = str.split("-"), dt = new Date(parseInt(dtParts[0], 10), parseInt(dtParts[1], 10) - 1, parseInt(dtParts[2], 10));
         return dt;
     }
     private static checkNumRange(num: number, range: string): string[] {
-        let errors: string[] = [], rangeParts = range.split(",");
+        const errors: string[] = [], rangeParts = range.split(",");
         if (!!rangeParts[0]) {
             if (num < parseFloat(rangeParts[0])) {
                 errors.push(utils.str.format(ERRS.ERR_FIELD_RANGE, num, range));
@@ -38,7 +37,7 @@ export class Validations {
         return errors;
     }
     private static checkDateRange(dt: Date, range: string): string[] {
-        let errors: string[] = [], rangeParts = range.split(",");
+        const errors: string[] = [], rangeParts = range.split(",");
         if (!!rangeParts[0]) {
             if (dt < Validations._dtRangeToDate(rangeParts[0])) {
                 errors.push(utils.str.format(ERRS.ERR_FIELD_RANGE, dt, range));
@@ -52,7 +51,7 @@ export class Validations {
         return errors;
     }
     static checkField(fieldInfo: IFieldInfo, value: any, isNew: boolean): string[] {
-        let res: string[] = [];
+        const res: string[] = [];
 
         const isNullVal = (value === null || (checks.isString(value) && !value));
 
@@ -136,7 +135,7 @@ export class Validations {
         const index: IIndexer<IValidationInfo> = {};
         vals.forEach((val) => {
             const name = !val.fieldName ? "*" : val.fieldName;
-            let test = index[name];
+            const test = index[name];
             if (!!test) {
                 test.errors = test.errors.concat(val.errors);
             }

@@ -4,10 +4,10 @@ import { IElView } from "../int";
 export class ViewChecks {
     static isElView: (obj: any) => boolean = () => { return false; };
 
-    //DUMMY implementations template
+    // DUMMY implementations template
     static isTemplateElView: (obj: any) => boolean = () => { return false; };
 
-    //DUMMY implementations dataform
+    // DUMMY implementations dataform
     static setIsInsideTemplate: (elView: IElView) => void = () => { };
     static isDataForm: (el: HTMLElement) => boolean = () => { return false; };
     static isInsideDataForm: (el: HTMLElement) => boolean = () => { return false; };

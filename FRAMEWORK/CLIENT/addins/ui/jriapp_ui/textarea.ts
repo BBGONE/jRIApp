@@ -77,7 +77,7 @@ export class TextAreaElView extends BaseElView {
         return (<HTMLTextAreaElement>this.el).wrap;
     }
     set wrap(v) {
-        let x = this.wrap;
+        const x = this.wrap;
         if (x !== v) {
             (<HTMLTextAreaElement>this.el).wrap = v;
             this.raisePropertyChanged(PROP_NAME.wrap);

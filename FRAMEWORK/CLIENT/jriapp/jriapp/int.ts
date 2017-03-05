@@ -6,14 +6,14 @@ import {
 } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
 
-//config global variable can be used using this interface
+// config global variable can be used using this interface
 export interface IJRIAppConfig extends IConfig {
     frameworkPath?: string; // "/Scripts/jriapp/"
     frameworkJS?: string; // "jriapp.js"
     bust?: string; // "bust=xyz"
 }
 
-//get config variable
+// get config variable
 export const Config: IJRIAppConfig = (<any>window).jriapp_config || {};
 
 export class ButtonCss {
@@ -94,7 +94,7 @@ export interface IBindableElement {
     expressions: string[];
 }
 
-//--Template interfaces
+// --Template interfaces
 export interface ITemplate extends IBaseObject {
     findElByDataName(name: string): HTMLElement[];
     findElViewsByDataName(name: string): IElView[];
@@ -111,7 +111,7 @@ export interface ITemplateEvents {
     templateUnLoading(template: ITemplate): void;
 }
 
-//--ElView interfaces
+// --ElView interfaces
 export interface IViewOptions {
     css?: string;
     tip?: string;
@@ -157,7 +157,7 @@ export interface IDataBindingService extends IDisposable {
     bind(opts: IBindingOptions): IBinding;
 }
 
-//--Binding interfaces
+// --Binding interfaces
 export interface IBindingOptions {
     mode?: BINDING_MODE;
     converterParam?: any;
@@ -171,7 +171,7 @@ export interface IBindingOptions {
 
 export type TBindingMode = "OneTime" | "OneWay" | "TwoWay" | "BackWay";
 
-//the result of parsing a data binding expression -typically all properties are strings here
+// the result of parsing a data binding expression -typically all properties are strings here
 export interface IBindingInfo {
     mode?: TBindingMode;
     converterParam?: any;
@@ -197,7 +197,7 @@ export interface IBinding extends IBaseObject {
     isDisabled: boolean;
 }
 
-//--Content interfaces
+// --Content interfaces
 export interface IExternallyCachable {
     addOnObjectCreated(fn: (sender: any, args: { objectKey: string; object: IBaseObject; isCachedExternally: boolean; }) => void, nmspace?: string): void;
     addOnObjectNeeded(fn: (sender: any, args: { objectKey: string; object: IBaseObject; }) => void, nmspace?: string): void;
@@ -213,7 +213,7 @@ export interface IContentConstructor {
     new (options: IConstructorContentOptions): IContent;
 }
 
-//it can have two template ids - one for display and one for editing
+// it can have two template ids - one for display and one for editing
 export interface ITemplateInfo {
     displayID?: string;
     editID?: string;
@@ -265,7 +265,7 @@ export interface IModuleLoader {
     whenAllLoaded(): IPromise<void>;
 }
 
-//--Application interfaces
+// --Application interfaces
 export interface IInternalAppMethods {
     bindTemplateElements(templateEl: HTMLElement): IPromise<ILifeTimeScope>;
     bindElements(scope: Document | HTMLElement, dctx: any, isDataFormBind: boolean, isInsideTemplate: boolean): IPromise<ILifeTimeScope>;

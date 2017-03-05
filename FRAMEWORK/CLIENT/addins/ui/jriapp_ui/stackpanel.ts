@@ -40,7 +40,7 @@ export interface IStackPanelOptions {
     orientation?: "vertical" | "horizontal";
 }
 
-interface IMappedItem { el: HTMLElement; template: ITemplate; item: ICollectionItem }
+interface IMappedItem { el: HTMLElement; template: ITemplate; item: ICollectionItem; }
 
 export interface IStackPanelConstructorOptions extends IStackPanelOptions {
     el: HTMLElement;
@@ -117,7 +117,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
             self._onItemClicked(mappedItem.el, mappedItem.item);
         }, {
                 nmspace: this.uniqueID,
-                //using delegation
+                // using delegation
                 matchElement: (el) => {
                     const attr = el.getAttribute(DATA_ATTR.DATA_EVENT_SCOPE),
                         tag = el.tagName.toLowerCase();
@@ -131,7 +131,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         this._setDataSource(ds);
     }
     protected _getEventNames() {
-        let base_events = super._getEventNames();
+        const base_events = super._getEventNames();
         return [PNL_EVENTS.item_clicked].concat(base_events);
     }
     addOnItemClicked(fn: TEventHandler<StackPanel, { item: ICollectionItem; }>, nmspace?: string, context?: IBaseObject) {
@@ -186,7 +186,8 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
     protected _onKeyUp(key: number, event: Event) {
     }
     protected _updateCurrent(item: ICollectionItem, withScroll: boolean) {
-        let self = this, old = self._currentItem, mappedItem: IMappedItem;
+        const self = this, old = self._currentItem;
+        let mappedItem: IMappedItem;
         if (old !== item) {
             this._currentItem = item;
             if (!!old) {
@@ -264,7 +265,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
     protected _appendItems(newItems: ICollectionItem[]) {
      const self = this, docFr = doc.createDocumentFragment();
         newItems.forEach((item) => {
-            //a row for item already exists
+            // a row for item already exists
             if (!!self._itemMap[item._key])
                 return;
             self._appendItem(docFr, item);
@@ -377,22 +378,22 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         if (!mappedItem) {
             return;
         }
-        //mappedItem.el.scrollIntoView(false);
+        // mappedItem.el.scrollIntoView(false);
 
-        let isVert = this.orientation === VERTICAL, pnl = mappedItem.el, viewport = this._el,
+        const isVert = this.orientation === VERTICAL, pnl = mappedItem.el, viewport = this._el,
             viewportRect = viewport.getBoundingClientRect(),  pnlRect = pnl.getBoundingClientRect(),
             viewPortSize = isVert ? viewport.clientHeight : viewport.clientWidth,
             itemSize = isVert ? pnl.offsetHeight : pnl.offsetWidth,
             currentPos = isVert ? viewport.scrollTop : viewport.scrollLeft,
             offsetDiff = isVert ? (currentPos + pnlRect.top - viewportRect.top) : (currentPos + pnlRect.left - viewportRect.left);
 
-        let contentSize = Math.min(itemSize, viewPortSize);
-        let offset = viewPortSize - contentSize;
+        const contentSize = Math.min(itemSize, viewPortSize);
+        const offset = viewPortSize - contentSize;
         let pos = !isUp ? Math.floor(offsetDiff - offset + 1) : Math.floor(offsetDiff - 1);
 
         
-        //console.log(strUtils.format("pos: {0} currentPos: {1} offsetDiff: {2} (offsetDiff - offset): {3} offset: {4} viewPortSize: {5} contentSize:{6} isUp: {7}",
-            //pos, currentPos, offsetDiff, (offsetDiff - offset), offset, viewPortSize, contentSize, isUp));
+        // console.log(strUtils.format("pos: {0} currentPos: {1} offsetDiff: {2} (offsetDiff - offset): {3} offset: {4} viewPortSize: {5} contentSize:{6} isUp: {7}",
+            // pos, currentPos, offsetDiff, (offsetDiff - offset), offset, viewPortSize, contentSize, isUp));
 
         if (pos < 0)
             pos = 0;
@@ -416,7 +417,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         boot.currentSelectable = this;
     }
     getDivElementByItem(item: ICollectionItem) {
-        let mappedItem = this._itemMap[item._key];
+        const mappedItem = this._itemMap[item._key];
         if (!mappedItem)
             return null;
         return mappedItem.el;

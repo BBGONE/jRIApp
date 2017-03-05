@@ -562,7 +562,7 @@ declare module "jriapp_ui/dialog" {
     export interface IButton {
         id: string;
         text: string;
-        'class': string;
+        "class": string;
         click: () => void;
     }
     export class DataEditDialog extends BaseObject implements ITemplateEvents {

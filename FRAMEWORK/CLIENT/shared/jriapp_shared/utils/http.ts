@@ -11,7 +11,7 @@ const coreUtils = CoreUtils, strUtils = StringUtils, _async = AsyncUtils;
 
 export class HttpUtils {
     public static isStatusOK(status: string | number) {
-        let chk = "" + status;
+        const chk = "" + status;
         return chk.length === 3 && strUtils.startsWith(chk, "2");
     }
     private static _getXMLRequest(url: string, method: string, deferred: IDeferred<string>, headers?: IIndexer<string>) {
@@ -19,12 +19,11 @@ export class HttpUtils {
         req.open(method, url, true);
         req.responseType = "text";
         req.onload = function (e) {
-            let status = "" + req.status;
+            const status = "" + req.status;
             if (status === "200") {
-                let res: string = req.response;
+                const res: string = req.response;
                 deferred.resolve(res);
-            }
-            else {
+            } else {
                 if (HttpUtils.isStatusOK(status))
                     deferred.reject(new DummyError(new Error(strUtils.format('Status: "{0}" loading from URL: "{1}"', status, url))));
                 else

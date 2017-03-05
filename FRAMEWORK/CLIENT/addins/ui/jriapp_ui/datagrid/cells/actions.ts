@@ -62,7 +62,7 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
 
         if (isEditing) {
             self._isEditing = true;
-            let editBtns = dom.fromHTML(self.editBtnsHTML);
+            const editBtns = dom.fromHTML(self.editBtnsHTML);
             self._setupButtons(editBtns);
             dom.append(td, editBtns);
         }
@@ -73,7 +73,7 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
                 viewBtns = viewBtns.filter((el) => {
                     const attr = el.getAttribute(DATA_ATTR.DATA_NAME);
                     if (!self.isCanEdit && (editName === attr)) {
-                        return false
+                        return false;
                     }
                     if (!self.isCanDelete && (deleteName === attr)) {
                         return false;

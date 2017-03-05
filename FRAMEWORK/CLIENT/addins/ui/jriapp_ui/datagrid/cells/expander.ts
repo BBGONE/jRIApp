@@ -10,7 +10,7 @@ const dom = DomUtils;
 export class ExpanderCell extends BaseCell<ExpanderColumn> {
     constructor(options: ICellOptions) {
         super(options);
-        let self = this;
+        const self = this;
         this._click.add(() => {
             self._onCellClicked(self.row);
         });
@@ -18,7 +18,7 @@ export class ExpanderCell extends BaseCell<ExpanderColumn> {
         dom.addClass([this.td], css.rowExpander);
     }
     protected _onCellClicked(row?: Row) {
-        let clicked_row: Row = row || this.row;
+        const clicked_row: Row = row || this.row;
         if (!clicked_row)
             return;
         super._onCellClicked(clicked_row);

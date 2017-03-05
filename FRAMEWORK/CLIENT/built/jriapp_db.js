@@ -56,10 +56,198 @@ define("jriapp_db/const", ["require", "exports"], function (require, exports) {
         isLoading: "isLoading"
     };
 });
-define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/utils", "jriapp_db/const", "jriapp_db/datacache"], function (require, exports, jriapp_shared_1, utils_1, const_1, datacache_1) {
+define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db/const"], function (require, exports, jriapp_shared_1, const_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_1.Utils, checks = utils.check, strUtils = utils.str, arrHelper = utils.arr, valUtils = utils_1.ValueUtils;
+    var utils = jriapp_shared_1.Utils, checks = utils.check, coreUtils = utils.core;
+    var DataCache = (function (_super) {
+        __extends(DataCache, _super);
+        function DataCache(query) {
+            var _this = _super.call(this) || this;
+            _this._query = query;
+            _this._pages = {};
+            _this._itemsByKey = {};
+            _this._totalCount = 0;
+            return _this;
+        }
+        DataCache.prototype._getPrevPageIndex = function (currentPageIndex) {
+            var pageIndex = -1;
+            coreUtils.forEachProp(this._pages, function (index, page) {
+                var cachePageIndex = page.pageIndex;
+                if (cachePageIndex > pageIndex && cachePageIndex < currentPageIndex)
+                    pageIndex = cachePageIndex;
+            });
+            return pageIndex;
+        };
+        DataCache.prototype.getNextRange = function (pageIndex) {
+            var half = Math.floor(((this.loadPageCount - 1) / 2));
+            var above = (pageIndex + half) + ((this.loadPageCount - 1) % 2);
+            var below = (pageIndex - half);
+            var prev = this._getPrevPageIndex(pageIndex);
+            if (below < 0) {
+                above += (0 - below);
+                below = 0;
+            }
+            if (below <= prev) {
+                above += (prev - below + 1);
+                below += (prev - below + 1);
+            }
+            if (this._pageCount > this.loadPageCount && above > (this._pageCount - 1)) {
+                below -= (above - (this._pageCount - 1));
+                if (below < 0) {
+                    below = 0;
+                }
+                above = this._pageCount - 1;
+            }
+            if (below <= prev) {
+                above += (prev - below + 1);
+                below += (prev - below + 1);
+            }
+            var cnt = above - below + 1;
+            if (cnt < this.loadPageCount) {
+                above += this.loadPageCount - cnt;
+                cnt = above - below + 1;
+            }
+            var start = below;
+            var end = above;
+            return { start: start, end: end, cnt: cnt };
+        };
+        DataCache.prototype.clear = function () {
+            this._pages = {};
+            this._itemsByKey = {};
+        };
+        DataCache.prototype.getPage = function (pageIndex) {
+            return this._pages[pageIndex];
+        };
+        DataCache.prototype.getPageItems = function (pageIndex) {
+            var page = this.getPage(pageIndex);
+            if (!page)
+                return [];
+            var dbSet = this._query.dbSet, keyMap = this._itemsByKey;
+            var res = page.keys.map(function (key) {
+                var kv = keyMap[key];
+                return (!kv) ? null : dbSet.createEntityFromObj(kv.val, kv.key);
+            }).filter(function (item) { return !!item; });
+            return res;
+        };
+        DataCache.prototype.setPageItems = function (pageIndex, items) {
+            this.deletePage(pageIndex);
+            if (items.length === 0)
+                return;
+            var kvs = items.map(function (item) { return { key: item._key, val: item._aspect.vals }; });
+            var page = { keys: kvs.map(function (kv) { return kv.key; }), pageIndex: pageIndex };
+            this._pages[pageIndex] = page;
+            var keyMap = this._itemsByKey, len = kvs.length;
+            for (var j = 0; j < len; j += 1) {
+                var kv = kvs[j];
+                keyMap[kv.key] = kv;
+            }
+        };
+        DataCache.prototype.fill = function (startIndex, items) {
+            var len = items.length, pageSize = this.pageSize;
+            for (var i = 0; i < this.loadPageCount; i += 1) {
+                var pageItems = [], pgstart = (i * pageSize);
+                if (pgstart >= len)
+                    break;
+                for (var j = 0; j < pageSize; j += 1) {
+                    var k = pgstart + j;
+                    if (k < len) {
+                        pageItems.push(items[k]);
+                    }
+                    else {
+                        break;
+                    }
+                }
+                this.setPageItems(startIndex + i, pageItems);
+            }
+        };
+        DataCache.prototype.deletePage = function (pageIndex) {
+            var page = this.getPage(pageIndex);
+            if (!page)
+                return;
+            var keys = page.keys;
+            for (var j = 0; j < keys.length; j += 1) {
+                delete this._itemsByKey[keys[j]];
+            }
+            delete this._pages[pageIndex];
+        };
+        DataCache.prototype.hasPage = function (pageIndex) {
+            return !!this.getPage(pageIndex);
+        };
+        DataCache.prototype.getItemByKey = function (key) {
+            var kv = this._itemsByKey[key];
+            if (!kv)
+                return null;
+            return this._query.dbSet.createEntityFromObj(kv.val, kv.key);
+        };
+        DataCache.prototype.destroy = function () {
+            if (this._isDestroyed)
+                return;
+            this._isDestroyCalled = true;
+            this.clear();
+            _super.prototype.destroy.call(this);
+        };
+        DataCache.prototype.toString = function () {
+            return "DataCache";
+        };
+        Object.defineProperty(DataCache.prototype, "_pageCount", {
+            get: function () {
+                var rowCount = this.totalCount, rowPerPage = this.pageSize;
+                var result = 0;
+                if ((rowCount === 0) || (rowPerPage === 0)) {
+                    return result;
+                }
+                if ((rowCount % rowPerPage) === 0) {
+                    result = (rowCount / rowPerPage);
+                }
+                else {
+                    result = (rowCount / rowPerPage);
+                    result = Math.floor(result) + 1;
+                }
+                return result;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DataCache.prototype, "pageSize", {
+            get: function () { return this._query.pageSize; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DataCache.prototype, "loadPageCount", {
+            get: function () { return this._query.loadPageCount; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DataCache.prototype, "totalCount", {
+            get: function () { return this._totalCount; },
+            set: function (v) {
+                if (checks.isNt(v))
+                    v = 0;
+                if (v !== this._totalCount) {
+                    this._totalCount = v;
+                    this.raisePropertyChanged(const_1.PROP_NAME.totalCount);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DataCache.prototype, "cacheSize", {
+            get: function () {
+                var indexes = Object.keys(this._pages);
+                return indexes.length;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return DataCache;
+    }(jriapp_shared_1.BaseObject));
+    exports.DataCache = DataCache;
+});
+define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/utils", "jriapp_db/const", "jriapp_db/datacache"], function (require, exports, jriapp_shared_2, utils_1, const_2, datacache_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var utils = jriapp_shared_2.Utils, checks = utils.check, strUtils = utils.str, arrHelper = utils.arr, valUtils = utils_1.ValueUtils;
     var DataQuery = (function (_super) {
         __extends(DataQuery, _super);
         function DataQuery(dbSet, queryInfo) {
@@ -106,7 +294,8 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
         };
         DataQuery.prototype._addFilterItem = function (fieldName, operand, value, checkFieldName) {
             if (checkFieldName === void 0) { checkFieldName = true; }
-            var fkind = 0, vals = [], stz = this.serverTimezone;
+            var fkind = 0, vals = [];
+            var stz = this.serverTimezone;
             if (!checks.isArray(value))
                 vals = [value];
             else
@@ -114,7 +303,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             var tmpVals = arrHelper.clone(vals);
             var fld = this.getFieldInfo(fieldName);
             if (!fld && checkFieldName)
-                throw new Error(strUtils.format(jriapp_shared_1.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, this.dbSetName, fieldName));
+                throw new Error(strUtils.format(jriapp_shared_2.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, this.dbSetName, fieldName));
             if (!!fld) {
                 vals = tmpVals.map(function (v) { return valUtils.stringifyValue(v, fld.dateConversion, fld.dataType, stz); });
             }
@@ -136,10 +325,10 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
                 case 1:
                     fkind = operand;
                     if (value.length !== 2)
-                        throw new Error(jriapp_shared_1.LocaleERRS.ERR_QUERY_BETWEEN);
+                        throw new Error(jriapp_shared_2.LocaleERRS.ERR_QUERY_BETWEEN);
                     break;
                 default:
-                    throw new Error(strUtils.format(jriapp_shared_1.LocaleERRS.ERR_QUERY_OPERATOR_INVALID, operand));
+                    throw new Error(strUtils.format(jriapp_shared_2.LocaleERRS.ERR_QUERY_OPERATOR_INVALID, operand));
             }
             var filterItem = { fieldName: fieldName, kind: fkind, values: vals };
             this._filterInfo.filterItems.push(filterItem);
@@ -321,7 +510,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
                     if (v === 1) {
                         this._clearCache();
                     }
-                    this.raisePropertyChanged(const_1.PROP_NAME.loadPageCount);
+                    this.raisePropertyChanged(const_2.PROP_NAME.loadPageCount);
                 }
             },
             enumerable: true,
@@ -332,7 +521,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             set: function (v) {
                 if (this._isClearCacheOnEveryLoad !== v) {
                     this._isClearCacheOnEveryLoad = v;
-                    this.raisePropertyChanged(const_1.PROP_NAME.isClearCacheOnEveryLoad);
+                    this.raisePropertyChanged(const_2.PROP_NAME.isClearCacheOnEveryLoad);
                 }
             },
             enumerable: true,
@@ -344,194 +533,8 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             configurable: true
         });
         return DataQuery;
-    }(jriapp_shared_1.BaseObject));
-    exports.DataQuery = DataQuery;
-});
-define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db/const"], function (require, exports, jriapp_shared_2, const_2) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_2.Utils, checks = utils.check, coreUtils = utils.core;
-    var DataCache = (function (_super) {
-        __extends(DataCache, _super);
-        function DataCache(query) {
-            var _this = _super.call(this) || this;
-            _this._query = query;
-            _this._pages = {};
-            _this._itemsByKey = {};
-            _this._totalCount = 0;
-            return _this;
-        }
-        DataCache.prototype._getPrevPageIndex = function (currentPageIndex) {
-            var pageIndex = -1;
-            coreUtils.forEachProp(this._pages, function (index, page) {
-                var cachePageIndex = page.pageIndex;
-                if (cachePageIndex > pageIndex && cachePageIndex < currentPageIndex)
-                    pageIndex = cachePageIndex;
-            });
-            return pageIndex;
-        };
-        DataCache.prototype.getNextRange = function (pageIndex) {
-            var half = Math.floor(((this.loadPageCount - 1) / 2));
-            var above = (pageIndex + half) + ((this.loadPageCount - 1) % 2);
-            var below = (pageIndex - half), prev = this._getPrevPageIndex(pageIndex);
-            if (below < 0) {
-                above += (0 - below);
-                below = 0;
-            }
-            if (below <= prev) {
-                above += (prev - below + 1);
-                below += (prev - below + 1);
-            }
-            if (this._pageCount > this.loadPageCount && above > (this._pageCount - 1)) {
-                below -= (above - (this._pageCount - 1));
-                if (below < 0) {
-                    below = 0;
-                }
-                above = this._pageCount - 1;
-            }
-            if (below <= prev) {
-                above += (prev - below + 1);
-                below += (prev - below + 1);
-            }
-            var cnt = above - below + 1;
-            if (cnt < this.loadPageCount) {
-                above += this.loadPageCount - cnt;
-                cnt = above - below + 1;
-            }
-            var start = below;
-            var end = above;
-            return { start: start, end: end, cnt: cnt };
-        };
-        DataCache.prototype.clear = function () {
-            this._pages = {};
-            this._itemsByKey = {};
-        };
-        DataCache.prototype.getPage = function (pageIndex) {
-            return this._pages[pageIndex];
-        };
-        DataCache.prototype.getPageItems = function (pageIndex) {
-            var page = this.getPage(pageIndex);
-            if (!page)
-                return [];
-            var dbSet = this._query.dbSet, keyMap = this._itemsByKey;
-            var res = page.keys.map(function (key) {
-                var kv = keyMap[key];
-                return (!kv) ? null : dbSet.createEntityFromObj(kv.val, kv.key);
-            }).filter(function (item) { return !!item; });
-            return res;
-        };
-        DataCache.prototype.setPageItems = function (pageIndex, items) {
-            this.deletePage(pageIndex);
-            if (items.length === 0)
-                return;
-            var kvs = items.map(function (item) { return { key: item._key, val: item._aspect.vals }; });
-            var page = { keys: kvs.map(function (kv) { return kv.key; }), pageIndex: pageIndex };
-            this._pages[pageIndex] = page;
-            var keyMap = this._itemsByKey;
-            for (var j = 0, len = kvs.length; j < len; j += 1) {
-                var kv = kvs[j];
-                keyMap[kv.key] = kv;
-            }
-        };
-        DataCache.prototype.fill = function (startIndex, items) {
-            var len = items.length, pageSize = this.pageSize;
-            for (var i = 0; i < this.loadPageCount; i += 1) {
-                var pageItems = [], pgstart = (i * pageSize);
-                if (pgstart >= len)
-                    break;
-                for (var j = 0; j < pageSize; j += 1) {
-                    var k = pgstart + j;
-                    if (k < len) {
-                        pageItems.push(items[k]);
-                    }
-                    else {
-                        break;
-                    }
-                }
-                this.setPageItems(startIndex + i, pageItems);
-            }
-        };
-        DataCache.prototype.deletePage = function (pageIndex) {
-            var page = this.getPage(pageIndex);
-            if (!page)
-                return;
-            var keys = page.keys;
-            for (var j = 0; j < keys.length; j += 1) {
-                delete this._itemsByKey[keys[j]];
-            }
-            delete this._pages[pageIndex];
-        };
-        DataCache.prototype.hasPage = function (pageIndex) {
-            return !!this.getPage(pageIndex);
-        };
-        DataCache.prototype.getItemByKey = function (key) {
-            var kv = this._itemsByKey[key];
-            if (!kv)
-                return null;
-            return this._query.dbSet.createEntityFromObj(kv.val, kv.key);
-        };
-        DataCache.prototype.destroy = function () {
-            if (this._isDestroyed)
-                return;
-            this._isDestroyCalled = true;
-            this.clear();
-            _super.prototype.destroy.call(this);
-        };
-        DataCache.prototype.toString = function () {
-            return "DataCache";
-        };
-        Object.defineProperty(DataCache.prototype, "_pageCount", {
-            get: function () {
-                var rowCount = this.totalCount, rowPerPage = this.pageSize, result = 0;
-                if ((rowCount === 0) || (rowPerPage === 0)) {
-                    return result;
-                }
-                if ((rowCount % rowPerPage) === 0) {
-                    result = (rowCount / rowPerPage);
-                }
-                else {
-                    result = (rowCount / rowPerPage);
-                    result = Math.floor(result) + 1;
-                }
-                return result;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(DataCache.prototype, "pageSize", {
-            get: function () { return this._query.pageSize; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(DataCache.prototype, "loadPageCount", {
-            get: function () { return this._query.loadPageCount; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(DataCache.prototype, "totalCount", {
-            get: function () { return this._totalCount; },
-            set: function (v) {
-                if (checks.isNt(v))
-                    v = 0;
-                if (v !== this._totalCount) {
-                    this._totalCount = v;
-                    this.raisePropertyChanged(const_2.PROP_NAME.totalCount);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(DataCache.prototype, "cacheSize", {
-            get: function () {
-                var indexes = Object.keys(this._pages);
-                return indexes.length;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return DataCache;
     }(jriapp_shared_2.BaseObject));
-    exports.DataCache = DataCache;
+    exports.DataQuery = DataQuery;
 });
 define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/base", "jriapp_shared/collection/utils", "jriapp_db/const", "jriapp_db/dataquery", "jriapp_db/entity_aspect"], function (require, exports, jriapp_shared_3, base_1, utils_2, const_3, dataquery_1, entity_aspect_1) {
     "use strict";
@@ -664,11 +667,12 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             return [DBSET_EVENTS.loaded].concat(base_events);
         };
         DbSet.prototype._mapAssocFields = function () {
-            var trackAssoc = this._trackAssoc, assoc, tasKeys = Object.keys(trackAssoc), frel, trackAssocMap = this._trackAssocMap;
-            for (var i = 0, len = tasKeys.length; i < len; i += 1) {
-                assoc = trackAssoc[tasKeys[i]];
-                for (var j = 0, len2 = assoc.fieldRels.length; j < len2; j += 1) {
-                    frel = assoc.fieldRels[j];
+            var trackAssoc = this._trackAssoc, tasKeys = Object.keys(trackAssoc), trackAssocMap = this._trackAssocMap;
+            var len = tasKeys.length;
+            for (var i = 0; i < len; i += 1) {
+                var assoc = trackAssoc[tasKeys[i]], len2 = assoc.fieldRels.length;
+                for (var j = 0; j < len2; j += 1) {
+                    var frel = assoc.fieldRels[j];
                     if (!checks.isArray(trackAssocMap[frel.childField])) {
                         trackAssocMap[frel.childField] = [assoc.childToParentName];
                     }
@@ -679,11 +683,11 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             }
         };
         DbSet.prototype._doNavigationField = function (opts, fieldInfo) {
-            var self = this, isChild = true, result = {
+            var self = this, result = {
                 getFunc: function (item) { throw new Error("Function is not implemented"); },
                 setFunc: function (v, item) { throw new Error("Function is not implemented"); }
             };
-            var assocs = opts.childAssoc.filter(function (a) {
+            var isChild = true, assocs = opts.childAssoc.filter(function (a) {
                 return a.childToParentName === fieldInfo.fieldName;
             });
             if (assocs.length === 0) {
@@ -721,7 +725,8 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                                 item._aspect._setFieldVal(fieldInfo.fieldName, v._key);
                             }
                             else {
-                                for (var i = 0, len = assoc.childFldInfos.length; i < len; i += 1) {
+                                var len = assoc.childFldInfos.length;
+                                for (var i = 0; i < len; i += 1) {
                                     item[assoc.childFldInfos[i].fieldName] = v[assoc.parentFldInfos[i].fieldName];
                                 }
                             }
@@ -731,7 +736,8 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                             if (!!oldKey) {
                                 item._aspect._setFieldVal(fieldInfo.fieldName, null);
                             }
-                            for (var i = 0, len = assoc.childFldInfos.length; i < len; i += 1) {
+                            var len = assoc.childFldInfos.length;
+                            for (var i = 0; i < len; i += 1) {
                                 item[assoc.childFldInfos[i].fieldName] = null;
                             }
                         }
@@ -934,7 +940,8 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             }
         };
         DbSet.prototype._fillFromService = function (info) {
-            var self = this, res = info.res, fieldNames = res.names, rows = res.rows || [], isPagingEnabled = this.isPagingEnabled, query = info.query, isClearAll = true;
+            var self = this, res = info.res, fieldNames = res.names, rows = res.rows || [], isPagingEnabled = this.isPagingEnabled, query = info.query;
+            var isClearAll = true;
             if (!!query && !query.getIsDestroyCalled()) {
                 isClearAll = query.isClearPrevData;
                 if (query.isClearCacheOnEveryLoad)
@@ -1406,9 +1413,9 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         });
         Object.defineProperty(DbSet.prototype, "cacheSize", {
             get: function () {
-                var query = this._query, dataCache;
+                var query = this._query;
                 if (!!query && query.isCacheValid) {
-                    dataCache = query._getInternal().getCache();
+                    var dataCache = query._getInternal().getCache();
                     return dataCache.cacheSize;
                 }
                 return 0;
@@ -1606,7 +1613,8 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             }, self._objId, null, 2);
         };
         Association.prototype._onParentCollChanged = function (args) {
-            var self = this, item, changed = [], changedKeys = {};
+            var self = this, changedKeys = {};
+            var item, changed = [];
             switch (args.changeType) {
                 case 2:
                     changed = self.refreshParentMap();
@@ -1652,7 +1660,8 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             }
         };
         Association.prototype._onParentCommitChanges = function (item, isBegin, isRejected, status) {
-            var self = this, fkey;
+            var self = this;
+            var fkey;
             if (isBegin) {
                 if (isRejected && status === 1) {
                     fkey = this._unMapParentItem(item);
@@ -1679,7 +1688,8 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             }
         };
         Association.prototype._checkParentFKey = function (item) {
-            var self = this, fkey, savedKey = self._saveParentFKey;
+            var self = this, savedKey = self._saveParentFKey;
+            var fkey;
             self._saveParentFKey = null;
             fkey = self.getParentFKey(item);
             if (fkey !== savedKey) {
@@ -1696,7 +1706,8 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             }
         };
         Association.prototype._onParentStatusChanged = function (item, oldStatus) {
-            var self = this, newStatus = item._aspect.status, fkey = null;
+            var self = this, newStatus = item._aspect.status;
+            var fkey = null;
             var children;
             if (newStatus === 3) {
                 children = self.getChildItems(item);
@@ -1734,7 +1745,8 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             }
         };
         Association.prototype._onChildCollChanged = function (args) {
-            var self = this, item, items = args.items, changed = [], changedKeys = {};
+            var self = this, items = args.items, changedKeys = {};
+            var item, changed = [];
             switch (args.changeType) {
                 case 2:
                     changed = self.refreshChildMap();
@@ -1824,15 +1836,17 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
                 self._storeChildFKey(item);
             }
             else {
-                if (!isCanceled)
+                if (!isCanceled) {
                     self._checkChildFKey(item);
+                }
                 else {
                     self._saveChildFKey = null;
                 }
             }
         };
         Association.prototype._onChildCommitChanges = function (item, isBegin, isRejected, status) {
-            var self = this, fkey;
+            var self = this;
+            var fkey;
             if (isBegin) {
                 if (isRejected && status === 1) {
                     fkey = this._unMapChildItem(item);
@@ -1853,23 +1867,22 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             }
         };
         Association.prototype._storeChildFKey = function (item) {
-            var self = this, fkey = self.getChildFKey(item), arr;
+            var self = this, fkey = self.getChildFKey(item);
             if (!!fkey) {
-                arr = self._childMap[fkey];
+                var arr = self._childMap[fkey];
                 if (!!arr && arr.indexOf(item) > -1) {
                     self._saveChildFKey = fkey;
                 }
             }
         };
         Association.prototype._checkChildFKey = function (item) {
-            var self = this, savedKey = self._saveChildFKey, fkey, arr;
+            var self = this, savedKey = self._saveChildFKey, fkey = self.getChildFKey(item);
             self._saveChildFKey = null;
-            fkey = self.getChildFKey(item);
             if (fkey !== savedKey) {
                 if (!!savedKey) {
                     self._notifyParentChanged([savedKey]);
                     self._notifyChildrenChanged([savedKey]);
-                    arr = self._childMap[savedKey];
+                    var arr = self._childMap[savedKey];
                     arrHelper.remove(arr, item);
                     if (arr.length === 0) {
                         delete self._childMap[savedKey];
@@ -1883,7 +1896,8 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             }
         };
         Association.prototype._onChildStatusChanged = function (item, oldStatus) {
-            var self = this, newStatus = item._aspect.status, fkey = self.getChildFKey(item);
+            var self = this, newStatus = item._aspect.status;
+            var fkey = self.getChildFKey(item);
             if (!fkey)
                 return;
             if (newStatus === 3) {
@@ -1893,10 +1907,10 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             }
         };
         Association.prototype._getItemKey = function (finf, ds, item) {
-            var arr = [], val, strval, internal = ds._getInternal();
-            for (var i = 0, len = finf.length; i < len; i += 1) {
-                val = item[finf[i].fieldName];
-                strval = internal.getStrValue(val, finf[i]);
+            var arr = [], internal = ds._getInternal(), len = finf.length;
+            for (var i = 0; i < len; i += 1) {
+                var val = item[finf[i].fieldName];
+                var strval = internal.getStrValue(val, finf[i]);
                 if (strval === null)
                     return null;
                 arr.push(strval);
@@ -1939,15 +1953,15 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             return changedKey;
         };
         Association.prototype._mapParentItems = function (items) {
-            var item, fkey, status, old, chngedKeys = {};
-            for (var i = 0, len = items.length; i < len; i += 1) {
-                item = items[i];
-                status = item._aspect.status;
-                if (status === 3)
+            var chngedKeys = {}, len = items.length;
+            for (var i = 0; i < len; i += 1) {
+                var item = items[i];
+                var status_1 = item._aspect.status;
+                if (status_1 === 3)
                     continue;
-                fkey = this.getParentFKey(item);
+                var fkey = this.getParentFKey(item);
                 if (!!fkey) {
-                    old = this._parentMap[fkey];
+                    var old = this._parentMap[fkey];
                     if (old !== item) {
                         this._parentMap[fkey] = item;
                         chngedKeys[fkey] = null;
@@ -1962,26 +1976,26 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             }
         };
         Association.prototype._onParentChanged = function (fkey, map) {
-            var self = this, item;
+            var self = this;
             if (!!fkey && !!this._childToParentName) {
                 var keys = Object.keys(map);
                 for (var k = 0; k < keys.length; k += 1) {
-                    item = map[keys[k]];
+                    var item = map[keys[k]];
                     if (!item.getIsDestroyCalled())
                         item.raisePropertyChanged(self._childToParentName);
                 }
             }
         };
         Association.prototype._mapChildren = function (items) {
-            var item, fkey, arr, status, chngedKeys = {};
-            for (var i = 0, len = items.length; i < len; i += 1) {
-                item = items[i];
-                status = item._aspect.status;
-                if (status === 3)
+            var chngedKeys = {}, len = items.length;
+            for (var i = 0; i < len; i += 1) {
+                var item = items[i];
+                var status_2 = item._aspect.status;
+                if (status_2 === 3)
                     continue;
-                fkey = this.getChildFKey(item);
+                var fkey = this.getChildFKey(item);
                 if (!!fkey) {
-                    arr = this._childMap[fkey];
+                    var arr = this._childMap[fkey];
                     if (!arr) {
                         arr = [];
                         this._childMap[fkey] = arr;
@@ -2395,7 +2409,8 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             if (!args)
                 args = {};
             for (var i = 0; i < len; i += 1) {
-                var pinfo = paramInfos[i], val = args[pinfo.name];
+                var pinfo = paramInfos[i];
+                var val = args[pinfo.name];
                 if (!pinfo.isNullable && !pinfo.isArray && !(pinfo.dataType === 1 || pinfo.dataType === 10) && checks.isNt(val)) {
                     throw new Error(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_SVC_METH_PARAM_INVALID, pinfo.name, val, methodInfo.methodName));
                 }
@@ -2758,7 +2773,8 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 this._isHasChanges = true;
             }
             else {
-                for (var i = 0, len = this._dbSets.arrDbSets.length; i < len; i += 1) {
+                var len = this._dbSets.arrDbSets.length;
+                for (var i = 0; i < len; i += 1) {
                     var test = this._dbSets.arrDbSets[i];
                     if (test.isHasChanges) {
                         this._isHasChanges = true;
@@ -2866,7 +2882,8 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             var opts = coreUtils.merge(options, {
                 serviceUrl: null,
                 permissions: null
-            }), loadUrl;
+            });
+            var loadUrl;
             try {
                 if (!checks.isString(opts.serviceUrl)) {
                     throw new Error(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_PARAM_INVALID, "serviceUrl", opts.serviceUrl));
@@ -3193,9 +3210,11 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             return true;
         };
         EntityAspect.prototype._skipValidate = function (fieldInfo, val) {
-            var childToParentNames = this.dbSet._getInternal().getChildToParentNames(fieldInfo.fieldName), res = false;
+            var childToParentNames = this.dbSet._getInternal().getChildToParentNames(fieldInfo.fieldName);
+            var res = false;
             if (!!childToParentNames && val === null) {
-                for (var i = 0, len = childToParentNames.length; i < len; i += 1) {
+                var len = childToParentNames.length;
+                for (var i = 0; i < len; i += 1) {
                     res = !!this._getFieldVal(childToParentNames[i]);
                     if (res)
                         break;
@@ -3256,7 +3275,8 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             var self = this, fld = self.dbSet.getFieldInfo(fullName);
             if (!fld)
                 throw new Error(strUtils.format(jriapp_shared_8.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fullName));
-            var stz = self.serverTimezone, newVal, oldVal, oldValOrig, dataType = fld.dataType, dcnv = fld.dateConversion;
+            var stz = self.serverTimezone, dataType = fld.dataType, dcnv = fld.dateConversion;
+            var newVal, oldVal, oldValOrig;
             newVal = valUtils.parseValue(val, dataType, dcnv, stz);
             oldVal = coreUtils.getValue(self._vals, fullName);
             switch (refreshMode) {
@@ -3350,7 +3370,8 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             return coreUtils.getValue(this._vals, fieldName);
         };
         EntityAspect.prototype._setFieldVal = function (fieldName, val) {
-            var dbSetName = this.dbSetName, dbSet = this.dbSet, oldV = this._getFieldVal(fieldName), newV = val, fieldInfo = this.getFieldInfo(fieldName), res = false;
+            var dbSetName = this.dbSetName, dbSet = this.dbSet, oldV = this._getFieldVal(fieldName), fieldInfo = this.getFieldInfo(fieldName);
+            var newV = val, res = false;
             if (!fieldInfo)
                 throw new Error(strUtils.format(jriapp_shared_8.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, dbSetName, fieldName));
             if (!this.isEditing && !this.isUpdating)
@@ -3596,7 +3617,8 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             this._removeHandler(VIEW_EVENTS.refreshed, nmspace);
         };
         DataView.prototype._filterForPaging = function (items) {
-            var skip = 0, take = 0, pos = -1, cnt = -1, result = [];
+            var skip = 0, take = 0, pos = -1, cnt = -1;
+            var result = [];
             skip = this.pageSize * this.pageIndex;
             take = this.pageSize;
             items.forEach(function (item) {
@@ -3767,7 +3789,8 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                 }
             }, self.uniqueID, null, 1);
             ds.addOnEndEdit(function (sender, args) {
-                var isOk, item = args.item, canFilter = !!self._fn_filter;
+                var isOk;
+                var item = args.item, canFilter = !!self._fn_filter;
                 if (!!self._itemsByKey[item._key]) {
                     self._onEditing(item, false, args.isCanceled);
                     if (!args.isCanceled && canFilter) {
@@ -3980,7 +4003,8 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
         __extends(ChildDataView, _super);
         function ChildDataView(options) {
             var _this = this;
-            var parentItem = !options.parentItem ? null : options.parentItem, assoc = options.association, opts = coreUtils.extend({}, options), oldFilter = opts.fn_filter;
+            var parentItem = !options.parentItem ? null : options.parentItem;
+            var assoc = options.association, opts = coreUtils.extend({}, options), oldFilter = opts.fn_filter;
             opts.dataSource = assoc.childDS;
             opts.fn_itemsProvider = function () {
                 if (!parentItem) {

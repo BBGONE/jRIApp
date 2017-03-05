@@ -17,7 +17,7 @@ export const css = {
     checkbox: "ria-checkbox"
 };
 
-//the result of parsing of the data-content attribute
+// the result of parsing of the data-content attribute
 export interface IDataContentAttr {
     fieldName?: string;
     readOnly?: boolean;
@@ -28,7 +28,7 @@ export interface IDataContentAttr {
 }
 
 export function parseContentAttr(content_attr: string): IContentOptions {
-    let contentOptions: IContentOptions = {
+    const contentOptions: IContentOptions = {
         name: null,
         templateInfo: null,
         bindingInfo: null,
@@ -37,13 +37,14 @@ export function parseContentAttr(content_attr: string): IContentOptions {
         options: null
     };
 
-    let attr: IDataContentAttr, temp_opts = parser.parseOptions(content_attr);
+    
+    const temp_opts = parser.parseOptions(content_attr);
 
     if (temp_opts.length === 0)
         return contentOptions;
-    attr = temp_opts[0];
+    const attr: IDataContentAttr = temp_opts[0];
     if (!attr.template && !!attr.fieldName) {
-        let bindInfo: IBindingInfo = {
+        const bindInfo: IBindingInfo = {
             target: null, source: null,
             targetPath: null, sourcePath: attr.fieldName,
             mode: "OneWay",

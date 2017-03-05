@@ -55,10 +55,10 @@ class Datepicker extends BaseObject implements IDatepicker {
     formatDate(date: Date): string {
         return this.datePickerFn.formatDate(this.dateFormat, date);
     }
-    //uses jQuery datepicker format
+    // uses jQuery datepicker format
     get dateFormat(): string {
         if (!this._dateFormat) {
-            let regional = this.datePickerFn.regional[this._datepickerRegion];
+            const regional = this.datePickerFn.regional[this._datepickerRegion];
             return regional.dateFormat;
         }
         else {
@@ -68,7 +68,7 @@ class Datepicker extends BaseObject implements IDatepicker {
     set dateFormat(v: string) {
         if (this.dateFormat !== v) {
             this._dateFormat = v;
-            let regional = this.datePickerFn.regional[this._datepickerRegion];
+            const regional = this.datePickerFn.regional[this._datepickerRegion];
             if (!!this._dateFormat) {
                 regional.dateFormat = this._dateFormat;
                 this.datePickerFn.setDefaults(regional);
@@ -80,9 +80,9 @@ class Datepicker extends BaseObject implements IDatepicker {
     set datepickerRegion(v) {
         if (!v)
             v = "";
-        let oldDateFormat = this.dateFormat;
+        const oldDateFormat = this.dateFormat;
         if (this._datepickerRegion !== v) {
-            let regional = this.datePickerFn.regional[v];
+            const regional = this.datePickerFn.regional[v];
             if (!!regional) {
                 this._datepickerRegion = v;
                 regional.dateFormat = oldDateFormat;

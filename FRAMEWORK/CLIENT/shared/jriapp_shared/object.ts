@@ -82,7 +82,7 @@ export class BaseObject implements IBaseObject {
         if (!error.message) {
             error = new Error("Unexpected Error: " + error);
         }
-        let args: TErrorArgs = { error: error, source: source, isHandled: false };
+        const args: TErrorArgs = { error: error, source: source, isHandled: false };
         evHelper.raise(this, this._events, OBJ_EVENTS.error, args);
         let isHandled = args.isHandled;
 
@@ -114,7 +114,7 @@ export class BaseObject implements IBaseObject {
     removeOnError(nmspace?: string): void {
         evHelper.remove(this._events, OBJ_EVENTS.error, nmspace);
     }
-    //remove event handlers by their namespace
+    // remove event handlers by their namespace
     removeNSHandlers(nmspace?: string): void {
         evHelper.remove(this._events, null, nmspace);
     }
@@ -143,7 +143,7 @@ export class BaseObject implements IBaseObject {
             evHelper.raiseProp(this, this._events, lastPropName, data);
         }
     }
-    //to subscribe for the changes on all properties, pass in the prop parameter: '*'
+    // to subscribe for the changes on all properties, pass in the prop parameter: '*'
     addOnPropertyChange(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject, priority?: TPriority): void {
         if (!prop)
             throw new Error(ERRS.ERR_PROP_NAME_EMPTY);

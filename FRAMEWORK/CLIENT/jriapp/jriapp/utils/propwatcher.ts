@@ -17,7 +17,7 @@ export class PropWatcher extends BaseObject {
         return new PropWatcher();
     }
     addPropWatch(obj: IBaseObject, prop: string, fn_onChange: (prop: string) => void) {
-        let self = this;
+        const self = this;
         obj.addOnPropertyChange(prop, function (s, a) {
             fn_onChange(a.property);
         }, self.uniqueID);
@@ -26,7 +26,7 @@ export class PropWatcher extends BaseObject {
             self._objs.push(obj);
     }
     addWatch(obj: IBaseObject, props: string[], fn_onChange: (prop: string) => void) {
-        let self = this;
+        const self = this;
         obj.addOnPropertyChange("*", function (s, a) {
             if (props.indexOf(a.property) > -1) {
                 fn_onChange(a.property);
@@ -43,7 +43,7 @@ export class PropWatcher extends BaseObject {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        let self = this;
+        const self = this;
         this._objs.forEach(function (obj) {
             self.removeWatch(obj);
         });

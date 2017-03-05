@@ -70,7 +70,7 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
         }
     }
     templateUnLoading(template: ITemplate): void {
-        //noop
+        // noop
     }
     private _templateChanging(oldName: string, newName: string) {
         const self = this;
@@ -120,7 +120,7 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
     }
     destroy() {
         if (this._isDestroyed)
-            return
+            return;
         this._isDestroyCalled = true;
         this._tDebounce.destroy();
         this._dsDebounce.destroy();

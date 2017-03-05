@@ -35,7 +35,7 @@ export function createTemplate(dataContext ?: any, templEvents?: ITemplateEvents
     const options: ITemplateOptions = {
         dataContext: dataContext,
         templEvents: templEvents
-    }
+    };
     return new Template(options);
 }
 
@@ -62,8 +62,8 @@ class Template extends BaseObject implements ITemplate {
     private _getBindings(): Binding[] {
         if (!this._lfTime)
             return [];
-        const arr = this._lfTime.getObjs(), res: Binding[] = [];
-        for (let i = 0, len = arr.length; i < len; i += 1) {
+        const arr = this._lfTime.getObjs(), res: Binding[] = [], len = arr.length;
+        for (let i = 0; i < len; i += 1) {
             if (sys.isBinding(arr[i]))
                 res.push(<Binding>arr[i]);
         }
@@ -72,8 +72,8 @@ class Template extends BaseObject implements ITemplate {
     private _getElViews(): IElView[] {
         if (!this._lfTime)
             return [];
-        const arr = this._lfTime.getObjs(), res: IElView[] = [];
-        for (let i = 0, len = arr.length; i < len; i += 1) {
+        const arr = this._lfTime.getObjs(), res: IElView[] = [], len = arr.length;
+        for (let i = 0; i < len; i += 1) {
             if (viewChecks.isElView(arr[i]))
                 res.push(<IElView>arr[i]);
         }
@@ -82,8 +82,8 @@ class Template extends BaseObject implements ITemplate {
     private _getTemplateElView(): ITemplateEvents {
         if (!this._lfTime)
             return null;
-        const arr = this._getElViews();
-        for (let i = 0, j = arr.length; i < j; i += 1) {
+        const arr = this._getElViews(), j = arr.length;
+        for (let i = 0; i < j; i += 1) {
             if (viewChecks.isTemplateElView(arr[i])) {
                 return <ITemplateEvents><any>arr[i];
             }
@@ -94,7 +94,8 @@ class Template extends BaseObject implements ITemplate {
        * returns a promise which resolves with the loaded template's DOM element
     */
     private _loadAsync(name: string): IPromise<HTMLElement> {
-        let self = this, fn_loader = this.app.getTemplateLoader(name), promise: IPromise<string>;
+        const self = this, fn_loader = this.app.getTemplateLoader(name);
+        let promise: IPromise<string>;
         if (checks.isFunc(fn_loader) && checks.isThenable(promise = fn_loader())) {
             return promise.then((html: string) => {
                 const elems = dom.fromHTML(html);
@@ -196,15 +197,12 @@ class Template extends BaseObject implements ITemplate {
         dom.setClass([templateEl], css.templateError, false);
         let ex: any;
         if (!!err) {
-            if (!!err.message)
-            {
+            if (!!err.message) {
                 ex = err;
-            }
-            else if (!!err.statusText) {
+            } else if (!!err.statusText) {
                 ex = new Error(err.statusText);
-            }
-            else {
-                ex = new Error('error: ' + err);
+            } else {
+                ex = new Error("error: " + err);
             }
         }
         if (!ex)
@@ -212,9 +210,9 @@ class Template extends BaseObject implements ITemplate {
         self.handleError(ex, self);
     }
     private _updateBindingSource() {
-        let i: number, len: number, binding: Binding, bindings = this._getBindings();
-        for (i = 0, len = bindings.length; i < len; i += 1) {
-            binding = bindings[i];
+        const bindings = this._getBindings(), len = bindings.length;
+        for (let i = 0; i < len; i += 1) {
+            const binding = bindings[i];
             if (!binding.isSourceFixed)
                 binding.source = this.dataContext;
         }
@@ -245,13 +243,13 @@ class Template extends BaseObject implements ITemplate {
         this._templEvents = null;
         super.destroy();
     }
-    //find elements which has specific data-name attribute value
-    //returns plain array of elements, or empty array
+    // find elements which has specific data-name attribute value
+    // returns plain array of elements, or empty array
     findElByDataName(name: string): HTMLElement[] {
         return arrHelper.fromList<HTMLElement>(this._el.querySelectorAll(["*[", DATA_ATTR.DATA_NAME, '="', name, '"]'].join("")));
     }
     findElViewsByDataName(name: string): IElView[] {
-        //first return elements with the needed data attributes those are inside template
+        // first return elements with the needed data attributes those are inside template
         const els = this.findElByDataName(name), res: IElView[] = [],
             viewStore = boot.getApp().viewFactory.store;
         els.forEach((el) => {

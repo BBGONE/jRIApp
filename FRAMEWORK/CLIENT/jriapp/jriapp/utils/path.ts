@@ -20,15 +20,15 @@ export interface IUrlParts {
     search: string;
 }
 
-//private to the module function
+// private to the module function
 function fn_getFrameworkPath(): string {
-    let name = frameworkJS;
-    let arr = arrHelper.fromList<HTMLScriptElement>(doc.scripts);
+    const name = frameworkJS;
+    const arr = arrHelper.fromList<HTMLScriptElement>(doc.scripts);
 
     for (let i = 0; i < arr.length; i += 1) {
-        let script = arr[i];
+        const script = arr[i];
         if (!!script.src) {
-            let parts = PathHelper.getUrlParts(script.src);
+            const parts = PathHelper.getUrlParts(script.src);
             let pathName = strUtils.rtrim(parts.pathname, "/");
             if (!!parts.pathname) {
                 pathName = pathName.toLowerCase();
@@ -43,20 +43,20 @@ function fn_getFrameworkPath(): string {
     return null;
 }
 
-let _cache = <IIndexer<string>>{};
+const _cache = <IIndexer<string>>{};
 
 export class PathHelper {
     private static _anchor: HTMLAnchorElement = doc.createElement("a");
     static appendBust(url: string): string {
-        let bust = config.bust;
+        const bust = config.bust;
         if (!bust)
             return url;
         return PathHelper.appendSearch(url, bust);
     }
     static appendSearch(url: string, search: string): string {
         search = strUtils.ltrim(search, "?");
-        let parts = PathHelper.getUrlParts(url);
-        let oldSearch = strUtils.ltrim(parts.search, "?");
+        const parts = PathHelper.getUrlParts(url);
+        const oldSearch = strUtils.ltrim(parts.search, "?");
         if (!!oldSearch && oldSearch.lastIndexOf(search) > -1)
             return url;
 
@@ -72,7 +72,7 @@ export class PathHelper {
         return PathHelper._anchor.href;
     }
     static getUrlParts(url: string): IUrlParts {
-        let parser = PathHelper._anchor;
+        const parser = PathHelper._anchor;
         parser.href = url;
         // IE doesn't populate all link properties when setting .href with a relative URL,
         // however .href will return an absolute URL which then can be used on itself
@@ -104,12 +104,12 @@ export class PathHelper {
     static getFrameworkPath(): string {
         let res = _cache["root"];
         if (!res) {
-            //we have a provided jriapp root already in global variable
+            // we have a provided jriapp root already in global variable
             if (!!config.frameworkPath) {
                 res = config.frameworkPath;
             }
 
-            //still no result
+            // still no result
             if (!res) {
                 res = fn_getFrameworkPath();
             }

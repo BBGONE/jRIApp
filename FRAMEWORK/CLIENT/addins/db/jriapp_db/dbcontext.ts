@@ -76,9 +76,9 @@ export class DbContext extends BaseObject {
     private _requests: IRequestPromise[];
     protected _initState: IStatefulPromise<any>;
     protected _dbSets: DbSets;
-    //_svcMethods: { [methodName: string]: (args: { [paramName: string]: any; }) => IStatefulPromise<any>; };
+    // _svcMethods: { [methodName: string]: (args: { [paramName: string]: any; }) => IStatefulPromise<any>; };
     protected _svcMethods: any;
-    //_assoc: IIndexer<() => Association>;
+    // _assoc: IIndexer<() => Association>;
     protected _assoc: any;
     private _arrAssoc: Association[];
     private _queryInf: { [queryName: string]: IQueryInfo; };
@@ -105,7 +105,7 @@ export class DbContext extends BaseObject {
         this._isSubmiting = false;
         this._isHasChanges = false;
         this._pendingSubmit = null;
-        //at first init it with client side timezone
+        // at first init it with client side timezone
         this._serverTimezone = coreUtils.get_timeZoneOffset();
         this._waitQueue = new WaitQueue(this);
         this._internal = {
@@ -150,7 +150,7 @@ export class DbContext extends BaseObject {
                 self._queryInf[info.methodName] = info;
             }
             else {
-                //service method info
+                // service method info
                 self._initMethod(info);
             }
         });
@@ -184,7 +184,7 @@ export class DbContext extends BaseObject {
     }
     protected _initMethod(methodInfo: IQueryInfo) {
         const self = this;
-        //function expects method parameters
+        // function expects method parameters
         this._svcMethods[methodInfo.methodName] = (args: { [paramName: string]: any; }) => {
             const deferred = _async.createDeferred<any>(), callback = (res: { result: any; error: any; }) => {
                 if (!res.error) {
@@ -235,7 +235,8 @@ export class DbContext extends BaseObject {
         if (!args)
             args = {};
         for (let i = 0; i < len; i += 1) {
-            let pinfo: IQueryParamInfo = paramInfos[i], val = args[pinfo.name];
+            const pinfo: IQueryParamInfo = paramInfos[i];
+            let val = args[pinfo.name];
             if (!pinfo.isNullable && !pinfo.isArray && !(pinfo.dataType === DATA_TYPE.String || pinfo.dataType === DATA_TYPE.Binary) && checks.isNt(val)) {
                 throw new Error(strUtils.format(ERRS.ERR_SVC_METH_PARAM_INVALID, pinfo.name, val, methodInfo.methodName));
             }
@@ -246,14 +247,14 @@ export class DbContext extends BaseObject {
                 val = [val];
             }
             let value: string = null;
-            //byte arrays are optimized for serialization
+            // byte arrays are optimized for serialization
             if (pinfo.dataType === DATA_TYPE.Binary && checks.isArray(val)) {
                 value = JSON.stringify(val);
             }
             else if (checks.isArray(val)) {
-                let arr: string[] = [];
+                const arr: string[] = [];
                 for (let k = 0; k < val.length; k += 1) {
-                    //first convert all values to string
+                    // first convert all values to string
                     arr.push(valUtils.stringifyValue(val[k], pinfo.dateConversion, pinfo.dataType, self.serverTimezone));
                 }
                 value = JSON.stringify(arr);
@@ -292,9 +293,9 @@ export class DbContext extends BaseObject {
 
             req_promise.then((res: string) => {
                 return _async.parseJSON(res);
-            }).then((res: IInvokeResponse) => { //success
+            }).then((res: IInvokeResponse) => { // success
                 fn_onComplete(res);
-            }, (err) => { //error
+            }, (err) => { // error
                 fn_onComplete({ result: null, error: err });
             });
         }
@@ -372,7 +373,7 @@ export class DbContext extends BaseObject {
                 fn_checkError(changes.error, DATA_OPER.Submit);
             }
             catch (ex) {
-                let submitted: IEntityItem[] = [], notvalid: IEntityItem[] = [];
+                const submitted: IEntityItem[] = [], notvalid: IEntityItem[] = [];
                 changes.dbSets.forEach((jsDB) => {
                     const dbSet = self._dbSets.getDbSet(jsDB.dbSetName);
                     jsDB.rows.forEach((row) => {
@@ -409,8 +410,8 @@ export class DbContext extends BaseObject {
             const changes: IRowInfo[] = dbSet._getInternal().getChanges();
             if (changes.length === 0)
                 return;
-            //it is needed to apply updates in parent-child relationship order on the server
-            //and provides child to parent map of the keys for the new entities
+            // it is needed to apply updates in parent-child relationship order on the server
+            // and provides child to parent map of the keys for the new entities
             const trackAssoc: ITrackAssoc[] = dbSet._getInternal().getTrackAssocInfo(),
                 jsDB = { dbSetName: dbSet.dbSetName, rows: changes };
             changeSet.dbSets.push(jsDB);
@@ -483,10 +484,10 @@ export class DbContext extends BaseObject {
             pageIndex = context.pageIndex;
 
         context.fn_onStart();
-        //restore pageIndex if it was changed while loading
+        // restore pageIndex if it was changed while loading
         context.query.pageIndex = pageIndex;
         context.dbSet._getInternal().beforeLoad(context.query, oldQuery);
-        //sync pageIndex
+        // sync pageIndex
         pageIndex = context.query.pageIndex;
 
         if (loadPageCount > 1 && isPagingEnabled) {
@@ -570,25 +571,25 @@ export class DbContext extends BaseObject {
         const self = this, operType = DATA_OPER.Refresh;
         args.fn_onStart();
         try {
-            let request: IRefreshRowInfo = {
+            const request: IRefreshRowInfo = {
                 dbSetName: args.item._aspect.dbSetName,
                 rowInfo: args.item._aspect._getRowInfo(),
                 error: null
             };
 
             args.item._aspect._checkCanRefresh();
-            let url = self._getUrl(DATA_SVC_METH.Refresh),
+            const url = self._getUrl(DATA_SVC_METH.Refresh),
                 req_promise = http.postAjax(url, JSON.stringify(request), self.requestHeaders);
 
             self._addRequestPromise(req_promise, operType);
 
             req_promise.then((res: string) => {
                 return _async.parseJSON(res);
-            }).then((res: IRefreshRowInfo) => { //success
+            }).then((res: IRefreshRowInfo) => { // success
                 if (self.getIsDestroyCalled())
                     return;
                 args.fn_onOK(res);
-            }, (err) => { //error
+            }, (err) => { // error
                 if (self.getIsDestroyCalled())
                     return;
                 args.fn_onErr(err);
@@ -644,8 +645,9 @@ export class DbContext extends BaseObject {
             this._isHasChanges = true;
         }
         else {
-            for (let i = 0, len = this._dbSets.arrDbSets.length; i < len; i += 1) {
-                let test = this._dbSets.arrDbSets[i];
+            const len = this._dbSets.arrDbSets.length;
+            for (let i = 0; i < len; i += 1) {
+                const test = this._dbSets.arrDbSets[i];
                 if (test.isHasChanges) {
                     this._isHasChanges = true;
                     break;
@@ -766,10 +768,11 @@ export class DbContext extends BaseObject {
             self._onDataOperError(err, operType);
         });
 
-        let opts = coreUtils.merge(options, {
+        const opts = coreUtils.merge(options, {
             serviceUrl: <string>null,
             permissions: <IPermissionsInfo>null
-        }), loadUrl: string;
+        });
+        let loadUrl: string;
 
         try {
             if (!checks.isString(opts.serviceUrl)) {
@@ -784,7 +787,7 @@ export class DbContext extends BaseObject {
                 return this._initState;
             }
 
-            //initialize by obtaining metadata from the data service by ajax call
+            // initialize by obtaining metadata from the data service by ajax call
             loadUrl = this._getUrl(DATA_SVC_METH.Permissions);
         }
         catch (ex) {
@@ -823,7 +826,7 @@ export class DbContext extends BaseObject {
     submitChanges(): IVoidPromise {
         const self = this;
 
-        //don't submit when another submit is already in the queue
+        // don't submit when another submit is already in the queue
         if (!!this._pendingSubmit) {
             return this._pendingSubmit.promise;
         }
@@ -837,7 +840,7 @@ export class DbContext extends BaseObject {
                     self._isSubmiting = true;
                     self.raisePropertyChanged(PROP_NAME.isSubmiting);
                 }
-                //allow to post new submit
+                // allow to post new submit
                 self._pendingSubmit = null;
             },
             fn_onEnd: () => {
@@ -893,12 +896,12 @@ export class DbContext extends BaseObject {
     abortRequests(reason?: string, operType?: DATA_OPER): void {
         if (checks.isNt(operType))
             operType = DATA_OPER.None;
-        let arr: IRequestPromise[] = this._requests.filter((a) => {
+        const arr: IRequestPromise[] = this._requests.filter((a) => {
             return operType === DATA_OPER.None ? true : (a.operType === operType);
         });
 
         for (let i = 0; i < arr.length; i += 1) {
-            let promise = arr[i];
+            const promise = arr[i];
             promise.req.abort(reason);
         }
     }

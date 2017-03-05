@@ -16,32 +16,32 @@ function pad(num: number): string {
 
 function dateToString(dt: Date) {
     return ("" + dt.getFullYear()) +
-        '-' + pad(dt.getMonth() + 1) +
-        '-' + pad(dt.getDate()) +
-        'T' + pad(dt.getHours()) +
-        ':' + pad(dt.getMinutes()) +
-        ':' + pad(dt.getSeconds()) +
-        '.' + (dt.getMilliseconds() / 1000).toFixed(3).slice(2, 5) + 'Z';
+        "-" + pad(dt.getMonth() + 1) +
+        "-" + pad(dt.getDate()) +
+        "T" + pad(dt.getHours()) +
+        ":" + pad(dt.getMinutes()) +
+        ":" + pad(dt.getSeconds()) +
+        "." + (dt.getMilliseconds() / 1000).toFixed(3).slice(2, 5) + "Z";
 }
 
 export const ValueUtils: IValueUtils = {
     valueToDate: function (val: string, dtcnv: DATE_CONVERSION, serverTZ: number): Date {
         if (!val)
             return null;
-        let dt = new Date(val);
-        let clientTZ = coreUtils.get_timeZoneOffset();
-        //make fix for timezone
+        const dt = new Date(val);
+        const clientTZ = coreUtils.get_timeZoneOffset();
+        // make fix for timezone
         dt.setMinutes(dt.getMinutes() + clientTZ); 
 
         switch (dtcnv) {
             case DATE_CONVERSION.None:
                 break;
             case DATE_CONVERSION.ServerLocalToClientLocal:
-                dt.setMinutes(dt.getMinutes() + serverTZ); //ServerToUTC
-                dt.setMinutes(dt.getMinutes() - clientTZ); //UtcToLocal
+                dt.setMinutes(dt.getMinutes() + serverTZ); // ServerToUTC
+                dt.setMinutes(dt.getMinutes() - clientTZ); // UtcToLocal
                 break;
             case DATE_CONVERSION.UtcToClientLocal:
-                dt.setMinutes(dt.getMinutes() - clientTZ); //UtcToLocal
+                dt.setMinutes(dt.getMinutes() - clientTZ); // UtcToLocal
                 break;
             default:
                 throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "dtcnv", dtcnv));
@@ -55,16 +55,16 @@ export const ValueUtils: IValueUtils = {
         if (!checks.isDate(dt))
             throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "dt", dt));
 
-        let clientTZ = coreUtils.get_timeZoneOffset();
+        const clientTZ = coreUtils.get_timeZoneOffset();
         switch (dtcnv) {
             case DATE_CONVERSION.None:
                 break;
             case DATE_CONVERSION.ServerLocalToClientLocal:
-                dt.setMinutes(dt.getMinutes() + clientTZ); //LocalToUTC
-                dt.setMinutes(dt.getMinutes() - serverTZ); //UtcToServer
+                dt.setMinutes(dt.getMinutes() + clientTZ); // LocalToUTC
+                dt.setMinutes(dt.getMinutes() - serverTZ); // UtcToServer
                 break;
             case DATE_CONVERSION.UtcToClientLocal:
-                dt.setMinutes(dt.getMinutes() + clientTZ); //LocalToUTC
+                dt.setMinutes(dt.getMinutes() + clientTZ); // LocalToUTC
                 break;
             default:
                 throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "dtcnv", dtcnv));
@@ -195,11 +195,12 @@ export type TraveseFieldCB<T> = (fld: IFieldInfo, name: string, parent_res?: T) 
 
 function _traverseField<T>(fldName: string, fld: IFieldInfo, fn: TraveseFieldCB<T>, parent_res?: T): void {
     if (fld.fieldType === FIELD_TYPE.Object) {
-        let res = fn(fld, fldName, parent_res);
+        const res = fn(fld, fldName, parent_res);
 
-        //for object fields traverse their nested fields
+        // for object fields traverse their nested fields
         if (!!fld.nested && fld.nested.length > 0) {
-            let nestedFld: IFieldInfo, len = fld.nested.length;
+            let nestedFld: IFieldInfo;
+            const len = fld.nested.length;
             for (let i = 0; i < len; i += 1) {
                 nestedFld = fld.nested[i];
                 if (nestedFld.fieldType === FIELD_TYPE.Object) {
@@ -218,7 +219,7 @@ function _traverseField<T>(fldName: string, fld: IFieldInfo, fn: TraveseFieldCB<
 
 export const CollUtils = {
     getObjectField: function (name: string, flds: IFieldInfo[]): IFieldInfo {
-        let arrFlds = flds.filter((f) => { return f.fieldName === name; });
+        const arrFlds = flds.filter((f) => { return f.fieldName === name; });
         if (!arrFlds || arrFlds.length !== 1)
             throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "arrFlds.length === 1"));
         return arrFlds[0];
@@ -232,9 +233,9 @@ export const CollUtils = {
         }
     },
     getPKFields(fieldInfos: IFieldInfo[]): IFieldInfo[] {
-        const pkFlds: IFieldInfo[] = [];
-        for (let i = 0, len = fieldInfos.length; i < len; i += 1) {
-            let fld = fieldInfos[i];
+        const pkFlds: IFieldInfo[] = [], len = fieldInfos.length;
+        for (let i = 0; i < len; i += 1) {
+            const fld = fieldInfos[i];
             if (fld.isPrimaryKey > 0) {
                 pkFlds.push(fld);
             }
@@ -280,4 +281,4 @@ export const CollUtils = {
     cloneVals: function (flds: IFieldInfo[], vals: any): any {
         return CollUtils.copyVals(flds, vals, {});
     }
-}
+};

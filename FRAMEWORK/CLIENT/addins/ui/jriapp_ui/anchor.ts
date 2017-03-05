@@ -47,7 +47,7 @@ export class AnchorElView extends CommandElView {
         this.invokeCommand(null, true);
     }
     protected _updateImage(src: string): void {
-        let el = this.el;
+        const el = this.el;
         if (this._imageSrc === src) {
             return;
         }
@@ -70,12 +70,12 @@ export class AnchorElView extends CommandElView {
         }
     }
     protected _updateGlyph(glyph: string): void {
-        let el = this.el;
+        const el = this.el;
 
         if (this._glyph === glyph) {
             return;
         }
-        let oldGlyph = this._glyph;
+        const oldGlyph = this._glyph;
         this._glyph = glyph;
 
         if (!!oldGlyph && !glyph) {
@@ -110,7 +110,7 @@ export class AnchorElView extends CommandElView {
     }
     get imageSrc(): string { return this._imageSrc; }
     set imageSrc(v: string) {
-        let x = this._imageSrc;
+        const x = this._imageSrc;
         if (x !== v) {
             this._updateImage(v);
             this.raisePropertyChanged(PROP_NAME.imageSrc);
@@ -118,7 +118,7 @@ export class AnchorElView extends CommandElView {
     }
     get glyph(): string { return this._glyph; }
     set glyph(v: string) {
-        let x = this._glyph;
+        const x = this._glyph;
         if (x !== v) {
             this._updateGlyph(v);
             this.raisePropertyChanged(PROP_NAME.glyph);
@@ -128,7 +128,7 @@ export class AnchorElView extends CommandElView {
         return this.el.innerHTML;
     }
     set html(v: string) {
-        let x = this.el.innerHTML;
+        const x = this.el.innerHTML;
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
             this.el.innerHTML = v;
@@ -139,7 +139,7 @@ export class AnchorElView extends CommandElView {
         return this.el.textContent;
     }
     set text(v: string) {
-        let x = this.el.textContent;
+        const x = this.el.textContent;
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
             this.el.textContent = v;
@@ -150,7 +150,7 @@ export class AnchorElView extends CommandElView {
         return (<HTMLAnchorElement>this.el).href;
     }
     set href(v: string) {
-        let x = this.href;
+        const x = this.href;
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
             (<HTMLAnchorElement>this.el).href = v;

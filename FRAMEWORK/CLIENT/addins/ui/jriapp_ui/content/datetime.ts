@@ -8,7 +8,7 @@ import { BasicContent } from "./basic";
 
 export class DateTimeContent extends BasicContent {
     protected getBindingOption(bindingInfo: IBindingInfo, tgt: IBaseObject, dctx: any, targetPath: string): IBindingOptions {
-        let options = super.getBindingOption(bindingInfo, tgt, dctx, targetPath);
+        const options = super.getBindingOption(bindingInfo, tgt, dctx, targetPath);
         options.converter = this.app.getConverter("dateTimeConverter");
         const finf = this.getFieldInfo(), defaults = bootstrap.defaults;
         switch (finf.dataType) {

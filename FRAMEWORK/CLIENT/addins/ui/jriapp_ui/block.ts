@@ -13,7 +13,7 @@ export class BlockElView extends SpanElView {
         return this.el.offsetWidth;
     }
     set width(v) {
-        let x = this.width;
+        const x = this.width;
         if (v !== x) {
             this.el.style.width = v + "px";
             this.raisePropertyChanged(PROP_NAME.width);
@@ -23,7 +23,7 @@ export class BlockElView extends SpanElView {
         return this.el.offsetHeight;
     }
     set height(v) {
-        let x = this.height;
+        const x = this.height;
         if (v !== x) {
             this.el.style.height = v + "px";
             this.raisePropertyChanged(PROP_NAME.height);

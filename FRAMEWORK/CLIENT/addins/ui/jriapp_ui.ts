@@ -46,5 +46,5 @@ export * from "./jriapp_ui/content/all";
 
 initContentFactory();
 
-//Load Stylesheet for all the bundle
+// Load Stylesheet for all the bundle
 bootstrap.loadOwnStyle("jriapp_ui");

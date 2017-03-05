@@ -12,7 +12,7 @@ export function createContentFactoryList(): IContentFactoryList {
     return new FactoryList();
 }
 
-//the base content factory It is always the last in the chain of factories
+// the base content factory It is always the last in the chain of factories
 class LastFactory implements IContentFactory {
     constructor() {
     }

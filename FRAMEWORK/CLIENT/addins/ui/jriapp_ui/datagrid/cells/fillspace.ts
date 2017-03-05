@@ -3,7 +3,7 @@ import { BaseObject } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { css } from "../const";
 import { FillSpaceRow } from "../rows/fillspace";
-import { DataGrid } from "../datagrid"
+import { DataGrid } from "../datagrid";
 
 const dom = DomUtils, doc = dom.document;
 

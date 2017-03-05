@@ -40,7 +40,8 @@ export class TabsElView extends BaseElView implements ITabs {
         this._createTabs();
     }
     protected _createTabs() {
-        let $el = $(this.el), self = this, tabOpts = {
+        const $el = $(this.el), self = this;
+        let tabOpts = {
             activate: () => {
                 if (!!self._tabsEvents) {
                     self._tabsEvents.onTabSelected(self);
@@ -101,11 +102,11 @@ export class TabsElView extends BaseElView implements ITabs {
        }
    }
     get tabIndex(): number {
-        let $el = <any>$(this.el);
+        const $el = <any>$(this.el);
         return $el.tabs("option", "active");
    }
     set tabIndex(v: number) {
-        let $el = <any>$(this.el);
+        const $el = <any>$(this.el);
         $el.tabs("option", "active", v);
    }
 }

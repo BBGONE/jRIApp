@@ -18,7 +18,7 @@ export class TemplateLoader extends BaseObject {
 
     constructor() {
         super();
-        let self = this;
+        const self = this;
         this._templateLoaders = {};
         this._templateGroups = {};
         this._promises = [];
@@ -33,7 +33,7 @@ export class TemplateLoader extends BaseObject {
         self._templateLoaders = {};
         self._templateGroups = {};
         if (!!self._waitQueue) {
-            self._waitQueue.destroy()
+            self._waitQueue.destroy();
             self._waitQueue = null;
         }
         super.destroy();
@@ -74,7 +74,7 @@ export class TemplateLoader extends BaseObject {
         self._promises.push(promise);
         if (self.isLoading !== old)
             self.raisePropertyChanged(PROP_NAME.isLoading);
-        let res = promise.then((html: string) => {
+        const res = promise.then((html: string) => {
             self._onLoaded(html, app);
         });
 
@@ -104,9 +104,9 @@ export class TemplateLoader extends BaseObject {
         if (!loader.groupName && !checks.isFunc(loader.fn_loader)) {
             throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "fn_loader is Function"));
         }
-        let prevLoader = self._getTemplateLoaderCore(name);
+        const prevLoader = self._getTemplateLoaderCore(name);
         if (!!prevLoader) {
-            //can overwrite previous loader with new one, only if the old did not have loader function and the new has it
+            // can overwrite previous loader with new one, only if the old did not have loader function and the new has it
             if ((!prevLoader.fn_loader && !!prevLoader.groupName) && (!loader.groupName && !!loader.fn_loader)) {
                 return self._registerTemplateLoaderCore(name, loader);
             }
@@ -114,22 +114,22 @@ export class TemplateLoader extends BaseObject {
         }
         return self._registerTemplateLoaderCore(name, loader);
     }
-    //this function will return promise resolved with the template's html
+    // this function will return promise resolved with the template's html
     public getTemplateLoader(name: string): () => IPromise<string> {
         const self = this, loader = self._getTemplateLoaderCore(name);
         if (!loader)
             return null;
         if (!loader.fn_loader && !!loader.groupName) {
-            let group = self._getTemplateGroup(loader.groupName);
+            const group = self._getTemplateGroup(loader.groupName);
             if (!group) {
                 throw new Error(strUtils.format(ERRS.ERR_TEMPLATE_GROUP_NOTREGISTERED, loader.groupName));
             }
 
-            //this function will return promise resolved with the template's html
+            // this function will return promise resolved with the template's html
             return () => {
-                //it prevents double loading
+                // it prevents double loading
                 if (!group.promise) {
-                    //start loading only if no another loading in progress
+                    // start loading only if no another loading in progress
                     group.promise = self.loadTemplatesAsync(group.fn_loader, group.app);
                 }
 
@@ -187,7 +187,7 @@ export class TemplateLoader extends BaseObject {
         }, group);
 
         if (!!group2.url && !group2.fn_loader) {
-            //make a function to load from this url
+            // make a function to load from this url
             group2.fn_loader = () => {
                 return http.getAjax(group2.url);
             };
@@ -198,11 +198,11 @@ export class TemplateLoader extends BaseObject {
             if (!!group2.app) {
                 name = group2.app.appName + "." + name;
             }
-            //for each template in the group register dummy loader function which has only group name
-            //when template will be requested, this dummy loader will be replaced with the real one
+            // for each template in the group register dummy loader function which has only group name
+            // when template will be requested, this dummy loader will be replaced with the real one
             self.registerTemplateLoader(name, {
                 groupName: groupName,
-                fn_loader: null //no loader function
+                fn_loader: null // no loader function
             });
         });
     }

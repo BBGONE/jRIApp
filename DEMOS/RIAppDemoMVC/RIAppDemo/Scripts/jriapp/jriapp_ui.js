@@ -26,10 +26,10 @@ define("jriapp_ui/content/int", ["require", "exports", "jriapp_shared", "jriapp/
             fieldName: null,
             options: null
         };
-        var attr, temp_opts = parser.parseOptions(content_attr);
+        var temp_opts = parser.parseOptions(content_attr);
         if (temp_opts.length === 0)
             return contentOptions;
-        attr = temp_opts[0];
+        var attr = temp_opts[0];
         if (!attr.template && !!attr.fieldName) {
             var bindInfo = {
                 target: null, source: null,
@@ -120,7 +120,8 @@ define("jriapp_ui/content/basic", ["require", "exports", "jriapp_shared", "jriap
             return !!editable && !finf.isReadOnly && finf.fieldType !== 2;
         };
         BasicContent.prototype.createTargetElement = function () {
-            var el, info = { name: null, options: null };
+            var el;
+            var info = { name: null, options: null };
             if (this._isEditing && this.getIsCanBeEdited()) {
                 el = doc.createElement("input");
                 el.setAttribute("type", "text");
@@ -150,17 +151,17 @@ define("jriapp_ui/content/basic", ["require", "exports", "jriapp_shared", "jriap
             if (!this._lfScope) {
                 return [];
             }
-            var arr = this._lfScope.getObjs(), res = [];
-            for (var i = 0, len = arr.length; i < len; i += 1) {
+            var arr = this._lfScope.getObjs(), res = [], len = arr.length;
+            for (var i = 0; i < len; i += 1) {
                 if (sys.isBinding(arr[i]))
                     res.push(arr[i]);
             }
             return res;
         };
         BasicContent.prototype.updateBindingSource = function () {
-            var binding, bindings = this.getBindings();
-            for (var i = 0, len = bindings.length; i < len; i += 1) {
-                binding = bindings[i];
+            var bindings = this.getBindings(), len = bindings.length;
+            for (var i = 0; i < len; i += 1) {
+                var binding = bindings[i];
                 if (!binding.isSourceFixed) {
                     binding.source = this._dataContext;
                 }
@@ -299,7 +300,8 @@ define("jriapp_ui/content/template", ["require", "exports", "jriapp_shared", "jr
             if (!this._templateInfo) {
                 throw new Error(jriapp_shared_3.LocaleERRS.ERR_TEMPLATE_ID_INVALID);
             }
-            var info = this._templateInfo, id = info.displayID;
+            var info = this._templateInfo;
+            var id = info.displayID;
             if (this._isEditing && !!info.editID) {
                 id = info.editID;
             }
@@ -612,13 +614,13 @@ define("jriapp_ui/utils/tooltip", ["require", "exports", "jriapp_ui/utils/jquery
         toolTipError: "qtip-red"
     };
     function createToolTipSvc() {
-        return new tooltipService();
+        return new TooltipService();
     }
     exports.createToolTipSvc = createToolTipSvc;
-    var tooltipService = (function () {
-        function tooltipService() {
+    var TooltipService = (function () {
+        function TooltipService() {
         }
-        tooltipService.prototype.addToolTip = function (el, tip, isError, pos) {
+        TooltipService.prototype.addToolTip = function (el, tip, isError, pos) {
             var $el = jquery_1.$(el), options = {
                 content: {
                     text: tip
@@ -652,7 +654,7 @@ define("jriapp_ui/utils/tooltip", ["require", "exports", "jriapp_ui/utils/jquery
                 $el.qtip(options);
             }
         };
-        return tooltipService;
+        return TooltipService;
     }());
 });
 define("jriapp_ui/utils/datepicker", ["require", "exports", "jriapp_shared", "jriapp_ui/utils/jquery"], function (require, exports, jriapp_shared_8, jquery_2) {
@@ -1324,7 +1326,8 @@ define("jriapp_ui/content/multyline", ["require", "exports", "jriapp_shared", "j
             configurable: true
         });
         MultyLineContent.prototype.createTargetElement = function () {
-            var el, info = { name: null, options: null };
+            var el;
+            var info = { name: null, options: null };
             if (this.isEditing && this.getIsCanBeEdited()) {
                 el = document.createElement("textarea");
                 info.options = this._options.options;
@@ -1573,7 +1576,8 @@ define("jriapp_ui/content/date", ["require", "exports", "jriapp_shared", "jriapp
             return options;
         };
         DateContent.prototype.createTargetElement = function () {
-            var el, info = { name: null, options: null };
+            var el;
+            var info = { name: null, options: null };
             if (this.isEditing && this.getIsCanBeEdited()) {
                 el = doc.createElement("input");
                 el.setAttribute("type", "text");
@@ -2922,26 +2926,26 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
         DataEditDialog.prototype._getButtons = function () {
             var self = this, buttons = [
                 {
-                    'id': self._objId + "_Refresh",
-                    'text': jriapp_shared_16.LocaleSTRS.TEXT.txtRefresh,
-                    'class': "btn btn-info",
-                    'click': function () {
+                    "id": self._objId + "_Refresh",
+                    "text": jriapp_shared_16.LocaleSTRS.TEXT.txtRefresh,
+                    "class": "btn btn-info",
+                    "click": function () {
                         self._onRefresh();
                     }
                 },
                 {
-                    'id': self._objId + "_Ok",
-                    'text': jriapp_shared_16.LocaleSTRS.TEXT.txtOk,
-                    'class': "btn btn-info",
-                    'click': function () {
+                    "id": self._objId + "_Ok",
+                    "text": jriapp_shared_16.LocaleSTRS.TEXT.txtOk,
+                    "class": "btn btn-info",
+                    "click": function () {
                         self._onOk();
                     }
                 },
                 {
-                    'id': self._objId + "_Cancel",
-                    'text': jriapp_shared_16.LocaleSTRS.TEXT.txtCancel,
-                    'class': "btn btn-info",
-                    'click': function () {
+                    "id": self._objId + "_Cancel",
+                    "text": jriapp_shared_16.LocaleSTRS.TEXT.txtCancel,
+                    "class": "btn btn-info",
+                    "click": function () {
                         self._onCancel();
                     }
                 }
@@ -2973,7 +2977,8 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
             });
         };
         DataEditDialog.prototype._onOk = function () {
-            var self = this, canCommit, action = 0;
+            var self = this;
+            var canCommit, action = 0;
             if (!!this._fn_OnOK) {
                 action = this._fn_OnOK(this);
             }
@@ -4341,7 +4346,8 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_shared", "j
             }
         };
         Row.prototype._createCell = function (col, num) {
-            var self = this, td = doc.createElement("td"), cell;
+            var self = this, td = doc.createElement("td");
+            var cell;
             if (col instanceof expander_2.ExpanderColumn) {
                 this._expanderCell = new expander_1.ExpanderCell({ row: self, td: td, column: col, num: num });
                 cell = this._expanderCell;
@@ -5468,7 +5474,8 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 return null;
             if (!row.isDeleted)
                 return row;
-            var delIndex = this.rows.indexOf(row), i = delIndex, len = this.rows.length;
+            var delIndex = this.rows.indexOf(row), len = this.rows.length;
+            var i = delIndex;
             if (!isUp) {
                 i -= 1;
                 if (i >= 0)
@@ -5751,7 +5758,8 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
         };
         DataGrid.prototype._appendItems = function (newItems) {
             var self = this, tbody = this._tBodyEl;
-            var isPrepend = self.options.isPrependAllRows, isPrependNew = self.options.isPrependNewRows;
+            var isPrepend = self.options.isPrependAllRows;
+            var isPrependNew = self.options.isPrependNewRows;
             if (newItems.length === 1) {
                 var item = newItems[0];
                 if (!self._rowMap[item._key]) {
@@ -5760,8 +5768,8 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 }
             }
             else {
-                var docFr = doc.createDocumentFragment();
-                for (var i = 0, k = newItems.length; i < k; i += 1) {
+                var docFr = doc.createDocumentFragment(), k = newItems.length;
+                for (var i = 0; i < k; i += 1) {
                     var item = newItems[i];
                     if (!self._rowMap[item._key]) {
                         self._createRowForItem(docFr, item, (isPrependNew && item._aspect.isNew));
@@ -5854,7 +5862,8 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
         DataGrid.prototype.updateColumnsSize = function () {
             if (this.getIsDestroyCalled())
                 return;
-            var width = 0, header = this._header;
+            var width = 0;
+            var header = this._header;
             this._columns.forEach(function (col) {
                 width += col.width;
             });
@@ -5909,7 +5918,8 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
         DataGrid.prototype.showEditDialog = function () {
             if (!this.isHasEditor || !this._editingRow)
                 return false;
-            var dialogOptions, item = this._editingRow.item;
+            var dialogOptions;
+            var item = this._editingRow.item;
             if (!item._aspect.isEditing)
                 item._aspect.beginEdit();
             if (!this._dialog) {
@@ -5932,7 +5942,8 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             if (!!this._fillSpace) {
                 this._fillSpace.height = 0;
             }
-            var animate = !!args.animate, alignBottom = (args.pos === 1), viewPortHeight = viewport.clientHeight, viewportRect = viewport.getBoundingClientRect(), rowHeight = row.height, currentScrollTop = viewport.scrollTop, offsetDiff = currentScrollTop + row.rect.top - viewportRect.top;
+            var animate = !!args.animate, alignBottom = (args.pos === 1), viewPortHeight = viewport.clientHeight, viewportRect = viewport.getBoundingClientRect(), rowHeight = row.height, currentScrollTop = viewport.scrollTop;
+            var offsetDiff = currentScrollTop + row.rect.top - viewportRect.top;
             if (alignBottom) {
                 offsetDiff = Math.floor(offsetDiff + 1);
             }
@@ -5944,7 +5955,8 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 contentHeight = contentHeight + this._details.height;
             }
             contentHeight = Math.min(viewPortHeight, contentHeight);
-            var yOffset = viewPortHeight - contentHeight, yPos = offsetDiff, deltaY = 0;
+            var yOffset = viewPortHeight - contentHeight;
+            var yPos = offsetDiff, deltaY = 0;
             if (alignBottom)
                 yPos -= yOffset;
             var maxScrollTop = this.table.offsetHeight - viewPortHeight + 1;
@@ -6362,7 +6374,8 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/const"
             return doc.createElement(tag);
         };
         Pager.prototype.render = function () {
-            var el = this._el, rowCount, currentPage, pageCount;
+            var el = this._el;
+            var rowCount, currentPage, pageCount;
             this._clearContent();
             if (this.rowsPerPage <= 0) {
                 return;
@@ -6395,7 +6408,8 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/const"
                     el.appendChild(this._createPrevious());
                 }
                 if (this.showNumbers) {
-                    var start = 1, end = pageCount, sliderSize = this.sliderSize, half = void 0, above = void 0, below = void 0;
+                    var sliderSize = this.sliderSize;
+                    var start = 1, end = pageCount, half = void 0, above = void 0, below = void 0;
                     if (this.useSlider && (sliderSize > 0)) {
                         half = Math.floor(((sliderSize - 1) / 2));
                         above = (currentPage + half) + ((sliderSize - 1) % 2);
@@ -6509,7 +6523,8 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/const"
             return a;
         };
         Pager.prototype._createFirst = function () {
-            var span = this._createElement("span"), tip;
+            var span = this._createElement("span");
+            var tip;
             if (this.showTip) {
                 tip = _STRS.firstPageTip;
             }
@@ -6519,7 +6534,8 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/const"
             return span;
         };
         Pager.prototype._createPrevious = function () {
-            var span = this._createElement("span"), previousPage = this.currentPage - 1, tip;
+            var span = this._createElement("span"), previousPage = this.currentPage - 1;
+            var tip;
             if (this.showTip) {
                 tip = strUtils.format(_STRS.prevPageTip, previousPage);
             }
@@ -6538,7 +6554,8 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/const"
             return span;
         };
         Pager.prototype._createOther = function (page) {
-            var span = this._createElement("span"), tip;
+            var span = this._createElement("span");
+            var tip;
             if (this.showTip) {
                 tip = this._buildTip(page);
             }
@@ -6548,7 +6565,8 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/const"
             return span;
         };
         Pager.prototype._createNext = function () {
-            var span = this._createElement("span"), nextPage = this.currentPage + 1, tip;
+            var span = this._createElement("span"), nextPage = this.currentPage + 1;
+            var tip;
             if (this.showTip) {
                 tip = strUtils.format(_STRS.nextPageTip, nextPage);
             }
@@ -6558,7 +6576,8 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/const"
             return span;
         };
         Pager.prototype._createLast = function () {
-            var span = this._createElement("span"), tip;
+            var span = this._createElement("span");
+            var tip;
             if (this.showTip) {
                 tip = _STRS.lastPageTip;
             }
@@ -6568,7 +6587,8 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/const"
             return span;
         };
         Pager.prototype._buildTip = function (page) {
-            var rowsPerPage = this.rowsPerPage, rowCount = this.rowCount, start = (((page - 1) * rowsPerPage) + 1), end = (page === this.pageCount) ? rowCount : (page * rowsPerPage), tip = "";
+            var rowsPerPage = this.rowsPerPage, rowCount = this.rowCount, start = (((page - 1) * rowsPerPage) + 1), end = (page === this.pageCount) ? rowCount : (page * rowsPerPage);
+            var tip = "";
             if (page === this.currentPage) {
                 tip = strUtils.format(_STRS.showingTip, start, end, rowCount);
             }
@@ -6605,7 +6625,8 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/const"
         });
         Object.defineProperty(Pager.prototype, "pageCount", {
             get: function () {
-                var rowCount = this.rowCount, rowsPerPage = this.rowsPerPage, result;
+                var rowCount = this.rowCount, rowsPerPage = this.rowsPerPage;
+                var result;
                 if ((rowCount === 0) || (rowsPerPage === 0)) {
                     return 0;
                 }
@@ -6951,7 +6972,8 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
         StackPanel.prototype._onKeyUp = function (key, event) {
         };
         StackPanel.prototype._updateCurrent = function (item, withScroll) {
-            var self = this, old = self._currentItem, mappedItem;
+            var self = this, old = self._currentItem;
+            var mappedItem;
             if (old !== item) {
                 this._currentItem = item;
                 if (!!old) {
@@ -7294,7 +7316,8 @@ define("jriapp_ui/tabs", ["require", "exports", "jriapp_shared", "jriapp_ui/util
             return _this;
         }
         TabsElView.prototype._createTabs = function () {
-            var $el = jquery_6.$(this.el), self = this, tabOpts = {
+            var $el = jquery_6.$(this.el), self = this;
+            var tabOpts = {
                 activate: function () {
                     if (!!self._tabsEvents) {
                         self._tabsEvents.onTabSelected(self);
@@ -7632,13 +7655,13 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
         return false;
     };
     viewChecks.isInNestedForm = function (root, forms, el) {
-        var i, oNode, len = forms.length;
+        var len = forms.length;
         if (len === 0) {
             return false;
         }
-        oNode = el.parentElement;
+        var oNode = el.parentElement;
         while (!!oNode) {
-            for (i = 0; i < len; i += 1) {
+            for (var i = 0; i < len; i += 1) {
                 if (oNode === forms[i]) {
                     return true;
                 }
@@ -7714,8 +7737,8 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
         DataForm.prototype._getBindings = function () {
             if (!this._lfTime)
                 return [];
-            var arr = this._lfTime.getObjs(), res = [];
-            for (var i = 0, len = arr.length; i < len; i += 1) {
+            var arr = this._lfTime.getObjs(), res = [], len = arr.length;
+            for (var i = 0; i < len; i += 1) {
                 if (sys.isBinding(arr[i]))
                     res.push(arr[i]);
             }
@@ -7915,7 +7938,8 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
                 var dataContext = this._dataContext;
                 if (!dataContext)
                     return;
-                var isEditing = this._isEditing, editable;
+                var isEditing = this._isEditing;
+                var editable;
                 if (!!this._editable)
                     editable = this._editable;
                 if (!editable && v !== isEditing) {
@@ -7992,7 +8016,8 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
         DataFormElView.prototype._getErrorTipInfo = function (errors) {
             var tip = ["<b>", jriapp_shared_36.LocaleSTRS.VALIDATE.errorInfo, "</b>", "<ul>"];
             errors.forEach(function (info) {
-                var fieldName = info.fieldName, res = "";
+                var fieldName = info.fieldName;
+                var res = "";
                 if (!!fieldName) {
                     res = jriapp_shared_36.LocaleSTRS.VALIDATE.errorField + " " + fieldName;
                 }

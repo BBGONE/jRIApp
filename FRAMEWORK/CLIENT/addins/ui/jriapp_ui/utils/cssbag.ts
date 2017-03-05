@@ -13,13 +13,13 @@ export class CSSBag extends BaseObject implements IPropertyBag {
         super();
         this._el = el;
     }
-    //override
+    // override
     _isHasProp(prop: string) {
         return true;
     }
-    //implement IPropertyBag
+    // implement IPropertyBag
     getProp(name: string): any {
-        //no need to get it
+        // no need to get it
         return checks.undefined;
     }
     setProp(name: string, val: any): void {
@@ -28,7 +28,7 @@ export class CSSBag extends BaseObject implements IPropertyBag {
         const cssName = strUtils.trimBrackets(name);
         if (cssName === "*") {
             if (!val) {
-                //remove all classes
+                // remove all classes
                 dom.removeClass([this._el], null);
             }
             else if (checks.isArray(val)) {
@@ -39,7 +39,7 @@ export class CSSBag extends BaseObject implements IPropertyBag {
             }
             return;
         }
-        //set individual classes
+        // set individual classes
         dom.setClass([this._el], cssName, !val);
     }
     get isPropertyBag() {

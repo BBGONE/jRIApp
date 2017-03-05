@@ -35,7 +35,7 @@ export interface IDialogConstructorOptions {
 export interface IButton {
     id: string;
     text: string;
-    'class': string;
+    "class": string;
     click: () => void;
 }
 
@@ -82,13 +82,13 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     private _result: "ok" | "cancel";
     private _options: IDialogOptions;
     private _fn_submitOnOK: () => IVoidPromise;
-    //save the global's currentSelectable  before showing and restore it on dialog's closing
+    // save the global's currentSelectable  before showing and restore it on dialog's closing
     private _currentSelectable: ISelectableProvider;
     private _deferred: IDeferred<ITemplate>;
 
     constructor(options: IDialogConstructorOptions) {
         super();
-        let self = this;
+        const self = this;
         options = coreUtils.extend({
             dataContext: null,
             templateID: null,
@@ -124,9 +124,9 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         this._result = null;
         this._currentSelectable = null;
         this._fn_submitOnOK = () => {
-            let submittable = sys.getSubmittable(self._dataContext);
+            const submittable = sys.getSubmittable(self._dataContext);
             if (!submittable || !submittable.isCanSubmit) {
-                //signals immediatly
+                // signals immediatly
                 return utils.defer.createDeferred<void>().resolve();
             }
             return submittable.submitChanges();
@@ -173,11 +173,11 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         }
     }
     protected _getEventNames() {
-        let base_events = super._getEventNames();
+        const base_events = super._getEventNames();
         return [DLG_EVENTS.close, DLG_EVENTS.refresh].concat(base_events);
     }
     templateLoading(template: ITemplate): void {
-        //noop
+        // noop
     }
     templateLoaded(template: ITemplate, error?: any): void {
         if (this.getIsDestroyCalled() || !!error) {
@@ -207,26 +207,26 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     protected _getButtons(): IButton[] {
         const self = this, buttons = [
             {
-                'id': self._objId + "_Refresh",
-                'text': STRS.TEXT.txtRefresh,
-                'class': "btn btn-info",
-                'click': () => {
+                "id": self._objId + "_Refresh",
+                "text": STRS.TEXT.txtRefresh,
+                "class": "btn btn-info",
+                "click": () => {
                     self._onRefresh();
                 }
             },
             {
-                'id': self._objId + "_Ok",
-                'text': STRS.TEXT.txtOk,
-                'class': "btn btn-info",
-                'click': () => {
+                "id": self._objId + "_Ok",
+                "text": STRS.TEXT.txtOk,
+                "class": "btn btn-info",
+                "click": () => {
                     self._onOk();
                 }
             },
             {
-                'id': self._objId + "_Cancel",
-                'text': STRS.TEXT.txtCancel,
-                'class': "btn btn-info",
-                'click': () => {
+                "id": self._objId + "_Cancel",
+                "text": STRS.TEXT.txtCancel,
+                "class": "btn btn-info",
+                "click": () => {
                     self._onCancel();
                 }
             }
@@ -252,13 +252,14 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         return [this._getOkButton(), this._getCancelButton(), this._getRefreshButton()];
     }
     protected _disableButtons(isDisable: boolean) {
-        let btns = this._getAllButtons();
+        const btns = this._getAllButtons();
         btns.forEach(($btn) => {
             $btn.prop("disabled", !!isDisable);
         });
     }
     protected _onOk() {
-        let self = this, canCommit: boolean, action = DIALOG_ACTION.Default;
+        const self = this;
+        let canCommit: boolean, action = DIALOG_ACTION.Default;
         if (!!this._fn_OnOK) {
             action = this._fn_OnOK(this);
         }
@@ -278,9 +279,9 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         if (canCommit) {
             if (this._submitOnOK) {
                 this._disableButtons(true);
-                let title = this.title;
+                const title = this.title;
                 this.title = STRS.TEXT.txtSubmitting;
-                let promise = this._fn_submitOnOK();
+                const promise = this._fn_submitOnOK();
                 promise.always(() => {
                     self._disableButtons(false);
                     self.title = title;
@@ -289,7 +290,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
                     self._result = "ok";
                     self.hide();
                 }, () => {
-                    //resume editing if fn_onEndEdit callback returns false in isOk argument
+                    // resume editing if fn_onEndEdit callback returns false in isOk argument
                     if (!!self._editable) {
                         if (!self._editable.beginEdit()) {
                             self._result = "cancel";
@@ -317,11 +318,11 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         this.hide();
     }
     protected _onRefresh() {
-        let args = { isHandled: false };
+        const args = { isHandled: false };
         this.raiseEvent(DLG_EVENTS.refresh, args);
         if (args.isHandled)
             return;
-        let dctx = this._dataContext;
+        const dctx = this._dataContext;
         if (!!dctx) {
             if (checks.isFunc(dctx.refresh)) {
                 dctx.refresh();
@@ -356,7 +357,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         }
     }
     show(): IPromise<DataEditDialog> {
-        let self = this;
+        const self = this;
         if (self.getIsDestroyCalled())
             return utils.defer.createDeferred<DataEditDialog>().reject();
         self._result = null;
@@ -377,7 +378,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         });
     }
     hide() {
-        let self = this;
+        const self = this;
         if (!this._$dlgEl)
             return;
         (<any>self._$dlgEl).dialog("close");
@@ -388,7 +389,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         return (<any>this._$dlgEl).dialog("option", name);
     }
     setOption(name: string, value: any) {
-        let self = this;
+        const self = this;
         (<any>self._$dlgEl).dialog("option", name, value);
     }
     destroy() {
@@ -423,7 +424,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     }
     get width() { return this.getOption("width"); }
     set width(v) {
-        let x = this.getOption("width");
+        const x = this.getOption("width");
         if (v !== x) {
             this.setOption("width", v);
             this.raisePropertyChanged(PROP_NAME.width);
@@ -431,7 +432,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     }
     get height() { return this.getOption("height"); }
     set height(v) {
-        let x = this.getOption("height");
+        const x = this.getOption("height");
         if (v !== x) {
             this.setOption("height", v);
             this.raisePropertyChanged(PROP_NAME.height);
@@ -439,7 +440,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     }
     get title() { return this.getOption("title"); }
     set title(v) {
-        let x = this.getOption("title");
+        const x = this.getOption("title");
         if (v !== x) {
             this.setOption("title", v);
             this.raisePropertyChanged(PROP_NAME.title);
@@ -447,7 +448,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     }
     get canRefresh() { return this._canRefresh; }
     set canRefresh(v) {
-        let x = this._canRefresh;
+        const x = this._canRefresh;
         if (v !== x) {
             this._canRefresh = v;
             this.raisePropertyChanged(PROP_NAME.canRefresh);
@@ -455,7 +456,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     }
     get canCancel() { return this._canCancel; }
     set canCancel(v) {
-        let x = this._canCancel;
+        const x = this._canCancel;
         if (v !== x) {
             this._canCancel = v;
             this.raisePropertyChanged(PROP_NAME.canCancel);
@@ -473,8 +474,8 @@ export class DialogVM extends ViewModel<IApplication> {
         this._dialogs = {};
     }
     createDialog(name: string, options: IDialogConstructorOptions): () => DataEditDialog {
-        let self = this;
-        //the map stores functions those create dialogs (aka factories)
+        const self = this;
+        // the map stores functions those create dialogs (aka factories)
         this._factories[name] = () => {
             let dialog = self._dialogs[name];
             if (!dialog) {
@@ -486,18 +487,18 @@ export class DialogVM extends ViewModel<IApplication> {
         return this._factories[name];
     }
     showDialog(name: string, dataContext: any): DataEditDialog {
-        let dlg = this.getDialog(name);
+        const dlg = this.getDialog(name);
         if (!dlg)
             throw new Error(strUtils.format("Invalid DataEditDialog name:  {0}", name));
         dlg.dataContext = dataContext;
-        //timeout helps to set dialog properties on returned DataEditDialog before its showing
+        // timeout helps to set dialog properties on returned DataEditDialog before its showing
         setTimeout(() => {
             dlg.show();
         }, 0);
         return dlg;
     }
     getDialog(name: string): DataEditDialog {
-        let factory = this._factories[name];
+        const factory = this._factories[name];
         if (!factory)
             return null;
         return factory();
@@ -506,7 +507,7 @@ export class DialogVM extends ViewModel<IApplication> {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        let self = this, keys = Object.keys(this._dialogs);
+        const self = this, keys = Object.keys(this._dialogs);
         keys.forEach((key: string) => {
             self._dialogs[key].destroy();
         });

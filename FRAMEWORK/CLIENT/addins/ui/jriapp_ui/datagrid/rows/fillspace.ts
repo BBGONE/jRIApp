@@ -3,7 +3,7 @@ import { BaseObject } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { css } from "../const";
 import { FillSpaceCell } from "../cells/fillspace";
-import { DataGrid } from "../datagrid"
+import { DataGrid } from "../datagrid";
 
 const dom = DomUtils;
 
@@ -14,7 +14,7 @@ export class FillSpaceRow extends BaseObject {
 
     constructor(options: { grid: DataGrid; tr: HTMLTableRowElement; }) {
         super();
-        let tr = options.tr;
+        const tr = options.tr;
         this._grid = options.grid;
         this._tr = tr;
         this._cell = null;
@@ -22,7 +22,7 @@ export class FillSpaceRow extends BaseObject {
         dom.addClass([tr], css.fillVSpace);
     }
     private _createCell() {
-        let td: HTMLTableCellElement = <HTMLTableCellElement>document.createElement("td");
+        const td: HTMLTableCellElement = <HTMLTableCellElement>document.createElement("td");
         this._cell = new FillSpaceCell({ row: this, td: td });
     }
     destroy() {

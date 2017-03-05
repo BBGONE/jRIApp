@@ -32,7 +32,7 @@ export class NumberContent extends BasicContent {
         return options;
     }
     protected previewKeyPress(keyCode: number, value: string) {
-        let ch = String.fromCharCode(keyCode), digits = "1234567890", defaults = bootstrap.defaults, notAllowedChars = "~@#$%^&*()+=_";
+        const ch = String.fromCharCode(keyCode), digits = "1234567890", defaults = bootstrap.defaults, notAllowedChars = "~@#$%^&*()+=_";
         if (notAllowedChars.indexOf(ch) > -1)
             return false;
         if (this._allowedKeys.indexOf(keyCode) > -1)
@@ -46,7 +46,7 @@ export class NumberContent extends BasicContent {
                 return value.indexOf(ch) < 0;
         }
         if (ch === defaults.thousandSep)
-            return true
+            return true;
         else
             return digits.indexOf(ch) > -1;
     }

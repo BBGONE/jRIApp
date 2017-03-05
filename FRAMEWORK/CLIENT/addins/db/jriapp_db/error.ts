@@ -42,7 +42,7 @@ export class SubmitError extends DataOperationError {
         this._allSubmitted = allSubmitted || [];
         this._notValidated = notValidated || [];
         if (this._notValidated.length > 0) {
-            let res = [message + ":"];
+            const res = [message + ":"];
             this._notValidated.forEach(function (item) {
                 res.push(strUtils.format("item key:{0} errors:{1}", item._key, item._aspect.getErrorString()));
            });

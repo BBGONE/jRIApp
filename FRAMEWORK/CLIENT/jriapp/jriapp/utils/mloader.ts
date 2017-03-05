@@ -31,7 +31,8 @@ function whenAll(loads: IModuleLoad[]): IPromise<any> {
     if (loads.length === 1)
         return loads[0].defered.promise();
 
-    let cnt = loads.length, resolved = 0, err: any = null;
+    const cnt = loads.length;
+    let resolved = 0, err: any = null;
     for (let i = 0; i < cnt; i += 1) {
         if (loads[i].state === LOAD_STATE.LOADED) {
             ++resolved;
@@ -62,8 +63,8 @@ class ModuleLoader implements IModuleLoader {
     load(names: string[]): IPromise<void> {
         const self = this;
 
-        //load CSS too if they are in the array
-        let cssNames = names.filter((val) => { return self.isCSS(val); }), cssLoads = self.loadCSS(cssNames),
+        // load CSS too if they are in the array
+        const cssNames = names.filter((val) => { return self.isCSS(val); }), cssLoads = self.loadCSS(cssNames),
             modNames = names.filter((val) => { return !self.isCSS(val); }), forLoad = modNames.filter((val) => {
                 return !self._loads[val];
             });
@@ -100,9 +101,8 @@ class ModuleLoader implements IModuleLoader {
 
         return whenAll(loads);
     }
-    whenAllLoaded(): IPromise<void>
-    {
-        let loads: IModuleLoad[] = [];
+    whenAllLoaded(): IPromise<void> {
+        const loads: IModuleLoad[] = [];
         coreUtils.forEachProp(this._loads, (name, val) => {
             loads.push(val);
         });
@@ -130,13 +130,13 @@ class ModuleLoader implements IModuleLoader {
 
             cssLoader.loadStyles(urls).then(() => {
                 forLoad.forEach((name) => {
-                    let load = self._cssLoads[name];
+                    const load = self._cssLoads[name];
                     load.state = LOAD_STATE.LOADED;
                     load.defered.resolve();
                 });
             }, (err) => {
                 forLoad.forEach((name) => {
-                    let load = self._cssLoads[name];
+                    const load = self._cssLoads[name];
                     load.state = LOAD_STATE.LOADED;
                     load.err = err;
                     load.defered.reject(err);
@@ -152,8 +152,7 @@ class ModuleLoader implements IModuleLoader {
     private isCSS(name: string): boolean {
         return !!name && strUtils.startsWith(name, CSSPrefix);
     }
-    private getUrl(name: string): string
-    {
+    private getUrl(name: string): string {
         if (this.isCSS(name)) {
             name = name.substr(CSSPrefix.length);
         }

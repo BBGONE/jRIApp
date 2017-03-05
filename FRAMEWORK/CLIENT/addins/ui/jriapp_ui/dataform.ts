@@ -65,28 +65,28 @@ viewChecks.isInsideDataForm = (el: HTMLElement) => {
     return false;
 };
 
-//check if the element inside of any dataform in the forms array
+// check if the element inside of any dataform in the forms array
 viewChecks.isInNestedForm = (root: any, forms: HTMLElement[], el: HTMLElement) => {
-    let i: number, oNode: HTMLElement, len = forms.length;
+    const len = forms.length;
     if (len === 0) {
         return false;
     }
-    oNode = el.parentElement;
+    let oNode = el.parentElement;
 
     while (!!oNode) {
-        for (i = 0; i < len; i += 1) {
+        for (let i = 0; i < len; i += 1) {
             if (oNode === forms[i]) {
-                //we found the form to be among the parents
+                // we found the form to be among the parents
                 return true;
             }
         }
 
         if (!!root && oNode === root) {
-            //reached up to the root
+            // reached up to the root
             return false;
         }
 
-        //try parent element
+        // try parent element
         oNode = oNode.parentElement;
     }
 
@@ -100,7 +100,7 @@ viewChecks.isInNestedForm = (root: any, forms: HTMLElement[], el: HTMLElement) =
 viewChecks.getParentDataForm = (rootForm: HTMLElement, el: HTMLElement) => {
     if (!el)
         return null;
-    let parent = el.parentElement;
+    const parent = el.parentElement;
     if (!!parent) {
         if (parent === rootForm)
             return rootForm;
@@ -169,12 +169,12 @@ export class DataForm extends BaseObject {
         this._contentPromise = null;
        
         const parent = viewChecks.getParentDataForm(null, this._el);
-        //if this form is nested inside another dataform
-        //subscribe for parent's destroy event
+        // if this form is nested inside another dataform
+        // subscribe for parent's destroy event
         if (!!parent) {
             self._parentDataForm = this.app.viewFactory.getOrCreateElView(parent);
             self._parentDataForm.addOnDestroyed(() => {
-                //destroy itself if parent form is destroyed
+                // destroy itself if parent form is destroyed
                 if (!self._isDestroyCalled)
                     self.destroy();
             }, self._objId);
@@ -183,8 +183,8 @@ export class DataForm extends BaseObject {
     private _getBindings(): Binding[] {
         if (!this._lfTime)
             return [];
-        let arr: any[] = this._lfTime.getObjs(), res: Binding[] = [];
-        for (let i = 0, len = arr.length; i < len; i += 1) {
+        const arr: any[] = this._lfTime.getObjs(), res: Binding[] = [], len = arr.length;
+        for (let i = 0; i < len; i += 1) {
             if (sys.isBinding(arr[i]))
                 res.push(arr[i]);
         }
@@ -198,11 +198,11 @@ export class DataForm extends BaseObject {
         const contentElements = utils.arr.fromList<HTMLElement>(this._el.querySelectorAll(DataForm._DATA_CONTENT_SELECTOR)),
             isEditing = this.isEditing;
 
-        //select all dataforms inside the scope
+        // select all dataforms inside the scope
         const forms = utils.arr.fromList<HTMLElement>(this._el.querySelectorAll(DataForm._DATA_FORM_SELECTOR));
 
         contentElements.forEach((el) => {
-            //check if the element inside a nested dataform
+            // check if the element inside a nested dataform
             if (viewChecks.isInNestedForm(self._el, forms, el))
                 return;
             const attr = el.getAttribute(DATA_ATTR.DATA_CONTENT),
@@ -236,14 +236,14 @@ export class DataForm extends BaseObject {
         });
     }
     private _updateCreatedContent() {
-        let dctx: any = this._dataContext, self = this;
+        const dctx: any = this._dataContext, self = this;
         try {
             this._content.forEach((content) => {
                 content.dataContext = dctx;
                 content.isEditing = self.isEditing;
             });
 
-            let bindings = this._getBindings();
+            const bindings = this._getBindings();
             bindings.forEach((binding) => {
                 if (!binding.isSourceFixed)
                     binding.source = dctx;
@@ -385,10 +385,11 @@ export class DataForm extends BaseObject {
     }
     get isEditing(): boolean { return this._isEditing; }
     set isEditing(v) {
-        let dataContext: any = this._dataContext;
+        const dataContext: any = this._dataContext;
         if (!dataContext)
             return;
-        let isEditing = this._isEditing, editable: IEditable;
+        const isEditing = this._isEditing;
+        let editable: IEditable;
 
         if (!!this._editable)
             editable = this._editable;
@@ -457,9 +458,10 @@ export class DataFormElView extends BaseElView {
     protected _getErrorTipInfo(errors: IValidationInfo[]) {
         const tip = ["<b>", STRS.VALIDATE.errorInfo, "</b>", "<ul>"];
         errors.forEach((info) => {
-            let fieldName = info.fieldName, res = "";
+            const fieldName = info.fieldName;
+            let res = "";
             if (!!fieldName) {
-                res = STRS.VALIDATE.errorField + " " + fieldName
+                res = STRS.VALIDATE.errorField + " " + fieldName;
             }
             info.errors.forEach((str) => {
                 if (!!res)

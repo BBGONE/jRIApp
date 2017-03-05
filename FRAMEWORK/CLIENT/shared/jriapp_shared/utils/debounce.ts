@@ -13,12 +13,12 @@ export class Debounce implements IDisposable {
         this._fn = null;
     }
     enque(fn: TFunc) {
-        //important, no error (just return with no action)!!!
+        // important, no error (just return with no action)!!!
         if (this.IsDestroyed)
             return;
         if (!fn)
             throw new Error("Debounce: Invalid operation");
-        //the last wins
+        // the last wins
         this._fn = fn;
 
 
@@ -47,7 +47,7 @@ export class Debounce implements IDisposable {
         }
     }
     cancel() {
-        //just set to null
+        // just set to null
         this._fn = null;
     }
     destroy(): void {

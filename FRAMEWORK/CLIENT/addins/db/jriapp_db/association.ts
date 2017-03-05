@@ -43,7 +43,7 @@ export class Association extends BaseObject {
         super();
         const self = this;
         this._objId = coreUtils.getNewID("ass");
-        let opts: IAssocConstructorOptions = coreUtils.extend({
+        const opts: IAssocConstructorOptions = coreUtils.extend({
             dbContext: null,
             parentName: "",
             childName: "",
@@ -71,9 +71,9 @@ export class Association extends BaseObject {
         this._parentMap = {};
         this._childMap = {};
         this._bindParentDS();
-        let changed1 = this._mapParentItems(this._parentDS.items);
+        const changed1 = this._mapParentItems(this._parentDS.items);
         this._bindChildDS();
-        let changed2 = this._mapChildren(this._childDS.items);
+        const changed2 = this._mapChildren(this._childDS.items);
         this._saveParentFKey = null;
         this._saveChildFKey = null;
         this._debounce = new Debounce();
@@ -131,7 +131,8 @@ export class Association extends BaseObject {
         }, self._objId, null, TPriority.High);
     }
     protected _onParentCollChanged(args: ICollChangedArgs<IEntityItem>) {
-        let self = this, item: IEntityItem, changed: string[] = [], changedKeys: any = {};
+        const self = this, changedKeys: any = {};
+        let item: IEntityItem, changed: string[] = [];
         switch (args.changeType) {
             case COLL_CHANGE_TYPE.Reset:
                 changed = self.refreshParentMap();
@@ -141,7 +142,7 @@ export class Association extends BaseObject {
                 break;
             case COLL_CHANGE_TYPE.Remove:
                 args.items.forEach((item) => {
-                    let key = self._unMapParentItem(item);
+                    const key = self._unMapParentItem(item);
                     if (!!key) {
                         changedKeys[key] = null;
                     }
@@ -165,7 +166,7 @@ export class Association extends BaseObject {
         self._notifyParentChanged(changed);
     }
     protected _onParentEdit(item: IEntityItem, isBegin: boolean, isCanceled: boolean) {
-        let self = this;
+        const self = this;
         if (isBegin) {
             self._storeParentFKey(item);
         }
@@ -177,15 +178,15 @@ export class Association extends BaseObject {
         }
     }
     protected _onParentCommitChanges(item: IEntityItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS) {
-        let self = this, fkey: string;
+        const self = this;
+        let fkey: string;
         if (isBegin) {
             if (isRejected && status === ITEM_STATUS.Added) {
                 fkey = this._unMapParentItem(item);
                 if (!!fkey)
                     self._notifyParentChanged([fkey]);
                 return;
-            }
-            else if (!isRejected && status === ITEM_STATUS.Deleted) {
+            } else if (!isRejected && status === ITEM_STATUS.Deleted) {
                 fkey = this._unMapParentItem(item);
                 if (!!fkey)
                     self._notifyParentChanged([fkey]);
@@ -199,21 +200,22 @@ export class Association extends BaseObject {
         }
     }
     protected _storeParentFKey(item: IEntityItem) {
-        let self = this, fkey = self.getParentFKey(item);
+        const self = this, fkey = self.getParentFKey(item);
         if (fkey !== null && !!self._parentMap[fkey]) {
             self._saveParentFKey = fkey;
         }
     }
     protected _checkParentFKey(item: IEntityItem) {
-        let self = this, fkey: string, savedKey = self._saveParentFKey;
+        const self = this, savedKey = self._saveParentFKey;
+        let fkey: string;
         self._saveParentFKey = null;
         fkey = self.getParentFKey(item);
         if (fkey !== savedKey) {
             if (!!savedKey) {
-                //first notify
+                // first notify
                 self._notifyChildrenChanged([savedKey]);
                 self._notifyParentChanged([savedKey]);
-                //then delete mapping
+                // then delete mapping
                 delete self._parentMap[savedKey];
             }
 
@@ -225,14 +227,15 @@ export class Association extends BaseObject {
         }
     }
     protected _onParentStatusChanged(item: IEntityItem, oldStatus: ITEM_STATUS) {
-        let self = this, newStatus = item._aspect.status, fkey: string = null;
+        const self = this, newStatus = item._aspect.status;
+        let fkey: string = null;
         let children: IEntityItem[];
         if (newStatus === ITEM_STATUS.Deleted) {
             children = self.getChildItems(item);
             fkey = this._unMapParentItem(item);
             switch (self.onDeleteAction) {
                 case DELETE_ACTION.NoAction:
-                    //nothing
+                    // nothing
                     break;
                 case DELETE_ACTION.Cascade:
                     children.forEach((child) => {
@@ -241,7 +244,7 @@ export class Association extends BaseObject {
                     break;
                 case DELETE_ACTION.SetNulls:
                     children.forEach((child) => {
-                        let isEdit = child._aspect.isEditing;
+                        const isEdit = child._aspect.isEditing;
                         if (!isEdit)
                             child._aspect.beginEdit();
                         try {
@@ -264,7 +267,8 @@ export class Association extends BaseObject {
         }
     }
     protected _onChildCollChanged(args: ICollChangedArgs<IEntityItem>) {
-        let self = this, item: IEntityItem, items = args.items, changed: string[] = [], changedKeys = {};
+        const self = this, items = args.items, changedKeys = {};
+        let item: IEntityItem, changed: string[] = [];
         switch (args.changeType) {
             case COLL_CHANGE_TYPE.Reset:
                 changed = self.refreshChildMap();
@@ -274,7 +278,7 @@ export class Association extends BaseObject {
                 break;
             case COLL_CHANGE_TYPE.Remove:
                 items.forEach(function (item) {
-                    let key = self._unMapChildItem(item);
+                    const key = self._unMapChildItem(item);
                     if (!!key) {
                         (<any>changedKeys)[key] = null;
                     }
@@ -286,7 +290,7 @@ export class Association extends BaseObject {
                     if (!!args.old_key) {
                         item = items[0];
                         if (!!item) {
-                            let parentKey = item._aspect._getFieldVal(this._childToParentName);
+                            const parentKey = item._aspect._getFieldVal(this._childToParentName);
                             if (!!parentKey) {
                                 delete this._childMap[parentKey];
                                 item._aspect._clearFieldVal(this._childToParentName);
@@ -308,12 +312,12 @@ export class Association extends BaseObject {
         this._notifyChanged(changed, []);
     }
     protected _notifyChanged(changed_pkeys: string[], changed_ckeys: string[]) {
-        let self = this;
+        const self = this;
         if (changed_pkeys.length > 0 || changed_ckeys.length > 0) {
-            //parentToChildren
+            // parentToChildren
             changed_pkeys.forEach((key) => {
-                let res = self._changed[key] || { children: {}, parent: null };
-                let arr = self._childMap[key];
+                const res = self._changed[key] || { children: {}, parent: null };
+                const arr = self._childMap[key];
                 if (!!arr) {
                     for (let i = 0; i < arr.length; i += 1) {
                         res.children[arr[i]._key] = arr[i];
@@ -321,10 +325,10 @@ export class Association extends BaseObject {
                 }
                 self._changed[key] = res;
             });
-            //childrenToParent
+            // childrenToParent
             changed_ckeys.forEach((key) => {
-                let res = self._changed[key] || { children: {}, parent: null };
-                let item = self._parentMap[key];
+                const res = self._changed[key] || { children: {}, parent: null };
+                const item = self._parentMap[key];
                 if (!!item) {
                     res.parent = item;
                 }
@@ -335,13 +339,13 @@ export class Association extends BaseObject {
         }
     }
     private _notify() {
-        let self= this, changed = self._changed;
+        const self = this, changed = self._changed;
         self._changed = {};
         try {
-            //for loop is more performant than forEach
-            let fkeys = Object.keys(changed);
+            // for loop is more performant than forEach
+            const fkeys = Object.keys(changed);
             for (let k = 0; k < fkeys.length; k += 1) {
-                let fkey = fkeys[k], map = changed[fkey];
+                const fkey = fkeys[k], map = changed[fkey];
                 self._onParentChanged(fkey, map.children);
                 if (!!map.parent) {
                     self._onChildrenChanged(fkey, map.parent);
@@ -353,28 +357,27 @@ export class Association extends BaseObject {
         }
     }
     protected _onChildEdit(item: IEntityItem, isBegin: boolean, isCanceled: boolean): void {
-        let self = this;
+        const self = this;
         if (isBegin) {
             self._storeChildFKey(item);
-        }
-        else {
-            if (!isCanceled)
+        } else {
+            if (!isCanceled) {
                 self._checkChildFKey(item);
-            else {
+            } else {
                 self._saveChildFKey = null;
             }
         }
     }
     protected _onChildCommitChanges(item: IEntityItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS): void {
-        let self = this, fkey: string;
+        const self = this;
+        let fkey: string;
         if (isBegin) {
             if (isRejected && status === ITEM_STATUS.Added) {
                 fkey = this._unMapChildItem(item);
                 if (!!fkey)
                     self._notifyChildrenChanged([fkey]);
                 return;
-            }
-            else if (!isRejected && status === ITEM_STATUS.Deleted) {
+            } else if (!isRejected && status === ITEM_STATUS.Deleted) {
                 fkey = self._unMapChildItem(item);
                 if (!!fkey)
                     self._notifyChildrenChanged([fkey]);
@@ -382,36 +385,36 @@ export class Association extends BaseObject {
             }
 
             self._storeChildFKey(item);
-        }
-        else {
+        } else {
             self._checkChildFKey(item);
         }
     }
     protected _storeChildFKey(item: IEntityItem): void {
-        let self = this, fkey = self.getChildFKey(item), arr: IEntityItem[];
+        const self = this, fkey = self.getChildFKey(item);
+       
         if (!!fkey) {
-            arr = self._childMap[fkey];
+            const arr: IEntityItem[] = self._childMap[fkey];
             if (!!arr && arr.indexOf(item) > -1) {
                 self._saveChildFKey = fkey;
             }
         }
     }
     protected _checkChildFKey(item: IEntityItem): void {
-        let self = this, savedKey = self._saveChildFKey, fkey: string, arr: IEntityItem[];
+        const self = this, savedKey = self._saveChildFKey, fkey = self.getChildFKey(item);
         self._saveChildFKey = null;
-        fkey = self.getChildFKey(item);
         if (fkey !== savedKey) {
             if (!!savedKey) {
-                //first notify
+                // first notify
                 self._notifyParentChanged([savedKey]);
                 self._notifyChildrenChanged([savedKey]);
-                //then delete mapping
-                arr = self._childMap[savedKey];
+                // then delete mapping
+                const arr: IEntityItem[] = self._childMap[savedKey];
                 arrHelper.remove(arr, item);
                 if (arr.length === 0) {
                     delete self._childMap[savedKey];
                 }
             }
+
             if (!!fkey) {
                 self._mapChildren([item]);
                 self._notifyParentChanged([fkey]);
@@ -420,7 +423,8 @@ export class Association extends BaseObject {
         }
     }
     protected _onChildStatusChanged(item: IEntityItem, oldStatus: ITEM_STATUS): void {
-        let self = this, newStatus = item._aspect.status, fkey = self.getChildFKey(item);
+        const self = this, newStatus = item._aspect.status;
+        let fkey = self.getChildFKey(item);
         if (!fkey)
             return;
         if (newStatus === ITEM_STATUS.Deleted) {
@@ -430,10 +434,10 @@ export class Association extends BaseObject {
         }
     }
     protected _getItemKey(finf: IFieldInfo[], ds: TDbSet, item: IEntityItem): string {
-        let arr: string[] = [], val: any, strval: string, internal = ds._getInternal();
-        for (let i = 0, len = finf.length; i < len; i += 1) {
-            val = (<any>item)[finf[i].fieldName];
-            strval = internal.getStrValue(val, finf[i]);
+        const arr: string[] = [], internal = ds._getInternal(), len = finf.length;
+        for (let i = 0; i < len; i += 1) {
+            const val = (<any>item)[finf[i].fieldName];
+            const strval = internal.getStrValue(val, finf[i]);
             if (strval === null)
                 return null;
             arr.push(strval);
@@ -441,12 +445,12 @@ export class Association extends BaseObject {
         return arr.join(";");
     }
     protected _resetChildMap(): void {
-        let self = this, fkeys = Object.keys(this._childMap);
+        const self = this, fkeys = Object.keys(this._childMap);
         this._childMap = {};
         self._notifyChildrenChanged(fkeys);
     }
     protected _resetParentMap(): void {
-        let self = this, fkeys = Object.keys(this._parentMap);
+        const self = this, fkeys = Object.keys(this._parentMap);
         this._parentMap = {};
         self._notifyParentChanged(fkeys);
     }
@@ -476,17 +480,17 @@ export class Association extends BaseObject {
         return changedKey;
     }
     protected _mapParentItems(items: IEntityItem[]) {
-        let item: IEntityItem, fkey: string, status: ITEM_STATUS, old: IEntityItem, chngedKeys: any = {};
-        for (let i = 0, len = items.length; i < len; i += 1) {
-            item = items[i];
-            status = item._aspect.status;
+        const chngedKeys: any = {}, len = items.length;
+        for (let i = 0; i < len; i += 1) {
+            const item: IEntityItem = items[i];
+            const status: ITEM_STATUS = item._aspect.status;
             if (status === ITEM_STATUS.Deleted)
                 continue;
-            fkey = this.getParentFKey(item);
+            const fkey: string = this.getParentFKey(item);
             if (!!fkey) {
-                old = this._parentMap[fkey];
+                const old: IEntityItem = this._parentMap[fkey];
                 if (old !== item) {
-                    //map items by foreign keys
+                    // map items by foreign keys
                     this._parentMap[fkey] = item;
                     chngedKeys[fkey] = null;
                 }
@@ -500,31 +504,33 @@ export class Association extends BaseObject {
         }
     }
     protected _onParentChanged(fkey: string, map: IIndexer<IEntityItem>) {
-        let self = this, item: IEntityItem;
+        const self = this;
 
         if (!!fkey && !!this._childToParentName) {
-            let keys = Object.keys(map);
+            const keys = Object.keys(map);
             for (let k = 0; k < keys.length; k += 1) {
-                item = map[keys[k]];
+                const item: IEntityItem = map[keys[k]];
                 if (!item.getIsDestroyCalled())
                     item.raisePropertyChanged(self._childToParentName);
             }
         }
     }
     protected _mapChildren(items: IEntityItem[]) {
-        let item: IEntityItem, fkey: string, arr: IEntityItem[], status: ITEM_STATUS, chngedKeys: any = {};
-        for (let i = 0, len = items.length; i < len; i += 1) {
-            item = items[i];
-            status = item._aspect.status;
+        const chngedKeys: any = {}, len = items.length;
+
+        for (let i = 0; i < len; i += 1) {
+            const item: IEntityItem = items[i];
+            const status: ITEM_STATUS = item._aspect.status;
             if (status === ITEM_STATUS.Deleted)
                 continue;
-            fkey = this.getChildFKey(item);
+            const fkey: string = this.getChildFKey(item);
             if (!!fkey) {
-                arr = this._childMap[fkey];
+                let arr: IEntityItem[] = this._childMap[fkey];
                 if (!arr) {
                     arr = [];
                     this._childMap[fkey] = arr;
                 }
+
                 if (arr.indexOf(item) < 0) {
                     arr.push(item);
                     if (!chngedKeys[fkey])
@@ -535,12 +541,13 @@ export class Association extends BaseObject {
         return Object.keys(chngedKeys);
     }
     protected _unbindParentDS() {
-        let self = this, ds = this.parentDS;
-        if (!ds) return;
+        const self = this, ds = this.parentDS;
+        if (!ds) 
+            return;
         ds.removeNSHandlers(self._objId);
     }
     protected _unbindChildDS() {
-        let self = this, ds = this.childDS;
+        const self = this, ds = this.childDS;
         if (!ds) return;
         ds.removeNSHandlers(self._objId);
     }
@@ -559,49 +566,49 @@ export class Association extends BaseObject {
     }
     getChildFKey(item: IEntityItem): string {
         if (!!item && !!this._childToParentName) {
-            //_getFieldVal for childToParentName can store temporary parent's key (which is generated on the client)
+            // _getFieldVal for childToParentName can store temporary parent's key (which is generated on the client)
             // we first check if it returns it
-            let parentKey = item._aspect._getFieldVal(this._childToParentName);
+            const parentKey = item._aspect._getFieldVal(this._childToParentName);
             if (!!parentKey) {
                 return parentKey;
             }
         }
-        //if keys are permanent (stored to the server), then return normal foreign keys
+        // if keys are permanent (stored to the server), then return normal foreign keys
         return this._getItemKey(this._childFldInfos, this._childDS, item);
     }
     isParentChild(parent: IEntityItem, child: IEntityItem): boolean {
         if (!parent || !child)
             return false;
-        let fkey1 = this.getParentFKey(parent);
+        const fkey1 = this.getParentFKey(parent);
         if (!fkey1)
             return false;
-        let fkey2 = this.getChildFKey(child);
+        const fkey2 = this.getChildFKey(child);
         if (!fkey2)
             return false;
         return fkey1 === fkey2;
     }
-    //get all childrens for parent item
+    // get all childrens for parent item
     getChildItems(parent: IEntityItem): IEntityItem[] {
         let arr: IEntityItem[] = [];
         if (!parent) {
             return arr;
         }
         try {
-            let fkey = this.getParentFKey(parent);
+            const fkey = this.getParentFKey(parent);
             arr = this._childMap[fkey];
         } catch (err) {
             utils.err.reThrow(err, this.handleError(err, this));
         }
         return (!arr) ? [] : arr;
     }
-    //get the parent for child item
+    // get the parent for child item
     getParentItem(item: IEntityItem): IEntityItem {
         let obj: IEntityItem = null;
         if (!item) {
             return obj;
         }
         try {
-            let fkey = this.getChildFKey(item);
+            const fkey = this.getChildFKey(item);
             obj = this._parentMap[fkey];
         } catch (err) {
             utils.err.reThrow(err, this.handleError(err, this));

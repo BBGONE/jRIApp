@@ -12,7 +12,7 @@ import { BaseElView, PROP_NAME } from "./baseview";
 const checks = Utils.check, boot = bootstrap, dom = DomUtils;
 
 export interface IBusyViewOptions extends IViewOptions {
-    img?: string
+    img?: string;
     delay?: number | string;
 }
 
@@ -40,7 +40,7 @@ export class BusyElView extends BaseElView {
         this._img.style.display = "none";
         this._img.style.zIndex = "10000";
         this._img.src = this._loaderPath;
-        this.el.appendChild(this._img)
+        this.el.appendChild(this._img);
         this._isBusy = false;
     }
     destroy() {
@@ -64,8 +64,8 @@ export class BusyElView extends BaseElView {
             self._timeOut = null;
             self._img.style.display = "";
             $(self._img).position({
-                //"my": "right top",
-                //"at": "left bottom",
+                // "my": "right top",
+                // "at": "left bottom",
                 "of": $(self.el)
             });
         };

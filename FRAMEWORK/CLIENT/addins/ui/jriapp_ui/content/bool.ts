@@ -18,20 +18,20 @@ export class BoolContent extends BasicContent {
         if (!!bindingInfo) {
             this.updateCss();
             this._lfScope = new LifeTimeScope();
-            let options = this.getBindingOption(bindingInfo, this._target, this._dataContext, "checked");
+            const options = this.getBindingOption(bindingInfo, this._target, this._dataContext, "checked");
             options.mode = BINDING_MODE.TwoWay;
             this._lfScope.addObj(this.app.bind(options));
         }
     }
-    //override
+    // override
     protected cleanUp(): void {
-        //noop
+        // noop
     }
     protected createCheckBoxView() {
-        let chk = document.createElement("input");
+        const chk = document.createElement("input");
         chk.setAttribute("type", "checkbox");
         dom.addClass([chk], css.checkbox);
-        let chbxView = new CheckBoxElView({ el: chk });
+        const chbxView = new CheckBoxElView({ el: chk });
         return chbxView;
     }
     protected createTargetElement(): IElView {
@@ -40,7 +40,7 @@ export class BoolContent extends BasicContent {
             tgt = this.createCheckBoxView();
             this._el = tgt.el;
         }
-        let label = doc.createElement("label");
+        const label = doc.createElement("label");
         dom.addClass([label], css.checkbox);
         label.appendChild(this._el);
         label.appendChild(doc.createElement("span"));
@@ -49,7 +49,7 @@ export class BoolContent extends BasicContent {
     }
     protected updateCss() {
         super.updateCss();
-        let el = <HTMLInputElement>this._el;
+        const el = <HTMLInputElement>this._el;
         if (this.isEditing && this.getIsCanBeEdited()) {
              el.disabled = false;
         }

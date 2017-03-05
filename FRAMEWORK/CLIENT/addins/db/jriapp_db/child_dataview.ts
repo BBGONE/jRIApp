@@ -23,8 +23,8 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
     protected _parentDebounce: Debounce;
 
     constructor(options: IChildDataViewOptions<TItem>) {
-        let parentItem: IEntityItem = !options.parentItem ? null : options.parentItem,
-            assoc = options.association,
+        let parentItem: IEntityItem = !options.parentItem ? null : options.parentItem;
+        const assoc = options.association,
             opts = <IDataViewOptions<TItem>>coreUtils.extend({}, options),
             oldFilter = opts.fn_filter;
 

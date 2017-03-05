@@ -5,7 +5,7 @@ import { createTemplate } from "jriapp/template";
 import { ICollectionItem } from "jriapp_shared/collection/int";
 
 import { DetailsRow } from "../rows/details";
-import { DataGrid } from "../datagrid"
+import { DataGrid } from "../datagrid";
 
 export class DetailsCell extends BaseObject {
     private _row: DetailsRow;

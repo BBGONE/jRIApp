@@ -41,7 +41,8 @@ export class TemplateContent extends BaseObject implements IContent {
         if (!this._templateInfo) {
             throw new Error(ERRS.ERR_TEMPLATE_ID_INVALID);
         }
-        let info = this._templateInfo, id = info.displayID;
+        const info = this._templateInfo;
+        let id = info.displayID;
         if (this._isEditing && !!info.editID) {
             id = info.editID;
         }

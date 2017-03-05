@@ -31,12 +31,14 @@ export class ArrayHelper {
     public static distinct(arr: string[]): string[];
     public static distinct(arr: number[]): number[];
     public static distinct(arr: any[]): any[] {
-        let o = <IIndexer<any>>{}, i: number, l = arr.length, r: any[] = [];
-        for (i = 0; i < l; i += 1)
+        const o = <IIndexer<any>>{}, r: any[] = [], l1 = arr.length;
+        for (let i = 0; i < l1; i += 1) {
             o["" + arr[i]] = arr[i];
-        let k = Object.keys(o);
-        for (i = 0, l = k.length; i < l; i += 1)
+        }
+        const k = Object.keys(o), l2 = k.length;
+        for (let i = 0; i < l2; i += 1) {
             r.push(o[k[i]]);
+        }
         return r;
     }
 
