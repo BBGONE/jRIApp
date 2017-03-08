@@ -39,7 +39,7 @@ export class RowSelectorColumn extends BaseColumn {
             const chk = <HTMLInputElement>e.target, cell = <RowSelectorCell>dom.getData(chk, "cell");
             if (!!cell && !cell.getIsDestroyCalled()) {
                 cell.row.isSelected = cell.checked;
-            } 
+            }
         }, {
                 nmspace: this.uniqueID,
                 // using delegation
@@ -67,8 +67,9 @@ export class RowSelectorColumn extends BaseColumn {
         }
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         dom.events.offNS(this._chk, this.uniqueID);
         dom.events.offNS(this.grid.table, this.uniqueID);

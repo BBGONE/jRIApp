@@ -34,16 +34,16 @@ export class TemplateElView extends CommandElView implements ITemplateEvents {
         // noop
     }
     templateLoaded(template: ITemplate, error?: any): void {
-        if (!!error)
+        if (!!error) {
             return;
+        }
         const self = this;
         try {
             self._template = template;
             const args = { template: template, isLoaded: true };
             self.invokeCommand(args, false);
             this.raisePropertyChanged(PROP_NAME.template);
-        }
-        catch (ex) {
+        } catch (ex) {
             utils.err.reThrow(ex, this.handleError(ex, this));
         }
     }
@@ -52,11 +52,9 @@ export class TemplateElView extends CommandElView implements ITemplateEvents {
         try {
             const args = { template: template, isLoaded: false };
             self.invokeCommand(args, false);
-        }
-        catch (ex) {
+        } catch (ex) {
             this.handleError(ex, this);
-        }
-        finally {
+        } finally {
             self._template = null;
         }
         this.raisePropertyChanged(PROP_NAME.template);

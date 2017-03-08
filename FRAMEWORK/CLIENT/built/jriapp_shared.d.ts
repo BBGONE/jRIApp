@@ -209,8 +209,8 @@ declare module "jriapp_shared/utils/strUtils" {
         static trim(str: string, chars?: string): string;
         static ltrim(str: string, chars?: string): string;
         static rtrim(str: string, chars?: string): string;
-        static format(format_str: string, ...args: any[]): string;
-        static formatNumber(num: any, decimals?: number, dec_point?: string, thousands_sep?: string): string;
+        static format(formatStr: string, ...args: any[]): string;
+        static formatNumber(num: any, decimals?: number, decPoint?: string, thousandsSep?: string): string;
         static stripNonNumeric(str: string): string;
         static padLeft(val: string, len: number, pad: string): string;
         static fastPadLeft(val: string, pad: string): string;
@@ -245,7 +245,7 @@ declare module "jriapp_shared/utils/coreutils" {
     export class CoreUtils {
         private static ERR_OBJ_ALREADY_REGISTERED;
         static getNewID(prefix?: string): string;
-        static get_timeZoneOffset: () => number;
+        static getTimeZoneOffset: () => number;
         static hasProp: typeof Checks.isHasProp;
         static setValue(root: any, namePath: string, val: any, checkOverwrite?: boolean, separator?: string): void;
         static getValue(root: any, namePath: string, separator?: string): any;
@@ -465,7 +465,7 @@ declare module "jriapp_shared/utils/eventhelper" {
 declare module "jriapp_shared/object" {
     import { IBaseObject, TPriority, TEventHandler, TErrorHandler, TPropChangedHandler } from "jriapp_shared/int";
     export class BaseObject implements IBaseObject {
-        private _obj_state;
+        private _objState;
         private _events;
         constructor();
         protected _getEventNames(): string[];
@@ -941,7 +941,7 @@ declare module "jriapp_shared/collection/int" {
         [fieldName: string]: string[];
     }
     export interface IErrorsList {
-        [item_key: string]: IErrors;
+        [itemKey: string]: IErrors;
     }
     export interface IInternalCollMethods<TItem extends ICollectionItem> {
         getEditingItem(): TItem;
@@ -1041,11 +1041,11 @@ declare module "jriapp_shared/collection/utils" {
     import { IFieldInfo } from "jriapp_shared/collection/int";
     import { IValueUtils } from "jriapp_shared/collection/int";
     export const ValueUtils: IValueUtils;
-    export type TraveseFieldCB<T> = (fld: IFieldInfo, name: string, parent_res?: T) => T;
+    export type TraveseFieldCB<T> = (fld: IFieldInfo, name: string, parentRes?: T) => T;
     export const CollUtils: {
         getObjectField: (name: string, flds: IFieldInfo[]) => IFieldInfo;
-        traverseField: <T>(fld: IFieldInfo, fn: TraveseFieldCB<T>, parent_res?: T) => void;
-        traverseFields: <T>(flds: IFieldInfo[], fn: TraveseFieldCB<T>, parent_res?: T) => void;
+        traverseField: <T>(fld: IFieldInfo, fn: TraveseFieldCB<T>, parentRes?: T) => void;
+        traverseFields: <T>(flds: IFieldInfo[], fn: TraveseFieldCB<T>, parentRes?: T) => void;
         getPKFields(fieldInfos: IFieldInfo[]): IFieldInfo[];
         initVals: (flds: IFieldInfo[], vals: any) => any;
         copyVals: (flds: IFieldInfo[], from: any, to: any) => any;
@@ -1303,7 +1303,7 @@ declare module "jriapp_shared/collection/item" {
     import { ICollectionItem } from "jriapp_shared/collection/int";
     import { ItemAspect } from "jriapp_shared/collection/aspect";
     export class CollectionItem<TAspect extends ItemAspect<ICollectionItem, any>> extends BaseObject implements ICollectionItem {
-        private __aspect;
+        private _aspectPrivate;
         constructor(aspect: TAspect);
         readonly _aspect: TAspect;
         readonly _key: string;

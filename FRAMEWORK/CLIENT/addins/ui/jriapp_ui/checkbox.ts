@@ -20,8 +20,9 @@ export class CheckBoxElView extends InputElView {
         dom.events.on(this.el, "change", (e) => {
             e.stopPropagation();
             const chk = <HTMLInputElement>self.el;
-            if (self.checked !== chk.checked)
+            if (self.checked !== chk.checked) {
                 self.checked = chk.checked;
+            }
         }, this.uniqueID);
 
         this._updateState();

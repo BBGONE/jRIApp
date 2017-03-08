@@ -13,16 +13,19 @@ let _stylesLoader: IStylesLoader = null;
 export const frameworkCss = "jriapp.css";
 
 export function createCssLoader(): IStylesLoader {
-    if (!_stylesLoader)
+    if (!_stylesLoader) {
         _stylesLoader = new StylesLoader();
+    }
     return _stylesLoader;
 }
 
 function whenAll(promises: IStatefulPromise<any>[]): IStatefulPromise<any> {
-    if (!promises)
+    if (!promises) {
         return _async.resolve<void>(void 0, true);
-    if (promises.length === 1)
+    }
+    if (promises.length === 1) {
         return promises[0];
+    }
     let resolved = 0;
     const cnt = promises.length;
     for (let i = 0; i < cnt; i += 1) {
@@ -57,7 +60,7 @@ export interface IUrlParts {
 // load css styles on demand
 class StylesLoader implements IStylesLoader {
     private _loadedCSS: IIndexer<IStatefulPromise<string>>;
-    
+
     constructor() {
         this._loadedCSS = <IIndexer<IStatefulPromise<string>>>{};
     }
@@ -73,13 +76,13 @@ class StylesLoader implements IStylesLoader {
 
         return false;
     }
-    private loadByLink(url: string, fn_onload: (err: any) => void) {
+    private loadByLink(url: string, fnOnload: (err: any) => void) {
         const link = createLink(url);
         link.onload = function () {
-            fn_onload(null);
+            fnOnload(null);
         };
         link.onerror = function () {
-            fn_onload("Error loading: " + url);
+            fnOnload("Error loading: " + url);
         };
         head.appendChild(link);
     }
@@ -108,10 +111,11 @@ class StylesLoader implements IStylesLoader {
         }
 
         this.load(url, (err: any) => {
-            if (!!err)
+            if (!!err) {
                 deferred.reject(err);
-            else
+            } else {
                 deferred.resolve(url);
+            }
         });
 
         this._loadedCSS[cssUrl] = cssPromise;

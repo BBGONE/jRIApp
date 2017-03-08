@@ -59,8 +59,9 @@ export class BaseCell<TColumn extends BaseColumn> extends BaseObject {
         this.row.scrollIntoView();
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         if (!!this._click) {
             this._click.destroy();

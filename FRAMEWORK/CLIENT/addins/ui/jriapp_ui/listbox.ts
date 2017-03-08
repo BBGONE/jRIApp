@@ -58,9 +58,7 @@ const LISTBOX_EVENTS = {
 };
 
  function fn_Str(v: any): string {
-    if (checks.isNt(v))
-        return "";
-    return "" + v;
+    return (checks.isNt(v)) ? "" : ("" + v);
  }
 
 export class ListBox extends BaseObject {
@@ -71,7 +69,7 @@ export class ListBox extends BaseObject {
     private _keyMap: { [key: string]: IMappedItem; };
     private _valMap: { [val: string]: IMappedItem; };
     private _options: IListBoxConstructorOptions;
-    private _fn_state: (data: IMappedItem) => void;
+    private _fnState: (data: IMappedItem) => void;
     private _textProvider: IOptionTextProvider;
     private _stateProvider: IOptionStateProvider;
     private _savedVal: any;
@@ -79,9 +77,9 @@ export class ListBox extends BaseObject {
     private _txtDebounce: Debounce;
     private _stDebounce: Debounce;
     private _changeDebounce: Debounce;
-    private _fn_checkChanges: () => void;
+    private _fnCheckChanges: () => void;
     private _isDSFilled: boolean;
-   
+
     constructor(options: IListBoxConstructorOptions) {
         super();
         const self = this;
@@ -93,16 +91,18 @@ export class ListBox extends BaseObject {
                 textPath: null,
                 statePath: null
             }, options);
-        if (!!options.dataSource && !sys.isCollection(options.dataSource))
+        if (!!options.dataSource && !sys.isCollection(options.dataSource)) {
             throw new Error(ERRS.ERR_LISTBOX_DATASRC_INVALID);
+        }
         this._el = options.el;
         this._options = options;
         this._objId = coreUtils.getNewID("lst");
         this._isDSFilled = false;
         dom.events.on(this.el, "change", (e) => {
             e.stopPropagation();
-            if (self._isRefreshing)
+            if (self._isRefreshing) {
                 return;
+            }
             self._onChanged();
         }, this._objId);
         this._textProvider = null;
@@ -116,9 +116,10 @@ export class ListBox extends BaseObject {
         this._keyMap = {};
         this._valMap = {};
         this._savedVal = checks.undefined;
-        this._fn_state = (data: IMappedItem) => {
-            if (!data || !data.item || data.item.getIsDestroyCalled())
+        this._fnState = (data: IMappedItem) => {
+            if (!data || !data.item || data.item.getIsDestroyCalled()) {
                 return;
+            }
             const item = data.item, path = self.statePath,
                 val = !path ? null : sys.resolvePath(item, path), spr = self._stateProvider;
             data.op.className = !spr ? "" : spr.getCSS(item, data.op.index, val);
@@ -128,14 +129,15 @@ export class ListBox extends BaseObject {
         this._setDataSource(ds);
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         this._dsDebounce.destroy();
         this._stDebounce.destroy();
         this._txtDebounce.destroy();
         this._changeDebounce.destroy();
-        this._fn_checkChanges = null;
+        this._fnCheckChanges = null;
         this._unbindDS();
         dom.events.offNS(this._el, this._objId);
         this._clear();
@@ -149,11 +151,11 @@ export class ListBox extends BaseObject {
         super.destroy();
     }
     protected _getEventNames() {
-        const base_events = super._getEventNames();
+        const baseEvents = super._getEventNames();
         const events = Object.keys(LISTBOX_EVENTS).map((key) => {
             return <string>(<any>LISTBOX_EVENTS)[key];
         });
-        return events.concat(base_events);
+        return events.concat(baseEvents);
     }
     addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any) {
         this._addHandler(LISTBOX_EVENTS.refreshed, fn, nmspace, context);
@@ -178,8 +180,7 @@ export class ListBox extends BaseObject {
 
         if (!!this._options.valuePath) {
             return sys.resolvePath(item, this._options.valuePath);
-        }
-        else {
+        } else {
             return null;
         }
     }
@@ -192,8 +193,7 @@ export class ListBox extends BaseObject {
         if (!!this._options.textPath) {
             const t = sys.resolvePath(item, this._options.textPath);
             res = fn_Str(t);
-        }
-        else {
+        } else {
             res = fn_Str(this._getValue(item));
         }
 
@@ -221,8 +221,9 @@ export class ListBox extends BaseObject {
                         args.items.forEach((item) => {
                             self._removeOption(item);
                         });
-                        if (!!self._textProvider)
+                        if (!!self._textProvider) {
                             self._resetText();
+                        }
                     }
                     break;
                 case COLL_CHANGE_TYPE.Remap:
@@ -236,8 +237,7 @@ export class ListBox extends BaseObject {
                     }
                     break;
             }
-        }
-        finally {
+        } finally {
             this.checkChanges();
         }
     }
@@ -246,8 +246,7 @@ export class ListBox extends BaseObject {
         if (isBegin) {
             this.setChanges();
             this._savedVal = this._getValue(item);
-        }
-        else {
+        } else {
             try {
                 if (!isCanceled) {
                     const oldVal = this._savedVal;
@@ -264,15 +263,13 @@ export class ListBox extends BaseObject {
                                 self._valMap[fn_Str(val)] = data;
                             }
                         }
-                    }
-                    else {
+                    } else {
                         if (!checks.isNt(oldVal)) {
                             delete self._valMap[fn_Str(oldVal)];
                         }
                     }
                 }
-            }
-            finally {
+            } finally {
                 this.checkChanges();
             }
         }
@@ -296,14 +293,12 @@ export class ListBox extends BaseObject {
 
             if (isRejected && status === ITEM_STATUS.Added) {
                 return;
-            }
-            else if (!isRejected && status === ITEM_STATUS.Deleted) {
+            } else if (!isRejected && status === ITEM_STATUS.Deleted) {
                 return;
             }
 
             this._savedVal = this._getValue(item);
-        }
-        else {
+        } else {
             const oldVal = this._savedVal;
             this._savedVal = checks.undefined;
             // delete is rejected
@@ -328,16 +323,16 @@ export class ListBox extends BaseObject {
                 if (!!data) {
                     data.op.text = self._getText(item, data.op.index);
                 }
-            }
-            finally {
+            } finally {
                 this.checkChanges();
             }
         }
     }
     private _bindDS() {
         const self = this, ds = this.dataSource;
-        if (!ds)
+        if (!ds) {
             return;
+        }
         ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self);
         ds.addOnBeginEdit((sender, args) => {
             self._onEdit(args.item, true, false);
@@ -354,8 +349,9 @@ export class ListBox extends BaseObject {
     }
     private _unbindDS() {
         const self = this, ds = this.dataSource;
-        if (!ds)
+        if (!ds) {
             return;
+        }
         ds.removeNSHandlers(self._objId);
     }
     private _addOption(item: ICollectionItem, first: boolean): IMappedItem {
@@ -370,8 +366,7 @@ export class ListBox extends BaseObject {
             if (checks.isString(this._options.emptyOptionText)) {
                 text = this._options.emptyOptionText;
             }
-        }
-        else {
+        } else {
            text = this._getText(item, selEl.options.length);
         }
         const val = fn_Str(this._getValue(item));
@@ -384,22 +379,21 @@ export class ListBox extends BaseObject {
             this._valMap[val] = data;
         }
         if (!!first) {
-            if (selEl.options.length < 2)
+            if (selEl.options.length < 2) {
                 selEl.add(oOption, null);
-            else {
+            } else {
                 const firstOp = <any>selEl.options[1];
                 selEl.add(oOption, firstOp);
             }
-        }
-        else {
+        } else {
             selEl.add(oOption, null);
         }
 
         if (!!item) {
             if (!!this.statePath) {
-                item.addOnPropertyChange(this.statePath, this._fn_state, this._objId);
+                item.addOnPropertyChange(this.statePath, this._fnState, this._objId);
             }
-            this._fn_state(data);
+            this._fnState(data);
         }
 
         return data;
@@ -424,7 +418,7 @@ export class ListBox extends BaseObject {
     private _resetState() {
         const self = this;
         coreUtils.forEachProp(this._keyMap, (key) => {
-            self._fn_state(self._keyMap[key]);
+            self._fnState(self._keyMap[key]);
         });
     }
     private _removeOption(item: ICollectionItem) {
@@ -477,13 +471,13 @@ export class ListBox extends BaseObject {
 
             if (this._isDSFilled && !checks.isNt(this._selectedValue) && !this.getByValue(this._selectedValue)) {
                 this.selectedValue = null;
-            }
-            else {
+            } else {
                 self.updateSelected(this._selectedValue);
             }
 
-            if (cnt > 0)
+            if (cnt > 0) {
                 this._isDSFilled = true;
+            }
 
         } finally {
             self._isRefreshing = false;
@@ -500,8 +494,9 @@ export class ListBox extends BaseObject {
         return (!data) ? -1 : data.op.index;
     }
     protected getByValue(val: any): IMappedItem {
-        if (checks.isNt(val))
+        if (checks.isNt(val)) {
             return null;
+        }
         const key = fn_Str(val);
         const data: IMappedItem = this._valMap[key];
         return (!data) ? null : data;
@@ -525,13 +520,13 @@ export class ListBox extends BaseObject {
     }
     protected setChanges(): void {
         // if already set then return
-        if (!!this._fn_checkChanges) {
+        if (!!this._fnCheckChanges) {
             return;
         }
         const self = this, prevVal = fn_Str(self.selectedValue), prevItem = self.selectedItem;
-        this._fn_checkChanges = () => {
+        this._fnCheckChanges = () => {
             // reset function
-            self._fn_checkChanges = null;
+            self._fnCheckChanges = null;
             const newVal = fn_Str(self.selectedValue), newItem = self.selectedItem;
             if (prevVal !== newVal) {
                 self.raisePropertyChanged(PROP_NAME.selectedValue);
@@ -543,10 +538,11 @@ export class ListBox extends BaseObject {
     }
     protected checkChanges(): void {
         this._changeDebounce.enque(() => {
-            const fn = this._fn_checkChanges;
-            this._fn_checkChanges = null;
-            if (!!fn)
+            const fn = this._fnCheckChanges;
+            this._fnCheckChanges = null;
+            if (!!fn) {
                 fn();
+            }
         });
     }
     protected _setIsEnabled(el: HTMLSelectElement, v: boolean) {
@@ -569,21 +565,17 @@ export class ListBox extends BaseObject {
                 if (!!ds && !ds.getIsDestroyCalled()) {
                     this._bindDS();
                     this._refresh();
-                }
-                else {
+                } else {
                     this._clear();
                     this._addOption(null, false);
                 }
-            }
-            finally {
+            } finally {
                 this.checkChanges();
             }
         });
     }
     protected get selectedIndex(): number {
-        if (!this.el || this.el.length == 0)
-            return -1;
-        return this.el.selectedIndex;
+        return (!this.el || this.el.length == 0) ? -1 : this.el.selectedIndex;
     }
     protected set selectedIndex(v: number) {
         if (!!this.el && this.el.length > v && this.selectedIndex !== v) {
@@ -592,10 +584,7 @@ export class ListBox extends BaseObject {
     }
     getText(val: any): string {
         const data: IMappedItem = this.getByValue(val);
-        if (!data)
-            return "";
-        else
-            return data.op.text;
+        return (!data) ? "" : data.op.text;
     }
     toString() {
         return "ListBox";
@@ -610,16 +599,14 @@ export class ListBox extends BaseObject {
         }
     }
     get selectedValue() {
-        if (!checks.isNt(this._selectedValue) && !this.getByValue(this._selectedValue))
-            return checks.undefined;
-        return this._selectedValue;
+        return (!checks.isNt(this._selectedValue) && !this.getByValue(this._selectedValue)) ? checks.undefined : this._selectedValue;
     }
     set selectedValue(v) {
         if (this._selectedValue !== v) {
             const oldItem = this.selectedItem;
             this._selectedValue = v;
             this.updateSelected(v);
-            this._fn_checkChanges = null;
+            this._fnCheckChanges = null;
             this.raisePropertyChanged(PROP_NAME.selectedValue);
             if (oldItem !== this.selectedItem) {
                 this.raisePropertyChanged(PROP_NAME.selectedItem);
@@ -636,7 +623,7 @@ export class ListBox extends BaseObject {
             this._selectedValue = newVal;
             const item = this.getByValue(newVal);
             this.selectedIndex = (!item ? 0 : item.op.index);
-            this._fn_checkChanges = null;
+            this._fnCheckChanges = null;
             this.raisePropertyChanged(PROP_NAME.selectedValue);
             if (oldItem !== this.selectedItem) {
                 this.raisePropertyChanged(PROP_NAME.selectedItem);
@@ -695,7 +682,7 @@ export interface IListBoxViewOptions extends IListBoxOptions, IViewOptions {
 
 export class ListBoxElView extends BaseElView {
     private _listBox: ListBox;
- 
+
     constructor(options: IListBoxViewOptions) {
         super(options);
         const self = this;
@@ -716,8 +703,9 @@ export class ListBoxElView extends BaseElView {
         }, self.uniqueID);
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         if (!this._listBox.getIsDestroyCalled()) {
             this._listBox.destroy();
@@ -745,9 +733,7 @@ export class ListBoxElView extends BaseElView {
         }
     }
     get selectedValue() {
-        if (this.getIsDestroyCalled())
-            return checks.undefined;
-        return this._listBox.selectedValue;
+        return (this.getIsDestroyCalled()) ? checks.undefined : this._listBox.selectedValue;
     }
     set selectedValue(v) {
         if (this._listBox.selectedValue !== v) {
@@ -755,9 +741,7 @@ export class ListBoxElView extends BaseElView {
         }
     }
     get selectedItem() {
-        if (this.getIsDestroyCalled())
-            return checks.undefined;
-        return this._listBox.selectedItem;
+        return (this.getIsDestroyCalled()) ? checks.undefined : this._listBox.selectedItem;
     }
     set selectedItem(v: ICollectionItem) {
         this._listBox.selectedItem = v;

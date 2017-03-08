@@ -14,10 +14,12 @@ export class Debounce implements IDisposable {
     }
     enque(fn: TFunc) {
         // important, no error (just return with no action)!!!
-        if (this.IsDestroyed)
+        if (this.IsDestroyed) {
             return;
-        if (!fn)
+        }
+        if (!fn) {
             throw new Error("Debounce: Invalid operation");
+        }
         // the last wins
         this._fn = fn;
 
@@ -26,7 +28,7 @@ export class Debounce implements IDisposable {
             clearTimeout(this._timer);
             this._timer = null;
         }
- 
+
         if (!this._timer) {
             const callback = () => {
                 const fn = this._fn;
@@ -40,8 +42,7 @@ export class Debounce implements IDisposable {
 
             if (!this._interval) {
                 this._timer = getTaskQueue().enque(callback);
-            }
-            else {
+            } else {
                 this._timer = setTimeout(callback, this._interval);
             }
         }
@@ -54,8 +55,7 @@ export class Debounce implements IDisposable {
         if (!!this._timer) {
             if (!this._interval) {
                 getTaskQueue().cancel(this._timer);
-            }
-            else {
+            } else {
                 clearTimeout(this._timer);
             }
         }

@@ -11,13 +11,15 @@ export class DataOperationError extends BaseError {
 
     constructor(originalError: any, operationName: DATA_OPER) {
         let message: string;
-        if (originalError instanceof Error)
+        if (originalError instanceof Error) {
             message = (<Error>originalError).message;
-        else if (originalError instanceof BaseError)
+        } else if (originalError instanceof BaseError) {
             message = (<BaseError>originalError).message;
+        }
 
-        if (!message)
+        if (!message) {
             message = "" + originalError;
+        }
         super(message);
         this._origError = originalError;
         this._operationName = operationName;

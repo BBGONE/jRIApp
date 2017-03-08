@@ -20,10 +20,11 @@ export class CheckBoxThreeStateElView extends InputElView {
 
         dom.events.on(this.el, "click", (e) => {
             e.stopPropagation();
-            if (self.checked === null)
+            if (self.checked === null) {
                 self.checked = true;
-            else
+            } else {
                 self.checked = !self.checked ? null : false;
+            }
         }, this.uniqueID);
 
         this._updateState();

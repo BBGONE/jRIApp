@@ -12,7 +12,6 @@ import { DomUtils } from "./utils/dom";
 const utils = Utils, _async = utils.defer, dom = DomUtils, viewChecks = ViewChecks,
     doc = dom.document, checks = utils.check, strUtils = utils.str,
     arrHelper = utils.arr, sys = utils.sys, boot = bootstrap, ERRS = LocaleERRS, ERROR = utils.err;
-    
 
 export const css = {
     templateContainer: "ria-template-container",
@@ -60,28 +59,33 @@ class Template extends BaseObject implements ITemplate {
         this._el.className = css.templateContainer;
     }
     private _getBindings(): Binding[] {
-        if (!this._lfTime)
+        if (!this._lfTime) {
             return [];
+        }
         const arr = this._lfTime.getObjs(), res: Binding[] = [], len = arr.length;
         for (let i = 0; i < len; i += 1) {
-            if (sys.isBinding(arr[i]))
+            if (sys.isBinding(arr[i])) {
                 res.push(<Binding>arr[i]);
+            }
         }
         return res;
     }
     private _getElViews(): IElView[] {
-        if (!this._lfTime)
+        if (!this._lfTime) {
             return [];
+        }
         const arr = this._lfTime.getObjs(), res: IElView[] = [], len = arr.length;
         for (let i = 0; i < len; i += 1) {
-            if (viewChecks.isElView(arr[i]))
+            if (viewChecks.isElView(arr[i])) {
                 res.push(<IElView>arr[i]);
+            }
         }
         return res;
     }
     private _getTemplateElView(): ITemplateEvents {
-        if (!this._lfTime)
+        if (!this._lfTime) {
             return null;
+        }
         const arr = this._getElViews(), j = arr.length;
         for (let i = 0; i < j; i += 1) {
             if (viewChecks.isTemplateElView(arr[i])) {
@@ -94,20 +98,20 @@ class Template extends BaseObject implements ITemplate {
        * returns a promise which resolves with the loaded template's DOM element
     */
     private _loadAsync(name: string): IPromise<HTMLElement> {
-        const self = this, fn_loader = this.app.getTemplateLoader(name);
+        const self = this, fnLoader = this.app.getTemplateLoader(name);
         let promise: IPromise<string>;
-        if (checks.isFunc(fn_loader) && checks.isThenable(promise = fn_loader())) {
+        if (checks.isFunc(fnLoader) && checks.isThenable(promise = fnLoader())) {
             return promise.then((html: string) => {
                 const elems = dom.fromHTML(html);
                 return elems[0];
             }, (err) => {
-                if (!!err && !!err.message)
+                if (!!err && !!err.message) {
                     throw err;
-                else
+                } else {
                     throw new Error(strUtils.format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
+                }
             });
-        }
-        else {
+        } else {
             const deferred = _async.createDeferred<HTMLElement>();
             return deferred.reject(new Error(strUtils.format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID)));
         }
@@ -115,8 +119,9 @@ class Template extends BaseObject implements ITemplate {
     private _loadTemplate(): void {
         const self = this, id = self.templateID, templateEl = self.el;
         try {
-            if (!!self._loadedElem)
+            if (!!self._loadedElem) {
                 self._unloadTemplate();
+            }
 
             if (!!id) {
                 const loadPromise = self._loadAsync(id), bindPromise = loadPromise.then((loadedEl) => {
@@ -124,8 +129,9 @@ class Template extends BaseObject implements ITemplate {
                 });
 
                 bindPromise.catch((err) => {
-                    if (self.getIsDestroyCalled())
+                    if (self.getIsDestroyCalled()) {
                         return;
+                    }
                     self._onFail(templateEl, err);
                 });
             }
@@ -155,17 +161,18 @@ class Template extends BaseObject implements ITemplate {
             if (!!this._templElView) {
                 this._templElView.templateUnLoading(this);
             }
-        }
-        finally {
+        } finally {
             this._cleanUp();
         }
     }
     private _dataBind(templateEl: HTMLElement, loadedEl: HTMLElement): IPromise<HTMLElement> {
         const self = this;
-        if (self.getIsDestroyCalled())
+        if (self.getIsDestroyCalled()) {
             ERROR.abort();
-        if (!loadedEl)
+        }
+        if (!loadedEl) {
             throw new Error(strUtils.format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
+        }
 
         if (!!self._loadedElem) {
             self._unloadTemplate();
@@ -188,8 +195,9 @@ class Template extends BaseObject implements ITemplate {
     }
     private _onFail(templateEl: HTMLElement, err: any): void {
         const self = this;
-        if (self.getIsDestroyCalled())
+        if (self.getIsDestroyCalled()) {
             return;
+        }
         self._onLoaded(err);
         if (ERROR.checkIsAbort(err)) {
             return;
@@ -205,16 +213,18 @@ class Template extends BaseObject implements ITemplate {
                 ex = new Error("error: " + err);
             }
         }
-        if (!ex)
+        if (!ex) {
             ex = new Error(strUtils.format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
+        }
         self.handleError(ex, self);
     }
     private _updateBindingSource() {
         const bindings = this._getBindings(), len = bindings.length;
         for (let i = 0; i < len; i += 1) {
             const binding = bindings[i];
-            if (!binding.isSourceFixed)
+            if (!binding.isSourceFixed) {
                 binding.source = this.dataContext;
+            }
         }
     }
     private _cleanUp() {
@@ -231,8 +241,9 @@ class Template extends BaseObject implements ITemplate {
         }
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         this._unloadTemplate();
         if (!!this._el) {
@@ -254,8 +265,9 @@ class Template extends BaseObject implements ITemplate {
             viewStore = boot.getApp().viewFactory.store;
         els.forEach((el) => {
             const elView = viewStore.getElView(el);
-            if (!!elView)
+            if (!!elView) {
                 res.push(elView);
+            }
         });
         return res;
     }

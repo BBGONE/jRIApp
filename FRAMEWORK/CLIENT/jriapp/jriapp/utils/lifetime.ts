@@ -6,7 +6,7 @@ import { ILifeTimeScope } from "../int";
 
 const utils = Utils;
 /*
-LifeTimeScope used to hold references to objects and destroys 
+LifeTimeScope used to hold references to objects and destroys
 them all when LifeTimeScope is destroyed itself
 */
 export class LifeTimeScope extends BaseObject implements ILifeTimeScope {
@@ -20,8 +20,9 @@ export class LifeTimeScope extends BaseObject implements ILifeTimeScope {
         return new LifeTimeScope();
     }
     addObj(b: IBaseObject) {
-        if (this._objs.indexOf(b) < 0)
+        if (this._objs.indexOf(b) < 0) {
             this._objs.push(b);
+        }
     }
     removeObj(b: IBaseObject) {
         utils.arr.remove(this._objs, b);
@@ -30,12 +31,14 @@ export class LifeTimeScope extends BaseObject implements ILifeTimeScope {
         return this._objs;
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         this._objs.forEach(function (obj) {
-            if (!obj.getIsDestroyCalled())
+            if (!obj.getIsDestroyCalled()) {
                 obj.destroy();
+            }
         });
         this._objs = [];
         super.destroy();

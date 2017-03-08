@@ -21,9 +21,9 @@ export class ERROR {
 
         handler = ERROR._handlers[APP_NAME];
         if (!!handler) {
-            if (handler === sender)
+            if (handler === sender) {
                 handler = null;
-            else {
+            } else {
                 isHandled = handler.handleError(error, source);
             }
         }
@@ -31,20 +31,22 @@ export class ERROR {
         if (!isHandled) {
             handler = ERROR._handlers["*"];
             if (!!handler) {
-                if (handler === sender)
+                if (handler === sender) {
                     handler = null;
-                else
+                } else {
                     isHandled = handler.handleError(error, source);
+                }
             }
         }
 
         return isHandled;
     }
     static throwDummy(err: any): void {
-        if (ERROR.checkIsDummy(err))
+        if (ERROR.checkIsDummy(err)) {
             throw err;
-        else
+        } else {
             throw new DummyError(err);
+        }
     }
     static checkIsDummy(error: any): boolean {
         return !!error && !!error.isDummy;
@@ -53,10 +55,11 @@ export class ERROR {
         return !!error && (error instanceof AbortError);
     }
     static reThrow(ex: any, isHandled: boolean) {
-        if (!isHandled)
+        if (!isHandled) {
             throw ex;
-        else
+        } else {
             ERROR.throwDummy(ex);
+        }
     }
     static abort(reason?: string) {
         throw new AbortError(reason);

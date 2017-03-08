@@ -26,8 +26,9 @@ export class FillSpaceRow extends BaseObject {
         this._cell = new FillSpaceCell({ row: this, td: td });
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         if (!!this._cell) {
             this._cell.destroy();

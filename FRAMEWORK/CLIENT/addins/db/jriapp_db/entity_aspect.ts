@@ -20,7 +20,16 @@ const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = uti
 
 // don't submit these types of fields to the server
 function fn_isNotSubmittable(fieldInfo: IFieldInfo) {
-    return (fieldInfo.fieldType === FIELD_TYPE.ClientOnly || fieldInfo.fieldType === FIELD_TYPE.Navigation || fieldInfo.fieldType === FIELD_TYPE.Calculated || fieldInfo.fieldType === FIELD_TYPE.ServerCalculated);
+    switch (fieldInfo.fieldType) {
+        case FIELD_TYPE.ClientOnly:
+        case FIELD_TYPE.Navigation:
+        case FIELD_TYPE.Calculated:
+        case FIELD_TYPE.ServerCalculated:
+        case FIELD_TYPE.ClientOnly:
+            return true;
+        default:
+            return false;
+    }
 }
 
 function _fn_traverseChanges(name: string, val: IValueChange, fn: (name: string, val: IValueChange) => void) {
@@ -30,13 +39,11 @@ function _fn_traverseChanges(name: string, val: IValueChange, fn: (name: string,
             const prop: IValueChange = val.nested[i];
             if (!!prop.nested && prop.nested.length > 0) {
                 _fn_traverseChanges(name + "." + prop.fieldName, prop, fn);
-            }
-            else {
+            } else {
                 fn(name + "." + prop.fieldName, prop);
             }
         }
-    }
-    else {
+    } else {
         fn(name, val);
     }
 }
@@ -65,16 +72,16 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         if (isNew) {
             this._setKey(key);
             this._status = ITEM_STATUS.Added;
-        }
-        else {
+        } else {
             this._setSrvKey(key);
             this._setKey(key);
         }
     }
     protected _onFieldChanged(fieldName: string, fieldInfo: IFieldInfo) {
         const self = this;
-        if (self._isDestroyCalled)
+        if (self._isDestroyCalled) {
             return;
+        }
         self.item.raisePropertyChanged(fieldName);
         if (!!fieldInfo.dependents && fieldInfo.dependents.length > 0) {
             fieldInfo.dependents.forEach((d) => {
@@ -85,8 +92,9 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
     protected _getValueChange(fullName: string, fieldInfo: IFieldInfo, changedOnly: boolean): IValueChange {
         const self = this, dbSet = self.dbSet;
         let res: IValueChange = null;
-        if (fn_isNotSubmittable(fieldInfo))
+        if (fn_isNotSubmittable(fieldInfo)) {
             return res;
+        }
 
         if (fieldInfo.fieldType === FIELD_TYPE.Object) {
             res = { fieldName: fieldInfo.fieldName, val: null, orig: null, flags: FLAGS.None, nested: [] };
@@ -97,12 +105,11 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
                     res.nested.push(tmp);
                 }
             }
-        }
-        else {
+        } else {
             const newVal = dbSet._getInternal().getStrValue(coreUtils.getValue(self._vals, fullName), fieldInfo),
                 oldV = self._origVals === null ? newVal : dbSet._getInternal().getStrValue(coreUtils.getValue(self._origVals, fullName), fieldInfo),
                 isChanged = (oldV !== newVal);
-            if (isChanged)
+            if (isChanged) {
                 res = {
                     fieldName: fieldInfo.fieldName,
                     val: newVal,
@@ -110,7 +117,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
                     flags: (FLAGS.Changed | FLAGS.Setted),
                     nested: null
                 };
-            else if (fieldInfo.isPrimaryKey > 0 || fieldInfo.fieldType === FIELD_TYPE.RowTimeStamp || fieldInfo.isNeedOriginal)
+            } else if (fieldInfo.isPrimaryKey > 0 || fieldInfo.fieldType === FIELD_TYPE.RowTimeStamp || fieldInfo.isNeedOriginal) {
                 res = {
                     fieldName: fieldInfo.fieldName,
                     val: newVal,
@@ -118,7 +125,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
                     flags: FLAGS.Setted,
                     nested: null
                 };
-            else
+            } else {
                 res = {
                     fieldName: fieldInfo.fieldName,
                     val: null,
@@ -126,21 +133,18 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
                     flags: FLAGS.None,
                     nested: null
                 };
+            }
         }
 
         if (changedOnly) {
             if (fieldInfo.fieldType === FIELD_TYPE.Object) {
-                if (res.nested.length > 0)
-                    return res;
-                else
-                    return null;
-            }
-            else if ((res.flags & FLAGS.Changed) === FLAGS.Changed)
+                return (res.nested.length > 0) ? res : null;
+            } else if ((res.flags & FLAGS.Changed) === FLAGS.Changed) {
                 return res;
-            else
+            } else {
                 return null;
-        }
-        else {
+            }
+        } else {
             return res;
         }
     }
@@ -169,27 +173,31 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
             const len = childToParentNames.length;
             for (let i = 0; i < len; i += 1) {
                 res = !!this._getFieldVal(childToParentNames[i]);
-                if (res)
+                if (res) {
                     break;
+                }
             }
         }
         return res;
     }
     protected _beginEdit() {
-        if (!super._beginEdit())
+        if (!super._beginEdit()) {
             return false;
+        }
         this._savedStatus = this.status;
         return true;
     }
     protected _endEdit() {
-        if (!super._endEdit())
+        if (!super._endEdit()) {
             return false;
+        }
         this._savedStatus = null;
         return true;
     }
     protected _cancelEdit() {
-        if (!this.isEditing)
+        if (!this.isEditing) {
             return false;
+        }
         const self = this, changes = this._getValueChanges(true), dbSet = this.dbSet;
         this._vals = this._saveVals;
         this._saveVals = null;
@@ -198,8 +206,9 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         dbSet.errors.removeAllErrors(this.item);
         changes.forEach((v) => {
             const fld = self.dbSet.getFieldInfo(v.fieldName);
-            if (!fld)
+            if (!fld) {
                 throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, v.fieldName));
+            }
             self._onFieldChanged(v.fieldName, fld);
         });
         return true;
@@ -208,10 +217,11 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         if (this._status !== v) {
             const oldStatus = this._status;
             this._status = v;
-            if (v !== ITEM_STATUS.None)
+            if (v !== ITEM_STATUS.None) {
                 this.dbSet._getInternal().addToChanged(this.item);
-            else
+            } else {
                 this.dbSet._getInternal().removeFromChanged(this.key);
+            }
             this.dbSet._getInternal().onItemStatusChanged(this.item, oldStatus);
         }
     }
@@ -226,8 +236,9 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
     }
     _refreshValue(val: any, fullName: string, refreshMode: REFRESH_MODE) {
         const self = this, fld = self.dbSet.getFieldInfo(fullName);
-        if (!fld)
+        if (!fld) {
             throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fullName));
+        }
         const stz = self.serverTimezone, dataType = fld.dataType, dcnv = fld.dateConversion;
         let newVal: any, oldVal: any, oldValOrig: any;
         newVal = valUtils.parseValue(val, dataType, dcnv, stz);
@@ -282,9 +293,9 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
             }
             rowInfo.values.forEach((val) => {
                 fn_traverseChanges(val, (fullName, vc) => {
-                    if (!((vc.flags & FLAGS.Refreshed) === FLAGS.Refreshed))
-                        return;
-                    self._refreshValue(vc.val, fullName, refreshMode);
+                    if ((vc.flags & FLAGS.Refreshed)) {
+                        self._refreshValue(vc.val, fullName, refreshMode);
+                    }
                 });
             });
 
@@ -320,22 +331,26 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         coreUtils.setValue(this._vals, fieldName, null, false);
     }
     _getFieldVal(fieldName: string) {
-        if (this._isDestroyCalled)
+        if (this._isDestroyCalled) {
             return null;
+        }
         return coreUtils.getValue(this._vals, fieldName);
     }
     _setFieldVal(fieldName: string, val: any): boolean {
         const dbSetName = this.dbSetName, dbSet = this.dbSet,
             oldV = this._getFieldVal(fieldName), fieldInfo = this.getFieldInfo(fieldName);
         let newV = val, res = false;
-        if (!fieldInfo)
+        if (!fieldInfo) {
             throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, dbSetName, fieldName));
-        if (!this.isEditing && !this.isUpdating)
+        }
+        if (!(this.isEditing || this.isUpdating)) {
             this.beginEdit();
-            
+        }
+
         try {
-            if (fieldInfo.dataType === DATA_TYPE.String && fieldInfo.isNullable && !newV)
+            if (fieldInfo.dataType === DATA_TYPE.String && fieldInfo.isNullable && !newV) {
                 newV = null;
+            }
             if (oldV !== newV) {
                 if (fieldInfo.isReadOnly && !(this.isNew && fieldInfo.allowClientDefault)) {
                     throw new Error(ERRS.ERR_FIELD_READONLY);
@@ -354,17 +369,16 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
                     res = true;
                 }
                 dbSet.errors.removeError(this.item, fieldName);
-                const validation_info = this._validateField(fieldName);
-                if (!!validation_info) {
-                    throw new ValidationError([validation_info], this);
+                const validationInfo = this._validateField(fieldName);
+                if (!!validationInfo) {
+                    throw new ValidationError([validationInfo], this);
                 }
             }
         } catch (ex) {
             let error: ValidationError;
             if (sys.isValidationError(ex)) {
                 error = ex;
-            }
-            else {
+            } else {
                 error = new ValidationError([
                     { fieldName: fieldName, errors: [ex.message] }
                 ], this);
@@ -378,8 +392,9 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         this._srvKey = v;
     }
     _acceptChanges(rowInfo?: IRowInfo): void {
-        if (this.getIsDestroyed())
+        if (this.getIsDestroyed()) {
             return;
+        }
         const oldStatus = this.status, dbSet = this.dbSet, internal = dbSet._getInternal(),  errors = dbSet.errors;
         if (oldStatus !== ITEM_STATUS.None) {
             internal.onCommitChanges(this.item, true, false, oldStatus);
@@ -390,8 +405,9 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
                 return;
             }
             this._origVals = null;
-            if (!!this._saveVals)
+            if (!!this._saveVals) {
                 this._saveVals = collUtils.cloneVals(this.dbSet.getFieldInfos(), this._vals); // coreUtils.clone(this._vals);
+            }
             this._setStatus(ITEM_STATUS.None);
             errors.removeAllErrors(this.item);
             if (!!rowInfo) {
@@ -406,16 +422,18 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
     }
     _onAttach(): void {
         super._onAttach();
-        if (this.key === null)
+        if (!this.key) {
             throw new Error(ERRS.ERR_ITEM_IS_DETACHED);
+        }
         this.dbSet._getInternal().addToChanged(this.item);
     }
     deleteItem(): boolean {
         return this.deleteOnSubmit();
     }
     deleteOnSubmit(): boolean {
-        if (this.getIsDestroyCalled())
+        if (this.getIsDestroyCalled()) {
             return false;
+        }
         const oldStatus = this.status, dbSet = this.dbSet;
         const args: ICancellableArgs<TItem> = { item: this.item, isCancel: false };
         dbSet._getInternal().onItemDeleting(args);
@@ -424,8 +442,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         }
         if (oldStatus === ITEM_STATUS.Added) {
             dbSet.removeItem(this.item);
-        }
-        else {
+        } else {
             this._setStatus(ITEM_STATUS.Deleted);
         }
         return true;
@@ -434,14 +451,16 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         this._acceptChanges(null);
     }
     rejectChanges(): void {
-        if (this.getIsDestroyed())
+        if (this.getIsDestroyed()) {
             return;
+        }
         const self = this, oldStatus = self.status, dbSet = self.dbSet, internal = dbSet._getInternal(), errors = dbSet.errors;
         if (oldStatus !== ITEM_STATUS.None) {
             internal.onCommitChanges(self.item, true, true, oldStatus);
             if (oldStatus === ITEM_STATUS.Added) {
-                if (!this.getIsDestroyCalled())
+                if (!this.getIsDestroyCalled()) {
                     this.destroy();
+                }
                 return;
             }
 
@@ -487,8 +506,9 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         return dbxt._getInternal().refreshItem(this.item);
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         this.cancelEdit();
         this.rejectChanges();

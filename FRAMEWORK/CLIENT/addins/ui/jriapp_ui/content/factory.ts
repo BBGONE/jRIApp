@@ -74,10 +74,11 @@ class ContentFactory implements IContentFactory {
         }
 
         if (!res) {
-            if (!this._nextFactory)
+            if (!this._nextFactory) {
                 throw new Error(ERRS.ERR_BINDING_CONTENT_NOT_FOUND);
-            else
+            } else {
                 return this._nextFactory.getContentType(options);
+            }
         } else {
             return res;
         }

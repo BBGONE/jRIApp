@@ -223,7 +223,7 @@ export interface IErrors {
 }
 
 export interface IErrorsList {
-    [item_key: string]: IErrors;
+    [itemKey: string]: IErrors;
 }
 
 export interface IInternalCollMethods<TItem extends ICollectionItem> {

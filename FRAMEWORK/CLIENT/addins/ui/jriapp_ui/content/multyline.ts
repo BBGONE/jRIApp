@@ -11,12 +11,13 @@ import { BasicContent } from "./basic";
 const utils = Utils, NAME = "multyline", strUtils = utils.str, dom = DomUtils, document = dom.document;
 
 export class MultyLineContent extends BasicContent {
-    static __allowedKeys: number[] = null;
-    private get _allowedKeys() {
-        if (!MultyLineContent.__allowedKeys) {
-            MultyLineContent.__allowedKeys = [0, KEYS.backspace, KEYS.del, KEYS.left, KEYS.right, KEYS.end, KEYS.home, KEYS.tab, KEYS.esc, KEYS.enter];
+    static _allowedKeys: number[] = null;
+
+    private get allowedKeys() {
+        if (!MultyLineContent._allowedKeys) {
+            MultyLineContent._allowedKeys = [0, KEYS.backspace, KEYS.del, KEYS.left, KEYS.right, KEYS.end, KEYS.home, KEYS.tab, KEYS.esc, KEYS.enter];
         }
-        return MultyLineContent.__allowedKeys;
+        return MultyLineContent._allowedKeys;
     }
     constructor(options: IConstructorContentOptions) {
         if (options.contentOptions.name !== NAME) {
@@ -31,8 +32,7 @@ export class MultyLineContent extends BasicContent {
             el = document.createElement("textarea");
             info.options = this._options.options;
             info.name = null;
-        }
-        else {
+        } else {
             el = document.createElement("div");
         }
         this.updateCss();
@@ -40,8 +40,9 @@ export class MultyLineContent extends BasicContent {
         return this.getElementView(this._el, info);
     }
     protected previewKeyPress(fieldInfo: IFieldInfo, keyCode: number, value: string) {
-        if (this._allowedKeys.indexOf(keyCode) > -1)
+        if (this.allowedKeys.indexOf(keyCode) > -1) {
             return true;
+        }
         return !(fieldInfo.maxLength > 0 && value.length >= fieldInfo.maxLength);
     }
     render() {

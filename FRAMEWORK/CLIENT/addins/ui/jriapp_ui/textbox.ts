@@ -30,8 +30,9 @@ export class TextBoxElView extends InputElView {
             e.stopPropagation();
             const args: TKeyPressArgs = { keyCode: e.which, value: (<HTMLInputElement>e.target).value, isCancel: false };
             self.raiseEvent(TXTBOX_EVENTS.keypress, args);
-            if (args.isCancel)
+            if (args.isCancel) {
                 e.preventDefault();
+            }
         }, this.uniqueID);
 
         if (!!options.updateOnKeyUp) {
@@ -42,8 +43,8 @@ export class TextBoxElView extends InputElView {
         }
     }
     protected _getEventNames() {
-        const base_events = super._getEventNames();
-        return [TXTBOX_EVENTS.keypress].concat(base_events);
+        const baseEvents = super._getEventNames();
+        return [TXTBOX_EVENTS.keypress].concat(baseEvents);
     }
     addOnKeyPress(fn: (sender: TextBoxElView, args: TKeyPressArgs) => void, nmspace?: string) {
         this._addHandler(TXTBOX_EVENTS.keypress, fn, nmspace);

@@ -32,10 +32,12 @@ const DATA_SVC_METH = {
 };
 
 function fn_checkError(svcError: { name: string; message?: string; }, oper: DATA_OPER) {
-    if (!svcError)
+    if (!svcError) {
         return;
-    if (ERROR.checkIsDummy(svcError))
+    }
+    if (ERROR.checkIsDummy(svcError)) {
         return;
+    }
     switch (svcError.name) {
         case "AccessDeniedException":
             throw new AccessDeniedError(ERRS.ERR_ACCESS_DENIED, oper);
@@ -106,7 +108,7 @@ export class DbContext extends BaseObject {
         this._isHasChanges = false;
         this._pendingSubmit = null;
         // at first init it with client side timezone
-        this._serverTimezone = coreUtils.get_timeZoneOffset();
+        this._serverTimezone = coreUtils.getTimeZoneOffset();
         this._waitQueue = new WaitQueue(this);
         this._internal = {
             onItemRefreshed: (res: IRefreshRowInfo, item: IEntityItem) => {
@@ -130,12 +132,13 @@ export class DbContext extends BaseObject {
         });
     }
     protected _getEventNames() {
-        const base_events = super._getEventNames();
-        return [DBCTX_EVENTS.submit_err].concat(base_events);
+        const baseEvents = super._getEventNames();
+        return [DBCTX_EVENTS.submit_err].concat(baseEvents);
     }
     protected _initDbSets() {
-        if (this.isInitialized)
+        if (this.isInitialized) {
             throw new Error(ERRS.ERR_DOMAIN_CONTEXT_INITIALIZED);
+        }
     }
     protected _initAssociations(associations: IAssociationInfo[]) {
         const self = this;
@@ -148,8 +151,7 @@ export class DbContext extends BaseObject {
         methods.forEach((info) => {
             if (info.isQuery) {
                 self._queryInf[info.methodName] = info;
-            }
-            else {
+            } else {
                 // service method info
                 self._initMethod(info);
             }
@@ -159,8 +161,9 @@ export class DbContext extends BaseObject {
         this._serverTimezone = info.serverTimezone;
         info.permissions.forEach((perms) => {
             const dbSet = this.findDbSet(perms.dbSetName);
-            if (!!dbSet)
+            if (!!dbSet) {
                 dbSet._getInternal().updatePermissions(perms);
+            }
         });
     }
     protected _initAssociation(assoc: IAssociationInfo) {
@@ -189,8 +192,7 @@ export class DbContext extends BaseObject {
             const deferred = _async.createDeferred<any>(), callback = (res: { result: any; error: any; }) => {
                 if (!res.error) {
                     deferred.resolve(res.result);
-                }
-                else {
+                } else {
                     deferred.reject();
                 }
             };
@@ -216,13 +218,16 @@ export class DbContext extends BaseObject {
         req.always(() => {
             utils.arr.remove(self._requests, item);
             self.raisePropertyChanged(PROP_NAME.requestCount);
-            if (self._requests.length === 0)
+            if (self._requests.length === 0) {
                 self.raisePropertyChanged(PROP_NAME.isBusy);
+            }
         });
-        if (cnt !== self._requests.length)
+        if (cnt !== self._requests.length) {
             self.raisePropertyChanged(PROP_NAME.requestCount);
-        if (_isBusy !== (self._requests.length > 0))
+        }
+        if (_isBusy !== (self._requests.length > 0)) {
             self.raisePropertyChanged(PROP_NAME.isBusy);
+        }
     }
     protected _tryAbortRequest(operType: DATA_OPER, name: string) {
         const reqs = this._requests.filter((req) => { return req.operType === operType && req.name === name; });
@@ -232,8 +237,9 @@ export class DbContext extends BaseObject {
         const self = this, methodName: string = methodInfo.methodName,
             data: IInvokeRequest = { methodName: methodName, paramInfo: { parameters: [] } },
             paramInfos = methodInfo.parameters, len = paramInfos.length;
-        if (!args)
+        if (!args) {
             args = {};
+        }
         for (let i = 0; i < len; i += 1) {
             const pinfo: IQueryParamInfo = paramInfos[i];
             let val = args[pinfo.name];
@@ -250,16 +256,14 @@ export class DbContext extends BaseObject {
             // byte arrays are optimized for serialization
             if (pinfo.dataType === DATA_TYPE.Binary && checks.isArray(val)) {
                 value = JSON.stringify(val);
-            }
-            else if (checks.isArray(val)) {
+            } else if (checks.isArray(val)) {
                 const arr: string[] = [];
                 for (let k = 0; k < val.length; k += 1) {
                     // first convert all values to string
                     arr.push(valUtils.stringifyValue(val[k], pinfo.dateConversion, pinfo.dataType, self.serverTimezone));
                 }
                 value = JSON.stringify(arr);
-            }
-            else {
+            } else {
                 value = valUtils.stringifyValue(val, pinfo.dateConversion, pinfo.dataType, self.serverTimezone);
             }
 
@@ -269,12 +273,14 @@ export class DbContext extends BaseObject {
         return data;
     }
     protected _invokeMethod(data: IInvokeRequest, callback: (res: { result: any; error: any; }) => void) {
-        const self = this, operType = DATA_OPER.Invoke, fn_onComplete = (res: IInvokeResponse) => {
-            if (self.getIsDestroyCalled())
+        const self = this, operType = DATA_OPER.Invoke, fnOnComplete = (res: IInvokeResponse) => {
+            if (self.getIsDestroyCalled()) {
                 return;
+            }
             try {
-                if (!res)
+                if (!res) {
                     throw new Error(strUtils.format(ERRS.ERR_UNEXPECTED_SVC_ERROR, "operation result is empty"));
+                }
                 fn_checkError(res.error, operType);
                 callback({ result: res.result, error: null });
             } catch (ex) {
@@ -288,18 +294,17 @@ export class DbContext extends BaseObject {
 
         try {
             const postData = JSON.stringify(data), invokeUrl = this._getUrl(DATA_SVC_METH.Invoke),
-                req_promise = http.postAjax(invokeUrl, postData, self.requestHeaders);
-            self._addRequestPromise(req_promise, operType);
+                reqPromise = http.postAjax(invokeUrl, postData, self.requestHeaders);
+            self._addRequestPromise(reqPromise, operType);
 
-            req_promise.then((res: string) => {
+            reqPromise.then((res: string) => {
                 return _async.parseJSON(res);
             }).then((res: IInvokeResponse) => { // success
-                fn_onComplete(res);
+                fnOnComplete(res);
             }, (err) => { // error
-                fn_onComplete({ result: null, error: err });
+                fnOnComplete({ result: null, error: err });
             });
-        }
-        catch (ex) {
+        } catch (ex) {
             if (ERROR.checkIsDummy(ex)) {
                 ERROR.throwDummy(ex);
             }
@@ -327,8 +332,9 @@ export class DbContext extends BaseObject {
     }
     protected _loadSubsets(response: IQueryResponse, isClearAll: boolean) {
         const self = this, isHasSubsets = checks.isArray(response.subsets) && response.subsets.length > 0;
-        if (!isHasSubsets)
+        if (!isHasSubsets) {
             return;
+        }
         response.subsets.forEach((loadResult) => {
             const dbSet = self.getDbSet(loadResult.dbSetName);
             dbSet.fillData(loadResult, !isClearAll);
@@ -344,11 +350,13 @@ export class DbContext extends BaseObject {
 
             const operType = DATA_OPER.Query;
             try {
-                if (checks.isNt(response))
+                if (checks.isNt(response)) {
                     throw new Error(strUtils.format(ERRS.ERR_UNEXPECTED_SVC_ERROR, "null result"));
+                }
                 const dbSetName = response.dbSetName, dbSet = self.getDbSet(dbSetName);
-                if (checks.isNt(dbSet))
+                if (checks.isNt(dbSet)) {
                     throw new Error(strUtils.format(ERRS.ERR_DBSET_NAME_INVALID, dbSetName));
+                }
                 fn_checkError(response.error, operType);
                 const isClearAll = (!!query && query.isClearPrevData),
                     loadRes = dbSet._getInternal().fillFromService(
@@ -371,8 +379,7 @@ export class DbContext extends BaseObject {
         try {
             try {
                 fn_checkError(changes.error, DATA_OPER.Submit);
-            }
-            catch (ex) {
+            } catch (ex) {
                 const submitted: IEntityItem[] = [], notvalid: IEntityItem[] = [];
                 changes.dbSets.forEach((jsDB) => {
                     const dbSet = self._dbSets.getDbSet(jsDB.dbSetName);
@@ -394,8 +401,7 @@ export class DbContext extends BaseObject {
             changes.dbSets.forEach((jsDB) => {
                 self._dbSets.getDbSet(jsDB.dbSetName)._getInternal().commitChanges(jsDB.rows);
             });
-        }
-        catch (ex) {
+        } catch (ex) {
             if (ERROR.checkIsDummy(ex)) {
                 ERROR.throwDummy(ex);
             }
@@ -408,8 +414,9 @@ export class DbContext extends BaseObject {
         this._dbSets.arrDbSets.forEach((dbSet) => {
             dbSet.endEdit();
             const changes: IRowInfo[] = dbSet._getInternal().getChanges();
-            if (changes.length === 0)
+            if (changes.length === 0) {
                 return;
+            }
             // it is needed to apply updates in parent-child relationship order on the server
             // and provides child to parent map of the keys for the new entities
             const trackAssoc: ITrackAssoc[] = dbSet._getInternal().getTrackAssocInfo(),
@@ -421,14 +428,16 @@ export class DbContext extends BaseObject {
     }
     protected _getUrl(action: string): string {
         let loadUrl = this.serviceUrl;
-        if (!strUtils.endsWith(loadUrl, "/"))
+        if (!strUtils.endsWith(loadUrl, "/")) {
             loadUrl = loadUrl + "/";
+        }
         loadUrl = loadUrl + [action, ""].join("/");
         return loadUrl;
     }
     protected _onDataOperError(ex: any, oper: DATA_OPER): boolean {
-        if (ERROR.checkIsDummy(ex))
+        if (ERROR.checkIsDummy(ex)) {
             return true;
+        }
         const err: DataOperationError = (ex instanceof DataOperationError) ? ex : new DataOperationError(ex, oper);
         return this.handleError(err, this);
     }
@@ -494,17 +503,18 @@ export class DbContext extends BaseObject {
             if (context.query._getInternal().isPageCached(pageIndex)) {
                 const loadPromise = self._loadFromCache(context.query, context.reason);
                 loadPromise.then((loadRes) => {
-                    if (self.getIsDestroyCalled())
+                    if (self.getIsDestroyCalled()) {
                         return;
+                    }
                     context.fn_onOK(loadRes);
                 }, (err) => {
-                    if (self.getIsDestroyCalled())
+                    if (self.getIsDestroyCalled()) {
                         return;
+                    }
                     context.fn_onErr(err);
                 });
                 return;
-            }
-            else {
+            } else {
                 range = context.query._getInternal().getCache().getNextRange(pageIndex);
                 pageIndex = range.start;
                 pageCount = range.cnt;
@@ -523,19 +533,21 @@ export class DbContext extends BaseObject {
             queryName: context.query.queryName
         };
 
-        const req_promise = http.postAjax(self._getUrl(DATA_SVC_METH.Query), JSON.stringify(requestInfo), self.requestHeaders);
-        self._addRequestPromise(req_promise, DATA_OPER.Query, requestInfo.dbSetName);
-        req_promise.then((res: string) => {
+        const reqPromise = http.postAjax(self._getUrl(DATA_SVC_METH.Query), JSON.stringify(requestInfo), self.requestHeaders);
+        self._addRequestPromise(reqPromise, DATA_OPER.Query, requestInfo.dbSetName);
+        reqPromise.then((res: string) => {
             return _async.parseJSON(res);
         }).then((response: IQueryResponse) => {
             return self._onLoaded(response, context.query, context.reason);
         }).then((loadRes) => {
-            if (self.getIsDestroyCalled())
+            if (self.getIsDestroyCalled()) {
                 return;
+            }
             context.fn_onOK(loadRes);
         }, (err) => {
-            if (self.getIsDestroyCalled())
+            if (self.getIsDestroyCalled()) {
                 return;
+            }
             context.fn_onErr(err);
         });
     }
@@ -547,12 +559,10 @@ export class DbContext extends BaseObject {
                 item._aspect.dbSet.removeItem(item);
                 item.destroy();
                 throw new Error(ERRS.ERR_ITEM_DELETED_BY_ANOTHER_USER);
-            }
-            else {
+            } else {
                 item._aspect._refreshValues(res.rowInfo, REFRESH_MODE.MergeIntoCurrent);
             }
-        }
-        catch (ex) {
+        } catch (ex) {
             if (ERROR.checkIsDummy(ex)) {
                 ERROR.throwDummy(ex);
             }
@@ -579,23 +589,24 @@ export class DbContext extends BaseObject {
 
             args.item._aspect._checkCanRefresh();
             const url = self._getUrl(DATA_SVC_METH.Refresh),
-                req_promise = http.postAjax(url, JSON.stringify(request), self.requestHeaders);
+                reqPromise = http.postAjax(url, JSON.stringify(request), self.requestHeaders);
 
-            self._addRequestPromise(req_promise, operType);
+            self._addRequestPromise(reqPromise, operType);
 
-            req_promise.then((res: string) => {
+            reqPromise.then((res: string) => {
                 return _async.parseJSON(res);
             }).then((res: IRefreshRowInfo) => { // success
-                if (self.getIsDestroyCalled())
+                if (self.getIsDestroyCalled()) {
                     return;
+                }
                 args.fn_onOK(res);
             }, (err) => { // error
-                if (self.getIsDestroyCalled())
+                if (self.getIsDestroyCalled()) {
                     return;
+                }
                 args.fn_onErr(err);
             });
-        }
-        catch (ex) {
+        } catch (ex) {
             args.fn_onErr(ex);
         }
     }
@@ -616,8 +627,7 @@ export class DbContext extends BaseObject {
                 try {
                     context.fn_onEnd();
                     self._onDataOperError(ex, DATA_OPER.Refresh);
-                }
-                finally {
+                } finally {
                     deferred.reject();
                 }
             },
@@ -625,8 +635,7 @@ export class DbContext extends BaseObject {
                 try {
                     self._onItemRefreshed(res, item);
                     context.fn_onEnd();
-                }
-                finally {
+                } finally {
                     deferred.resolve(item);
                 }
             }
@@ -643,8 +652,7 @@ export class DbContext extends BaseObject {
         this._isHasChanges = false;
         if (dbSet.isHasChanges) {
             this._isHasChanges = true;
-        }
-        else {
+        } else {
             const len = this._dbSets.arrDbSets.length;
             for (let i = 0; i < len; i += 1) {
                 const test = this._dbSets.arrDbSets[i];
@@ -682,8 +690,7 @@ export class DbContext extends BaseObject {
             fn_onOK: (res: IQueryResult<IEntityItem>) => {
                 try {
                     context.fn_onEnd();
-                }
-                finally {
+                } finally {
                     deferred.resolve(res);
                 }
             },
@@ -691,21 +698,20 @@ export class DbContext extends BaseObject {
                 try {
                     context.fn_onEnd();
                     self._onDataOperError(ex, DATA_OPER.Query);
-                }
-                finally {
+                } finally {
                     deferred.reject();
                 }
             }
         };
 
-        if (query.isClearPrevData)
+        if (query.isClearPrevData) {
             self._tryAbortRequest(DATA_OPER.Query, context.dbSetName);
+        }
 
         context.dbSet.waitForNotBusy(() => {
             try {
                 self._loadInternal(context);
-            }
-            catch (err) {
+            } catch (err) {
                 context.fn_onErr(err);
             }
         }, query.isClearPrevData ? context.dbSetName : null);
@@ -727,21 +733,24 @@ export class DbContext extends BaseObject {
             return;
         }
 
-        const req_promise = http.postAjax(self._getUrl(DATA_SVC_METH.Submit), JSON.stringify(changeSet), self.requestHeaders);
-        self._addRequestPromise(req_promise, DATA_OPER.Submit);
-        req_promise.then((res: string) => {
+        const reqPromise = http.postAjax(self._getUrl(DATA_SVC_METH.Submit), JSON.stringify(changeSet), self.requestHeaders);
+        self._addRequestPromise(reqPromise, DATA_OPER.Submit);
+        reqPromise.then((res: string) => {
             return _async.parseJSON(res);
         }).then((res: IChangeSet) => {
-            if (self.getIsDestroyCalled())
+            if (self.getIsDestroyCalled()) {
                 return;
+            }
             self._dataSaved(res);
         }).then(() => {
-            if (self.getIsDestroyCalled())
+            if (self.getIsDestroyCalled()) {
                 return;
+            }
             args.fn_onOk();
         }, (er) => {
-            if (self.getIsDestroyCalled())
+            if (self.getIsDestroyCalled()) {
                 return;
+            }
             args.fn_onErr(er);
         });
     }
@@ -759,12 +768,14 @@ export class DbContext extends BaseObject {
 
         this._initState = deferred.promise();
         this._initState.then(() => {
-            if (self.getIsDestroyCalled())
+            if (self.getIsDestroyCalled()) {
                 return;
+            }
             self.raisePropertyChanged(PROP_NAME.isInitialized);
         }, (err) => {
-            if (self.getIsDestroyCalled())
+            if (self.getIsDestroyCalled()) {
                 return;
+            }
             self._onDataOperError(err, operType);
         });
 
@@ -789,20 +800,20 @@ export class DbContext extends BaseObject {
 
             // initialize by obtaining metadata from the data service by ajax call
             loadUrl = this._getUrl(DATA_SVC_METH.Permissions);
-        }
-        catch (ex) {
+        } catch (ex) {
             return deferred.reject(ex);
         }
 
-        const ajax_promise = http.getAjax(loadUrl, self.requestHeaders),
-            res_promise = ajax_promise.then((permissions: string) => {
-                if (self.getIsDestroyCalled())
+        const ajaxPromise = http.getAjax(loadUrl, self.requestHeaders),
+            resPromise = ajaxPromise.then((permissions: string) => {
+                if (self.getIsDestroyCalled()) {
                     return;
+                }
                 self._updatePermissions(JSON.parse(permissions));
             });
 
-        deferred.resolve(res_promise);
-        this._addRequestPromise(ajax_promise, operType);
+        deferred.resolve(resPromise);
+        this._addRequestPromise(ajaxPromise, operType);
         return this._initState;
     }
     addOnSubmitError(fn: TEventHandler<DbContext, { error: any; isHandled: boolean; }>, nmspace?: string, context?: IBaseObject): void {
@@ -819,8 +830,9 @@ export class DbContext extends BaseObject {
     }
     getAssociation(name: string): Association {
         const name2 = "get" + name, fn = this._assoc[name2];
-        if (!fn)
+        if (!fn) {
             throw new Error(strUtils.format(ERRS.ERR_ASSOC_NAME_INVALID, name));
+        }
         return fn();
     }
     submitChanges(): IVoidPromise {
@@ -853,16 +865,14 @@ export class DbContext extends BaseObject {
                 try {
                     context.fn_onEnd();
                     self._onSubmitError(ex);
-                }
-                finally {
+                } finally {
                     deferred.reject();
                 }
             },
             fn_onOk: () => {
                 try {
                     context.fn_onEnd();
-                }
-                finally {
+                } finally {
                     deferred.resolve();
                 }
             }
@@ -872,8 +882,7 @@ export class DbContext extends BaseObject {
         self.waitForNotBusy(() => {
             try {
                 self._submitChanges(context);
-            }
-            catch (err) {
+            } catch (err) {
                 context.fn_onErr(err);
             }
         });
@@ -894,8 +903,9 @@ export class DbContext extends BaseObject {
         });
     }
     abortRequests(reason?: string, operType?: DATA_OPER): void {
-        if (checks.isNt(operType))
+        if (checks.isNt(operType)) {
             operType = DATA_OPER.None;
+        }
         const arr: IRequestPromise[] = this._requests.filter((a) => {
             return operType === DATA_OPER.None ? true : (a.operType === operType);
         });
@@ -906,8 +916,9 @@ export class DbContext extends BaseObject {
         }
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         this.abortRequests();
         this._waitQueue.destroy();

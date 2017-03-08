@@ -51,9 +51,7 @@ define("jriapp_shared/utils/checks", ["require", "exports"], function (require, 
         function Checks() {
         }
         Checks.isHasProp = function (obj, prop) {
-            if (!obj)
-                return false;
-            return prop in obj;
+            return (!obj) ? false : (prop in obj);
         };
         Checks.isNull = function (a) {
             return a === null;
@@ -65,60 +63,40 @@ define("jriapp_shared/utils/checks", ["require", "exports"], function (require, 
             return (a === null || a === Checks.undefined);
         };
         Checks.isObject = function (a) {
-            if (Checks.isNt(a))
-                return false;
-            return (typeof a === "object");
+            return (Checks.isNt(a)) ? false : (typeof a === "object");
         };
         Checks.isSimpleObject = function (a) {
-            if (!a)
-                return false;
-            return ((typeof a === "object") && Object.prototype === Object.getPrototypeOf(a));
+            return (!a) ? false : ((typeof a === "object") && Object.prototype === Object.getPrototypeOf(a));
         };
         Checks.isString = function (a) {
-            if (Checks.isNt(a))
-                return false;
-            return (typeof a === "string") || (typeof a === "object" && a instanceof String);
+            return (Checks.isNt(a)) ? false : ((typeof a === "string") || (typeof a === "object" && a instanceof String));
         };
         Checks.isFunc = function (a) {
-            if (Checks.isNt(a))
-                return false;
-            return (typeof a === "function") || (typeof a === "object" && a instanceof Function);
+            return (Checks.isNt(a)) ? false : ((typeof a === "function") || (typeof a === "object" && a instanceof Function));
         };
         Checks.isBoolean = function (a) {
-            if (Checks.isNt(a))
-                return false;
-            return (typeof a === "boolean") || (typeof a === "object" && a instanceof Boolean);
+            return (Checks.isNt(a)) ? false : ((typeof a === "boolean") || (typeof a === "object" && a instanceof Boolean));
         };
         Checks.isDate = function (a) {
-            if (Checks.isNt(a))
-                return false;
-            return (typeof a === "object" && a instanceof Date);
+            return (Checks.isNt(a)) ? false : (typeof a === "object" && a instanceof Date);
         };
         Checks.isNumber = function (a) {
-            if (Checks.isNt(a))
-                return false;
-            return typeof a === "number" || (typeof a === "object" && a instanceof Number);
+            return (Checks.isNt(a)) ? false : (typeof a === "number" || (typeof a === "object" && a instanceof Number));
         };
         Checks.isNumeric = function (a) {
             return Checks.isNumber(a) || (Checks.isString(a) && !isNaN(Number(a)));
         };
         Checks.isBoolString = function (a) {
-            if (Checks.isNt(a))
-                return false;
-            return (a === "true" || a === "false");
+            return (Checks.isNt(a)) ? false : (a === "true" || a === "false");
         };
         Checks.isGuid = function (a) {
             return Checks.isString(a) && GUID_RX.test(a);
         };
         Checks.isArray = function (a) {
-            if (!a)
-                return false;
-            return Array.isArray(a);
+            return (!a) ? false : Array.isArray(a);
         };
         Checks.isThenable = function (a) {
-            if (!a)
-                return false;
-            return ((typeof (a) === "object") && Checks.isFunc(a.then));
+            return (!a) ? false : ((typeof (a) === "object") && Checks.isFunc(a.then));
         };
         return Checks;
     }());
@@ -128,101 +106,97 @@ define("jriapp_shared/utils/checks", ["require", "exports"], function (require, 
 define("jriapp_shared/utils/strUtils", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var undefined = void (0), trimQuotsRX = /^(['"])+|(['"])+$/g, trimBracketsRX = /^(\[)+|(\])+$/g, trimSpaceRX = /^\s+|\s+$/g;
+    var _undefined = void (0), trimQuotsRX = /^(['"])+|(['"])+$/g, trimBracketsRX = /^(\[)+|(\])+$/g, trimSpaceRX = /^\s+|\s+$/g;
     var StringUtils = (function () {
         function StringUtils() {
         }
         StringUtils.endsWith = function (str, suffix) {
-            if (!str || !suffix)
-                return false;
-            return (str.substr(str.length - suffix.length) === suffix);
+            return (!str || !suffix) ? false : (str.substr(str.length - suffix.length) === suffix);
         };
         StringUtils.startsWith = function (str, prefix) {
-            if (!str || !prefix)
-                return false;
-            return (str.substr(0, prefix.length) === prefix);
+            return (!str || !prefix) ? false : (str.substr(0, prefix.length) === prefix);
         };
         StringUtils.fastTrim = function (str) {
-            if (!str)
-                return str;
-            return str.replace(trimSpaceRX, "");
+            return (!str) ? str : str.replace(trimSpaceRX, "");
         };
         StringUtils.trim = function (str, chars) {
-            if (!chars) {
-                return StringUtils.fastTrim(str);
-            }
-            return StringUtils.ltrim(StringUtils.rtrim(str, chars), chars);
+            return (!chars) ? StringUtils.fastTrim(str) : StringUtils.ltrim(StringUtils.rtrim(str, chars), chars);
         };
         StringUtils.ltrim = function (str, chars) {
-            if (!str)
+            if (!str) {
                 return str;
+            }
             chars = chars || "\\s";
             return str.replace(new RegExp("^[" + chars + "]+", "g"), "");
         };
         StringUtils.rtrim = function (str, chars) {
-            if (!str)
+            if (!str) {
                 return str;
+            }
             chars = chars || "\\s";
             return str.replace(new RegExp("[" + chars + "]+$", "g"), "");
         };
-        StringUtils.format = function (format_str) {
+        StringUtils.format = function (formatStr) {
             var args = [];
             for (var _i = 1; _i < arguments.length; _i++) {
                 args[_i - 1] = arguments[_i];
             }
             var result = "";
             for (var i = 0;;) {
-                var open_1 = format_str.indexOf("{", i);
-                var close_1 = format_str.indexOf("}", i);
+                var open_1 = formatStr.indexOf("{", i);
+                var close_1 = formatStr.indexOf("}", i);
                 if ((open_1 < 0) && (close_1 < 0)) {
-                    result += format_str.slice(i);
+                    result += formatStr.slice(i);
                     break;
                 }
                 if ((close_1 > 0) && ((close_1 < open_1) || (open_1 < 0))) {
-                    if (format_str.charAt(close_1 + 1) !== "}") {
-                        throw new Error(StringUtils.ERR_STRING_FORMAT_INVALID + format_str);
+                    if (formatStr.charAt(close_1 + 1) !== "}") {
+                        throw new Error(StringUtils.ERR_STRING_FORMAT_INVALID + formatStr);
                     }
-                    result += format_str.slice(i, close_1 + 1);
+                    result += formatStr.slice(i, close_1 + 1);
                     i = close_1 + 2;
                     continue;
                 }
-                result += format_str.slice(i, open_1);
+                result += formatStr.slice(i, open_1);
                 i = open_1 + 1;
-                if (format_str.charAt(i) === "{") {
+                if (formatStr.charAt(i) === "{") {
                     result += "{";
                     i++;
                     continue;
                 }
-                if (close_1 < 0)
-                    throw new Error(StringUtils.ERR_STRING_FORMAT_INVALID + format_str);
-                var brace = format_str.substring(i, close_1);
+                if (close_1 < 0) {
+                    throw new Error(StringUtils.ERR_STRING_FORMAT_INVALID + formatStr);
+                }
+                var brace = formatStr.substring(i, close_1);
                 var colonIndex = brace.indexOf(":");
                 var argNumber = parseInt((colonIndex < 0) ? brace : brace.substring(0, colonIndex), 10);
-                if (isNaN(argNumber))
-                    throw new Error(StringUtils.ERR_STRING_FORMAT_INVALID + format_str);
+                if (isNaN(argNumber)) {
+                    throw new Error(StringUtils.ERR_STRING_FORMAT_INVALID + formatStr);
+                }
                 var argFormat = (colonIndex < 0) ? "" : brace.substring(colonIndex + 1);
                 var arg = args[argNumber];
-                if (arg === undefined || arg === null) {
+                if (arg === _undefined || arg === null) {
                     arg = "";
                 }
                 if (arg.format) {
                     result += arg.format(argFormat);
                 }
-                else
+                else {
                     result += arg.toString();
+                }
                 i = close_1 + 1;
             }
             return result;
         };
-        StringUtils.formatNumber = function (num, decimals, dec_point, thousands_sep) {
+        StringUtils.formatNumber = function (num, decimals, decPoint, thousandsSep) {
             num = (num + "").replace(/[^0-9+-Ee.]/g, "");
-            var n = !isFinite(+num) ? 0 : +num, dec = (dec_point === undefined) ? "." : dec_point, sep = (thousands_sep === undefined) ? "," : thousands_sep;
+            var n = !isFinite(+num) ? 0 : +num, dec = (decPoint === _undefined) ? "." : decPoint, sep = (thousandsSep === _undefined) ? "," : thousandsSep;
             var prec = !isFinite(+decimals) ? 0 : Math.abs(decimals), s = [""];
             var toFixedFix = function (n, prec) {
                 var k = Math.pow(10, prec);
                 return "" + Math.round(n * k) / k;
             };
-            if (decimals === null || decimals === undefined) {
+            if (decimals === null || decimals === _undefined) {
                 s = ("" + n).split(".");
                 prec = 2;
             }
@@ -234,8 +208,9 @@ define("jriapp_shared/utils/strUtils", ["require", "exports"], function (require
             if (len > 3) {
                 for (i = 0; i < len; i += 1) {
                     s0 = s0 + s[0].charAt(i);
-                    if (i < (len - 1) && (len - i - 1) % 3 === 0)
+                    if (i < (len - 1) && (len - i - 1) % 3 === 0) {
                         s0 = s0 + sep;
+                    }
                 }
                 s[0] = s0;
             }
@@ -260,29 +235,35 @@ define("jriapp_shared/utils/strUtils", ["require", "exports"], function (require
             return out;
         };
         StringUtils.padLeft = function (val, len, pad) {
-            if (!val)
+            if (!val) {
                 val = "";
+            }
             pad = pad || " ";
-            if (val.length >= len)
+            if (val.length >= len) {
                 return val;
+            }
             var str = new Array(len).join(pad[0]);
             return (str + val).slice(-len);
         };
         StringUtils.fastPadLeft = function (val, pad) {
-            if (!val)
+            if (!val) {
                 val = "";
-            if (val.length >= pad.length)
+            }
+            if (val.length >= pad.length) {
                 return val;
+            }
             return (pad + val).slice(-pad.length);
         };
         StringUtils.trimQuotes = function (val) {
-            if (!val)
+            if (!val) {
                 return "";
+            }
             return StringUtils.fastTrim(val.replace(trimQuotsRX, ""));
         };
         StringUtils.trimBrackets = function (val) {
-            if (!val)
+            if (!val) {
                 return "";
+            }
             return StringUtils.fastTrim(val.replace(trimBracketsRX, ""));
         };
         return StringUtils;
@@ -306,10 +287,12 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/uti
             return !!obj && checks.isFunc(obj.submitChanges) && checks.isHasProp(obj, "isCanSubmit");
         };
         SysUtils.isErrorNotification = function (obj) {
-            if (!obj)
+            if (!obj) {
                 return false;
-            if (!checks.isFunc(obj.getIErrorNotification))
+            }
+            if (!checks.isFunc(obj.getIErrorNotification)) {
                 return false;
+            }
             var tmp = obj.getIErrorNotification();
             return !!tmp && checks.isFunc(tmp.getIErrorNotification);
         };
@@ -317,10 +300,12 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/uti
             if (!obj) {
                 return null;
             }
-            else if (!!obj._aspect && SysUtils.isErrorNotification(obj._aspect))
+            else if (!!obj._aspect && SysUtils.isErrorNotification(obj._aspect)) {
                 return obj._aspect.getIErrorNotification();
-            else if (SysUtils.isErrorNotification(obj))
+            }
+            else if (SysUtils.isErrorNotification(obj)) {
                 return obj.getIErrorNotification();
+            }
             return null;
         };
         SysUtils.getEditable = function (obj) {
@@ -351,8 +336,9 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/uti
             var parts = (!path) ? [] : path.split("."), parts2 = [];
             parts.forEach(function (part) {
                 part = part.trim();
-                if (!part)
+                if (!part) {
                     throw new Error("Invalid path: " + path);
+                }
                 var obj = null, matches = INDEX_PROP_RX.exec(part);
                 if (!!matches) {
                     while (!!matches) {
@@ -385,10 +371,12 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/uti
         };
         SysUtils.getProp = function (obj, prop) {
             var self = SysUtils;
-            if (!prop)
+            if (!prop) {
                 return obj;
-            if (self.isBaseObj(obj) && obj.getIsDestroyCalled())
+            }
+            if (self.isBaseObj(obj) && obj.getIsDestroyCalled()) {
                 return checks.undefined;
+            }
             if (strUtils.startsWith(prop, "[")) {
                 if (self.isCollection(obj)) {
                     prop = strUtils.trimBrackets(prop);
@@ -406,10 +394,12 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/uti
         };
         SysUtils.setProp = function (obj, prop, val) {
             var self = SysUtils;
-            if (!prop)
+            if (!prop) {
                 throw new Error("Invalid operation: Empty Property name");
-            if (self.isBaseObj(obj) && obj.getIsDestroyCalled())
+            }
+            if (self.isBaseObj(obj) && obj.getIsDestroyCalled()) {
                 return;
+            }
             if (strUtils.startsWith(prop, "[")) {
                 if (checks.isArray(obj)) {
                     prop = strUtils.trimBrackets(prop);
@@ -514,13 +504,15 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
         CoreUtils.resolveOwner = function (obj, path, separator) {
             if (separator === void 0) { separator = "."; }
             var parts = path.split(separator), len = parts.length;
-            if (len === 1)
+            if (len === 1) {
                 return obj;
+            }
             var res = obj;
             for (var i = 0; i < len - 1; i += 1) {
                 res = res[parts[i]];
-                if (res === checks.undefined || res === null)
+                if (res === checks.undefined || res === null) {
                     return res;
+                }
             }
             return res;
         };
@@ -529,8 +521,9 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
             var chars = UUID_CHARS, uuid = [], rnd = Math.random;
             radix = radix || chars.length;
             if (!!len) {
-                for (i = 0; i < len; i += 1)
+                for (i = 0; i < len; i += 1) {
                     uuid[i] = chars[0 | rnd() * radix];
+                }
             }
             else {
                 var r = void 0;
@@ -546,15 +539,19 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
             return uuid.join("");
         };
         CoreUtils.parseBool = function (a) {
-            if (checks.isBoolean(a))
+            if (checks.isBoolean(a)) {
                 return a;
+            }
             var v = strUtils.trim(a).toLowerCase();
-            if (v === "false")
+            if (v === "false") {
                 return false;
-            if (v === "true")
+            }
+            else if (v === "true") {
                 return true;
-            else
+            }
+            else {
                 throw new Error(strUtils.format("parseBool, argument: {0} is not a valid boolean string", a));
+            }
         };
         CoreUtils.round = function (num, decimals) {
             return parseFloat(num.toFixed(decimals));
@@ -588,8 +585,9 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
             if (!target) {
                 target = {};
             }
-            if (!source)
+            if (!source) {
                 return target;
+            }
             return CoreUtils.extend(target, source);
         };
         CoreUtils.extend = function (target) {
@@ -627,16 +625,18 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
             };
         };
         CoreUtils.forEachProp = function (obj, fn) {
-            if (!obj)
+            if (!obj) {
                 return;
+            }
             var names = Object.keys(obj), len = names.length;
             for (var i = 0; i < len; i += 1) {
                 fn(names[i], obj[names[i]]);
             }
         };
         CoreUtils.assignStrings = function (target, source) {
-            if (checks.isNt(target))
+            if (checks.isNt(target)) {
                 target = {};
+            }
             if (!checks.isSimpleObject(source)) {
                 return target;
             }
@@ -655,7 +655,7 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
         return CoreUtils;
     }());
     CoreUtils.ERR_OBJ_ALREADY_REGISTERED = "an Object with the name: {0} is already registered and can not be overwritten";
-    CoreUtils.get_timeZoneOffset = (function () {
+    CoreUtils.getTimeZoneOffset = (function () {
         var dt = new Date(), tz = dt.getTimezoneOffset();
         return function () { return tz; };
     })();
@@ -885,8 +885,9 @@ define("jriapp_shared/errors", ["require", "exports", "jriapp_shared/const", "jr
             get: function () {
                 var hashMap = {};
                 this._errors.forEach(function (err) {
-                    if (!err)
+                    if (!err) {
                         return;
+                    }
                     var str = "";
                     if (err instanceof AggregateError) {
                         str = err.message;
@@ -897,8 +898,9 @@ define("jriapp_shared/errors", ["require", "exports", "jriapp_shared/const", "jr
                     else if (!!err.message) {
                         str = "" + err.message;
                     }
-                    else
+                    else {
                         str = "" + err;
+                    }
                     hashMap[str] = "";
                 });
                 var msg = "";
@@ -909,8 +911,9 @@ define("jriapp_shared/errors", ["require", "exports", "jriapp_shared/const", "jr
                     }
                     msg += "" + err;
                 });
-                if (!msg)
+                if (!msg) {
                     msg = "Aggregate Error";
+                }
                 return msg;
             },
             enumerable: true,
@@ -931,12 +934,15 @@ define("jriapp_shared/errors", ["require", "exports", "jriapp_shared/const", "jr
             var _this = this;
             var message = lang_1.ERRS.ERR_VALIDATION + "\r\n";
             validations.forEach(function (err, i) {
-                if (i > 0)
+                if (i > 0) {
                     message = message + "\r\n";
-                if (!!err.fieldName)
+                }
+                if (!!err.fieldName) {
                     message = message + " " + lang_1.STRS.TEXT.txtField + ": '" + err.fieldName + "'  " + err.errors.join(", ");
-                else
+                }
+                else {
                     message = message + err.errors.join(", ");
+                }
             });
             _this = _super.call(this, message) || this;
             _this._validations = validations;
@@ -980,8 +986,9 @@ define("jriapp_shared/utils/error", ["require", "exports", "jriapp_shared/const"
             var handler, isHandled = false;
             handler = ERROR._handlers[const_3.APP_NAME];
             if (!!handler) {
-                if (handler === sender)
+                if (handler === sender) {
                     handler = null;
+                }
                 else {
                     isHandled = handler.handleError(error, source);
                 }
@@ -989,19 +996,23 @@ define("jriapp_shared/utils/error", ["require", "exports", "jriapp_shared/const"
             if (!isHandled) {
                 handler = ERROR._handlers["*"];
                 if (!!handler) {
-                    if (handler === sender)
+                    if (handler === sender) {
                         handler = null;
-                    else
+                    }
+                    else {
                         isHandled = handler.handleError(error, source);
+                    }
                 }
             }
             return isHandled;
         };
         ERROR.throwDummy = function (err) {
-            if (ERROR.checkIsDummy(err))
+            if (ERROR.checkIsDummy(err)) {
                 throw err;
-            else
+            }
+            else {
                 throw new errors_1.DummyError(err);
+            }
         };
         ERROR.checkIsDummy = function (error) {
             return !!error && !!error.isDummy;
@@ -1010,10 +1021,12 @@ define("jriapp_shared/utils/error", ["require", "exports", "jriapp_shared/const"
             return !!error && (error instanceof errors_1.AbortError);
         };
         ERROR.reThrow = function (ex, isHandled) {
-            if (!isHandled)
+            if (!isHandled) {
                 throw ex;
-            else
+            }
+            else {
                 ERROR.throwDummy(ex);
+            }
         };
         ERROR.abort = function (reason) {
             throw new errors_1.AbortError(reason);
@@ -1055,15 +1068,16 @@ define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/
             return { fn: handler, context: !context ? null : context };
         };
         EventList.count = function (list) {
-            if (!list)
+            if (!list) {
                 return 0;
-            var ns_keys, cnt = 0, obj;
+            }
+            var nsKeys, cnt = 0, obj;
             for (var j = 0; j <= 2; ++j) {
                 obj = list[j];
                 if (!!obj) {
-                    ns_keys = Object.keys(obj);
-                    for (var i = 0; i < ns_keys.length; ++i) {
-                        cnt += obj[ns_keys[i]].length;
+                    nsKeys = Object.keys(obj);
+                    for (var i = 0; i < nsKeys.length; ++i) {
+                        cnt += obj[nsKeys[i]].length;
                     }
                 }
             }
@@ -1071,30 +1085,34 @@ define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/
         };
         EventList.append = function (list, node, ns, priority) {
             if (priority === void 0) { priority = 0; }
-            if (!ns)
+            if (!ns) {
                 ns = "*";
+            }
             var obj = list[priority];
             if (!obj) {
                 list[priority] = obj = {};
             }
             var arr = obj[ns];
-            if (!arr)
+            if (!arr) {
                 obj[ns] = arr = [];
+            }
             arr.push(node);
         };
         EventList.remove = function (list, ns) {
-            if (!list)
+            if (!list) {
                 return;
-            var ns_keys, obj;
-            if (!ns)
+            }
+            var nsKeys, obj;
+            if (!ns) {
                 ns = "*";
+            }
             for (var j = 0; j <= 2; ++j) {
                 obj = list[j];
                 if (!!obj) {
                     if (ns === "*") {
-                        ns_keys = Object.keys(obj);
-                        for (var i = 0; i < ns_keys.length; ++i) {
-                            delete obj[ns_keys[i]];
+                        nsKeys = Object.keys(obj);
+                        for (var i = 0; i < nsKeys.length; ++i) {
+                            delete obj[nsKeys[i]];
                         }
                     }
                     else {
@@ -1104,15 +1122,16 @@ define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/
             }
         };
         EventList.toArray = function (list) {
-            if (!list)
+            if (!list) {
                 return [];
+            }
             var res = [];
             for (var k = 2; k >= 0; k -= 1) {
                 var obj = list[k];
                 if (!!obj) {
-                    var ns_keys = Object.keys(obj);
-                    for (var i = 0; i < ns_keys.length; ++i) {
-                        var arr = obj[ns_keys[i]];
+                    var nsKeys = Object.keys(obj);
+                    for (var i = 0; i < nsKeys.length; ++i) {
+                        var arr = obj[nsKeys[i]];
                         for (var j = 0; j < arr.length; ++j) {
                             res.push(arr[j]);
                         }
@@ -1128,10 +1147,12 @@ define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/
         function EventHelper() {
         }
         EventHelper.removeNS = function (ev, ns) {
-            if (!ev)
+            if (!ev) {
                 return;
-            if (!ns)
+            }
+            if (!ns) {
                 ns = "*";
+            }
             var keys = Object.keys(ev);
             for (var i = 0; i < keys.length; i += 1) {
                 if (ns === "*") {
@@ -1150,8 +1171,9 @@ define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/
             if (!checks.isFunc(handler)) {
                 throw new Error(lang_2.ERRS.ERR_EVENT_INVALID_FUNC);
             }
-            if (!name)
+            if (!name) {
                 throw new Error(strUtils.format(lang_2.ERRS.ERR_EVENT_INVALID, "[Empty]"));
+            }
             var n = name, ns = !nmspace ? "*" : "" + nmspace;
             var list = ev[n];
             var node = evList.Node(handler, context);
@@ -1161,8 +1183,9 @@ define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/
             evList.append(list, node, ns, priority);
         };
         EventHelper.remove = function (ev, name, nmspace) {
-            if (!ev)
+            if (!ev) {
                 return null;
+            }
             var ns = !nmspace ? "*" : "" + nmspace;
             if (!name) {
                 EventHelper.removeNS(ev, ns);
@@ -1195,8 +1218,9 @@ define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/
             }
         };
         EventHelper.raiseProp = function (sender, ev, prop, args) {
-            if (!ev)
+            if (!ev) {
                 return;
+            }
             if (!!prop) {
                 var isAllProp = prop === "*";
                 if (!isAllProp) {
@@ -1228,17 +1252,17 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
     })(ObjState || (ObjState = {}));
     var BaseObject = (function () {
         function BaseObject() {
-            this._obj_state = 0;
+            this._objState = 0;
             this._events = null;
         }
         BaseObject.prototype._getEventNames = function () {
             return [OBJ_EVENTS.error, OBJ_EVENTS.destroyed];
         };
         BaseObject.prototype._addHandler = function (name, handler, nmspace, context, priority) {
-            if (this._obj_state === void 0) {
+            if (this._objState === void 0) {
                 throw new Error("Using uninitialized object");
             }
-            if (this._obj_state !== 0) {
+            if (this._objState !== 0) {
                 throw new Error(strUtils.format(lang_3.ERRS.ERR_ASSERTION_FAILED, "this._obj_state !== ObjState.None"));
             }
             if (debug.isDebugging()) {
@@ -1247,8 +1271,9 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
                     throw new Error(strUtils.format(lang_3.ERRS.ERR_EVENT_INVALID, name));
                 }
             }
-            if (!this._events)
+            if (!this._events) {
                 this._events = {};
+            }
             evHelper.add(this._events, name, handler, nmspace, context, priority);
         };
         BaseObject.prototype._removeHandler = function (name, nmspace) {
@@ -1256,20 +1281,20 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
         };
         Object.defineProperty(BaseObject.prototype, "_isDestroyed", {
             get: function () {
-                return this._obj_state === 2;
+                return this._objState === 2;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(BaseObject.prototype, "_isDestroyCalled", {
             get: function () {
-                return this._obj_state !== 0;
+                return this._objState !== 0;
             },
             set: function (v) {
-                if (this._obj_state === 2) {
+                if (this._objState === 2) {
                     throw new Error(strUtils.format(lang_3.ERRS.ERR_ASSERTION_FAILED, "this._obj_state !== ObjState.Destroyed"));
                 }
-                this._obj_state = !v ? 0 : 1;
+                this._objState = !v ? 0 : 1;
             },
             enumerable: true,
             configurable: true
@@ -1321,8 +1346,9 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
             evHelper.remove(this._events, null, nmspace);
         };
         BaseObject.prototype.raiseEvent = function (name, args) {
-            if (!name)
+            if (!name) {
                 throw new Error(lang_3.ERRS.ERR_EVENT_INVALID);
+            }
             evHelper.raise(this, this._events, name, args);
         };
         BaseObject.prototype.raisePropertyChanged = function (name) {
@@ -1346,14 +1372,16 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
             }
         };
         BaseObject.prototype.addOnPropertyChange = function (prop, handler, nmspace, context, priority) {
-            if (!prop)
+            if (!prop) {
                 throw new Error(lang_3.ERRS.ERR_PROP_NAME_EMPTY);
+            }
             if (debug.isDebugging() && prop !== "*" && !this._isHasProp(prop)) {
                 debug.checkStartDebugger();
                 throw new Error(strUtils.format(lang_3.ERRS.ERR_PROP_NAME_INVALID, prop));
             }
-            if (!this._events)
+            if (!this._events) {
                 this._events = {};
+            }
             evHelper.add(this._events, "0" + prop, handler, nmspace, context, priority);
         };
         BaseObject.prototype.removeOnPropertyChange = function (prop, nmspace) {
@@ -1369,15 +1397,16 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
             }
         };
         BaseObject.prototype.getIsDestroyed = function () {
-            return this._obj_state === 2;
+            return this._objState === 2;
         };
         BaseObject.prototype.getIsDestroyCalled = function () {
-            return this._obj_state !== 0;
+            return this._objState !== 0;
         };
         BaseObject.prototype.destroy = function () {
-            if (this._obj_state === 2)
+            if (this._objState === 2) {
                 return;
-            this._obj_state = 2;
+            }
+            this._objState = 2;
             try {
                 evHelper.raise(this, this._events, OBJ_EVENTS.destroyed, {});
             }
@@ -1465,8 +1494,9 @@ define("jriapp_shared/utils/queue", ["require", "exports", "jriapp_shared/utils/
                         var arr = _tasks;
                         _timer = null;
                         _tasks = [];
-                        if (_newTaskId > MAX_NUM)
+                        if (_newTaskId > MAX_NUM) {
                             _newTaskId = 1;
+                        }
                         try {
                             arr.forEach(function (task) {
                                 try {
@@ -1613,9 +1643,9 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
                     if (value === this._promise) {
                         throw new TypeError("recursive resolution");
                     }
-                    var fn_then = value.then;
+                    var fnThen = value.then;
                     this._state = 1;
-                    fn_then.call(value, function (result) {
+                    fnThen.call(value, function (result) {
                         if (pending) {
                             pending = false;
                             _this._resolve(result);
@@ -1721,17 +1751,11 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
         };
         Promise.all = function () {
             var args = arrHelper.fromList(arguments);
-            if (args.length === 1 && checks.isArray(args[0]))
-                return whenAll(args[0]);
-            else
-                return whenAll(args);
+            return (args.length === 1 && checks.isArray(args[0])) ? whenAll(args[0]) : whenAll(args);
         };
         Promise.race = function () {
             var args = arrHelper.fromList(arguments);
-            if (args.length === 1 && checks.isArray(args[0]))
-                return race(args[0]);
-            else
-                return race(args);
+            return (args.length === 1 && checks.isArray(args[0])) ? race(args[0]) : race(args);
         };
         Promise.reject = function (reason, isSync) {
             var deferred = createDefer(isSync);
@@ -1768,8 +1792,9 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
             return this._deferred.promise().always(errorCB);
         };
         AbortablePromise.prototype.abort = function (reason) {
-            if (this._aborted)
+            if (this._aborted) {
                 return;
+            }
             var self = this;
             self._deferred.reject(new errors_2.AbortError(reason));
             self._aborted = true;
@@ -1794,10 +1819,12 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
         }
         Debounce.prototype.enque = function (fn) {
             var _this = this;
-            if (this.IsDestroyed)
+            if (this.IsDestroyed) {
                 return;
-            if (!fn)
+            }
+            if (!fn) {
                 throw new Error("Debounce: Invalid operation");
+            }
             this._fn = fn;
             if (!!this._interval && !!this._timer) {
                 clearTimeout(this._timer);
@@ -1876,8 +1903,9 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
             return _this;
         }
         JsonBag.prototype.destroy = function () {
-            if (this._isDestroyed)
+            if (this._isDestroyed) {
                 return;
+            }
             this._isDestroyCalled = true;
             this._debounce.destroy();
             this._jsonChanged = null;
@@ -1886,8 +1914,8 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
             _super.prototype.destroy.call(this);
         };
         JsonBag.prototype._getEventNames = function () {
-            var base_events = _super.prototype._getEventNames.call(this);
-            return [BAG_EVENTS.validate_bag, BAG_EVENTS.validate_field].concat(base_events);
+            var baseEvents = _super.prototype._getEventNames.call(this);
+            return [BAG_EVENTS.validate_bag, BAG_EVENTS.validate_field].concat(baseEvents);
         };
         JsonBag.prototype._isHasProp = function (prop) {
             if (strUtils.startsWith(prop, "[")) {
@@ -1947,10 +1975,7 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
                 result: []
             };
             this.raiseEvent(BAG_EVENTS.validate_bag, args);
-            if (!!args.result)
-                return args.result;
-            else
-                return [];
+            return (!!args.result) ? args.result : [];
         };
         JsonBag.prototype._validateField = function (fieldName) {
             var args = {
@@ -1959,10 +1984,7 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
                 errors: []
             };
             this.raiseEvent(BAG_EVENTS.validate_field, args);
-            if (!!args.errors && args.errors.length > 0)
-                return { fieldName: fieldName, errors: args.errors };
-            else
-                return null;
+            return (!!args.errors && args.errors.length > 0) ? { fieldName: fieldName, errors: args.errors } : null;
         };
         JsonBag.prototype._onErrorsChanged = function () {
             this.raiseEvent(BAG_EVENTS.errors_changed, {});
@@ -1975,28 +1997,34 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
             this._onErrorsChanged();
         };
         JsonBag.prototype._addError = function (fieldName, errors, ignoreChangeErrors) {
-            if (!fieldName)
+            if (!fieldName) {
                 fieldName = "*";
+            }
             if (!(checks.isArray(errors) && errors.length > 0)) {
                 this._removeError(fieldName, ignoreChangeErrors);
                 return;
             }
             var itemErrors = this._errors;
             itemErrors[fieldName] = errors;
-            if (!ignoreChangeErrors)
+            if (!ignoreChangeErrors) {
                 this._onErrorsChanged();
+            }
         };
         JsonBag.prototype._removeError = function (fieldName, ignoreChangeErrors) {
             var itemErrors = this._errors;
-            if (!itemErrors)
+            if (!itemErrors) {
                 return false;
-            if (!fieldName)
+            }
+            if (!fieldName) {
                 fieldName = "*";
-            if (!itemErrors[fieldName])
+            }
+            if (!itemErrors[fieldName]) {
                 return false;
+            }
             delete itemErrors[fieldName];
-            if (!ignoreChangeErrors)
+            if (!ignoreChangeErrors) {
                 this._onErrorsChanged();
+            }
             return true;
         };
         JsonBag.prototype._removeAllErrors = function () {
@@ -2008,23 +2036,28 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
         };
         JsonBag.prototype.getFieldErrors = function (fieldName) {
             var bagErrors = this._errors;
-            if (!bagErrors)
+            if (!bagErrors) {
                 return [];
+            }
             var name = fieldName;
-            if (!fieldName)
+            if (!fieldName) {
                 fieldName = "*";
-            if (!bagErrors[fieldName])
+            }
+            if (!bagErrors[fieldName]) {
                 return [];
-            if (fieldName === "*")
+            }
+            if (fieldName === "*") {
                 name = null;
+            }
             return [
                 { fieldName: name, errors: bagErrors[fieldName] }
             ];
         };
         JsonBag.prototype.getAllErrors = function () {
             var bagErrors = this._errors;
-            if (!bagErrors)
+            if (!bagErrors) {
                 return [];
+            }
             var res = [];
             coreUtils.forEachProp(bagErrors, function (name) {
                 var fieldName = null;
@@ -2048,9 +2081,9 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
         JsonBag.prototype.endEdit = function () {
             if (this.isEditing) {
                 this._removeAllErrors();
-                var validation_infos = this._validateBag();
-                if (validation_infos.length > 0) {
-                    this._addErrors(validation_infos);
+                var validationInfos = this._validateBag();
+                if (validationInfos.length > 0) {
+                    this._addErrors(validationInfos);
                 }
                 if (this.getIsHasErrors()) {
                     return false;
@@ -2090,9 +2123,9 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
                     coreUtils.setValue(this._val, fieldName, val, false, "->");
                     this.raisePropertyChanged(name);
                     this._removeError(name);
-                    var validation_info = this._validateField(name);
-                    if (!!validation_info && validation_info.errors.length > 0) {
-                        throw new errors_3.ValidationError([validation_info], this);
+                    var validationInfo = this._validateField(name);
+                    if (!!validationInfo && validationInfo.errors.length > 0) {
+                        throw new errors_3.ValidationError([validationInfo], this);
                     }
                 }
                 catch (ex) {
@@ -2326,10 +2359,12 @@ define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/s
                     deferred.resolve(res);
                 }
                 else {
-                    if (HttpUtils.isStatusOK(status))
+                    if (HttpUtils.isStatusOK(status)) {
                         deferred.reject(new errors_4.DummyError(new Error(strUtils.format('Status: "{0}" loading from URL: "{1}"', status, url))));
-                    else
+                    }
+                    else {
                         deferred.reject(new Error(strUtils.format('Error: "{0}" to load from URL: "{1}"', status, url)));
+                    }
                 }
             };
             req.onerror = function (e) {
@@ -2439,8 +2474,9 @@ define("jriapp_shared/utils/waitqueue", ["require", "exports", "jriapp_shared/ob
                         firstWinsTask = task;
                     }
                     if (firstWinsTask.lastWins) {
-                        if (found.length === 0)
+                        if (found.length === 0) {
                             found.push(task);
+                        }
                     }
                     else {
                         found.push(task);
@@ -2484,8 +2520,9 @@ define("jriapp_shared/utils/waitqueue", ["require", "exports", "jriapp_shared/ob
                 lastWins: false
             }, item);
             var self = this;
-            if (!this._owner)
+            if (!this._owner) {
                 return;
+            }
             var property = opts.prop;
             var propQueue = this._queue[property];
             if (!propQueue) {
@@ -2493,8 +2530,9 @@ define("jriapp_shared/utils/waitqueue", ["require", "exports", "jriapp_shared/ob
                 this._queue[property] = propQueue;
                 this._owner.addOnPropertyChange(property, function (s, a) {
                     setTimeout(function () {
-                        if (self.getIsDestroyCalled())
+                        if (self.getIsDestroyCalled()) {
                             return;
+                        }
                         self._checkQueue(property, self._owner[property]);
                     }, 0);
                 }, self.uniqueID);
@@ -2509,14 +2547,16 @@ define("jriapp_shared/utils/waitqueue", ["require", "exports", "jriapp_shared/ob
             propQueue.push(task);
             self._checkQueue(property, self._owner[property]);
             setTimeout(function () {
-                if (self.getIsDestroyCalled())
+                if (self.getIsDestroyCalled()) {
                     return;
+                }
                 self._checkQueue(property, self._owner[property]);
             }, 0);
         };
         WaitQueue.prototype.destroy = function () {
-            if (this._isDestroyed)
+            if (this._isDestroyed) {
                 return;
+            }
             this._isDestroyCalled = true;
             this._owner.removeNSHandlers(this.uniqueID);
             this._queue = {};
@@ -2565,10 +2605,11 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
     }
     exports.ValueUtils = {
         valueToDate: function (val, dtcnv, serverTZ) {
-            if (!val)
+            if (!val) {
                 return null;
+            }
             var dt = new Date(val);
-            var clientTZ = coreUtils.get_timeZoneOffset();
+            var clientTZ = coreUtils.getTimeZoneOffset();
             dt.setMinutes(dt.getMinutes() + clientTZ);
             switch (dtcnv) {
                 case 0:
@@ -2586,11 +2627,13 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
             return dt;
         },
         dateToValue: function (dt, dtcnv, serverTZ) {
-            if (dt === null)
+            if (dt === null) {
                 return null;
-            if (!checks.isDate(dt))
+            }
+            if (!checks.isDate(dt)) {
                 throw new Error(strUtils.format(lang_4.ERRS.ERR_PARAM_INVALID, "dt", dt));
-            var clientTZ = coreUtils.get_timeZoneOffset();
+            }
+            var clientTZ = coreUtils.getTimeZoneOffset();
             switch (dtcnv) {
                 case 0:
                     break;
@@ -2607,33 +2650,36 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
             return dateToString(dt);
         },
         compareVals: function (v1, v2, dataType) {
-            if ((v1 === null && v2 !== null) || (v1 !== null && v2 === null))
+            if ((v1 === null && v2 !== null) || (v1 !== null && v2 === null)) {
                 return false;
+            }
             switch (dataType) {
                 case 6:
                 case 7:
                 case 8:
-                    if (checks.isDate(v1) && checks.isDate(v2))
-                        return v1.getTime() === v2.getTime();
-                    else
-                        return false;
+                    return (checks.isDate(v1) && checks.isDate(v2)) ? (v1.getTime() === v2.getTime()) : false;
                 default:
                     return v1 === v2;
             }
         },
         stringifyValue: function (v, dtcnv, dataType, serverTZ) {
             var res = null;
-            if (checks.isNt(v))
+            if (checks.isNt(v)) {
                 return res;
+            }
             function conv(v) {
-                if (checks.isDate(v))
+                if (checks.isDate(v)) {
                     return exports.ValueUtils.dateToValue(v, dtcnv, serverTZ);
-                else if (checks.isArray(v))
+                }
+                else if (checks.isArray(v)) {
                     return JSON.stringify(v);
-                else if (checks.isString(v))
+                }
+                else if (checks.isString(v)) {
                     return v;
-                else
+                }
+                else {
                     return JSON.stringify(v);
+                }
             }
             ;
             var isOK = false;
@@ -2680,14 +2726,16 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
                 default:
                     throw new Error(strUtils.format(lang_4.ERRS.ERR_PARAM_INVALID, "dataType", dataType));
             }
-            if (!isOK)
+            if (!isOK) {
                 throw new Error(strUtils.format(lang_4.ERRS.ERR_FIELD_WRONG_TYPE, v, dataType));
+            }
             return res;
         },
         parseValue: function (v, dataType, dtcnv, serverTZ) {
             var res = null;
-            if (v === checks.undefined || v === null)
+            if (v === checks.undefined || v === null) {
                 return res;
+            }
             switch (dataType) {
                 case 0:
                     res = v;
@@ -2720,9 +2768,9 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
             return res;
         }
     };
-    function _traverseField(fldName, fld, fn, parent_res) {
+    function _traverseField(fldName, fld, fn, parentRes) {
         if (fld.fieldType === 5) {
-            var res = fn(fld, fldName, parent_res);
+            var res = fn(fld, fldName, parentRes);
             if (!!fld.nested && fld.nested.length > 0) {
                 var nestedFld = void 0;
                 var len = fld.nested.length;
@@ -2738,22 +2786,23 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
             }
         }
         else {
-            fn(fld, fldName, parent_res);
+            fn(fld, fldName, parentRes);
         }
     }
     exports.CollUtils = {
         getObjectField: function (name, flds) {
             var arrFlds = flds.filter(function (f) { return f.fieldName === name; });
-            if (!arrFlds || arrFlds.length !== 1)
+            if (!arrFlds || arrFlds.length !== 1) {
                 throw new Error(strUtils.format(lang_4.ERRS.ERR_ASSERTION_FAILED, "arrFlds.length === 1"));
+            }
             return arrFlds[0];
         },
-        traverseField: function (fld, fn, parent_res) {
-            _traverseField(fld.fieldName, fld, fn, parent_res);
+        traverseField: function (fld, fn, parentRes) {
+            _traverseField(fld.fieldName, fld, fn, parentRes);
         },
-        traverseFields: function (flds, fn, parent_res) {
+        traverseFields: function (flds, fn, parentRes) {
             for (var i = 0; i < flds.length; i += 1) {
-                _traverseField(flds[i].fieldName, flds[i], fn, parent_res);
+                _traverseField(flds[i].fieldName, flds[i], fn, parentRes);
             }
         },
         getPKFields: function (fieldInfos) {
@@ -2796,10 +2845,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
             return to;
         },
         objToVals: function (flds, obj) {
-            if (!obj)
-                return exports.CollUtils.initVals(flds, {});
-            else
-                return exports.CollUtils.copyVals(flds, obj, {});
+            return (!obj) ? exports.CollUtils.initVals(flds, {}) : exports.CollUtils.copyVals(flds, obj, {});
         },
         cloneVals: function (flds, vals) {
             return exports.CollUtils.copyVals(flds, vals, {});
@@ -2855,38 +2901,46 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             this.onErrorsChanged(item);
         };
         Errors.prototype.addError = function (item, fieldName, errors, ignoreChangeErrors) {
-            if (!fieldName)
+            if (!fieldName) {
                 fieldName = "*";
+            }
             if (!(checks.isArray(errors) && errors.length > 0)) {
                 this.removeError(item, fieldName, ignoreChangeErrors);
                 return;
             }
-            if (!this._errors[item._key])
+            if (!this._errors[item._key]) {
                 this._errors[item._key] = {};
+            }
             var itemErrors = this._errors[item._key];
             itemErrors[fieldName] = errors;
-            if (!ignoreChangeErrors)
+            if (!ignoreChangeErrors) {
                 this.onErrorsChanged(item);
+            }
         };
         Errors.prototype.removeError = function (item, fieldName, ignoreChangeErrors) {
             var itemErrors = this._errors[item._key];
-            if (!itemErrors)
+            if (!itemErrors) {
                 return;
-            if (!fieldName)
+            }
+            if (!fieldName) {
                 fieldName = "*";
-            if (!itemErrors[fieldName])
+            }
+            if (!itemErrors[fieldName]) {
                 return;
+            }
             delete itemErrors[fieldName];
             if (Object.keys(itemErrors).length === 0) {
                 delete this._errors[item._key];
             }
-            if (!ignoreChangeErrors)
+            if (!ignoreChangeErrors) {
                 this.onErrorsChanged(item);
+            }
         };
         Errors.prototype.removeAllErrors = function (item) {
             var itemErrors = this._errors[item._key];
-            if (!itemErrors)
+            if (!itemErrors) {
                 return;
+            }
             delete this._errors[item._key];
             this.onErrorsChanged(item);
         };
@@ -2956,17 +3010,11 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 },
                 validateItemField: function (args) {
                     self.raiseEvent(COLL_EVENTS.validate_field, args);
-                    if (!!args.errors && args.errors.length > 0)
-                        return { fieldName: args.fieldName, errors: args.errors };
-                    else
-                        return null;
+                    return (!!args.errors && args.errors.length > 0) ? { fieldName: args.fieldName, errors: args.errors } : null;
                 },
                 validateItem: function (args) {
                     self.raiseEvent(COLL_EVENTS.validate_item, args);
-                    if (!!args.result && args.result.length > 0)
-                        return args.result;
-                    else
-                        return [];
+                    return (!!args.result && args.result.length > 0) ? args.result : [];
                 }
             };
             return _this;
@@ -2993,9 +3041,9 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             return fieldInfo;
         };
         BaseCollection.prototype._getEventNames = function () {
-            var base_events = _super.prototype._getEventNames.call(this);
+            var baseEvents = _super.prototype._getEventNames.call(this);
             var events = Object.keys(COLL_EVENTS).map(function (key) { return COLL_EVENTS[key]; });
-            return events.concat(base_events);
+            return events.concat(baseEvents);
         };
         BaseCollection.prototype.addOnClearing = function (fn, nmspace, context, priority) {
             this._addHandler(COLL_EVENTS.clearing, fn, nmspace, context, priority);
@@ -3118,8 +3166,9 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             this.addOnPropertyChange(int_2.PROP_NAME.currentItem, handler, nmspace, context);
         };
         BaseCollection.prototype._getPKFieldInfos = function () {
-            if (!!this._pkInfo)
+            if (!!this._pkInfo) {
                 return this._pkInfo;
+            }
             var fldMap = this._fieldMap, pk = [];
             coreUtils.forEachProp(fldMap, function (fldName) {
                 if (fldMap[fldName].isPrimaryKey > 0) {
@@ -3165,8 +3214,9 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         BaseCollection.prototype._onItemAdding = function (item) {
             var args = { item: item, isCancel: false };
             this.raiseEvent(COLL_EVENTS.item_adding, args);
-            if (args.isCancel)
+            if (args.isCancel) {
                 utils.err.throwDummy(new Error("operation canceled"));
+            }
         };
         BaseCollection.prototype._onItemAdded = function (item) {
             var args = { item: item, isAddNewHandled: false };
@@ -3253,8 +3303,9 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 }
                 return;
             }
-            if (v._aspect.isDetached)
+            if (v._aspect.isDetached) {
                 throw new Error(lang_5.ERRS.ERR_ITEM_IS_DETACHED);
+            }
             var item = self.getItemByKey(v._key);
             if (!item) {
                 throw new Error(lang_5.ERRS.ERR_ITEM_IS_NOTFOUND);
@@ -3287,12 +3338,13 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             return this._EditingItem;
         };
         BaseCollection.prototype._getStrValue = function (val, fieldInfo) {
-            var dcnv = fieldInfo.dateConversion, stz = coreUtils.get_timeZoneOffset();
+            var dcnv = fieldInfo.dateConversion, stz = coreUtils.getTimeZoneOffset();
             return valUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
         };
         BaseCollection.prototype._onBeforeEditing = function (item, isBegin, isCanceled) {
-            if (this._isUpdating)
+            if (this._isUpdating) {
                 return;
+            }
             if (isBegin) {
                 this.raiseEvent(COLL_EVENTS.before_begin_edit, { item: item });
             }
@@ -3301,8 +3353,9 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             }
         };
         BaseCollection.prototype._onEditing = function (item, isBegin, isCanceled) {
-            if (this._isUpdating)
+            if (this._isUpdating) {
                 return;
+            }
             if (isBegin) {
                 this._EditingItem = item;
                 this.raiseEvent(COLL_EVENTS.begin_edit, { item: item });
@@ -3327,18 +3380,12 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         BaseCollection.prototype._validateItem = function (item) {
             var args = { item: item, result: [] };
             this.raiseEvent(COLL_EVENTS.validate_item, args);
-            if (!!args.result && args.result.length > 0)
-                return args.result;
-            else
-                return [];
+            return (!!args.result && args.result.length > 0) ? args.result : [];
         };
         BaseCollection.prototype._validateItemField = function (item, fieldName) {
             var args = { item: item, fieldName: fieldName, errors: [] };
             this.raiseEvent(COLL_EVENTS.validate_field, args);
-            if (!!args.errors && args.errors.length > 0)
-                return { fieldName: fieldName, errors: args.errors };
-            else
-                return null;
+            return (!!args.errors && args.errors.length > 0) ? { fieldName: fieldName, errors: args.errors } : null;
         };
         BaseCollection.prototype._onItemDeleting = function (args) {
             this.raiseEvent(COLL_EVENTS.item_deleting, args);
@@ -3356,7 +3403,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             this._itemsByKey = {};
             this._errors.clear();
             utils.queue.enque(function () { _this._clearItems(oldItems); });
-            if (oper !== 1)
+            if (oper !== 1) {
                 this._onCollectionChanged({
                     changeType: 2,
                     reason: reason,
@@ -3364,6 +3411,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                     items: [],
                     pos: []
                 });
+            }
             this.raiseEvent(COLL_EVENTS.cleared, { reason: reason });
             this._onCountChanged();
         };
@@ -3378,30 +3426,40 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         };
         BaseCollection.prototype._getSortFn = function (fieldNames, sortOrder) {
             var mult = 1;
-            if (sortOrder === 1)
+            if (sortOrder === 1) {
                 mult = -1;
+            }
             return function (a, b) {
-                var res = 0, i, len, af, bf, fieldName;
-                for (i = 0, len = fieldNames.length; i < len; i += 1) {
+                var res = 0, i, af, bf, fieldName;
+                var len = fieldNames.length;
+                for (i = 0; i < len; i += 1) {
                     fieldName = fieldNames[i];
                     af = sys.resolvePath(a, fieldName);
                     bf = sys.resolvePath(b, fieldName);
-                    if (af === checks.undefined)
+                    if (af === checks.undefined) {
                         af = null;
-                    if (bf === checks.undefined)
+                    }
+                    if (bf === checks.undefined) {
                         bf = null;
-                    if (af === null && bf !== null)
+                    }
+                    if (af === null && bf !== null) {
                         res = -1 * mult;
-                    else if (af !== null && bf === null)
+                    }
+                    else if (af !== null && bf === null) {
                         res = mult;
-                    else if (af < bf)
+                    }
+                    else if (af < bf) {
                         res = -1 * mult;
-                    else if (af > bf)
+                    }
+                    else if (af > bf) {
                         res = mult;
-                    else
+                    }
+                    else {
                         res = 0;
-                    if (res !== 0)
+                    }
+                    if (res !== 0) {
                         return res;
+                    }
                 }
                 return res;
             };
@@ -3464,13 +3522,15 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             return item;
         };
         BaseCollection.prototype.getItemByPos = function (pos) {
-            if (pos < 0 || pos >= this._items.length)
+            if (pos < 0 || pos >= this._items.length) {
                 return null;
+            }
             return this._items[pos];
         };
         BaseCollection.prototype.getItemByKey = function (key) {
-            if (!key)
+            if (!key) {
                 throw new Error(lang_5.ERRS.ERR_KEY_IS_EMPTY);
+            }
             return this._itemsByKey["" + key];
         };
         BaseCollection.prototype.findByPK = function () {
@@ -3478,15 +3538,17 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             for (var _i = 0; _i < arguments.length; _i++) {
                 vals[_i] = arguments[_i];
             }
-            if (arguments.length === 0)
+            if (arguments.length === 0) {
                 return null;
+            }
             var self = this, pkInfo = self._getPKFieldInfos(), arr = [];
             var key, values = [];
             if (vals.length === 1 && checks.isArray(vals[0])) {
                 values = vals[0];
             }
-            else
+            else {
                 values = vals;
+            }
             if (values.length !== pkInfo.length) {
                 return null;
             }
@@ -3499,11 +3561,13 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         };
         BaseCollection.prototype.moveFirst = function (skipDeleted) {
             var pos = 0, old = this._currentPos;
-            if (old === pos)
+            if (old === pos) {
                 return false;
+            }
             var item = this.getItemByPos(pos);
-            if (!item)
+            if (!item) {
                 return false;
+            }
             if (!!skipDeleted) {
                 if (item._aspect.isDeleted) {
                     return this.moveNext(true);
@@ -3523,8 +3587,9 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 pos -= 1;
             }
             item = this.getItemByPos(pos);
-            if (!item)
+            if (!item) {
                 return false;
+            }
             if (!!skipDeleted) {
                 if (item._aspect.isDeleted) {
                     this._currentPos = pos;
@@ -3545,8 +3610,9 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 pos += 1;
             }
             item = this.getItemByPos(pos);
-            if (!item)
+            if (!item) {
                 return false;
+            }
             if (!!skipDeleted) {
                 if (item._aspect.isDeleted) {
                     this._currentPos = pos;
@@ -3560,11 +3626,13 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         };
         BaseCollection.prototype.moveLast = function (skipDeleted) {
             var pos = this._items.length - 1, old = this._currentPos;
-            if (old === pos)
+            if (old === pos) {
                 return false;
+            }
             var item = this.getItemByPos(pos);
-            if (!item)
+            if (!item) {
                 return false;
+            }
             if (!!skipDeleted) {
                 if (item._aspect.isDeleted) {
                     return this.movePrev(true);
@@ -3577,11 +3645,13 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         };
         BaseCollection.prototype.goTo = function (pos) {
             var old = this._currentPos;
-            if (old === pos)
+            if (old === pos) {
                 return false;
+            }
             var item = this.getItemByPos(pos);
-            if (!item)
+            if (!item) {
                 return false;
+            }
             this._onCurrentChanging(item);
             this._currentPos = pos;
             this._onCurrentChanged();
@@ -3654,8 +3724,9 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             this.totalCount = 0;
         };
         BaseCollection.prototype.destroy = function () {
-            if (this._isDestroyed)
+            if (this._isDestroyed) {
                 return;
+            }
             this._isDestroyCalled = true;
             this._waitQueue.destroy();
             this._waitQueue = null;
@@ -3731,8 +3802,9 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             get: function () { return this._pageIndex; },
             set: function (v) {
                 if (v !== this._pageIndex && this.isPagingEnabled) {
-                    if (v < 0)
+                    if (v < 0) {
                         return;
+                    }
                     if (!this._onPageChanging()) {
                         return;
                     }
@@ -3859,8 +3931,9 @@ define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_sha
                     res.push(lang_6.ERRS.ERR_FIELD_ISNOT_NULLABLE);
                 }
             }
-            if (isNullVal)
+            if (isNullVal) {
                 return res;
+            }
             switch (fieldInfo.dataType) {
                 case 0:
                     break;
@@ -3887,18 +3960,21 @@ define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_sha
                     if (!checks.isArray(value)) {
                         res.push(strUtils.format(lang_6.ERRS.ERR_FIELD_WRONG_TYPE, value, "Array"));
                     }
-                    if (fieldInfo.maxLength > 0 && value.length > fieldInfo.maxLength)
+                    if (fieldInfo.maxLength > 0 && value.length > fieldInfo.maxLength) {
                         res.push(strUtils.format(lang_6.ERRS.ERR_FIELD_MAXLEN, fieldInfo.maxLength));
+                    }
                     break;
                 case 2:
-                    if (!checks.isBoolean(value))
+                    if (!checks.isBoolean(value)) {
                         res.push(strUtils.format(lang_6.ERRS.ERR_FIELD_WRONG_TYPE, value, "Boolean"));
+                    }
                     break;
                 case 3:
                 case 4:
                 case 5:
-                    if (!checks.isNumber(value))
+                    if (!checks.isNumber(value)) {
                         res.push(strUtils.format(lang_6.ERRS.ERR_FIELD_WRONG_TYPE, value, "Number"));
+                    }
                     if (!!fieldInfo.range) {
                         Validations.checkNumRange(Number(value), fieldInfo.range).forEach(function (err) {
                             res.push(err);
@@ -3907,8 +3983,9 @@ define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_sha
                     break;
                 case 6:
                 case 7:
-                    if (!checks.isDate(value))
+                    if (!checks.isDate(value)) {
                         res.push(strUtils.format(lang_6.ERRS.ERR_FIELD_WRONG_TYPE, value, "Date"));
+                    }
                     if (!!fieldInfo.range) {
                         Validations.checkDateRange(value, fieldInfo.range).forEach(function (err) {
                             res.push(err);
@@ -3916,8 +3993,9 @@ define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_sha
                     }
                     break;
                 case 8:
-                    if (!checks.isDate(value))
+                    if (!checks.isDate(value)) {
                         res.push(strUtils.format(lang_6.ERRS.ERR_FIELD_WRONG_TYPE, value, "Time"));
+                    }
                     break;
                 default:
                     res.push(strUtils.format(lang_6.ERRS.ERR_PARAM_INVALID, "dataType", fieldInfo.dataType));
@@ -3925,8 +4003,9 @@ define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_sha
             return res;
         };
         Validations.distinct = function (vals) {
-            if (!vals)
+            if (!vals) {
                 return [];
+            }
             var index = {};
             vals.forEach(function (val) {
                 var name = !val.fieldName ? "*" : val.fieldName;
@@ -3969,27 +4048,31 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             return _this;
         }
         ItemAspect.prototype._getEventNames = function () {
-            var base_events = _super.prototype._getEventNames.call(this);
-            return [int_3.ITEM_EVENTS.errors_changed].concat(base_events);
+            var baseEvents = _super.prototype._getEventNames.call(this);
+            return [int_3.ITEM_EVENTS.errors_changed].concat(baseEvents);
         };
         ItemAspect.prototype._onErrorsChanged = function () {
             this.raiseEvent(int_3.ITEM_EVENTS.errors_changed, {});
         };
         ItemAspect.prototype._setIsEdited = function (v) {
-            if (v)
+            if (v) {
                 this._flags |= (1 << 1);
-            else
+            }
+            else {
                 this._flags &= ~(1 << 1);
+            }
         };
         ItemAspect.prototype._beginEdit = function () {
-            if (this.isDetached)
+            if (this.isDetached) {
                 throw new Error("Invalid operation. The item is detached");
+            }
             var coll = this.collection;
             var isHandled = false;
             if (coll.isEditing) {
                 var item = coll._getInternal().getEditingItem();
-                if (item._aspect === this)
+                if (item._aspect === this) {
                     return false;
+                }
                 try {
                     item._aspect.endEdit();
                     if (item._aspect.getIsHasErrors()) {
@@ -4008,10 +4091,12 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             return true;
         };
         ItemAspect.prototype._endEdit = function () {
-            if (this.isDetached)
+            if (this.isDetached) {
                 throw new Error("Invalid operation. The item is detached");
-            if (!this.isEditing)
+            }
+            if (!this.isEditing) {
                 return false;
+            }
             var coll = this.collection, self = this, errors = coll.errors;
             errors.removeAllErrors(this.item);
             var validations = this._validateFields();
@@ -4025,10 +4110,12 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             return true;
         };
         ItemAspect.prototype._cancelEdit = function () {
-            if (this.isDetached)
+            if (this.isDetached) {
                 throw new Error("Invalid operation. The item is detached");
-            if (!this.isEditing)
+            }
+            if (!this.isEditing) {
                 return false;
+            }
             var coll = this.collection, self = this, item = self.item, changes = this._saveVals;
             this._vals = this._saveVals;
             this._saveVals = null;
@@ -4049,8 +4136,9 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         ItemAspect.prototype._validateField = function (fieldName) {
             var fieldInfo = this.getFieldInfo(fieldName), errors = this.collection.errors;
             var value = coreUtils.getValue(this._vals, fieldName);
-            if (this._skipValidate(fieldInfo, value))
+            if (this._skipValidate(fieldInfo, value)) {
                 return null;
+            }
             var standardErrors = validation_1.Validations.checkField(fieldInfo, value, this.isNew);
             var customValidation = errors.validateItemField(this.item, fieldName);
             var result = { fieldName: fieldName, errors: [] };
@@ -4094,10 +4182,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             }
         };
         ItemAspect.prototype.handleError = function (error, source) {
-            if (!this._collection)
-                return _super.prototype.handleError.call(this, error, source);
-            else
-                return this._collection.handleError(error, source);
+            return (!this._collection) ? _super.prototype.handleError.call(this, error, source) : this._collection.handleError(error, source);
         };
         ItemAspect.prototype._setItem = function (v) {
             this._item = v;
@@ -4106,17 +4191,21 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             this._key = v;
         };
         ItemAspect.prototype._setIsAttached = function (v) {
-            if (v)
+            if (v) {
                 this._flags |= (1 << 0);
-            else
+            }
+            else {
                 this._flags &= ~(1 << 0);
+            }
         };
         ItemAspect.prototype._setIsRefreshing = function (v) {
             if (this.isRefreshing !== v) {
-                if (v)
+                if (v) {
                     this._flags |= (1 << 2);
-                else
+                }
+                else {
                     this._flags &= ~(1 << 2);
+                }
                 this.raisePropertyChanged(int_3.PROP_NAME.isRefreshing);
             }
         };
@@ -4136,8 +4225,9 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         };
         ItemAspect.prototype.getErrorString = function () {
             var itemErrors = this.collection.errors.getErrors(this.item);
-            if (!itemErrors)
+            if (!itemErrors) {
                 return "";
+            }
             var res = [];
             coreUtils.forEachProp(itemErrors, function (name) {
                 res.push(strUtils.format("{0}: {1}", name, itemErrors[name]));
@@ -4150,24 +4240,28 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         ItemAspect.prototype.rejectChanges = function () {
         };
         ItemAspect.prototype.beginEdit = function () {
-            if (this.isEditing)
+            if (this.isEditing) {
                 return false;
+            }
             var coll = this.collection, internal = coll._getInternal(), item = this.item;
             internal.onBeforeEditing(item, true, false);
-            if (!this._beginEdit())
+            if (!this._beginEdit()) {
                 return false;
+            }
             internal.onEditing(item, true, false);
             if (!!this._valueBag && this.isEditing) {
                 coreUtils.forEachProp(this._valueBag, function (name, obj) {
-                    if (!!obj && sys.isEditable(obj.val))
+                    if (!!obj && sys.isEditable(obj.val)) {
                         obj.val.beginEdit();
+                    }
                 });
             }
             return true;
         };
         ItemAspect.prototype.endEdit = function () {
-            if (!this.isEditing)
+            if (!this.isEditing) {
                 return false;
+            }
             var coll = this.collection, internal = coll._getInternal(), item = this.item;
             internal.onBeforeEditing(item, false, false);
             var customEndEdit = true;
@@ -4180,25 +4274,29 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                     }
                 });
             }
-            if (!customEndEdit || !this._endEdit())
+            if (!customEndEdit || !this._endEdit()) {
                 return false;
+            }
             internal.onEditing(item, false, false);
             this._setIsEdited(true);
             return true;
         };
         ItemAspect.prototype.cancelEdit = function () {
-            if (!this.isEditing)
+            if (!this.isEditing) {
                 return false;
+            }
             var coll = this.collection, internal = coll._getInternal(), item = this.item, isNew = this.isNew;
             internal.onBeforeEditing(item, false, true);
             if (!!this._valueBag) {
                 coreUtils.forEachProp(this._valueBag, function (name, obj) {
-                    if (!!obj && sys.isEditable(obj.val))
+                    if (!!obj && sys.isEditable(obj.val)) {
                         obj.val.cancelEdit();
+                    }
                 });
             }
-            if (!this._cancelEdit())
+            if (!this._cancelEdit()) {
                 return false;
+            }
             internal.onEditing(item, false, true);
             if (isNew && !this.isEdited && !this.getIsDestroyCalled()) {
                 this.destroy();
@@ -4207,8 +4305,9 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         };
         ItemAspect.prototype.deleteItem = function () {
             var coll = this.collection;
-            if (!this.key)
+            if (!this.key) {
                 return false;
+            }
             var args = { item: this.item, isCancel: false };
             coll._getInternal().onItemDeleting(args);
             if (args.isCancel) {
@@ -4222,9 +4321,8 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             if (!res && !!this._valueBag) {
                 coreUtils.forEachProp(this._valueBag, function (name, obj) {
                     var errNotification = sys.getErrorNotification(obj.val);
-                    if (!!errNotification) {
-                        if (errNotification.getIsHasErrors())
-                            res = true;
+                    if (!!errNotification && errNotification.getIsHasErrors()) {
+                        res = true;
                     }
                 });
             }
@@ -4238,8 +4336,9 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         };
         ItemAspect.prototype.getFieldErrors = function (fieldName) {
             var res = [], itemErrors = this.collection.errors.getErrors(this.item);
-            if (!itemErrors)
+            if (!itemErrors) {
                 return res;
+            }
             var name = fieldName;
             if (!fieldName) {
                 fieldName = "*";
@@ -4264,8 +4363,9 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                 });
             }
             var itemErrors = this.collection.errors.getErrors(this.item);
-            if (!itemErrors)
+            if (!itemErrors) {
                 return res;
+            }
             coreUtils.forEachProp(itemErrors, function (name) {
                 var fieldName = null;
                 if (name !== "*") {
@@ -4281,15 +4381,16 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         ItemAspect.prototype.setCustomVal = function (name, val, isOwnVal) {
             var _this = this;
             if (isOwnVal === void 0) { isOwnVal = true; }
-            if (this.getIsDestroyCalled())
+            if (this.getIsDestroyCalled()) {
                 return;
-            var coll = this.collection;
+            }
             if (!this._valueBag) {
-                if (checks.isNt(val))
+                if (checks.isNt(val)) {
                     return;
+                }
                 this._valueBag = {};
             }
-            var oldEntry = this._valueBag[name];
+            var oldEntry = this._valueBag[name], coll = this.collection;
             if (!!oldEntry && oldEntry.val !== val) {
                 this._delCustomVal(oldEntry);
             }
@@ -4305,13 +4406,15 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                         _this.raiseErrorsChanged();
                     }, coll.uniqueID);
                 }
-                if (this.isEditing && sys.isEditable(val))
+                if (this.isEditing && sys.isEditable(val)) {
                     val.beginEdit();
+                }
             }
         };
         ItemAspect.prototype.getCustomVal = function (name) {
-            if (this.getIsDestroyCalled() || !this._valueBag)
+            if (this.getIsDestroyCalled() || !this._valueBag) {
                 return null;
+            }
             var obj = this._valueBag[name];
             if (!obj) {
                 return null;
@@ -4319,8 +4422,9 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             return obj.val;
         };
         ItemAspect.prototype.destroy = function () {
-            if (this._isDestroyed)
+            if (this._isDestroyed) {
                 return;
+            }
             var self = this;
             this._isDestroyCalled = true;
             var coll = this._collection, item = this._item;
@@ -4381,8 +4485,9 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         Object.defineProperty(ItemAspect.prototype, "isUpdating", {
             get: function () {
                 var coll = this.collection;
-                if (!coll)
+                if (!coll) {
                     return false;
+                }
                 return coll.isUpdating;
             },
             enumerable: true,
@@ -4456,16 +4561,16 @@ define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/ob
         __extends(CollectionItem, _super);
         function CollectionItem(aspect) {
             var _this = _super.call(this) || this;
-            _this.__aspect = aspect;
+            _this._aspectPrivate = aspect;
             return _this;
         }
         Object.defineProperty(CollectionItem.prototype, "_aspect", {
-            get: function () { return this.__aspect; },
+            get: function () { return this._aspectPrivate; },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(CollectionItem.prototype, "_key", {
-            get: function () { return !this.__aspect ? null : this.__aspect.key; },
+            get: function () { return !this._aspectPrivate ? null : this._aspectPrivate.key; },
             enumerable: true,
             configurable: true
         });
@@ -4474,7 +4579,7 @@ define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/ob
                 return;
             }
             this._isDestroyCalled = true;
-            var aspect = this.__aspect;
+            var aspect = this._aspectPrivate;
             if (!!aspect) {
                 if (!aspect.getIsDestroyCalled()) {
                     aspect.destroy();
@@ -4497,8 +4602,9 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
         __extends(ListItemAspect, _super);
         function ListItemAspect(coll, vals, key, isNew) {
             var _this = _super.call(this, coll) || this;
-            if (isNew)
+            if (isNew) {
                 _this._status = 1;
+            }
             _this._vals = vals;
             var item = coll.itemFactory(_this);
             _this._setItem(item);
@@ -4516,9 +4622,9 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                     coreUtils.setValue(this._vals, name, val, false);
                     item.raisePropertyChanged(name);
                     errors.removeError(item, name);
-                    var validation_info = this._validateField(name);
-                    if (!!validation_info && validation_info.errors.length > 0) {
-                        throw new errors_7.ValidationError([validation_info], this);
+                    var validationInfo = this._validateField(name);
+                    if (!!validationInfo && validationInfo.errors.length > 0) {
+                        throw new errors_7.ValidationError([validationInfo], this);
                     }
                 }
                 catch (ex) {
@@ -4542,8 +4648,9 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
             this._status = 0;
         };
         ListItemAspect.prototype.toString = function () {
-            if (!this.item)
+            if (!this.item) {
                 return "ListItemAspect";
+            }
             return this.item.toString() + "Aspect";
         };
         Object.defineProperty(ListItemAspect.prototype, "list", {
@@ -4559,14 +4666,16 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
         function BaseList(props) {
             var _this = _super.call(this) || this;
             _this._initItemFactory();
-            if (!!props)
+            if (!!props) {
                 _this._updateFieldMap(props);
+            }
             return _this;
         }
         BaseList.prototype._updateFieldMap = function (props) {
             var self = this;
-            if (!checks.isArray(props) || props.length === 0)
+            if (!checks.isArray(props) || props.length === 0) {
                 throw new Error(strUtils.format(lang_7.ERRS.ERR_PARAM_INVALID, "props", props));
+            }
             self._fieldMap = {};
             self._fieldInfos = [];
             props.forEach(function (prop) {
@@ -4605,19 +4714,22 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
             return key;
         };
         BaseList.prototype.destroy = function () {
-            if (this._isDestroyed)
+            if (this._isDestroyed) {
                 return;
+            }
             this._isDestroyCalled = true;
             this._itemFactory = null;
             _super.prototype.destroy.call(this);
         };
         BaseList.prototype.fillItems = function (objArray, clearAll) {
             var self = this, newItems = [], positions = [], items = [];
-            if (!objArray)
+            if (!objArray) {
                 objArray = [];
+            }
             try {
-                if (!!clearAll)
+                if (!!clearAll) {
                     this.clear();
+                }
                 objArray.forEach(function (obj) {
                     var item = self.createItem(obj), oldItem = self._itemsByKey[item._key];
                     if (!oldItem) {
@@ -4814,8 +4926,9 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
             return _this;
         }
         AnyList.prototype.destroy = function () {
-            if (this._isDestroyed)
+            if (this._isDestroyed) {
                 return;
+            }
             this._isDestroyCalled = true;
             this._debounce.destroy();
             this._onChanged = null;
@@ -4828,8 +4941,9 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
         AnyList.prototype.createItem = function (obj) {
             var isNew = !obj;
             var vals = isNew ? { val: {} } : obj;
-            if (!vals.val)
+            if (!vals.val) {
                 vals.val = {};
+            }
             var key = this._getNewKey();
             var aspect = new AnyItemAspect(this, vals, key, isNew);
             return aspect.item;
@@ -4876,14 +4990,16 @@ define("jriapp_shared/utils/jsonarray", ["require", "exports", "jriapp_shared/ob
             _this._owner = owner;
             _this._pathToArray = pathToArray;
             _this.owner.addOnPropertyChange("val", function () {
-                if (!!_this._list)
+                if (!!_this._list) {
                     _this._list.setValues(_this.getArray());
+                }
             }, _this._objId);
             return _this;
         }
         JsonArray.prototype.destroy = function () {
-            if (this._isDestroyed)
+            if (this._isDestroyed) {
                 return;
+            }
             this._isDestroyCalled = true;
             this._owner.removeNSHandlers(this._objId);
             this._list.destroy();
@@ -4892,8 +5008,8 @@ define("jriapp_shared/utils/jsonarray", ["require", "exports", "jriapp_shared/ob
             _super.prototype.destroy.call(this);
         };
         JsonArray.prototype._getEventNames = function () {
-            var base_events = _super.prototype._getEventNames.call(this);
-            return [BAG_EVENTS.validate_bag, BAG_EVENTS.validate_field].concat(base_events);
+            var baseEvents = _super.prototype._getEventNames.call(this);
+            return [BAG_EVENTS.validate_bag, BAG_EVENTS.validate_field].concat(baseEvents);
         };
         JsonArray.prototype.updateArray = function (arr) {
             coreUtils.setValue(this._owner.val, this._pathToArray, arr, false, "->");
@@ -4917,10 +5033,7 @@ define("jriapp_shared/utils/jsonarray", ["require", "exports", "jriapp_shared/ob
                 result: []
             };
             this.raiseEvent(BAG_EVENTS.validate_bag, args);
-            if (!!args.result)
-                return args.result;
-            else
-                return [];
+            return (!!args.result) ? args.result : [];
         };
         JsonArray.prototype._validateField = function (bag, fieldName) {
             var args = {
@@ -4929,14 +5042,12 @@ define("jriapp_shared/utils/jsonarray", ["require", "exports", "jriapp_shared/ob
                 errors: []
             };
             this.raiseEvent(BAG_EVENTS.validate_field, args);
-            if (!!args.errors && args.errors.length > 0)
-                return { fieldName: fieldName, errors: args.errors };
-            else
-                return null;
+            return (!!args.errors && args.errors.length > 0) ? { fieldName: fieldName, errors: args.errors } : null;
         };
         JsonArray.prototype.getArray = function () {
-            if (!this._owner)
+            if (!this._owner) {
                 return [];
+            }
             var res = coreUtils.getValue(this._owner.val, this._pathToArray, "->");
             return (!res) ? [] : res;
         };
@@ -4962,13 +5073,14 @@ define("jriapp_shared/utils/jsonarray", ["require", "exports", "jriapp_shared/ob
                         _this.updateArray(vals);
                     });
                     this._list.addOnValidateField(function (s, args) {
-                        var validation_info = _this._validateField(args.item, args.fieldName);
-                        if (!!validation_info && validation_info.errors.length > 0)
-                            args.errors = validation_info.errors;
+                        var validationInfo = _this._validateField(args.item, args.fieldName);
+                        if (!!validationInfo && validationInfo.errors.length > 0) {
+                            args.errors = validationInfo.errors;
+                        }
                     }, this._objId);
                     this._list.addOnValidateItem(function (s, args) {
-                        var validation_infos = _this._validateBag(args.item);
-                        args.result = validation_infos;
+                        var validationInfos = _this._validateBag(args.item);
+                        args.result = validationInfos;
                     }, this._objId);
                     this._list.setValues(this.getArray());
                 }
@@ -5000,10 +5112,12 @@ define("jriapp_shared/utils/weakmap", ["require", "exports"], function (require,
         }
         WeakMap.prototype.set = function (key, value) {
             var entry = key[this._name];
-            if (!!entry && entry[0] === key)
+            if (!!entry && entry[0] === key) {
                 entry[1] = value;
-            else
+            }
+            else {
                 Object.defineProperty(key, this._name, { value: [key, value], writable: true });
+            }
             return this;
         };
         WeakMap.prototype.get = function (key) {
@@ -5012,16 +5126,18 @@ define("jriapp_shared/utils/weakmap", ["require", "exports"], function (require,
         };
         WeakMap.prototype.delete = function (key) {
             var entry = key[this._name];
-            if (!entry)
+            if (!entry) {
                 return false;
+            }
             var hasValue = (entry[0] === key);
             entry[0] = entry[1] = _undefined;
             return hasValue;
         };
         WeakMap.prototype.has = function (key) {
             var entry = key[this._name];
-            if (!entry)
+            if (!entry) {
                 return false;
+            }
             return (entry[0] === key);
         };
         return WeakMap;
@@ -5065,8 +5181,9 @@ define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_sha
                 key = this._getNewKey();
             }
             else {
-                if (checks.isNt(vals[this._keyName]))
+                if (checks.isNt(vals[this._keyName])) {
                     throw new Error(strUtils.format(lang_8.ERRS.ERR_DICTKEY_IS_EMPTY, this._keyName));
+                }
                 key = "" + vals[this._keyName];
             }
             var aspect = new list_2.ListItemAspect(this, vals, key, isNew);
@@ -5121,15 +5238,17 @@ define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/c
         function Lazy(factory) {
             this._val = null;
             this._factory = factory;
-            if (!this._factory)
+            if (!this._factory) {
                 throw new Error("Lazy: Invalid value factory");
+            }
         }
         Object.defineProperty(Lazy.prototype, "Value", {
             get: function () {
                 if (this._val === null) {
                     this._val = this._factory();
-                    if (checks.isNt(this._val))
+                    if (checks.isNt(this._val)) {
                         throw new Error("Lazy: the value factory did'not returned an object");
+                    }
                     this._factory = null;
                 }
                 return this._val;

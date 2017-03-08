@@ -26,14 +26,16 @@ export class BusyElView extends BaseElView {
     constructor(options: IBusyViewOptions) {
         super(options);
         let img: string;
-        if (!!options.img)
+        if (!!options.img) {
             img = options.img;
-        else
+        } else {
             img = LOADER_GIF.Default;
+        }
         this._delay = 400;
         this._timeOut = null;
-        if (!checks.isNt(options.delay))
+        if (!checks.isNt(options.delay)) {
             this._delay = parseInt("" + options.delay);
+        }
         this._loaderPath = bootstrap.getImagePath(img);
         this._img = new Image();
         this._img.style.position = "absolute";
@@ -44,8 +46,9 @@ export class BusyElView extends BaseElView {
         this._isBusy = false;
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         if (!!this._timeOut) {
             clearTimeout(this._timeOut);
@@ -79,13 +82,11 @@ export class BusyElView extends BaseElView {
                 }
 
                 self._timeOut = setTimeout(fn, self._delay);
-            }
-            else {
+            } else {
                 if (!!self._timeOut) {
                     clearTimeout(self._timeOut);
                     self._timeOut = null;
-                }
-                else {
+                } else {
                     self._img.style.display = "none";
                 }
             }

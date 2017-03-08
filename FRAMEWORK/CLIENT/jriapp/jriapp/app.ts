@@ -34,20 +34,21 @@ export class Application extends BaseObject implements IApplication {
     private _dataBindingService: IDataBindingService;
     private _viewFactory: IElViewFactory;
     private _internal: IInternalAppMethods;
-    private _app_state: AppState;
+    private _appState: AppState;
 
     constructor(options?: IAppOptions) {
         super();
         if (!options) {
             options = {};
         }
-        const self = this, moduleInits = options.modulesInits || <IIndexer<(app: IApplication) => void>>{}, app_name = APP_NAME;
-        this._appName = app_name;
+        const self = this, moduleInits = options.modulesInits || <IIndexer<(app: IApplication) => void>>{}, appName = APP_NAME;
+        this._appName = appName;
         this._options = options;
-        if (!!boot.getApp())
-            throw new Error(utils.str.format(ERRS.ERR_APP_NAME_NOT_UNIQUE, app_name));
+        if (!!boot.getApp()) {
+            throw new Error(utils.str.format(ERRS.ERR_APP_NAME_NOT_UNIQUE, appName));
+        }
         this._objId = utils.core.getNewID("app");
-        this._app_state = AppState.None;
+        this._appState = AppState.None;
         this._moduleInits = moduleInits;
         this._viewFactory = createElViewFactory(boot.elViewRegister);
         this._dataBindingService = createDataBindSvc(this.appRoot, this._viewFactory);
@@ -89,8 +90,8 @@ export class Application extends BaseObject implements IApplication {
         });
     }
     protected _getEventNames() {
-        const base_events = super._getEventNames();
-        return [APP_EVENTS.startup].concat(base_events);
+        const baseEvents = super._getEventNames();
+        return [APP_EVENTS.startup].concat(baseEvents);
     }
     /**
     can be overriden in derived classes
@@ -117,8 +118,7 @@ export class Application extends BaseObject implements IApplication {
         const name2 = STORE_KEY.CONVERTER + name;
         if (!boot._getInternal().getObject(this, name2)) {
             boot._getInternal().registerObject(this, name2, obj);
-        }
-        else {
+        } else {
             throw new Error(utils.str.format(ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
         }
     }
@@ -128,8 +128,9 @@ export class Application extends BaseObject implements IApplication {
         if (!res) {
             res = boot._getInternal().getObject(boot, name2);
         }
-        if (!res)
+        if (!res) {
             throw new Error(utils.str.format(ERRS.ERR_CONVERTER_NOTREGISTERED, name));
+        }
         return res;
     }
     registerSvc(name: string, obj: any): void {
@@ -145,8 +146,8 @@ export class Application extends BaseObject implements IApplication {
         }
         return res;
     }
-    registerElView(name: string, vw_type: IViewType): void {
-        this._viewFactory.register.registerElView(name, vw_type);
+    registerElView(name: string, vwType: IViewType): void {
+        this._viewFactory.register.registerElView(name, vwType);
     }
     /**
     registers instances of objects, so they can be retrieved later anywhere in the application's code
@@ -176,19 +177,18 @@ export class Application extends BaseObject implements IApplication {
     startUp(onStartUp?: (app: Application) => any): IPromise<Application> {
         const self = this, deferred = utils.defer.createDeferred<Application>();
 
-        if (this._app_state !== AppState.None) {
+        if (this._appState !== AppState.None) {
             return deferred.reject(new Error("Application can not be started when state != AppState.None"));
         }
 
-        const fn_startApp = () => {
+        const fnStartApp = () => {
             try {
                 self._initAppModules();
                 const onStartupRes1: any = self.onStartUp();
                 let setupPromise1: IThenable<void>;
                 if (utils.check.isThenable(onStartupRes1)) {
                     setupPromise1 = (<IThenable<any>>onStartupRes1);
-                }
-                else {
+                } else {
                     setupPromise1 = utils.defer.createDeferred<void>().resolve();
                 }
 
@@ -203,8 +203,7 @@ export class Application extends BaseObject implements IApplication {
                         }, (err) => {
                             deferred.reject(err);
                         });
-                    }
-                    else {
+                    } else {
                         setupPromise2 = self._dataBindingService.setUpBindings();
                     }
 
@@ -219,30 +218,29 @@ export class Application extends BaseObject implements IApplication {
                 }, (err) => {
                     deferred.reject(err);
                 });
-            }
-            catch (ex) {
+            } catch (ex) {
                 deferred.reject(ex);
             }
         };
 
-        this._app_state = AppState.Starting;
+        this._appState = AppState.Starting;
 
         const promise = deferred.promise().then(() => {
-            self._app_state = AppState.Started;
+            self._appState = AppState.Started;
             return self;
         }, (err) => {
-            self._app_state = AppState.Error;
+            self._appState = AppState.Error;
             throw err;
         });
 
         try {
-            if (!!onStartUp && !utils.check.isFunc(onStartUp))
+            if (!!onStartUp && !utils.check.isFunc(onStartUp)) {
                 throw new Error(ERRS.ERR_APP_SETUP_INVALID);
+            }
 
             // wait until all templates have been loaded (if any)
-            boot.templateLoader.waitForNotLoading(fn_startApp, null);
-        }
-        catch (ex) {
+            boot.templateLoader.waitForNotLoading(fnStartApp, null);
+        } catch (ex) {
             deferred.reject(ex);
         }
 
@@ -253,21 +251,22 @@ export class Application extends BaseObject implements IApplication {
         return this.loadTemplatesAsync(() => utils.http.getAjax(url));
     }
     // loads a group of templates from the server
-    loadTemplatesAsync(fn_loader: () => IPromise<string>): IPromise<any> {
-        return boot.templateLoader.loadTemplatesAsync(fn_loader, this);
+    loadTemplatesAsync(fnLoader: () => IPromise<string>): IPromise<any> {
+        return boot.templateLoader.loadTemplatesAsync(fnLoader, this);
     }
     // fn_loader must load template and return promise which resolves with the loaded HTML string
-    registerTemplateLoader(name: string, fn_loader: () => IPromise<string>): void {
+    registerTemplateLoader(name: string, fnLoader: () => IPromise<string>): void {
         boot.templateLoader.registerTemplateLoader(this.appName + "." + name, {
-            fn_loader: fn_loader
+            fn_loader: fnLoader
         });
     }
     // register loading a template from html element by its id value
     registerTemplateById(name: string, templateId: string): void {
         this.registerTemplateLoader(name, utils.core.memoize(() => {
             const deferred = utils.defer.createDeferred<string>(true), el = dom.queryOne<Element>(doc, "#" + templateId);
-            if (!el)
+            if (!el) {
                 throw new Error(utils.str.format(ERRS.ERR_TEMPLATE_ID_INVALID, templateId));
+            }
             const str = el.innerHTML;
             deferred.resolve(str);
             return deferred.promise();
@@ -277,8 +276,9 @@ export class Application extends BaseObject implements IApplication {
         let res = boot.templateLoader.getTemplateLoader(this.appName + "." + name);
         if (!res) {
             res = boot.templateLoader.getTemplateLoader(name);
-            if (!res)
+            if (!res) {
                 return () => { return utils.defer.reject<string>(new Error(utils.str.format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name))); };
+            }
         }
         return res;
     }
@@ -293,12 +293,13 @@ export class Application extends BaseObject implements IApplication {
         boot.templateLoader.registerTemplateGroup(this.appName + "." + name, group2);
     }
     destroy(): void {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         const self = this;
         try {
-            self._app_state = AppState.Destroyed;
+            self._appState = AppState.Destroyed;
             boot._getInternal().unregisterApp(self);
             self._cleanUpObjMaps();
             self._dataBindingService.destroy();
@@ -320,10 +321,7 @@ export class Application extends BaseObject implements IApplication {
     get options() { return this._options; }
     get appName() { return this._appName; }
     get appRoot(): Document | HTMLElement {
-        if (!this._options || !this._options.appRoot)
-            return doc;
-        else
-            return this._options.appRoot;
+        return (!this._options || !this._options.appRoot) ? doc : this._options.appRoot;
     }
     get viewFactory(): IElViewFactory {
         return this._viewFactory;

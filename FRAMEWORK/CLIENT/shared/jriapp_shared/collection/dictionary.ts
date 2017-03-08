@@ -44,8 +44,9 @@ export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TIte
         if (isNew) {
             key = this._getNewKey();
         } else {
-            if (checks.isNt(vals[this._keyName]))
+            if (checks.isNt(vals[this._keyName])) {
                 throw new Error(strUtils.format(ERRS.ERR_DICTKEY_IS_EMPTY, this._keyName));
+            }
             key = "" + vals[this._keyName];
         }
         const aspect = new ListItemAspect<TItem, TObj>(this, vals, key, isNew);

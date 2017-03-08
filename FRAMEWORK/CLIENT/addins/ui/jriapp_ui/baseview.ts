@@ -209,11 +209,11 @@ export class BaseElView extends BaseObject implements IElView {
             if (!v) {
                 this._display = this.el.style.display;
                 // if saved display is none, then don't store it
-                if (this._display === "none")
+                if (this._display === "none") {
                     this._display = null;
+                }
                 this.el.style.display = "none";
-            }
-            else {
+            } else {
                 this.el.style.display = (!this._display ? "" : this._display);
             }
             this.raisePropertyChanged(PROP_NAME.isVisible);
@@ -262,8 +262,9 @@ export class BaseElView extends BaseObject implements IElView {
     // exposes All CSS Classes for data binding directly to them
     get classes(): IPropertyBag {
         if (!this._classes) {
-            if (this.getIsDestroyCalled())
+            if (this.getIsDestroyCalled()) {
                 return checks.undefined;
+            }
             this._classes = new CSSBag(this.el);
         }
         return this._classes;

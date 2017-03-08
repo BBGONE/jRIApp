@@ -32,8 +32,7 @@ export class Parser {
         if (kv.val) {
             if (checks.isNumeric(kv.val)) {
                 kv.val = Number(kv.val);
-            }
-            else if (checks.isBoolString(kv.val)) {
+            } else if (checks.isBoolString(kv.val)) {
                 kv.val = coreUtils.parseBool(kv.val);
             }
         }
@@ -50,10 +49,11 @@ export class Parser {
             ch = val.charAt(i);
             // is this content inside '' or "" ?
             if (ch === "'" || ch === '"') {
-                if (!literal)
+                if (!literal) {
                     literal = ch;
-                else if (literal === ch)
+                } else if (literal === ch) {
                     literal = null;
+                }
             }
 
             // value inside braces
@@ -64,8 +64,7 @@ export class Parser {
                     bracePart = braceParts[0];
                     kv.val += bracePart;
                     i += bracePart.length - 1;
-                }
-                else {
+                } else {
                     throw new Error(strUtils.format(ERRS.ERR_EXPR_BRACES_INVALID, bracePart));
                 }
                 continue;
@@ -77,15 +76,14 @@ export class Parser {
                     kv = { key: "", val: "" };
                     isKey = true; // currently parsing key value
                 }
-            }
-            else if (!literal && (ch === vd1 || ch === vd2)) {
+            } else if (!literal && (ch === vd1 || ch === vd2)) {
                 isKey = false; // begin parsing value
-            }
-            else {
-                if (isKey)
+            } else {
+                if (isKey) {
                     kv.key += ch;
-                else
+                } else {
                     kv.val += ch;
+                }
             }
         }
 
@@ -131,27 +129,27 @@ export class Parser {
             ch = val.charAt(i);
             // is this content inside '' or "" ?
             if (ch === "'" || ch === '"') {
-                if (!literal)
+                if (!literal) {
                     literal = ch;
-                else if (literal === ch)
+                } else if (literal === ch) {
                     literal = null;
+                }
             }
 
             if (!literal && ch === "{") {
                 cnt += 1;
                 s += ch;
-            }
-            else if (!literal && ch === "}") {
+            } else if (!literal && ch === "}") {
                 cnt -= 1;
                 s += ch;
                 if (cnt === 0) {
                     parts.push(s);
                     s = "";
-                    if (firstOnly)
+                    if (firstOnly) {
                         return parts;
+                    }
                 }
-            }
-            else {
+            } else {
                 if (cnt > 0) {
                     s += ch;
                 }
@@ -164,18 +162,20 @@ export class Parser {
         const self = Parser;
         const res: any = {};
         part = strUtils.trim(part);
-        if (isInsideBraces(part))
+        if (isInsideBraces(part)) {
             part = trimOuterBraces(part);
+        }
         const kvals = self._getKeyVals(part);
         kvals.forEach(function (kv) {
             const isString = checks.isString(kv.val);
-            if (isString && isInsideBraces(kv.val))
+            if (isString && isInsideBraces(kv.val)) {
                 res[kv.key] = self.parseOption(kv.val);
-            else {
-                if (isString)
+            } else {
+                if (isString) {
                     res[kv.key] = strUtils.trimQuotes(kv.val);
-                else
+                } else {
                     res[kv.key] = kv.val;
+                }
             }
         });
 

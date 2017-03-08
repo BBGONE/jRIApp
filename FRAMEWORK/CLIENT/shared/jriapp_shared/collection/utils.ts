@@ -26,12 +26,13 @@ function dateToString(dt: Date) {
 
 export const ValueUtils: IValueUtils = {
     valueToDate: function (val: string, dtcnv: DATE_CONVERSION, serverTZ: number): Date {
-        if (!val)
+        if (!val) {
             return null;
+        }
         const dt = new Date(val);
-        const clientTZ = coreUtils.get_timeZoneOffset();
+        const clientTZ = coreUtils.getTimeZoneOffset();
         // make fix for timezone
-        dt.setMinutes(dt.getMinutes() + clientTZ); 
+        dt.setMinutes(dt.getMinutes() + clientTZ);
 
         switch (dtcnv) {
             case DATE_CONVERSION.None:
@@ -49,13 +50,15 @@ export const ValueUtils: IValueUtils = {
         return dt;
     },
     dateToValue: function (dt: Date, dtcnv: DATE_CONVERSION, serverTZ: number): string {
-        if (dt === null)
+        if (dt === null) {
             return null;
+        }
 
-        if (!checks.isDate(dt))
+        if (!checks.isDate(dt)) {
             throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "dt", dt));
+        }
 
-        const clientTZ = coreUtils.get_timeZoneOffset();
+        const clientTZ = coreUtils.getTimeZoneOffset();
         switch (dtcnv) {
             case DATE_CONVERSION.None:
                 break;
@@ -73,16 +76,14 @@ export const ValueUtils: IValueUtils = {
         return dateToString(dt);
     },
     compareVals: function (v1: any, v2: any, dataType: DATA_TYPE): boolean {
-        if ((v1 === null && v2 !== null) || (v1 !== null && v2 === null))
+        if ((v1 === null && v2 !== null) || (v1 !== null && v2 === null)) {
             return false;
+        }
         switch (dataType) {
             case DATA_TYPE.DateTime:
             case DATA_TYPE.Date:
             case DATA_TYPE.Time:
-                if (checks.isDate(v1) && checks.isDate(v2))
-                    return v1.getTime() === v2.getTime();
-                else
-                    return false;
+                return (checks.isDate(v1) && checks.isDate(v2)) ? (v1.getTime() === v2.getTime()) : false;
             default:
                 return v1 === v2;
         }
@@ -90,18 +91,20 @@ export const ValueUtils: IValueUtils = {
     stringifyValue: function (v: any, dtcnv: DATE_CONVERSION, dataType: DATA_TYPE, serverTZ: number): string {
         let res: string = null;
 
-        if (checks.isNt(v))
+        if (checks.isNt(v)) {
             return res;
+        }
 
         function conv(v: any): string {
-            if (checks.isDate(v))
+            if (checks.isDate(v)) {
                 return ValueUtils.dateToValue(v, dtcnv, serverTZ);
-            else if (checks.isArray(v))
+            } else if (checks.isArray(v)) {
                 return JSON.stringify(v);
-            else if (checks.isString(v))
+            } else if (checks.isString(v)) {
                 return v;
-            else
+            } else {
                 return JSON.stringify(v);
+            }
         };
         let isOK = false;
         switch (dataType) {
@@ -148,15 +151,17 @@ export const ValueUtils: IValueUtils = {
                 throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "dataType", dataType));
         }
 
-        if (!isOK)
+        if (!isOK) {
             throw new Error(strUtils.format(ERRS.ERR_FIELD_WRONG_TYPE, v, dataType));
+        }
         return res;
     },
     parseValue: function (v: string, dataType: DATA_TYPE, dtcnv: DATE_CONVERSION, serverTZ: number) {
         let res: any = null;
 
-        if (v === checks.undefined || v === null)
+        if (v === checks.undefined || v === null) {
             return res;
+        }
         switch (dataType) {
             case DATA_TYPE.None:
                 res = v;
@@ -191,11 +196,11 @@ export const ValueUtils: IValueUtils = {
     }
 };
 
-export type TraveseFieldCB<T> = (fld: IFieldInfo, name: string, parent_res?: T) => T;
+export type TraveseFieldCB<T> = (fld: IFieldInfo, name: string, parentRes?: T) => T;
 
-function _traverseField<T>(fldName: string, fld: IFieldInfo, fn: TraveseFieldCB<T>, parent_res?: T): void {
+function _traverseField<T>(fldName: string, fld: IFieldInfo, fn: TraveseFieldCB<T>, parentRes?: T): void {
     if (fld.fieldType === FIELD_TYPE.Object) {
-        const res = fn(fld, fldName, parent_res);
+        const res = fn(fld, fldName, parentRes);
 
         // for object fields traverse their nested fields
         if (!!fld.nested && fld.nested.length > 0) {
@@ -205,31 +210,30 @@ function _traverseField<T>(fldName: string, fld: IFieldInfo, fn: TraveseFieldCB<
                 nestedFld = fld.nested[i];
                 if (nestedFld.fieldType === FIELD_TYPE.Object) {
                     _traverseField(fldName + "." + nestedFld.fieldName, nestedFld, fn, res);
-                }
-                else {
+                } else {
                     fn(nestedFld, fldName + "." + nestedFld.fieldName, res);
                 }
             }
         }
-    }
-    else {
-        fn(fld, fldName, parent_res);
+    } else {
+        fn(fld, fldName, parentRes);
     }
 }
 
 export const CollUtils = {
     getObjectField: function (name: string, flds: IFieldInfo[]): IFieldInfo {
         const arrFlds = flds.filter((f) => { return f.fieldName === name; });
-        if (!arrFlds || arrFlds.length !== 1)
+        if (!arrFlds || arrFlds.length !== 1) {
             throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "arrFlds.length === 1"));
+        }
         return arrFlds[0];
     },
-    traverseField: function <T>(fld: IFieldInfo, fn: TraveseFieldCB<T>, parent_res?: T): void {
-        _traverseField(fld.fieldName, fld, fn, parent_res);
+    traverseField: function <T>(fld: IFieldInfo, fn: TraveseFieldCB<T>, parentRes?: T): void {
+        _traverseField(fld.fieldName, fld, fn, parentRes);
     },
-    traverseFields: function <T>(flds: IFieldInfo[], fn: TraveseFieldCB<T>, parent_res?: T): void {
+    traverseFields: function <T>(flds: IFieldInfo[], fn: TraveseFieldCB<T>, parentRes?: T): void {
         for (let i = 0; i < flds.length; i += 1) {
-            _traverseField(flds[i].fieldName, flds[i], fn, parent_res);
+            _traverseField(flds[i].fieldName, flds[i], fn, parentRes);
         }
     },
     getPKFields(fieldInfos: IFieldInfo[]): IFieldInfo[] {
@@ -249,8 +253,7 @@ export const CollUtils = {
         CollUtils.traverseFields(flds, (fld, fullName) => {
             if (fld.fieldType === FIELD_TYPE.Object) {
                 coreUtils.setValue(vals, fullName, {});
-            }
-            else {
+            } else {
                 if (!(fld.fieldType === FIELD_TYPE.Navigation || fld.fieldType === FIELD_TYPE.Calculated)) {
                     coreUtils.setValue(vals, fullName, null);
                 }
@@ -262,8 +265,7 @@ export const CollUtils = {
         CollUtils.traverseFields(flds, (fld, fullName) => {
             if (fld.fieldType === FIELD_TYPE.Object) {
                 coreUtils.setValue(to, fullName, {});
-            }
-            else {
+            } else {
                 if (!(fld.fieldType === FIELD_TYPE.Navigation || fld.fieldType === FIELD_TYPE.Calculated)) {
                     const value = coreUtils.getValue(from, fullName);
                     coreUtils.setValue(to, fullName, value);
@@ -273,10 +275,7 @@ export const CollUtils = {
         return to;
     },
     objToVals: function (flds: IFieldInfo[], obj: any): any {
-        if (!obj)
-            return CollUtils.initVals(flds, {});
-        else
-            return CollUtils.copyVals(flds, obj, {});
+        return (!obj) ? CollUtils.initVals(flds, {}) : CollUtils.copyVals(flds, obj, {});
     },
     cloneVals: function (flds: IFieldInfo[], vals: any): any {
         return CollUtils.copyVals(flds, vals, {});

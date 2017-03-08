@@ -1,40 +1,33 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-const undefined: any = void (0), trimQuotsRX = /^(['"])+|(['"])+$/g, trimBracketsRX = /^(\[)+|(\])+$/g, trimSpaceRX = /^\s+|\s+$/g;
+const _undefined: any = void (0), trimQuotsRX = /^(['"])+|(['"])+$/g, trimBracketsRX = /^(\[)+|(\])+$/g, trimSpaceRX = /^\s+|\s+$/g;
 
 
 export class StringUtils {
     private static ERR_STRING_FORMAT_INVALID = "String format has invalid expression value: ";
 
     static endsWith(str: string, suffix: string): boolean {
-        if (!str || !suffix)
-            return false;
-        return (str.substr(str.length - suffix.length) === suffix);
+        return (!str || !suffix) ? false : (str.substr(str.length - suffix.length) === suffix);
     }
     static startsWith(str: string, prefix: string): boolean {
-        if (!str || !prefix)
-            return false;
-        return (str.substr(0, prefix.length) === prefix);
+        return (!str || !prefix) ? false : (str.substr(0, prefix.length) === prefix);
     }
     static fastTrim(str: string): string {
-        if (!str)
-            return str;
-        return str.replace(trimSpaceRX, "");
+        return (!str) ? str : str.replace(trimSpaceRX, "");
     }
     static trim(str: string, chars?: string): string {
-        if (!chars) {
-            return StringUtils.fastTrim(str);
-        }
-        return StringUtils.ltrim(StringUtils.rtrim(str, chars), chars);
+        return (!chars) ? StringUtils.fastTrim(str) : StringUtils.ltrim(StringUtils.rtrim(str, chars), chars);
     }
     static ltrim(str: string, chars?: string): string {
-        if (!str)
+        if (!str) {
             return str;
+        }
         chars = chars || "\\s";
         return str.replace(new RegExp("^[" + chars + "]+", "g"), "");
     }
     static rtrim(str: string, chars?: string): string {
-        if (!str)
+        if (!str) {
             return str;
+        }
         chars = chars || "\\s";
         return str.replace(new RegExp("[" + chars + "]+$", "g"), "");
     }
@@ -42,46 +35,50 @@ export class StringUtils {
      *    Usage:     format('test {0}={1}', 'x', 100);
      *    result:    test x=100
     */
-    static format(format_str: string, ...args: any[]): string {
+    static format(formatStr: string, ...args: any[]): string {
         let result = "";
         for (let i = 0; ; ) {
-            const open = format_str.indexOf("{", i);
-            const close = format_str.indexOf("}", i);
+            const open = formatStr.indexOf("{", i);
+            const close = formatStr.indexOf("}", i);
             if ((open < 0) && (close < 0)) {
-                result += format_str.slice(i);
+                result += formatStr.slice(i);
                 break;
             }
             if ((close > 0) && ((close < open) || (open < 0))) {
-                if (format_str.charAt(close + 1) !== "}") {
-                    throw new Error(StringUtils.ERR_STRING_FORMAT_INVALID + format_str);
+                if (formatStr.charAt(close + 1) !== "}") {
+                    throw new Error(StringUtils.ERR_STRING_FORMAT_INVALID + formatStr);
                 }
-                result += format_str.slice(i, close + 1);
+                result += formatStr.slice(i, close + 1);
                 i = close + 2;
                 continue;
             }
-            result += format_str.slice(i, open);
+            result += formatStr.slice(i, open);
             i = open + 1;
-            if (format_str.charAt(i) === "{") {
+            if (formatStr.charAt(i) === "{") {
                 result += "{";
                 i++;
                 continue;
             }
-            if (close < 0) throw new Error(StringUtils.ERR_STRING_FORMAT_INVALID + format_str);
-            const brace = format_str.substring(i, close);
+            if (close < 0) {
+                throw new Error(StringUtils.ERR_STRING_FORMAT_INVALID + formatStr);
+            }
+            const brace = formatStr.substring(i, close);
             const colonIndex = brace.indexOf(":");
             const argNumber = parseInt((colonIndex < 0) ? brace : brace.substring(0, colonIndex), 10);
-            if (isNaN(argNumber)) throw new Error(StringUtils.ERR_STRING_FORMAT_INVALID + format_str);
+            if (isNaN(argNumber)) {
+                throw new Error(StringUtils.ERR_STRING_FORMAT_INVALID + formatStr);
+            }
             const argFormat = (colonIndex < 0) ? "" : brace.substring(colonIndex + 1);
             let arg = args[argNumber];
-            if (arg === undefined || arg === null) {
+            if (arg === _undefined || arg === null) {
                 arg = "";
             }
 
             if (arg.format) {
                 result += arg.format(argFormat);
-            }
-            else
+            } else {
                 result += arg.toString();
+            }
             i = close + 1;
         }
         return result;
@@ -90,22 +87,21 @@ export class StringUtils {
      *    Usage:     formatNumber(123456.789, 2, '.', ',');
      *    result:    123,456.79
     **/
-    static formatNumber(num: any, decimals?: number, dec_point?: string, thousands_sep?: string) {
+    static formatNumber(num: any, decimals?: number, decPoint?: string, thousandsSep?: string) {
         num = (num + "").replace(/[^0-9+-Ee.]/g, "");
-        const n = !isFinite(+num) ? 0 : +num, dec = (dec_point === undefined) ? "." : dec_point,
-        sep = (thousands_sep === undefined) ? "," : thousands_sep;
+        const n = !isFinite(+num) ? 0 : +num, dec = (decPoint === _undefined) ? "." : decPoint,
+        sep = (thousandsSep === _undefined) ? "," : thousandsSep;
         let prec = !isFinite(+decimals) ? 0 : Math.abs(decimals), s = [""];
-            // Fix for IE parseFloat(0.55).toFixed(0) = 0;
+        // Fix for IE parseFloat(0.55).toFixed(0) = 0;
         const toFixedFix = function (n: number, prec: number) {
                 const k = Math.pow(10, prec);
                 return "" + Math.round(n * k) / k;
             };
 
-        if (decimals === null || decimals === undefined) {
+        if (decimals === null || decimals === _undefined) {
             s = ("" + n).split(".");
             prec = 2;
-        }
-        else {
+        } else {
             s = (prec ? toFixedFix(n, prec) : "" + Math.round(n)).split(".");
         }
 
@@ -114,11 +110,13 @@ export class StringUtils {
         if (len > 3) {
             for (i = 0; i < len; i += 1) {
                 s0 = s0 + s[0].charAt(i);
-                if (i < (len - 1) && (len - i - 1) % 3 === 0)
+                if (i < (len - 1) && (len - i - 1) % 3 === 0) {
                     s0 = s0 + sep;
+                }
             }
             s[0] = s0;
         }
+
         if ((s[1] || "").length < prec) {
             s[1] = s[1] || "";
             s[1] += new Array(prec - s[1].length + 1).join("0");
@@ -140,29 +138,35 @@ export class StringUtils {
         return out;
     }
     static padLeft(val: string, len: number, pad: string) {
-        if (!val)
+        if (!val) {
             val = "";
+        }
         pad = pad || " ";
-        if (val.length >= len)
+        if (val.length >= len) {
             return val;
+        }
         const str = new Array(len).join(pad[0]);
-        return (str + val).slice(-len);  
+        return (str + val).slice(-len);
     }
     static fastPadLeft(val: string, pad: string) {
-        if (!val)
+        if (!val) {
             val = "";
-        if (val.length >= pad.length)
+        }
+        if (val.length >= pad.length) {
             return val;
+        }
         return (pad + val).slice(-pad.length);
     }
     static trimQuotes(val: string) {
-        if (!val)
+        if (!val) {
             return "";
+        }
         return StringUtils.fastTrim(val.replace(trimQuotsRX, ""));
     }
     static trimBrackets(val: string) {
-        if (!val)
+        if (!val) {
             return "";
+        }
         return StringUtils.fastTrim(val.replace(trimBracketsRX, ""));
     }
 }

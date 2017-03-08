@@ -47,8 +47,9 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
                 if (!val) {
                     throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, attr.name, "empty"));
                 }
-                if (val[0] !== "{" && val[val.length - 1] !== "}")
+                if (val[0] !== "{" && val[val.length - 1] !== "}") {
                     val = "{" + val + "}";
+                }
                 res.expressions.push(val);
             }
             if (strUtils.startsWith(attr.name, DATA_ATTR.DATA_FORM)) {
@@ -58,17 +59,15 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
                 res.dataView = attr.value.trim();
             }
         }
-        if (!!res.dataView || res.expressions.length > 0)
-            return res;
-        else
-            return null;
+        return (!!res.dataView || res.expressions.length > 0) ? res : null;
     }
     private _getBindableElements(scope: Document | HTMLElement): IBindableElement[] {
         const self = this, result: IBindableElement[] = [], allElems = dom.queryAll<HTMLElement>(scope, "*");
         allElems.forEach((el) => {
             const res = self._toBindableElement(el);
-            if (!!res)
+            if (!!res) {
                 result.push(res);
+            }
         });
 
         return result;
@@ -81,17 +80,20 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
     }
     private _getRequiredModuleNames(el: HTMLElement): string[] {
         const attr = el.getAttribute(DATA_ATTR.DATA_REQUIRE);
-        if (!attr)
+        if (!attr) {
             return <string[]>[];
+        }
         const reqArr = attr.split(",");
 
         const hashMap: IIndexer<any> = {};
         reqArr.forEach((name) => {
-            if (!name)
+            if (!name) {
                 return;
+            }
             name = strUtils.fastTrim(name);
-            if (!!name)
+            if (!!name) {
                 hashMap[name] = name;
+            }
         });
         return Object.keys(hashMap);
     }
@@ -114,15 +116,16 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
     private _bindElView(elView: IElView, bindElem: IBindableElement, lftm: ILifeTimeScope, isInsideTemplate: boolean, defSource: any) {
         const self = this;
         lftm.addObj(elView);
-        if (isInsideTemplate)
+        if (isInsideTemplate) {
             viewChecks.setIsInsideTemplate(elView);
+        }
 
         // then create databinding if element has data-bind attribute
-        const bind_attr = bindElem.expressions.join("");
-        if (!!bind_attr) {
-            const temp_opts: IBindingInfo[] = parser.parseOptions(bind_attr), len = temp_opts.length;
+        const bindAttr = bindElem.expressions.join("");
+        if (!!bindAttr) {
+            const tempOpts: IBindingInfo[] = parser.parseOptions(bindAttr), len = tempOpts.length;
             for (let j = 0; j < len; j += 1) {
-                const info = temp_opts[j];
+                const info = tempOpts[j];
                 const op: IBindingOptions = getBindingOptions(info, elView, defSource);
                 const binding = self.bind(op);
                 lftm.addObj(binding);
@@ -137,8 +140,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
             if (!!rootBindEl && !!rootBindEl.dataForm) {
                 // in this case process only this element
                 bindElems = [rootBindEl];
-            }
-            else {
+            } else {
                 bindElems = self._getBindableElements(templateEl);
                 if (!!rootBindEl) {
                     bindElems.push(rootBindEl);
@@ -159,8 +161,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
             });
 
             defer.resolve(lftm);
-        }
-        catch (err) {
+        } catch (err) {
             self.handleError(err, self);
             setTimeout(() => {
                 defer.reject(new DummyError(err));
@@ -176,14 +177,13 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
             res = self._mloader.load(requiredModules).then(() => {
                 return self._bindTemplateElements(templateEl);
             });
-        }
-        else {
+        } else {
             res = self._bindTemplateElements(templateEl);
         }
 
         res.catch((err) => {
             utils.queue.enque(() => {
-                self.handleError(err, self);               
+                self.handleError(err, self);
             });
         });
 
@@ -211,8 +211,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
             });
 
             defer.resolve(lftm);
-        }
-        catch (err) {
+        } catch (err) {
             self.handleError(err, self);
             setTimeout(() => {
                 defer.reject(new DummyError(err));

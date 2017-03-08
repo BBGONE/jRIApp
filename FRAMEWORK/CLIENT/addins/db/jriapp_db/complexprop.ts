@@ -42,8 +42,9 @@ export class BaseComplexProperty extends BaseObject implements IErrorNotificatio
    }
     getPropertyByName(name: string): IFieldInfo {
         const arrProps = this.getProperties().filter((f) => { return f.fieldName === name; });
-        if (!arrProps || arrProps.length !== 1)
+        if (!arrProps || arrProps.length !== 1) {
             throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "arrProps.length === 1"));
+        }
         return arrProps[0];
    }
     getIsHasErrors(): boolean {
@@ -79,7 +80,6 @@ export class RootComplexProperty extends BaseComplexProperty {
    }
     setValue(fullName: string, value: any) {
         this._entity._setFieldVal(fullName, value);
-        
    }
     getValue(fullName: string): any {
         return this._entity._getFieldVal(fullName);
@@ -129,8 +129,9 @@ export class ChildComplexProperty extends BaseComplexProperty {
         while (!!parent && (parent instanceof ChildComplexProperty)) {
             parent = (<ChildComplexProperty>parent).getParent();
        }
-        if (!parent || !(parent instanceof RootComplexProperty))
+        if (!parent || !(parent instanceof RootComplexProperty)) {
             throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "parent instanceof RootComplexProperty"));
+        }
         return <RootComplexProperty>parent;
    }
     getFullPath(name: string): string {

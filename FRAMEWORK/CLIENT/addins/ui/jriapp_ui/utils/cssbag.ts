@@ -23,18 +23,17 @@ export class CSSBag extends BaseObject implements IPropertyBag {
         return checks.undefined;
     }
     setProp(name: string, val: any): void {
-        if (val === checks.undefined)
+        if (val === checks.undefined) {
             return;
+        }
         const cssName = strUtils.trimBrackets(name);
         if (cssName === "*") {
             if (!val) {
                 // remove all classes
                 dom.removeClass([this._el], null);
-            }
-            else if (checks.isArray(val)) {
+            } else if (checks.isArray(val)) {
                 dom.setClasses([this._el], <string[]>val);
-            }
-            else if (checks.isString(val)) {
+            } else if (checks.isString(val)) {
                 dom.setClasses([this._el], val.split(" "));
             }
             return;

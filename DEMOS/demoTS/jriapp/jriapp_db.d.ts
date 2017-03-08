@@ -91,7 +91,7 @@ declare module "jriapp_db/dataquery" {
     }
     export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
         private _dbSet;
-        private __queryInfo;
+        private _queryInfo;
         private _filterInfo;
         private _sortInfo;
         private _isIncludeTotalCount;
@@ -334,7 +334,7 @@ declare module "jriapp_db/association" {
         protected _onChildCollChanged(args: ICollChangedArgs<IEntityItem>): void;
         protected _notifyChildrenChanged(changed: string[]): void;
         protected _notifyParentChanged(changed: string[]): void;
-        protected _notifyChanged(changed_pkeys: string[], changed_ckeys: string[]): void;
+        protected _notifyChanged(changedPkeys: string[], changedCkeys: string[]): void;
         private _notify();
         protected _onChildEdit(item: IEntityItem, isBegin: boolean, isCanceled: boolean): void;
         protected _onChildCommitChanges(item: IEntityItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS): void;
@@ -798,9 +798,9 @@ declare module "jriapp_db/dataview" {
     }
     export class DataView<TItem extends ICollectionItem> extends BaseCollection<TItem> {
         private _dataSource;
-        private _fn_filter;
-        private _fn_sort;
-        private _fn_itemsProvider;
+        private _fnFilter;
+        private _fnSort;
+        private _fnItemsProvider;
         private _isAddingNew;
         private _refreshDebounce;
         constructor(options: IDataViewOptions<TItem>);

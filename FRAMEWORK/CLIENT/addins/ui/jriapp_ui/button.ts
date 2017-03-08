@@ -19,10 +19,12 @@ export class ButtonElView extends CommandElView {
         }, this.uniqueID);
     }
     protected _onClick(e: Event) {
-        if (this.stopPropagation)
+        if (this.stopPropagation) {
             e.stopPropagation();
-        if (this.preventDefault)
+        }
+        if (this.preventDefault) {
             e.preventDefault();
+        }
         this.invokeCommand(null, true);
     }
     toString() {

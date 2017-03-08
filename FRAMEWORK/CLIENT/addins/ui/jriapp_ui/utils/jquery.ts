@@ -3,8 +3,9 @@ import {
     LocaleERRS
 } from "jriapp_shared";
 
-if (!("jQuery" in window))
+if (!("jQuery" in window)) {
     throw new Error(LocaleERRS.ERR_APP_NEED_JQUERY);
+}
 
 export const $: JQueryStatic = jQuery;
 

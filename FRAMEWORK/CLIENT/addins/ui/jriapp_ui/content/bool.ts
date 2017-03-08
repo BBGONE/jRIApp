@@ -52,8 +52,7 @@ export class BoolContent extends BasicContent {
         const el = <HTMLInputElement>this._el;
         if (this.isEditing && this.getIsCanBeEdited()) {
              el.disabled = false;
-        }
-        else {
+        } else {
              el.disabled = true;
         }
     }
@@ -62,8 +61,9 @@ export class BoolContent extends BasicContent {
         this.updateCss();
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         if (!!this._lfScope) {
             this._lfScope.destroy();

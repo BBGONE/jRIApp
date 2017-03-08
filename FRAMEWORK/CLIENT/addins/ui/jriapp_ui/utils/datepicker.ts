@@ -35,10 +35,11 @@ class Datepicker extends BaseObject implements IDatepicker {
     }
     attachTo(el: any, options?: { dateFormat?: string; }, onSelect?: (dateText?: string) => void) {
         const $el = $(el);
-        if (!!options)
+        if (!!options) {
             $el.datepicker(options);
-        else
+        } else {
             $el.datepicker();
+        }
 
         if (!!onSelect) {
             $el.datepicker("option", "onSelect", (dateText: string) => {
@@ -60,8 +61,7 @@ class Datepicker extends BaseObject implements IDatepicker {
         if (!this._dateFormat) {
             const regional = this.datePickerFn.regional[this._datepickerRegion];
             return regional.dateFormat;
-        }
-        else {
+        } else {
             return this._dateFormat;
         }
     }
@@ -78,8 +78,9 @@ class Datepicker extends BaseObject implements IDatepicker {
     }
     get datepickerRegion() { return this._datepickerRegion; }
     set datepickerRegion(v) {
-        if (!v)
+        if (!v) {
             v = "";
+        }
         const oldDateFormat = this.dateFormat;
         if (this._datepickerRegion !== v) {
             const regional = this.datePickerFn.regional[v];

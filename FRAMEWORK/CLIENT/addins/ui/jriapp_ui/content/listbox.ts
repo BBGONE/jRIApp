@@ -12,7 +12,7 @@ import { SpanElView } from "../span";
 import { BasicContent } from "./basic";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, strUtils = utils.str, coreUtils = utils.core,
-    sys = utils.sys;    
+    sys = utils.sys;
 
 const PROP_NAME = {
     dataSource: "dataSource",
@@ -68,8 +68,8 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         }
     }
     protected _getEventNames() {
-        const base_events = super._getEventNames();
-        return [LOOKUP_EVENTS.obj_created, LOOKUP_EVENTS.obj_needed].concat(base_events);
+        const baseEvents = super._getEventNames();
+        return [LOOKUP_EVENTS.obj_created, LOOKUP_EVENTS.obj_needed].concat(baseEvents);
     }
     addOnObjectCreated(fn: (sender: any, args: TObjCreatedArgs) => void, nmspace?: string) {
         this._addHandler(LOOKUP_EVENTS.obj_created, fn, nmspace);
@@ -152,8 +152,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
             selectView = this.getListBoxElView();
             this._listBinding = this.bindToList(selectView);
             tgt = selectView;
-        }
-        else {
+        } else {
             spanView = this.getSpanView();
             this._valBinding = this.bindToValue();
             tgt = spanView;
@@ -190,8 +189,9 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         }
     }
     protected bindToValue() {
-        if (!this._options.fieldName)
+        if (!this._options.fieldName) {
             return null;
+        }
 
         const options: IBindingOptions = {
             target: this, source: this._dataContext,
@@ -202,8 +202,9 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         return this.app.bind(options);
     }
     protected bindToList(selectView: ListBoxElView) {
-        if (!this._options.fieldName)
+        if (!this._options.fieldName) {
             return null;
+        }
 
         const options: IBindingOptions = {
             target: selectView, source: this._dataContext,

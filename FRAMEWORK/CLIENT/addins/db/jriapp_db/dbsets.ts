@@ -27,8 +27,9 @@ export class DbSets extends BaseObject {
     }
     protected _createDbSet(name: string, dbSetType: IDbSetConstructor<IEntityItem, any>) {
         const self = this, dbContext = this._dbContext;
-        if (!!self._dbSets[name])
+        if (!!self._dbSets[name]) {
             throw new Error(utils.str.format("DbSet: {0} is already created", name));
+        }
         self._dbSets[name] = new Lazy<TDbSet>(() => {
             const res = new dbSetType(dbContext);
             self._dbSetCreated(res);
@@ -43,19 +44,22 @@ export class DbSets extends BaseObject {
     }
     findDbSet(name: string): TDbSet {
         const res = this._dbSets[name];
-        if (!res)
+        if (!res) {
             return null;
+        }
         return res.Value;
     }
     getDbSet(name: string): TDbSet {
         const dbSet = this.findDbSet(name);
-        if (!dbSet)
+        if (!dbSet) {
             throw new Error(strUtils.format(ERRS.ERR_DBSET_NAME_INVALID, name));
+        }
         return dbSet;
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         this._arrDbSets.forEach((dbSet) => {
             dbSet.destroy();

@@ -48,27 +48,30 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         this._valueBag = null;
     }
     protected _getEventNames() {
-        const base_events = super._getEventNames();
-        return [ITEM_EVENTS.errors_changed].concat(base_events);
+        const baseEvents = super._getEventNames();
+        return [ITEM_EVENTS.errors_changed].concat(baseEvents);
     }
     protected _onErrorsChanged() {
         this.raiseEvent(ITEM_EVENTS.errors_changed, {});
     }
     protected _setIsEdited(v: boolean) {
-        if (v)
+        if (v) {
             this._flags |= (1 << AspectFlags.IsEdited);
-        else
+        } else {
             this._flags &= ~(1 << AspectFlags.IsEdited);
+        }
     }
     protected _beginEdit(): boolean {
-        if (this.isDetached)
+        if (this.isDetached) {
             throw new Error("Invalid operation. The item is detached");
+        }
         const coll = this.collection;
         let isHandled: boolean = false;
         if (coll.isEditing) {
             const item = coll._getInternal().getEditingItem();
-            if (item._aspect === this)
+            if (item._aspect === this) {
                 return false;
+            }
             try {
                 item._aspect.endEdit();
                 if (item._aspect.getIsHasErrors()) {
@@ -86,10 +89,12 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         return true;
     }
     protected _endEdit(): boolean {
-        if (this.isDetached)
+        if (this.isDetached) {
             throw new Error("Invalid operation. The item is detached");
-        if (!this.isEditing)
+        }
+        if (!this.isEditing) {
             return false;
+        }
         const coll = this.collection, self = this, errors = coll.errors;
         // revalidate all
         errors.removeAllErrors(this.item);
@@ -104,10 +109,12 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         return true;
     }
     protected _cancelEdit(): boolean {
-        if (this.isDetached)
+        if (this.isDetached) {
             throw new Error("Invalid operation. The item is detached");
-        if (!this.isEditing)
+        }
+        if (!this.isEditing) {
             return false;
+        }
         const coll = this.collection, self = this, item = self.item, changes = this._saveVals;
         this._vals = this._saveVals;
         this._saveVals = null;
@@ -129,8 +136,9 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
     protected _validateField(fieldName: string): IValidationInfo {
         const fieldInfo = this.getFieldInfo(fieldName), errors = this.collection.errors;
         const value = coreUtils.getValue(this._vals, fieldName);
-        if (this._skipValidate(fieldInfo, value))
+        if (this._skipValidate(fieldInfo, value)) {
             return null;
+        }
         const standardErrors: string[] = Validations.checkField(fieldInfo, value, this.isNew);
         const customValidation: IValidationInfo = errors.validateItemField(this.item, fieldName);
 
@@ -156,7 +164,7 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
                 }
             }
         });
-   
+
         // raise validation event for the whole item validation
         const itemVals: IValidationInfo[] = self._validateItem();
         return Validations.distinct(res.concat(itemVals));
@@ -185,10 +193,7 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         }
     }
     handleError(error: any, source: any): boolean {
-        if (!this._collection)
-            return super.handleError(error, source);
-        else
-            return this._collection.handleError(error, source);
+        return (!this._collection) ? super.handleError(error, source) :  this._collection.handleError(error, source);
     }
     _setItem(v: TItem) {
         this._item = v;
@@ -197,17 +202,19 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         this._key = v;
     }
     _setIsAttached(v: boolean) {
-        if (v)
+        if (v) {
             this._flags |= (1 << AspectFlags.IsAttached);
-        else
+        } else {
             this._flags &= ~(1 << AspectFlags.IsAttached);
+        }
     }
     _setIsRefreshing(v: boolean) {
         if (this.isRefreshing !== v) {
-            if (v)
+            if (v) {
                 this._flags |= (1 << AspectFlags.isRefreshing);
-            else
+            } else {
                 this._flags &= ~(1 << AspectFlags.isRefreshing);
+            }
             this.raisePropertyChanged(PROP_NAME.isRefreshing);
         }
     }
@@ -227,8 +234,9 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
     }
     getErrorString(): string {
         const itemErrors = this.collection.errors.getErrors(this.item);
-        if (!itemErrors)
+        if (!itemErrors) {
             return "";
+        }
         const res: string[] = [];
         coreUtils.forEachProp(itemErrors, (name) => {
             res.push(strUtils.format("{0}: {1}", name, itemErrors[name]));
@@ -241,24 +249,28 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
     rejectChanges(): void {
     }
     beginEdit(): boolean {
-        if (this.isEditing)
+        if (this.isEditing) {
             return false;
+        }
         const coll = this.collection, internal = coll._getInternal(), item = this.item;
         internal.onBeforeEditing(item, true, false);
-        if (!this._beginEdit())
+        if (!this._beginEdit()) {
             return false;
+        }
         internal.onEditing(item, true, false);
         if (!!this._valueBag && this.isEditing) {
             coreUtils.forEachProp(this._valueBag, (name, obj) => {
-                if (!!obj && sys.isEditable(obj.val))
+                if (!!obj && sys.isEditable(obj.val)) {
                     obj.val.beginEdit();
+                }
             });
         }
         return true;
     }
     endEdit(): boolean {
-        if (!this.isEditing)
+        if (!this.isEditing) {
             return false;
+        }
         const coll = this.collection, internal = coll._getInternal(), item = this.item;
         internal.onBeforeEditing(item, false, false);
         let customEndEdit = true;
@@ -271,25 +283,29 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
                 }
             });
         }
-        if (!customEndEdit || !this._endEdit())
+        if (!customEndEdit || !this._endEdit()) {
             return false;
+        }
         internal.onEditing(item, false, false);
         this._setIsEdited(true);
         return true;
     }
     cancelEdit(): boolean {
-        if (!this.isEditing)
+        if (!this.isEditing) {
             return false;
+        }
         const coll = this.collection, internal = coll._getInternal(), item = this.item, isNew = this.isNew;
         internal.onBeforeEditing(item, false, true);
         if (!!this._valueBag) {
             coreUtils.forEachProp(this._valueBag, (name, obj) => {
-                if (!!obj && sys.isEditable(obj.val))
+                if (!!obj && sys.isEditable(obj.val)) {
                     obj.val.cancelEdit();
+                }
             });
         }
-        if (!this._cancelEdit())
+        if (!this._cancelEdit()) {
             return false;
+        }
         internal.onEditing(item, false, true);
         if (isNew && !this.isEdited && !this.getIsDestroyCalled()) {
             this.destroy();
@@ -298,8 +314,9 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
     }
     deleteItem(): boolean {
         const coll = this.collection;
-        if (!this.key)
+        if (!this.key) {
             return false;
+        }
         const args: ICancellableArgs<TItem> = { item: this.item, isCancel: false };
         coll._getInternal().onItemDeleting(args);
         if (args.isCancel) {
@@ -313,9 +330,8 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         if (!res && !!this._valueBag) {
             coreUtils.forEachProp(this._valueBag, (name, obj) => {
                 const errNotification = sys.getErrorNotification(obj.val);
-                if (!!errNotification) {
-                    if (errNotification.getIsHasErrors())
-                        res = true;
+                if (!!errNotification && errNotification.getIsHasErrors()) {
+                    res = true;
                 }
             });
         }
@@ -329,8 +345,9 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
     }
     getFieldErrors(fieldName: string): IValidationInfo[] {
         const res: IValidationInfo[] = [], itemErrors = this.collection.errors.getErrors(this.item);
-        if (!itemErrors)
+        if (!itemErrors) {
             return res;
+        }
         let name = fieldName;
         if (!fieldName) {
             fieldName = "*";
@@ -356,8 +373,9 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         }
 
         const itemErrors = this.collection.errors.getErrors(this.item);
-        if (!itemErrors)
+        if (!itemErrors) {
             return res;
+        }
         coreUtils.forEachProp(itemErrors, (name) => {
             let fieldName: string = null;
             if (name !== "*") {
@@ -372,17 +390,18 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
     }
     // can be used to store any user object
     setCustomVal(name: string, val: any, isOwnVal: boolean = true): void {
-        if (this.getIsDestroyCalled())
+        if (this.getIsDestroyCalled()) {
             return;
-        const coll = this.collection;
+        }
 
         if (!this._valueBag) {
-            if (checks.isNt(val))
+            if (checks.isNt(val)) {
                 return;
+            }
             this._valueBag = {};
         }
 
-        const oldEntry = this._valueBag[name];
+        const oldEntry = this._valueBag[name],  coll = this.collection;
 
         if (!!oldEntry && oldEntry.val !== val) {
             this._delCustomVal(oldEntry);
@@ -390,8 +409,7 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
 
         if (checks.isNt(val)) {
             delete this._valueBag[name];
-        }
-        else {
+        } else {
             const newEntry: ICustomVal = { val: val, isOwnIt: !!isOwnVal };
             this._valueBag[name] = newEntry;
             const errNotification = sys.getErrorNotification(val);
@@ -401,13 +419,15 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
                 }, coll.uniqueID);
             }
 
-            if (this.isEditing && sys.isEditable(val))
+            if (this.isEditing && sys.isEditable(val)) {
                 val.beginEdit();
+            }
         }
     }
     getCustomVal(name: string): any {
-        if (this.getIsDestroyCalled() || !this._valueBag)
+        if (this.getIsDestroyCalled() || !this._valueBag) {
             return null;
+        }
 
         const obj = this._valueBag[name];
         if (!obj) {
@@ -416,8 +436,9 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         return obj.val;
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         const self = this;
         this._isDestroyCalled = true;
         const coll = this._collection, item = this._item;
@@ -439,7 +460,7 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         this._vals = {};
         this._flags = 0;
         this._collection = null;
-        super.destroy(); 
+        super.destroy();
     }
     toString() {
         return "ItemAspect";
@@ -460,8 +481,9 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
     }
     get isUpdating(): boolean {
         const coll = this.collection;
-        if (!coll)
+        if (!coll) {
             return false;
+        }
         return coll.isUpdating;
     }
     get isEditing(): boolean {

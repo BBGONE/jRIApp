@@ -61,8 +61,9 @@ export class Validations {
             }
         }
 
-        if (isNullVal)
+        if (isNullVal) {
             return res;
+        }
 
         switch (fieldInfo.dataType) {
             case DATA_TYPE.None:
@@ -90,18 +91,21 @@ export class Validations {
                 if (!checks.isArray(value)) {
                     res.push(strUtils.format(ERRS.ERR_FIELD_WRONG_TYPE, value, "Array"));
                 }
-                if (fieldInfo.maxLength > 0 && value.length > fieldInfo.maxLength)
+                if (fieldInfo.maxLength > 0 && value.length > fieldInfo.maxLength) {
                     res.push(strUtils.format(ERRS.ERR_FIELD_MAXLEN, fieldInfo.maxLength));
+                }
                 break;
             case DATA_TYPE.Bool:
-                if (!checks.isBoolean(value))
+                if (!checks.isBoolean(value)) {
                     res.push(strUtils.format(ERRS.ERR_FIELD_WRONG_TYPE, value, "Boolean"));
+                }
                 break;
             case DATA_TYPE.Integer:
             case DATA_TYPE.Decimal:
             case DATA_TYPE.Float:
-                if (!checks.isNumber(value))
+                if (!checks.isNumber(value)) {
                     res.push(strUtils.format(ERRS.ERR_FIELD_WRONG_TYPE, value, "Number"));
+                }
                 if (!!fieldInfo.range) {
                     Validations.checkNumRange(Number(value), fieldInfo.range).forEach((err) => {
                         res.push(err);
@@ -110,8 +114,9 @@ export class Validations {
                 break;
             case DATA_TYPE.DateTime:
             case DATA_TYPE.Date:
-                if (!checks.isDate(value))
+                if (!checks.isDate(value)) {
                     res.push(strUtils.format(ERRS.ERR_FIELD_WRONG_TYPE, value, "Date"));
+                }
                 if (!!fieldInfo.range) {
                     Validations.checkDateRange(value, fieldInfo.range).forEach((err) => {
                         res.push(err);
@@ -119,8 +124,9 @@ export class Validations {
                 }
                 break;
             case DATA_TYPE.Time:
-                if (!checks.isDate(value))
+                if (!checks.isDate(value)) {
                     res.push(strUtils.format(ERRS.ERR_FIELD_WRONG_TYPE, value, "Time"));
+                }
                 break;
             default:
                 res.push(strUtils.format(ERRS.ERR_PARAM_INVALID, "dataType", fieldInfo.dataType));
@@ -129,8 +135,9 @@ export class Validations {
         return res;
     }
     static distinct(vals: IValidationInfo[]): IValidationInfo[] {
-        if (!vals)
+        if (!vals) {
             return [];
+        }
 
         const index: IIndexer<IValidationInfo> = {};
         vals.forEach((val) => {
@@ -138,8 +145,7 @@ export class Validations {
             const test = index[name];
             if (!!test) {
                 test.errors = test.errors.concat(val.errors);
-            }
-            else {
+            } else {
                 index[name] = val;
             }
         });

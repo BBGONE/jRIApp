@@ -142,10 +142,10 @@ class Deferred<T> implements IStatefulDeferred<T> {
                 if (value === this._promise) {
                     throw new TypeError("recursive resolution");
                 }
-                const fn_then = value.then;
+                const fnThen = value.then;
                 this._state = PromiseState.ResolutionInProgress;
 
-                fn_then.call(value,
+                fnThen.call(value,
                     (result: any): void => {
                         if (pending) {
                             pending = false;
@@ -314,10 +314,7 @@ export class Promise<T> implements IStatefulPromise<T> {
 
     static all<T>(): IStatefulPromise<T[]> {
         const args: any[] = arrHelper.fromList(arguments);
-        if (args.length === 1 && checks.isArray(args[0]))
-            return whenAll(args[0]);
-        else
-            return whenAll(args);
+        return (args.length === 1 && checks.isArray(args[0])) ? whenAll(args[0]) : whenAll(args);
     }
 
     static race<T>(...promises: Array<IPromise<T>>): IPromise<T>;
@@ -326,10 +323,7 @@ export class Promise<T> implements IStatefulPromise<T> {
 
     static race<T>(): IPromise<T> {
         const args: any[] = arrHelper.fromList(arguments);
-        if (args.length === 1 && checks.isArray(args[0]))
-            return race(args[0]);
-        else
-            return race(args);
+        return (args.length === 1 && checks.isArray(args[0])) ? race(args[0]) : race(args);
     }
 
     static reject<T>(reason?: any, isSync?: boolean): IStatefulPromise<T> {
@@ -408,8 +402,9 @@ export class AbortablePromise<T> implements IAbortablePromise<T> {
     }
 
     abort(reason?: string): void {
-        if (this._aborted)
+        if (this._aborted) {
             return;
+        }
         const self = this;
         self._deferred.reject(new AbortError(reason));
         self._aborted = true;

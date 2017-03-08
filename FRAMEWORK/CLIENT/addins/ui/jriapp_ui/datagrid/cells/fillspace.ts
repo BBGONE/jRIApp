@@ -23,8 +23,9 @@ export class FillSpaceCell extends BaseObject {
         this._td.appendChild(this._div);
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         this._row = null;
         this._td = null;

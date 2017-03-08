@@ -70,18 +70,18 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     private _submitOnOK: boolean;
     private _canRefresh: boolean;
     private _canCancel: boolean;
-    private _fn_OnClose: (dialog: DataEditDialog) => void;
-    private _fn_OnOK: (dialog: DataEditDialog) => DIALOG_ACTION;
-    private _fn_OnShow: (dialog: DataEditDialog) => void;
-    private _fn_OnCancel: (dialog: DataEditDialog) => DIALOG_ACTION;
-    private _fn_OnTemplateCreated: (template: ITemplate) => void;
-    private _fn_OnTemplateDestroy: (template: ITemplate) => void;
+    private _fnOnClose: (dialog: DataEditDialog) => void;
+    private _fnOnOK: (dialog: DataEditDialog) => DIALOG_ACTION;
+    private _fnOnShow: (dialog: DataEditDialog) => void;
+    private _fnOnCancel: (dialog: DataEditDialog) => DIALOG_ACTION;
+    private _fnOnTemplateCreated: (template: ITemplate) => void;
+    private _fnOnTemplateDestroy: (template: ITemplate) => void;
     private _editable: IEditable;
     private _template: ITemplate;
     private _$dlgEl: JQuery;
     private _result: "ok" | "cancel";
     private _options: IDialogOptions;
-    private _fn_submitOnOK: () => IVoidPromise;
+    private _fnSubmitOnOK: () => IVoidPromise;
     // save the global's currentSelectable  before showing and restore it on dialog's closing
     private _currentSelectable: ISelectableProvider;
     private _deferred: IDeferred<ITemplate>;
@@ -111,19 +111,19 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         this._submitOnOK = options.submitOnOK;
         this._canRefresh = options.canRefresh;
         this._canCancel = options.canCancel;
-        this._fn_OnClose = options.fn_OnClose;
-        this._fn_OnOK = options.fn_OnOK;
-        this._fn_OnShow = options.fn_OnShow;
-        this._fn_OnCancel = options.fn_OnCancel;
-        this._fn_OnTemplateCreated = options.fn_OnTemplateCreated;
-        this._fn_OnTemplateDestroy = options.fn_OnTemplateDestroy;
+        this._fnOnClose = options.fn_OnClose;
+        this._fnOnOK = options.fn_OnOK;
+        this._fnOnShow = options.fn_OnShow;
+        this._fnOnCancel = options.fn_OnCancel;
+        this._fnOnTemplateCreated = options.fn_OnTemplateCreated;
+        this._fnOnTemplateDestroy = options.fn_OnTemplateDestroy;
 
         this._editable = null;
         this._template = null;
         this._$dlgEl = null;
         this._result = null;
         this._currentSelectable = null;
-        this._fn_submitOnOK = () => {
+        this._fnSubmitOnOK = () => {
             const submittable = sys.getSubmittable(self._dataContext);
             if (!submittable || !submittable.isCanSubmit) {
                 // signals immediatly
@@ -167,32 +167,32 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             this._$dlgEl = $(this._template.el);
             doc.body.appendChild(this._template.el);
             (<any>this._$dlgEl).dialog(this._options);
-        }
-        catch (ex) {
+        } catch (ex) {
             ERROR.reThrow(ex, this.handleError(ex, this));
         }
     }
     protected _getEventNames() {
-        const base_events = super._getEventNames();
-        return [DLG_EVENTS.close, DLG_EVENTS.refresh].concat(base_events);
+        const baseEvents = super._getEventNames();
+        return [DLG_EVENTS.close, DLG_EVENTS.refresh].concat(baseEvents);
     }
     templateLoading(template: ITemplate): void {
         // noop
     }
     templateLoaded(template: ITemplate, error?: any): void {
         if (this.getIsDestroyCalled() || !!error) {
-            if (!!this._deferred)
+            if (!!this._deferred) {
                 this._deferred.reject(error);
+            }
             return;
         }
-        if (!!this._fn_OnTemplateCreated) {
-            this._fn_OnTemplateCreated(template);
+        if (!!this._fnOnTemplateCreated) {
+            this._fnOnTemplateCreated(template);
         }
         this._deferred.resolve(template);
     }
     templateUnLoading(template: ITemplate): void {
-        if (!!this._fn_OnTemplateDestroy) {
-            this._fn_OnTemplateDestroy(template);
+        if (!!this._fnOnTemplateDestroy) {
+            this._fnOnTemplateDestroy(template);
         }
     }
     protected _createTemplate(): ITemplate {
@@ -201,8 +201,9 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         return template;
     }
     protected _destroyTemplate() {
-        if (!!this._template)
+        if (!!this._template) {
             this._template.destroy();
+        }
     }
     protected _getButtons(): IButton[] {
         const self = this, buttons = [
@@ -258,30 +259,24 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         });
     }
     protected _onOk() {
-        const self = this;
-        let canCommit: boolean, action = DIALOG_ACTION.Default;
-        if (!!this._fn_OnOK) {
-            action = this._fn_OnOK(this);
-        }
-        if (action === DIALOG_ACTION.StayOpen)
+        const self = this, action = (!!this._fnOnOK) ? this._fnOnOK(this) : DIALOG_ACTION.Default;
+        if (action === DIALOG_ACTION.StayOpen) {
             return;
+        }
 
         if (!this._dataContext) {
             self.hide();
             return;
         }
 
-        if (!!this._editable)
-            canCommit = this._editable.endEdit();
-        else
-            canCommit = true;
+       const canCommit = (!!this._editable)  ? this._editable.endEdit() : true;
 
         if (canCommit) {
             if (this._submitOnOK) {
                 this._disableButtons(true);
                 const title = this.title;
                 this.title = STRS.TEXT.txtSubmitting;
-                const promise = this._fn_submitOnOK();
+                const promise = this._fnSubmitOnOK();
                 promise.always(() => {
                     self._disableButtons(false);
                     self.title = title;
@@ -298,36 +293,34 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
                         }
                     }
                 });
-            }
-            else {
+            } else {
                 self._result = "ok";
                 self.hide();
             }
         }
     }
     protected _onCancel() {
-        let action = DIALOG_ACTION.Default;
-        if (!!this._fn_OnCancel) {
-            action = this._fn_OnCancel(this);
-        }
-        if (action === DIALOG_ACTION.StayOpen)
+        const action = (!!this._fnOnCancel) ? this._fnOnCancel(this) : DIALOG_ACTION.Default;
+        if (action === DIALOG_ACTION.StayOpen) {
             return;
-        if (!!this._editable)
+        }
+        if (!!this._editable) {
             this._editable.cancelEdit();
+        }
         this._result = "cancel";
         this.hide();
     }
     protected _onRefresh() {
         const args = { isHandled: false };
         this.raiseEvent(DLG_EVENTS.refresh, args);
-        if (args.isHandled)
+        if (args.isHandled) {
             return;
+        }
         const dctx = this._dataContext;
         if (!!dctx) {
             if (checks.isFunc(dctx.refresh)) {
                 dctx.refresh();
-            }
-            else if (!!dctx._aspect && checks.isFunc(dctx._aspect.refresh)) {
+            } else if (!!dctx._aspect && checks.isFunc(dctx._aspect.refresh)) {
                 dctx._aspect.refresh();
             }
         }
@@ -339,11 +332,11 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
                     this._editable.cancelEdit();
                 }
             }
-            if (!!this._fn_OnClose)
-                this._fn_OnClose(this);
+            if (!!this._fnOnClose) {
+                this._fnOnClose(this);
+            }
             this.raiseEvent(DLG_EVENTS.close, {});
-        }
-        finally {
+        } finally {
             this._template.dataContext = null;
         }
         let csel = this._currentSelectable;
@@ -352,14 +345,15 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     }
     protected _onShow() {
         this._currentSelectable = boot.currentSelectable;
-        if (!!this._fn_OnShow) {
-            this._fn_OnShow(this);
+        if (!!this._fnOnShow) {
+            this._fnOnShow(this);
         }
     }
     show(): IPromise<DataEditDialog> {
         const self = this;
-        if (self.getIsDestroyCalled())
+        if (self.getIsDestroyCalled()) {
             return utils.defer.createDeferred<DataEditDialog>().reject();
+        }
         self._result = null;
         return this._deferred.promise().then((template) => {
             if (self.getIsDestroyCalled() || !self._$dlgEl) {
@@ -372,20 +366,23 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         }).then(() => {
             return self;
         }, (err) => {
-            if (!self.getIsDestroyCalled())
+            if (!self.getIsDestroyCalled()) {
                 self.handleError(err, self);
+            }
             ERROR.abort();
         });
     }
     hide() {
         const self = this;
-        if (!this._$dlgEl)
+        if (!this._$dlgEl) {
             return;
+        }
         (<any>self._$dlgEl).dialog("close");
     }
     getOption(name: string) {
-        if (!this._$dlgEl)
+        if (!this._$dlgEl) {
             return checks.undefined;
+        }
         return (<any>this._$dlgEl).dialog("option", name);
     }
     setOption(name: string, value: any) {
@@ -393,15 +390,16 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         (<any>self._$dlgEl).dialog("option", name, value);
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         this.hide();
         this._destroyTemplate();
         this._$dlgEl = null;
         this._template = null;
         this._dataContext = null;
-        this._fn_submitOnOK = null;
+        this._fnSubmitOnOK = null;
         this._editable = null;
         super.destroy();
     }
@@ -488,8 +486,9 @@ export class DialogVM extends ViewModel<IApplication> {
     }
     showDialog(name: string, dataContext: any): DataEditDialog {
         const dlg = this.getDialog(name);
-        if (!dlg)
+        if (!dlg) {
             throw new Error(strUtils.format("Invalid DataEditDialog name:  {0}", name));
+        }
         dlg.dataContext = dataContext;
         // timeout helps to set dialog properties on returned DataEditDialog before its showing
         setTimeout(() => {
@@ -499,13 +498,15 @@ export class DialogVM extends ViewModel<IApplication> {
     }
     getDialog(name: string): DataEditDialog {
         const factory = this._factories[name];
-        if (!factory)
+        if (!factory) {
             return null;
+        }
         return factory();
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         const self = this, keys = Object.keys(this._dialogs);
         keys.forEach((key: string) => {

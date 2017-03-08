@@ -6,16 +6,18 @@ import { TextBoxElView } from "../textbox";
 import { BasicContent } from "./basic";
 
 export class StringContent extends BasicContent {
-    static __allowedKeys: number[] = null;
-    private get _allowedKeys() {
-        if (!StringContent.__allowedKeys) {
-            StringContent.__allowedKeys = [0, KEYS.backspace, KEYS.del, KEYS.left, KEYS.right, KEYS.end, KEYS.home, KEYS.tab, KEYS.esc, KEYS.enter];
+    static _allowedKeys: number[] = null;
+
+    private get allowedKeys() {
+        if (!StringContent._allowedKeys) {
+            StringContent._allowedKeys = [0, KEYS.backspace, KEYS.del, KEYS.left, KEYS.right, KEYS.end, KEYS.home, KEYS.tab, KEYS.esc, KEYS.enter];
         }
-        return StringContent.__allowedKeys;
+        return StringContent._allowedKeys;
     }
     protected previewKeyPress(fieldInfo: IFieldInfo, keyCode: number, value: string) {
-        if (this._allowedKeys.indexOf(keyCode) > -1)
+        if (this.allowedKeys.indexOf(keyCode) > -1) {
             return true;
+        }
         return !(fieldInfo.maxLength > 0 && value.length >= fieldInfo.maxLength);
     }
     render() {

@@ -19,8 +19,9 @@ export class DetailsCell extends BaseObject {
         super();
         this._row = options.row;
         this._td = options.td;
-        if (!options.details_id)
+        if (!options.details_id) {
             return;
+        }
         this._td.colSpan = this.grid.columns.length;
         this._row.tr.appendChild(this._td);
         this._template = createTemplate(null, null);
@@ -28,8 +29,9 @@ export class DetailsCell extends BaseObject {
         this._td.appendChild(this._template.el);
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         if (!!this._template) {
             this._template.destroy();

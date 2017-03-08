@@ -41,13 +41,13 @@ export class DefaultAnimation extends BaseObject implements IDataGridAnimation {
         }
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         try {
             this.stop();
-        }
-        finally {
+        } finally {
             super.destroy();
         }
     }

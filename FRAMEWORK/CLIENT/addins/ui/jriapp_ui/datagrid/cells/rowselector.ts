@@ -37,8 +37,9 @@ export class RowSelectorCell extends BaseCell<RowSelectorColumn> {
         }
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         dom.removeData(this._chk);
         super.destroy();

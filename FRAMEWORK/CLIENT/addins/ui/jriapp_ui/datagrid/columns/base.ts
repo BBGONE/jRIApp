@@ -94,8 +94,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
             this._template = createTemplate(null, this);
             this._template.templateID = this._options.templateID;
             dom.append(col, [this._template.el]);
-        }
-        else if (!!this._options.title) {
+        } else if (!!this._options.title) {
             col.innerHTML = this._options.title;
         }
 
@@ -104,8 +103,9 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         }
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         dom.events.offNS(this.grid.table, this.uniqueID);
 
@@ -134,8 +134,9 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         // noop
     }
     scrollIntoView(isUp: boolean) {
-        if (this.getIsDestroyCalled())
+        if (this.getIsDestroyCalled()) {
             return;
+        }
         this._col.scrollIntoView(!!isUp);
     }
     updateWidth() {

@@ -18,7 +18,7 @@ import { DataGrid } from "../datagrid";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, sys = utils.sys;
 
-const fn_state = (row: Row) => {
+const fnState = (row: Row) => {
     const path = row.grid.options.rowStateField,
         val = (!row.item || !path) ? null : sys.resolvePath(row.item, path),
         css = row.grid._getInternal().onRowStateChanged(row, val);
@@ -38,7 +38,7 @@ export class Row extends BaseObject {
     private _isSelected: boolean;
     private _isDetached: boolean;
     private _stateCss: string;
-    
+
     constructor(grid: DataGrid, options: {
         tr: HTMLTableRowElement;
         item: ICollectionItem;
@@ -66,10 +66,10 @@ export class Row extends BaseObject {
         if (!!this._item) {
             if (!!this.isHasStateField) {
                 this._item.addOnPropertyChange(this._grid.options.rowStateField, () => {
-                    fn_state(self);
+                    fnState(self);
                 }, this._objId);
             }
-            fn_state(self);
+            fnState(self);
         }
     }
     private _createCells() {
@@ -85,16 +85,13 @@ export class Row extends BaseObject {
         if (col instanceof ExpanderColumn) {
             this._expanderCell = new ExpanderCell({ row: self, td: td, column: col, num: num });
             cell = this._expanderCell;
-        }
-        else if (col instanceof ActionsColumn) {
+        } else if (col instanceof ActionsColumn) {
             this._actionsCell = new ActionsCell({ row: self, td: td, column: col, num: num });
             cell = this._actionsCell;
-        }
-        else if (col instanceof RowSelectorColumn) {
+        } else if (col instanceof RowSelectorColumn) {
             this._rowSelectorCell = new RowSelectorCell({ row: self, td: td, column: col, num: num });
             cell = this._rowSelectorCell;
-        }
-        else {
+        } else {
             cell = new DataCell({ row: self, td: td, column: col, num: num });
         }
         return cell;
@@ -102,11 +99,13 @@ export class Row extends BaseObject {
     _setState(css: string) {
         if (this._stateCss !== css) {
             const arr: string[] = [];
-            if (!!this._stateCss)
+            if (!!this._stateCss) {
                 arr.push("-" + this._stateCss);
+            }
             this._stateCss = css;
-            if (!!this._stateCss)
+            if (!!this._stateCss) {
                 arr.push("+" + this._stateCss);
+            }
             dom.setClasses([this.tr], arr);
         }
     }
@@ -116,8 +115,9 @@ export class Row extends BaseObject {
                 (<DataCell>cell)._beginEdit();
             }
         });
-        if (!!this._actionsCell)
+        if (!!this._actionsCell) {
             this._actionsCell.update();
+        }
     }
     _onEndEdit(isCanceled: boolean) {
         this._cells.forEach((cell) => {
@@ -125,8 +125,9 @@ export class Row extends BaseObject {
                 (<DataCell>cell)._endEdit(isCanceled);
             }
         });
-        if (!!this._actionsCell)
+        if (!!this._actionsCell) {
             this._actionsCell.update();
+        }
     }
     beginEdit() {
         return this._item._aspect.beginEdit();
@@ -138,8 +139,9 @@ export class Row extends BaseObject {
         return this._item._aspect.cancelEdit();
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         const grid = this._grid;
         if (!!grid) {
@@ -169,7 +171,7 @@ export class Row extends BaseObject {
         dom.setClass([this._tr], css.rowError, !hasErrors);
     }
     updateUIState() {
-        fn_state(this);
+        fnState(this);
     }
     scrollIntoView(animate?: boolean, pos?: ROW_POSITION) {
         this.grid.scrollToRow({ row: this, animate: animate, pos: pos });
@@ -214,8 +216,7 @@ export class Row extends BaseObject {
         if (v !== this.isExpanded) {
             if (!v && this.isExpanded) {
                 this.grid._getInternal().expandDetails(this, false);
-            }
-            else if (v) {
+            } else if (v) {
                 this.grid._getInternal().expandDetails(this, true);
             }
         }

@@ -18,18 +18,18 @@ export class ExpanderCell extends BaseCell<ExpanderColumn> {
         dom.addClass([this.td], css.rowExpander);
     }
     protected _onCellClicked(row?: Row) {
-        const clicked_row: Row = row || this.row;
-        if (!clicked_row)
+        const clickedRow: Row = row || this.row;
+        if (!clickedRow) {
             return;
-        super._onCellClicked(clicked_row);
-        clicked_row.isExpanded = !clicked_row.isExpanded;
+        }
+        super._onCellClicked(clickedRow);
+        clickedRow.isExpanded = !clickedRow.isExpanded;
     }
     toggleImage() {
         if (this.row.isExpanded) {
             dom.removeClass([this.td], css.rowCollapsed);
             dom.addClass([this.td], css.rowExpanded);
-        }
-        else {
+        } else {
             dom.removeClass([this.td], css.rowExpanded);
             dom.addClass([this.td], css.rowCollapsed);
         }

@@ -27,7 +27,7 @@ export interface IDataContentAttr {
     options?: any;
 }
 
-export function parseContentAttr(content_attr: string): IContentOptions {
+export function parseContentAttr(contentAttr: string): IContentOptions {
     const contentOptions: IContentOptions = {
         name: null,
         templateInfo: null,
@@ -37,12 +37,13 @@ export function parseContentAttr(content_attr: string): IContentOptions {
         options: null
     };
 
-    
-    const temp_opts = parser.parseOptions(content_attr);
 
-    if (temp_opts.length === 0)
+    const tempOpts = parser.parseOptions(contentAttr);
+
+    if (tempOpts.length === 0) {
         return contentOptions;
-    const attr: IDataContentAttr = temp_opts[0];
+    }
+    const attr: IDataContentAttr = tempOpts[0];
     if (!attr.template && !!attr.fieldName) {
         const bindInfo: IBindingInfo = {
             target: null, source: null,
@@ -54,14 +55,16 @@ export function parseContentAttr(content_attr: string): IContentOptions {
         contentOptions.bindingInfo = bindInfo;
         contentOptions.displayInfo = attr.css;
         contentOptions.fieldName = attr.fieldName;
-        if (!!attr.name)
+        if (!!attr.name) {
             contentOptions.name = attr.name;
-        if (!!attr.options)
+        }
+        if (!!attr.options) {
             contentOptions.options = attr.options;
-        if (attr.readOnly !== checks.undefined)
+        }
+        if (attr.readOnly !== checks.undefined) {
             contentOptions.readOnly = coreUtils.parseBool(attr.readOnly);
-    }
-    else if (!!attr.template) {
+        }
+    } else if (!!attr.template) {
         contentOptions.templateInfo = attr.template;
         delete attr.template;
     }

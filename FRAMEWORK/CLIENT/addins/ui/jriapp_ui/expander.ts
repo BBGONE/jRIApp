@@ -31,8 +31,9 @@ export class ExpanderElView extends AnchorElView {
         this.isExpanded = isExpanded;
     }
     protected refresh(): void {
-        if (this.getIsDestroyCalled())
+        if (this.getIsDestroyCalled()) {
             return;
+        }
         this.imageSrc = this._isExpanded ? this._expandedsrc : this._collapsedsrc;
         // this.glyph = this._isExpanded ? this._expandedsrc : this._collapsedsrc;
     }
@@ -41,8 +42,9 @@ export class ExpanderElView extends AnchorElView {
         this.invokeCommand();
     }
     protected _onClick(e: any) {
-        if (this.preventDefault)
+        if (this.preventDefault) {
             e.preventDefault();
+        }
         this.isExpanded = !this.isExpanded;
     }
     // override

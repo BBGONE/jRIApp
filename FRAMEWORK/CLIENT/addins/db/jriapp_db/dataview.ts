@@ -28,9 +28,9 @@ export interface IDataViewOptions<TItem extends ICollectionItem> {
 
 export class DataView<TItem extends ICollectionItem> extends BaseCollection<TItem> {
     private _dataSource: ICollection<TItem>;
-    private _fn_filter: (item: TItem) => boolean;
-    private _fn_sort: (item1: TItem, item2: TItem) => number;
-    private _fn_itemsProvider: (ds: ICollection<TItem>) => TItem[];
+    private _fnFilter: (item: TItem) => boolean;
+    private _fnSort: (item1: TItem, item2: TItem) => number;
+    private _fnItemsProvider: (ds: ICollection<TItem>) => TItem[];
     private _isAddingNew: boolean;
     private _refreshDebounce: Debounce;
 
@@ -43,15 +43,17 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
             fn_itemsProvider: null
         }, options);
 
-        if (!sys.isCollection(opts.dataSource))
+        if (!sys.isCollection(opts.dataSource)) {
             throw new Error(ERRS.ERR_DATAVIEW_DATASRC_INVALID);
-        if (!!opts.fn_filter && !checks.isFunc(opts.fn_filter))
+        }
+        if (!!opts.fn_filter && !checks.isFunc(opts.fn_filter)) {
             throw new Error(ERRS.ERR_DATAVIEW_FILTER_INVALID);
+        }
         this._refreshDebounce = new Debounce();
         this._dataSource = opts.dataSource;
-        this._fn_filter = !opts.fn_filter ? null : opts.fn_filter;
-        this._fn_sort = opts.fn_sort;
-        this._fn_itemsProvider = opts.fn_itemsProvider;
+        this._fnFilter = !opts.fn_filter ? null : opts.fn_filter;
+        this._fnSort = opts.fn_sort;
+        this._fnItemsProvider = opts.fn_itemsProvider;
         this._isAddingNew = false;
         const self = this, ds = this._dataSource;
         ds.getFieldNames().forEach((name) => {
@@ -60,8 +62,8 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         this._bindDS();
     }
     protected _getEventNames() {
-        const base_events = super._getEventNames();
-        return [VIEW_EVENTS.refreshed].concat(base_events);
+        const baseEvents = super._getEventNames();
+        return [VIEW_EVENTS.refreshed].concat(baseEvents);
     }
     // override
     protected _clearItems(items: TItem[]) {
@@ -94,8 +96,9 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         this.raiseEvent(VIEW_EVENTS.refreshed, args);
     }
     protected _refresh(reason: COLL_CHANGE_REASON): void {
-        if (this.getIsDestroyCalled())
+        if (this.getIsDestroyCalled()) {
             return;
+        }
         try {
             let items: TItem[];
             const ds = this._dataSource;
@@ -105,23 +108,21 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
                 return;
             }
 
-            if (!!this._fn_itemsProvider) {
-                items = this._fn_itemsProvider(ds);
-            }
-            else {
+            if (!!this._fnItemsProvider) {
+                items = this._fnItemsProvider(ds);
+            } else {
                 items = ds.items;
             }
 
-            if (!!this._fn_filter) {
-                items = items.filter(this._fn_filter);
+            if (!!this._fnFilter) {
+                items = items.filter(this._fnFilter);
             }
-            if (!!this._fn_sort) {
-                items = items.sort(this._fn_sort);
+            if (!!this._fnSort) {
+                items = items.sort(this._fnSort);
             }
             this._fillItems({ items: items, reason: reason, clear: true, isAppend: false });
             this._onViewRefreshed({});
-        }
-        catch (ex) {
+        } catch (ex) {
             ERROR.reThrow(ex, this.handleError(ex, this));
         }
     }
@@ -145,7 +146,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         }
 
         const arr = (this.isPagingEnabled && !data.isAppend) ? this._filterForPaging(data.items) : data.items;
-        
+
         arr.forEach((item) => {
             const oldItem = self._itemsByKey[item._key];
             if (!oldItem) {
@@ -154,8 +155,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
                 positions.push(self._items.length - 1);
                 self._items.push(item);
                 items.push(item);
-            }
-            else {
+            } else {
                 items.push(oldItem);
             }
         });
@@ -166,8 +166,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
 
         if (isClearAll) {
             this.totalCount = data.items.length;
-        }
-        else {
+        } else {
             this.totalCount = this.totalCount + newItems.length;
         }
 
@@ -199,7 +198,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
             case COLL_CHANGE_TYPE.Add:
                 {
                     if (!this._isAddingNew) {
-                        const items: TItem[] = (!self._fn_filter) ? args.items : args.items.filter(self._fn_filter);
+                        const items: TItem[] = (!self._fnFilter) ? args.items : args.items.filter(self._fnFilter);
                         if (items.length > 0) {
                             self.appendItems(items);
                         }
@@ -232,20 +231,19 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         }
     }
     protected _onDSStatusChanged(sender: any, args: ICollItemStatusArgs<TItem>) {
-        const self = this, item = args.item, key = args.key, oldStatus = args.oldStatus, canFilter = !!self._fn_filter;
+        const self = this, item = args.item, key = args.key, oldStatus = args.oldStatus, canFilter = !!self._fnFilter;
 
         if (!!self._itemsByKey[key]) {
             self._onItemStatusChanged(item, oldStatus);
             if (canFilter) {
-                const isOk = self._fn_filter(item);
+                const isOk = self._fnFilter(item);
                 if (!isOk) {
                     self.removeItem(item);
                 }
             }
-        }
-        else {
+        } else {
             if (canFilter) {
-                const isOk = self._fn_filter(item);
+                const isOk = self._fnFilter(item);
                 if (isOk) {
                     self.appendItems([item]);
                 }
@@ -254,8 +252,9 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
     }
     protected _bindDS() {
         const self = this, ds = this._dataSource;
-        if (!ds)
+        if (!ds) {
             return;
+        }
         ds.addOnCollChanged(self._onDSCollectionChanged, self.uniqueID, self, TPriority.AboveNormal);
         ds.addOnBeginEdit((sender, args) => {
             if (!!self._itemsByKey[args.item._key]) {
@@ -264,18 +263,18 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         }, self.uniqueID, null, TPriority.AboveNormal);
         ds.addOnEndEdit((sender, args) => {
             let isOk: boolean;
-            const item = args.item, canFilter = !!self._fn_filter;
+            const item = args.item, canFilter = !!self._fnFilter;
             if (!!self._itemsByKey[item._key]) {
                 self._onEditing(item, false, args.isCanceled);
                 if (!args.isCanceled && canFilter) {
-                    isOk = self._fn_filter(item);
-                    if (!isOk)
+                    isOk = self._fnFilter(item);
+                    if (!isOk) {
                         self.removeItem(item);
+                    }
                 }
-            }
-            else {
+            } else {
                 if (!args.isCanceled && canFilter) {
-                    isOk = self._fn_filter(item);
+                    isOk = self._fnFilter(item);
                     if (isOk) {
                         self.appendItems([item]);
                     }
@@ -312,17 +311,19 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
     }
     protected _unbindDS() {
         const self = this, ds = this._dataSource;
-        if (!ds) return;
+        if (!ds) {
+            return;
+        }
         ds.removeNSHandlers(self.uniqueID);
     }
     protected _checkCurrentChanging(newCurrent: TItem) {
         const ds = this._dataSource;
         try {
             const item = (<BaseCollection<TItem>>ds)._getInternal().getEditingItem();
-            if (!!item && newCurrent !== item)
+            if (!!item && newCurrent !== item) {
                 ds.endEdit();
-        }
-        catch (ex) {
+            }
+        } catch (ex) {
             ds.cancelEdit();
             ERROR.reThrow(ex, this.handleError(ex, this));
         }
@@ -332,15 +333,17 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
     }
     protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER) {
         super._clear(reason, oper);
-        if (reason !== COLL_CHANGE_REASON.PageChange)
+        if (reason !== COLL_CHANGE_REASON.PageChange) {
             this.pageIndex = 0;
+        }
     }
     _getStrValue(val: any, fieldInfo: IFieldInfo): string {
         return (<BaseCollection<TItem>>this._dataSource)._getInternal().getStrValue(val, fieldInfo);
     }
     appendItems(items: TItem[]) {
-        if (this._isDestroyCalled)
+        if (this._isDestroyCalled) {
             return [];
+        }
         return this._fillItems({ items: items, reason: COLL_CHANGE_REASON.None, clear: false, isAppend: true });
     }
     addNew() {
@@ -354,8 +357,9 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         return item;
     }
     removeItem(item: TItem) {
-        if (!this._itemsByKey[item._key])
+        if (!this._itemsByKey[item._key]) {
             return;
+        }
         const oldPos = arrHelper.remove(this._items, item);
         if (oldPos < 0) {
             throw new Error(ERRS.ERR_ITEM_IS_NOTFOUND);
@@ -391,15 +395,16 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         });
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         this._refreshDebounce.destroy();
         this._refreshDebounce = null;
         this._unbindDS();
         this._dataSource = null;
-        this._fn_filter = null;
-        this._fn_sort = null;
+        this._fnFilter = null;
+        this._fnSort = null;
         super.destroy();
     }
     get errors(): Errors<TItem> {
@@ -415,24 +420,24 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         }
     }
     get permissions(): IPermissions { return this._dataSource.permissions; }
-    get fn_filter() { return this._fn_filter; }
+    get fn_filter() { return this._fnFilter; }
     set fn_filter(v: (item: TItem) => boolean) {
-        if (this._fn_filter !== v) {
-            this._fn_filter = v;
+        if (this._fnFilter !== v) {
+            this._fnFilter = v;
             this._refresh(COLL_CHANGE_REASON.None);
         }
     }
-    get fn_sort() { return this._fn_sort; }
+    get fn_sort() { return this._fnSort; }
     set fn_sort(v: (item1: TItem, item2: TItem) => number) {
-        if (this._fn_sort !== v) {
-            this._fn_sort = v;
+        if (this._fnSort !== v) {
+            this._fnSort = v;
             this._refresh(COLL_CHANGE_REASON.Sorting);
         }
     }
-    get fn_itemsProvider() { return this._fn_itemsProvider; }
+    get fn_itemsProvider() { return this._fnItemsProvider; }
     set fn_itemsProvider(v: (ds: BaseCollection<TItem>) => TItem[]) {
-        if (this._fn_itemsProvider !== v) {
-            this._fn_itemsProvider = v;
+        if (this._fnItemsProvider !== v) {
+            this._fnItemsProvider = v;
             this._refresh(COLL_CHANGE_REASON.None);
         }
     }

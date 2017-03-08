@@ -17,31 +17,25 @@ export class BaseConverter implements IConverter {
         return val;
    }
     convertToTarget(val: any, param: any, dataContext: any): any {
-        if (checks.isNt(val))
-            return null;
-        return val;
+        return (checks.isNt(val)) ? null : val;
    }
 };
 export let baseConverter = new BaseConverter();
 
 export class DateConverter implements IConverter {
     convertToSource(val: any, param: any, dataContext: any): Date {
-        if (!val)
+        if (!val) {
             return null;
+        }
         const defaults = boot.defaults, datepicker = boot.getSvc<IDatepicker>("IDatepicker");
-        if (!!datepicker)
-            return datepicker.parseDate(val);
-        else
-            return dateTimeConverter.convertToSource(val, defaults.dateFormat, dataContext);
+        return (!!datepicker) ? datepicker.parseDate(val) : dateTimeConverter.convertToSource(val, defaults.dateFormat, dataContext);
    }
     convertToTarget(val: any, param: any, dataContext: any): string {
-        if (checks.isNt(val))
+        if (checks.isNt(val)) {
             return "";
+        }
         const defaults = boot.defaults, datepicker = boot.getSvc<IDatepicker>("IDatepicker");
-        if (!!datepicker)
-            return datepicker.formatDate(val);
-        else
-            return dateTimeConverter.convertToTarget(val, defaults.dateFormat, dataContext);
+        return (!!datepicker) ? datepicker.formatDate(val) : dateTimeConverter.convertToTarget(val, defaults.dateFormat, dataContext);
    }
     toString() {
         return "DateConverter";
@@ -51,8 +45,9 @@ const dateConverter = new DateConverter();
 
 export class DateTimeConverter implements IConverter {
     convertToSource(val: any, param: any, dataContext: any): Date {
-        if (!val)
+        if (!val) {
             return null;
+        }
         const m = moment(val, param);
         if (!m.isValid()) {
             throw new Error(strUtils.format(ERRS.ERR_CONV_INVALID_DATE, val));
@@ -74,11 +69,12 @@ const dateTimeConverter = new DateTimeConverter();
 
 export class NumberConverter implements IConverter {
     convertToSource(val: any, param: any, dataContext: any): number {
-        if (checks.isNt(val))
+        if (checks.isNt(val)) {
             return null;
-        const defaults = bootstrap.defaults, dp = defaults.decimalPoint, thousand_sep = defaults.thousandSep;
+        }
+        const defaults = bootstrap.defaults, dp = defaults.decimalPoint, thousandSep = defaults.thousandSep;
         let prec = 4;
-        let value = val.replace(thousand_sep, "");
+        let value = val.replace(thousandSep, "");
         value = value.replace(dp, ".");
         value = strUtils.stripNonNumeric(value);
         if (value === "") {
@@ -113,23 +109,23 @@ export class NumberConverter implements IConverter {
         if (checks.isNt(val)) {
             return "";
        }
-        const defaults = bootstrap.defaults, dp = defaults.decimalPoint, thousand_sep = defaults.thousandSep;
+        const defaults = bootstrap.defaults, dp = defaults.decimalPoint, thousandSep = defaults.thousandSep;
         let prec: number;
         switch (param) {
             case NUM_CONV.Integer:
                 prec = 0;
-                return strUtils.formatNumber(val, prec, dp, thousand_sep);
+                return strUtils.formatNumber(val, prec, dp, thousandSep);
             case NUM_CONV.Decimal:
                 prec = defaults.decPrecision;
-                return strUtils.formatNumber(val, prec, dp, thousand_sep);
+                return strUtils.formatNumber(val, prec, dp, thousandSep);
             case NUM_CONV.SmallInt:
                 prec = 0;
                 return strUtils.formatNumber(val, prec, dp, "");
             case NUM_CONV.Float:
                 // float number type preserves all number precision
-                return strUtils.formatNumber(val, null, dp, thousand_sep);
+                return strUtils.formatNumber(val, null, dp, thousandSep);
             default:
-                return strUtils.formatNumber(val, null, dp, thousand_sep);
+                return strUtils.formatNumber(val, null, dp, thousandSep);
        }
    }
     toString() {

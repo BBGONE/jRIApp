@@ -40,8 +40,9 @@ export function createQueue(interval: number = 0): IQueue {
                     _timer = null;
                     _tasks = [];
                     // recycle generated nums if they are too big
-                    if (_newTaskId > MAX_NUM)
+                    if (_newTaskId > MAX_NUM) {
                         _newTaskId = 1;
+                    }
 
                     try {
                         arr.forEach((task) => {
@@ -49,13 +50,11 @@ export function createQueue(interval: number = 0): IQueue {
                                 if (!!task.func) {
                                     task.func();
                                 }
-                            }
-                            catch (err) {
+                            } catch (err) {
                                 error.handleError(win, err, win);
                             }
                         });
-                    }
-                    finally {
+                    } finally {
                         // reset the map after all the tasks in the queue have been executed
                         // so a task can be cancelled from another task
                         _taskMap = {};

@@ -125,13 +125,13 @@ export interface IElViewStore {
 }
 
 export interface IElViewRegister {
-    registerElView(name: string, vw_type: IViewType): void;
+    registerElView(name: string, vwType: IViewType): void;
     getElViewType(name: string): IViewType;
     destroy(): void;
 }
 
 export interface IElViewFactory {
-    createElView(view_info: { name: string; options: IViewOptions; }): IElView;
+    createElView(viewInfo: { name: string; options: IViewOptions; }): IElView;
     getOrCreateElView(el: HTMLElement): IElView;
     getElementViewInfo(el: HTMLElement): { name: string; options: IViewOptions; };
     store: IElViewStore;
@@ -275,7 +275,7 @@ export interface IApplication extends IErrorHandler, IExports, IBaseObject {
     _getInternal(): IInternalAppMethods;
     addOnStartUp(fn: TEventHandler<IApplication, any>, nmspace?: string, context?: IBaseObject): void;
     removeOnStartUp(nmspace?: string): void;
-    registerElView(name: string, vw_type: IViewType): void;
+    registerElView(name: string, vwType: IViewType): void;
     registerConverter(name: string, obj: IConverter): void;
     getConverter(name: string): IConverter;
     registerSvc(name: string, obj: any): void;
@@ -285,8 +285,8 @@ export interface IApplication extends IErrorHandler, IExports, IBaseObject {
     getObject<T>(name: string): T;
     getObject(name: string): any;
     loadTemplates(url: string): IPromise<any>;
-    loadTemplatesAsync(fn_loader: () => IPromise<string>): IPromise<any>;
-    registerTemplateLoader(name: string, fn_loader: () => IPromise<string>): void;
+    loadTemplatesAsync(fnLoader: () => IPromise<string>): IPromise<any>;
+    registerTemplateLoader(name: string, fnLoader: () => IPromise<string>): void;
     getTemplateLoader(name: string): () => IPromise<string>;
     registerTemplateGroup(name: string, group: {
         fn_loader?: () => IPromise<string>;

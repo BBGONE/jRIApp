@@ -96,8 +96,9 @@ class EventHelper {
             throw new Error(ERRS.ERR_EVENT_INVALID_FUNC);
         }
 
-        if (!name)
+        if (!name) {
             throw new Error(strUtils.format(ERRS.ERR_EVENT_INVALID, "[Empty]"));
+        }
 
         const ns = !nmspace ? "*" : "" + nmspace;
 
@@ -111,22 +112,26 @@ class EventHelper {
         list.push(node);
     }
     static getNS(ev: TEventList, ns: string): TEventNodeArray {
-        if (!ev)
+        if (!ev) {
             return [];
+        }
         const res: TEventNodeArray = [], list = ev[ns];
-        if (!list)
+        if (!list) {
             return res;
+        }
         for (let k = 0; k < list.length; ++k) {
             res.push(list[k]);
         }
         return res;
     }
     static removeNS(ev: TEventList, name: string, ns: string): TEventNodeArray {
-        if (!ev)
+        if (!ev) {
             return [];
+        }
         const res: TEventNodeArray = [], list = ev[ns];
-        if (!list)
+        if (!list) {
             return res;
+        }
 
         if (!name) {
             delete ev[ns];
@@ -135,58 +140,60 @@ class EventHelper {
 
         const newArr: TEventNodeArray = [];
         for (let k = 0; k < list.length; ++k) {
-            if (list[k].name === name)
+            if (list[k].name === name) {
                 res.push(list[k]);
-            else
+            } else {
                 newArr.push(list[k]);
+            }
         }
 
-        if (newArr.length > 0)
+        if (newArr.length > 0) {
             ev[ns] = newArr;
-        else
+        } else {
             delete ev[ns];
+        }
 
         return res;
     }
     static remove(ev: TEventList, name?: string, nmspace?: string): TEventNodeArray {
-        if (!ev)
+        if (!ev) {
             return [];
+        }
         const ns = !nmspace ? "*" : "" + nmspace, arr: TEventNodeArray[] = [];
 
         if (ns === "*") {
-            const ns_keys = Object.keys(ev);
-            for (let i = 0; i < ns_keys.length; ++i) {
-                arr.push(EventHelper.removeNS(ev, name, ns_keys[i]));
+            const nsKeys = Object.keys(ev);
+            for (let i = 0; i < nsKeys.length; ++i) {
+                arr.push(EventHelper.removeNS(ev, name, nsKeys[i]));
             }
             // return merged array
             return arrHelper.merge(arr);
-        }
-        else {
+        } else {
             return EventHelper.removeNS(ev, name, ns);
         }
     }
     static toArray(ev: TEventList): TEventNodeArray {
-        if (!ev)
+        if (!ev) {
             return [];
-        const ns_keys = Object.keys(ev), arr: TEventNodeArray[] = [];
-        for (let i = 0; i < ns_keys.length; ++i) {
-            arr.push(EventHelper.getNS(ev, ns_keys[i]));
+        }
+        const nsKeys = Object.keys(ev), arr: TEventNodeArray[] = [];
+        for (let i = 0; i < nsKeys.length; ++i) {
+            arr.push(EventHelper.getNS(ev, nsKeys[i]));
         }
 
         // return merged array
         return arrHelper.merge(arr);
     }
-    static getDelegateListener(root: TDomElement, fn_match: (el: TDomElement) => boolean, listener: THandlerFunc): (event: Event) => void {
+    static getDelegateListener(root: TDomElement, fnMatch: (el: TDomElement) => boolean, listener: THandlerFunc): (event: Event) => void {
         const res = (event: Event): void => {
             let target: TDomElement = <any>event.target;
             // go up to the parent node
             while (!!target && target !== root) {
-                if (fn_match(target)) {
+                if (fnMatch(target)) {
                     const eventCopy = new EventWrap(event, target);
                     listener.apply(target, [eventCopy]);
                     return;
                 }
-                
                 target = (<Element><any>target).parentElement;
             }
         };
@@ -214,114 +221,113 @@ export type TEventsDelegateArgs = {
 export type TEventsArgsOrNamespace = TEventsArgs | string;
 
 function isDelegateArgs(a: any): a is TEventsDelegateArgs {
-    if (!a) return false;
-    return checks.isFunc(a.matchElement);
+    return (!a) ? false : checks.isFunc(a.matchElement);
 }
 
 export type THandlerFunc = (evt: Event | EventWrap) => void;
 
 export class DomEvents {
-    static on(el: TDomElement, ev_type: "MSContentZoom", listener: (ev: UIEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "MSGestureChange", listener: (ev: MSGestureEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "MSGestureDoubleTap", listener: (ev: MSGestureEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "MSGestureEnd", listener: (ev: MSGestureEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "MSGestureHold", listener: (ev: MSGestureEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "MSGestureStart", listener: (ev: MSGestureEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "MSGestureTap", listener: (ev: MSGestureEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "MSInertiaStart", listener: (ev: MSGestureEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "MSManipulationStateChanged", listener: (ev: MSManipulationEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "MSPointerCancel", listener: (ev: MSPointerEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "MSPointerDown", listener: (ev: MSPointerEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "MSPointerEnter", listener: (ev: MSPointerEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "MSPointerLeave", listener: (ev: MSPointerEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "MSPointerMove", listener: (ev: MSPointerEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "MSPointerOut", listener: (ev: MSPointerEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "MSPointerOver", listener: (ev: MSPointerEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "MSPointerUp", listener: (ev: MSPointerEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "abort", listener: (ev: UIEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "activate", listener: (ev: UIEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "beforeactivate", listener: (ev: UIEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "beforedeactivate", listener: (ev: UIEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "blur", listener: (ev: FocusEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "canplay", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "canplaythrough", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "change", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "click", listener: (ev: MouseEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "contextmenu", listener: (ev: PointerEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "dblclick", listener: (ev: MouseEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "deactivate", listener: (ev: UIEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "drag", listener: (ev: DragEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "dragend", listener: (ev: DragEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "dragenter", listener: (ev: DragEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "dragleave", listener: (ev: DragEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "dragover", listener: (ev: DragEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "dragstart", listener: (ev: DragEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "drop", listener: (ev: DragEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "durationchange", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "emptied", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "ended", listener: (ev: MediaStreamErrorEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "error", listener: (ev: ErrorEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "focus", listener: (ev: FocusEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "fullscreenchange", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "fullscreenerror", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "input", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "invalid", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "keydown", listener: (ev: KeyboardEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "keypress", listener: (ev: KeyboardEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "keyup", listener: (ev: KeyboardEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "load", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "loadeddata", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "loadedmetadata", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "loadstart", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "mousedown", listener: (ev: MouseEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "mousemove", listener: (ev: MouseEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "mouseout", listener: (ev: MouseEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "mouseover", listener: (ev: MouseEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "mouseup", listener: (ev: MouseEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "mousewheel", listener: (ev: WheelEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "mssitemodejumplistitemremoved", listener: (ev: MSSiteModeEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "msthumbnailclick", listener: (ev: MSSiteModeEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "pause", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "play", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "playing", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "pointercancel", listener: (ev: PointerEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "pointerdown", listener: (ev: PointerEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "pointerenter", listener: (ev: PointerEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "pointerleave", listener: (ev: PointerEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "pointerlockchange", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "pointerlockerror", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "pointermove", listener: (ev: PointerEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "pointerout", listener: (ev: PointerEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "pointerover", listener: (ev: PointerEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "pointerup", listener: (ev: PointerEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "progress", listener: (ev: ProgressEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "ratechange", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "readystatechange", listener: (ev: ProgressEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "reset", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "scroll", listener: (ev: UIEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "seeked", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "seeking", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "select", listener: (ev: UIEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "selectionchange", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "selectstart", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "stalled", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "stop", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "submit", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "suspend", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "timeupdate", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "touchcancel", listener: (ev: TouchEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "touchend", listener: (ev: TouchEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "touchmove", listener: (ev: TouchEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "touchstart", listener: (ev: TouchEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "volumechange", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "waiting", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "webkitfullscreenchange", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "webkitfullscreenerror", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: "wheel", listener: (ev: WheelEvent) => any, args?: TEventsArgsOrNamespace): void;
-    static on(el: TDomElement, ev_type: string, listener: (ev: EventWrap) => any, args: TEventsDelegateArgs): void;
-    static on(el: TDomElement, ev_type: string, listener: EventListenerOrEventListenerObject, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "MSContentZoom", listener: (ev: UIEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "MSGestureChange", listener: (ev: MSGestureEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "MSGestureDoubleTap", listener: (ev: MSGestureEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "MSGestureEnd", listener: (ev: MSGestureEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "MSGestureHold", listener: (ev: MSGestureEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "MSGestureStart", listener: (ev: MSGestureEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "MSGestureTap", listener: (ev: MSGestureEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "MSInertiaStart", listener: (ev: MSGestureEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "MSManipulationStateChanged", listener: (ev: MSManipulationEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "MSPointerCancel", listener: (ev: MSPointerEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "MSPointerDown", listener: (ev: MSPointerEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "MSPointerEnter", listener: (ev: MSPointerEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "MSPointerLeave", listener: (ev: MSPointerEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "MSPointerMove", listener: (ev: MSPointerEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "MSPointerOut", listener: (ev: MSPointerEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "MSPointerOver", listener: (ev: MSPointerEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "MSPointerUp", listener: (ev: MSPointerEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "abort", listener: (ev: UIEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "activate", listener: (ev: UIEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "beforeactivate", listener: (ev: UIEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "beforedeactivate", listener: (ev: UIEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "blur", listener: (ev: FocusEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "canplay", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "canplaythrough", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "change", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "click", listener: (ev: MouseEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "contextmenu", listener: (ev: PointerEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "dblclick", listener: (ev: MouseEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "deactivate", listener: (ev: UIEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "drag", listener: (ev: DragEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "dragend", listener: (ev: DragEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "dragenter", listener: (ev: DragEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "dragleave", listener: (ev: DragEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "dragover", listener: (ev: DragEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "dragstart", listener: (ev: DragEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "drop", listener: (ev: DragEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "durationchange", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "emptied", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "ended", listener: (ev: MediaStreamErrorEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "error", listener: (ev: ErrorEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "focus", listener: (ev: FocusEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "fullscreenchange", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "fullscreenerror", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "input", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "invalid", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "keydown", listener: (ev: KeyboardEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "keypress", listener: (ev: KeyboardEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "keyup", listener: (ev: KeyboardEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "load", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "loadeddata", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "loadedmetadata", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "loadstart", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "mousedown", listener: (ev: MouseEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "mousemove", listener: (ev: MouseEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "mouseout", listener: (ev: MouseEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "mouseover", listener: (ev: MouseEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "mouseup", listener: (ev: MouseEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "mousewheel", listener: (ev: WheelEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "mssitemodejumplistitemremoved", listener: (ev: MSSiteModeEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "msthumbnailclick", listener: (ev: MSSiteModeEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "pause", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "play", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "playing", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "pointercancel", listener: (ev: PointerEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "pointerdown", listener: (ev: PointerEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "pointerenter", listener: (ev: PointerEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "pointerleave", listener: (ev: PointerEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "pointerlockchange", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "pointerlockerror", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "pointermove", listener: (ev: PointerEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "pointerout", listener: (ev: PointerEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "pointerover", listener: (ev: PointerEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "pointerup", listener: (ev: PointerEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "progress", listener: (ev: ProgressEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "ratechange", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "readystatechange", listener: (ev: ProgressEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "reset", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "scroll", listener: (ev: UIEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "seeked", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "seeking", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "select", listener: (ev: UIEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "selectionchange", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "selectstart", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "stalled", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "stop", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "submit", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "suspend", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "timeupdate", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "touchcancel", listener: (ev: TouchEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "touchend", listener: (ev: TouchEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "touchmove", listener: (ev: TouchEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "touchstart", listener: (ev: TouchEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "volumechange", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "waiting", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "webkitfullscreenchange", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "webkitfullscreenerror", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: "wheel", listener: (ev: WheelEvent) => any, args?: TEventsArgsOrNamespace): void;
+    static on(el: TDomElement, evType: string, listener: (ev: EventWrap) => any, args: TEventsDelegateArgs): void;
+    static on(el: TDomElement, evType: string, listener: EventListenerOrEventListenerObject, args?: TEventsArgsOrNamespace): void;
     // on implementation
-    static on(el: TDomElement, ev_type: string, listener: THandlerFunc, args?: TEventsArgsOrNamespace | TEventsDelegateArgs): void {
+    static on(el: TDomElement, evType: string, listener: THandlerFunc, args?: TEventsArgsOrNamespace | TEventsDelegateArgs): void {
         let events: TEventList = weakmap.get(el), ns: string, useCapture: boolean = false;
         if (!events) {
             events = <any>{};
@@ -331,25 +337,24 @@ export class DomEvents {
         if (!!args) {
             if (checks.isString(args)) {
                 ns = args;
-            }
-            else if (isDelegateArgs(args)) {
+            } else if (isDelegateArgs(args)) {
                 ns = args.nmspace;
                 listener = helper.getDelegateListener(el, args.matchElement, listener);
-            }
-            else {
-                ns = args.nmspace, useCapture = !!args.useCapture;
+            } else {
+                ns = args.nmspace;
+                useCapture = !!args.useCapture;
             }
         }
 
-        helper.add(events, ev_type, listener, ns, useCapture);
-        el.addEventListener(ev_type, listener, useCapture);
+        helper.add(events, evType, listener, ns, useCapture);
+        el.addEventListener(evType, listener, useCapture);
     }
-    static off(el: TDomElement, ev_type?: string, nmspace?: string, useCapture?: boolean): void {
+    static off(el: TDomElement, evType?: string, nmspace?: string, useCapture?: boolean): void {
         const ev: TEventList = weakmap.get(el);
         if (!ev) {
             return;
         }
-        const handlers = helper.remove(ev, ev_type, nmspace);
+        const handlers = helper.remove(ev, evType, nmspace);
         for (let i = 0; i < handlers.length; i += 1) {
             const handler = handlers[i];
             if (checks.isNt(useCapture) || (useCapture === handler.useCapture)) {

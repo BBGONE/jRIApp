@@ -9,12 +9,12 @@ import { TextBoxElView } from "../textbox";
 import { BasicContent } from "./basic";
 
 export class NumberContent extends BasicContent {
-    static __allowedKeys: number[] = null;
-    private get _allowedKeys() {
-        if (!NumberContent.__allowedKeys) {
-            NumberContent.__allowedKeys = [0, KEYS.backspace, KEYS.del, KEYS.left, KEYS.right, KEYS.end, KEYS.home, KEYS.tab, KEYS.esc, KEYS.enter];
+    static _allowedKeys: number[] = null;
+    private get allowedKeys() {
+        if (!NumberContent._allowedKeys) {
+            NumberContent._allowedKeys = [0, KEYS.backspace, KEYS.del, KEYS.left, KEYS.right, KEYS.end, KEYS.home, KEYS.tab, KEYS.esc, KEYS.enter];
         }
-        return NumberContent.__allowedKeys;
+        return NumberContent._allowedKeys;
     }
     protected getBindingOption(bindingInfo: IBindingInfo, tgt: IBaseObject, dctx: any, targetPath: string): IBindingOptions {
         const options = super.getBindingOption(bindingInfo, tgt, dctx, targetPath), finf = this.getFieldInfo();
@@ -33,22 +33,20 @@ export class NumberContent extends BasicContent {
     }
     protected previewKeyPress(keyCode: number, value: string) {
         const ch = String.fromCharCode(keyCode), digits = "1234567890", defaults = bootstrap.defaults, notAllowedChars = "~@#$%^&*()+=_";
-        if (notAllowedChars.indexOf(ch) > -1)
+        if (notAllowedChars.indexOf(ch) > -1) {
             return false;
-        if (this._allowedKeys.indexOf(keyCode) > -1)
-            return true;
-        if (ch === "-" && value.length === 0)
-            return true;
-        if (ch === defaults.decimalPoint) {
-            if (value.length === 0)
-                return false;
-            else
-                return value.indexOf(ch) < 0;
         }
-        if (ch === defaults.thousandSep)
+        if (this.allowedKeys.indexOf(keyCode) > -1) {
             return true;
-        else
-            return digits.indexOf(ch) > -1;
+        }
+        if (ch === "-" && value.length === 0) {
+            return true;
+        }
+        if (ch === defaults.decimalPoint) {
+            return (value.length === 0) ? false : value.indexOf(ch) < 0;
+        }
+
+        return (ch === defaults.thousandSep) ? true : digits.indexOf(ch) > -1;
     }
     render() {
         super.render();

@@ -16,9 +16,9 @@ const _checkDOMReady: TCheckDOMReady = (function () {
         const callback = () => {
             doc.removeEventListener(domContentLoaded, <any>callback);
             isDOMloaded = true;
-            let fn_onloaded: TFunc = null;
-            while (fn_onloaded = funcs.shift()) {
-                queue.enque(fn_onloaded);
+            let fnOnloaded: TFunc = null;
+            while (fnOnloaded = funcs.shift()) {
+                queue.enque(fnOnloaded);
             }
         };
 
@@ -42,8 +42,9 @@ export class DomUtils {
 
     static getData(el: Node, key: string): any {
         const map: any = weakmap.get(el);
-        if (!map)
+        if (!map) {
             return (void 0);
+        }
         return map[key];
     }
     static setData(el: Node, key: string, val: any): void {
@@ -61,17 +62,18 @@ export class DomUtils {
         }
         if (!key) {
             weakmap.delete(el);
-        }
-        else {
+        } else {
             delete map[key];
         }
     }
     static isContained(oNode: any, oCont: any) {
-        if (!oNode)
+        if (!oNode) {
             return false;
+        }
         while (!!(oNode = oNode.parentNode)) {
-            if (oNode === oCont)
+            if (oNode === oCont) {
                 return true;
+            }
         }
 
         return false;
@@ -89,34 +91,40 @@ export class DomUtils {
         return <any>root.querySelector(selector);
     }
     static append(parent: Node, children: Node[]): void {
-        if (!children)
+        if (!children) {
             return;
+        }
         children.forEach((node) => {
             parent.appendChild(node);
         });
     }
     static prepend(parent: Node, child: Node): void {
-        if (!child)
+        if (!child) {
             return;
+        }
         let firstChild: Node = null;
-        if (!(firstChild = parent.firstChild))
+        if (!(firstChild = parent.firstChild)) {
             parent.appendChild(child);
-        else
+        } else {
             parent.insertBefore(child, firstChild);
+        }
     }
     static removeNode(node: Node) {
-        if (!node)
+        if (!node) {
             return;
+        }
         const pnd = node.parentNode;
-        if (!!pnd)
+        if (!!pnd) {
             pnd.removeChild(node);
+        }
     }
     static insertAfter(node: Node, refNode: Node) {
         const parent = refNode.parentNode;
-        if (parent.lastChild === refNode)
+        if (parent.lastChild === refNode) {
             parent.appendChild(node);
-        else
+        } else {
             parent.insertBefore(node, refNode.nextSibling);
+        }
     }
     static insertBefore(node: Node, refNode: Node) {
         const parent = refNode.parentNode;
@@ -124,29 +132,34 @@ export class DomUtils {
     }
     static wrap(elem: Element, wrapper: Element) {
         const parent = elem.parentElement, nsibling = elem.nextSibling;
-        if (!parent)
+        if (!parent) {
             return;
+        }
         wrapper.appendChild(elem);
         (!nsibling) ? parent.appendChild(wrapper) : parent.insertBefore(wrapper, nsibling);
     }
     static unwrap(elem: Element) {
         const wrapper = elem.parentElement;
-        if (!wrapper)
+        if (!wrapper) {
             return;
+        }
         const parent = wrapper.parentElement, nsibling = wrapper.nextSibling;
-        if (!parent)
+        if (!parent) {
             return;
+        }
         parent.removeChild(wrapper);
         (!nsibling) ? parent.appendChild(elem) : parent.insertBefore(elem, nsibling);
     }
 
     private static getClassMap(el: Element): IIndexer<number> {
         const res: IIndexer<number> = {};
-        if (!el)
+        if (!el) {
             return res;
+        }
         const className = el.className;
-        if (!className)
+        if (!className) {
             return res;
+        }
         const arr: string[] = className.split(" ");
         for (let i = 0; i < arr.length; i += 1) {
             arr[i] = arr[i].trim();
@@ -162,24 +175,28 @@ export class DomUtils {
        -* means to remove all classes
     */
     static setClasses(elems: Element[], classes: string[]): void {
-        if (!elems.length || !classes.length)
+        if (!elems.length || !classes.length) {
             return;
+        }
 
         const toAdd: string[] = [];
         let toRemove: string[] = [], removeAll = false;
         classes.forEach((v: string) => {
-            if (!v)
+            if (!v) {
                 return;
+            }
 
             let name = v.trim();
-            if (!name)
+            if (!name) {
                 return;
+            }
             const op = v.charAt(0);
             if (op == "+" || op == "-") {
                 name = v.substr(1).trim();
             }
-            if (!name)
+            if (!name) {
                 return;
+            }
 
             const arr: string[] = name.split(" ");
             for (let i = 0; i < arr.length; i += 1) {
@@ -187,12 +204,12 @@ export class DomUtils {
                 if (!!v2) {
                     if (op != "-") {
                         toAdd.push(v2);
-                    }
-                    else {
-                        if (name === "*")
+                    } else {
+                        if (name === "*") {
                             removeAll = true;
-                        else
+                        } else {
                             toRemove.push(v2);
+                        }
                     }
                 }
             }
@@ -219,8 +236,9 @@ export class DomUtils {
         }
     }
     static setClass(elems: Element[], css: string, remove: boolean = false): void {
-        if (!elems.length)
+        if (!elems.length) {
             return;
+        }
 
         if (!css) {
             if (remove) {
@@ -240,20 +258,21 @@ export class DomUtils {
         if (hasClassList && arr.length === 1) {
             for (let j = 0; j < elems.length; j += 1) {
                 const el = elems[j];
-                if (remove)
+                if (remove) {
                     el.classList.remove(arr[0]);
-                else
+                } else {
                     el.classList.add(arr[0]);
+                }
             }
-        }
-        else {
+        } else {
             for (let j = 0; j < elems.length; j += 1) {
                 const el = elems[j], map = DomUtils.getClassMap(el);
                 for (let i = 0; i < arr.length; i += 1) {
-                    if (remove)
+                    if (remove) {
                         delete map[arr[i]];
-                    else
+                    } else {
                         map[arr[i]] = i + 1000;
+                    }
                 }
                 const keys = Object.keys(map);
                 el.className = keys.join(" ");

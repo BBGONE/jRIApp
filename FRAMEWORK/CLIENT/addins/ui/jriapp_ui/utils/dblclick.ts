@@ -5,50 +5,53 @@ export class DblClick implements IDisposable {
     private _isDestroyed: boolean;
     private _timer: number;
     private _interval: number;
-    private _fn_OnClick: () => any;
-    private _fn_OnDblClick: () => any;
+    private _fnOnClick: () => any;
+    private _fnOnDblClick: () => any;
 
     constructor(interval: number = 0) {
         this._isDestroyed = false;
         this._timer = null;
         this._interval = !interval ? 0 : interval;
-        this._fn_OnClick = null;
-        this._fn_OnDblClick = null;
+        this._fnOnClick = null;
+        this._fnOnDblClick = null;
     }
     click() {
         const self = this;
         if (!!this._timer) {
             clearTimeout(this._timer);
             this._timer = null;
-            if (!!this._fn_OnDblClick)
-                this._fn_OnDblClick();
-            else if (!!this._fn_OnClick)
-                this._fn_OnClick();
-        }
-        else {
-            if (!!this._fn_OnClick) {
+            if (!!this._fnOnDblClick) {
+                this._fnOnDblClick();
+            } else if (!!this._fnOnClick) {
+                this._fnOnClick();
+            }
+        } else {
+            if (!!this._fnOnClick) {
                 this._timer = setTimeout(function () {
                     self._timer = null;
-                    if (!!self._fn_OnClick)
-                        self._fn_OnClick();
+                    if (!!self._fnOnClick) {
+                        self._fnOnClick();
+                    }
                 }, self._interval);
             }
         }
     }
-    add(fn_OnClick: () => any, fn_OnDblClick?: () => any) {
-        if (this._isDestroyed)
+    add(fnOnClick: () => any, fnOnDblClick?: () => any) {
+        if (this._isDestroyed) {
             return;
-        this._fn_OnClick = fn_OnClick;
-        this._fn_OnDblClick = fn_OnDblClick;
+        }
+        this._fnOnClick = fnOnClick;
+        this._fnOnDblClick = fnOnDblClick;
     }
     destroy(): void {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyed = true;
         clearTimeout(this._timer);
         this._timer = null;
-        this._fn_OnClick = null;
-        this._fn_OnDblClick = null;
+        this._fnOnClick = null;
+        this._fnOnDblClick = null;
     }
     getIsDestroyed(): boolean {
         return this._isDestroyed;

@@ -78,8 +78,9 @@ export class BasicContent extends BaseObject implements IContent {
         }
     }
     protected getIsCanBeEdited() {
-        if (this._isReadOnly)
+        if (this._isReadOnly) {
             return false;
+        }
         const finf = this.getFieldInfo();
         if (!finf) {
             return false;
@@ -121,8 +122,9 @@ export class BasicContent extends BaseObject implements IContent {
         }
         const arr = this._lfScope.getObjs(), res: Binding[] = [], len = arr.length;
         for (let i = 0; i < len; i += 1) {
-            if (sys.isBinding(arr[i]))
+            if (sys.isBinding(arr[i])) {
                 res.push(<Binding>arr[i]);
+            }
         }
         return res;
     }
@@ -146,12 +148,13 @@ export class BasicContent extends BaseObject implements IContent {
         }
         this._target = null;
     }
-    protected getElementView(el: HTMLElement, view_info: { name: string; options: IViewOptions; }): IElView {
+    protected getElementView(el: HTMLElement, viewInfo: { name: string; options: IViewOptions; }): IElView {
         const factory = boot.getApp().viewFactory, elView = factory.store.getElView(el);
-        if (!!elView)
+        if (!!elView) {
             return elView;
-        view_info.options = coreUtils.merge({ el: el }, view_info.options);
-        return factory.createElView(view_info);
+        }
+        viewInfo.options = coreUtils.merge({ el: el }, viewInfo.options);
+        return factory.createElView(viewInfo);
     }
     protected getFieldInfo(): IFieldInfo {
         return this._options.fieldInfo;
@@ -170,14 +173,14 @@ export class BasicContent extends BaseObject implements IContent {
                 this._parentEl.appendChild(this._el);
                 this._lfScope.addObj(this.app.bind(options));
             }
-        }
-        catch (ex) {
+        } catch (ex) {
             utils.err.reThrow(ex, this.handleError(ex, this));
         }
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         const displayInfo = this._options.displayInfo;
         dom.removeClass([this._parentEl], css.content);

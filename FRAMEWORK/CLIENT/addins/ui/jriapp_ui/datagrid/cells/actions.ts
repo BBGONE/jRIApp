@@ -25,8 +25,9 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
         this._createButtons(this.row.isEditing);
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         const td = this.td, btns = dom.queryAll<HTMLElement>(td, actionsSelector);
         btns.forEach((img) => {
@@ -44,18 +45,21 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
         });
     }
     protected get editBtnsHTML() {
-        if (!editBtnsHTML)
+        if (!editBtnsHTML) {
             editBtnsHTML = strUtils.format(_editBtnsHTML, ButtonCss.OK, ButtonCss.Cancel);
+        }
         return editBtnsHTML;
     }
     protected get viewBtnsHTML() {
-        if (!viewBtnsHTML)
+        if (!viewBtnsHTML) {
             viewBtnsHTML = strUtils.format(_viewBtnsHTML, ButtonCss.Edit, ButtonCss.Delete);
+        }
         return viewBtnsHTML;
     }
     protected _createButtons(isEditing: boolean) {
-        if (!this.td)
+        if (!this.td) {
             return;
+        }
 
         const self = this, td = this.td;
         td.innerHTML = "";
@@ -65,8 +69,7 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
             const editBtns = dom.fromHTML(self.editBtnsHTML);
             self._setupButtons(editBtns);
             dom.append(td, editBtns);
-        }
-        else {
+        } else {
             self._isEditing = false;
             let viewBtns = dom.fromHTML(self.viewBtnsHTML);
             if (!self.isCanEdit || !self.isCanDelete) {
@@ -86,8 +89,9 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
         }
     }
     update() {
-        if (!this.row)
+        if (!this.row) {
             return;
+        }
         if (this._isEditing !== this.row.isEditing) {
             this._createButtons(this.row.isEditing);
         }

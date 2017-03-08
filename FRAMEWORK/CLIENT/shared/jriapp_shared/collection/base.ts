@@ -76,38 +76,46 @@ export class Errors<TItem extends ICollectionItem> {
         this.onErrorsChanged(item);
     }
     addError(item: TItem, fieldName: string, errors: string[], ignoreChangeErrors?: boolean): void {
-        if (!fieldName)
+        if (!fieldName) {
             fieldName = "*";
+        }
         if (!(checks.isArray(errors) && errors.length > 0)) {
             this.removeError(item, fieldName, ignoreChangeErrors);
             return;
         }
-        if (!this._errors[item._key])
+        if (!this._errors[item._key]) {
             this._errors[item._key] = {};
+        }
         const itemErrors = this._errors[item._key];
         itemErrors[fieldName] = errors;
-        if (!ignoreChangeErrors)
+        if (!ignoreChangeErrors) {
             this.onErrorsChanged(item);
+        }
     }
     removeError(item: TItem, fieldName: string, ignoreChangeErrors?: boolean): void {
         const itemErrors = this._errors[item._key];
-        if (!itemErrors)
+        if (!itemErrors) {
             return;
-        if (!fieldName)
+        }
+        if (!fieldName) {
             fieldName = "*";
-        if (!itemErrors[fieldName])
+        }
+        if (!itemErrors[fieldName]) {
             return;
+        }
         delete itemErrors[fieldName];
         if (Object.keys(itemErrors).length === 0) {
             delete this._errors[item._key];
         }
-        if (!ignoreChangeErrors)
+        if (!ignoreChangeErrors) {
             this.onErrorsChanged(item);
+        }
     }
     removeAllErrors(item: TItem): void {
         const itemErrors = this._errors[item._key];
-        if (!itemErrors)
+        if (!itemErrors) {
             return;
+        }
         delete this._errors[item._key];
         this.onErrorsChanged(item);
     }
@@ -195,17 +203,11 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
             },
             validateItemField: (args: ICollValidateFieldArgs<TItem>) => {
                 self.raiseEvent(COLL_EVENTS.validate_field, args);
-                if (!!args.errors && args.errors.length > 0)
-                    return <IValidationInfo>{ fieldName: args.fieldName, errors: args.errors };
-                else
-                    return <IValidationInfo>null;
+                return (!!args.errors && args.errors.length > 0) ? <IValidationInfo>{ fieldName: args.fieldName, errors: args.errors } : <IValidationInfo>null;
             },
             validateItem: (args: ICollValidateItemArgs<TItem>) => {
                 self.raiseEvent(COLL_EVENTS.validate_item, args);
-                if (!!args.result && args.result.length > 0)
-                    return args.result;
-                else
-                    return <IValidationInfo[]>[];
+                return (!!args.result && args.result.length > 0) ? args.result : <IValidationInfo[]>[];
             }
         };
     }
@@ -231,9 +233,9 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         return fieldInfo;
     }
     protected _getEventNames() {
-        const base_events = super._getEventNames();
+        const baseEvents = super._getEventNames();
         const events = Object.keys(COLL_EVENTS).map((key) => { return <string>(<any>COLL_EVENTS)[key]; });
-        return events.concat(base_events);
+        return events.concat(baseEvents);
     }
     addOnClearing(fn: TEventHandler<ICollection<TItem>, { reason: COLL_CHANGE_REASON; }>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
         this._addHandler(COLL_EVENTS.clearing, fn, nmspace, context, priority);
@@ -356,8 +358,9 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         this.addOnPropertyChange(PROP_NAME.currentItem, handler, nmspace, context);
     }
     protected _getPKFieldInfos(): IFieldInfo[] {
-        if (!!this._pkInfo)
+        if (!!this._pkInfo) {
             return this._pkInfo;
+        }
         const fldMap = this._fieldMap, pk: IFieldInfo[] = [];
         coreUtils.forEachProp(fldMap, (fldName) => {
             if (fldMap[fldName].isPrimaryKey > 0) {
@@ -404,8 +407,9 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     protected _onItemAdding(item: TItem) {
         const args: ICancellableArgs<TItem> = { item: item, isCancel: false };
         this.raiseEvent(COLL_EVENTS.item_adding, args);
-        if (args.isCancel)
+        if (args.isCancel) {
             utils.err.throwDummy(new Error("operation canceled"));
+        }
     }
     // new item has been added and now is in editing state and is currentItem
     protected _onItemAdded(item: TItem) {
@@ -429,8 +433,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         if (checks.isNt(itemPos)) {
             pos = this._items.length;
             this._items.push(item);
-        }
-        else {
+        } else {
             pos = itemPos;
             utils.arr.insert(this._items, item, pos);
         }
@@ -460,8 +463,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
                 pos: [pos],
                 old_key: item._key
             });
-        }
-        finally {
+        } finally {
             this.raisePropertyChanged(PROP_NAME.count);
         }
     }
@@ -491,8 +493,9 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
             }
             return;
         }
-        if (v._aspect.isDetached)
+        if (v._aspect.isDetached) {
             throw new Error(ERRS.ERR_ITEM_IS_DETACHED);
+        }
         const item = self.getItemByKey(v._key);
         if (!item) {
             throw new Error(ERRS.ERR_ITEM_IS_NOTFOUND);
@@ -528,22 +531,23 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         return this._EditingItem;
     }
     protected _getStrValue(val: any, fieldInfo: IFieldInfo): string {
-        const dcnv = fieldInfo.dateConversion, stz = coreUtils.get_timeZoneOffset();
+        const dcnv = fieldInfo.dateConversion, stz = coreUtils.getTimeZoneOffset();
         return valUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
     }
     protected _onBeforeEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void {
-        if (this._isUpdating)
+        if (this._isUpdating) {
             return;
+        }
         if (isBegin) {
             this.raiseEvent(COLL_EVENTS.before_begin_edit, <ICollItemArgs<TItem>>{ item: item });
-        }
-        else {
+        } else {
             this.raiseEvent(COLL_EVENTS.before_end_edit, { item: item, isCanceled: isCanceled });
         }
     }
     protected _onEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void {
-        if (this._isUpdating)
+        if (this._isUpdating) {
             return;
+        }
         if (isBegin) {
             this._EditingItem = item;
             this.raiseEvent(COLL_EVENTS.begin_edit, <ICollItemArgs<TItem>>{ item: item });
@@ -551,8 +555,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
             if (!!item) {
                 item._aspect.raisePropertyChanged(PROP_NAME.isEditing);
             }
-        }
-        else {
+        } else {
             const oldItem = this._EditingItem;
             this._EditingItem = null;
             this.raiseEvent(COLL_EVENTS.end_edit, { item: item, isCanceled: isCanceled });
@@ -569,18 +572,12 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     protected _validateItem(item: TItem): IValidationInfo[] {
         const args: ICollValidateItemArgs<TItem> = { item: item, result: [] };
         this.raiseEvent(COLL_EVENTS.validate_item, args);
-        if (!!args.result && args.result.length > 0)
-            return args.result;
-        else
-            return [];
+        return (!!args.result && args.result.length > 0) ? args.result : [];
     }
     protected _validateItemField(item: TItem, fieldName: string): IValidationInfo {
         const args: ICollValidateFieldArgs<TItem> = { item: item, fieldName: fieldName, errors: <string[]>[] };
         this.raiseEvent(COLL_EVENTS.validate_field, args);
-        if (!!args.errors && args.errors.length > 0)
-            return { fieldName: fieldName, errors: args.errors };
-        else
-            return null;
+        return (!!args.errors && args.errors.length > 0) ? { fieldName: fieldName, errors: args.errors } : null;
     }
     protected _onItemDeleting(args: ICancellableArgs<TItem>): boolean {
         this.raiseEvent(COLL_EVENTS.item_deleting, args);
@@ -597,7 +594,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         this._itemsByKey = {};
         this._errors.clear();
         utils.queue.enque(() => { this._clearItems(oldItems); });
-        if (oper !== COLL_CHANGE_OPER.Fill)
+        if (oper !== COLL_CHANGE_OPER.Fill) {
             this._onCollectionChanged({
                 changeType: COLL_CHANGE_TYPE.Reset,
                 reason: reason,
@@ -605,6 +602,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
                 items: [],
                 pos: []
             });
+        }
         this.raiseEvent(COLL_EVENTS.cleared, { reason: reason });
         this._onCountChanged();
     }
@@ -619,32 +617,38 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     }
     _getSortFn(fieldNames: string[], sortOrder: SORT_ORDER): (a: any, b: any) => number {
         let mult = 1;
-        if (sortOrder === SORT_ORDER.DESC)
+        if (sortOrder === SORT_ORDER.DESC) {
             mult = -1;
+        }
         return (a: any, b: any) => {
-            let res = 0, i: number, len: number, af: any, bf: any, fieldName: string;
-            for (i = 0, len = fieldNames.length; i < len; i += 1) {
+            let res = 0, i: number, af: any, bf: any, fieldName: string;
+            const len = fieldNames.length;
+            for (i = 0; i < len; i += 1) {
                 fieldName = fieldNames[i];
                 af = sys.resolvePath(a, fieldName);
                 bf = sys.resolvePath(b, fieldName);
-                if (af === checks.undefined)
+                if (af === checks.undefined) {
                     af = null;
-                if (bf === checks.undefined)
+                }
+                if (bf === checks.undefined) {
                     bf = null;
+                }
 
-                if (af === null && bf !== null)
+                if (af === null && bf !== null) {
                     res = -1 * mult;
-                else if (af !== null && bf === null)
+                } else if (af !== null && bf === null) {
                     res = mult;
-                else if (af < bf)
+                } else if (af < bf) {
                     res = -1 * mult;
-                else if (af > bf)
+                } else if (af > bf) {
                     res = mult;
-                else
+                } else {
                     res = 0;
+                }
 
-                if (res !== 0)
+                if (res !== 0) {
                     return res;
+                }
             }
             return res;
         };
@@ -662,7 +666,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
             }
             return fld;
         }
-        
+
         throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "fieldName", fieldName));
     }
     getFieldNames(): string[] {
@@ -700,8 +704,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
             this.currentItem = item;
             item._aspect.beginEdit();
             this._onItemAdded(item);
-        }
-        catch (ex) {
+        } catch (ex) {
             isHandled = this.handleError(ex, this);
             item._aspect.cancelEdit();
             utils.err.reThrow(ex, isHandled);
@@ -709,25 +712,28 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         return item;
     }
     getItemByPos(pos: number): TItem {
-        if (pos < 0 || pos >= this._items.length)
+        if (pos < 0 || pos >= this._items.length) {
             return null;
+        }
         return this._items[pos];
     }
     getItemByKey(key: string): TItem {
-        if (!key)
+        if (!key) {
             throw new Error(ERRS.ERR_KEY_IS_EMPTY);
+        }
         return this._itemsByKey["" + key];
     }
     findByPK(...vals: any[]): TItem {
-        if (arguments.length === 0)
+        if (arguments.length === 0) {
             return null;
+        }
         const self = this, pkInfo = self._getPKFieldInfos(), arr: string[] = [];
         let key: string, values: any[] = [];
         if (vals.length === 1 && checks.isArray(vals[0])) {
             values = vals[0];
-        }
-        else
+        } else {
             values = vals;
+        }
         if (values.length !== pkInfo.length) {
             return null;
         }
@@ -741,11 +747,13 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     }
     moveFirst(skipDeleted?: boolean): boolean {
         const pos = 0, old = this._currentPos;
-        if (old === pos)
+        if (old === pos) {
             return false;
+        }
         const item = this.getItemByPos(pos);
-        if (!item)
+        if (!item) {
             return false;
+        }
         if (!!skipDeleted) {
             if (item._aspect.isDeleted) {
                 return this.moveNext(true);
@@ -765,8 +773,9 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
             pos -= 1;
         }
         item = this.getItemByPos(pos);
-        if (!item)
+        if (!item) {
             return false;
+        }
         if (!!skipDeleted) {
             if (item._aspect.isDeleted) {
                 this._currentPos = pos;
@@ -787,8 +796,9 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
             pos += 1;
         }
         item = this.getItemByPos(pos);
-        if (!item)
+        if (!item) {
             return false;
+        }
         if (!!skipDeleted) {
             if (item._aspect.isDeleted) {
                 this._currentPos = pos;
@@ -802,11 +812,13 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     }
     moveLast(skipDeleted?: boolean): boolean {
         const pos = this._items.length - 1, old = this._currentPos;
-        if (old === pos)
+        if (old === pos) {
             return false;
+        }
         const item = this.getItemByPos(pos);
-        if (!item)
+        if (!item) {
             return false;
+        }
         if (!!skipDeleted) {
             if (item._aspect.isDeleted) {
                 return this.movePrev(true);
@@ -819,11 +831,13 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     }
     goTo(pos: number): boolean {
         const old = this._currentPos;
-        if (old === pos)
+        if (old === pos) {
             return false;
+        }
         const item = this.getItemByPos(pos);
-        if (!item)
+        if (!item) {
             return false;
+        }
         this._onCurrentChanging(item);
         this._currentPos = pos;
         this._onCurrentChanged();
@@ -860,8 +874,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
                 this._currentPos = curPos - 1;
                 this._onCurrentChanged();
             }
-        }
-        finally {
+        } finally {
             if (!item.getIsDestroyCalled()) {
                 item.destroy();
             }
@@ -900,8 +913,9 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         this.totalCount = 0;
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         this._waitQueue.destroy();
         this._waitQueue = null;
@@ -948,8 +962,9 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     get pageIndex() { return this._pageIndex; }
     set pageIndex(v: number) {
         if (v !== this._pageIndex && this.isPagingEnabled) {
-            if (v < 0)
+            if (v < 0) {
                 return;
+            }
             if (!this._onPageChanging()) {
                 return;
             }
@@ -968,8 +983,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
 
         if ((rowCount % rowPerPage) === 0) {
             result = (rowCount / rowPerPage);
-        }
-        else {
+        } else {
             result = (rowCount / rowPerPage);
             result = Math.floor(result) + 1;
         }

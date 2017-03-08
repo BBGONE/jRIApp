@@ -33,8 +33,7 @@ export class AsyncUtils {
         setTimeout(() => {
             try {
                 deferred.resolve(func());
-            }
-            catch (err) {
+            } catch (err) {
                 deferred.reject(err);
             }
         }, !time ? 0 : time);

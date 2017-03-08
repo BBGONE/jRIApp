@@ -51,8 +51,9 @@ export class TemplateContent extends BaseObject implements IContent {
             id = info.editID;
         }
 
-        if (!id)
+        if (!id) {
             throw new Error(ERRS.ERR_TEMPLATE_ID_INVALID);
+        }
         return id;
     }
     private createTemplate(): ITemplate {
@@ -81,8 +82,9 @@ export class TemplateContent extends BaseObject implements IContent {
         }
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         dom.removeClass([this._parentEl], css.content);
         this.cleanUp();

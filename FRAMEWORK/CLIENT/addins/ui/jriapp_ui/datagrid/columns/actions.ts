@@ -63,25 +63,29 @@ export class ActionsColumn extends BaseColumn {
         }, this.uniqueID);
     }
     protected _onOk(cell: ActionsCell) {
-        if (!cell.row)
+        if (!cell.row) {
             return;
+        }
         cell.row.endEdit();
         cell.update();
     }
     protected _onCancel(cell: ActionsCell) {
-        if (!cell.row)
+        if (!cell.row) {
             return;
+        }
         cell.row.cancelEdit();
         cell.update();
     }
     protected _onDelete(cell: ActionsCell) {
-        if (!cell.row)
+        if (!cell.row) {
             return;
+        }
         cell.row.deleteRow();
     }
     protected _onEdit(cell: ActionsCell) {
-        if (!cell.row)
+        if (!cell.row) {
             return;
+        }
         cell.row.beginEdit();
         cell.update();
         this.grid.showEditDialog();
@@ -90,8 +94,9 @@ export class ActionsColumn extends BaseColumn {
         return "ActionsColumn";
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         dom.events.offNS(this.grid.table, this.uniqueID);
         this.grid.removeNSHandlers(this.uniqueID);

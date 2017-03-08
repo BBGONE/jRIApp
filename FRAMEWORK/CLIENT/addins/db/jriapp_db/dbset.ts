@@ -27,15 +27,18 @@ const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = uti
     valUtils = ValueUtils, colUtils = CollUtils;
 
 function doFieldDependences(dbSet: TDbSet, info: IFieldInfo) {
-    if (!info.dependentOn)
+    if (!info.dependentOn) {
         return;
+    }
     const deps: string[] = info.dependentOn.split(",");
     deps.forEach((depOn) => {
         const depOnFld = dbSet.getFieldInfo(depOn);
-        if (!depOnFld)
+        if (!depOnFld) {
             throw new Error(strUtils.format(ERRS.ERR_CALC_FIELD_DEFINE, depOn));
-        if (info === depOnFld)
+        }
+        if (info === depOnFld) {
             throw new Error(strUtils.format(ERRS.ERR_CALC_FIELD_SELF_DEPEND, depOn));
+        }
         if (depOnFld.dependents.indexOf(info.fullName) < 0) {
             depOnFld.dependents.push(info.fullName);
         }
@@ -99,7 +102,7 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
     private _dbSetName: string;
     private _pkFields: IFieldInfo[];
     private _isPageFilled: boolean;
- 
+
     constructor(opts: IDbSetConstuctorOptions) {
         super();
         const self = this, dbContext = opts.dbContext, dbSetInfo = opts.dbSetInfo,
@@ -142,8 +145,7 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
             if (fld.fieldType === FIELD_TYPE.Navigation) {
                 // navigation fields can NOT be on nested fields
                 coreUtils.setValue(self._navfldMap, fullName, self._doNavigationField(opts, fld), true);
-            }
-            else if (fld.fieldType === FIELD_TYPE.Calculated) {
+            } else if (fld.fieldType === FIELD_TYPE.Calculated) {
                 // calculated fields can be on nested fields
                 coreUtils.setValue(self._calcfldMap, fullName, self._doCalculatedField(opts, fld), true);
             }
@@ -207,14 +209,11 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
         });
     }
     public handleError(error: any, source: any): boolean {
-        if (!this._dbContext)
-            return super.handleError(error, source);
-        else
-            return this._dbContext.handleError(error, source);
+        return (!this._dbContext) ? super.handleError(error, source) : this._dbContext.handleError(error, source);
     }
     protected _getEventNames() {
-        const base_events = super._getEventNames();
-        return [DBSET_EVENTS.loaded].concat(base_events);
+        const baseEvents = super._getEventNames();
+        return [DBSET_EVENTS.loaded].concat(baseEvents);
     }
     protected _mapAssocFields() {
         const trackAssoc = this._trackAssoc, tasKeys = Object.keys(trackAssoc), trackAssocMap = this._trackAssocMap;
@@ -247,8 +246,9 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
             isChild = false;
         }
 
-        if (assocs.length !== 1)
+        if (assocs.length !== 1) {
             throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID_TYPE, "assocs", "Array"));
+        }
         const assocName = assocs[0].name;
         fieldInfo.isReadOnly = true;
         if (isChild) {
@@ -296,8 +296,8 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
                     }
                 };
             }
-        } // if (isChild)
-        else {
+            // if (isChild)
+        } else {
             self._parentAssocMap[assocs[0].parentToChildrenName] = assocs[0];
             // returns items children
             result.getFunc = (item: TItem) => {
@@ -320,14 +320,14 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
         const self = this;
         values.forEach((value, index) => {
             const name: IFieldName = names[index], fieldName = path + name.n, fld = self.getFieldInfo(fieldName);
-            if (!fld)
+            if (!fld) {
                 throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fieldName));
+            }
 
             if (fld.fieldType === FIELD_TYPE.Object) {
                 // for object fields the value should be an array of values - recursive processing
                 self._refreshValues(fieldName + ".", item, <any[]>value, name.p, rm);
-            }
-            else {
+            } else {
                 // for other fields the value is a string
                 item._aspect._refreshValue(value, fieldName, rm);
             }
@@ -338,14 +338,14 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
         values.forEach((value, index) => {
             const name: IFieldName = names[index], fieldName = path + name.n,
                 fld = self.getFieldInfo(fieldName);
-            if (!fld)
+            if (!fld) {
                 throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fieldName));
+            }
 
             if (fld.fieldType === FIELD_TYPE.Object) {
                 // for object fields the value should be an array of values - recursive processing
                 self._applyFieldVals(vals, fieldName + ".", <any[]>value, name.p);
-            }
-            else {
+            } else {
                 // for other fields the value is a string, which is parsed to a typed value
                 const val = valUtils.parseValue(value, fld.dataType, fld.dateConversion, stz);
                 coreUtils.setValue(vals, fieldName, val, false);
@@ -396,8 +396,9 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
         this._isPageFilled = false;
         this.cancelEdit();
         super._onPageChanged();
-        if (this._ignorePageChanged)
+        if (this._ignorePageChanged) {
             return;
+        }
         self.query.pageIndex = self.pageIndex;
         self._pageDebounce.enque(() => {
             self.dbContext._getInternal().load(self.query, COLL_CHANGE_REASON.PageChange);
@@ -405,8 +406,9 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
     }
     protected _onPageSizeChanged() {
         super._onPageSizeChanged();
-        if (!!this._query)
+        if (!!this._query) {
             this._query.pageSize = this.pageSize;
+        }
     }
     protected _defineCalculatedField(fullName: string, getFunc: (item: TItem) => any) {
         const calcDef: ICalcFieldImpl<TItem> = coreUtils.getValue(this._calcfldMap, fullName);
@@ -423,15 +425,17 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
         const pkFlds = this._pkFields, len = pkFlds.length;
         if (len === 1) {
             const val = coreUtils.getValue(vals, pkFlds[0].fieldName);
-            if (checks.isNt(val))
+            if (checks.isNt(val)) {
                 throw new Error(`Empty key field value for: ${pkFlds[0].fieldName}`);
+            }
             return this._getStrValue(val, pkFlds[0]);
         } else {
             const pkVals: string[] = [];
             for (let i = 0; i < len; i += 1) {
                 const val = coreUtils.getValue(vals, pkFlds[i].fieldName);
-                if (checks.isNt(val))
+                if (checks.isNt(val)) {
                     throw new Error(`Empty key field value for: ${pkFlds[i].fieldName}`);
+                }
                 const strval = this._getStrValue(val, pkFlds[i]);
                 pkVals.push(strval);
             }
@@ -442,8 +446,7 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
         try {
             const val: ICalcFieldImpl<TItem> = coreUtils.getValue(this._calcfldMap, fieldName);
             return val.getFunc.call(item, item);
-        }
-        catch (err) {
+        } catch (err) {
             ERROR.reThrow(err, this.handleError(err, this));
         }
     }
@@ -470,8 +473,7 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
             try {
                 this.pageIndex = 0;
                 this.pageSize = query.pageSize;
-            }
-            finally {
+            } finally {
                 this._ignorePageChanged = false;
             }
         }
@@ -480,8 +482,7 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
             this._ignorePageChanged = true;
             try {
                 this.pageIndex = query.pageIndex;
-            }
-            finally {
+            } finally {
                 this._ignorePageChanged = false;
             }
         }
@@ -528,23 +529,25 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
 
         if (!!query && !query.getIsDestroyCalled()) {
             isClearAll = query.isClearPrevData;
-            if (query.isClearCacheOnEveryLoad)
+            if (query.isClearCacheOnEveryLoad) {
                 query._getInternal().clearCache();
-            if (isClearAll)
+            }
+            if (isClearAll) {
                 this._clear(info.reason, COLL_CHANGE_OPER.Fill);
+            }
         }
 
         const fetchedItems = rows.map((row) => {
             // row.key already a string value generated on server (no need to convert to string)
             const key = row.k;
-            if (!key)
+            if (!key) {
                 throw new Error(ERRS.ERR_KEY_IS_EMPTY);
+            }
 
             let item = self._itemsByKey[key];
             if (!item) {
                 item = self.createEntityFromData(row, fieldNames);
-            }
-            else {
+            } else {
                 self._refreshValues("", item, row.v, fieldNames, REFRESH_MODE.RefreshCurrent);
             }
 
@@ -552,7 +555,7 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
         });
 
         let arr = fetchedItems;
-    
+
         if (!!query && !query.getIsDestroyCalled()) {
             if (query.isIncludeTotalCount && !checks.isNt(res.totalCount)) {
                 this.totalCount = res.totalCount;
@@ -560,8 +563,9 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
 
             if (query.loadPageCount > 1 && isPagingEnabled) {
                 const dataCache = query._getInternal().getCache();
-                if (query.isIncludeTotalCount && !checks.isNt(res.totalCount))
+                if (query.isIncludeTotalCount && !checks.isNt(res.totalCount)) {
                     dataCache.totalCount = res.totalCount;
+                }
                 dataCache.fill(res.pageIndex, fetchedItems);
                 arr = <TItem[]>dataCache.getPageItems(query.pageIndex);
             }
@@ -569,7 +573,7 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
 
         const newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];
         arr.forEach((item) => {
-            const oldItem = self._itemsByKey[item._key]; 
+            const oldItem = self._itemsByKey[item._key];
             if (!oldItem) {
                 self._items.push(item);
                 positions.push(self._items.length - 1);
@@ -577,8 +581,7 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
                 newItems.push(item);
                 items.push(item);
                 item._aspect._setIsAttached(true);
-            }
-            else {
+            } else {
                 items.push(oldItem);
             }
         });
@@ -604,10 +607,12 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
     }
     protected _fillFromCache(args: IFillFromCacheArgs): IQueryResult<TItem> {
         const self = this, query = args.query;
-        if (!query)
+        if (!query) {
             throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "query is not null"));
-        if (query.getIsDestroyCalled())
+        }
+        if (query.getIsDestroyCalled()) {
             throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "query not destroyed"));
+        }
         const dataCache = query._getInternal().getCache(),
             arr = <TItem[]>dataCache.getPageItems(query.pageIndex);
 
@@ -669,12 +674,12 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
         const keyMap = this._itemsByKey, item = keyMap[row.clientKey],
             errors: IIndexer<string[]> = {};
         row.invalid.forEach((err) => {
-            if (!err.fieldName)
+            if (!err.fieldName) {
                 err.fieldName = "*";
+            }
             if (checks.isArray(errors[err.fieldName])) {
                 errors[err.fieldName].push(err.message);
-            }
-            else {
+            } else {
                 errors[err.fieldName] = [err.message];
             }
         });
@@ -706,23 +711,27 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
         return res;
     }
     protected _addToChanged(item: TItem): void {
-        if (item._aspect.isDetached)
+        if (item._aspect.isDetached) {
             return;
+        }
         if (!this._changeCache[item._key]) {
             this._changeCache[item._key] = item;
             this._changeCount += 1;
-            if (this._changeCount === 1)
+            if (this._changeCount === 1) {
                 this.raisePropertyChanged(PROP_NAME.isHasChanges);
+            }
         }
     }
     protected _removeFromChanged(key: string): void {
-        if (!key)
+        if (!key) {
             return;
+        }
         if (!!this._changeCache[key]) {
             delete this._changeCache[key];
             this._changeCount -= 1;
-            if (this._changeCount === 0)
+            if (this._changeCount === 0) {
                 this.raisePropertyChanged(PROP_NAME.isHasChanges);
+            }
         }
     }
     // occurs when item Status Changed (not used in simple collections)
@@ -759,8 +768,7 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
                     n: fld.fieldName, p: res
                 });
                 return res;
-            }
-            else {
+            } else {
                 const isOK = fld.fieldType === FIELD_TYPE.None || fld.fieldType === FIELD_TYPE.RowTimeStamp || fld.fieldType === FIELD_TYPE.ServerCalculated;
                 if (isOK) {
                     arr.push({
@@ -797,20 +805,21 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
         const self = this, reason = COLL_CHANGE_REASON.None;
         this._destroyQuery();
         const isClearAll = !isAppend;
-        if (isClearAll)
+        if (isClearAll) {
             self._clear(reason, COLL_CHANGE_OPER.Fill);
+        }
 
         const fetchedItems = data.rows.map((row) => {
             // row.key already a string value generated on server (no need to convert to string)
             const key = row.k;
-            if (!key)
+            if (!key) {
                 throw new Error(ERRS.ERR_KEY_IS_EMPTY);
+            }
 
             let item = self._itemsByKey[key];
             if (!item) {
                 item = self.createEntityFromData(row, data.names);
-            }
-            else {
+            } else {
                 self._refreshValues("", item, row.v, data.names, REFRESH_MODE.RefreshCurrent);
             }
             return item;
@@ -826,8 +835,7 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
                 newItems.push(item);
                 items.push(item);
                 item._aspect._setIsAttached(true);
-            }
-            else {
+            } else {
                 items.push(oldItem);
             }
         });
@@ -857,8 +865,9 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
         const self = this, reason = COLL_CHANGE_REASON.None;
         this._destroyQuery();
         const isClearAll = !isAppend;
-        if (isClearAll)
+        if (isClearAll) {
             self._clear(reason, COLL_CHANGE_OPER.Fill);
+        }
 
         const fetchedItems = data.map((obj) => {
             return self.createEntityFromObj(obj);
@@ -874,8 +883,7 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
                 newItems.push(item);
                 items.push(item);
                 item._aspect._setIsAttached(true);
-            }
-            else {
+            } else {
                 items.push(oldItem);
             }
         });
@@ -930,8 +938,7 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
                 fld = colUtils.getObjectField(parts[i], fld.nested);
             }
             return fld;
-        }
-        else if (fld.fieldType === FIELD_TYPE.Navigation) {
+        } else if (fld.fieldType === FIELD_TYPE.Navigation) {
             // for example Customer.Name
             const assoc = this._childAssocMap[fld.fieldName];
             if (!!assoc) {
@@ -947,17 +954,20 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
         if (!checks.isNt(query)) {
             query.clearSort();
             for (let i = 0; i < fieldNames.length; i += 1) {
-                if (i === 0)
-                    query.orderBy(fieldNames[i], sortOrder);
-                else
-                    query.thenBy(fieldNames[i], sortOrder);
+                switch (i) {
+                    case 0:
+                       query.orderBy(fieldNames[i], sortOrder);
+                    break;
+                    default:
+                       query.thenBy(fieldNames[i], sortOrder);
+                    break;
+                }
             }
 
             query.isClearPrevData = true;
             query.pageIndex = 0;
             return self.dbContext._getInternal().load(query, COLL_CHANGE_REASON.Sorting);
-        }
-        else {
+        } else {
             return super.sort(fieldNames, sortOrder);
         }
     }
@@ -991,8 +1001,9 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
         return new DataQuery<TItem, TObj>(this, queryInfo);
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         this._pageDebounce.destroy();
         this._pageDebounce = null;

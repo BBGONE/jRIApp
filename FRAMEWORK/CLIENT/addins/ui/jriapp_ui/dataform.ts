@@ -36,8 +36,7 @@ viewChecks.isDataForm = (el: HTMLElement) => {
 
     if (el.hasAttribute(DATA_ATTR.DATA_FORM)) {
         return true;
-    }
-    else {
+    } else {
         const attr = el.getAttribute(DATA_ATTR.DATA_VIEW);
         if (!attr) {
             return false;
@@ -56,12 +55,11 @@ viewChecks.isInsideDataForm = (el: HTMLElement) => {
     if (!!parent) {
         if (!viewChecks.isDataForm(parent)) {
             return viewChecks.isInsideDataForm(parent);
-        }
-        else {
+        } else {
             return true;
         }
     }
-    
+
     return false;
 };
 
@@ -98,33 +96,35 @@ viewChecks.isInNestedForm = (root: any, forms: HTMLElement[], el: HTMLElement) =
        this function returns element dataform
 */
 viewChecks.getParentDataForm = (rootForm: HTMLElement, el: HTMLElement) => {
-    if (!el)
+    if (!el) {
         return null;
+    }
     const parent = el.parentElement;
     if (!!parent) {
-        if (parent === rootForm)
+        if (parent === rootForm) {
             return rootForm;
+        }
         if (viewChecks.isDataForm(parent)) {
             return parent;
-        }
-        else
+        } else {
             return viewChecks.getParentDataForm(rootForm, parent);
+        }
     }
 
     return null;
 };
 
 function getFieldInfo(obj: any, fieldName: string): IFieldInfo {
-    if (!obj)
+    if (!obj) {
         return null;
+    }
     if (!!obj._aspect && checks.isFunc(obj._aspect.getFieldInfo)) {
         return obj._aspect.getFieldInfo(fieldName);
-    }
-    else if (checks.isFunc(obj.getFieldInfo)) {
+    } else if (checks.isFunc(obj.getFieldInfo)) {
         return obj.getFieldInfo(fieldName);
-    }
-    else
+    } else {
         return null;
+    }
 }
 
 const PROP_NAME = {
@@ -150,7 +150,7 @@ export class DataForm extends BaseObject {
     private _errors: IValidationInfo[];
     private _isInsideTemplate: boolean;
     private _contentPromise: IVoidPromise;
- 
+
     constructor(options: IViewOptions) {
         super();
         const self = this;
@@ -167,7 +167,7 @@ export class DataForm extends BaseObject {
         this._parentDataForm = null;
         this._errors = null;
         this._contentPromise = null;
-       
+
         const parent = viewChecks.getParentDataForm(null, this._el);
         // if this form is nested inside another dataform
         // subscribe for parent's destroy event
@@ -175,18 +175,21 @@ export class DataForm extends BaseObject {
             self._parentDataForm = this.app.viewFactory.getOrCreateElView(parent);
             self._parentDataForm.addOnDestroyed(() => {
                 // destroy itself if parent form is destroyed
-                if (!self._isDestroyCalled)
+                if (!self._isDestroyCalled) {
                     self.destroy();
+                }
             }, self._objId);
         }
     }
     private _getBindings(): Binding[] {
-        if (!this._lfTime)
+        if (!this._lfTime) {
             return [];
+        }
         const arr: any[] = this._lfTime.getObjs(), res: Binding[] = [], len = arr.length;
         for (let i = 0; i < len; i += 1) {
-            if (sys.isBinding(arr[i]))
+            if (sys.isBinding(arr[i])) {
                 res.push(arr[i]);
+            }
         }
         return res;
     }
@@ -203,8 +206,9 @@ export class DataForm extends BaseObject {
 
         contentElements.forEach((el) => {
             // check if the element inside a nested dataform
-            if (viewChecks.isInNestedForm(self._el, forms, el))
+            if (viewChecks.isInNestedForm(self._el, forms, el)) {
                 return;
+            }
             const attr = el.getAttribute(DATA_ATTR.DATA_CONTENT),
                 op = parseContentAttr(attr);
             if (!!op.fieldName && !op.fieldInfo) {
@@ -229,8 +233,9 @@ export class DataForm extends BaseObject {
             self._lfTime = lftm;
             const bindings = self._getBindings();
             bindings.forEach((binding) => {
-                if (!binding.isSourceFixed)
+                if (!binding.isSourceFixed) {
                     binding.source = dctx;
+                }
             });
             self._contentCreated = true;
         });
@@ -245,11 +250,11 @@ export class DataForm extends BaseObject {
 
             const bindings = this._getBindings();
             bindings.forEach((binding) => {
-                if (!binding.isSourceFixed)
+                if (!binding.isSourceFixed) {
                     binding.source = dctx;
+                }
             });
-        }
-        catch (ex) {
+        } catch (ex) {
             utils.err.reThrow(ex, this.handleError(ex, this));
         }
     }
@@ -258,39 +263,40 @@ export class DataForm extends BaseObject {
         try {
             if (self._contentCreated) {
                 self._updateCreatedContent();
-            }
-            else {
+            } else {
                 if (!!self._contentPromise) {
                     self._contentPromise.then(() => {
-                        if (self.getIsDestroyCalled())
+                        if (self.getIsDestroyCalled()) {
                             return;
+                        }
                         self._updateCreatedContent();
                     }, (err) => {
-                        if (self.getIsDestroyCalled())
+                        if (self.getIsDestroyCalled()) {
                             return;
+                        }
                         self.handleError(err, self);
                     });
-                }
-                else {
+                } else {
                     self._contentPromise = self._createContent();
                 }
             }
-        }
-        catch (ex) {
+        } catch (ex) {
             utils.err.reThrow(ex, self.handleError(ex, self));
         }
     }
     private _onDSErrorsChanged() {
-        if (!!this._errNotification)
+        if (!!this._errNotification) {
             this.validationErrors = this._errNotification.getAllErrors();
+        }
     }
     _onIsEditingChanged() {
         this.isEditing = this._editable.isEditing;
     }
     private _bindDS() {
         const dataContext = this._dataContext, self = this;
-        if (!dataContext)
+        if (!dataContext) {
             return;
+        }
 
         if (!!dataContext) {
             this._editable = sys.getEditable(dataContext);
@@ -336,8 +342,9 @@ export class DataForm extends BaseObject {
         this._contentCreated = false;
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         this._clearContent();
         dom.removeClass([this.el], css.dataform);
@@ -360,8 +367,9 @@ export class DataForm extends BaseObject {
     get el(): HTMLElement { return this._el; }
     get dataContext(): IBaseObject { return this._dataContext; }
     set dataContext(v) {
-        if (v === this._dataContext)
+        if (v === this._dataContext) {
             return;
+        }
 
         if (!!v && !sys.isBaseObj(v)) {
             throw new Error(ERRS.ERR_DATAFRM_DCTX_INVALID);
@@ -386,13 +394,15 @@ export class DataForm extends BaseObject {
     get isEditing(): boolean { return this._isEditing; }
     set isEditing(v) {
         const dataContext: any = this._dataContext;
-        if (!dataContext)
+        if (!dataContext) {
             return;
+        }
         const isEditing = this._isEditing;
         let editable: IEditable;
 
-        if (!!this._editable)
+        if (!!this._editable) {
             editable = this._editable;
+        }
 
         if (!editable && v !== isEditing) {
             this._isEditing = v;
@@ -406,12 +416,10 @@ export class DataForm extends BaseObject {
             try {
                 if (v) {
                     editable.beginEdit();
-                }
-                else {
+                } else {
                     editable.endEdit();
                 }
-            }
-            catch (ex) {
+            } catch (ex) {
                 utils.err.reThrow(ex, this.handleError(ex, dataContext));
             }
         }
@@ -464,10 +472,11 @@ export class DataFormElView extends BaseElView {
                 res = STRS.VALIDATE.errorField + " " + fieldName;
             }
             info.errors.forEach((str) => {
-                if (!!res)
+                if (!!res) {
                     res = res + " -> " + str;
-                else
+                } else  {
                     res = str;
+                }
             });
             tip.push("<li>" + res + "</li>");
             res = "";
@@ -486,8 +495,7 @@ export class DataFormElView extends BaseElView {
             }
             fn_addToolTip(this._errorGliph, this._getErrorTipInfo(errors), true);
             this._setFieldError(true);
-        }
-        else {
+        } else {
             if (!!this._errorGliph) {
                 fn_addToolTip(this._errorGliph, null);
                 dom.removeNode(this._errorGliph);
@@ -497,8 +505,9 @@ export class DataFormElView extends BaseElView {
         }
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         if (!!this._errorGliph) {
             dom.removeNode(this._errorGliph);

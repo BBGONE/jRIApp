@@ -27,20 +27,21 @@ export class TCommand<TParam, TThis> extends BaseObject implements ICommand {
     protected _predicate: TPredicate<TParam, TThis>;
     private _objId: string;
 
-    constructor(fn_action: TAction<TParam, TThis>, thisObj?: TThis, fn_canExecute?: TPredicate<TParam, TThis>) {
+    constructor(fnAction: TAction<TParam, TThis>, thisObj?: TThis, fnCanExecute?: TPredicate<TParam, TThis>) {
         super();
         this._objId = coreUtils.getNewID("cmd");
-        this._action = fn_action;
+        this._action = fnAction;
         this._thisObj = !thisObj ? null : thisObj;
-        this._predicate = !fn_canExecute ? null : fn_canExecute;
+        this._predicate = !fnCanExecute ? null : fnCanExecute;
     }
     protected _getEventNames() {
-        const base_events = super._getEventNames();
-        return [CMD_EVENTS.can_execute_changed].concat(base_events);
+        const baseEvents = super._getEventNames();
+        return [CMD_EVENTS.can_execute_changed].concat(baseEvents);
     }
     protected _canExecute(sender: any, param: TParam, context: any): boolean {
-        if (!this._predicate)
+        if (!this._predicate) {
             return true;
+        }
         return this._predicate.apply(context, [sender, param, this._thisObj]);
     }
     protected _execute(sender: any, param: TParam, context: any) {
@@ -61,8 +62,9 @@ export class TCommand<TParam, TThis> extends BaseObject implements ICommand {
         this._execute(sender, param, this._thisObj || this);
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         this._action = null;
         this._thisObj = null;
@@ -100,11 +102,12 @@ export abstract class BaseCommand<TParam, TThis> extends TCommand<TParam, TThis>
 }
 
 export type Command = TCommand<any, any>;
-export const Command: new (fn_action: TAction<any, any>, thisObj?: any, fn_canExecute?: TPredicate<any, any>) => Command = TCommand;
+export const Command: new (fnAction: TAction<any, any>, thisObj?: any, fnCanExecute?: TPredicate<any, any>) => Command = TCommand;
 
 // for strongly typed parameters
 export type TemplateCommand = TCommand<{ template: ITemplate; isLoaded: boolean; }, any>;
-export const TemplateCommand: new (fn_action: TAction<{ template: ITemplate; isLoaded: boolean; }, any>, thisObj?: any, fn_canExecute?: TPredicate<{ template: ITemplate; isLoaded: boolean; }, any>) => TemplateCommand = TCommand;
+export const TemplateCommand: new (fnAction: TAction<{ template: ITemplate; isLoaded: boolean; }, any>, thisObj?: any,
+    fnCanExecute?: TPredicate<{ template: ITemplate; isLoaded: boolean; }, any>) => TemplateCommand = TCommand;
 
 export class ViewModel<TApp extends IApplication> extends BaseObject {
     private _objId: string;

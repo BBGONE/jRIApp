@@ -48,8 +48,9 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
         this._errors = {};
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         this._debounce.destroy();
         this._jsonChanged = null;
@@ -58,8 +59,8 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
         super.destroy();
     }
     protected _getEventNames() {
-        const base_events = super._getEventNames();
-        return [BAG_EVENTS.validate_bag, BAG_EVENTS.validate_field].concat(base_events);
+        const baseEvents = super._getEventNames();
+        return [BAG_EVENTS.validate_bag, BAG_EVENTS.validate_field].concat(baseEvents);
     }
     // override
     _isHasProp(prop: string) {
@@ -122,10 +123,7 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
             result: []
         };
         this.raiseEvent(BAG_EVENTS.validate_bag, args);
-        if (!!args.result)
-            return args.result;
-        else
-            return [];
+        return (!!args.result) ? args.result : [];
     }
     protected _validateField(fieldName: string): IValidationInfo {
         const args: IFieldValidateArgs<JsonBag> = {
@@ -134,10 +132,7 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
             errors: []
         };
         this.raiseEvent(BAG_EVENTS.validate_field, args);
-        if (!!args.errors && args.errors.length > 0)
-            return { fieldName: fieldName, errors: args.errors };
-        else
-            return null;
+        return (!!args.errors && args.errors.length > 0) ? { fieldName: fieldName, errors: args.errors } : null;
     }
     protected _onErrorsChanged(): void {
         this.raiseEvent(BAG_EVENTS.errors_changed, {});
@@ -150,28 +145,34 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
         this._onErrorsChanged();
     }
     protected _addError(fieldName: string, errors: string[], ignoreChangeErrors?: boolean): void {
-        if (!fieldName)
+        if (!fieldName) {
             fieldName = "*";
+        }
         if (!(checks.isArray(errors) && errors.length > 0)) {
             this._removeError(fieldName, ignoreChangeErrors);
             return;
         }
         const itemErrors = this._errors;
         itemErrors[fieldName] = errors;
-        if (!ignoreChangeErrors)
+        if (!ignoreChangeErrors) {
             this._onErrorsChanged();
+        }
     }
     protected _removeError(fieldName: string, ignoreChangeErrors?: boolean): boolean {
         const itemErrors = this._errors;
-        if (!itemErrors)
+        if (!itemErrors) {
             return false;
-        if (!fieldName)
+        }
+        if (!fieldName) {
             fieldName = "*";
-        if (!itemErrors[fieldName])
+        }
+        if (!itemErrors[fieldName]) {
             return false;
+        }
         delete itemErrors[fieldName];
-        if (!ignoreChangeErrors)
+        if (!ignoreChangeErrors) {
             this._onErrorsChanged();
+        }
         return true;
     }
     protected _removeAllErrors(): void {
@@ -183,23 +184,28 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
     }
     getFieldErrors(fieldName: string): IValidationInfo[] {
         const bagErrors = this._errors;
-        if (!bagErrors)
+        if (!bagErrors) {
             return [];
+        }
         let name = fieldName;
-        if (!fieldName)
+        if (!fieldName) {
             fieldName = "*";
-        if (!bagErrors[fieldName])
+        }
+        if (!bagErrors[fieldName]) {
             return [];
-        if (fieldName === "*")
+        }
+        if (fieldName === "*") {
             name = null;
+        }
         return [
             { fieldName: name, errors: bagErrors[fieldName] }
         ];
     }
     getAllErrors(): IValidationInfo[] {
         const bagErrors = this._errors;
-        if (!bagErrors)
+        if (!bagErrors) {
             return [];
+        }
         const res: IValidationInfo[] = [];
         coreUtils.forEachProp(bagErrors, function (name) {
             let fieldName: string = null;
@@ -227,9 +233,9 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
         if (this.isEditing) {
             // revalidate all
             this._removeAllErrors();
-            const validation_infos = this._validateBag();
-            if (validation_infos.length > 0) {
-                this._addErrors(validation_infos);
+            const validationInfos = this._validateBag();
+            if (validationInfos.length > 0) {
+                this._addErrors(validationInfos);
             }
             if (this.getIsHasErrors()) {
                 return false;
@@ -269,16 +275,15 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
                 coreUtils.setValue(this._val, fieldName, val, false, "->");
                 this.raisePropertyChanged(name);
                 this._removeError(name);
-                const validation_info = this._validateField(name);
-                if (!!validation_info && validation_info.errors.length > 0) {
-                    throw new ValidationError([validation_info], this);
+                const validationInfo = this._validateField(name);
+                if (!!validationInfo && validationInfo.errors.length > 0) {
+                    throw new ValidationError([validationInfo], this);
                 }
             } catch (ex) {
                 let error: ValidationError;
                 if (sys.isValidationError(ex)) {
                     error = ex;
-                }
-                else {
+                } else {
                     error = new ValidationError([
                         { fieldName: name, errors: [ex.message] }
                     ], this);

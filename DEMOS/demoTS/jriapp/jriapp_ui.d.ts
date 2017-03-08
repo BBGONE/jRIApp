@@ -21,7 +21,7 @@ declare module "jriapp_ui/content/int" {
         name?: string;
         options?: any;
     }
-    export function parseContentAttr(content_attr: string): IContentOptions;
+    export function parseContentAttr(contentAttr: string): IContentOptions;
 }
 declare module "jriapp_ui/content/basic" {
     import { IBaseObject, BaseObject } from "jriapp_shared";
@@ -45,7 +45,7 @@ declare module "jriapp_ui/content/basic" {
         protected getBindings(): Binding[];
         protected updateBindingSource(): void;
         protected cleanUp(): void;
-        protected getElementView(el: HTMLElement, view_info: {
+        protected getElementView(el: HTMLElement, viewInfo: {
             name: string;
             options: IViewOptions;
         }): IElView;
@@ -267,8 +267,8 @@ declare module "jriapp_ui/content/string" {
     import { IFieldInfo } from "jriapp_shared/collection/int";
     import { BasicContent } from "jriapp_ui/content/basic";
     export class StringContent extends BasicContent {
-        static __allowedKeys: number[];
-        private readonly _allowedKeys;
+        static _allowedKeys: number[];
+        private readonly allowedKeys;
         protected previewKeyPress(fieldInfo: IFieldInfo, keyCode: number, value: string): boolean;
         render(): void;
         toString(): string;
@@ -296,8 +296,8 @@ declare module "jriapp_ui/content/multyline" {
     import { IElView, IConstructorContentOptions } from "jriapp/int";
     import { BasicContent } from "jriapp_ui/content/basic";
     export class MultyLineContent extends BasicContent {
-        static __allowedKeys: number[];
-        private readonly _allowedKeys;
+        static _allowedKeys: number[];
+        private readonly allowedKeys;
         constructor(options: IConstructorContentOptions);
         protected createTargetElement(): IElView;
         protected previewKeyPress(fieldInfo: IFieldInfo, keyCode: number, value: string): boolean;
@@ -336,8 +336,8 @@ declare module "jriapp_ui/content/number" {
     import { IBindingOptions, IBindingInfo } from "jriapp/int";
     import { BasicContent } from "jriapp_ui/content/basic";
     export class NumberContent extends BasicContent {
-        static __allowedKeys: number[];
-        private readonly _allowedKeys;
+        static _allowedKeys: number[];
+        private readonly allowedKeys;
         protected getBindingOption(bindingInfo: IBindingInfo, tgt: IBaseObject, dctx: any, targetPath: string): IBindingOptions;
         protected previewKeyPress(keyCode: number, value: string): boolean;
         render(): void;
@@ -398,7 +398,7 @@ declare module "jriapp_ui/listbox" {
         private _keyMap;
         private _valMap;
         private _options;
-        private _fn_state;
+        private _fnState;
         private _textProvider;
         private _stateProvider;
         private _savedVal;
@@ -406,7 +406,7 @@ declare module "jriapp_ui/listbox" {
         private _txtDebounce;
         private _stDebounce;
         private _changeDebounce;
-        private _fn_checkChanges;
+        private _fnCheckChanges;
         private _isDSFilled;
         constructor(options: IListBoxConstructorOptions);
         destroy(): void;
@@ -572,18 +572,18 @@ declare module "jriapp_ui/dialog" {
         private _submitOnOK;
         private _canRefresh;
         private _canCancel;
-        private _fn_OnClose;
-        private _fn_OnOK;
-        private _fn_OnShow;
-        private _fn_OnCancel;
-        private _fn_OnTemplateCreated;
-        private _fn_OnTemplateDestroy;
+        private _fnOnClose;
+        private _fnOnOK;
+        private _fnOnShow;
+        private _fnOnCancel;
+        private _fnOnTemplateCreated;
+        private _fnOnTemplateDestroy;
         private _editable;
         private _template;
         private _$dlgEl;
         private _result;
         private _options;
-        private _fn_submitOnOK;
+        private _fnSubmitOnOK;
         private _currentSelectable;
         private _deferred;
         constructor(options: IDialogConstructorOptions);
@@ -757,11 +757,11 @@ declare module "jriapp_ui/utils/dblclick" {
         private _isDestroyed;
         private _timer;
         private _interval;
-        private _fn_OnClick;
-        private _fn_OnDblClick;
+        private _fnOnClick;
+        private _fnOnDblClick;
         constructor(interval?: number);
         click(): void;
-        add(fn_OnClick: () => any, fn_OnDblClick?: () => any): void;
+        add(fnOnClick: () => any, fnOnDblClick?: () => any): void;
         destroy(): void;
         getIsDestroyed(): boolean;
         getIsDestroyCalled(): boolean;
@@ -1063,7 +1063,7 @@ declare module "jriapp_ui/datagrid/rows/details" {
             tr: HTMLTableRowElement;
             details_id: string;
         });
-        private _createCell(details_id);
+        private _createCell(detailsId);
         protected _setParentRow(row: Row): void;
         private _initShow();
         private _show(onEnd);
@@ -1254,7 +1254,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         protected _getLastRow(): Row;
         protected _removeRow(row: Row): number;
         protected _expandDetails(parentRow: Row, expanded: boolean): void;
-        protected _parseColumnAttr(column_attr: string, content_attr: string): IColumnInfo;
+        protected _parseColumnAttr(columnAttr: string, contentAttr: string): IColumnInfo;
         protected _findUndeleted(row: Row, isUp: boolean): Row;
         protected _onDSCurrentChanged(prevCurrent: ICollectionItem, newCurrent: ICollectionItem): void;
         protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>): void;
@@ -1434,7 +1434,7 @@ declare module "jriapp_ui/stackpanel" {
         private _itemMap;
         private _options;
         private _selectable;
-        private _item_tag;
+        private _itemTag;
         private _isKeyNavigation;
         private _debounce;
         constructor(options: IStackPanelConstructorOptions);

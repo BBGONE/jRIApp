@@ -76,8 +76,7 @@ export class AnyValListItem extends CollectionItem<AnyItemAspect> implements IAn
                 let error: ValidationError;
                 if (sys.isValidationError(ex)) {
                     error = ex;
-                }
-                else {
+                } else {
                     error = new ValidationError([
                         { fieldName: name, errors: [ex.message] }
                     ], this);
@@ -141,8 +140,9 @@ export class AnyList extends BaseList<IAnyValItem, IAnyVal> {
         });
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         this._debounce.destroy();
         this._onChanged = null;
@@ -157,8 +157,9 @@ export class AnyList extends BaseList<IAnyValItem, IAnyVal> {
     protected createItem(obj?: IAnyVal): IAnyValItem {
         const isNew = !obj;
         const vals: any = isNew ? { val: {} } : obj;
-        if (!vals.val)
+        if (!vals.val) {
             vals.val = {};
+        }
         const key = this._getNewKey();
         const aspect = new AnyItemAspect(this, vals, key, isNew);
         return aspect.item;

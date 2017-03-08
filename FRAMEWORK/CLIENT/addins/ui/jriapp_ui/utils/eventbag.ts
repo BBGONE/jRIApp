@@ -30,17 +30,19 @@ export class EventBag extends BaseObject implements IPropertyBag {
     }
    // implement IPropertyBag
     getProp(name: string): ICommand {
-        if (!this._dic)
+        if (!this._dic) {
             return null;
-        const eventName = strUtils.trimBrackets(name);
-        const cmd = this._dic[eventName];
+        }
+        const eventName = strUtils.trimBrackets(name), cmd = this._dic[eventName];
         return !cmd ? null : cmd;
     }
     setProp(name: string, command: ICommand): void {
-        if (!this._dic && !!command)
+        if (!this._dic && !!command) {
             this._dic = {};
-        if (!this._dic)
+        }
+        if (!this._dic) {
             return;
+        }
         const eventName = strUtils.trimBrackets(name), old = this._dic[eventName];
         if (!command && !!old) {
             delete this._dic[eventName];
@@ -66,8 +68,7 @@ export class EventBag extends BaseObject implements IPropertyBag {
                     oldVal: null,
                     newVal: command
                 });
-            }
-            else {
+            } else {
                 this._onChange(this, {
                     name: eventName,
                     changeType: EVENT_CHANGE_TYPE.Updated,
@@ -84,14 +85,17 @@ export class EventBag extends BaseObject implements IPropertyBag {
     }
 
     trigger(eventName: string, args?: any) {
-        if (!this._dic)
+        if (!this._dic) {
             return;
+        }
         const command = this._dic[eventName];
-        if (!command)
+        if (!command) {
             return;
+        }
         args = args || {};
-        if (command.canExecute(this, args))
+        if (command.canExecute(this, args)) {
             command.execute(this, args);
+        }
     }
     toString() {
         return "EventBag";

@@ -10,8 +10,7 @@ export class ArrayHelper {
     public static clone<T>(arr: T[]): T[] {
         if (arr.length === 1) {
             return [arr[0]];
-        }
-        else {
+        } else {
             return Array.apply(null, arr);
         }
     }

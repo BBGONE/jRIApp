@@ -25,8 +25,9 @@ export class TemplateLoader extends BaseObject {
         this._waitQueue = new WaitQueue(self);
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         const self = this;
         self._promises = [];
@@ -39,8 +40,8 @@ export class TemplateLoader extends BaseObject {
         super.destroy();
     }
     protected _getEventNames() {
-        const base_events = super._getEventNames();
-        return ["loaded"].concat(base_events);
+        const baseEvents = super._getEventNames();
+        return ["loaded"].concat(baseEvents);
     }
     addOnLoaded(fn: (sender: TemplateLoader, args: { html: string; app: IApplication; }) => void, nmspace?: string) {
         this.addHandler("loaded", fn, nmspace);
@@ -69,19 +70,21 @@ export class TemplateLoader extends BaseObject {
     private _getTemplateLoaderCore(name: string): ITemplateLoaderInfo {
         return coreUtils.getValue(this._templateLoaders, name);
     }
-    public loadTemplatesAsync(fn_loader: () => IPromise<string>, app: IApplication): IPromise<any> {
-        const self = this, promise = fn_loader(), old = self.isLoading;
+    public loadTemplatesAsync(fnLoader: () => IPromise<string>, app: IApplication): IPromise<any> {
+        const self = this, promise = fnLoader(), old = self.isLoading;
         self._promises.push(promise);
-        if (self.isLoading !== old)
+        if (self.isLoading !== old) {
             self.raisePropertyChanged(PROP_NAME.isLoading);
+        }
         const res = promise.then((html: string) => {
             self._onLoaded(html, app);
         });
 
         res.always(() => {
             utils.arr.remove(self._promises, promise);
-            if (!self.isLoading)
+            if (!self.isLoading) {
                 self.raisePropertyChanged(PROP_NAME.isLoading);
+            }
         });
         return res;
     }
@@ -117,8 +120,9 @@ export class TemplateLoader extends BaseObject {
     // this function will return promise resolved with the template's html
     public getTemplateLoader(name: string): () => IPromise<string> {
         const self = this, loader = self._getTemplateLoaderCore(name);
-        if (!loader)
+        if (!loader) {
             return null;
+        }
         if (!loader.fn_loader && !!loader.groupName) {
             const group = self._getTemplateGroup(loader.groupName);
             if (!group) {
@@ -144,8 +148,9 @@ export class TemplateLoader extends BaseObject {
                         const loader = self._getTemplateLoaderCore(name);
                         if (!loader || !loader.fn_loader) {
                             const error = strUtils.format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
-                            if (DEBUG.isDebugging())
+                            if (DEBUG.isDebugging()) {
                                 LOG.error(error);
+                            }
                             throw new Error(error);
                         }
                     });
@@ -153,8 +158,9 @@ export class TemplateLoader extends BaseObject {
                     const loader = self._getTemplateLoaderCore(name);
                     if (!loader || !loader.fn_loader) {
                         const error = strUtils.format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
-                        if (DEBUG.isDebugging())
+                        if (DEBUG.isDebugging()) {
                             LOG.error(error);
+                        }
                         throw new Error(error);
                     }
 
@@ -172,8 +178,7 @@ export class TemplateLoader extends BaseObject {
 
                 return deferred.promise();
             };
-        }
-        else {
+        } else {
             return loader.fn_loader;
         }
     }

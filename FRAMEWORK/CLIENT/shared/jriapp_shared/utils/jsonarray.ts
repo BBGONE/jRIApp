@@ -25,13 +25,15 @@ export class JsonArray extends BaseObject {
         this._owner = owner;
         this._pathToArray = pathToArray;
         this.owner.addOnPropertyChange("val", () => {
-            if (!!this._list)
+            if (!!this._list) {
                 this._list.setValues(this.getArray());
+            }
         }, this._objId);
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         this._owner.removeNSHandlers(this._objId);
         this._list.destroy();
@@ -40,8 +42,8 @@ export class JsonArray extends BaseObject {
         super.destroy();
     }
     protected _getEventNames() {
-        const base_events = super._getEventNames();
-        return [BAG_EVENTS.validate_bag, BAG_EVENTS.validate_field].concat(base_events);
+        const baseEvents = super._getEventNames();
+        return [BAG_EVENTS.validate_bag, BAG_EVENTS.validate_field].concat(baseEvents);
     }
     protected updateArray(arr: any[]): void {
         coreUtils.setValue(this._owner.val, this._pathToArray, arr, false, "->");
@@ -66,10 +68,7 @@ export class JsonArray extends BaseObject {
             result: []
         };
         this.raiseEvent(BAG_EVENTS.validate_bag, args);
-        if (!!args.result)
-            return args.result;
-        else
-            return [];
+        return (!!args.result) ? args.result : [];
     }
     protected _validateField(bag: IAnyValItem, fieldName: string): IValidationInfo {
         const args: IFieldValidateArgs<IPropertyBag> = {
@@ -78,14 +77,12 @@ export class JsonArray extends BaseObject {
             errors: []
         };
         this.raiseEvent(BAG_EVENTS.validate_field, args);
-        if (!!args.errors && args.errors.length > 0)
-            return { fieldName: fieldName, errors: args.errors };
-        else
-            return null;
+        return (!!args.errors && args.errors.length > 0) ? { fieldName: fieldName, errors: args.errors } : null;
     }
     getArray(): any[] {
-        if (!this._owner)
+        if (!this._owner) {
             return [];
+        }
         const res = coreUtils.getValue(this._owner.val, this._pathToArray, "->");
         return (!res) ? [] : res;
     }
@@ -102,14 +99,15 @@ export class JsonArray extends BaseObject {
             });
 
             this._list.addOnValidateField((s, args) => {
-                const validation_info = this._validateField(args.item, args.fieldName);
-                if (!!validation_info && validation_info.errors.length > 0)
-                    args.errors = validation_info.errors;
+                const validationInfo = this._validateField(args.item, args.fieldName);
+                if (!!validationInfo && validationInfo.errors.length > 0) {
+                    args.errors = validationInfo.errors;
+                }
             }, this._objId);
 
             this._list.addOnValidateItem((s, args) => {
-                const validation_infos = this._validateBag(args.item);
-                args.result = validation_infos;
+                const validationInfos = this._validateBag(args.item);
+                args.result = validationInfos;
             }, this._objId);
 
             this._list.setValues(this.getArray());

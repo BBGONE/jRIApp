@@ -31,13 +31,14 @@ export class DetailsRow extends BaseObject {
         this._createCell(options.details_id);
         dom.addClass([tr], css.rowDetails);
         this._grid.addOnRowExpanded((sender, args) => {
-            if (!args.isExpanded && !!args.collapsedRow)
+            if (!args.isExpanded && !!args.collapsedRow) {
                 self._setParentRow(null);
+            }
         }, this._objId);
     }
-    private _createCell(details_id: string) {
+    private _createCell(detailsId: string) {
         const td: HTMLTableCellElement = <HTMLTableCellElement>document.createElement("td");
-        this._cell = new DetailsCell({ row: this, td: td, details_id: details_id });
+        this._cell = new DetailsCell({ row: this, td: td, details_id: detailsId });
     }
     protected _setParentRow(row: Row) {
         const self = this;
@@ -51,15 +52,18 @@ export class DetailsRow extends BaseObject {
         this._parentRow = row;
         this._item = row.item;
         this._cell.item = this._item;
-        if (this._isFirstShow)
+        if (this._isFirstShow) {
             this._initShow();
+        }
         dom.insertAfter(this.tr, row.tr);
         this._show(() => {
             const parentRow = self._parentRow;
-            if (!parentRow || parentRow.getIsDestroyCalled())
+            if (!parentRow || parentRow.getIsDestroyCalled()) {
                 return;
-            if (self.grid.options.isUseScrollIntoDetails)
+            }
+            if (self.grid.options.isUseScrollIntoDetails) {
                 parentRow.scrollIntoView(true, ROW_POSITION.Details);
+            }
         });
     }
     private _initShow() {
@@ -78,8 +82,9 @@ export class DetailsRow extends BaseObject {
         animation.hide(onEnd);
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         this._grid.removeNSHandlers(this._objId);
         if (!!this._cell) {
@@ -125,8 +130,7 @@ export class DetailsRow extends BaseObject {
                 self._hide(() => {
                     self._setParentRow(v);
                 });
-            }
-            else {
+            } else {
                 self._setParentRow(v);
             }
         }

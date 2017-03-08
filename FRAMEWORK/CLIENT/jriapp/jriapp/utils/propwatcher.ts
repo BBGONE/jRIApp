@@ -16,32 +16,35 @@ export class PropWatcher extends BaseObject {
     static create() {
         return new PropWatcher();
     }
-    addPropWatch(obj: IBaseObject, prop: string, fn_onChange: (prop: string) => void) {
+    addPropWatch(obj: IBaseObject, prop: string, fnOnChange: (prop: string) => void) {
         const self = this;
         obj.addOnPropertyChange(prop, function (s, a) {
-            fn_onChange(a.property);
+            fnOnChange(a.property);
         }, self.uniqueID);
 
-        if (self._objs.indexOf(obj) < 0)
+        if (self._objs.indexOf(obj) < 0) {
             self._objs.push(obj);
+        }
     }
-    addWatch(obj: IBaseObject, props: string[], fn_onChange: (prop: string) => void) {
+    addWatch(obj: IBaseObject, props: string[], fnOnChange: (prop: string) => void) {
         const self = this;
         obj.addOnPropertyChange("*", function (s, a) {
             if (props.indexOf(a.property) > -1) {
-                fn_onChange(a.property);
+                fnOnChange(a.property);
             }
         }, self.uniqueID);
 
-        if (self._objs.indexOf(obj) < 0)
+        if (self._objs.indexOf(obj) < 0) {
             self._objs.push(obj);
+        }
     }
     removeWatch(obj: IBaseObject) {
         obj.removeNSHandlers(this.uniqueID);
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         const self = this;
         this._objs.forEach(function (obj) {

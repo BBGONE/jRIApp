@@ -40,8 +40,9 @@ export class CommandElView extends BaseElView {
         if (!!self.command && self.command.canExecute(self, args)) {
             if (isAsync) {
                 utils.queue.enque(() => {
-                    if (self.getIsDestroyCalled())
+                    if (self.getIsDestroyCalled()) {
                         return;
+                    }
                     // repeat the check after timeout
                     try {
                         if (!!self.command && self.command.canExecute(self, args)) {

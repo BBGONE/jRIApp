@@ -22,7 +22,7 @@ interface IWaitQueueTask {
     args: any[];
 }
 
-/* 
+/*
    waits for property change on the object (the owner)
    then checks queue of actions for the property change
    based on property value checking predicate
@@ -84,8 +84,9 @@ export class WaitQueue extends BaseObject {
                 }
 
                 if (firstWinsTask.lastWins) { // the last task wins, the rest is ignored
-                    if (found.length === 0)
+                    if (found.length === 0) {
                         found.push(task); // add only the last task, the rest just remove from queue
+                    }
                 } else {
                     found.push(task); // add all tasks in the group, they will be executed all
                 }
@@ -128,8 +129,9 @@ export class WaitQueue extends BaseObject {
             lastWins: false
         }, item);
         const self = this;
-        if (!this._owner)
+        if (!this._owner) {
             return;
+        }
         const property = opts.prop;
         let propQueue = this._queue[property];
 
@@ -138,8 +140,9 @@ export class WaitQueue extends BaseObject {
             this._queue[property] = propQueue;
             this._owner.addOnPropertyChange(property, function (s, a) {
                 setTimeout(function () {
-                    if (self.getIsDestroyCalled())
+                    if (self.getIsDestroyCalled()) {
                         return;
+                    }
                     self._checkQueue(property, (<any>self._owner)[property]);
                 }, 0);
             }, self.uniqueID);
@@ -155,14 +158,16 @@ export class WaitQueue extends BaseObject {
         propQueue.push(task);
         self._checkQueue(property, (<any>self._owner)[property]);
         setTimeout(function () {
-            if (self.getIsDestroyCalled())
+            if (self.getIsDestroyCalled()) {
                 return;
+            }
             self._checkQueue(property, (<any>self._owner)[property]);
         }, 0);
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         this._owner.removeNSHandlers(this.uniqueID);
         this._queue = {};

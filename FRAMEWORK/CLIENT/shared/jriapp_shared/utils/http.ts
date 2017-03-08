@@ -24,10 +24,11 @@ export class HttpUtils {
                 const res: string = req.response;
                 deferred.resolve(res);
             } else {
-                if (HttpUtils.isStatusOK(status))
+                if (HttpUtils.isStatusOK(status)) {
                     deferred.reject(new DummyError(new Error(strUtils.format('Status: "{0}" loading from URL: "{1}"', status, url))));
-                else
+                } else {
                     deferred.reject(new Error(strUtils.format('Error: "{0}" to load from URL: "{1}"', status, url)));
+                }
             }
         };
         req.onerror = function (e) {

@@ -74,20 +74,19 @@ export class AggregateError extends BaseError {
             [name: string]: any;
         } = {};
         this._errors.forEach((err) => {
-            if (!err)
+            if (!err) {
                 return;
+            }
             let str = "";
             if (err instanceof AggregateError) {
                 str = (<AggregateError>err).message;
-            }
-            else if (err instanceof Error) {
+            } else if (err instanceof Error) {
                 str = (<Error>err).message;
-            }
-            else if (!!err.message) {
+            } else if (!!err.message) {
                 str = "" + err.message;
-            }
-            else
+            } else {
                 str = "" + err;
+            }
 
             hashMap[str] = "";
         });
@@ -102,8 +101,9 @@ export class AggregateError extends BaseError {
             msg += "" + err;
         });
 
-        if (!msg)
+        if (!msg) {
             msg = "Aggregate Error";
+        }
         return msg;
     }
 
@@ -124,12 +124,14 @@ export class ValidationError extends BaseError {
     constructor(validations: IValidationInfo[], item: any) {
         let message = ERRS.ERR_VALIDATION + "\r\n";
         validations.forEach(function (err, i) {
-            if (i > 0)
+            if (i > 0) {
                 message = message + "\r\n";
-            if (!!err.fieldName)
+            }
+            if (!!err.fieldName) {
                 message = message + " " + STRS.TEXT.txtField + ": '" + err.fieldName + "'  " + err.errors.join(", ");
-            else
+            } else {
                 message = message + err.errors.join(", ");
+            }
         });
         super(message);
         this._validations = validations;

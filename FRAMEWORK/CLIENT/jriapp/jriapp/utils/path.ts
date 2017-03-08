@@ -49,21 +49,24 @@ export class PathHelper {
     private static _anchor: HTMLAnchorElement = doc.createElement("a");
     static appendBust(url: string): string {
         const bust = config.bust;
-        if (!bust)
+        if (!bust) {
             return url;
+        }
         return PathHelper.appendSearch(url, bust);
     }
     static appendSearch(url: string, search: string): string {
         search = strUtils.ltrim(search, "?");
         const parts = PathHelper.getUrlParts(url);
         const oldSearch = strUtils.ltrim(parts.search, "?");
-        if (!!oldSearch && oldSearch.lastIndexOf(search) > -1)
+        if (!!oldSearch && oldSearch.lastIndexOf(search) > -1) {
             return url;
+        }
 
-        if (!oldSearch)
+        if (!oldSearch) {
             url = url + "?" + search;
-        else
+        } else {
             url = url + "&" + search;
+        }
 
         return url;
     }
@@ -119,8 +122,9 @@ export class PathHelper {
             }
         }
 
-        if (!res)
+        if (!res) {
             throw new Error(strUtils.format("Can not resolve {0} framework path", name));
+        }
 
         return res;
     }

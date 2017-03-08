@@ -74,8 +74,9 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
             var pageIndex = -1;
             coreUtils.forEachProp(this._pages, function (index, page) {
                 var cachePageIndex = page.pageIndex;
-                if (cachePageIndex > pageIndex && cachePageIndex < currentPageIndex)
+                if (cachePageIndex > pageIndex && cachePageIndex < currentPageIndex) {
                     pageIndex = cachePageIndex;
+                }
             });
             return pageIndex;
         };
@@ -121,8 +122,9 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
         };
         DataCache.prototype.getPageItems = function (pageIndex) {
             var page = this.getPage(pageIndex);
-            if (!page)
+            if (!page) {
                 return [];
+            }
             var dbSet = this._query.dbSet, keyMap = this._itemsByKey;
             var res = page.keys.map(function (key) {
                 var kv = keyMap[key];
@@ -132,8 +134,9 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
         };
         DataCache.prototype.setPageItems = function (pageIndex, items) {
             this.deletePage(pageIndex);
-            if (items.length === 0)
+            if (items.length === 0) {
                 return;
+            }
             var kvs = items.map(function (item) { return { key: item._key, val: item._aspect.vals }; });
             var page = { keys: kvs.map(function (kv) { return kv.key; }), pageIndex: pageIndex };
             this._pages[pageIndex] = page;
@@ -147,8 +150,9 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
             var len = items.length, pageSize = this.pageSize;
             for (var i = 0; i < this.loadPageCount; i += 1) {
                 var pageItems = [], pgstart = (i * pageSize);
-                if (pgstart >= len)
+                if (pgstart >= len) {
                     break;
+                }
                 for (var j = 0; j < pageSize; j += 1) {
                     var k = pgstart + j;
                     if (k < len) {
@@ -163,8 +167,9 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
         };
         DataCache.prototype.deletePage = function (pageIndex) {
             var page = this.getPage(pageIndex);
-            if (!page)
+            if (!page) {
                 return;
+            }
             var keys = page.keys;
             for (var j = 0; j < keys.length; j += 1) {
                 delete this._itemsByKey[keys[j]];
@@ -176,13 +181,15 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
         };
         DataCache.prototype.getItemByKey = function (key) {
             var kv = this._itemsByKey[key];
-            if (!kv)
+            if (!kv) {
                 return null;
+            }
             return this._query.dbSet.createEntityFromObj(kv.val, kv.key);
         };
         DataCache.prototype.destroy = function () {
-            if (this._isDestroyed)
+            if (this._isDestroyed) {
                 return;
+            }
             this._isDestroyCalled = true;
             this.clear();
             _super.prototype.destroy.call(this);
@@ -222,8 +229,9 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
         Object.defineProperty(DataCache.prototype, "totalCount", {
             get: function () { return this._totalCount; },
             set: function (v) {
-                if (checks.isNt(v))
+                if (checks.isNt(v)) {
                     v = 0;
+                }
                 if (v !== this._totalCount) {
                     this._totalCount = v;
                     this.raisePropertyChanged(const_1.PROP_NAME.totalCount);
@@ -254,7 +262,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             var _this = _super.call(this) || this;
             var self = _this;
             _this._dbSet = dbSet;
-            _this.__queryInfo = queryInfo;
+            _this._queryInfo = queryInfo;
             _this._filterInfo = { filterItems: [] };
             _this._sortInfo = { sortItems: [] };
             _this._isIncludeTotalCount = true;
@@ -281,7 +289,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
                     self._updateCache(pageIndex, items);
                 },
                 getQueryInfo: function () {
-                    return self.__queryInfo;
+                    return self._queryInfo;
                 }
             };
             return _this;
@@ -296,14 +304,17 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             if (checkFieldName === void 0) { checkFieldName = true; }
             var fkind = 0, vals = [];
             var stz = this.serverTimezone;
-            if (!checks.isArray(value))
+            if (!checks.isArray(value)) {
                 vals = [value];
-            else
+            }
+            else {
                 vals = value;
+            }
             var tmpVals = arrHelper.clone(vals);
             var fld = this.getFieldInfo(fieldName);
-            if (!fld && checkFieldName)
+            if (!fld && checkFieldName) {
                 throw new Error(strUtils.format(jriapp_shared_2.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, this.dbSetName, fieldName));
+            }
             if (!!fld) {
                 vals = tmpVals.map(function (v) { return valUtils.stringifyValue(v, fld.dateConversion, fld.dataType, stz); });
             }
@@ -324,8 +335,9 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
                     break;
                 case 1:
                     fkind = operand;
-                    if (value.length !== 2)
+                    if (value.length !== 2) {
                         throw new Error(jriapp_shared_2.LocaleERRS.ERR_QUERY_BETWEEN);
+                    }
                     break;
                 default:
                     throw new Error(strUtils.format(jriapp_shared_2.LocaleERRS.ERR_QUERY_OPERATOR_INVALID, operand));
@@ -409,8 +421,9 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             return this.dbSet.dbContext.load(this);
         };
         DataQuery.prototype.destroy = function () {
-            if (this._isDestroyed)
+            if (this._isDestroyed) {
                 return;
+            }
             this._isDestroyCalled = true;
             this._clearCache();
             _super.prototype.destroy.call(this);
@@ -434,7 +447,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             configurable: true
         });
         Object.defineProperty(DataQuery.prototype, "queryName", {
-            get: function () { return this.__queryInfo.methodName; },
+            get: function () { return this._queryInfo.methodName; },
             enumerable: true,
             configurable: true
         });
@@ -541,15 +554,18 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_3.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err, valUtils = utils_2.ValueUtils, colUtils = utils_2.CollUtils;
     function doFieldDependences(dbSet, info) {
-        if (!info.dependentOn)
+        if (!info.dependentOn) {
             return;
+        }
         var deps = info.dependentOn.split(",");
         deps.forEach(function (depOn) {
             var depOnFld = dbSet.getFieldInfo(depOn);
-            if (!depOnFld)
+            if (!depOnFld) {
                 throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_CALC_FIELD_DEFINE, depOn));
-            if (info === depOnFld)
+            }
+            if (info === depOnFld) {
                 throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_CALC_FIELD_SELF_DEPEND, depOn));
+            }
             if (depOnFld.dependents.indexOf(info.fullName) < 0) {
                 depOnFld.dependents.push(info.fullName);
             }
@@ -657,14 +673,11 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             return _this;
         }
         DbSet.prototype.handleError = function (error, source) {
-            if (!this._dbContext)
-                return _super.prototype.handleError.call(this, error, source);
-            else
-                return this._dbContext.handleError(error, source);
+            return (!this._dbContext) ? _super.prototype.handleError.call(this, error, source) : this._dbContext.handleError(error, source);
         };
         DbSet.prototype._getEventNames = function () {
-            var base_events = _super.prototype._getEventNames.call(this);
-            return [DBSET_EVENTS.loaded].concat(base_events);
+            var baseEvents = _super.prototype._getEventNames.call(this);
+            return [DBSET_EVENTS.loaded].concat(baseEvents);
         };
         DbSet.prototype._mapAssocFields = function () {
             var trackAssoc = this._trackAssoc, tasKeys = Object.keys(trackAssoc), trackAssocMap = this._trackAssocMap;
@@ -696,8 +709,9 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 });
                 isChild = false;
             }
-            if (assocs.length !== 1)
+            if (assocs.length !== 1) {
                 throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_PARAM_INVALID_TYPE, "assocs", "Array"));
+            }
             var assocName = assocs[0].name;
             fieldInfo.isReadOnly = true;
             if (isChild) {
@@ -766,8 +780,9 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             var self = this;
             values.forEach(function (value, index) {
                 var name = names[index], fieldName = path + name.n, fld = self.getFieldInfo(fieldName);
-                if (!fld)
+                if (!fld) {
                     throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fieldName));
+                }
                 if (fld.fieldType === 5) {
                     self._refreshValues(fieldName + ".", item, value, name.p, rm);
                 }
@@ -780,8 +795,9 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             var self = this, stz = self.dbContext.serverTimezone;
             values.forEach(function (value, index) {
                 var name = names[index], fieldName = path + name.n, fld = self.getFieldInfo(fieldName);
-                if (!fld)
+                if (!fld) {
                     throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fieldName));
+                }
                 if (fld.fieldType === 5) {
                     self._applyFieldVals(vals, fieldName + ".", value, name.p);
                 }
@@ -822,8 +838,9 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             this._isPageFilled = false;
             this.cancelEdit();
             _super.prototype._onPageChanged.call(this);
-            if (this._ignorePageChanged)
+            if (this._ignorePageChanged) {
                 return;
+            }
             self.query.pageIndex = self.pageIndex;
             self._pageDebounce.enque(function () {
                 self.dbContext._getInternal().load(self.query, 1);
@@ -831,8 +848,9 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         };
         DbSet.prototype._onPageSizeChanged = function () {
             _super.prototype._onPageSizeChanged.call(this);
-            if (!!this._query)
+            if (!!this._query) {
                 this._query.pageSize = this.pageSize;
+            }
         };
         DbSet.prototype._defineCalculatedField = function (fullName, getFunc) {
             var calcDef = coreUtils.getValue(this._calcfldMap, fullName);
@@ -849,16 +867,18 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             var pkFlds = this._pkFields, len = pkFlds.length;
             if (len === 1) {
                 var val = coreUtils.getValue(vals, pkFlds[0].fieldName);
-                if (checks.isNt(val))
+                if (checks.isNt(val)) {
                     throw new Error("Empty key field value for: " + pkFlds[0].fieldName);
+                }
                 return this._getStrValue(val, pkFlds[0]);
             }
             else {
                 var pkVals = [];
                 for (var i = 0; i < len; i += 1) {
                     var val = coreUtils.getValue(vals, pkFlds[i].fieldName);
-                    if (checks.isNt(val))
+                    if (checks.isNt(val)) {
                         throw new Error("Empty key field value for: " + pkFlds[i].fieldName);
+                    }
                     var strval = this._getStrValue(val, pkFlds[i]);
                     pkVals.push(strval);
                 }
@@ -944,15 +964,18 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             var isClearAll = true;
             if (!!query && !query.getIsDestroyCalled()) {
                 isClearAll = query.isClearPrevData;
-                if (query.isClearCacheOnEveryLoad)
+                if (query.isClearCacheOnEveryLoad) {
                     query._getInternal().clearCache();
-                if (isClearAll)
+                }
+                if (isClearAll) {
                     this._clear(info.reason, 1);
+                }
             }
             var fetchedItems = rows.map(function (row) {
                 var key = row.k;
-                if (!key)
+                if (!key) {
                     throw new Error(jriapp_shared_3.LocaleERRS.ERR_KEY_IS_EMPTY);
+                }
                 var item = self._itemsByKey[key];
                 if (!item) {
                     item = self.createEntityFromData(row, fieldNames);
@@ -969,8 +992,9 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 }
                 if (query.loadPageCount > 1 && isPagingEnabled) {
                     var dataCache = query._getInternal().getCache();
-                    if (query.isIncludeTotalCount && !checks.isNt(res.totalCount))
+                    if (query.isIncludeTotalCount && !checks.isNt(res.totalCount)) {
                         dataCache.totalCount = res.totalCount;
+                    }
                     dataCache.fill(res.pageIndex, fetchedItems);
                     arr = dataCache.getPageItems(query.pageIndex);
                 }
@@ -1009,10 +1033,12 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         };
         DbSet.prototype._fillFromCache = function (args) {
             var self = this, query = args.query;
-            if (!query)
+            if (!query) {
                 throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_ASSERTION_FAILED, "query is not null"));
-            if (query.getIsDestroyCalled())
+            }
+            if (query.getIsDestroyCalled()) {
                 throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_ASSERTION_FAILED, "query not destroyed"));
+            }
             var dataCache = query._getInternal().getCache(), arr = dataCache.getPageItems(query.pageIndex);
             this._clear(args.reason, 1);
             this._items = arr;
@@ -1066,8 +1092,9 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         DbSet.prototype._setItemInvalid = function (row) {
             var keyMap = this._itemsByKey, item = keyMap[row.clientKey], errors = {};
             row.invalid.forEach(function (err) {
-                if (!err.fieldName)
+                if (!err.fieldName) {
                     err.fieldName = "*";
+                }
                 if (checks.isArray(errors[err.fieldName])) {
                     errors[err.fieldName].push(err.message);
                 }
@@ -1102,23 +1129,27 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             return res;
         };
         DbSet.prototype._addToChanged = function (item) {
-            if (item._aspect.isDetached)
+            if (item._aspect.isDetached) {
                 return;
+            }
             if (!this._changeCache[item._key]) {
                 this._changeCache[item._key] = item;
                 this._changeCount += 1;
-                if (this._changeCount === 1)
+                if (this._changeCount === 1) {
                     this.raisePropertyChanged(const_3.PROP_NAME.isHasChanges);
+                }
             }
         };
         DbSet.prototype._removeFromChanged = function (key) {
-            if (!key)
+            if (!key) {
                 return;
+            }
             if (!!this._changeCache[key]) {
                 delete this._changeCache[key];
                 this._changeCount -= 1;
-                if (this._changeCount === 0)
+                if (this._changeCount === 0) {
                     this.raisePropertyChanged(const_3.PROP_NAME.isHasChanges);
+                }
             }
         };
         DbSet.prototype._onItemStatusChanged = function (item, oldStatus) {
@@ -1186,12 +1217,14 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             var self = this, reason = 0;
             this._destroyQuery();
             var isClearAll = !isAppend;
-            if (isClearAll)
+            if (isClearAll) {
                 self._clear(reason, 1);
+            }
             var fetchedItems = data.rows.map(function (row) {
                 var key = row.k;
-                if (!key)
+                if (!key) {
                     throw new Error(jriapp_shared_3.LocaleERRS.ERR_KEY_IS_EMPTY);
+                }
                 var item = self._itemsByKey[key];
                 if (!item) {
                     item = self.createEntityFromData(row, data.names);
@@ -1237,8 +1270,9 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             var self = this, reason = 0;
             this._destroyQuery();
             var isClearAll = !isAppend;
-            if (isClearAll)
+            if (isClearAll) {
                 self._clear(reason, 1);
+            }
             var fetchedItems = data.map(function (obj) {
                 return self.createEntityFromObj(obj);
             });
@@ -1318,10 +1352,14 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             if (!checks.isNt(query)) {
                 query.clearSort();
                 for (var i = 0; i < fieldNames.length; i += 1) {
-                    if (i === 0)
-                        query.orderBy(fieldNames[i], sortOrder);
-                    else
-                        query.thenBy(fieldNames[i], sortOrder);
+                    switch (i) {
+                        case 0:
+                            query.orderBy(fieldNames[i], sortOrder);
+                            break;
+                        default:
+                            query.thenBy(fieldNames[i], sortOrder);
+                            break;
+                    }
                 }
                 query.isClearPrevData = true;
                 query.pageIndex = 0;
@@ -1361,8 +1399,9 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             return new dataquery_1.DataQuery(this, queryInfo);
         };
         DbSet.prototype.destroy = function () {
-            if (this._isDestroyed)
+            if (this._isDestroyed) {
                 return;
+            }
             this._isDestroyCalled = true;
             this._pageDebounce.destroy();
             this._pageDebounce = null;
@@ -1465,8 +1504,9 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared", "jriapp_db/co
         };
         DbSets.prototype._createDbSet = function (name, dbSetType) {
             var self = this, dbContext = this._dbContext;
-            if (!!self._dbSets[name])
+            if (!!self._dbSets[name]) {
                 throw new Error(utils.str.format("DbSet: {0} is already created", name));
+            }
             self._dbSets[name] = new jriapp_shared_4.Lazy(function () {
                 var res = new dbSetType(dbContext);
                 self._dbSetCreated(res);
@@ -1489,19 +1529,22 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared", "jriapp_db/co
         });
         DbSets.prototype.findDbSet = function (name) {
             var res = this._dbSets[name];
-            if (!res)
+            if (!res) {
                 return null;
+            }
             return res.Value;
         };
         DbSets.prototype.getDbSet = function (name) {
             var dbSet = this.findDbSet(name);
-            if (!dbSet)
+            if (!dbSet) {
                 throw new Error(strUtils.format(jriapp_shared_4.LocaleERRS.ERR_DBSET_NAME_INVALID, name));
+            }
             return dbSet;
         };
         DbSets.prototype.destroy = function () {
-            if (this._isDestroyed)
+            if (this._isDestroyed) {
                 return;
+            }
             this._isDestroyCalled = true;
             this._arrDbSets.forEach(function (dbSet) {
                 dbSet.destroy();
@@ -1565,15 +1608,13 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             return _this;
         }
         Association.prototype.handleError = function (error, source) {
-            if (!this._dbContext)
-                return _super.prototype.handleError.call(this, error, source);
-            else
-                return this._dbContext.handleError(error, source);
+            return (!this._dbContext) ? _super.prototype.handleError.call(this, error, source) : this._dbContext.handleError(error, source);
         };
         Association.prototype._bindParentDS = function () {
             var self = this, ds = this._parentDS;
-            if (!ds)
+            if (!ds) {
                 return;
+            }
             ds.addOnCollChanged(function (sender, args) {
                 self._onParentCollChanged(args);
             }, self._objId, null, 2);
@@ -1594,8 +1635,9 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
         };
         Association.prototype._bindChildDS = function () {
             var self = this, ds = this._childDS;
-            if (!ds)
+            if (!ds) {
                 return;
+            }
             ds.addOnCollChanged(function (sender, args) {
                 self._onChildCollChanged(args);
             }, self._objId, null, 2);
@@ -1653,10 +1695,12 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
                 self._storeParentFKey(item);
             }
             else {
-                if (!isCanceled)
+                if (!isCanceled) {
                     self._checkParentFKey(item);
-                else
+                }
+                else {
                     self._saveParentFKey = null;
+                }
             }
         };
         Association.prototype._onParentCommitChanges = function (item, isBegin, isRejected, status) {
@@ -1665,14 +1709,16 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             if (isBegin) {
                 if (isRejected && status === 1) {
                     fkey = this._unMapParentItem(item);
-                    if (!!fkey)
+                    if (!!fkey) {
                         self._notifyParentChanged([fkey]);
+                    }
                     return;
                 }
                 else if (!isRejected && status === 3) {
                     fkey = this._unMapParentItem(item);
-                    if (!!fkey)
+                    if (!!fkey) {
                         self._notifyParentChanged([fkey]);
+                    }
                     return;
                 }
                 self._storeParentFKey(item);
@@ -1723,18 +1769,21 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
                     case 2:
                         children.forEach(function (child) {
                             var isEdit = child._aspect.isEditing;
-                            if (!isEdit)
+                            if (!isEdit) {
                                 child._aspect.beginEdit();
+                            }
                             try {
                                 self._childFldInfos.forEach(function (f) {
                                     child[f.fieldName] = null;
                                 });
-                                if (!isEdit)
+                                if (!isEdit) {
                                     child._aspect.endEdit();
+                                }
                             }
                             finally {
-                                if (!isEdit)
+                                if (!isEdit) {
                                     child._aspect.cancelEdit();
+                                }
                             }
                         });
                         break;
@@ -1789,10 +1838,10 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
         Association.prototype._notifyParentChanged = function (changed) {
             this._notifyChanged(changed, []);
         };
-        Association.prototype._notifyChanged = function (changed_pkeys, changed_ckeys) {
+        Association.prototype._notifyChanged = function (changedPkeys, changedCkeys) {
             var self = this;
-            if (changed_pkeys.length > 0 || changed_ckeys.length > 0) {
-                changed_pkeys.forEach(function (key) {
+            if (changedPkeys.length > 0 || changedCkeys.length > 0) {
+                changedPkeys.forEach(function (key) {
                     var res = self._changed[key] || { children: {}, parent: null };
                     var arr = self._childMap[key];
                     if (!!arr) {
@@ -1802,7 +1851,7 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
                     }
                     self._changed[key] = res;
                 });
-                changed_ckeys.forEach(function (key) {
+                changedCkeys.forEach(function (key) {
                     var res = self._changed[key] || { children: {}, parent: null };
                     var item = self._parentMap[key];
                     if (!!item) {
@@ -1850,14 +1899,16 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             if (isBegin) {
                 if (isRejected && status === 1) {
                     fkey = this._unMapChildItem(item);
-                    if (!!fkey)
+                    if (!!fkey) {
                         self._notifyChildrenChanged([fkey]);
+                    }
                     return;
                 }
                 else if (!isRejected && status === 3) {
                     fkey = self._unMapChildItem(item);
-                    if (!!fkey)
+                    if (!!fkey) {
                         self._notifyChildrenChanged([fkey]);
+                    }
                     return;
                 }
                 self._storeChildFKey(item);
@@ -1898,12 +1949,14 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
         Association.prototype._onChildStatusChanged = function (item, oldStatus) {
             var self = this, newStatus = item._aspect.status;
             var fkey = self.getChildFKey(item);
-            if (!fkey)
+            if (!fkey) {
                 return;
+            }
             if (newStatus === 3) {
                 fkey = self._unMapChildItem(item);
-                if (!!fkey)
+                if (!!fkey) {
                     self._notifyChildrenChanged([fkey]);
+                }
             }
         };
         Association.prototype._getItemKey = function (finf, ds, item) {
@@ -1911,8 +1964,9 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             for (var i = 0; i < len; i += 1) {
                 var val = item[finf[i].fieldName];
                 var strval = internal.getStrValue(val, finf[i]);
-                if (strval === null)
+                if (strval === null) {
                     return null;
+                }
                 arr.push(strval);
             }
             return arr.join(";");
@@ -1935,8 +1989,9 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
                 if (!!arr) {
                     idx = arrHelper.remove(arr, item);
                     if (idx > -1) {
-                        if (arr.length === 0)
+                        if (arr.length === 0) {
                             delete this._childMap[fkey];
+                        }
                         changedKey = fkey;
                     }
                 }
@@ -1957,8 +2012,9 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             for (var i = 0; i < len; i += 1) {
                 var item = items[i];
                 var status_1 = item._aspect.status;
-                if (status_1 === 3)
+                if (status_1 === 3) {
                     continue;
+                }
                 var fkey = this.getParentFKey(item);
                 if (!!fkey) {
                     var old = this._parentMap[fkey];
@@ -1978,11 +2034,12 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
         Association.prototype._onParentChanged = function (fkey, map) {
             var self = this;
             if (!!fkey && !!this._childToParentName) {
-                var keys = Object.keys(map);
-                for (var k = 0; k < keys.length; k += 1) {
+                var keys = Object.keys(map), len = keys.length;
+                for (var k = 0; k < len; k += 1) {
                     var item = map[keys[k]];
-                    if (!item.getIsDestroyCalled())
+                    if (!item.getIsDestroyCalled()) {
                         item.raisePropertyChanged(self._childToParentName);
+                    }
                 }
             }
         };
@@ -1991,8 +2048,9 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             for (var i = 0; i < len; i += 1) {
                 var item = items[i];
                 var status_2 = item._aspect.status;
-                if (status_2 === 3)
+                if (status_2 === 3) {
                     continue;
+                }
                 var fkey = this.getChildFKey(item);
                 if (!!fkey) {
                     var arr = this._childMap[fkey];
@@ -2002,8 +2060,9 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
                     }
                     if (arr.indexOf(item) < 0) {
                         arr.push(item);
-                        if (!chngedKeys[fkey])
+                        if (!chngedKeys[fkey]) {
                             chngedKeys[fkey] = null;
+                        }
                     }
                 }
             }
@@ -2011,14 +2070,16 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
         };
         Association.prototype._unbindParentDS = function () {
             var self = this, ds = this.parentDS;
-            if (!ds)
+            if (!ds) {
                 return;
+            }
             ds.removeNSHandlers(self._objId);
         };
         Association.prototype._unbindChildDS = function () {
             var self = this, ds = this.childDS;
-            if (!ds)
+            if (!ds) {
                 return;
+            }
             ds.removeNSHandlers(self._objId);
         };
         Association.prototype.refreshParentMap = function () {
@@ -2030,8 +2091,9 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             return this._mapChildren(this._childDS.items);
         };
         Association.prototype.getParentFKey = function (item) {
-            if (!!item && item._aspect.isNew)
+            if (!!item && item._aspect.isNew) {
                 return item._key;
+            }
             return this._getItemKey(this._parentFldInfos, this._parentDS, item);
         };
         Association.prototype.getChildFKey = function (item) {
@@ -2044,14 +2106,17 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             return this._getItemKey(this._childFldInfos, this._childDS, item);
         };
         Association.prototype.isParentChild = function (parent, child) {
-            if (!parent || !child)
+            if (!parent || !child) {
                 return false;
+            }
             var fkey1 = this.getParentFKey(parent);
-            if (!fkey1)
+            if (!fkey1) {
                 return false;
+            }
             var fkey2 = this.getChildFKey(child);
-            if (!fkey2)
+            if (!fkey2) {
                 return false;
+            }
             return fkey1 === fkey2;
         };
         Association.prototype.getChildItems = function (parent) {
@@ -2154,12 +2219,15 @@ define("jriapp_db/error", ["require", "exports", "jriapp_shared"], function (req
         function DataOperationError(originalError, operationName) {
             var _this = this;
             var message;
-            if (originalError instanceof Error)
+            if (originalError instanceof Error) {
                 message = originalError.message;
-            else if (originalError instanceof jriapp_shared_6.BaseError)
+            }
+            else if (originalError instanceof jriapp_shared_6.BaseError) {
                 message = originalError.message;
-            if (!message)
+            }
+            if (!message) {
                 message = "" + originalError;
+            }
             _this = _super.call(this, message) || this;
             _this._origError = originalError;
             _this._operationName = operationName;
@@ -2248,10 +2316,12 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         Refresh: "refresh"
     };
     function fn_checkError(svcError, oper) {
-        if (!svcError)
+        if (!svcError) {
             return;
-        if (ERROR.checkIsDummy(svcError))
+        }
+        if (ERROR.checkIsDummy(svcError)) {
             return;
+        }
         switch (svcError.name) {
             case "AccessDeniedException":
                 throw new error_1.AccessDeniedError(jriapp_shared_7.LocaleERRS.ERR_ACCESS_DENIED, oper);
@@ -2285,7 +2355,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             _this._isSubmiting = false;
             _this._isHasChanges = false;
             _this._pendingSubmit = null;
-            _this._serverTimezone = coreUtils.get_timeZoneOffset();
+            _this._serverTimezone = coreUtils.getTimeZoneOffset();
             _this._waitQueue = new jriapp_shared_7.WaitQueue(_this);
             _this._internal = {
                 onItemRefreshed: function (res, item) {
@@ -2310,12 +2380,13 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             return _this;
         }
         DbContext.prototype._getEventNames = function () {
-            var base_events = _super.prototype._getEventNames.call(this);
-            return [DBCTX_EVENTS.submit_err].concat(base_events);
+            var baseEvents = _super.prototype._getEventNames.call(this);
+            return [DBCTX_EVENTS.submit_err].concat(baseEvents);
         };
         DbContext.prototype._initDbSets = function () {
-            if (this.isInitialized)
+            if (this.isInitialized) {
                 throw new Error(jriapp_shared_7.LocaleERRS.ERR_DOMAIN_CONTEXT_INITIALIZED);
+            }
         };
         DbContext.prototype._initAssociations = function (associations) {
             var self = this;
@@ -2339,8 +2410,9 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             this._serverTimezone = info.serverTimezone;
             info.permissions.forEach(function (perms) {
                 var dbSet = _this.findDbSet(perms.dbSetName);
-                if (!!dbSet)
+                if (!!dbSet) {
                     dbSet._getInternal().updatePermissions(perms);
+                }
             });
         };
         DbContext.prototype._initAssociation = function (assoc) {
@@ -2392,13 +2464,16 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             req.always(function () {
                 utils.arr.remove(self._requests, item);
                 self.raisePropertyChanged(const_5.PROP_NAME.requestCount);
-                if (self._requests.length === 0)
+                if (self._requests.length === 0) {
                     self.raisePropertyChanged(const_5.PROP_NAME.isBusy);
+                }
             });
-            if (cnt !== self._requests.length)
+            if (cnt !== self._requests.length) {
                 self.raisePropertyChanged(const_5.PROP_NAME.requestCount);
-            if (_isBusy !== (self._requests.length > 0))
+            }
+            if (_isBusy !== (self._requests.length > 0)) {
                 self.raisePropertyChanged(const_5.PROP_NAME.isBusy);
+            }
         };
         DbContext.prototype._tryAbortRequest = function (operType, name) {
             var reqs = this._requests.filter(function (req) { return req.operType === operType && req.name === name; });
@@ -2406,8 +2481,9 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         };
         DbContext.prototype._getMethodParams = function (methodInfo, args) {
             var self = this, methodName = methodInfo.methodName, data = { methodName: methodName, paramInfo: { parameters: [] } }, paramInfos = methodInfo.parameters, len = paramInfos.length;
-            if (!args)
+            if (!args) {
                 args = {};
+            }
             for (var i = 0; i < len; i += 1) {
                 var pinfo = paramInfos[i];
                 var val = args[pinfo.name];
@@ -2439,12 +2515,14 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             return data;
         };
         DbContext.prototype._invokeMethod = function (data, callback) {
-            var self = this, operType = 3, fn_onComplete = function (res) {
-                if (self.getIsDestroyCalled())
+            var self = this, operType = 3, fnOnComplete = function (res) {
+                if (self.getIsDestroyCalled()) {
                     return;
+                }
                 try {
-                    if (!res)
+                    if (!res) {
                         throw new Error(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_UNEXPECTED_SVC_ERROR, "operation result is empty"));
+                    }
                     fn_checkError(res.error, operType);
                     callback({ result: res.result, error: null });
                 }
@@ -2457,14 +2535,14 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 }
             };
             try {
-                var postData = JSON.stringify(data), invokeUrl = this._getUrl(DATA_SVC_METH.Invoke), req_promise = http.postAjax(invokeUrl, postData, self.requestHeaders);
-                self._addRequestPromise(req_promise, operType);
-                req_promise.then(function (res) {
+                var postData = JSON.stringify(data), invokeUrl = this._getUrl(DATA_SVC_METH.Invoke), reqPromise = http.postAjax(invokeUrl, postData, self.requestHeaders);
+                self._addRequestPromise(reqPromise, operType);
+                reqPromise.then(function (res) {
                     return _async.parseJSON(res);
                 }).then(function (res) {
-                    fn_onComplete(res);
+                    fnOnComplete(res);
                 }, function (err) {
-                    fn_onComplete({ result: null, error: err });
+                    fnOnComplete({ result: null, error: err });
                 });
             }
             catch (ex) {
@@ -2496,8 +2574,9 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         };
         DbContext.prototype._loadSubsets = function (response, isClearAll) {
             var self = this, isHasSubsets = checks.isArray(response.subsets) && response.subsets.length > 0;
-            if (!isHasSubsets)
+            if (!isHasSubsets) {
                 return;
+            }
             response.subsets.forEach(function (loadResult) {
                 var dbSet = self.getDbSet(loadResult.dbSetName);
                 dbSet.fillData(loadResult, !isClearAll);
@@ -2512,11 +2591,13 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 }
                 var operType = 2;
                 try {
-                    if (checks.isNt(response))
+                    if (checks.isNt(response)) {
                         throw new Error(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_UNEXPECTED_SVC_ERROR, "null result"));
+                    }
                     var dbSetName = response.dbSetName, dbSet = self.getDbSet(dbSetName);
-                    if (checks.isNt(dbSet))
+                    if (checks.isNt(dbSet)) {
                         throw new Error(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_DBSET_NAME_INVALID, dbSetName));
+                    }
                     fn_checkError(response.error, operType);
                     var isClearAll_1 = (!!query && query.isClearPrevData), loadRes = dbSet._getInternal().fillFromService({
                         res: response,
@@ -2573,8 +2654,9 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             this._dbSets.arrDbSets.forEach(function (dbSet) {
                 dbSet.endEdit();
                 var changes = dbSet._getInternal().getChanges();
-                if (changes.length === 0)
+                if (changes.length === 0) {
                     return;
+                }
                 var trackAssoc = dbSet._getInternal().getTrackAssocInfo(), jsDB = { dbSetName: dbSet.dbSetName, rows: changes };
                 changeSet.dbSets.push(jsDB);
                 changeSet.trackAssocs = changeSet.trackAssocs.concat(trackAssoc);
@@ -2583,14 +2665,16 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         };
         DbContext.prototype._getUrl = function (action) {
             var loadUrl = this.serviceUrl;
-            if (!strUtils.endsWith(loadUrl, "/"))
+            if (!strUtils.endsWith(loadUrl, "/")) {
                 loadUrl = loadUrl + "/";
+            }
             loadUrl = loadUrl + [action, ""].join("/");
             return loadUrl;
         };
         DbContext.prototype._onDataOperError = function (ex, oper) {
-            if (ERROR.checkIsDummy(ex))
+            if (ERROR.checkIsDummy(ex)) {
                 return true;
+            }
             var err = (ex instanceof error_1.DataOperationError) ? ex : new error_1.DataOperationError(ex, oper);
             return this.handleError(err, this);
         };
@@ -2636,12 +2720,14 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 if (context.query._getInternal().isPageCached(pageIndex)) {
                     var loadPromise = self._loadFromCache(context.query, context.reason);
                     loadPromise.then(function (loadRes) {
-                        if (self.getIsDestroyCalled())
+                        if (self.getIsDestroyCalled()) {
                             return;
+                        }
                         context.fn_onOK(loadRes);
                     }, function (err) {
-                        if (self.getIsDestroyCalled())
+                        if (self.getIsDestroyCalled()) {
                             return;
+                        }
                         context.fn_onErr(err);
                     });
                     return;
@@ -2663,19 +2749,21 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 paramInfo: self._getMethodParams(context.query._getInternal().getQueryInfo(), context.query.params).paramInfo,
                 queryName: context.query.queryName
             };
-            var req_promise = http.postAjax(self._getUrl(DATA_SVC_METH.Query), JSON.stringify(requestInfo), self.requestHeaders);
-            self._addRequestPromise(req_promise, 2, requestInfo.dbSetName);
-            req_promise.then(function (res) {
+            var reqPromise = http.postAjax(self._getUrl(DATA_SVC_METH.Query), JSON.stringify(requestInfo), self.requestHeaders);
+            self._addRequestPromise(reqPromise, 2, requestInfo.dbSetName);
+            reqPromise.then(function (res) {
                 return _async.parseJSON(res);
             }).then(function (response) {
                 return self._onLoaded(response, context.query, context.reason);
             }).then(function (loadRes) {
-                if (self.getIsDestroyCalled())
+                if (self.getIsDestroyCalled()) {
                     return;
+                }
                 context.fn_onOK(loadRes);
             }, function (err) {
-                if (self.getIsDestroyCalled())
+                if (self.getIsDestroyCalled()) {
                     return;
+                }
                 context.fn_onErr(err);
             });
         };
@@ -2710,17 +2798,19 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                     error: null
                 };
                 args.item._aspect._checkCanRefresh();
-                var url = self._getUrl(DATA_SVC_METH.Refresh), req_promise = http.postAjax(url, JSON.stringify(request), self.requestHeaders);
-                self._addRequestPromise(req_promise, operType);
-                req_promise.then(function (res) {
+                var url = self._getUrl(DATA_SVC_METH.Refresh), reqPromise = http.postAjax(url, JSON.stringify(request), self.requestHeaders);
+                self._addRequestPromise(reqPromise, operType);
+                reqPromise.then(function (res) {
                     return _async.parseJSON(res);
                 }).then(function (res) {
-                    if (self.getIsDestroyCalled())
+                    if (self.getIsDestroyCalled()) {
                         return;
+                    }
                     args.fn_onOK(res);
                 }, function (err) {
-                    if (self.getIsDestroyCalled())
+                    if (self.getIsDestroyCalled()) {
                         return;
+                    }
                     args.fn_onErr(err);
                 });
             }
@@ -2823,8 +2913,9 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                     }
                 }
             };
-            if (query.isClearPrevData)
+            if (query.isClearPrevData) {
                 self._tryAbortRequest(2, context.dbSetName);
+            }
             context.dbSet.waitForNotBusy(function () {
                 try {
                     self._loadInternal(context);
@@ -2843,21 +2934,24 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 args.fn_onOk();
                 return;
             }
-            var req_promise = http.postAjax(self._getUrl(DATA_SVC_METH.Submit), JSON.stringify(changeSet), self.requestHeaders);
-            self._addRequestPromise(req_promise, 1);
-            req_promise.then(function (res) {
+            var reqPromise = http.postAjax(self._getUrl(DATA_SVC_METH.Submit), JSON.stringify(changeSet), self.requestHeaders);
+            self._addRequestPromise(reqPromise, 1);
+            reqPromise.then(function (res) {
                 return _async.parseJSON(res);
             }).then(function (res) {
-                if (self.getIsDestroyCalled())
+                if (self.getIsDestroyCalled()) {
                     return;
+                }
                 self._dataSaved(res);
             }).then(function () {
-                if (self.getIsDestroyCalled())
+                if (self.getIsDestroyCalled()) {
                     return;
+                }
                 args.fn_onOk();
             }, function (er) {
-                if (self.getIsDestroyCalled())
+                if (self.getIsDestroyCalled()) {
                     return;
+                }
                 args.fn_onErr(er);
             });
         };
@@ -2871,12 +2965,14 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             var self = this, operType = 5, deferred = _async.createDeferred();
             this._initState = deferred.promise();
             this._initState.then(function () {
-                if (self.getIsDestroyCalled())
+                if (self.getIsDestroyCalled()) {
                     return;
+                }
                 self.raisePropertyChanged(const_5.PROP_NAME.isInitialized);
             }, function (err) {
-                if (self.getIsDestroyCalled())
+                if (self.getIsDestroyCalled()) {
                     return;
+                }
                 self._onDataOperError(err, operType);
             });
             var opts = coreUtils.merge(options, {
@@ -2900,13 +2996,14 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             catch (ex) {
                 return deferred.reject(ex);
             }
-            var ajax_promise = http.getAjax(loadUrl, self.requestHeaders), res_promise = ajax_promise.then(function (permissions) {
-                if (self.getIsDestroyCalled())
+            var ajaxPromise = http.getAjax(loadUrl, self.requestHeaders), resPromise = ajaxPromise.then(function (permissions) {
+                if (self.getIsDestroyCalled()) {
                     return;
+                }
                 self._updatePermissions(JSON.parse(permissions));
             });
-            deferred.resolve(res_promise);
-            this._addRequestPromise(ajax_promise, operType);
+            deferred.resolve(resPromise);
+            this._addRequestPromise(ajaxPromise, operType);
             return this._initState;
         };
         DbContext.prototype.addOnSubmitError = function (fn, nmspace, context) {
@@ -2923,8 +3020,9 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         };
         DbContext.prototype.getAssociation = function (name) {
             var name2 = "get" + name, fn = this._assoc[name2];
-            if (!fn)
+            if (!fn) {
                 throw new Error(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_ASSOC_NAME_INVALID, name));
+            }
             return fn();
         };
         DbContext.prototype.submitChanges = function () {
@@ -2990,8 +3088,9 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             });
         };
         DbContext.prototype.abortRequests = function (reason, operType) {
-            if (checks.isNt(operType))
+            if (checks.isNt(operType)) {
                 operType = 0;
+            }
             var arr = this._requests.filter(function (a) {
                 return operType === 0 ? true : (a.operType === operType);
             });
@@ -3001,8 +3100,9 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             }
         };
         DbContext.prototype.destroy = function () {
-            if (this._isDestroyed)
+            if (this._isDestroyed) {
                 return;
+            }
             this._isDestroyCalled = true;
             this.abortRequests();
             this._waitQueue.destroy();
@@ -3082,7 +3182,16 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_8.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, valUtils = utils_4.ValueUtils, collUtils = utils_4.CollUtils, sys = utils.sys;
     function fn_isNotSubmittable(fieldInfo) {
-        return (fieldInfo.fieldType === 1 || fieldInfo.fieldType === 3 || fieldInfo.fieldType === 2 || fieldInfo.fieldType === 6);
+        switch (fieldInfo.fieldType) {
+            case 1:
+            case 3:
+            case 2:
+            case 6:
+            case 1:
+                return true;
+            default:
+                return false;
+        }
     }
     function _fn_traverseChanges(name, val, fn) {
         if (!!val.nested && val.nested.length > 0) {
@@ -3126,8 +3235,9 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
         }
         EntityAspect.prototype._onFieldChanged = function (fieldName, fieldInfo) {
             var self = this;
-            if (self._isDestroyCalled)
+            if (self._isDestroyCalled) {
                 return;
+            }
             self.item.raisePropertyChanged(fieldName);
             if (!!fieldInfo.dependents && fieldInfo.dependents.length > 0) {
                 fieldInfo.dependents.forEach(function (d) {
@@ -3138,8 +3248,9 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
         EntityAspect.prototype._getValueChange = function (fullName, fieldInfo, changedOnly) {
             var self = this, dbSet = self.dbSet;
             var res = null;
-            if (fn_isNotSubmittable(fieldInfo))
+            if (fn_isNotSubmittable(fieldInfo)) {
                 return res;
+            }
             if (fieldInfo.fieldType === 5) {
                 res = { fieldName: fieldInfo.fieldName, val: null, orig: null, flags: 0, nested: [] };
                 var len = fieldInfo.nested.length;
@@ -3152,7 +3263,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             }
             else {
                 var newVal = dbSet._getInternal().getStrValue(coreUtils.getValue(self._vals, fullName), fieldInfo), oldV = self._origVals === null ? newVal : dbSet._getInternal().getStrValue(coreUtils.getValue(self._origVals, fullName), fieldInfo), isChanged = (oldV !== newVal);
-                if (isChanged)
+                if (isChanged) {
                     res = {
                         fieldName: fieldInfo.fieldName,
                         val: newVal,
@@ -3160,7 +3271,8 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                         flags: (1 | 2),
                         nested: null
                     };
-                else if (fieldInfo.isPrimaryKey > 0 || fieldInfo.fieldType === 4 || fieldInfo.isNeedOriginal)
+                }
+                else if (fieldInfo.isPrimaryKey > 0 || fieldInfo.fieldType === 4 || fieldInfo.isNeedOriginal) {
                     res = {
                         fieldName: fieldInfo.fieldName,
                         val: newVal,
@@ -3168,7 +3280,8 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                         flags: 2,
                         nested: null
                     };
-                else
+                }
+                else {
                     res = {
                         fieldName: fieldInfo.fieldName,
                         val: null,
@@ -3176,18 +3289,18 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                         flags: 0,
                         nested: null
                     };
+                }
             }
             if (changedOnly) {
                 if (fieldInfo.fieldType === 5) {
-                    if (res.nested.length > 0)
-                        return res;
-                    else
-                        return null;
+                    return (res.nested.length > 0) ? res : null;
                 }
-                else if ((res.flags & 1) === 1)
+                else if ((res.flags & 1) === 1) {
                     return res;
-                else
+                }
+                else {
                     return null;
+                }
             }
             else {
                 return res;
@@ -3216,27 +3329,31 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 var len = childToParentNames.length;
                 for (var i = 0; i < len; i += 1) {
                     res = !!this._getFieldVal(childToParentNames[i]);
-                    if (res)
+                    if (res) {
                         break;
+                    }
                 }
             }
             return res;
         };
         EntityAspect.prototype._beginEdit = function () {
-            if (!_super.prototype._beginEdit.call(this))
+            if (!_super.prototype._beginEdit.call(this)) {
                 return false;
+            }
             this._savedStatus = this.status;
             return true;
         };
         EntityAspect.prototype._endEdit = function () {
-            if (!_super.prototype._endEdit.call(this))
+            if (!_super.prototype._endEdit.call(this)) {
                 return false;
+            }
             this._savedStatus = null;
             return true;
         };
         EntityAspect.prototype._cancelEdit = function () {
-            if (!this.isEditing)
+            if (!this.isEditing) {
                 return false;
+            }
             var self = this, changes = this._getValueChanges(true), dbSet = this.dbSet;
             this._vals = this._saveVals;
             this._saveVals = null;
@@ -3245,8 +3362,9 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             dbSet.errors.removeAllErrors(this.item);
             changes.forEach(function (v) {
                 var fld = self.dbSet.getFieldInfo(v.fieldName);
-                if (!fld)
+                if (!fld) {
                     throw new Error(strUtils.format(jriapp_shared_8.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, v.fieldName));
+                }
                 self._onFieldChanged(v.fieldName, fld);
             });
             return true;
@@ -3255,10 +3373,12 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             if (this._status !== v) {
                 var oldStatus = this._status;
                 this._status = v;
-                if (v !== 0)
+                if (v !== 0) {
                     this.dbSet._getInternal().addToChanged(this.item);
-                else
+                }
+                else {
                     this.dbSet._getInternal().removeFromChanged(this.key);
+                }
                 this.dbSet._getInternal().onItemStatusChanged(this.item, oldStatus);
             }
         };
@@ -3273,8 +3393,9 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
         };
         EntityAspect.prototype._refreshValue = function (val, fullName, refreshMode) {
             var self = this, fld = self.dbSet.getFieldInfo(fullName);
-            if (!fld)
+            if (!fld) {
                 throw new Error(strUtils.format(jriapp_shared_8.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fullName));
+            }
             var stz = self.serverTimezone, dataType = fld.dataType, dcnv = fld.dateConversion;
             var newVal, oldVal, oldValOrig;
             newVal = valUtils.parseValue(val, dataType, dcnv, stz);
@@ -3328,9 +3449,9 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 }
                 rowInfo.values.forEach(function (val) {
                     fn_traverseChanges(val, function (fullName, vc) {
-                        if (!((vc.flags & 4) === 4))
-                            return;
-                        self._refreshValue(vc.val, fullName, refreshMode);
+                        if ((vc.flags & 4)) {
+                            self._refreshValue(vc.val, fullName, refreshMode);
+                        }
                     });
                 });
                 if (oldStatus === 2) {
@@ -3365,20 +3486,24 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             coreUtils.setValue(this._vals, fieldName, null, false);
         };
         EntityAspect.prototype._getFieldVal = function (fieldName) {
-            if (this._isDestroyCalled)
+            if (this._isDestroyCalled) {
                 return null;
+            }
             return coreUtils.getValue(this._vals, fieldName);
         };
         EntityAspect.prototype._setFieldVal = function (fieldName, val) {
             var dbSetName = this.dbSetName, dbSet = this.dbSet, oldV = this._getFieldVal(fieldName), fieldInfo = this.getFieldInfo(fieldName);
             var newV = val, res = false;
-            if (!fieldInfo)
+            if (!fieldInfo) {
                 throw new Error(strUtils.format(jriapp_shared_8.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, dbSetName, fieldName));
-            if (!this.isEditing && !this.isUpdating)
+            }
+            if (!(this.isEditing || this.isUpdating)) {
                 this.beginEdit();
+            }
             try {
-                if (fieldInfo.dataType === 1 && fieldInfo.isNullable && !newV)
+                if (fieldInfo.dataType === 1 && fieldInfo.isNullable && !newV) {
                     newV = null;
+                }
                 if (oldV !== newV) {
                     if (fieldInfo.isReadOnly && !(this.isNew && fieldInfo.allowClientDefault)) {
                         throw new Error(jriapp_shared_8.LocaleERRS.ERR_FIELD_READONLY);
@@ -3396,9 +3521,9 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                         res = true;
                     }
                     dbSet.errors.removeError(this.item, fieldName);
-                    var validation_info = this._validateField(fieldName);
-                    if (!!validation_info) {
-                        throw new errors_1.ValidationError([validation_info], this);
+                    var validationInfo = this._validateField(fieldName);
+                    if (!!validationInfo) {
+                        throw new errors_1.ValidationError([validationInfo], this);
                     }
                 }
             }
@@ -3421,8 +3546,9 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             this._srvKey = v;
         };
         EntityAspect.prototype._acceptChanges = function (rowInfo) {
-            if (this.getIsDestroyed())
+            if (this.getIsDestroyed()) {
                 return;
+            }
             var oldStatus = this.status, dbSet = this.dbSet, internal = dbSet._getInternal(), errors = dbSet.errors;
             if (oldStatus !== 0) {
                 internal.onCommitChanges(this.item, true, false, oldStatus);
@@ -3433,8 +3559,9 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                     return;
                 }
                 this._origVals = null;
-                if (!!this._saveVals)
+                if (!!this._saveVals) {
                     this._saveVals = collUtils.cloneVals(this.dbSet.getFieldInfos(), this._vals);
+                }
                 this._setStatus(0);
                 errors.removeAllErrors(this.item);
                 if (!!rowInfo) {
@@ -3449,16 +3576,18 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
         };
         EntityAspect.prototype._onAttach = function () {
             _super.prototype._onAttach.call(this);
-            if (this.key === null)
+            if (!this.key) {
                 throw new Error(jriapp_shared_8.LocaleERRS.ERR_ITEM_IS_DETACHED);
+            }
             this.dbSet._getInternal().addToChanged(this.item);
         };
         EntityAspect.prototype.deleteItem = function () {
             return this.deleteOnSubmit();
         };
         EntityAspect.prototype.deleteOnSubmit = function () {
-            if (this.getIsDestroyCalled())
+            if (this.getIsDestroyCalled()) {
                 return false;
+            }
             var oldStatus = this.status, dbSet = this.dbSet;
             var args = { item: this.item, isCancel: false };
             dbSet._getInternal().onItemDeleting(args);
@@ -3477,14 +3606,16 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             this._acceptChanges(null);
         };
         EntityAspect.prototype.rejectChanges = function () {
-            if (this.getIsDestroyed())
+            if (this.getIsDestroyed()) {
                 return;
+            }
             var self = this, oldStatus = self.status, dbSet = self.dbSet, internal = dbSet._getInternal(), errors = dbSet.errors;
             if (oldStatus !== 0) {
                 internal.onCommitChanges(self.item, true, true, oldStatus);
                 if (oldStatus === 1) {
-                    if (!this.getIsDestroyCalled())
+                    if (!this.getIsDestroyCalled()) {
                         this.destroy();
+                    }
                     return;
                 }
                 var changes = self._getValueChanges(true);
@@ -3527,8 +3658,9 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             return dbxt._getInternal().refreshItem(this.item);
         };
         EntityAspect.prototype.destroy = function () {
-            if (this._isDestroyed)
+            if (this._isDestroyed) {
                 return;
+            }
             this._isDestroyCalled = true;
             this.cancelEdit();
             this.rejectChanges();
@@ -3587,15 +3719,17 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                 fn_sort: null,
                 fn_itemsProvider: null
             }, options);
-            if (!sys.isCollection(opts.dataSource))
+            if (!sys.isCollection(opts.dataSource)) {
                 throw new Error(jriapp_shared_9.LocaleERRS.ERR_DATAVIEW_DATASRC_INVALID);
-            if (!!opts.fn_filter && !checks.isFunc(opts.fn_filter))
+            }
+            if (!!opts.fn_filter && !checks.isFunc(opts.fn_filter)) {
                 throw new Error(jriapp_shared_9.LocaleERRS.ERR_DATAVIEW_FILTER_INVALID);
+            }
             _this._refreshDebounce = new jriapp_shared_9.Debounce();
             _this._dataSource = opts.dataSource;
-            _this._fn_filter = !opts.fn_filter ? null : opts.fn_filter;
-            _this._fn_sort = opts.fn_sort;
-            _this._fn_itemsProvider = opts.fn_itemsProvider;
+            _this._fnFilter = !opts.fn_filter ? null : opts.fn_filter;
+            _this._fnSort = opts.fn_sort;
+            _this._fnItemsProvider = opts.fn_itemsProvider;
             _this._isAddingNew = false;
             var self = _this, ds = _this._dataSource;
             ds.getFieldNames().forEach(function (name) {
@@ -3605,8 +3739,8 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             return _this;
         }
         DataView.prototype._getEventNames = function () {
-            var base_events = _super.prototype._getEventNames.call(this);
-            return [VIEW_EVENTS.refreshed].concat(base_events);
+            var baseEvents = _super.prototype._getEventNames.call(this);
+            return [VIEW_EVENTS.refreshed].concat(baseEvents);
         };
         DataView.prototype._clearItems = function (items) {
         };
@@ -3637,8 +3771,9 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             this.raiseEvent(VIEW_EVENTS.refreshed, args);
         };
         DataView.prototype._refresh = function (reason) {
-            if (this.getIsDestroyCalled())
+            if (this.getIsDestroyCalled()) {
                 return;
+            }
             try {
                 var items = void 0;
                 var ds = this._dataSource;
@@ -3647,17 +3782,17 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                     this._onViewRefreshed({});
                     return;
                 }
-                if (!!this._fn_itemsProvider) {
-                    items = this._fn_itemsProvider(ds);
+                if (!!this._fnItemsProvider) {
+                    items = this._fnItemsProvider(ds);
                 }
                 else {
                     items = ds.items;
                 }
-                if (!!this._fn_filter) {
-                    items = items.filter(this._fn_filter);
+                if (!!this._fnFilter) {
+                    items = items.filter(this._fnFilter);
                 }
-                if (!!this._fn_sort) {
-                    items = items.sort(this._fn_sort);
+                if (!!this._fnSort) {
+                    items = items.sort(this._fnSort);
                 }
                 this._fillItems({ items: items, reason: reason, clear: true, isAppend: false });
                 this._onViewRefreshed({});
@@ -3726,7 +3861,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                 case 1:
                     {
                         if (!this._isAddingNew) {
-                            var items = (!self._fn_filter) ? args.items : args.items.filter(self._fn_filter);
+                            var items = (!self._fnFilter) ? args.items : args.items.filter(self._fnFilter);
                             if (items.length > 0) {
                                 self.appendItems(items);
                             }
@@ -3759,11 +3894,11 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             }
         };
         DataView.prototype._onDSStatusChanged = function (sender, args) {
-            var self = this, item = args.item, key = args.key, oldStatus = args.oldStatus, canFilter = !!self._fn_filter;
+            var self = this, item = args.item, key = args.key, oldStatus = args.oldStatus, canFilter = !!self._fnFilter;
             if (!!self._itemsByKey[key]) {
                 self._onItemStatusChanged(item, oldStatus);
                 if (canFilter) {
-                    var isOk = self._fn_filter(item);
+                    var isOk = self._fnFilter(item);
                     if (!isOk) {
                         self.removeItem(item);
                     }
@@ -3771,7 +3906,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             }
             else {
                 if (canFilter) {
-                    var isOk = self._fn_filter(item);
+                    var isOk = self._fnFilter(item);
                     if (isOk) {
                         self.appendItems([item]);
                     }
@@ -3780,8 +3915,9 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
         };
         DataView.prototype._bindDS = function () {
             var self = this, ds = this._dataSource;
-            if (!ds)
+            if (!ds) {
                 return;
+            }
             ds.addOnCollChanged(self._onDSCollectionChanged, self.uniqueID, self, 1);
             ds.addOnBeginEdit(function (sender, args) {
                 if (!!self._itemsByKey[args.item._key]) {
@@ -3790,18 +3926,19 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             }, self.uniqueID, null, 1);
             ds.addOnEndEdit(function (sender, args) {
                 var isOk;
-                var item = args.item, canFilter = !!self._fn_filter;
+                var item = args.item, canFilter = !!self._fnFilter;
                 if (!!self._itemsByKey[item._key]) {
                     self._onEditing(item, false, args.isCanceled);
                     if (!args.isCanceled && canFilter) {
-                        isOk = self._fn_filter(item);
-                        if (!isOk)
+                        isOk = self._fnFilter(item);
+                        if (!isOk) {
                             self.removeItem(item);
+                        }
                     }
                 }
                 else {
                     if (!args.isCanceled && canFilter) {
-                        isOk = self._fn_filter(item);
+                        isOk = self._fnFilter(item);
                         if (isOk) {
                             self.appendItems([item]);
                         }
@@ -3837,16 +3974,18 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
         };
         DataView.prototype._unbindDS = function () {
             var self = this, ds = this._dataSource;
-            if (!ds)
+            if (!ds) {
                 return;
+            }
             ds.removeNSHandlers(self.uniqueID);
         };
         DataView.prototype._checkCurrentChanging = function (newCurrent) {
             var ds = this._dataSource;
             try {
                 var item = ds._getInternal().getEditingItem();
-                if (!!item && newCurrent !== item)
+                if (!!item && newCurrent !== item) {
                     ds.endEdit();
+                }
             }
             catch (ex) {
                 ds.cancelEdit();
@@ -3858,15 +3997,17 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
         };
         DataView.prototype._clear = function (reason, oper) {
             _super.prototype._clear.call(this, reason, oper);
-            if (reason !== 1)
+            if (reason !== 1) {
                 this.pageIndex = 0;
+            }
         };
         DataView.prototype._getStrValue = function (val, fieldInfo) {
             return this._dataSource._getInternal().getStrValue(val, fieldInfo);
         };
         DataView.prototype.appendItems = function (items) {
-            if (this._isDestroyCalled)
+            if (this._isDestroyCalled) {
                 return [];
+            }
             return this._fillItems({ items: items, reason: 0, clear: false, isAppend: true });
         };
         DataView.prototype.addNew = function () {
@@ -3881,8 +4022,9 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             return item;
         };
         DataView.prototype.removeItem = function (item) {
-            if (!this._itemsByKey[item._key])
+            if (!this._itemsByKey[item._key]) {
                 return;
+            }
             var oldPos = arrHelper.remove(this._items, item);
             if (oldPos < 0) {
                 throw new Error(jriapp_shared_9.LocaleERRS.ERR_ITEM_IS_NOTFOUND);
@@ -3918,15 +4060,16 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             });
         };
         DataView.prototype.destroy = function () {
-            if (this._isDestroyed)
+            if (this._isDestroyed) {
                 return;
+            }
             this._isDestroyCalled = true;
             this._refreshDebounce.destroy();
             this._refreshDebounce = null;
             this._unbindDS();
             this._dataSource = null;
-            this._fn_filter = null;
-            this._fn_sort = null;
+            this._fnFilter = null;
+            this._fnSort = null;
             _super.prototype.destroy.call(this);
         };
         Object.defineProperty(DataView.prototype, "errors", {
@@ -3959,10 +4102,10 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             configurable: true
         });
         Object.defineProperty(DataView.prototype, "fn_filter", {
-            get: function () { return this._fn_filter; },
+            get: function () { return this._fnFilter; },
             set: function (v) {
-                if (this._fn_filter !== v) {
-                    this._fn_filter = v;
+                if (this._fnFilter !== v) {
+                    this._fnFilter = v;
                     this._refresh(0);
                 }
             },
@@ -3970,10 +4113,10 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             configurable: true
         });
         Object.defineProperty(DataView.prototype, "fn_sort", {
-            get: function () { return this._fn_sort; },
+            get: function () { return this._fnSort; },
             set: function (v) {
-                if (this._fn_sort !== v) {
-                    this._fn_sort = v;
+                if (this._fnSort !== v) {
+                    this._fnSort = v;
                     this._refresh(2);
                 }
             },
@@ -3981,10 +4124,10 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             configurable: true
         });
         Object.defineProperty(DataView.prototype, "fn_itemsProvider", {
-            get: function () { return this._fn_itemsProvider; },
+            get: function () { return this._fnItemsProvider; },
             set: function (v) {
-                if (this._fn_itemsProvider !== v) {
-                    this._fn_itemsProvider = v;
+                if (this._fnItemsProvider !== v) {
+                    this._fnItemsProvider = v;
                     this._refresh(0);
                 }
             },
@@ -4019,8 +4162,9 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
             _this = _super.call(this, opts) || this;
             var self = _this;
             _this._getParent = function () {
-                if (self.getIsDestroyCalled())
+                if (self.getIsDestroyCalled()) {
                     return null;
+                }
                 return parentItem;
             };
             _this._setParent = function (v) {
@@ -4028,8 +4172,9 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
                     parentItem = v;
                     self.raisePropertyChanged(const_7.PROP_NAME.parentItem);
                 }
-                if (self.getIsDestroyCalled())
+                if (self.getIsDestroyCalled()) {
                     return;
+                }
                 if (self.items.length > 0) {
                     self.clear();
                     self._onViewRefreshed({});
@@ -4049,8 +4194,9 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
             return _this;
         }
         ChildDataView.prototype.destroy = function () {
-            if (this._isDestroyed)
+            if (this._isDestroyed) {
                 return;
+            }
             this._isDestroyCalled = true;
             this._setParent(null);
             this._parentDebounce.destroy();
@@ -4059,9 +4205,7 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
             _super.prototype.destroy.call(this);
         };
         ChildDataView.prototype.toString = function () {
-            if (!!this._association)
-                return "ChildDataView for " + this._association.toString();
-            return "ChildDataView";
+            return (!!this._association) ? ("ChildDataView for " + this._association.toString()) : "ChildDataView";
         };
         Object.defineProperty(ChildDataView.prototype, "parentItem", {
             get: function () {
@@ -4119,8 +4263,9 @@ define("jriapp_db/complexprop", ["require", "exports", "jriapp_shared"], functio
         };
         BaseComplexProperty.prototype.getPropertyByName = function (name) {
             var arrProps = this.getProperties().filter(function (f) { return f.fieldName === name; });
-            if (!arrProps || arrProps.length !== 1)
+            if (!arrProps || arrProps.length !== 1) {
                 throw new Error(strUtils.format(jriapp_shared_11.LocaleERRS.ERR_ASSERTION_FAILED, "arrProps.length === 1"));
+            }
             return arrProps[0];
         };
         BaseComplexProperty.prototype.getIsHasErrors = function () {
@@ -4207,8 +4352,9 @@ define("jriapp_db/complexprop", ["require", "exports", "jriapp_shared"], functio
             while (!!parent && (parent instanceof ChildComplexProperty)) {
                 parent = parent.getParent();
             }
-            if (!parent || !(parent instanceof RootComplexProperty))
+            if (!parent || !(parent instanceof RootComplexProperty)) {
                 throw new Error(strUtils.format(jriapp_shared_11.LocaleERRS.ERR_ASSERTION_FAILED, "parent instanceof RootComplexProperty"));
+            }
             return parent;
         };
         ChildComplexProperty.prototype.getFullPath = function (name) {

@@ -28,8 +28,9 @@ export type TItemFactory<TItem extends IListItem, TObj> = (aspect: ListItemAspec
 export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TItem, TObj> {
     constructor(coll: BaseList<TItem, TObj>, vals: TObj, key: string, isNew: boolean) {
         super(coll);
-        if (isNew)
+        if (isNew) {
             this._status = ITEM_STATUS.Added;
+        }
         this._vals = <any>vals;
         const item = coll.itemFactory(this);
         this._setItem(item);
@@ -47,15 +48,14 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
                 coreUtils.setValue(this._vals, name, val, false);
                 item.raisePropertyChanged(name);
                 errors.removeError(item, name);
-                const validation_info = this._validateField(name);
-                if (!!validation_info && validation_info.errors.length > 0) {
-                    throw new ValidationError([validation_info], this);
+                const validationInfo = this._validateField(name);
+                if (!!validationInfo && validationInfo.errors.length > 0) {
+                    throw new ValidationError([validationInfo], this);
                 }
             } catch (ex) {
                 if (utils.sys.isValidationError(ex)) {
                     error = ex;
-                }
-                else {
+                } else {
                     error = new ValidationError([
                         { fieldName: name, errors: [ex.message] }
                     ], this);
@@ -72,8 +72,9 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
         this._status = ITEM_STATUS.None;
     }
     toString(): string {
-        if (!this.item)
+        if (!this.item) {
             return "ListItemAspect";
+        }
         return this.item.toString() + "Aspect";
     }
     get list(): BaseList<TItem, TObj> { return <BaseList<TItem, TObj>>this.collection; }
@@ -85,13 +86,15 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
     constructor(props: IPropInfo[]) {
         super();
         this._initItemFactory();
-        if (!!props)
+        if (!!props) {
             this._updateFieldMap(props);
+        }
     }
     private _updateFieldMap(props: IPropInfo[]) {
         const self = this;
-        if (!checks.isArray(props) || props.length === 0)
+        if (!checks.isArray(props) || props.length === 0) {
             throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "props", props));
+        }
 
         self._fieldMap = {};
         self._fieldInfos = [];
@@ -134,19 +137,22 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
         return key;
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         this._itemFactory = null;
         super.destroy();
     }
     fillItems(objArray: TObj[], clearAll?: boolean) {
         const self = this, newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];
-        if (!objArray)
+        if (!objArray) {
             objArray = [];
+        }
         try {
-            if (!!clearAll)
+            if (!!clearAll) {
                 this.clear();
+            }
             objArray.forEach(function (obj) {
                 const item = self.createItem(obj), oldItem = self._itemsByKey[item._key];
                 if (!oldItem) {
@@ -156,8 +162,7 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
                     positions.push(self._items.length - 1);
                     items.push(item);
                     item._aspect._setIsAttached(true);
-                }
-                else {
+                } else {
                     items.push(oldItem);
                 }
             });
@@ -165,8 +170,7 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
             if (newItems.length > 0) {
                 this.raisePropertyChanged(PROP_NAME.count);
             }
-        }
-        finally {
+        } finally {
             this._onCollectionChanged({
                 changeType: COLL_CHANGE_TYPE.Reset,
                 reason: COLL_CHANGE_REASON.None,

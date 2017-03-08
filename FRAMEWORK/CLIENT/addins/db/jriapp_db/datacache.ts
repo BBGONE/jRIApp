@@ -12,7 +12,7 @@ export class DataCache extends BaseObject {
     private _pages: IIndexer<ICachedPage>;
     private _itemsByKey: { [key: string]: IKV; };
     private _totalCount: number;
-    
+
     constructor(query: TDataQuery) {
         super();
         this._query = query;
@@ -24,8 +24,9 @@ export class DataCache extends BaseObject {
         let pageIndex = -1;
         coreUtils.forEachProp(this._pages, (index, page) => {
             const cachePageIndex = page.pageIndex;
-            if (cachePageIndex > pageIndex && cachePageIndex < currentPageIndex)
+            if (cachePageIndex > pageIndex && cachePageIndex < currentPageIndex) {
                 pageIndex = cachePageIndex;
+            }
         });
         return pageIndex;
     }
@@ -75,8 +76,9 @@ export class DataCache extends BaseObject {
     }
     getPageItems(pageIndex: number): IEntityItem[] {
         const page = this.getPage(pageIndex);
-        if (!page)
+        if (!page) {
             return [];
+        }
         const dbSet = this._query.dbSet, keyMap = this._itemsByKey;
         const res = page.keys.map((key) => {
             const kv = keyMap[key];
@@ -86,8 +88,9 @@ export class DataCache extends BaseObject {
     }
     setPageItems(pageIndex: number, items: IEntityItem[]) {
         this.deletePage(pageIndex);
-        if (items.length === 0)
+        if (items.length === 0) {
             return;
+        }
         const kvs = items.map((item) => { return { key: item._key, val: item._aspect.vals }; });
         // create new page
         const page: ICachedPage = { keys: kvs.map((kv) => kv.key), pageIndex: pageIndex };
@@ -102,14 +105,14 @@ export class DataCache extends BaseObject {
         const len = items.length, pageSize = this.pageSize;
         for (let i = 0; i < this.loadPageCount; i += 1) {
             const pageItems: IEntityItem[] = [], pgstart = (i * pageSize);
-            if (pgstart >= len)
+            if (pgstart >= len) {
                 break;
+            }
             for (let j = 0; j < pageSize; j += 1) {
                 const k = pgstart + j;
                 if (k < len) {
                     pageItems.push(items[k]);
-                }
-                else {
+                } else {
                     break;
                 }
             }
@@ -118,8 +121,9 @@ export class DataCache extends BaseObject {
     }
     deletePage(pageIndex: number) {
         const page: ICachedPage = this.getPage(pageIndex);
-        if (!page)
+        if (!page) {
             return;
+        }
         const keys = page.keys;
         for (let j = 0; j < keys.length; j += 1) {
             delete this._itemsByKey[keys[j]];
@@ -131,13 +135,15 @@ export class DataCache extends BaseObject {
     }
     getItemByKey(key: string): IEntityItem {
         const kv = this._itemsByKey[key];
-        if (!kv)
+        if (!kv) {
             return null;
+        }
         return this._query.dbSet.createEntityFromObj(kv.val, kv.key);
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         this.clear();
         super.destroy();
@@ -155,8 +161,7 @@ export class DataCache extends BaseObject {
 
         if ((rowCount % rowPerPage) === 0) {
             result = (rowCount / rowPerPage);
-        }
-        else {
+        } else {
             result = (rowCount / rowPerPage);
             result = Math.floor(result) + 1;
         }
@@ -166,8 +171,9 @@ export class DataCache extends BaseObject {
     get loadPageCount() { return this._query.loadPageCount; }
     get totalCount() { return this._totalCount; }
     set totalCount(v: number) {
-        if (checks.isNt(v))
+        if (checks.isNt(v)) {
             v = 0;
+        }
         if (v !== this._totalCount) {
             this._totalCount = v;
             this.raisePropertyChanged(PROP_NAME.totalCount);

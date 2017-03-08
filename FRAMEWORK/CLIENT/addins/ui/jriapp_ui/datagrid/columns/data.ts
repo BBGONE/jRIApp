@@ -31,7 +31,7 @@ export class DataColumn extends BaseColumn {
             const sortOrd = this._sortOrder;
             this.grid._getInternal().resetColumnsSort();
 
-            this.sortOrder = (sortOrd === SORT_ORDER.ASC) ? SORT_ORDER.DESC : SORT_ORDER.ASC; 
+            this.sortOrder = (sortOrd === SORT_ORDER.ASC) ? SORT_ORDER.DESC : SORT_ORDER.ASC;
             this.grid.sortByColumn(this);
         }
     }
@@ -54,8 +54,9 @@ export class DataColumn extends BaseColumn {
         };
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         const self = this;
         utils.core.forEachProp(self._objCache, (key) => {

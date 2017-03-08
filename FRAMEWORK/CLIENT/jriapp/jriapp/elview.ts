@@ -28,12 +28,12 @@ class ElViewRegister implements IElViewRegister, IExports {
         this._exports = {};
         this._next = next;
     }
-    registerElView(name: string, vw_type: IViewType): void {
+    registerElView(name: string, vwType: IViewType): void {
         if (!bootstrap._getInternal().getObject(this, name)) {
-            bootstrap._getInternal().registerObject(this, name, vw_type);
-        }
-        else
+            bootstrap._getInternal().registerObject(this, name, vwType);
+        } else {
             throw new Error(utils.str.format(ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
+        }
     }
     getElViewType(name: string): IViewType {
         let res = bootstrap._getInternal().getObject(this, name);
@@ -67,8 +67,7 @@ class ElViewStore implements IElViewStore {
     setElView(el: HTMLElement, view?: IElView): void {
         if (!view) {
             this._weakmap.delete(el);
-        }
-        else {
+        } else {
             this._weakmap.set(el, view);
         }
     }
@@ -84,25 +83,27 @@ class ElViewFactory extends BaseObject implements IElViewFactory {
         this._register = createElViewRegister(register);
     }
     public destroy(): void {
-        if (!this._store)
+        if (!this._store) {
             return;
+        }
         this._store.destroy();
         this._register.destroy();
         this._store = null;
         this._register = null;
         super.destroy();
     }
-    createElView(view_info: {
+    createElView(viewInfo: {
         name: string;
         options: IViewOptions;
     }): IElView {
         let viewType: IViewType, elView: IElView;
-        const options = view_info.options, el = options.el;
+        const options = viewInfo.options, el = options.el;
 
-        if (!!view_info.name) {
-            viewType = this._register.getElViewType(view_info.name);
-            if (!viewType)
-                throw new Error(utils.str.format(ERRS.ERR_ELVIEW_NOT_REGISTERED, view_info.name));
+        if (!!viewInfo.name) {
+            viewType = this._register.getElViewType(viewInfo.name);
+            if (!viewType) {
+                throw new Error(utils.str.format(ERRS.ERR_ELVIEW_NOT_REGISTERED, viewInfo.name));
+            }
         }
         if (!viewType) {
             let nodeNm = el.nodeName.toLowerCase(), attrType: string;
@@ -119,14 +120,14 @@ class ElViewFactory extends BaseObject implements IElViewFactory {
                     break;
             }
 
-            if (!viewType)
+            if (!viewType) {
                 throw new Error(utils.str.format(ERRS.ERR_ELVIEW_NOT_CREATED, nodeNm));
+            }
         }
 
         try {
             elView = new viewType(options);
-        }
-        catch (e) {
+        } catch (e) {
             // ensure clean up
             this._store.setElView(el, null);
             throw e;
@@ -137,27 +138,28 @@ class ElViewFactory extends BaseObject implements IElViewFactory {
     getOrCreateElView(el: HTMLElement): IElView {
         const elView = this.store.getElView(el);
         // check if element view is already created for this element
-        if (!!elView)
+        if (!!elView) {
             return elView;
+        }
         const info = this.getElementViewInfo(el);
         return this.createElView(info);
     }
     getElementViewInfo(el: HTMLElement): { name: string; options: IViewOptions; } {
-        let view_name: string = null, vw_options: IViewOptions = null, attr: string, data_view_op_arr: any[],
-            data_view_op: any;
+        let viewName: string = null, vwOptions: IViewOptions = null, attr: string, dataViewOpArr: any[],
+            dataViewOp: any;
         if (el.hasAttribute(DATA_ATTR.DATA_VIEW)) {
             attr = el.getAttribute(DATA_ATTR.DATA_VIEW);
-            data_view_op_arr = parser.parseOptions(attr);
-            if (!!data_view_op_arr && data_view_op_arr.length > 0) {
-                data_view_op = data_view_op_arr[0];
-                if (!!data_view_op.name && data_view_op.name !== "default") {
-                    view_name = data_view_op.name;
+            dataViewOpArr = parser.parseOptions(attr);
+            if (!!dataViewOpArr && dataViewOpArr.length > 0) {
+                dataViewOp = dataViewOpArr[0];
+                if (!!dataViewOp.name && dataViewOp.name !== "default") {
+                    viewName = dataViewOp.name;
                 }
-                vw_options = data_view_op.options;
+                vwOptions = dataViewOp.options;
             }
         }
-        const options: IViewOptions = utils.core.merge({ el: el }, vw_options);
-        return { name: view_name, options: options };
+        const options: IViewOptions = utils.core.merge({ el: el }, vwOptions);
+        return { name: viewName, options: options };
     }
     get store() {
         return this._store;

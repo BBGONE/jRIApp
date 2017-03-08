@@ -73,8 +73,9 @@ export class Pager extends BaseObject {
             }, options);
         const self = this;
         this._display = null;
-        if (!!options.dataSource && !sys.isCollection(options.dataSource))
+        if (!!options.dataSource && !sys.isCollection(options.dataSource)) {
             throw new Error(ERRS.ERR_PAGER_DATASRC_INVALID);
+        }
         this._options = options;
         this._el = options.el;
         dom.addClass([this._el], css.pager);
@@ -131,8 +132,7 @@ export class Pager extends BaseObject {
 
         if (this.hideOnSinglePage && (pageCount === 1)) {
             this.isVisible = false;
-        }
-        else {
+        } else {
             this.isVisible = true;
 
             if (this.showInfo) {
@@ -182,8 +182,7 @@ export class Pager extends BaseObject {
                 for (let i = start; i <= end; i++) {
                     if (i === currentPage) {
                         el.appendChild(this._createCurrent());
-                    }
-                    else {
+                    } else {
                         el.appendChild(this._createOther(i));
                     }
                 }
@@ -208,8 +207,9 @@ export class Pager extends BaseObject {
         this.rowCount = ds.totalCount;
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         this._pageDebounce.destroy();
         this._dsDebounce.destroy();
@@ -223,8 +223,9 @@ export class Pager extends BaseObject {
     }
     protected _bindDS() {
         const self = this, ds = this.dataSource;
-        if (!ds)
+        if (!ds) {
             return;
+        }
         ds.addOnCollChanged((sender, args) => {
             switch (args.changeType) {
                 case COLL_CHANGE_TYPE.Reset:
@@ -243,8 +244,9 @@ export class Pager extends BaseObject {
     }
     protected _unbindDS() {
         const self = this, ds = this.dataSource;
-        if (!ds)
+        if (!ds) {
             return;
+        }
         ds.removeNSHandlers(self._objId);
     }
     protected _clearContent() {
@@ -357,8 +359,7 @@ export class Pager extends BaseObject {
 
         if (page === this.currentPage) {
             tip = strUtils.format(_STRS.showingTip, start, end, rowCount);
-        }
-        else {
+        } else {
             tip = strUtils.format(_STRS.showTip, start, end, rowCount);
         }
         return tip;
@@ -391,8 +392,7 @@ export class Pager extends BaseObject {
 
         if ((rowCount % rowsPerPage) === 0) {
             return (rowCount / rowsPerPage);
-        }
-        else {
+        } else {
             result = (rowCount / rowsPerPage);
             result = Math.floor(result) + 1;
             return result;
@@ -487,11 +487,11 @@ export class Pager extends BaseObject {
             if (!v) {
                 this._display = this.el.style.display;
                 // if saved display is none, then don't store it
-                if (this._display === "none")
+                if (this._display === "none") {
                     this._display = null;
+                }
                 this.el.style.display = "none";
-            }
-            else {
+            } else {
                 this.el.style.display = (!this._display ? "" : this._display);
             }
             this.raisePropertyChanged("isVisible");
@@ -510,8 +510,9 @@ export class PagerElView extends BaseElView {
         this._pager = new Pager(<IPagerConstructorOptions>options);
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         if (!this._pager.getIsDestroyCalled()) {
             this._pager.destroy();

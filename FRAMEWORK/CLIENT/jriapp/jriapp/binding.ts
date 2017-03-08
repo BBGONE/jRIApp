@@ -31,8 +31,7 @@ function fn_reportUnResolved(bindTo: BindTo, root: any, path: string, propName: 
     let msg = "Unresolved data binding for ";
     if (bindTo === BindTo.Source) {
         msg += " Source: ";
-    }
-    else {
+    } else {
         msg += " Target: ";
     }
     msg += "'" + root + "'";
@@ -53,8 +52,7 @@ function fn_reportMaxRec(bindTo: BindTo, src: any, tgt: any, spath: string, tpat
     let msg = "Maximum recursion exceeded for ";
     if (bindTo === BindTo.Source) {
         msg += "Updating Source value: ";
-    }
-    else {
+    } else {
         msg += "Updating Target value: ";
     }
     msg += " source:'" + src + "'";
@@ -97,23 +95,29 @@ export function getBindingOptions(
 
     if (checks.isString(bindInfo.converter)) {
         converter = app.getConverter(bindInfo.converter);
-    }
-    else {
+    } else {
         converter = bindInfo.converter;
     }
 
     const fixedSource = bindInfo.source, fixedTarget = bindInfo.target;
 
-    if (!bindInfo.sourcePath && !!bindInfo.to)
+    if (!bindInfo.sourcePath && !!bindInfo.to) {
         bindingOpts.sourcePath = bindInfo.to;
-    else if (!!bindInfo.sourcePath)
+    } else if (!!bindInfo.sourcePath) {
         bindingOpts.sourcePath = bindInfo.sourcePath;
-    if (!!bindInfo.targetPath)
+    }
+
+    if (!!bindInfo.targetPath) {
         bindingOpts.targetPath = bindInfo.targetPath;
-    if (!!bindInfo.converterParam)
+    }
+
+    if (!!bindInfo.converterParam) {
         bindingOpts.converterParam = bindInfo.converterParam;
-    if (!!bindInfo.mode)
+    }
+
+    if (!!bindInfo.mode) {
         bindingOpts.mode = bindModeMap[bindInfo.mode];
+    }
 
     if (!!converter) {
         bindingOpts.converter = converter;
@@ -121,17 +125,15 @@ export function getBindingOptions(
 
     if (!fixedTarget) {
         bindingOpts.target = defaultTarget;
-    }
-    else {
+    } else {
         if (checks.isString(fixedTarget)) {
-            if (fixedTarget === "this")
+            if (fixedTarget === "this") {
                 bindingOpts.target = defaultTarget;
-            else {
+            } else {
                 // if no fixed target, then target evaluation starts from this app
                 bindingOpts.target = parser.resolveSource(app, sys.getPathParts(fixedTarget));
             }
-        }
-        else {
+        } else {
             bindingOpts.target = fixedTarget;
         }
     }
@@ -139,19 +141,16 @@ export function getBindingOptions(
     if (!fixedSource) {
         // if source is not supplied use defaultSource parameter as source
         bindingOpts.source = defaultSource;
-    }
-    else {
+    } else {
         bindingOpts.isSourceFixed = true;
         if (checks.isString(fixedSource)) {
             if (fixedSource === "this") {
                 bindingOpts.source = defaultTarget;
-            }
-            else {
+            } else {
                 // source evaluation starts from this app
                 bindingOpts.source = parser.resolveSource(app, sys.getPathParts(fixedSource));
             }
-        }
-        else {
+        } else {
             bindingOpts.source = fixedSource;
         }
     }
@@ -210,14 +209,15 @@ export class Binding extends BaseObject implements IBinding {
         }
 
         // save the state - source and target, when the binding is disabled
-        this._state = null; 
+        this._state = null;
         this._mode = opts.mode;
         this._converter = !opts.converter ? null : opts.converter;
         this._converterParam = opts.converterParam;
         this._srcPath = sys.getPathParts(opts.sourcePath);
         this._tgtPath = sys.getPathParts(opts.targetPath);
-        if (this._tgtPath.length < 1)
+        if (this._tgtPath.length < 1) {
             throw new Error(strUtils.format(ERRS.ERR_BIND_TGTPATH_INVALID, opts.targetPath));
+        }
         this._srcFixed = (!!opts.isSourceFixed);
         this._pathItems = {};
         this._objId = coreUtils.getNewID("bnd");
@@ -233,9 +233,10 @@ export class Binding extends BaseObject implements IBinding {
         this._setSource(opts.source);
         this._update();
 
-        const err_notif = sys.getErrorNotification(this._srcEnd);
-        if (!!err_notif && err_notif.getIsHasErrors())
-            this._onSrcErrChanged(err_notif);
+        const errNotif = sys.getErrorNotification(this._srcEnd);
+        if (!!errNotif && errNotif.getIsHasErrors()) {
+            this._onSrcErrChanged(errNotif);
+        }
     }
     private _update(): void {
         const umask = this._umask, MAX_REC = 3;
@@ -246,12 +247,10 @@ export class Binding extends BaseObject implements IBinding {
             if (!!(umask & 1)) {
                 flag = 1;
             }
-        }
-        else {
+        } else {
             if (!!(umask & 2)) {
                 flag = 2;
-            }
-            else if (!!(umask & 1) && (this._mode === BINDING_MODE.TwoWay)) {
+            } else if (!!(umask & 1) && (this._mode === BINDING_MODE.TwoWay)) {
                 flag = 1;
             }
         }
@@ -263,12 +262,10 @@ export class Binding extends BaseObject implements IBinding {
                         this._cntUSrc += 1;
                         try {
                             this._updateSource();
-                        }
-                        finally {
+                        } finally {
                             this._cntUSrc -= 1;
                         }
-                    }
-                    else {
+                    } else {
                         fn_reportMaxRec(BindTo.Source, this._source, this._target, this._srcPath.join("."), this._tgtPath.join("."));
                     }
                 }
@@ -279,25 +276,23 @@ export class Binding extends BaseObject implements IBinding {
                         this._cntUtgt += 1;
                         try {
                             this._updateTarget();
-                        }
-                        finally {
+                        } finally {
                             this._cntUtgt -= 1;
                         }
-                    }
-                    else {
+                    } else {
                         fn_reportMaxRec(BindTo.Target, this._source, this._target, this._srcPath.join("."), this._tgtPath.join("."));
                     }
                 }
                 break;
         }
     }
-    private _onSrcErrChanged(err_notif: IErrorNotification) {
+    private _onSrcErrChanged(errNotif: IErrorNotification) {
         let errors: IValidationInfo[] = [];
         const tgt = this._tgtEnd, src = this._srcEnd, srcPath = this._srcPath;
         if (!!tgt && viewChecks.isElView(tgt)) {
             if (!!src && srcPath.length > 0) {
-                const prop = sys.isPropBag(err_notif) ? srcPath[srcPath.length - 1] : srcPath.join(".");
-                errors = err_notif.getFieldErrors(prop);
+                const prop = sys.isPropBag(errNotif) ? srcPath[srcPath.length - 1] : srcPath.join(".");
+                errors = errNotif.getFieldErrors(prop);
             }
             (<IElView>tgt).validationErrors = errors;
         }
@@ -341,42 +336,42 @@ export class Binding extends BaseObject implements IBinding {
 
         if (path.length === 0) {
             self._srcEnd = obj;
-        }
-        else {
+        } else {
             self._parseSrc2(obj, path, lvl);
         }
 
         if (self._mode === BINDING_MODE.BackWay) {
-            if (!!self._srcEnd)
+            if (!!self._srcEnd) {
                 self._umask |= 1;
-        }
-        else {
-            if (!!self._tgtEnd)
+            }
+        } else {
+            if (!!self._tgtEnd) {
                 self._umask |= 2;
+            }
         }
     }
     private _parseSrc2(obj: any, path: string[], lvl: number) {
         const self = this, isBaseObj = sys.isBaseObj(obj);
 
         if (isBaseObj) {
-            if ((<IBaseObject>obj).getIsDestroyCalled())
+            if ((<IBaseObject>obj).getIsDestroyCalled()) {
                 return;
+            }
             (<IBaseObject>obj).addOnDestroyed(self._onSrcDestroyed, self._objId, self);
             self._setPathItem(obj, BindTo.Source, lvl, path);
         }
 
         if (path.length > 1) {
             if (isBaseObj) {
-                const fn_chng = self._getSrcChangedFn(self, obj, path[0], path.slice(1), lvl + 1);
-                self._addOnPropChanged(obj, path[0], fn_chng);
+                const fnChange = self._getSrcChangedFn(self, obj, path[0], path.slice(1), lvl + 1);
+                self._addOnPropChanged(obj, path[0], fnChange);
             }
 
             if (!!obj) {
                 const nextObj = sys.getProp(obj, path[0]);
                 if (!!nextObj) {
                     self._parseSrc2(nextObj, path.slice(1), lvl + 1);
-                }
-                else if (checks.isUndefined(nextObj)) {
+                } else if (checks.isUndefined(nextObj)) {
                     fn_reportUnResolved(BindTo.Source, self.source, self._srcPath.join("."), path[0]);
                 }
             }
@@ -389,22 +384,21 @@ export class Binding extends BaseObject implements IBinding {
             if (isValidProp) {
                 const updateOnChange = isBaseObj && (self._mode === BINDING_MODE.OneWay || self._mode === BINDING_MODE.TwoWay);
                 if (updateOnChange) {
-                    const fn_upd = () => {
+                    const fnUpd = () => {
                         if (!!self._tgtEnd) {
                             self._umask |= 2;
                             self._update();
                         }
                     };
-                    self._addOnPropChanged(obj, path[0], fn_upd);
+                    self._addOnPropChanged(obj, path[0], fnUpd);
                 }
 
-                const err_notif = sys.getErrorNotification(obj);
-                if (!!err_notif) {
-                    err_notif.addOnErrorsChanged(self._onSrcErrChanged, self._objId, self);
+                const errNotif = sys.getErrorNotification(obj);
+                if (!!errNotif) {
+                    errNotif.addOnErrorsChanged(self._onSrcErrChanged, self._objId, self);
                 }
                 self._srcEnd = obj;
-            }
-            else {
+            } else {
                 fn_reportUnResolved(BindTo.Source, self.source, self._srcPath.join("."), path[0]);
             }
         }
@@ -418,27 +412,28 @@ export class Binding extends BaseObject implements IBinding {
 
         if (path.length === 0) {
             self._tgtEnd = obj;
-        }
-        else {
+        } else {
             self._parseTgt2(obj, path, lvl);
         }
 
         if (self._mode === BINDING_MODE.BackWay) {
-            if (!!self._srcEnd)
+            if (!!self._srcEnd) {
                 this._umask |= 1;
-        }
-        else {
+            }
+        } else {
             // if new target then update the target (not the source!)
-            if (!!self._tgtEnd)
+            if (!!self._tgtEnd) {
                 this._umask |= 2;
+            }
         }
     }
     private _parseTgt2(obj: any, path: string[], lvl: number) {
         const self = this, isBaseObj = sys.isBaseObj(obj);
 
         if (isBaseObj) {
-            if ((<IBaseObject>obj).getIsDestroyCalled())
+            if ((<IBaseObject>obj).getIsDestroyCalled()) {
                 return;
+            }
 
             (<IBaseObject>obj).addOnDestroyed(self._onTgtDestroyed, self._objId, self);
             self._setPathItem(obj, BindTo.Target, lvl, path);
@@ -446,16 +441,15 @@ export class Binding extends BaseObject implements IBinding {
 
         if (path.length > 1) {
             if (isBaseObj) {
-                const fn_chng = self._getTgtChangedFn(self, obj, path[0], path.slice(1), lvl + 1);
-                self._addOnPropChanged(obj, path[0], fn_chng);
+                const fnChange = self._getTgtChangedFn(self, obj, path[0], path.slice(1), lvl + 1);
+                self._addOnPropChanged(obj, path[0], fnChange);
             }
 
             if (!!obj) {
                 const nextObj = sys.getProp(obj, path[0]);
                 if (!!nextObj) {
                     self._parseTgt2(nextObj, path.slice(1), lvl + 1);
-                }
-                else if (checks.isUndefined(nextObj)) {
+                } else if (checks.isUndefined(nextObj)) {
                     fn_reportUnResolved(BindTo.Target, self.target, self._tgtPath.join("."), path[0]);
                 }
             }
@@ -468,17 +462,16 @@ export class Binding extends BaseObject implements IBinding {
             if (isValidProp) {
                 const updateOnChange = isBaseObj && (self._mode === BINDING_MODE.TwoWay || self._mode === BINDING_MODE.BackWay);
                 if (updateOnChange) {
-                    const fn_upd = () => {
+                    const fnUpd = () => {
                         if (!!self._srcEnd) {
                             self._umask |= 1;
                             self._update();
                         }
                     };
-                    self._addOnPropChanged(obj, path[0], fn_upd);
+                    self._addOnPropChanged(obj, path[0], fnUpd);
                 }
                 self._tgtEnd = obj;
-            }
-            else {
+            } else {
                 fn_reportUnResolved(BindTo.Target, self.target, self._tgtPath.join("."), path[0]);
             }
         }
@@ -487,8 +480,9 @@ export class Binding extends BaseObject implements IBinding {
         const len = lvl + path.length;
         for (let i = lvl; i < len; i += 1) {
             const key = (bindingTo === BindTo.Source) ? ("s" + i) : ((bindingTo === BindTo.Target) ? ("t" + i) : null);
-            if (!key)
+            if (!key) {
                 throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "bindingTo", bindingTo));
+            }
 
             const oldObj = this._pathItems[key];
             if (!!oldObj) {
@@ -504,26 +498,27 @@ export class Binding extends BaseObject implements IBinding {
     private _cleanUp(obj: IBaseObject) {
         if (!!obj) {
             obj.removeNSHandlers(this._objId);
-            const err_notif = sys.getErrorNotification(obj);
-            if (!!err_notif) {
-                err_notif.removeOnErrorsChanged(this._objId);
+            const errNotif = sys.getErrorNotification(obj);
+            if (!!errNotif) {
+                errNotif.removeOnErrorsChanged(this._objId);
             }
         }
     }
     private _onTgtDestroyed(sender: any) {
         const self = this;
-        if (self.getIsDestroyCalled())
+        if (self.getIsDestroyCalled()) {
             return;
+        }
 
         if (sender === self.target) {
             this._setTarget(null);
             this._update();
-        }
-        else {
+        } else {
             self._setPathItem(null, BindTo.Target, 0, self._tgtPath);
             utils.queue.enque(() => {
-                if (self.getIsDestroyCalled())
+                if (self.getIsDestroyCalled()) {
                     return;
+                }
                 // rebind after the target is destroyed
                 self._parseTgt(self.target, self._tgtPath, 0);
                 self._update();
@@ -532,8 +527,9 @@ export class Binding extends BaseObject implements IBinding {
     }
     private _onSrcDestroyed(sender: any) {
         const self = this;
-        if (self.getIsDestroyCalled())
+        if (self.getIsDestroyCalled()) {
             return;
+        }
 
         if (sender === self.source) {
             self._setSource(null);
@@ -541,8 +537,9 @@ export class Binding extends BaseObject implements IBinding {
         } else {
             self._setPathItem(null, BindTo.Source, 0, self._srcPath);
             utils.queue.enque(() => {
-                if (self.getIsDestroyCalled())
+                if (self.getIsDestroyCalled()) {
                     return;
+                }
                 // rebind after the source is destroyed
                 self._parseSrc(self.source, self._srcPath, 0);
                 self._update();
@@ -550,28 +547,30 @@ export class Binding extends BaseObject implements IBinding {
         }
     }
     private _updateTarget() {
-        if (this.getIsDestroyCalled())
+        if (this.getIsDestroyCalled()) {
             return;
-        try {
-            if (!this._converter)
-                this.targetValue = this.sourceValue;
-            else
-                this.targetValue = this._converter.convertToTarget(this.sourceValue, this._converterParam, this._srcEnd);
         }
-        catch (ex) {
+        try {
+            if (!this._converter) {
+                this.targetValue = this.sourceValue;
+            } else {
+                this.targetValue = this._converter.convertToTarget(this.sourceValue, this._converterParam, this._srcEnd);
+            }
+        } catch (ex) {
             utils.err.reThrow(ex, this.handleError(ex, this));
         }
     }
     private _updateSource() {
-        if (this.getIsDestroyCalled())
+        if (this.getIsDestroyCalled()) {
             return;
-        try {
-            if (!this._converter)
-                this.sourceValue = this.targetValue;
-            else
-                this.sourceValue = this._converter.convertToSource(this.targetValue, this._converterParam, this._srcEnd);
         }
-        catch (ex) {
+        try {
+            if (!this._converter) {
+                this.sourceValue = this.targetValue;
+            } else {
+                this.sourceValue = this._converter.convertToSource(this.targetValue, this._converterParam, this._srcEnd);
+            }
+        } catch (ex) {
             if (!sys.isValidationError(ex) || !viewChecks.isElView(this._tgtEnd)) {
                 // BaseElView is notified about errors in _onSrcErrChanged event handler
                 // err_notif.addOnErrorsChanged(self._onSrcErrChanged, self._objId, self);
@@ -593,21 +592,23 @@ export class Binding extends BaseObject implements IBinding {
                 this._cntUtgt += 1;
                 try {
                     this.targetValue = null;
-                }
-                finally {
+                } finally {
                     this._cntUtgt -= 1;
                     // sanity check
-                    if (this._cntUtgt < 0)
+                    if (this._cntUtgt < 0) {
                         throw new Error("Invalid operation: this._cntUtgt = " + this._cntUtgt);
+                    }
                 }
             }
             this._setPathItem(null, BindTo.Target, 0, this._tgtPath);
-            if (!!value && !sys.isBaseObj(value))
+            if (!!value && !sys.isBaseObj(value)) {
                 throw new Error(ERRS.ERR_BIND_TARGET_INVALID);
+            }
             this._target = value;
             this._parseTgt(this._target, this._tgtPath, 0);
-            if (!!this._target && !this._tgtEnd)
+            if (!!this._target && !this._tgtEnd) {
                 throw new Error(strUtils.format(ERRS.ERR_BIND_TGTPATH_INVALID, this._tgtPath.join(".")));
+            }
         }
     }
     protected _setSource(value: any) {
@@ -621,12 +622,12 @@ export class Binding extends BaseObject implements IBinding {
                 this._cntUSrc += 1;
                 try {
                     this.sourceValue = null;
-                }
-                finally {
+                } finally {
                     this._cntUSrc -= 1;
                     // sanity check
-                    if (this._cntUSrc < 0)
+                    if (this._cntUSrc < 0) {
                         throw new Error("Invalid operation: this._cntUSrc = " + this._cntUSrc);
+                    }
                 }
             }
             this._setPathItem(null, BindTo.Source, 0, this._srcPath);
@@ -635,8 +636,9 @@ export class Binding extends BaseObject implements IBinding {
         }
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         const self = this;
         coreUtils.forEachProp(this._pathItems, (key, old) => {
@@ -678,8 +680,9 @@ export class Binding extends BaseObject implements IBinding {
     get sourcePath() { return this._srcPath; }
     get sourceValue() {
         let res: any = null;
-        if (this._srcPath.length === 0)
+        if (this._srcPath.length === 0) {
             res = this._srcEnd;
+        }
         if (!!this._srcEnd) {
             const prop = this._srcPath[this._srcPath.length - 1];
             res = sys.getProp(this._srcEnd, prop);
@@ -687,8 +690,9 @@ export class Binding extends BaseObject implements IBinding {
         return res;
     }
     set sourceValue(v) {
-        if (this._srcPath.length === 0 || !this._srcEnd || v === checks.undefined)
+        if (this._srcPath.length === 0 || !this._srcEnd || v === checks.undefined) {
             return;
+        }
         const prop = this._srcPath[this._srcPath.length - 1];
         sys.setProp(this._srcEnd, prop, v);
     }
@@ -701,8 +705,9 @@ export class Binding extends BaseObject implements IBinding {
         return res;
     }
     set targetValue(v) {
-        if (this._tgtPath.length === 0 || !this._tgtEnd || v === checks.undefined)
+        if (this._tgtPath.length === 0 || !this._tgtEnd || v === checks.undefined) {
             return;
+        }
         const prop = this._tgtPath[this._tgtPath.length - 1];
         sys.setProp(this._tgtEnd, prop, v);
     }
@@ -723,12 +728,10 @@ export class Binding extends BaseObject implements IBinding {
                 try {
                     this.target = null;
                     this.source = null;
-                }
-                finally {
+                } finally {
                     this._state = s;
                 }
-            }
-            else {
+            } else {
                 // restoring from disabled state
                 s = this._state;
                 this._state = null;

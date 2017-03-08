@@ -22,7 +22,7 @@ export interface IInternalQueryMethods {
 
 export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
     private _dbSet: DbSet<TItem, TObj, DbContext>;
-    private __queryInfo: IQueryInfo;
+    private _queryInfo: IQueryInfo;
     private _filterInfo: IFilterInfo;
     private _sortInfo: ISortInfo;
     private _isIncludeTotalCount: boolean;
@@ -41,7 +41,7 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
         super();
         const self = this;
         this._dbSet = dbSet;
-        this.__queryInfo = queryInfo;
+        this._queryInfo = queryInfo;
         this._filterInfo = { filterItems: [] };
         this._sortInfo = { sortItems: [] };
         this._isIncludeTotalCount = true;
@@ -68,7 +68,7 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
                 self._updateCache(pageIndex, items);
             },
             getQueryInfo: () => {
-                return self.__queryInfo;
+                return self._queryInfo;
             }
         };
    }
@@ -81,20 +81,21 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
     private _addFilterItem(fieldName: string, operand: FILTER_TYPE, value: any[], checkFieldName = true) {
         let fkind = FILTER_TYPE.Equals, vals: any[] = [];
         const stz = this.serverTimezone;
-        if (!checks.isArray(value))
+        if (!checks.isArray(value)) {
             vals = [value];
-        else
+        } else {
             vals = value;
+        }
 
         const tmpVals = arrHelper.clone(vals);
         const fld = this.getFieldInfo(fieldName);
-        if (!fld && checkFieldName)
+        if (!fld && checkFieldName) {
             throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, this.dbSetName, fieldName));
+        }
 
         if (!!fld) {
             vals = tmpVals.map((v) => valUtils.stringifyValue(v, fld.dateConversion, fld.dataType, stz));
-        }
-        else {
+        } else {
             vals = tmpVals.map((v) => valUtils.stringifyValue(v, DATE_CONVERSION.None, checks.isDate(v) ? DATA_TYPE.Date : DATA_TYPE.None, stz));
         }
 
@@ -112,8 +113,9 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
                 break;
             case FILTER_TYPE.Between:
                 fkind = operand;
-                if (value.length !== 2)
+                if (value.length !== 2) {
                     throw new Error(ERRS.ERR_QUERY_BETWEEN);
+                }
                 break;
             default:
                 throw new Error(strUtils.format(ERRS.ERR_QUERY_OPERATOR_INVALID, operand));
@@ -196,8 +198,9 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
         return <IPromise<IQueryResult<TItem>>>this.dbSet.dbContext.load(this);
    }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         this._clearCache();
         super.destroy();
@@ -208,7 +211,7 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
     get serverTimezone() { return this._dbSet.dbContext.serverTimezone; }
     get dbSet() { return this._dbSet; }
     get dbSetName() { return this._dbSet.dbSetName; }
-    get queryName() { return this.__queryInfo.methodName; }
+    get queryName() { return this._queryInfo.methodName; }
     get filterInfo() { return this._filterInfo; }
     get sortInfo() { return this._sortInfo; }
     get isIncludeTotalCount() { return this._isIncludeTotalCount; }

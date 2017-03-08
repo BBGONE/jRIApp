@@ -12,7 +12,7 @@ const utils = Utils, dom = DomUtils, boot = bootstrap;
 
 export class DataCell extends BaseCell<DataColumn> {
     private _content: IContent;
- 
+
     constructor(options: ICellOptions) {
         super(options);
         const self = this;
@@ -55,8 +55,7 @@ export class DataCell extends BaseCell<DataColumn> {
                 isEditing: this.item._aspect.isEditing
             });
             this._content.render();
-        }
-        finally {
+        } finally {
             delete contentOptions.initContentFn;
         }
     }
@@ -71,8 +70,9 @@ export class DataCell extends BaseCell<DataColumn> {
         }
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         if (!!this._content) {
             this._content.destroy();

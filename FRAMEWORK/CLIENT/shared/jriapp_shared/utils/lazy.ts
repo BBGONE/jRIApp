@@ -12,14 +12,16 @@ export class Lazy<T> implements IDisposable {
 
     constructor(factory: TValueFactory<T>) {
         this._factory = factory;
-        if (!this._factory)
+        if (!this._factory) {
             throw new Error("Lazy: Invalid value factory");
+        }
     }
     public get Value(): T {
         if (this._val === null) {
             this._val = this._factory();
-            if (checks.isNt(this._val))
+            if (checks.isNt(this._val)) {
                 throw new Error("Lazy: the value factory did'not returned an object");
+            }
             // release the reference
             this._factory = null;
         }

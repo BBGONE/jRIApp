@@ -50,12 +50,12 @@ const utils = Utils, strUtils = utils.str, coreUtils = utils.core, ERROR = utils
     dom = DomUtils, parser = Parser, doc = dom.document, win = dom.window, boot = bootstrap;
 
 let _columnWidthInterval: number, _gridsCount: number = 0;
-const _created_grids: IIndexer<DataGrid> = {};
+const _createdGrids: IIndexer<DataGrid> = {};
 
 export function getDataGrids(): DataGrid[] {
-    const keys = Object.keys(_created_grids), res: DataGrid[] = [];
+    const keys = Object.keys(_createdGrids), res: DataGrid[] = [];
     for (let i = 0; i < keys.length; i += 1) {
-        const grid = _created_grids[keys[i]];
+        const grid = _createdGrids[keys[i]];
         res.push(grid);
     }
 
@@ -63,11 +63,12 @@ export function getDataGrids(): DataGrid[] {
 }
 
 export function findDataGrid(gridName: string): DataGrid {
-    const keys = Object.keys(_created_grids);
+    const keys = Object.keys(_createdGrids);
     for (let i = 0; i < keys.length; i += 1) {
-        const grid = _created_grids[keys[i]];
-        if (!!grid.table && grid.table.getAttribute(DATA_ATTR.DATA_NAME) === gridName)
+        const grid = _createdGrids[keys[i]];
+        if (!!grid.table && grid.table.getAttribute(DATA_ATTR.DATA_NAME) === gridName) {
             return grid;
+        }
     }
 
     return null;
@@ -79,7 +80,7 @@ function updateWidth() {
 }
 
 function _gridCreated(grid: DataGrid) {
-    _created_grids[grid.uniqueID] = grid;
+    _createdGrids[grid.uniqueID] = grid;
     _gridsCount += 1;
     if (_gridsCount === 1) {
         _columnWidthInterval = win.requestAnimationFrame(updateWidth);
@@ -87,7 +88,7 @@ function _gridCreated(grid: DataGrid) {
 }
 
 function _gridDestroyed(grid: DataGrid) {
-    delete _created_grids[grid.uniqueID];
+    delete _createdGrids[grid.uniqueID];
     _gridsCount -= 1;
     if (_gridsCount === 0) {
         win.cancelAnimationFrame(_columnWidthInterval);
@@ -95,10 +96,11 @@ function _gridDestroyed(grid: DataGrid) {
 }
 
 function _checkGridWidth() {
-    coreUtils.forEachProp(_created_grids, (id) => {
-        const grid = _created_grids[id];
-        if (grid.getIsDestroyCalled())
+    coreUtils.forEachProp(_createdGrids, (id) => {
+        const grid = _createdGrids[id];
+        if (grid.getIsDestroyCalled()) {
             return;
+        }
         grid._getInternal().columnWidthCheck();
     });
 }
@@ -205,8 +207,9 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 isPrependAllRows: false
             });
 
-        if (!!options.dataSource && !sys.isCollection(options.dataSource))
+        if (!!options.dataSource && !sys.isCollection(options.dataSource)) {
             throw new Error(ERRS.ERR_GRID_DATASRC_INVALID);
+        }
         this._options = options;
         const table = this._options.el;
         this._table = table;
@@ -288,8 +291,9 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 self._expandDetails(parentRow, expanded);
             },
             columnWidthCheck: () => {
-                if (self.getIsDestroyCalled())
+                if (self.getIsDestroyCalled()) {
                     return;
+                }
                 const tw2 = table.offsetWidth;
                 if (tw !== tw2) {
                     tw = tw2;
@@ -306,9 +310,9 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._setDataSource(ds);
     }
     protected _getEventNames() {
-        const base_events = super._getEventNames();
+        const baseEvents = super._getEventNames();
         const events = Object.keys(GRID_EVENTS).map((key) => { return <string>(<any>GRID_EVENTS)[key]; });
-        return events.concat(base_events);
+        return events.concat(baseEvents);
     }
     addOnRowExpanded(fn: TEventHandler<DataGrid, { collapsedRow: Row; expandedRow: Row; isExpanded: boolean; }>, nmspace?: string, context?: any) {
         this._addHandler(GRID_EVENTS.row_expanded, fn, nmspace, context);
@@ -348,8 +352,9 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     }
     protected _onKeyDown(key: number, event: Event): void {
         const ds = this.dataSource, self = this;
-        if (!ds)
+        if (!ds) {
             return;
+        }
         const currentRow = this.currentRow;
         switch (key) {
             case KEYS.up:
@@ -371,8 +376,9 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             case KEYS.pageDown:
                 event.preventDefault();
                 this._pageDebounce.enque(() => {
-                    if (ds.pageIndex > 0)
+                    if (ds.pageIndex > 0) {
                         ds.pageIndex = ds.pageIndex - 1;
+                    }
                 });
                 break;
             case KEYS.pageUp:
@@ -394,15 +400,17 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 }
                 break;
             case KEYS.space:
-                if (!!this._rowSelectorCol && !!currentRow && (!currentRow.isExpanded && !currentRow.isEditing))
+                if (!!this._rowSelectorCol && !!currentRow && (!currentRow.isExpanded && !currentRow.isEditing)) {
                     event.preventDefault();
+                }
                 break;
         }
     }
     protected _onKeyUp(key: number, event: Event): void {
         const ds = this.dataSource;
-        if (!ds)
+        if (!ds) {
             return;
+        }
         const currentRow = this.currentRow;
         switch (key) {
             case KEYS.enter:
@@ -410,8 +418,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                     event.preventDefault();
                     if (currentRow.isEditing) {
                         this.raiseEvent(GRID_EVENTS.row_action, { row: currentRow, action: ROW_ACTION.OK });
-                    }
-                    else {
+                    } else {
                         this.raiseEvent(GRID_EVENTS.row_action, { row: currentRow, action: ROW_ACTION.EDIT });
                     }
                 }
@@ -436,11 +443,13 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         return this._expandedRow === row;
     }
     protected _setCurrentColumn(column: BaseColumn): void {
-        if (!!this._currentColumn)
+        if (!!this._currentColumn) {
             this._currentColumn.isSelected = false;
+        }
         this._currentColumn = column;
-        if (!!this._currentColumn)
+        if (!!this._currentColumn) {
             this._currentColumn.isSelected = true;
+        }
     }
     protected _onRowStateChanged(row: Row, val: any): string {
         const args = { row: row, val: val, css: <string>null };
@@ -462,24 +471,23 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         });
     }
     protected _getLastRow(): Row {
-        if (this._rows.length === 0)
+        if (this._rows.length === 0) {
             return null;
+        }
         let i = this._rows.length - 1, row = this._rows[i];
         while (row.isDeleted && i > 0) {
             i -= 1;
             row = this._rows[i];
         }
-        if (row.isDeleted)
-            return null;
-        else
-            return row;
+        return (row.isDeleted) ? null : row;
     }
     protected _removeRow(row: Row): number {
         if (this._isRowExpanded(row)) {
             this.collapseDetails();
         }
-        if (this._rows.length === 0)
+        if (this._rows.length === 0) {
             return -1;
+        }
         const rowkey = row.itemKey, i = utils.arr.remove(this._rows, row);
         try {
             if (i > -1) {
@@ -487,24 +495,24 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                     row.destroy();
                 }
             }
-        }
-        finally {
-            if (!!this._rowMap[rowkey])
+        } finally {
+            if (!!this._rowMap[rowkey]) {
                 delete this._rowMap[rowkey];
+            }
         }
         return i;
     }
     protected _expandDetails(parentRow: Row, expanded: boolean): void {
-        if (!this._options.details)
+        if (!this._options.details) {
             return;
+        }
         if (!this._details) {
             this._details = this._createDetails();
             this._fillSpace = this._createFillSpace();
         }
         const old = this._expandedRow;
-        if (old === parentRow) {
-            if (!!old && expanded)
-                return;
+        if (old === parentRow && (!!old && expanded)) {
+            return;
         }
         this._expandedRow = null;
         this._details.parentRow = null;
@@ -514,8 +522,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             this._details.parentRow = parentRow;
             this._expandedRow.expanderCell.toggleImage();
             this._fillSpace.attach();
-        }
-        else {
+        } else {
             this._expandedRow = null;
             this._details.parentRow = null;
             if (!!old) {
@@ -524,13 +531,12 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             this._fillSpace.detach();
             this._fillSpace.height = 0;
         }
-        if (old !== parentRow) {
-            if (!!old)
-                old.expanderCell.toggleImage();
+        if (old !== parentRow && !!old) {
+            old.expanderCell.toggleImage();
         }
         this.raiseEvent(GRID_EVENTS.row_expanded, { collapsedRow: old, expandedRow: parentRow, isExpanded: expanded });
     }
-    protected _parseColumnAttr(column_attr: string, content_attr: string) {
+    protected _parseColumnAttr(columnAttr: string, contentAttr: string) {
         const defaultOp: IColumnInfo = {
             "type": COLUMN_TYPE.DATA, // default column type
             title: null,
@@ -540,52 +546,61 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         };
         let options: IColumnInfo;
 
-        const temp_opts = parser.parseOptions(column_attr);
-        if (temp_opts.length > 0)
-            options = coreUtils.extend(defaultOp, temp_opts[0]);
-        else
+        const tempOpts = parser.parseOptions(columnAttr);
+        if (tempOpts.length > 0) {
+            options = coreUtils.extend(defaultOp, tempOpts[0]);
+        } else {
             options = defaultOp;
+        }
 
-        if (!!content_attr) {
-            options.content = parseContentAttr(content_attr);
-            if (!options.sortMemberName && !!options.content.fieldName)
+        if (!!contentAttr) {
+            options.content = parseContentAttr(contentAttr);
+            if (!options.sortMemberName && !!options.content.fieldName) {
                 options.sortMemberName = options.content.fieldName;
+            }
         }
 
         return options;
     }
     protected _findUndeleted(row: Row, isUp: boolean) {
-        if (!row)
+        if (!row) {
             return null;
-        if (!row.isDeleted)
+        }
+        if (!row.isDeleted) {
             return row;
+        }
         // find nearest nondeleted row (search up and down)
         const delIndex = this.rows.indexOf(row), len = this.rows.length;
         let i = delIndex;
 
         if (!isUp) {
             i -= 1;
-            if (i >= 0)
+            if (i >= 0) {
                 row = this.rows[i];
+            }
             while (i >= 0 && row.isDeleted) {
                 i -= 1;
-                if (i >= 0)
+                if (i >= 0) {
                     row = this.rows[i];
+                }
             }
-            if (row.isDeleted)
+            if (row.isDeleted) {
                 row = null;
-        }
-        else {
+            }
+        } else {
             i += 1;
-            if (i < len)
+            if (i < len) {
                 row = this.rows[i];
+            }
             while (i < len && row.isDeleted) {
                 i += 1;
-                if (i < len)
+                if (i < len) {
                     row = this.rows[i];
+                }
             }
-            if (row.isDeleted)
+            if (row.isDeleted) {
                 row = null;
+            }
         }
         return row;
     }
@@ -632,12 +647,13 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                     // positioning the row after deletion
                     const rowlen = this._rows.length;
                     if (rowpos > -1 && rowlen > 0) {
-                        if (rowpos < rowlen)
+                        if (rowpos < rowlen) {
                             this.currentRow = this._rows[rowpos];
-                        else
+                        } else {
                             this.currentRow = this._rows[rowlen - 1];
+                        }
                     }
-                    
+
                     self._updateTableDisplay();
                 }
                 break;
@@ -655,12 +671,14 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         }
     }
     protected _updateTableDisplay() {
-        if (!this._table)
+        if (!this._table) {
             return;
-        if (!this.dataSource || this.dataSource.count === 0)
+        }
+        if (!this.dataSource || this.dataSource.count === 0) {
             this._table.style.visibility = "hidden";
-        else
+        } else {
             this._table.style.visibility = "visible";
+        }
     }
     protected _onPageChanged() {
         if (!!this._rowSelectorCol) {
@@ -670,13 +688,13 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     }
     protected _onItemEdit(item: ICollectionItem, isBegin: boolean, isCanceled: boolean) {
         const row = this._rowMap[item._key];
-        if (!row)
+        if (!row) {
             return;
+        }
         if (isBegin) {
             row._onBeginEdit();
             this._editingRow = row;
-        }
-        else {
+        } else {
             row._onEndEdit(isCanceled);
             this._editingRow = null;
         }
@@ -684,8 +702,9 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     }
     protected _onItemAdded(sender: any, args: ICollItemAddedArgs<ICollectionItem>) {
         const item = args.item, row = this._rowMap[item._key];
-        if (!row)
+        if (!row) {
             return;
+        }
         this.scrollToCurrent();
         // row.isExpanded = true;
         if (this._options.isHandleAddNew && !args.isAddNewHandled) {
@@ -693,10 +712,10 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         }
     }
     protected _onItemStatusChanged(item: ICollectionItem, oldStatus: ITEM_STATUS) {
-        const newStatus: ITEM_STATUS = item._aspect.status, ds = this.dataSource;
-        const row = this._rowMap[item._key];
-        if (!row)
-            return;
+        const newStatus: ITEM_STATUS = item._aspect.status, ds = this.dataSource, row = this._rowMap[item._key];
+        if (!row) {
+             return;
+        }
         if (newStatus === ITEM_STATUS.Deleted) {
             row.isDeleted = true;
             let row2 = this._findUndeleted(row, true);
@@ -706,15 +725,15 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             if (!!row2) {
                 ds.currentItem = row2.item;
             }
-        }
-        else if (oldStatus === ITEM_STATUS.Deleted) {
+        } else if (oldStatus === ITEM_STATUS.Deleted) {
             row.isDeleted = false;
         }
     }
     protected _onDSErrorsChanged(sender: any, args: ICollItemArgs<ICollectionItem>) {
         const row = this._rowMap[args.item._key];
-        if (!row)
+        if (!row) {
             return;
+        }
         row.updateErrorState();
     }
     protected _bindDS() {
@@ -752,13 +771,15 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     protected _unbindDS() {
         const self = this, ds = this.dataSource;
         this._updateTableDisplay();
-        if (!ds)
+        if (!ds) {
             return;
+        }
         ds.removeNSHandlers(self._objId);
     }
     protected _clearGrid() {
-        if (this._rows.length === 0)
+        if (this._rows.length === 0) {
             return;
+        }
         this.collapseDetails();
         const self = this, tbody = self._tBodyEl, newTbody = doc.createElement("tbody");
         this.table.replaceChild(newTbody, tbody);
@@ -797,8 +818,9 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._contaner = container;
     }
     protected _unWrapTable() {
-        if (!this._header)
+        if (!this._header) {
             return;
+        }
         this._header.remove();
         this._header = null;
         // remove wrapDiv
@@ -819,8 +841,9 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
 
         cellInfos.forEach((cellInfo) => {
             const col = self._createColumn(cellInfo);
-            if (!!col)
+            if (!!col) {
                 self._columns.push(col);
+            }
         });
 
         self.updateColumnsSize();
@@ -865,8 +888,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 isPrepend = isPrepend || (isPrependNew && item._aspect.isNew);
                 self._createRowForItem(tbody, item, isPrepend);
             }
-        }
-        else {
+        } else {
             const docFr = doc.createDocumentFragment(), k = newItems.length;
             for (let i = 0; i < k; i += 1) {
                 const item = newItems[i];
@@ -875,15 +897,16 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 }
             }
 
-            self._addNodeToParent(tbody, docFr, isPrepend); 
+            self._addNodeToParent(tbody, docFr, isPrepend);
         }
-       
+
         self.updateColumnsSize();
     }
     protected _refresh(isPageChanged: boolean) {
         const self = this, ds = this.dataSource;
-        if (!ds || self.getIsDestroyCalled())
+        if (!ds || self.getIsDestroyCalled()) {
             return;
+        }
         this._clearGrid();
         const docFr = doc.createDocumentFragment(), oldTbody = this._tBodyEl, newTbody = doc.createElement("tbody");
         ds.items.forEach((item, index) => {
@@ -894,8 +917,9 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         if (isPageChanged) {
             self._onPageChanged();
         }
-        if (self.isUseScrollInto)
+        if (self.isUseScrollInto) {
             self.scrollToCurrent();
+        }
 
         self.updateColumnsSize();
         self._updateTableDisplay();
@@ -904,24 +928,24 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     protected _addNodeToParent(parent: Node, node: Node, prepend: boolean) {
         if (!prepend) {
             dom.append(parent, [node]);
-        }
-        else {
+        } else {
             dom.prepend(parent, node);
         }
     }
     protected _createRowForItem(parent: Node, item: ICollectionItem, prepend: boolean) {
         const self = this, tr = doc.createElement("tr"), gridRow = new Row(self, { tr: tr, item: item });
         self._rowMap[item._key] = gridRow;
-        if (!prepend)
+        if (!prepend) {
             self._rows.push(gridRow);
-        else
+        } else {
             self._rows.unshift(gridRow);
-        self._addNodeToParent(parent, gridRow.tr, prepend); 
+        }
+        self._addNodeToParent(parent, gridRow.tr, prepend);
         return gridRow;
     }
     protected _createDetails() {
-        const details_id = this._options.details.templateID, tr = doc.createElement("tr");
-        return new DetailsRow({ grid: this, tr: tr, details_id: details_id });
+        const detailsId = this._options.details.templateID, tr = doc.createElement("tr");
+        return new DetailsRow({ grid: this, tr: tr, details_id: detailsId });
     }
     protected _createFillSpace() {
         const tr: HTMLTableRowElement = doc.createElement("tr");
@@ -938,8 +962,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                         height: "easeOutBounce"
                     }
                 });
-        }
-        else {
+        } else {
             this._wrapper.scrollTop = yPos;
         }
     }
@@ -951,8 +974,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             if (!!ds && !ds.getIsDestroyCalled()) {
                 this._bindDS();
                 this._refresh(false);
-            }
-            else {
+            } else {
                 this._clearGrid();
             }
         });
@@ -961,8 +983,9 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         return this._internal;
     }
     updateColumnsSize() {
-        if (this.getIsDestroyCalled())
+        if (this.getIsDestroyCalled()) {
             return;
+        }
         let width = 0;
         const header = this._header;
         this._columns.forEach((col) => {
@@ -980,28 +1003,29 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     }
     sortByColumn(column: DataColumn): IPromise<any> {
         const ds = this.dataSource;
-        if (!ds)
+        if (!ds) {
             return utils.defer.reject<void>("DataGrid's datasource is not set");
+        }
         const sorts = column.sortMemberName.split(";");
         const promise = ds.sort(sorts, column.sortOrder);
         return promise;
     }
     selectRows(isSelect: boolean) {
         this._rows.forEach((row) => {
-            if (row.isDeleted)
+            if (row.isDeleted) {
                 return;
+            }
             row.isSelected = isSelect;
         });
     }
     findRowByItem(item: ICollectionItem) {
         const row = this._rowMap[item._key];
-        if (!row)
-            return null;
-        return row;
+        return (!row) ? null : row;
     }
     collapseDetails() {
-        if (!this._details)
+        if (!this._details) {
             return;
+        }
         const old = this._expandedRow;
         if (!!old) {
             this._expandDetails(old, false);
@@ -1010,8 +1034,9 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     getSelectedRows() {
         const res: Row[] = [];
         this._rows.forEach((row) => {
-            if (row.isDeleted)
+            if (row.isDeleted) {
                 return;
+            }
             if (row.isSelected) {
                 res.push(row);
             }
@@ -1019,28 +1044,31 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         return res;
     }
     showEditDialog() {
-        if (!this.isHasEditor || !this._editingRow)
+        if (!this.isHasEditor || !this._editingRow) {
             return false;
+        }
         let dialogOptions: IDialogConstructorOptions;
         const item = this._editingRow.item;
-        if (!item._aspect.isEditing)
+        if (!item._aspect.isEditing) {
             item._aspect.beginEdit();
+        }
         if (!this._dialog) {
             dialogOptions = coreUtils.extend({
                 dataContext: item,
                 templateID: null
             }, this._options.editor);
             this._dialog = new DataEditDialog(dialogOptions);
-        }
-        else
+        } else {
             this._dialog.dataContext = item;
+        }
         this._dialog.canRefresh = !!this.dataSource.permissions.canRefreshRow && !item._aspect.isNew;
         this._dialog.show();
         return true;
     }
     scrollToRow(args: { row: Row; animate?: boolean; pos?: ROW_POSITION; }) {
-        if (!args || !args.row)
+        if (!args || !args.row) {
             return;
+        }
         const row = args.row,  viewport = this._wrapper;
         if (!!this._fillSpace) {
             // reset fillspace to calculate original table height
@@ -1054,8 +1082,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
 
         if (alignBottom) {
             offsetDiff = Math.floor(offsetDiff + 1);
-        }
-        else {
+        } else {
             offsetDiff = Math.floor(offsetDiff - 1);
         }
 
@@ -1070,19 +1097,18 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         const yOffset = viewPortHeight - contentHeight;
         let yPos = offsetDiff, deltaY = 0;
 
-        if (alignBottom)
+        if (alignBottom) {
             yPos -= yOffset;
+        }
 
         const maxScrollTop = this.table.offsetHeight - viewPortHeight + 1;
 
         if (yPos < 0) {
             yPos = 0;
-        }
-        else if (yPos > maxScrollTop) {
+        } else if (yPos > maxScrollTop) {
             deltaY = yPos - maxScrollTop;
         }
 
-     
         if (!!this._fillSpace) {
             // add additional height to the table for scrolling further
             this._fillSpace.height = deltaY;
@@ -1094,8 +1120,9 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         // no need for scrolling if  the row is visible inside the viewport
         // but if the row details is expanded (args.pos === ROW_POSITION.Details) then always scroll the row to the top
         // in order to show the details in full
-        if ((args.pos !== ROW_POSITION.Details) && (currentScrollTop < offsetDiff && currentScrollTop > (offsetDiff - yOffset)))
+        if ((args.pos !== ROW_POSITION.Details) && (currentScrollTop < offsetDiff && currentScrollTop > (offsetDiff - yOffset))) {
             return;
+        }
 
         this._scrollTo(yPos, animate);
     }
@@ -1118,8 +1145,9 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         }
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         this._scrollDebounce.destroy();
         this._dsDebounce.destroy();
@@ -1164,18 +1192,18 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     get _tHeadEl() { return this.table.tHead; }
     get _tFootEl() { return this.table.tFoot; }
     get _tHeadRow(): HTMLTableRowElement {
-        if (!this._tHeadEl)
+        if (!this._tHeadEl) {
             return null;
+        }
         const trs = this._tHeadEl.rows;
-        if (trs.length === 0)
+        if (trs.length === 0) {
             return null;
+        }
         return <HTMLTableRowElement>trs[0];
     }
     get _tHeadCells() {
         const row = this._tHeadRow;
-        if (!row)
-            return [];
-        return utils.arr.fromList<HTMLTableHeaderCellElement>(row.cells);
+        return (!row) ? [] : utils.arr.fromList<HTMLTableHeaderCellElement>(row.cells);
     }
     get uniqueID() { return this._objId; }
     get name() { return this._name; }
@@ -1192,29 +1220,25 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     get columns() { return this._columns; }
     get currentItem() {
         const ds = this.dataSource;
-        if (!ds)
-            return null;
-        return ds.currentItem;
+        return (!ds) ? null : ds.currentItem;
     }
     set currentItem(item) {
         const ds = this.dataSource;
-        if (!ds)
+        if (!ds) {
             return;
+        }
         ds.currentItem = item;
     }
     get currentRow() {
         const cur = this.currentItem;
-        if (!cur)
-            return null;
-        return this._rowMap[cur._key];
+        return (!cur) ? null : this._rowMap[cur._key];
     }
     set currentRow(row) {
         if (!!row && !row.getIsDestroyCalled()) {
             if (row.item !== this.currentItem) {
                 this.currentItem = row.item;
             }
-        }
-        else {
+        } else {
             this.currentItem = null;
         }
     }
@@ -1223,14 +1247,16 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         return (this._options.editor && this._options.editor.templateID);
     }
     get isCanEdit() {
-        if (this._options.isCanEdit !== null)
+        if (this._options.isCanEdit !== null) {
             return this._options.isCanEdit;
+        }
         const ds = this.dataSource;
         return !!ds && ds.permissions.canEditRow;
     }
     get isCanDelete() {
-        if (this._options.isCanDelete !== null)
+        if (this._options.isCanDelete !== null) {
             return this._options.isCanDelete;
+        }
         const ds = this.dataSource;
         return !!ds && ds.permissions.canDeleteRow;
     }
@@ -1276,8 +1302,9 @@ export class DataGridElView extends BaseElView {
         return "DataGridElView";
     }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         this._stateDebounce.destroy();
         if (!this._grid.getIsDestroyCalled()) {
@@ -1309,8 +1336,9 @@ export class DataGridElView extends BaseElView {
         if (v !== this._stateProvider) {
             this._stateProvider = v;
             this._stateDebounce.enque(() => {
-                if (!this._grid || this._grid.getIsDestroyCalled())
+                if (!this._grid || this._grid.getIsDestroyCalled()) {
                     return;
+                }
                 this._grid.rows.forEach((row) => {
                     row.updateUIState();
                 });

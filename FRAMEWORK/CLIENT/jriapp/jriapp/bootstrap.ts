@@ -86,7 +86,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             bootstrap._getInternal().initialize();
         });
     }
-    private _appInst: IApplication; 
+    private _appInst: IApplication;
     private _currentSelectable: ISelectableProvider;
     private _defaults: Defaults;
     private _templateLoader: TemplateLoader;
@@ -101,8 +101,9 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     constructor() {
         super();
         const self = this;
-        if (!!bootstrap)
+        if (!!bootstrap) {
             throw new Error(ERRS.ERR_GLOBAL_SINGLTON);
+        }
         this._bootState = BootstrapState.None;
         this._appInst = null;
         this._currentSelectable = null;
@@ -114,13 +115,15 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         this._templateLoader = null;
         this._templateLoader = new TemplateLoader();
         this._templateLoader.addOnLoaded((s, a) => {
-            if (!s)
+            if (!s) {
                 throw new Error("Invalid operation");
+            }
             self._onTemplateLoaded(a.html, a.app);
         });
         this._templateLoader.addOnError((s, a) => {
-            if (!s)
+            if (!s) {
                 throw new Error("Invalid operation");
+            }
             return self.handleError(a.error, a.source);
         });
         this._elViewRegister = createElViewRegister(null);
@@ -203,8 +206,9 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         const self = this, templates = dom.queryAll<HTMLElement>(root, _TEMPLATE_SELECTOR);
         templates.forEach((el) => {
             const name = el.getAttribute("id");
-            if (!name)
+            if (!name) {
                 throw new Error(ERRS.ERR_TEMPLATE_HAS_NO_ID);
+            }
             const html = el.innerHTML;
             self._processTemplate(name, html, app);
         });
@@ -226,11 +230,11 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         deferred.resolve(res);
     }
     protected _getEventNames(): string[] {
-        const base_events = super._getEventNames(),
+        const baseEvents = super._getEventNames(),
             events = Object.keys(GLOB_EVENTS).map((key) => {
                 return <string>(<any>GLOB_EVENTS)[key];
             });
-        return events.concat(base_events);
+        return events.concat(baseEvents);
     }
     // override
     protected _addHandler(name: string, fn: (sender: any, args: any) => void, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
@@ -240,16 +244,16 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         if ((name === GLOB_EVENTS.load && isReady) || (name === GLOB_EVENTS.initialized && isIntialized)) {
             // when already is ready, immediately raise the event
             utils.queue.enque(() => { fn.apply(self, [self, {}]); });
-        }
-        else {
+        } else {
             super._addHandler(name, fn, nmspace, context, priority);
         }
     }
     private _init(): IPromise<Bootstrap> {
         const self = this;
         const promise: IPromise<Bootstrap> = self.stylesLoader.whenAllLoaded().then(() => {
-            if (self._bootState !== BootstrapState.None)
+            if (self._bootState !== BootstrapState.None) {
                 throw new Error("Invalid operation: bootState !== BootstrapState.None");
+            }
 
             self._bootState = BootstrapState.Initializing;
 
@@ -260,8 +264,9 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             self.removeHandler(GLOB_EVENTS.initialized);
 
             return _async.delay(() => {
-                if (self.getIsDestroyCalled())
+                if (self.getIsDestroyCalled()) {
                     throw new Error("Bootstrap is in destroyed state");
+                }
                 self._processHTMLTemplates();
                 self._bootState = BootstrapState.Ready;
                 self.raisePropertyChanged(PROP_NAME.isReady);
@@ -270,8 +275,9 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         });
 
        const res = promise.then((boot) => {
-            if (boot._bootState !== BootstrapState.Ready)
+            if (boot._bootState !== BootstrapState.Ready) {
                 throw new Error("Invalid operation: bootState !== BootstrapState.Ready");
+            }
             boot.raiseEvent(GLOB_EVENTS.load, {});
             boot.removeHandler(GLOB_EVENTS.load);
             return boot;
@@ -293,16 +299,18 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         dom.events.on(el, "click", (e) => {
             e.stopPropagation();
             const target = e.target;
-            if (dom.isContained(target, el))
+            if (dom.isContained(target, el)) {
                 self.currentSelectable = selectable;
+            }
         }, isel.getUniqueID());
     }
     private _untrackSelectable(selectable: ISelectableProvider): void {
         const isel = selectable.getISelectable(),
             el = isel.getContainerEl();
         dom.events.off(el, "click", isel.getUniqueID());
-        if (this.currentSelectable === selectable)
+        if (this.currentSelectable === selectable) {
             this.currentSelectable = null;
+        }
     }
     private _registerApp(app: IApplication): void {
         if (!!this._appInst) {
@@ -320,8 +328,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             ERROR.removeHandler(app.appName);
             this.templateLoader.unRegisterTemplateGroup(app.appName);
             this.templateLoader.unRegisterTemplateLoader(app.appName);
-        }
-        finally {
+        } finally {
             this._appInst = null;
         }
     }
@@ -343,8 +350,9 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     private _getConverter(name: string): IConverter {
         const name2 = STORE_KEY.CONVERTER + name;
         const res = this._getObject(this, name2);
-        if (!res)
+        if (!res) {
             throw new Error(strUtils.format(ERRS.ERR_CONVERTER_NOTREGISTERED, name));
+        }
         return res;
     }
     private _waitLoaded(onLoad: (bootstrap: Bootstrap) => void): void {
@@ -355,8 +363,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
                 setTimeout(() => {
                     try {
                         onLoad(self);
-                    }
-                    catch (err) {
+                    } catch (err) {
                         ERROR.reThrow(err, self.handleError(err, self));
                     }
                 }, 0);
@@ -394,8 +401,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             setTimeout(() => {
                 try {
                     onInit(self);
-                }
-                catch (err) {
+                } catch (err) {
                     ERROR.reThrow(err, self.handleError(err, self));
                 }
             }, 0);
@@ -411,8 +417,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             try {
                 const app = appFactory();
                 deferred.resolve(app.startUp(onStartUp));
-            }
-            catch (err) {
+            } catch (err) {
                 deferred.reject(err);
             }
         });
@@ -426,8 +431,9 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         return res;
     }
     destroy(): void {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         const self = this;
         self._removeHandler();
@@ -465,8 +471,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         const name2 = STORE_KEY.CONVERTER + name;
         if (!this._getObject(this, name2)) {
             this._registerObject(this, name2, obj);
-        }
-        else {
+        } else {
             throw new Error(strUtils.format(ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
         }
     }

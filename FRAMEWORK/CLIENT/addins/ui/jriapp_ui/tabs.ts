@@ -52,8 +52,9 @@ export class TabsElView extends BaseElView implements ITabs {
         tabOpts = coreUtils.extend(tabOpts, self._tabOpts);
         (<any>$el).tabs(tabOpts);
         utils.queue.enque(() => {
-            if (self.getIsDestroyCalled())
+            if (self.getIsDestroyCalled()) {
                 return;
+            }
             self._tabsCreated = true;
             self._onTabsCreated();
             self.raisePropertyChanged(PROP_NAME.tabIndex);
@@ -78,8 +79,9 @@ export class TabsElView extends BaseElView implements ITabs {
        }
    }
     destroy() {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         this._destroyTabs();
         this._tabsEvents = null;
@@ -92,8 +94,9 @@ export class TabsElView extends BaseElView implements ITabs {
     set tabsEvents(v) {
         const old = this._tabsEvents;
         if (v !== old) {
-            if (!!old)
+            if (!!old) {
                 old.removeTabs();
+            }
             this._tabsEvents = v;
             this.raisePropertyChanged(PROP_NAME.tabsEvents);
             if (this._tabsCreated) {

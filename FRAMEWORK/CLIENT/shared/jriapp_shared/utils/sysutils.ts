@@ -15,7 +15,7 @@ export class SysUtils {
     static isBinding: (obj: any) => boolean = () => { return false; };
     static isPropBag: (obj: any) => boolean = (obj) => {
         return !!obj && obj.isPropertyBag;
-    };
+    }
 
     // DUMMY implementations collection
     static isCollection: (obj: any) => boolean = () => { return false; };
@@ -31,32 +31,32 @@ export class SysUtils {
         return !!obj && checks.isFunc(obj.submitChanges) && checks.isHasProp(obj, "isCanSubmit");
     }
     static isErrorNotification(obj: any): obj is IErrorNotification {
-        if (!obj) return false;
-        if (!checks.isFunc(obj.getIErrorNotification))
+        if (!obj) {
+             return false;
+        }
+        if (!checks.isFunc(obj.getIErrorNotification)) {
             return false;
+        }
         const tmp = obj.getIErrorNotification();
         return !!tmp && checks.isFunc(tmp.getIErrorNotification);
     }
-  
     static getErrorNotification(obj: any): IErrorNotification {
         if (!obj) {
             return null;
-        }
-        else if (!!obj._aspect && SysUtils.isErrorNotification(obj._aspect))
+        } else if (!!obj._aspect && SysUtils.isErrorNotification(obj._aspect)) {
             return <IErrorNotification>obj._aspect.getIErrorNotification();
-        else if (SysUtils.isErrorNotification(obj))
+        } else if (SysUtils.isErrorNotification(obj)) {
             return <IErrorNotification>obj.getIErrorNotification();
+        }
 
         return null;
     }
     static getEditable(obj: any): IEditable {
         if (!obj) {
             return null;
-        }
-        else if (!!obj._aspect && SysUtils.isEditable(obj._aspect)) {
+        } else if (!!obj._aspect && SysUtils.isEditable(obj._aspect)) {
             return <IEditable>obj._aspect;
-        }
-        else if (SysUtils.isEditable(obj)) {
+        } else if (SysUtils.isEditable(obj)) {
             return <IEditable>obj;
         }
 
@@ -80,8 +80,9 @@ export class SysUtils {
         parts.forEach(function (part) {
             part = part.trim();
             // if empty part
-            if (!part)
+            if (!part) {
                 throw new Error("Invalid path: " + path);
+            }
 
             let obj: string = null, matches: any[] = INDEX_PROP_RX.exec(part);
             if (!!matches) {
@@ -110,8 +111,7 @@ export class SysUtils {
 
                     matches = INDEX_PROP_RX.exec(part);
                 }
-            }
-            else {
+            } else {
                 parts2.push(part);
             }
         });
@@ -120,24 +120,24 @@ export class SysUtils {
     }
     static getProp(obj: any, prop: string) {
         const self = SysUtils;
-        if (!prop)
+        if (!prop) {
             return obj;
+        }
 
-        if (self.isBaseObj(obj) && obj.getIsDestroyCalled())
+        if (self.isBaseObj(obj) && obj.getIsDestroyCalled()) {
             return checks.undefined;
+        }
 
         if (strUtils.startsWith(prop, "[")) {
             if (self.isCollection(obj)) {
                 // it is an indexed property like ['someProp']
                 prop = strUtils.trimBrackets(prop);
                 return self.getItemByProp(obj, prop);
-            }
-            else if (checks.isArray(obj)) {
+            } else if (checks.isArray(obj)) {
                 // it is an indexed property like ['someProp']
                 prop = strUtils.trimBrackets(prop);
                 return obj[parseInt(prop, 10)];
-            }
-            else if (self.isPropBag(obj)) {
+            } else if (self.isPropBag(obj)) {
                 return (<IPropertyBag>obj).getProp(prop);
             }
         }
@@ -146,11 +146,13 @@ export class SysUtils {
     }
     static setProp(obj: any, prop: string, val: any) {
         const self = SysUtils;
-        if (!prop)
+        if (!prop) {
             throw new Error("Invalid operation: Empty Property name");
+        }
 
-        if (self.isBaseObj(obj) && obj.getIsDestroyCalled())
+        if (self.isBaseObj(obj) && obj.getIsDestroyCalled()) {
             return;
+        }
 
         // it is an indexed property, obj must be an Array
         if (strUtils.startsWith(prop, "[")) {

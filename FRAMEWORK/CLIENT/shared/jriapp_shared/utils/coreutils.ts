@@ -17,7 +17,7 @@ export class CoreUtils {
         return (prefix === "*") ? id.toString(36) : (prefix + "_" + id.toString(36));
     }
 
-    static get_timeZoneOffset = (() => {
+    static getTimeZoneOffset = (() => {
         const dt = new Date(), tz = dt.getTimezoneOffset();
         return () => tz;
     })();
@@ -72,13 +72,15 @@ export class CoreUtils {
     // the object that directly has this property (last object in chain obj1.obj2.lastObj)
     static resolveOwner(obj: any, path: string, separator = "."): any {
         const parts = path.split(separator), len = parts.length;
-        if (len === 1)
+        if (len === 1) {
             return obj;
+        }
         let res = obj;
         for (let i = 0; i < len - 1; i += 1) {
             res = res[parts[i]];
-            if (res === checks.undefined || res === null)
+            if (res === checks.undefined || res === null) {
                 return res;
+            }
         }
         return res;
     }
@@ -89,7 +91,7 @@ export class CoreUtils {
 
         if (!!len) {
             // Compact form
-            for (i = 0; i < len; i += 1) uuid[i] = chars[0 | rnd() * radix];
+            for (i = 0; i < len; i += 1) { uuid[i] = chars[0 | rnd() * radix]; }
         } else {
             // rfc4122, version 4 form
             let r: number;
@@ -111,14 +113,17 @@ export class CoreUtils {
         return uuid.join("");
     }
     static parseBool(a: any): boolean {
-        if (checks.isBoolean(a))
+        if (checks.isBoolean(a)) {
             return a;
+        }
         const v = strUtils.trim(a).toLowerCase();
-        if (v === "false") return false;
-        if (v === "true")
+        if (v === "false") {
+            return false;
+        } else if (v === "true") {
             return true;
-        else
+        } else {
             throw new Error(strUtils.format("parseBool, argument: {0} is not a valid boolean string", a));
+        }
     }
     static round(num: number, decimals: number): number {
         return parseFloat(num.toFixed(decimals));
@@ -154,8 +159,9 @@ export class CoreUtils {
         if (!target) {
             target = <any>{};
         }
-        if (!source)
+        if (!source) {
             return target;
+        }
         return CoreUtils.extend(target, source);
     }
     static extend<T, U>(target: T, ...source: U[]): T | U {
@@ -192,16 +198,18 @@ export class CoreUtils {
         };
     }
     static forEachProp<T>(obj: IIndexer<T>, fn: (name: string, val?: T) => void) {
-        if (!obj)
+        if (!obj) {
             return;
+        }
         const names = Object.keys(obj), len = names.length;
         for (let i = 0; i < len; i += 1) {
             fn(names[i], obj[names[i]]);
         }
     }
     static assignStrings<T extends U, U extends IIndexer<any>>(target: T, source: U): T {
-        if (checks.isNt(target))
+        if (checks.isNt(target)) {
             target = <any>{};
+        }
         if (!checks.isSimpleObject(source)) {
             return target;
         }

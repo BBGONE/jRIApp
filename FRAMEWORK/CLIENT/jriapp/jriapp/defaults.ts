@@ -63,15 +63,16 @@ export class Defaults extends BaseObject {
     // path to where application images are stored
     get imagesPath() { return this._imagesPath; }
     set imagesPath(v) {
-        if (!v)
+        if (!v) {
             v = "";
+        }
         if (this._imagesPath !== v) {
             if (!strUtils.endsWith(v, "/")) {
                 this._imagesPath = v + "/";
-           }
-            else
+           } else {
                 this._imagesPath = v;
-            this.raisePropertyChanged(PROP_NAME.imagesPath);
+           }
+           this.raisePropertyChanged(PROP_NAME.imagesPath);
        }
    }
     get decimalPoint() { return this._decimalPoint; }

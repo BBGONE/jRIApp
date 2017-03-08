@@ -30,8 +30,9 @@ export class TextAreaElView extends BaseElView {
             e.stopPropagation();
             const args: TKeyPressArgs = { keyCode: e.which, value: (<HTMLTextAreaElement>e.target).value, isCancel: false };
             self.raiseEvent(TXTAREA_EVENTS.keypress, args);
-            if (args.isCancel)
+            if (args.isCancel) {
                 e.preventDefault();
+            }
         }, this.uniqueID);
 
         if (!!options.updateOnKeyUp) {
@@ -42,8 +43,8 @@ export class TextAreaElView extends BaseElView {
         }
     }
     protected _getEventNames() {
-        const base_events = super._getEventNames();
-        return [TXTAREA_EVENTS.keypress].concat(base_events);
+        const baseEvents = super._getEventNames();
+        return [TXTAREA_EVENTS.keypress].concat(baseEvents);
     }
     addOnKeyPress(fn: (sender: TextAreaElView, args: TKeyPressArgs) => void, nmspace?: string) {
         this._addHandler(TXTAREA_EVENTS.keypress, fn, nmspace);

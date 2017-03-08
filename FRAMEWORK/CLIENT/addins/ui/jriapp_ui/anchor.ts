@@ -26,11 +26,13 @@ export class AnchorElView extends CommandElView {
         this._span = null;
         this._glyph = null;
 
-        if (!!options.imageSrc)
+        if (!!options.imageSrc) {
             this.imageSrc = options.imageSrc;
+        }
 
-        if (!!options.glyph)
+        if (!!options.glyph) {
             this.glyph = options.glyph;
+        }
 
         dom.addClass([this.el], css.commandLink);
         dom.events.on(this.el, "click", (e) => {
@@ -89,7 +91,7 @@ export class AnchorElView extends CommandElView {
                 this._span = dom.document.createElement("span");
                 el.appendChild(this._span);
             }
-        
+
             if (!!oldGlyph) {
                 dom.removeClass([this._span], oldGlyph);
             }
@@ -97,8 +99,9 @@ export class AnchorElView extends CommandElView {
         }
     }
     destroy(): void {
-        if (this._isDestroyed)
+        if (this._isDestroyed) {
             return;
+        }
         this._isDestroyCalled = true;
         dom.removeClass([this.el], css.commandLink);
         this.imageSrc = null;
