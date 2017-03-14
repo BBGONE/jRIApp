@@ -1,4 +1,5 @@
-﻿using RIAPP.DataService.DomainService.Attributes;
+﻿using RIAPP.DataService.DomainService;
+using RIAPP.DataService.DomainService.Attributes;
 using RIAPP.DataService.DomainService.Config;
 using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.DomainService.Security;
@@ -159,6 +160,9 @@ namespace RIAppDemo.BLL.DataServices
         [Invoke]
         public Task<string> TestInvoke(byte[] param1, string param2)
         {
+            var ipAddressService = this.ServiceContainer.GetService<IHostAddrService>();
+            string userIPaddress = ipAddressService.GetIPAddress();
+
             return Task.Run(() =>
             {
                 var sb = new StringBuilder();
@@ -176,14 +180,16 @@ namespace RIAppDemo.BLL.DataServices
                     throw new Exception("Error generated randomly for testing purposes. Don't worry! Try again.");
                 */
 
-                return string.Format("TestInvoke method invoked with<br/><br/><b>param1:</b> {0}<br/> <b>param2:</b> {1}",
-                        sb, param2);
+                return string.Format("TestInvoke method invoked with<br/><br/><b>param1:</b> {0}<br/> <b>param2:</b> {1} User IP: {2}",
+                        sb, param2, userIPaddress);
             });
         }
 
         [Invoke]
         public void TestComplexInvoke(AddressInfo info, KeyVal[] keys)
         {
+            var ipAddressService = this.ServiceContainer.GetService<IHostAddrService>();
+            string userIPaddress = ipAddressService.GetIPAddress();
             //p.s. do something with info and keys
         }
 

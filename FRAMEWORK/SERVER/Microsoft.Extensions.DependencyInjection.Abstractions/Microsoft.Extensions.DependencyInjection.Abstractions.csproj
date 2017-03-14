@@ -7,8 +7,8 @@
     <ProjectGuid>{3FC36108-1AD9-43E2-B685-B4BCD00A7BDA}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>RIAPP.DI.Abstractions</RootNamespace>
-    <AssemblyName>RIAPP.DI.Abstractions</AssemblyName>
+    <RootNamespace>Microsoft.Extensions.DependencyInjection.Abstractions</RootNamespace>
+    <AssemblyName>Microsoft.Extensions.DependencyInjection.Abstractions</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />

@@ -1,4 +1,7 @@
-﻿using System;
+﻿using RIAPP.DataService.DomainService;
+using RIAPP.DataService.DomainService.Types;
+using RIAPP.DataService.Utils.Interfaces;
+using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -8,10 +11,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
-using RIAPP.DataService.DomainService;
-using RIAPP.DataService.DomainService.Interfaces;
-using RIAPP.DataService.DomainService.Types;
-using RIAPP.DataService.Utils.Interfaces;
 
 namespace RIAPP.DataService.WebApi
 {
@@ -35,11 +34,24 @@ namespace RIAPP.DataService.WebApi
             get { return _dataService.Value; }
         }
 
+        public ISerializer Serializer
+        {
+            get
+            {
+                return _serializer;
+            }
+        }
+
         protected virtual T CreateDomainService()
         {
             var args = new ServiceArgs(_serializer, User);
-            var service = (IDomainService) Activator.CreateInstance(typeof(T), args);
-            return (T) service;
+            return this.CreateDomainService(args);
+        }
+
+        protected virtual T CreateDomainService(ServiceArgs args)
+        {
+            var service = (T)Activator.CreateInstance(typeof(T), args);
+            return service;
         }
 
         protected override void Dispose(bool disposing)

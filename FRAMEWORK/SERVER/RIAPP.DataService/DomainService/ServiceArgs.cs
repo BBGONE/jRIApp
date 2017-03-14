@@ -22,5 +22,16 @@ namespace RIAPP.DataService.DomainService
         public ISerializer Serializer { get; }
 
         public IServiceCollection ServiceCollection { get; }
+
+        /// <summary>
+        /// Used as a convenience method to add a service to the ServiceCollection
+        /// </summary>
+        /// <typeparam name="TService"></typeparam>
+        /// <param name="implementationInstance"></param>
+        public void AddSingleton<TService>(TService implementationInstance)
+           where TService : class
+        {
+            this.ServiceCollection.AddSingleton<TService>(implementationInstance);
+        }
     }
 }
