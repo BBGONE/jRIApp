@@ -2,7 +2,7 @@
 
 namespace RIAPP.DataService.DomainService.Config
 {
-    public class SvcDescriptor
+    public class ServiceTypeDescriptor
     {
         public Type ModelType;
         public Type ImplementationType;

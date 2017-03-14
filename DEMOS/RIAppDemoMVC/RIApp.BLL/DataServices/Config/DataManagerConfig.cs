@@ -10,8 +10,11 @@ namespace RIAppDemo.BLL.DataServices.Config
         public static void RegisterDataManagers(IDataManagerContainer dataManagers)
         {
             dataManagers.RegisterDataManager<CustomerAddress, CustomerAddressDM>();
-            dataManagers.RegisterDataManager<Product, ProductDM>();
             dataManagers.RegisterDataManager<LookUpProduct, LookUpProductDM>();
+
+            //dataManagers.RegisterDataManager<Product, ProductDM>();
+            // just for for testing  - using raw types
+            dataManagers.RegisterDataManager(typeof(Product), typeof(ProductDM));
         }
     }
 }

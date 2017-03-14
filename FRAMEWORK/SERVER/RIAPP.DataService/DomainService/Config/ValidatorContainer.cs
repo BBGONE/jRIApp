@@ -7,16 +7,16 @@ namespace RIAPP.DataService.DomainService.Config
 {
     public class ValidatorContainer : IValidatorContainer
     {
-        private readonly ConcurrentDictionary<Type, SvcDescriptor> _validators;
+        private readonly ConcurrentDictionary<Type, ServiceTypeDescriptor> _validators;
 
         public ValidatorContainer()
         {
-            _validators = new ConcurrentDictionary<Type, SvcDescriptor>();
+            _validators = new ConcurrentDictionary<Type, ServiceTypeDescriptor>();
         }
 
         public IValidator GetValidator(IServiceContainer services, Type modelType)
         {
-            SvcDescriptor descriptor;
+            ServiceTypeDescriptor descriptor;
             if (_validators.TryGetValue(modelType, out descriptor))
                 return (IValidator)services.GetService(descriptor.ServiceType);
             return null;
@@ -28,11 +28,27 @@ namespace RIAPP.DataService.DomainService.Config
             return (IValidator<TModel>)res;
         }
 
+        public void RegisterValidator(Type ModelType, Type ValidatorType)
+        {
+            Type unboundType = typeof(IValidator<>);
+            Type[] argsType = { ModelType };
+            Type serviceType = unboundType.MakeGenericType(argsType);
+
+            ServiceTypeDescriptor descriptor = new ServiceTypeDescriptor
+            {
+                ImplementationType = ValidatorType,
+                ServiceType = serviceType,
+                ModelType = ModelType
+            };
+
+            _validators.TryAdd(ModelType, descriptor);
+        }
+
         public void RegisterValidator<TModel, TValidator>()
             where TModel : class
             where TValidator : IValidator<TModel>
         {
-            SvcDescriptor descriptor = new SvcDescriptor
+            ServiceTypeDescriptor descriptor = new ServiceTypeDescriptor
             {
                 ImplementationType = typeof(TValidator),
                 ServiceType = typeof(IValidator<TModel>),
@@ -42,6 +58,6 @@ namespace RIAPP.DataService.DomainService.Config
             _validators.TryAdd(typeof(TModel), descriptor);
         }
 
-        public IEnumerable<SvcDescriptor> Descriptors { get { return _validators.Values; } }
+        public IEnumerable<ServiceTypeDescriptor> Descriptors { get { return _validators.Values; } }
     }
 }

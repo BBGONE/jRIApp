@@ -9,7 +9,9 @@ namespace RIAppDemo.BLL.DataServices.Config
         public static void RegisterValidators(IValidatorContainer validators)
         {
             validators.RegisterValidator<Customer, CustomerValidator>();
-            validators.RegisterValidator<Product, ProductValidator>();
+            //validators.RegisterValidator<Product, ProductValidator>();
+            // just for for testing  - using raw types
+            validators.RegisterValidator(typeof(Product), typeof(ProductValidator));
         }
     }
 }

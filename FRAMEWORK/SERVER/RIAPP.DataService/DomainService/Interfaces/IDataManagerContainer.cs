@@ -12,10 +12,12 @@ namespace RIAPP.DataService.DomainService.Interfaces
         IDataManager<TModel> GetDataManager<TModel>(IServiceContainer services)
             where TModel : class;
 
+        void RegisterDataManager(Type ModelType, Type DataManagerType);
+
         void RegisterDataManager<TModel,TDataManager>()
             where TModel : class
             where TDataManager : IDataManager<TModel>;
 
-        IEnumerable<SvcDescriptor> Descriptors { get; }
+        IEnumerable<ServiceTypeDescriptor> Descriptors { get; }
     }
 }

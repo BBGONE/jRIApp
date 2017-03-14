@@ -53,7 +53,7 @@
     <Compile Include="DomainService\Config\CodeGenConfig.cs" />
     <Compile Include="DomainService\Config\ServiceConfig.cs" />
     <Compile Include="DomainService\Config\DataManagerContainer.cs" />
-    <Compile Include="DomainService\Config\SvcDescriptor.cs" />
+    <Compile Include="DomainService\Config\ServiceTypeDescriptor.cs" />
     <Compile Include="DomainService\Exceptions\DummyException.cs" />
     <Compile Include="DomainService\Interfaces\ICodeGenProvider.cs" />
     <Compile Include="DomainService\Interfaces\IEntityVersionProvider.cs" />

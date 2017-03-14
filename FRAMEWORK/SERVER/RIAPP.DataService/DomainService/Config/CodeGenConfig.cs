@@ -44,6 +44,6 @@ namespace RIAPP.DataService.DomainService.Config
             return providerFactory();
         }
 
-        public bool IsCodeGenEnabled { get => _IsCodeGenEnabled; set => _IsCodeGenEnabled = value; }
+        public bool IsCodeGenEnabled { get { return _IsCodeGenEnabled; } set { _IsCodeGenEnabled = value; } }
     }
 }

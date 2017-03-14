@@ -9,10 +9,12 @@ namespace RIAPP.DataService.DomainService.Interfaces
         IValidator GetValidator(IServiceContainer services, Type modelType);
         IValidator<TModel> GetValidator<TModel>(IServiceContainer services);
 
+        void RegisterValidator(Type ModelType, Type ValidatorType);
+
         void RegisterValidator<TModel, TValidator>()
             where TModel : class
             where TValidator : IValidator<TModel>;
 
-        IEnumerable<SvcDescriptor> Descriptors { get; }
+        IEnumerable<ServiceTypeDescriptor> Descriptors { get; }
     }
 }
