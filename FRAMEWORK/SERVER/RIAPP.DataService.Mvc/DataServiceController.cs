@@ -17,13 +17,6 @@ namespace RIAPP.DataService.Mvc
     public abstract class DataServiceController<T> : Controller
         where T : BaseDomainService
     {
-        /// <summary>
-        ///     I use plain text here so that it was easier to configure compression in IIS
-        ///     if i used 'application/json' here i would  need to make changes in IIS application.config
-        ///     to  allow compression, but plain text result only needs to enable Dynamic content compression in IIS
-        /// </summary>
-        private static string ResultContentType = MediaTypeNames.Text.Plain;
-
         private Lazy<IDomainService> _DomainService;
 
         public DataServiceController()
@@ -43,15 +36,14 @@ namespace RIAPP.DataService.Mvc
         [HttpGet]
         public ActionResult GetTypeScript()
         {
-            var comment =
-                string.Format(
-                    "\tGenerated from: {0} on {1:yyyy-MM-dd} at {1:HH:mm}\r\n\tDon't make manual changes here, because they will be lost when this db interface will be regenerated!",
+            var comment = string.Format(
+                    "\tGenerated from: {0} on {1:yyyy-MM-dd} at {1:HH:mm}\r\n\tDon't make manual changes here, they will be lost when this interface will be regenerated!",
                     ControllerContext.HttpContext.Request.RawUrl, DateTime.Now);
-            var info = DomainService.ServiceCodeGen(new CodeGenArgs("ts") { comment = comment });
+            var content = DomainService.ServiceCodeGen(new CodeGenArgs("ts") { comment = comment });
             var res = new ContentResult();
             res.ContentEncoding = Encoding.UTF8;
             res.ContentType = MediaTypeNames.Text.Plain;
-            res.Content = info;
+            res.Content = content;
             return res;
         }
 
@@ -59,11 +51,11 @@ namespace RIAPP.DataService.Mvc
         [HttpGet]
         public ActionResult GetXAML(bool isDraft = true)
         {
-            var info = DomainService.ServiceCodeGen(new CodeGenArgs("xaml") { isDraft = isDraft });
+            var content = DomainService.ServiceCodeGen(new CodeGenArgs("xaml") { isDraft = isDraft });
             var res = new ContentResult();
             res.ContentEncoding = Encoding.UTF8;
             res.ContentType = MediaTypeNames.Text.Plain;
-            res.Content = info;
+            res.Content = content;
             return res;
         }
 
@@ -71,11 +63,11 @@ namespace RIAPP.DataService.Mvc
         [HttpGet]
         public ActionResult GetCSharp()
         {
-            var info = DomainService.ServiceCodeGen(new CodeGenArgs("csharp"));
+            var content = DomainService.ServiceCodeGen(new CodeGenArgs("csharp"));
             var res = new ContentResult();
             res.ContentEncoding = Encoding.UTF8;
             res.ContentType = MediaTypeNames.Text.Plain;
-            res.Content = info;
+            res.Content = content;
             return res;
         }
 

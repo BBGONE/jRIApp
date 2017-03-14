@@ -14,9 +14,9 @@ namespace RIAPP.DataService.DomainService.Security
         private const string ANONYMOUS_USER = "Anonymous";
         private IEnumerable<string> _serviceRoles;
 
-        public AuthorizerClass(Type serviceType, IPrincipal principal)
+        public AuthorizerClass(BaseDomainService service, IPrincipal principal)
         {
-            this.serviceType = serviceType;
+            this.serviceType = service.GetType();
             if (principal == null)
             {
                 IIdentity identity = new GenericIdentity(string.Empty);

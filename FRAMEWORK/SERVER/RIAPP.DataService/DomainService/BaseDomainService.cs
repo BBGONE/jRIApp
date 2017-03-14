@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Concurrent;
-using System.Linq;
-using System.Reflection;
-using System.Security.Principal;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.DependencyInjection;
 using RIAPP.DataService.DomainService.Config;
 using RIAPP.DataService.DomainService.Exceptions;
 using RIAPP.DataService.DomainService.Interfaces;
@@ -12,35 +6,42 @@ using RIAPP.DataService.DomainService.Security;
 using RIAPP.DataService.DomainService.Types;
 using RIAPP.DataService.Resources;
 using RIAPP.DataService.Utils;
-using RIAPP.DataService.Utils.CodeGen;
 using RIAPP.DataService.Utils.Extensions;
 using RIAPP.DataService.Utils.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Security.Principal;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace RIAPP.DataService.DomainService
 {
-    public abstract class BaseDomainService : IDomainService, IServicesProvider
+    public abstract class BaseDomainService : IDomainService, IServicesProviderTmp
     {
         private readonly object _lockObj = new  object();
         private readonly IPrincipal _User;
-        protected readonly ISerializer serializer;
-        private bool _IsCodeGenEnabled;
-        private ConcurrentDictionary<string, Func<ICodeGenProvider>> _codeGenProviders;
-        private IServiceContainer _serviceContainer;
-        private IServiceOperationsHelper _serviceHelper;
+        protected readonly ISerializer _Serializer;
+        private Lazy<IServiceContainer> _ServiceContainer;
 
         public BaseDomainService(IServiceArgs args)
         {
-            this.serializer = args.serializer;
-            if (this.serializer == null)
+            if (args.Serializer == null)
                 throw new ArgumentException(ErrorStrings.ERR_NO_SERIALIZER);
-            this._User = args.principal;
-            this._IsCodeGenEnabled = false;
-            this._codeGenProviders = null;
-            this._serviceContainer = this.CreateServiceContainer();
-            this._serviceHelper = this.CreateServiceHelper();
+
+            this._Serializer = args.Serializer;
+            this._User = args.Principal;
+
+            this._ServiceContainer = new Lazy<IServiceContainer>(() => {
+                var serviceCollection = args.ServiceCollection;
+                this.ConfigureServices(serviceCollection);
+                return this.CreateServiceContainer(serviceCollection);
+            }, true);
         }
 
+        public ServiceConfig Config { get; internal set; }
+        
         public IPrincipal User
         {
             get
@@ -49,37 +50,17 @@ namespace RIAPP.DataService.DomainService
             }
         }
 
-        public bool IsCodeGenEnabled
-        {
-            get
-            {
-                return this._IsCodeGenEnabled;
-            }
-            protected set
-            {
-                this._IsCodeGenEnabled = value;
-            }
-        }
-
         public IServiceContainer ServiceContainer
         {
             get
             {
-                return this._serviceContainer;
+                return this._ServiceContainer.Value;
             }
         }
 
-        protected internal IServiceOperationsHelper ServiceHelper
+        public CachedMetadata GetMetadata()
         {
-            get
-            {
-                return this._serviceHelper;
-            }
-        }
-
-        protected void AddOrReplaceCodeGen(string lang, Func<ICodeGenProvider> providerFactory)
-        {
-            this._codeGenProviders.AddOrUpdate(lang, providerFactory, (k, old) => { return providerFactory; });
+            return MetadataHelper.GetInitializedMetadata(this);
         }
 
         protected internal void _OnError(Exception ex)
@@ -90,19 +71,39 @@ namespace RIAPP.DataService.DomainService
         }
 
         #region Overridable Methods
-        protected virtual void ConfigureCodeGen()
+        protected virtual void ConfigureServices(IServiceCollection serviceCollection)
         {
-            this.AddOrReplaceCodeGen("xaml", () => new XamlProvider(this));
+            serviceCollection.AddSingleton<IDomainService>(this);
+            serviceCollection.AddSingleton<BaseDomainService>(this);
+            serviceCollection.AddSingleton(this.GetType(), this);
+
+            foreach (var descriptor in this.Config.DataManagerContainer.Descriptors)
+            {
+                serviceCollection.AddScoped(descriptor.ServiceType, descriptor.ImplementationType);
+            }
+            foreach (var descriptor in this.Config.ValidatorsContainer.Descriptors)
+            {
+                serviceCollection.AddScoped(descriptor.ServiceType, descriptor.ImplementationType);
+            }
         }
 
-        protected virtual IServiceContainer CreateServiceContainer()
+        protected virtual void ConfigureCodeGen(CodeGenConfig config)
         {
-            return new ServiceContainerFactory().CreateServiceContainer(GetType(), this.serializer, User);
         }
 
-        protected virtual IServiceOperationsHelper CreateServiceHelper()
+        protected internal virtual IServiceContainer CreateServiceContainer(IServiceCollection serviceCollection)
         {
-            return new ServiceOperationsHelper(this);
+            serviceCollection.AddScoped<IAuthorizer, AuthorizerClass>();
+
+            serviceCollection.AddScoped<IValueConverter, ValueConverter>();
+
+            serviceCollection.AddScoped<IDataHelper, DataHelper>();
+            
+            serviceCollection.AddScoped<IValidationHelper, ValidationHelper>();
+
+            serviceCollection.AddScoped<IServiceOperationsHelper, ServiceOperationsHelper>();
+
+            return new ServiceContainer(serviceCollection);
         }
 
         protected internal abstract Metadata GetMetadata(bool isDraft);
@@ -130,28 +131,29 @@ namespace RIAPP.DataService.DomainService
 
         protected virtual Task AfterExecuteChangeSet()
         {
-            return _serviceHelper.AfterExecuteChangeSet();
+            return this.ServiceContainer.ServiceHelper.AfterExecuteChangeSet();
         }
 
         protected virtual void ApplyChangesToEntity(RowInfo rowInfo)
         {
-            var metadata = MetadataHelper.GetInitializedMetadata(this);
+            var metadata = this.GetMetadata();
             var dbSetInfo = rowInfo.dbSetInfo;
             if (dbSetInfo.EntityType == null)
                 throw new DomainServiceException(string.Format(ErrorStrings.ERR_DB_ENTITYTYPE_INVALID,
                     dbSetInfo.dbSetName));
             try
             {
+                IServiceOperationsHelper serviceHelper = this.ServiceContainer.ServiceHelper;
                 switch (rowInfo.changeType)
                 {
                     case ChangeType.Added:
-                        _serviceHelper.InsertEntity(metadata, rowInfo);
+                        serviceHelper.InsertEntity(metadata, rowInfo);
                         break;
                     case ChangeType.Deleted:
-                        _serviceHelper.DeleteEntity(metadata, rowInfo);
+                        serviceHelper.DeleteEntity(metadata, rowInfo);
                         break;
                     case ChangeType.Updated:
-                        _serviceHelper.UpdateEntity(metadata, rowInfo);
+                        serviceHelper.UpdateEntity(metadata, rowInfo);
                         break;
                     default:
                         throw new DomainServiceException(string.Format(ErrorStrings.ERR_REC_CHANGETYPE_INVALID,
@@ -189,7 +191,7 @@ namespace RIAPP.DataService.DomainService
 
         protected virtual void AuthorizeChangeSet(ChangeSet changeSet)
         {
-            var metadata = MetadataHelper.GetInitializedMetadata(this);
+            var metadata = this.GetMetadata();
             foreach (var dbSet in changeSet.dbSets)
             {
                 //methods on domain service which are attempted to be executed by client (SaveChanges triggers their execution)
@@ -232,7 +234,7 @@ namespace RIAPP.DataService.DomainService
 
         protected async Task<QueryResponse> ExecQuery(QueryRequest queryInfo)
         {
-            var metadata = MetadataHelper.GetInitializedMetadata(this);
+            var metadata = this.GetMetadata();
             var method = metadata.GetQueryMethod(queryInfo.dbSetName, queryInfo.queryName);
             var authorizer = ServiceContainer.Authorizer;
             authorizer.CheckUserRightsToExecute(method.methodData);
@@ -251,9 +253,10 @@ namespace RIAPP.DataService.DomainService
             var req = new RequestContext(this, queryInfo: queryInfo, operation: ServiceOperationType.Query);
             using (var callContext = new RequestCallContext(req))
             {
-                var instance = _serviceHelper.GetMethodOwner(method.methodData);
+                IServiceOperationsHelper serviceHelper = this.ServiceContainer.ServiceHelper;
+                var instance = serviceHelper.GetMethodOwner(method.methodData);
                 var invokeRes = method.methodData.methodInfo.Invoke(instance, methParams.ToArray());
-                queryResult = (QueryResult) await ServiceOperationsHelper.GetMethodResult(invokeRes).ConfigureAwait(false);
+                queryResult = (QueryResult) await serviceHelper.GetMethodResult(invokeRes).ConfigureAwait(false);
 
 
                 var entities = queryResult.Result;
@@ -293,7 +296,7 @@ namespace RIAPP.DataService.DomainService
         protected async Task<bool> ApplyChangeSet(ChangeSet changeSet)
         {
             AuthorizeChangeSet(changeSet);
-            var metadata = MetadataHelper.GetInitializedMetadata(this);
+            var metadata = this.GetMetadata();
             var graph = new ChangeSetGraph(changeSet, metadata);
             graph.Prepare();
 
@@ -334,6 +337,7 @@ namespace RIAPP.DataService.DomainService
             }
 
             var hasErrors = false;
+            IServiceOperationsHelper serviceHelper = this.ServiceContainer.ServiceHelper;
 
             //Validation step
             foreach (var rowInfo in graph.insertList)
@@ -343,7 +347,7 @@ namespace RIAPP.DataService.DomainService
                     operation: ServiceOperationType.SaveChanges);
                 using (var callContext = new RequestCallContext(req))
                 {
-                    if (!await _serviceHelper.ValidateEntity(metadata, req).ConfigureAwait(false))
+                    if (!await serviceHelper.ValidateEntity(metadata, req).ConfigureAwait(false))
                     {
                         rowInfo.invalid = rowInfo.changeState.ValidationErrors;
                         hasErrors = true;
@@ -359,7 +363,7 @@ namespace RIAPP.DataService.DomainService
                     operation: ServiceOperationType.SaveChanges);
                 using (var callContext = new RequestCallContext(req))
                 {
-                    if (!await _serviceHelper.ValidateEntity(metadata, req).ConfigureAwait(false))
+                    if (!await serviceHelper.ValidateEntity(metadata, req).ConfigureAwait(false))
                     {
                         rowInfo.invalid = rowInfo.changeState.ValidationErrors;
                         hasErrors = true;
@@ -379,7 +383,7 @@ namespace RIAPP.DataService.DomainService
                 foreach (var rowInfo in graph.allList)
                 {
                     if (rowInfo.changeType != ChangeType.Deleted)
-                        _serviceHelper.UpdateRowInfoAfterUpdates(rowInfo);
+                        serviceHelper.UpdateRowInfoAfterUpdates(rowInfo);
                     else
                         rowInfo.values = null;
                 }
@@ -397,7 +401,7 @@ namespace RIAPP.DataService.DomainService
 
         protected async Task<InvokeResponse> InvokeMethod(InvokeRequest invokeInfo)
         {
-            var metadata = MetadataHelper.GetInitializedMetadata(this);
+            var metadata = this.GetMetadata();
             var method = metadata.GetInvokeMethod(invokeInfo.methodName);
             var authorizer = ServiceContainer.Authorizer;
             authorizer.CheckUserRightsToExecute(method.methodData);
@@ -409,9 +413,10 @@ namespace RIAPP.DataService.DomainService
             var req = new RequestContext(this, operation: ServiceOperationType.InvokeMethod);
             using (var callContext = new RequestCallContext(req))
             {
-                var instance = _serviceHelper.GetMethodOwner(method.methodData);
+                IServiceOperationsHelper serviceHelper = this.ServiceContainer.ServiceHelper;
+                var instance = serviceHelper.GetMethodOwner(method.methodData);
                 var invokeRes = method.methodData.methodInfo.Invoke(instance, methParams.ToArray());
-                var meth_result = await ServiceOperationsHelper.GetMethodResult(invokeRes).ConfigureAwait(false);
+                var meth_result = await serviceHelper.GetMethodResult(invokeRes).ConfigureAwait(false);
                 var res = new InvokeResponse();
                 if (method.methodResult)
                     res.result = meth_result;
@@ -421,7 +426,7 @@ namespace RIAPP.DataService.DomainService
 
         protected async Task<RefreshInfo> RefreshRowInfo(RefreshInfo info)
         {
-            var metadata = MetadataHelper.GetInitializedMetadata(this);
+            var metadata = this.GetMetadata();
             info.dbSetInfo = metadata.dbSets[info.dbSetName];
             var methodData = metadata.getOperationMethodInfo(info.dbSetName, MethodType.Refresh);
             if (methodData == null)
@@ -433,17 +438,18 @@ namespace RIAPP.DataService.DomainService
             var req = new RequestContext(this, rowInfo: info.rowInfo, operation: ServiceOperationType.RowRefresh);
             using (var callContext = new RequestCallContext(req))
             {
-                var instance = _serviceHelper.GetMethodOwner(methodData);
-                var invokeRes = methodData.methodInfo.Invoke(instance, new object[] {info});
-                var dbEntity = await ServiceOperationsHelper.GetMethodResult(invokeRes).ConfigureAwait(false);
+                IServiceOperationsHelper serviceHelper = this.ServiceContainer.ServiceHelper;
+                var instance = serviceHelper.GetMethodOwner(methodData);
+                var invokeRes = methodData.methodInfo.Invoke(instance, new object[] { info });
+                var dbEntity = await serviceHelper.GetMethodResult(invokeRes).ConfigureAwait(false);
 
-                var rri = new RefreshInfo {rowInfo = info.rowInfo, dbSetName = info.dbSetName};
+                var rri = new RefreshInfo { rowInfo = info.rowInfo, dbSetName = info.dbSetName };
                 if (dbEntity != null)
                 {
-                    _serviceHelper.UpdateRowInfoFromEntity(dbEntity, info.rowInfo);
-                }
-                else
+                    serviceHelper.UpdateRowInfoFromEntity(dbEntity, info.rowInfo);
+                } else { 
                     rri.rowInfo = null;
+                }
 
                 return rri;
             }
@@ -455,38 +461,23 @@ namespace RIAPP.DataService.DomainService
 
         public string ServiceCodeGen(CodeGenArgs args)
         {
-            lock (this._lockObj)
+            CodeGenConfig config = new CodeGenConfig(this);
+            try
             {
-                if (this._codeGenProviders == null)
-                {
-                    try
-                    {
-                        this._codeGenProviders = new ConcurrentDictionary<string, Func<ICodeGenProvider>>();
-                        this.ConfigureCodeGen();
-                    }
-                    catch(Exception ex)
-                    {
-                        //if not properly initialized then reset to null
-                        this._codeGenProviders = null;
-                        this._OnError(ex);
-                        throw;
-                    }
-                }
+                this.ConfigureCodeGen(config);
+            }
+            catch (Exception ex)
+            {
+                this._OnError(ex);
+                throw;
             }
 
             try
             {
-                if (!this.IsCodeGenEnabled)
+                if (!config.IsCodeGenEnabled)
                     throw new InvalidOperationException(ErrorStrings.ERR_CODEGEN_DISABLED);
-
-                var metadata = MetadataHelper.GetInitializedMetadata(this);
-
-                Func<ICodeGenProvider> providerFactory = null;
-                if (!this._codeGenProviders.TryGetValue(args.lang, out providerFactory))
-                    throw new InvalidOperationException(string.Format(ErrorStrings.ERR_CODEGEN_NOT_IMPLEMENTED,
-                        args.lang));
-
-                return providerFactory().GetScript(args.comment, args.isDraft);
+                ICodeGenProvider codeGen = config.GetCodeGen(args.lang);
+                return codeGen.GetScript(args.comment, args.isDraft);
             }
             catch(Exception ex)
             {
@@ -499,7 +490,7 @@ namespace RIAPP.DataService.DomainService
         {
             try
             {
-                var metadata = MetadataHelper.GetInitializedMetadata(this);
+                var metadata = this.GetMetadata();
                 var result = new Permissions();
                 result.serverTimezone = DateTimeHelper.GetTimezoneOffset();
                 var authorizer = ServiceContainer.Authorizer;
@@ -522,7 +513,7 @@ namespace RIAPP.DataService.DomainService
         {
             try
             {
-                var metadata = MetadataHelper.GetInitializedMetadata(this);
+                var metadata = this.GetMetadata();
                 var result = new MetadataResult();
                 result.methods = metadata.methodDescriptions;
                 result.associations.AddRange(metadata.associations.Values);
@@ -629,11 +620,18 @@ namespace RIAPP.DataService.DomainService
 
         protected virtual void Dispose(bool isDisposing)
         {
-            if (_serviceHelper is IDisposable && isDisposing)
-                (_serviceHelper as IDisposable).Dispose();
+            Lazy<IServiceContainer> services = Interlocked.Exchange(ref this._ServiceContainer, null);
+            if (services == null)
+            {
+                return;
+            }
 
-            this._serviceHelper = null;
-            this._serviceContainer = null;
+            if (services.IsValueCreated)
+            {
+                var disposable = (services.Value as IDisposable);
+                if (disposable != null)
+                    disposable.Dispose();
+            }
         }
 
         void IDisposable.Dispose()

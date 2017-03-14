@@ -5,21 +5,20 @@ namespace RIAPP.DataService.DomainService.Config
 {
     public class ServiceConfig
     {
-        private readonly CachedMetadata _metadata;
-
-        public ServiceConfig(CachedMetadata metadata)
+        public ServiceConfig()
         {
-            _metadata = metadata;
+           DataManagerContainer = new DataManagerContainer();
+           ValidatorsContainer = new ValidatorContainer();
         }
 
         public IValidatorContainer ValidatorsContainer
         {
-            get { return _metadata.ValidatorsContainer; }
+            get;
         }
 
         public IDataManagerContainer DataManagerContainer
         {
-            get { return _metadata.DataManagerContainer; }
+            get;
         }
     }
 }

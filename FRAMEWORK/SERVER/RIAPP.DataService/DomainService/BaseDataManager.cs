@@ -5,7 +5,7 @@ using RIAPP.DataService.DomainService.Types;
 
 namespace RIAPP.DataService.DomainService
 {
-    public class BaseDataManager<TDataService, TModel> : IDataManager<TModel>, IServicesProvider
+    public class BaseDataManager<TDataService, TModel> : IDataManager<TModel>, IServicesProviderTmp
         where TModel : class
         where TDataService : BaseDomainService
     {

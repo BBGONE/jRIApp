@@ -1,33 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
+using RIAPP.DataService.DomainService.Config;
 
 namespace RIAPP.DataService.DomainService.Interfaces
 {
-    public class RegisteredDMEventArgs : EventArgs
-    {
-        public RegisteredDMEventArgs(Type dataManagerType, Type modeltype)
-        {
-            DataManagerType = dataManagerType;
-            ModelType = modeltype;
-        }
-
-        public Type DataManagerType { get; private set; }
-        public Type ModelType { get; private set; }
-    }
-
     public interface IDataManagerContainer
     {
         bool isDataManagerRegistered(Type modelType);
-        object GetDataManager(BaseDomainService dataService, Type modelType);
+        object GetDataManager(IServiceContainer services, Type modelType);
 
-        IDataManager<TModel> GetDataManager<TModel>(BaseDomainService dataService)
+        IDataManager<TModel> GetDataManager<TModel>(IServiceContainer services)
             where TModel : class;
 
-        void RegisterDataManager<TDataService, TDataManager, TModel>(
-            Func<TDataService, IDataManager<TModel>> dataManagerFactory)
+        void RegisterDataManager<TModel,TDataManager>()
             where TModel : class
-            where TDataManager : IDataManager<TModel>
-            where TDataService : BaseDomainService;
+            where TDataManager : IDataManager<TModel>;
 
-        event EventHandler<RegisteredDMEventArgs> RegisteredDM;
+        IEnumerable<SvcDescriptor> Descriptors { get; }
     }
 }

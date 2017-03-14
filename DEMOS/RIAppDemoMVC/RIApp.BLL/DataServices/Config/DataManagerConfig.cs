@@ -9,12 +9,9 @@ namespace RIAppDemo.BLL.DataServices.Config
     {
         public static void RegisterDataManagers(IDataManagerContainer dataManagers)
         {
-            dataManagers.RegisterDataManager<RIAppDemoServiceEF, CustomerAddressDM, CustomerAddress>(
-                dataService => { return new CustomerAddressDM(); });
-            dataManagers.RegisterDataManager<RIAppDemoServiceEF, ProductDM, Product>(
-                dataService => { return new ProductDM(); });
-            dataManagers.RegisterDataManager<RIAppDemoServiceEF, LookUpProductDM, LookUpProduct>(
-                dataService => { return new LookUpProductDM(); });
+            dataManagers.RegisterDataManager<CustomerAddress, CustomerAddressDM>();
+            dataManagers.RegisterDataManager<Product, ProductDM>();
+            dataManagers.RegisterDataManager<LookUpProduct, LookUpProductDM>();
         }
     }
 }

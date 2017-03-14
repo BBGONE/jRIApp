@@ -63,7 +63,7 @@ namespace RIAPP.DataService.DomainService
 
         private IServiceOperationsHelper ServiceHelper
         {
-            get { return DataService.ServiceHelper; }
+            get { return DataService.ServiceContainer.ServiceHelper; }
         }
 
         public BaseDomainService DataService { get; }

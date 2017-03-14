@@ -1,74 +1,81 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using Microsoft.Extensions.DependencyInjection;
 using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.Utils.Interfaces;
+using System;
+using System.Threading;
 
 namespace RIAPP.DataService.DomainService
 {
-    public class ServiceContainer : IServiceContainer
+    public class ServiceContainer: IServiceContainer, IDisposable
     {
-        private readonly ConcurrentDictionary<Type, object> _services;
+        private readonly IServiceCollection _serviceCollection;
+        private Lazy<IServiceProvider> _provider;
 
-        public ServiceContainer()
+        public ServiceContainer(IServiceCollection serviceCollection)
         {
-            _services = new ConcurrentDictionary<Type, object>();
+            _serviceCollection = serviceCollection;
+            _provider = new Lazy<IServiceProvider>(()=> this.CreateServiceProvider(), true);
         }
 
-        public void AddService(Type serviceType, object instance)
+        protected virtual IServiceProvider CreateServiceProvider()
         {
-            _services.AddOrUpdate(serviceType, instance, (k, v) =>
-            {
-                return instance;
-            });
+            return this._serviceCollection.BuildServiceProvider();
         }
 
-        public void AddService<T>(T instance)
+        public object GetService(Type serviceType)
         {
-            this.AddService(typeof(T), instance);
+            return _provider.Value.GetService(serviceType);
         }
 
-
-        public void RemoveService(Type serviceType)
+        public T GetService<T>()
         {
-            object old;
-            _services.TryRemove(serviceType, out old);
-        }
-
-        public object LocateService(Type serviceType)
-        {
-            object result;
-            _services.TryGetValue(serviceType, out result);
-            return result;
-        }
-
-        public T LocateService<T>()
-        {
-            return (T) LocateService(typeof(T));
+            return (T) GetService(typeof(T));
         }
 
         public IAuthorizer Authorizer
         {
-            get { return LocateService<IAuthorizer>(); }
+            get { return GetService<IAuthorizer>(); }
         }
 
         public ISerializer Serializer
         {
-            get { return LocateService<ISerializer>(); }
+            get { return GetService<ISerializer>(); }
         }
 
         public IValueConverter ValueConverter
         {
-            get { return LocateService<IValueConverter>(); }
+            get { return GetService<IValueConverter>(); }
         }
 
         public IDataHelper DataHelper
         {
-            get { return LocateService<IDataHelper>(); }
+            get { return GetService<IDataHelper>(); }
         }
 
         public IValidationHelper ValidationHelper
         {
-            get { return LocateService<IValidationHelper>(); }
+            get { return GetService<IValidationHelper>(); }
+        }
+
+        public IServiceOperationsHelper ServiceHelper
+        {
+            get { return GetService<IServiceOperationsHelper>(); }
+        }
+
+        public void Dispose()
+        {
+            Lazy<IServiceProvider> provider = Interlocked.Exchange(ref this._provider, null);
+            if (provider== null)
+            {
+                return;
+            }
+           
+            if (provider.IsValueCreated)
+            {
+                var disposable = (provider.Value as IDisposable);
+                if (disposable != null)
+                    disposable.Dispose();
+            }
         }
     }
 }

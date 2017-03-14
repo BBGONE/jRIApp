@@ -1,4 +1,6 @@
-﻿namespace RIAPP.DataService.DomainService.Types
+﻿using System;
+
+namespace RIAPP.DataService.DomainService.Types
 {
     public class CodeGenArgs
     {

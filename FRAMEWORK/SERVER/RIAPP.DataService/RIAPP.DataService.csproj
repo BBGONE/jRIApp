@@ -50,8 +50,10 @@
     <Compile Include="DomainService\Attributes\UpdateAttribute.cs" />
     <Compile Include="DomainService\Attributes\InsertAttribute.cs" />
     <Compile Include="DomainService\BaseValidator.cs" />
+    <Compile Include="DomainService\Config\CodeGenConfig.cs" />
     <Compile Include="DomainService\Config\ServiceConfig.cs" />
     <Compile Include="DomainService\Config\DataManagerContainer.cs" />
+    <Compile Include="DomainService\Config\SvcDescriptor.cs" />
     <Compile Include="DomainService\Exceptions\DummyException.cs" />
     <Compile Include="DomainService\Interfaces\ICodeGenProvider.cs" />
     <Compile Include="DomainService\Interfaces\IEntityVersionProvider.cs" />
@@ -65,7 +67,6 @@
     <Compile Include="DomainService\RequestContext.cs" />
     <Compile Include="DomainService\RowGenerator.cs" />
     <Compile Include="DomainService\Security\OverrideAuthorizeAttribute.cs" />
-    <Compile Include="DomainService\ServiceContainerFactory.cs" />
     <Compile Include="DomainService\ServiceOperationsHelper.cs" />
     <Compile Include="DomainService\SubsetsGenerator.cs" />
     <Compile Include="DomainService\Types\CodeGenArgs.cs" />
@@ -210,7 +211,16 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\EntityInterface.txt" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.DependencyInjection.Abstractions\Microsoft.Extensions.DependencyInjection.Abstractions.csproj">
+      <Project>{3fc36108-1ad9-43e2-b685-b4bcd00a7bda}</Project>
+      <Name>Microsoft.Extensions.DependencyInjection.Abstractions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Microsoft.Extensions.DependencyInjection\Microsoft.Extensions.DependencyInjection.csproj">
+      <Project>{f07ebc66-7a7f-40cd-95e5-57023edbf01e}</Project>
+      <Name>Microsoft.Extensions.DependencyInjection</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -1,9 +1,8 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using RIAPP.DataService.DomainService.Attributes;
+using RIAPP.DataService.DomainService.Types;
 using RIAppDemo.BLL.Models;
 using RIAppDemo.DAL.EF;
-using RIAPP.DataService.DomainService.Attributes;
-using RIAPP.DataService.DomainService.Types;
+using System.Linq;
 
 namespace RIAppDemo.BLL.DataServices.DataManagers
 {

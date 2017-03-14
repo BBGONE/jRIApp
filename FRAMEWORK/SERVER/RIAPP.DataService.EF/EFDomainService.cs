@@ -1,13 +1,14 @@
-﻿using System;
-using System.Linq;
-using System.Transactions;
-using System.Data.Metadata.Edm;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using RIAPP.DataService.DomainService;
+﻿using RIAPP.DataService.DomainService;
+using RIAPP.DataService.DomainService.Config;
 using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.DomainService.Types;
 using RIAPP.DataService.EF.Utils;
+using System;
+using System.Data.Metadata.Edm;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Transactions;
 
 namespace RIAPP.DataService.EF
 {
@@ -31,10 +32,10 @@ namespace RIAPP.DataService.EF
 
 
         #region Overridable Methods
-        protected override void ConfigureCodeGen()
+        protected override void ConfigureCodeGen(CodeGenConfig config)
         {
-            base.ConfigureCodeGen();
-            this.AddOrReplaceCodeGen("csharp", () => new CsharpProvider<TDB>(this));
+            base.ConfigureCodeGen(config);
+            config.AddOrReplaceCodeGen("csharp", () => new CsharpProvider<TDB>(this));
         }
 
         protected virtual TDB CreateDataContext() {

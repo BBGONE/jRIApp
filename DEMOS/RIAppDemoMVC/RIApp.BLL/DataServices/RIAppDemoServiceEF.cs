@@ -1,4 +1,15 @@
-﻿using System;
+﻿using RIAPP.DataService.DomainService.Attributes;
+using RIAPP.DataService.DomainService.Config;
+using RIAPP.DataService.DomainService.Interfaces;
+using RIAPP.DataService.DomainService.Security;
+using RIAPP.DataService.DomainService.Types;
+using RIAPP.DataService.EF6_CF;
+using RIAPP.DataService.Utils.Extensions;
+using RIAppDemo.BLL.DataServices.Config;
+using RIAppDemo.BLL.Models;
+using RIAppDemo.BLL.Utils;
+using RIAppDemo.DAL.EF;
+using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.Entity;
@@ -8,20 +19,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Transactions;
-using RIAppDemo.BLL.DataServices.Config;
-using RIAppDemo.BLL.Models;
-using RIAppDemo.BLL.Utils;
-using RIAppDemo.DAL.EF;
-using RIAPP.DataService.DomainService.Attributes;
-using RIAPP.DataService.DomainService.Config;
-using RIAPP.DataService.DomainService.Interfaces;
-using RIAPP.DataService.DomainService.Security;
-using RIAPP.DataService.DomainService.Types;
-using RIAPP.DataService.EF6_CF;
-using RIAPP.DataService.Utils.Extensions;
 using ResourceHelper = RIAppDemo.BLL.Utils.ResourceHelper;
 using SortOrder = RIAPP.DataService.DomainService.Types.SortOrder;
-using RIAPP.DataService.Utils.CodeGen;
 
 namespace RIAppDemo.BLL.DataServices
 {
@@ -66,16 +65,14 @@ namespace RIAppDemo.BLL.DataServices
             DataManagerConfig.RegisterDataManagers(config.DataManagerContainer);
         }
 
-        protected override void ConfigureCodeGen()
+        protected override void ConfigureCodeGen(CodeGenConfig config)
         {
-            base.ConfigureCodeGen();
-            this.AddOrReplaceCodeGen("ts", () => new TypeScriptProvider(this, new[] { typeof(TestModel), typeof(KeyVal),
-                typeof(StrKeyVal), typeof(RadioVal), typeof(HistoryItem), typeof(TestEnum2)
-            }));
+            base.ConfigureCodeGen(config);
+            config.clientTypes.AddRange(new[] { typeof(TestModel), typeof(KeyVal), typeof(StrKeyVal), typeof(RadioVal), typeof(HistoryItem), typeof(TestEnum2) });
             //it allows getting information via GetCSharp, GetXAML, GetTypeScript
             //it should be set to false in release version 
             //allow it only at development time
-            this.IsCodeGenEnabled = true;
+            config.IsCodeGenEnabled = true;
         }
 
         #region ProductModel
@@ -260,7 +257,7 @@ namespace RIAppDemo.BLL.DataServices
             var res = custList.Select(c => new CustomerJSON() {
                 CustomerID = c.CustomerID,
                 rowguid = c.rowguid,
-                Data = this.serializer.Serialize(new
+                Data = this._Serializer.Serialize(new
                 {
                     Title = c.Title,
                     CompanyName = c.CompanyName,

@@ -49,12 +49,15 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ErrorStrings.resx</DependentUpon>
     </Compile>
-    <Compile Include="LinqServiceContainerFactory.cs" />
     <Compile Include="Utils\CsharpProvider.cs" />
     <Compile Include="Utils\DataServiceMethodsHelper.cs" />
     <Compile Include="Utils\LinqValueConverter.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.DependencyInjection.Abstractions\Microsoft.Extensions.DependencyInjection.Abstractions.csproj">
+      <Project>{3fc36108-1ad9-43e2-b685-b4bcd00a7bda}</Project>
+      <Name>Microsoft.Extensions.DependencyInjection.Abstractions</Name>
+    </ProjectReference>
     <ProjectReference Include="..\RIAPP.DataService\RIAPP.DataService.csproj">
       <Project>{5FA08D23-6BAE-47AD-930B-A11EAFFF11DC}</Project>
       <Name>RIAPP.DataService</Name>

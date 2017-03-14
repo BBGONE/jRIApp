@@ -1,17 +1,17 @@
-﻿using System;
+﻿using RIAPP.DataService.DomainService;
+using RIAPP.DataService.DomainService.Attributes;
+using RIAPP.DataService.DomainService.Config;
+using RIAPP.DataService.DomainService.Interfaces;
+using RIAPP.DataService.DomainService.Security;
+using RIAPP.DataService.DomainService.Types;
+using RIAppDemo.BLL.Models;
+using RIAppDemo.BLL.Utils;
+using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using RIAppDemo.BLL.Models;
-using RIAppDemo.BLL.Utils;
-using RIAPP.DataService.DomainService;
-using RIAPP.DataService.DomainService.Attributes;
-using RIAPP.DataService.DomainService.Interfaces;
-using RIAPP.DataService.DomainService.Security;
-using RIAPP.DataService.DomainService.Types;
-using RIAPP.DataService.Utils.CodeGen;
-using System.Collections.Generic;
 
 namespace RIAppDemo.BLL.DataServices
 {
@@ -23,7 +23,6 @@ namespace RIAppDemo.BLL.DataServices
         public FolderBrowserService(IServiceArgs args)
             : base(args)
         {
-            IsCodeGenEnabled = true;
         }
 
         protected override Metadata GetMetadata(bool isDraft)
@@ -31,14 +30,13 @@ namespace RIAppDemo.BLL.DataServices
             return Metadata.FromXML(ResourceHelper.GetResourceString("RIAppDemo.BLL.Metadata.FolderBrowser.xml"));
         }
 
-        protected override void ConfigureCodeGen()
+        protected override void ConfigureCodeGen(CodeGenConfig config)
         {
-            base.ConfigureCodeGen();
-            this.AddOrReplaceCodeGen("ts", () => new TypeScriptProvider(this));
+            base.ConfigureCodeGen(config);
             //it allows getting information via GetCSharp, GetXAML, GetTypeScript
             //it should be set to false in release version 
             //allow it only at development time
-            this.IsCodeGenEnabled = true;
+            config.IsCodeGenEnabled = true;
         }
 
         private string GetRootPath(string infoType)

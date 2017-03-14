@@ -11,24 +11,24 @@ namespace RIAPP.DataService.Utils.Extensions
 {
     public static class QueryHelperEx
     {
-        public static T GetOriginal<T>(this IServicesProvider dataService)
+        public static T GetOriginal<T>(this IServicesProviderTmp dataService)
             where T : class
         {
             return RequestContext.Current.GetOriginal<T>();
         }
 
-        public static T GetParent<T>(this IServicesProvider dataService)
+        public static T GetParent<T>(this IServicesProviderTmp dataService)
             where T : class
         {
             return RequestContext.Current.GetParent<T>();
         }
 
-        public static QueryRequest GetCurrentQueryInfo(this IServicesProvider dataService)
+        public static QueryRequest GetCurrentQueryInfo(this IServicesProviderTmp dataService)
         {
             return RequestContext.Current.CurrentQueryInfo;
         }
 
-        public static IQueryable<T> PerformSort<T>(this IServicesProvider dataService, IQueryable<T> entities,
+        public static IQueryable<T> PerformSort<T>(this IServicesProviderTmp dataService, IQueryable<T> entities,
             SortInfo sort)
             where T : class
         {
@@ -57,7 +57,7 @@ namespace RIAPP.DataService.Utils.Extensions
             return result;
         }
 
-        public static IQueryable<T> PerformFilter<T>(this IServicesProvider dataService, IQueryable<T> entities,
+        public static IQueryable<T> PerformFilter<T>(this IServicesProviderTmp dataService, IQueryable<T> entities,
             FilterInfo filter, DbSetInfo dbInfo)
             where T : class
         {
@@ -166,7 +166,7 @@ namespace RIAPP.DataService.Utils.Extensions
             return result;
         }
 
-        public static IQueryable<T> GetPage<T>(this IServicesProvider dataService, IQueryable<T> entities, int pageIndex,
+        public static IQueryable<T> GetPage<T>(this IServicesProviderTmp dataService, IQueryable<T> entities, int pageIndex,
             int pageSize, int pageCount, DbSetInfo dbInfo)
             where T : class
         {
@@ -180,7 +180,7 @@ namespace RIAPP.DataService.Utils.Extensions
             return result;
         }
 
-        public static IQueryable<T> PerformQuery<T>(this IServicesProvider dataService, IQueryable<T> entities,
+        public static IQueryable<T> PerformQuery<T>(this IServicesProviderTmp dataService, IQueryable<T> entities,
             ref int? totalCount)
             where T : class
         {
@@ -197,7 +197,7 @@ namespace RIAPP.DataService.Utils.Extensions
             return entities;
         }
 
-        public static T GetRefreshedEntity<T>(this IServicesProvider dataService, IQueryable<T> entities,
+        public static T GetRefreshedEntity<T>(this IServicesProviderTmp dataService, IQueryable<T> entities,
             RefreshInfo info)
             where T : class
         {
@@ -206,7 +206,7 @@ namespace RIAPP.DataService.Utils.Extensions
             return (T) dbEntity;
         }
 
-        public static int? GetTotalCount<T>(this IServicesProvider dataService, IQueryable<T> entities,
+        public static int? GetTotalCount<T>(this IServicesProviderTmp dataService, IQueryable<T> entities,
             FilterInfo filter, DbSetInfo dbSetInfo)
             where T : class
         {

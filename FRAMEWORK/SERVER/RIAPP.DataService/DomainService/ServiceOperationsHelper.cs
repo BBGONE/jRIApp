@@ -18,7 +18,6 @@ namespace RIAPP.DataService.DomainService
         ///     Already created instances of DataManagers indexed by modelType
         /// </summary>
         private readonly ConcurrentDictionary<Type, object> _dataManagers;
-
         private BaseDomainService _domainService;
 
         public ServiceOperationsHelper(BaseDomainService domainService)
@@ -46,9 +45,9 @@ namespace RIAPP.DataService.DomainService
                 return _domainService;
             if (methodData.entityType == null)
                 return _domainService;
-            var metadata = MetadataHelper.GetInitializedMetadata(_domainService);
+            var metadata = _domainService.GetMetadata();
             var managerInstance = _dataManagers.GetOrAdd(methodData.entityType,
-                t => { return metadata.DataManagerContainer.GetDataManager(_domainService, t); });
+                t => { return metadata.Config.DataManagerContainer.GetDataManager(_services, t); });
             return managerInstance;
         }
 
@@ -359,7 +358,7 @@ namespace RIAPP.DataService.DomainService
 
         public async Task<bool> ValidateEntity(CachedMetadata metadata, RequestContext requestContext)
         {
-            var validatorsContainer = metadata.ValidatorsContainer;
+            var validatorsContainer = metadata.Config.ValidatorsContainer;
             var rowInfo = requestContext.CurrentRowInfo;
             var dbSetInfo = rowInfo.dbSetInfo;
             IEnumerable<ValidationErrorInfo> errs1 = null;
@@ -428,12 +427,10 @@ namespace RIAPP.DataService.DomainService
             if (errs1 == null)
                 errs1 = Enumerable.Empty<ValidationErrorInfo>();
 
-            var validator = validatorsContainer.GetValidator(requestContext, rowInfo.dbSetInfo.EntityType);
+            var validator = validatorsContainer.GetValidator(_services, rowInfo.dbSetInfo.EntityType);
             if (validator != null)
             {
-                errs2 =
-                    await
-                        validator.ValidateModelAsync(rowInfo.changeState.Entity,
+                errs2 = await validator.ValidateModelAsync(rowInfo.changeState.Entity,
                             rowInfo.changeState.NamesOfChangedFields);
             }
 
@@ -451,7 +448,7 @@ namespace RIAPP.DataService.DomainService
             return true;
         }
 
-        public static async Task<object> GetMethodResult(object invokeRes)
+        public async Task<object> GetMethodResult(object invokeRes)
         {
             var typeInfo = invokeRes != null ? invokeRes.GetType() : null;
             if (typeInfo != null && invokeRes is Task)

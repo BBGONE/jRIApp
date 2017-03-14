@@ -15,16 +15,14 @@ namespace RIAPP.DataService.Utils
         private readonly Lazy<ILookup<Type, DbSetInfo>> _dbSetsByTypeLookUp;
         private readonly OperationalMethods _operMethods;
         private readonly MethodMap _svcMethods;
-
+        private readonly ServiceConfig _config;
 
         public CachedMetadata()
         {
-            ValidatorsContainer = new ValidatorContainer();
-            DataManagerContainer = new DataManagerContainer();
-            DataManagerContainer.RegisteredDM += _dataManagerContainer_RegisteredDM;
             _dbSetsByTypeLookUp = new Lazy<ILookup<Type, DbSetInfo>>(() => { return dbSets.Values.ToLookup(v => v.EntityType); }, true);
             _svcMethods = new MethodMap();
             _operMethods = new OperationalMethods();
+            this._config = new ServiceConfig();
         }
 
         internal ILookup<Type, DbSetInfo> dbSetsByTypeLookUp
@@ -32,6 +30,7 @@ namespace RIAPP.DataService.Utils
             get { return _dbSetsByTypeLookUp.Value; }
         }
 
+        public ServiceConfig Config => _config;
         public DbSetsDictionary dbSets { get; } = new DbSetsDictionary();
         public AssociationsDictionary associations { get; } = new AssociationsDictionary();
 
@@ -40,19 +39,6 @@ namespace RIAPP.DataService.Utils
             get { return new MethodsList(_svcMethods.Values); }
         }
 
-        public IValidatorContainer ValidatorsContainer { get; }
-
-        public IDataManagerContainer DataManagerContainer { get; }
-
-        private void _dataManagerContainer_RegisteredDM(object sender, RegisteredDMEventArgs e)
-        {
-            if (RegisteredDM != null)
-            {
-                RegisteredDM(this, e);
-            }
-        }
-
-        public event EventHandler<RegisteredDMEventArgs> RegisteredDM;
 
         internal void InitSvcMethods(MethodsList methods)
         {

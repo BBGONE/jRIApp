@@ -15,6 +15,7 @@ using RIAPP.DataService.Resources;
 using RIAPP.DataService.Utils.CodeGen;
 using RIAPP.DataService.Utils.Extensions;
 using RIAPP.DataService.Utils.STAThreadSync;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace RIAPP.DataService.Utils
 {
@@ -31,7 +32,7 @@ namespace RIAPP.DataService.Utils
 
         public static CachedMetadata GetInitializedMetadata(BaseDomainService domainService)
         {
-            return _metadataCache.GetOrAdd(domainService.GetType(), (svcType) => {
+            var result = _metadataCache.GetOrAdd(domainService.GetType(), (svcType) => {
                 AsyncState asyncState = new AsyncState() { domainService = domainService };
 
                 ExecuteOnSTA(state =>
@@ -49,8 +50,12 @@ namespace RIAPP.DataService.Utils
 
                 }, asyncState);
 
-                return asyncState.cachedMetadata;
+                var metadata = asyncState.cachedMetadata;
+                return metadata;
             });
+
+            domainService.Config = result.Config;
+            return result;
         }
 
         public static void ExecuteOnSTA(SendOrPostCallback action, object state)
@@ -60,13 +65,8 @@ namespace RIAPP.DataService.Utils
 
         private static CachedMetadata InitMetadata(BaseDomainService domainService)
         {
-            EventHandler<RegisteredDMEventArgs> fn_regDM = (sender, e) => {
-                ProcessMethodDescriptions(domainService.ServiceContainer, e.DataManagerType, (CachedMetadata)sender);
-            };
-
             CachedMetadata cachedMetadata = new CachedMetadata();
             //called on every data manager registered while bootstrapping
-            cachedMetadata.RegisteredDM += fn_regDM;
             try
             {
                 InitCachedMetadata(domainService, cachedMetadata);
@@ -78,7 +78,6 @@ namespace RIAPP.DataService.Utils
             }
             finally
             {
-                cachedMetadata.RegisteredDM -= fn_regDM;
                 cachedMetadata.InitCompleted();
             }
 
@@ -91,12 +90,23 @@ namespace RIAPP.DataService.Utils
 
             foreach (var dbSetInfo in metadata.DbSets)
             {
-                dbSetInfo.Initialize(domainService.ServiceContainer);
-                //indexed by dbSetName
+              // indexed by dbSetName
                 cachedMetadata.dbSets.Add(dbSetInfo.dbSetName, dbSetInfo);
             }
-            //bootstrapping
-            domainService.Bootstrap(new ServiceConfig(cachedMetadata));
+
+            // bootstrapping services
+            domainService.Bootstrap(cachedMetadata.Config);
+            domainService.Config = cachedMetadata.Config;
+
+            foreach (var dbSetInfo in cachedMetadata.dbSets.Values)
+            {
+                dbSetInfo.Initialize(domainService.ServiceContainer);
+            }
+
+            foreach(var descriptor in cachedMetadata.Config.DataManagerContainer.Descriptors)
+            {
+                ProcessMethodDescriptions(domainService.ServiceContainer, descriptor.ImplementationType, cachedMetadata);
+            }
 
             ProcessMethodDescriptions(domainService.ServiceContainer, domainService.GetType(), cachedMetadata);
 
@@ -325,13 +335,13 @@ namespace RIAPP.DataService.Utils
             return allList;
         }
 
-        private static MethodsList GetSvcMethods(IEnumerable<MethodInfoData> allList, IServiceContainer services)
+        private static MethodsList GetSvcMethods(IEnumerable<MethodInfoData> allList, IServiceContainer serviceContainer)
         {
             var queryAndInvokes = allList.GetQueryAndInvokeOnly().ToArray();
             var methodList = new MethodsList();
             Array.ForEach(queryAndInvokes, info =>
             {
-                var m = MethodDescription.FromMethodInfo(info, services);
+                var m = MethodDescription.FromMethodInfo(info, serviceContainer);
                 methodList.Add(m);
             });
             return methodList;
@@ -342,10 +352,10 @@ namespace RIAPP.DataService.Utils
         ///     and generates from this methods their invocation method descriptions
         /// </summary>
         /// <returns></returns>
-        private static void ProcessMethodDescriptions(IServiceContainer services, Type fromType, CachedMetadata metadata)
+        private static void ProcessMethodDescriptions(IServiceContainer serviceContainer, Type fromType, CachedMetadata metadata)
         {
             var allList = GetAllMethods(fromType);
-            var svcMethods = GetSvcMethods(allList, services);
+            var svcMethods = GetSvcMethods(allList, serviceContainer);
             metadata.InitSvcMethods(svcMethods);
 
             var otherMethods = allList.GetOthersOnly();

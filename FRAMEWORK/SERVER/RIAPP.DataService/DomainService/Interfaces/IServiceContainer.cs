@@ -1,5 +1,5 @@
-﻿using System;
-using RIAPP.DataService.Utils.Interfaces;
+﻿using RIAPP.DataService.Utils.Interfaces;
+using System;
 
 namespace RIAPP.DataService.DomainService.Interfaces
 {
@@ -10,14 +10,10 @@ namespace RIAPP.DataService.DomainService.Interfaces
         ISerializer Serializer { get; }
         IValidationHelper ValidationHelper { get; }
         IValueConverter ValueConverter { get; }
-        void AddService(Type serviceType, object instance);
+        IServiceOperationsHelper ServiceHelper { get; }
 
-        void AddService<T>(T instance);
+        object GetService(Type serviceType);
 
-        void RemoveService(Type serviceType);
-
-        object LocateService(Type serviceType);
-
-        T LocateService<T>();
+        T GetService<T>();
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace RIAPP.DataService.DomainService.Interfaces
 {
-    public interface IServicesProvider
+    public interface IServicesProviderTmp
     {
         IServiceContainer ServiceContainer { get; }
     }

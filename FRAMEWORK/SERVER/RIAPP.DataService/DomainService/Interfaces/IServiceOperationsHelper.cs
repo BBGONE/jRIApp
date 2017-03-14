@@ -25,5 +25,7 @@ namespace RIAPP.DataService.DomainService.Interfaces
         void UpdateRowInfoFromEntity(object entity, RowInfo rowInfo);
         void UpdateValuesFromEntity(object entity, string path, DbSetInfo dbSetInfo, ValueChange[] values);
         Task<bool> ValidateEntity(CachedMetadata metadata, RequestContext requestContext);
+
+        Task<object> GetMethodResult(object invokeRes);
     }
 }

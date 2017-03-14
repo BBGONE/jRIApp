@@ -1,12 +1,16 @@
-﻿using System;
-using System.Linq;
-using System.Reflection;
-using System.Transactions;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.DependencyInjection;
 using RIAPP.DataService.DomainService;
+using RIAPP.DataService.DomainService.Config;
 using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.DomainService.Types;
 using RIAPP.DataService.LinqSql.Utils;
+using RIAPP.DataService.Utils;
+using RIAPP.DataService.Utils.Interfaces;
+using System;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
+using System.Transactions;
 
 namespace RIAPP.DataService.LinqSql
 {
@@ -29,15 +33,20 @@ namespace RIAPP.DataService.LinqSql
         }
 
         #region Overridable Methods
-        protected override void ConfigureCodeGen()
+        protected override void ConfigureCodeGen(CodeGenConfig config)
         {
-            base.ConfigureCodeGen();
-            this.AddOrReplaceCodeGen("csharp", () => new CsharpProvider<TDB>(this));
+            base.ConfigureCodeGen(config);
+            config.AddOrReplaceCodeGen("csharp", () => new CsharpProvider<TDB>(this));
         }
 
-        protected override IServiceContainer CreateServiceContainer()
+        protected override IServiceContainer CreateServiceContainer(IServiceCollection serviceCollection)
         {
-            return (new LinqServiceContainerFactory()).CreateServiceContainer(this.GetType(), this.serializer, this.User);
+            var result = base.CreateServiceContainer(serviceCollection);
+            ServiceDescriptor[] toRemove = serviceCollection.Where(sd => sd.ServiceType == typeof(IValueConverter)).ToArray();
+            Array.ForEach(toRemove, sd => serviceCollection.Remove(sd));
+            //replace with another service
+            serviceCollection.AddScoped<IValueConverter, LinqValueConverter>();
+            return result;
         }
 
         protected virtual TDB CreateDataContext() {

@@ -1,4 +1,11 @@
-﻿using System;
+﻿using RIAPP.DataService.DomainService;
+using RIAPP.DataService.DomainService.Config;
+using RIAPP.DataService.DomainService.Exceptions;
+using RIAPP.DataService.DomainService.Interfaces;
+using RIAPP.DataService.DomainService.Types;
+using RIAPP.DataService.EF6_CF.Utils;
+using RIAPP.DataService.Utils;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -9,12 +16,6 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Transactions;
-using RIAPP.DataService.DomainService;
-using RIAPP.DataService.DomainService.Exceptions;
-using RIAPP.DataService.DomainService.Interfaces;
-using RIAPP.DataService.DomainService.Types;
-using RIAPP.DataService.EF6_CF.Utils;
-using RIAPP.DataService.Utils;
 using DataType = RIAPP.DataService.DomainService.Types.DataType;
 
 namespace RIAPP.DataService.EF6_CF
@@ -63,10 +64,10 @@ namespace RIAPP.DataService.EF6_CF
         }
 
         #region Overridable Methods
-        protected override void ConfigureCodeGen()
+        protected override void ConfigureCodeGen(CodeGenConfig config)
         {
-            base.ConfigureCodeGen();
-            this.AddOrReplaceCodeGen("csharp", () => new CsharpProvider<TDB>(this));
+            base.ConfigureCodeGen(config);
+            config.AddOrReplaceCodeGen("csharp", () => new CsharpProvider<TDB>(this));
         }
 
         protected virtual TDB CreateDataContext()
