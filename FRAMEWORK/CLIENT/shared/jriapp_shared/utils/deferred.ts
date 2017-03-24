@@ -41,6 +41,17 @@ export function race<T>(promises: IPromise<T>[]): IStatefulPromise<T> {
     });
 }
 
+/**
+ * Sequentially executes functions which return promises
+   instead  it returns a promise which have a result - an array of results of the promises
+ * @param funcs (array of functions which return promises)
+ */
+export function promiseSerial<T>(funcs: { (): IPromise<T>; }[]): IStatefulPromise<T[]> {
+    return funcs.reduce((promise, func) =>
+        promise.then(result => func().then(Array.prototype.concat.bind(result))),
+        Promise.resolve<T[]>([]));
+}
+
 export type TDispatcher = (closure: TFunc) => void;
 
 function fn_enque(task: () => void) {

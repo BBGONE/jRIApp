@@ -1557,6 +1557,12 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
         });
     }
     exports.race = race;
+    function promiseSerial(funcs) {
+        return funcs.reduce(function (promise, func) {
+            return promise.then(function (result) { return func().then(Array.prototype.concat.bind(result)); });
+        }, Promise.resolve([]));
+    }
+    exports.promiseSerial = promiseSerial;
     function fn_enque(task) {
         getTaskQueue().enque(task);
     }
@@ -2306,6 +2312,9 @@ define("jriapp_shared/utils/async", ["require", "exports", "jriapp_shared/utils/
         };
         AsyncUtils.resolve = function (value, isSync) {
             return deferred_2.Promise.resolve(value, isSync);
+        };
+        AsyncUtils.promiseSerial = function (funcs) {
+            return deferred_2.promiseSerial(funcs);
         };
         AsyncUtils.whenAll = function (args) {
             return _whenAll(args);

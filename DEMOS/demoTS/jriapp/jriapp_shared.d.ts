@@ -525,6 +525,9 @@ declare module "jriapp_shared/utils/deferred" {
     export function getTaskQueue(): ITaskQueue;
     export function whenAll<T>(promises: Array<T | IThenable<T>>): IStatefulPromise<T[]>;
     export function race<T>(promises: IPromise<T>[]): IStatefulPromise<T>;
+    export function promiseSerial<T>(funcs: {
+        (): IPromise<T>;
+    }[]): IStatefulPromise<T[]>;
     export type TDispatcher = (closure: TFunc) => void;
     export class Promise<T> implements IStatefulPromise<T> {
         private _deferred;
@@ -968,6 +971,9 @@ declare module "jriapp_shared/utils/async" {
         static createDeferred<T>(isSync?: boolean): IStatefulDeferred<T>;
         static reject<T>(reason?: any, isSync?: boolean): IStatefulPromise<T>;
         static resolve<T>(value?: T, isSync?: boolean): IStatefulPromise<T>;
+        static promiseSerial<T>(funcs: {
+            (): IPromise<T>;
+        }[]): IStatefulPromise<T[]>;
         static whenAll<T>(args: Array<T | IThenable<T>>): IStatefulPromise<T[]>;
         static race<T>(promises: Array<IPromise<T>>): IPromise<T>;
         static getTaskQueue(): ITaskQueue;

@@ -3,7 +3,7 @@ import {
     IThenable, ITaskQueue, IStatefulDeferred, IStatefulPromise, IPromise
 } from "./ideferred";
 import {
-    createDefer, whenAll, race, getTaskQueue, Promise
+    createDefer, whenAll, race, getTaskQueue, Promise, promiseSerial
 } from "./deferred";
 import { Checks } from "./checks";
 
@@ -18,6 +18,13 @@ export class AsyncUtils {
     }
     static resolve<T>(value?: T, isSync?: boolean): IStatefulPromise<T> {
         return Promise.resolve(value, isSync);
+    }
+    /**
+     * execute sequetially
+     * @param funcs (array of functions which return promises)
+     */
+    static promiseSerial<T>(funcs: { (): IPromise<T>; }[]): IStatefulPromise<T[]> {
+        return promiseSerial(funcs);
     }
     static whenAll<T>(args: Array<T | IThenable<T>>): IStatefulPromise<T[]> {
         return _whenAll(args);
