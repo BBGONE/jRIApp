@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using RIAppDemo.BLL.Utils;
+using System;
 
 namespace RIAppDemo.Models
 {
@@ -30,21 +31,32 @@ namespace RIAppDemo.Models
 
     public static class UploadExtensions2
     {
-        public static UploadedFile2 RetrieveFileFromRequest(HttpRequestMessage request)
+        private static UploadedFile2 RetrieveFileFromRequest(HttpRequestMessage request)
         {
             string filename = null;
             string fileType = null;
-            var fileSize = 0;
-            var id = -1;
+            int fileSize = 0;
+            int id = -1;
             int? ChunkNum = null, ChunkSize= null, ChunkCount = null;
+
             IEnumerable<string> values;
+            if (request.Headers.TryGetValues("X-File-Size", out values))
+                fileSize = int.Parse(values.First());
+            else
+                throw new InvalidOperationException("Invalid File-Size header");
 
             if (request.Headers.TryGetValues("X-File-Name", out values))
                 filename = values.First();
+            else
+                throw new InvalidOperationException("Invalid File-Name header");
+
             if (request.Headers.TryGetValues("X-File-Type", out values))
                 fileType = values.First();
             if (request.Headers.TryGetValues("X-Data-ID", out values))
                 id = int.Parse(values.First());
+            else
+                throw new InvalidOperationException("Invalid Data-ID header");
+
             if (request.Headers.TryGetValues("X-Chunk-Num", out values))
                 ChunkNum = int.Parse(values.First());
             if (request.Headers.TryGetValues("X-Chunk-Size", out values))
@@ -65,7 +77,7 @@ namespace RIAppDemo.Models
             };
         }
 
-        private static async Task<string> LoadChunk(ApiController controller, UploadedFile2 file)
+        private static async Task<string> SaveChunk(ApiController controller, UploadedFile2 file)
         {
             string dir = System.Web.Hosting.HostingEnvironment.MapPath(@"~/App_Data");
             dir = Path.Combine(dir, "TEMP");
@@ -88,7 +100,7 @@ namespace RIAppDemo.Models
             UploadedFile2 file = RetrieveFileFromRequest(request);
             if (file.IsChunked)
             {
-                string filepath = await LoadChunk(controller, file);
+                string filepath = await SaveChunk(controller, file);
 
                 if (file.IsLastChunk)
                 {

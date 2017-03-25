@@ -29,34 +29,28 @@ namespace RIAppDemo.Models
 
     public static class UploadExtensions
     {
-        public static UploadedFile RetrieveFileFromRequest(this Controller controller)
+        private static UploadedFile RetrieveFileFromRequest(Controller controller)
         {
-           var Request = controller.Request;
-           if (Request.ContentLength > 0)
-           {
-                int fileSize = Request.ContentLength;
-                string filename = Request.Headers["X-File-Name"];
-                string fileType = Request.Headers["X-File-Type"];
-                int id = int.Parse(Request.Headers["X-Data-ID"]);
-                return new UploadedFile()
-                {
-                    FileName = filename,
-                    ContentType = fileType,
-                    FileSize = fileSize,
-                    Content = Request.InputStream,
-                    DataID = id,
-                    ChunkNum = Request.Headers.Keys.OfType<string>().Contains("X-Chunk-Num") ? int.Parse(Request.Headers["X-Chunk-Num"]) : (int?)null,
-                    ChunkSize = Request.Headers.Keys.OfType<string>().Contains("X-Chunk-Size") ? int.Parse(Request.Headers["X-Chunk-Size"]) : (int?)null,
-                    ChunkTotal = Request.Headers.Keys.OfType<string>().Contains("X-Chunk-Count") ? int.Parse(Request.Headers["X-Chunk-Count"]) : (int?)null
-                };
-            }
-            else
+            var Request = controller.Request;
+            int? chunkSize = Request.Headers.Keys.OfType<string>().Contains("X-Chunk-Size") ? int.Parse(Request.Headers["X-Chunk-Size"]) : (int?)null;
+            int fileSize = chunkSize.HasValue ? int.Parse(Request.Headers["X-File-Size"]) : Request.ContentLength;
+            string filename = Request.Headers["X-File-Name"];
+            string fileType = Request.Headers["X-File-Type"];
+            int id = int.Parse(Request.Headers["X-Data-ID"]);
+            return new UploadedFile()
             {
-                throw new InvalidOperationException("No Data Stream");
-            }
+                FileName = filename,
+                ContentType = fileType,
+                FileSize = fileSize,
+                Content = Request.InputStream,
+                DataID = id,
+                ChunkNum = Request.Headers.Keys.OfType<string>().Contains("X-Chunk-Num") ? int.Parse(Request.Headers["X-Chunk-Num"]) : (int?)null,
+                ChunkSize = chunkSize,
+                ChunkTotal = Request.Headers.Keys.OfType<string>().Contains("X-Chunk-Count") ? int.Parse(Request.Headers["X-Chunk-Count"]) : (int?)null
+            };
         }
 
-        private static string LoadChunk(Controller controller, UploadedFile file)
+        private static string SaveChunk(Controller controller, UploadedFile file)
         {
             string dir = controller.ControllerContext.HttpContext.Server.MapPath(@"~/App_Data");
             dir = Path.Combine(dir, "TEMP");
@@ -79,7 +73,7 @@ namespace RIAppDemo.Models
             UploadedFile file = RetrieveFileFromRequest(controller);
             if (file.IsChunked)
             {
-                string filepath = LoadChunk(controller, file);
+                string filepath = SaveChunk(controller, file);
 
                 if (file.IsLastChunk)
                 {
