@@ -1,5 +1,4 @@
-﻿using RIAPP.DataService.DomainService;
-using RIAPP.DataService.DomainService.Attributes;
+﻿using RIAPP.DataService.DomainService.Attributes;
 using RIAPP.DataService.DomainService.Config;
 using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.DomainService.Security;
@@ -578,9 +577,7 @@ namespace RIAppDemo.BLL.DataServices
             }
         }
 
-        /*
-        
-        public async Task SaveThumbnail2(int id, string fileName, Func<Stream, Task> copy)
+        public async Task SaveThumbnail2(int id, string fileName, IDataContent content)
         {
             var product = await DB.Products.Where(a => a.ProductID == id).FirstOrDefaultAsync();
             if (product == null)
@@ -597,7 +594,7 @@ namespace RIAppDemo.BLL.DataServices
                     await blobStream.InitColumnAsync();
                     blobStream.Open();
                     Task delayTask = Task.Delay(10000);
-                    Task firstTask = await Task.WhenAny(copy(bufferedStream), delayTask);
+                    Task firstTask = await Task.WhenAny(content.CopyToAsync(bufferedStream), delayTask);
                     if (firstTask == delayTask)
                         throw new Exception("Saving Image took longer than expected");
                     //if it's a copy task then just await for completion
@@ -610,7 +607,6 @@ namespace RIAppDemo.BLL.DataServices
             }
         }
         
-         */
         #endregion
     }
 }

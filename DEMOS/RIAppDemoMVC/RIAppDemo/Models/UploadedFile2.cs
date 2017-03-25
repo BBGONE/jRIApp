@@ -4,9 +4,30 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using RIAppDemo.BLL.Utils;
 
 namespace RIAppDemo.Models
 {
+    class HttpDataContent : IDataContent
+    {
+        private HttpContent _content;
+
+        public HttpDataContent(HttpContent content)
+        {
+            this._content = content;
+        }
+
+        public Task CopyToAsync(Stream stream, int bufferSize = 131072)
+        {
+            return this._content.CopyToAsync(stream);
+        }
+
+        public void CleanUp()
+        {
+           //noop
+        }
+    }
+
     public static class UploadExtensions2
     {
         public static UploadedFile2 RetrieveFileFromRequest(HttpRequestMessage request)
@@ -71,20 +92,12 @@ namespace RIAppDemo.Models
 
                 if (file.IsLastChunk)
                 {
-                    using (var fileStream = System.IO.File.Open(filepath, FileMode.Open, FileAccess.Read))
-                    {
-                        file.FileStream = new MemoryStream();
-                        fileStream.CopyTo(file.FileStream);
-                        file.FileStream.Position = 0;
-                    }
-                    System.IO.File.Delete(filepath);
+                    file.DataContent = new FileContent(filepath);
                 }
             }
             else
             {
-                file.FileStream = new MemoryStream();
-                await file.Content.CopyToAsync(file.FileStream);
-                file.FileStream.Position = 0;
+                file.DataContent = new HttpDataContent(file.Content);
             }
 
             return file;
@@ -98,7 +111,7 @@ namespace RIAppDemo.Models
         public string FileName { get; set; }
         public string ContentType { get; set; }
         public HttpContent Content { get; set; }
-        public Stream FileStream { get; set; }
+        public IDataContent DataContent { get; set; }
 
         public int? ChunkNum { get; set; }
 

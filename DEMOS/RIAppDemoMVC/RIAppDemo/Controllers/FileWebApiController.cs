@@ -21,16 +21,23 @@ namespace RIAppDemo.Controllers
             try
             {
                 var file = await this.GetFileFromRequest(request);
-
-                if (file.FileName != null && file.FileStream != null)
+                
+                if (file.DataContent != null)
                 {
-                    var filename = Path.GetFileName(file.FileName);
-                    if (filename != null)
+                    try
                     {
-                        using (var svc = ThumbnailServiceFactory.Create(User))
+                        var filename = Path.GetFileName(file.FileName);
+                        if (filename != null)
                         {
-                            await svc.SaveThumbnail(file.DataID, file.FileName, file.FileStream);
+                            using (var svc = ThumbnailServiceFactory.Create(User))
+                            {
+                                await svc.SaveThumbnail2(file.DataID, file.FileName, file.DataContent);
+                            }
                         }
+                    }
+                    finally
+                    {
+                        file.DataContent.CleanUp();
                     }
                 }
 

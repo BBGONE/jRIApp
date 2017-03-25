@@ -1,10 +1,32 @@
-﻿using System;
+﻿using RIAppDemo.BLL.Utils;
+using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 
 namespace RIAppDemo.Models
 {
+    class StreamDataContent : IDataContent
+    {
+        private Stream _stream;
+
+        public StreamDataContent(Stream stream)
+        {
+            this._stream = stream;
+        }
+
+        public Task CopyToAsync(Stream stream, int bufferSize = 131072)
+        {
+            return this._stream.CopyToAsync(stream);
+        }
+
+        public void CleanUp()
+        {
+            //noop
+        }
+    }
+
     public static class UploadExtensions
     {
         public static UploadedFile RetrieveFileFromRequest(this Controller controller)
@@ -14,18 +36,13 @@ namespace RIAppDemo.Models
             string fileType = null;
             int fileSize = 0;
             int id = -1;
-            Stream fileStream = null;
-
             var files = Request.Files;
+
             if (files.Count > 0)
             {
                 //uploading the old way using form post
-                MemoryStream strm = new MemoryStream();
                 var file = files[0];
-                file.InputStream.CopyTo(strm);
-                strm.Position = 0;
                 fileSize = file.ContentLength;
-                fileStream = strm;
                 fileType = file.ContentType;
                 filename = file.FileName;
                 return new UploadedFile()
@@ -33,18 +50,14 @@ namespace RIAppDemo.Models
                     FileName = filename,
                     ContentType = fileType,
                     FileSize = fileSize,
-                    Contents = fileStream,
+                    Content = file.InputStream,
                     DataID = id
                 };
             }
             else if (Request.ContentLength > 0)
             {
                 //uploading using ajax post
-                MemoryStream strm = new MemoryStream();
                 fileSize = Request.ContentLength;
-                Request.InputStream.CopyTo(strm);
-                strm.Position = 0;
-                fileStream = strm;
                 filename = Request.Headers["X-File-Name"];
                 fileType = Request.Headers["X-File-Type"];
                 id = int.Parse(Request.Headers["X-Data-ID"]);
@@ -53,7 +66,7 @@ namespace RIAppDemo.Models
                     FileName = filename,
                     ContentType = fileType,
                     FileSize = fileSize,
-                    Contents = fileStream,
+                    Content = Request.InputStream,
                     DataID = id,
                     ChunkNum = Request.Headers.Keys.OfType<string>().Contains("X-Chunk-Num") ? int.Parse(Request.Headers["X-Chunk-Num"]) : (int?)null,
                     ChunkSize = Request.Headers.Keys.OfType<string>().Contains("X-Chunk-Size") ? int.Parse(Request.Headers["X-Chunk-Size"]) : (int?)null,
@@ -78,36 +91,30 @@ namespace RIAppDemo.Models
 
             using (var fileStream = (file.ChunkNum == 1) ? System.IO.File.Create(filepath) : System.IO.File.Open(filepath, FileMode.Append))
             {
-                file.Contents.CopyTo(fileStream);
+                file.Content.CopyTo(fileStream);
             }
 
             return filepath;
         }
 
-        public static bool GetFileFromRequest(this Controller controller, out UploadedFile file)
+        public static UploadedFile GetFileFromRequest(this Controller controller)
         {
-            file = RetrieveFileFromRequest(controller);
+            UploadedFile file = RetrieveFileFromRequest(controller);
             if (file.IsChunked)
             {
                 string filepath = LoadChunk(controller, file);
 
-                if (!file.IsLastChunk)
+                if (file.IsLastChunk)
                 {
-                    return false;
-                }
-                else
-                {
-                    using (var fileStream = System.IO.File.Open(filepath, FileMode.Open, FileAccess.Read))
-                    {
-                        file.Contents = new MemoryStream();
-                        fileStream.CopyTo(file.Contents);
-                        file.Contents.Position = 0;
-                    }
-                    System.IO.File.Delete(filepath);
+                    file.DataContent = new FileContent(filepath);
                 }
             }
+            else
+            {
+                file.DataContent = new StreamDataContent(file.Content);
+            }
 
-            return true;
+            return file;
         }
     }
 
@@ -117,7 +124,8 @@ namespace RIAppDemo.Models
         public int FileSize { get; set; }
         public string FileName { get; set; }
         public string ContentType { get; set; }
-        public Stream Contents { get; set; }
+        public Stream Content { get; set; }
+        public IDataContent DataContent { get; set; }
 
         public int? ChunkNum { get; set; }
 

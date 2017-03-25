@@ -20,22 +20,24 @@ namespace RIAppDemo.Controllers
         {
             try
             {
-                UploadedFile file;
-                if (!this.GetFileFromRequest(out file))
+                UploadedFile file = this.GetFileFromRequest();
+                if (file.DataContent != null)
                 {
-                    return new HttpStatusCodeResult(200);
-                }
-
-                if (file.FileName != null)
-                {
-                    var filename = Path.GetFileName(file.FileName);
-                    if (filename != null)
+                    try
                     {
-                        var svc = ThumbnailServiceFactory.Create(User);
-                        using (svc)
+                        var filename = Path.GetFileName(file.FileName);
+                        if (filename != null)
                         {
-                            await svc.SaveThumbnail(file.DataID, file.FileName, file.Contents);
+                            var svc = ThumbnailServiceFactory.Create(User);
+                            using (svc)
+                            {
+                                await svc.SaveThumbnail2(file.DataID, file.FileName, file.DataContent);
+                            }
                         }
+                    }
+                    finally
+                    {
+                        file.DataContent.CleanUp();
                     }
                 }
 
