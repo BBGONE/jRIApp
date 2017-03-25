@@ -31,36 +31,13 @@ namespace RIAppDemo.Models
     {
         public static UploadedFile RetrieveFileFromRequest(this Controller controller)
         {
-            var Request = controller.Request;
-            string filename = null;
-            string fileType = null;
-            int fileSize = 0;
-            int id = -1;
-            var files = Request.Files;
-
-            if (files.Count > 0)
-            {
-                //uploading the old way using form post
-                var file = files[0];
-                fileSize = file.ContentLength;
-                fileType = file.ContentType;
-                filename = file.FileName;
-                return new UploadedFile()
-                {
-                    FileName = filename,
-                    ContentType = fileType,
-                    FileSize = fileSize,
-                    Content = file.InputStream,
-                    DataID = id
-                };
-            }
-            else if (Request.ContentLength > 0)
-            {
-                //uploading using ajax post
-                fileSize = Request.ContentLength;
-                filename = Request.Headers["X-File-Name"];
-                fileType = Request.Headers["X-File-Type"];
-                id = int.Parse(Request.Headers["X-Data-ID"]);
+           var Request = controller.Request;
+           if (Request.ContentLength > 0)
+           {
+                int fileSize = Request.ContentLength;
+                string filename = Request.Headers["X-File-Name"];
+                string fileType = Request.Headers["X-File-Type"];
+                int id = int.Parse(Request.Headers["X-Data-ID"]);
                 return new UploadedFile()
                 {
                     FileName = filename,
@@ -75,7 +52,7 @@ namespace RIAppDemo.Models
             }
             else
             {
-                throw new InvalidOperationException("No file stream");
+                throw new InvalidOperationException("No Data Stream");
             }
         }
 
