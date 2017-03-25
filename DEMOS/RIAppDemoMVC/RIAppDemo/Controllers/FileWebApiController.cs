@@ -1,53 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using RIAppDemo.BLL.DataServices;
+using RIAppDemo.Models;
+using System;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
-using System.Web.Http;
-using RIAppDemo.BLL.DataServices;
 using System.Threading.Tasks;
+using System.Web.Http;
 
 namespace RIAppDemo.Controllers
 {
     public class FileController : ApiController
     {
-        private UploadedFile RetrieveFileFromRequest(HttpRequestMessage request)
-        {
-            string filename = null;
-            string fileType = null;
-            var fileSize = 0;
-            var id = -1;
-            IEnumerable<string> values;
-
-            if (request.Headers.TryGetValues("X-File-Name", out values))
-                filename = values.First();
-            if (request.Headers.TryGetValues("X-File-Type", out values))
-                fileType = values.First();
-            if (request.Headers.TryGetValues("X-Data-ID", out values))
-                id = int.Parse(values.First());
-
-            return new UploadedFile
-            {
-                FileName = filename,
-                ContentType = fileType,
-                FileSize = fileSize,
-                Content = request.Content,
-                DataID = id
-            };
-        }
-
-        public class UploadedFile
-        {
-            public int DataID { get; set; }
-            public int FileSize { get; set; }
-            public string FileName { get; set; }
-            public string ContentType { get; set; }
-            public HttpContent Content { get; set; }
-        }
-
         #region Public API
 
         [HttpPost]
@@ -55,16 +20,16 @@ namespace RIAppDemo.Controllers
         {
             try
             {
-                var file = RetrieveFileFromRequest(request);
+                var file = await this.GetFileFromRequest(request);
 
-                if (file.FileName != null)
+                if (file.FileName != null && file.FileStream != null)
                 {
                     var filename = Path.GetFileName(file.FileName);
                     if (filename != null)
                     {
                         using (var svc = ThumbnailServiceFactory.Create(User))
                         {
-                            await svc.SaveThumbnail2(file.DataID, file.FileName, file.Content.CopyToAsync);
+                            await svc.SaveThumbnail(file.DataID, file.FileName, file.FileStream);
                         }
                     }
                 }

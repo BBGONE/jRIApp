@@ -138,6 +138,7 @@
     </Compile>
     <Compile Include="Models\SSEMessage.cs" />
     <Compile Include="Models\SPATemplate.cs" />
+    <Compile Include="Models\UploadedFile2.cs" />
     <Compile Include="Models\UploadedFile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -181,6 +181,25 @@ declare module "ssevents" {
         readonly clientID: string;
     }
 }
+declare module "uploader" {
+    import * as RIAPP from "jriapp_shared";
+    export interface IAddHeadersArgs {
+        xhr: XMLHttpRequest;
+        promise: RIAPP.IPromise<any>;
+    }
+    export class Uploader extends RIAPP.BaseObject {
+        private _uploadUrl;
+        private _file;
+        constructor(uploadUrl: string, file: File);
+        _getEventNames(): string[];
+        addOnProgress(fn: (sender: Uploader, args: number) => void, nmspace?: string): void;
+        addOnAddHeaders(fn: (sender: Uploader, args: IAddHeadersArgs) => void, nmspace?: string): void;
+        uploadFile(): RIAPP.IPromise<string>;
+        protected uploadFileChunk(file: File, chunk: Blob, part: number, total: number): RIAPP.IPromise<number>;
+        readonly uploadUrl: string;
+        readonly fileName: string;
+    }
+}
 declare module "websocket" {
     import * as RIAPP from "jriapp";
     export class WebSocketsVM extends RIAPP.BaseObject {

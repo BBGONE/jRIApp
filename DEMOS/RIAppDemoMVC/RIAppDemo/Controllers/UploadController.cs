@@ -1,56 +1,16 @@
-﻿using System;
+﻿using RIAppDemo.BLL.DataServices;
+using RIAppDemo.Models;
+using System;
 using System.IO;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using System.Web.SessionState;
-using RIAppDemo.BLL.DataServices;
-using RIAppDemo.Models;
-using System.Threading.Tasks;
 
 namespace RIAppDemo.Controllers
 {
     [SessionState(SessionStateBehavior.Disabled)]
     public class UploadController : Controller
     {
-        /// <summary>
-        ///     Used in FileApi action
-        /// </summary>
-        /// <returns></returns>
-        private UploadedFile RetrieveFileFromRequest()
-        {
-            string filename = null;
-            string fileType = null;
-            var fileSize = 0;
-            var id = -1;
-            Stream fileContents = null;
-
-            if (Request.Files.Count > 0)
-            {
-                //they're uploading the old way
-                var file = Request.Files[0];
-                fileSize = file.ContentLength;
-                fileContents = file.InputStream;
-                fileType = file.ContentType;
-                filename = file.FileName;
-            }
-            else if (Request.ContentLength > 0)
-            {
-                fileSize = Request.ContentLength;
-                fileContents = Request.InputStream;
-                filename = Request.Headers["X-File-Name"];
-                fileType = Request.Headers["X-File-Type"];
-                id = int.Parse(Request.Headers["X-Data-ID"]);
-            }
-
-            return new UploadedFile
-            {
-                FileName = filename,
-                ContentType = fileType,
-                FileSize = fileSize,
-                Contents = fileContents,
-                DataID = id
-            };
-        }
-
         public ActionResult Index()
         {
             return new EmptyResult();
@@ -60,7 +20,11 @@ namespace RIAppDemo.Controllers
         {
             try
             {
-                var file = RetrieveFileFromRequest();
+                UploadedFile file;
+                if (!this.GetFileFromRequest(out file))
+                {
+                    return new HttpStatusCodeResult(200);
+                }
 
                 if (file.FileName != null)
                 {

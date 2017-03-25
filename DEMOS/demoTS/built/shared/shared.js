@@ -868,6 +868,85 @@ define("ssevents", ["require", "exports", "jriapp"], function (require, exports,
     }(RIAPP.BaseObject));
     exports.SSEventsVM = SSEventsVM;
 });
+define("uploader", ["require", "exports", "jriapp_shared"], function (require, exports, RIAPP) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var utils = RIAPP.Utils, _async = utils.defer, CHUNK_SIZE = (512 * 1024);
+    var Uploader = (function (_super) {
+        __extends(Uploader, _super);
+        function Uploader(uploadUrl, file) {
+            var _this = _super.call(this) || this;
+            _this._uploadUrl = uploadUrl;
+            _this._file = file;
+            return _this;
+        }
+        Uploader.prototype._getEventNames = function () {
+            var base_events = _super.prototype._getEventNames.call(this);
+            return ['progress', 'addheaders'].concat(base_events);
+        };
+        Uploader.prototype.addOnProgress = function (fn, nmspace) {
+            this.addHandler('progress', fn, nmspace);
+        };
+        Uploader.prototype.addOnAddHeaders = function (fn, nmspace) {
+            this.addHandler('addheaders', fn, nmspace);
+        };
+        Uploader.prototype.uploadFile = function () {
+            var self = this, chunks = [], file = this._file, FILE_SIZE = file.size;
+            var streamPos = 0, endPos = CHUNK_SIZE;
+            while (streamPos < FILE_SIZE) {
+                chunks.push(file.slice(streamPos, endPos));
+                streamPos = endPos;
+                endPos = streamPos + CHUNK_SIZE;
+            }
+            var len = chunks.length;
+            var funcs = chunks.map(function (chunk, i) { return function () { return self.uploadFileChunk(file, chunk, i + 1, len); }; });
+            var res = _async.promiseSerial(funcs).then(function (res) {
+                self.raiseEvent('progress', 100);
+                return file.name;
+            });
+            return res;
+        };
+        Uploader.prototype.uploadFileChunk = function (file, chunk, part, total) {
+            var self = this, xhr = new XMLHttpRequest(), upload = xhr.upload;
+            xhr.responseType = "text";
+            var deffered = _async.createDeferred();
+            upload.onload = function (e) {
+                deffered.resolve(part);
+            };
+            upload.onerror = function (e) {
+                deffered.reject(new Error("Uploading file " + file.name + " error"));
+            };
+            deffered.promise().then(function () { return self.raiseEvent('progress', part / total); });
+            xhr.open("post", self.uploadUrl, true);
+            xhr.setRequestHeader("Content-Type", "multipart/form-data");
+            xhr.setRequestHeader("X-File-Name", file.name);
+            xhr.setRequestHeader("X-File-Size", file.size.toString());
+            xhr.setRequestHeader("X-File-Type", file.type);
+            xhr.setRequestHeader("X-Chunk-Num", part.toString());
+            xhr.setRequestHeader("X-Chunk-Size", chunk.size.toString());
+            xhr.setRequestHeader("X-Chunk-Count", total.toString());
+            var args = { xhr: xhr, promise: null };
+            self.raiseEvent('addheaders', args);
+            var addHeadersPromise = !args.promise ? _async.resolve() : args.promise;
+            return addHeadersPromise.then(function () {
+                xhr.send(chunk);
+                return deffered.promise();
+            });
+        };
+        Object.defineProperty(Uploader.prototype, "uploadUrl", {
+            get: function () { return this._uploadUrl; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Uploader.prototype, "fileName", {
+            get: function () { return this._file.name; },
+            enumerable: true,
+            configurable: true
+        });
+        return Uploader;
+    }(RIAPP.BaseObject));
+    exports.Uploader = Uploader;
+});
 define("websocket", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });

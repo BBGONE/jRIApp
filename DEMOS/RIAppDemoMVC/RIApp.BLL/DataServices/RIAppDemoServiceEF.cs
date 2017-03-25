@@ -529,7 +529,7 @@ namespace RIAppDemo.BLL.DataServices
 
         #endregion
 
-        #region Helper Methods
+        #region IThumbnailService
 
         public async Task<string> GetThumbnail(int id, Stream strm)
         {
@@ -578,6 +578,8 @@ namespace RIAppDemo.BLL.DataServices
             }
         }
 
+        /*
+        
         public async Task SaveThumbnail2(int id, string fileName, Func<Stream, Task> copy)
         {
             var product = await DB.Products.Where(a => a.ProductID == id).FirstOrDefaultAsync();
@@ -607,7 +609,8 @@ namespace RIAppDemo.BLL.DataServices
                 trxScope.Complete();
             }
         }
-
+        
+         */
         #endregion
     }
 }

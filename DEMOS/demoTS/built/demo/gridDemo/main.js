@@ -2212,14 +2212,22 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
     }(RIAPP.ViewModel));
     exports.ProductViewModel = ProductViewModel;
 });
-define("gridDemo/baseUpload", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
+define("gridDemo/baseUpload", ["require", "exports", "jriapp", "jriapp_ui", "uploader", "uploader"], function (require, exports, RIAPP, uiMOD, uploader_1, uploader_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = RIAPP.Utils;
+    exports.Uploader = uploader_2.Uploader;
+    var utils = RIAPP.Utils, $ = uiMOD.$;
+    function fn_getTemplateElement(template, name) {
+        var t = template, els = t.findElByDataName(name);
+        if (els.length < 1) {
+            return null;
+        }
+        return els[0];
+    }
     var BaseUploadVM = (function (_super) {
         __extends(BaseUploadVM, _super);
-        function BaseUploadVM(url) {
-            var _this = _super.call(this) || this;
+        function BaseUploadVM(app, url) {
+            var _this = _super.call(this, app) || this;
             var self = _this;
             _this._uploadUrl = url;
             _this._formEl = null;
@@ -2230,61 +2238,112 @@ define("gridDemo/baseUpload", ["require", "exports", "jriapp"], function (requir
             _this._fileInfo = null;
             _this._id = null;
             _this._fileUploaded = false;
-            _this._initOk = _this._initXhr();
             _this._uploadCommand = new RIAPP.Command(function (sender, param) {
                 try {
                     self.uploadFiles(self._fileEl.files);
                 }
                 catch (ex) {
-                    self.handleError(ex, self);
+                    self.handleError(ex, this);
                 }
             }, self, function (sender, param) {
                 return self._canUpload();
             });
             return _this;
         }
-        BaseUploadVM.prototype._initXhr = function () {
-            this.xhr = new XMLHttpRequest();
-            if (!this.xhr.upload) {
-                this.xhr = null;
-                this.handleError('Browser dose not support HTML5 files upload interface', this);
-                return false;
-            }
-            var self = this, xhr = this.xhr, upload = xhr.upload;
-            upload.onloadstart = function (e) {
-                self._progressBar.prop("max", 100);
-                self._progressBar.prop("value", 0);
-                self._percentageCalc.html("0%");
-                self._progressDiv.show();
-            };
-            upload.onprogress = function (e) {
-                if (!!e.lengthComputable) {
-                    self._progressBar.prop("max", e.total);
-                    self._progressBar.prop("value", e.loaded);
-                    self._percentageCalc.html(Math.round(e.loaded / e.total * 100) + "%");
-                }
-            };
-            upload.onload = function (e) {
-                self.fileInfo = 'the File is uploaded';
-                self._progressDiv.hide();
-                self._onFileUploaded();
-            };
-            upload.onerror = function (e) {
-                self.fileInfo = null;
-                self._progressDiv.hide();
-                self.handleError(new Error('File uploading error'), self);
-            };
-            xhr.onreadystatechange = function (e) {
-                if (xhr.readyState === 4) {
-                    if (xhr.status >= 400) {
-                        self.handleError(new Error(utils.str.format("File upload error: {0}", xhr.statusText)), self);
-                    }
-                }
-            };
-            return true;
+        BaseUploadVM.prototype._initUI = function () {
+            var self = this;
+            self.formEl.reset();
+            self.fileInfo = null;
+            self.fileName = null;
+            self._fileUploaded = false;
+        };
+        BaseUploadVM.prototype._onProgress = function (val) {
+            var self = this;
+            self._progressBar.prop("max", 100);
+            self._progressBar.prop("value", Math.floor(val * 100));
+            self._percentageCalc.html(Math.floor(val * 100) + "%");
+        };
+        BaseUploadVM.prototype._onLoadStart = function () {
+            var self = this;
+            self._progressBar.prop("max", 100);
+            self._progressBar.prop("value", 0);
+            self._percentageCalc.html("0%");
+            self._progressDiv.show();
+        };
+        BaseUploadVM.prototype._onLoadComplete = function () {
+            var self = this;
+            self.fileInfo = 'File uploaded';
+            self._progressDiv.hide();
+            self._onFileUploaded();
+        };
+        BaseUploadVM.prototype._onLoadError = function () {
+            var self = this;
+            self.fileInfo = 'Upload Error!';
+            self._progressDiv.hide();
+            self.handleError(new Error(utils.str.format("File upload error: {0}", 'Upload Error')), self);
         };
         BaseUploadVM.prototype._onFileUploaded = function () {
             this._fileUploaded = true;
+        };
+        BaseUploadVM.prototype._addHeaders = function (xhr, file) {
+            xhr.setRequestHeader("X-Data-ID", this.id);
+            return null;
+        };
+        BaseUploadVM.prototype._onIDChanged = function () {
+            this._uploadCommand.raiseCanExecuteChanged();
+        };
+        BaseUploadVM.prototype._canUpload = function () {
+            return !!this._fileInfo;
+        };
+        BaseUploadVM.prototype._getDataID = function () {
+            return this.id;
+        };
+        BaseUploadVM.prototype._prepareTemplate = function (template, isLoaded) {
+            var self = this;
+            try {
+                var t = template, templEl = t.el;
+                if (isLoaded) {
+                    self._onTemplateCreated(template);
+                }
+                else {
+                    var fileEl = $(fn_getTemplateElement(template, 'files-to-upload'));
+                    fileEl.off('change');
+                    $('*[data-name="btn-input"]', templEl).off('click');
+                }
+            }
+            catch (ex) {
+                self.handleError(ex, this);
+            }
+        };
+        BaseUploadVM.prototype._onTemplateCreated = function (template) {
+            var self = this;
+            self._fileEl = fn_getTemplateElement(template, 'files-to-upload');
+            self._formEl = fn_getTemplateElement(template, 'uploadForm');
+            self._progressBar = $(fn_getTemplateElement(template, 'progressBar'));
+            self._percentageCalc = $(fn_getTemplateElement(template, 'percentageCalc'));
+            self._progressDiv = $(fn_getTemplateElement(template, 'progressDiv'));
+            self._progressDiv.hide();
+            $(self._fileEl).on('change', function (e) {
+                var fileEl = this;
+                e.stopPropagation();
+                var fileList = fileEl.files;
+                self.fileInfo = null;
+                var txt = '';
+                for (var i = 0, l = fileList.length; i < l; i++) {
+                    txt += utils.str.format('<p>{0} ({1} KB)</p>', fileList[i].name, utils.str.formatNumber(fileList[i].size / 1024, 2, '.', ','));
+                }
+                self.fileInfo = txt;
+                self.fileName = fileList.length > 0 ? fileList[0].name : null;
+            });
+            var templEl = template.el, $fileEl = $(self._fileEl);
+            $fileEl.change(function (e) {
+                $('input[data-name="files-input"]', templEl).val($(this).val());
+            });
+            $('*[data-name="btn-input"]', templEl).click(function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $fileEl.click();
+            });
         };
         BaseUploadVM.prototype.uploadFiles = function (fileList) {
             if (!!fileList) {
@@ -2294,26 +2353,37 @@ define("gridDemo/baseUpload", ["require", "exports", "jriapp"], function (requir
             }
         };
         BaseUploadVM.prototype.uploadFile = function (file) {
-            if (!this._initOk)
-                return;
-            var xhr = this.xhr;
-            xhr.open("post", this._uploadUrl, true);
-            xhr.setRequestHeader("Content-Type", "multipart/form-data");
-            xhr.setRequestHeader("X-File-Name", file.name);
-            xhr.setRequestHeader("X-File-Size", file.size.toString());
-            xhr.setRequestHeader("X-File-Type", file.type);
-            xhr.setRequestHeader("X-Data-ID", this._getDataID());
-            xhr.send(file);
+            var self = this, uploader = new uploader_1.Uploader(this._uploadUrl, file);
+            self._onLoadStart();
+            uploader.addOnProgress(function (s, val) {
+                self._onProgress(val);
+            });
+            uploader.addOnAddHeaders(function (s, args) {
+                args.promise = self._addHeaders(args.xhr, file);
+            });
+            uploader.uploadFile().then(function (fileName) {
+                uploader.destroy();
+                self._onLoadComplete();
+            }).catch(function (err) {
+                uploader.destroy();
+                self._onLoadError();
+            });
         };
-        BaseUploadVM.prototype._onIDChanged = function () {
-            this._uploadCommand.raiseCanExecuteChanged();
-        };
-        BaseUploadVM.prototype._canUpload = function () {
-            return this._initOk && !!this._fileInfo && !utils.check.isNt(this.id);
-        };
-        BaseUploadVM.prototype._getDataID = function () {
-            return this.id;
-        };
+        Object.defineProperty(BaseUploadVM.prototype, "uploadUrl", {
+            get: function () { return this._uploadUrl; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BaseUploadVM.prototype, "fileUploaded", {
+            get: function () { return this._fileUploaded; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BaseUploadVM.prototype, "formEl", {
+            get: function () { return this._formEl; },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(BaseUploadVM.prototype, "fileInfo", {
             get: function () { return this._fileInfo; },
             set: function (v) {
@@ -2321,6 +2391,17 @@ define("gridDemo/baseUpload", ["require", "exports", "jriapp"], function (requir
                     this._fileInfo = v;
                     this.raisePropertyChanged('fileInfo');
                     this._uploadCommand.raiseCanExecuteChanged();
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BaseUploadVM.prototype, "fileName", {
+            get: function () { return this._fileName; },
+            set: function (v) {
+                if (this._fileName !== v) {
+                    this._fileName = v;
+                    this.raisePropertyChanged('fileName');
                 }
             },
             enumerable: true,
@@ -2344,25 +2425,31 @@ define("gridDemo/baseUpload", ["require", "exports", "jriapp"], function (requir
             enumerable: true,
             configurable: true
         });
+        BaseUploadVM.prototype.beginEdit = function () {
+            return true;
+        };
+        BaseUploadVM.prototype.endEdit = function () {
+            return true;
+        };
+        BaseUploadVM.prototype.cancelEdit = function () {
+            return true;
+        };
+        Object.defineProperty(BaseUploadVM.prototype, "isEditing", {
+            get: function () { return true; },
+            enumerable: true,
+            configurable: true
+        });
         return BaseUploadVM;
-    }(RIAPP.BaseObject));
+    }(RIAPP.ViewModel));
     exports.BaseUploadVM = BaseUploadVM;
 });
 define("gridDemo/uploads", ["require", "exports", "jriapp", "jriapp_ui", "gridDemo/baseUpload"], function (require, exports, RIAPP, uiMOD, baseUpload_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = RIAPP.Utils, $ = uiMOD.$;
-    var fn_getTemplateElement = function (template, name) {
-        var t = template;
-        var els = t.findElByDataName(name);
-        if (els.length < 1)
-            return null;
-        return els[0];
-    };
     var UploadThumbnailVM = (function (_super) {
         __extends(UploadThumbnailVM, _super);
         function UploadThumbnailVM(app, url) {
-            var _this = _super.call(this, url) || this;
+            var _this = _super.call(this, app, url) || this;
             var self = _this;
             _this._product = null;
             _this._dialogVM = new uiMOD.DialogVM(app);
@@ -2370,38 +2457,12 @@ define("gridDemo/uploads", ["require", "exports", "jriapp", "jriapp_ui", "gridDe
                 templateID: 'uploadTemplate',
                 width: 450,
                 height: 250,
-                title: 'Upload product thumbnail',
+                title: 'Upload Product Thumbnail',
                 fn_OnTemplateCreated: function (template) {
-                    self._fileEl = fn_getTemplateElement(template, 'files-to-upload');
-                    self._formEl = fn_getTemplateElement(template, 'uploadForm');
-                    self._progressBar = $(fn_getTemplateElement(template, 'progressBar'));
-                    self._percentageCalc = $(fn_getTemplateElement(template, 'percentageCalc'));
-                    self._progressDiv = $(fn_getTemplateElement(template, 'progressDiv'));
-                    self._progressDiv.hide();
-                    $(self._fileEl).on('change', function (e) {
-                        var fileEl = this;
-                        e.stopPropagation();
-                        var fileList = fileEl.files, txt = '';
-                        self.fileInfo = null;
-                        for (var i = 0, l = fileList.length; i < l; i++) {
-                            txt += utils.str.format('<p>{0} ({1} KB)</p>', fileList[i].name, utils.str.formatNumber(fileList[i].size / 1024, 2, '.', ','));
-                        }
-                        self.fileInfo = txt;
-                    });
-                    var templEl = template.el, $fileEl = $(self._fileEl);
-                    $fileEl.change(function (e) {
-                        $('input[data-name="files-input"]', templEl).val($(this).val());
-                    });
-                    $('*[data-name="btn-input"]', templEl).click(function (e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        $fileEl.click();
-                    });
+                    self._prepareTemplate(template, true);
                 },
                 fn_OnShow: function (dialog) {
-                    self._formEl.reset();
-                    self.fileInfo = null;
-                    self._fileUploaded = false;
+                    self._initUI();
                 },
                 fn_OnClose: function (dialog) {
                     if (dialog.result == 'ok' && self._onDialogClose()) {
@@ -2422,37 +2483,17 @@ define("gridDemo/uploads", ["require", "exports", "jriapp", "jriapp_ui", "gridDe
             }, self, function (sender, param) {
                 return true;
             });
-            _this._templateCommand = new RIAPP.TemplateCommand(function (sender, param) {
-                try {
-                    var template = param.template, fileEl = $('input[data-name="files-to-upload"]', template.el);
-                    if (fileEl.length == 0)
-                        return;
-                    if (param.isLoaded) {
-                        fileEl.change(function (e) {
-                            $('input[data-name="files-input"]', template.el).val($(this).val());
-                        });
-                        $('*[data-name="btn-input"]', template.el).click(function (e) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            fileEl.click();
-                        });
-                    }
-                    else {
-                        fileEl.off('change');
-                        $('*[data-name="btn-input"]', template.el).off('click');
-                    }
-                }
-                catch (ex) {
-                    self.handleError(ex, self);
-                }
-            }, self, function (sender, param) {
-                return true;
-            });
             return _this;
         }
         UploadThumbnailVM.prototype._getEventNames = function () {
             var base_events = _super.prototype._getEventNames.call(this);
             return ['files_uploaded'].concat(base_events);
+        };
+        UploadThumbnailVM.prototype._onDialogClose = function () {
+            return this.fileUploaded;
+        };
+        UploadThumbnailVM.prototype.endEdit = function () {
+            return this._onDialogClose();
         };
         UploadThumbnailVM.prototype.addOnFilesUploaded = function (fn, nmspace) {
             this.addHandler('files_uploaded', fn, nmspace);
@@ -2460,16 +2501,8 @@ define("gridDemo/uploads", ["require", "exports", "jriapp", "jriapp_ui", "gridDe
         UploadThumbnailVM.prototype.removeOnFilesUploaded = function (nmspace) {
             this.removeHandler('files_uploaded', nmspace);
         };
-        UploadThumbnailVM.prototype._onDialogClose = function () {
-            return this._fileUploaded;
-        };
         Object.defineProperty(UploadThumbnailVM.prototype, "dialogCommand", {
             get: function () { return this._dialogCommand; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(UploadThumbnailVM.prototype, "templateCommand", {
-            get: function () { return this._templateCommand; },
             enumerable: true,
             configurable: true
         });
