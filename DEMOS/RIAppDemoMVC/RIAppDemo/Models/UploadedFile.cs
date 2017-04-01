@@ -1,32 +1,10 @@
 ﻿using RIAppDemo.BLL.Utils;
-using System;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Web.Mvc;
 
 namespace RIAppDemo.Models
 {
-    class StreamDataContent : IDataContent
-    {
-        private Stream _stream;
-
-        public StreamDataContent(Stream stream)
-        {
-            this._stream = stream;
-        }
-
-        public Task CopyToAsync(Stream stream, int bufferSize = 131072)
-        {
-            return this._stream.CopyToAsync(stream);
-        }
-
-        public void CleanUp()
-        {
-            //noop
-        }
-    }
-
     public static class UploadExtensions
     {
         private static UploadedFile RetrieveFileFromRequest(Controller controller)
@@ -82,7 +60,7 @@ namespace RIAppDemo.Models
             }
             else
             {
-                file.DataContent = new StreamDataContent(file.Content);
+                file.DataContent = new StreamContent(file.Content);
             }
 
             return file;

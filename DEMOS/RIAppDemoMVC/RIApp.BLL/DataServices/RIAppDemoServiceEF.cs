@@ -553,28 +553,9 @@ namespace RIAppDemo.BLL.DataServices
             return fileName;
         }
 
-        public async Task SaveThumbnail(int id, string fileName, Stream strm)
+        public Task SaveThumbnail(int id, string fileName, Stream strm)
         {
-            var product = await DB.Products.Where(a => a.ProductID == id).FirstOrDefaultAsync();
-            if (product == null)
-                throw new Exception(string.Format("Product {0} is Not Found", id));
-
-            var topts = new TransactionOptions() { Timeout = TimeSpan.FromSeconds(60), IsolationLevel = IsolationLevel.Serializable };
-            using (var trxScope = new TransactionScope(TransactionScopeOption.Required, topts, TransactionScopeAsyncFlowOption.Enabled))
-            using (var conn = DBConnectionFactory.GetRIAppDemoConnection())
-            {
-                using (var bstrm = new BlobStream(conn as SqlConnection, "[SalesLT].[Product]", "ThumbNailPhoto",
-                    string.Format("WHERE [ProductID]={0}", id)))
-                {
-                    await bstrm.InitColumnAsync();
-                    bstrm.Open();
-                    strm.CopyTo(bstrm, 128 * 1024);
-                }
-
-                product.ThumbnailPhotoFileName = fileName;
-                await DB.SaveChangesAsync();
-                trxScope.Complete();
-            }
+            return SaveThumbnail2(id, fileName, new StreamContent(strm));
         }
 
         public async Task SaveThumbnail2(int id, string fileName, IDataContent content)

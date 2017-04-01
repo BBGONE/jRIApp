@@ -445,7 +445,7 @@ export class DbContext extends BaseObject {
         const args = { error: error, isHandled: false };
         this.raiseEvent(DBCTX_EVENTS.submit_err, args);
         if (!args.isHandled) {
-            this.rejectChanges();
+            //this.rejectChanges();
             this._onDataOperError(error, DATA_OPER.Submit);
         }
     }

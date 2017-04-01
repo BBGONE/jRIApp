@@ -81,6 +81,7 @@
     <Compile Include="Utils\IHostAddrService.cs" />
     <Compile Include="Utils\ResourceHelper.cs" />
     <Compile Include="Utils\Serializer.cs" />
+    <Compile Include="Utils\StreamContent.cs" />
     <Compile Include="Validators\ProductValidator.cs" />
     <Compile Include="Validators\CustomerValidator.cs" />
   </ItemGroup>

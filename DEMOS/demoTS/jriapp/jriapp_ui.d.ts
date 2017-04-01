@@ -584,6 +584,8 @@ declare module "jriapp_ui/dialog" {
         private _result;
         private _options;
         private _fnSubmitOnOK;
+        private _fnRejectOnCancel;
+        private _submitError;
         private _currentSelectable;
         private _deferred;
         constructor(options: IDialogConstructorOptions);

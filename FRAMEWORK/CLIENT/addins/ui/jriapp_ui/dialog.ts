@@ -10,7 +10,7 @@ import { bootstrap } from "jriapp/bootstrap";
 import { ViewModel } from "jriapp/mvvm";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str,
-    coreUtils = utils.core, sys = utils.sys, doc = DomUtils.document,
+    coreUtils = utils.core, sys = utils.sys, _async = utils.defer, doc = DomUtils.document,
     ERROR = utils.err, boot = bootstrap;
 
 export const enum DIALOG_ACTION { Default = 0, StayOpen = 1 };
@@ -82,6 +82,8 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     private _result: "ok" | "cancel";
     private _options: IDialogOptions;
     private _fnSubmitOnOK: () => IVoidPromise;
+    private _fnRejectOnCancel: () => void;
+    private _submitError: boolean;
     // save the global's currentSelectable  before showing and restore it on dialog's closing
     private _currentSelectable: ISelectableProvider;
     private _deferred: IDeferred<ITemplate>;
@@ -127,10 +129,18 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             const submittable = sys.getSubmittable(self._dataContext);
             if (!submittable || !submittable.isCanSubmit) {
                 // signals immediatly
-                return utils.defer.createDeferred<void>().resolve();
+                return _async.resolve<void>();
             }
             return submittable.submitChanges();
         };
+        this._fnRejectOnCancel = () => {
+            const submittable = sys.getSubmittable(self._dataContext);
+            if (!!submittable) {
+                submittable.rejectChanges();
+            }
+            self._submitError = false;
+        };
+        this._submitError = false;
         this._updateIsEditable();
         this._options = {
             width: options.width,
@@ -282,9 +292,11 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
                     self.title = title;
                 });
                 promise.then(() => {
+                    self._submitError = false;
                     self._result = "ok";
                     self.hide();
-                }, () => {
+                }, (err) => {
+                    self._submitError = true;
                     // resume editing if fn_onEndEdit callback returns false in isOk argument
                     if (!!self._editable) {
                         if (!self._editable.beginEdit()) {
@@ -294,6 +306,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
                     }
                 });
             } else {
+                self._submitError = false;
                 self._result = "ok";
                 self.hide();
             }
@@ -306,6 +319,9 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         }
         if (!!this._editable) {
             this._editable.cancelEdit();
+        }
+        if (!!this._submitError) {
+            this._fnRejectOnCancel();
         }
         this._result = "cancel";
         this.hide();
@@ -345,6 +361,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     }
     protected _onShow() {
         this._currentSelectable = boot.currentSelectable;
+        this._submitError = false;
         if (!!this._fnOnShow) {
             this._fnOnShow(this);
         }

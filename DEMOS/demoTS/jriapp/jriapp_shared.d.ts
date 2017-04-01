@@ -154,6 +154,7 @@ declare module "jriapp_shared/int" {
     }
     export interface ISubmittable {
         submitChanges(): IVoidPromise;
+        rejectChanges(): void;
         readonly isCanSubmit: boolean;
     }
     export interface IValidationInfo {

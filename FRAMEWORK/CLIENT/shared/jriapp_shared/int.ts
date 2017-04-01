@@ -65,6 +65,7 @@ export interface IEditable {
 
 export interface ISubmittable {
     submitChanges(): IVoidPromise;
+    rejectChanges(): void;
     readonly isCanSubmit: boolean;
 }
 

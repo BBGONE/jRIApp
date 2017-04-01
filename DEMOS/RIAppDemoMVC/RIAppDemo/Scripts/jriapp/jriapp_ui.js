@@ -2814,7 +2814,7 @@ define("jriapp_ui/content/factory", ["require", "exports", "jriapp_shared", "jri
 define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/utils/jquery", "jriapp/utils/dom", "jriapp/template", "jriapp/bootstrap", "jriapp/mvvm"], function (require, exports, jriapp_shared_16, jquery_3, dom_14, template_3, bootstrap_12, mvvm_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_16.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, sys = utils.sys, doc = dom_14.DomUtils.document, ERROR = utils.err, boot = bootstrap_12.bootstrap;
+    var utils = jriapp_shared_16.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, sys = utils.sys, _async = utils.defer, doc = dom_14.DomUtils.document, ERROR = utils.err, boot = bootstrap_12.bootstrap;
     var DIALOG_ACTION;
     (function (DIALOG_ACTION) {
         DIALOG_ACTION[DIALOG_ACTION["Default"] = 0] = "Default";
@@ -2875,10 +2875,18 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
             _this._fnSubmitOnOK = function () {
                 var submittable = sys.getSubmittable(self._dataContext);
                 if (!submittable || !submittable.isCanSubmit) {
-                    return utils.defer.createDeferred().resolve();
+                    return _async.resolve();
                 }
                 return submittable.submitChanges();
             };
+            _this._fnRejectOnCancel = function () {
+                var submittable = sys.getSubmittable(self._dataContext);
+                if (!!submittable) {
+                    submittable.rejectChanges();
+                }
+                self._submitError = false;
+            };
+            _this._submitError = false;
             _this._updateIsEditable();
             _this._options = {
                 width: options.width,
@@ -3028,9 +3036,11 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
                         self.title = title_1;
                     });
                     promise.then(function () {
+                        self._submitError = false;
                         self._result = "ok";
                         self.hide();
-                    }, function () {
+                    }, function (err) {
+                        self._submitError = true;
                         if (!!self._editable) {
                             if (!self._editable.beginEdit()) {
                                 self._result = "cancel";
@@ -3040,6 +3050,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
                     });
                 }
                 else {
+                    self._submitError = false;
                     self._result = "ok";
                     self.hide();
                 }
@@ -3052,6 +3063,9 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
             }
             if (!!this._editable) {
                 this._editable.cancelEdit();
+            }
+            if (!!this._submitError) {
+                this._fnRejectOnCancel();
             }
             this._result = "cancel";
             this.hide();
@@ -3093,6 +3107,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
         };
         DataEditDialog.prototype._onShow = function () {
             this._currentSelectable = boot.currentSelectable;
+            this._submitError = false;
             if (!!this._fnOnShow) {
                 this._fnOnShow(this);
             }

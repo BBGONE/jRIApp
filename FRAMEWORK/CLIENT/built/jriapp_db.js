@@ -2682,7 +2682,6 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             var args = { error: error, isHandled: false };
             this.raiseEvent(DBCTX_EVENTS.submit_err, args);
             if (!args.isHandled) {
-                this.rejectChanges();
                 this._onDataOperError(error, 1);
             }
         };
