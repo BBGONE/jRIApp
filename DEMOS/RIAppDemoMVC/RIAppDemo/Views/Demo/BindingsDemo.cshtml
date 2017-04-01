@@ -64,11 +64,12 @@
                     return new DEMO.DemoApplication(DEMO.appOptions);
                 },
                 function(app) {
-                    //just an example of how to create the data binding in code
+                    //just an example of how to create the data binding in code 
                     //store the reference to the Binding's instance - in case we need to destroy it when we want
                     //BUT - even without storing the reference it can not be removed by garbage collector, because it subscribed to property changes
                     //in the TestObject (and TestObject's instance hold references to the subscriber)
                     //P.S.- we really don't need to use data binding here, because we can do the same logic inside the TestObject's code
+                    //but can be used for testing purposes
                     app.UC.createdBinding = app.bind({
                         sourcePath: 'testProperty1',
                         targetPath: 'testProperty2',
