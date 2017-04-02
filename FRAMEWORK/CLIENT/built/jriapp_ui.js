@@ -2834,6 +2834,65 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
         canRefresh: "canRefresh",
         canCancel: "canCancel"
     };
+    var SubmitInfo = (function () {
+        function SubmitInfo(dataContext) {
+            this._dataContext = dataContext;
+            this._submitError = false;
+            this._editable = sys.getEditable(this._dataContext);
+        }
+        SubmitInfo.prototype.submit = function () {
+            var self = this, submittable = sys.getSubmittable(this._dataContext);
+            if (!submittable || !submittable.isCanSubmit) {
+                return _async.resolve();
+            }
+            var promise = submittable.submitChanges();
+            promise.then(function () {
+                self._submitError = false;
+            }, function (err) {
+                self._submitError = true;
+            });
+            return promise;
+        };
+        SubmitInfo.prototype.reject = function () {
+            var submittable = sys.getSubmittable(this._dataContext);
+            if (!!submittable) {
+                submittable.rejectChanges();
+            }
+            this._submitError = false;
+        };
+        SubmitInfo.prototype.cancel = function () {
+            if (!!this._editable) {
+                this._editable.cancelEdit();
+            }
+            if (!!this._submitError) {
+                this.reject();
+            }
+        };
+        SubmitInfo.prototype.endEdit = function () {
+            return (!!this._editable && this._editable.isEditing) ? this._editable.endEdit() : true;
+        };
+        SubmitInfo.prototype.beginEdit = function () {
+            return (!!this._editable) ? (this._editable.isEditing || this._editable.beginEdit()) : false;
+        };
+        Object.defineProperty(SubmitInfo.prototype, "dataContext", {
+            get: function () { return this._dataContext; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SubmitInfo.prototype, "submitError", {
+            get: function () { return this._submitError; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SubmitInfo.prototype, "editable", {
+            get: function () {
+                return this._editable;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return SubmitInfo;
+    }());
     var DataEditDialog = (function (_super) {
         __extends(DataEditDialog, _super);
         function DataEditDialog(options) {
@@ -2867,27 +2926,11 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
             _this._fnOnCancel = options.fn_OnCancel;
             _this._fnOnTemplateCreated = options.fn_OnTemplateCreated;
             _this._fnOnTemplateDestroy = options.fn_OnTemplateDestroy;
-            _this._editable = null;
             _this._template = null;
             _this._$dlgEl = null;
             _this._result = null;
             _this._currentSelectable = null;
-            _this._fnSubmitOnOK = function () {
-                var submittable = sys.getSubmittable(self._dataContext);
-                if (!submittable || !submittable.isCanSubmit) {
-                    return _async.resolve();
-                }
-                return submittable.submitChanges();
-            };
-            _this._fnRejectOnCancel = function () {
-                var submittable = sys.getSubmittable(self._dataContext);
-                if (!!submittable) {
-                    submittable.rejectChanges();
-                }
-                self._submitError = false;
-            };
-            _this._submitError = false;
-            _this._updateIsEditable();
+            _this._submitInfo = null;
             _this._options = {
                 width: options.width,
                 height: options.height,
@@ -2899,7 +2942,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
                 },
                 buttons: self._getButtons()
             };
-            _this._deferred = utils.defer.createDeferred();
+            _this._deferredTemplate = utils.defer.createDeferred();
             _this._createDialog();
             return _this;
         }
@@ -2914,9 +2957,6 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
         };
         DataEditDialog.prototype.removeOnRefresh = function (nmspace) {
             this._removeHandler(DLG_EVENTS.refresh, nmspace);
-        };
-        DataEditDialog.prototype._updateIsEditable = function () {
-            this._editable = sys.getEditable(this._dataContext);
         };
         DataEditDialog.prototype._createDialog = function () {
             try {
@@ -2937,15 +2977,15 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
         };
         DataEditDialog.prototype.templateLoaded = function (template, error) {
             if (this.getIsDestroyCalled() || !!error) {
-                if (!!this._deferred) {
-                    this._deferred.reject(error);
+                if (!!this._deferredTemplate) {
+                    this._deferredTemplate.reject(error);
                 }
                 return;
             }
             if (!!this._fnOnTemplateCreated) {
                 this._fnOnTemplateCreated(template);
             }
-            this._deferred.resolve(template);
+            this._deferredTemplate.resolve(template);
         };
         DataEditDialog.prototype.templateUnLoading = function (template) {
             if (!!this._fnOnTemplateDestroy) {
@@ -3024,36 +3064,32 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
                 self.hide();
                 return;
             }
-            var canCommit = (!!this._editable) ? this._editable.endEdit() : true;
-            if (canCommit) {
-                if (this._submitOnOK) {
-                    this._disableButtons(true);
-                    var title_1 = this.title;
-                    this.title = jriapp_shared_16.LocaleSTRS.TEXT.txtSubmitting;
-                    var promise = this._fnSubmitOnOK();
-                    promise.always(function () {
-                        self._disableButtons(false);
-                        self.title = title_1;
-                    });
-                    promise.then(function () {
-                        self._submitError = false;
-                        self._result = "ok";
-                        self.hide();
-                    }, function (err) {
-                        self._submitError = true;
-                        if (!!self._editable) {
-                            if (!self._editable.beginEdit()) {
-                                self._result = "cancel";
-                                self.hide();
-                            }
-                        }
-                    });
-                }
-                else {
-                    self._submitError = false;
+            var canCommit = this._submitInfo.endEdit();
+            if (!canCommit) {
+                return;
+            }
+            if (this._submitOnOK) {
+                this._disableButtons(true);
+                var title_1 = this.title;
+                this.title = jriapp_shared_16.LocaleSTRS.TEXT.txtSubmitting;
+                var promise = this._submitInfo.submit();
+                promise.always(function () {
+                    self._disableButtons(false);
+                    self.title = title_1;
+                });
+                promise.then(function () {
                     self._result = "ok";
                     self.hide();
-                }
+                }).catch(function () {
+                    if (!self._submitInfo.beginEdit()) {
+                        self._result = "cancel";
+                        self.hide();
+                    }
+                });
+            }
+            else {
+                self._result = "ok";
+                self.hide();
             }
         };
         DataEditDialog.prototype._onCancel = function () {
@@ -3061,12 +3097,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
             if (action === 1) {
                 return;
             }
-            if (!!this._editable) {
-                this._editable.cancelEdit();
-            }
-            if (!!this._submitError) {
-                this._fnRejectOnCancel();
-            }
+            this._submitInfo.cancel();
             this._result = "cancel";
             this.hide();
         };
@@ -3088,10 +3119,8 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
         };
         DataEditDialog.prototype._onClose = function () {
             try {
-                if (this._result !== "ok" && !!this._dataContext) {
-                    if (!!this._editable) {
-                        this._editable.cancelEdit();
-                    }
+                if (this._result !== "ok" && !!this._submitInfo) {
+                    this._submitInfo.cancel();
                 }
                 if (!!this._fnOnClose) {
                     this._fnOnClose(this);
@@ -3100,6 +3129,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
             }
             finally {
                 this._template.dataContext = null;
+                this._submitInfo = null;
             }
             var csel = this._currentSelectable;
             this._currentSelectable = null;
@@ -3107,7 +3137,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
         };
         DataEditDialog.prototype._onShow = function () {
             this._currentSelectable = boot.currentSelectable;
-            this._submitError = false;
+            this._submitInfo = new SubmitInfo(this.dataContext);
             if (!!this._fnOnShow) {
                 this._fnOnShow(this);
             }
@@ -3118,7 +3148,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
                 return utils.defer.createDeferred().reject();
             }
             self._result = null;
-            return this._deferred.promise().then(function (template) {
+            return this._deferredTemplate.promise().then(function (template) {
                 if (self.getIsDestroyCalled() || !self._$dlgEl) {
                     ERROR.abort();
                 }
@@ -3162,8 +3192,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
             this._$dlgEl = null;
             this._template = null;
             this._dataContext = null;
-            this._fnSubmitOnOK = null;
-            this._editable = null;
+            this._submitInfo = null;
             _super.prototype.destroy.call(this);
         };
         Object.defineProperty(DataEditDialog.prototype, "dataContext", {
@@ -3171,7 +3200,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
             set: function (v) {
                 if (v !== this._dataContext) {
                     this._dataContext = v;
-                    this._updateIsEditable();
+                    this._submitInfo = new SubmitInfo(this._dataContext);
                     this.raisePropertyChanged(PROP_NAME.dataContext);
                 }
             },

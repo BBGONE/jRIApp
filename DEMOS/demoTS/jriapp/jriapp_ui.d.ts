@@ -578,16 +578,13 @@ declare module "jriapp_ui/dialog" {
         private _fnOnCancel;
         private _fnOnTemplateCreated;
         private _fnOnTemplateDestroy;
-        private _editable;
         private _template;
         private _$dlgEl;
         private _result;
         private _options;
-        private _fnSubmitOnOK;
-        private _fnRejectOnCancel;
-        private _submitError;
+        private _submitInfo;
         private _currentSelectable;
-        private _deferred;
+        private _deferredTemplate;
         constructor(options: IDialogConstructorOptions);
         addOnClose(fn: TEventHandler<DataEditDialog, any>, nmspace?: string, context?: IBaseObject): void;
         removeOnClose(nmspace?: string): void;
@@ -595,7 +592,6 @@ declare module "jriapp_ui/dialog" {
             isHandled: boolean;
         }>, nmspace?: string, context?: IBaseObject): void;
         removeOnRefresh(nmspace?: string): void;
-        protected _updateIsEditable(): void;
         protected _createDialog(): void;
         protected _getEventNames(): string[];
         templateLoading(template: ITemplate): void;

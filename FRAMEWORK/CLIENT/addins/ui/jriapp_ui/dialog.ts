@@ -63,6 +63,60 @@ const PROP_NAME = {
     canCancel: "canCancel"
 };
 
+class SubmitInfo
+{
+    private _submitError: boolean;
+    private _dataContext: any;
+    private _editable: IEditable;
+
+    constructor(dataContext: any) {
+        this._dataContext = dataContext;
+        this._submitError = false;
+        this._editable = sys.getEditable(this._dataContext);
+    }
+    submit(): IVoidPromise
+    {
+        const self = this, submittable = sys.getSubmittable(this._dataContext);
+        if (!submittable || !submittable.isCanSubmit) {
+            // signals immediatly
+            return _async.resolve<void>();
+        }
+        const promise = submittable.submitChanges();
+        promise.then(() => {
+            self._submitError = false;
+        }, (err) => {
+            self._submitError = true;
+        });
+        return promise;
+    }
+    reject(): void {
+        const submittable = sys.getSubmittable(this._dataContext);
+        if (!!submittable) {
+            submittable.rejectChanges();
+        }
+        this._submitError = false;
+    }
+    cancel(): void {
+        if (!!this._editable) {
+            this._editable.cancelEdit();
+        }
+        if (!!this._submitError) {
+            this.reject();
+        }
+    }
+    endEdit(): boolean {
+        return (!!this._editable && this._editable.isEditing) ? this._editable.endEdit() : true;
+    }
+    beginEdit(): boolean {
+        return (!!this._editable) ? (this._editable.isEditing || this._editable.beginEdit()) : false;
+    }
+    get dataContext(): any { return this._dataContext; }
+    get submitError(): boolean { return this._submitError; }
+    get editable(): IEditable {
+        return this._editable;
+    }
+}
+
 export class DataEditDialog extends BaseObject implements ITemplateEvents {
     private _objId: string;
     private _dataContext: any;
@@ -76,17 +130,14 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     private _fnOnCancel: (dialog: DataEditDialog) => DIALOG_ACTION;
     private _fnOnTemplateCreated: (template: ITemplate) => void;
     private _fnOnTemplateDestroy: (template: ITemplate) => void;
-    private _editable: IEditable;
     private _template: ITemplate;
     private _$dlgEl: JQuery;
     private _result: "ok" | "cancel";
     private _options: IDialogOptions;
-    private _fnSubmitOnOK: () => IVoidPromise;
-    private _fnRejectOnCancel: () => void;
-    private _submitError: boolean;
+    private _submitInfo: SubmitInfo;
     // save the global's currentSelectable  before showing and restore it on dialog's closing
     private _currentSelectable: ISelectableProvider;
-    private _deferred: IDeferred<ITemplate>;
+    private _deferredTemplate: IDeferred<ITemplate>;
 
     constructor(options: IDialogConstructorOptions) {
         super();
@@ -120,28 +171,11 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         this._fnOnTemplateCreated = options.fn_OnTemplateCreated;
         this._fnOnTemplateDestroy = options.fn_OnTemplateDestroy;
 
-        this._editable = null;
         this._template = null;
         this._$dlgEl = null;
         this._result = null;
         this._currentSelectable = null;
-        this._fnSubmitOnOK = () => {
-            const submittable = sys.getSubmittable(self._dataContext);
-            if (!submittable || !submittable.isCanSubmit) {
-                // signals immediatly
-                return _async.resolve<void>();
-            }
-            return submittable.submitChanges();
-        };
-        this._fnRejectOnCancel = () => {
-            const submittable = sys.getSubmittable(self._dataContext);
-            if (!!submittable) {
-                submittable.rejectChanges();
-            }
-            self._submitError = false;
-        };
-        this._submitError = false;
-        this._updateIsEditable();
+        this._submitInfo = null;
         this._options = {
             width: options.width,
             height: options.height,
@@ -153,7 +187,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             },
             buttons: self._getButtons()
         };
-        this._deferred = utils.defer.createDeferred<ITemplate>();
+        this._deferredTemplate = utils.defer.createDeferred<ITemplate>();
         this._createDialog();
     }
     addOnClose(fn: TEventHandler<DataEditDialog, any>, nmspace?: string, context?: IBaseObject) {
@@ -167,9 +201,6 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     }
     removeOnRefresh(nmspace?: string) {
         this._removeHandler(DLG_EVENTS.refresh, nmspace);
-    }
-    protected _updateIsEditable() {
-        this._editable = sys.getEditable(this._dataContext);
     }
     protected _createDialog() {
         try {
@@ -190,15 +221,15 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     }
     templateLoaded(template: ITemplate, error?: any): void {
         if (this.getIsDestroyCalled() || !!error) {
-            if (!!this._deferred) {
-                this._deferred.reject(error);
+            if (!!this._deferredTemplate) {
+                this._deferredTemplate.reject(error);
             }
             return;
         }
         if (!!this._fnOnTemplateCreated) {
             this._fnOnTemplateCreated(template);
         }
-        this._deferred.resolve(template);
+        this._deferredTemplate.resolve(template);
     }
     templateUnLoading(template: ITemplate): void {
         if (!!this._fnOnTemplateDestroy) {
@@ -279,37 +310,34 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             return;
         }
 
-       const canCommit = (!!this._editable)  ? this._editable.endEdit() : true;
+        const canCommit = this._submitInfo.endEdit();
 
-        if (canCommit) {
-            if (this._submitOnOK) {
-                this._disableButtons(true);
-                const title = this.title;
-                this.title = STRS.TEXT.txtSubmitting;
-                const promise = this._fnSubmitOnOK();
-                promise.always(() => {
-                    self._disableButtons(false);
-                    self.title = title;
-                });
-                promise.then(() => {
-                    self._submitError = false;
-                    self._result = "ok";
-                    self.hide();
-                }, (err) => {
-                    self._submitError = true;
-                    // resume editing if fn_onEndEdit callback returns false in isOk argument
-                    if (!!self._editable) {
-                        if (!self._editable.beginEdit()) {
-                            self._result = "cancel";
-                            self.hide();
-                        }
-                    }
-                });
-            } else {
-                self._submitError = false;
+        if (!canCommit) {
+            return;
+        }
+
+        if (this._submitOnOK) {
+            this._disableButtons(true);
+            const title = this.title;
+            this.title = STRS.TEXT.txtSubmitting;
+            const promise = this._submitInfo.submit();
+            promise.always(() => {
+                self._disableButtons(false);
+                self.title = title;
+            });
+
+            promise.then(() => {
                 self._result = "ok";
                 self.hide();
-            }
+            }).catch(() => {
+                if (!self._submitInfo.beginEdit()) {
+                    self._result = "cancel";
+                    self.hide();
+                }
+            });
+        } else {
+            self._result = "ok";
+            self.hide();
         }
     }
     protected _onCancel() {
@@ -317,12 +345,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         if (action === DIALOG_ACTION.StayOpen) {
             return;
         }
-        if (!!this._editable) {
-            this._editable.cancelEdit();
-        }
-        if (!!this._submitError) {
-            this._fnRejectOnCancel();
-        }
+        this._submitInfo.cancel();
         this._result = "cancel";
         this.hide();
     }
@@ -343,10 +366,8 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     }
     protected _onClose() {
         try {
-            if (this._result !== "ok" && !!this._dataContext) {
-                if (!!this._editable) {
-                    this._editable.cancelEdit();
-                }
+            if (this._result !== "ok" && !!this._submitInfo) {
+                this._submitInfo.cancel();
             }
             if (!!this._fnOnClose) {
                 this._fnOnClose(this);
@@ -354,6 +375,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             this.raiseEvent(DLG_EVENTS.close, {});
         } finally {
             this._template.dataContext = null;
+            this._submitInfo = null;
         }
         let csel = this._currentSelectable;
         this._currentSelectable = null;
@@ -361,7 +383,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     }
     protected _onShow() {
         this._currentSelectable = boot.currentSelectable;
-        this._submitError = false;
+        this._submitInfo = new SubmitInfo(this.dataContext);
         if (!!this._fnOnShow) {
             this._fnOnShow(this);
         }
@@ -372,7 +394,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             return utils.defer.createDeferred<DataEditDialog>().reject();
         }
         self._result = null;
-        return this._deferred.promise().then((template) => {
+        return this._deferredTemplate.promise().then((template) => {
             if (self.getIsDestroyCalled() || !self._$dlgEl) {
                 ERROR.abort();
             }
@@ -416,15 +438,14 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         this._$dlgEl = null;
         this._template = null;
         this._dataContext = null;
-        this._fnSubmitOnOK = null;
-        this._editable = null;
+        this._submitInfo = null;
         super.destroy();
     }
     get dataContext() { return this._dataContext; }
     set dataContext(v) {
         if (v !== this._dataContext) {
             this._dataContext = v;
-            this._updateIsEditable();
+            this._submitInfo = new SubmitInfo(this._dataContext);
             this.raisePropertyChanged(PROP_NAME.dataContext);
         }
     }
