@@ -878,13 +878,14 @@ export class DbContext extends BaseObject {
             }
         };
 
-
-        self.waitForNotBusy(() => {
-            try {
-                self._submitChanges(context);
-            } catch (err) {
-                context.fn_onErr(err);
-            }
+        _async.getTaskQueue().enque(() => {
+            self.waitForNotBusy(() => {
+                try {
+                    self._submitChanges(context);
+                } catch (err) {
+                    context.fn_onErr(err);
+                }
+            });
         });
 
         return submitState.promise;

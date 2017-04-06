@@ -3063,13 +3063,15 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                     }
                 }
             };
-            self.waitForNotBusy(function () {
-                try {
-                    self._submitChanges(context);
-                }
-                catch (err) {
-                    context.fn_onErr(err);
-                }
+            _async.getTaskQueue().enque(function () {
+                self.waitForNotBusy(function () {
+                    try {
+                        self._submitChanges(context);
+                    }
+                    catch (err) {
+                        context.fn_onErr(err);
+                    }
+                });
             });
             return submitState.promise;
         };
