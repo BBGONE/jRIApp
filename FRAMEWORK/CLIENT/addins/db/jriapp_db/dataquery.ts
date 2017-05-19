@@ -32,6 +32,7 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
     private _params: { [name: string]: any; };
     private _loadPageCount: number;
     private _isClearCacheOnEveryLoad: boolean;
+    private _isForAppend: boolean;
     private _dataCache: DataCache;
     private _cacheInvalidated: boolean;
     private _internal: IInternalQueryMethods;
@@ -51,6 +52,7 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
         this._params = {};
         this._loadPageCount = 1;
         this._isClearCacheOnEveryLoad = true;
+        this._isForAppend = false;
         this._dataCache = null;
         this._cacheInvalidated = false;
         this._isPagingEnabled = dbSet.isPagingEnabled;
@@ -71,13 +73,13 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
                 return self._queryInfo;
             }
         };
-   }
+    }
     private _addSort(fieldName: string, sortOrder: SORT_ORDER) {
         const ord = !checks.isNt(sortOrder) ? sortOrder : SORT_ORDER.ASC;
         const sortItem = { fieldName: fieldName, sortOrder: ord };
         this._sortInfo.sortItems.push(sortItem);
         this._cacheInvalidated = true;
-   }
+    }
     private _addFilterItem(fieldName: string, operand: FILTER_TYPE, value: any[], checkFieldName = true) {
         let fkind = FILTER_TYPE.Equals, vals: any[] = [];
         const stz = this.serverTimezone;
@@ -124,27 +126,27 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
         const filterItem = { fieldName: fieldName, kind: fkind, values: vals };
         this._filterInfo.filterItems.push(filterItem);
         this._cacheInvalidated = true;
-   }
+    }
     private _resetCacheInvalidated() {
         this._cacheInvalidated = false;
-   }
+    }
     private _clearCache(): void {
         if (!!this._dataCache) {
             this._dataCache.destroy();
             this._dataCache = null;
-       }
+        }
         this._resetCacheInvalidated();
-   }
+    }
     private _getCache(): DataCache {
         if (!this._dataCache) {
             this._dataCache = new DataCache(this);
-       }
+        }
         return this._dataCache;
-   }
+    }
     private _isPageCached(pageIndex: number): boolean {
         if (!this._dataCache) {
             return false;
-       }
+        }
         return this._dataCache.hasPage(pageIndex);
     }
     private _updateCache(pageIndex: number, items: IEntityItem[]): void {
@@ -160,43 +162,43 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
     where(fieldName: string, operand: FILTER_TYPE, value: any, checkFieldName = true) {
         this._addFilterItem(fieldName, operand, value, checkFieldName);
         return this;
-   }
+    }
     and(fieldName: string, operand: FILTER_TYPE, value: any, checkFieldName = true) {
         this._addFilterItem(fieldName, operand, value, checkFieldName);
         return this;
-   }
+    }
     orderBy(fieldName: string, sortOrder?: SORT_ORDER) {
         this._addSort(fieldName, sortOrder);
         return this;
-   }
+    }
     thenBy(fieldName: string, sortOrder?: SORT_ORDER) {
         this._addSort(fieldName, sortOrder);
         return this;
-   }
+    }
     clearSort() {
         this._sortInfo.sortItems = [];
         this._cacheInvalidated = true;
         return this;
-   }
+    }
     clearFilter() {
         this._filterInfo.filterItems = [];
         this._cacheInvalidated = true;
         return this;
-   }
+    }
     clearParams() {
         this._params = {};
         this._cacheInvalidated = true;
         return this;
-   }
+    }
     getFieldInfo(fieldName: string): IFieldInfo {
         return this._dbSet.getFieldInfo(fieldName);
-   }
+    }
     getFieldNames() {
         return this._dbSet.getFieldNames();
-   }
+    }
     load(): IPromise<IQueryResult<TItem>> {
         return <IPromise<IQueryResult<TItem>>>this.dbSet.dbContext.load(this);
-   }
+    }
     destroy() {
         if (this._isDestroyed) {
             return;
@@ -204,64 +206,71 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
         this._isDestroyCalled = true;
         this._clearCache();
         super.destroy();
-   }
+    }
     toString() {
         return "DataQuery";
-   }
+    }
     get serverTimezone() { return this._dbSet.dbContext.serverTimezone; }
     get dbSet() { return this._dbSet; }
     get dbSetName() { return this._dbSet.dbSetName; }
     get queryName() { return this._queryInfo.methodName; }
     get filterInfo() { return this._filterInfo; }
     get sortInfo() { return this._sortInfo; }
-    get isIncludeTotalCount() { return this._isIncludeTotalCount; }
+    get isIncludeTotalCount() { return this._isIncludeTotalCount && !this.isForAppend; }
     set isIncludeTotalCount(v: boolean) { this._isIncludeTotalCount = v; }
-    get isClearPrevData() { return this._isClearPrevData; }
+    get isClearPrevData() { return this._isClearPrevData && !this.isForAppend; }
     set isClearPrevData(v: boolean) { this._isClearPrevData = v; }
     get pageSize() { return this._pageSize; }
     set pageSize(v: number) {
         if (this._pageSize !== v) {
             this._pageSize = v;
-       }
-   }
+        }
+    }
     get pageIndex() { return this._pageIndex; }
     set pageIndex(v: number) {
         if (this._pageIndex !== v) {
             this._pageIndex = v;
-       }
-   }
+        }
+    }
     get params() { return this._params; }
     set params(v: any) {
         if (this._params !== v) {
             this._params = v;
             this._cacheInvalidated = true;
-       }
-   }
-    get isPagingEnabled() { return this._isPagingEnabled; }
+        }
+    }
+    get isPagingEnabled() { return this._isPagingEnabled && !this.isForAppend; }
     set isPagingEnabled(v: boolean) {
         this._isPagingEnabled = v;
-   }
-    get loadPageCount() { return this._loadPageCount; }
+    }
+    get loadPageCount() { return this.isForAppend ? 1 : this._loadPageCount; }
     set loadPageCount(v: number) {
         if (v < 1) {
             v = 1;
-       }
+        }
         if (this._loadPageCount !== v) {
             this._loadPageCount = v;
-            if (v === 1) {
+            if (v === 1 || this.isForAppend) {
                 this._clearCache();
-           }
+            }
             this.raisePropertyChanged(PROP_NAME.loadPageCount);
-       }
-   }
-    get isClearCacheOnEveryLoad() { return this._isClearCacheOnEveryLoad; }
+        }
+    }
+    get isClearCacheOnEveryLoad() { return this._isClearCacheOnEveryLoad || this.isForAppend; }
     set isClearCacheOnEveryLoad(v) {
         if (this._isClearCacheOnEveryLoad !== v) {
             this._isClearCacheOnEveryLoad = v;
             this.raisePropertyChanged(PROP_NAME.isClearCacheOnEveryLoad);
-       }
-   }
-    get isCacheValid() { return !!this._dataCache && !this._cacheInvalidated; }
+        }
+    }
+    get isForAppend() { return this._isForAppend; }
+    set isForAppend(v) {
+        if (this._isForAppend !== v) {
+            this._isForAppend = v;
+            this.raisePropertyChanged(PROP_NAME.isForAppend);
+        }
+    }
+    get isCacheValid() { return !!this._dataCache && !this._cacheInvalidated && !this.isForAppend; }
 }
 
 export type TDataQuery = DataQuery<IEntityItem, any>;

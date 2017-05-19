@@ -15,6 +15,7 @@ export const PROP_NAME = {
     totalCount: "totalCount",
     loadPageCount: "loadPageCount",
     isClearCacheOnEveryLoad: "isClearCacheOnEveryLoad",
+    isForAppend: "isForAppend",
     isRefreshing: "isRefreshing",
     requestCount: "requestCount",
     isLoading: "isLoading"

@@ -36,6 +36,7 @@ declare module "jriapp_db/const" {
         totalCount: string;
         loadPageCount: string;
         isClearCacheOnEveryLoad: string;
+        isForAppend: string;
         isRefreshing: string;
         requestCount: string;
         isLoading: string;
@@ -101,6 +102,7 @@ declare module "jriapp_db/dataquery" {
         private _params;
         private _loadPageCount;
         private _isClearCacheOnEveryLoad;
+        private _isForAppend;
         private _dataCache;
         private _cacheInvalidated;
         private _internal;
@@ -140,6 +142,7 @@ declare module "jriapp_db/dataquery" {
         isPagingEnabled: boolean;
         loadPageCount: number;
         isClearCacheOnEveryLoad: boolean;
+        isForAppend: boolean;
         readonly isCacheValid: boolean;
     }
     export type TDataQuery = DataQuery<IEntityItem, any>;

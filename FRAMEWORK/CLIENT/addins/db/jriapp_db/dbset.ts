@@ -459,6 +459,10 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
         val.setFunc.call(item, value, item);
     }
     protected _beforeLoad(query: DataQuery<TItem, TObj>, oldQuery: DataQuery<TItem, TObj>): void {
+        if (!!query.isForAppend) {
+            return;
+        }
+
         if (!!query && oldQuery !== query) {
             this._query = query;
             this._query.pageIndex = 0;

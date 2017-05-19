@@ -51,6 +51,7 @@ define("jriapp_db/const", ["require", "exports"], function (require, exports) {
         totalCount: "totalCount",
         loadPageCount: "loadPageCount",
         isClearCacheOnEveryLoad: "isClearCacheOnEveryLoad",
+        isForAppend: "isForAppend",
         isRefreshing: "isRefreshing",
         requestCount: "requestCount",
         isLoading: "isLoading"
@@ -272,6 +273,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             _this._params = {};
             _this._loadPageCount = 1;
             _this._isClearCacheOnEveryLoad = true;
+            _this._isForAppend = false;
             _this._dataCache = null;
             _this._cacheInvalidated = false;
             _this._isPagingEnabled = dbSet.isPagingEnabled;
@@ -462,13 +464,13 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             configurable: true
         });
         Object.defineProperty(DataQuery.prototype, "isIncludeTotalCount", {
-            get: function () { return this._isIncludeTotalCount; },
+            get: function () { return this._isIncludeTotalCount && !this.isForAppend; },
             set: function (v) { this._isIncludeTotalCount = v; },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(DataQuery.prototype, "isClearPrevData", {
-            get: function () { return this._isClearPrevData; },
+            get: function () { return this._isClearPrevData && !this.isForAppend; },
             set: function (v) { this._isClearPrevData = v; },
             enumerable: true,
             configurable: true
@@ -505,7 +507,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             configurable: true
         });
         Object.defineProperty(DataQuery.prototype, "isPagingEnabled", {
-            get: function () { return this._isPagingEnabled; },
+            get: function () { return this._isPagingEnabled && !this.isForAppend; },
             set: function (v) {
                 this._isPagingEnabled = v;
             },
@@ -513,14 +515,14 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             configurable: true
         });
         Object.defineProperty(DataQuery.prototype, "loadPageCount", {
-            get: function () { return this._loadPageCount; },
+            get: function () { return this.isForAppend ? 1 : this._loadPageCount; },
             set: function (v) {
                 if (v < 1) {
                     v = 1;
                 }
                 if (this._loadPageCount !== v) {
                     this._loadPageCount = v;
-                    if (v === 1) {
+                    if (v === 1 || this.isForAppend) {
                         this._clearCache();
                     }
                     this.raisePropertyChanged(const_2.PROP_NAME.loadPageCount);
@@ -530,7 +532,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             configurable: true
         });
         Object.defineProperty(DataQuery.prototype, "isClearCacheOnEveryLoad", {
-            get: function () { return this._isClearCacheOnEveryLoad; },
+            get: function () { return this._isClearCacheOnEveryLoad || this.isForAppend; },
             set: function (v) {
                 if (this._isClearCacheOnEveryLoad !== v) {
                     this._isClearCacheOnEveryLoad = v;
@@ -540,8 +542,19 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(DataQuery.prototype, "isForAppend", {
+            get: function () { return this._isForAppend; },
+            set: function (v) {
+                if (this._isForAppend !== v) {
+                    this._isForAppend = v;
+                    this.raisePropertyChanged(const_2.PROP_NAME.isForAppend);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(DataQuery.prototype, "isCacheValid", {
-            get: function () { return !!this._dataCache && !this._cacheInvalidated; },
+            get: function () { return !!this._dataCache && !this._cacheInvalidated && !this.isForAppend; },
             enumerable: true,
             configurable: true
         });
@@ -903,6 +916,9 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             val.setFunc.call(item, value, item);
         };
         DbSet.prototype._beforeLoad = function (query, oldQuery) {
+            if (!!query.isForAppend) {
+                return;
+            }
             if (!!query && oldQuery !== query) {
                 this._query = query;
                 this._query.pageIndex = 0;
