@@ -66,7 +66,7 @@ export class Application extends BaseObject implements IApplication {
             }
         };
 
-        boot._getInternal().registerApp(this);
+        boot._getInternal().registerApp(<IApplication>this);
     }
     private _cleanUpObjMaps() {
         const self = this;
@@ -86,7 +86,7 @@ export class Application extends BaseObject implements IApplication {
         const self = this, keys = Object.keys(self._moduleInits);
         keys.forEach((key) => {
             const initFn = self._moduleInits[key];
-            initFn(self);
+            initFn(<IApplication>self);
         });
     }
     protected _getEventNames() {
@@ -174,8 +174,8 @@ export class Application extends BaseObject implements IApplication {
     set up application - use onStartUp callback to setUp handlers on objects, create viewModels and etc.
     all  that we need to do before setting up databindings
     */
-    startUp(onStartUp?: (app: Application) => any): IPromise<Application> {
-        const self = this, deferred = utils.defer.createDeferred<Application>();
+    startUp(onStartUp?: (app: IApplication) => any): IPromise<IApplication> {
+        const self = this, deferred = utils.defer.createDeferred<IApplication>();
 
         if (this._appState !== AppState.None) {
             return deferred.reject(new Error("Application can not be started when state != AppState.None"));
@@ -214,7 +214,7 @@ export class Application extends BaseObject implements IApplication {
 
                 // resolved with an application instance
                 promise.then(() => {
-                    deferred.resolve(self);
+                    deferred.resolve(<IApplication>self);
                 }, (err) => {
                     deferred.reject(err);
                 });
@@ -227,7 +227,7 @@ export class Application extends BaseObject implements IApplication {
 
         const promise = deferred.promise().then(() => {
             self._appState = AppState.Started;
-            return self;
+            return <IApplication>self;
         }, (err) => {
             self._appState = AppState.Error;
             throw err;
@@ -252,7 +252,7 @@ export class Application extends BaseObject implements IApplication {
     }
     // loads a group of templates from the server
     loadTemplatesAsync(fnLoader: () => IPromise<string>): IPromise<any> {
-        return boot.templateLoader.loadTemplatesAsync(fnLoader, this);
+        return boot.templateLoader.loadTemplatesAsync(fnLoader, <IApplication>this);
     }
     // fn_loader must load template and return promise which resolves with the loaded HTML string
     registerTemplateLoader(name: string, fnLoader: () => IPromise<string>): void {
@@ -288,7 +288,7 @@ export class Application extends BaseObject implements IApplication {
             url: <string>null,
             names: <string[]>null,
             promise: <IPromise<string>>null,
-            app: this
+            app: <IApplication>this
         }, group);
         boot.templateLoader.registerTemplateGroup(this.appName + "." + name, group2);
     }
@@ -300,7 +300,7 @@ export class Application extends BaseObject implements IApplication {
         const self = this;
         try {
             self._appState = AppState.Destroyed;
-            boot._getInternal().unregisterApp(self);
+            boot._getInternal().unregisterApp(<IApplication>self);
             self._cleanUpObjMaps();
             self._dataBindingService.destroy();
             self._dataBindingService = null;
@@ -328,5 +328,5 @@ export class Application extends BaseObject implements IApplication {
     }
     // Namespace for attaching custom user code (functions and objects - anything)
     get UC() { return this._UC; }
-    get app() { return this; }
+    get app() { return <IApplication>this; }
 }

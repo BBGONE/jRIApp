@@ -310,7 +310,7 @@ declare module "jriapp/int" {
             names: string[];
         }): void;
         bind(opts: IBindingOptions): IBinding;
-        startUp<TApp extends IApplication>(onStartUp?: (app: TApp) => any): IPromise<TApp>;
+        startUp(onStartUp?: (app: IApplication) => any): IPromise<IApplication>;
         readonly uniqueID: string;
         readonly appName: string;
         readonly appRoot: Document | HTMLElement;
@@ -962,7 +962,7 @@ declare module "jriapp/app" {
         registerElView(name: string, vwType: IViewType): void;
         registerObject(name: string, obj: any): void;
         getObject(name: string): any;
-        startUp(onStartUp?: (app: Application) => any): IPromise<Application>;
+        startUp(onStartUp?: (app: IApplication) => any): IPromise<IApplication>;
         loadTemplates(url: string): IPromise<any>;
         loadTemplatesAsync(fnLoader: () => IPromise<string>): IPromise<any>;
         registerTemplateLoader(name: string, fnLoader: () => IPromise<string>): void;
@@ -977,7 +977,7 @@ declare module "jriapp/app" {
         readonly appRoot: Document | HTMLElement;
         readonly viewFactory: IElViewFactory;
         readonly UC: any;
-        readonly app: this;
+        readonly app: IApplication;
     }
 }
 declare module "jriapp" {

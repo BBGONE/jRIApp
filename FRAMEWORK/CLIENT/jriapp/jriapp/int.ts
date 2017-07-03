@@ -294,7 +294,7 @@ export interface IApplication extends IErrorHandler, IExports, IBaseObject {
         names: string[];
    }): void;
     bind(opts: IBindingOptions): IBinding;
-    startUp<TApp extends IApplication>(onStartUp?: (app: TApp) => any): IPromise<TApp>;
+    startUp(onStartUp?: (app: IApplication) => any): IPromise<IApplication>;
     readonly uniqueID: string;
     readonly appName: string;
     readonly appRoot: Document | HTMLElement;

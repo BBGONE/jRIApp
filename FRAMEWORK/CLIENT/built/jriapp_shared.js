@@ -98,9 +98,9 @@ define("jriapp_shared/utils/checks", ["require", "exports"], function (require, 
         Checks.isThenable = function (a) {
             return (!a) ? false : ((typeof (a) === "object") && Checks.isFunc(a.then));
         };
+        Checks.undefined = void (0);
         return Checks;
     }());
-    Checks.undefined = void (0);
     exports.Checks = Checks;
 });
 define("jriapp_shared/utils/strUtils", ["require", "exports"], function (require, exports) {
@@ -266,9 +266,9 @@ define("jriapp_shared/utils/strUtils", ["require", "exports"], function (require
             }
             return StringUtils.fastTrim(val.replace(trimBracketsRX, ""));
         };
+        StringUtils.ERR_STRING_FORMAT_INVALID = "String format has invalid expression value: ";
         return StringUtils;
     }());
-    StringUtils.ERR_STRING_FORMAT_INVALID = "String format has invalid expression value: ";
     exports.StringUtils = StringUtils;
 });
 define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/utils/checks", "jriapp_shared/utils/strUtils"], function (require, exports, checks_1, strUtils_1) {
@@ -428,16 +428,16 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/uti
             }
             return self.getProp(res, parts[maxindex]);
         };
+        SysUtils.isBaseObj = function () { return false; };
+        SysUtils.isBinding = function () { return false; };
+        SysUtils.isPropBag = function (obj) {
+            return !!obj && obj.isPropertyBag;
+        };
+        SysUtils.isCollection = function () { return false; };
+        SysUtils.getItemByProp = function () { return null; };
+        SysUtils.isValidationError = function () { return false; };
         return SysUtils;
     }());
-    SysUtils.isBaseObj = function () { return false; };
-    SysUtils.isBinding = function () { return false; };
-    SysUtils.isPropBag = function (obj) {
-        return !!obj && obj.isPropertyBag;
-    };
-    SysUtils.isCollection = function () { return false; };
-    SysUtils.getItemByProp = function () { return null; };
-    SysUtils.isValidationError = function () { return false; };
     exports.SysUtils = SysUtils;
 });
 define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/checks"], function (require, exports, strutils_1, checks_2) {
@@ -652,14 +652,14 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
             }
             return target;
         };
+        CoreUtils.ERR_OBJ_ALREADY_REGISTERED = "an Object with the name: {0} is already registered and can not be overwritten";
+        CoreUtils.getTimeZoneOffset = (function () {
+            var dt = new Date(), tz = dt.getTimezoneOffset();
+            return function () { return tz; };
+        })();
+        CoreUtils.hasProp = checks.isHasProp;
         return CoreUtils;
     }());
-    CoreUtils.ERR_OBJ_ALREADY_REGISTERED = "an Object with the name: {0} is already registered and can not be overwritten";
-    CoreUtils.getTimeZoneOffset = (function () {
-        var dt = new Date(), tz = dt.getTimezoneOffset();
-        return function () { return tz; };
-    })();
-    CoreUtils.hasProp = checks.isHasProp;
     exports.CoreUtils = CoreUtils;
 });
 define("jriapp_shared/lang", ["require", "exports", "jriapp_shared/utils/coreutils"], function (require, exports, coreutils_1) {
@@ -1031,9 +1031,9 @@ define("jriapp_shared/utils/error", ["require", "exports", "jriapp_shared/const"
         ERROR.abort = function (reason) {
             throw new errors_1.AbortError(reason);
         };
+        ERROR._handlers = {};
         return ERROR;
     }());
-    ERROR._handlers = {};
     exports.ERROR = ERROR;
 });
 define("jriapp_shared/utils/debug", ["require", "exports", "jriapp_shared/const", "jriapp_shared/int"], function (require, exports, const_4, int_1) {
@@ -2404,10 +2404,10 @@ define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/s
             req.send(null);
             return new deferred_3.AbortablePromise(deferred, req);
         };
+        HttpUtils.defaultHeaders = {};
+        HttpUtils.ajaxTimeOut = 600;
         return HttpUtils;
     }());
-    HttpUtils.defaultHeaders = {};
-    HttpUtils.ajaxTimeOut = 600;
     exports.HttpUtils = HttpUtils;
 });
 define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug", "jriapp_shared/utils/error", "jriapp_shared/utils/logger", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/async", "jriapp_shared/utils/http", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/deferred"], function (require, exports, coreutils_5, debug_3, error_3, logger_1, sysutils_4, async_2, http_1, strutils_4, checks_8, arrhelper_2, deferred_4) {
@@ -2416,19 +2416,19 @@ define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/
     var Utils = (function () {
         function Utils() {
         }
+        Utils.check = checks_8.Checks;
+        Utils.str = strutils_4.StringUtils;
+        Utils.arr = arrhelper_2.ArrayHelper;
+        Utils.http = http_1.HttpUtils;
+        Utils.core = coreutils_5.CoreUtils;
+        Utils.defer = async_2.AsyncUtils;
+        Utils.err = error_3.ERROR;
+        Utils.log = logger_1.LOGGER;
+        Utils.debug = debug_3.DEBUG;
+        Utils.sys = sysutils_4.SysUtils;
+        Utils.queue = deferred_4.getTaskQueue();
         return Utils;
     }());
-    Utils.check = checks_8.Checks;
-    Utils.str = strutils_4.StringUtils;
-    Utils.arr = arrhelper_2.ArrayHelper;
-    Utils.http = http_1.HttpUtils;
-    Utils.core = coreutils_5.CoreUtils;
-    Utils.defer = async_2.AsyncUtils;
-    Utils.err = error_3.ERROR;
-    Utils.log = logger_1.LOGGER;
-    Utils.debug = debug_3.DEBUG;
-    Utils.sys = sysutils_4.SysUtils;
-    Utils.queue = deferred_4.getTaskQueue();
     exports.Utils = Utils;
 });
 define("jriapp_shared/utils/waitqueue", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/coreutils"], function (require, exports, object_2, coreutils_6) {
