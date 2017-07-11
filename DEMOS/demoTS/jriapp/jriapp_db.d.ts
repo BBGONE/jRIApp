@@ -77,7 +77,7 @@ declare module "jriapp_db/datacache" {
 }
 declare module "jriapp_db/dataquery" {
     import { FILTER_TYPE, SORT_ORDER } from "jriapp_shared/collection/const";
-    import { IPromise, BaseObject } from "jriapp_shared";
+    import { IStatefulPromise, BaseObject } from "jriapp_shared";
     import { IFieldInfo } from "jriapp_shared/collection/int";
     import { IEntityItem, IQueryInfo, IFilterInfo, ISortInfo, IQueryResult } from "jriapp_db/int";
     import { DataCache } from "jriapp_db/datacache";
@@ -125,7 +125,7 @@ declare module "jriapp_db/dataquery" {
         clearParams(): this;
         getFieldInfo(fieldName: string): IFieldInfo;
         getFieldNames(): string[];
-        load(): IPromise<IQueryResult<TItem>>;
+        load(): IStatefulPromise<IQueryResult<TItem>>;
         destroy(): void;
         toString(): string;
         readonly serverTimezone: number;

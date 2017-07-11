@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { FILTER_TYPE, SORT_ORDER, DATE_CONVERSION, DATA_TYPE } from "jriapp_shared/collection/const";
-import { IPromise, BaseObject, Utils, LocaleERRS as ERRS } from "jriapp_shared";
+import { IStatefulPromise, BaseObject, Utils, LocaleERRS as ERRS } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
 import { ValueUtils } from "jriapp_shared/collection/utils";
 import { PROP_NAME } from "./const";
@@ -196,8 +196,8 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
     getFieldNames() {
         return this._dbSet.getFieldNames();
     }
-    load(): IPromise<IQueryResult<TItem>> {
-        return <IPromise<IQueryResult<TItem>>>this.dbSet.dbContext.load(this);
+    load(): IStatefulPromise<IQueryResult<TItem>> {
+        return <IStatefulPromise<IQueryResult<TItem>>>this.dbSet.dbContext.load(this);
     }
     destroy() {
         if (this._isDestroyed) {
