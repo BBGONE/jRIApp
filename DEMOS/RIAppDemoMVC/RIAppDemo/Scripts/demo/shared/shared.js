@@ -340,11 +340,11 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             _this._loadTimeout = null;
             _this._dataContext = null;
             _this._isLoading = false;
-            _this._width = options.width || '200px';
-            _this._height = options.height || '300px';
             _this._lookupGrid = null;
             _this._btnOk = null;
             _this._btnCancel = null;
+            _this._width = options.width || '200px';
+            _this._height = options.height || '330px';
             _this._$dlg = null;
             var $el = $(_this.el);
             $el.on('change.' + _this.uniqueID, function (e) {
@@ -354,7 +354,7 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             });
             $el.on('keyup.' + _this.uniqueID, function (e) {
                 e.stopPropagation();
-                self._onKeyUp(e.target.value);
+                self._onKeyUp(e.target.value, e.keyCode);
                 self._onKeyPress(e.keyCode);
             });
             $el.on('keypress.' + _this.uniqueID, function (e) {
@@ -363,12 +363,12 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             _this._isOpen = false;
             _this._createGridDataSource();
             _this._template = _this._createTemplate();
-            _this._$dropDown = uiMOD.$(RIAPP.DOM.document.createElement("div"));
+            _this._$dropDown = $(RIAPP.DOM.document.createElement("div"));
             _this._$dropDown.css({
                 "position": "absolute",
+                "z-index": "10000",
                 "left": "-2000px",
                 "top": "-1000px",
-                "z-index": "10000",
                 "background-color": "white",
                 "border": "1px solid gray",
                 "width": _this._width,
@@ -392,11 +392,11 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             }
             this._btnOk = findElemInTemplate(template, 'btnOk');
             this._btnCancel = findElemInTemplate(template, 'btnCancel');
-            uiMOD.$(this._btnOk).click(function () {
+            $(this._btnOk).click(function () {
                 self._updateSelection();
                 self._hide();
             });
-            uiMOD.$(this._btnCancel).click(function () {
+            $(this._btnCancel).click(function () {
                 self._hide();
             });
         };
@@ -426,38 +426,38 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
         };
         AutoCompleteElView.prototype._onTextChange = function () {
         };
-        AutoCompleteElView.prototype._onKeyUp = function (text) {
+        AutoCompleteElView.prototype._onKeyUp = function (text, keyCode) {
             var self = this;
             clearTimeout(this._loadTimeout);
             if (!!text && text.length >= self._minTextLength) {
                 this._loadTimeout = setTimeout(function () {
-                    if (self._isDestroyCalled)
+                    if (self.getIsDestroyCalled())
                         return;
                     if (self._prevText != text) {
                         self._prevText = text;
-                        if (!self._isOpen)
-                            self._open();
-                        self.load(text);
+                        if (!((keyCode === 27) || (keyCode == 13))) {
+                            if (!self._isOpen)
+                                self._open();
+                            self.load(text);
+                        }
                     }
                 }, 500);
             }
-            else
+            else {
                 self.gridDataSource.clear();
+            }
         };
         AutoCompleteElView.prototype._onKeyPress = function (keyCode) {
-            if (keyCode === 27) {
-                this._hideAsync();
-                return;
-            }
             if (keyCode === 13) {
                 this._updateSelection();
+            }
+            if (keyCode === 27 || keyCode === 9 || keyCode === 13) {
                 this._hideAsync();
-                return;
             }
         };
         AutoCompleteElView.prototype._hideAsync = function () {
             var self = this;
-            setTimeout(function () {
+            return utils.defer.delay(function () {
                 self._hide();
             }, 100);
         };
@@ -468,7 +468,7 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             this._$dropDown.position({
                 my: "left top",
                 at: "left bottom",
-                of: uiMOD.$(this.el),
+                of: $(this.el),
                 offset: "0 0"
             });
         };
@@ -477,14 +477,15 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
         };
         AutoCompleteElView.prototype._onHide = function () {
             this.raiseEvent('hide', {});
+            this.raisePropertyChanged("value");
         };
         AutoCompleteElView.prototype._open = function () {
             if (this._isOpen)
                 return;
-            var self = this;
-            this._$dlg = $(this.el).closest(".ui-dialog");
-            var dialogdrag = "dialogdrag." + this.uniqueID;
-            this._$dlg.on(dialogdrag, null, function (event) {
+            var self = this, $dlg = $(this.el).closest(".ui-dialog"), txtEl = self.el;
+            this._$dlg = $dlg;
+            var ns = "dialogdrag." + this.uniqueID;
+            this._$dlg.on(ns, null, function (event) {
                 if (!self._isOpen)
                     return null;
                 self._updatePosition();
@@ -496,10 +497,17 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
                     self._updateSelection();
                     self._hide();
                 }, this.uniqueID);
-                uiMOD.$(RIAPP.DOM.document).on('keyup.' + this.uniqueID, function (e) {
+                bootstrap.currentSelectable = self._lookupGrid;
+                $(RIAPP.DOM.document).on('keyup.' + this.uniqueID, function (e) {
                     e.stopPropagation();
-                    if (bootstrap.currentSelectable === self._lookupGrid)
+                    if (bootstrap.currentSelectable === self._lookupGrid) {
                         self._onKeyPress(e.which);
+                    }
+                });
+                $(RIAPP.DOM.document).on('mousedown.' + this.uniqueID, function (e) {
+                    if (RIAPP.DOM.isContained(e.target, $dlg.get(0)) || RIAPP.DOM.isContained(e.target, txtEl)) {
+                        self._hideAsync();
+                    }
                 });
             }
             this._isOpen = true;
@@ -513,7 +521,7 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             if (!!this._lookupGrid) {
                 this._lookupGrid.removeNSHandlers(this.uniqueID);
             }
-            this._$dropDown.css("left", "-2000px");
+            this._$dropDown.css({ left: "-2000px" });
             this._isOpen = false;
             this._onHide();
         };
@@ -535,6 +543,7 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
                 return;
             this._isDestroyCalled = true;
             this._hide();
+            $(this.el).off('.' + this.uniqueID);
             if (!!this._lookupGrid) {
                 this._lookupGrid = null;
             }
@@ -559,10 +568,12 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
         });
         Object.defineProperty(AutoCompleteElView.prototype, "currentSelection", {
             get: function () {
-                if (this._gridDataSource.currentItem)
+                if (this._gridDataSource.currentItem) {
                     return this._gridDataSource.currentItem[this._fieldName];
-                else
+                }
+                else {
                     return null;
+                }
             },
             enumerable: true,
             configurable: true
@@ -575,9 +586,14 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
         Object.defineProperty(AutoCompleteElView.prototype, "dataContext", {
             get: function () { return this._dataContext; },
             set: function (v) {
+                var old = this._dataContext;
                 if (this._dataContext !== v) {
+                    if (!!old)
+                        old.removeNSHandlers(this.uniqueID);
                     this._dataContext = v;
                     this.raisePropertyChanged('dataContext');
+                    if (!this._dataContext)
+                        this._hideAsync();
                 }
             },
             enumerable: true,
