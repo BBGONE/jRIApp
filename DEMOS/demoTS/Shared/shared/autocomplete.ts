@@ -3,7 +3,7 @@ import * as dbMOD from "jriapp_db";
 import * as uiMOD from "jriapp_ui";
 import * as COMMON from "./common";
 
-let bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
+let bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = uiMOD.$;
 
 function findElemViewInTemplate(template: RIAPP.ITemplate, name: string) {
     //look by data-name attribute value
@@ -184,14 +184,16 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
             self.gridDataSource.clear();
         }
     }
-    protected _onKeyPress(keyCode: number) {
+    protected _onKeyPress(keyCode: number): boolean {
         if (keyCode === RIAPP.KEYS.enter) {
             this._updateSelection();
         }
 
         if (keyCode === RIAPP.KEYS.esc || keyCode === RIAPP.KEYS.tab || keyCode === RIAPP.KEYS.enter) {
             this._hideAsync();
+            return true;
         }
+        return false;
     }
     protected _hideAsync(): RIAPP.IPromise<void> {
         const self = this;
@@ -243,9 +245,9 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
             bootstrap.currentSelectable = self._lookupGrid;
 
             $(RIAPP.DOM.document).on('keyup.' + this.uniqueID, function (e) {
-                e.stopPropagation();
                 if (bootstrap.currentSelectable === self._lookupGrid) {
-                    self._onKeyPress(e.which);
+                    if (self._onKeyPress(e.which))
+                        e.stopPropagation();
                 }
             });
 

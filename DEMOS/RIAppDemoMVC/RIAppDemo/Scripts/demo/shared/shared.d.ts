@@ -101,7 +101,7 @@ declare module "autocomplete" {
         protected _createTemplate(): RIAPP.ITemplate;
         protected _onTextChange(): void;
         protected _onKeyUp(text: string, keyCode: number): void;
-        protected _onKeyPress(keyCode: number): void;
+        protected _onKeyPress(keyCode: number): boolean;
         protected _hideAsync(): RIAPP.IPromise<void>;
         protected _updateSelection(): void;
         protected _updatePosition(): void;

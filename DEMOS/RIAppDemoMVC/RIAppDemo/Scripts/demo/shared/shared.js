@@ -305,7 +305,7 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
 define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], function (require, exports, RIAPP, uiMOD, COMMON) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
+    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = uiMOD.$;
     function findElemViewInTemplate(template, name) {
         var arr = template.findElViewsByDataName(name);
         if (!!arr && arr.length > 0)
@@ -453,7 +453,9 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             }
             if (keyCode === 27 || keyCode === 9 || keyCode === 13) {
                 this._hideAsync();
+                return true;
             }
+            return false;
         };
         AutoCompleteElView.prototype._hideAsync = function () {
             var self = this;
@@ -499,9 +501,9 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
                 }, this.uniqueID);
                 bootstrap.currentSelectable = self._lookupGrid;
                 $(RIAPP.DOM.document).on('keyup.' + this.uniqueID, function (e) {
-                    e.stopPropagation();
                     if (bootstrap.currentSelectable === self._lookupGrid) {
-                        self._onKeyPress(e.which);
+                        if (self._onKeyPress(e.which))
+                            e.stopPropagation();
                     }
                 });
                 $(RIAPP.DOM.document).on('mousedown.' + this.uniqueID, function (e) {
