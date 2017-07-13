@@ -3277,6 +3277,10 @@ define("prodAutocomplete", ["require", "exports", "autocomplete"], function (req
                 this.getDataContext().ProductID = id;
             }
         };
+        ProductAutoComplete.prototype._onHide = function () {
+            this._updateValue();
+            _super.prototype._onHide.call(this);
+        };
         ProductAutoComplete.prototype._updateValue = function () {
             if (!this.dataContext) {
                 this.value = '';
@@ -3297,8 +3301,7 @@ define("prodAutocomplete", ["require", "exports", "autocomplete"], function (req
             }
         };
         ProductAutoComplete.prototype.setDataContext = function (v) {
-            var old = this.getDataContext();
-            var self = this;
+            var old = this.getDataContext(), self = this;
             if (old !== v) {
                 var dxt = v;
                 if (!!dxt) {

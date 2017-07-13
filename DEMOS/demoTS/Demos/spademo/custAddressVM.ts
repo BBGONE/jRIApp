@@ -16,7 +16,7 @@ export class CustomerAddressVM extends RIAPP.ViewModel<DemoApplication> {
 
     constructor(customerVM: CustomerVM) {
         super(customerVM.app);
-        var self = this;
+        let self = this;
         this._customerVM = customerVM;
         this._addAddressVM = null;
         this._currentCustomer = self._customerVM.currentItem;
@@ -29,17 +29,17 @@ export class CustomerAddressVM extends RIAPP.ViewModel<DemoApplication> {
         }, self.uniqueID);
 
         this._custAdressDb.addOnBeginEdit(function (sender, args) {
-            var item = args.item;
+            let item = args.item;
             //start editing Address entity, when CustomerAddress begins editing
             //p.s.- Address is navigation property
-            var address = item.Address;
+            let address = item.Address;
             if (!!address)
                 address._aspect.beginEdit();
         }, self.uniqueID);
 
         this._custAdressDb.addOnEndEdit(function (sender, args) {
-            var item = args.item;
-            var address = item.Address;
+            let item = args.item;
+            let address = item.Address;
             if (!args.isCanceled) {
                 if (!!address)
                     address._aspect.endEdit();
@@ -70,7 +70,7 @@ export class CustomerAddressVM extends RIAPP.ViewModel<DemoApplication> {
                 fn_itemsProvider: function (ds) {
                     if (!self._currentCustomer)
                         return [];
-                    var custAdrs = self._currentCustomer.CustomerAddresses;
+                    let custAdrs = self._currentCustomer.CustomerAddresses;
                     return custAdrs.map(function (m) {
                         return m.Address;
                     }).filter(function (address) {
@@ -95,7 +95,7 @@ export class CustomerAddressVM extends RIAPP.ViewModel<DemoApplication> {
     }
     //async load, returns promise
     _loadAddresses(addressIDs: number[], isClearTable: boolean) {
-        var query = this._addressesDb.createReadAddressByIdsQuery({ addressIDs: addressIDs });
+        let query = this._addressesDb.createReadAddressByIdsQuery({ addressIDs: addressIDs });
         //if true, we clear all previous data in the TDbSet
         query.isClearPrevData = isClearTable;
         //returns promise
@@ -103,14 +103,14 @@ export class CustomerAddressVM extends RIAPP.ViewModel<DemoApplication> {
     }
     _addNewAddress() {
         //use the TDataView, not TDbSet
-        var adr = this.addressesView.addNew();
+        let adr = this.addressesView.addNew();
         return adr;
     }
     _addNewCustAddress(address: DEMODB.Address) {
-        var cust = this.currentCustomer;
+        let cust = this.currentCustomer;
         //console.log("ADDED: "+ address.CountryRegion);
         //to add item here, use the TDataView, not TDbSet
-        var ca = this.custAdressView.addNew();
+        let ca = this.custAdressView.addNew();
         ca.CustomerID = cust.CustomerID;
         //this is default, can edit later
         ca.AddressType = "Main Office";
@@ -121,14 +121,14 @@ export class CustomerAddressVM extends RIAPP.ViewModel<DemoApplication> {
         return ca;
     }
     load(customers: DEMODB.Customer[]) {
-        var custArr = customers || [];
+        let custArr = customers || [];
 
         //customerIDs for all loaded customers entities (for current page only, not which in cache if query.loadPageCount>1)
-        var custIDs = custArr.map(function (item) {
+        let custIDs = custArr.map(function (item) {
             return item.CustomerID;
         });
 
-        var query = this._custAdressDb.createReadAddressForCustomersQuery({ custIDs: custIDs });
+        let query = this._custAdressDb.createReadAddressForCustomersQuery({ custIDs: custIDs });
         query.load();
     }
     destroy() {

@@ -7,7 +7,7 @@ import * as DEMODB from "../demo/demoDB";
 import { DemoApplication } from "./app";
 import { OrderVM } from "./orderVM";
 
-var utils = RIAPP.Utils, $ = uiMOD.$;
+let utils = RIAPP.Utils, $ = uiMOD.$;
 
 export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
     private _dataGrid: uiMOD.DataGrid;
@@ -22,7 +22,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
 
     constructor(app: DemoApplication) {
         super(app);
-        var self = this;
+        let self = this;
         this._dataGrid = null;
         this._dbSet = this.dbSets.Customer;
         this._dbSet.isSubmitOnDelete = true;
@@ -39,7 +39,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
 
         //example of using custom validation on client (in addition to a built-in validation)
         this._dbSet.addOnValidateField(function (sender, args) {
-            var item = args.item;
+            let item = args.item;
             //check complex property value
             if (args.fieldName == "ComplexProp.ComplexProp.Phone") {
                 if (utils.str.startsWith(args.item.ComplexProp.ComplexProp.Phone, '888')) {
@@ -100,7 +100,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
             self.dbSets.Address.clear();
         }, self.uniqueID);
 
-        var custAssoc = self.dbContext.associations.getCustAddrToCustomer();
+        let custAssoc = self.dbContext.associations.getCustAddrToCustomer();
 
         //the view to filter CustomerAddresses related to the current customer only
         this._custAdressView = new dbMOD.ChildDataView<DEMODB.CustomerAddress>(
@@ -112,7 +112,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
         this._ordersVM = new OrderVM(this);
     }
     protected _addGrid(grid: uiMOD.DataGrid): void {
-        var self = this;
+        let self = this;
         if (!!this._dataGrid)
             this._removeGrid();
         this._dataGrid = grid;
@@ -143,7 +143,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
     }
 
     protected _getEventNames() {
-        var base_events = super._getEventNames();
+        let base_events = super._getEventNames();
         return ['row_expanded', 'page_changed'].concat(base_events);
     }
     protected _onCurrentChanged() {
@@ -152,7 +152,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
     }
     //returns promise
     load() {
-        var self = this, query = this._dbSet.createReadCustomerQuery({ includeNav: true });
+        let self = this, query = this._dbSet.createReadCustomerQuery({ includeNav: true });
         query.pageSize = 50;
         query.orderBy('ComplexProp.LastName').thenBy('ComplexProp.MiddleName').thenBy('ComplexProp.FirstName');
         let res = query.load();

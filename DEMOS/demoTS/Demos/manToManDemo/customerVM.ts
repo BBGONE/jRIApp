@@ -14,7 +14,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
 
     constructor(app: DemoApplication) {
         super(app);
-        var self = this;
+        let self = this;
         this._dbSet = this.dbSets.Customer;
         this._dbSet.isSubmitOnDelete = true;
 
@@ -47,7 +47,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
 
         //initialize new item with default values
         this._dbSet.addOnItemAdded(function (sender, args) {
-            var item = args.item;
+            let item = args.item;
             item.NameStyle = false;
         }, self.uniqueID);
 
@@ -91,14 +91,14 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
     }
     //here we added a custom event
     _getEventNames() {
-        var base_events = super._getEventNames();
+        let base_events = super._getEventNames();
         return ['data_filled'].concat(base_events);
     }
     _onCurrentChanged() {
         this.raisePropertyChanged('currentItem');
     }
     load() {
-        var query = this.dbSet.createReadCustomerQuery({ includeNav: false });
+        let query = this.dbSet.createReadCustomerQuery({ includeNav: false });
         query.pageSize = 50;
         //when loadPageCount > 1 the we are loading several pages at once
         //when moving to the next page, the data is retrived from the local cache

@@ -3,7 +3,7 @@ import * as RIAPP from "jriapp";
 import * as DEMODB from "./demoDB";
 import * as COMMON from "common";
 
-var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
+let bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
 
 export class UppercaseConverter extends RIAPP.BaseConverter {
     convertToSource(val: any, param: any, dataContext: any): any {
@@ -43,7 +43,7 @@ export class TestObject extends RIAPP.BaseObject {
 
     constructor(initPropValue: string) {
         super();
-        var self = this;
+        let self = this;
         this._testProperty1 = initPropValue;
         this._testProperty2 = null;
         this._testProperty3 = null;
@@ -154,7 +154,7 @@ export class DemoApplication extends RIAPP.Application {
         this._testObject = null;
     }
     onStartUp() {
-        var self = this;
+        let self = this;
         this._errorVM = new COMMON.ErrorViewModel(this);
         this._testObject = new TestObject('some initial text');
         //here we could process application's errors
@@ -171,7 +171,7 @@ export class DemoApplication extends RIAPP.Application {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        var self = this;
+        let self = this;
         try {
             self._errorVM.destroy();
             self._testObject.destroy();
@@ -199,7 +199,7 @@ function initModule(app: RIAPP.Application) {
 };
 
 
-export var appOptions: RIAPP.IAppOptions = {
+export let appOptions: RIAPP.IAppOptions = {
     modulesInits: {
         "COMMON": COMMON.initModule,
         "BINDDEMO": initModule

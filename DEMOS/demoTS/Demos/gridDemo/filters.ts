@@ -5,7 +5,7 @@ import * as DEMODB from "../demo/demoDB";
 import { ResetCommand } from "./commands";
 import { DemoApplication } from "./app";
 
-var utils = RIAPP.Utils;
+let utils = RIAPP.Utils;
 
 export class ProductsFilter extends RIAPP.BaseObject {
     private _prodNumber: any;
@@ -26,7 +26,7 @@ export class ProductsFilter extends RIAPP.BaseObject {
 
     constructor(app: DemoApplication) {
         super();
-        var self = this;
+        let self = this;
         this._app = app;
         this._prodNumber = null;
         this._name = null;
@@ -59,14 +59,14 @@ export class ProductsFilter extends RIAPP.BaseObject {
         this._resetCommand = new ResetCommand(self);
     }
     _loadCategories() {
-        var query = this.ProductCategories.createReadProductCategoryQuery();
+        let query = this.ProductCategories.createReadProductCategoryQuery();
         query.orderBy('Name');
         //returns a promise
         return query.load();
     }
     //returns a promise
     _loadProductModels() {
-        var query = this.ProductModels.createReadProductModelQuery();
+        let query = this.ProductModels.createReadProductModelQuery();
         query.orderBy('Name');
         //returns promise
         return query.load();
@@ -74,7 +74,7 @@ export class ProductsFilter extends RIAPP.BaseObject {
     //returns a promise
     load() {
         //load two dbsets simultaneously
-        var promise1 = this._loadCategories(), promise2 = this._loadProductModels();
+        let promise1 = this._loadCategories(), promise2 = this._loadProductModels();
         return utils.defer.whenAll<any>([promise1, promise2]);
     }
     reset() {

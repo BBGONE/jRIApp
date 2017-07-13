@@ -84,7 +84,6 @@ declare module "autocomplete" {
         private _isLoading;
         private _width;
         private _height;
-        private _$dlg;
         private _isOpen;
         private _lookupGrid;
         private _btnOk;
@@ -126,8 +125,8 @@ declare module "autocomplete" {
 }
 declare module "header" {
     import * as RIAPP from "jriapp";
-    export var topPanel: string;
-    export var contentPanel: string;
+    export let topPanel: string;
+    export let contentPanel: string;
     export class HeaderVM extends RIAPP.ViewModel<RIAPP.IApplication> {
         _$topPanel: JQuery;
         _$contentPanel: JQuery;

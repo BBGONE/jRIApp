@@ -10,7 +10,7 @@ export class AddressVM extends RIAPP.ViewModel<DemoApplication> {
 
     constructor(orderVM: OrderVM) {
         super(orderVM.app);
-        var self = this;
+        let self = this;
         this._orderVM = orderVM;
         this._dbSet = this.dbSets.Address;
         this._orderVM.dbSet.addOnFill(function (sender, args) {
@@ -26,20 +26,20 @@ export class AddressVM extends RIAPP.ViewModel<DemoApplication> {
     }
     //returns a promise
     loadAddressesForOrders(orders: DEMODB.SalesOrderHeader[]) {
-        var ids1: number[] = orders.map(function (item) {
+        let ids1: number[] = orders.map(function (item) {
             return item.ShipToAddressID;
         });
-        var ids2: number[] = orders.map(function (item) {
+        let ids2: number[] = orders.map(function (item) {
             return item.BillToAddressID;
         });
-        var ids: number[] = ids1.concat(ids2).filter(function (id) {
+        let ids: number[] = ids1.concat(ids2).filter(function (id) {
             return id !== null;
         });
         return this.load(RIAPP.Utils.arr.distinct(ids), false);
     }
     //returns a promise
     load(ids: number[], isClearTable: boolean) {
-        var query = this.dbSet.createReadAddressByIdsQuery({ addressIDs: ids });
+        let query = this.dbSet.createReadAddressByIdsQuery({ addressIDs: ids });
         //if true, then the previous data will be cleared when the new is loaded
         query.isClearPrevData = isClearTable;
         return query.load();

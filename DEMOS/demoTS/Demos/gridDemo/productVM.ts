@@ -9,7 +9,7 @@ import { DemoApplication } from "./app";
 import { TestInvokeCommand } from "./commands";
 import { RowStateProvider, OptionStateProvider, OptionTextProvider } from "./states";
 
-var utils = RIAPP.Utils;
+let utils = RIAPP.Utils;
 
 
 export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implements uiMOD.ITabsEvents {
@@ -33,7 +33,7 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
 
     constructor(app: DemoApplication) {
         super(app);
-        var self = this;
+        let self = this;
         this._filter = new ProductsFilter(app);
         this._dbSet = this.dbSets.Product;
         this._dataGrid = null;
@@ -46,7 +46,7 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
         this._optionStateProvider = new OptionStateProvider();
         //this._templateID = 'productEditTemplate';
 
-        var sodAssoc = self.dbContext.associations.getOrdDetailsToProduct();
+        let sodAssoc = self.dbContext.associations.getOrdDetailsToProduct();
 
         //the view to filter DEMODB.SalesOrderDetails related to the currently selected product only
         this._vwSalesOrderDet = new dbMOD.ChildDataView<DEMODB.SalesOrderDetail>(
@@ -109,7 +109,7 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
 
         //example of using custom validation on client (in addition to a built-in validation)
         this._dbSet.addOnValidateField(function (sender, args) {
-            var item = args.item;
+            let item = args.item;
             validations.filter((val) => {
                 return args.fieldName === val.fieldName;
             }).forEach((val) => {
@@ -118,7 +118,7 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
         }, self.uniqueID);
 
         this._dbSet.addOnValidateItem(function (sender, args) {
-            var item = args.item;
+            let item = args.item;
             validations.filter((val) => {
                 return !val.fieldName;
             }).forEach((val) => {
@@ -168,7 +168,7 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
         });
 
         this._dialogVM = new uiMOD.DialogVM(app);
-        var dialogOptions: uiMOD.IDialogConstructorOptions = {
+        let dialogOptions: uiMOD.IDialogConstructorOptions = {
             templateID: 'invokeResultTemplate',
             width: 600,
             height: 250,
@@ -181,7 +181,7 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
         this._dialogVM.createDialog('testDialog', dialogOptions);
     }
     protected _addGrid(grid: uiMOD.DataGrid): void {
-        var self = this;
+        let self = this;
         if (!!this._dataGrid)
             this._removeGrid();
         this._dataGrid = grid;
@@ -241,11 +241,11 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
         this._columnCommand.raiseCanExecuteChanged();
     }
     protected _updateSelection() {
-        var self = this, keys = self.selectedIDs, grid = self._dataGrid;
+        let self = this, keys = self.selectedIDs, grid = self._dataGrid;
         keys.forEach(function (key) {
-            var item = self.dbSet.getItemByKey(key);
+            let item = self.dbSet.getItemByKey(key);
             if (!!item) {
-                var row = grid.findRowByItem(item);
+                let row = grid.findRowByItem(item);
                 if (!!row)
                     row.isSelected = true;
             }
@@ -280,7 +280,7 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
         //you can create several methods on the service which return the same entity type
         //but they must have different names (no overloads)
         //the query'service method can accept additional parameters which you can supply with the query
-        var query = this.dbSet.createReadProductQuery({ param1: [10, 11, 12, 13, 14], param2: 'Test' });
+        let query = this.dbSet.createReadProductQuery({ param1: [10, 11, 12, 13, 14], param2: 'Test' });
         query.pageSize = 50;
         COMMON.addTextQuery(query, 'ProductNumber', this._filter.prodNumber);
         COMMON.addTextQuery(query, 'Name', this._filter.name);
@@ -348,7 +348,7 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
     get columnCommand() { return this._columnCommand; }
     get selectedCount() { return this._selectedCount; }
     set selectedCount(v) {
-        var old = this._selectedCount;
+        let old = this._selectedCount;
         if (old !== v) {
             this._selectedCount = v;
             this.raisePropertyChanged('selectedCount');
@@ -357,7 +357,7 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
     get selectedIDs() { return Object.keys(this._selected); }
     get invokeResult() { return this._invokeResult; }
     set invokeResult(v) {
-        var old = this._invokeResult;
+        let old = this._invokeResult;
         if (old !== v) {
             this._invokeResult = v;
             this.raisePropertyChanged('invokeResult');

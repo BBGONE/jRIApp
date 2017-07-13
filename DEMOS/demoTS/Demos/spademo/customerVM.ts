@@ -29,7 +29,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
 
     constructor(app: DemoApplication) {
         super(app);
-        var self = this;
+        let self = this;
         this._dbSet = this.dbSets.Customer;
         this._dbSet.isSubmitOnDelete = true;
         this._propWatcher = new RIAPP.PropWatcher();
@@ -145,7 +145,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
             self.dbSets.Address.clear();
         }, self.uniqueID);
 
-        var custAssoc = self.dbContext.associations.getCustAddrToCustomer();
+        let custAssoc = self.dbContext.associations.getCustAddrToCustomer();
 
         //the view to filter CustomerAddresses related to the current customer only
         this._custAdressView = new dbMOD.ChildDataView<DEMODB.CustomerAddress>(
@@ -158,7 +158,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
         this._customerAddressVM = new CustomerAddressVM(this);
     }
     protected _getEventNames() {
-        var base_events = super._getEventNames();
+        let base_events = super._getEventNames();
         return ['row_expanded', 'page_changed'].concat(base_events);
     }
     protected _onCurrentChanged() {
@@ -178,7 +178,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
     }
     //returns promise
     load() {
-        var query = this._dbSet.createReadCustomerQuery({ includeNav: true });
+        let query = this._dbSet.createReadCustomerQuery({ includeNav: true });
         query.pageSize = 50;
         //load without filtering
         query.orderBy('ComplexProp.LastName').thenBy('ComplexProp.MiddleName').thenBy('ComplexProp.FirstName');

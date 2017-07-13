@@ -13,7 +13,7 @@ export class ProductVM extends RIAPP.ViewModel<DemoApplication> {
 
     constructor(orderDetailVM: OrderDetailVM) {
         super(orderDetailVM.app);
-        var self = this;
+        let self = this;
         this._orderDetailVM = orderDetailVM;
         this._dbSet = this.dbSets.Product;
 
@@ -38,7 +38,7 @@ export class ProductVM extends RIAPP.ViewModel<DemoApplication> {
     }
     //returns promise
     loadProductsForOrderDetails(orderDetails: DEMODB.SalesOrderDetail[]) {
-        var ids: number[] = orderDetails.map(function (item) {
+        let ids: number[] = orderDetails.map(function (item) {
             return item.ProductID;
         }).filter(function (id) {
             return id !== null;
@@ -48,7 +48,7 @@ export class ProductVM extends RIAPP.ViewModel<DemoApplication> {
     }
     //returns promise
     load(ids: number[], isClearTable: boolean) {
-        var query = this.dbSet.createReadProductByIdsQuery({ productIDs: ids });
+        let query = this.dbSet.createReadProductByIdsQuery({ productIDs: ids });
         query.isClearPrevData = isClearTable;
         return query.load();
     }

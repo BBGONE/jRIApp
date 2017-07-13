@@ -44,7 +44,7 @@ export class DemoApplication extends RIAPP.Application {
         this._websockVM = null;
     }
     onStartUp() {
-        var self = this, options: IMainOptions = self.options;
+        let self = this, options: IMainOptions = self.options;
         this._dbContext = new DEMODB.DbContext();
         this._dbContext.initialize({ serviceUrl: options.service_url, permissions: options.permissionInfo });
         this._dbContext.dbSets.Product.defineIsActiveField(function (item) {
@@ -97,7 +97,7 @@ export class DemoApplication extends RIAPP.Application {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        var self = this;
+        let self = this;
         try {
             self._errorVM.destroy();
             self._headerVM.destroy();

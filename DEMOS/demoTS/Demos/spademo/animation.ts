@@ -2,7 +2,7 @@
 import * as uiMOD from "jriapp_ui";
 
 //local variables for optimization
-var utils = RIAPP.Utils;
+let utils = RIAPP.Utils;
 
 export class FadeAnimation extends RIAPP.BaseObject implements uiMOD.IDynaContentAnimation {
     private _$animatedEl: JQuery;
@@ -23,7 +23,7 @@ export class FadeAnimation extends RIAPP.BaseObject implements uiMOD.IDynaConten
         this.stop();
         this._$animatedEl = $(template.el.parentElement);
         this._$animatedEl.hide();
-        var deffered = utils.defer.createDeferred<void>();
+        let deffered = utils.defer.createDeferred<void>();
         (<any>this._$animatedEl).show(this._effect, this._duration, () => {
             deffered.resolve();
         });
@@ -34,7 +34,7 @@ export class FadeAnimation extends RIAPP.BaseObject implements uiMOD.IDynaConten
         this._$animatedEl = $(template.el.parentElement);
     }
     hide(template: RIAPP.ITemplate): RIAPP.IVoidPromise {
-        var deffered = utils.defer.createDeferred<void>();
+        let deffered = utils.defer.createDeferred<void>();
         (<any>this._$animatedEl).hide(this._effect, this._duration, () => {
             deffered.resolve();
         });
@@ -79,7 +79,7 @@ export class SlideAnimation extends RIAPP.BaseObject implements uiMOD.IDynaConte
     show(template: RIAPP.ITemplate, isFirstShow: boolean): RIAPP.IVoidPromise {
         this.stop();
         this._$animatedEl = $(template.el.parentElement);
-        var deffered = utils.defer.createDeferred<void>();
+        let deffered = utils.defer.createDeferred<void>();
         (<any>this._$animatedEl).show(this._effect, this._duration, () => {
             deffered.resolve();
         });
@@ -90,7 +90,7 @@ export class SlideAnimation extends RIAPP.BaseObject implements uiMOD.IDynaConte
         this._$animatedEl = $(template.el.parentElement);
     }
     hide(template: RIAPP.ITemplate): RIAPP.IVoidPromise {
-        var deffered = utils.defer.createDeferred<void>();
+        let deffered = utils.defer.createDeferred<void>();
         (<any>this._$animatedEl).hide(this._effect, this._duration, () => {
             deffered.resolve();
         });

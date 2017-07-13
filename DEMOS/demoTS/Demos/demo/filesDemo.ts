@@ -5,8 +5,8 @@ import * as uiMOD from "jriapp_ui";
 import * as FOLDERBROWSER_SVC from "./folderBrowserSvc";
 import * as COMMON from "common";
 
-var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = uiMOD.$;
-declare var DTNodeStatus_Ok: any;
+let bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = uiMOD.$;
+declare let DTNodeStatus_Ok: any;
 
 export interface IMainOptions extends RIAPP.IAppOptions {
     service_url: string;
@@ -36,7 +36,7 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
 
     constructor(app: DemoApplication, options: IFolderBrowserOptions) {
         super(app);
-        var self = this;
+        let self = this;
         self._includeFiles = options.includeFiles;
         self._$tree = options.$tree;
         this._infotype = null;
@@ -52,14 +52,14 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
         this._createDynaTree();
     }
     _getEventNames() {
-        var base_events = super._getEventNames();
+        let base_events = super._getEventNames();
         return ['node_selected'].concat(base_events);
     }
     addOnNodeSelected(fn: (sender: FolderBrowser, args: { item: FOLDERBROWSER_SVC.FileSystemObject; }) => void, namespace?: string) {
         this.addHandler('node_selected', fn, namespace);
     }
     private _createDynaTree() {
-        var self = this;
+        let self = this;
         (<any>this._$tree).dynatree({
             onActivate: function (node: any) {
                 self.raiseEvent('node_selected', { item: node.data.item });
@@ -71,7 +71,7 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
             onExpand: function (flag: any, node: any) {
                 if (!flag) {
                     node.visit(function (child: any) {
-                        var item = <FOLDERBROWSER_SVC.FileSystemObject>child.data.item;
+                        let item = <FOLDERBROWSER_SVC.FileSystemObject>child.data.item;
                         if (!item)
                             return;
                         item._aspect.deleteItem();
@@ -92,18 +92,18 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
         this._$treeRoot = (<any>this._$tree).dynatree("getRoot");
     }
     loadRootFolder() {
-        var self = this, query = self._dbSet.createReadRootQuery({ includeFiles: self._includeFiles, infoType: self.infotype });
+        let self = this, query = self._dbSet.createReadRootQuery({ includeFiles: self._includeFiles, infoType: self.infotype });
         query.isClearPrevData = true;
-        var promise = query.load();
+        let promise = query.load();
         promise.then(function (res) {
             self._onLoaded(res.fetchedItems);
         });
         return promise;
     }
     loadChildren(item: FOLDERBROWSER_SVC.FileSystemObject) {
-        var self = this, query = self._dbSet.createReadChildrenQuery({ parentKey: item.Key, level: item.Level + 1, path: item.fullPath, includeFiles: self._includeFiles, infoType: self.infotype });
+        let self = this, query = self._dbSet.createReadChildrenQuery({ parentKey: item.Key, level: item.Level + 1, path: item.fullPath, includeFiles: self._includeFiles, infoType: self.infotype });
         query.isClearPrevData = false;
-        var promise = query.load();
+        let promise = query.load();
         promise.then(function (res) {
             self._onLoaded(res.fetchedItems);
         });
@@ -112,7 +112,7 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
     private _onLoaded(fetchedItems: FOLDERBROWSER_SVC.FileSystemObject[]) {
         const self = this;
         try {
-            var topLevel = fetchedItems.filter(function (item) {
+            let topLevel = fetchedItems.filter(function (item) {
                 return item.Level == 0;
             });
             if (topLevel.length > 0) {
@@ -124,7 +124,7 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
         }
     }
     private _addItemsToNode(node: any, items: FOLDERBROWSER_SVC.FileSystemObject[]) {
-        var arr = items.map(function (item) {
+        let arr = items.map(function (item) {
             return { title: item.Name, isLazy: item.HasSubDirs, isFolder: item.IsFolder, item: item };
         });
         node.removeChildren();
@@ -149,8 +149,8 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
 }
 
 function fn_getTemplateElement(template: RIAPP.ITemplate, name: string) {
-    var t = template;
-    var els = t.findElByDataName(name);
+    let t = template;
+    let els = t.findElByDataName(name);
     if (els.length < 1)
         return null;
     return els[0];
@@ -173,16 +173,16 @@ export class FolderBrowserVM extends RIAPP.ViewModel<DemoApplication> {
         this._folderBrowser = null;
         this._options = options;
         this._infotype = null;
-        var title = self._options.includeFiles ? 'Выбор файла' : 'Выбор папки';
-        var dialogOptions: uiMOD.IDialogConstructorOptions = {
+        let title = self._options.includeFiles ? 'Выбор файла' : 'Выбор папки';
+        let dialogOptions: uiMOD.IDialogConstructorOptions = {
             templateID: 'treeTemplate',
             width: 650,
             height: 700,
             title: title,
             fn_OnTemplateCreated: function (template) {
                 //executed in the context of the dialog
-                var $tree = $(fn_getTemplateElement(template, 'tree'));
-                var options = <IFolderBrowserOptions>coreUtils.merge(self._options, { $tree: $tree });
+                let $tree = $(fn_getTemplateElement(template, 'tree'));
+                let options = <IFolderBrowserOptions>coreUtils.merge(self._options, { $tree: $tree });
                 self._folderBrowser = new FolderBrowser(app, options);
                 self._folderBrowser.addOnNodeSelected(function (s, a) {
                     self.selectedItem = a.item;
@@ -214,7 +214,7 @@ export class FolderBrowserVM extends RIAPP.ViewModel<DemoApplication> {
         });
     }
     _getEventNames() {
-        var base_events = super._getEventNames();
+        let base_events = super._getEventNames();
         return ['item_selected'].concat(base_events);
     }
     addOnItemSelected(fn: (sender: FolderBrowserVM, args: { fullPath: string }) => void, namespace?: string) {
@@ -227,7 +227,7 @@ export class FolderBrowserVM extends RIAPP.ViewModel<DemoApplication> {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        var self = this;
+        let self = this;
         if (!!self._folderBrowser) {
             self._folderBrowser.destroy();
             self._folderBrowser = null;
@@ -270,7 +270,7 @@ export class DemoApplication extends RIAPP.Application {
         this._selectedPath = null;
     }
     onStartUp() {
-        var self = this, options: IMainOptions = self.options;
+        let self = this, options: IMainOptions = self.options;
         self._dbContext = new FOLDERBROWSER_SVC.DbContext();
         self._dbContext.initialize({
             serviceUrl: options.service_url,
@@ -307,14 +307,14 @@ export class DemoApplication extends RIAPP.Application {
         super.onStartUp();
     }
     private _getFullPath(item: FOLDERBROWSER_SVC.FileSystemObject, path: string): string {
-        var self = this, part: string;
+        let self = this, part: string;
         if (utils.check.isNt(path))
             path = '';
         if (!path)
             part = '';
         else
             part = '\\' + path;
-        var parent = <FOLDERBROWSER_SVC.FileSystemObject>self.dbContext.associations.getChildToParent().getParentItem(item);
+        let parent = <FOLDERBROWSER_SVC.FileSystemObject>self.dbContext.associations.getChildToParent().getParentItem(item);
         if (!parent) {
             return item.Name + part;
         }
@@ -330,7 +330,7 @@ export class DemoApplication extends RIAPP.Application {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        var self = this;
+        let self = this;
         try {
             self._errorVM.destroy();
             self._fbrowserVM1.destroy();

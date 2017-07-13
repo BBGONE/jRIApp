@@ -193,7 +193,7 @@ export class BaseUploadVM<TApp extends RIAPP.IApplication> extends RIAPP.ViewMod
     //id of the record in database
     get id() { return this._id; }
     set id(v: string) {
-        var old = this._id;
+        let old = this._id;
         if (old !== v) {
             this._id = v;
             this.raisePropertyChanged('id');

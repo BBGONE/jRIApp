@@ -4,7 +4,7 @@ import * as dbMOD from "jriapp_db";
 import * as FOLDERBROWSER_SVC from "./folderBrowserSvc";
 import * as COMMON from "common";
 
-var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, infoType = "BASE_ROOT";
+let bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, infoType = "BASE_ROOT";
 
 export interface IMainOptions extends RIAPP.IAppOptions {
     service_url: string;
@@ -34,7 +34,7 @@ export class ExProps extends RIAPP.BaseObject {
 
     constructor(item: FOLDERBROWSER_SVC.FileSystemObject, dbContext: FOLDERBROWSER_SVC.DbContext) {
         super();
-        var self: ExProps = this;
+        let self: ExProps = this;
         this._item = item;
         this._dbContext = dbContext;
         this._childView = null;
@@ -74,7 +74,7 @@ export class ExProps extends RIAPP.BaseObject {
         }, self, null);
     }
     _getEventNames() {
-        var base_events = super._getEventNames();
+        let base_events = super._getEventNames();
         return ['clicked', 'dblclicked'].concat(base_events);
     }
     addOnClicked(fn: (sender: ExProps, args: { item: FOLDERBROWSER_SVC.FileSystemObject; }) => void, nmspace?: string) {
@@ -90,8 +90,8 @@ export class ExProps extends RIAPP.BaseObject {
         this.removeHandler('dblclicked', nmspace);
     }
     createChildView() {
-        var self = this;
-        var dvw = new dbMOD.ChildDataView<FOLDERBROWSER_SVC.FileSystemObject>(
+        let self = this;
+        let dvw = new dbMOD.ChildDataView<FOLDERBROWSER_SVC.FileSystemObject>(
             {
                 association: self._dbContext.associations.getChildToParent(),
                 parentItem: self._item
@@ -102,16 +102,16 @@ export class ExProps extends RIAPP.BaseObject {
         return dvw;
     }
     loadChildren() {
-        var self = this, query = self._dbSet.createReadChildrenQuery({ parentKey: self.item.Key, level: self.item.Level + 1, path: self.item.fullPath, includeFiles: false, infoType: infoType });
+        let self = this, query = self._dbSet.createReadChildrenQuery({ parentKey: self.item.Key, level: self.item.Level + 1, path: self.item.fullPath, includeFiles: false, infoType: infoType });
         query.isClearPrevData = false;
-        var promise = query.load();
+        let promise = query.load();
         return promise;
     }
     destroy() {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        var self = this;
+        let self = this;
         clearTimeout(self._clickTimeOut);
         if (!!this._childView) {
             this._childView.parentItem = null;
@@ -132,9 +132,9 @@ export class ExProps extends RIAPP.BaseObject {
     get toggleCommand() { return this._toggleCommand; }
     get clickCommand() { return this._clickCommand; }
     get css1() {
-        var children_css = this.item.HasSubDirs ? ' dynatree-has-children' : ''
-        var folder_css = this.item.IsFolder ? ' dynatree-folder' : '';
-        var css = '';
+        let children_css = this.item.HasSubDirs ? ' dynatree-has-children' : ''
+        let folder_css = this.item.IsFolder ? ' dynatree-folder' : '';
+        let css = '';
         if (!this._childView)
             css = 'dynatree-node dynatree-exp dynatree-ico-cf'; //dynatree-active
         else
@@ -160,7 +160,7 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
 
     constructor(app: DemoApplication, options: IFolderBrowserOptions) {
         super(app);
-        var self = this;
+        let self = this;
         self._dbSet = self.dbContext.dbSets.FileSystemObject;
 
         self._collapseCommand = new RIAPP.Command(function (s, a) {
@@ -202,14 +202,14 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
         alert("double clicked item: " + item.fullPath);
     }
     private _getFullPath(item: FOLDERBROWSER_SVC.FileSystemObject, path: string): string {
-        var self = this, part: string;
+        let self = this, part: string;
         if (utils.check.isNt(path))
             path = '';
         if (!path)
             part = '';
         else
             part = '\\' + path;
-        var parent = <FOLDERBROWSER_SVC.FileSystemObject>self.dbContext.associations.getChildToParent().getParentItem(item);
+        let parent = <FOLDERBROWSER_SVC.FileSystemObject>self.dbContext.associations.getChildToParent().getParentItem(item);
         if (!parent) {
             return item.Name + part;
         }
@@ -221,8 +221,8 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
         return this._getFullPath(item, null);
     }
     private createDataView() {
-        var self = this;
-        var res = new dbMOD.DataView<FOLDERBROWSER_SVC.FileSystemObject>(
+        let self = this;
+        let res = new dbMOD.DataView<FOLDERBROWSER_SVC.FileSystemObject>(
             {
                 dataSource: self._dbSet,
                 fn_filter: (item) => {
@@ -233,8 +233,8 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
         return res;
     }
     collapse() {
-        var self = this;
-        var items = self._dbSet.items.filter((item) => {
+        let self = this;
+        let items = self._dbSet.items.filter((item) => {
             return (item.Level > 0);
         });
 
@@ -251,18 +251,18 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
         });
     }
     loadRootFolder() {
-        var self = this, query = self._dbSet.createReadRootQuery({ includeFiles: false, infoType: infoType });
+        let self = this, query = self._dbSet.createReadRootQuery({ includeFiles: false, infoType: infoType });
         query.isClearPrevData = true;
-        var promise = query.load();
+        let promise = query.load();
         promise.then(function (res) {
             //self._rootView.refresh();
         });
         return promise;
     }
     loadAll() {
-        var self = this, query = self._dbSet.createReadAllQuery({ includeFiles: false, infoType: infoType });
+        let self = this, query = self._dbSet.createReadAllQuery({ includeFiles: false, infoType: infoType });
         query.isClearPrevData = true;
-        var promise = query.load();
+        let promise = query.load();
         return promise;
     }
     destroy() {
@@ -289,7 +289,7 @@ export class DemoApplication extends RIAPP.Application {
         this._fbrowserVM = null;
     }
     onStartUp() {
-        var self = this, options: IMainOptions = self.options;
+        let self = this, options: IMainOptions = self.options;
         self._dbContext = new FOLDERBROWSER_SVC.DbContext();
         self._dbContext.initialize({
             serviceUrl: options.service_url,
@@ -313,7 +313,7 @@ export class DemoApplication extends RIAPP.Application {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        var self = this;
+        let self = this;
         try {
             self._errorVM.destroy();
             self._fbrowserVM.destroy();

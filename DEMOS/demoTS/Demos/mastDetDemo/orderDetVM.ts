@@ -8,7 +8,7 @@ import { DemoApplication } from "./app";
 import { OrderVM } from "./orderVM";
 import { ProductVM } from "./productVM";
 
-var utils = RIAPP.Utils, $ = uiMOD.$;
+let utils = RIAPP.Utils, $ = uiMOD.$;
 
 export class OrderDetailVM extends RIAPP.ViewModel<DemoApplication> {
     private _orderVM: OrderVM;
@@ -18,7 +18,7 @@ export class OrderDetailVM extends RIAPP.ViewModel<DemoApplication> {
 
     constructor(orderVM: OrderVM) {
         super(orderVM.app);
-        var self = this;
+        let self = this;
         this._dbSet = this.dbSets.SalesOrderDetail;
         this._orderVM = orderVM;
         this._currentOrder = null;
@@ -41,11 +41,11 @@ export class OrderDetailVM extends RIAPP.ViewModel<DemoApplication> {
         this.clear();
 
         if (!this.currentOrder || this.currentOrder._aspect.isNew) {
-            var deferred = utils.defer.createDeferred<dbMOD.IQueryResult<DEMODB.SalesOrderDetail>>();
+            let deferred = utils.defer.createDeferred<dbMOD.IQueryResult<DEMODB.SalesOrderDetail>>();
             deferred.reject();
             return deferred.promise();
         }
-        var query = this.dbSet.createReadSalesOrderDetailQuery();
+        let query = this.dbSet.createReadSalesOrderDetailQuery();
         query.where('SalesOrderID', RIAPP.FILTER_TYPE.Equals, [this.currentOrder.SalesOrderID]);
         query.orderBy('SalesOrderDetailID');
         return query.load();

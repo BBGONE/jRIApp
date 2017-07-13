@@ -378,7 +378,7 @@ class AddressEntity extends RIAPP.CollectionItem<TAddressAspect> implements Addr
 export class AddressDb extends dbMOD.DbSet<Address, IAddress, DbContext>
 {
     constructor(dbContext: DbContext) {
-        var opts: dbMOD.IDbSetConstuctorOptions = {
+        let opts: dbMOD.IDbSetConstuctorOptions = {
             dbContext: dbContext,
             dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "Address" },
             childAssoc: ([]),
@@ -400,7 +400,7 @@ export class AddressDb extends dbMOD.DbSet<Address, IAddress, DbContext>
     createReadAddressByIdsQuery(args?: {
         addressIDs: number[];
     }): dbMOD.DataQuery<Address, IAddress> {
-        var query = this.createQuery('ReadAddressByIds');
+        let query = this.createQuery('ReadAddressByIds');
         query.params = args;
         return query;
     }
@@ -445,7 +445,7 @@ class AddressInfoEntity extends RIAPP.CollectionItem<TAddressInfoAspect> impleme
 export class AddressInfoDb extends dbMOD.DbSet<AddressInfo, IAddressInfo, DbContext>
 {
     constructor(dbContext: DbContext) {
-        var opts: dbMOD.IDbSetConstuctorOptions = {
+        let opts: dbMOD.IDbSetConstuctorOptions = {
             dbContext: dbContext,
             dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "AddressInfo" },
             childAssoc: ([]),
@@ -525,7 +525,7 @@ class CustomerEntity extends RIAPP.CollectionItem<TCustomerAspect> implements Cu
 export class CustomerDb extends dbMOD.DbSet<Customer, ICustomer, DbContext>
 {
     constructor(dbContext: DbContext) {
-        var opts: dbMOD.IDbSetConstuctorOptions = {
+        let opts: dbMOD.IDbSetConstuctorOptions = {
             dbContext: dbContext,
             dbSetInfo: { "fieldInfos": [], "enablePaging": true, "pageSize": 25, "dbSetName": "Customer" },
             childAssoc: ([]),
@@ -547,7 +547,7 @@ export class CustomerDb extends dbMOD.DbSet<Customer, ICustomer, DbContext>
     createReadCustomerQuery(args?: {
         includeNav?: boolean;
     }): dbMOD.DataQuery<Customer, ICustomer> {
-        var query = this.createQuery('ReadCustomer');
+        let query = this.createQuery('ReadCustomer');
         query.params = args;
         return query;
     }
@@ -599,7 +599,7 @@ class CustomerAddressEntity extends RIAPP.CollectionItem<TCustomerAddressAspect>
 export class CustomerAddressDb extends dbMOD.DbSet<CustomerAddress, ICustomerAddress, DbContext>
 {
     constructor(dbContext: DbContext) {
-        var opts: dbMOD.IDbSetConstuctorOptions = {
+        let opts: dbMOD.IDbSetConstuctorOptions = {
             dbContext: dbContext,
             dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "CustomerAddress" },
             childAssoc: ([{ "name": "CustAddrToAddress", "parentDbSetName": "Address", "childDbSetName": "CustomerAddress", "childToParentName": "Address", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "AddressID" }] }, { "name": "CustAddrToAddress2", "parentDbSetName": "AddressInfo", "childDbSetName": "CustomerAddress", "childToParentName": "AddressInfo", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "AddressID" }] }, { "name": "CustAddrToCustomer", "parentDbSetName": "Customer", "childDbSetName": "CustomerAddress", "childToParentName": "Customer", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "CustomerID", "childField": "CustomerID" }] }]),
@@ -621,7 +621,7 @@ export class CustomerAddressDb extends dbMOD.DbSet<CustomerAddress, ICustomerAdd
     createReadAddressForCustomersQuery(args?: {
         custIDs: number[];
     }): dbMOD.DataQuery<CustomerAddress, ICustomerAddress> {
-        var query = this.createQuery('ReadAddressForCustomers');
+        let query = this.createQuery('ReadAddressForCustomers');
         query.params = args;
         return query;
     }
@@ -663,7 +663,7 @@ class CustomerJSONEntity extends RIAPP.CollectionItem<TCustomerJSONAspect> imple
 export class CustomerJSONDb extends dbMOD.DbSet<CustomerJSON, ICustomerJSON, DbContext>
 {
     constructor(dbContext: DbContext) {
-        var opts: dbMOD.IDbSetConstuctorOptions = {
+        let opts: dbMOD.IDbSetConstuctorOptions = {
             dbContext: dbContext,
             dbSetInfo: { "fieldInfos": [], "enablePaging": true, "pageSize": 25, "dbSetName": "CustomerJSON" },
             childAssoc: ([]),
@@ -718,7 +718,7 @@ class LookUpProductEntity extends RIAPP.CollectionItem<TLookUpProductAspect> imp
 export class LookUpProductDb extends dbMOD.DbSet<LookUpProduct, ILookUpProduct, DbContext>
 {
     constructor(dbContext: DbContext) {
-        var opts: dbMOD.IDbSetConstuctorOptions = {
+        let opts: dbMOD.IDbSetConstuctorOptions = {
             dbContext: dbContext,
             dbSetInfo: { "fieldInfos": [], "enablePaging": true, "pageSize": 25, "dbSetName": "LookUpProduct" },
             childAssoc: ([]),
@@ -815,7 +815,7 @@ class ProductEntity extends RIAPP.CollectionItem<TProductAspect> implements Prod
 export class ProductDb extends dbMOD.DbSet<Product, IProduct, DbContext>
 {
     constructor(dbContext: DbContext) {
-        var opts: dbMOD.IDbSetConstuctorOptions = {
+        let opts: dbMOD.IDbSetConstuctorOptions = {
             dbContext: dbContext,
             dbSetInfo: { "fieldInfos": [], "enablePaging": true, "pageSize": 25, "dbSetName": "Product" },
             childAssoc: ([]),
@@ -837,7 +837,7 @@ export class ProductDb extends dbMOD.DbSet<Product, IProduct, DbContext>
     createReadProductByIdsQuery(args?: {
         productIDs: number[];
     }): dbMOD.DataQuery<Product, IProduct> {
-        var query = this.createQuery('ReadProductByIds');
+        let query = this.createQuery('ReadProductByIds');
         query.params = args;
         return query;
     }
@@ -845,7 +845,7 @@ export class ProductDb extends dbMOD.DbSet<Product, IProduct, DbContext>
         param1: number[];
         param2: string;
     }): dbMOD.DataQuery<Product, IProduct> {
-        var query = this.createQuery('ReadProduct');
+        let query = this.createQuery('ReadProduct');
         query.params = args;
         return query;
     }
@@ -890,7 +890,7 @@ class ProductCategoryEntity extends RIAPP.CollectionItem<TProductCategoryAspect>
 export class ProductCategoryDb extends dbMOD.DbSet<ProductCategory, IProductCategory, DbContext>
 {
     constructor(dbContext: DbContext) {
-        var opts: dbMOD.IDbSetConstuctorOptions = {
+        let opts: dbMOD.IDbSetConstuctorOptions = {
             dbContext: dbContext,
             dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "ProductCategory" },
             childAssoc: ([]),
@@ -944,7 +944,7 @@ class ProductModelEntity extends RIAPP.CollectionItem<TProductModelAspect> imple
 export class ProductModelDb extends dbMOD.DbSet<ProductModel, IProductModel, DbContext>
 {
     constructor(dbContext: DbContext) {
-        var opts: dbMOD.IDbSetConstuctorOptions = {
+        let opts: dbMOD.IDbSetConstuctorOptions = {
             dbContext: dbContext,
             dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "ProductModel" },
             childAssoc: ([]),
@@ -996,7 +996,7 @@ class SalesInfoEntity extends RIAPP.CollectionItem<TSalesInfoAspect> implements 
 export class SalesInfoDb extends dbMOD.DbSet<SalesInfo, ISalesInfo, DbContext>
 {
     constructor(dbContext: DbContext) {
-        var opts: dbMOD.IDbSetConstuctorOptions = {
+        let opts: dbMOD.IDbSetConstuctorOptions = {
             dbContext: dbContext,
             dbSetInfo: { "fieldInfos": [], "enablePaging": true, "pageSize": 25, "dbSetName": "SalesInfo" },
             childAssoc: ([]),
@@ -1071,7 +1071,7 @@ class SalesOrderDetailEntity extends RIAPP.CollectionItem<TSalesOrderDetailAspec
 export class SalesOrderDetailDb extends dbMOD.DbSet<SalesOrderDetail, ISalesOrderDetail, DbContext>
 {
     constructor(dbContext: DbContext) {
-        var opts: dbMOD.IDbSetConstuctorOptions = {
+        let opts: dbMOD.IDbSetConstuctorOptions = {
             dbContext: dbContext,
             dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "SalesOrderDetail" },
             childAssoc: ([{ "name": "OrdDetailsToOrder", "parentDbSetName": "SalesOrderHeader", "childDbSetName": "SalesOrderDetail", "childToParentName": "SalesOrderHeader", "parentToChildrenName": "SalesOrderDetails", "onDeleteAction": 1, "fieldRels": [{ "parentField": "SalesOrderID", "childField": "SalesOrderID" }] }, { "name": "OrdDetailsToProduct", "parentDbSetName": "Product", "childDbSetName": "SalesOrderDetail", "childToParentName": "Product", "parentToChildrenName": "SalesOrderDetails", "onDeleteAction": 0, "fieldRels": [{ "parentField": "ProductID", "childField": "ProductID" }] }]),
@@ -1185,7 +1185,7 @@ class SalesOrderHeaderEntity extends RIAPP.CollectionItem<TSalesOrderHeaderAspec
 export class SalesOrderHeaderDb extends dbMOD.DbSet<SalesOrderHeader, ISalesOrderHeader, DbContext>
 {
     constructor(dbContext: DbContext) {
-        var opts: dbMOD.IDbSetConstuctorOptions = {
+        let opts: dbMOD.IDbSetConstuctorOptions = {
             dbContext: dbContext,
             dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "SalesOrderHeader" },
             childAssoc: ([{ "name": "OrdersToBillAddr", "parentDbSetName": "Address", "childDbSetName": "SalesOrderHeader", "childToParentName": "Address1", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "BillToAddressID" }] }, { "name": "OrdersToCustomer", "parentDbSetName": "Customer", "childDbSetName": "SalesOrderHeader", "childToParentName": "Customer", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "CustomerID", "childField": "CustomerID" }] }, { "name": "OrdersToShipAddr", "parentDbSetName": "Address", "childDbSetName": "SalesOrderHeader", "childToParentName": "Address", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "ShipToAddressID" }] }]),
@@ -1256,9 +1256,9 @@ export class DbContext extends dbMOD.DbContext {
     protected _initDbSets() {
         super._initDbSets();
         this._dbSets = new DbSets(this);
-        var associations = [{ "name": "CustAddrToAddress", "parentDbSetName": "Address", "childDbSetName": "CustomerAddress", "childToParentName": "Address", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "AddressID" }] }, { "name": "CustAddrToAddress2", "parentDbSetName": "AddressInfo", "childDbSetName": "CustomerAddress", "childToParentName": "AddressInfo", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "AddressID" }] }, { "name": "CustAddrToCustomer", "parentDbSetName": "Customer", "childDbSetName": "CustomerAddress", "childToParentName": "Customer", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "CustomerID", "childField": "CustomerID" }] }, { "name": "OrdDetailsToOrder", "parentDbSetName": "SalesOrderHeader", "childDbSetName": "SalesOrderDetail", "childToParentName": "SalesOrderHeader", "parentToChildrenName": "SalesOrderDetails", "onDeleteAction": 1, "fieldRels": [{ "parentField": "SalesOrderID", "childField": "SalesOrderID" }] }, { "name": "OrdDetailsToProduct", "parentDbSetName": "Product", "childDbSetName": "SalesOrderDetail", "childToParentName": "Product", "parentToChildrenName": "SalesOrderDetails", "onDeleteAction": 0, "fieldRels": [{ "parentField": "ProductID", "childField": "ProductID" }] }, { "name": "OrdersToBillAddr", "parentDbSetName": "Address", "childDbSetName": "SalesOrderHeader", "childToParentName": "Address1", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "BillToAddressID" }] }, { "name": "OrdersToCustomer", "parentDbSetName": "Customer", "childDbSetName": "SalesOrderHeader", "childToParentName": "Customer", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "CustomerID", "childField": "CustomerID" }] }, { "name": "OrdersToShipAddr", "parentDbSetName": "Address", "childDbSetName": "SalesOrderHeader", "childToParentName": "Address", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "ShipToAddressID" }] }];
+        let associations = [{ "name": "CustAddrToAddress", "parentDbSetName": "Address", "childDbSetName": "CustomerAddress", "childToParentName": "Address", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "AddressID" }] }, { "name": "CustAddrToAddress2", "parentDbSetName": "AddressInfo", "childDbSetName": "CustomerAddress", "childToParentName": "AddressInfo", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "AddressID" }] }, { "name": "CustAddrToCustomer", "parentDbSetName": "Customer", "childDbSetName": "CustomerAddress", "childToParentName": "Customer", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "CustomerID", "childField": "CustomerID" }] }, { "name": "OrdDetailsToOrder", "parentDbSetName": "SalesOrderHeader", "childDbSetName": "SalesOrderDetail", "childToParentName": "SalesOrderHeader", "parentToChildrenName": "SalesOrderDetails", "onDeleteAction": 1, "fieldRels": [{ "parentField": "SalesOrderID", "childField": "SalesOrderID" }] }, { "name": "OrdDetailsToProduct", "parentDbSetName": "Product", "childDbSetName": "SalesOrderDetail", "childToParentName": "Product", "parentToChildrenName": "SalesOrderDetails", "onDeleteAction": 0, "fieldRels": [{ "parentField": "ProductID", "childField": "ProductID" }] }, { "name": "OrdersToBillAddr", "parentDbSetName": "Address", "childDbSetName": "SalesOrderHeader", "childToParentName": "Address1", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "BillToAddressID" }] }, { "name": "OrdersToCustomer", "parentDbSetName": "Customer", "childDbSetName": "SalesOrderHeader", "childToParentName": "Customer", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "CustomerID", "childField": "CustomerID" }] }, { "name": "OrdersToShipAddr", "parentDbSetName": "Address", "childDbSetName": "SalesOrderHeader", "childToParentName": "Address", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "ShipToAddressID" }] }];
         this._initAssociations(associations);
-        var methods = [{ "methodName": "ReadAddress", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadAddressByIds", "parameters": [{ "name": "addressIDs", "dataType": 3, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 0 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadAddressForCustomers", "parameters": [{ "name": "custIDs", "dataType": 3, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 0 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadAddressInfo", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadCustomer", "parameters": [{ "name": "includeNav", "dataType": 2, "isArray": false, "isNullable": true, "dateConversion": 0, "ordinal": 0 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadCustomerAddress", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadCustomerJSON", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadProduct", "parameters": [{ "name": "param1", "dataType": 3, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 0 }, { "name": "param2", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 1 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadProductByIds", "parameters": [{ "name": "productIDs", "dataType": 3, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 0 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadProductCategory", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadProductLookUp", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadProductModel", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadSalesInfo", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadSalesOrderDetail", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadSalesOrderHeader", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "TestComplexInvoke", "parameters": [{ "name": "info", "dataType": 0, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 0 }, { "name": "keys", "dataType": 0, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 1 }], "methodResult": false, "isQuery": false }, { "methodName": "TestInvoke", "parameters": [{ "name": "param1", "dataType": 10, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 0 }, { "name": "param2", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 1 }], "methodResult": true, "isQuery": false }];
+        let methods = [{ "methodName": "ReadAddress", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadAddressByIds", "parameters": [{ "name": "addressIDs", "dataType": 3, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 0 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadAddressForCustomers", "parameters": [{ "name": "custIDs", "dataType": 3, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 0 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadAddressInfo", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadCustomer", "parameters": [{ "name": "includeNav", "dataType": 2, "isArray": false, "isNullable": true, "dateConversion": 0, "ordinal": 0 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadCustomerAddress", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadCustomerJSON", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadProduct", "parameters": [{ "name": "param1", "dataType": 3, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 0 }, { "name": "param2", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 1 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadProductByIds", "parameters": [{ "name": "productIDs", "dataType": 3, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 0 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadProductCategory", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadProductLookUp", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadProductModel", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadSalesInfo", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadSalesOrderDetail", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadSalesOrderHeader", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "TestComplexInvoke", "parameters": [{ "name": "info", "dataType": 0, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 0 }, { "name": "keys", "dataType": 0, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 1 }], "methodResult": false, "isQuery": false }, { "methodName": "TestInvoke", "parameters": [{ "name": "param1", "dataType": 10, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 0 }, { "name": "param2", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 1 }], "methodResult": true, "isQuery": false }];
         this._initMethods(methods);
     }
     get associations() { return <IAssocs>this._assoc; }

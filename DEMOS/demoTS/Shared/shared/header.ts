@@ -3,8 +3,8 @@ import * as uiMOD from "jriapp_ui";
 
 const $ = uiMOD.$;
 
-export var topPanel: string;
-export var contentPanel: string;
+export let topPanel: string;
+export let contentPanel: string;
 topPanel = "#demoHeader";
 contentPanel = "#demoContent";
 
@@ -16,7 +16,7 @@ export class HeaderVM extends RIAPP.ViewModel<RIAPP.IApplication> {
 
     constructor(app: RIAPP.IApplication) {
         super(app);
-        var self = this;
+        let self = this;
         this._$topPanel = $(topPanel);
         this._$contentPanel = $(contentPanel);
         this._contentPanelHeight = 0;
@@ -33,22 +33,22 @@ export class HeaderVM extends RIAPP.ViewModel<RIAPP.IApplication> {
 
     }
     _getEventNames() {
-        var base_events = super._getEventNames();
+        let base_events = super._getEventNames();
         return ['updateUI'].concat(base_events);
     }
     addOnUpdateUI(fn: (sender: HeaderVM, args: { isHandled: boolean; isUp: boolean; }) => void, namespace?: string) {
         this.addHandler('updateUI', fn, namespace);
     }
     expand() {
-        var self = this;
+        let self = this;
         this._$topPanel.slideDown('fast', function () { self.updateUI(false); });
     }
     collapse() {
-        var self = this;
+        let self = this;
         this._$topPanel.slideUp('fast', function () { self.updateUI(true); });
     }
     updateUI(isUp: boolean) {
-        var args = { isHandled: false, isUp: isUp };
+        let args = { isHandled: false, isUp: isUp };
         this.raiseEvent('updateUI', args);
         if (args.isHandled)
             return;

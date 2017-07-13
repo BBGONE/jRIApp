@@ -11,7 +11,7 @@ import * as AUTOCOMPLETE from "autocomplete";
 import * as PRODAUTOCOMPLETE from "./prodAutocomplete";
 import { IMainOptions, DemoApplication } from "./app";
 
-var bootstrap = RIAPP.bootstrap;
+let bootstrap = RIAPP.bootstrap;
 
 
 //bootstrap error handler - the last resort (typically display message to the user)

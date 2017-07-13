@@ -3,7 +3,7 @@ import * as RIAPP from "jriapp";
 import * as DEMODB from "./demoDB";
 import * as COMMON from "common";
 
-var bootstrap = RIAPP.bootstrap;
+let bootstrap = RIAPP.bootstrap;
 
 export class RadioValueConverter extends RIAPP.BaseConverter {
     convertToSource(val: any, param: any, dataContext: any) {
@@ -38,7 +38,7 @@ export class RadioDemoVM extends RIAPP.ViewModel<DemoApplication> {
         //console.log(this._testDict.items2[3].SomeProperty2[0]);
     }
     _getEventNames() {
-        var base_events = super._getEventNames();
+        let base_events = super._getEventNames();
         return ['radio_value_changed'].concat(base_events);
     }
     //can be overriden in descendants as in his example
@@ -64,7 +64,7 @@ export class RadioDemo2VM extends RadioDemoVM {
 
     constructor(app: DemoApplication, currentValue?: string) {
         super(app);
-        var self = this;
+        let self = this;
         if (!!currentValue)
             this.radioValue = currentValue;
         this._historyList = new DEMODB.HistoryList();
@@ -82,7 +82,7 @@ export class RadioDemo2VM extends RadioDemoVM {
     _onRadioValueChanged() {
         super._onRadioValueChanged();
         if (!!this.radioValue) {
-            var item = this._historyList.addNew();
+            let item = this._historyList.addNew();
             item.radioValue = this.radioValue;
             item.time = new Date();
             item._aspect.endEdit();
@@ -114,7 +114,7 @@ export class DemoApplication extends RIAPP.Application {
         this._demoVM = null;
     }
     onStartUp() {
-        var self = this;
+        let self = this;
         this._errorVM = new COMMON.ErrorViewModel(this);
         this._demoVM = new RadioDemo2VM(this);
 
@@ -131,7 +131,7 @@ export class DemoApplication extends RIAPP.Application {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        var self = this;
+        let self = this;
         try {
             self._errorVM.destroy();
             self._demoVM.destroy();
@@ -154,7 +154,7 @@ function initModule(app: RIAPP.Application) {
     app.registerConverter('radioValueConverter', new RadioValueConverter());
 };
 
-export var appOptions: RIAPP.IAppOptions = {
+export let appOptions: RIAPP.IAppOptions = {
     modulesInits: {
         "COMMON": COMMON.initModule,
         "COLLDEMO": initModule

@@ -67,7 +67,7 @@ export class CustomerBag extends RIAPP.JsonBag {
 
         //perform all validations
         this.addOnValidateBag((s, args) => {
-            var bag = args.bag;
+            let bag = args.bag;
             validations.forEach((val) => {
                 let errors: string[] = [];
                 val.fn(bag, errors);
@@ -78,7 +78,7 @@ export class CustomerBag extends RIAPP.JsonBag {
 
         //validate only specific field
         this.addOnValidateField((s, args) => {
-            var bag = args.bag;
+            let bag = args.bag;
             validations.filter((val) => {
                 return args.fieldName === val.fieldName;
             }).forEach((val) => {
@@ -104,7 +104,7 @@ export class CustomerBag extends RIAPP.JsonBag {
 
         //perform all validations
         addresses.addOnValidateBag((s, args) => {
-            var bag = args.bag;
+            let bag = args.bag;
             validations.forEach((val) => {
                 let errors: string[] = [];
                 val.fn(bag, errors);
@@ -115,7 +115,7 @@ export class CustomerBag extends RIAPP.JsonBag {
 
         //validate only specific field
         addresses.addOnValidateField((s, args) => {
-            var bag = args.bag;
+            let bag = args.bag;
             validations.filter((val) => {
                 return args.fieldName === val.fieldName;
             }).forEach((val) => {
@@ -179,7 +179,7 @@ export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
         this._addNewCommand = new RIAPP.TCommand<any, CustomerViewModel>(function (sender, param) {
             //grid will show the edit dialog, because we set grid options isHandleAddNew:true
             //see the options for the grid on the HTML demo page
-            var item = self._dbSet.addNew();
+            let item = self._dbSet.addNew();
             item.Data = JSON.stringify({});
             //P.S. - grids editor options also has submitOnOK:true, which means
             //on clicking OK button all changes are submitted to the service
@@ -233,7 +233,7 @@ export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
         this.raisePropertyChanged('currentItem');
     }
     load() {
-        var query = this.dbSet.createReadCustomerJSONQuery();
+        let query = this.dbSet.createReadCustomerJSONQuery();
         query.pageSize = 50;
         query.orderBy('CustomerID');
         return query.load();

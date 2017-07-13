@@ -53,7 +53,7 @@ class FileSystemObjectEntity extends RIAPP.CollectionItem<TFileSystemObjectAspec
 export class FileSystemObjectDb extends dbMOD.DbSet<FileSystemObject, IFileSystemObject, DbContext>
 {
     constructor(dbContext: DbContext) {
-        var opts: dbMOD.IDbSetConstuctorOptions = {
+        let opts: dbMOD.IDbSetConstuctorOptions = {
             dbContext: dbContext,
             dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "FileSystemObject" },
             childAssoc: ([{ "name": "ChildToParent", "parentDbSetName": "FileSystemObject", "childDbSetName": "FileSystemObject", "childToParentName": "Parent", "parentToChildrenName": "Children", "onDeleteAction": 1, "fieldRels": [{ "parentField": "Key", "childField": "ParentKey" }] }]),
@@ -76,7 +76,7 @@ export class FileSystemObjectDb extends dbMOD.DbSet<FileSystemObject, IFileSyste
         includeFiles: boolean;
         infoType: string;
     }): dbMOD.DataQuery<FileSystemObject, IFileSystemObject> {
-        var query = this.createQuery('ReadAll');
+        let query = this.createQuery('ReadAll');
         query.params = args;
         return query;
     }
@@ -87,7 +87,7 @@ export class FileSystemObjectDb extends dbMOD.DbSet<FileSystemObject, IFileSyste
         includeFiles: boolean;
         infoType: string;
     }): dbMOD.DataQuery<FileSystemObject, IFileSystemObject> {
-        var query = this.createQuery('ReadChildren');
+        let query = this.createQuery('ReadChildren');
         query.params = args;
         return query;
     }
@@ -95,7 +95,7 @@ export class FileSystemObjectDb extends dbMOD.DbSet<FileSystemObject, IFileSyste
         includeFiles: boolean;
         infoType: string;
     }): dbMOD.DataQuery<FileSystemObject, IFileSystemObject> {
-        var query = this.createQuery('ReadRoot');
+        let query = this.createQuery('ReadRoot');
         query.params = args;
         return query;
     }
@@ -120,9 +120,9 @@ export class DbContext extends dbMOD.DbContext {
     protected _initDbSets() {
         super._initDbSets();
         this._dbSets = new DbSets(this);
-        var associations = [{ "name": "ChildToParent", "parentDbSetName": "FileSystemObject", "childDbSetName": "FileSystemObject", "childToParentName": "Parent", "parentToChildrenName": "Children", "onDeleteAction": 1, "fieldRels": [{ "parentField": "Key", "childField": "ParentKey" }] }];
+        let associations = [{ "name": "ChildToParent", "parentDbSetName": "FileSystemObject", "childDbSetName": "FileSystemObject", "childToParentName": "Parent", "parentToChildrenName": "Children", "onDeleteAction": 1, "fieldRels": [{ "parentField": "Key", "childField": "ParentKey" }] }];
         this._initAssociations(associations);
-        var methods = [{ "methodName": "ReadAll", "parameters": [{ "name": "includeFiles", "dataType": 2, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 0 }, { "name": "infoType", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 1 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadChildren", "parameters": [{ "name": "parentKey", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 0 }, { "name": "level", "dataType": 3, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 1 }, { "name": "path", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 2 }, { "name": "includeFiles", "dataType": 2, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 3 }, { "name": "infoType", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 4 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadRoot", "parameters": [{ "name": "includeFiles", "dataType": 2, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 0 }, { "name": "infoType", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 1 }], "methodResult": true, "isQuery": true }];
+        let methods = [{ "methodName": "ReadAll", "parameters": [{ "name": "includeFiles", "dataType": 2, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 0 }, { "name": "infoType", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 1 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadChildren", "parameters": [{ "name": "parentKey", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 0 }, { "name": "level", "dataType": 3, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 1 }, { "name": "path", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 2 }, { "name": "includeFiles", "dataType": 2, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 3 }, { "name": "infoType", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 4 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadRoot", "parameters": [{ "name": "includeFiles", "dataType": 2, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 0 }, { "name": "infoType", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 1 }], "methodResult": true, "isQuery": true }];
         this._initMethods(methods);
     }
     get associations() { return <IAssocs>this._assoc; }

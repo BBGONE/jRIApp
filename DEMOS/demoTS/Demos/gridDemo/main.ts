@@ -9,7 +9,7 @@ import * as COMMON from "common";
 import { IMainOptions, DemoApplication } from "./app";
 import * as  ResizableGrid from "./resizableGrid";
 
-var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core;
+const bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core;
 const styles = ["lsize", 'msize', 'ssize', 'nsize'];
 
 /*

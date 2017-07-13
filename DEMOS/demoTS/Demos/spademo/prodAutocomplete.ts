@@ -22,6 +22,11 @@ export class ProductAutoComplete extends AUTOCOMPLETE.AutoCompleteElView {
             this.getDataContext().ProductID = id;
         }
     }
+    //override
+    protected _onHide() {
+        this._updateValue();
+        super._onHide();
+    }
     //new method
     protected _updateValue() {
         if (!this.dataContext) {
@@ -36,7 +41,7 @@ export class ProductAutoComplete extends AUTOCOMPLETE.AutoCompleteElView {
             if (this._lastLoadedID !== productID) {
                 //this prevents the cicles of loading of the same item
                 this._lastLoadedID = productID;
-                let query = this._lookupSource.createReadProductByIdsQuery({ productIDs: [productID] });
+                const query = this._lookupSource.createReadProductByIdsQuery({ productIDs: [productID] });
                 query.isClearPrevData = false;
                 query.load();
             }
@@ -44,8 +49,7 @@ export class ProductAutoComplete extends AUTOCOMPLETE.AutoCompleteElView {
     }
     //override
     protected setDataContext(v: DEMODB.SalesOrderDetail) {
-        const old = this.getDataContext();
-        const self = this;
+        const old = this.getDataContext(), self = this;
         if (old !== v) {
             const dxt = v;
             if (!!dxt) {

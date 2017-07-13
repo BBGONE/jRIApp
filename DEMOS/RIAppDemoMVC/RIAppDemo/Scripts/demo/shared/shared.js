@@ -308,17 +308,11 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
     var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = uiMOD.$, dom = RIAPP.DOM;
     function findElemViewInTemplate(template, name) {
         var arr = template.findElViewsByDataName(name);
-        if (!!arr && arr.length > 0)
-            return arr[0];
-        else
-            return null;
+        return (!!arr && arr.length > 0) ? arr[0] : null;
     }
     function findElemInTemplate(template, name) {
         var arr = template.findElByDataName(name);
-        if (!!arr && arr.length > 0)
-            return arr[0];
-        else
-            return null;
+        return (!!arr && arr.length > 0) ? arr[0] : null;
     }
     var AutoCompleteElView = (function (_super) {
         __extends(AutoCompleteElView, _super);
@@ -345,7 +339,6 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             _this._btnCancel = null;
             _this._width = options.width || '200px';
             _this._height = options.height || '330px';
-            _this._$dlg = null;
             var $el = $(_this.el);
             $el.on('change.' + _this.uniqueID, function (e) {
                 e.stopPropagation();
@@ -485,17 +478,14 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
         AutoCompleteElView.prototype._open = function () {
             if (this._isOpen)
                 return;
-            var self = this, $dlg = $(this.el).closest(".ui-dialog"), txtEl = self.el;
-            this._$dlg = $dlg;
-            var ns = "dialogdrag." + this.uniqueID;
-            $dlg.on(ns, null, function (event) {
-                if (!self._isOpen)
-                    return null;
-                self._updatePosition();
-                return null;
-            });
-            this._updatePosition();
+            var self = this;
             if (!!this._lookupGrid) {
+                var dlg_1 = this._$dropDown.get(0), txtEl_1 = self.el;
+                $(dom.document).on('mousedown.' + this.uniqueID, function (e) {
+                    if (!(dom.isContained(e.target, dlg_1) || dom.isContained(e.target, txtEl_1))) {
+                        self._hideAsync();
+                    }
+                });
                 this._lookupGrid.addOnCellDblClicked(function (s, a) {
                     self._updateSelection();
                     self._hide();
@@ -507,12 +497,8 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
                             e.stopPropagation();
                     }
                 });
-                $(dom.document).on('mousedown.' + this.uniqueID, function (e) {
-                    if (dom.isContained(e.target, $dlg.get(0)) || dom.isContained(e.target, txtEl)) {
-                        self._hideAsync();
-                    }
-                });
             }
+            this._updatePosition();
             this._isOpen = true;
             this._onShow();
         };
@@ -520,7 +506,6 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             if (!this._isOpen)
                 return;
             $(dom.document).off('.' + this.uniqueID);
-            this._$dlg.off('.' + this.uniqueID);
             if (!!this._lookupGrid) {
                 this._lookupGrid.removeNSHandlers(this.uniqueID);
             }
@@ -645,7 +630,6 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
         app.registerElView('autocomplete', AutoCompleteElView);
     }
     exports.initModule = initModule;
-    ;
 });
 define("header", ["require", "exports", "jriapp", "jriapp_ui"], function (require, exports, RIAPP, uiMOD) {
     "use strict";

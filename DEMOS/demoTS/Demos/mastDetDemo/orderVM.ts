@@ -9,7 +9,7 @@ import { CustomerVM } from "./customerVM";
 import { OrderDetailVM } from "./orderDetVM";
 import { AddressVM } from "./addressVM";
 
-var utils = RIAPP.Utils, $ = uiMOD.$;
+let utils = RIAPP.Utils, $ = uiMOD.$;
 
 export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.ITabsEvents {
     private _customerVM: CustomerVM;
@@ -25,7 +25,7 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
 
     constructor(customerVM: CustomerVM) {
         super(customerVM.app);
-        var self = this;
+        let self = this;
         this._customerVM = customerVM;
         this._dbSet = this.dbSets.SalesOrderHeader;
         this._currentCustomer = null;
@@ -58,7 +58,7 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
 
         this._dbSet.addOnItemAdded(function (sender, args) {
             //can be solved soon with generics
-            var item = args.item;
+            let item = args.item;
             item.Customer = self.currentCustomer;
             //datejs extension
             item.OrderDate = moment().toDate();
@@ -78,11 +78,11 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
         this._orderDetailVM = new OrderDetailVM(this);
     }
     protected _getEventNames() {
-        var base_events = super._getEventNames();
+        let base_events = super._getEventNames();
         return ['row_expanded'].concat(base_events);
     }
     protected _addGrid(grid: uiMOD.DataGrid): void {
-        var self = this;
+        let self = this;
         if (!!this._dataGrid)
             this._removeGrid();
         this._dataGrid = grid;
@@ -137,11 +137,11 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
         //explicitly clear before every load
         this.clear();
         if (!this.currentCustomer || this.currentCustomer._aspect.isNew) {
-            var deferred = utils.defer.createDeferred<dbMOD.IQueryResult<DEMODB.SalesOrderHeader>>();
+            let deferred = utils.defer.createDeferred<dbMOD.IQueryResult<DEMODB.SalesOrderHeader>>();
             deferred.reject();
             return deferred.promise();
         }
-        var query = this.dbSet.createReadSalesOrderHeaderQuery();
+        let query = this.dbSet.createReadSalesOrderHeaderQuery();
         query.where('CustomerID', RIAPP.FILTER_TYPE.Equals, [this.currentCustomer.CustomerID]);
         query.orderBy('OrderDate').thenBy('SalesOrderID');
         return query.load();

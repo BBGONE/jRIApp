@@ -3,23 +3,17 @@ import * as dbMOD from "jriapp_db";
 import * as uiMOD from "jriapp_ui";
 import * as COMMON from "./common";
 
-let bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = uiMOD.$, dom = RIAPP.DOM;
+const bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = uiMOD.$, dom = RIAPP.DOM;
 
 function findElemViewInTemplate(template: RIAPP.ITemplate, name: string) {
     //look by data-name attribute value
-    let arr = template.findElViewsByDataName(name);
-    if (!!arr && arr.length > 0)
-        return arr[0];
-    else
-        return null;
+    const arr = template.findElViewsByDataName(name);
+    return (!!arr && arr.length > 0) ? arr[0] : null;
 }
 
 function findElemInTemplate(template: RIAPP.ITemplate, name: string) {
-    let arr = template.findElByDataName(name);
-    if (!!arr && arr.length > 0)
-        return arr[0];
-    else
-        return null;
+    const arr = template.findElByDataName(name);
+    return (!!arr && arr.length > 0) ? arr[0] : null;
 }
 
 export interface IAutocompleteOptions extends RIAPP.IViewOptions {
@@ -48,7 +42,6 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
     private _isLoading: boolean;
     private _width: any;
     private _height: any;
-    private _$dlg: JQuery;
     private _isOpen: boolean;
     private _lookupGrid: uiMOD.DataGrid;
     private _btnOk: HTMLElement;
@@ -101,7 +94,6 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
         this._btnCancel = null;
         this._width = options.width || '200px';
         this._height = options.height || '330px';
-        this._$dlg = null;
         const $el = $(this.el);
 
         $el.on('change.' + this.uniqueID, function (e) {
@@ -223,21 +215,17 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
     protected _open() {
         if (this._isOpen)
             return;
-        const self = this, $dlg = $(this.el).closest(".ui-dialog"), txtEl = self.el;
-
-        this._$dlg = $dlg;
-        const ns = "dialogdrag." + this.uniqueID;
-        
-        $dlg.on(ns, null, (event) => {
-            if (!self._isOpen)
-                return null;
-            self._updatePosition();
-            return null;
-        });
-
-        this._updatePosition();
+        const self = this;
 
         if (!!this._lookupGrid) {
+            const dlg = this._$dropDown.get(0), txtEl = self.el;
+
+            $(dom.document).on('mousedown.' + this.uniqueID, function (e) {
+                if (!(dom.isContained(e.target, dlg) || dom.isContained(e.target, txtEl))) {
+                    self._hideAsync();
+                }
+            });
+
             this._lookupGrid.addOnCellDblClicked(function (s, a) {
                 self._updateSelection();
                 self._hide();
@@ -251,13 +239,8 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
                         e.stopPropagation();
                 }
             });
-
-            $(dom.document).on('mousedown.' + this.uniqueID, function (e) {
-                if (dom.isContained(e.target, $dlg.get(0)) || dom.isContained(e.target, txtEl)) {
-                    self._hideAsync();
-                }
-            });
         }
+        this._updatePosition();
         this._isOpen = true;
         this._onShow();
     }
@@ -265,7 +248,6 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
         if (!this._isOpen)
             return;
         $(dom.document).off('.' + this.uniqueID);
-        this._$dlg.off('.' + this.uniqueID);
         if (!!this._lookupGrid) {
             this._lookupGrid.removeNSHandlers(this.uniqueID);
         }
@@ -359,4 +341,4 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
 //this function is executed when an application which uses this namespace is created
 export function initModule(app: RIAPP.Application) {
     app.registerElView('autocomplete', AutoCompleteElView);
-};
+}

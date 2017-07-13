@@ -17,7 +17,7 @@ export interface IGridEvents<TItem extends RIAPP.ICollectionItem> {
 }
 
 export function addTextQuery(query: dbMOD.TDataQuery, fldName: string, val: any): dbMOD.TDataQuery {
-    var tmp: string;
+    let tmp: string;
     if (!!val) {
         if (utils.str.startsWith(val, '%') && utils.str.endsWith(val, '%')) {
             tmp = utils.str.trim(val, '% ');
@@ -58,8 +58,8 @@ export class DownloadLinkElView extends uiMOD.BaseElView {
         return this.el.textContent;
     }
     set text(v) {
-        var el = this.el;
-        var x = this.text;
+        let el = this.el;
+        let x = this.text;
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
             el.textContent = v;
@@ -79,7 +79,7 @@ export class DownloadLinkElView extends uiMOD.BaseElView {
     }
     get id() { return this._id; }
     set id(v) {
-        var x = this._id;
+        let x = this._id;
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
             this._id = v;
@@ -115,18 +115,18 @@ export class FileImgElView extends uiMOD.BaseElView {
     }
     reloadImg(): void {
         if (!!this.src) {
-            var src = this.src;
-            var pos = src.indexOf('?');
+            let src = this.src;
+            let pos = src.indexOf('?');
             if (pos >= 0) {
                 src = src.substr(0, pos);
             }
-            var date = new Date();
+            let date = new Date();
             this.src = src + '?v=' + date.getTime();
         }
     }
     get fileName() { return this._fileName; }
     set fileName(v) {
-        var x = this._fileName;
+        let x = this._fileName;
         if (x !== v) {
             this._fileName = v;
             this.raisePropertyChanged('fileName');
@@ -141,7 +141,7 @@ export class FileImgElView extends uiMOD.BaseElView {
             this._src = v;
             this.raisePropertyChanged('src');
         }
-        var img = this.el;
+        let img = this.el;
         //set empty image as a stub
         (<HTMLImageElement>img).src = "data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
 
@@ -153,7 +153,7 @@ export class FileImgElView extends uiMOD.BaseElView {
     }
     get id() { return this._id; }
     set id(v) {
-        var x = this._id;
+        let x = this._id;
         v = (v === null)? '': ('' + v);
         if (x !== v) {
             this._id = v;
@@ -175,13 +175,13 @@ export class ErrorViewModel extends RIAPP.ViewModel<RIAPP.IApplication> {
 
     constructor(app: RIAPP.IApplication) {
         super(app);
-        var self = this;
+        let self = this;
         this._error = null;
         this._errors = [];
         this._message = null;
         this._title = '';
         this._dialogVM = new uiMOD.DialogVM(app);
-        var dialogOptions: uiMOD.IDialogConstructorOptions = {
+        let dialogOptions: uiMOD.IDialogConstructorOptions = {
             templateID: 'errorTemplate',
             width: 500,
             height: 300,
@@ -236,7 +236,7 @@ export class ErrorViewModel extends RIAPP.ViewModel<RIAPP.IApplication> {
     }
     get error() { return this._error; }
     set error(v) {
-        var self = this, old = this._error;
+        let self = this, old = this._error;
         if (!old) {
             this._error = v;
             let msg: string = '';
@@ -254,7 +254,7 @@ export class ErrorViewModel extends RIAPP.ViewModel<RIAPP.IApplication> {
     }
     get title() { return this._title; }
     set title(v) {
-        var old = this._title;
+        let old = this._title;
         if (old !== v) {
             this._title = v;
             this.raisePropertyChanged('title');
@@ -262,7 +262,7 @@ export class ErrorViewModel extends RIAPP.ViewModel<RIAPP.IApplication> {
     }
     get message() { return this._message; }
     set message(v) {
-        var old = this._message;
+        let old = this._message;
         if (old !== v) {
             this._message = v;
             this.raisePropertyChanged('message');

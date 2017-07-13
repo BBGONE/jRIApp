@@ -18,7 +18,7 @@ export class OptionTextProvider implements uiMOD.IOptionTextProvider {
 
 export class OptionStateProvider implements uiMOD.IOptionStateProvider {
     getCSS(item: RIAPP.ICollectionItem, itemIndex: number, val: any): string {
-        //var name: string = val;
+        //let name: string = val;
         if (itemIndex % 2 == 0)
             return "gray-bgc";
         else

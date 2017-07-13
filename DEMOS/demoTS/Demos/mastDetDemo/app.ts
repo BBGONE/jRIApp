@@ -18,13 +18,13 @@ export class DemoApplication extends RIAPP.Application {
 
     constructor(options: IMainOptions) {
         super(options);
-        var self = this;
+        let self = this;
         this._dbContext = null;
         this._errorVM = null;
         this._customerVM = null;
     }
     onStartUp() {
-        var self = this, options: IMainOptions = self.options;
+        let self = this, options: IMainOptions = self.options;
         this._dbContext = new DEMODB.DbContext();
         this._dbContext.initialize({ serviceUrl: options.service_url, permissions: options.permissionInfo });
         function toText(str: any) {
@@ -70,7 +70,7 @@ export class DemoApplication extends RIAPP.Application {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        var self = this;
+        let self = this;
         try {
             self._errorVM.destroy();
             self._customerVM.destroy();

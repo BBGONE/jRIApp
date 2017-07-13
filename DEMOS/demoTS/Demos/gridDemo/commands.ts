@@ -8,9 +8,9 @@ import { ProductsFilter } from "./filters";
 export class TestInvokeCommand extends RIAPP.BaseCommand<DEMODB.Product, ProductViewModel>
 {
     protected Action(sender: RIAPP.IBaseObject, param: DEMODB.Product) {
-        var self = this.thisObj;
+        let self = this.thisObj;
         self.invokeResult = null;
-        var promise = self.dbContext.serviceMethods.TestInvoke({ param1: [10, 11, 12, 13, 14], param2: param.Name });
+        let promise = self.dbContext.serviceMethods.TestInvoke({ param1: [10, 11, 12, 13, 14], param2: param.Name });
         promise.then(function (res) {
             self.invokeResult = res;
             self.showDialog();
@@ -20,7 +20,7 @@ export class TestInvokeCommand extends RIAPP.BaseCommand<DEMODB.Product, Product
         });
     }
     protected getIsCanExecute(sender: RIAPP.IBaseObject, param: DEMODB.Product): boolean {
-        var self = this.thisObj;
+        let self = this.thisObj;
         //just for the test: this command can be executed only when this condition is true!
         return self.currentItem !== null;
     }
