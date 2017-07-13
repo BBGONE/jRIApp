@@ -3,7 +3,7 @@ import * as dbMOD from "jriapp_db";
 import * as uiMOD from "jriapp_ui";
 import * as COMMON from "./common";
 
-let bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = uiMOD.$;
+let bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = uiMOD.$, dom = RIAPP.DOM;
 
 function findElemViewInTemplate(template: RIAPP.ITemplate, name: string) {
     //look by data-name attribute value
@@ -60,10 +60,9 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
         //noop
     }
     templateLoaded(template: RIAPP.ITemplate, error?: any): void {
-        if (this._isDestroyCalled)
+        if (this.getIsDestroyCalled() || error)
             return;
-        const self = this;
-        let gridElView = <uiMOD.DataGridElView>findElemViewInTemplate(template, 'lookupGrid');
+        const self = this, gridElView = <uiMOD.DataGridElView>findElemViewInTemplate(template, 'lookupGrid');
         if (!!gridElView) {
             this._lookupGrid = gridElView.grid;
         }
@@ -122,7 +121,7 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
         this._isOpen = false;
         this._createGridDataSource();
         this._template = this._createTemplate();
-        this._$dropDown = $(RIAPP.DOM.document.createElement("div"));
+        this._$dropDown = $(dom.document.createElement("div"));
         this._$dropDown.css({
             "position": "absolute",
             "z-index": "10000",
@@ -137,7 +136,7 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
         this._template.el.style.height = '100%';
         this._template.el.style.width = '100%';
 
-        RIAPP.DOM.document.body.appendChild(this._$dropDown.get(0));
+        dom.document.body.appendChild(this._$dropDown.get(0));
     }
     protected _createGridDataSource() {
         this._gridDataSource = this._getDbContext().getDbSet(this._dbSetName);
@@ -168,14 +167,16 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
         clearTimeout(this._loadTimeout);
         if (!!text && text.length >= self._minTextLength) {
             this._loadTimeout = setTimeout(function () {
-                if (self.getIsDestroyCalled())
+                if (self.getIsDestroyCalled()) {
                     return;
+                }
 
                 if (self._prevText != text) {
                     self._prevText = text;
                     if (!((keyCode === RIAPP.KEYS.esc) || (keyCode == RIAPP.KEYS.enter))) {
-                        if (!self._isOpen)
+                        if (!self._isOpen) {
                             self._open();
+                        }
                         self.load(text);
                     }
                 }
@@ -227,7 +228,7 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
         this._$dlg = $dlg;
         const ns = "dialogdrag." + this.uniqueID;
         
-        this._$dlg.on(ns, null, (event) => {
+        $dlg.on(ns, null, (event) => {
             if (!self._isOpen)
                 return null;
             self._updatePosition();
@@ -244,15 +245,15 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
 
             bootstrap.currentSelectable = self._lookupGrid;
 
-            $(RIAPP.DOM.document).on('keyup.' + this.uniqueID, function (e) {
+            $(dom.document).on('keyup.' + this.uniqueID, function (e) {
                 if (bootstrap.currentSelectable === self._lookupGrid) {
                     if (self._onKeyPress(e.which))
                         e.stopPropagation();
                 }
             });
 
-            $(RIAPP.DOM.document).on('mousedown.' + this.uniqueID, function (e) {
-                if (RIAPP.DOM.isContained(e.target, $dlg.get(0)) || RIAPP.DOM.isContained(e.target, txtEl)) {
+            $(dom.document).on('mousedown.' + this.uniqueID, function (e) {
+                if (dom.isContained(e.target, $dlg.get(0)) || dom.isContained(e.target, txtEl)) {
                     self._hideAsync();
                 }
             });
@@ -263,7 +264,7 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
     protected _hide() {
         if (!this._isOpen)
             return;
-        $(RIAPP.DOM.document).off('.' + this.uniqueID);
+        $(dom.document).off('.' + this.uniqueID);
         this._$dlg.off('.' + this.uniqueID);
         if (!!this._lookupGrid) {
             this._lookupGrid.removeNSHandlers(this.uniqueID);
@@ -284,6 +285,22 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
             self._isLoading = false;
             self.raisePropertyChanged('isLoading');
         });
+    }
+    protected getDataContext(): RIAPP.IBaseObject {
+        return this._dataContext;
+    }
+    protected setDataContext(v: RIAPP.IBaseObject) {
+        const old: RIAPP.IBaseObject = this._dataContext;
+        if (this._dataContext !== v) {
+            if (!!old) {
+                old.removeNSHandlers(this.uniqueID);
+            }
+            this._dataContext = v;
+            this.raisePropertyChanged('dataContext');
+            if (!this._dataContext) {
+                this._hideAsync();
+            }
+        }
     }
     destroy() {
         if (this._isDestroyed)
@@ -316,17 +333,9 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
     //template instance of drop down area (which contains datagrid) under textbox
     get template(): RIAPP.ITemplate { return this._template; }
     //Entity which is databound to the textbox
-    get dataContext() { return this._dataContext; }
+    get dataContext(): RIAPP.IBaseObject { return this.getDataContext(); }
     set dataContext(v) {
-        const old: RIAPP.IBaseObject = this._dataContext;
-        if (this._dataContext !== v) {
-            if (!!old)
-                old.removeNSHandlers(this.uniqueID);
-            this._dataContext = v;
-            this.raisePropertyChanged('dataContext');
-            if (!this._dataContext)
-                this._hideAsync();
-        }
+        this.setDataContext(v);
     }
     //dbSet for a datagrid's dataSource (for lookup values)
     get gridDataSource(): RIAPP.ICollection<RIAPP.ICollectionItem> { return this._gridDataSource; }

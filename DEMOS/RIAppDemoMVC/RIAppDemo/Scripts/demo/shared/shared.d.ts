@@ -110,12 +110,14 @@ declare module "autocomplete" {
         protected _open(): void;
         protected _hide(): void;
         load(str: string): void;
+        protected getDataContext(): RIAPP.IBaseObject;
+        protected setDataContext(v: RIAPP.IBaseObject): void;
         destroy(): void;
         readonly fieldName: string;
         readonly templateId: string;
         readonly currentSelection: any;
         readonly template: RIAPP.ITemplate;
-        dataContext: any;
+        dataContext: RIAPP.IBaseObject;
         readonly gridDataSource: RIAPP.ICollection<RIAPP.ICollectionItem>;
         value: string;
         readonly isLoading: boolean;

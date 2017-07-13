@@ -2285,10 +2285,9 @@ define("mastDetDemo/addressVM", ["require", "exports", "jriapp"], function (requ
     }(RIAPP.ViewModel));
     exports.AddressVM = AddressVM;
 });
-define("mastDetDemo/prodAutocomplete", ["require", "exports", "jriapp", "jriapp_ui", "autocomplete"], function (require, exports, RIAPP, uiMOD, AUTOCOMPLETE) {
+define("mastDetDemo/prodAutocomplete", ["require", "exports", "autocomplete"], function (require, exports, AUTOCOMPLETE) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = RIAPP.Utils, $ = uiMOD.$;
     var ProductAutoComplete = (function (_super) {
         __extends(ProductAutoComplete, _super);
         function ProductAutoComplete(options) {
@@ -2304,20 +2303,15 @@ define("mastDetDemo/prodAutocomplete", ["require", "exports", "jriapp", "jriapp_
         ProductAutoComplete.prototype._updateSelection = function () {
             if (!!this.dataContext) {
                 var id = this.currentSelection;
-                this.dataContext.ProductID = id;
+                this.getDataContext().ProductID = id;
             }
-        };
-        ProductAutoComplete.prototype._onHide = function () {
-            _super.prototype._onHide.call(this);
-            this._updateValue();
         };
         ProductAutoComplete.prototype._updateValue = function () {
             if (!this.dataContext) {
                 this.value = '';
                 return;
             }
-            var productID = this.dataContext.ProductID;
-            var product = this._lookupSource.findEntity(productID);
+            var productID = this.getDataContext().ProductID, product = this._lookupSource.findEntity(productID);
             if (!!product) {
                 this.value = product.Name;
             }
@@ -2331,33 +2325,29 @@ define("mastDetDemo/prodAutocomplete", ["require", "exports", "jriapp", "jriapp_
                 }
             }
         };
-        Object.defineProperty(ProductAutoComplete.prototype, "dataContext", {
-            get: function () { return this._dataContext; },
-            set: function (v) {
-                var self = this;
-                if (this._dataContext !== v) {
-                    if (!!this._dataContext) {
-                        this._dataContext.removeNSHandlers(this.uniqueID);
-                    }
-                    this._dataContext = v;
-                    if (!!this._dataContext) {
-                        this._dataContext.addOnPropertyChange('ProductID', function (sender, a) {
-                            self._updateValue();
-                        }, this.uniqueID);
-                    }
-                    self._updateValue();
-                    this.raisePropertyChanged('dataContext');
+        ProductAutoComplete.prototype.setDataContext = function (v) {
+            var old = this.getDataContext();
+            var self = this;
+            if (old !== v) {
+                var dxt = v;
+                if (!!dxt) {
+                    dxt.addOnPropertyChange('ProductID', function (sender, a) {
+                        self._updateValue();
+                    }, this.uniqueID);
                 }
-            },
-            enumerable: true,
-            configurable: true
-        });
+                _super.prototype.setDataContext.call(this, v);
+                self._updateValue();
+            }
+        };
+        ProductAutoComplete.prototype.getDataContext = function () { return _super.prototype.getDataContext.call(this); };
         Object.defineProperty(ProductAutoComplete.prototype, "currentSelection", {
             get: function () {
-                if (!!this.gridDataSource.currentItem)
+                if (!!this.gridDataSource.currentItem) {
                     return this.gridDataSource.currentItem['ProductID'];
-                else
+                }
+                else {
                     return null;
+                }
             },
             enumerable: true,
             configurable: true
