@@ -37,6 +37,9 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
         this._setKey(key);
     }
     _setProp(name: string, val: any) {
+        if (this._isCanceling) {
+            return;
+        }
         let error: ValidationError;
         const coll = this.collection, item = this.item, fieldInfo = this.getFieldInfo(name),
             errors = coll.errors;

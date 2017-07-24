@@ -1249,6 +1249,7 @@ declare module "jriapp_shared/collection/aspect" {
         protected _vals: IIndexer<any>;
         private _flags;
         private _valueBag;
+        protected _isCanceling: boolean;
         constructor(collection: BaseCollection<TItem>);
         protected _getEventNames(): string[];
         protected _onErrorsChanged(): void;

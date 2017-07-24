@@ -3,7 +3,7 @@ import {
     FIELD_TYPE, DATA_TYPE, ITEM_STATUS
 } from "jriapp_shared/collection/const";
 import {
-    IIndexer, IVoidPromise, IPromise, LocaleERRS as ERRS, Utils
+    IIndexer, IVoidPromise, IStatefulPromise, LocaleERRS as ERRS, Utils
 } from "jriapp_shared";
 import { ValidationError } from "jriapp_shared/errors";
 import { ICancellableArgs, IFieldInfo } from "jriapp_shared/collection/int";
@@ -60,7 +60,6 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
     private _srvKey: string;
     private _origVals: IIndexer<any>;
     private _savedStatus: ITEM_STATUS;
-
     constructor(dbSet: DbSet<TItem, TObj, TDbContext>, vals: TObj, key: string, isNew: boolean) {
         super(dbSet);
         this._srvKey = null;
@@ -201,9 +200,9 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         const self = this, changes = this._getValueChanges(true), dbSet = this.dbSet;
         this._vals = this._saveVals;
         this._saveVals = null;
+        dbSet.errors.removeAllErrors(this.item);
         this._setStatus(this._savedStatus);
         this._savedStatus = null;
-        dbSet.errors.removeAllErrors(this.item);
         changes.forEach((v) => {
             const fld = self.dbSet.getFieldInfo(v.fieldName);
             if (!fld) {
@@ -337,6 +336,9 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         return coreUtils.getValue(this._vals, fieldName);
     }
     _setFieldVal(fieldName: string, val: any): boolean {
+        if (this._isCanceling) {
+            return false;
+        }
         const dbSetName = this.dbSetName, dbSet = this.dbSet,
             oldV = this._getFieldVal(fieldName), fieldInfo = this.getFieldInfo(fieldName);
         let newV = val, res = false;
@@ -501,9 +503,9 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         promise.then(removeHandler, removeHandler);
         return promise;
     }
-    refresh(): IPromise<TItem> {
+    refresh(): IStatefulPromise<TItem> {
         const dbxt = this.dbSet.dbContext;
-        return dbxt._getInternal().refreshItem(this.item);
+        return <IStatefulPromise<TItem>>dbxt._getInternal().refreshItem(this.item);
     }
     destroy() {
         if (this._isDestroyed) {

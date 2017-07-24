@@ -3374,9 +3374,9 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             var self = this, changes = this._getValueChanges(true), dbSet = this.dbSet;
             this._vals = this._saveVals;
             this._saveVals = null;
+            dbSet.errors.removeAllErrors(this.item);
             this._setStatus(this._savedStatus);
             this._savedStatus = null;
-            dbSet.errors.removeAllErrors(this.item);
             changes.forEach(function (v) {
                 var fld = self.dbSet.getFieldInfo(v.fieldName);
                 if (!fld) {
@@ -3509,6 +3509,9 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             return coreUtils.getValue(this._vals, fieldName);
         };
         EntityAspect.prototype._setFieldVal = function (fieldName, val) {
+            if (this._isCanceling) {
+                return false;
+            }
             var dbSetName = this.dbSetName, dbSet = this.dbSet, oldV = this._getFieldVal(fieldName), fieldInfo = this.getFieldInfo(fieldName);
             var newV = val, res = false;
             if (!fieldInfo) {

@@ -523,7 +523,7 @@ declare module "jriapp_db/dbcontext" {
 }
 declare module "jriapp_db/entity_aspect" {
     import { ITEM_STATUS } from "jriapp_shared/collection/const";
-    import { IVoidPromise, IPromise } from "jriapp_shared";
+    import { IVoidPromise, IStatefulPromise } from "jriapp_shared";
     import { IFieldInfo } from "jriapp_shared/collection/int";
     import { ItemAspect } from "jriapp_shared/collection/aspect";
     import { REFRESH_MODE } from "jriapp_db/const";
@@ -567,7 +567,7 @@ declare module "jriapp_db/entity_aspect" {
         acceptChanges(): void;
         rejectChanges(): void;
         submitChanges(): IVoidPromise;
-        refresh(): IPromise<TItem>;
+        refresh(): IStatefulPromise<TItem>;
         destroy(): void;
         toString(): string;
         readonly srvKey: string;

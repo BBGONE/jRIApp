@@ -35,6 +35,7 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
     protected _vals: IIndexer<any>;
     private _flags: number;
     private _valueBag: IIndexer<ICustomVal>;
+    protected _isCanceling: boolean;
 
     constructor(collection: BaseCollection<TItem>) {
         super();
@@ -46,6 +47,7 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         this._vals = null;
         this._flags = 0;
         this._valueBag = null;
+        this._isCanceling = false;
     }
     protected _getEventNames() {
         const baseEvents = super._getEventNames();
@@ -115,6 +117,7 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         if (!this.isEditing) {
             return false;
         }
+
         const coll = this.collection, self = this, item = self.item, changes = this._saveVals;
         this._vals = this._saveVals;
         this._saveVals = null;
@@ -125,6 +128,7 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
                 item.raisePropertyChanged(name);
             }
         });
+
         return true;
     }
     protected _skipValidate(fieldInfo: IFieldInfo, val: any) {
@@ -294,21 +298,27 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         if (!this.isEditing) {
             return false;
         }
-        const coll = this.collection, internal = coll._getInternal(), item = this.item, isNew = this.isNew;
-        internal.onBeforeEditing(item, false, true);
-        if (!!this._valueBag) {
-            coreUtils.forEachProp(this._valueBag, (name, obj) => {
-                if (!!obj && sys.isEditable(obj.val)) {
-                    obj.val.cancelEdit();
-                }
-            });
-        }
-        if (!this._cancelEdit()) {
-            return false;
-        }
-        internal.onEditing(item, false, true);
-        if (isNew && !this.isEdited && !this.getIsDestroyCalled()) {
-            this.destroy();
+
+        this._isCanceling = true;
+        try {
+            const coll = this.collection, internal = coll._getInternal(), item = this.item, isNew = this.isNew;
+            internal.onBeforeEditing(item, false, true);
+            if (!!this._valueBag) {
+                coreUtils.forEachProp(this._valueBag, (name, obj) => {
+                    if (!!obj && sys.isEditable(obj.val)) {
+                        obj.val.cancelEdit();
+                    }
+                });
+            }
+            if (!this._cancelEdit()) {
+                return false;
+            }
+            internal.onEditing(item, false, true);
+            if (isNew && !this.isEdited && !this.getIsDestroyCalled()) {
+                this.destroy();
+            }
+        } finally {
+            this._isCanceling = false;
         }
         return true;
     }

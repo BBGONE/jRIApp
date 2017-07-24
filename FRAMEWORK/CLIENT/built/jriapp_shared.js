@@ -672,18 +672,18 @@ define("jriapp_shared/lang", ["require", "exports", "jriapp_shared/utils/coreuti
     exports.assign = assign;
     var _ERRS = {
         ERR_OBJ_ALREADY_REGISTERED: "an Object with the name: {0} is already registered and can not be overwritten",
-        ERR_APP_NEED_JQUERY: "The project is dependent on JQuery",
+        ERR_APP_NEED_JQUERY: "The project is dependent on JQuery and can not function properly without it",
         ERR_ASSERTION_FAILED: 'The Assertion "{0}" failed',
         ERR_BINDING_CONTENT_NOT_FOUND: "BindingContent is not found",
         ERR_DBSET_READONLY: "TDbSet: {0} is readOnly and can not be edited",
         ERR_DBSET_INVALID_FIELDNAME: "TDbSet: {0} has no field with the name: {1}",
         ERR_FIELD_READONLY: "Field is readOnly and can not be edited",
-        ERR_FIELD_ISNOT_NULLABLE: "Field is not nullable and can not be set to null",
-        ERR_FIELD_WRONG_TYPE: "Value {0} has wrong datatype. It should have {1} datatype.",
-        ERR_FIELD_MAXLEN: "Value exceeds field maxlength: {0}",
+        ERR_FIELD_ISNOT_NULLABLE: "Field must not be empty",
+        ERR_FIELD_WRONG_TYPE: "Value {0} has a wrong datatype. It must have {1} datatype.",
+        ERR_FIELD_MAXLEN: "Value exceeds maximum field length: {0}",
         ERR_FIELD_DATATYPE: "Unknown field data type: {0}",
-        ERR_FIELD_REGEX: "Value {0} can not be accepted as the right value for this field",
-        ERR_FIELD_RANGE: "Value {0} is outside the allowed range {1} for this field",
+        ERR_FIELD_REGEX: "Value {0} is not validated for correctness",
+        ERR_FIELD_RANGE: "Value {0} is outside the allowed range {1}",
         ERR_EVENT_INVALID: "Invalid event name: {0}",
         ERR_EVENT_INVALID_FUNC: "Invalid event function value",
         ERR_MODULE_NOT_REGISTERED: "Module: {0} is not registered",
@@ -696,15 +696,15 @@ define("jriapp_shared/lang", ["require", "exports", "jriapp_shared/utils/coreuti
         ERR_TEMPLATE_GROUP_NOTREGISTERED: "TEMPLATE's group: {0} is not registered",
         ERR_TEMPLATE_HAS_NO_ID: "TEMPLATE inside SCRIPT tag must have an ID attribute",
         ERR_CONVERTER_NOTREGISTERED: "Converter: {0} is not registered",
-        ERR_JQUERY_DATEPICKER_NOTFOUND: "Application is dependent on JQuery.UI.datepicker. Please include it in the scripts.",
+        ERR_JQUERY_DATEPICKER_NOTFOUND: "Application is dependent on JQuery.UI.datepicker",
         ERR_PARAM_INVALID: "Parameter: {0} has invalid value: {1}",
         ERR_PARAM_INVALID_TYPE: "Parameter: {0} has invalid type. It must be {1}",
         ERR_KEY_IS_EMPTY: "Key value must not be empty",
-        ERR_KEY_IS_NOTFOUND: "Can not find item with the key: {0}",
-        ERR_ITEM_IS_ATTACHED: "Operation invalid, reason: Item already has been attached",
-        ERR_ITEM_IS_DETACHED: "Operation invalid, reason: Item is detached",
-        ERR_ITEM_IS_NOTFOUND: "Operation invalid, reason: Item is not found",
-        ERR_ITEM_NAME_COLLISION: 'The "{0}" TDbSet\'s field name: "{1}" is invalid, because a property with that name already exists on the entity type.',
+        ERR_KEY_IS_NOTFOUND: "Can not find an item with the key: {0}",
+        ERR_ITEM_IS_ATTACHED: "Operation invalid. The reason: Item already has been attached",
+        ERR_ITEM_IS_DETACHED: "Operation invalid. The reason: Item is detached",
+        ERR_ITEM_IS_NOTFOUND: "Operation invalid. The reason: Item is not found",
+        ERR_ITEM_NAME_COLLISION: 'The "{0}" TDbSet\'s field name: "{1}" is invalid, because a property with that name already exists on the entity',
         ERR_DICTKEY_IS_NOTFOUND: "Dictionary keyName: {0} does not exist in item's properties",
         ERR_DICTKEY_IS_EMPTY: "Dictionary key property: {0} must be not empty",
         ERR_CONV_INVALID_DATE: "Cannot parse string value: {0} to a valid Date",
@@ -738,10 +738,10 @@ define("jriapp_shared/lang", ["require", "exports", "jriapp_shared/utils/coreuti
         ERR_LISTBOX_DATASRC_INVALID: "ListBox datasource must be a descendant of Collection type",
         ERR_DATAFRM_DCTX_INVALID: "DataForm's dataContext must be a descendant of BaseObject type",
         ERR_DCTX_HAS_NO_FIELDINFO: "DataContext has no getFieldInfo method",
-        ERR_TEMPLATE_ID_INVALID: "Element can not be found by TemplateID: {0}",
-        ERR_ITEM_DELETED_BY_ANOTHER_USER: "The record was deleted by another user",
-        ERR_ACCESS_DENIED: "The access is denied. Please, ask administrator to assign user rights to your account.",
-        ERR_CONCURRENCY: "The record has been modified by another user. Please, refresh record before editing.",
+        ERR_TEMPLATE_ID_INVALID: "Element can not be found by its TemplateID: {0}",
+        ERR_ITEM_DELETED_BY_ANOTHER_USER: "The record have been deleted by another user",
+        ERR_ACCESS_DENIED: "The access is denied. Please, ask administrator to assign user rights to your account",
+        ERR_CONCURRENCY: "The record has been modified by another user. Please, refresh record before editing",
         ERR_VALIDATION: "Data validation error",
         ERR_SVC_VALIDATION: "Data validation error: {0}",
         ERR_SVC_ERROR: "Service error: {0}",
@@ -4054,6 +4054,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             _this._vals = null;
             _this._flags = 0;
             _this._valueBag = null;
+            _this._isCanceling = false;
             return _this;
         }
         ItemAspect.prototype._getEventNames = function () {
@@ -4294,21 +4295,27 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             if (!this.isEditing) {
                 return false;
             }
-            var coll = this.collection, internal = coll._getInternal(), item = this.item, isNew = this.isNew;
-            internal.onBeforeEditing(item, false, true);
-            if (!!this._valueBag) {
-                coreUtils.forEachProp(this._valueBag, function (name, obj) {
-                    if (!!obj && sys.isEditable(obj.val)) {
-                        obj.val.cancelEdit();
-                    }
-                });
+            this._isCanceling = true;
+            try {
+                var coll = this.collection, internal = coll._getInternal(), item = this.item, isNew = this.isNew;
+                internal.onBeforeEditing(item, false, true);
+                if (!!this._valueBag) {
+                    coreUtils.forEachProp(this._valueBag, function (name, obj) {
+                        if (!!obj && sys.isEditable(obj.val)) {
+                            obj.val.cancelEdit();
+                        }
+                    });
+                }
+                if (!this._cancelEdit()) {
+                    return false;
+                }
+                internal.onEditing(item, false, true);
+                if (isNew && !this.isEdited && !this.getIsDestroyCalled()) {
+                    this.destroy();
+                }
             }
-            if (!this._cancelEdit()) {
-                return false;
-            }
-            internal.onEditing(item, false, true);
-            if (isNew && !this.isEdited && !this.getIsDestroyCalled()) {
-                this.destroy();
+            finally {
+                this._isCanceling = false;
             }
             return true;
         };
@@ -4621,6 +4628,9 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
             return _this;
         }
         ListItemAspect.prototype._setProp = function (name, val) {
+            if (this._isCanceling) {
+                return;
+            }
             var error;
             var coll = this.collection, item = this.item, fieldInfo = this.getFieldInfo(name), errors = coll.errors;
             if (this._getProp(name) !== val) {
