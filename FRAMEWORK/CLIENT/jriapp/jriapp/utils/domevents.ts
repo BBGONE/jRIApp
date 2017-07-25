@@ -224,7 +224,7 @@ function isDelegateArgs(a: any): a is TEventsDelegateArgs {
     return (!a) ? false : checks.isFunc(a.matchElement);
 }
 
-export type THandlerFunc = (evt: Event | EventWrap) => void;
+export type THandlerFunc = (evt: any) => void;
 
 export class DomEvents {
     static on(el: TDomElement, evType: "MSContentZoom", listener: (ev: UIEvent) => any, args?: TEventsArgsOrNamespace): void;

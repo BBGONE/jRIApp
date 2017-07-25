@@ -3509,7 +3509,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             return coreUtils.getValue(this._vals, fieldName);
         };
         EntityAspect.prototype._setFieldVal = function (fieldName, val) {
-            if (this._isCanceling) {
+            if (this.isCancelling) {
                 return false;
             }
             var dbSetName = this.dbSetName, dbSet = this.dbSet, oldV = this._getFieldVal(fieldName), fieldInfo = this.getFieldInfo(fieldName);

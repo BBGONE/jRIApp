@@ -4040,7 +4040,8 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
     (function (AspectFlags) {
         AspectFlags[AspectFlags["IsAttached"] = 0] = "IsAttached";
         AspectFlags[AspectFlags["IsEdited"] = 1] = "IsEdited";
-        AspectFlags[AspectFlags["isRefreshing"] = 2] = "isRefreshing";
+        AspectFlags[AspectFlags["IsRefreshing"] = 2] = "IsRefreshing";
+        AspectFlags[AspectFlags["IsCancelling"] = 3] = "IsCancelling";
     })(AspectFlags || (AspectFlags = {}));
     var ItemAspect = (function (_super) {
         __extends(ItemAspect, _super);
@@ -4054,7 +4055,6 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             _this._vals = null;
             _this._flags = 0;
             _this._valueBag = null;
-            _this._isCanceling = false;
             return _this;
         }
         ItemAspect.prototype._getEventNames = function () {
@@ -4070,6 +4070,14 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             }
             else {
                 this._flags &= ~(1 << 1);
+            }
+        };
+        ItemAspect.prototype._setIsCancelling = function (v) {
+            if (v) {
+                this._flags |= (1 << 3);
+            }
+            else {
+                this._flags &= ~(1 << 3);
             }
         };
         ItemAspect.prototype._beginEdit = function () {
@@ -4295,7 +4303,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             if (!this.isEditing) {
                 return false;
             }
-            this._isCanceling = true;
+            this._setIsCancelling(true);
             try {
                 var coll = this.collection, internal = coll._getInternal(), item = this.item, isNew = this.isNew;
                 internal.onBeforeEditing(item, false, true);
@@ -4315,7 +4323,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                 }
             }
             finally {
-                this._isCanceling = false;
+                this._setIsCancelling(false);
             }
             return true;
         };
@@ -4566,6 +4574,13 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(ItemAspect.prototype, "isCancelling", {
+            get: function () {
+                return !!(this._flags & (1 << 3));
+            },
+            enumerable: true,
+            configurable: true
+        });
         return ItemAspect;
     }(object_4.BaseObject));
     exports.ItemAspect = ItemAspect;
@@ -4628,7 +4643,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
             return _this;
         }
         ListItemAspect.prototype._setProp = function (name, val) {
-            if (this._isCanceling) {
+            if (this.isCancelling) {
                 return;
             }
             var error;

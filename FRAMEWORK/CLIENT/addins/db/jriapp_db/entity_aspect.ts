@@ -336,7 +336,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         return coreUtils.getValue(this._vals, fieldName);
     }
     _setFieldVal(fieldName: string, val: any): boolean {
-        if (this._isCanceling) {
+        if (this.isCancelling) {
             return false;
         }
         const dbSetName = this.dbSetName, dbSet = this.dbSet,

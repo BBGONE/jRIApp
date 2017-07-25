@@ -1249,11 +1249,11 @@ declare module "jriapp_shared/collection/aspect" {
         protected _vals: IIndexer<any>;
         private _flags;
         private _valueBag;
-        protected _isCanceling: boolean;
         constructor(collection: BaseCollection<TItem>);
         protected _getEventNames(): string[];
         protected _onErrorsChanged(): void;
         protected _setIsEdited(v: boolean): void;
+        protected _setIsCancelling(v: boolean): void;
         protected _beginEdit(): boolean;
         protected _endEdit(): boolean;
         protected _cancelEdit(): boolean;
@@ -1304,6 +1304,7 @@ declare module "jriapp_shared/collection/aspect" {
         readonly isEdited: boolean;
         readonly isDetached: boolean;
         readonly isRefreshing: boolean;
+        readonly isCancelling: boolean;
     }
 }
 declare module "jriapp_shared/collection/item" {

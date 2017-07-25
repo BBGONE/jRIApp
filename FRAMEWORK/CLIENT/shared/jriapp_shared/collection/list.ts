@@ -37,7 +37,7 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
         this._setKey(key);
     }
     _setProp(name: string, val: any) {
-        if (this._isCanceling) {
+        if (this.isCancelling) {
             return;
         }
         let error: ValidationError;

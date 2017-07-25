@@ -416,7 +416,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         self._waitLoaded(() => {
             try {
                 const app = appFactory();
-                deferred.resolve(app.startUp(onStartUp));
+                deferred.resolve(<IPromise<TApp>>app.startUp(onStartUp));
             } catch (err) {
                 deferred.reject(err);
             }

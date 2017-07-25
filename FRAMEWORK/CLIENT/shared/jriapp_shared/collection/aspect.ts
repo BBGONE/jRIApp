@@ -18,7 +18,8 @@ const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = util
 const enum AspectFlags {
     IsAttached = 0,
     IsEdited = 1,
-    isRefreshing = 2
+    IsRefreshing = 2,
+    IsCancelling = 3
 }
 
 interface ICustomVal {
@@ -35,8 +36,7 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
     protected _vals: IIndexer<any>;
     private _flags: number;
     private _valueBag: IIndexer<ICustomVal>;
-    protected _isCanceling: boolean;
-
+  
     constructor(collection: BaseCollection<TItem>) {
         super();
         this._key = null;
@@ -47,7 +47,6 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         this._vals = null;
         this._flags = 0;
         this._valueBag = null;
-        this._isCanceling = false;
     }
     protected _getEventNames() {
         const baseEvents = super._getEventNames();
@@ -61,6 +60,13 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
             this._flags |= (1 << AspectFlags.IsEdited);
         } else {
             this._flags &= ~(1 << AspectFlags.IsEdited);
+        }
+    }
+    protected _setIsCancelling(v: boolean) {
+        if (v) {
+            this._flags |= (1 << AspectFlags.IsCancelling);
+        } else {
+            this._flags &= ~(1 << AspectFlags.IsCancelling);
         }
     }
     protected _beginEdit(): boolean {
@@ -215,9 +221,9 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
     _setIsRefreshing(v: boolean) {
         if (this.isRefreshing !== v) {
             if (v) {
-                this._flags |= (1 << AspectFlags.isRefreshing);
+                this._flags |= (1 << AspectFlags.IsRefreshing);
             } else {
-                this._flags &= ~(1 << AspectFlags.isRefreshing);
+                this._flags &= ~(1 << AspectFlags.IsRefreshing);
             }
             this.raisePropertyChanged(PROP_NAME.isRefreshing);
         }
@@ -299,7 +305,7 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
             return false;
         }
 
-        this._isCanceling = true;
+        this._setIsCancelling(true);
         try {
             const coll = this.collection, internal = coll._getInternal(), item = this.item, isNew = this.isNew;
             internal.onBeforeEditing(item, false, true);
@@ -318,7 +324,7 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
                 this.destroy();
             }
         } finally {
-            this._isCanceling = false;
+            this._setIsCancelling(false);
         }
         return true;
     }
@@ -520,6 +526,9 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         return !(this._flags & (1 << AspectFlags.IsAttached));
     }
     get isRefreshing(): boolean {
-        return !!(this._flags & (1 << AspectFlags.isRefreshing));
+        return !!(this._flags & (1 << AspectFlags.IsRefreshing));
+    }
+    get isCancelling(): boolean {
+        return !!(this._flags & (1 << AspectFlags.IsCancelling));
     }
 }
