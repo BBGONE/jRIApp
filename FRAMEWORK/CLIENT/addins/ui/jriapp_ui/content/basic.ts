@@ -95,6 +95,9 @@ export class BasicContent extends BaseObject implements IContent {
             el = doc.createElement("input");
             el.setAttribute("type", "text");
             info.options = this._options.options;
+            if (!!info.options && !!info.options.placeholder) {
+                el.setAttribute('placeholder', info.options.placeholder);
+            } 
         } else {
             el = doc.createElement("span");
         }

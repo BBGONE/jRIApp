@@ -131,6 +131,9 @@ define("jriapp_ui/content/basic", ["require", "exports", "jriapp_shared", "jriap
                 el = doc.createElement("input");
                 el.setAttribute("type", "text");
                 info.options = this._options.options;
+                if (!!info.options && !!info.options.placeholder) {
+                    el.setAttribute('placeholder', info.options.placeholder);
+                }
             }
             else {
                 el = doc.createElement("span");
