@@ -1085,10 +1085,10 @@ declare module "jriapp_shared/collection/base" {
     }
     export class BaseCollection<TItem extends ICollectionItem> extends BaseObject implements ICollection<TItem> {
         private _objId;
-        protected _options: ICollectionOptions;
+        private _perms;
+        private _options;
         protected _isLoading: boolean;
         protected _EditingItem: TItem;
-        protected _perms: IPermissions;
         protected _totalCount: number;
         protected _pageIndex: number;
         protected _items: TItem[];
@@ -1149,6 +1149,7 @@ declare module "jriapp_shared/collection/base" {
         addOnPageSizeChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void;
         addOnTotalCountChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void;
         addOnCurrentChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void;
+        protected _updatePermissions(perms: IPermissions): void;
         protected _getPKFieldInfos(): IFieldInfo[];
         protected _checkCurrentChanging(newCurrent: TItem): void;
         protected _onCurrentChanging(newCurrent: TItem): void;

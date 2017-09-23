@@ -232,7 +232,6 @@ declare module "jriapp_db/dbset" {
         protected _getNavFieldVal(fieldName: string, item: TItem): any;
         protected _setNavFieldVal(fieldName: string, item: TItem, value: any): void;
         protected _beforeLoad(query: DataQuery<TItem, TObj>, oldQuery: DataQuery<TItem, TObj>): void;
-        protected _updatePermissions(perms: IPermissions): void;
         protected _getChildToParentNames(childFieldName: string): string[];
         protected _afterFill(result: IQueryResult<TItem>, isClearAll?: boolean): void;
         protected _fillFromService(info: IFillFromServiceArgs): IQueryResult<TItem>;

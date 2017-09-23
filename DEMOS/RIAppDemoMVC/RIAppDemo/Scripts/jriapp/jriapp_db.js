@@ -594,8 +594,8 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             var self = _this, dbContext = opts.dbContext, dbSetInfo = opts.dbSetInfo, fieldInfos = dbSetInfo.fieldInfos;
             _this._dbContext = dbContext;
             _this._dbSetName = dbSetInfo.dbSetName;
-            _this._options.enablePaging = dbSetInfo.enablePaging;
-            _this._options.pageSize = dbSetInfo.pageSize;
+            _this.options.enablePaging = dbSetInfo.enablePaging;
+            _this.options.pageSize = dbSetInfo.pageSize;
             _this._query = null;
             _this._itemFactory = null;
             _this._isSubmitOnDelete = false;
@@ -628,7 +628,6 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 }
             });
             self._mapAssocFields();
-            Object.freeze(_this._perms);
             var internalObj = {
                 getCalcFieldVal: function (fieldName, item) {
                     return self._getCalcFieldVal(fieldName, item);
@@ -948,9 +947,6 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             if (!query.isCacheValid) {
                 query._getInternal().clearCache();
             }
-        };
-        DbSet.prototype._updatePermissions = function (perms) {
-            this._perms = perms;
         };
         DbSet.prototype._getChildToParentNames = function (childFieldName) { return this._trackAssocMap[childFieldName]; };
         DbSet.prototype._afterFill = function (result, isClearAll) {
@@ -4105,10 +4101,10 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             configurable: true
         });
         Object.defineProperty(DataView.prototype, "isPagingEnabled", {
-            get: function () { return this._options.enablePaging; },
+            get: function () { return this.options.enablePaging; },
             set: function (v) {
-                if (this._options.enablePaging !== v) {
-                    this._options.enablePaging = v;
+                if (this.options.enablePaging !== v) {
+                    this.options.enablePaging = v;
                     this.raisePropertyChanged(const_6.PROP_NAME.isPagingEnabled);
                     this._refresh(0);
                 }

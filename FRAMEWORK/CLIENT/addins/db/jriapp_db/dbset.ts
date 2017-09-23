@@ -109,8 +109,8 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
             fieldInfos = dbSetInfo.fieldInfos;
         this._dbContext = <TDbContext>dbContext;
         this._dbSetName = dbSetInfo.dbSetName;
-        this._options.enablePaging = dbSetInfo.enablePaging;
-        this._options.pageSize = dbSetInfo.pageSize;
+        this.options.enablePaging = dbSetInfo.enablePaging;
+        this.options.pageSize = dbSetInfo.pageSize;
         this._query = null;
         this._itemFactory = null;
         this._isSubmitOnDelete = false;
@@ -152,7 +152,6 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
         });
 
         self._mapAssocFields();
-        Object.freeze(this._perms);
         const internalObj = {
             getCalcFieldVal: (fieldName: string, item: TItem) => {
                 return self._getCalcFieldVal(fieldName, item);
@@ -494,9 +493,6 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
         if (!query.isCacheValid) {
             query._getInternal().clearCache();
         }
-    }
-    protected _updatePermissions(perms: IPermissions): void {
-        this._perms = perms;
     }
     protected _getChildToParentNames(childFieldName: string): string[] { return this._trackAssocMap[childFieldName]; }
     protected _afterFill(result: IQueryResult<TItem>, isClearAll?: boolean) {

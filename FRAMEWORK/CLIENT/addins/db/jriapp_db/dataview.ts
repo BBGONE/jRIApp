@@ -411,10 +411,10 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         return (<BaseCollection<TItem>>this._dataSource).errors;
     }
     get dataSource(): ICollection<TItem> { return this._dataSource; }
-    get isPagingEnabled(): boolean { return this._options.enablePaging; }
+    get isPagingEnabled(): boolean { return this.options.enablePaging; }
     set isPagingEnabled(v) {
-        if (this._options.enablePaging !== v) {
-            this._options.enablePaging = v;
+        if (this.options.enablePaging !== v) {
+            this.options.enablePaging = v;
             this.raisePropertyChanged(PROP_NAME.isPagingEnabled);
             this._refresh(COLL_CHANGE_REASON.None);
         }

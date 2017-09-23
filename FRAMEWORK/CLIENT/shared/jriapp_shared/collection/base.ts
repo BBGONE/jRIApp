@@ -139,10 +139,10 @@ export class Errors<TItem extends ICollectionItem> {
 
 export class BaseCollection<TItem extends ICollectionItem> extends BaseObject implements ICollection<TItem> {
     private _objId: string;
-    protected _options: ICollectionOptions;
+    private _perms: IPermissions;
+    private _options: ICollectionOptions;
     protected _isLoading: boolean;
     protected _EditingItem: TItem;
-    protected _perms: IPermissions;
     protected _totalCount: number;
     protected _pageIndex: number;
     protected _items: TItem[];
@@ -356,6 +356,9 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
     }
     addOnCurrentChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void {
         this.addOnPropertyChange(PROP_NAME.currentItem, handler, nmspace, context);
+    }
+    protected _updatePermissions(perms: IPermissions): void {
+        this._perms = perms;
     }
     protected _getPKFieldInfos(): IFieldInfo[] {
         if (!!this._pkInfo) {

@@ -3174,6 +3174,9 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         BaseCollection.prototype.addOnCurrentChanged = function (handler, nmspace, context) {
             this.addOnPropertyChange(int_2.PROP_NAME.currentItem, handler, nmspace, context);
         };
+        BaseCollection.prototype._updatePermissions = function (perms) {
+            this._perms = perms;
+        };
         BaseCollection.prototype._getPKFieldInfos = function () {
             if (!!this._pkInfo) {
                 return this._pkInfo;
