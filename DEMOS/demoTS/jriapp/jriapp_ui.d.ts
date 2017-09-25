@@ -1297,7 +1297,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         destroy(): void;
         readonly table: HTMLTableElement;
         readonly options: IDataGridConstructorOptions;
-        readonly _tBodyEl: Element;
+        readonly _tBodyEl: HTMLTableSectionElement;
         readonly _tHeadEl: HTMLTableSectionElement;
         readonly _tFootEl: HTMLTableSectionElement;
         readonly _tHeadRow: HTMLTableRowElement;

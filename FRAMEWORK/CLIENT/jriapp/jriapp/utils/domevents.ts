@@ -218,7 +218,7 @@ export type TEventsDelegateArgs = {
     matchElement: (el: Element) => boolean;
 };
 
-export type TEventsArgsOrNamespace = TEventsArgs | string;
+export type TEventsArgsOrNamespace = TEventsArgs | string | TEventsDelegateArgs;
 
 function isDelegateArgs(a: any): a is TEventsDelegateArgs {
     return (!a) ? false : checks.isFunc(a.matchElement);
@@ -327,7 +327,7 @@ export class DomEvents {
     static on(el: TDomElement, evType: string, listener: (ev: EventWrap) => any, args: TEventsDelegateArgs): void;
     static on(el: TDomElement, evType: string, listener: EventListenerOrEventListenerObject, args?: TEventsArgsOrNamespace): void;
     // on implementation
-    static on(el: TDomElement, evType: string, listener: THandlerFunc, args?: TEventsArgsOrNamespace | TEventsDelegateArgs): void {
+    static on(el: TDomElement, evType: string, listener: THandlerFunc, args?: TEventsArgsOrNamespace): void {
         let events: TEventList = weakmap.get(el), ns: string, useCapture: boolean = false;
         if (!events) {
             events = <any>{};

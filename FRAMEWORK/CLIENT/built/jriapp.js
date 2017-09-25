@@ -68,12 +68,12 @@ define("jriapp/int", ["require", "exports"], function (require, exports) {
     var ButtonCss = (function () {
         function ButtonCss() {
         }
+        ButtonCss.Edit = "jriapp-actions jriapp-edit";
+        ButtonCss.Delete = "jriapp-actions jriapp-delete";
+        ButtonCss.OK = "jriapp-actions jriapp-ok";
+        ButtonCss.Cancel = "jriapp-actions jriapp-cancel";
         return ButtonCss;
     }());
-    ButtonCss.Edit = "jriapp-actions jriapp-edit";
-    ButtonCss.Delete = "jriapp-actions jriapp-delete";
-    ButtonCss.OK = "jriapp-actions jriapp-ok";
-    ButtonCss.Cancel = "jriapp-actions jriapp-cancel";
     exports.ButtonCss = ButtonCss;
 });
 define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_1) {
@@ -1329,12 +1329,12 @@ define("jriapp/utils/dom", ["require", "exports", "jriapp_shared", "jriapp/utils
         DomUtils.removeClass = function (elems, css) {
             DomUtils.setClass(elems || [], css, true);
         };
+        DomUtils.window = win;
+        DomUtils.document = doc;
+        DomUtils.ready = _checkDOMReady;
+        DomUtils.events = domevents_1.DomEvents;
         return DomUtils;
     }());
-    DomUtils.window = win;
-    DomUtils.document = doc;
-    DomUtils.ready = _checkDOMReady;
-    DomUtils.events = domevents_1.DomEvents;
     exports.DomUtils = DomUtils;
 });
 define("jriapp/utils/path", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/int"], function (require, exports, jriapp_shared_8, dom_1, int_2) {
@@ -1453,9 +1453,9 @@ define("jriapp/utils/path", ["require", "exports", "jriapp_shared", "jriapp/util
             }
             return res;
         };
+        PathHelper._anchor = doc.createElement("a");
         return PathHelper;
     }());
-    PathHelper._anchor = doc.createElement("a");
     exports.PathHelper = PathHelper;
 });
 define("jriapp/utils/sloader", ["require", "exports", "jriapp_shared", "jriapp_shared/utils/async", "jriapp/utils/dom", "jriapp/utils/path"], function (require, exports, jriapp_shared_9, async_1, dom_2, path_1) {
@@ -2055,15 +2055,15 @@ define("jriapp/utils/viewchecks", ["require", "exports"], function (require, exp
     var ViewChecks = (function () {
         function ViewChecks() {
         }
+        ViewChecks.isElView = function () { return false; };
+        ViewChecks.isTemplateElView = function () { return false; };
+        ViewChecks.setIsInsideTemplate = function () { };
+        ViewChecks.isDataForm = function () { return false; };
+        ViewChecks.isInsideDataForm = function () { return false; };
+        ViewChecks.isInNestedForm = function () { return false; };
+        ViewChecks.getParentDataForm = function () { return null; };
         return ViewChecks;
     }());
-    ViewChecks.isElView = function () { return false; };
-    ViewChecks.isTemplateElView = function () { return false; };
-    ViewChecks.setIsInsideTemplate = function () { };
-    ViewChecks.isDataForm = function () { return false; };
-    ViewChecks.isInsideDataForm = function () { return false; };
-    ViewChecks.isInNestedForm = function () { return false; };
-    ViewChecks.getParentDataForm = function () { return null; };
     exports.ViewChecks = ViewChecks;
 });
 define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/bootstrap"], function (require, exports, jriapp_shared_11, bootstrap_2) {

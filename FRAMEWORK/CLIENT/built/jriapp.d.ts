@@ -439,7 +439,7 @@ declare module "jriapp/utils/domevents" {
         nmspace: string;
         matchElement: (el: Element) => boolean;
     };
-    export type TEventsArgsOrNamespace = TEventsArgs | string;
+    export type TEventsArgsOrNamespace = TEventsArgs | string | TEventsDelegateArgs;
     export type THandlerFunc = (evt: any) => void;
     export class DomEvents {
         static on(el: TDomElement, evType: "MSContentZoom", listener: (ev: UIEvent) => any, args?: TEventsArgsOrNamespace): void;

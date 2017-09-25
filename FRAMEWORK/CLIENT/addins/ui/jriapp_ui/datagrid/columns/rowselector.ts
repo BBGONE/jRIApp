@@ -43,7 +43,7 @@ export class RowSelectorColumn extends BaseColumn {
         }, {
                 nmspace: this.uniqueID,
                 // using delegation
-                matchElement: (el) => {
+                matchElement: (el: Element) => {
                     const attr = el.getAttribute(DATA_ATTR.DATA_EVENT_SCOPE),
                         tag = el.tagName.toLowerCase();
                     return self.uniqueID === attr && tag === "input";

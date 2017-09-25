@@ -99,7 +99,7 @@ export class Pager extends BaseObject {
         }, {
                 nmspace: this._objId,
                 // using delegation
-                matchElement: (el) => {
+                matchElement: (el: Element) => {
                     const attr = el.getAttribute(DATA_ATTR.DATA_EVENT_SCOPE),
                         tag = el.tagName.toLowerCase();
                     return self._objId === attr && tag === "a";
