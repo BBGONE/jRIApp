@@ -929,8 +929,9 @@ define("uploader", ["require", "exports", "jriapp_shared"], function (require, e
             };
             deffered.promise().then(function () { return self.raiseEvent('progress', part / total); });
             xhr.open("post", self.uploadUrl, true);
+            var name = encodeURIComponent(file.name);
             xhr.setRequestHeader("Content-Type", "multipart/form-data");
-            xhr.setRequestHeader("X-File-Name", file.name);
+            xhr.setRequestHeader("X-File-Name", name);
             xhr.setRequestHeader("X-File-Size", file.size.toString());
             xhr.setRequestHeader("X-File-Type", file.type);
             xhr.setRequestHeader("X-Chunk-Num", part.toString());

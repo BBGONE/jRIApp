@@ -46,7 +46,10 @@ namespace RIAppDemo.Models
                 throw new InvalidOperationException("Invalid File-Size header");
 
             if (request.Headers.TryGetValues("X-File-Name", out values))
+            {
                 filename = values.First();
+                filename = Uri.UnescapeDataString(filename);
+            }
             else
                 throw new InvalidOperationException("Invalid File-Name header");
 

@@ -1,4 +1,5 @@
 ﻿using RIAppDemo.BLL.Utils;
+using System;
 using System.IO;
 using System.Linq;
 using System.Web.Mvc;
@@ -12,7 +13,7 @@ namespace RIAppDemo.Models
             var Request = controller.Request;
             int? chunkSize = Request.Headers.Keys.OfType<string>().Contains("X-Chunk-Size") ? int.Parse(Request.Headers["X-Chunk-Size"]) : (int?)null;
             int fileSize = chunkSize.HasValue ? int.Parse(Request.Headers["X-File-Size"]) : Request.ContentLength;
-            string filename = Request.Headers["X-File-Name"];
+            string filename = Uri.UnescapeDataString(Request.Headers["X-File-Name"]);
             string fileType = Request.Headers["X-File-Type"];
             int id = int.Parse(Request.Headers["X-Data-ID"]);
             return new UploadedFile()
