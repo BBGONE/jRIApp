@@ -4,12 +4,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace RIAPP.DataService.DomainService.Interfaces
 {
-    public interface IServiceArgs
+    public interface IServiceOptions
     {
-        IPrincipal Principal { get; }
+        IPrincipal User { get; set; }
 
-        ISerializer Serializer { get; }
+        ISerializer Serializer { get; set; }
 
-        IServiceCollection ServiceCollection { get; }
+        IServiceCollection Services { get; }
     }
 }

@@ -20,13 +20,13 @@ namespace RIAPP.DataService.LinqSql
         private TDB _db;
         private bool _ownsDb = false;
 
-        public LinqForSqlDomainService(TDB db, IServiceArgs args)
+        public LinqForSqlDomainService(TDB db, Action<IServiceOptions> args)
             :base(args)
         {
             this._db = db;
         }
 
-        public LinqForSqlDomainService(IServiceArgs args)
+        public LinqForSqlDomainService(Action<IServiceOptions> args)
             : this(null,args)
         {
            
@@ -39,14 +39,13 @@ namespace RIAPP.DataService.LinqSql
             config.AddOrReplaceCodeGen("csharp", () => new CsharpProvider<TDB>(this));
         }
 
-        protected override IServiceContainer CreateServiceContainer(IServiceCollection serviceCollection)
+        protected override void ConfigureServices(IServiceCollection services)
         {
-            var result = base.CreateServiceContainer(serviceCollection);
-            ServiceDescriptor[] toRemove = serviceCollection.Where(sd => sd.ServiceType == typeof(IValueConverter)).ToArray();
-            Array.ForEach(toRemove, sd => serviceCollection.Remove(sd));
+            base.ConfigureServices(services);
+            ServiceDescriptor[] toRemove = services.Where(sd => sd.ServiceType == typeof(IValueConverter)).ToArray();
+            Array.ForEach(toRemove, sd => services.Remove(sd));
             //replace with another service
-            serviceCollection.AddScoped<IValueConverter, LinqValueConverter>();
-            return result;
+            services.AddSingleton<IValueConverter, LinqValueConverter>();
         }
 
         protected virtual TDB CreateDataContext() {
@@ -179,6 +178,8 @@ namespace RIAPP.DataService.LinqSql
                 this._db = null;
                 this._ownsDb = false;
             }
+
+            base.Dispose(isDisposing);
         }
     }
 }

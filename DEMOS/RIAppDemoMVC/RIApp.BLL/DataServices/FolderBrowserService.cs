@@ -20,7 +20,7 @@ namespace RIAppDemo.BLL.DataServices
         private readonly string BASE_ROOT = AppDomain.CurrentDomain.BaseDirectory;
         private readonly string CONFIG_ROOT = ConfigurationManager.AppSettings["FOLDER_BROWSER_PATH"];
 
-        public FolderBrowserService(IServiceArgs args)
+        public FolderBrowserService(Action<IServiceOptions> args)
             : base(args)
         {
         }

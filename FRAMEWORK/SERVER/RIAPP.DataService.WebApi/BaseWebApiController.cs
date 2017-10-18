@@ -1,4 +1,5 @@
 ﻿using RIAPP.DataService.DomainService;
+using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.DomainService.Types;
 using RIAPP.DataService.Utils.Interfaces;
 using System;
@@ -44,13 +45,19 @@ namespace RIAPP.DataService.WebApi
 
         protected virtual T CreateDomainService()
         {
-            var args = new ServiceArgs(_serializer, User);
-            return this.CreateDomainService(args);
+            return this.CreateDomainService(null);
         }
 
-        protected virtual T CreateDomainService(ServiceArgs args)
+        protected virtual T CreateDomainService(Action<IServiceOptions> args)
         {
-            var service = (T)Activator.CreateInstance(typeof(T), args);
+            Action<IServiceOptions> action = (options) =>
+            {
+                options.Serializer = this.Serializer;
+                options.User = this.User;
+                if (args != null)
+                    args(options);
+            };
+            var service = (T)Activator.CreateInstance(typeof(T), action);
             return service;
         }
 

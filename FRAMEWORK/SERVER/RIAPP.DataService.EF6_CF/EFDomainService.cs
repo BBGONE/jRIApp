@@ -26,13 +26,13 @@ namespace RIAPP.DataService.EF6_CF
         private TDB _db;
         private bool _ownsDb;
         
-        public EFDomainService(TDB db, IServiceArgs args)
+        public EFDomainService(TDB db, Action<IServiceOptions> args)
             : base(args)
         {
             _db = db;
         }
 
-        public EFDomainService(IServiceArgs args)
+        public EFDomainService(Action<IServiceOptions> args)
             : this(null, args)
         {
         }
@@ -61,6 +61,8 @@ namespace RIAPP.DataService.EF6_CF
                 _db = null;
                 _ownsDb = false;
             }
+
+            base.Dispose(isDisposing);
         }
 
         #region Overridable Methods

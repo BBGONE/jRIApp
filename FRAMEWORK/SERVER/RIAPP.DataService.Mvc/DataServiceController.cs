@@ -73,13 +73,19 @@ namespace RIAPP.DataService.Mvc
 
         protected virtual IDomainService CreateDomainService()
         {
-            var args = new ServiceArgs(Serializer, User);
-            return this.CreateDomainService(args);
+            return this.CreateDomainService(null);
         }
 
-        protected virtual IDomainService CreateDomainService(ServiceArgs args)
+        protected virtual IDomainService CreateDomainService(Action<IServiceOptions> args)
         {
-            var service = (IDomainService)Activator.CreateInstance(typeof(T), args);
+            Action<IServiceOptions> action = (options) =>
+            {
+                options.Serializer = this.Serializer;
+                options.User = this.User;
+                if (args != null)
+                    args(options);
+            };
+            var service = (IDomainService)Activator.CreateInstance(typeof(T), action);
             return service;
         }
 

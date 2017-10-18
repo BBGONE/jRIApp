@@ -8,18 +8,32 @@ namespace RIAPP.DataService.DomainService
 {
     public class ServiceContainer: IServiceContainer, IDisposable
     {
-        private readonly IServiceCollection _serviceCollection;
         private Lazy<IServiceProvider> _provider;
+        private IDisposable _scope;
 
-        public ServiceContainer(IServiceCollection serviceCollection)
+        public ServiceContainer(IServiceCollection services)
         {
-            _serviceCollection = serviceCollection;
-            _provider = new Lazy<IServiceProvider>(()=> this.CreateServiceProvider(), true);
+            this._scope = null;
+            this._provider = new Lazy<IServiceProvider>(()=>
+            {
+                var provider = services.BuildServiceProvider();
+                this._scope = provider as IDisposable;
+                return provider;
+            }, true);
+        }
+        
+        public ServiceContainer(IServiceProvider serviceProvider, IDisposable scope)
+        {
+            _provider = new Lazy<IServiceProvider>(()=> serviceProvider);
+            _scope = scope;
         }
 
-        protected virtual IServiceProvider CreateServiceProvider()
+
+        protected virtual ServiceContainer CreateScope()
         {
-            return this._serviceCollection.BuildServiceProvider();
+            IServiceScopeFactory scopeFactory = this.GetService<IServiceScopeFactory>();
+            IServiceScope scope = scopeFactory.CreateScope();
+            return new ServiceContainer(scope.ServiceProvider, scope);
         }
 
         public object GetService(Type serviceType)
@@ -64,18 +78,13 @@ namespace RIAPP.DataService.DomainService
 
         public void Dispose()
         {
-            Lazy<IServiceProvider> provider = Interlocked.Exchange(ref this._provider, null);
-            if (provider== null)
+            IDisposable scope = Interlocked.Exchange(ref this._scope, null);
+            if (scope == null)
             {
                 return;
             }
-           
-            if (provider.IsValueCreated)
-            {
-                var disposable = (provider.Value as IDisposable);
-                if (disposable != null)
-                    disposable.Dispose();
-            }
+
+            scope.Dispose();
         }
     }
 }

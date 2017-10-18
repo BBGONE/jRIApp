@@ -34,7 +34,7 @@ namespace RIAppDemo.BLL.DataServices
         //store last diffgram here
         private string _diffGramm;
 
-        public RIAppDemoServiceEF(IServiceArgs args)
+        public RIAppDemoServiceEF(Action<IServiceOptions> args)
             : base(args)
         {
         }

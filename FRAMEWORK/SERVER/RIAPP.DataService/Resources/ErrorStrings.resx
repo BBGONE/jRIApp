@@ -181,7 +181,13 @@
     <value>Can not return included child entities for multypage requests</value>
   </data>
   <data name="ERR_NO_SERIALIZER" xml:space="preserve">
-    <value>The dataservice class expects a serializer instance</value>
+    <value>The dataservice options expect a serializer instance</value>
+  </data>
+  <data name="ERR_NO_SERVICES" xml:space="preserve">
+    <value>The dataservice constructor expect a valid services instance</value>
+  </data>
+  <data name="ERR_NO_USER" xml:space="preserve">
+    <value>The dataservice options expect a use principal instance</value>
   </data>
   <data name="ERR_PPROPERTY_ISNULL" xml:space="preserve">
     <value>Object: {0} property {1} is NULL</value>

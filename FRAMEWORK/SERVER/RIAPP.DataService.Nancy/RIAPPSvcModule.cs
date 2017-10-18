@@ -126,10 +126,22 @@ namespace RIAPP.DataService.Nancy
 
         protected virtual IDomainService CreateDomainService()
         {
-            ServiceArgs args = new ServiceArgs(this._serializer, this.User);
-            var service = (IDomainService)Activator.CreateInstance(typeof(T), args);
+            return this.CreateDomainService(null);
+        }
+
+        protected virtual IDomainService CreateDomainService(Action<IServiceOptions> args)
+        {
+            Action<IServiceOptions> action = (options) =>
+            {
+                options.Serializer = this.Serializer;
+                options.User = this.User;
+                if (args != null)
+                    args(options);
+            };
+            var service = (IDomainService)Activator.CreateInstance(typeof(T), action);
             return service;
         }
+
 
         public Response GetPermissionsInfo()
         {

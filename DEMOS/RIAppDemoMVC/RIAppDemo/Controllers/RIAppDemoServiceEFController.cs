@@ -1,10 +1,11 @@
-﻿using RIAPP.DataService.DomainService;
-using RIAPP.DataService.DomainService.Interfaces;
+﻿using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.Mvc;
 using RIAppDemo.BLL.DataServices;
 using RIAppDemo.BLL.Utils;
 using System.Web.Mvc;
 using System.Web.SessionState;
+using RIAPP.DataService.Utils.Extensions;
+using System;
 
 namespace RIAppDemo.Controllers
 {
@@ -13,14 +14,15 @@ namespace RIAppDemo.Controllers
     {
         private string _userIPAddress;
 
-        protected override IDomainService CreateDomainService()
+        protected override IDomainService CreateDomainService(Action<IServiceOptions> args)
         {
             this._userIPAddress = this.Request.UserHostAddress;
-            var args = new ServiceArgs(this.Serializer, this.User);
-            //just as an example how to add external services to the data service
-            //this service has one method to get an IP address of the client
-            args.AddSingleton<IHostAddrService>(this);
-            var service = (RIAppDemoServiceEF)base.CreateDomainService(args);
+            var service = base.CreateDomainService((options) => {
+                //an example how to add external services to the data service
+                //this service has one method to get an IP address of the client
+
+                options.AddSingleton<IHostAddrService>(this);
+            });
             return service;
         }
 

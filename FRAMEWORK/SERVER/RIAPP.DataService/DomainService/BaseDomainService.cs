@@ -25,18 +25,20 @@ namespace RIAPP.DataService.DomainService
         protected readonly ISerializer _Serializer;
         private Lazy<IServiceContainer> _ServiceContainer;
 
-        public BaseDomainService(IServiceArgs args)
+        public BaseDomainService(Action<IServiceOptions> optionsInitializer)
         {
-            if (args.Serializer == null)
+            ServiceOptions options = new ServiceOptions(new ServiceCollection());
+            optionsInitializer(options);
+            if (options.Serializer == null)
                 throw new ArgumentException(ErrorStrings.ERR_NO_SERIALIZER);
+            if (options.User == null)
+                throw new ArgumentException(ErrorStrings.ERR_NO_USER);
 
-            this._Serializer = args.Serializer;
-            this._User = args.Principal;
-
+            this._Serializer = options.Serializer;
+            this._User = options.User;
             this._ServiceContainer = new Lazy<IServiceContainer>(() => {
-                var serviceCollection = args.ServiceCollection;
-                this.ConfigureServices(serviceCollection);
-                return this.CreateServiceContainer(serviceCollection);
+                this.ConfigureServices(options.Services);
+                return new ServiceContainer(options.Services);
             }, true);
         }
 
@@ -71,39 +73,36 @@ namespace RIAPP.DataService.DomainService
         }
 
         #region Overridable Methods
-        protected virtual void ConfigureServices(IServiceCollection serviceCollection)
+        protected virtual void ConfigureServices(IServiceCollection services)
         {
-            serviceCollection.AddSingleton<IDomainService>(this);
-            serviceCollection.AddSingleton<BaseDomainService>(this);
-            serviceCollection.AddSingleton(this.GetType(), this);
+            services.AddSingleton<ISerializer>(this._Serializer);
+            services.AddSingleton<IPrincipal>(this._User);
+            services.AddSingleton<IDomainService>(this);
+            services.AddSingleton<BaseDomainService>(this);
+            services.AddSingleton(this.GetType(), this);
+                    
+            services.AddSingleton<IAuthorizer, AuthorizerClass>();
+
+            services.AddSingleton<IValueConverter, ValueConverter>();
+
+            services.AddSingleton<IDataHelper, DataHelper>();
+
+            services.AddSingleton<IValidationHelper, ValidationHelper>();
+
+            services.AddSingleton<IServiceOperationsHelper, ServiceOperationsHelper>();
 
             foreach (var descriptor in this.Config.DataManagerContainer.Descriptors)
             {
-                serviceCollection.AddScoped(descriptor.ServiceType, descriptor.ImplementationType);
+                services.AddScoped(descriptor.ServiceType, descriptor.ImplementationType);
             }
             foreach (var descriptor in this.Config.ValidatorsContainer.Descriptors)
             {
-                serviceCollection.AddScoped(descriptor.ServiceType, descriptor.ImplementationType);
+                services.AddScoped(descriptor.ServiceType, descriptor.ImplementationType);
             }
         }
 
         protected virtual void ConfigureCodeGen(CodeGenConfig config)
         {
-        }
-
-        protected internal virtual IServiceContainer CreateServiceContainer(IServiceCollection serviceCollection)
-        {
-            serviceCollection.AddScoped<IAuthorizer, AuthorizerClass>();
-
-            serviceCollection.AddScoped<IValueConverter, ValueConverter>();
-
-            serviceCollection.AddScoped<IDataHelper, DataHelper>();
-            
-            serviceCollection.AddScoped<IValidationHelper, ValidationHelper>();
-
-            serviceCollection.AddScoped<IServiceOperationsHelper, ServiceOperationsHelper>();
-
-            return new ServiceContainer(serviceCollection);
         }
 
         protected internal abstract Metadata GetMetadata(bool isDraft);

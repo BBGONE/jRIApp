@@ -8,8 +8,10 @@ namespace RIAppDemo.BLL.DataServices
     {
         public static IThumbnailService Create(IPrincipal user)
         {
-            var args = new ServiceArgs(new Serializer(), user);
-            var svc = new RIAppDemoServiceEF(args);
+            var svc = new RIAppDemoServiceEF((options) => {
+                options.Serializer = new Serializer();
+                options.User = user;
+            });
             return svc;
         }
     }

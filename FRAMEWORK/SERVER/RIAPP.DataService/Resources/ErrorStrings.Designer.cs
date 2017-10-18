@@ -250,11 +250,29 @@ namespace RIAPP.DataService.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The dataservice class expects a serializer instance.
+        ///   Looks up a localized string similar to The dataservice options expect a serializer instance.
         /// </summary>
         internal static string ERR_NO_SERIALIZER {
             get {
                 return ResourceManager.GetString("ERR_NO_SERIALIZER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The dataservice constructor expect a valid services instance.
+        /// </summary>
+        internal static string ERR_NO_SERVICES {
+            get {
+                return ResourceManager.GetString("ERR_NO_SERVICES", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The dataservice options expect a use principal instance.
+        /// </summary>
+        internal static string ERR_NO_USER {
+            get {
+                return ResourceManager.GetString("ERR_NO_USER", resourceCulture);
             }
         }
         

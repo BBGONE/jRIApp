@@ -74,8 +74,8 @@
     <Compile Include="DomainService\Types\FieldName.cs" />
     <Compile Include="DomainService\Types\Subset.cs" />
     <Compile Include="DomainService\Types\ParamMetadata.cs" />
-    <Compile Include="DomainService\ServiceArgs.cs" />
-    <Compile Include="DomainService\Interfaces\IServiceArgs.cs" />
+    <Compile Include="DomainService\ServiceOptions.cs" />
+    <Compile Include="DomainService\Interfaces\IServiceOptions.cs" />
     <Compile Include="DomainService\Security\AuthorizeAttribute.cs" />
     <Compile Include="DomainService\Security\AllowAnonymousAttribute.cs" />
     <Compile Include="DomainService\Attributes\CommentAttribute.cs" />
@@ -104,6 +104,7 @@
     <Compile Include="Utils\CodeGen\XamlProvider.cs" />
     <Compile Include="Utils\CodeGen\TypeScriptProvider.cs" />
     <Compile Include="Utils\DateTimeHelper.cs" />
+    <Compile Include="Utils\Extensions\ServiceOptionsEx.cs" />
     <Compile Include="Utils\Extensions\ExceptionEx.cs" />
     <Compile Include="Utils\Extensions\StringEx.cs" />
     <Compile Include="Utils\Interfaces\IMultiMap.cs" />
