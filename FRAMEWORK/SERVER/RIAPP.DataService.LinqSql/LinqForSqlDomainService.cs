@@ -5,6 +5,7 @@ using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.DomainService.Types;
 using RIAPP.DataService.LinqSql.Utils;
 using RIAPP.DataService.Utils;
+using RIAPP.DataService.Utils.Extensions;
 using RIAPP.DataService.Utils.Interfaces;
 using System;
 using System.Linq;
@@ -42,10 +43,7 @@ namespace RIAPP.DataService.LinqSql
         protected override void ConfigureServices(IServiceCollection services)
         {
             base.ConfigureServices(services);
-            ServiceDescriptor[] toRemove = services.Where(sd => sd.ServiceType == typeof(IValueConverter)).ToArray();
-            Array.ForEach(toRemove, sd => services.Remove(sd));
-            //replace with another service
-            services.AddSingleton<IValueConverter, LinqValueConverter>();
+            services.ReplaceSingleton<IValueConverter, LinqValueConverter>();
         }
 
         protected virtual TDB CreateDataContext() {

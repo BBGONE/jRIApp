@@ -104,6 +104,7 @@
     <Compile Include="Utils\CodeGen\XamlProvider.cs" />
     <Compile Include="Utils\CodeGen\TypeScriptProvider.cs" />
     <Compile Include="Utils\DateTimeHelper.cs" />
+    <Compile Include="Utils\Extensions\ServiceCollectionEx.cs" />
     <Compile Include="Utils\Extensions\ServiceOptionsEx.cs" />
     <Compile Include="Utils\Extensions\ExceptionEx.cs" />
     <Compile Include="Utils\Extensions\StringEx.cs" />

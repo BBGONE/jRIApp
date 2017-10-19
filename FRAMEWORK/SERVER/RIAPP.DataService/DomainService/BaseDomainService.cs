@@ -93,11 +93,11 @@ namespace RIAPP.DataService.DomainService
 
             foreach (var descriptor in this.Config.DataManagerContainer.Descriptors)
             {
-                services.AddScoped(descriptor.ServiceType, descriptor.ImplementationType);
+                services.AddSingleton(descriptor.ServiceType, descriptor.ImplementationType);
             }
             foreach (var descriptor in this.Config.ValidatorsContainer.Descriptors)
             {
-                services.AddScoped(descriptor.ServiceType, descriptor.ImplementationType);
+                services.AddSingleton(descriptor.ServiceType, descriptor.ImplementationType);
             }
         }
 

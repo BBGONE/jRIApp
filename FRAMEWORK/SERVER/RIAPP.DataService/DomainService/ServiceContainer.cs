@@ -2,6 +2,7 @@
 using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.Utils.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace RIAPP.DataService.DomainService
@@ -13,6 +14,7 @@ namespace RIAPP.DataService.DomainService
 
         public ServiceContainer(IServiceCollection services)
         {
+            services.AddSingleton<IServiceContainer>(this);
             this._scope = null;
             this._provider = new Lazy<IServiceProvider>(()=>
             {
@@ -22,14 +24,14 @@ namespace RIAPP.DataService.DomainService
             }, true);
         }
         
-        public ServiceContainer(IServiceProvider serviceProvider, IDisposable scope)
+        private ServiceContainer(IServiceProvider serviceProvider, IDisposable scope)
         {
             _provider = new Lazy<IServiceProvider>(()=> serviceProvider);
             _scope = scope;
         }
 
 
-        protected virtual ServiceContainer CreateScope()
+        public IServiceContainer CreateScope()
         {
             IServiceScopeFactory scopeFactory = this.GetService<IServiceScopeFactory>();
             IServiceScope scope = scopeFactory.CreateScope();
@@ -43,7 +45,17 @@ namespace RIAPP.DataService.DomainService
 
         public T GetService<T>()
         {
-            return (T) GetService(typeof(T));
+            return _provider.Value.GetService<T>();
+        }
+
+        public IEnumerable<object> GetServices(Type serviceType)
+        {
+            return _provider.Value.GetServices(serviceType);
+        }
+
+        public IEnumerable<T> GetServices<T>()
+        {
+            return _provider.Value.GetServices<T>();
         }
 
         public IAuthorizer Authorizer
