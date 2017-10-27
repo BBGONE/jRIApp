@@ -250,14 +250,12 @@ namespace RIAPP.DataService.Utils.CodeGen
                     if (methodInfo.methodResult)
                     {
                         sbArgs.Append("\t}) => RIAPP.IPromise<");
-                        sbArgs.Append(
-                            _dotNet2TS.RegisterType(
-                                MetadataHelper.RemoveTaskFromType(methodInfo.methodData.methodInfo.ReturnType)));
+                        sbArgs.Append(_dotNet2TS.RegisterType(MetadataHelper.RemoveTaskFromType(methodInfo.methodData.methodInfo.ReturnType)));
                         sbArgs.Append(">");
                     }
                     else
                     {
-                        sbArgs.Append("\t}) => RIAPP.IVoidPromise");
+                        sbArgs.Append("\t}) => RIAPP.IPromise<void>");
                     }
                 }
                 else
@@ -265,12 +263,12 @@ namespace RIAPP.DataService.Utils.CodeGen
                     if (methodInfo.methodResult)
                     {
                         sbArgs.Append("() => RIAPP.IPromise<");
-                        sbArgs.Append(_dotNet2TS.RegisterType(methodInfo.methodData.methodInfo.ReturnType));
+                        sbArgs.Append(_dotNet2TS.RegisterType(MetadataHelper.RemoveTaskFromType(methodInfo.methodData.methodInfo.ReturnType)));
                         sbArgs.Append(">");
                     }
                     else
                     {
-                        sbArgs.Append("() => RIAPP.IVoidPromise");
+                        sbArgs.Append("() => RIAPP.IPromise<void>");
                     }
                 }
 

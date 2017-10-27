@@ -4,6 +4,7 @@ using System.Runtime.Serialization;
 using System.Web.Script.Serialization;
 using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.Utils;
+using System.Threading.Tasks;
 
 namespace RIAPP.DataService.DomainService.Types
 {
@@ -32,7 +33,7 @@ namespace RIAPP.DataService.DomainService.Types
             get
             {
                 var returnType = methodData.methodInfo.ReturnType;
-                var isVoid = returnType == typeof(void);
+                var isVoid = returnType == typeof(void) || returnType == typeof(Task);
                 return !isVoid;
             }
         }

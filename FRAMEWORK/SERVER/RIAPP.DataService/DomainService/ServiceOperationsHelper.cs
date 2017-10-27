@@ -454,7 +454,14 @@ namespace RIAPP.DataService.DomainService
             if (typeInfo != null && invokeRes is Task)
             {
                 await ((Task) invokeRes).ConfigureAwait(false);
-                return typeInfo.GetProperty("Result").GetValue(invokeRes, null);
+                if (typeInfo.IsGenericType)
+                {
+                    return typeInfo.GetProperty("Result").GetValue(invokeRes, null);
+                }
+                else
+                {
+                    return null;
+                }
             }
             return invokeRes;
         }
