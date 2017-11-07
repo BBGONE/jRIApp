@@ -16,11 +16,87 @@ import { getBindingOptions, Binding } from "./binding";
 import { ViewChecks } from "./utils/viewchecks";
 import { Parser } from "./utils/parser";
 
-const utils = Utils, viewChecks = ViewChecks, dom = DomUtils, doc = dom.document,
+const utils = Utils, _async = utils.defer, viewChecks = ViewChecks, dom = DomUtils, doc = dom.document,
     strUtils = utils.str, boot = bootstrap, ERRS = LocaleERRS, parser = Parser;
 
 export function createDataBindSvc(root: Document | HTMLElement, elViewFactory: IElViewFactory): IDataBindingService {
     return new DataBindingService(root, elViewFactory);
+}
+
+function fn_toBindableElement(el: HTMLElement): IBindableElement {
+    let val: string, attr: Attr;
+    const allAttrs = el.attributes, res: IBindableElement = { el: el, dataView: null, dataForm: null, expressions: [] };
+    const n = allAttrs.length;
+    for (let i = 0; i < n; i++) {
+        attr = allAttrs[i];
+        if (strUtils.startsWith(attr.name, DATA_ATTR.DATA_BIND)) {
+            val = attr.value.trim();
+            if (!val) {
+                throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, attr.name, "empty"));
+            }
+            if (val[0] !== "{" && val[val.length - 1] !== "}") {
+                val = "{" + val + "}";
+            }
+            res.expressions.push(val);
+        }
+        if (strUtils.startsWith(attr.name, DATA_ATTR.DATA_FORM)) {
+            res.dataForm = attr.value.trim();
+        }
+        if (strUtils.startsWith(attr.name, DATA_ATTR.DATA_VIEW)) {
+            res.dataView = attr.value.trim();
+        }
+    }
+    return (!!res.dataView || res.expressions.length > 0) ? res : null;
+ }
+
+function fn_getBindableElements(scope: Document | HTMLElement): IBindableElement[] {
+    const result: IBindableElement[] = [], allElems = dom.queryAll<HTMLElement>(scope, "*");
+    allElems.forEach((el) => {
+        const res = fn_toBindableElement(el);
+        if (!!res) {
+            result.push(res);
+        }
+    });
+
+    return result;
+}
+
+function fn_getRequiredModules(el: HTMLElement): string[] {
+    const attr = el.getAttribute(DATA_ATTR.DATA_REQUIRE);
+    if (!attr) {
+        return <string[]>[];
+    }
+    const reqArr = attr.split(",");
+
+    const hashMap: IIndexer<any> = {};
+    reqArr.forEach((name) => {
+        if (!name) {
+            return;
+        }
+        name = strUtils.fastTrim(name);
+        if (!!name) {
+            hashMap[name] = name;
+        }
+    });
+    return Object.keys(hashMap);
+}
+
+function fn_getDataFormElements(bindElems: IBindableElement[]): HTMLElement[] {
+    return bindElems.filter((bindElem) => {
+        return !!bindElem.dataForm;
+    }).map((bindElem) => {
+        return bindElem.el;
+    });
+}
+
+// mark all dataforms for easier checking that the element is a dataform
+function fn_updDataFormAttr(bindElems: IBindableElement[]): void {
+    bindElems.forEach((bindElem) => {
+        if (!bindElem.dataForm && viewChecks.isDataForm(bindElem.el)) {
+            bindElem.el.setAttribute(DATA_ATTR.DATA_FORM, "yes");
+            bindElem.dataForm = "yes";
+        }
+    });
 }
 
 class DataBindingService extends BaseObject implements IDataBindingService, IErrorHandler {
@@ -36,82 +112,11 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
         this._objLifeTime = null;
         this._mloader = createModulesLoader();
     }
-    private _toBindableElement(el: HTMLElement): IBindableElement {
-        let val: string, attr: Attr;
-        const allAttrs = el.attributes, res: IBindableElement = { el: el, dataView: null, dataForm: null, expressions: [] };
-        const n = allAttrs.length;
-        for (let i = 0; i < n; i++) {
-            attr = allAttrs[i];
-            if (strUtils.startsWith(attr.name, DATA_ATTR.DATA_BIND)) {
-                val = attr.value.trim();
-                if (!val) {
-                    throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, attr.name, "empty"));
-                }
-                if (val[0] !== "{" && val[val.length - 1] !== "}") {
-                    val = "{" + val + "}";
-                }
-                res.expressions.push(val);
-            }
-            if (strUtils.startsWith(attr.name, DATA_ATTR.DATA_FORM)) {
-                res.dataForm = attr.value.trim();
-            }
-            if (strUtils.startsWith(attr.name, DATA_ATTR.DATA_VIEW)) {
-                res.dataView = attr.value.trim();
-            }
-        }
-        return (!!res.dataView || res.expressions.length > 0) ? res : null;
-    }
-    private _getBindableElements(scope: Document | HTMLElement): IBindableElement[] {
-        const self = this, result: IBindableElement[] = [], allElems = dom.queryAll<HTMLElement>(scope, "*");
-        allElems.forEach((el) => {
-            const res = self._toBindableElement(el);
-            if (!!res) {
-                result.push(res);
-            }
-        });
-
-        return result;
-    }
     private _cleanUp() {
         if (!!this._objLifeTime) {
             this._objLifeTime.destroy();
             this._objLifeTime = null;
         }
-    }
-    private _getRequiredModuleNames(el: HTMLElement): string[] {
-        const attr = el.getAttribute(DATA_ATTR.DATA_REQUIRE);
-        if (!attr) {
-            return <string[]>[];
-        }
-        const reqArr = attr.split(",");
-
-        const hashMap: IIndexer<any> = {};
-        reqArr.forEach((name) => {
-            if (!name) {
-                return;
-            }
-            name = strUtils.fastTrim(name);
-            if (!!name) {
-                hashMap[name] = name;
-            }
-        });
-        return Object.keys(hashMap);
-    }
-    private _getOnlyDataFormElems(bindElems: IBindableElement[]): HTMLElement[] {
-        return bindElems.filter((bindElem) => {
-            return !!bindElem.dataForm;
-        }).map((bindElem) => {
-            return bindElem.el;
-        });
-    }
-    private _updDataFormAttr(bindElems: IBindableElement[]): void {
-        // mark all dataforms for easier checking that the element is a dataform
-        bindElems.forEach((bindElem) => {
-            if (!bindElem.dataForm && viewChecks.isDataForm(bindElem.el)) {
-                bindElem.el.setAttribute(DATA_ATTR.DATA_FORM, "yes");
-                bindElem.dataForm = "yes";
-            }
-        });
     }
     private _bindElView(elView: IElView, bindElem: IBindableElement, lftm: ILifeTimeScope, isInsideTemplate: boolean, defSource: any) {
         const self = this;
@@ -133,25 +138,24 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
         }
     }
     private _bindTemplateElements(templateEl: HTMLElement): IPromise<ILifeTimeScope> {
-        const self = this, defer = utils.defer.createDeferred<ILifeTimeScope>(true);
+        const self = this, defer = _async.createDeferred<ILifeTimeScope>(true);
         let bindElems: IBindableElement[];
         try {
-            const rootBindEl: IBindableElement = self._toBindableElement(templateEl), lftm: ILifeTimeScope = new LifeTimeScope();
+            const rootBindEl: IBindableElement = fn_toBindableElement(templateEl), lftm: ILifeTimeScope = new LifeTimeScope();
             if (!!rootBindEl && !!rootBindEl.dataForm) {
                 // in this case process only this element
                 bindElems = [rootBindEl];
             } else {
-                bindElems = self._getBindableElements(templateEl);
+                bindElems = fn_getBindableElements(templateEl);
                 if (!!rootBindEl) {
                     bindElems.push(rootBindEl);
                 }
             }
 
-            // mark all dataforms for easier checking that the element is a dataform
-            self._updDataFormAttr(bindElems);
+            fn_updDataFormAttr(bindElems);
 
             // select all dataforms inside the scope
-            const forms = self._getOnlyDataFormElems(bindElems), needBinding = bindElems.filter((bindElem) => {
+            const forms = fn_getDataFormElements(bindElems), needBinding = bindElems.filter((bindElem) => {
                 return !viewChecks.isInNestedForm(templateEl, forms, bindElem.el);
             });
 
@@ -171,7 +175,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
         return defer.promise();
     }
     bindTemplateElements(templateEl: HTMLElement): IPromise<ILifeTimeScope> {
-        const self = this, requiredModules = self._getRequiredModuleNames(templateEl);
+        const self = this, requiredModules = fn_getRequiredModules(templateEl);
         let res: IPromise<ILifeTimeScope>;
         if (requiredModules.length > 0) {
             res = self._mloader.load(requiredModules).then(() => {
@@ -190,18 +194,17 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
         return res;
     }
     bindElements(scope: Document | HTMLElement, defaultDataContext: any, isDataFormBind: boolean, isInsideTemplate: boolean): IPromise<ILifeTimeScope> {
-        const self = this, defer = utils.defer.createDeferred<ILifeTimeScope>(true);
+        const self = this, defer = _async.createDeferred<ILifeTimeScope>(true);
         scope = scope || doc;
         try {
-            const bindElems = self._getBindableElements(scope), lftm = new LifeTimeScope();
+            const bindElems = fn_getBindableElements(scope), lftm = new LifeTimeScope();
 
             if (!isDataFormBind) {
-                // mark all dataforms for easier checking that the element is a dataform
-                self._updDataFormAttr(bindElems);
+                fn_updDataFormAttr(bindElems);
             }
 
             // select all dataforms inside the scope
-            const forms = self._getOnlyDataFormElems(bindElems), needBinding = bindElems.filter((bindElem) => {
+            const forms =fn_getDataFormElements(bindElems), needBinding = bindElems.filter((bindElem) => {
                 return !viewChecks.isInNestedForm(scope, forms, bindElem.el);
             });
 

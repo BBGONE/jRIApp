@@ -219,8 +219,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
             return parts;
         };
         Parser.parseOption = function (part) {
-            var self = Parser;
-            var res = {};
+            var self = Parser, res = {};
             part = strUtils.trim(part);
             if (isInsideBraces(part)) {
                 part = trimOuterBraces(part);
@@ -243,8 +242,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
             return res;
         };
         Parser.parseOptions = function (str) {
-            var self = Parser;
-            var res = [];
+            var self = Parser, res = [];
             str = strUtils.trim(str);
             var parts = [str];
             if (isInsideBraces(str)) {
@@ -3682,11 +3680,79 @@ define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/u
 define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/const", "jriapp/bootstrap", "jriapp/utils/lifetime", "jriapp/utils/dom", "jriapp/utils/mloader", "jriapp/binding", "jriapp/utils/viewchecks", "jriapp/utils/parser"], function (require, exports, jriapp_shared_18, const_4, bootstrap_5, lifetime_1, dom_5, mloader_1, binding_1, viewchecks_3, parser_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_18.Utils, viewChecks = viewchecks_3.ViewChecks, dom = dom_5.DomUtils, doc = dom.document, strUtils = utils.str, boot = bootstrap_5.bootstrap, ERRS = jriapp_shared_18.LocaleERRS, parser = parser_3.Parser;
+    var utils = jriapp_shared_18.Utils, _async = utils.defer, viewChecks = viewchecks_3.ViewChecks, dom = dom_5.DomUtils, doc = dom.document, strUtils = utils.str, boot = bootstrap_5.bootstrap, ERRS = jriapp_shared_18.LocaleERRS, parser = parser_3.Parser;
     function createDataBindSvc(root, elViewFactory) {
         return new DataBindingService(root, elViewFactory);
     }
     exports.createDataBindSvc = createDataBindSvc;
+    function fn_toBindableElement(el) {
+        var val, attr;
+        var allAttrs = el.attributes, res = { el: el, dataView: null, dataForm: null, expressions: [] };
+        var n = allAttrs.length;
+        for (var i = 0; i < n; i++) {
+            attr = allAttrs[i];
+            if (strUtils.startsWith(attr.name, const_4.DATA_ATTR.DATA_BIND)) {
+                val = attr.value.trim();
+                if (!val) {
+                    throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, attr.name, "empty"));
+                }
+                if (val[0] !== "{" && val[val.length - 1] !== "}") {
+                    val = "{" + val + "}";
+                }
+                res.expressions.push(val);
+            }
+            if (strUtils.startsWith(attr.name, const_4.DATA_ATTR.DATA_FORM)) {
+                res.dataForm = attr.value.trim();
+            }
+            if (strUtils.startsWith(attr.name, const_4.DATA_ATTR.DATA_VIEW)) {
+                res.dataView = attr.value.trim();
+            }
+        }
+        return (!!res.dataView || res.expressions.length > 0) ? res : null;
+    }
+    function fn_getBindableElements(scope) {
+        var result = [], allElems = dom.queryAll(scope, "*");
+        allElems.forEach(function (el) {
+            var res = fn_toBindableElement(el);
+            if (!!res) {
+                result.push(res);
+            }
+        });
+        return result;
+    }
+    function fn_getRequiredModules(el) {
+        var attr = el.getAttribute(const_4.DATA_ATTR.DATA_REQUIRE);
+        if (!attr) {
+            return [];
+        }
+        var reqArr = attr.split(",");
+        var hashMap = {};
+        reqArr.forEach(function (name) {
+            if (!name) {
+                return;
+            }
+            name = strUtils.fastTrim(name);
+            if (!!name) {
+                hashMap[name] = name;
+            }
+        });
+        return Object.keys(hashMap);
+    }
+    function fn_getDataFormElements(bindElems) {
+        return bindElems.filter(function (bindElem) {
+            return !!bindElem.dataForm;
+        }).map(function (bindElem) {
+            return bindElem.el;
+        });
+    }
+    function fn_updDataFormAttr(bindElems) {
+        bindElems.forEach(function (bindElem) {
+            if (!bindElem.dataForm && viewChecks.isDataForm(bindElem.el)) {
+                bindElem.el.setAttribute(const_4.DATA_ATTR.DATA_FORM, "yes");
+                bindElem.dataForm = "yes";
+            }
+        });
+    }
     var DataBindingService = (function (_super) {
         __extends(DataBindingService, _super);
         function DataBindingService(root, elViewFactory) {
@@ -3697,79 +3763,11 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/con
             _this._mloader = mloader_1.create();
             return _this;
         }
-        DataBindingService.prototype._toBindableElement = function (el) {
-            var val, attr;
-            var allAttrs = el.attributes, res = { el: el, dataView: null, dataForm: null, expressions: [] };
-            var n = allAttrs.length;
-            for (var i = 0; i < n; i++) {
-                attr = allAttrs[i];
-                if (strUtils.startsWith(attr.name, const_4.DATA_ATTR.DATA_BIND)) {
-                    val = attr.value.trim();
-                    if (!val) {
-                        throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, attr.name, "empty"));
-                    }
-                    if (val[0] !== "{" && val[val.length - 1] !== "}") {
-                        val = "{" + val + "}";
-                    }
-                    res.expressions.push(val);
-                }
-                if (strUtils.startsWith(attr.name, const_4.DATA_ATTR.DATA_FORM)) {
-                    res.dataForm = attr.value.trim();
-                }
-                if (strUtils.startsWith(attr.name, const_4.DATA_ATTR.DATA_VIEW)) {
-                    res.dataView = attr.value.trim();
-                }
-            }
-            return (!!res.dataView || res.expressions.length > 0) ? res : null;
-        };
-        DataBindingService.prototype._getBindableElements = function (scope) {
-            var self = this, result = [], allElems = dom.queryAll(scope, "*");
-            allElems.forEach(function (el) {
-                var res = self._toBindableElement(el);
-                if (!!res) {
-                    result.push(res);
-                }
-            });
-            return result;
-        };
         DataBindingService.prototype._cleanUp = function () {
             if (!!this._objLifeTime) {
                 this._objLifeTime.destroy();
                 this._objLifeTime = null;
             }
-        };
-        DataBindingService.prototype._getRequiredModuleNames = function (el) {
-            var attr = el.getAttribute(const_4.DATA_ATTR.DATA_REQUIRE);
-            if (!attr) {
-                return [];
-            }
-            var reqArr = attr.split(",");
-            var hashMap = {};
-            reqArr.forEach(function (name) {
-                if (!name) {
-                    return;
-                }
-                name = strUtils.fastTrim(name);
-                if (!!name) {
-                    hashMap[name] = name;
-                }
-            });
-            return Object.keys(hashMap);
-        };
-        DataBindingService.prototype._getOnlyDataFormElems = function (bindElems) {
-            return bindElems.filter(function (bindElem) {
-                return !!bindElem.dataForm;
-            }).map(function (bindElem) {
-                return bindElem.el;
-            });
-        };
-        DataBindingService.prototype._updDataFormAttr = function (bindElems) {
-            bindElems.forEach(function (bindElem) {
-                if (!bindElem.dataForm && viewChecks.isDataForm(bindElem.el)) {
-                    bindElem.el.setAttribute(const_4.DATA_ATTR.DATA_FORM, "yes");
-                    bindElem.dataForm = "yes";
-                }
-            });
         };
         DataBindingService.prototype._bindElView = function (elView, bindElem, lftm, isInsideTemplate, defSource) {
             var self = this;
@@ -3789,21 +3787,21 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/con
             }
         };
         DataBindingService.prototype._bindTemplateElements = function (templateEl) {
-            var self = this, defer = utils.defer.createDeferred(true);
+            var self = this, defer = _async.createDeferred(true);
             var bindElems;
             try {
-                var rootBindEl = self._toBindableElement(templateEl), lftm_1 = new lifetime_1.LifeTimeScope();
+                var rootBindEl = fn_toBindableElement(templateEl), lftm_1 = new lifetime_1.LifeTimeScope();
                 if (!!rootBindEl && !!rootBindEl.dataForm) {
                     bindElems = [rootBindEl];
                 }
                 else {
-                    bindElems = self._getBindableElements(templateEl);
+                    bindElems = fn_getBindableElements(templateEl);
                     if (!!rootBindEl) {
                         bindElems.push(rootBindEl);
                     }
                 }
-                self._updDataFormAttr(bindElems);
-                var forms_1 = self._getOnlyDataFormElems(bindElems), needBinding = bindElems.filter(function (bindElem) {
+                fn_updDataFormAttr(bindElems);
+                var forms_1 = fn_getDataFormElements(bindElems), needBinding = bindElems.filter(function (bindElem) {
                     return !viewChecks.isInNestedForm(templateEl, forms_1, bindElem.el);
                 });
                 needBinding.forEach(function (bindElem) {
@@ -3821,7 +3819,7 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/con
             return defer.promise();
         };
         DataBindingService.prototype.bindTemplateElements = function (templateEl) {
-            var self = this, requiredModules = self._getRequiredModuleNames(templateEl);
+            var self = this, requiredModules = fn_getRequiredModules(templateEl);
             var res;
             if (requiredModules.length > 0) {
                 res = self._mloader.load(requiredModules).then(function () {
@@ -3839,14 +3837,14 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/con
             return res;
         };
         DataBindingService.prototype.bindElements = function (scope, defaultDataContext, isDataFormBind, isInsideTemplate) {
-            var self = this, defer = utils.defer.createDeferred(true);
+            var self = this, defer = _async.createDeferred(true);
             scope = scope || doc;
             try {
-                var bindElems = self._getBindableElements(scope), lftm_2 = new lifetime_1.LifeTimeScope();
+                var bindElems = fn_getBindableElements(scope), lftm_2 = new lifetime_1.LifeTimeScope();
                 if (!isDataFormBind) {
-                    self._updDataFormAttr(bindElems);
+                    fn_updDataFormAttr(bindElems);
                 }
-                var forms_2 = self._getOnlyDataFormElems(bindElems), needBinding = bindElems.filter(function (bindElem) {
+                var forms_2 = fn_getDataFormElements(bindElems), needBinding = bindElems.filter(function (bindElem) {
                     return !viewChecks.isInNestedForm(scope, forms_2, bindElem.el);
                 });
                 needBinding.forEach(function (bindElem) {
@@ -4227,6 +4225,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.5.14";
+    exports.VERSION = "1.6.3";
     bootstrap_7.Bootstrap._initFramework();
 });

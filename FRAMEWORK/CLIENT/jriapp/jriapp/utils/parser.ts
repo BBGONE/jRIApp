@@ -1,7 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { Utils, LocaleERRS as ERRS } from "jriapp_shared";
 
-
 const checks = Utils.check, strUtils = Utils.str, coreUtils = Utils.core, sys = Utils.sys;
 
 const trimOuterBracesRX = /^([{]){0,1}|([}]){0,1}$/g;
@@ -159,8 +158,7 @@ export class Parser {
         return parts;
     }
     static parseOption(part: string) {
-        const self = Parser;
-        const res: any = {};
+        const self = Parser, res: any = {};
         part = strUtils.trim(part);
         if (isInsideBraces(part)) {
             part = trimOuterBraces(part);
@@ -182,8 +180,7 @@ export class Parser {
         return res;
     }
     static parseOptions(str: string) {
-        const self = Parser;
-        const res: any[] = [];
+        const self = Parser, res: any[] = [];
 
         str = strUtils.trim(str);
         let parts = [str];

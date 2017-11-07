@@ -401,7 +401,7 @@ declare module "jriapp_db/error" {
 declare module "jriapp_db/dbcontext" {
     import { COLL_CHANGE_REASON } from "jriapp_shared/collection/const";
     import { IIndexer, IVoidPromise, IBaseObject, TEventHandler, BaseObject, IStatefulPromise, IAbortablePromise } from "jriapp_shared";
-    import { IEntityItem, IRefreshRowInfo, IQueryResult, IQueryInfo, IAssociationInfo, IPermissionsInfo, IInvokeRequest, IQueryResponse, IChangeSet } from "jriapp_db/int";
+    import { IEntityItem, IRefreshRowInfo, IQueryResult, IQueryInfo, IAssociationInfo, IPermissionsInfo, IInvokeRequest, IInvokeResponse, IQueryResponse, IChangeSet } from "jriapp_db/int";
     import { DATA_OPER } from "jriapp_db/const";
     import { TDbSet } from "jriapp_db/dbset";
     import { DbSets } from "jriapp_db/dbsets";
@@ -443,10 +443,9 @@ declare module "jriapp_db/dbcontext" {
         protected _getMethodParams(methodInfo: IQueryInfo, args: {
             [paramName: string]: any;
         }): IInvokeRequest;
-        protected _invokeMethod(data: IInvokeRequest, callback: (res: {
-            result: any;
-            error: any;
-        }) => void): void;
+        protected _invokeMethod(methodInfo: IQueryInfo, args: {
+            [paramName: string]: any;
+        }): IStatefulPromise<IInvokeResponse>;
         protected _loadFromCache(query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
         protected _loadSubsets(response: IQueryResponse, isClearAll: boolean): void;
         protected _onLoaded(response: IQueryResponse, query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;

@@ -2328,10 +2328,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         Refresh: "refresh"
     };
     function fn_checkError(svcError, oper) {
-        if (!svcError) {
-            return;
-        }
-        if (ERROR.checkIsDummy(svcError)) {
+        if (!svcError || ERROR.checkIsDummy(svcError)) {
             return;
         }
         switch (svcError.name) {
@@ -2449,25 +2446,21 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         DbContext.prototype._initMethod = function (methodInfo) {
             var self = this;
             this._svcMethods[methodInfo.methodName] = function (args) {
-                var deferred = _async.createDeferred(), callback = function (res) {
-                    if (!res.error) {
-                        deferred.resolve(res.result);
+                return self._invokeMethod(methodInfo, args).then(function (res) {
+                    if (self.getIsDestroyCalled()) {
+                        throw new jriapp_shared_7.AbortError();
                     }
-                    else {
-                        deferred.reject();
+                    if (!res) {
+                        throw new Error(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_UNEXPECTED_SVC_ERROR, "operation result is empty"));
                     }
-                };
-                try {
-                    var data = self._getMethodParams(methodInfo, args);
-                    self._invokeMethod(data, callback);
-                }
-                catch (ex) {
-                    if (!ERROR.checkIsDummy(ex)) {
-                        self.handleError(ex, self);
-                        callback({ result: null, error: ex });
+                    fn_checkError(res.error, 3);
+                    return res.result;
+                }).catch(function (err) {
+                    if (!ERROR.checkIsDummy(err)) {
+                        self._onDataOperError(err, 3);
                     }
-                }
-                return deferred.promise();
+                    ERROR.throwDummy(err);
+                });
             };
         };
         DbContext.prototype._addRequestPromise = function (req, operType, name) {
@@ -2526,63 +2519,29 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             }
             return data;
         };
-        DbContext.prototype._invokeMethod = function (data, callback) {
-            var self = this, operType = 3, fnOnComplete = function (res) {
-                if (self.getIsDestroyCalled()) {
-                    return;
-                }
-                try {
-                    if (!res) {
-                        throw new Error(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_UNEXPECTED_SVC_ERROR, "operation result is empty"));
-                    }
-                    fn_checkError(res.error, operType);
-                    callback({ result: res.result, error: null });
-                }
-                catch (ex) {
-                    if (ERROR.checkIsDummy(ex)) {
-                        return;
-                    }
-                    self._onDataOperError(ex, operType);
-                    callback({ result: null, error: ex });
-                }
-            };
-            try {
-                var postData = JSON.stringify(data), invokeUrl = this._getUrl(DATA_SVC_METH.Invoke), reqPromise = http.postAjax(invokeUrl, postData, self.requestHeaders);
-                self._addRequestPromise(reqPromise, operType);
-                reqPromise.then(function (res) {
+        DbContext.prototype._invokeMethod = function (methodInfo, args) {
+            var _this = this;
+            var self = this;
+            return _async.delay(function () {
+                var data = self._getMethodParams(methodInfo, args);
+                return JSON.stringify(data);
+            }).then(function (postData) {
+                var invokeUrl = _this._getUrl(DATA_SVC_METH.Invoke), reqPromise = http.postAjax(invokeUrl, postData, self.requestHeaders);
+                self._addRequestPromise(reqPromise, 3);
+                return reqPromise.then(function (res) {
                     return _async.parseJSON(res);
-                }).then(function (res) {
-                    fnOnComplete(res);
-                }, function (err) {
-                    fnOnComplete({ result: null, error: err });
                 });
-            }
-            catch (ex) {
-                if (ERROR.checkIsDummy(ex)) {
-                    ERROR.throwDummy(ex);
-                }
-                this._onDataOperError(ex, operType);
-                callback({ result: null, error: ex });
-                ERROR.throwDummy(ex);
-            }
+            });
         };
         DbContext.prototype._loadFromCache = function (query, reason) {
-            var self = this, defer = _async.createDeferred();
-            utils.queue.enque(function () {
+            var self = this;
+            return _async.delay(function () {
                 if (self.getIsDestroyCalled()) {
-                    defer.reject(new jriapp_shared_7.AbortError());
-                    return;
+                    throw new jriapp_shared_7.AbortError();
                 }
                 var dbSet = query.dbSet;
-                try {
-                    var queryRes = dbSet._getInternal().fillFromCache({ reason: reason, query: query });
-                    defer.resolve(queryRes);
-                }
-                catch (ex) {
-                    defer.reject(ex);
-                }
+                return dbSet._getInternal().fillFromCache({ reason: reason, query: query });
             });
-            return defer.promise();
         };
         DbContext.prototype._loadSubsets = function (response, isClearAll) {
             var self = this, isHasSubsets = checks.isArray(response.subsets) && response.subsets.length > 0;
@@ -2595,35 +2554,28 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             });
         };
         DbContext.prototype._onLoaded = function (response, query, reason) {
-            var self = this, defer = _async.createDeferred();
-            utils.queue.enque(function () {
+            var self = this;
+            return _async.delay(function () {
                 if (self.getIsDestroyCalled()) {
-                    defer.reject(new jriapp_shared_7.AbortError());
-                    return;
+                    throw new jriapp_shared_7.AbortError();
                 }
                 var operType = 2;
-                try {
-                    if (checks.isNt(response)) {
-                        throw new Error(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_UNEXPECTED_SVC_ERROR, "null result"));
-                    }
-                    var dbSetName = response.dbSetName, dbSet = self.getDbSet(dbSetName);
-                    if (checks.isNt(dbSet)) {
-                        throw new Error(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_DBSET_NAME_INVALID, dbSetName));
-                    }
-                    fn_checkError(response.error, operType);
-                    var isClearAll_1 = (!!query && query.isClearPrevData), loadRes = dbSet._getInternal().fillFromService({
-                        res: response,
-                        reason: reason,
-                        query: query,
-                        onFillEnd: function () { self._loadSubsets(response, isClearAll_1); }
-                    });
-                    defer.resolve(loadRes);
+                if (checks.isNt(response)) {
+                    throw new Error(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_UNEXPECTED_SVC_ERROR, "null result"));
                 }
-                catch (ex) {
-                    defer.reject(ex);
+                var dbSetName = response.dbSetName, dbSet = self.getDbSet(dbSetName);
+                if (checks.isNt(dbSet)) {
+                    throw new Error(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_DBSET_NAME_INVALID, dbSetName));
                 }
+                fn_checkError(response.error, operType);
+                var isClearAll = (!!query && query.isClearPrevData);
+                return dbSet._getInternal().fillFromService({
+                    res: response,
+                    reason: reason,
+                    query: query,
+                    onFillEnd: function () { self._loadSubsets(response, isClearAll); }
+                });
             });
-            return defer.promise();
         };
         DbContext.prototype._dataSaved = function (changes) {
             var self = this;

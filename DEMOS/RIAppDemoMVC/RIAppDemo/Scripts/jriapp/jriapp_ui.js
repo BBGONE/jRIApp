@@ -620,9 +620,9 @@ define("jriapp_ui/utils/jquery", ["require", "exports", "jriapp_shared"], functi
                 $el[name]("destroy");
             }
         };
-        JQueryUtils.$ = jQuery;
         return JQueryUtils;
     }());
+    JQueryUtils.$ = jQuery;
     exports.JQueryUtils = JQueryUtils;
 });
 define("jriapp_ui/utils/tooltip", ["require", "exports", "jriapp_ui/utils/jquery", "jriapp/utils/dom"], function (require, exports, jquery_1, dom_4) {
@@ -1231,9 +1231,9 @@ define("jriapp_ui/content/string", ["require", "exports", "jriapp_ui/textbox", "
         StringContent.prototype.toString = function () {
             return "StringContent";
         };
-        StringContent._allowedKeys = null;
         return StringContent;
     }(basic_1.BasicContent));
+    StringContent._allowedKeys = null;
     exports.StringContent = StringContent;
 });
 define("jriapp_ui/textarea", ["require", "exports", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp_ui/baseview"], function (require, exports, dom_7, bootstrap_5, baseview_3) {
@@ -1387,9 +1387,9 @@ define("jriapp_ui/content/multyline", ["require", "exports", "jriapp_shared", "j
         MultyLineContent.prototype.toString = function () {
             return "MultyLineContent";
         };
-        MultyLineContent._allowedKeys = null;
         return MultyLineContent;
     }(basic_2.BasicContent));
+    MultyLineContent._allowedKeys = null;
     exports.MultyLineContent = MultyLineContent;
 });
 define("jriapp_ui/checkbox", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp_ui/baseview", "jriapp_ui/input"], function (require, exports, jriapp_shared_11, dom_9, bootstrap_6, baseview_4, input_2) {
@@ -1579,9 +1579,9 @@ define("jriapp_ui/content/number", ["require", "exports", "jriapp/bootstrap", "j
         NumberContent.prototype.toString = function () {
             return "NumberContent";
         };
-        NumberContent._allowedKeys = null;
         return NumberContent;
     }(basic_4.BasicContent));
+    NumberContent._allowedKeys = null;
     exports.NumberContent = NumberContent;
 });
 define("jriapp_ui/content/date", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp_ui/content/basic"], function (require, exports, jriapp_shared_12, dom_11, basic_5) {
@@ -8198,10 +8198,10 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             enumerable: true,
             configurable: true
         });
-        DataForm._DATA_FORM_SELECTOR = ["*[", const_26.DATA_ATTR.DATA_FORM, "]"].join("");
-        DataForm._DATA_CONTENT_SELECTOR = ["*[", const_26.DATA_ATTR.DATA_CONTENT, "]:not([", const_26.DATA_ATTR.DATA_COLUMN, "])"].join("");
         return DataForm;
     }(jriapp_shared_36.BaseObject));
+    DataForm._DATA_FORM_SELECTOR = ["*[", const_26.DATA_ATTR.DATA_FORM, "]"].join("");
+    DataForm._DATA_CONTENT_SELECTOR = ["*[", const_26.DATA_ATTR.DATA_CONTENT, "]:not([", const_26.DATA_ATTR.DATA_COLUMN, "])"].join("");
     exports.DataForm = DataForm;
     var DataFormElView = (function (_super) {
         __extends(DataFormElView, _super);

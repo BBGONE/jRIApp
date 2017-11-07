@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Depend
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.DependencyInjection", "..\..\FRAMEWORK\SERVER\Microsoft.Extensions.DependencyInjection\Microsoft.Extensions.DependencyInjection.csproj", "{F07EBC66-7A7F-40CD-95E5-57023EDBF01E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RIAPP.DataService.LinqSql", "..\..\FRAMEWORK\SERVER\RIAPP.DataService.LinqSql\RIAPP.DataService.LinqSql.csproj", "{8603C41C-DC36-4902-B4FE-B0315D28FB05}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{F07EBC66-7A7F-40CD-95E5-57023EDBF01E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F07EBC66-7A7F-40CD-95E5-57023EDBF01E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F07EBC66-7A7F-40CD-95E5-57023EDBF01E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8603C41C-DC36-4902-B4FE-B0315D28FB05}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8603C41C-DC36-4902-B4FE-B0315D28FB05}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8603C41C-DC36-4902-B4FE-B0315D28FB05}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8603C41C-DC36-4902-B4FE-B0315D28FB05}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
