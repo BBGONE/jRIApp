@@ -20,7 +20,7 @@ export class AsyncUtils {
         return Promise.resolve(value, isSync);
     }
     /**
-     * execute sequetially
+     * execute sequentially
      * @param funcs (array of functions which return promises)
      */
     static promiseSerial<T>(funcs: { (): IPromise<T>; }[]): IStatefulPromise<T[]> {

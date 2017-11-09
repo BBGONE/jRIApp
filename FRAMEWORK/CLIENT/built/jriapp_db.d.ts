@@ -431,6 +431,7 @@ declare module "jriapp_db/dbcontext" {
         private _waitQueue;
         private _internal;
         constructor();
+        protected _checkDestroy(): void;
         protected _getEventNames(): string[];
         protected _initDbSets(): void;
         protected _initAssociations(associations: IAssociationInfo[]): void;

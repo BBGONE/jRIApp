@@ -128,6 +128,11 @@ export class DbContext extends BaseObject {
             self.raisePropertyChanged(PROP_NAME.isBusy);
         });
     }
+    protected _checkDestroy() {
+        if (this.getIsDestroyCalled()) {
+            throw new AbortError();
+        }
+    }
     protected _getEventNames() {
         const baseEvents = super._getEventNames();
         return [DBCTX_EVENTS.submit_err].concat(baseEvents);
@@ -187,9 +192,7 @@ export class DbContext extends BaseObject {
         // function expects method parameters
         this._svcMethods[methodInfo.methodName] = (args: { [paramName: string]: any; }) => {
             return self._invokeMethod(methodInfo, args).then((res) => {
-                if (self.getIsDestroyCalled()) {
-                    throw new AbortError();
-                }
+                self._checkDestroy();
                 if (!res) {
                     throw new Error(strUtils.format(ERRS.ERR_UNEXPECTED_SVC_ERROR, "operation result is empty"));
                 }
@@ -205,20 +208,21 @@ export class DbContext extends BaseObject {
     }
     protected _addRequestPromise(req: IAbortablePromise<any>, operType: DATA_OPER, name?: string) {
         const self = this, item: IRequestPromise = { req: req, operType: operType, name: name },
-            cnt = self._requests.length, _isBusy = cnt > 0;
+            cnt = self._requests.length, oldBusy = this.isBusy;
 
         self._requests.push(item);
         req.always(() => {
+            const oldBusy = self.isBusy;
             utils.arr.remove(self._requests, item);
             self.raisePropertyChanged(PROP_NAME.requestCount);
-            if (self._requests.length === 0) {
+            if (oldBusy !== self.isBusy) {
                 self.raisePropertyChanged(PROP_NAME.isBusy);
             }
         });
         if (cnt !== self._requests.length) {
             self.raisePropertyChanged(PROP_NAME.requestCount);
         }
-        if (_isBusy !== (self._requests.length > 0)) {
+        if (oldBusy !== self.isBusy) {
             self.raisePropertyChanged(PROP_NAME.isBusy);
         }
     }
@@ -267,22 +271,24 @@ export class DbContext extends BaseObject {
     }
     protected _invokeMethod(methodInfo: IQueryInfo, args: { [paramName: string]: any; }): IStatefulPromise<IInvokeResponse> {
         const self = this;
-        return _async.delay<any>(() => {
+        return _async.delay<string>(() => {
             const data = self._getMethodParams(methodInfo, args);
             return JSON.stringify(data);
         }).then((postData) => {
+            self._checkDestroy();
             const invokeUrl = this._getUrl(DATA_SVC_METH.Invoke),
                 reqPromise = http.postAjax(invokeUrl, postData, self.requestHeaders);
             self._addRequestPromise(reqPromise, DATA_OPER.Invoke);
 
             return reqPromise.then((res: string) => {
+                self._checkDestroy();
                 return _async.parseJSON(res);
             });
         });
     }
     protected _loadFromCache(query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
         const self = this;
-        return _async.delay <IQueryResult<IEntityItem>>(() => {
+        return _async.delay<IQueryResult<IEntityItem>>(() => {
             if (self.getIsDestroyCalled()) {
                 throw new AbortError();
             }
@@ -436,6 +442,7 @@ export class DbContext extends BaseObject {
         fn_onOK: (res: IQueryResult<IEntityItem>) => void;
         fn_onErr: (ex: any) => void;
     }): void {
+        this._checkDestroy();
         const self = this, oldQuery = context.dbSet.query,
             loadPageCount = context.loadPageCount,
             isPagingEnabled = context.isPagingEnabled;
@@ -529,6 +536,7 @@ export class DbContext extends BaseObject {
         fn_onErr: (ex: any) => void;
         fn_onOK: (res: IRefreshRowInfo) => void;
     }) {
+        this._checkDestroy();
         const self = this, operType = DATA_OPER.Refresh;
         args.fn_onStart();
         try {
@@ -545,16 +553,13 @@ export class DbContext extends BaseObject {
             self._addRequestPromise(reqPromise, operType);
 
             reqPromise.then((res: string) => {
+                self._checkDestroy();
                 return _async.parseJSON(res);
             }).then((res: IRefreshRowInfo) => { // success
-                if (self.getIsDestroyCalled()) {
-                    return;
-                }
+                self._checkDestroy();
                 args.fn_onOK(res);
             }, (err) => { // error
-                if (self.getIsDestroyCalled()) {
-                    return;
-                }
+                self._checkDestroy();
                 args.fn_onErr(err);
             });
         } catch (ex) {
@@ -675,6 +680,7 @@ export class DbContext extends BaseObject {
         fn_onErr: (ex: any) => void;
         fn_onOk: () => void;
     }): void {
+        this._checkDestroy();
         const self = this;
         args.fn_onStart();
         const changeSet = self._getChanges();
@@ -689,19 +695,13 @@ export class DbContext extends BaseObject {
         reqPromise.then((res: string) => {
             return _async.parseJSON(res);
         }).then((res: IChangeSet) => {
-            if (self.getIsDestroyCalled()) {
-                return;
-            }
+            self._checkDestroy();
             self._dataSaved(res);
         }).then(() => {
-            if (self.getIsDestroyCalled()) {
-                return;
-            }
+            self._checkDestroy();
             args.fn_onOk();
         }, (er) => {
-            if (self.getIsDestroyCalled()) {
-                return;
-            }
+            self._checkDestroy();
             args.fn_onErr(er);
         });
     }
@@ -715,56 +715,40 @@ export class DbContext extends BaseObject {
         if (!!this._initState) {
             return this._initState;
         }
-        const self = this, operType = DATA_OPER.Init, deferred = _async.createDeferred<any>();
-
-        this._initState = deferred.promise();
-        this._initState.then(() => {
-            if (self.getIsDestroyCalled()) {
-                return;
-            }
-            self.raisePropertyChanged(PROP_NAME.isInitialized);
-        }, (err) => {
-            if (self.getIsDestroyCalled()) {
-                return;
-            }
-            self._onDataOperError(err, operType);
-        });
-
-        const opts = coreUtils.merge(options, {
+        const self = this, opts = coreUtils.merge(options, {
             serviceUrl: <string>null,
             permissions: <IPermissionsInfo>null
         });
-        let loadUrl: string;
-
-        try {
-            if (!checks.isString(opts.serviceUrl)) {
-                throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "serviceUrl", opts.serviceUrl));
-            }
-            this._serviceUrl = opts.serviceUrl;
-            this._initDbSets();
-
-            if (!!opts.permissions) {
-                self._updatePermissions(opts.permissions);
-                deferred.resolve();
-                return this._initState;
-            }
-
-            // initialize by obtaining metadata from the data service by ajax call
-            loadUrl = this._getUrl(DATA_SVC_METH.Permissions);
-        } catch (ex) {
-            return deferred.reject(ex);
+        if (!checks.isString(opts.serviceUrl)) {
+            throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "serviceUrl", opts.serviceUrl));
         }
+        this._serviceUrl = opts.serviceUrl;
+        this._initDbSets();
 
-        const ajaxPromise = http.getAjax(loadUrl, self.requestHeaders),
-            resPromise = ajaxPromise.then((permissions: string) => {
-                if (self.getIsDestroyCalled()) {
-                    return;
-                }
-                self._updatePermissions(JSON.parse(permissions));
-            });
+        this._initState = _async.delay<IPermissionsInfo>(() => {
+            if (!!opts.permissions) {
+                return opts.permissions;
+            } else {
+                // initialize by obtaining metadata from the data service by ajax call
+                const loadUrl = this._getUrl(DATA_SVC_METH.Permissions);
+                const ajaxPromise = http.getAjax(loadUrl, self.requestHeaders),
+                    resPromise = ajaxPromise.then((permissions: string) => {
+                        self._checkDestroy();
+                        return JSON.parse(permissions);
+                    });
 
-        deferred.resolve(resPromise);
-        this._addRequestPromise(ajaxPromise, operType);
+                this._addRequestPromise(ajaxPromise, DATA_OPER.Init);
+                return <any>resPromise;
+            }
+        }).then((res: IPermissionsInfo) => {
+            self._checkDestroy();
+            self._updatePermissions(res);
+            self.raisePropertyChanged(PROP_NAME.isInitialized);
+        }).catch((err) => {
+            self._checkDestroy();
+            self._onDataOperError(err, DATA_OPER.Init);
+        });
+
         return this._initState;
     }
     addOnSubmitError(fn: TEventHandler<DbContext, { error: any; isHandled: boolean; }>, nmspace?: string, context?: IBaseObject): void {
@@ -794,7 +778,8 @@ export class DbContext extends BaseObject {
             return this._pendingSubmit.promise;
         }
 
-        const deferred = _async.createDeferred<void>(), submitState = { promise: deferred.promise() };
+        const deferred = _async.createDeferred<void>(),
+            submitState = { promise: deferred.promise() };
         this._pendingSubmit = submitState;
 
         const context = {
