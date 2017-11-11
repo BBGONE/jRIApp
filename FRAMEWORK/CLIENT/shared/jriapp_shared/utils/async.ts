@@ -35,8 +35,9 @@ export class AsyncUtils {
     static getTaskQueue(): ITaskQueue {
         return _getTaskQueue();
     }
-    static delay<T>(func: () => T, time?: number): IStatefulPromise<T> {
-        const deferred = createDefer<T>(true);
+    static delay<T>(func: () => IPromise<T> | T, time?: number): IStatefulPromise<T>;
+    static delay(func: () => any, time?: number): IStatefulPromise<any> {
+        const deferred = createDefer<any>(true);
         setTimeout(() => {
             try {
                 deferred.resolve(func());
@@ -47,7 +48,8 @@ export class AsyncUtils {
 
         return deferred.promise();
     }
-    static parseJSON(res: string | any): IStatefulPromise<any> {
+    static parseJSON<T>(res: string | any): IStatefulPromise<T>;
+    static parseJSON(res: any): IStatefulPromise<any> {
         return AsyncUtils.delay(() => {
             return (checks.isString(res)) ? JSON.parse(res) : res;
         });

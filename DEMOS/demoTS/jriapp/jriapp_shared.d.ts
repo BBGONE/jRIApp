@@ -978,8 +978,8 @@ declare module "jriapp_shared/utils/async" {
         static whenAll<T>(args: Array<T | IThenable<T>>): IStatefulPromise<T[]>;
         static race<T>(promises: Array<IPromise<T>>): IPromise<T>;
         static getTaskQueue(): ITaskQueue;
-        static delay<T>(func: () => T, time?: number): IStatefulPromise<T>;
-        static parseJSON(res: string | any): IStatefulPromise<any>;
+        static delay<T>(func: () => IPromise<T> | T, time?: number): IStatefulPromise<T>;
+        static parseJSON<T>(res: string | any): IStatefulPromise<T>;
     }
 }
 declare module "jriapp_shared/utils/http" {

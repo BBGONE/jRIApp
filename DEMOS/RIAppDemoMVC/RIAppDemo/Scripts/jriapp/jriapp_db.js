@@ -2690,14 +2690,10 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 if (context.query._getInternal().isPageCached(pageIndex)) {
                     var loadPromise = self._loadFromCache(context.query, context.reason);
                     loadPromise.then(function (loadRes) {
-                        if (self.getIsDestroyCalled()) {
-                            return;
-                        }
+                        self._checkDestroy();
                         context.fn_onOK(loadRes);
                     }, function (err) {
-                        if (self.getIsDestroyCalled()) {
-                            return;
-                        }
+                        self._checkDestroy();
                         context.fn_onErr(err);
                     });
                     return;

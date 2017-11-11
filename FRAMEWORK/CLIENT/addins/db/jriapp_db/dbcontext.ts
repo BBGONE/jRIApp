@@ -282,7 +282,7 @@ export class DbContext extends BaseObject {
 
             return reqPromise.then((res: string) => {
                 self._checkDestroy();
-                return _async.parseJSON(res);
+                return _async.parseJSON<IInvokeResponse>(res);
             });
         });
     }
@@ -461,14 +461,10 @@ export class DbContext extends BaseObject {
             if (context.query._getInternal().isPageCached(pageIndex)) {
                 const loadPromise = self._loadFromCache(context.query, context.reason);
                 loadPromise.then((loadRes) => {
-                    if (self.getIsDestroyCalled()) {
-                        return;
-                    }
+                    self._checkDestroy();
                     context.fn_onOK(loadRes);
                 }, (err) => {
-                    if (self.getIsDestroyCalled()) {
-                        return;
-                    }
+                    self._checkDestroy();
                     context.fn_onErr(err);
                 });
                 return;
@@ -494,7 +490,7 @@ export class DbContext extends BaseObject {
         const reqPromise = http.postAjax(self._getUrl(DATA_SVC_METH.Query), JSON.stringify(requestInfo), self.requestHeaders);
         self._addRequestPromise(reqPromise, DATA_OPER.Query, requestInfo.dbSetName);
         reqPromise.then((res: string) => {
-            return _async.parseJSON(res);
+            return _async.parseJSON<IQueryResponse>(res);
         }).then((response: IQueryResponse) => {
             return self._onLoaded(response, context.query, context.reason);
         }).then((loadRes) => {
@@ -554,7 +550,7 @@ export class DbContext extends BaseObject {
 
             reqPromise.then((res: string) => {
                 self._checkDestroy();
-                return _async.parseJSON(res);
+                return _async.parseJSON<IRefreshRowInfo>(res);
             }).then((res: IRefreshRowInfo) => { // success
                 self._checkDestroy();
                 args.fn_onOK(res);
@@ -693,7 +689,7 @@ export class DbContext extends BaseObject {
         const reqPromise = http.postAjax(self._getUrl(DATA_SVC_METH.Submit), JSON.stringify(changeSet), self.requestHeaders);
         self._addRequestPromise(reqPromise, DATA_OPER.Submit);
         reqPromise.then((res: string) => {
-            return _async.parseJSON(res);
+            return _async.parseJSON<IChangeSet>(res);
         }).then((res: IChangeSet) => {
             self._checkDestroy();
             self._dataSaved(res);
@@ -734,11 +730,11 @@ export class DbContext extends BaseObject {
                 const ajaxPromise = http.getAjax(loadUrl, self.requestHeaders),
                     resPromise = ajaxPromise.then((permissions: string) => {
                         self._checkDestroy();
-                        return JSON.parse(permissions);
+                        return <IPermissionsInfo>JSON.parse(permissions);
                     });
 
                 this._addRequestPromise(ajaxPromise, DATA_OPER.Init);
-                return <any>resPromise;
+                return resPromise;
             }
         }).then((res: IPermissionsInfo) => {
             self._checkDestroy();
