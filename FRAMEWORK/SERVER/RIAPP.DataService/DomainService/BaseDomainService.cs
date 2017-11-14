@@ -175,11 +175,26 @@ namespace RIAPP.DataService.DomainService
 
             try
             {
-                string[] changed = rowInfo.changeType == ChangeType.Deleted ? rowInfo.dbSetInfo.GetNames().Select(f => f.n).ToArray() : rowInfo.changeState.NamesOfChangedFields;
-                var diffgram = DiffGram.GetDiffGram(rowInfo.changeState.OriginalEntity,
+                string[] changed = new string[0];
+                switch (rowInfo.changeType)
+                {
+                    case ChangeType.Updated:
+                        {
+                            changed = rowInfo.changeState.ChangedFieldNames;
+                        }
+                        break;
+                    default:
+                        {
+                            changed = rowInfo.dbSetInfo.GetNames().Select(f => f.n).ToArray();
+                        }
+                        break;
+                }
+
+                string[] pknames = rowInfo.dbSetInfo.GetPKFields().Select(f => f.fieldName).ToArray();
+                string diffgram = DiffGram.GetDiffGram(rowInfo.changeState.OriginalEntity,
                     rowInfo.changeType == ChangeType.Deleted ? null : rowInfo.changeState.Entity,
-                    rowInfo.dbSetInfo.EntityType,
-                    changed);
+                    rowInfo.dbSetInfo.EntityType, changed, pknames, rowInfo.changeType, rowInfo.dbSetInfo.dbSetName);
+
                 OnTrackChange(rowInfo.dbSetInfo.dbSetName, rowInfo.changeType, diffgram);
             }
             catch (Exception ex)

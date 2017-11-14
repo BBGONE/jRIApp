@@ -7,7 +7,7 @@ namespace RIAPP.DataService.DomainService
     {
         public EntityChangeState()
         {
-            NamesOfChangedFields = new string[0];
+            ChangedFieldNames = new string[0];
             ParentRows = new ParentChildNode[0];
         }
 
@@ -23,9 +23,8 @@ namespace RIAPP.DataService.DomainService
 
 
         /// <summary>
-        ///     Field Names those are modified on client
-        ///     and submitted for entity update or insert
+        ///   Field Names which are modified and submitted from the client
         /// </summary>
-        public string[] NamesOfChangedFields { get; set; }
+        public string[] ChangedFieldNames { get; set; }
     }
 }

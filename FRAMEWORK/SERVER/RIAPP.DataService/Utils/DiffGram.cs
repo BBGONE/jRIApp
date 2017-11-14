@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
 using RIAPP.DataService.Resources;
+using RIAPP.DataService.DomainService.Types;
 
 namespace RIAPP.DataService.Utils
 {
@@ -11,8 +12,8 @@ namespace RIAPP.DataService.Utils
     {
         private static object GetValue(object obj, string propertyName)
         {
-            var parts = propertyName.Split('.');
-            var objType = obj.GetType();
+            string[] parts = propertyName.Split('.');
+            System.Type objType = obj.GetType();
             var pinfo = objType.GetProperty(parts[0]);
             if (pinfo == null)
                 throw new Exception(string.Format(ErrorStrings.ERR_PROPERTY_IS_MISSING, objType.Name, propertyName));
@@ -38,11 +39,11 @@ namespace RIAPP.DataService.Utils
             return res;
         }
 
-        public static string GetDiffGram(Dictionary<string, object> d1, Dictionary<string, object> d2, Type t)
+        public static string GetDiffGram(Dictionary<string, object> d1, Dictionary<string, object> d2, Type t, string[] pkNames, Dictionary<string, object> dpk, ChangeType changeType, string dbSetName)
         {
-            var lst = new LinkedList<Vals>();
+            LinkedList<Vals> lst = new LinkedList<Vals>();
 
-            foreach (var pnm in d1.Keys.Intersect(d2.Keys))
+            foreach (string pnm in d1.Keys.Intersect(d2.Keys))
             {
                 var val1 = d1[pnm];
                 var val2 = d2[pnm];
@@ -91,10 +92,12 @@ namespace RIAPP.DataService.Utils
                         Name = pnm
                     });
                 }
+                /*
                 else if (val1 == null)
                 {
                     lst.AddLast(new Vals {Val1 = "NULL", Val2 = "", Name = pnm});
                 }
+                */
             }
 
             foreach (var pnm in d2.Keys.Except(d1.Keys))
@@ -109,13 +112,20 @@ namespace RIAPP.DataService.Utils
                         Name = pnm
                     });
                 }
+                /*
                 else if (val2 == null)
                 {
                     lst.AddLast(new Vals {Val1 = "", Val2 = "NULL", Name = pnm});
                 }
+                */
             }
 
-            var x = new XElement("diffgram",
+            string pkval = string.Join(",", pkNames.Select(nm => dpk[nm].ToString()));
+
+            var x = new XElement("diffgram", 
+                new XAttribute("dbset-name", dbSetName), 
+                new XAttribute("key-name", string.Join(",", pkNames)),
+                new XAttribute("key-val", pkval),
                 from v in lst
                 select new XElement(v.Name,
                     new XAttribute("old", v.Val1),
@@ -124,11 +134,14 @@ namespace RIAPP.DataService.Utils
             return x.ToString();
         }
 
-        public static string GetDiffGram(object obj1, object obj2, Type t, string[] propNames)
+        public static string GetDiffGram(object obj1, object obj2, Type t, string[] propNames, string[] pkNames, ChangeType changeType, string dbSetName)
         {
             var d1 = GetValues(t, obj1, propNames);
             var d2 = GetValues(t, obj2, propNames);
-            return GetDiffGram(d1, d2, t);
+            var obj = obj2 == null ? obj1 : obj2;
+            var dpk = GetValues(t, obj, pkNames);
+            
+            return GetDiffGram(d1, d2, t, pkNames, dpk, changeType, dbSetName);
         }
 
         private struct Vals
