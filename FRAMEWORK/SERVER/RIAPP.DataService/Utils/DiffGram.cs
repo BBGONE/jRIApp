@@ -126,6 +126,7 @@ namespace RIAPP.DataService.Utils
                 new XAttribute("dbset-name", dbSetName), 
                 new XAttribute("key-name", string.Join(",", pkNames)),
                 new XAttribute("key-val", pkval),
+                new XAttribute("change-type", changeType),
                 from v in lst
                 select new XElement(v.Name,
                     new XAttribute("old", v.Val1),
