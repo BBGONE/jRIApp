@@ -130,7 +130,7 @@ export class DbContext extends BaseObject {
     }
     protected _checkDestroy() {
         if (this.getIsDestroyCalled()) {
-            throw new AbortError();
+            ERROR.abort("dbContext destroyed");
         }
     }
     protected _getEventNames() {
@@ -199,9 +199,7 @@ export class DbContext extends BaseObject {
                 fn_checkError(res.error, DATA_OPER.Invoke);
                 return res.result;
             }).catch((err) => {
-                if (!ERROR.checkIsDummy(err)) {
-                    self._onDataOperError(err, DATA_OPER.Invoke);
-                }
+                self._onDataOperError(err, DATA_OPER.Invoke);
                 ERROR.throwDummy(err);
             });
         };
@@ -212,6 +210,8 @@ export class DbContext extends BaseObject {
 
         self._requests.push(item);
         req.always(() => {
+            if (self.getIsDestroyCalled())
+                return;
             const oldBusy = self.isBusy;
             utils.arr.remove(self._requests, item);
             self.raisePropertyChanged(PROP_NAME.requestCount);
@@ -289,9 +289,7 @@ export class DbContext extends BaseObject {
     protected _loadFromCache(query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
         const self = this;
         return _async.delay<IQueryResult<IEntityItem>>(() => {
-            if (self.getIsDestroyCalled()) {
-                throw new AbortError();
-            }
+            self._checkDestroy();
             const dbSet = query.dbSet;
             return dbSet._getInternal().fillFromCache({ reason: reason, query: query });
         });
@@ -399,6 +397,9 @@ export class DbContext extends BaseObject {
         return this.handleError(err, this);
     }
     protected _onSubmitError(error: any): void {
+        if (ERROR.checkIsDummy(error)) {
+            return;
+        }
         const args = { error: error, isHandled: false };
         this.raiseEvent(DBCTX_EVENTS.submit_err, args);
         if (!args.isHandled) {
@@ -442,7 +443,6 @@ export class DbContext extends BaseObject {
         fn_onOK: (res: IQueryResult<IEntityItem>) => void;
         fn_onErr: (ex: any) => void;
     }): void {
-        this._checkDestroy();
         const self = this, oldQuery = context.dbSet.query,
             loadPageCount = context.loadPageCount,
             isPagingEnabled = context.isPagingEnabled;
@@ -464,7 +464,6 @@ export class DbContext extends BaseObject {
                     self._checkDestroy();
                     context.fn_onOK(loadRes);
                 }, (err) => {
-                    self._checkDestroy();
                     context.fn_onErr(err);
                 });
                 return;
@@ -494,21 +493,15 @@ export class DbContext extends BaseObject {
         }).then((response: IQueryResponse) => {
             return self._onLoaded(response, context.query, context.reason);
         }).then((loadRes) => {
-            if (self.getIsDestroyCalled()) {
-                return;
-            }
+            self._checkDestroy();
             context.fn_onOK(loadRes);
-        }, (err) => {
-            if (self.getIsDestroyCalled()) {
-                return;
-            }
-            context.fn_onErr(err);
-        });
+            }, (err) => {
+                context.fn_onErr(err);
+            });
     }
     protected _onItemRefreshed(res: IRefreshRowInfo, item: IEntityItem): void {
-        const operType = DATA_OPER.Refresh;
         try {
-            fn_checkError(res.error, operType);
+            fn_checkError(res.error, DATA_OPER.Refresh);
             if (!res.rowInfo) {
                 item._aspect.dbSet.removeItem(item);
                 item.destroy();
@@ -520,7 +513,7 @@ export class DbContext extends BaseObject {
             if (ERROR.checkIsDummy(ex)) {
                 ERROR.throwDummy(ex);
             }
-            this._onDataOperError(ex, operType);
+            this._onDataOperError(ex, DATA_OPER.Refresh);
             ERROR.throwDummy(ex);
         }
     }
@@ -532,8 +525,7 @@ export class DbContext extends BaseObject {
         fn_onErr: (ex: any) => void;
         fn_onOK: (res: IRefreshRowInfo) => void;
     }) {
-        this._checkDestroy();
-        const self = this, operType = DATA_OPER.Refresh;
+        const self = this;
         args.fn_onStart();
         try {
             const request: IRefreshRowInfo = {
@@ -546,7 +538,7 @@ export class DbContext extends BaseObject {
             const url = self._getUrl(DATA_SVC_METH.Refresh),
                 reqPromise = http.postAjax(url, JSON.stringify(request), self.requestHeaders);
 
-            self._addRequestPromise(reqPromise, operType);
+            self._addRequestPromise(reqPromise, DATA_OPER.Refresh);
 
             reqPromise.then((res: string) => {
                 self._checkDestroy();
@@ -555,7 +547,6 @@ export class DbContext extends BaseObject {
                 self._checkDestroy();
                 args.fn_onOK(res);
             }, (err) => { // error
-                self._checkDestroy();
                 args.fn_onErr(err);
             });
         } catch (ex) {
@@ -593,7 +584,14 @@ export class DbContext extends BaseObject {
             }
         };
 
-        context.dbSet.waitForNotBusy(() => self._loadRefresh(context), item._key);
+        context.dbSet.waitForNotBusy(() => {
+            try {
+                self._checkDestroy();
+                self._loadRefresh(context);
+            } catch (err) {
+                context.fn_onErr(err);
+            }
+        }, item._key);
         return deferred.promise();
     }
     protected _getQueryInfo(name: string): IQueryInfo {
@@ -662,6 +660,7 @@ export class DbContext extends BaseObject {
 
         context.dbSet.waitForNotBusy(() => {
             try {
+                self._checkDestroy();
                 self._loadInternal(context);
             } catch (err) {
                 context.fn_onErr(err);
@@ -676,7 +675,6 @@ export class DbContext extends BaseObject {
         fn_onErr: (ex: any) => void;
         fn_onOk: () => void;
     }): void {
-        this._checkDestroy();
         const self = this;
         args.fn_onStart();
         const changeSet = self._getChanges();
@@ -697,7 +695,6 @@ export class DbContext extends BaseObject {
             self._checkDestroy();
             args.fn_onOk();
         }, (er) => {
-            self._checkDestroy();
             args.fn_onErr(er);
         });
     }
@@ -768,7 +765,6 @@ export class DbContext extends BaseObject {
     }
     submitChanges(): IVoidPromise {
         const self = this;
-
         // don't submit when another submit is already in the queue
         if (!!this._pendingSubmit) {
             return this._pendingSubmit.promise;
@@ -813,6 +809,7 @@ export class DbContext extends BaseObject {
         _async.getTaskQueue().enque(() => {
             self.waitForNotBusy(() => {
                 try {
+                    self._checkDestroy();
                     self._submitChanges(context);
                 } catch (err) {
                     context.fn_onErr(err);

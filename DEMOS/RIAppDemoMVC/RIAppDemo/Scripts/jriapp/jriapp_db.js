@@ -2390,7 +2390,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         }
         DbContext.prototype._checkDestroy = function () {
             if (this.getIsDestroyCalled()) {
-                throw new jriapp_shared_7.AbortError();
+                ERROR.abort("dbContext destroyed");
             }
         };
         DbContext.prototype._getEventNames = function () {
@@ -2459,9 +2459,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                     fn_checkError(res.error, 3);
                     return res.result;
                 }).catch(function (err) {
-                    if (!ERROR.checkIsDummy(err)) {
-                        self._onDataOperError(err, 3);
-                    }
+                    self._onDataOperError(err, 3);
                     ERROR.throwDummy(err);
                 });
             };
@@ -2470,6 +2468,8 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             var self = this, item = { req: req, operType: operType, name: name }, cnt = self._requests.length, oldBusy = this.isBusy;
             self._requests.push(item);
             req.always(function () {
+                if (self.getIsDestroyCalled())
+                    return;
                 var oldBusy = self.isBusy;
                 utils.arr.remove(self._requests, item);
                 self.raisePropertyChanged(const_5.PROP_NAME.requestCount);
@@ -2542,9 +2542,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         DbContext.prototype._loadFromCache = function (query, reason) {
             var self = this;
             return _async.delay(function () {
-                if (self.getIsDestroyCalled()) {
-                    throw new jriapp_shared_7.AbortError();
-                }
+                self._checkDestroy();
                 var dbSet = query.dbSet;
                 return dbSet._getInternal().fillFromCache({ reason: reason, query: query });
             });
@@ -2649,6 +2647,9 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             return this.handleError(err, this);
         };
         DbContext.prototype._onSubmitError = function (error) {
+            if (ERROR.checkIsDummy(error)) {
+                return;
+            }
             var args = { error: error, isHandled: false };
             this.raiseEvent(DBCTX_EVENTS.submit_err, args);
             if (!args.isHandled) {
@@ -2679,7 +2680,6 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             });
         };
         DbContext.prototype._loadInternal = function (context) {
-            this._checkDestroy();
             var self = this, oldQuery = context.dbSet.query, loadPageCount = context.loadPageCount, isPagingEnabled = context.isPagingEnabled;
             var range, pageCount = 1, pageIndex = context.pageIndex;
             context.fn_onStart();
@@ -2693,7 +2693,6 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                         self._checkDestroy();
                         context.fn_onOK(loadRes);
                     }, function (err) {
-                        self._checkDestroy();
                         context.fn_onErr(err);
                     });
                     return;
@@ -2722,21 +2721,15 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             }).then(function (response) {
                 return self._onLoaded(response, context.query, context.reason);
             }).then(function (loadRes) {
-                if (self.getIsDestroyCalled()) {
-                    return;
-                }
+                self._checkDestroy();
                 context.fn_onOK(loadRes);
             }, function (err) {
-                if (self.getIsDestroyCalled()) {
-                    return;
-                }
                 context.fn_onErr(err);
             });
         };
         DbContext.prototype._onItemRefreshed = function (res, item) {
-            var operType = 4;
             try {
-                fn_checkError(res.error, operType);
+                fn_checkError(res.error, 4);
                 if (!res.rowInfo) {
                     item._aspect.dbSet.removeItem(item);
                     item.destroy();
@@ -2750,13 +2743,12 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 if (ERROR.checkIsDummy(ex)) {
                     ERROR.throwDummy(ex);
                 }
-                this._onDataOperError(ex, operType);
+                this._onDataOperError(ex, 4);
                 ERROR.throwDummy(ex);
             }
         };
         DbContext.prototype._loadRefresh = function (args) {
-            this._checkDestroy();
-            var self = this, operType = 4;
+            var self = this;
             args.fn_onStart();
             try {
                 var request = {
@@ -2766,7 +2758,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 };
                 args.item._aspect._checkCanRefresh();
                 var url = self._getUrl(DATA_SVC_METH.Refresh), reqPromise = http.postAjax(url, JSON.stringify(request), self.requestHeaders);
-                self._addRequestPromise(reqPromise, operType);
+                self._addRequestPromise(reqPromise, 4);
                 reqPromise.then(function (res) {
                     self._checkDestroy();
                     return _async.parseJSON(res);
@@ -2774,7 +2766,6 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                     self._checkDestroy();
                     args.fn_onOK(res);
                 }, function (err) {
-                    self._checkDestroy();
                     args.fn_onErr(err);
                 });
             }
@@ -2814,7 +2805,15 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                     }
                 }
             };
-            context.dbSet.waitForNotBusy(function () { return self._loadRefresh(context); }, item._key);
+            context.dbSet.waitForNotBusy(function () {
+                try {
+                    self._checkDestroy();
+                    self._loadRefresh(context);
+                }
+                catch (err) {
+                    context.fn_onErr(err);
+                }
+            }, item._key);
             return deferred.promise();
         };
         DbContext.prototype._getQueryInfo = function (name) {
@@ -2882,6 +2881,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             }
             context.dbSet.waitForNotBusy(function () {
                 try {
+                    self._checkDestroy();
                     self._loadInternal(context);
                 }
                 catch (err) {
@@ -2891,7 +2891,6 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             return deferred.promise();
         };
         DbContext.prototype._submitChanges = function (args) {
-            this._checkDestroy();
             var self = this;
             args.fn_onStart();
             var changeSet = self._getChanges();
@@ -2910,7 +2909,6 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 self._checkDestroy();
                 args.fn_onOk();
             }, function (er) {
-                self._checkDestroy();
                 args.fn_onErr(er);
             });
         };
@@ -3015,6 +3013,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             _async.getTaskQueue().enque(function () {
                 self.waitForNotBusy(function () {
                     try {
+                        self._checkDestroy();
                         self._submitChanges(context);
                     }
                     catch (err) {
