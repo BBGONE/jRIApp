@@ -34,6 +34,7 @@ export class TestObject extends RIAPP.BaseObject {
     private _testProperty2: string;
     private _testProperty3: string;
     private _testCommand: RIAPP.ICommand;
+    private _paramCommand: RIAPP.ICommand;
     private _month: number;
     private _months: DEMODB.KeyValDictionary;
     private _format: string;
@@ -56,6 +57,10 @@ export class TestObject extends RIAPP.BaseObject {
                 //if this function return false, then the command is disabled
                 return self.isEnabled;
             });
+
+        this._paramCommand = new RIAPP.Command(function (sender, args) {
+            alert(`command parameter: ${args}`);
+        }, self);
 
         this._month = new Date().getMonth() + 1;
         this._months = new DEMODB.KeyValDictionary();
@@ -112,6 +117,7 @@ export class TestObject extends RIAPP.BaseObject {
         }
     }
     get testCommand(): RIAPP.ICommand { return this._testCommand; }
+    get paramCommand(): RIAPP.ICommand { return this._paramCommand; }
     get testToolTip(): string {
         return "Click the button to execute the command.<br/>" +
             "P.S. <b>command is active when the testProperty1 length > 3</b>";

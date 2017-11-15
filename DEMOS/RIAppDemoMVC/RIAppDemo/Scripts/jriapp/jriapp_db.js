@@ -2527,16 +2527,16 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             var _this = this;
             var self = this;
             return _async.delay(function () {
+                self._checkDestroy();
                 var data = self._getMethodParams(methodInfo, args);
                 return JSON.stringify(data);
             }).then(function (postData) {
                 self._checkDestroy();
                 var invokeUrl = _this._getUrl(DATA_SVC_METH.Invoke), reqPromise = http.postAjax(invokeUrl, postData, self.requestHeaders);
                 self._addRequestPromise(reqPromise, 3);
-                return reqPromise.then(function (res) {
-                    self._checkDestroy();
-                    return _async.parseJSON(res);
-                });
+                return reqPromise;
+            }).then(function (res) {
+                return JSON.parse(res);
             });
         };
         DbContext.prototype._loadFromCache = function (query, reason) {
@@ -2560,10 +2560,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         DbContext.prototype._onLoaded = function (response, query, reason) {
             var self = this;
             return _async.delay(function () {
-                if (self.getIsDestroyCalled()) {
-                    throw new jriapp_shared_7.AbortError();
-                }
-                var operType = 2;
+                self._checkDestroy();
                 if (checks.isNt(response)) {
                     throw new Error(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_UNEXPECTED_SVC_ERROR, "null result"));
                 }
@@ -2571,7 +2568,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 if (checks.isNt(dbSet)) {
                     throw new Error(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_DBSET_NAME_INVALID, dbSetName));
                 }
-                fn_checkError(response.error, operType);
+                fn_checkError(response.error, 2);
                 var isClearAll = (!!query && query.isClearPrevData);
                 return dbSet._getInternal().fillFromService({
                     res: response,
@@ -2610,9 +2607,6 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 });
             }
             catch (ex) {
-                if (ERROR.checkIsDummy(ex)) {
-                    ERROR.throwDummy(ex);
-                }
                 self._onSubmitError(ex);
                 ERROR.throwDummy(ex);
             }
@@ -2680,50 +2674,48 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             });
         };
         DbContext.prototype._loadInternal = function (context) {
-            var self = this, oldQuery = context.dbSet.query, loadPageCount = context.loadPageCount, isPagingEnabled = context.isPagingEnabled;
-            var range, pageCount = 1, pageIndex = context.pageIndex;
+            var self = this;
             context.fn_onStart();
-            context.query.pageIndex = pageIndex;
-            context.dbSet._getInternal().beforeLoad(context.query, oldQuery);
-            pageIndex = context.query.pageIndex;
-            if (loadPageCount > 1 && isPagingEnabled) {
-                if (context.query._getInternal().isPageCached(pageIndex)) {
-                    var loadPromise = self._loadFromCache(context.query, context.reason);
-                    loadPromise.then(function (loadRes) {
-                        self._checkDestroy();
-                        context.fn_onOK(loadRes);
-                    }, function (err) {
-                        context.fn_onErr(err);
-                    });
-                    return;
+            _async.delay(function () {
+                self._checkDestroy();
+                var oldQuery = context.dbSet.query, loadPageCount = context.loadPageCount, isPagingEnabled = context.isPagingEnabled;
+                var range, pageCount = 1, pageIndex = context.pageIndex;
+                context.query.pageIndex = pageIndex;
+                context.dbSet._getInternal().beforeLoad(context.query, oldQuery);
+                pageIndex = context.query.pageIndex;
+                if (loadPageCount > 1 && isPagingEnabled) {
+                    if (context.query._getInternal().isPageCached(pageIndex)) {
+                        return self._loadFromCache(context.query, context.reason);
+                    }
+                    else {
+                        range = context.query._getInternal().getCache().getNextRange(pageIndex);
+                        pageIndex = range.start;
+                        pageCount = range.cnt;
+                    }
                 }
-                else {
-                    range = context.query._getInternal().getCache().getNextRange(pageIndex);
-                    pageIndex = range.start;
-                    pageCount = range.cnt;
-                }
-            }
-            var requestInfo = {
-                dbSetName: context.dbSetName,
-                pageIndex: context.query.isPagingEnabled ? pageIndex : -1,
-                pageSize: context.query.pageSize,
-                pageCount: pageCount,
-                isIncludeTotalCount: context.query.isIncludeTotalCount,
-                filterInfo: context.query.filterInfo,
-                sortInfo: context.query.sortInfo,
-                paramInfo: self._getMethodParams(context.query._getInternal().getQueryInfo(), context.query.params).paramInfo,
-                queryName: context.query.queryName
-            };
-            var reqPromise = http.postAjax(self._getUrl(DATA_SVC_METH.Query), JSON.stringify(requestInfo), self.requestHeaders);
-            self._addRequestPromise(reqPromise, 2, requestInfo.dbSetName);
-            reqPromise.then(function (res) {
-                return _async.parseJSON(res);
-            }).then(function (response) {
-                return self._onLoaded(response, context.query, context.reason);
+                var requestInfo = {
+                    dbSetName: context.dbSetName,
+                    pageIndex: context.query.isPagingEnabled ? pageIndex : -1,
+                    pageSize: context.query.pageSize,
+                    pageCount: pageCount,
+                    isIncludeTotalCount: context.query.isIncludeTotalCount,
+                    filterInfo: context.query.filterInfo,
+                    sortInfo: context.query.sortInfo,
+                    paramInfo: self._getMethodParams(context.query._getInternal().getQueryInfo(), context.query.params).paramInfo,
+                    queryName: context.query.queryName
+                };
+                var reqPromise = http.postAjax(self._getUrl(DATA_SVC_METH.Query), JSON.stringify(requestInfo), self.requestHeaders);
+                self._addRequestPromise(reqPromise, 2, requestInfo.dbSetName);
+                return reqPromise.then(function (res) {
+                    return JSON.parse(res);
+                }).then(function (response) {
+                    self._checkDestroy();
+                    return self._onLoaded(response, context.query, context.reason);
+                });
             }).then(function (loadRes) {
                 self._checkDestroy();
                 context.fn_onOK(loadRes);
-            }, function (err) {
+            }).catch(function (err) {
                 context.fn_onErr(err);
             });
         };
@@ -2740,9 +2732,6 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 }
             }
             catch (ex) {
-                if (ERROR.checkIsDummy(ex)) {
-                    ERROR.throwDummy(ex);
-                }
                 this._onDataOperError(ex, 4);
                 ERROR.throwDummy(ex);
             }
@@ -2750,7 +2739,8 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         DbContext.prototype._loadRefresh = function (args) {
             var self = this;
             args.fn_onStart();
-            try {
+            _async.delay(function () {
+                self._checkDestroy();
                 var request = {
                     dbSetName: args.item._aspect.dbSetName,
                     rowInfo: args.item._aspect._getRowInfo(),
@@ -2759,19 +2749,15 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 args.item._aspect._checkCanRefresh();
                 var url = self._getUrl(DATA_SVC_METH.Refresh), reqPromise = http.postAjax(url, JSON.stringify(request), self.requestHeaders);
                 self._addRequestPromise(reqPromise, 4);
-                reqPromise.then(function (res) {
-                    self._checkDestroy();
-                    return _async.parseJSON(res);
-                }).then(function (res) {
-                    self._checkDestroy();
-                    args.fn_onOK(res);
-                }, function (err) {
-                    args.fn_onErr(err);
-                });
-            }
-            catch (ex) {
-                args.fn_onErr(ex);
-            }
+                return reqPromise;
+            }).then(function (res) {
+                return JSON.parse(res);
+            }).then(function (res) {
+                self._checkDestroy();
+                args.fn_onOK(res);
+            }).catch(function (err) {
+                args.fn_onErr(err);
+            });
         };
         DbContext.prototype._refreshItem = function (item) {
             var self = this, deferred = _async.createDeferred();
@@ -2891,25 +2877,35 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             return deferred.promise();
         };
         DbContext.prototype._submitChanges = function (args) {
-            var self = this;
+            var self = this, no_changes = "NO_CHANGES";
             args.fn_onStart();
-            var changeSet = self._getChanges();
-            if (changeSet.dbSets.length === 0) {
-                args.fn_onOk();
-                return;
-            }
-            var reqPromise = http.postAjax(self._getUrl(DATA_SVC_METH.Submit), JSON.stringify(changeSet), self.requestHeaders);
-            self._addRequestPromise(reqPromise, 1);
-            reqPromise.then(function (res) {
-                return _async.parseJSON(res);
+            _async.delay(function () {
+                self._checkDestroy();
+                var res = self._getChanges();
+                if (res.dbSets.length === 0) {
+                    ERROR.abort(no_changes);
+                }
+                ;
+                return res;
+            }).then(function (changes) {
+                var reqPromise = http.postAjax(self._getUrl(DATA_SVC_METH.Submit), JSON.stringify(changes), self.requestHeaders);
+                self._addRequestPromise(reqPromise, 1);
+                return reqPromise;
+            }).then(function (res) {
+                return JSON.parse(res);
             }).then(function (res) {
                 self._checkDestroy();
                 self._dataSaved(res);
             }).then(function () {
                 self._checkDestroy();
                 args.fn_onOk();
-            }, function (er) {
-                args.fn_onErr(er);
+            }).catch(function (er) {
+                if (!self.getIsDestroyCalled() && ERROR.checkIsAbort(er) && er.reason === no_changes) {
+                    args.fn_onOk();
+                }
+                else {
+                    args.fn_onErr(er);
+                }
             });
         };
         DbContext.prototype._getInternal = function () {
@@ -2935,20 +2931,19 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 }
                 else {
                     var loadUrl = _this._getUrl(DATA_SVC_METH.Permissions);
-                    var ajaxPromise = http.getAjax(loadUrl, self.requestHeaders), resPromise = ajaxPromise.then(function (permissions) {
-                        self._checkDestroy();
+                    var ajaxPromise = http.getAjax(loadUrl, self.requestHeaders);
+                    _this._addRequestPromise(ajaxPromise, 5);
+                    return ajaxPromise.then(function (permissions) {
                         return JSON.parse(permissions);
                     });
-                    _this._addRequestPromise(ajaxPromise, 5);
-                    return resPromise;
                 }
             }).then(function (res) {
                 self._checkDestroy();
                 self._updatePermissions(res);
                 self.raisePropertyChanged(const_5.PROP_NAME.isInitialized);
             }).catch(function (err) {
-                self._checkDestroy();
                 self._onDataOperError(err, 5);
+                ERROR.throwDummy(err);
             });
             return this._initState;
         };

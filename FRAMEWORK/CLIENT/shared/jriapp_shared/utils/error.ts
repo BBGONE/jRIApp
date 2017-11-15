@@ -51,7 +51,7 @@ export class ERROR {
     static checkIsDummy(error: any): boolean {
         return !!error && !!error.isDummy;
     }
-    static checkIsAbort(error: any): boolean {
+    static checkIsAbort(error: any): error is AbortError  {
         return !!error && (error instanceof AbortError);
     }
     static reThrow(ex: any, isHandled: boolean) {

@@ -422,6 +422,7 @@ declare module "jriapp_shared/errors" {
     }
 }
 declare module "jriapp_shared/utils/error" {
+    import { AbortError } from "jriapp_shared/errors";
     import { IErrorHandler } from "jriapp_shared/int";
     export class ERROR {
         private static _handlers;
@@ -430,7 +431,7 @@ declare module "jriapp_shared/utils/error" {
         static handleError(sender: any, error: any, source: any): boolean;
         static throwDummy(err: any): void;
         static checkIsDummy(error: any): boolean;
-        static checkIsAbort(error: any): boolean;
+        static checkIsAbort(error: any): error is AbortError;
         static reThrow(ex: any, isHandled: boolean): void;
         static abort(reason?: string): void;
     }

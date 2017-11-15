@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { DATA_TYPE, COLL_CHANGE_REASON } from "jriapp_shared/collection/const";
 import {
-    IIndexer, IVoidPromise, AbortError, IBaseObject, TEventHandler, LocaleERRS as ERRS,
+    IIndexer, IVoidPromise, IBaseObject, TEventHandler, LocaleERRS as ERRS,
     BaseObject, Utils, WaitQueue, Lazy, IStatefulPromise, IAbortablePromise, PromiseState
 } from "jriapp_shared";
 import { ValueUtils } from "jriapp_shared/collection/utils";
@@ -272,6 +272,7 @@ export class DbContext extends BaseObject {
     protected _invokeMethod(methodInfo: IQueryInfo, args: { [paramName: string]: any; }): IStatefulPromise<IInvokeResponse> {
         const self = this;
         return _async.delay<string>(() => {
+            self._checkDestroy();
             const data = self._getMethodParams(methodInfo, args);
             return JSON.stringify(data);
         }).then((postData) => {
@@ -280,10 +281,9 @@ export class DbContext extends BaseObject {
                 reqPromise = http.postAjax(invokeUrl, postData, self.requestHeaders);
             self._addRequestPromise(reqPromise, DATA_OPER.Invoke);
 
-            return reqPromise.then((res: string) => {
-                self._checkDestroy();
-                return _async.parseJSON<IInvokeResponse>(res);
-            });
+            return reqPromise;
+        }).then((res: string) => {
+            return <IInvokeResponse>JSON.parse(res);
         });
     }
     protected _loadFromCache(query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
@@ -307,10 +307,7 @@ export class DbContext extends BaseObject {
     protected _onLoaded(response: IQueryResponse, query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
         const self = this;
         return _async.delay<IQueryResult<IEntityItem>>(() => {
-            if (self.getIsDestroyCalled()) {
-                throw new AbortError();
-            }
-            const operType = DATA_OPER.Query;
+            self._checkDestroy();
             if (checks.isNt(response)) {
                 throw new Error(strUtils.format(ERRS.ERR_UNEXPECTED_SVC_ERROR, "null result"));
             }
@@ -318,15 +315,15 @@ export class DbContext extends BaseObject {
             if (checks.isNt(dbSet)) {
                 throw new Error(strUtils.format(ERRS.ERR_DBSET_NAME_INVALID, dbSetName));
             }
-            fn_checkError(response.error, operType);
+            fn_checkError(response.error, DATA_OPER.Query);
             const isClearAll = (!!query && query.isClearPrevData);
             return dbSet._getInternal().fillFromService(
-                    {
-                        res: response,
-                        reason: reason,
-                        query: query,
-                        onFillEnd: () => { self._loadSubsets(response, isClearAll); }
-                    });
+                {
+                    res: response,
+                    reason: reason,
+                    query: query,
+                    onFillEnd: () => { self._loadSubsets(response, isClearAll); }
+                });
         });
     }
     protected _dataSaved(changes: IChangeSet): void {
@@ -357,9 +354,6 @@ export class DbContext extends BaseObject {
                 self._dbSets.getDbSet(jsDB.dbSetName)._getInternal().commitChanges(jsDB.rows);
             });
         } catch (ex) {
-            if (ERROR.checkIsDummy(ex)) {
-                ERROR.throwDummy(ex);
-            }
             self._onSubmitError(ex);
             ERROR.throwDummy(ex);
         }
@@ -443,61 +437,61 @@ export class DbContext extends BaseObject {
         fn_onOK: (res: IQueryResult<IEntityItem>) => void;
         fn_onErr: (ex: any) => void;
     }): void {
-        const self = this, oldQuery = context.dbSet.query,
-            loadPageCount = context.loadPageCount,
-            isPagingEnabled = context.isPagingEnabled;
-
-        let range: { start: number; end: number; cnt: number; }, pageCount = 1,
-            pageIndex = context.pageIndex;
-
+        const self = this;
         context.fn_onStart();
-        // restore pageIndex if it was changed while loading
-        context.query.pageIndex = pageIndex;
-        context.dbSet._getInternal().beforeLoad(context.query, oldQuery);
-        // sync pageIndex
-        pageIndex = context.query.pageIndex;
 
-        if (loadPageCount > 1 && isPagingEnabled) {
-            if (context.query._getInternal().isPageCached(pageIndex)) {
-                const loadPromise = self._loadFromCache(context.query, context.reason);
-                loadPromise.then((loadRes) => {
-                    self._checkDestroy();
-                    context.fn_onOK(loadRes);
-                }, (err) => {
-                    context.fn_onErr(err);
-                });
-                return;
-            } else {
-                range = context.query._getInternal().getCache().getNextRange(pageIndex);
-                pageIndex = range.start;
-                pageCount = range.cnt;
+        _async.delay<IQueryResult<IEntityItem>>(() => {
+            self._checkDestroy();
+
+            const oldQuery = context.dbSet.query,
+                loadPageCount = context.loadPageCount,
+                isPagingEnabled = context.isPagingEnabled
+
+            let range: { start: number; end: number; cnt: number; }, pageCount = 1,
+                pageIndex = context.pageIndex;
+            // restore pageIndex if it was changed while loading
+            context.query.pageIndex = pageIndex;
+            context.dbSet._getInternal().beforeLoad(context.query, oldQuery);
+            // sync pageIndex
+            pageIndex = context.query.pageIndex;
+
+            if (loadPageCount > 1 && isPagingEnabled) {
+                if (context.query._getInternal().isPageCached(pageIndex)) {
+                    return self._loadFromCache(context.query, context.reason);
+                } else {
+                    range = context.query._getInternal().getCache().getNextRange(pageIndex);
+                    pageIndex = range.start;
+                    pageCount = range.cnt;
+                }
             }
-        }
 
-        const requestInfo: IQueryRequest = {
-            dbSetName: context.dbSetName,
-            pageIndex: context.query.isPagingEnabled ? pageIndex : -1,
-            pageSize: context.query.pageSize,
-            pageCount: pageCount,
-            isIncludeTotalCount: context.query.isIncludeTotalCount,
-            filterInfo: context.query.filterInfo,
-            sortInfo: context.query.sortInfo,
-            paramInfo: self._getMethodParams(context.query._getInternal().getQueryInfo(), context.query.params).paramInfo,
-            queryName: context.query.queryName
-        };
+            const requestInfo: IQueryRequest = {
+                dbSetName: context.dbSetName,
+                pageIndex: context.query.isPagingEnabled ? pageIndex : -1,
+                pageSize: context.query.pageSize,
+                pageCount: pageCount,
+                isIncludeTotalCount: context.query.isIncludeTotalCount,
+                filterInfo: context.query.filterInfo,
+                sortInfo: context.query.sortInfo,
+                paramInfo: self._getMethodParams(context.query._getInternal().getQueryInfo(), context.query.params).paramInfo,
+                queryName: context.query.queryName
+            };
 
-        const reqPromise = http.postAjax(self._getUrl(DATA_SVC_METH.Query), JSON.stringify(requestInfo), self.requestHeaders);
-        self._addRequestPromise(reqPromise, DATA_OPER.Query, requestInfo.dbSetName);
-        reqPromise.then((res: string) => {
-            return _async.parseJSON<IQueryResponse>(res);
-        }).then((response: IQueryResponse) => {
-            return self._onLoaded(response, context.query, context.reason);
+            const reqPromise = http.postAjax(self._getUrl(DATA_SVC_METH.Query), JSON.stringify(requestInfo), self.requestHeaders);
+            self._addRequestPromise(reqPromise, DATA_OPER.Query, requestInfo.dbSetName);
+
+            return reqPromise.then((res: string) => {
+                return <IQueryResponse>JSON.parse(res);
+            }).then((response: IQueryResponse) => {
+                self._checkDestroy();
+                return self._onLoaded(response, context.query, context.reason);
+            });
         }).then((loadRes) => {
             self._checkDestroy();
             context.fn_onOK(loadRes);
-            }, (err) => {
-                context.fn_onErr(err);
-            });
+        }).catch((err) => {
+            context.fn_onErr(err);
+        });
     }
     protected _onItemRefreshed(res: IRefreshRowInfo, item: IEntityItem): void {
         try {
@@ -510,9 +504,6 @@ export class DbContext extends BaseObject {
                 item._aspect._refreshValues(res.rowInfo, REFRESH_MODE.MergeIntoCurrent);
             }
         } catch (ex) {
-            if (ERROR.checkIsDummy(ex)) {
-                ERROR.throwDummy(ex);
-            }
             this._onDataOperError(ex, DATA_OPER.Refresh);
             ERROR.throwDummy(ex);
         }
@@ -527,7 +518,9 @@ export class DbContext extends BaseObject {
     }) {
         const self = this;
         args.fn_onStart();
-        try {
+
+        _async.delay<string>(() => {
+            self._checkDestroy();
             const request: IRefreshRowInfo = {
                 dbSetName: args.item._aspect.dbSetName,
                 rowInfo: args.item._aspect._getRowInfo(),
@@ -539,19 +532,15 @@ export class DbContext extends BaseObject {
                 reqPromise = http.postAjax(url, JSON.stringify(request), self.requestHeaders);
 
             self._addRequestPromise(reqPromise, DATA_OPER.Refresh);
-
-            reqPromise.then((res: string) => {
-                self._checkDestroy();
-                return _async.parseJSON<IRefreshRowInfo>(res);
-            }).then((res: IRefreshRowInfo) => { // success
-                self._checkDestroy();
-                args.fn_onOK(res);
-            }, (err) => { // error
-                args.fn_onErr(err);
-            });
-        } catch (ex) {
-            args.fn_onErr(ex);
-        }
+            return reqPromise;
+        }).then((res: string) => {
+            return <IRefreshRowInfo>JSON.parse(res);
+        }).then((res: IRefreshRowInfo) => {
+            self._checkDestroy();
+            args.fn_onOK(res);
+        }).catch((err) => {
+            args.fn_onErr(err);
+        });
     }
     protected _refreshItem(item: IEntityItem): IStatefulPromise<IEntityItem> {
         const self = this, deferred = _async.createDeferred<IEntityItem>();
@@ -675,27 +664,34 @@ export class DbContext extends BaseObject {
         fn_onErr: (ex: any) => void;
         fn_onOk: () => void;
     }): void {
-        const self = this;
+        const self = this, no_changes = "NO_CHANGES";
         args.fn_onStart();
-        const changeSet = self._getChanges();
 
-        if (changeSet.dbSets.length === 0) {
-            args.fn_onOk();
-            return;
-        }
-
-        const reqPromise = http.postAjax(self._getUrl(DATA_SVC_METH.Submit), JSON.stringify(changeSet), self.requestHeaders);
-        self._addRequestPromise(reqPromise, DATA_OPER.Submit);
-        reqPromise.then((res: string) => {
-            return _async.parseJSON<IChangeSet>(res);
+        _async.delay<IChangeSet>(() => {
+            self._checkDestroy();
+            const res = self._getChanges();
+            if (res.dbSets.length === 0) {
+                ERROR.abort(no_changes);
+            };
+            return res;
+        }).then((changes) => {
+            const reqPromise = http.postAjax(self._getUrl(DATA_SVC_METH.Submit), JSON.stringify(changes), self.requestHeaders);
+            self._addRequestPromise(reqPromise, DATA_OPER.Submit);
+            return reqPromise;
+        }).then((res: string) => {
+            return <IChangeSet>JSON.parse(res);
         }).then((res: IChangeSet) => {
             self._checkDestroy();
             self._dataSaved(res);
         }).then(() => {
             self._checkDestroy();
             args.fn_onOk();
-        }, (er) => {
-            args.fn_onErr(er);
+        }).catch((er) => {
+            if (!self.getIsDestroyCalled() && ERROR.checkIsAbort(er) && er.reason === no_changes) {
+                args.fn_onOk();
+            } else {
+                args.fn_onErr(er);
+            }
         });
     }
     _getInternal(): IInternalDbxtMethods {
@@ -724,22 +720,19 @@ export class DbContext extends BaseObject {
             } else {
                 // initialize by obtaining metadata from the data service by ajax call
                 const loadUrl = this._getUrl(DATA_SVC_METH.Permissions);
-                const ajaxPromise = http.getAjax(loadUrl, self.requestHeaders),
-                    resPromise = ajaxPromise.then((permissions: string) => {
-                        self._checkDestroy();
-                        return <IPermissionsInfo>JSON.parse(permissions);
-                    });
-
+                const ajaxPromise = http.getAjax(loadUrl, self.requestHeaders);
                 this._addRequestPromise(ajaxPromise, DATA_OPER.Init);
-                return resPromise;
+                return ajaxPromise.then((permissions: string) => {
+                    return <IPermissionsInfo>JSON.parse(permissions);
+                });
             }
         }).then((res: IPermissionsInfo) => {
             self._checkDestroy();
             self._updatePermissions(res);
             self.raisePropertyChanged(PROP_NAME.isInitialized);
         }).catch((err) => {
-            self._checkDestroy();
             self._onDataOperError(err, DATA_OPER.Init);
+            ERROR.throwDummy(err);
         });
 
         return this._initState;

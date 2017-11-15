@@ -4225,6 +4225,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.6.5";
+    exports.VERSION = "1.6.6";
     bootstrap_7.Bootstrap._initFramework();
 });

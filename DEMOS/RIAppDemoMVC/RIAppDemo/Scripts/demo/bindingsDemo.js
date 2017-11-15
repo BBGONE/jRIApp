@@ -60,6 +60,9 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             }, self, function (sender, args) {
                 return self.isEnabled;
             });
+            _this._paramCommand = new RIAPP.Command(function (sender, args) {
+                alert("command parameter: " + args);
+            }, self);
             _this._month = new Date().getMonth() + 1;
             _this._months = new DEMODB.KeyValDictionary();
             _this._fillMonths();
@@ -130,6 +133,11 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
         });
         Object.defineProperty(TestObject.prototype, "testCommand", {
             get: function () { return this._testCommand; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TestObject.prototype, "paramCommand", {
+            get: function () { return this._paramCommand; },
             enumerable: true,
             configurable: true
         });
