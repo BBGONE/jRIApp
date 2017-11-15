@@ -135,8 +135,8 @@ namespace RIAPP.DataService.DomainService
 
         protected virtual void ApplyChangesToEntity(RowInfo rowInfo)
         {
-            var metadata = this.GetMetadata();
-            var dbSetInfo = rowInfo.dbSetInfo;
+            CachedMetadata metadata = this.GetMetadata();
+            DbSetInfo dbSetInfo = rowInfo.dbSetInfo;
             if (dbSetInfo.EntityType == null)
                 throw new DomainServiceException(string.Format(ErrorStrings.ERR_DB_ENTITYTYPE_INVALID,
                     dbSetInfo.dbSetName));
@@ -161,7 +161,7 @@ namespace RIAPP.DataService.DomainService
             }
             catch (Exception ex)
             {
-                var dbEntity = rowInfo.changeState == null ? null : rowInfo.changeState.Entity;
+                object dbEntity = rowInfo.changeState == null ? null : rowInfo.changeState.Entity;
                 rowInfo.changeState = new EntityChangeState {Entity = dbEntity, Error = ex};
                 _OnError(ex);
                 throw new DummyException(ex.Message, ex);
@@ -205,27 +205,27 @@ namespace RIAPP.DataService.DomainService
 
         protected virtual void AuthorizeChangeSet(ChangeSet changeSet)
         {
-            var metadata = this.GetMetadata();
-            foreach (var dbSet in changeSet.dbSets)
+            CachedMetadata metadata = this.GetMetadata();
+            foreach (DbSet dbSet in changeSet.dbSets)
             {
                 //methods on domain service which are attempted to be executed by client (SaveChanges triggers their execution)
-                var domainServiceMethods = new Dictionary<string, MethodInfoData>();
-                var dbInfo = metadata.dbSets[dbSet.dbSetName];
+                Dictionary<string, MethodInfoData> domainServiceMethods = new Dictionary<string, MethodInfoData>();
+                DbSetInfo dbInfo = metadata.dbSets[dbSet.dbSetName];
 
                 foreach (var rowInfo in dbSet.rows)
                 {
-                    var method = SecurityHelper.GetCRUDMethodInfo(metadata, dbInfo.dbSetName, rowInfo);
+                    MethodInfoData method = SecurityHelper.GetCRUDMethodInfo(metadata, dbInfo.dbSetName, rowInfo);
                     if (method == null)
                         throw new DomainServiceException(string.Format(ErrorStrings.ERR_REC_CHANGETYPE_INVALID,
                             dbInfo.EntityType.Name, rowInfo.changeType));
-                    var dicKey = string.Format("{0}:{1}", method.ownerType.FullName, method.methodInfo.Name);
+                    string dicKey = string.Format("{0}:{1}", method.ownerType.FullName, method.methodInfo.Name);
                     if (!domainServiceMethods.ContainsKey(dicKey))
                     {
                         domainServiceMethods.Add(dicKey, method);
                     }
                 } // foreach (RowInfo rowInfo in dbSet.rows)
 
-                var authorizer = ServiceContainer.Authorizer;
+                IAuthorizer authorizer = ServiceContainer.Authorizer;
                 authorizer.CheckUserRightsToExecute(domainServiceMethods.Values);
             } //foreach (var dbSet in changeSet.dbSets)
         }
@@ -242,24 +242,24 @@ namespace RIAPP.DataService.DomainService
         /// <returns></returns>
         public QueryResponse GetQueryData(string dbSetName, string queryName)
         {
-            var getInfo = new QueryRequest {dbSetName = dbSetName, queryName = queryName};
+            QueryRequest getInfo = new QueryRequest {dbSetName = dbSetName, queryName = queryName};
             return ServiceGetData(getInfo).Result;
         }
 
         protected async Task<QueryResponse> ExecQuery(QueryRequest queryInfo)
         {
-            var metadata = this.GetMetadata();
-            var method = metadata.GetQueryMethod(queryInfo.dbSetName, queryInfo.queryName);
-            var authorizer = ServiceContainer.Authorizer;
+            CachedMetadata metadata = this.GetMetadata();
+            MethodDescription method = metadata.GetQueryMethod(queryInfo.dbSetName, queryInfo.queryName);
+            IAuthorizer authorizer = ServiceContainer.Authorizer;
             authorizer.CheckUserRightsToExecute(method.methodData);
             queryInfo.dbSetInfo = metadata.dbSets[queryInfo.dbSetName];
             var isMultyPageRequest = queryInfo.dbSetInfo.enablePaging && queryInfo.pageCount > 1;
 
             QueryResult queryResult = null;
             int? totalCount = null;
-            var methParams = new LinkedList<object>();
+            LinkedList<object> methParams = new LinkedList<object>();
 
-            for (var i = 0; i < method.parameters.Count; ++i)
+            for (int i = 0; i < method.parameters.Count; ++i)
             {
                 methParams.AddLast(queryInfo.paramInfo.GetValue(method.parameters[i].name, method, ServiceContainer));
             }
@@ -268,21 +268,21 @@ namespace RIAPP.DataService.DomainService
             using (var callContext = new RequestCallContext(req))
             {
                 IServiceOperationsHelper serviceHelper = this.ServiceContainer.ServiceHelper;
-                var instance = serviceHelper.GetMethodOwner(method.methodData);
-                var invokeRes = method.methodData.methodInfo.Invoke(instance, methParams.ToArray());
+                object instance = serviceHelper.GetMethodOwner(method.methodData);
+                object invokeRes = method.methodData.methodInfo.Invoke(instance, methParams.ToArray());
                 queryResult = (QueryResult) await serviceHelper.GetMethodResult(invokeRes).ConfigureAwait(false);
 
 
-                var entities = queryResult.Result;
+                IEnumerable<object> entities = queryResult.Result;
                 totalCount = queryResult.TotalCount;
-                var rowGenerator = new RowGenerator(queryInfo.dbSetInfo, entities, ServiceContainer.DataHelper);
-                var rows = rowGenerator.CreateRows();
+                RowGenerator rowGenerator = new RowGenerator(queryInfo.dbSetInfo, entities, ServiceContainer.DataHelper);
+                IEnumerable<Row> rows = rowGenerator.CreateRows();
 
-                var subsetsGenerator = new SubsetsGenerator(this);
-                var subsets1 = subsetsGenerator.CreateSubsets(queryInfo.dbSetInfo, entities, queryResult.includeNavigations);
-                var subsets2 = subsetsGenerator.CreateSubsets(queryResult.subResults);
+                SubsetsGenerator subsetsGenerator = new SubsetsGenerator(this);
+                IEnumerable<Subset> subsets1 = subsetsGenerator.CreateSubsets(queryInfo.dbSetInfo, entities, queryResult.includeNavigations);
+                SubsetList subsets2 = subsetsGenerator.CreateSubsets(queryResult.subResults);
 
-                var subResults = subsets1.Aggregate(subsets2, (lst, subRes) =>
+                SubsetList subResults = subsets1.Aggregate(subsets2, (lst, subRes) =>
                 {
                     if (lst.Any(r => r.dbSetName == subRes.dbSetName))
                         throw new DomainServiceException(string.Format("The included results already have {0} entities", subRes.dbSetName));
@@ -290,7 +290,7 @@ namespace RIAPP.DataService.DomainService
                     return lst;
                 });
 
-                var res = new QueryResponse
+                QueryResponse res = new QueryResponse
                 {
                     pageIndex = queryInfo.pageIndex,
                     pageCount = queryInfo.pageCount,
@@ -310,13 +310,13 @@ namespace RIAPP.DataService.DomainService
         protected async Task<bool> ApplyChangeSet(ChangeSet changeSet)
         {
             AuthorizeChangeSet(changeSet);
-            var metadata = this.GetMetadata();
-            var graph = new ChangeSetGraph(changeSet, metadata);
+            CachedMetadata metadata = this.GetMetadata();
+            ChangeSetGraph graph = new ChangeSetGraph(changeSet, metadata);
             graph.Prepare();
 
             foreach (var rowInfo in graph.insertList)
             {
-                var dbSet = changeSet.dbSets.Where(d => d.dbSetName == rowInfo.dbSetInfo.dbSetName).Single();
+                DbSet dbSet = changeSet.dbSets.Where(d => d.dbSetName == rowInfo.dbSetInfo.dbSetName).Single();
                 var req = new RequestContext(this, changeSet: changeSet, dbSet: dbSet, rowInfo: rowInfo,
                     operation: ServiceOperationType.SaveChanges);
                 using (var callContext = new RequestCallContext(req))
@@ -326,9 +326,9 @@ namespace RIAPP.DataService.DomainService
                 }
             }
 
-            foreach (var rowInfo in graph.updateList)
+            foreach (RowInfo rowInfo in graph.updateList)
             {
-                var dbSet = changeSet.dbSets.Where(d => d.dbSetName == rowInfo.dbSetInfo.dbSetName).Single();
+                DbSet dbSet = changeSet.dbSets.Where(d => d.dbSetName == rowInfo.dbSetInfo.dbSetName).Single();
                 var req = new RequestContext(this, changeSet: changeSet, dbSet: dbSet, rowInfo: rowInfo,
                     operation: ServiceOperationType.SaveChanges);
                 using (var callContext = new RequestCallContext(req))
@@ -338,9 +338,9 @@ namespace RIAPP.DataService.DomainService
                 }
             }
 
-            foreach (var rowInfo in graph.deleteList)
+            foreach (RowInfo rowInfo in graph.deleteList)
             {
-                var dbSet = changeSet.dbSets.Where(d => d.dbSetName == rowInfo.dbSetInfo.dbSetName).Single();
+                DbSet dbSet = changeSet.dbSets.Where(d => d.dbSetName == rowInfo.dbSetInfo.dbSetName).Single();
                 var req = new RequestContext(this, changeSet: changeSet, dbSet: dbSet, rowInfo: rowInfo,
                     operation: ServiceOperationType.SaveChanges);
                 using (var callContext = new RequestCallContext(req))
@@ -350,13 +350,13 @@ namespace RIAPP.DataService.DomainService
                 }
             }
 
-            var hasErrors = false;
+            bool hasErrors = false;
             IServiceOperationsHelper serviceHelper = this.ServiceContainer.ServiceHelper;
 
             //Validation step
-            foreach (var rowInfo in graph.insertList)
+            foreach (RowInfo rowInfo in graph.insertList)
             {
-                var dbSet = changeSet.dbSets.Where(d => d.dbSetName == rowInfo.dbSetInfo.dbSetName).Single();
+                DbSet dbSet = changeSet.dbSets.Where(d => d.dbSetName == rowInfo.dbSetInfo.dbSetName).Single();
                 var req = new RequestContext(this, changeSet: changeSet, dbSet: dbSet, rowInfo: rowInfo,
                     operation: ServiceOperationType.SaveChanges);
                 using (var callContext = new RequestCallContext(req))
@@ -372,7 +372,7 @@ namespace RIAPP.DataService.DomainService
             //Validation step
             foreach (var rowInfo in graph.updateList)
             {
-                var dbSet = changeSet.dbSets.Where(d => d.dbSetName == rowInfo.dbSetInfo.dbSetName).Single();
+                DbSet dbSet = changeSet.dbSets.Where(d => d.dbSetName == rowInfo.dbSetInfo.dbSetName).Single();
                 var req = new RequestContext(this, changeSet: changeSet, dbSet: dbSet, rowInfo: rowInfo,
                     operation: ServiceOperationType.SaveChanges);
                 using (var callContext = new RequestCallContext(req))
@@ -394,7 +394,7 @@ namespace RIAPP.DataService.DomainService
                 await ExecuteChangeSet().ConfigureAwait(false);
 
 
-                foreach (var rowInfo in graph.allList)
+                foreach (RowInfo rowInfo in graph.allList)
                 {
                     if (rowInfo.changeType != ChangeType.Deleted)
                         serviceHelper.UpdateRowInfoAfterUpdates(rowInfo);
@@ -404,7 +404,7 @@ namespace RIAPP.DataService.DomainService
 
 
                 //Track changes step
-                foreach (var rowInfo in graph.allList)
+                foreach (RowInfo rowInfo in graph.allList)
                 {
                     TrackChangesToEntity(rowInfo);
                 }
@@ -415,12 +415,12 @@ namespace RIAPP.DataService.DomainService
 
         protected async Task<InvokeResponse> InvokeMethod(InvokeRequest invokeInfo)
         {
-            var metadata = this.GetMetadata();
-            var method = metadata.GetInvokeMethod(invokeInfo.methodName);
-            var authorizer = ServiceContainer.Authorizer;
+            CachedMetadata metadata = this.GetMetadata();
+            MethodDescription method = metadata.GetInvokeMethod(invokeInfo.methodName);
+            IAuthorizer authorizer = ServiceContainer.Authorizer;
             authorizer.CheckUserRightsToExecute(method.methodData);
-            var methParams = new List<object>();
-            for (var i = 0; i < method.parameters.Count; ++i)
+            List<object> methParams = new List<object>();
+            for (int i = 0; i < method.parameters.Count; ++i)
             {
                 methParams.Add(invokeInfo.paramInfo.GetValue(method.parameters[i].name, method, ServiceContainer));
             }
@@ -428,10 +428,10 @@ namespace RIAPP.DataService.DomainService
             using (var callContext = new RequestCallContext(req))
             {
                 IServiceOperationsHelper serviceHelper = this.ServiceContainer.ServiceHelper;
-                var instance = serviceHelper.GetMethodOwner(method.methodData);
-                var invokeRes = method.methodData.methodInfo.Invoke(instance, methParams.ToArray());
-                var meth_result = await serviceHelper.GetMethodResult(invokeRes).ConfigureAwait(false);
-                var res = new InvokeResponse();
+                object instance = serviceHelper.GetMethodOwner(method.methodData);
+                object invokeRes = method.methodData.methodInfo.Invoke(instance, methParams.ToArray());
+                object meth_result = await serviceHelper.GetMethodResult(invokeRes).ConfigureAwait(false);
+                InvokeResponse res = new InvokeResponse();
                 if (method.methodResult)
                     res.result = meth_result;
                 return res;
@@ -440,24 +440,24 @@ namespace RIAPP.DataService.DomainService
 
         protected async Task<RefreshInfo> RefreshRowInfo(RefreshInfo info)
         {
-            var metadata = this.GetMetadata();
+            CachedMetadata metadata = this.GetMetadata();
             info.dbSetInfo = metadata.dbSets[info.dbSetName];
-            var methodData = metadata.getOperationMethodInfo(info.dbSetName, MethodType.Refresh);
+            MethodInfoData methodData = metadata.getOperationMethodInfo(info.dbSetName, MethodType.Refresh);
             if (methodData == null)
                 throw new InvalidOperationException(string.Format(ErrorStrings.ERR_REC_REFRESH_INVALID,
                     info.dbSetInfo.EntityType.Name, GetType().Name));
             info.rowInfo.dbSetInfo = info.dbSetInfo;
-            var authorizer = ServiceContainer.Authorizer;
+            IAuthorizer authorizer = ServiceContainer.Authorizer;
             authorizer.CheckUserRightsToExecute(methodData);
             var req = new RequestContext(this, rowInfo: info.rowInfo, operation: ServiceOperationType.RowRefresh);
             using (var callContext = new RequestCallContext(req))
             {
                 IServiceOperationsHelper serviceHelper = this.ServiceContainer.ServiceHelper;
-                var instance = serviceHelper.GetMethodOwner(methodData);
-                var invokeRes = methodData.methodInfo.Invoke(instance, new object[] { info });
-                var dbEntity = await serviceHelper.GetMethodResult(invokeRes).ConfigureAwait(false);
+                object instance = serviceHelper.GetMethodOwner(methodData);
+                object invokeRes = methodData.methodInfo.Invoke(instance, new object[] { info });
+                object dbEntity = await serviceHelper.GetMethodResult(invokeRes).ConfigureAwait(false);
 
-                var rri = new RefreshInfo { rowInfo = info.rowInfo, dbSetName = info.dbSetName };
+                RefreshInfo rri = new RefreshInfo { rowInfo = info.rowInfo, dbSetName = info.dbSetName };
                 if (dbEntity != null)
                 {
                     serviceHelper.UpdateRowInfoFromEntity(dbEntity, info.rowInfo);
@@ -504,13 +504,13 @@ namespace RIAPP.DataService.DomainService
         {
             try
             {
-                var metadata = this.GetMetadata();
-                var result = new Permissions();
+                CachedMetadata metadata = this.GetMetadata();
+                Permissions result = new Permissions();
                 result.serverTimezone = DateTimeHelper.GetTimezoneOffset();
-                var authorizer = ServiceContainer.Authorizer;
+                IAuthorizer authorizer = ServiceContainer.Authorizer;
                 foreach (var dbInfo in metadata.dbSets.Values)
                 {
-                    var permissions = SecurityHelper.GetDbSetPermissions(metadata, dbInfo.dbSetName, authorizer);
+                    DbSetPermit permissions = SecurityHelper.GetDbSetPermissions(metadata, dbInfo.dbSetName, authorizer);
                     result.permissions.Add(permissions);
                 }
 
@@ -527,8 +527,8 @@ namespace RIAPP.DataService.DomainService
         {
             try
             {
-                var metadata = this.GetMetadata();
-                var result = new MetadataResult();
+                CachedMetadata metadata = this.GetMetadata();
+                MetadataResult result = new MetadataResult();
                 result.methods = metadata.methodDescriptions;
                 result.associations.AddRange(metadata.associations.Values);
                 result.dbSets.AddRange(metadata.dbSets.Values.OrderBy(d=>d.dbSetName));
@@ -568,7 +568,7 @@ namespace RIAPP.DataService.DomainService
 
         public async Task<ChangeSet> ServiceApplyChangeSet(ChangeSet changeSet)
         {
-            var res = true;
+            bool res = true;
             try
             {
                 res = await ApplyChangeSet(changeSet);
@@ -642,7 +642,7 @@ namespace RIAPP.DataService.DomainService
 
             if (services.IsValueCreated)
             {
-                var disposable = (services.Value as IDisposable);
+                IDisposable disposable = (services.Value as IDisposable);
                 if (disposable != null)
                     disposable.Dispose();
             }
