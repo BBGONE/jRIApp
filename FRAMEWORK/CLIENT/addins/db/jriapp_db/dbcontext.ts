@@ -672,7 +672,7 @@ export class DbContext extends BaseObject {
             const res = self._getChanges();
             if (res.dbSets.length === 0) {
                 ERROR.abort(no_changes);
-            };
+            }
             return res;
         }).then((changes) => {
             const reqPromise = http.postAjax(self._getUrl(DATA_SVC_METH.Submit), JSON.stringify(changes), self.requestHeaders);
