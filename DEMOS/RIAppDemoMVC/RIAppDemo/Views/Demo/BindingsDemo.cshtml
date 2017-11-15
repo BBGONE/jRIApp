@@ -168,6 +168,20 @@
            data-view="name=generic">Test command 2</a>
     </div>
     <div>
+        <h4 style="color:blue;margin-top:2em;">Using command parameter!</h4>
+        <script type="text/x-example">
+   <button class="btn btn-info btn-small" data-bind="{this.command,to=paramCommand,source=testObject}{this.commandParam,to=val,source={val='test1'}}">Test 1</button>
+   
+   <button class="btn btn-info btn-small" data-bind="{this.command,to=paramCommand,source=testObject}{this.commandParam,to=val,source={val='test2'}}">Test 2</button>
+   
+   <button class="btn btn-info btn-small" data-bind="{this.command,to=paramCommand,source=testObject}{this.commandParam,to=val,source={val='test3'}}">Test 3</button>
+        </script>
+
+        <button class="btn btn-info btn-small" data-bind="{this.command,to=paramCommand,source=testObject}{this.commandParam,to=val,source={val='test1'}}">Test 1</button>
+        &nbsp;<button class="btn btn-info btn-small" data-bind="{this.command,to=paramCommand,source=testObject}{this.commandParam,to=val,source={val='test2'}}">Test 2</button>
+        &nbsp;<button class="btn btn-info btn-small" data-bind="{this.command,to=paramCommand,source=testObject}{this.commandParam,to=val,source={val='test3'}}">Test 3</button>
+    </div>
+    <div>
         <h4 style="color:blue;margin-top:2em; display: inline-block;">The source can be an inline object too!</h4>
         <script type="text/x-example">
             <span data-bind="{this.value,to=val,source={val='The databound value have been taken from inline object'}}"></span>
