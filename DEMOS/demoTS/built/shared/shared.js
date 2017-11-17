@@ -328,7 +328,6 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             _this._template = null;
             _this._gridDataSource = null;
             _this._prevText = null;
-            _this._selectedItem = null;
             _this._template = null;
             _this._$dropDown = null;
             _this._loadTimeout = null;
@@ -647,13 +646,14 @@ define("header", ["require", "exports", "jriapp", "jriapp_ui"], function (requir
             _this._contentPanelHeight = 0;
             if (!!_this._$contentPanel)
                 _this._contentPanelHeight = _this._$contentPanel.height();
-            _this._expanderCommand = new RIAPP.Command(function (sender, param) {
+            _this._expanderCommand = new RIAPP.TCommand(function (sender, param) {
                 if (sender.isExpanded) {
-                    self.expand();
+                    this.expand();
                 }
-                else
-                    self.collapse();
-            }, self, null);
+                else {
+                    this.collapse();
+                }
+            }, self);
             return _this;
         }
         HeaderVM.prototype._getEventNames = function () {
@@ -664,12 +664,12 @@ define("header", ["require", "exports", "jriapp", "jriapp_ui"], function (requir
             this.addHandler('updateUI', fn, namespace);
         };
         HeaderVM.prototype.expand = function () {
-            var self = this;
-            this._$topPanel.slideDown('fast', function () { self.updateUI(false); });
+            var _this = this;
+            this._$topPanel.slideDown('fast', function () { return _this.updateUI(false); });
         };
         HeaderVM.prototype.collapse = function () {
-            var self = this;
-            this._$topPanel.slideUp('fast', function () { self.updateUI(true); });
+            var _this = this;
+            this._$topPanel.slideUp('fast', function () { return _this.updateUI(true); });
         };
         HeaderVM.prototype.updateUI = function (isUp) {
             var args = { isHandled: false, isUp: isUp };

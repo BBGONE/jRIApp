@@ -8,14 +8,12 @@ export class FadeAnimation extends RIAPP.BaseObject implements uiMOD.IDynaConten
     private _$animatedEl: JQuery;
     private _effect: string;
     private _duration: number;
-    private _isAnimateFirstShow: boolean;
 
     constructor(isAnimateFirstShow: boolean, duration?: number) {
         super();
         this._$animatedEl = null;
         this._effect = 'fade';
         this._duration = !!duration ? duration : 1000;
-        this._isAnimateFirstShow = !!isAnimateFirstShow;
     }
     beforeShow(template: RIAPP.ITemplate, isFirstShow: boolean):void {
     }
@@ -65,14 +63,12 @@ export class SlideAnimation extends RIAPP.BaseObject implements uiMOD.IDynaConte
     private _$animatedEl: JQuery;
     private _effect: string;
     private _duration: number;
-    private _isAnimateFirstShow: boolean;
 
     constructor(isAnimateFirstShow: boolean, duration?: number) {
         super();
         this._$animatedEl = null;
         this._effect = 'slide';
         this._duration = !!duration ? duration : 1000;
-        this._isAnimateFirstShow = !!isAnimateFirstShow;
     }
     beforeShow(template: RIAPP.ITemplate, isFirstShow: boolean): void {
     }

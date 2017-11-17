@@ -35,7 +35,6 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
     private _template: RIAPP.ITemplate;
     protected _gridDataSource: RIAPP.ICollection<RIAPP.ICollectionItem>;
     private _prevText: string;
-    private _selectedItem: RIAPP.ICollectionItem;
     private _$dropDown: JQuery;
     private _loadTimeout: any;
     private _dataContext: any;
@@ -83,7 +82,6 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
         this._template = null;
         this._gridDataSource = null;
         this._prevText = null;
-        this._selectedItem = null;
         this._template = null;
         this._$dropDown = null;
         this._loadTimeout = null;

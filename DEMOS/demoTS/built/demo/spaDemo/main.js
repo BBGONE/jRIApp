@@ -2071,7 +2071,6 @@ define("animation", ["require", "exports", "jriapp"], function (require, exports
             _this._$animatedEl = null;
             _this._effect = 'fade';
             _this._duration = !!duration ? duration : 1000;
-            _this._isAnimateFirstShow = !!isAnimateFirstShow;
             return _this;
         }
         FadeAnimation.prototype.beforeShow = function (template, isFirstShow) {
@@ -2130,7 +2129,6 @@ define("animation", ["require", "exports", "jriapp"], function (require, exports
             _this._$animatedEl = null;
             _this._effect = 'slide';
             _this._duration = !!duration ? duration : 1000;
-            _this._isAnimateFirstShow = !!isAnimateFirstShow;
             return _this;
         }
         SlideAnimation.prototype.beforeShow = function (template, isFirstShow) {

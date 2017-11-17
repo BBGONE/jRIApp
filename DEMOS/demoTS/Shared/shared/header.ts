@@ -9,27 +9,28 @@ topPanel = "#demoHeader";
 contentPanel = "#demoContent";
 
 export class HeaderVM extends RIAPP.ViewModel<RIAPP.IApplication> {
-    _$topPanel: JQuery;
-    _$contentPanel: JQuery;
-    _contentPanelHeight: number;
-    _expanderCommand: RIAPP.ICommand;
+    private _$topPanel: JQuery;
+    private _$contentPanel: JQuery;
+    private _contentPanelHeight: number;
+    private _expanderCommand: RIAPP.ICommand;
 
     constructor(app: RIAPP.IApplication) {
         super(app);
-        let self = this;
+        const self = this;
         this._$topPanel = $(topPanel);
         this._$contentPanel = $(contentPanel);
         this._contentPanelHeight = 0;
         if (!!this._$contentPanel)
             this._contentPanelHeight = this._$contentPanel.height();
 
-        this._expanderCommand = new RIAPP.Command(function (sender, param) {
+        //uses strongly typed "this"
+        this._expanderCommand = new RIAPP.TCommand<any, HeaderVM>(function (sender: uiMOD.ExpanderElView, param) {
             if (sender.isExpanded) {
-                self.expand();
+                this.expand();
+            } else {
+                this.collapse();
             }
-            else
-                self.collapse();
-        }, self, null);
+        }, self);
 
     }
     _getEventNames() {
@@ -40,15 +41,13 @@ export class HeaderVM extends RIAPP.ViewModel<RIAPP.IApplication> {
         this.addHandler('updateUI', fn, namespace);
     }
     expand() {
-        let self = this;
-        this._$topPanel.slideDown('fast', function () { self.updateUI(false); });
+        this._$topPanel.slideDown('fast', () => this.updateUI(false));
     }
     collapse() {
-        let self = this;
-        this._$topPanel.slideUp('fast', function () { self.updateUI(true); });
+        this._$topPanel.slideUp('fast', () => this.updateUI(true));
     }
     updateUI(isUp: boolean) {
-        let args = { isHandled: false, isUp: isUp };
+        const args = { isHandled: false, isUp: isUp };
         this.raiseEvent('updateUI', args);
         if (args.isHandled)
             return;

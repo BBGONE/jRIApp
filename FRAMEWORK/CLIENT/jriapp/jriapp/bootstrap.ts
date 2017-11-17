@@ -51,7 +51,7 @@ const utils = Utils, dom = DomUtils, win = dom.window, doc = win.document,
 })();
 
 const _TEMPLATE_SELECTOR = 'script[type="text/html"]';
-const stylesLoader: IStylesLoader = createCssLoader();
+const _stylesLoader: IStylesLoader = createCssLoader();
 
 const GLOB_EVENTS = {
     load: "load",
@@ -160,7 +160,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         this._defaults = new Defaults();
         this.defaults.imagesPath = PathHelper.getFrameworkImgPath();
         // load jriapp.css (it will load only if it is not loaded yet)
-        stylesLoader.loadOwnStyle();
+        _stylesLoader.loadOwnStyle();
         ERROR.addHandler("*", this);
     }
     private _bindGlobalEvents(): void {
@@ -490,7 +490,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     toString() {
         return "JRIApp Bootstrap";
     }
-    get stylesLoader(): IStylesLoader { return stylesLoader; }
+    get stylesLoader(): IStylesLoader { return _stylesLoader; }
     get elViewRegister(): IElViewRegister { return this._elViewRegister; }
     get contentFactory(): IContentFactoryList { return this._contentFactory; }
     get templateLoader(): TemplateLoader { return this._templateLoader; }

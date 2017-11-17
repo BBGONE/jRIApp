@@ -140,9 +140,9 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
         });
 
         //loads data from the server for the products
-        this._loadCommand = new RIAPP.TCommand<any, ProductViewModel>(function (sender, data, viewModel) {
-            viewModel.load();
-        }, self, null);
+        this._loadCommand = new RIAPP.TCommand<any, ProductViewModel>(function (sender, data) {
+            this.load();
+        }, self);
 
         //example of using a method invocation on the service
         //invokes test service method with parameters and displays result with alert
@@ -150,15 +150,15 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
 
 
         //for testing templates in datagrid columns
-        this._columnCommand = new RIAPP.TCommand<DEMODB.Product, ProductViewModel>(function (sender, cmdParam, viewModel) {
+        this._columnCommand = new RIAPP.TCommand<DEMODB.Product, ProductViewModel>(function (sender, cmdParam) {
             let dataName = "";
             if (sender instanceof uiMOD.BaseElView) {
                 dataName = (<uiMOD.BaseElView>sender).dataName;
             }
 
             alert(utils.str.format("You clicked on \"{0}\", current ProductID is: {1}", dataName, (!cmdParam ? "Not selected" : cmdParam.ProductID)));
-        }, self, function (sender, param, thisobj) {
-            return !!self.currentItem;
+        }, self, function (sender, param) {
+            return !!this.currentItem;
         });
 
         //the property watcher helps us handling properties changes

@@ -77,7 +77,6 @@ declare module "autocomplete" {
         private _template;
         protected _gridDataSource: RIAPP.ICollection<RIAPP.ICollectionItem>;
         private _prevText;
-        private _selectedItem;
         private _$dropDown;
         private _loadTimeout;
         private _dataContext;
@@ -128,10 +127,10 @@ declare module "header" {
     export let topPanel: string;
     export let contentPanel: string;
     export class HeaderVM extends RIAPP.ViewModel<RIAPP.IApplication> {
-        _$topPanel: JQuery;
-        _$contentPanel: JQuery;
-        _contentPanelHeight: number;
-        _expanderCommand: RIAPP.ICommand;
+        private _$topPanel;
+        private _$contentPanel;
+        private _contentPanelHeight;
+        private _expanderCommand;
         constructor(app: RIAPP.IApplication);
         _getEventNames(): string[];
         addOnUpdateUI(fn: (sender: HeaderVM, args: {

@@ -172,18 +172,18 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             }, self, function (s, p) {
                 return self.dbContext.isHasChanges;
             });
-            _this._undoCommand = new RIAPP.Command(function (sender, param) {
-                self.dbContext.rejectChanges();
+            _this._undoCommand = new RIAPP.TCommand(function (sender, param) {
+                this.dbContext.rejectChanges();
             }, self, function (s, p) {
-                return self.dbContext.isHasChanges;
+                return this.dbContext.isHasChanges;
             });
             _this._propWatcher.addPropWatch(self.dbContext, 'isHasChanges', function (prop) {
                 self._saveCommand.raiseCanExecuteChanged();
                 self._undoCommand.raiseCanExecuteChanged();
             });
-            _this._loadCommand = new RIAPP.TCommand(function (sender, data, viewModel) {
-                viewModel.load();
-            }, self, null);
+            _this._loadCommand = new RIAPP.TCommand(function (sender, data) {
+                this.load();
+            }, self);
             _this._dbSet.defineCustomerField(function (item) {
                 var bag = item._aspect.getCustomVal("jsonBag");
                 if (!bag) {

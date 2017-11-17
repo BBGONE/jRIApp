@@ -170,16 +170,14 @@
     <div>
         <h4 style="color:blue;margin-top:2em;">Using command parameter!</h4>
         <script type="text/x-example">
-   <button class="btn btn-info btn-small" data-bind="{this.command,to=paramCommand,source=testObject}{this.commandParam,to=val,source={val='test1'}}">Test 1</button>
-   
-   <button class="btn btn-info btn-small" data-bind="{this.command,to=paramCommand,source=testObject}{this.commandParam,to=val,source={val='test2'}}">Test 2</button>
-   
-   <button class="btn btn-info btn-small" data-bind="{this.command,to=paramCommand,source=testObject}{this.commandParam,to=val,source={val='test3'}}">Test 3</button>
+   <button class="btn btn-info btn-small" data-bind="{this.command,to=paramCommand,source=testObject}{this.commandParam,source={color='Magenta',r=255,g=0,b=255}}">Color #1</button>
+   <button class="btn btn-info btn-small" data-bind="{this.command,to=paramCommand,source=testObject}{this.commandParam,source={color='Cornflower',r=100,g=149,b=237}}">Color #2</button>
+   <button class="btn btn-info btn-small" data-bind="{this.command,to=paramCommand,source=testObject}{this.commandParam,source={color='Forest Green',r=34,g=139,b=34}}">Color #3</button>
         </script>
 
-        <button class="btn btn-info btn-small" data-bind="{this.command,to=paramCommand,source=testObject}{this.commandParam,to=val,source={val='test1'}}">Test 1</button>
-        &nbsp;<button class="btn btn-info btn-small" data-bind="{this.command,to=paramCommand,source=testObject}{this.commandParam,to=val,source={val='test2'}}">Test 2</button>
-        &nbsp;<button class="btn btn-info btn-small" data-bind="{this.command,to=paramCommand,source=testObject}{this.commandParam,to=val,source={val='test3'}}">Test 3</button>
+        <button class="btn btn-info btn-small" data-bind="{this.command,to=paramCommand,source=testObject}{this.commandParam,source={color='Magenta',r=255,g=0,b=255}}">Color #1</button>
+        &nbsp;<button class="btn btn-info btn-small" data-bind="{this.command,to=paramCommand,source=testObject}{this.commandParam,source={color='Cornflower',r=100,g=149,b=237}}">Color #2</button>
+        &nbsp;<button class="btn btn-info btn-small" data-bind="{this.command,to=paramCommand,source=testObject}{this.commandParam,source={color='Forest Green',r=34,g=139,b=34}}">Color #3</button>
     </div>
     <div>
         <h4 style="color:blue;margin-top:2em; display: inline-block;">The source can be an inline object too!</h4>

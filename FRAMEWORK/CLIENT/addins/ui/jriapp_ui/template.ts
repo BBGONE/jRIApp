@@ -1,11 +1,12 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { Utils } from "jriapp_shared";
 import { ITemplate, ITemplateEvents, IViewOptions } from "jriapp/int";
+import { TCommand } from "jriapp/mvvm";
 import { ViewChecks } from "jriapp/utils/viewchecks";
 import { bootstrap } from "jriapp/bootstrap";
 import { CommandElView } from "./command";
 
-const utils = Utils, viewChecks = ViewChecks, boot = bootstrap;
+const utils = Utils, viewChecks = ViewChecks, boot = bootstrap, ERROR = utils.err;
 
 viewChecks.isTemplateElView = (obj: any) => {
     return !!obj && obj instanceof TemplateElView;
@@ -20,6 +21,13 @@ export interface ITemplateOptions {
     dataContext?: any;
     templEvents?: ITemplateEvents;
 }
+
+// for strongly typed parameters
+export type TemplateCommandParam = { template: ITemplate; isLoaded: boolean; };
+export class TemplateCommand<TThis> extends TCommand<TemplateCommandParam, TThis>
+{
+}
+
 
 export class TemplateElView extends CommandElView implements ITemplateEvents {
     private _template: ITemplate;
@@ -40,17 +48,17 @@ export class TemplateElView extends CommandElView implements ITemplateEvents {
         const self = this;
         try {
             self._template = template;
-            const args = { template: template, isLoaded: true };
+            const args: TemplateCommandParam = { template: template, isLoaded: true };
             self.invokeCommand(args, false);
             this.raisePropertyChanged(PROP_NAME.template);
         } catch (ex) {
-            utils.err.reThrow(ex, this.handleError(ex, this));
+            ERROR.reThrow(ex, this.handleError(ex, this));
         }
     }
     templateUnLoading(template: ITemplate): void {
         const self = this;
         try {
-            const args = { template: template, isLoaded: false };
+            const args: TemplateCommandParam = { template: template, isLoaded: false };
             self.invokeCommand(args, false);
         } catch (ex) {
             this.handleError(ex, this);

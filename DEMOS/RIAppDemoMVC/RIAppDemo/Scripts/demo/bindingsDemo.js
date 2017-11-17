@@ -46,6 +46,12 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
         return NotConverter;
     }(RIAPP.BaseConverter));
     exports.NotConverter = NotConverter;
+    function RGBToHex(r, g, b) {
+        var bin = r << 16 | g << 8 | b;
+        return (function (h) {
+            return new Array(7 - h.length).join("0") + h;
+        })(bin.toString(16).toUpperCase());
+    }
     var TestObject = (function (_super) {
         __extends(TestObject, _super);
         function TestObject(initPropValue) {
@@ -60,8 +66,8 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             }, self, function (sender, args) {
                 return self.isEnabled;
             });
-            _this._paramCommand = new RIAPP.Command(function (sender, args) {
-                alert("command parameter: " + args);
+            _this._paramCommand = new RIAPP.TCommand(function (sender, args) {
+                alert(args.color + ": #" + RGBToHex(args.r, args.g, args.b));
             }, self);
             _this._month = new Date().getMonth() + 1;
             _this._months = new DEMODB.KeyValDictionary();

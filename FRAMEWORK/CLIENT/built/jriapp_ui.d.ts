@@ -1297,7 +1297,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         destroy(): void;
         readonly table: HTMLTableElement;
         readonly options: IDataGridConstructorOptions;
-        readonly _tBodyEl: Element;
+        readonly _tBodyEl: HTMLTableSectionElement;
         readonly _tHeadEl: HTMLTableSectionElement;
         readonly _tFootEl: HTMLTableSectionElement;
         readonly _tHeadRow: HTMLTableRowElement;
@@ -1321,7 +1321,6 @@ declare module "jriapp_ui/datagrid/datagrid" {
     }
     export class DataGridElView extends BaseElView {
         private _grid;
-        private _options;
         private _stateProvider;
         private _stateDebounce;
         constructor(options: IDataGridViewOptions);
@@ -1548,10 +1547,17 @@ declare module "jriapp_ui/command" {
 }
 declare module "jriapp_ui/template" {
     import { ITemplate, ITemplateEvents, IViewOptions } from "jriapp/int";
+    import { TCommand } from "jriapp/mvvm";
     import { CommandElView } from "jriapp_ui/command";
     export interface ITemplateOptions {
         dataContext?: any;
         templEvents?: ITemplateEvents;
+    }
+    export type TemplateCommandParam = {
+        template: ITemplate;
+        isLoaded: boolean;
+    };
+    export class TemplateCommand<TThis> extends TCommand<TemplateCommandParam, TThis> {
     }
     export class TemplateElView extends CommandElView implements ITemplateEvents {
         private _template;
@@ -1775,7 +1781,7 @@ declare module "jriapp_ui" {
     export * from "jriapp_ui/stackpanel";
     export * from "jriapp_ui/tabs";
     export { BaseElView, fn_addToolTip } from "jriapp_ui/baseview";
-    export { TemplateElView } from "jriapp_ui/template";
+    export { TemplateElView, TemplateCommand, TemplateCommandParam } from "jriapp_ui/template";
     export { DataForm, DataFormElView } from "jriapp_ui/dataform";
     export { DatePickerElView } from "jriapp_ui/datepicker";
     export { AnchorElView, IAncorOptions } from "jriapp_ui/anchor";

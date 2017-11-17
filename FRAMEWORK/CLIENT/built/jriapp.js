@@ -68,12 +68,12 @@ define("jriapp/int", ["require", "exports"], function (require, exports) {
     var ButtonCss = (function () {
         function ButtonCss() {
         }
+        ButtonCss.Edit = "jriapp-actions jriapp-edit";
+        ButtonCss.Delete = "jriapp-actions jriapp-delete";
+        ButtonCss.OK = "jriapp-actions jriapp-ok";
+        ButtonCss.Cancel = "jriapp-actions jriapp-cancel";
         return ButtonCss;
     }());
-    ButtonCss.Edit = "jriapp-actions jriapp-edit";
-    ButtonCss.Delete = "jriapp-actions jriapp-delete";
-    ButtonCss.OK = "jriapp-actions jriapp-ok";
-    ButtonCss.Cancel = "jriapp-actions jriapp-cancel";
     exports.ButtonCss = ButtonCss;
 });
 define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_1) {
@@ -1327,12 +1327,12 @@ define("jriapp/utils/dom", ["require", "exports", "jriapp_shared", "jriapp/utils
         DomUtils.removeClass = function (elems, css) {
             DomUtils.setClass(elems || [], css, true);
         };
+        DomUtils.window = win;
+        DomUtils.document = doc;
+        DomUtils.ready = _checkDOMReady;
+        DomUtils.events = domevents_1.DomEvents;
         return DomUtils;
     }());
-    DomUtils.window = win;
-    DomUtils.document = doc;
-    DomUtils.ready = _checkDOMReady;
-    DomUtils.events = domevents_1.DomEvents;
     exports.DomUtils = DomUtils;
 });
 define("jriapp/utils/path", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/int"], function (require, exports, jriapp_shared_8, dom_1, int_2) {
@@ -1451,9 +1451,9 @@ define("jriapp/utils/path", ["require", "exports", "jriapp_shared", "jriapp/util
             }
             return res;
         };
+        PathHelper._anchor = doc.createElement("a");
         return PathHelper;
     }());
-    PathHelper._anchor = doc.createElement("a");
     exports.PathHelper = PathHelper;
 });
 define("jriapp/utils/sloader", ["require", "exports", "jriapp_shared", "jriapp_shared/utils/async", "jriapp/utils/dom", "jriapp/utils/path"], function (require, exports, jriapp_shared_9, async_1, dom_2, path_1) {
@@ -1596,7 +1596,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
         }
     })();
     var _TEMPLATE_SELECTOR = 'script[type="text/html"]';
-    var stylesLoader = sloader_1.createCssLoader();
+    var _stylesLoader = sloader_1.createCssLoader();
     var GLOB_EVENTS = {
         load: "load",
         unload: "unload",
@@ -1676,7 +1676,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
             };
             _this._defaults = new defaults_1.Defaults();
             _this.defaults.imagesPath = path_2.PathHelper.getFrameworkImgPath();
-            stylesLoader.loadOwnStyle();
+            _stylesLoader.loadOwnStyle();
             ERROR.addHandler("*", _this);
             return _this;
         }
@@ -1989,7 +1989,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
             return "JRIApp Bootstrap";
         };
         Object.defineProperty(Bootstrap.prototype, "stylesLoader", {
-            get: function () { return stylesLoader; },
+            get: function () { return _stylesLoader; },
             enumerable: true,
             configurable: true
         });
@@ -2053,15 +2053,15 @@ define("jriapp/utils/viewchecks", ["require", "exports"], function (require, exp
     var ViewChecks = (function () {
         function ViewChecks() {
         }
+        ViewChecks.isElView = function () { return false; };
+        ViewChecks.isTemplateElView = function () { return false; };
+        ViewChecks.setIsInsideTemplate = function () { };
+        ViewChecks.isDataForm = function () { return false; };
+        ViewChecks.isInsideDataForm = function () { return false; };
+        ViewChecks.isInNestedForm = function () { return false; };
+        ViewChecks.getParentDataForm = function () { return null; };
         return ViewChecks;
     }());
-    ViewChecks.isElView = function () { return false; };
-    ViewChecks.isTemplateElView = function () { return false; };
-    ViewChecks.setIsInsideTemplate = function () { };
-    ViewChecks.isDataForm = function () { return false; };
-    ViewChecks.isInsideDataForm = function () { return false; };
-    ViewChecks.isInNestedForm = function () { return false; };
-    ViewChecks.getParentDataForm = function () { return null; };
     exports.ViewChecks = ViewChecks;
 });
 define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/bootstrap"], function (require, exports, jriapp_shared_11, bootstrap_2) {
@@ -3435,11 +3435,11 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
             if (!this._predicate) {
                 return true;
             }
-            return this._predicate.apply(context, [sender, param, this._thisObj]);
+            return this._predicate.apply(context, [sender, param]);
         };
         TCommand.prototype._execute = function (sender, param, context) {
             if (!!this._action) {
-                this._action.apply(context, [sender, param, this._thisObj]);
+                this._action.apply(context, [sender, param]);
             }
         };
         TCommand.prototype.addOnCanExecuteChanged = function (fn, nmspace, context) {
@@ -3449,10 +3449,10 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
             this._removeHandler(CMD_EVENTS.can_execute_changed, nmspace);
         };
         TCommand.prototype.canExecute = function (sender, param) {
-            return this._canExecute(sender, param, this._thisObj || this);
+            return this._canExecute(sender, param, this._thisObj);
         };
         TCommand.prototype.execute = function (sender, param) {
-            this._execute(sender, param, this._thisObj || this);
+            this._execute(sender, param, this._thisObj);
         };
         TCommand.prototype.destroy = function () {
             if (this._isDestroyed) {
@@ -3505,7 +3505,6 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
     }(TCommand));
     exports.BaseCommand = BaseCommand;
     exports.Command = TCommand;
-    exports.TemplateCommand = TCommand;
     var ViewModel = (function (_super) {
         __extends(ViewModel, _super);
         function ViewModel(app) {
@@ -4220,11 +4219,10 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.LifeTimeScope = lifetime_2.LifeTimeScope;
     exports.PropWatcher = propwatcher_1.PropWatcher;
     exports.ViewModel = mvvm_1.ViewModel;
-    exports.TemplateCommand = mvvm_1.TemplateCommand;
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.6.6";
+    exports.VERSION = "1.6.7";
     bootstrap_7.Bootstrap._initFramework();
 });

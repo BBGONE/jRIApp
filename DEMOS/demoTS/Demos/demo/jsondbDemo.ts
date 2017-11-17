@@ -199,12 +199,12 @@ export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
             return self.dbContext.isHasChanges;
         });
 
-
-        this._undoCommand = new RIAPP.Command(function (sender, param) {
-            self.dbContext.rejectChanges();
+        //with typed "this" inside the callbacks
+        this._undoCommand = new RIAPP.TCommand<any, CustomerViewModel>(function (sender, param) {
+            this.dbContext.rejectChanges();
         }, self, function (s, p) {
             //the command is enabled when there are pending changes
-            return self.dbContext.isHasChanges;
+            return this.dbContext.isHasChanges;
         });
 
         //the property watcher helps us handling properties changes
@@ -214,10 +214,10 @@ export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
             self._undoCommand.raiseCanExecuteChanged();
         });
 
-        //loads data from the server for the products
-        this._loadCommand = new RIAPP.TCommand<any, CustomerViewModel>(function (sender, data, viewModel) {
-            viewModel.load();
-        }, self, null);
+        //loads data from the server for the products (with typed "this" inside the callback)
+        this._loadCommand = new RIAPP.TCommand<any, CustomerViewModel>(function (sender, data) {
+            this.load();
+        }, self);
 
         this._dbSet.defineCustomerField(function (item) {
             let bag = <CustomerBag>item._aspect.getCustomVal("jsonBag");

@@ -1928,18 +1928,18 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
             _this._addNewCommand = new RIAPP.TCommand(function (sender, param) {
                 self._dbSet.addNew();
             });
-            _this._loadCommand = new RIAPP.TCommand(function (sender, data, viewModel) {
-                viewModel.load();
-            }, self, null);
+            _this._loadCommand = new RIAPP.TCommand(function (sender, data) {
+                this.load();
+            }, self);
             _this._testInvokeCommand = new commands_2.TestInvokeCommand(_this);
-            _this._columnCommand = new RIAPP.TCommand(function (sender, cmdParam, viewModel) {
+            _this._columnCommand = new RIAPP.TCommand(function (sender, cmdParam) {
                 var dataName = "";
                 if (sender instanceof uiMOD.BaseElView) {
                     dataName = sender.dataName;
                 }
                 alert(utils.str.format("You clicked on \"{0}\", current ProductID is: {1}", dataName, (!cmdParam ? "Not selected" : cmdParam.ProductID)));
-            }, self, function (sender, param, thisobj) {
-                return !!self.currentItem;
+            }, self, function (sender, param) {
+                return !!this.currentItem;
             });
             _this._propWatcher.addWatch(self, ['currentItem'], function (property) {
                 self._testInvokeCommand.raiseCanExecuteChanged();

@@ -29,6 +29,13 @@ export class NotConverter extends RIAPP.BaseConverter {
     }
 }
 
+function RGBToHex(r: number, g: number, b: number): string {
+    var bin = r << 16 | g << 8 | b;
+    return (function (h) {
+        return new Array(7 - h.length).join("0") + h
+    })(bin.toString(16).toUpperCase());
+}
+
 export class TestObject extends RIAPP.BaseObject {
     private _testProperty1: string;
     private _testProperty2: string;
@@ -44,22 +51,23 @@ export class TestObject extends RIAPP.BaseObject {
 
     constructor(initPropValue: string) {
         super();
-        let self = this;
+        const self = this;
         this._testProperty1 = initPropValue;
         this._testProperty2 = null;
         this._testProperty3 = null;
         this._boolProperty = null;
 
+        //untyped command parameter and untyped "this" - nongeneric command
         this._testCommand = new RIAPP.Command(function (sender, args) {
             self._onTestCommandExecuted();
-        }, self,
-            function (sender, args) {
+        }, self, (sender, args) => {
                 //if this function return false, then the command is disabled
                 return self.isEnabled;
-            });
+        });
 
-        this._paramCommand = new RIAPP.Command(function (sender, args) {
-            alert(`command parameter: ${args}`);
+        //strongly typed command parameter and strongly typed "this" - generic command 
+        this._paramCommand = new RIAPP.TCommand<{ color: string; r: number; g: number; b: number; }, TestObject>(function (sender, args) {
+            alert(`${args.color}: #${RGBToHex(args.r, args.g, args.b)}`);
         }, self);
 
         this._month = new Date().getMonth() + 1;

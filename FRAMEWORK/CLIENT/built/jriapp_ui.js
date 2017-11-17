@@ -620,9 +620,9 @@ define("jriapp_ui/utils/jquery", ["require", "exports", "jriapp_shared"], functi
                 $el[name]("destroy");
             }
         };
+        JQueryUtils.$ = jQuery;
         return JQueryUtils;
     }());
-    JQueryUtils.$ = jQuery;
     exports.JQueryUtils = JQueryUtils;
 });
 define("jriapp_ui/utils/tooltip", ["require", "exports", "jriapp_ui/utils/jquery", "jriapp/utils/dom"], function (require, exports, jquery_1, dom_4) {
@@ -1231,9 +1231,9 @@ define("jriapp_ui/content/string", ["require", "exports", "jriapp_ui/textbox", "
         StringContent.prototype.toString = function () {
             return "StringContent";
         };
+        StringContent._allowedKeys = null;
         return StringContent;
     }(basic_1.BasicContent));
-    StringContent._allowedKeys = null;
     exports.StringContent = StringContent;
 });
 define("jriapp_ui/textarea", ["require", "exports", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp_ui/baseview"], function (require, exports, dom_7, bootstrap_5, baseview_3) {
@@ -1387,9 +1387,9 @@ define("jriapp_ui/content/multyline", ["require", "exports", "jriapp_shared", "j
         MultyLineContent.prototype.toString = function () {
             return "MultyLineContent";
         };
+        MultyLineContent._allowedKeys = null;
         return MultyLineContent;
     }(basic_2.BasicContent));
-    MultyLineContent._allowedKeys = null;
     exports.MultyLineContent = MultyLineContent;
 });
 define("jriapp_ui/checkbox", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp_ui/baseview", "jriapp_ui/input"], function (require, exports, jriapp_shared_11, dom_9, bootstrap_6, baseview_4, input_2) {
@@ -1579,9 +1579,9 @@ define("jriapp_ui/content/number", ["require", "exports", "jriapp/bootstrap", "j
         NumberContent.prototype.toString = function () {
             return "NumberContent";
         };
+        NumberContent._allowedKeys = null;
         return NumberContent;
     }(basic_4.BasicContent));
-    NumberContent._allowedKeys = null;
     exports.NumberContent = NumberContent;
 });
 define("jriapp_ui/content/date", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp_ui/content/basic"], function (require, exports, jriapp_shared_12, dom_11, basic_5) {
@@ -6384,7 +6384,6 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             var _this = _super.call(this, options) || this;
             _this._stateProvider = null;
             _this._stateDebounce = new jriapp_shared_30.Debounce();
-            _this._options = options;
             var opts = coreUtils.extend({
                 el: _this.el,
                 dataSource: null,
@@ -7723,10 +7722,10 @@ define("jriapp_ui/command", ["require", "exports", "jriapp_shared", "jriapp/util
     }(baseview_14.BaseElView));
     exports.CommandElView = CommandElView;
 });
-define("jriapp_ui/template", ["require", "exports", "jriapp_shared", "jriapp/utils/viewchecks", "jriapp/bootstrap", "jriapp_ui/command"], function (require, exports, jriapp_shared_35, viewchecks_2, bootstrap_18, command_1) {
+define("jriapp_ui/template", ["require", "exports", "jriapp_shared", "jriapp/mvvm", "jriapp/utils/viewchecks", "jriapp/bootstrap", "jriapp_ui/command"], function (require, exports, jriapp_shared_35, mvvm_2, viewchecks_2, bootstrap_18, command_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_35.Utils, viewChecks = viewchecks_2.ViewChecks, boot = bootstrap_18.bootstrap;
+    var utils = jriapp_shared_35.Utils, viewChecks = viewchecks_2.ViewChecks, boot = bootstrap_18.bootstrap, ERROR = utils.err;
     viewChecks.isTemplateElView = function (obj) {
         return !!obj && obj instanceof TemplateElView;
     };
@@ -7734,6 +7733,14 @@ define("jriapp_ui/template", ["require", "exports", "jriapp_shared", "jriapp/uti
         template: "template",
         isEnabled: "isEnabled"
     };
+    var TemplateCommand = (function (_super) {
+        __extends(TemplateCommand, _super);
+        function TemplateCommand() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return TemplateCommand;
+    }(mvvm_2.TCommand));
+    exports.TemplateCommand = TemplateCommand;
     var TemplateElView = (function (_super) {
         __extends(TemplateElView, _super);
         function TemplateElView(options) {
@@ -7756,7 +7763,7 @@ define("jriapp_ui/template", ["require", "exports", "jriapp_shared", "jriapp/uti
                 this.raisePropertyChanged(PROP_NAME.template);
             }
             catch (ex) {
-                utils.err.reThrow(ex, this.handleError(ex, this));
+                ERROR.reThrow(ex, this.handleError(ex, this));
             }
         };
         TemplateElView.prototype.templateUnLoading = function (template) {
@@ -8198,10 +8205,10 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             enumerable: true,
             configurable: true
         });
+        DataForm._DATA_FORM_SELECTOR = ["*[", const_26.DATA_ATTR.DATA_FORM, "]"].join("");
+        DataForm._DATA_CONTENT_SELECTOR = ["*[", const_26.DATA_ATTR.DATA_CONTENT, "]:not([", const_26.DATA_ATTR.DATA_COLUMN, "])"].join("");
         return DataForm;
     }(jriapp_shared_36.BaseObject));
-    DataForm._DATA_FORM_SELECTOR = ["*[", const_26.DATA_ATTR.DATA_FORM, "]"].join("");
-    DataForm._DATA_CONTENT_SELECTOR = ["*[", const_26.DATA_ATTR.DATA_CONTENT, "]:not([", const_26.DATA_ATTR.DATA_COLUMN, "])"].join("");
     exports.DataForm = DataForm;
     var DataFormElView = (function (_super) {
         __extends(DataFormElView, _super);
@@ -8970,6 +8977,7 @@ define("jriapp_ui", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/conten
     exports.BaseElView = baseview_23.BaseElView;
     exports.fn_addToolTip = baseview_23.fn_addToolTip;
     exports.TemplateElView = template_9.TemplateElView;
+    exports.TemplateCommand = template_9.TemplateCommand;
     exports.DataForm = dataform_1.DataForm;
     exports.DataFormElView = dataform_1.DataFormElView;
     exports.DatePickerElView = datepicker_2.DatePickerElView;

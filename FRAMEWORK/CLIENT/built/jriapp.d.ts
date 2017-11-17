@@ -863,26 +863,29 @@ declare module "jriapp/utils/propwatcher" {
 }
 declare module "jriapp/mvvm" {
     import { BaseObject, IBaseObject } from "jriapp_shared";
-    import { ITemplate, IApplication } from "jriapp/int";
-    export interface ICommand {
-        canExecute: (sender: any, param: any) => boolean;
-        execute: (sender: any, param: any) => void;
+    import { IApplication } from "jriapp/int";
+    export interface ITCommand<TParam> {
+        canExecute: (sender: any, param: TParam) => boolean;
+        execute: (sender: any, param: TParam) => void;
         raiseCanExecuteChanged: () => void;
-        addOnCanExecuteChanged(fn: (sender: ICommand, args: {}) => void, nmspace?: string, context?: IBaseObject): void;
+        addOnCanExecuteChanged(fn: (sender: ITCommand<TParam>, args: any) => void, nmspace?: string, context?: IBaseObject): void;
         removeOnCanExecuteChanged(nmspace?: string): void;
     }
-    export type TAction<TParam, TThis> = (sender: any, param: TParam, thisObj: TThis) => void;
-    export type TPredicate<TParam, TThis> = (sender: any, param: TParam, thisObj: TThis) => boolean;
-    export class TCommand<TParam, TThis> extends BaseObject implements ICommand {
-        protected _action: TAction<TParam, TThis>;
+    export type ICommand = ITCommand<any>;
+    export type TAction<TParam, TThis, TSender> = (this: TThis, sender: TSender, param: TParam) => void;
+    export type Action = TAction<any, any, any>;
+    export type TPredicate<TParam, TThis, TSender> = (this: TThis, sender: TSender, param: TParam) => boolean;
+    export type Predicate = TPredicate<any, any, any>;
+    export class TCommand<TParam, TThis> extends BaseObject implements ITCommand<TParam> {
+        protected _action: TAction<TParam, TThis, any>;
         protected _thisObj: TThis;
-        protected _predicate: TPredicate<TParam, TThis>;
+        protected _predicate: TPredicate<TParam, TThis, any>;
         private _objId;
-        constructor(fnAction: TAction<TParam, TThis>, thisObj?: TThis, fnCanExecute?: TPredicate<TParam, TThis>);
+        constructor(fnAction: TAction<TParam, TThis, any>, thisObj?: TThis, fnCanExecute?: TPredicate<TParam, TThis, any>);
         protected _getEventNames(): string[];
         protected _canExecute(sender: any, param: TParam, context: any): boolean;
         protected _execute(sender: any, param: TParam, context: any): void;
-        addOnCanExecuteChanged(fn: (sender: ICommand, args: any) => void, nmspace?: string, context?: IBaseObject): void;
+        addOnCanExecuteChanged(fn: (sender: ITCommand<TParam>, args: any) => void, nmspace?: string, context?: IBaseObject): void;
         removeOnCanExecuteChanged(nmspace?: string): void;
         canExecute(sender: any, param: TParam): boolean;
         execute(sender: any, param: TParam): void;
@@ -900,18 +903,7 @@ declare module "jriapp/mvvm" {
         protected abstract getIsCanExecute(sender: any, param: TParam): boolean;
     }
     export type Command = TCommand<any, any>;
-    export const Command: new (fnAction: TAction<any, any>, thisObj?: any, fnCanExecute?: TPredicate<any, any>) => Command;
-    export type TemplateCommand = TCommand<{
-        template: ITemplate;
-        isLoaded: boolean;
-    }, any>;
-    export const TemplateCommand: new (fnAction: TAction<{
-        template: ITemplate;
-        isLoaded: boolean;
-    }, any>, thisObj?: any, fnCanExecute?: TPredicate<{
-        template: ITemplate;
-        isLoaded: boolean;
-    }, any>) => TemplateCommand;
+    export const Command: new (fnAction: Action, thisObj?: any, fnCanExecute?: Predicate) => Command;
     export class ViewModel<TApp extends IApplication> extends BaseObject {
         private _objId;
         private _app;
@@ -996,7 +988,7 @@ declare module "jriapp" {
     export { createTemplate, ITemplateOptions } from "jriapp/template";
     export { LifeTimeScope } from "jriapp/utils/lifetime";
     export { PropWatcher } from "jriapp/utils/propwatcher";
-    export { ViewModel, TemplateCommand, BaseCommand, Command, ICommand, TCommand } from "jriapp/mvvm";
+    export { ViewModel, BaseCommand, Command, ICommand, TCommand, ITCommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "1.6.6";
+    export const VERSION = "1.6.7";
 }

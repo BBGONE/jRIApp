@@ -1279,7 +1279,6 @@ export interface IDataGridViewOptions extends IDataGridOptions, IViewOptions {
 
 export class DataGridElView extends BaseElView {
     private _grid: DataGrid;
-    private _options: IDataGridViewOptions;
     private _stateProvider: IRowStateProvider;
     private _stateDebounce: Debounce;
 
@@ -1287,7 +1286,6 @@ export class DataGridElView extends BaseElView {
         super(options);
         this._stateProvider = null;
         this._stateDebounce = new Debounce();
-        this._options = options;
         const opts = <IDataGridConstructorOptions>coreUtils.extend(
             {
                 el: <HTMLTableElement>this.el,
