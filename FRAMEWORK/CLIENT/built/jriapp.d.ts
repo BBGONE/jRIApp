@@ -872,16 +872,16 @@ declare module "jriapp/mvvm" {
         removeOnCanExecuteChanged(nmspace?: string): void;
     }
     export type ICommand = ITCommand<any>;
-    export type TAction<TParam, TThis, TSender> = (this: TThis, sender: TSender, param: TParam) => void;
-    export type Action = TAction<any, any, any>;
-    export type TPredicate<TParam, TThis, TSender> = (this: TThis, sender: TSender, param: TParam) => boolean;
-    export type Predicate = TPredicate<any, any, any>;
+    export type TAction<TParam, TThis> = (this: TThis, sender: any, param: TParam) => void;
+    export type Action = TAction<any, any>;
+    export type TPredicate<TParam, TThis> = (this: TThis, sender: any, param: TParam) => boolean;
+    export type Predicate = TPredicate<any, any>;
     export class TCommand<TParam, TThis> extends BaseObject implements ITCommand<TParam> {
-        protected _action: TAction<TParam, TThis, any>;
+        protected _action: TAction<TParam, TThis>;
         protected _thisObj: TThis;
-        protected _predicate: TPredicate<TParam, TThis, any>;
+        protected _predicate: TPredicate<TParam, TThis>;
         private _objId;
-        constructor(fnAction: TAction<TParam, TThis, any>, thisObj?: TThis, fnCanExecute?: TPredicate<TParam, TThis, any>);
+        constructor(fnAction: TAction<TParam, TThis>, thisObj?: TThis, fnCanExecute?: TPredicate<TParam, TThis>);
         protected _getEventNames(): string[];
         protected _canExecute(sender: any, param: TParam, context: any): boolean;
         protected _execute(sender: any, param: TParam, context: any): void;
@@ -893,14 +893,13 @@ declare module "jriapp/mvvm" {
         raiseCanExecuteChanged(): void;
         toString(): string;
         readonly uniqueID: string;
-        readonly thisObj: TThis;
     }
-    export abstract class BaseCommand<TParam, TThis> extends TCommand<TParam, TThis> {
-        constructor(thisObj: TThis);
-        canExecute(sender: any, param: TParam): boolean;
-        execute(sender: any, param: TParam): void;
-        protected abstract Action(sender: any, param: TParam): void;
-        protected abstract getIsCanExecute(sender: any, param: TParam): boolean;
+    export abstract class BaseCommand<TParam, TOwner> extends TCommand<TParam, any> {
+        private _owner;
+        constructor(owner: TOwner);
+        protected abstract action(sender: any, param: TParam): void;
+        protected abstract isCanExecute(sender: any, param: TParam): boolean;
+        readonly owner: TOwner;
     }
     export type Command = TCommand<any, any>;
     export const Command: new (fnAction: Action, thisObj?: any, fnCanExecute?: Predicate) => Command;

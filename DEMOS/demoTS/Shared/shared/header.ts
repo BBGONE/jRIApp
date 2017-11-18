@@ -34,7 +34,7 @@ export class HeaderVM extends RIAPP.ViewModel<RIAPP.IApplication> {
 
     }
     _getEventNames() {
-        let base_events = super._getEventNames();
+        const base_events = super._getEventNames();
         return ['updateUI'].concat(base_events);
     }
     addOnUpdateUI(fn: (sender: HeaderVM, args: { isHandled: boolean; isUp: boolean; }) => void, namespace?: string) {

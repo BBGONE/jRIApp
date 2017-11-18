@@ -64,10 +64,8 @@
     <TypeScriptCompile Include="jriapp_shared\utils\weakmap.ts" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="tsconfig.json" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="packages.config" />
+    <Content Include="tsconfig.json" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>

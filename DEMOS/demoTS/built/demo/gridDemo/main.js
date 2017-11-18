@@ -1543,19 +1543,18 @@ define("gridDemo/commands", ["require", "exports", "jriapp"], function (require,
         function TestInvokeCommand() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        TestInvokeCommand.prototype.Action = function (sender, param) {
-            var self = this.thisObj;
-            self.invokeResult = null;
-            var promise = self.dbContext.serviceMethods.TestInvoke({ param1: [10, 11, 12, 13, 14], param2: param.Name });
+        TestInvokeCommand.prototype.action = function (sender, param) {
+            var viewModel = this.owner;
+            viewModel.invokeResult = null;
+            var promise = viewModel.dbContext.serviceMethods.TestInvoke({ param1: [10, 11, 12, 13, 14], param2: param.Name });
             promise.then(function (res) {
-                self.invokeResult = res;
-                self.showDialog();
-            }, function () {
+                viewModel.invokeResult = res;
+                viewModel.showDialog();
             });
         };
-        TestInvokeCommand.prototype.getIsCanExecute = function (sender, param) {
-            var self = this.thisObj;
-            return self.currentItem !== null;
+        TestInvokeCommand.prototype.isCanExecute = function (sender, param) {
+            var viewModel = this.owner;
+            return viewModel.currentItem !== null;
         };
         return TestInvokeCommand;
     }(RIAPP.BaseCommand));
@@ -1565,10 +1564,10 @@ define("gridDemo/commands", ["require", "exports", "jriapp"], function (require,
         function ResetCommand() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        ResetCommand.prototype.Action = function (sender, param) {
-            this.thisObj.reset();
+        ResetCommand.prototype.action = function (sender, param) {
+            this.owner.reset();
         };
-        ResetCommand.prototype.getIsCanExecute = function (sender, param) {
+        ResetCommand.prototype.isCanExecute = function (sender, param) {
             return true;
         };
         return ResetCommand;

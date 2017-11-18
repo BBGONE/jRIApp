@@ -718,22 +718,19 @@ define("ssevents", ["require", "exports", "jriapp"], function (require, exports,
             _this._url = _this._baseUrl + "?id=" + clientID;
             _this._closeClientUrl = _this._baseUrl + "/CloseClient?id=" + clientID;
             _this._postMsgUrl = _this._baseUrl + "/PostMessage";
-            _this._openESCommand = new RIAPP.Command(function (sender, data) {
-                self.open().then(function () {
-                }, function (res) {
+            _this._openESCommand = new RIAPP.TCommand(function (sender, data) {
+                this.open().catch(function (res) {
                     self.handleError(res, self);
                 });
-            }, null, function () {
-                return !self._es;
+            }, self, function () {
+                return !_this._es;
             });
             _this._closeESCommand = new RIAPP.TCommand(function (sender, data) {
-                self.close();
-            }, null, function () {
-                return !!self._es;
+                this.close();
+            }, self, function () {
+                return !!_this._es;
             });
-            bootstrap.addOnUnLoad(function (s, a) {
-                self.close();
-            });
+            bootstrap.addOnUnLoad(function (s, a) { return self.close(); });
             return _this;
         }
         SSEventsVM.isSupported = function () {
@@ -817,29 +814,27 @@ define("ssevents", ["require", "exports", "jriapp"], function (require, exports,
             return this._deffered.promise();
         };
         SSEventsVM.prototype.close = function () {
-            var self = this, postData = null;
+            var postData = null;
             if (!this._es)
                 return;
             try {
-                self._close();
+                this._close();
             }
             finally {
-                utils.http.postAjax(self._closeClientUrl, postData);
+                utils.http.postAjax(this._closeClientUrl, postData);
             }
         };
         SSEventsVM.prototype.post = function (message, clientID) {
-            var payload = { message: message };
-            var self = this, postData = JSON.stringify({ payload: payload, clientID: !clientID ? self._clientID : clientID });
-            var req_promise = utils.http.postAjax(self._postMsgUrl, postData);
+            var payload = { message: message }, postData = JSON.stringify({ payload: payload, clientID: !clientID ? this._clientID : clientID });
+            var req_promise = utils.http.postAjax(this._postMsgUrl, postData);
             return req_promise;
         };
         SSEventsVM.prototype.destroy = function () {
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
-            var self = this;
             try {
-                self.close();
+                this.close();
             }
             finally {
                 _super.prototype.destroy.call(this);
@@ -973,20 +968,18 @@ define("websocket", ["require", "exports", "jriapp"], function (require, exports
             _this._deffered = null;
             _this._url = url;
             _this._openWsCommand = new RIAPP.TCommand(function (sender, data) {
-                self.open().then(function () { }, function (res) {
+                this.open().catch(function (res) {
                     self.handleError(res, self);
                 });
-            }, null, function () {
+            }, self, function () {
                 return !self._ws;
             });
             _this._closeWsCommand = new RIAPP.TCommand(function (sender, data) {
-                self.close();
-            }, null, function () {
-                return !!self._ws;
+                this.close();
+            }, self, function () {
+                return !!_this._ws;
             });
-            bootstrap.addOnUnLoad(function (s, a) {
-                self.close();
-            });
+            bootstrap.addOnUnLoad(function (s, a) { return self.close(); });
             return _this;
         }
         WebSocketsVM.createUrl = function (port, svcName, isSSL) {
@@ -1044,8 +1037,9 @@ define("websocket", ["require", "exports", "jriapp"], function (require, exports
             else if (res.Tag == "message") {
                 this.raiseEvent('message', { message: event.data, data: res.Payload });
             }
-            else
+            else {
                 console.log(event.data);
+            }
         };
         WebSocketsVM.prototype.addOnMessage = function (fn, nmspace, context) {
             this.addHandler('message', fn, nmspace, context);
@@ -1105,9 +1099,8 @@ define("websocket", ["require", "exports", "jriapp"], function (require, exports
             if (this._isDestroyed)
                 return;
             this._isDestroyCalled = true;
-            var self = this;
             try {
-                self.close();
+                this.close();
             }
             finally {
                 _super.prototype.destroy.call(this);

@@ -3,7 +3,7 @@
 import * as RIAPP from "jriapp";
 
 //server side events client
-let bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
+const bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
 
 export class SSEventsVM extends RIAPP.BaseObject {
     private _es: sse.IEventSourceStatic;
@@ -19,7 +19,7 @@ export class SSEventsVM extends RIAPP.BaseObject {
 
     constructor(baseUrl: string, clientID: string) {
         super();
-        let self = this;
+        const self = this;
         this._es = null;
         this._deffered = null;
 
@@ -29,23 +29,20 @@ export class SSEventsVM extends RIAPP.BaseObject {
         this._closeClientUrl = this._baseUrl + "/CloseClient?id=" + clientID;
         this._postMsgUrl = this._baseUrl + "/PostMessage";
 
-        this._openESCommand = new RIAPP.Command(function (sender, data) {
-            self.open().then(() => {
-            }, (res) => {
+        this._openESCommand = new RIAPP.TCommand<any, SSEventsVM>(function (sender, data) {
+            this.open().catch((res) => {
                 self.handleError(res, self);
             });
-        }, null, () => {
-            return !self._es;
+        }, self, () => {
+            return !this._es;
         });
-        this._closeESCommand = new RIAPP.TCommand(function (sender, data) {
-            self.close();
-        }, null, () => {
-            return !!self._es;
+        this._closeESCommand = new RIAPP.TCommand<any, SSEventsVM>(function (sender, data) {
+            this.close();
+        }, self, () => {
+            return !!this._es;
         });
 
-        bootstrap.addOnUnLoad(function (s, a) {
-            self.close();
-        });
+        bootstrap.addOnUnLoad((s, a) => self.close());
     }
     static isSupported(): boolean {
         try {
@@ -55,7 +52,7 @@ export class SSEventsVM extends RIAPP.BaseObject {
         }
     }
     protected _getEventNames() {
-        let base_events = super._getEventNames();
+        const base_events = super._getEventNames();
         return ['open', 'close', 'error', 'message'].concat(base_events);
     }
     private _onEsOpen(event:any) {
@@ -71,7 +68,7 @@ export class SSEventsVM extends RIAPP.BaseObject {
         this.close();
     }
     private _onMsg(event:any) {
-        let data = JSON.parse(event.data);
+        const data = JSON.parse(event.data);
         this.raiseEvent('message', { message: event.data, data: data });
     }
     private _close() {
@@ -100,7 +97,7 @@ export class SSEventsVM extends RIAPP.BaseObject {
         this.addHandler('message', fn, namespace);
     }
     open(): RIAPP.IPromise<any> {
-        let self = this;
+        const self = this;
         if (!!this._deffered)
             return this._deffered.promise();
         this._deffered = utils.defer.createDeferred<any>();
@@ -130,30 +127,28 @@ export class SSEventsVM extends RIAPP.BaseObject {
     }
     //gracefully close the sse client
     close() {
-        let self = this, postData:any = null;
+        let postData:any = null;
         if (!this._es)
             return;
         try {
-            self._close();
+            this._close();
         }
         finally {
-            utils.http.postAjax(self._closeClientUrl, postData);
+            utils.http.postAjax(this._closeClientUrl, postData);
         }
     }
     //post message (to itself or another client)
     post(message: string, clientID?: string): RIAPP.IAbortablePromise<string> {
-        let payload = { message: message };
-        let self = this, postData = JSON.stringify({ payload: payload, clientID: !clientID ? self._clientID : clientID });
-        let req_promise = utils.http.postAjax(self._postMsgUrl, postData);
+        let payload = { message: message }, postData = JSON.stringify({ payload: payload, clientID: !clientID ? this._clientID : clientID });
+        let req_promise = utils.http.postAjax(this._postMsgUrl, postData);
         return req_promise;
     }
     destroy() {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        let self = this;
         try {
-            self.close();
+            this.close();
         } finally {
             super.destroy();
         }

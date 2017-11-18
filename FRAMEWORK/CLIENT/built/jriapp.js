@@ -3423,8 +3423,8 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
             var _this = _super.call(this) || this;
             _this._objId = coreUtils.getNewID("cmd");
             _this._action = fnAction;
-            _this._thisObj = !thisObj ? null : thisObj;
-            _this._predicate = !fnCanExecute ? null : fnCanExecute;
+            _this._thisObj = thisObj;
+            _this._predicate = fnCanExecute;
             return _this;
         }
         TCommand.prototype._getEventNames = function () {
@@ -3477,30 +3477,26 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(TCommand.prototype, "thisObj", {
-            get: function () {
-                return this._thisObj;
-            },
-            enumerable: true,
-            configurable: true
-        });
         return TCommand;
     }(jriapp_shared_16.BaseObject));
     exports.TCommand = TCommand;
     var BaseCommand = (function (_super) {
         __extends(BaseCommand, _super);
-        function BaseCommand(thisObj) {
-            var _this = _super.call(this, null, thisObj, null) || this;
-            _this._action = _this.Action;
-            _this._predicate = _this.getIsCanExecute;
+        function BaseCommand(owner) {
+            var _this = _super.call(this, null, null, null) || this;
+            _this._action = _this.action;
+            _this._predicate = _this.isCanExecute;
+            _this._thisObj = _this;
+            _this._owner = owner;
             return _this;
         }
-        BaseCommand.prototype.canExecute = function (sender, param) {
-            return this._canExecute(sender, param, this);
-        };
-        BaseCommand.prototype.execute = function (sender, param) {
-            this._execute(sender, param, this);
-        };
+        Object.defineProperty(BaseCommand.prototype, "owner", {
+            get: function () {
+                return this._owner;
+            },
+            enumerable: true,
+            configurable: true
+        });
         return BaseCommand;
     }(TCommand));
     exports.BaseCommand = BaseCommand;

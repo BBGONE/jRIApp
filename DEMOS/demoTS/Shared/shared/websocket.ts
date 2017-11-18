@@ -1,6 +1,6 @@
 ﻿import * as RIAPP from "jriapp";
 
-let bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
+const bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
 
 export class WebSocketsVM extends RIAPP.BaseObject {
     private _ws: WebSocket;
@@ -13,31 +13,29 @@ export class WebSocketsVM extends RIAPP.BaseObject {
 
     public static createUrl(port: number, svcName?: string, isSSL?: boolean): string {
         svcName = !!svcName ? svcName : "PollingService";
-        let url = (!isSSL ? "ws://" : "wss://") + window.location.host.split(":")[0] + ":" + port + "/" + svcName;
+        const url = (!isSSL ? "ws://" : "wss://") + window.location.host.split(":")[0] + ":" + port + "/" + svcName;
         return url;
     }
     constructor(url: string) {
         super();
-        let self = this;
+        const self = this;
         this._ws = null;
         this._clientID = null;
         this._deffered = null;
         this._url = url;
-        this._openWsCommand = new RIAPP.TCommand(function (sender, data) {
-            self.open().then(() => { }, (res) => {
+        this._openWsCommand = new RIAPP.TCommand<any, WebSocketsVM>(function (sender, data) {
+            this.open().catch((res) => {
                 self.handleError(res, self);
             });
-        }, null, () => {
+        }, self, () => {
             return !self._ws;
         });
-        this._closeWsCommand = new RIAPP.TCommand(function (sender, data) {
-            self.close();
-        }, null, () => {
-            return !!self._ws;
+        this._closeWsCommand = new RIAPP.TCommand<any, WebSocketsVM>(function (sender, data) {
+            this.close();
+        }, self, () => {
+            return !!this._ws;
         });
-        bootstrap.addOnUnLoad(function (s, a) {
-            self.close();
-        });
+        bootstrap.addOnUnLoad((s, a) => self.close());
     }
     static isSupported(): boolean {
         try {
@@ -47,7 +45,7 @@ export class WebSocketsVM extends RIAPP.BaseObject {
         }
     }
     protected _getEventNames() {
-        let base_events = super._getEventNames();
+        const base_events = super._getEventNames();
         return ['open', 'close', 'error', 'message'].concat(base_events);
     }
     protected _onWsOpen(event:any) {
@@ -82,21 +80,19 @@ export class WebSocketsVM extends RIAPP.BaseObject {
                 this._deffered.resolve(this._clientID);
                 this._deffered = null;
             }
-        }
-        else if (res.Tag == "closed") {
+        } else if (res.Tag == "closed") {
             this.close();
-        }
-        else if (res.Tag == "message") {
+        } else if (res.Tag == "message") {
             this.raiseEvent('message', { message: event.data, data: res.Payload });
-        }
-        else
+        } else {
             console.log(event.data);
+        }
     }
     addOnMessage(fn: (sender: WebSocketsVM, args: { message: string; data: any; }) => void, nmspace?: string, context?: any) {
         this.addHandler('message', fn, nmspace, context);
     }
     open(): RIAPP.IPromise<any> {
-        let self = this;
+        const self = this;
         if (!!this._deffered)
             return this._deffered.promise();
         this._deffered = utils.defer.createDeferred<any>();
@@ -153,9 +149,8 @@ export class WebSocketsVM extends RIAPP.BaseObject {
         if (this._isDestroyed)
             return;
         this._isDestroyCalled = true;
-        let self = this;
         try {
-            self.close();
+            this.close();
         } finally {
             super.destroy();
         }

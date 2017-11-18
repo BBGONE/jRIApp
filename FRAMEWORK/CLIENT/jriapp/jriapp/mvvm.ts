@@ -19,23 +19,23 @@ const CMD_EVENTS = {
     can_execute_changed: "canExecute_changed"
 };
 
-export type TAction<TParam, TThis, TSender> = (this: TThis, sender: TSender, param: TParam) => void;
-export type Action = TAction<any, any, any>;
-export type TPredicate<TParam, TThis, TSender> = (this: TThis, sender: TSender, param: TParam) => boolean;
-export type Predicate = TPredicate<any, any, any>;
+export type TAction<TParam, TThis> = (this: TThis, sender: any, param: TParam) => void;
+export type Action = TAction<any, any>;
+export type TPredicate<TParam, TThis> = (this: TThis, sender: any, param: TParam) => boolean;
+export type Predicate = TPredicate<any, any>;
 
 export class TCommand<TParam, TThis> extends BaseObject implements ITCommand<TParam> {
-    protected _action: TAction<TParam, TThis, any>;
+    protected _action: TAction<TParam, TThis>;
     protected _thisObj: TThis;
-    protected _predicate: TPredicate<TParam, TThis, any>;
+    protected _predicate: TPredicate<TParam, TThis>;
     private _objId: string;
 
-    constructor(fnAction: TAction<TParam, TThis, any>, thisObj?: TThis, fnCanExecute?: TPredicate<TParam, TThis, any>) {
+    constructor(fnAction: TAction<TParam, TThis>, thisObj?: TThis, fnCanExecute?: TPredicate<TParam, TThis>) {
         super();
         this._objId = coreUtils.getNewID("cmd");
         this._action = fnAction;
-        this._thisObj = !thisObj ? null : thisObj;
-        this._predicate = !fnCanExecute ? null : fnCanExecute;
+        this._thisObj = thisObj;
+        this._predicate = fnCanExecute;
     }
     protected _getEventNames() {
         const baseEvents = super._getEventNames();
@@ -83,25 +83,23 @@ export class TCommand<TParam, TThis> extends BaseObject implements ITCommand<TPa
     get uniqueID() {
         return this._objId;
     }
-    get thisObj() {
-        return this._thisObj;
-    }
 }
 
-export abstract class BaseCommand<TParam, TThis> extends TCommand<TParam, TThis> {
-    constructor(thisObj: TThis) {
-        super(null, thisObj, null);
-        this._action = this.Action;
-        this._predicate = this.getIsCanExecute;
+export abstract class BaseCommand<TParam, TOwner> extends TCommand<TParam, any> {
+    private _owner: TOwner;
+ 
+    constructor(owner: TOwner) {
+        super(null, null, null);
+        this._action = this.action;
+        this._predicate = this.isCanExecute;
+        this._thisObj = this;
+        this._owner = owner;
     }
-    canExecute(sender: any, param: TParam): boolean {
-        return this._canExecute(sender, param, this);
+    protected abstract action(sender: any, param: TParam): void;
+    protected abstract isCanExecute(sender: any, param: TParam): boolean;
+    get owner() {
+        return this._owner;
     }
-    execute(sender: any, param: TParam) {
-        this._execute(sender, param, this);
-    }
-    protected abstract Action(sender: any, param: TParam): void;
-    protected abstract getIsCanExecute(sender: any, param: TParam): boolean;
 }
 
 export type Command = TCommand<any, any>;
