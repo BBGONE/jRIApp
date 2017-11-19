@@ -1748,7 +1748,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
             });
             return events.concat(baseEvents);
         };
-        Bootstrap.prototype._addHandler = function (name, fn, nmspace, context, priority) {
+        Bootstrap.prototype.addHandler = function (name, fn, nmspace, context, priority) {
             var self = this, isReady = self._bootState === 3;
             var isIntialized = (self._bootState === 2 || self._bootState === 3);
             if ((name === GLOB_EVENTS.load && isReady) || (name === GLOB_EVENTS.initialized && isIntialized)) {
@@ -4219,6 +4219,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.7.0";
+    exports.VERSION = "1.7.1";
     bootstrap_7.Bootstrap._initFramework();
 });

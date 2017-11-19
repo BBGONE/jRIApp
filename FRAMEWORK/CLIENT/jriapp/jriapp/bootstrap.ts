@@ -237,7 +237,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         return events.concat(baseEvents);
     }
     // override
-    protected _addHandler(name: string, fn: (sender: any, args: any) => void, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+    addHandler(name: string, fn: (sender: any, args: any) => void, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
         const self = this, isReady = self._bootState === BootstrapState.Ready;
         const isIntialized = (self._bootState === BootstrapState.Initialized || self._bootState === BootstrapState.Ready);
 

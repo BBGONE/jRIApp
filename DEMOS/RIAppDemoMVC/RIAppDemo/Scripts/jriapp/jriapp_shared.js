@@ -1292,7 +1292,7 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
     };
     var checks = checks_4.Checks, strUtils = strUtils_2.StringUtils, coreUtils = coreutils_2.CoreUtils, evHelper = eventhelper_1.EventHelper, debug = debug_2.DEBUG, sys = sysutils_2.SysUtils, weakmap = weakmap_1.createWeakMap();
     sys.isBaseObj = function (obj) {
-        return (!!obj && obj instanceof BaseObject);
+        return (!!obj && !!weakmap.get(obj));
     };
     var ObjState;
     (function (ObjState) {

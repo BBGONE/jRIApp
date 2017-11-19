@@ -656,7 +656,7 @@ declare module "jriapp/bootstrap" {
         private _processHTMLTemplates();
         private _processTemplate(name, html, app);
         _getEventNames(): string[];
-        protected _addHandler(name: string, fn: (sender: any, args: any) => void, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
+        addHandler(name: string, fn: (sender: any, args: any) => void, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
         private _init();
         private _initialize();
         private _trackSelectable(selectable);
@@ -989,5 +989,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand, TCommand, ITCommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "1.7.0";
+    export const VERSION = "1.7.1";
 }
