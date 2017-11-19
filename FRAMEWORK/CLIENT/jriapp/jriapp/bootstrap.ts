@@ -229,7 +229,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         self.templateLoader.registerTemplateLoader(!app ? name : (app.appName + "." + name), loader);
         deferred.resolve(res);
     }
-    protected _getEventNames(): string[] {
+    _getEventNames(): string[] {
         const baseEvents = super._getEventNames(),
             events = Object.keys(GLOB_EVENTS).map((key) => {
                 return <string>(<any>GLOB_EVENTS)[key];
@@ -245,7 +245,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             // when already is ready, immediately raise the event
             utils.queue.enque(() => { fn.apply(self, [self, {}]); });
         } else {
-            super._addHandler(name, fn, nmspace, context, priority);
+            super.addHandler(name, fn, nmspace, context, priority);
         }
     }
     private _init(): IPromise<Bootstrap> {
@@ -374,13 +374,13 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         return this._internal;
     }
     addOnLoad(fn: TEventHandler<Bootstrap, any>, nmspace?: string, context?: IBaseObject) {
-        this._addHandler(GLOB_EVENTS.load, fn, nmspace, context);
+        this.addHandler(GLOB_EVENTS.load, fn, nmspace, context);
     }
     addOnUnLoad(fn: TEventHandler<Bootstrap, any>, nmspace?: string, context?: IBaseObject) {
-        this._addHandler(GLOB_EVENTS.unload, fn, nmspace, context);
+        this.addHandler(GLOB_EVENTS.unload, fn, nmspace, context);
     }
     addOnInitialize(fn: TEventHandler<Bootstrap, any>, nmspace?: string, context?: IBaseObject) {
-        this._addHandler(GLOB_EVENTS.initialized, fn, nmspace, context);
+        this.addHandler(GLOB_EVENTS.initialized, fn, nmspace, context);
     }
     addModuleInit(fn: (app: IApplication) => void): boolean {
         if (this._moduleInits.filter((val) => { return val === fn; }).length === 0) {
@@ -436,7 +436,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         }
         this._isDestroyCalled = true;
         const self = this;
-        self._removeHandler();
+        self.removeHandler();
         self._destroyApp();
         self._exports = {};
         if (self._templateLoader !== null) {

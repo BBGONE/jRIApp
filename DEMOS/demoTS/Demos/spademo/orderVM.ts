@@ -77,7 +77,7 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
         this._addressVM = new AddressVM(this);
         this._orderDetailVM = new OrderDetailVM(this);
     }
-    protected _getEventNames() {
+    _getEventNames() {
         let base_events = super._getEventNames();
         return ['row_expanded'].concat(base_events);
     }

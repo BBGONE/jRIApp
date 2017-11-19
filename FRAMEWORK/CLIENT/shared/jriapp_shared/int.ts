@@ -16,6 +16,7 @@ export type TErrorArgs = { error: any; source: any; isHandled: boolean; };
 export type TErrorHandler = (sender: any, args: TErrorArgs) => void;
 export type TPropChangedHandler = (sender: any, args: { property: string; }) => void;
 export type TFunc = { (...args: any[]): void; };
+export type TAnyConstructor<T> = new (...args: any[]) => T;
 
 export interface IDisposable {
     destroy(): void;
@@ -40,6 +41,7 @@ export const enum TPriority {
 }
 
 export interface IBaseObject extends IErrorHandler, IDisposable {
+    _getEventNames(): string[];
     _isHasProp(prop: string): boolean;
     getIsDestroyed(): boolean;
     getIsDestroyCalled(): boolean;

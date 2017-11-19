@@ -48,7 +48,7 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         this._flags = 0;
         this._valueBag = null;
     }
-    protected _getEventNames() {
+    _getEventNames() {
         const baseEvents = super._getEventNames();
         return [ITEM_EVENTS.errors_changed].concat(baseEvents);
     }
@@ -354,10 +354,10 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         return res;
     }
     addOnErrorsChanged(fn: TEventHandler<ItemAspect<TItem, TObj>, any>, nmspace?: string, context?: any) {
-        this._addHandler(ITEM_EVENTS.errors_changed, fn, nmspace, context);
+        this.addHandler(ITEM_EVENTS.errors_changed, fn, nmspace, context);
     }
     removeOnErrorsChanged(nmspace?: string) {
-        this._removeHandler(ITEM_EVENTS.errors_changed, nmspace);
+        this.removeHandler(ITEM_EVENTS.errors_changed, nmspace);
     }
     getFieldErrors(fieldName: string): IValidationInfo[] {
         const res: IValidationInfo[] = [], itemErrors = this.collection.errors.getErrors(this.item);

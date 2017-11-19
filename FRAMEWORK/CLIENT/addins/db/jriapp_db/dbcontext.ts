@@ -133,7 +133,7 @@ export class DbContext extends BaseObject {
             ERROR.abort("dbContext destroyed");
         }
     }
-    protected _getEventNames() {
+    _getEventNames() {
         const baseEvents = super._getEventNames();
         return [DBCTX_EVENTS.submit_err].concat(baseEvents);
     }
@@ -738,10 +738,10 @@ export class DbContext extends BaseObject {
         return this._initState;
     }
     addOnSubmitError(fn: TEventHandler<DbContext, { error: any; isHandled: boolean; }>, nmspace?: string, context?: IBaseObject): void {
-        this._addHandler(DBCTX_EVENTS.submit_err, fn, nmspace, context);
+        this.addHandler(DBCTX_EVENTS.submit_err, fn, nmspace, context);
     }
     removeOnSubmitError(nmspace?: string): void {
-        this._removeHandler(DBCTX_EVENTS.submit_err, nmspace);
+        this.removeHandler(DBCTX_EVENTS.submit_err, nmspace);
     }
     getDbSet(name: string): TDbSet {
         return this._dbSets.getDbSet(name);

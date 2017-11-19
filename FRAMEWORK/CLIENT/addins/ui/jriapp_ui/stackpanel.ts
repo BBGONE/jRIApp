@@ -129,15 +129,15 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         const ds = this._options.dataSource;
         this._setDataSource(ds);
     }
-    protected _getEventNames() {
+    _getEventNames() {
         const baseEvents = super._getEventNames();
         return [PNL_EVENTS.item_clicked].concat(baseEvents);
     }
     addOnItemClicked(fn: TEventHandler<StackPanel, { item: ICollectionItem; }>, nmspace?: string, context?: IBaseObject) {
-        this._addHandler(PNL_EVENTS.item_clicked, fn, nmspace, context);
+        this.addHandler(PNL_EVENTS.item_clicked, fn, nmspace, context);
     }
     removeOnItemClicked(nmspace?: string) {
-        this._removeHandler(PNL_EVENTS.item_clicked, nmspace);
+        this.removeHandler(PNL_EVENTS.item_clicked, nmspace);
     }
     protected _getContainerEl() { return this.el; }
     protected _onKeyDown(key: number, event: Event) {

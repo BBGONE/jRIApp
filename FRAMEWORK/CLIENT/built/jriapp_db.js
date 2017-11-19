@@ -1321,10 +1321,10 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             return result;
         };
         DbSet.prototype.addOnLoaded = function (fn, nmspace, context, priority) {
-            this._addHandler(DBSET_EVENTS.loaded, fn, nmspace, context, priority);
+            this.addHandler(DBSET_EVENTS.loaded, fn, nmspace, context, priority);
         };
         DbSet.prototype.removeOnLoaded = function (nmspace) {
-            this._removeHandler(DBSET_EVENTS.loaded, nmspace);
+            this.removeHandler(DBSET_EVENTS.loaded, nmspace);
         };
         DbSet.prototype.waitForNotBusy = function (callback, groupName) {
             this._waitQueue.enQueue({
@@ -2947,10 +2947,10 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             return this._initState;
         };
         DbContext.prototype.addOnSubmitError = function (fn, nmspace, context) {
-            this._addHandler(DBCTX_EVENTS.submit_err, fn, nmspace, context);
+            this.addHandler(DBCTX_EVENTS.submit_err, fn, nmspace, context);
         };
         DbContext.prototype.removeOnSubmitError = function (nmspace) {
-            this._removeHandler(DBCTX_EVENTS.submit_err, nmspace);
+            this.removeHandler(DBCTX_EVENTS.submit_err, nmspace);
         };
         DbContext.prototype.getDbSet = function (name) {
             return this._dbSets.getDbSet(name);
@@ -3691,10 +3691,10 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
         DataView.prototype._clearItems = function (items) {
         };
         DataView.prototype.addOnViewRefreshed = function (fn, nmspace) {
-            this._addHandler(VIEW_EVENTS.refreshed, fn, nmspace);
+            this.addHandler(VIEW_EVENTS.refreshed, fn, nmspace);
         };
         DataView.prototype.removeOnViewRefreshed = function (nmspace) {
-            this._removeHandler(VIEW_EVENTS.refreshed, nmspace);
+            this.removeHandler(VIEW_EVENTS.refreshed, nmspace);
         };
         DataView.prototype._filterForPaging = function (items) {
             var skip = 0, take = 0, pos = -1, cnt = -1;

@@ -1054,6 +1054,56 @@ define("jriapp_shared/utils/debug", ["require", "exports", "jriapp_shared/const"
     }());
     exports.DEBUG = DEBUG;
 });
+define("jriapp_shared/utils/weakmap", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var _undefined = void 0;
+    var counter = (new Date().getTime()) % 1e9;
+    function createWeakMap() {
+        var win = window;
+        if (!win.WeakMap) {
+            win.WeakMap = WeakMap;
+        }
+        return new win.WeakMap();
+    }
+    exports.createWeakMap = createWeakMap;
+    var WeakMap = (function () {
+        function WeakMap() {
+            this._name = "_wm_" + (Math.random() * 1e9 >>> 0) + (counter++ + "__");
+        }
+        WeakMap.prototype.set = function (key, value) {
+            var entry = key[this._name];
+            if (!!entry && entry[0] === key) {
+                entry[1] = value;
+            }
+            else {
+                Object.defineProperty(key, this._name, { value: [key, value], writable: true });
+            }
+            return this;
+        };
+        WeakMap.prototype.get = function (key) {
+            var entry = key[this._name];
+            return (!entry ? _undefined : (entry[0] === key ? entry[1] : _undefined));
+        };
+        WeakMap.prototype.delete = function (key) {
+            var entry = key[this._name];
+            if (!entry) {
+                return false;
+            }
+            var hasValue = (entry[0] === key);
+            entry[0] = entry[1] = _undefined;
+            return hasValue;
+        };
+        WeakMap.prototype.has = function (key) {
+            var entry = key[this._name];
+            if (!entry) {
+                return false;
+            }
+            return (entry[0] === key);
+        };
+        return WeakMap;
+    }());
+});
 define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/checks", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/debug"], function (require, exports, lang_2, checks_3, strutils_2, debug_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -1233,14 +1283,14 @@ define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/
     }());
     exports.EventHelper = EventHelper;
 });
-define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/error", "jriapp_shared/utils/debug", "jriapp_shared/utils/eventhelper"], function (require, exports, lang_3, sysutils_2, checks_4, strUtils_2, coreutils_2, error_1, debug_2, eventhelper_1) {
+define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/error", "jriapp_shared/utils/debug", "jriapp_shared/utils/weakmap", "jriapp_shared/utils/eventhelper"], function (require, exports, lang_3, sysutils_2, checks_4, strUtils_2, coreutils_2, error_1, debug_2, weakmap_1, eventhelper_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var OBJ_EVENTS = {
         error: "error",
         destroyed: "destroyed"
     };
-    var checks = checks_4.Checks, strUtils = strUtils_2.StringUtils, coreUtils = coreutils_2.CoreUtils, evHelper = eventhelper_1.EventHelper, debug = debug_2.DEBUG, sys = sysutils_2.SysUtils;
+    var checks = checks_4.Checks, strUtils = strUtils_2.StringUtils, coreUtils = coreutils_2.CoreUtils, evHelper = eventhelper_1.EventHelper, debug = debug_2.DEBUG, sys = sysutils_2.SysUtils, weakmap = weakmap_1.createWeakMap();
     sys.isBaseObj = function (obj) {
         return (!!obj && obj instanceof BaseObject);
     };
@@ -1250,57 +1300,244 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
         ObjState[ObjState["DestroyCalled"] = 1] = "DestroyCalled";
         ObjState[ObjState["Destroyed"] = 2] = "Destroyed";
     })(ObjState || (ObjState = {}));
+    function fn_addHandler(obj, name, handler, nmspace, context, priority) {
+        if (debug.isDebugging()) {
+            if (!!name && obj._getEventNames().indexOf(name) < 0) {
+                debug.checkStartDebugger();
+                throw new Error(strUtils.format(lang_3.ERRS.ERR_EVENT_INVALID, name));
+            }
+        }
+        var state = weakmap.get(obj);
+        if (state === void 0) {
+            throw new Error("Using uninitialized object");
+        }
+        if (state.objState !== 0) {
+            throw new Error(strUtils.format(lang_3.ERRS.ERR_ASSERTION_FAILED, "this._obj_state !== ObjState.None"));
+        }
+        if (!state.events) {
+            state.events = {};
+        }
+        evHelper.add(state.events, name, handler, nmspace, context, priority);
+    }
+    function fn_removeHandler(obj, name, nmspace) {
+        if (debug.isDebugging()) {
+            if (!!name && obj._getEventNames().indexOf(name) < 0) {
+                debug.checkStartDebugger();
+                throw new Error(strUtils.format(lang_3.ERRS.ERR_EVENT_INVALID, name));
+            }
+        }
+        var state = weakmap.get(obj);
+        evHelper.remove(state.events, name, nmspace);
+    }
+    function fn_isDestroyed(obj) {
+        var state = weakmap.get(obj);
+        return state.objState === 2;
+    }
+    function fn_isDestroyCalled(obj) {
+        var state = weakmap.get(obj);
+        return state.objState !== 0;
+    }
+    function fn_setIsDestroyCalled(obj, v) {
+        var state = weakmap.get(obj);
+        if (state.objState === 2) {
+            throw new Error(strUtils.format(lang_3.ERRS.ERR_ASSERTION_FAILED, "this._obj_state !== ObjState.Destroyed"));
+        }
+        state.objState = !v ? 0 : 1;
+    }
+    function fn_canRaiseEvent(obj, name) {
+        var state = weakmap.get(obj);
+        return evHelper.count(state.events, name) > 0;
+    }
+    function fn_raiseEvent(obj, name, args) {
+        var state = weakmap.get(obj);
+        if (!name) {
+            throw new Error(lang_3.ERRS.ERR_EVENT_INVALID);
+        }
+        evHelper.raise(obj, state.events, name, args);
+    }
+    function fn_raisePropChanged(obj, name) {
+        var state = weakmap.get(obj);
+        var data = { property: name }, parts = name.split("."), lastPropName = parts[parts.length - 1];
+        if (parts.length > 1) {
+            var owner = coreUtils.resolveOwner(obj, name);
+            if (debug.isDebugging() && checks.isUndefined(owner)) {
+                debug.checkStartDebugger();
+                throw new Error(strUtils.format(lang_3.ERRS.ERR_PROP_NAME_INVALID, name));
+            }
+            if (sys.isBaseObj(obj)) {
+                obj.raisePropertyChanged(lastPropName);
+            }
+        }
+        else {
+            if (debug.isDebugging() && !obj._isHasProp(lastPropName)) {
+                debug.checkStartDebugger();
+                throw new Error(strUtils.format(lang_3.ERRS.ERR_PROP_NAME_INVALID, lastPropName));
+            }
+            evHelper.raiseProp(obj, state.events, lastPropName, data);
+        }
+    }
+    function fn_addOnPropertyChange(obj, prop, handler, nmspace, context, priority) {
+        var state = weakmap.get(obj);
+        if (!prop) {
+            throw new Error(lang_3.ERRS.ERR_PROP_NAME_EMPTY);
+        }
+        if (debug.isDebugging() && prop !== "*" && !obj._isHasProp(prop)) {
+            debug.checkStartDebugger();
+            throw new Error(strUtils.format(lang_3.ERRS.ERR_PROP_NAME_INVALID, prop));
+        }
+        if (!state.events) {
+            state.events = {};
+        }
+        evHelper.add(state.events, "0" + prop, handler, nmspace, context, priority);
+    }
+    function fn_removeOnPropertyChange(obj, prop, nmspace) {
+        var state = weakmap.get(obj);
+        if (!!prop) {
+            if (debug.isDebugging() && prop !== "*" && !obj._isHasProp(prop)) {
+                debug.checkStartDebugger();
+                throw new Error(strUtils.format(lang_3.ERRS.ERR_PROP_NAME_INVALID, prop));
+            }
+            evHelper.remove(state.events, "0" + prop, nmspace);
+        }
+        else {
+            evHelper.removeNS(state.events, nmspace);
+        }
+    }
+    function MixedBaseObject(Base) {
+        return (function (_super) {
+            __extends(class_1, _super);
+            function class_1() {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                var _this = _super.apply(this, args) || this;
+                weakmap.set(_this, { objState: 0, events: null });
+                return _this;
+            }
+            Object.defineProperty(class_1.prototype, "_isDestroyed", {
+                get: function () {
+                    return fn_isDestroyed(this);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(class_1.prototype, "_isDestroyCalled", {
+                get: function () {
+                    return fn_isDestroyCalled(this);
+                },
+                set: function (v) {
+                    fn_setIsDestroyCalled(this, v);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            class_1.prototype._canRaiseEvent = function (name) {
+                return fn_canRaiseEvent(this, name);
+            };
+            class_1.prototype._getEventNames = function () {
+                return [OBJ_EVENTS.error, OBJ_EVENTS.destroyed];
+            };
+            class_1.prototype._isHasProp = function (prop) {
+                return checks.isHasProp(this, prop);
+            };
+            class_1.prototype.handleError = function (error, source) {
+                if (error_1.ERROR.checkIsDummy(error)) {
+                    return true;
+                }
+                if (!error.message) {
+                    error = new Error("Unexpected Error: " + error);
+                }
+                var args = { error: error, source: source, isHandled: false }, state = weakmap.get(this);
+                evHelper.raise(this, state.events, OBJ_EVENTS.error, args);
+                var isHandled = args.isHandled;
+                if (!isHandled) {
+                    isHandled = error_1.ERROR.handleError(this, error, source);
+                }
+                return isHandled;
+            };
+            class_1.prototype.addHandler = function (name, handler, nmspace, context, priority) {
+                fn_addHandler(this, name, handler, nmspace, context, priority);
+            };
+            class_1.prototype.removeHandler = function (name, nmspace) {
+                fn_removeHandler(this, name, nmspace);
+            };
+            class_1.prototype.addOnDestroyed = function (handler, nmspace, context, priority) {
+                fn_addHandler(this, OBJ_EVENTS.destroyed, handler, nmspace, context, priority);
+            };
+            class_1.prototype.removeOnDestroyed = function (nmspace) {
+                fn_removeHandler(this, OBJ_EVENTS.destroyed, nmspace);
+            };
+            class_1.prototype.addOnError = function (handler, nmspace, context, priority) {
+                fn_addHandler(this, OBJ_EVENTS.error, handler, nmspace, context, priority);
+            };
+            class_1.prototype.removeOnError = function (nmspace) {
+                fn_removeHandler(this, OBJ_EVENTS.error, nmspace);
+            };
+            class_1.prototype.removeNSHandlers = function (nmspace) {
+                fn_removeHandler(this, null, nmspace);
+            };
+            class_1.prototype.raiseEvent = function (name, args) {
+                fn_raiseEvent(this, name, args);
+            };
+            class_1.prototype.raisePropertyChanged = function (name) {
+                fn_raisePropChanged(this, name);
+            };
+            class_1.prototype.addOnPropertyChange = function (prop, handler, nmspace, context, priority) {
+                fn_addOnPropertyChange(this, prop, handler, nmspace, context, priority);
+            };
+            class_1.prototype.removeOnPropertyChange = function (prop, nmspace) {
+                fn_removeOnPropertyChange(this, prop, nmspace);
+            };
+            class_1.prototype.getIsDestroyed = function () {
+                return fn_isDestroyed(this);
+            };
+            class_1.prototype.getIsDestroyCalled = function () {
+                return fn_isDestroyCalled(this);
+            };
+            class_1.prototype.destroy = function () {
+                var state = weakmap.get(this);
+                if (state.objState === 2) {
+                    return;
+                }
+                state.objState = 2;
+                try {
+                    fn_raiseEvent(this, OBJ_EVENTS.destroyed, {});
+                }
+                finally {
+                    state.events = null;
+                }
+            };
+            return class_1;
+        }(Base));
+    }
+    exports.MixedBaseObject = MixedBaseObject;
     var BaseObject = (function () {
         function BaseObject() {
-            this._objState = 0;
-            this._events = null;
+            weakmap.set(this, { objState: 0, events: null });
         }
-        BaseObject.prototype._getEventNames = function () {
-            return [OBJ_EVENTS.error, OBJ_EVENTS.destroyed];
-        };
-        BaseObject.prototype._addHandler = function (name, handler, nmspace, context, priority) {
-            if (this._objState === void 0) {
-                throw new Error("Using uninitialized object");
-            }
-            if (this._objState !== 0) {
-                throw new Error(strUtils.format(lang_3.ERRS.ERR_ASSERTION_FAILED, "this._obj_state !== ObjState.None"));
-            }
-            if (debug.isDebugging()) {
-                if (!!name && this._getEventNames().indexOf(name) < 0) {
-                    debug.checkStartDebugger();
-                    throw new Error(strUtils.format(lang_3.ERRS.ERR_EVENT_INVALID, name));
-                }
-            }
-            if (!this._events) {
-                this._events = {};
-            }
-            evHelper.add(this._events, name, handler, nmspace, context, priority);
-        };
-        BaseObject.prototype._removeHandler = function (name, nmspace) {
-            evHelper.remove(this._events, name, nmspace);
-        };
         Object.defineProperty(BaseObject.prototype, "_isDestroyed", {
             get: function () {
-                return this._objState === 2;
+                return fn_isDestroyed(this);
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(BaseObject.prototype, "_isDestroyCalled", {
             get: function () {
-                return this._objState !== 0;
+                return fn_isDestroyCalled(this);
             },
             set: function (v) {
-                if (this._objState === 2) {
-                    throw new Error(strUtils.format(lang_3.ERRS.ERR_ASSERTION_FAILED, "this._obj_state !== ObjState.Destroyed"));
-                }
-                this._objState = !v ? 0 : 1;
+                fn_setIsDestroyCalled(this, v);
             },
             enumerable: true,
             configurable: true
         });
         BaseObject.prototype._canRaiseEvent = function (name) {
-            return evHelper.count(this._events, name) > 0;
+            return fn_canRaiseEvent(this, name);
+        };
+        BaseObject.prototype._getEventNames = function () {
+            return [OBJ_EVENTS.error, OBJ_EVENTS.destroyed];
         };
         BaseObject.prototype._isHasProp = function (prop) {
             return checks.isHasProp(this, prop);
@@ -1312,8 +1549,8 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
             if (!error.message) {
                 error = new Error("Unexpected Error: " + error);
             }
-            var args = { error: error, source: source, isHandled: false };
-            evHelper.raise(this, this._events, OBJ_EVENTS.error, args);
+            var args = { error: error, source: source, isHandled: false }, state = weakmap.get(this);
+            evHelper.raise(this, state.events, OBJ_EVENTS.error, args);
             var isHandled = args.isHandled;
             if (!isHandled) {
                 isHandled = error_1.ERROR.handleError(this, error, source);
@@ -1321,97 +1558,55 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
             return isHandled;
         };
         BaseObject.prototype.addHandler = function (name, handler, nmspace, context, priority) {
-            this._addHandler(name, handler, nmspace, context, priority);
+            fn_addHandler(this, name, handler, nmspace, context, priority);
         };
         BaseObject.prototype.removeHandler = function (name, nmspace) {
-            if (debug.isDebugging() && !!name && this._getEventNames().indexOf(name) < 0) {
-                debug.checkStartDebugger();
-                throw new Error(strUtils.format(lang_3.ERRS.ERR_EVENT_INVALID, name));
-            }
-            this._removeHandler(name, nmspace);
+            fn_removeHandler(this, name, nmspace);
         };
         BaseObject.prototype.addOnDestroyed = function (handler, nmspace, context, priority) {
-            this._addHandler(OBJ_EVENTS.destroyed, handler, nmspace, context, priority);
+            fn_addHandler(this, OBJ_EVENTS.destroyed, handler, nmspace, context, priority);
         };
         BaseObject.prototype.removeOnDestroyed = function (nmspace) {
-            evHelper.remove(this._events, OBJ_EVENTS.destroyed, nmspace);
+            fn_removeHandler(this, OBJ_EVENTS.destroyed, nmspace);
         };
         BaseObject.prototype.addOnError = function (handler, nmspace, context, priority) {
-            this._addHandler(OBJ_EVENTS.error, handler, nmspace, context, priority);
+            fn_addHandler(this, OBJ_EVENTS.error, handler, nmspace, context, priority);
         };
         BaseObject.prototype.removeOnError = function (nmspace) {
-            evHelper.remove(this._events, OBJ_EVENTS.error, nmspace);
+            fn_removeHandler(this, OBJ_EVENTS.error, nmspace);
         };
         BaseObject.prototype.removeNSHandlers = function (nmspace) {
-            evHelper.remove(this._events, null, nmspace);
+            fn_removeHandler(this, null, nmspace);
         };
         BaseObject.prototype.raiseEvent = function (name, args) {
-            if (!name) {
-                throw new Error(lang_3.ERRS.ERR_EVENT_INVALID);
-            }
-            evHelper.raise(this, this._events, name, args);
+            fn_raiseEvent(this, name, args);
         };
         BaseObject.prototype.raisePropertyChanged = function (name) {
-            var data = { property: name }, parts = name.split("."), lastPropName = parts[parts.length - 1];
-            if (parts.length > 1) {
-                var obj = coreUtils.resolveOwner(this, name);
-                if (debug.isDebugging() && checks.isUndefined(obj)) {
-                    debug.checkStartDebugger();
-                    throw new Error(strUtils.format(lang_3.ERRS.ERR_PROP_NAME_INVALID, name));
-                }
-                if (sys.isBaseObj(obj)) {
-                    obj.raisePropertyChanged(lastPropName);
-                }
-            }
-            else {
-                if (debug.isDebugging() && !this._isHasProp(lastPropName)) {
-                    debug.checkStartDebugger();
-                    throw new Error(strUtils.format(lang_3.ERRS.ERR_PROP_NAME_INVALID, lastPropName));
-                }
-                evHelper.raiseProp(this, this._events, lastPropName, data);
-            }
+            fn_raisePropChanged(this, name);
         };
         BaseObject.prototype.addOnPropertyChange = function (prop, handler, nmspace, context, priority) {
-            if (!prop) {
-                throw new Error(lang_3.ERRS.ERR_PROP_NAME_EMPTY);
-            }
-            if (debug.isDebugging() && prop !== "*" && !this._isHasProp(prop)) {
-                debug.checkStartDebugger();
-                throw new Error(strUtils.format(lang_3.ERRS.ERR_PROP_NAME_INVALID, prop));
-            }
-            if (!this._events) {
-                this._events = {};
-            }
-            evHelper.add(this._events, "0" + prop, handler, nmspace, context, priority);
+            fn_addOnPropertyChange(this, prop, handler, nmspace, context, priority);
         };
         BaseObject.prototype.removeOnPropertyChange = function (prop, nmspace) {
-            if (!!prop) {
-                if (debug.isDebugging() && prop !== "*" && !this._isHasProp(prop)) {
-                    debug.checkStartDebugger();
-                    throw new Error(strUtils.format(lang_3.ERRS.ERR_PROP_NAME_INVALID, prop));
-                }
-                evHelper.remove(this._events, "0" + prop, nmspace);
-            }
-            else {
-                evHelper.removeNS(this._events, nmspace);
-            }
+            fn_removeOnPropertyChange(this, prop, nmspace);
         };
         BaseObject.prototype.getIsDestroyed = function () {
-            return this._objState === 2;
+            return fn_isDestroyed(this);
         };
         BaseObject.prototype.getIsDestroyCalled = function () {
-            return this._objState !== 0;
+            return fn_isDestroyCalled(this);
         };
         BaseObject.prototype.destroy = function () {
-            if (this._objState === 2) {
+            var state = weakmap.get(this);
+            if (state.objState === 2) {
                 return;
             }
-            this._objState = 2;
+            state.objState = 2;
             try {
-                evHelper.raise(this, this._events, OBJ_EVENTS.destroyed, {});
+                fn_raiseEvent(this, OBJ_EVENTS.destroyed, {});
             }
             finally {
-                this._events = null;
+                state.events = null;
             }
         };
         return BaseObject;
@@ -1930,22 +2125,22 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
             return _super.prototype._isHasProp.call(this, prop);
         };
         JsonBag.prototype.addOnValidateBag = function (fn, nmspace, context) {
-            this._addHandler(BAG_EVENTS.validate_bag, fn, nmspace, context);
+            this.addHandler(BAG_EVENTS.validate_bag, fn, nmspace, context);
         };
         JsonBag.prototype.removeOnValidateBag = function (nmspace) {
-            this._removeHandler(BAG_EVENTS.validate_bag, nmspace);
+            this.removeHandler(BAG_EVENTS.validate_bag, nmspace);
         };
         JsonBag.prototype.addOnValidateField = function (fn, nmspace, context) {
-            this._addHandler(BAG_EVENTS.validate_field, fn, nmspace, context);
+            this.addHandler(BAG_EVENTS.validate_field, fn, nmspace, context);
         };
         JsonBag.prototype.removeOnValidateField = function (nmspace) {
-            this._removeHandler(BAG_EVENTS.validate_field, nmspace);
+            this.removeHandler(BAG_EVENTS.validate_field, nmspace);
         };
         JsonBag.prototype.addOnErrorsChanged = function (fn, nmspace, context) {
-            this._addHandler(BAG_EVENTS.errors_changed, fn, nmspace, context);
+            this.addHandler(BAG_EVENTS.errors_changed, fn, nmspace, context);
         };
         JsonBag.prototype.removeOnErrorsChanged = function (nmspace) {
-            this._removeHandler(BAG_EVENTS.errors_changed, nmspace);
+            this.removeHandler(BAG_EVENTS.errors_changed, nmspace);
         };
         JsonBag.prototype.onChanged = function () {
             var _this = this;
@@ -3055,112 +3250,112 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             return events.concat(baseEvents);
         };
         BaseCollection.prototype.addOnClearing = function (fn, nmspace, context, priority) {
-            this._addHandler(COLL_EVENTS.clearing, fn, nmspace, context, priority);
+            this.addHandler(COLL_EVENTS.clearing, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnClearing = function (nmspace) {
-            this._removeHandler(COLL_EVENTS.clearing, nmspace);
+            this.removeHandler(COLL_EVENTS.clearing, nmspace);
         };
         BaseCollection.prototype.addOnCleared = function (fn, nmspace, context, priority) {
-            this._addHandler(COLL_EVENTS.cleared, fn, nmspace, context, priority);
+            this.addHandler(COLL_EVENTS.cleared, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnCleared = function (nmspace) {
-            this._removeHandler(COLL_EVENTS.cleared, nmspace);
+            this.removeHandler(COLL_EVENTS.cleared, nmspace);
         };
         BaseCollection.prototype.addOnCollChanged = function (fn, nmspace, context, priority) {
-            this._addHandler(COLL_EVENTS.collection_changed, fn, nmspace, context, priority);
+            this.addHandler(COLL_EVENTS.collection_changed, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnCollChanged = function (nmspace) {
-            this._removeHandler(COLL_EVENTS.collection_changed, nmspace);
+            this.removeHandler(COLL_EVENTS.collection_changed, nmspace);
         };
         BaseCollection.prototype.addOnFill = function (fn, nmspace, context, priority) {
-            this._addHandler(COLL_EVENTS.fill, fn, nmspace, context, priority);
+            this.addHandler(COLL_EVENTS.fill, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnFill = function (nmspace) {
-            this._removeHandler(COLL_EVENTS.fill, nmspace);
+            this.removeHandler(COLL_EVENTS.fill, nmspace);
         };
         BaseCollection.prototype.addOnValidateField = function (fn, nmspace, context, priority) {
-            this._addHandler(COLL_EVENTS.validate_field, fn, nmspace, context, priority);
+            this.addHandler(COLL_EVENTS.validate_field, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnValidateField = function (nmspace) {
-            this._removeHandler(COLL_EVENTS.validate_field, nmspace);
+            this.removeHandler(COLL_EVENTS.validate_field, nmspace);
         };
         BaseCollection.prototype.addOnValidateItem = function (fn, nmspace, context, priority) {
-            this._addHandler(COLL_EVENTS.validate_item, fn, nmspace, context, priority);
+            this.addHandler(COLL_EVENTS.validate_item, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnValidateItem = function (nmspace) {
-            this._removeHandler(COLL_EVENTS.validate_item, nmspace);
+            this.removeHandler(COLL_EVENTS.validate_item, nmspace);
         };
         BaseCollection.prototype.addOnItemDeleting = function (fn, nmspace, context, priority) {
-            this._addHandler(COLL_EVENTS.item_deleting, fn, nmspace, context, priority);
+            this.addHandler(COLL_EVENTS.item_deleting, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnItemDeleting = function (nmspace) {
-            this._removeHandler(COLL_EVENTS.item_deleting, nmspace);
+            this.removeHandler(COLL_EVENTS.item_deleting, nmspace);
         };
         BaseCollection.prototype.addOnItemAdding = function (fn, nmspace, context, priority) {
-            this._addHandler(COLL_EVENTS.item_adding, fn, nmspace, context, priority);
+            this.addHandler(COLL_EVENTS.item_adding, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnItemAdding = function (nmspace) {
-            this._removeHandler(COLL_EVENTS.item_adding, nmspace);
+            this.removeHandler(COLL_EVENTS.item_adding, nmspace);
         };
         BaseCollection.prototype.addOnItemAdded = function (fn, nmspace, context, priority) {
-            this._addHandler(COLL_EVENTS.item_added, fn, nmspace, context, priority);
+            this.addHandler(COLL_EVENTS.item_added, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnItemAdded = function (nmspace) {
-            this._removeHandler(COLL_EVENTS.item_added, nmspace);
+            this.removeHandler(COLL_EVENTS.item_added, nmspace);
         };
         BaseCollection.prototype.addOnCurrentChanging = function (fn, nmspace, context, priority) {
-            this._addHandler(COLL_EVENTS.current_changing, fn, nmspace, context, priority);
+            this.addHandler(COLL_EVENTS.current_changing, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnCurrentChanging = function (nmspace) {
-            this._removeHandler(COLL_EVENTS.current_changing, nmspace);
+            this.removeHandler(COLL_EVENTS.current_changing, nmspace);
         };
         BaseCollection.prototype.addOnPageChanging = function (fn, nmspace, context, priority) {
-            this._addHandler(COLL_EVENTS.page_changing, fn, nmspace, context, priority);
+            this.addHandler(COLL_EVENTS.page_changing, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnPageChanging = function (nmspace) {
-            this._removeHandler(COLL_EVENTS.page_changing, nmspace);
+            this.removeHandler(COLL_EVENTS.page_changing, nmspace);
         };
         BaseCollection.prototype.addOnErrorsChanged = function (fn, nmspace, context, priority) {
-            this._addHandler(COLL_EVENTS.errors_changed, fn, nmspace, context, priority);
+            this.addHandler(COLL_EVENTS.errors_changed, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnErrorsChanged = function (nmspace) {
-            this._removeHandler(COLL_EVENTS.errors_changed, nmspace);
+            this.removeHandler(COLL_EVENTS.errors_changed, nmspace);
         };
         BaseCollection.prototype.addOnBeginEdit = function (fn, nmspace, context, priority) {
-            this._addHandler(COLL_EVENTS.begin_edit, fn, nmspace, context, priority);
+            this.addHandler(COLL_EVENTS.begin_edit, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnBeginEdit = function (nmspace) {
-            this._removeHandler(COLL_EVENTS.begin_edit, nmspace);
+            this.removeHandler(COLL_EVENTS.begin_edit, nmspace);
         };
         BaseCollection.prototype.addOnEndEdit = function (fn, nmspace, context, priority) {
-            this._addHandler(COLL_EVENTS.end_edit, fn, nmspace, context, priority);
+            this.addHandler(COLL_EVENTS.end_edit, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnEndEdit = function (nmspace) {
-            this._removeHandler(COLL_EVENTS.end_edit, nmspace);
+            this.removeHandler(COLL_EVENTS.end_edit, nmspace);
         };
         BaseCollection.prototype.addOnBeforeBeginEdit = function (fn, nmspace, context, priority) {
-            this._addHandler(COLL_EVENTS.before_begin_edit, fn, nmspace, context, priority);
+            this.addHandler(COLL_EVENTS.before_begin_edit, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnBeforeBeginEdit = function (nmspace) {
-            this._removeHandler(COLL_EVENTS.before_begin_edit, nmspace);
+            this.removeHandler(COLL_EVENTS.before_begin_edit, nmspace);
         };
         BaseCollection.prototype.addOnBeforeEndEdit = function (fn, nmspace, context, priority) {
-            this._addHandler(COLL_EVENTS.before_end_edit, fn, nmspace, context, priority);
+            this.addHandler(COLL_EVENTS.before_end_edit, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeBeforeOnEndEdit = function (nmspace) {
-            this._removeHandler(COLL_EVENTS.before_end_edit, nmspace);
+            this.removeHandler(COLL_EVENTS.before_end_edit, nmspace);
         };
         BaseCollection.prototype.addOnCommitChanges = function (fn, nmspace, context, priority) {
-            this._addHandler(COLL_EVENTS.commit_changes, fn, nmspace, context, priority);
+            this.addHandler(COLL_EVENTS.commit_changes, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnCommitChanges = function (nmspace) {
-            this._removeHandler(COLL_EVENTS.commit_changes, nmspace);
+            this.removeHandler(COLL_EVENTS.commit_changes, nmspace);
         };
         BaseCollection.prototype.addOnStatusChanged = function (fn, nmspace, context, priority) {
-            this._addHandler(COLL_EVENTS.status_changed, fn, nmspace, context, priority);
+            this.addHandler(COLL_EVENTS.status_changed, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnStatusChanged = function (nmspace) {
-            this._removeHandler(COLL_EVENTS.status_changed, nmspace);
+            this.removeHandler(COLL_EVENTS.status_changed, nmspace);
         };
         BaseCollection.prototype.addOnPageIndexChanged = function (handler, nmspace, context) {
             this.addOnPropertyChange(int_2.PROP_NAME.pageIndex, handler, nmspace, context);
@@ -4356,10 +4551,10 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             return res;
         };
         ItemAspect.prototype.addOnErrorsChanged = function (fn, nmspace, context) {
-            this._addHandler(int_3.ITEM_EVENTS.errors_changed, fn, nmspace, context);
+            this.addHandler(int_3.ITEM_EVENTS.errors_changed, fn, nmspace, context);
         };
         ItemAspect.prototype.removeOnErrorsChanged = function (nmspace) {
-            this._removeHandler(int_3.ITEM_EVENTS.errors_changed, nmspace);
+            this.removeHandler(int_3.ITEM_EVENTS.errors_changed, nmspace);
         };
         ItemAspect.prototype.getFieldErrors = function (fieldName) {
             var res = [], itemErrors = this.collection.errors.getErrors(this.item);
@@ -5053,16 +5248,16 @@ define("jriapp_shared/utils/jsonarray", ["require", "exports", "jriapp_shared/ob
             this._owner.updateJson();
         };
         JsonArray.prototype.addOnValidateBag = function (fn, nmspace, context) {
-            this._addHandler(BAG_EVENTS.validate_bag, fn, nmspace, context);
+            this.addHandler(BAG_EVENTS.validate_bag, fn, nmspace, context);
         };
         JsonArray.prototype.removeOnValidateBag = function (nmspace) {
-            this._removeHandler(BAG_EVENTS.validate_bag, nmspace);
+            this.removeHandler(BAG_EVENTS.validate_bag, nmspace);
         };
         JsonArray.prototype.addOnValidateField = function (fn, nmspace, context) {
-            this._addHandler(BAG_EVENTS.validate_field, fn, nmspace, context);
+            this.addHandler(BAG_EVENTS.validate_field, fn, nmspace, context);
         };
         JsonArray.prototype.removeOnValidateField = function (nmspace) {
-            this._removeHandler(BAG_EVENTS.validate_field, nmspace);
+            this.removeHandler(BAG_EVENTS.validate_field, nmspace);
         };
         JsonArray.prototype._validateBag = function (bag) {
             var args = {
@@ -5129,56 +5324,6 @@ define("jriapp_shared/utils/jsonarray", ["require", "exports", "jriapp_shared/ob
         return JsonArray;
     }(object_6.BaseObject));
     exports.JsonArray = JsonArray;
-});
-define("jriapp_shared/utils/weakmap", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var _undefined = void 0;
-    var counter = (new Date().getTime()) % 1e9;
-    function createWeakMap() {
-        var win = window;
-        if (!win.WeakMap) {
-            win.WeakMap = WeakMap;
-        }
-        return new win.WeakMap();
-    }
-    exports.createWeakMap = createWeakMap;
-    var WeakMap = (function () {
-        function WeakMap() {
-            this._name = "_wm_" + (Math.random() * 1e9 >>> 0) + (counter++ + "__");
-        }
-        WeakMap.prototype.set = function (key, value) {
-            var entry = key[this._name];
-            if (!!entry && entry[0] === key) {
-                entry[1] = value;
-            }
-            else {
-                Object.defineProperty(key, this._name, { value: [key, value], writable: true });
-            }
-            return this;
-        };
-        WeakMap.prototype.get = function (key) {
-            var entry = key[this._name];
-            return (!entry ? _undefined : (entry[0] === key ? entry[1] : _undefined));
-        };
-        WeakMap.prototype.delete = function (key) {
-            var entry = key[this._name];
-            if (!entry) {
-                return false;
-            }
-            var hasValue = (entry[0] === key);
-            entry[0] = entry[1] = _undefined;
-            return hasValue;
-        };
-        WeakMap.prototype.has = function (key) {
-            var entry = key[this._name];
-            if (!entry) {
-                return false;
-            }
-            return (entry[0] === key);
-        };
-        return WeakMap;
-    }());
 });
 define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/utils", "jriapp_shared/collection/base", "jriapp_shared/collection/list"], function (require, exports, utils_9, lang_8, utils_10, base_2, list_2) {
     "use strict";
@@ -5320,7 +5465,7 @@ define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/c
     }());
     exports.Lazy = Lazy;
 });
-define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/jsonarray", "jriapp_shared/utils/weakmap", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/errors", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, const_5, int_5, errors_9, object_7, jsonbag_1, jsonarray_1, weakmap_1, lang_9, base_3, item_2, aspect_2, list_3, dictionary_1, errors_10, ideferred_1, utils_11, waitqueue_2, debounce_3, lazy_1) {
+define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/jsonarray", "jriapp_shared/utils/weakmap", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/errors", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, const_5, int_5, errors_9, object_7, jsonbag_1, jsonarray_1, weakmap_2, lang_9, base_3, item_2, aspect_2, list_3, dictionary_1, errors_10, ideferred_1, utils_11, waitqueue_2, debounce_3, lazy_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -5332,7 +5477,7 @@ define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_sh
     __export(object_7);
     __export(jsonbag_1);
     __export(jsonarray_1);
-    exports.createWeakMap = weakmap_1.createWeakMap;
+    exports.createWeakMap = weakmap_2.createWeakMap;
     exports.LocaleSTRS = lang_9.STRS;
     exports.LocaleERRS = lang_9.ERRS;
     exports.BaseCollection = base_3.BaseCollection;

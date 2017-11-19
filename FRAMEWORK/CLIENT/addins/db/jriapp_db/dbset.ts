@@ -210,7 +210,7 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
     public handleError(error: any, source: any): boolean {
         return (!this._dbContext) ? super.handleError(error, source) : this._dbContext.handleError(error, source);
     }
-    protected _getEventNames() {
+    _getEventNames() {
         const baseEvents = super._getEventNames();
         return [DBSET_EVENTS.loaded].concat(baseEvents);
     }
@@ -909,10 +909,10 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
         return result;
     }
     addOnLoaded(fn: TEventHandler<DbSet<TItem, TObj, TDbContext>, IDbSetLoadedArgs<TObj>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this._addHandler(DBSET_EVENTS.loaded, fn, nmspace, context, priority);
+        this.addHandler(DBSET_EVENTS.loaded, fn, nmspace, context, priority);
     }
     removeOnLoaded(nmspace?: string) {
-        this._removeHandler(DBSET_EVENTS.loaded, nmspace);
+        this.removeHandler(DBSET_EVENTS.loaded, nmspace);
     }
     waitForNotBusy(callback: () => void, groupName: string) {
         this._waitQueue.enQueue({

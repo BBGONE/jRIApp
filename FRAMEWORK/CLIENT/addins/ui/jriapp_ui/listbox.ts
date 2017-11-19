@@ -150,7 +150,7 @@ export class ListBox extends BaseObject {
         this._isDSFilled = false;
         super.destroy();
     }
-    protected _getEventNames() {
+    _getEventNames() {
         const baseEvents = super._getEventNames();
         const events = Object.keys(LISTBOX_EVENTS).map((key) => {
             return <string>(<any>LISTBOX_EVENTS)[key];
@@ -158,10 +158,10 @@ export class ListBox extends BaseObject {
         return events.concat(baseEvents);
     }
     addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any) {
-        this._addHandler(LISTBOX_EVENTS.refreshed, fn, nmspace, context);
+        this.addHandler(LISTBOX_EVENTS.refreshed, fn, nmspace, context);
     }
     removeOnRefreshed(nmspace?: string) {
-        this._removeHandler(LISTBOX_EVENTS.refreshed, nmspace);
+        this.removeHandler(LISTBOX_EVENTS.refreshed, nmspace);
     }
     protected _onChanged() {
         const data: IMappedItem = this.getByIndex(this.selectedIndex);

@@ -89,7 +89,7 @@ export class Application extends BaseObject implements IApplication {
             initFn(<IApplication>self);
         });
     }
-    protected _getEventNames() {
+    _getEventNames() {
         const baseEvents = super._getEventNames();
         return [APP_EVENTS.startup].concat(baseEvents);
     }
@@ -103,10 +103,10 @@ export class Application extends BaseObject implements IApplication {
         return this._internal;
     }
     addOnStartUp(fn: TEventHandler<IApplication, any>, nmspace?: string, context?: IBaseObject): void {
-        this._addHandler(APP_EVENTS.startup, fn, nmspace, context);
+        this.addHandler(APP_EVENTS.startup, fn, nmspace, context);
     }
     removeOnStartUp(nmspace?: string): void {
-        this._removeHandler(APP_EVENTS.startup, nmspace);
+        this.removeHandler(APP_EVENTS.startup, nmspace);
     }
     getExports(): IIndexer<any> {
         return this._exports;

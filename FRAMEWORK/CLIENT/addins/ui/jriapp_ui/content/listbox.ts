@@ -67,21 +67,21 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
             this._options.initContentFn(this);
         }
     }
-    protected _getEventNames() {
+    _getEventNames() {
         const baseEvents = super._getEventNames();
         return [LOOKUP_EVENTS.obj_created, LOOKUP_EVENTS.obj_needed].concat(baseEvents);
     }
     addOnObjectCreated(fn: (sender: any, args: TObjCreatedArgs) => void, nmspace?: string) {
-        this._addHandler(LOOKUP_EVENTS.obj_created, fn, nmspace);
+        this.addHandler(LOOKUP_EVENTS.obj_created, fn, nmspace);
     }
     removeOnObjectCreated(nmspace?: string) {
-        this._removeHandler(LOOKUP_EVENTS.obj_created, nmspace);
+        this.removeHandler(LOOKUP_EVENTS.obj_created, nmspace);
     }
     addOnObjectNeeded(fn: (sender: any, args: TObjNeededArgs) => void, nmspace?: string) {
-        this._addHandler(LOOKUP_EVENTS.obj_needed, fn, nmspace);
+        this.addHandler(LOOKUP_EVENTS.obj_needed, fn, nmspace);
     }
     removeOnObjectNeeded(nmspace?: string) {
-        this._removeHandler(LOOKUP_EVENTS.obj_needed, nmspace);
+        this.removeHandler(LOOKUP_EVENTS.obj_needed, nmspace);
     }
     protected getListBoxElView(): ListBoxElView {
         if (!!this._listBoxElView) {

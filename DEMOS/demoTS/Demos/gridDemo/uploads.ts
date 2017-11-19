@@ -50,7 +50,7 @@ export class UploadThumbnailVM extends BaseUploadVM<RIAPP.Application> {
             return true;
         });
     }
-    protected _getEventNames() {
+    _getEventNames() {
         let base_events = super._getEventNames();
         return ['files_uploaded'].concat(base_events);
     }

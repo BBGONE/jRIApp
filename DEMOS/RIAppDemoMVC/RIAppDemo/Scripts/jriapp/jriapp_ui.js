@@ -1168,10 +1168,10 @@ define("jriapp_ui/textbox", ["require", "exports", "jriapp/utils/dom", "jriapp/b
             return [TXTBOX_EVENTS.keypress].concat(baseEvents);
         };
         TextBoxElView.prototype.addOnKeyPress = function (fn, nmspace) {
-            this._addHandler(TXTBOX_EVENTS.keypress, fn, nmspace);
+            this.addHandler(TXTBOX_EVENTS.keypress, fn, nmspace);
         };
         TextBoxElView.prototype.removeOnKeyPress = function (nmspace) {
-            this._removeHandler(TXTBOX_EVENTS.keypress, nmspace);
+            this.removeHandler(TXTBOX_EVENTS.keypress, nmspace);
         };
         TextBoxElView.prototype.toString = function () {
             return "TextBoxElView";
@@ -1276,10 +1276,10 @@ define("jriapp_ui/textarea", ["require", "exports", "jriapp/utils/dom", "jriapp/
             return [TXTAREA_EVENTS.keypress].concat(baseEvents);
         };
         TextAreaElView.prototype.addOnKeyPress = function (fn, nmspace) {
-            this._addHandler(TXTAREA_EVENTS.keypress, fn, nmspace);
+            this.addHandler(TXTAREA_EVENTS.keypress, fn, nmspace);
         };
         TextAreaElView.prototype.removeOnKeyPress = function (nmspace) {
-            this._removeHandler(TXTAREA_EVENTS.keypress, nmspace);
+            this.removeHandler(TXTAREA_EVENTS.keypress, nmspace);
         };
         TextAreaElView.prototype.toString = function () {
             return "TextAreaElView";
@@ -1762,10 +1762,10 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             return events.concat(baseEvents);
         };
         ListBox.prototype.addOnRefreshed = function (fn, nmspace, context) {
-            this._addHandler(LISTBOX_EVENTS.refreshed, fn, nmspace, context);
+            this.addHandler(LISTBOX_EVENTS.refreshed, fn, nmspace, context);
         };
         ListBox.prototype.removeOnRefreshed = function (nmspace) {
-            this._removeHandler(LISTBOX_EVENTS.refreshed, nmspace);
+            this.removeHandler(LISTBOX_EVENTS.refreshed, nmspace);
         };
         ListBox.prototype._onChanged = function () {
             var data = this.getByIndex(this.selectedIndex);
@@ -2546,16 +2546,16 @@ define("jriapp_ui/content/listbox", ["require", "exports", "jriapp_shared", "jri
             return [LOOKUP_EVENTS.obj_created, LOOKUP_EVENTS.obj_needed].concat(baseEvents);
         };
         LookupContent.prototype.addOnObjectCreated = function (fn, nmspace) {
-            this._addHandler(LOOKUP_EVENTS.obj_created, fn, nmspace);
+            this.addHandler(LOOKUP_EVENTS.obj_created, fn, nmspace);
         };
         LookupContent.prototype.removeOnObjectCreated = function (nmspace) {
-            this._removeHandler(LOOKUP_EVENTS.obj_created, nmspace);
+            this.removeHandler(LOOKUP_EVENTS.obj_created, nmspace);
         };
         LookupContent.prototype.addOnObjectNeeded = function (fn, nmspace) {
-            this._addHandler(LOOKUP_EVENTS.obj_needed, fn, nmspace);
+            this.addHandler(LOOKUP_EVENTS.obj_needed, fn, nmspace);
         };
         LookupContent.prototype.removeOnObjectNeeded = function (nmspace) {
-            this._removeHandler(LOOKUP_EVENTS.obj_needed, nmspace);
+            this.removeHandler(LOOKUP_EVENTS.obj_needed, nmspace);
         };
         LookupContent.prototype.getListBoxElView = function () {
             if (!!this._listBoxElView) {
@@ -2950,16 +2950,16 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
             return _this;
         }
         DataEditDialog.prototype.addOnClose = function (fn, nmspace, context) {
-            this._addHandler(DLG_EVENTS.close, fn, nmspace, context);
+            this.addHandler(DLG_EVENTS.close, fn, nmspace, context);
         };
         DataEditDialog.prototype.removeOnClose = function (nmspace) {
-            this._removeHandler(DLG_EVENTS.close, nmspace);
+            this.removeHandler(DLG_EVENTS.close, nmspace);
         };
         DataEditDialog.prototype.addOnRefresh = function (fn, nmspace, context) {
-            this._addHandler(DLG_EVENTS.refresh, fn, nmspace, context);
+            this.addHandler(DLG_EVENTS.refresh, fn, nmspace, context);
         };
         DataEditDialog.prototype.removeOnRefresh = function (nmspace) {
-            this._removeHandler(DLG_EVENTS.refresh, nmspace);
+            this.removeHandler(DLG_EVENTS.refresh, nmspace);
         };
         DataEditDialog.prototype._createDialog = function () {
             try {
@@ -5358,40 +5358,40 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             return events.concat(baseEvents);
         };
         DataGrid.prototype.addOnRowExpanded = function (fn, nmspace, context) {
-            this._addHandler(GRID_EVENTS.row_expanded, fn, nmspace, context);
+            this.addHandler(GRID_EVENTS.row_expanded, fn, nmspace, context);
         };
         DataGrid.prototype.removeOnRowExpanded = function (nmspace) {
-            this._removeHandler(GRID_EVENTS.row_expanded, nmspace);
+            this.removeHandler(GRID_EVENTS.row_expanded, nmspace);
         };
         DataGrid.prototype.addOnRowSelected = function (fn, nmspace, context) {
-            this._addHandler(GRID_EVENTS.row_selected, fn, nmspace, context);
+            this.addHandler(GRID_EVENTS.row_selected, fn, nmspace, context);
         };
         DataGrid.prototype.removeOnRowSelected = function (nmspace) {
-            this._removeHandler(GRID_EVENTS.row_selected, nmspace);
+            this.removeHandler(GRID_EVENTS.row_selected, nmspace);
         };
         DataGrid.prototype.addOnPageChanged = function (fn, nmspace, context) {
-            this._addHandler(GRID_EVENTS.page_changed, fn, nmspace, context);
+            this.addHandler(GRID_EVENTS.page_changed, fn, nmspace, context);
         };
         DataGrid.prototype.removeOnPageChanged = function (nmspace) {
-            this._removeHandler(GRID_EVENTS.page_changed, nmspace);
+            this.removeHandler(GRID_EVENTS.page_changed, nmspace);
         };
         DataGrid.prototype.addOnRowStateChanged = function (fn, nmspace, context) {
-            this._addHandler(GRID_EVENTS.row_state_changed, fn, nmspace, context);
+            this.addHandler(GRID_EVENTS.row_state_changed, fn, nmspace, context);
         };
         DataGrid.prototype.removeOnRowStateChanged = function (nmspace) {
-            this._removeHandler(GRID_EVENTS.row_state_changed, nmspace);
+            this.removeHandler(GRID_EVENTS.row_state_changed, nmspace);
         };
         DataGrid.prototype.addOnCellDblClicked = function (fn, nmspace, context) {
-            this._addHandler(GRID_EVENTS.cell_dblclicked, fn, nmspace, context);
+            this.addHandler(GRID_EVENTS.cell_dblclicked, fn, nmspace, context);
         };
         DataGrid.prototype.removeOnCellDblClicked = function (nmspace) {
-            this._removeHandler(GRID_EVENTS.cell_dblclicked, nmspace);
+            this.removeHandler(GRID_EVENTS.cell_dblclicked, nmspace);
         };
         DataGrid.prototype.addOnRowAction = function (fn, nmspace, context) {
-            this._addHandler(GRID_EVENTS.row_action, fn, nmspace, context);
+            this.addHandler(GRID_EVENTS.row_action, fn, nmspace, context);
         };
         DataGrid.prototype.removeOnRowAction = function (nmspace) {
-            this._removeHandler(GRID_EVENTS.row_action, nmspace);
+            this.removeHandler(GRID_EVENTS.row_action, nmspace);
         };
         DataGrid.prototype._onKeyDown = function (key, event) {
             var ds = this.dataSource, self = this;
@@ -7096,10 +7096,10 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             return [PNL_EVENTS.item_clicked].concat(baseEvents);
         };
         StackPanel.prototype.addOnItemClicked = function (fn, nmspace, context) {
-            this._addHandler(PNL_EVENTS.item_clicked, fn, nmspace, context);
+            this.addHandler(PNL_EVENTS.item_clicked, fn, nmspace, context);
         };
         StackPanel.prototype.removeOnItemClicked = function (nmspace) {
-            this._removeHandler(PNL_EVENTS.item_clicked, nmspace);
+            this.removeHandler(PNL_EVENTS.item_clicked, nmspace);
         };
         StackPanel.prototype._getContainerEl = function () { return this.el; };
         StackPanel.prototype._onKeyDown = function (key, event) {

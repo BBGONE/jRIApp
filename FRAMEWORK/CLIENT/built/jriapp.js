@@ -1755,7 +1755,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
                 utils.queue.enque(function () { fn.apply(self, [self, {}]); });
             }
             else {
-                _super.prototype._addHandler.call(this, name, fn, nmspace, context, priority);
+                _super.prototype.addHandler.call(this, name, fn, nmspace, context, priority);
             }
         };
         Bootstrap.prototype._init = function () {
@@ -1878,13 +1878,13 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
             return this._internal;
         };
         Bootstrap.prototype.addOnLoad = function (fn, nmspace, context) {
-            this._addHandler(GLOB_EVENTS.load, fn, nmspace, context);
+            this.addHandler(GLOB_EVENTS.load, fn, nmspace, context);
         };
         Bootstrap.prototype.addOnUnLoad = function (fn, nmspace, context) {
-            this._addHandler(GLOB_EVENTS.unload, fn, nmspace, context);
+            this.addHandler(GLOB_EVENTS.unload, fn, nmspace, context);
         };
         Bootstrap.prototype.addOnInitialize = function (fn, nmspace, context) {
-            this._addHandler(GLOB_EVENTS.initialized, fn, nmspace, context);
+            this.addHandler(GLOB_EVENTS.initialized, fn, nmspace, context);
         };
         Bootstrap.prototype.addModuleInit = function (fn) {
             if (this._moduleInits.filter(function (val) { return val === fn; }).length === 0) {
@@ -1936,7 +1936,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
             }
             this._isDestroyCalled = true;
             var self = this;
-            self._removeHandler();
+            self.removeHandler();
             self._destroyApp();
             self._exports = {};
             if (self._templateLoader !== null) {
@@ -3443,10 +3443,10 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
             }
         };
         TCommand.prototype.addOnCanExecuteChanged = function (fn, nmspace, context) {
-            this._addHandler(CMD_EVENTS.can_execute_changed, fn, nmspace, context);
+            this.addHandler(CMD_EVENTS.can_execute_changed, fn, nmspace, context);
         };
         TCommand.prototype.removeOnCanExecuteChanged = function (nmspace) {
-            this._removeHandler(CMD_EVENTS.can_execute_changed, nmspace);
+            this.removeHandler(CMD_EVENTS.can_execute_changed, nmspace);
         };
         TCommand.prototype.canExecute = function (sender, param) {
             return this._canExecute(sender, param, this._thisObj);
@@ -3958,10 +3958,10 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/const", "jr
             return this._internal;
         };
         Application.prototype.addOnStartUp = function (fn, nmspace, context) {
-            this._addHandler(APP_EVENTS.startup, fn, nmspace, context);
+            this.addHandler(APP_EVENTS.startup, fn, nmspace, context);
         };
         Application.prototype.removeOnStartUp = function (nmspace) {
-            this._removeHandler(APP_EVENTS.startup, nmspace);
+            this.removeHandler(APP_EVENTS.startup, nmspace);
         };
         Application.prototype.getExports = function () {
             return this._exports;
@@ -4219,6 +4219,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "1.6.7";
+    exports.VERSION = "1.7.0";
     bootstrap_7.Bootstrap._initFramework();
 });

@@ -111,6 +111,7 @@ declare module "jriapp_shared/int" {
     export type TFunc = {
         (...args: any[]): void;
     };
+    export type TAnyConstructor<T> = new (...args: any[]) => T;
     export interface IDisposable {
         destroy(): void;
     }
@@ -131,6 +132,7 @@ declare module "jriapp_shared/int" {
         High = 2,
     }
     export interface IBaseObject extends IErrorHandler, IDisposable {
+        _getEventNames(): string[];
         _isHasProp(prop: string): boolean;
         getIsDestroyed(): boolean;
         getIsDestroyCalled(): boolean;
@@ -442,6 +444,10 @@ declare module "jriapp_shared/utils/debug" {
         static isDebugging(): boolean;
     }
 }
+declare module "jriapp_shared/utils/weakmap" {
+    import { IWeakMap } from "jriapp_shared/int";
+    export function createWeakMap(): IWeakMap;
+}
 declare module "jriapp_shared/utils/eventhelper" {
     import { TPriority, IIndexer, IBaseObject, TEventHandler } from "jriapp_shared/int";
     export type TEventNode = {
@@ -465,17 +471,37 @@ declare module "jriapp_shared/utils/eventhelper" {
     }
 }
 declare module "jriapp_shared/object" {
-    import { IBaseObject, TPriority, TEventHandler, TErrorHandler, TPropChangedHandler } from "jriapp_shared/int";
+    import { IBaseObject, TPriority, TEventHandler, TErrorHandler, TPropChangedHandler, TAnyConstructor } from "jriapp_shared/int";
+    export function MixedBaseObject<T extends TAnyConstructor<{}>>(Base: T): {
+        new (...args: any[]): {
+            readonly _isDestroyed: boolean;
+            _isDestroyCalled: boolean;
+            _canRaiseEvent(name: string): boolean;
+            _getEventNames(): string[];
+            _isHasProp(prop: string): boolean;
+            handleError(error: any, source: any): boolean;
+            addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
+            removeHandler(name?: string, nmspace?: string): void;
+            addOnDestroyed(handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
+            removeOnDestroyed(nmspace?: string): void;
+            addOnError(handler: TErrorHandler, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
+            removeOnError(nmspace?: string): void;
+            removeNSHandlers(nmspace?: string): void;
+            raiseEvent(name: string, args: any): void;
+            raisePropertyChanged(name: string): void;
+            addOnPropertyChange(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
+            removeOnPropertyChange(prop?: string, nmspace?: string): void;
+            getIsDestroyed(): boolean;
+            getIsDestroyCalled(): boolean;
+            destroy(): void;
+        };
+    } & T;
     export class BaseObject implements IBaseObject {
-        private _objState;
-        private _events;
         constructor();
-        protected _getEventNames(): string[];
-        protected _addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        protected _removeHandler(name?: string, nmspace?: string): void;
         protected readonly _isDestroyed: boolean;
         protected _isDestroyCalled: boolean;
         protected _canRaiseEvent(name: string): boolean;
+        _getEventNames(): string[];
         _isHasProp(prop: string): boolean;
         handleError(error: any, source: any): boolean;
         addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
@@ -614,7 +640,7 @@ declare module "jriapp_shared/utils/jsonbag" {
         private _errors;
         constructor(json: string, jsonChanged: (json: string) => void);
         destroy(): void;
-        protected _getEventNames(): string[];
+        _getEventNames(): string[];
         _isHasProp(prop: string): boolean;
         addOnValidateBag(fn: TEventHandler<IPropertyBag, IBagValidateArgs<IPropertyBag>>, nmspace?: string, context?: any): void;
         removeOnValidateBag(nmspace?: string): void;
@@ -1105,7 +1131,7 @@ declare module "jriapp_shared/collection/base" {
         protected _internal: IInternalCollMethods<TItem>;
         constructor();
         static getEmptyFieldInfo(fieldName: string): IFieldInfo;
-        protected _getEventNames(): string[];
+        _getEventNames(): string[];
         addOnClearing(fn: TEventHandler<ICollection<TItem>, {
             reason: COLL_CHANGE_REASON;
         }>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
@@ -1252,7 +1278,7 @@ declare module "jriapp_shared/collection/aspect" {
         private _flags;
         private _valueBag;
         constructor(collection: BaseCollection<TItem>);
-        protected _getEventNames(): string[];
+        _getEventNames(): string[];
         protected _onErrorsChanged(): void;
         protected _setIsEdited(v: boolean): void;
         protected _setIsCancelling(v: boolean): void;
@@ -1410,7 +1436,7 @@ declare module "jriapp_shared/utils/jsonarray" {
         private _objId;
         constructor(owner: JsonBag, pathToArray: string);
         destroy(): void;
-        protected _getEventNames(): string[];
+        _getEventNames(): string[];
         protected updateArray(arr: any[]): void;
         addOnValidateBag(fn: TEventHandler<IPropertyBag, IBagValidateArgs<IPropertyBag>>, nmspace?: string, context?: any): void;
         removeOnValidateBag(nmspace?: string): void;
@@ -1423,10 +1449,6 @@ declare module "jriapp_shared/utils/jsonarray" {
         readonly owner: JsonBag;
         readonly list: AnyList;
     }
-}
-declare module "jriapp_shared/utils/weakmap" {
-    import { IWeakMap } from "jriapp_shared/int";
-    export function createWeakMap(): IWeakMap;
 }
 declare module "jriapp_shared/collection/dictionary" {
     import { IPropInfo } from "jriapp_shared/collection/int";

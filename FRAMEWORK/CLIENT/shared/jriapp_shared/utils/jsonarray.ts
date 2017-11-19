@@ -41,7 +41,7 @@ export class JsonArray extends BaseObject {
         this._owner = null;
         super.destroy();
     }
-    protected _getEventNames() {
+    _getEventNames() {
         const baseEvents = super._getEventNames();
         return [BAG_EVENTS.validate_bag, BAG_EVENTS.validate_field].concat(baseEvents);
     }
@@ -50,16 +50,16 @@ export class JsonArray extends BaseObject {
         this._owner.updateJson();
     }
     addOnValidateBag(fn: TEventHandler<IPropertyBag, IBagValidateArgs<IPropertyBag>>, nmspace?: string, context?: any) {
-        this._addHandler(BAG_EVENTS.validate_bag, fn, nmspace, context);
+        this.addHandler(BAG_EVENTS.validate_bag, fn, nmspace, context);
     }
     removeOnValidateBag(nmspace?: string) {
-        this._removeHandler(BAG_EVENTS.validate_bag, nmspace);
+        this.removeHandler(BAG_EVENTS.validate_bag, nmspace);
     }
     addOnValidateField(fn: TEventHandler<IPropertyBag, IFieldValidateArgs<IPropertyBag>>, nmspace?: string, context?: any) {
-        this._addHandler(BAG_EVENTS.validate_field, fn, nmspace, context);
+        this.addHandler(BAG_EVENTS.validate_field, fn, nmspace, context);
     }
     removeOnValidateField(nmspace?: string) {
-        this._removeHandler(BAG_EVENTS.validate_field, nmspace);
+        this.removeHandler(BAG_EVENTS.validate_field, nmspace);
     }
     // error Notification Implementation
     protected _validateBag(bag: IAnyValItem): IValidationInfo[] {

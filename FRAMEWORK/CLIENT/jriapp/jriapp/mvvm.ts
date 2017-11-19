@@ -37,7 +37,7 @@ export class TCommand<TParam, TThis> extends BaseObject implements ITCommand<TPa
         this._thisObj = thisObj;
         this._predicate = fnCanExecute;
     }
-    protected _getEventNames() {
+    _getEventNames() {
         const baseEvents = super._getEventNames();
         return [CMD_EVENTS.can_execute_changed].concat(baseEvents);
     }
@@ -53,10 +53,10 @@ export class TCommand<TParam, TThis> extends BaseObject implements ITCommand<TPa
         }
     }
     addOnCanExecuteChanged(fn: (sender: ITCommand<TParam>, args: any) => void, nmspace?: string, context?: IBaseObject) {
-        this._addHandler(CMD_EVENTS.can_execute_changed, fn, nmspace, context);
+        this.addHandler(CMD_EVENTS.can_execute_changed, fn, nmspace, context);
     }
     removeOnCanExecuteChanged(nmspace?: string) {
-        this._removeHandler(CMD_EVENTS.can_execute_changed, nmspace);
+        this.removeHandler(CMD_EVENTS.can_execute_changed, nmspace);
     }
     canExecute(sender: any, param: TParam): boolean {
         return this._canExecute(sender, param, this._thisObj);

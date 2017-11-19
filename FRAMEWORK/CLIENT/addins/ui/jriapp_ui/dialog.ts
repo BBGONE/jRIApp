@@ -191,16 +191,16 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         this._createDialog();
     }
     addOnClose(fn: TEventHandler<DataEditDialog, any>, nmspace?: string, context?: IBaseObject) {
-        this._addHandler(DLG_EVENTS.close, fn, nmspace, context);
+        this.addHandler(DLG_EVENTS.close, fn, nmspace, context);
     }
     removeOnClose(nmspace?: string) {
-        this._removeHandler(DLG_EVENTS.close, nmspace);
+        this.removeHandler(DLG_EVENTS.close, nmspace);
     }
     addOnRefresh(fn: TEventHandler<DataEditDialog, { isHandled: boolean; }>, nmspace?: string, context?: IBaseObject) {
-        this._addHandler(DLG_EVENTS.refresh, fn, nmspace, context);
+        this.addHandler(DLG_EVENTS.refresh, fn, nmspace, context);
     }
     removeOnRefresh(nmspace?: string) {
-        this._removeHandler(DLG_EVENTS.refresh, nmspace);
+        this.removeHandler(DLG_EVENTS.refresh, nmspace);
     }
     protected _createDialog() {
         try {
@@ -212,7 +212,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             ERROR.reThrow(ex, this.handleError(ex, this));
         }
     }
-    protected _getEventNames() {
+    _getEventNames() {
         const baseEvents = super._getEventNames();
         return [DLG_EVENTS.close, DLG_EVENTS.refresh].concat(baseEvents);
     }

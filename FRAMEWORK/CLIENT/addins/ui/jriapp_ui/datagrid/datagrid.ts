@@ -309,46 +309,46 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         const ds = this._options.dataSource;
         this._setDataSource(ds);
     }
-    protected _getEventNames() {
+    _getEventNames() {
         const baseEvents = super._getEventNames();
         const events = Object.keys(GRID_EVENTS).map((key) => { return <string>(<any>GRID_EVENTS)[key]; });
         return events.concat(baseEvents);
     }
     addOnRowExpanded(fn: TEventHandler<DataGrid, { collapsedRow: Row; expandedRow: Row; isExpanded: boolean; }>, nmspace?: string, context?: any) {
-        this._addHandler(GRID_EVENTS.row_expanded, fn, nmspace, context);
+        this.addHandler(GRID_EVENTS.row_expanded, fn, nmspace, context);
     }
     removeOnRowExpanded(nmspace?: string) {
-        this._removeHandler(GRID_EVENTS.row_expanded, nmspace);
+        this.removeHandler(GRID_EVENTS.row_expanded, nmspace);
     }
     addOnRowSelected(fn: TEventHandler<DataGrid, { row: Row; }>, nmspace?: string, context?: any) {
-        this._addHandler(GRID_EVENTS.row_selected, fn, nmspace, context);
+        this.addHandler(GRID_EVENTS.row_selected, fn, nmspace, context);
     }
     removeOnRowSelected(nmspace?: string) {
-        this._removeHandler(GRID_EVENTS.row_selected, nmspace);
+        this.removeHandler(GRID_EVENTS.row_selected, nmspace);
     }
     addOnPageChanged(fn: TEventHandler<DataGrid, any>, nmspace?: string, context?: any) {
-        this._addHandler(GRID_EVENTS.page_changed, fn, nmspace, context);
+        this.addHandler(GRID_EVENTS.page_changed, fn, nmspace, context);
     }
     removeOnPageChanged(nmspace?: string) {
-        this._removeHandler(GRID_EVENTS.page_changed, nmspace);
+        this.removeHandler(GRID_EVENTS.page_changed, nmspace);
     }
     addOnRowStateChanged(fn: TEventHandler<DataGrid, { row: Row; val: any; css: string; }>, nmspace?: string, context?: any) {
-        this._addHandler(GRID_EVENTS.row_state_changed, fn, nmspace, context);
+        this.addHandler(GRID_EVENTS.row_state_changed, fn, nmspace, context);
     }
     removeOnRowStateChanged(nmspace?: string) {
-        this._removeHandler(GRID_EVENTS.row_state_changed, nmspace);
+        this.removeHandler(GRID_EVENTS.row_state_changed, nmspace);
     }
     addOnCellDblClicked(fn: TEventHandler<DataGrid, { cell: BaseCell<BaseColumn>; }>, nmspace?: string, context?: any) {
-        this._addHandler(GRID_EVENTS.cell_dblclicked, fn, nmspace, context);
+        this.addHandler(GRID_EVENTS.cell_dblclicked, fn, nmspace, context);
     }
     removeOnCellDblClicked(nmspace?: string) {
-        this._removeHandler(GRID_EVENTS.cell_dblclicked, nmspace);
+        this.removeHandler(GRID_EVENTS.cell_dblclicked, nmspace);
     }
     addOnRowAction(fn: TEventHandler<DataGrid, { row: Row; action: ROW_ACTION; }>, nmspace?: string, context?: any) {
-        this._addHandler(GRID_EVENTS.row_action, fn, nmspace, context);
+        this.addHandler(GRID_EVENTS.row_action, fn, nmspace, context);
     }
     removeOnRowAction(nmspace?: string) {
-        this._removeHandler(GRID_EVENTS.row_action, nmspace);
+        this.removeHandler(GRID_EVENTS.row_action, nmspace);
     }
     protected _onKeyDown(key: number, event: Event): void {
         const ds = this.dataSource, self = this;

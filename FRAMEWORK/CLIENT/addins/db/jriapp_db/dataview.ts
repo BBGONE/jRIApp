@@ -61,7 +61,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         });
         this._bindDS();
     }
-    protected _getEventNames() {
+    _getEventNames() {
         const baseEvents = super._getEventNames();
         return [VIEW_EVENTS.refreshed].concat(baseEvents);
     }
@@ -70,10 +70,10 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         // noop
     }
     addOnViewRefreshed(fn: TEventHandler<DataView<TItem>, any>, nmspace?: string) {
-        this._addHandler(VIEW_EVENTS.refreshed, fn, nmspace);
+        this.addHandler(VIEW_EVENTS.refreshed, fn, nmspace);
     }
     removeOnViewRefreshed(nmspace?: string) {
-        this._removeHandler(VIEW_EVENTS.refreshed, nmspace);
+        this.removeHandler(VIEW_EVENTS.refreshed, nmspace);
     }
     protected _filterForPaging(items: TItem[]) {
         let skip = 0, take = 0, pos = -1, cnt = -1;

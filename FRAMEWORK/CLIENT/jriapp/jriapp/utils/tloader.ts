@@ -39,7 +39,7 @@ export class TemplateLoader extends BaseObject {
         }
         super.destroy();
     }
-    protected _getEventNames() {
+    _getEventNames() {
         const baseEvents = super._getEventNames();
         return ["loaded"].concat(baseEvents);
     }

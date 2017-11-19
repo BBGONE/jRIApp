@@ -42,15 +42,15 @@ export class TextBoxElView extends InputElView {
             }, this.uniqueID);
         }
     }
-    protected _getEventNames() {
+    _getEventNames() {
         const baseEvents = super._getEventNames();
         return [TXTBOX_EVENTS.keypress].concat(baseEvents);
     }
     addOnKeyPress(fn: (sender: TextBoxElView, args: TKeyPressArgs) => void, nmspace?: string) {
-        this._addHandler(TXTBOX_EVENTS.keypress, fn, nmspace);
+        this.addHandler(TXTBOX_EVENTS.keypress, fn, nmspace);
     }
     removeOnKeyPress(nmspace?: string) {
-        this._removeHandler(TXTBOX_EVENTS.keypress, nmspace);
+        this.removeHandler(TXTBOX_EVENTS.keypress, nmspace);
     }
     toString() {
         return "TextBoxElView";

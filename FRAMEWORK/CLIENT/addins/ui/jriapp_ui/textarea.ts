@@ -42,15 +42,15 @@ export class TextAreaElView extends BaseElView {
             }, this.uniqueID);
         }
     }
-    protected _getEventNames() {
+    _getEventNames() {
         const baseEvents = super._getEventNames();
         return [TXTAREA_EVENTS.keypress].concat(baseEvents);
     }
     addOnKeyPress(fn: (sender: TextAreaElView, args: TKeyPressArgs) => void, nmspace?: string) {
-        this._addHandler(TXTAREA_EVENTS.keypress, fn, nmspace);
+        this.addHandler(TXTAREA_EVENTS.keypress, fn, nmspace);
     }
     removeOnKeyPress(nmspace?: string) {
-        this._removeHandler(TXTAREA_EVENTS.keypress, nmspace);
+        this.removeHandler(TXTAREA_EVENTS.keypress, nmspace);
     }
     toString() {
         return "TextAreaElView";

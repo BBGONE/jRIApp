@@ -51,7 +51,7 @@ export class SSEventsVM extends RIAPP.BaseObject {
             return false;
         }
     }
-    protected _getEventNames() {
+    _getEventNames() {
         const base_events = super._getEventNames();
         return ['open', 'close', 'error', 'message'].concat(base_events);
     }

@@ -142,7 +142,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
         alert("You double clicked " + cell.uniqueID);
     }
 
-    protected _getEventNames() {
+    _getEventNames() {
         let base_events = super._getEventNames();
         return ['row_expanded', 'page_changed'].concat(base_events);
     }

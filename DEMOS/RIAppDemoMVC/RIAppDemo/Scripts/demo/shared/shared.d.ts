@@ -95,7 +95,7 @@ declare module "autocomplete" {
         constructor(options: IAutocompleteOptions);
         protected _createGridDataSource(): void;
         protected _getDbContext(): dbMOD.DbContext;
-        protected _getEventNames(): string[];
+        _getEventNames(): string[];
         protected _createTemplate(): RIAPP.ITemplate;
         protected _onTextChange(): void;
         protected _onKeyUp(text: string, keyCode: number): void;
@@ -160,7 +160,7 @@ declare module "ssevents" {
         private _timeOut;
         constructor(baseUrl: string, clientID: string);
         static isSupported(): boolean;
-        protected _getEventNames(): string[];
+        _getEventNames(): string[];
         private _onEsOpen(event);
         private _onEsError(event);
         private _onMsg(event);
@@ -213,7 +213,7 @@ declare module "websocket" {
         static createUrl(port: number, svcName?: string, isSSL?: boolean): string;
         constructor(url: string);
         static isSupported(): boolean;
-        protected _getEventNames(): string[];
+        _getEventNames(): string[];
         protected _onWsOpen(event: any): void;
         protected _onWsClose(event: any): void;
         protected _onWsError(event: any): void;

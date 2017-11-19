@@ -157,7 +157,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
         this._ordersVM = new OrderVM(this);
         this._customerAddressVM = new CustomerAddressVM(this);
     }
-    protected _getEventNames() {
+    _getEventNames() {
         let base_events = super._getEventNames();
         return ['row_expanded', 'page_changed'].concat(base_events);
     }
