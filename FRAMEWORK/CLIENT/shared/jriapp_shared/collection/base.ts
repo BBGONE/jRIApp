@@ -593,21 +593,24 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         this._newKey = 0;
         this.currentItem = null;
         const oldItems = this._items;
-        this._items = [];
-        this._itemsByKey = {};
-        this._errors.clear();
-        this._clearItems(oldItems);
-        if (oper !== COLL_CHANGE_OPER.Fill) {
-            this._onCollectionChanged({
-                changeType: COLL_CHANGE_TYPE.Reset,
-                reason: reason,
-                oper: oper,
-                items: [],
-                pos: []
-            });
+        try {
+            this._items = [];
+            this._itemsByKey = {};
+            this._errors.clear();
+            if (oper !== COLL_CHANGE_OPER.Fill) {
+                this._onCollectionChanged({
+                    changeType: COLL_CHANGE_TYPE.Reset,
+                    reason: reason,
+                    oper: oper,
+                    items: [],
+                    pos: []
+                });
+            }
+            this.raiseEvent(COLL_EVENTS.cleared, { reason: reason });
+            this._onCountChanged();
+        } finally {
+            this._clearItems(oldItems);
         }
-        this.raiseEvent(COLL_EVENTS.cleared, { reason: reason });
-        this._onCountChanged();
     }
     _setIsLoading(v: boolean) {
         if (this._isLoading !== v) {

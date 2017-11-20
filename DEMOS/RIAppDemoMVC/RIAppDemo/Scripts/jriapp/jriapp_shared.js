@@ -3605,21 +3605,25 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             this._newKey = 0;
             this.currentItem = null;
             var oldItems = this._items;
-            this._items = [];
-            this._itemsByKey = {};
-            this._errors.clear();
-            this._clearItems(oldItems);
-            if (oper !== 1) {
-                this._onCollectionChanged({
-                    changeType: 2,
-                    reason: reason,
-                    oper: oper,
-                    items: [],
-                    pos: []
-                });
+            try {
+                this._items = [];
+                this._itemsByKey = {};
+                this._errors.clear();
+                if (oper !== 1) {
+                    this._onCollectionChanged({
+                        changeType: 2,
+                        reason: reason,
+                        oper: oper,
+                        items: [],
+                        pos: []
+                    });
+                }
+                this.raiseEvent(COLL_EVENTS.cleared, { reason: reason });
+                this._onCountChanged();
             }
-            this.raiseEvent(COLL_EVENTS.cleared, { reason: reason });
-            this._onCountChanged();
+            finally {
+                this._clearItems(oldItems);
+            }
         };
         BaseCollection.prototype._setIsLoading = function (v) {
             if (this._isLoading !== v) {
