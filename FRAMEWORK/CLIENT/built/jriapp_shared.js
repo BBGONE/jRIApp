@@ -3599,7 +3599,6 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             return !args.isCancel;
         };
         BaseCollection.prototype._clear = function (reason, oper) {
-            var _this = this;
             this.raiseEvent(COLL_EVENTS.clearing, { reason: reason });
             this.cancelEdit();
             this._EditingItem = null;
@@ -3609,7 +3608,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             this._items = [];
             this._itemsByKey = {};
             this._errors.clear();
-            utils.queue.enque(function () { _this._clearItems(oldItems); });
+            this._clearItems(oldItems);
             if (oper !== 1) {
                 this._onCollectionChanged({
                     changeType: 2,
@@ -4241,6 +4240,22 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         AspectFlags[AspectFlags["IsRefreshing"] = 2] = "IsRefreshing";
         AspectFlags[AspectFlags["IsCancelling"] = 3] = "IsCancelling";
     })(AspectFlags || (AspectFlags = {}));
+    function fn_destroyVal(entry, nmspace) {
+        if (!entry) {
+            return;
+        }
+        var val = entry.val;
+        if (sys.isEditable(val) && val.isEditing) {
+            val.cancelEdit();
+        }
+        var errNotification = sys.getErrorNotification(val);
+        if (!!errNotification) {
+            errNotification.removeOnErrorsChanged(nmspace);
+        }
+        if (entry.isOwnIt && sys.isBaseObj(val)) {
+            val.destroy();
+        }
+    }
     var ItemAspect = (function (_super) {
         __extends(ItemAspect, _super);
         function ItemAspect(collection) {
@@ -4380,22 +4395,6 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             return validation_1.Validations.distinct(res.concat(itemVals));
         };
         ItemAspect.prototype._resetStatus = function () {
-        };
-        ItemAspect.prototype._delCustomVal = function (entry) {
-            var coll = this.collection;
-            if (!!entry) {
-                var val = entry.val;
-                if (sys.isEditable(val) && val.isEditing) {
-                    val.cancelEdit();
-                }
-                var errNotification = sys.getErrorNotification(val);
-                if (!!errNotification) {
-                    errNotification.removeOnErrorsChanged(coll.uniqueID);
-                }
-                if (entry.isOwnIt && sys.isBaseObj(val)) {
-                    val.destroy();
-                }
-            }
         };
         ItemAspect.prototype.handleError = function (error, source) {
             return (!this._collection) ? _super.prototype.handleError.call(this, error, source) : this._collection.handleError(error, source);
@@ -4603,9 +4602,6 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         ItemAspect.prototype.setCustomVal = function (name, val, isOwnVal) {
             var _this = this;
             if (isOwnVal === void 0) { isOwnVal = true; }
-            if (this.getIsDestroyCalled()) {
-                return;
-            }
             if (!this._valueBag) {
                 if (checks.isNt(val)) {
                     return;
@@ -4614,7 +4610,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             }
             var oldEntry = this._valueBag[name], coll = this.collection;
             if (!!oldEntry && oldEntry.val !== val) {
-                this._delCustomVal(oldEntry);
+                fn_destroyVal(oldEntry, coll.uniqueID);
             }
             if (checks.isNt(val)) {
                 delete this._valueBag[name];
@@ -4634,38 +4630,31 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             }
         };
         ItemAspect.prototype.getCustomVal = function (name) {
-            if (this.getIsDestroyCalled() || !this._valueBag) {
+            if (!this._valueBag) {
                 return null;
             }
             var obj = this._valueBag[name];
-            if (!obj) {
-                return null;
-            }
-            return obj.val;
+            return (!obj) ? null : obj.val;
         };
         ItemAspect.prototype.destroy = function () {
             if (this._isDestroyed) {
                 return;
             }
-            var self = this;
             this._isDestroyCalled = true;
             var coll = this._collection, item = this._item;
             if (!!item) {
                 this.cancelEdit();
-                if (!!this._valueBag) {
-                    utils.core.forEachProp(this._valueBag, function (name) {
-                        self._delCustomVal(self._valueBag[name]);
+                var bag = this._valueBag;
+                if (!!bag) {
+                    coreUtils.forEachProp(bag, function (name, val) {
+                        fn_destroyVal(val, coll.uniqueID);
                     });
-                    this._valueBag = null;
                 }
                 if (!item._aspect.isDetached) {
                     coll.removeItem(item);
                 }
             }
-            this._saveVals = null;
-            this._vals = {};
             this._flags = 0;
-            this._collection = null;
             _super.prototype.destroy.call(this);
         };
         ItemAspect.prototype.toString = function () {

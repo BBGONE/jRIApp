@@ -19,13 +19,11 @@ export class CollectionItem<TAspect extends ItemAspect<ICollectionItem, any>> ex
         }
         this._isDestroyCalled = true;
         const aspect: TAspect = this._aspectPrivate;
-
         if (!!aspect) {
             if (!aspect.getIsDestroyCalled()) {
                 aspect.destroy();
             }
         }
-
         super.destroy();
     }
     toString(): string {

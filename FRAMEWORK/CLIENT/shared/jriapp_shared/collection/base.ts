@@ -596,7 +596,7 @@ export class BaseCollection<TItem extends ICollectionItem> extends BaseObject im
         this._items = [];
         this._itemsByKey = {};
         this._errors.clear();
-        utils.queue.enque(() => { this._clearItems(oldItems); });
+        this._clearItems(oldItems);
         if (oper !== COLL_CHANGE_OPER.Fill) {
             this._onCollectionChanged({
                 changeType: COLL_CHANGE_TYPE.Reset,

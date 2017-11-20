@@ -1290,7 +1290,6 @@ declare module "jriapp_shared/collection/aspect" {
         protected _validateField(fieldName: string): IValidationInfo;
         protected _validateFields(): IValidationInfo[];
         protected _resetStatus(): void;
-        private _delCustomVal(entry);
         handleError(error: any, source: any): boolean;
         _setItem(v: TItem): void;
         _setKey(v: string): void;

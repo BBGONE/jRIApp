@@ -27,6 +27,26 @@ interface ICustomVal {
     isOwnIt: boolean;
 }
 
+function fn_destroyVal(entry: ICustomVal, nmspace: string): void {
+    if (!entry) {
+        return;
+    }
+    const val = entry.val;
+
+    if (sys.isEditable(val) && val.isEditing) {
+        val.cancelEdit();
+    }
+
+    const errNotification = sys.getErrorNotification(val);
+    if (!!errNotification) {
+        errNotification.removeOnErrorsChanged(nmspace);
+    }
+
+    if (entry.isOwnIt && sys.isBaseObj(val)) {
+        val.destroy();
+    }
+}
+
 export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject implements IItemAspect<TItem, TObj> {
     private _key: string;
     private _item: TItem;
@@ -182,25 +202,6 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
     protected _resetStatus() {
         // can reset isNew on all items in the collection
         // the list descendant does it
-    }
-    private _delCustomVal(entry: ICustomVal) {
-        const coll = this.collection;
-        if (!!entry) {
-            const val = entry.val;
-
-            if (sys.isEditable(val) && val.isEditing) {
-                val.cancelEdit();
-            }
-
-            const errNotification = sys.getErrorNotification(val);
-            if (!!errNotification) {
-                errNotification.removeOnErrorsChanged(coll.uniqueID);
-            }
-
-            if (entry.isOwnIt && sys.isBaseObj(val)) {
-                val.destroy();
-            }
-        }
     }
     handleError(error: any, source: any): boolean {
         return (!this._collection) ? super.handleError(error, source) :  this._collection.handleError(error, source);
@@ -406,10 +407,6 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
     }
     // can be used to store any user object
     setCustomVal(name: string, val: any, isOwnVal: boolean = true): void {
-        if (this.getIsDestroyCalled()) {
-            return;
-        }
-
         if (!this._valueBag) {
             if (checks.isNt(val)) {
                 return;
@@ -420,7 +417,7 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         const oldEntry = this._valueBag[name],  coll = this.collection;
 
         if (!!oldEntry && oldEntry.val !== val) {
-            this._delCustomVal(oldEntry);
+            fn_destroyVal(oldEntry, coll.uniqueID);
         }
 
         if (checks.isNt(val)) {
@@ -441,41 +438,33 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         }
     }
     getCustomVal(name: string): any {
-        if (this.getIsDestroyCalled() || !this._valueBag) {
+        if (!this._valueBag) {
             return null;
         }
 
         const obj = this._valueBag[name];
-        if (!obj) {
-            return null;
-        }
-        return obj.val;
+        return (!obj) ? null: obj.val;
     }
     destroy() {
         if (this._isDestroyed) {
             return;
         }
-        const self = this;
         this._isDestroyCalled = true;
         const coll = this._collection, item = this._item;
         if (!!item) {
             this.cancelEdit();
-            if (!!this._valueBag) {
-                utils.core.forEachProp(this._valueBag, (name) => {
-                    self._delCustomVal(self._valueBag[name]);
+            const bag = this._valueBag;
+            if (!!bag) {
+                coreUtils.forEachProp(bag, (name, val) => {
+                    fn_destroyVal(val, coll.uniqueID);
                 });
-
-                this._valueBag = null;
             }
 
             if (!item._aspect.isDetached) {
                 coll.removeItem(item);
             }
         }
-        this._saveVals = null;
-        this._vals = {};
         this._flags = 0;
-        this._collection = null;
         super.destroy();
     }
     toString() {
