@@ -1110,7 +1110,7 @@ declare module "jriapp_shared/collection/base" {
         onErrorsChanged(item: TItem): void;
         getItemsWithErrors(): TItem[];
     }
-    export class BaseCollection<TItem extends ICollectionItem> extends BaseObject implements ICollection<TItem> {
+    export abstract class BaseCollection<TItem extends ICollectionItem> extends BaseObject implements ICollection<TItem> {
         private _objId;
         private _perms;
         private _options;
@@ -1339,7 +1339,6 @@ declare module "jriapp_shared/collection/item" {
     import { ICollectionItem } from "jriapp_shared/collection/int";
     import { ItemAspect } from "jriapp_shared/collection/aspect";
     export class CollectionItem<TAspect extends ItemAspect<ICollectionItem, any>> extends BaseObject implements ICollectionItem {
-        private _aspectPrivate;
         constructor(aspect: TAspect);
         readonly _aspect: TAspect;
         readonly _key: string;
@@ -1357,7 +1356,6 @@ declare module "jriapp_shared/collection/list" {
     export interface IListItemAspectConstructor<TItem extends IListItem, TObj> {
         new (coll: BaseList<TItem, TObj>, obj?: TObj): ListItemAspect<TItem, TObj>;
     }
-    export type TItemFactory<TItem extends IListItem, TObj> = (aspect: ListItemAspect<TItem, TObj>) => TItem;
     export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TItem, TObj> {
         constructor(coll: BaseList<TItem, TObj>, vals: TObj, key: string, isNew: boolean);
         _setProp(name: string, val: any): void;
@@ -1366,22 +1364,19 @@ declare module "jriapp_shared/collection/list" {
         toString(): string;
         readonly list: BaseList<TItem, TObj>;
     }
-    export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TItem> {
-        protected _itemFactory: TItemFactory<TItem, TObj>;
+    export abstract class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TItem> {
         constructor(props: IPropInfo[]);
+        abstract itemFactory(aspect: ListItemAspect<TItem, TObj>): TItem;
         private _updateFieldMap(props);
-        protected _initItemFactory(): void;
         protected _attach(item: TItem): number;
         protected _createNew(): TItem;
         protected createItem(obj?: TObj): TItem;
         protected _getNewKey(): string;
-        destroy(): void;
         fillItems(objArray: TObj[], clearAll?: boolean): void;
         getNewItems(): TItem[];
         resetStatus(): void;
         toArray(): TObj[];
         toString(): string;
-        readonly itemFactory: TItemFactory<TItem, TObj>;
     }
 }
 declare module "jriapp_shared/utils/anylist" {
@@ -1416,7 +1411,7 @@ declare module "jriapp_shared/utils/anylist" {
         private _debounce;
         constructor(onChanged: (arr: any[]) => void);
         destroy(): void;
-        protected _initItemFactory(): void;
+        itemFactory(aspect: AnyItemAspect): AnyValListItem;
         protected createItem(obj?: IAnyVal): IAnyValItem;
         protected onChanged(): void;
         setValues(values: any[]): void;
@@ -1452,7 +1447,7 @@ declare module "jriapp_shared/utils/jsonarray" {
 declare module "jriapp_shared/collection/dictionary" {
     import { IPropInfo } from "jriapp_shared/collection/int";
     import { BaseList, IListItem } from "jriapp_shared/collection/list";
-    export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TItem, TObj> {
+    export abstract class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TItem, TObj> {
         private _keyName;
         constructor(keyName: string, props: IPropInfo[]);
         protected createItem(obj?: TObj): TItem;
@@ -1487,7 +1482,7 @@ declare module "jriapp_shared" {
     export { BaseCollection } from "jriapp_shared/collection/base";
     export { CollectionItem } from "jriapp_shared/collection/item";
     export { ItemAspect } from "jriapp_shared/collection/aspect";
-    export { ListItemAspect, IListItem, BaseList, IListItemAspectConstructor, TItemFactory } from "jriapp_shared/collection/list";
+    export { ListItemAspect, IListItem, BaseList, IListItemAspectConstructor } from "jriapp_shared/collection/list";
     export { BaseDictionary } from "jriapp_shared/collection/dictionary";
     export { ValidationError } from "jriapp_shared/errors";
     export * from "jriapp_shared/utils/ideferred";
