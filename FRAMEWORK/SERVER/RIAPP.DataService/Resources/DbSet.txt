@@ -9,10 +9,10 @@
 		};
 		opts.dbSetInfo.fieldInfos = ({{FIELD_INFOS}});
 		super(opts);
-		this._initItemFactory();
 	}
-	protected _initItemFactory(): void {
-		this._itemFactory = (aspect: {{ASPECT_NAME}}) => { return new {{ENTITY_NAME}}(aspect); };
+	// override
+	itemFactory(aspect: {{ASPECT_NAME}}): {{INTERFACE_NAME}}  {
+		return new {{ENTITY_NAME}}(aspect);
 	}
 	findEntity({{PK_VALS}}): {{INTERFACE_NAME}} {
 		return this.findByPK(RIAPP.Utils.arr.fromList(arguments));

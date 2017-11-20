@@ -60,6 +60,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
     private _srvKey: string;
     private _origVals: IIndexer<any>;
     private _savedStatus: ITEM_STATUS;
+
     constructor(dbSet: DbSet<TItem, TObj, TDbContext>, vals: TObj, key: string, isNew: boolean) {
         super(dbSet);
         this._srvKey = null;

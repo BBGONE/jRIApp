@@ -597,7 +597,6 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             _this.options.enablePaging = dbSetInfo.enablePaging;
             _this.options.pageSize = dbSetInfo.pageSize;
             _this._query = null;
-            _this._itemFactory = null;
             _this._isSubmitOnDelete = false;
             _this._navfldMap = {};
             _this._calcfldMap = {};
@@ -1444,11 +1443,6 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         });
         Object.defineProperty(DbSet.prototype, "dbSetName", {
             get: function () { return this._dbSetName; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(DbSet.prototype, "itemFactory", {
-            get: function () { return this._itemFactory; },
             enumerable: true,
             configurable: true
         });

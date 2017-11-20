@@ -22,7 +22,7 @@ sys.getItemByProp = (obj: any, prop: string) => {
 };
 
 
-export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TItem, TObj> {
+export abstract class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TItem, TObj> {
     private _keyName: string;
 
     constructor(keyName: string, props: IPropInfo[]) {

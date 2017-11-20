@@ -149,9 +149,8 @@ export class AnyList extends BaseList<IAnyValItem, IAnyVal> {
         super.destroy();
     }
     // override
-    protected _initItemFactory(): void {
-        const itemType = AnyValListItem;
-        this._itemFactory = (aspect: AnyItemAspect) => { return new itemType(aspect); };
+    itemFactory(aspect: AnyItemAspect): AnyValListItem {
+        return new AnyValListItem(aspect);
     }
     // override
     protected createItem(obj?: IAnyVal): IAnyValItem {

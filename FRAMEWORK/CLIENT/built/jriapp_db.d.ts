@@ -152,10 +152,11 @@ declare module "jriapp_db/dbset" {
     import { TEventHandler, IBaseObject, IPromise, TPriority } from "jriapp_shared";
     import { IInternalCollMethods, IFieldInfo } from "jriapp_shared/collection/int";
     import { BaseCollection } from "jriapp_shared/collection/base";
-    import { IFieldName, IEntityItem, TItemFactory, IRowInfo, ITrackAssoc, IQueryResponse, IPermissions, IDbSetConstuctorOptions, ICalcFieldImpl, INavFieldImpl, IQueryResult, IRowData, IDbSetLoadedArgs } from "jriapp_db/int";
+    import { IFieldName, IEntityItem, IRowInfo, ITrackAssoc, IQueryResponse, IPermissions, IDbSetConstuctorOptions, ICalcFieldImpl, INavFieldImpl, IQueryResult, IRowData, IDbSetLoadedArgs } from "jriapp_db/int";
     import { REFRESH_MODE } from "jriapp_db/const";
     import { DataQuery, TDataQuery } from "jriapp_db/dataquery";
     import { DbContext } from "jriapp_db/dbcontext";
+    import { EntityAspect } from "jriapp_db/entity_aspect";
     export interface IFillFromServiceArgs {
         res: IQueryResponse;
         reason: COLL_CHANGE_REASON;
@@ -186,7 +187,7 @@ declare module "jriapp_db/dbset" {
     export interface IDbSetConstructor<TItem extends IEntityItem, TObj> {
         new (dbContext: DbContext): DbSet<TItem, TObj, DbContext>;
     }
-    export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext> extends BaseCollection<TItem> {
+    export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext> extends BaseCollection<TItem> {
         private _dbContext;
         private _isSubmitOnDelete;
         private _trackAssoc;
@@ -204,7 +205,6 @@ declare module "jriapp_db/dbset" {
         protected _itemsByKey: {
             [key: string]: TItem;
         };
-        protected _itemFactory: TItemFactory<TItem, TObj>;
         protected _ignorePageChanged: boolean;
         protected _query: DataQuery<TItem, TObj>;
         private _pageDebounce;
@@ -212,6 +212,7 @@ declare module "jriapp_db/dbset" {
         private _pkFields;
         private _isPageFilled;
         constructor(opts: IDbSetConstuctorOptions);
+        abstract itemFactory(aspect: EntityAspect<TItem, TObj, TDbContext>): TItem;
         handleError(error: any, source: any): boolean;
         _getEventNames(): string[];
         protected _mapAssocFields(): void;
@@ -270,7 +271,6 @@ declare module "jriapp_db/dbset" {
         readonly items: TItem[];
         readonly dbContext: TDbContext;
         readonly dbSetName: string;
-        readonly itemFactory: TItemFactory<TItem, TObj>;
         readonly query: DataQuery<TItem, TObj>;
         readonly isHasChanges: boolean;
         readonly cacheSize: number;
@@ -589,7 +589,6 @@ declare module "jriapp_db/int" {
     export interface IEntityItem extends ICollectionItem {
         readonly _aspect: EntityAspect<IEntityItem, any, DbContext>;
     }
-    export type TItemFactory<TItem extends IEntityItem, TObj> = (aspect: EntityAspect<TItem, TObj, DbContext>) => TItem;
     export interface IKV {
         key: string;
         val: any;
@@ -919,7 +918,7 @@ declare module "jriapp_db/complexprop" {
     }
 }
 declare module "jriapp_db" {
-    export { IFieldName, IEntityItem, IPermissions, IQueryResult, IDbSetLoadedArgs, IErrorInfo, IMetadata, IDbSetConstuctorOptions, IValidationErrorInfo, IPermissionsInfo, IFilterInfo, ISortInfo, IRowData, TItemFactory } from "jriapp_db/int";
+    export { IFieldName, IEntityItem, IPermissions, IQueryResult, IDbSetLoadedArgs, IErrorInfo, IMetadata, IDbSetConstuctorOptions, IValidationErrorInfo, IPermissionsInfo, IFilterInfo, ISortInfo, IRowData } from "jriapp_db/int";
     export { DbSet, TDbSet, IDbSetConstructor, IInternalDbSetMethods } from "jriapp_db/dbset";
     export * from "jriapp_db/dataview";
     export * from "jriapp_db/child_dataview";

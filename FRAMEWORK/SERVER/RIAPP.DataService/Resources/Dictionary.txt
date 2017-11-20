@@ -2,9 +2,9 @@
 	constructor() {
 		super('{{KEY_NAME}}',{{PROPS}});
 	}
-	//override
-	protected _initItemFactory(): void {
-		this._itemFactory = (aspect: {{ASPECT_NAME}}) => { return new {{ITEM_TYPE_NAME}}(aspect); };
+	// override
+	itemFactory(aspect: {{ASPECT_NAME}}): {{INTERFACE_NAME}} {
+		return new {{ITEM_TYPE_NAME}}(aspect);
 	}
 	findItem({{PK_VALS}}): {{INTERFACE_NAME}} {
 		return this.findByPK(RIAPP.Utils.arr.fromList(arguments));

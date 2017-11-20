@@ -2,9 +2,9 @@
 	constructor() {
 		super({{PROP_INFOS}});
 	}
-	//override
-	protected _initItemFactory(): void {
-		this._itemFactory = (aspect: {{ASPECT_NAME}}) => { return new {{ITEM_TYPE_NAME}}(aspect); };
+	// override
+	itemFactory(aspect: {{ASPECT_NAME}}): {{INTERFACE_NAME}} {
+		return new {{ITEM_TYPE_NAME}}(aspect);
 	}
 	toString() {
 		return '{{LIST_NAME}}';

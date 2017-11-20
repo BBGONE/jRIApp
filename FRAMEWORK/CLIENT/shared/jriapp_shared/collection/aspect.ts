@@ -5,14 +5,13 @@ import { IVoidPromise } from "../utils/ideferred";
 import { IIndexer, IValidationInfo, TEventHandler, IErrorNotification } from "../int";
 import { BaseObject } from "../object";
 import { Utils } from "../utils/utils";
-
 import { ICollectionItem, IItemAspect, ICancellableArgs, PROP_NAME, ITEM_EVENTS } from "./int";
 import { BaseCollection } from "./base";
 import { CollUtils } from "./utils";
 import { ValidationError } from "../errors";
 import { Validations } from "./validation";
 
-const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check,
+const utils = Utils, coreUtils = utils.core, checks = utils.check,
     sys = utils.sys, ERROR = utils.err, collUtils = CollUtils;
 
 const enum AspectFlags {
@@ -144,7 +143,8 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
             return false;
         }
 
-        const coll = this.collection, self = this, item = self.item, changes = this._saveVals;
+        const coll = this.collection, self = this,
+            item = self.item, changes = this._saveVals;
         this._vals = this._saveVals;
         this._saveVals = null;
         coll.errors.removeAllErrors(item);
@@ -204,7 +204,7 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         // the list descendant does it
     }
     handleError(error: any, source: any): boolean {
-        return (!this._collection) ? super.handleError(error, source) :  this._collection.handleError(error, source);
+        return this.collection.handleError(error, source);
     }
     _setItem(v: TItem) {
         this._item = v;
@@ -249,17 +249,23 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
             return "";
         }
         const res: string[] = [];
-        coreUtils.forEachProp(itemErrors, (name) => {
-            res.push(strUtils.format("{0}: {1}", name, itemErrors[name]));
+        coreUtils.forEachProp(itemErrors, (name, errs) => {
+            for (let i = 0; i < errs.length; i += 1) {
+                res.push(`${name}: ${errs[i]}`);
+            }
         });
         return res.join("|");
     }
     submitChanges(): IVoidPromise {
+        //not implemented
         return utils.defer.reject<void>();
     }
     rejectChanges(): void {
     }
     beginEdit(): boolean {
+        if (this.isDetached) {
+            throw new Error("Invalid operation. The item is detached");
+        }
         if (this.isEditing) {
             return false;
         }
@@ -281,6 +287,9 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
     endEdit(): boolean {
         if (!this.isEditing) {
             return false;
+        }
+        if (this.isDetached) {
+            throw new Error("Invalid operation. The item is detached");
         }
         const coll = this.collection, internal = coll._getInternal(), item = this.item;
         internal.onBeforeEditing(item, false, false);
@@ -305,7 +314,9 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         if (!this.isEditing) {
             return false;
         }
-
+        if (this.isDetached) {
+            throw new Error("Invalid operation. The item is detached");
+        }
         this._setIsCancelling(true);
         try {
             const coll = this.collection, internal = coll._getInternal(), item = this.item, isNew = this.isNew;
@@ -330,6 +341,9 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         return true;
     }
     deleteItem(): boolean {
+        if (this.isDetached) {
+            throw new Error("Invalid operation. The item is detached");
+        }
         const coll = this.collection;
         if (!this.key) {
             return false;
@@ -441,7 +455,6 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         if (!this._valueBag) {
             return null;
         }
-
         const obj = this._valueBag[name];
         return (!obj) ? null: obj.val;
     }
@@ -460,7 +473,7 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
                 });
             }
 
-            if (!item._aspect.isDetached) {
+            if (!this.isDetached) {
                 coll.removeItem(item);
             }
         }
@@ -492,7 +505,8 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         return coll.isUpdating;
     }
     get isEditing(): boolean {
-        const coll = this._collection, editingItem = !coll ? <TItem>null : coll._getInternal().getEditingItem();
+        const coll = this._collection,
+            editingItem = !coll ? <TItem>null : coll._getInternal().getEditingItem();
         return !!editingItem && editingItem._aspect === this;
     }
     get isCanSubmit(): boolean {

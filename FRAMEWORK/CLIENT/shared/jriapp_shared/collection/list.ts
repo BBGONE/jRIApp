@@ -23,8 +23,6 @@ export interface IListItemAspectConstructor<TItem extends IListItem, TObj> {
     new (coll: BaseList<TItem, TObj>, obj?: TObj): ListItemAspect<TItem, TObj>;
 }
 
-export type TItemFactory<TItem extends IListItem, TObj> = (aspect: ListItemAspect<TItem, TObj>) => TItem;
-
 export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TItem, TObj> {
     constructor(coll: BaseList<TItem, TObj>, vals: TObj, key: string, isNew: boolean) {
         super(coll);
@@ -83,16 +81,14 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
     get list(): BaseList<TItem, TObj> { return <BaseList<TItem, TObj>>this.collection; }
 }
 
-export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TItem> {
-    protected _itemFactory: TItemFactory<TItem, TObj>;
-
+export abstract class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TItem> {
     constructor(props: IPropInfo[]) {
         super();
-        this._initItemFactory();
         if (!!props) {
             this._updateFieldMap(props);
         }
     }
+    abstract itemFactory(aspect: ListItemAspect<TItem, TObj>): TItem;
     private _updateFieldMap(props: IPropInfo[]) {
         const self = this;
         if (!checks.isArray(props) || props.length === 0) {
@@ -111,9 +107,6 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
                 fld.fullName = fullName;
             });
         });
-    }
-    protected _initItemFactory(): void {
-       // noop
     }
     protected _attach(item: TItem) {
         try {
@@ -138,14 +131,6 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
         const key = "clkey_" + this._newKey;
         this._newKey += 1;
         return key;
-    }
-    destroy() {
-        if (this._isDestroyed) {
-            return;
-        }
-        this._isDestroyCalled = true;
-        this._itemFactory = null;
-        super.destroy();
     }
     fillItems(objArray: TObj[], clearAll?: boolean) {
         const self = this, newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];
@@ -206,8 +191,5 @@ export class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TIte
     }
     toString(): string {
         return "BaseList";
-    }
-    get itemFactory(): TItemFactory<TItem, TObj> {
-        return this._itemFactory;
     }
 }

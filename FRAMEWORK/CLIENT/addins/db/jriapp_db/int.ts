@@ -18,12 +18,11 @@ export interface IEntityItem extends ICollectionItem {
     readonly _aspect: EntityAspect<IEntityItem, any, DbContext>;
 }
 
-export type TItemFactory<TItem extends IEntityItem, TObj> = (aspect: EntityAspect<TItem, TObj, DbContext>) => TItem;
-
 export interface IKV {
     key: string;
     val: any;
 }
+
 export interface ICachedPage {
     keys: string[];
     pageIndex: number;

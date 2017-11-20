@@ -137,7 +137,7 @@ export class Errors<TItem extends ICollectionItem> {
     }
 }
 
-export class BaseCollection<TItem extends ICollectionItem> extends BaseObject implements ICollection<TItem> {
+export abstract class BaseCollection<TItem extends ICollectionItem> extends BaseObject implements ICollection<TItem> {
     private _objId: string;
     private _perms: IPermissions;
     private _options: ICollectionOptions;

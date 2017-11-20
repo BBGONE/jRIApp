@@ -14,7 +14,7 @@ import {
     ValueUtils, CollUtils
 } from "jriapp_shared/collection/utils";
 import {
-    IFieldName, IEntityItem, TItemFactory, IRowInfo, ITrackAssoc, IQueryResponse,
+    IFieldName, IEntityItem, IRowInfo, ITrackAssoc, IQueryResponse,
     IPermissions, IDbSetConstuctorOptions, IAssociationInfo, ICalcFieldImpl, INavFieldImpl,
     IQueryResult, IRowData, IDbSetLoadedArgs
 } from "./int";
@@ -83,7 +83,7 @@ export interface IDbSetConstructor<TItem extends IEntityItem, TObj> {
     new (dbContext: DbContext): DbSet<TItem, TObj, DbContext>;
 }
 
-export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext> extends BaseCollection<TItem> {
+export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext> extends BaseCollection<TItem> {
     private _dbContext: TDbContext;
     private _isSubmitOnDelete: boolean;
     private _trackAssoc: { [name: string]: IAssociationInfo; };
@@ -95,7 +95,6 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
     protected _navfldMap: { [fieldName: string]: INavFieldImpl<TItem>; };
     protected _calcfldMap: { [fieldName: string]: ICalcFieldImpl<TItem>; };
     protected _itemsByKey: { [key: string]: TItem; };
-    protected _itemFactory: TItemFactory<TItem, TObj>;
     protected _ignorePageChanged: boolean;
     protected _query: DataQuery<TItem, TObj>;
     private _pageDebounce: Debounce;
@@ -112,7 +111,6 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
         this.options.enablePaging = dbSetInfo.enablePaging;
         this.options.pageSize = dbSetInfo.pageSize;
         this._query = null;
-        this._itemFactory = null;
         this._isSubmitOnDelete = false;
         this._navfldMap = {};
         this._calcfldMap = {};
@@ -207,6 +205,7 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
             self.raisePropertyChanged(PROP_NAME.isBusy);
         });
     }
+    abstract itemFactory(aspect: EntityAspect<TItem, TObj, TDbContext>): TItem;
     public handleError(error: any, source: any): boolean {
         return (!this._dbContext) ? super.handleError(error, source) : this._dbContext.handleError(error, source);
     }
@@ -1025,7 +1024,6 @@ export class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext
         return this._dbContext;
     }
     get dbSetName(): string { return this._dbSetName; }
-    get itemFactory(): TItemFactory<TItem, TObj> { return this._itemFactory; }
     get query(): DataQuery<TItem, TObj> { return this._query; }
     get isHasChanges(): boolean { return this._changeCount > 0; }
     get cacheSize(): number {
