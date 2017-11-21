@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
     IBaseObject, IIndexer, TPriority, TEventHandler, TErrorHandler,
-    TErrorArgs, TPropChangedHandler, TAnyConstructor
+    TErrorArgs, TPropChangedHandler //, TAnyConstructor
 } from "./int";
 import { ERRS } from "./lang";
 import { SysUtils } from "./utils/sysutils";
@@ -146,8 +146,10 @@ function fn_removeOnPropertyChange(obj: any, prop?: string, nmspace?: string): v
 /**
  * The function is used to make any object which has a constructor as a Framework's BaseObject by the way of mixing IBaseObject into the implementation
  * For example: export const SomeNewObject = MixedBaseObject(SomeObject);
+ * it is currently unused!!!
  * @param Base
  */
+/*
 export function MixedBaseObject<T extends TAnyConstructor<{}>>(Base: T) {
     return class extends Base implements IBaseObject {
         constructor(...args: any[]) {
@@ -244,9 +246,11 @@ export function MixedBaseObject<T extends TAnyConstructor<{}>>(Base: T) {
         }
     }
 }
+*/
 
 /**
- * Instead of mixing IBaseObject into some class You can derive your class from this BaseObject
+ * Instead of mixing IBaseObject into some class 
+ * You can derive your class from this BaseObject
  */
 export class BaseObject implements IBaseObject {
     constructor() {

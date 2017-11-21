@@ -471,31 +471,7 @@ declare module "jriapp_shared/utils/eventhelper" {
     }
 }
 declare module "jriapp_shared/object" {
-    import { IBaseObject, TPriority, TEventHandler, TErrorHandler, TPropChangedHandler, TAnyConstructor } from "jriapp_shared/int";
-    export function MixedBaseObject<T extends TAnyConstructor<{}>>(Base: T): {
-        new (...args: any[]): {
-            readonly _isDestroyed: boolean;
-            _isDestroyCalled: boolean;
-            _canRaiseEvent(name: string): boolean;
-            _getEventNames(): string[];
-            _isHasProp(prop: string): boolean;
-            handleError(error: any, source: any): boolean;
-            addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-            removeHandler(name?: string, nmspace?: string): void;
-            addOnDestroyed(handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-            removeOnDestroyed(nmspace?: string): void;
-            addOnError(handler: TErrorHandler, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-            removeOnError(nmspace?: string): void;
-            removeNSHandlers(nmspace?: string): void;
-            raiseEvent(name: string, args: any): void;
-            raisePropertyChanged(name: string): void;
-            addOnPropertyChange(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-            removeOnPropertyChange(prop?: string, nmspace?: string): void;
-            getIsDestroyed(): boolean;
-            getIsDestroyCalled(): boolean;
-            destroy(): void;
-        };
-    } & T;
+    import { IBaseObject, TPriority, TEventHandler, TErrorHandler, TPropChangedHandler } from "jriapp_shared/int";
     export class BaseObject implements IBaseObject {
         constructor();
         protected readonly _isDestroyed: boolean;
