@@ -46,7 +46,13 @@ function fn_destroyVal(entry: ICustomVal, nmspace: string): void {
     }
 }
 
-export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject implements IItemAspect<TItem, TObj> {
+function fn_checkDetached<TItem extends ICollectionItem, TObj>(aspect: IItemAspect<TItem, TObj>): void {
+    if (aspect.isDetached) {
+        throw new Error("Invalid operation. The item is detached");
+    }
+}
+
+export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject implements IItemAspect<TItem, TObj> {
     private _key: string;
     private _item: TItem;
     private _collection: BaseCollection<TItem>;
@@ -58,9 +64,9 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
   
     constructor(collection: BaseCollection<TItem>) {
         super();
+        this._collection = collection;
         this._key = null;
         this._item = null;
-        this._collection = collection;
         this._status = ITEM_STATUS.None;
         this._saveVals = null;
         this._vals = null;
@@ -89,9 +95,7 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         }
     }
     protected _beginEdit(): boolean {
-        if (this.isDetached) {
-            throw new Error("Invalid operation. The item is detached");
-        }
+        fn_checkDetached(this);
         const coll = this.collection;
         let isHandled: boolean = false;
         if (coll.isEditing) {
@@ -116,12 +120,10 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         return true;
     }
     protected _endEdit(): boolean {
-        if (this.isDetached) {
-            throw new Error("Invalid operation. The item is detached");
-        }
         if (!this.isEditing) {
             return false;
         }
+        fn_checkDetached(this);
         const coll = this.collection, self = this, errors = coll.errors;
         // revalidate all
         errors.removeAllErrors(this.item);
@@ -136,13 +138,10 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         return true;
     }
     protected _cancelEdit(): boolean {
-        if (this.isDetached) {
-            throw new Error("Invalid operation. The item is detached");
-        }
         if (!this.isEditing) {
             return false;
         }
-
+        fn_checkDetached(this);
         const coll = this.collection, self = this,
             item = self.item, changes = this._saveVals;
         this._vals = this._saveVals;
@@ -257,15 +256,12 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         return res.join("|");
     }
     submitChanges(): IVoidPromise {
-        //not implemented
-        return utils.defer.reject<void>();
+        return utils.defer.reject<void>("not implemented");
     }
     rejectChanges(): void {
     }
     beginEdit(): boolean {
-        if (this.isDetached) {
-            throw new Error("Invalid operation. The item is detached");
-        }
+        fn_checkDetached(this);
         if (this.isEditing) {
             return false;
         }
@@ -288,9 +284,7 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         if (!this.isEditing) {
             return false;
         }
-        if (this.isDetached) {
-            throw new Error("Invalid operation. The item is detached");
-        }
+        fn_checkDetached(this);
         const coll = this.collection, internal = coll._getInternal(), item = this.item;
         internal.onBeforeEditing(item, false, false);
         let customEndEdit = true;
@@ -314,9 +308,7 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         if (!this.isEditing) {
             return false;
         }
-        if (this.isDetached) {
-            throw new Error("Invalid operation. The item is detached");
-        }
+        fn_checkDetached(this);
         this._setIsCancelling(true);
         try {
             const coll = this.collection, internal = coll._getInternal(), item = this.item, isNew = this.isNew;
@@ -341,11 +333,8 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         return true;
     }
     deleteItem(): boolean {
-        if (this.isDetached) {
-            throw new Error("Invalid operation. The item is detached");
-        }
         const coll = this.collection;
-        if (!this.key) {
+        if (this.isDetached) {
             return false;
         }
         const args: ICancellableArgs<TItem> = { item: this.item, isCancel: false };
@@ -360,9 +349,11 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
         let res = !!this.collection.errors.getErrors(this.item);
         if (!res && !!this._valueBag) {
             coreUtils.forEachProp(this._valueBag, (name, obj) => {
-                const errNotification = sys.getErrorNotification(obj.val);
-                if (!!errNotification && errNotification.getIsHasErrors()) {
-                    res = true;
+                if (!!obj) {
+                    const errNotification = sys.getErrorNotification(obj.val);
+                    if (!!errNotification && errNotification.getIsHasErrors()) {
+                        res = true;
+                    }
                 }
             });
         }
@@ -493,20 +484,17 @@ export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject 
     get key(): string {
         return this._key;
     }
-    get collection(): BaseCollection<TItem> { return this._collection; }
+    get collection(): BaseCollection<TItem> {
+        return this._collection;
+    }
     get status(): ITEM_STATUS {
         return this._status;
     }
     get isUpdating(): boolean {
-        const coll = this.collection;
-        if (!coll) {
-            return false;
-        }
-        return coll.isUpdating;
+        return this.collection.isUpdating;
     }
     get isEditing(): boolean {
-        const coll = this._collection,
-            editingItem = !coll ? <TItem>null : coll._getInternal().getEditingItem();
+        const editingItem = this.collection._getInternal().getEditingItem();
         return !!editingItem && editingItem._aspect === this;
     }
     get isCanSubmit(): boolean {

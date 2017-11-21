@@ -1268,7 +1268,7 @@ declare module "jriapp_shared/collection/aspect" {
     import { BaseObject } from "jriapp_shared/object";
     import { ICollectionItem, IItemAspect } from "jriapp_shared/collection/int";
     import { BaseCollection } from "jriapp_shared/collection/base";
-    export class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject implements IItemAspect<TItem, TObj> {
+    export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject implements IItemAspect<TItem, TObj> {
         private _key;
         private _item;
         private _collection;

@@ -4260,13 +4260,18 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             val.destroy();
         }
     }
+    function fn_checkDetached(aspect) {
+        if (aspect.isDetached) {
+            throw new Error("Invalid operation. The item is detached");
+        }
+    }
     var ItemAspect = (function (_super) {
         __extends(ItemAspect, _super);
         function ItemAspect(collection) {
             var _this = _super.call(this) || this;
+            _this._collection = collection;
             _this._key = null;
             _this._item = null;
-            _this._collection = collection;
             _this._status = 0;
             _this._saveVals = null;
             _this._vals = null;
@@ -4298,9 +4303,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             }
         };
         ItemAspect.prototype._beginEdit = function () {
-            if (this.isDetached) {
-                throw new Error("Invalid operation. The item is detached");
-            }
+            fn_checkDetached(this);
             var coll = this.collection;
             var isHandled = false;
             if (coll.isEditing) {
@@ -4326,12 +4329,10 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             return true;
         };
         ItemAspect.prototype._endEdit = function () {
-            if (this.isDetached) {
-                throw new Error("Invalid operation. The item is detached");
-            }
             if (!this.isEditing) {
                 return false;
             }
+            fn_checkDetached(this);
             var coll = this.collection, self = this, errors = coll.errors;
             errors.removeAllErrors(this.item);
             var validations = this._validateFields();
@@ -4345,12 +4346,10 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             return true;
         };
         ItemAspect.prototype._cancelEdit = function () {
-            if (this.isDetached) {
-                throw new Error("Invalid operation. The item is detached");
-            }
             if (!this.isEditing) {
                 return false;
             }
+            fn_checkDetached(this);
             var coll = this.collection, self = this, item = self.item, changes = this._saveVals;
             this._vals = this._saveVals;
             this._saveVals = null;
@@ -4456,14 +4455,12 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             return res.join("|");
         };
         ItemAspect.prototype.submitChanges = function () {
-            return utils.defer.reject();
+            return utils.defer.reject("not implemented");
         };
         ItemAspect.prototype.rejectChanges = function () {
         };
         ItemAspect.prototype.beginEdit = function () {
-            if (this.isDetached) {
-                throw new Error("Invalid operation. The item is detached");
-            }
+            fn_checkDetached(this);
             if (this.isEditing) {
                 return false;
             }
@@ -4486,9 +4483,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             if (!this.isEditing) {
                 return false;
             }
-            if (this.isDetached) {
-                throw new Error("Invalid operation. The item is detached");
-            }
+            fn_checkDetached(this);
             var coll = this.collection, internal = coll._getInternal(), item = this.item;
             internal.onBeforeEditing(item, false, false);
             var customEndEdit = true;
@@ -4512,9 +4507,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             if (!this.isEditing) {
                 return false;
             }
-            if (this.isDetached) {
-                throw new Error("Invalid operation. The item is detached");
-            }
+            fn_checkDetached(this);
             this._setIsCancelling(true);
             try {
                 var coll = this.collection, internal = coll._getInternal(), item = this.item, isNew = this.isNew;
@@ -4540,11 +4533,8 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             return true;
         };
         ItemAspect.prototype.deleteItem = function () {
-            if (this.isDetached) {
-                throw new Error("Invalid operation. The item is detached");
-            }
             var coll = this.collection;
-            if (!this.key) {
+            if (this.isDetached) {
                 return false;
             }
             var args = { item: this.item, isCancel: false };
@@ -4559,9 +4549,11 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             var res = !!this.collection.errors.getErrors(this.item);
             if (!res && !!this._valueBag) {
                 coreUtils.forEachProp(this._valueBag, function (name, obj) {
-                    var errNotification = sys.getErrorNotification(obj.val);
-                    if (!!errNotification && errNotification.getIsHasErrors()) {
-                        res = true;
+                    if (!!obj) {
+                        var errNotification = sys.getErrorNotification(obj.val);
+                        if (!!errNotification && errNotification.getIsHasErrors()) {
+                            res = true;
+                        }
                     }
                 });
             }
@@ -4700,7 +4692,9 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             configurable: true
         });
         Object.defineProperty(ItemAspect.prototype, "collection", {
-            get: function () { return this._collection; },
+            get: function () {
+                return this._collection;
+            },
             enumerable: true,
             configurable: true
         });
@@ -4713,18 +4707,14 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         });
         Object.defineProperty(ItemAspect.prototype, "isUpdating", {
             get: function () {
-                var coll = this.collection;
-                if (!coll) {
-                    return false;
-                }
-                return coll.isUpdating;
+                return this.collection.isUpdating;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(ItemAspect.prototype, "isEditing", {
             get: function () {
-                var coll = this._collection, editingItem = !coll ? null : coll._getInternal().getEditingItem();
+                var editingItem = this.collection._getInternal().getEditingItem();
                 return !!editingItem && editingItem._aspect === this;
             },
             enumerable: true,
