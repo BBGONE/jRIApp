@@ -665,7 +665,7 @@ define("jriapp_ui/utils/tooltip", ["require", "exports", "jriapp_ui/utils/jquery
             };
             if (!!$el.data("qtip")) {
                 if (!tip) {
-                    $el.qtip("dispose", true);
+                    $el.qtip("destroy", true);
                 }
                 else {
                     $el.qtip("option", "content.text", tip);
