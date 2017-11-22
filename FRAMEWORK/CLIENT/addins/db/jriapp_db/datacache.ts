@@ -140,13 +140,13 @@ export class DataCache extends BaseObject {
         }
         return this._query.dbSet.createEntityFromObj(kv.val, kv.key);
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         this.clear();
-        super.destroy();
+        super.dispose();
     }
     toString() {
         return "DataCache";
@@ -176,7 +176,7 @@ export class DataCache extends BaseObject {
         }
         if (v !== this._totalCount) {
             this._totalCount = v;
-            this.raisePropertyChanged(PROP_NAME.totalCount);
+            this.objEvents.raiseProp(PROP_NAME.totalCount);
         }
     }
     get cacheSize() {

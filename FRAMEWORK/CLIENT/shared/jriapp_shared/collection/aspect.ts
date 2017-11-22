@@ -42,7 +42,7 @@ function fn_destroyVal(entry: ICustomVal, nmspace: string): void {
     }
 
     if (entry.isOwnIt && sys.isBaseObj(val)) {
-        val.destroy();
+        val.dispose();
     }
 }
 
@@ -73,12 +73,12 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         this._flags = 0;
         this._valueBag = null;
     }
-    _getEventNames() {
-        const baseEvents = super._getEventNames();
+    getEventNames() {
+        const baseEvents = super.getEventNames();
         return [ITEM_EVENTS.errors_changed].concat(baseEvents);
     }
     protected _onErrorsChanged() {
-        this.raiseEvent(ITEM_EVENTS.errors_changed, {});
+        this.objEvents.raise(ITEM_EVENTS.errors_changed, {});
     }
     protected _setIsEdited(v: boolean) {
         if (v) {
@@ -150,7 +150,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         // refresh User interface when values restored
         coll.getFieldNames().forEach((name) => {
             if (changes[name] !== self._vals[name]) {
-                item.raisePropertyChanged(name);
+                item.objEvents.raiseProp(name);
             }
         });
 
@@ -225,7 +225,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
             } else {
                 this._flags &= ~(1 << AspectFlags.IsRefreshing);
             }
-            this.raisePropertyChanged(PROP_NAME.isRefreshing);
+            this.objEvents.raiseProp(PROP_NAME.isRefreshing);
         }
     }
     _onAttaching(): void {
@@ -324,8 +324,8 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
                 return false;
             }
             internal.onEditing(item, false, true);
-            if (isNew && !this.isEdited && !this.getIsDestroyCalled()) {
-                this.destroy();
+            if (isNew && !this.isEdited && !this.getIsDisposing()) {
+                this.dispose();
             }
         } finally {
             this._setIsCancelling(false);
@@ -342,7 +342,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         if (args.isCancel) {
             return false;
         }
-        this.destroy();
+        this.dispose();
         return true;
     }
     getIsHasErrors() {
@@ -360,10 +360,10 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         return res;
     }
     addOnErrorsChanged(fn: TEventHandler<ItemAspect<TItem, TObj>, any>, nmspace?: string, context?: any) {
-        this.addHandler(ITEM_EVENTS.errors_changed, fn, nmspace, context);
+        this.objEvents.on(ITEM_EVENTS.errors_changed, fn, nmspace, context);
     }
     removeOnErrorsChanged(nmspace?: string) {
-        this.removeHandler(ITEM_EVENTS.errors_changed, nmspace);
+        this.objEvents.off(ITEM_EVENTS.errors_changed, nmspace);
     }
     getFieldErrors(fieldName: string): IValidationInfo[] {
         const res: IValidationInfo[] = [], itemErrors = this.collection.errors.getErrors(this.item);
@@ -449,11 +449,11 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         const obj = this._valueBag[name];
         return (!obj) ? null: obj.val;
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         const coll = this._collection, item = this._item;
         if (!!item) {
             this.cancelEdit();
@@ -469,7 +469,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
             }
         }
         this._flags = 0;
-        super.destroy();
+        super.dispose();
     }
     toString() {
         return "ItemAspect";

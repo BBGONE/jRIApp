@@ -48,7 +48,7 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
         this._dsDebounce = new Debounce();
     }
     templateLoading(template: ITemplate): void {
-        if (this.getIsDestroyCalled()) {
+        if (this.getIsDisposing()) {
             return;
         }
         const isFirstShow = !this._prevTemplateID,
@@ -58,7 +58,7 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
         }
     }
     templateLoaded(template: ITemplate, error?: any): void {
-        if (this.getIsDestroyCalled()) {
+        if (this.getIsDisposing()) {
             return;
         }
         if (!dom.isContained(template.el, this.el)) {
@@ -82,18 +82,18 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
                     self._animation.stop();
                     self._animation.beforeHide(self._template);
                     self._animation.hide(self._template).always(() => {
-                        if (self.getIsDestroyCalled()) {
+                        if (self.getIsDisposing()) {
                             return;
                         }
-                        self._template.destroy();
+                        self._template.dispose();
                         self._template = null;
-                        self.raisePropertyChanged(PROP_NAME.template);
+                        self.objEvents.raiseProp(PROP_NAME.template);
 
                     });
                 } else {
-                    self._template.destroy();
+                    self._template.dispose();
                     self._template = null;
-                    self.raisePropertyChanged(PROP_NAME.template);
+                    self.objEvents.raiseProp(PROP_NAME.template);
                 }
                 return;
             }
@@ -101,14 +101,14 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
             if (!self._template) {
                 self._template = createTemplate(self._dataContext, self);
                 self._template.templateID = newName;
-                self.raisePropertyChanged(PROP_NAME.template);
+                self.objEvents.raiseProp(PROP_NAME.template);
                 return;
             }
             if (!!self._animation && !!self._template.loadedElem) {
                 self._animation.stop();
                 self._animation.beforeHide(self._template);
                 self._animation.hide(self._template).always(() => {
-                    if (self.getIsDestroyCalled()) {
+                    if (self.getIsDisposing()) {
                         return;
                     }
                     self._template.templateID = newName;
@@ -120,26 +120,26 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
             utils.err.reThrow(ex, self.handleError(ex, self));
         }
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
-        this._tDebounce.destroy();
-        this._dsDebounce.destroy();
+        this.setDisposing();
+        this._tDebounce.dispose();
+        this._dsDebounce.dispose();
         const a = this._animation;
         this._animation = null;
         const t = this._template;
         this._template = null;
 
         if (sys.isBaseObj(a)) {
-            (<IBaseObject><any>a).destroy();
+            (<IBaseObject><any>a).dispose();
         }
         if (!!t) {
-            t.destroy();
+            t.dispose();
         }
         this._dataContext = null;
-        super.destroy();
+        super.dispose();
     }
     get template() { return this._template; }
     get templateID() {
@@ -153,7 +153,7 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
             this._tDebounce.enque(() => {
                 self._templateChanging(old, v);
             });
-            this.raisePropertyChanged(PROP_NAME.templateID);
+            this.objEvents.raiseProp(PROP_NAME.templateID);
         }
     }
     get dataContext() { return this._dataContext; }
@@ -166,14 +166,14 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
                     this._template.dataContext = ds;
                 }
             });
-            this.raisePropertyChanged(PROP_NAME.dataContext);
+            this.objEvents.raiseProp(PROP_NAME.dataContext);
         }
     }
     get animation() { return this._animation; }
     set animation(v) {
         if (this._animation !== v) {
             this._animation = v;
-            this.raisePropertyChanged(PROP_NAME.animation);
+            this.objEvents.raiseProp(PROP_NAME.animation);
         }
     }
 }

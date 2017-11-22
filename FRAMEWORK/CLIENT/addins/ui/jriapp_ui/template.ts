@@ -50,7 +50,7 @@ export class TemplateElView extends CommandElView implements ITemplateEvents {
             self._template = template;
             const args: TemplateCommandParam = { template: template, isLoaded: true };
             self.invokeCommand(args, false);
-            this.raisePropertyChanged(PROP_NAME.template);
+            this.objEvents.raiseProp(PROP_NAME.template);
         } catch (ex) {
             ERROR.reThrow(ex, this.handleError(ex, this));
         }
@@ -65,7 +65,7 @@ export class TemplateElView extends CommandElView implements ITemplateEvents {
         } finally {
             self._template = null;
         }
-        this.raisePropertyChanged(PROP_NAME.template);
+        this.objEvents.raiseProp(PROP_NAME.template);
     }
     toString(): string {
         return "TemplateElView";
@@ -74,7 +74,7 @@ export class TemplateElView extends CommandElView implements ITemplateEvents {
     set isEnabled(v: boolean) {
         if (this._isEnabled !== v) {
             this._isEnabled = v;
-            this.raisePropertyChanged(PROP_NAME.isEnabled);
+            this.objEvents.raiseProp(PROP_NAME.isEnabled);
         }
     }
     get template(): ITemplate {

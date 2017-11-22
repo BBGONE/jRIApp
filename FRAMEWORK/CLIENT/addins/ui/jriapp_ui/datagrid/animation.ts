@@ -40,15 +40,15 @@ export class DefaultAnimation extends BaseObject implements IDataGridAnimation {
             this._$el = null;
         }
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         try {
             this.stop();
         } finally {
-            super.destroy();
+            super.dispose();
         }
     }
 }

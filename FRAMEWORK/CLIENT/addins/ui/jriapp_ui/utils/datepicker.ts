@@ -48,7 +48,7 @@ class Datepicker extends BaseObject implements IDatepicker {
         }
     }
     detachFrom(el: any) {
-        JQueryUtils.destroy$Plugin($(el), "datepicker");
+        JQueryUtils.dispose$Plugin($(el), "datepicker");
     }
     parseDate(str: string): Date {
         return this.datePickerFn.parseDate(this.dateFormat, str);
@@ -73,7 +73,7 @@ class Datepicker extends BaseObject implements IDatepicker {
                 regional.dateFormat = this._dateFormat;
                 this.datePickerFn.setDefaults(regional);
             }
-            this.raisePropertyChanged(PROP_NAME.dateFormat);
+            this.objEvents.raiseProp(PROP_NAME.dateFormat);
         }
     }
     get datepickerRegion() { return this._datepickerRegion; }
@@ -88,7 +88,7 @@ class Datepicker extends BaseObject implements IDatepicker {
                 this._datepickerRegion = v;
                 regional.dateFormat = oldDateFormat;
                 this.datePickerFn.setDefaults(regional);
-                this.raisePropertyChanged(PROP_NAME.datepickerRegion);
+                this.objEvents.raiseProp(PROP_NAME.datepickerRegion);
             }
         }
     }

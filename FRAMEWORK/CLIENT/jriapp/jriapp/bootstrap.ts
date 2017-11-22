@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
     DUMY_ERROR, IIndexer, IBaseObject, IPromise,
-    TEventHandler, TPriority, LocaleERRS, BaseObject, Utils
+    TEventHandler, TPriority, LocaleERRS, BaseObject, Utils, ObjectEvents, IObjectEvents
 } from "jriapp_shared";
 import { STORE_KEY } from "./const";
 import { IApplication, ISelectableProvider, IExports, IConverter, ISvcStore,
@@ -77,7 +77,23 @@ export interface IInternalBootstrapMethods {
 }
 
 export const enum BootstrapState {
-    None = 0, Initializing = 1, Initialized = 2, Ready = 3, Error = 4, Destroyed = 5
+    None = 0, Initializing = 1, Initialized = 2, Ready = 3, Error = 4, Disposed = 5
+}
+
+class _ObjectEvents extends ObjectEvents {
+    // override
+    on(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void {
+        const owner = <Bootstrap>this.owner;
+        const self = this, isReady = owner.state === BootstrapState.Ready;
+        const isIntialized = (owner.state === BootstrapState.Initialized || owner.state === BootstrapState.Ready);
+
+        if ((name === GLOB_EVENTS.load && isReady) || (name === GLOB_EVENTS.initialized && isIntialized)) {
+            // when already is ready, immediately raise the event
+            utils.queue.enque(() => { handler.apply(self, [self, {}]); });
+        } else {
+            super.on(name, handler, nmspace, context, priority);
+        }
+    }
 }
 
 export class Bootstrap extends BaseObject implements IExports, ISvcStore {
@@ -161,7 +177,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         this.defaults.imagesPath = PathHelper.getFrameworkImgPath();
         // load jriapp.css (it will load only if it is not loaded yet)
         _stylesLoader.loadOwnStyle();
-        ERROR.addHandler("*", this);
+        ERROR.addErrorHandler("*", this);
     }
     private _bindGlobalEvents(): void {
         const self = this;
@@ -185,7 +201,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         }, this._objId);
 
         dom.events.on(win, "beforeunload", () => {
-            self.raiseEvent(GLOB_EVENTS.unload, {});
+            self.objEvents.raise(GLOB_EVENTS.unload, {});
         }, this._objId);
 
         // this is a way to attach for correct work in firefox
@@ -229,24 +245,16 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         self.templateLoader.registerTemplateLoader(!app ? name : (app.appName + "." + name), loader);
         deferred.resolve(res);
     }
-    _getEventNames(): string[] {
-        const baseEvents = super._getEventNames(),
+    // override
+    protected _createObjEvents(): IObjectEvents {
+        return new _ObjectEvents(this);
+    }
+    getEventNames(): string[] {
+        const baseEvents = super.getEventNames(),
             events = Object.keys(GLOB_EVENTS).map((key) => {
                 return <string>(<any>GLOB_EVENTS)[key];
             });
         return events.concat(baseEvents);
-    }
-    // override
-    addHandler(name: string, fn: (sender: any, args: any) => void, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        const self = this, isReady = self._bootState === BootstrapState.Ready;
-        const isIntialized = (self._bootState === BootstrapState.Initialized || self._bootState === BootstrapState.Ready);
-
-        if ((name === GLOB_EVENTS.load && isReady) || (name === GLOB_EVENTS.initialized && isIntialized)) {
-            // when already is ready, immediately raise the event
-            utils.queue.enque(() => { fn.apply(self, [self, {}]); });
-        } else {
-            super.addHandler(name, fn, nmspace, context, priority);
-        }
     }
     private _init(): IPromise<Bootstrap> {
         const self = this;
@@ -260,16 +268,16 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             self._bindGlobalEvents();
 
             self._bootState = BootstrapState.Initialized;
-            self.raiseEvent(GLOB_EVENTS.initialized, {});
-            self.removeHandler(GLOB_EVENTS.initialized);
+            self.objEvents.raise(GLOB_EVENTS.initialized, {});
+            self.objEvents.off(GLOB_EVENTS.initialized);
 
             return _async.delay(() => {
-                if (self.getIsDestroyCalled()) {
+                if (self.getIsDisposing()) {
                     throw new Error("Bootstrap is in destroyed state");
                 }
                 self._processHTMLTemplates();
                 self._bootState = BootstrapState.Ready;
-                self.raisePropertyChanged(PROP_NAME.isReady);
+                self.objEvents.raiseProp(PROP_NAME.isReady);
                 return self;
             });
         });
@@ -278,8 +286,8 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             if (boot._bootState !== BootstrapState.Ready) {
                 throw new Error("Invalid operation: bootState !== BootstrapState.Ready");
             }
-            boot.raiseEvent(GLOB_EVENTS.load, {});
-            boot.removeHandler(GLOB_EVENTS.load);
+            boot.objEvents.raise(GLOB_EVENTS.load, {});
+            boot.objEvents.off(GLOB_EVENTS.load);
             return boot;
         });
 
@@ -317,7 +325,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             throw new Error("Application already registered");
         }
         this._appInst = app;
-        ERROR.addHandler(app.appName, app);
+        ERROR.addErrorHandler(app.appName, app);
     }
     private _unregisterApp(app: IApplication): void {
         if (!this._appInst || this._appInst.appName !== app.appName) {
@@ -325,7 +333,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         }
 
         try {
-            ERROR.removeHandler(app.appName);
+            ERROR.removeErrorHandler(app.appName);
             this.templateLoader.unRegisterTemplateGroup(app.appName);
             this.templateLoader.unRegisterTemplateLoader(app.appName);
         } finally {
@@ -334,8 +342,8 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     }
     private _destroyApp(): void {
         const self = this, app = self._appInst;
-        if (!!app && !app.getIsDestroyCalled()) {
-            app.destroy();
+        if (!!app && !app.getIsDisposing()) {
+            app.dispose();
         }
     }
     private _registerObject(root: IExports, name: string, obj: any): void {
@@ -374,13 +382,13 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         return this._internal;
     }
     addOnLoad(fn: TEventHandler<Bootstrap, any>, nmspace?: string, context?: IBaseObject) {
-        this.addHandler(GLOB_EVENTS.load, fn, nmspace, context);
+        this.objEvents.on(GLOB_EVENTS.load, fn, nmspace, context);
     }
     addOnUnLoad(fn: TEventHandler<Bootstrap, any>, nmspace?: string, context?: IBaseObject) {
-        this.addHandler(GLOB_EVENTS.unload, fn, nmspace, context);
+        this.objEvents.on(GLOB_EVENTS.unload, fn, nmspace, context);
     }
     addOnInitialize(fn: TEventHandler<Bootstrap, any>, nmspace?: string, context?: IBaseObject) {
-        this.addHandler(GLOB_EVENTS.initialized, fn, nmspace, context);
+        this.objEvents.on(GLOB_EVENTS.initialized, fn, nmspace, context);
     }
     addModuleInit(fn: (app: IApplication) => void): boolean {
         if (this._moduleInits.filter((val) => { return val === fn; }).length === 0) {
@@ -430,29 +438,29 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
 
         return res;
     }
-    destroy(): void {
-        if (this._isDestroyed) {
+    dispose(): void {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         const self = this;
-        self.removeHandler();
+        self.objEvents.off();
         self._destroyApp();
         self._exports = {};
         if (self._templateLoader !== null) {
-            self._templateLoader.destroy();
+            self._templateLoader.dispose();
             self._templateLoader = null;
         }
-        self._elViewRegister.destroy();
+        self._elViewRegister.dispose();
         self._elViewRegister = null;
         self._contentFactory = null;
         self._moduleInits = [];
         dom.events.offNS(doc, this._objId);
         dom.events.offNS(win, this._objId);
         win.onerror = null;
-        ERROR.removeHandler("*");
-        this._bootState = BootstrapState.Destroyed;
-        super.destroy();
+        ERROR.removeErrorHandler("*");
+        this._bootState = BootstrapState.Disposed;
+        super.dispose();
     }
     registerSvc(name: string, obj: any) {
         const name2 = STORE_KEY.SVC + name;
@@ -500,7 +508,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     set currentSelectable(v: ISelectableProvider) {
         if (this._currentSelectable !== v) {
             this._currentSelectable = v;
-            this.raisePropertyChanged(PROP_NAME.curSelectable);
+            this.objEvents.raiseProp(PROP_NAME.curSelectable);
         }
     }
     get defaults() {

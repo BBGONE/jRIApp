@@ -67,21 +67,21 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
             this._options.initContentFn(this);
         }
     }
-    _getEventNames() {
-        const baseEvents = super._getEventNames();
+    getEventNames() {
+        const baseEvents = super.getEventNames();
         return [LOOKUP_EVENTS.obj_created, LOOKUP_EVENTS.obj_needed].concat(baseEvents);
     }
     addOnObjectCreated(fn: (sender: any, args: TObjCreatedArgs) => void, nmspace?: string) {
-        this.addHandler(LOOKUP_EVENTS.obj_created, fn, nmspace);
+        this.objEvents.on(LOOKUP_EVENTS.obj_created, fn, nmspace);
     }
     removeOnObjectCreated(nmspace?: string) {
-        this.removeHandler(LOOKUP_EVENTS.obj_created, nmspace);
+        this.objEvents.off(LOOKUP_EVENTS.obj_created, nmspace);
     }
     addOnObjectNeeded(fn: (sender: any, args: TObjNeededArgs) => void, nmspace?: string) {
-        this.addHandler(LOOKUP_EVENTS.obj_needed, fn, nmspace);
+        this.objEvents.on(LOOKUP_EVENTS.obj_needed, fn, nmspace);
     }
     removeOnObjectNeeded(nmspace?: string) {
-        this.removeHandler(LOOKUP_EVENTS.obj_needed, nmspace);
+        this.objEvents.off(LOOKUP_EVENTS.obj_needed, nmspace);
     }
     protected getListBoxElView(): ListBoxElView {
         if (!!this._listBoxElView) {
@@ -92,7 +92,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
 
         const args1: TObjNeededArgs = { objectKey: objectKey, object: null };
         // try get externally externally cached listBox
-        this.raiseEvent(LOOKUP_EVENTS.obj_needed, args1);
+        this.objEvents.raise(LOOKUP_EVENTS.obj_needed, args1);
         if (!!args1.object) {
             this._isListBoxCachedExternally = true;
             this._listBoxElView = <ListBoxElView>args1.object;
@@ -105,7 +105,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         const listBoxElView = this.createListBoxElView(lookUpOptions);
         const args2: TObjCreatedArgs = { objectKey: objectKey, object: listBoxElView, isCachedExternally: false };
         // this allows to cache listBox externally
-        this.raiseEvent(LOOKUP_EVENTS.obj_created, args2);
+        this.objEvents.raise(LOOKUP_EVENTS.obj_created, args2);
         this._isListBoxCachedExternally = args2.isCachedExternally;
         this._listBoxElView = listBoxElView;
         this._listBoxElView.listBox.addOnRefreshed(this.onListRefreshed, this.uniqueID, this);
@@ -167,16 +167,16 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
             this._el = null;
         }
         if (!!this._listBinding) {
-            this._listBinding.destroy();
+            this._listBinding.dispose();
             this._listBinding = null;
         }
         if (!!this._valBinding) {
-            this._valBinding.destroy();
+            this._valBinding.dispose();
             this._valBinding = null;
         }
 
         if (!!this._listBoxElView && this._isListBoxCachedExternally) {
-            this._listBoxElView.listBox.removeNSHandlers(this.uniqueID);
+            this._listBoxElView.listBox.objEvents.offNS(this.uniqueID);
             this._listBoxElView = null;
         }
     }
@@ -219,24 +219,24 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         this.createTargetElement();
         this._parentEl.appendChild(this._el);
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         this.cleanUp();
         if (!!this._listBoxElView) {
-            this._listBoxElView.listBox.removeNSHandlers(this.uniqueID);
-            if (!this._isListBoxCachedExternally && !this._listBoxElView.getIsDestroyCalled()) {
-                this._listBoxElView.destroy();
+            this._listBoxElView.listBox.objEvents.offNS(this.uniqueID);
+            if (!this._isListBoxCachedExternally && !this._listBoxElView.getIsDisposing()) {
+                this._listBoxElView.dispose();
             }
             this._listBoxElView = null;
         }
         if (!!this._spanView) {
-            this._spanView.destroy();
+            this._spanView.dispose();
             this._spanView = null;
         }
-        super.destroy();
+        super.dispose();
     }
     toString() {
         return "LookupContent";
@@ -245,7 +245,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
     set value(v) {
         if (this._value !== v) {
             this._value = v;
-            this.raisePropertyChanged(PROP_NAME.value);
+            this.objEvents.raiseProp(PROP_NAME.value);
         }
         this.updateTextValue();
     }

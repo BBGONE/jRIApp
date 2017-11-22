@@ -21,7 +21,7 @@ const APP_EVENTS = {
     startup: "startup"
 };
 
-const enum AppState { None, Starting, Started, Destroyed, Error }
+const enum AppState { None, Starting, Started, Disposed, Error }
 
 export class Application extends BaseObject implements IApplication {
     private _UC: any;
@@ -74,8 +74,8 @@ export class Application extends BaseObject implements IApplication {
             utils.core.forEachProp(objMap, (name) => {
                 const obj = objMap[name];
                 if (sys.isBaseObj(obj)) {
-                    if (!(<IBaseObject>obj).getIsDestroyed()) {
-                        (<IBaseObject>obj).removeNSHandlers(self.uniqueID);
+                    if (!(<IBaseObject>obj).getIsDisposed()) {
+                        (<IBaseObject>obj).objEvents.offNS(self.uniqueID);
                     }
                 }
             });
@@ -89,8 +89,8 @@ export class Application extends BaseObject implements IApplication {
             initFn(<IApplication>self);
         });
     }
-    _getEventNames() {
-        const baseEvents = super._getEventNames();
+    getEventNames() {
+        const baseEvents = super.getEventNames();
         return [APP_EVENTS.startup].concat(baseEvents);
     }
     /**
@@ -103,10 +103,10 @@ export class Application extends BaseObject implements IApplication {
         return this._internal;
     }
     addOnStartUp(fn: TEventHandler<IApplication, any>, nmspace?: string, context?: IBaseObject): void {
-        this.addHandler(APP_EVENTS.startup, fn, nmspace, context);
+        this.objEvents.on(APP_EVENTS.startup, fn, nmspace, context);
     }
     removeOnStartUp(nmspace?: string): void {
-        this.removeHandler(APP_EVENTS.startup, nmspace);
+        this.objEvents.off(APP_EVENTS.startup, nmspace);
     }
     getExports(): IIndexer<any> {
         return this._exports;
@@ -156,7 +156,7 @@ export class Application extends BaseObject implements IApplication {
     registerObject(name: string, obj: any): void {
         const self = this, name2 = STORE_KEY.OBJECT + name;
         if (sys.isBaseObj(obj)) {
-            (<IBaseObject>obj).addOnDestroyed(() => {
+            (<IBaseObject>obj).addOnDisposed(() => {
                 boot._getInternal().unregisterObject(self, name2);
             }, self.uniqueID);
         }
@@ -193,7 +193,7 @@ export class Application extends BaseObject implements IApplication {
                 }
 
                 const promise = setupPromise1.then(() => {
-                    self.raiseEvent(APP_EVENTS.startup, {});
+                    self.objEvents.raise(APP_EVENTS.startup, {});
                     const onStartupRes2: any = (!!onStartUp) ? onStartUp.apply(self, [self]) : null;
                     let setupPromise2: IThenable<void>;
 
@@ -292,26 +292,26 @@ export class Application extends BaseObject implements IApplication {
         }, group);
         boot.templateLoader.registerTemplateGroup(this.appName + "." + name, group2);
     }
-    destroy(): void {
-        if (this._isDestroyed) {
+    dispose(): void {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         const self = this;
         try {
-            self._appState = AppState.Destroyed;
+            self._appState = AppState.Disposed;
             boot._getInternal().unregisterApp(<IApplication>self);
             self._cleanUpObjMaps();
-            self._dataBindingService.destroy();
+            self._dataBindingService.dispose();
             self._dataBindingService = null;
-            self._viewFactory.destroy();
+            self._viewFactory.dispose();
             self._exports = {};
             self._moduleInits = {};
             self._UC = {};
             self._options = null;
             self._viewFactory = null;
         } finally {
-            super.destroy();
+            super.dispose();
         }
     }
     toString() {

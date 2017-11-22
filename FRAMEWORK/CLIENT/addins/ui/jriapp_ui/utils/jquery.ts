@@ -12,7 +12,7 @@ export const $: JQueryStatic = jQuery;
 export class JQueryUtils {
     static $ = jQuery;
 
-    static destroy$Plugin($el: JQuery, name: string): void {
+    static dispose$Plugin($el: JQuery, name: string): void {
         const plugin = $el.data(name);
         if (!!plugin) {
             $el[name]("destroy");

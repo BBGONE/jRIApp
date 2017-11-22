@@ -206,20 +206,20 @@ export class Pager extends BaseObject {
     protected _onTotalCountChanged(ds: ICollection<ICollectionItem>) {
         this.rowCount = ds.totalCount;
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
-        this._pageDebounce.destroy();
-        this._dsDebounce.destroy();
+        this.setDisposing();
+        this._pageDebounce.dispose();
+        this._dsDebounce.dispose();
         this._unbindDS();
         this._clearContent();
         dom.events.offNS(this._el, this._objId);
         dom.removeClass([this.el], css.pager);
         this._el = null;
         this._options = <any>{};
-        super.destroy();
+        super.dispose();
     }
     protected _bindDS() {
         const self = this, ds = this.dataSource;
@@ -247,7 +247,7 @@ export class Pager extends BaseObject {
         if (!ds) {
             return;
         }
-        ds.removeNSHandlers(self._objId);
+        ds.objEvents.offNS(self._objId);
     }
     protected _clearContent() {
         this._el.innerHTML = "";
@@ -379,7 +379,7 @@ export class Pager extends BaseObject {
     set dataSource(v: ICollection<ICollectionItem>) {
         if (v !== this.dataSource) {
             this._setDataSource(v);
-            this.raisePropertyChanged(PROP_NAME.dataSource);
+            this.objEvents.raiseProp(PROP_NAME.dataSource);
         }
     }
     get pageCount(): number {
@@ -403,7 +403,7 @@ export class Pager extends BaseObject {
         if (this._rowCount !== v) {
             this._rowCount = v;
             this.render();
-            this.raisePropertyChanged(PROP_NAME.rowCount);
+            this.objEvents.raiseProp(PROP_NAME.rowCount);
         }
     }
     get rowsPerPage() { return this._rowsPerPage; }
@@ -418,7 +418,7 @@ export class Pager extends BaseObject {
         if (this._currentPage !== v) {
             this._currentPage = v;
             this.render();
-            this.raisePropertyChanged(PROP_NAME.currentPage);
+            this.objEvents.raiseProp(PROP_NAME.currentPage);
         }
     }
     get useSlider() { return this._options.useSlider; }
@@ -494,7 +494,7 @@ export class Pager extends BaseObject {
             } else {
                 this.el.style.display = (!this._display ? "" : this._display);
             }
-            this.raisePropertyChanged("isVisible");
+            this.objEvents.raiseProp("isVisible");
         }
     }
 }
@@ -509,15 +509,15 @@ export class PagerElView extends BaseElView {
         super(options);
         this._pager = new Pager(<IPagerConstructorOptions>options);
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
-        if (!this._pager.getIsDestroyCalled()) {
-            this._pager.destroy();
+        this.setDisposing();
+        if (!this._pager.getIsDisposing()) {
+            this._pager.dispose();
         }
-        super.destroy();
+        super.dispose();
     }
     toString() {
         return "PagerElView";
@@ -528,7 +528,7 @@ export class PagerElView extends BaseElView {
     set dataSource(v) {
         if (this.dataSource !== v) {
             this._pager.dataSource = v;
-            this.raisePropertyChanged(PROP_NAME.dataSource);
+            this.objEvents.raiseProp(PROP_NAME.dataSource);
         }
     }
     get pager() { return this._pager; }

@@ -129,15 +129,15 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         const ds = this._options.dataSource;
         this._setDataSource(ds);
     }
-    _getEventNames() {
-        const baseEvents = super._getEventNames();
+    getEventNames() {
+        const baseEvents = super.getEventNames();
         return [PNL_EVENTS.item_clicked].concat(baseEvents);
     }
     addOnItemClicked(fn: TEventHandler<StackPanel, { item: ICollectionItem; }>, nmspace?: string, context?: IBaseObject) {
-        this.addHandler(PNL_EVENTS.item_clicked, fn, nmspace, context);
+        this.objEvents.on(PNL_EVENTS.item_clicked, fn, nmspace, context);
     }
     removeOnItemClicked(nmspace?: string) {
-        this.removeHandler(PNL_EVENTS.item_clicked, nmspace);
+        this.objEvents.off(PNL_EVENTS.item_clicked, nmspace);
     }
     protected _getContainerEl() { return this.el; }
     protected _onKeyDown(key: number, event: Event) {
@@ -204,7 +204,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
                     }
                 }
             }
-            this.raisePropertyChanged(PROP_NAME.currentItem);
+            this.objEvents.raiseProp(PROP_NAME.currentItem);
         }
     }
     protected _onDSCurrentChanged(): void {
@@ -296,12 +296,12 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         if (!ds) {
             return;
         }
-        ds.removeNSHandlers(self._objId);
+        ds.objEvents.offNS(self._objId);
     }
     protected _onItemClicked(div: HTMLElement, item: ICollectionItem) {
         this._updateCurrent(item, false);
         this.dataSource.currentItem = item;
-        this.raiseEvent(PNL_EVENTS.item_clicked, { item: item });
+        this.objEvents.raise(PNL_EVENTS.item_clicked, { item: item });
     }
     protected _clearContent() {
         const self = this, keys = Object.keys(self._itemMap);
@@ -319,7 +319,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
             return;
         }
         delete self._itemMap[key];
-        mappedItem.template.destroy();
+        mappedItem.template.dispose();
         mappedItem.template = null;
         dom.removeNode(mappedItem.el);
     }
@@ -343,7 +343,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         this._options.dataSource = v;
         this._debounce.enque(() => {
             const ds = this._options.dataSource;
-            if (!!ds && !ds.getIsDestroyCalled()) {
+            if (!!ds && !ds.getIsDisposing()) {
                 this._bindDS();
                 this._refresh();
             } else {
@@ -351,12 +351,12 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
             }
         });
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
-        this._debounce.destroy();
+        this.setDisposing();
+        this._debounce.dispose();
         boot._getInternal().untrackSelectable(this);
         this._unbindDS();
         this._clearContent();
@@ -368,7 +368,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         this._currentItem = null;
         this._itemMap = {};
         this._options = <any>{};
-        super.destroy();
+        super.dispose();
     }
     getISelectable(): ISelectable {
         return this._selectable;
@@ -433,7 +433,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
     set dataSource(v) {
         if (v !== this.dataSource) {
             this._setDataSource(v);
-            this.raisePropertyChanged(PROP_NAME.dataSource);
+            this.objEvents.raiseProp(PROP_NAME.dataSource);
         }
     }
     get currentItem() { return this._currentItem; }
@@ -461,16 +461,16 @@ export class StackPanelElView extends BaseElView {
             }
         }, this.uniqueID);
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
-        if (!this._panel.getIsDestroyCalled()) {
-            this._panel.destroy();
+        this.setDisposing();
+        if (!this._panel.getIsDisposing()) {
+            this._panel.dispose();
         }
         this._panelEvents = null;
-        super.destroy();
+        super.dispose();
     }
     toString() {
         return "StackPanelElView";
@@ -481,7 +481,7 @@ export class StackPanelElView extends BaseElView {
     set dataSource(v: ICollection<ICollectionItem>) {
         if (this.dataSource !== v) {
             this._panel.dataSource = v;
-            this.raisePropertyChanged(PROP_NAME.dataSource);
+            this.objEvents.raiseProp(PROP_NAME.dataSource);
         }
     }
     get panelEvents() { return this._panelEvents; }
@@ -489,7 +489,7 @@ export class StackPanelElView extends BaseElView {
         const old = this._panelEvents;
         if (v !== old) {
             this._panelEvents = v;
-            this.raisePropertyChanged(PROP_NAME.panelEvents);
+            this.objEvents.raiseProp(PROP_NAME.panelEvents);
         }
     }
     get panel() { return this._panel; }

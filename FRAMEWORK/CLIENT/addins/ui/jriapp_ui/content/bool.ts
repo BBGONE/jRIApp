@@ -60,20 +60,20 @@ export class BoolContent extends BasicContent {
         this.cleanUp();
         this.updateCss();
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         if (!!this._lfScope) {
-            this._lfScope.destroy();
+            this._lfScope.dispose();
             this._lfScope = null;
         }
         if (!!this._target) {
-            this._target.destroy();
+            this._target.dispose();
             this._target = null;
         }
-        super.destroy();
+        super.dispose();
     }
     toString() {
         return "BoolContent";

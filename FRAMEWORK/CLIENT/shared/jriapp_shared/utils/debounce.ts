@@ -14,7 +14,7 @@ export class Debounce implements IDisposable {
     }
     enque(fn: TFunc) {
         // important, no error (just return with no action)!!!
-        if (this.IsDestroyed) {
+        if (this.getIsDisposing()) {
             return;
         }
         if (!fn) {
@@ -51,7 +51,7 @@ export class Debounce implements IDisposable {
         // just set to null
         this._fn = null;
     }
-    destroy(): void {
+    dispose(): void {
         if (!!this._timer) {
             if (!this._interval) {
                 getTaskQueue().cancel(this._timer);
@@ -65,7 +65,10 @@ export class Debounce implements IDisposable {
     get interval() {
         return this._interval;
     }
-    get IsDestroyed(): boolean {
+    getIsDisposed(): boolean {
+        return this._timer === void 0;
+    }
+    getIsDisposing(): boolean {
         return this._timer === void 0;
     }
 }

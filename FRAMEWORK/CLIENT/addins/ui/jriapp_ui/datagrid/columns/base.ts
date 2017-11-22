@@ -102,11 +102,11 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
             fn_addToolTip(col, this._options.tip, false, "bottom center");
         }
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         dom.events.offNS(this.grid.table, this.uniqueID);
 
         if (!!this._options.tip) {
@@ -114,7 +114,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         }
 
         if (!!this._template) {
-            this._template.destroy();
+            this._template.dispose();
             this._template = null;
         }
         dom.events.offNS(this._col, this.uniqueID);
@@ -122,7 +122,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         this._th = null;
         this._grid = null;
         this._options = null;
-        super.destroy();
+        super.dispose();
     }
     templateLoading(template: ITemplate): void {
         // noop
@@ -134,7 +134,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         // noop
     }
     scrollIntoView(isUp: boolean) {
-        if (this.getIsDestroyCalled()) {
+        if (this.getIsDisposing()) {
             return;
         }
         this._col.scrollIntoView(!!isUp);

@@ -129,7 +129,7 @@ class Template extends BaseObject implements ITemplate {
                 });
 
                 bindPromise.catch((err) => {
-                    if (self.getIsDestroyCalled()) {
+                    if (self.getIsDisposing()) {
                         return;
                     }
                     self._onFail(templateEl, err);
@@ -167,7 +167,7 @@ class Template extends BaseObject implements ITemplate {
     }
     private _dataBind(templateEl: HTMLElement, loadedEl: HTMLElement): IPromise<HTMLElement> {
         const self = this;
-        if (self.getIsDestroyCalled()) {
+        if (self.getIsDisposing()) {
             ERROR.abort();
         }
         if (!loadedEl) {
@@ -183,8 +183,8 @@ class Template extends BaseObject implements ITemplate {
         templateEl.appendChild(loadedEl);
         const promise = self.app._getInternal().bindTemplateElements(loadedEl);
         return promise.then((lftm) => {
-            if (self.getIsDestroyCalled()) {
-                lftm.destroy();
+            if (self.getIsDisposing()) {
+                lftm.dispose();
                 ERROR.abort();
             }
             self._lfTime = lftm;
@@ -195,7 +195,7 @@ class Template extends BaseObject implements ITemplate {
     }
     private _onFail(templateEl: HTMLElement, err: any): void {
         const self = this;
-        if (self.getIsDestroyCalled()) {
+        if (self.getIsDisposing()) {
             return;
         }
         self._onLoaded(err);
@@ -229,7 +229,7 @@ class Template extends BaseObject implements ITemplate {
     }
     private _cleanUp() {
         if (!!this._lfTime) {
-            this._lfTime.destroy();
+            this._lfTime.dispose();
             this._lfTime = null;
         }
 
@@ -240,11 +240,11 @@ class Template extends BaseObject implements ITemplate {
             this._loadedElem = null;
         }
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         this._unloadTemplate();
         if (!!this._el) {
             dom.removeNode(this._el);
@@ -252,7 +252,7 @@ class Template extends BaseObject implements ITemplate {
         }
         this._dataContext = null;
         this._templEvents = null;
-        super.destroy();
+        super.dispose();
     }
     // find elements which has specific data-name attribute value
     // returns plain array of elements, or empty array
@@ -282,7 +282,7 @@ class Template extends BaseObject implements ITemplate {
         if (this._dataContext !== v) {
             this._dataContext = v;
             this._updateBindingSource();
-            this.raisePropertyChanged(PROP_NAME.dataContext);
+            this.objEvents.raiseProp(PROP_NAME.dataContext);
         }
     }
     get templateID() { return this._templateID; }
@@ -290,7 +290,7 @@ class Template extends BaseObject implements ITemplate {
         if (this._templateID !== v) {
             this._templateID = v;
             this._loadTemplate();
-            this.raisePropertyChanged(PROP_NAME.templateID);
+            this.objEvents.raiseProp(PROP_NAME.templateID);
         }
     }
     get el() { return this._el; }

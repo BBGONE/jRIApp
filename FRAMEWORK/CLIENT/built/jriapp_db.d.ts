@@ -66,7 +66,7 @@ declare module "jriapp_db/datacache" {
         deletePage(pageIndex: number): void;
         hasPage(pageIndex: number): boolean;
         getItemByKey(key: string): IEntityItem;
-        destroy(): void;
+        dispose(): void;
         toString(): string;
         readonly _pageCount: number;
         readonly pageSize: number;
@@ -126,7 +126,7 @@ declare module "jriapp_db/dataquery" {
         getFieldInfo(fieldName: string): IFieldInfo;
         getFieldNames(): string[];
         load(): IStatefulPromise<IQueryResult<TItem>>;
-        destroy(): void;
+        dispose(): void;
         toString(): string;
         readonly serverTimezone: number;
         readonly dbSet: DbSet<TItem, TObj, DbContext>;
@@ -214,7 +214,7 @@ declare module "jriapp_db/dbset" {
         constructor(opts: IDbSetConstuctorOptions);
         abstract itemFactory(aspect: EntityAspect<TItem, TObj, TDbContext>): TItem;
         handleError(error: any, source: any): boolean;
-        _getEventNames(): string[];
+        getEventNames(): string[];
         protected _mapAssocFields(): void;
         protected _doNavigationField(opts: IDbSetConstuctorOptions, fieldInfo: IFieldInfo): INavFieldImpl<TItem>;
         protected _doCalculatedField(opts: IDbSetConstuctorOptions, fieldInfo: IFieldInfo): ICalcFieldImpl<TItem>;
@@ -266,7 +266,7 @@ declare module "jriapp_db/dbset" {
         deleteOnSubmit(item: TItem): void;
         clear(): void;
         createQuery(name: string): DataQuery<TItem, TObj>;
-        destroy(): void;
+        dispose(): void;
         toString(): string;
         readonly items: TItem[];
         readonly dbContext: TDbContext;
@@ -295,7 +295,7 @@ declare module "jriapp_db/dbsets" {
         readonly arrDbSets: TDbSet[];
         findDbSet(name: string): TDbSet;
         getDbSet(name: string): TDbSet;
-        destroy(): void;
+        dispose(): void;
     }
 }
 declare module "jriapp_db/association" {
@@ -361,7 +361,7 @@ declare module "jriapp_db/association" {
         isParentChild(parent: IEntityItem, child: IEntityItem): boolean;
         getChildItems(parent: IEntityItem): IEntityItem[];
         getParentItem(item: IEntityItem): IEntityItem;
-        destroy(): void;
+        dispose(): void;
         toString(): string;
         readonly name: string;
         readonly parentToChildrenName: string;
@@ -432,7 +432,7 @@ declare module "jriapp_db/dbcontext" {
         private _internal;
         constructor();
         protected _checkDestroy(): void;
-        _getEventNames(): string[];
+        getEventNames(): string[];
         protected _initDbSets(): void;
         protected _initAssociations(associations: IAssociationInfo[]): void;
         protected _initMethods(methods: IQueryInfo[]): void;
@@ -507,7 +507,7 @@ declare module "jriapp_db/dbcontext" {
         acceptChanges(): void;
         rejectChanges(): void;
         abortRequests(reason?: string, operType?: DATA_OPER): void;
-        destroy(): void;
+        dispose(): void;
         readonly serviceUrl: string;
         readonly isInitialized: boolean;
         readonly isBusy: boolean;
@@ -567,7 +567,7 @@ declare module "jriapp_db/entity_aspect" {
         rejectChanges(): void;
         submitChanges(): IVoidPromise;
         refresh(): IStatefulPromise<TItem>;
-        destroy(): void;
+        dispose(): void;
         toString(): string;
         readonly srvKey: string;
         readonly isCanSubmit: boolean;
@@ -805,7 +805,7 @@ declare module "jriapp_db/dataview" {
         private _isAddingNew;
         private _refreshDebounce;
         constructor(options: IDataViewOptions<TItem>);
-        _getEventNames(): string[];
+        getEventNames(): string[];
         protected _clearItems(items: TItem[]): void;
         addOnViewRefreshed(fn: TEventHandler<DataView<TItem>, any>, nmspace?: string): void;
         removeOnViewRefreshed(nmspace?: string): void;
@@ -832,7 +832,7 @@ declare module "jriapp_db/dataview" {
         sortLocal(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any>;
         clear(): void;
         refresh(): void;
-        destroy(): void;
+        dispose(): void;
         readonly errors: Errors<TItem>;
         readonly dataSource: ICollection<TItem>;
         isPagingEnabled: boolean;
@@ -860,7 +860,7 @@ declare module "jriapp_db/child_dataview" {
         private _association;
         protected _parentDebounce: Debounce;
         constructor(options: IChildDataViewOptions<TItem>);
-        destroy(): void;
+        dispose(): void;
         toString(): string;
         parentItem: IEntityItem;
         readonly association: Association;

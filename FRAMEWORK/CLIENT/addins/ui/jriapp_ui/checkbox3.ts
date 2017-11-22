@@ -45,7 +45,7 @@ export class CheckBoxThreeStateElView extends InputElView {
             chk.checked = !!v;
             chk.indeterminate = this._checked === null;
             this._updateState();
-            this.raisePropertyChanged(PROP_NAME.checked);
+            this.objEvents.raiseProp(PROP_NAME.checked);
         }
     }
 }

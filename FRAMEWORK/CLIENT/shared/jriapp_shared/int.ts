@@ -19,7 +19,8 @@ export type TFunc = { (...args: any[]): void; };
 export type TAnyConstructor<T> = new (...args: any[]) => T;
 
 export interface IDisposable {
-    destroy(): void;
+    dispose(): void;
+    getIsDisposed(): boolean;
 }
 
 export interface IIndexer<T> {
@@ -40,22 +41,28 @@ export const enum TPriority {
     Normal = 0, AboveNormal = 1, High = 2
 }
 
+export interface IObjectEvents {
+    canRaise(name: string): boolean;
+    on(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void;
+    off(name?: string, nmspace?: string): void;
+   // remove event handlers by their namespace
+    offNS(nmspace?: string): void;
+    raise(name: string, args: any): void;
+    raiseProp(name: string): void;
+    // to subscribe for changes on all properties, pass in the prop parameter: '*'
+    onProp(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: object, priority?: TPriority): void;
+    offProp(prop?: string, nmspace?: string): void;
+}
+
 export interface IBaseObject extends IErrorHandler, IDisposable {
-    _getEventNames(): string[];
-    _isHasProp(prop: string): boolean;
-    getIsDestroyed(): boolean;
-    getIsDestroyCalled(): boolean;
-    raisePropertyChanged(name: string): void;
-    addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-    removeHandler(name?: string, nmspace?: string): void;
-    addOnPropertyChange(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-    removeOnPropertyChange(prop?: string, nmspace?: string): void;
-    removeNSHandlers(nmspace?: string): void;
-    addOnError(handler: TErrorHandler, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
+    getIsDisposing(): boolean;
+    getEventNames(): string[];
+    isHasProp(prop: string): boolean;
+    addOnError(handler: TErrorHandler, nmspace?: string, context?: object, priority?: TPriority): void;
     removeOnError(nmspace?: string): void;
-    addOnDestroyed(handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-    removeOnDestroyed(nmspace?: string): void;
-    raiseEvent(name: string, args: any): void;
+    addOnDisposed(handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void;
+    removeOnDisposed(nmspace?: string): void;
+    readonly objEvents: IObjectEvents;
 }
 
 export interface IEditable {

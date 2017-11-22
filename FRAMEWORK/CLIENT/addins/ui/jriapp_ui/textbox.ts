@@ -23,13 +23,13 @@ export class TextBoxElView extends InputElView {
         const self = this;
         dom.events.on(this.el, "change", (e) => {
             e.stopPropagation();
-            self.raisePropertyChanged(PROP_NAME.value);
+            self.objEvents.raiseProp(PROP_NAME.value);
         }, this.uniqueID);
 
         dom.events.on(this.el, "keypress", (e) => {
             e.stopPropagation();
             const args: TKeyPressArgs = { keyCode: e.which, value: (<HTMLInputElement>e.target).value, isCancel: false };
-            self.raiseEvent(TXTBOX_EVENTS.keypress, args);
+            self.objEvents.raise(TXTBOX_EVENTS.keypress, args);
             if (args.isCancel) {
                 e.preventDefault();
             }
@@ -38,19 +38,19 @@ export class TextBoxElView extends InputElView {
         if (!!options.updateOnKeyUp) {
             dom.events.on(this.el, "keyup", (e) => {
                 e.stopPropagation();
-                self.raisePropertyChanged(PROP_NAME.value);
+                self.objEvents.raiseProp(PROP_NAME.value);
             }, this.uniqueID);
         }
     }
-    _getEventNames() {
-        const baseEvents = super._getEventNames();
+    getEventNames() {
+        const baseEvents = super.getEventNames();
         return [TXTBOX_EVENTS.keypress].concat(baseEvents);
     }
     addOnKeyPress(fn: (sender: TextBoxElView, args: TKeyPressArgs) => void, nmspace?: string) {
-        this.addHandler(TXTBOX_EVENTS.keypress, fn, nmspace);
+        this.objEvents.on(TXTBOX_EVENTS.keypress, fn, nmspace);
     }
     removeOnKeyPress(nmspace?: string) {
-        this.removeHandler(TXTBOX_EVENTS.keypress, nmspace);
+        this.objEvents.off(TXTBOX_EVENTS.keypress, nmspace);
     }
     toString() {
         return "TextBoxElView";
@@ -62,7 +62,7 @@ export class TextBoxElView extends InputElView {
         const x = this.el.style.color;
         if (v !== x) {
             this.el.style.color = v;
-            this.raisePropertyChanged(PROP_NAME.color);
+            this.objEvents.raiseProp(PROP_NAME.color);
         }
     }
 }

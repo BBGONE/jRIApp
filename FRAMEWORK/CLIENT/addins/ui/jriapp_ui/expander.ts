@@ -31,7 +31,7 @@ export class ExpanderElView extends AnchorElView {
         this.isExpanded = isExpanded;
     }
     protected refresh(): void {
-        if (this.getIsDestroyCalled()) {
+        if (this.getIsDisposing()) {
             return;
         }
         this.imageSrc = this._isExpanded ? this._expandedsrc : this._collapsedsrc;
@@ -60,7 +60,7 @@ export class ExpanderElView extends AnchorElView {
         if (this._isExpanded !== v) {
             this._isExpanded = v;
             this.invokeCommand();
-            this.raisePropertyChanged(PROP_NAME.isExpanded);
+            this.objEvents.raiseProp(PROP_NAME.isExpanded);
         }
     }
 }

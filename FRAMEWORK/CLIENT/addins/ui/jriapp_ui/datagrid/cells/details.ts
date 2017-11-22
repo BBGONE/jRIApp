@@ -28,18 +28,18 @@ export class DetailsCell extends BaseObject {
         this._template.templateID = options.details_id;
         this._td.appendChild(this._template.el);
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         if (!!this._template) {
-            this._template.destroy();
+            this._template.dispose();
             this._template = null;
         }
         this._row = null;
         this._td = null;
-        super.destroy();
+        super.dispose();
     }
     toString(): string {
         return "DetailsCell";

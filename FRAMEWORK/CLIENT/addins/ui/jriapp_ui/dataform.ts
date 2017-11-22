@@ -170,13 +170,13 @@ export class DataForm extends BaseObject {
 
         const parent = viewChecks.getParentDataForm(null, this._el);
         // if this form is nested inside another dataform
-        // subscribe for parent's destroy event
+        // subscribe for parent's dispose event
         if (!!parent) {
             self._parentDataForm = this.app.viewFactory.getOrCreateElView(parent);
-            self._parentDataForm.addOnDestroyed(() => {
-                // destroy itself if parent form is destroyed
-                if (!self._isDestroyCalled) {
-                    self.destroy();
+            self._parentDataForm.addOnDisposed(() => {
+                // dispose itself if parent form is destroyed
+                if (!self.getIsDisposing()) {
+                    self.dispose();
                 }
             }, self._objId);
         }
@@ -226,8 +226,8 @@ export class DataForm extends BaseObject {
 
         const promise = self.app._getInternal().bindElements(this._el, dctx, true, this.isInsideTemplate);
         return promise.then((lftm) => {
-            if (self.getIsDestroyCalled()) {
-                lftm.destroy();
+            if (self.getIsDisposing()) {
+                lftm.dispose();
                 return;
             }
             self._lfTime = lftm;
@@ -266,12 +266,12 @@ export class DataForm extends BaseObject {
             } else {
                 if (!!self._contentPromise) {
                     self._contentPromise.then(() => {
-                        if (self.getIsDestroyCalled()) {
+                        if (self.getIsDisposing()) {
                             return;
                         }
                         self._updateCreatedContent();
                     }, (err) => {
-                        if (self.getIsDestroyCalled()) {
+                        if (self.getIsDisposing()) {
                             return;
                         }
                         self.handleError(err, self);
@@ -303,12 +303,12 @@ export class DataForm extends BaseObject {
             this._errNotification = sys.getErrorNotification(dataContext);
         }
 
-        dataContext.addOnDestroyed(() => {
+        dataContext.addOnDisposed(() => {
             self.dataContext = null;
         }, self._objId);
 
         if (!!this._editable) {
-            (<IBaseObject><any>this._editable).addOnPropertyChange(PROP_NAME.isEditing, self._onIsEditingChanged, self._objId, self);
+            (<IBaseObject><any>this._editable).objEvents.onProp(PROP_NAME.isEditing, self._onIsEditingChanged, self._objId, self);
         }
 
         if (!!this._errNotification) {
@@ -318,10 +318,10 @@ export class DataForm extends BaseObject {
     private _unbindDS() {
         const dataContext = this._dataContext;
         this.validationErrors = null;
-        if (!!dataContext && !dataContext.getIsDestroyCalled()) {
-            dataContext.removeNSHandlers(this._objId);
+        if (!!dataContext && !dataContext.getIsDisposing()) {
+            dataContext.objEvents.offNS(this._objId);
             if (!!this._editable) {
-                (<IBaseObject><any>this._editable).removeNSHandlers(this._objId);
+                (<IBaseObject><any>this._editable).objEvents.offNS(this._objId);
             }
             if (!!this._errNotification) {
                 this._errNotification.removeOnErrorsChanged(this._objId);
@@ -332,33 +332,33 @@ export class DataForm extends BaseObject {
     }
     private _clearContent() {
         this._content.forEach((content) => {
-            content.destroy();
+            content.dispose();
         });
         this._content = [];
         if (!!this._lfTime) {
-            this._lfTime.destroy();
+            this._lfTime.dispose();
             this._lfTime = null;
         }
         this._contentCreated = false;
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         this._clearContent();
         dom.removeClass([this.el], css.dataform);
         this._el = null;
         this._unbindDS();
         const parentDataForm = this._parentDataForm;
         this._parentDataForm = null;
-        if (!!parentDataForm && !parentDataForm.getIsDestroyCalled()) {
-            parentDataForm.removeNSHandlers(this._objId);
+        if (!!parentDataForm && !parentDataForm.getIsDisposing()) {
+            parentDataForm.objEvents.offNS(this._objId);
         }
         this._dataContext = null;
         this._contentCreated = false;
         this._contentPromise = null;
-        super.destroy();
+        super.dispose();
     }
     toString(): string {
         return "DataForm";
@@ -389,7 +389,7 @@ export class DataForm extends BaseObject {
             }
         }
 
-        this.raisePropertyChanged(PROP_NAME.dataContext);
+        this.objEvents.raiseProp(PROP_NAME.dataContext);
     }
     get isEditing(): boolean { return this._isEditing; }
     set isEditing(v) {
@@ -407,7 +407,7 @@ export class DataForm extends BaseObject {
         if (!editable && v !== isEditing) {
             this._isEditing = v;
             this._updateContent();
-            this.raisePropertyChanged(PROP_NAME.isEditing);
+            this.objEvents.raiseProp(PROP_NAME.isEditing);
             return;
         }
 
@@ -427,14 +427,14 @@ export class DataForm extends BaseObject {
         if (!!editable && editable.isEditing !== isEditing) {
             this._isEditing = editable.isEditing;
             this._updateContent();
-            this.raisePropertyChanged(PROP_NAME.isEditing);
+            this.objEvents.raiseProp(PROP_NAME.isEditing);
         }
     }
     get validationErrors(): IValidationInfo[] { return this._errors; }
     set validationErrors(v) {
         if (v !== this._errors) {
             this._errors = v;
-            this.raisePropertyChanged(PROP_NAME.validationErrors);
+            this.objEvents.raiseProp(PROP_NAME.validationErrors);
         }
     }
     get isInsideTemplate(): boolean { return this._isInsideTemplate; }
@@ -452,13 +452,13 @@ export class DataFormElView extends BaseElView {
         const self = this;
         this._form = new DataForm(options);
         this._errorGliph = null;
-        this._form.addOnPropertyChange("*", (form, args) => {
+        this._form.objEvents.onProp("*", (form, args) => {
             switch (args.property) {
                 case PROP_NAME.validationErrors:
                     self.validationErrors = form.validationErrors;
                     break;
                 case PROP_NAME.dataContext:
-                    self.raisePropertyChanged(args.property);
+                    self.objEvents.raiseProp(args.property);
                     break;
             }
         }, this.uniqueID);
@@ -504,19 +504,19 @@ export class DataFormElView extends BaseElView {
             this._setFieldError(false);
         }
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         if (!!this._errorGliph) {
             dom.removeNode(this._errorGliph);
             this._errorGliph = null;
         }
-        if (!this._form.getIsDestroyCalled()) {
-            this._form.destroy();
+        if (!this._form.getIsDisposing()) {
+            this._form.dispose();
         }
-        super.destroy();
+        super.dispose();
     }
     toString() {
         return "DataFormElView";

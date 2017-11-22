@@ -198,19 +198,19 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
             }
         };
         coreUtils.merge(internalObj, this._internal);
-        this.dbContext.addOnPropertyChange(PROP_NAME.isSubmiting, (s, a) => {
-            self.raisePropertyChanged(PROP_NAME.isBusy);
+        this.dbContext.objEvents.onProp(PROP_NAME.isSubmiting, (s, a) => {
+            self.objEvents.raiseProp(PROP_NAME.isBusy);
         }, this.dbSetName);
-        this.addOnPropertyChange(PROP_NAME.isLoading, (s, a) => {
-            self.raisePropertyChanged(PROP_NAME.isBusy);
+        this.objEvents.onProp(PROP_NAME.isLoading, (s, a) => {
+            self.objEvents.raiseProp(PROP_NAME.isBusy);
         });
     }
     abstract itemFactory(aspect: EntityAspect<TItem, TObj, TDbContext>): TItem;
     public handleError(error: any, source: any): boolean {
         return (!this._dbContext) ? super.handleError(error, source) : this._dbContext.handleError(error, source);
     }
-    _getEventNames() {
-        const baseEvents = super._getEventNames();
+    getEventNames() {
+        const baseEvents = super.getEventNames();
         return [DBSET_EVENTS.loaded].concat(baseEvents);
     }
     protected _mapAssocFields() {
@@ -367,7 +367,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
         this._changeCache = {};
         this._changeCount = 0;
         if (old !== this._changeCount)
-            this.raisePropertyChanged(PROP_NAME.isHasChanges);
+            this.objEvents.raiseProp(PROP_NAME.isHasChanges);
     }
     */
     protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER) {
@@ -467,7 +467,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
         }
 
         if (!!oldQuery && oldQuery !== query) {
-            oldQuery.destroy();
+            oldQuery.dispose();
         }
 
         if (query.pageSize !== this.pageSize) {
@@ -526,7 +526,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
             isPagingEnabled = this.isPagingEnabled, query = info.query;
         let isClearAll = true;
 
-        if (!!query && !query.getIsDestroyCalled()) {
+        if (!!query && !query.getIsDisposing()) {
             isClearAll = query.isClearPrevData;
             if (query.isClearCacheOnEveryLoad) {
                 query._getInternal().clearCache();
@@ -555,7 +555,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
 
         let arr = fetchedItems;
 
-        if (!!query && !query.getIsDestroyCalled()) {
+        if (!!query && !query.getIsDisposing()) {
             if (query.isIncludeTotalCount && !checks.isNt(res.totalCount)) {
                 this.totalCount = res.totalCount;
             }
@@ -609,7 +609,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
         if (!query) {
             throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "query is not null"));
         }
-        if (query.getIsDestroyCalled()) {
+        if (query.getIsDisposing()) {
             throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "query not destroyed"));
         }
         const dataCache = query._getInternal().getCache(),
@@ -717,7 +717,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
             this._changeCache[item._key] = item;
             this._changeCount += 1;
             if (this._changeCount === 1) {
-                this.raisePropertyChanged(PROP_NAME.isHasChanges);
+                this.objEvents.raiseProp(PROP_NAME.isHasChanges);
             }
         }
     }
@@ -729,7 +729,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
             delete this._changeCache[key];
             this._changeCount -= 1;
             if (this._changeCount === 0) {
-                this.raisePropertyChanged(PROP_NAME.isHasChanges);
+                this.objEvents.raiseProp(PROP_NAME.isHasChanges);
             }
         }
     }
@@ -744,18 +744,20 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
         this._removeFromChanged(item._key);
         super._onRemoved(item, pos);
     }
-    // reports ALL the values returned from the server (it is not not triggered when loaded from the Data Cache)
+    // reports ALL the values returned from the server 
+    // it is not not triggered when loaded from the Data Cache
     protected _onLoaded(items: TItem[]) {
-        if (this._canRaiseEvent(DBSET_EVENTS.loaded)) {
+        // canRaise is checked because creating vals is an expensive operation
+        if (this.objEvents.canRaise(DBSET_EVENTS.loaded)) {
             const vals = items.map((item) => <TObj>item._aspect.vals);
-            this.raiseEvent(DBSET_EVENTS.loaded, { vals: vals });
+            this.objEvents.raise(DBSET_EVENTS.loaded, { vals: vals });
         }
     }
     protected _destroyQuery(): void {
         const query = this._query;
         this._query = null;
         if (!!query) {
-            query.destroy();
+            query.dispose();
         }
     }
     protected _getNames(): IFieldName[] {
@@ -908,10 +910,10 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
         return result;
     }
     addOnLoaded(fn: TEventHandler<DbSet<TItem, TObj, TDbContext>, IDbSetLoadedArgs<TObj>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.addHandler(DBSET_EVENTS.loaded, fn, nmspace, context, priority);
+        this.objEvents.on(DBSET_EVENTS.loaded, fn, nmspace, context, priority);
     }
     removeOnLoaded(nmspace?: string) {
-        this.removeHandler(DBSET_EVENTS.loaded, nmspace);
+        this.objEvents.off(DBSET_EVENTS.loaded, nmspace);
     }
     waitForNotBusy(callback: () => void, groupName: string) {
         this._waitQueue.enQueue({
@@ -999,22 +1001,22 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
         }
         return new DataQuery<TItem, TObj>(this, queryInfo);
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
-        this._pageDebounce.destroy();
+        this.setDisposing();
+        this._pageDebounce.dispose();
         this._pageDebounce = null;
         this.clear();
         const dbContext = this.dbContext;
         this._dbContext = null;
         if (!!dbContext) {
-            dbContext.removeNSHandlers(this.dbSetName);
+            dbContext.objEvents.offNS(this.dbSetName);
         }
         this._navfldMap = {};
         this._calcfldMap = {};
-        super.destroy();
+        super.dispose();
     }
     toString() {
         return this.dbSetName;
@@ -1038,7 +1040,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
     set isSubmitOnDelete(v: boolean) {
         if (this._isSubmitOnDelete !== v) {
             this._isSubmitOnDelete = !!v;
-            this.raisePropertyChanged(PROP_NAME.isSubmitOnDelete);
+            this.objEvents.raiseProp(PROP_NAME.isSubmitOnDelete);
         }
     }
     get isBusy(): boolean { return this.isLoading || this.dbContext.isSubmiting; }

@@ -121,13 +121,13 @@ export interface IViewOptions {
 export interface IElViewStore {
     getElView(el: HTMLElement): IElView;
     setElView(el: HTMLElement, view?: IElView): void;
-    destroy(): void;
+    dispose(): void;
 }
 
 export interface IElViewRegister {
     registerElView(name: string, vwType: IViewType): void;
     getElViewType(name: string): IViewType;
-    destroy(): void;
+    dispose(): void;
 }
 
 export interface IElViewFactory {
@@ -136,7 +136,7 @@ export interface IElViewFactory {
     getElementViewInfo(el: HTMLElement): { name: string; options: IViewOptions; };
     store: IElViewStore;
     register: IElViewRegister;
-    destroy(): void;
+    dispose(): void;
 }
 
 

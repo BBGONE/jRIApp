@@ -13,7 +13,7 @@ export class InputElView extends BaseElView {
         const el = <HTMLInputElement>this.el;
         if (v !== !this.isEnabled) {
             el.disabled = v;
-            this.raisePropertyChanged(PROP_NAME.isEnabled);
+            this.objEvents.raiseProp(PROP_NAME.isEnabled);
         }
     }
     get value(): string {
@@ -24,7 +24,7 @@ export class InputElView extends BaseElView {
         v = (!v) ? "" : str;
         if (x !== v) {
             (<HTMLInputElement>this.el).value = v;
-            this.raisePropertyChanged(PROP_NAME.value);
+            this.objEvents.raiseProp(PROP_NAME.value);
         }
     }
 }

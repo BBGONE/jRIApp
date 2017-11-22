@@ -24,16 +24,16 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
         dom.addClass([this.td], [css.rowActions, css.nobr].join(" "));
         this._createButtons(this.row.isEditing);
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         const td = this.td, btns = dom.queryAll<HTMLElement>(td, actionsSelector);
         btns.forEach((img) => {
             dom.removeData(img);
         });
-        super.destroy();
+        super.dispose();
     }
     private _setupButtons(buttons: HTMLElement[]) {
         const self = this;

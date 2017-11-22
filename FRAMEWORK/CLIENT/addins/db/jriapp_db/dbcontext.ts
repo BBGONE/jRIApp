@@ -124,17 +124,17 @@ export class DbContext extends BaseObject {
                 return self._load(query, reason);
             }
         };
-        this.addOnPropertyChange(PROP_NAME.isSubmiting, () => {
-            self.raisePropertyChanged(PROP_NAME.isBusy);
+        this.objEvents.onProp(PROP_NAME.isSubmiting, () => {
+            self.objEvents.raiseProp(PROP_NAME.isBusy);
         });
     }
     protected _checkDestroy() {
-        if (this.getIsDestroyCalled()) {
+        if (this.getIsDisposing()) {
             ERROR.abort("dbContext destroyed");
         }
     }
-    _getEventNames() {
-        const baseEvents = super._getEventNames();
+    getEventNames() {
+        const baseEvents = super.getEventNames();
         return [DBCTX_EVENTS.submit_err].concat(baseEvents);
     }
     protected _initDbSets() {
@@ -210,20 +210,20 @@ export class DbContext extends BaseObject {
 
         self._requests.push(item);
         req.always(() => {
-            if (self.getIsDestroyCalled())
+            if (self.getIsDisposing())
                 return;
             const oldBusy = self.isBusy;
             utils.arr.remove(self._requests, item);
-            self.raisePropertyChanged(PROP_NAME.requestCount);
+            self.objEvents.raiseProp(PROP_NAME.requestCount);
             if (oldBusy !== self.isBusy) {
-                self.raisePropertyChanged(PROP_NAME.isBusy);
+                self.objEvents.raiseProp(PROP_NAME.isBusy);
             }
         });
         if (cnt !== self._requests.length) {
-            self.raisePropertyChanged(PROP_NAME.requestCount);
+            self.objEvents.raiseProp(PROP_NAME.requestCount);
         }
         if (oldBusy !== self.isBusy) {
-            self.raisePropertyChanged(PROP_NAME.isBusy);
+            self.objEvents.raiseProp(PROP_NAME.isBusy);
         }
     }
     protected _tryAbortRequest(operType: DATA_OPER, name: string) {
@@ -395,7 +395,7 @@ export class DbContext extends BaseObject {
             return;
         }
         const args = { error: error, isHandled: false };
-        this.raiseEvent(DBCTX_EVENTS.submit_err, args);
+        this.objEvents.raise(DBCTX_EVENTS.submit_err, args);
         if (!args.isHandled) {
             //this.rejectChanges();
             this._onDataOperError(error, DATA_OPER.Submit);
@@ -498,7 +498,7 @@ export class DbContext extends BaseObject {
             fn_checkError(res.error, DATA_OPER.Refresh);
             if (!res.rowInfo) {
                 item._aspect.dbSet.removeItem(item);
-                item.destroy();
+                item.dispose();
                 throw new Error(ERRS.ERR_ITEM_DELETED_BY_ANOTHER_USER);
             } else {
                 item._aspect._refreshValues(res.rowInfo, REFRESH_MODE.MergeIntoCurrent);
@@ -602,7 +602,7 @@ export class DbContext extends BaseObject {
             }
         }
         if (this._isHasChanges !== old) {
-            this.raisePropertyChanged(PROP_NAME.isHasChanges);
+            this.objEvents.raiseProp(PROP_NAME.isHasChanges);
         }
     }
     protected _load(query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
@@ -687,7 +687,7 @@ export class DbContext extends BaseObject {
             self._checkDestroy();
             args.fn_onOk();
         }).catch((er) => {
-            if (!self.getIsDestroyCalled() && ERROR.checkIsAbort(er) && er.reason === no_changes) {
+            if (!self.getIsDisposing() && ERROR.checkIsAbort(er) && er.reason === no_changes) {
                 args.fn_onOk();
             } else {
                 args.fn_onErr(er);
@@ -729,7 +729,7 @@ export class DbContext extends BaseObject {
         }).then((res: IPermissionsInfo) => {
             self._checkDestroy();
             self._updatePermissions(res);
-            self.raisePropertyChanged(PROP_NAME.isInitialized);
+            self.objEvents.raiseProp(PROP_NAME.isInitialized);
         }).catch((err) => {
             self._onDataOperError(err, DATA_OPER.Init);
             ERROR.throwDummy(err);
@@ -738,10 +738,10 @@ export class DbContext extends BaseObject {
         return this._initState;
     }
     addOnSubmitError(fn: TEventHandler<DbContext, { error: any; isHandled: boolean; }>, nmspace?: string, context?: IBaseObject): void {
-        this.addHandler(DBCTX_EVENTS.submit_err, fn, nmspace, context);
+        this.objEvents.on(DBCTX_EVENTS.submit_err, fn, nmspace, context);
     }
     removeOnSubmitError(nmspace?: string): void {
-        this.removeHandler(DBCTX_EVENTS.submit_err, nmspace);
+        this.objEvents.off(DBCTX_EVENTS.submit_err, nmspace);
     }
     getDbSet(name: string): TDbSet {
         return this._dbSets.getDbSet(name);
@@ -771,7 +771,7 @@ export class DbContext extends BaseObject {
             fn_onStart: () => {
                 if (!self._isSubmiting) {
                     self._isSubmiting = true;
-                    self.raisePropertyChanged(PROP_NAME.isSubmiting);
+                    self.objEvents.raiseProp(PROP_NAME.isSubmiting);
                 }
                 // allow to post new submit
                 self._pendingSubmit = null;
@@ -779,7 +779,7 @@ export class DbContext extends BaseObject {
             fn_onEnd: () => {
                 if (self._isSubmiting) {
                     self._isSubmiting = false;
-                    self.raisePropertyChanged(PROP_NAME.isSubmiting);
+                    self.objEvents.raiseProp(PROP_NAME.isSubmiting);
                 }
             },
             fn_onErr: (ex: any) => {
@@ -838,20 +838,20 @@ export class DbContext extends BaseObject {
             promise.req.abort(reason);
         }
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         this.abortRequests();
-        this._waitQueue.destroy();
+        this._waitQueue.dispose();
         this._waitQueue = null;
         this._arrAssoc.forEach((assoc) => {
-            assoc.destroy();
+            assoc.dispose();
         });
         this._arrAssoc = [];
         this._assoc = {};
-        this._dbSets.destroy();
+        this._dbSets.dispose();
         this._dbSets = null;
         this._svcMethods = {};
         this._queryInf = {};
@@ -859,7 +859,7 @@ export class DbContext extends BaseObject {
         this._initState = null;
         this._isSubmiting = false;
         this._isHasChanges = false;
-        super.destroy();
+        super.dispose();
     }
     get serviceUrl() { return this._serviceUrl; }
     get isInitialized() { return !!this._initState && this._initState.state() === PromiseState.Resolved; }

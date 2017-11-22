@@ -21,7 +21,7 @@ export class DbSets extends BaseObject {
     protected _dbSetCreated(dbSet: TDbSet) {
         const self = this;
         this._arrDbSets.push(dbSet);
-        dbSet.addOnPropertyChange(PROP_NAME.isHasChanges, (sender, args) => {
+        dbSet.objEvents.onProp(PROP_NAME.isHasChanges, (sender, args) => {
             self._dbContext._getInternal().onDbSetHasChangesChanged(sender);
         });
     }
@@ -56,17 +56,17 @@ export class DbSets extends BaseObject {
         }
         return dbSet;
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         this._arrDbSets.forEach((dbSet) => {
-            dbSet.destroy();
+            dbSet.dispose();
         });
         this._arrDbSets = [];
         this._dbSets = null;
         this._dbContext = null;
-        super.destroy();
+        super.dispose();
     }
 }

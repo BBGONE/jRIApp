@@ -142,7 +142,7 @@ export class BasicContent extends BaseObject implements IContent {
     }
     protected cleanUp() {
         if (!!this._lfScope) {
-            this._lfScope.destroy();
+            this._lfScope.dispose();
             this._lfScope = null;
         }
         if (!!this._el) {
@@ -180,11 +180,11 @@ export class BasicContent extends BaseObject implements IContent {
             utils.err.reThrow(ex, this.handleError(ex, this));
         }
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         const displayInfo = this._options.displayInfo;
         dom.removeClass([this._parentEl], css.content);
         dom.removeClass([this._parentEl], css.required);
@@ -198,7 +198,7 @@ export class BasicContent extends BaseObject implements IContent {
         this._parentEl = null;
         this._dataContext = null;
         this._options = null;
-        super.destroy();
+        super.dispose();
     }
     toString() {
         return "BasicContent";

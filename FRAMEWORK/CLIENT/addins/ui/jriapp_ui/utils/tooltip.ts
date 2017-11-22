@@ -44,7 +44,7 @@ class TooltipService implements ITooltipService {
 
         if (!!$el.data("qtip")) {
             if (!tip) {
-                $el.qtip("destroy", true);
+                $el.qtip("dispose", true);
             } else {
                 $el.qtip("option", "content.text", tip);
             }

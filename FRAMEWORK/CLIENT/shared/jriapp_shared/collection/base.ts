@@ -199,14 +199,14 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
                 return self._onItemDeleting(args);
             },
             onErrorsChanged: (args: ICollItemArgs<TItem>) => {
-                self.raiseEvent(COLL_EVENTS.errors_changed, args);
+                self.objEvents.raise(COLL_EVENTS.errors_changed, args);
             },
             validateItemField: (args: ICollValidateFieldArgs<TItem>) => {
-                self.raiseEvent(COLL_EVENTS.validate_field, args);
+                self.objEvents.raise(COLL_EVENTS.validate_field, args);
                 return (!!args.errors && args.errors.length > 0) ? <IValidationInfo>{ fieldName: args.fieldName, errors: args.errors } : <IValidationInfo>null;
             },
             validateItem: (args: ICollValidateItemArgs<TItem>) => {
-                self.raiseEvent(COLL_EVENTS.validate_item, args);
+                self.objEvents.raise(COLL_EVENTS.validate_item, args);
                 return (!!args.result && args.result.length > 0) ? args.result : <IValidationInfo[]>[];
             }
         };
@@ -232,130 +232,130 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         };
         return fieldInfo;
     }
-    _getEventNames(): string[] {
-        const baseEvents = super._getEventNames();
+    getEventNames(): string[] {
+        const baseEvents = super.getEventNames();
         const events = Object.keys(COLL_EVENTS).map((key) => { return <string>(<any>COLL_EVENTS)[key]; });
         return events.concat(baseEvents);
     }
     addOnClearing(fn: TEventHandler<ICollection<TItem>, { reason: COLL_CHANGE_REASON; }>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.addHandler(COLL_EVENTS.clearing, fn, nmspace, context, priority);
+        this.objEvents.on(COLL_EVENTS.clearing, fn, nmspace, context, priority);
     }
     removeOnClearing(nmspace?: string) {
-        this.removeHandler(COLL_EVENTS.clearing, nmspace);
+        this.objEvents.off(COLL_EVENTS.clearing, nmspace);
     }
     addOnCleared(fn: TEventHandler<ICollection<TItem>, { reason: COLL_CHANGE_REASON; }>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.addHandler(COLL_EVENTS.cleared, fn, nmspace, context, priority);
+        this.objEvents.on(COLL_EVENTS.cleared, fn, nmspace, context, priority);
     }
     removeOnCleared(nmspace?: string) {
-        this.removeHandler(COLL_EVENTS.cleared, nmspace);
+        this.objEvents.off(COLL_EVENTS.cleared, nmspace);
     }
     addOnCollChanged(fn: TEventHandler<ICollection<TItem>, ICollChangedArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.addHandler(COLL_EVENTS.collection_changed, fn, nmspace, context, priority);
+        this.objEvents.on(COLL_EVENTS.collection_changed, fn, nmspace, context, priority);
     }
     removeOnCollChanged(nmspace?: string) {
-        this.removeHandler(COLL_EVENTS.collection_changed, nmspace);
+        this.objEvents.off(COLL_EVENTS.collection_changed, nmspace);
     }
     addOnFill(fn: TEventHandler<ICollection<TItem>, ICollFillArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.addHandler(COLL_EVENTS.fill, fn, nmspace, context, priority);
+        this.objEvents.on(COLL_EVENTS.fill, fn, nmspace, context, priority);
     }
     removeOnFill(nmspace?: string) {
-        this.removeHandler(COLL_EVENTS.fill, nmspace);
+        this.objEvents.off(COLL_EVENTS.fill, nmspace);
     }
     addOnValidateField(fn: TEventHandler<ICollection<TItem>, ICollValidateFieldArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.addHandler(COLL_EVENTS.validate_field, fn, nmspace, context, priority);
+        this.objEvents.on(COLL_EVENTS.validate_field, fn, nmspace, context, priority);
     }
     removeOnValidateField(nmspace?: string) {
-        this.removeHandler(COLL_EVENTS.validate_field, nmspace);
+        this.objEvents.off(COLL_EVENTS.validate_field, nmspace);
     }
     addOnValidateItem(fn: TEventHandler<ICollection<TItem>, ICollValidateItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.addHandler(COLL_EVENTS.validate_item, fn, nmspace, context, priority);
+        this.objEvents.on(COLL_EVENTS.validate_item, fn, nmspace, context, priority);
     }
     removeOnValidateItem(nmspace?: string) {
-        this.removeHandler(COLL_EVENTS.validate_item, nmspace);
+        this.objEvents.off(COLL_EVENTS.validate_item, nmspace);
     }
     addOnItemDeleting(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.addHandler(COLL_EVENTS.item_deleting, fn, nmspace, context, priority);
+        this.objEvents.on(COLL_EVENTS.item_deleting, fn, nmspace, context, priority);
     }
     removeOnItemDeleting(nmspace?: string) {
-        this.removeHandler(COLL_EVENTS.item_deleting, nmspace);
+        this.objEvents.off(COLL_EVENTS.item_deleting, nmspace);
     }
     addOnItemAdding(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.addHandler(COLL_EVENTS.item_adding, fn, nmspace, context, priority);
+        this.objEvents.on(COLL_EVENTS.item_adding, fn, nmspace, context, priority);
     }
     removeOnItemAdding(nmspace?: string) {
-        this.removeHandler(COLL_EVENTS.item_adding, nmspace);
+        this.objEvents.off(COLL_EVENTS.item_adding, nmspace);
     }
     addOnItemAdded(fn: TEventHandler<ICollection<TItem>, IItemAddedArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.addHandler(COLL_EVENTS.item_added, fn, nmspace, context, priority);
+        this.objEvents.on(COLL_EVENTS.item_added, fn, nmspace, context, priority);
     }
     removeOnItemAdded(nmspace?: string) {
-        this.removeHandler(COLL_EVENTS.item_added, nmspace);
+        this.objEvents.off(COLL_EVENTS.item_added, nmspace);
     }
     addOnCurrentChanging(fn: TEventHandler<ICollection<TItem>, ICurrentChangingArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.addHandler(COLL_EVENTS.current_changing, fn, nmspace, context, priority);
+        this.objEvents.on(COLL_EVENTS.current_changing, fn, nmspace, context, priority);
     }
     removeOnCurrentChanging(nmspace?: string) {
-        this.removeHandler(COLL_EVENTS.current_changing, nmspace);
+        this.objEvents.off(COLL_EVENTS.current_changing, nmspace);
     }
     addOnPageChanging(fn: TEventHandler<ICollection<TItem>, IPageChangingArgs>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.addHandler(COLL_EVENTS.page_changing, fn, nmspace, context, priority);
+        this.objEvents.on(COLL_EVENTS.page_changing, fn, nmspace, context, priority);
     }
     removeOnPageChanging(nmspace?: string) {
-        this.removeHandler(COLL_EVENTS.page_changing, nmspace);
+        this.objEvents.off(COLL_EVENTS.page_changing, nmspace);
     }
     addOnErrorsChanged(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.addHandler(COLL_EVENTS.errors_changed, fn, nmspace, context, priority);
+        this.objEvents.on(COLL_EVENTS.errors_changed, fn, nmspace, context, priority);
     }
     removeOnErrorsChanged(nmspace?: string) {
-        this.removeHandler(COLL_EVENTS.errors_changed, nmspace);
+        this.objEvents.off(COLL_EVENTS.errors_changed, nmspace);
     }
     addOnBeginEdit(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.addHandler(COLL_EVENTS.begin_edit, fn, nmspace, context, priority);
+        this.objEvents.on(COLL_EVENTS.begin_edit, fn, nmspace, context, priority);
     }
     removeOnBeginEdit(nmspace?: string) {
-        this.removeHandler(COLL_EVENTS.begin_edit, nmspace);
+        this.objEvents.off(COLL_EVENTS.begin_edit, nmspace);
     }
     addOnEndEdit(fn: TEventHandler<ICollection<TItem>, ICollEndEditArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.addHandler(COLL_EVENTS.end_edit, fn, nmspace, context, priority);
+        this.objEvents.on(COLL_EVENTS.end_edit, fn, nmspace, context, priority);
     }
     removeOnEndEdit(nmspace?: string) {
-        this.removeHandler(COLL_EVENTS.end_edit, nmspace);
+        this.objEvents.off(COLL_EVENTS.end_edit, nmspace);
     }
     addOnBeforeBeginEdit(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.addHandler(COLL_EVENTS.before_begin_edit, fn, nmspace, context, priority);
+        this.objEvents.on(COLL_EVENTS.before_begin_edit, fn, nmspace, context, priority);
     }
     removeOnBeforeBeginEdit(nmspace?: string) {
-        this.removeHandler(COLL_EVENTS.before_begin_edit, nmspace);
+        this.objEvents.off(COLL_EVENTS.before_begin_edit, nmspace);
     }
     addOnBeforeEndEdit(fn: TEventHandler<ICollection<TItem>, ICollEndEditArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.addHandler(COLL_EVENTS.before_end_edit, fn, nmspace, context, priority);
+        this.objEvents.on(COLL_EVENTS.before_end_edit, fn, nmspace, context, priority);
     }
     removeBeforeOnEndEdit(nmspace?: string) {
-        this.removeHandler(COLL_EVENTS.before_end_edit, nmspace);
+        this.objEvents.off(COLL_EVENTS.before_end_edit, nmspace);
     }
     addOnCommitChanges(fn: TEventHandler<ICollection<TItem>, ICommitChangesArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.addHandler(COLL_EVENTS.commit_changes, fn, nmspace, context, priority);
+        this.objEvents.on(COLL_EVENTS.commit_changes, fn, nmspace, context, priority);
     }
     removeOnCommitChanges(nmspace?: string) {
-        this.removeHandler(COLL_EVENTS.commit_changes, nmspace);
+        this.objEvents.off(COLL_EVENTS.commit_changes, nmspace);
     }
     addOnStatusChanged(fn: TEventHandler<ICollection<TItem>, ICollItemStatusArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.addHandler(COLL_EVENTS.status_changed, fn, nmspace, context, priority);
+        this.objEvents.on(COLL_EVENTS.status_changed, fn, nmspace, context, priority);
     }
     removeOnStatusChanged(nmspace?: string) {
-        this.removeHandler(COLL_EVENTS.status_changed, nmspace);
+        this.objEvents.off(COLL_EVENTS.status_changed, nmspace);
     }
     addOnPageIndexChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void {
-        this.addOnPropertyChange(PROP_NAME.pageIndex, handler, nmspace, context);
+        this.objEvents.onProp(PROP_NAME.pageIndex, handler, nmspace, context);
     }
     addOnPageSizeChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void {
-        this.addOnPropertyChange(PROP_NAME.pageSize, handler, nmspace, context);
+        this.objEvents.onProp(PROP_NAME.pageSize, handler, nmspace, context);
     }
     addOnTotalCountChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void {
-        this.addOnPropertyChange(PROP_NAME.totalCount, handler, nmspace, context);
+        this.objEvents.onProp(PROP_NAME.totalCount, handler, nmspace, context);
     }
     addOnCurrentChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void {
-        this.addOnPropertyChange(PROP_NAME.currentItem, handler, nmspace, context);
+        this.objEvents.onProp(PROP_NAME.currentItem, handler, nmspace, context);
     }
     protected _updatePermissions(perms: IPermissions): void {
         this._perms = perms;
@@ -385,31 +385,31 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
     }
     protected _onCurrentChanging(newCurrent: TItem) {
         this._checkCurrentChanging(newCurrent);
-        this.raiseEvent(COLL_EVENTS.current_changing, <ICurrentChangingArgs<TItem>>{ newCurrent: newCurrent });
+        this.objEvents.raise(COLL_EVENTS.current_changing, <ICurrentChangingArgs<TItem>>{ newCurrent: newCurrent });
     }
     protected _onCurrentChanged() {
-        this.raisePropertyChanged(PROP_NAME.currentItem);
+        this.objEvents.raiseProp(PROP_NAME.currentItem);
     }
     protected _onCountChanged() {
-        this.raisePropertyChanged(PROP_NAME.count);
+        this.objEvents.raiseProp(PROP_NAME.count);
     }
     protected _onEditingChanged() {
-        this.raisePropertyChanged(PROP_NAME.isEditing);
+        this.objEvents.raiseProp(PROP_NAME.isEditing);
     }
     // occurs when item status Changed (not used in simple collections)
     protected _onItemStatusChanged(item: TItem, oldStatus: ITEM_STATUS) {
-        this.raiseEvent(COLL_EVENTS.status_changed, <ICollItemStatusArgs<TItem>>{ item: item, oldStatus: oldStatus, key: item._key });
+        this.objEvents.raise(COLL_EVENTS.status_changed, <ICollItemStatusArgs<TItem>>{ item: item, oldStatus: oldStatus, key: item._key });
     }
     protected _onCollectionChanged(args: ICollChangedArgs<TItem>) {
-        this.raiseEvent(COLL_EVENTS.collection_changed, args);
+        this.objEvents.raise(COLL_EVENTS.collection_changed, args);
     }
     protected _onFillEnd(args: ICollFillArgs<TItem>) {
-        this.raiseEvent(COLL_EVENTS.fill, args);
+        this.objEvents.raise(COLL_EVENTS.fill, args);
     }
     // new item is being added, but is not in the collection now
     protected _onItemAdding(item: TItem) {
         const args: ICancellableArgs<TItem> = { item: item, isCancel: false };
-        this.raiseEvent(COLL_EVENTS.item_adding, args);
+        this.objEvents.raise(COLL_EVENTS.item_adding, args);
         if (args.isCancel) {
             utils.err.throwDummy(new Error("operation canceled"));
         }
@@ -417,7 +417,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
     // new item has been added and now is in editing state and is currentItem
     protected _onItemAdded(item: TItem) {
         const args: IItemAddedArgs<TItem> = { item: item, isAddNewHandled: false };
-        this.raiseEvent(COLL_EVENTS.item_added, args);
+        this.objEvents.raise(COLL_EVENTS.item_added, args);
     }
     protected _createNew(): TItem {
         throw new Error("_createNew Not implemented");
@@ -450,7 +450,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
             new_key: item._key
         });
         item._aspect._onAttach();
-        this.raisePropertyChanged(PROP_NAME.count);
+        this.objEvents.raiseProp(PROP_NAME.count);
         this._onCurrentChanging(item);
         this._currentPos = pos;
         this._onCurrentChanged();
@@ -467,14 +467,14 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
                 old_key: item._key
             });
         } finally {
-            this.raisePropertyChanged(PROP_NAME.count);
+            this.objEvents.raiseProp(PROP_NAME.count);
         }
     }
     protected _onPageSizeChanged() {
     }
     protected _onPageChanging() {
         const args: IPageChangingArgs = { page: this.pageIndex, isCancel: false };
-        this.raiseEvent(COLL_EVENTS.page_changing, args);
+        this.objEvents.raise(COLL_EVENTS.page_changing, args);
         if (!args.isCancel) {
             try {
                 this.endEdit();
@@ -518,17 +518,17 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
     protected _clearItems(items: TItem[]) {
         items.forEach((item) => {
             item._aspect._setIsAttached(false);
-            item.destroy();
+            item.dispose();
         });
     }
     // override
-    _isHasProp(prop: string) {
+    isHasProp(prop: string) {
         // first check for indexed property name
         if (strUtils.startsWith(prop, "[")) {
             const res = sys.getProp(this, prop);
             return !checks.isUndefined(res);
         }
-        return super._isHasProp(prop);
+        return super.isHasProp(prop);
     }
     protected _getEditingItem() {
         return this._EditingItem;
@@ -542,9 +542,9 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
             return;
         }
         if (isBegin) {
-            this.raiseEvent(COLL_EVENTS.before_begin_edit, <ICollItemArgs<TItem>>{ item: item });
+            this.objEvents.raise(COLL_EVENTS.before_begin_edit, <ICollItemArgs<TItem>>{ item: item });
         } else {
-            this.raiseEvent(COLL_EVENTS.before_end_edit, { item: item, isCanceled: isCanceled });
+            this.objEvents.raise(COLL_EVENTS.before_end_edit, { item: item, isCanceled: isCanceled });
         }
     }
     protected _onEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void {
@@ -553,41 +553,41 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         }
         if (isBegin) {
             this._EditingItem = item;
-            this.raiseEvent(COLL_EVENTS.begin_edit, <ICollItemArgs<TItem>>{ item: item });
+            this.objEvents.raise(COLL_EVENTS.begin_edit, <ICollItemArgs<TItem>>{ item: item });
             this._onEditingChanged();
             if (!!item) {
-                item._aspect.raisePropertyChanged(PROP_NAME.isEditing);
+                item._aspect.objEvents.raiseProp(PROP_NAME.isEditing);
             }
         } else {
             const oldItem = this._EditingItem;
             this._EditingItem = null;
-            this.raiseEvent(COLL_EVENTS.end_edit, { item: item, isCanceled: isCanceled });
+            this.objEvents.raise(COLL_EVENTS.end_edit, { item: item, isCanceled: isCanceled });
             this._onEditingChanged();
             if (!!oldItem) {
-                oldItem._aspect.raisePropertyChanged(PROP_NAME.isEditing);
+                oldItem._aspect.objEvents.raiseProp(PROP_NAME.isEditing);
             }
         }
     }
     // used by descendants when commiting submits for items
     protected _onCommitChanges(item: TItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS): void {
-        this.raiseEvent(COLL_EVENTS.commit_changes, <ICommitChangesArgs<TItem>>{ item: item, isBegin: isBegin, isRejected: isRejected, status: status });
+        this.objEvents.raise(COLL_EVENTS.commit_changes, <ICommitChangesArgs<TItem>>{ item: item, isBegin: isBegin, isRejected: isRejected, status: status });
     }
     protected _validateItem(item: TItem): IValidationInfo[] {
         const args: ICollValidateItemArgs<TItem> = { item: item, result: [] };
-        this.raiseEvent(COLL_EVENTS.validate_item, args);
+        this.objEvents.raise(COLL_EVENTS.validate_item, args);
         return (!!args.result && args.result.length > 0) ? args.result : [];
     }
     protected _validateItemField(item: TItem, fieldName: string): IValidationInfo {
         const args: ICollValidateFieldArgs<TItem> = { item: item, fieldName: fieldName, errors: <string[]>[] };
-        this.raiseEvent(COLL_EVENTS.validate_field, args);
+        this.objEvents.raise(COLL_EVENTS.validate_field, args);
         return (!!args.errors && args.errors.length > 0) ? { fieldName: fieldName, errors: args.errors } : null;
     }
     protected _onItemDeleting(args: ICancellableArgs<TItem>): boolean {
-        this.raiseEvent(COLL_EVENTS.item_deleting, args);
+        this.objEvents.raise(COLL_EVENTS.item_deleting, args);
         return !args.isCancel;
     }
     protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER) {
-        this.raiseEvent(COLL_EVENTS.clearing, { reason: reason });
+        this.objEvents.raise(COLL_EVENTS.clearing, { reason: reason });
         this.cancelEdit();
         this._EditingItem = null;
         this._newKey = 0;
@@ -606,7 +606,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
                     pos: []
                 });
             }
-            this.raiseEvent(COLL_EVENTS.cleared, { reason: reason });
+            this.objEvents.raise(COLL_EVENTS.cleared, { reason: reason });
             this._onCountChanged();
         } finally {
             this._clearItems(oldItems);
@@ -615,7 +615,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
     _setIsLoading(v: boolean) {
         if (this._isLoading !== v) {
             this._isLoading = v;
-            this.raisePropertyChanged(PROP_NAME.isLoading);
+            this.objEvents.raiseProp(PROP_NAME.isLoading);
         }
     }
     _getInternal(): IInternalCollMethods<TItem> {
@@ -881,8 +881,8 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
                 this._onCurrentChanged();
             }
         } finally {
-            if (!item.getIsDestroyCalled()) {
-                item.destroy();
+            if (!item.getIsDisposing()) {
+                item.dispose();
             }
         }
     }
@@ -918,17 +918,17 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         this._clear(COLL_CHANGE_REASON.None, COLL_CHANGE_OPER.None);
         this.totalCount = 0;
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
-        this._waitQueue.destroy();
+        this.setDisposing();
+        this._waitQueue.dispose();
         this._waitQueue = null;
         this.clear();
         this._fieldMap = {};
         this._fieldInfos = [];
-        super.destroy();
+        super.dispose();
     }
     waitForNotLoading(callback: () => void, groupName: string) {
         this._waitQueue.enQueue({
@@ -953,15 +953,15 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
     set totalCount(v: number) {
         if (v !== this._totalCount) {
             this._totalCount = v;
-            this.raisePropertyChanged(PROP_NAME.totalCount);
-            this.raisePropertyChanged(PROP_NAME.pageCount);
+            this.objEvents.raiseProp(PROP_NAME.totalCount);
+            this.objEvents.raiseProp(PROP_NAME.pageCount);
         }
     }
     get pageSize() { return this._options.pageSize; }
     set pageSize(v: number) {
         if (this._options.pageSize !== v) {
             this._options.pageSize = v;
-            this.raisePropertyChanged(PROP_NAME.pageSize);
+            this.objEvents.raiseProp(PROP_NAME.pageSize);
             this._onPageSizeChanged();
         }
     }
@@ -976,7 +976,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
             }
             this._pageIndex = v;
             this._onPageChanged();
-            this.raisePropertyChanged(PROP_NAME.pageIndex);
+            this.objEvents.raiseProp(PROP_NAME.pageIndex);
         }
     }
     get pageCount() {
@@ -1002,7 +1002,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
     set isUpdating(v: boolean) {
         if (this._isUpdating !== v) {
             this._isUpdating = v;
-            this.raisePropertyChanged(PROP_NAME.isUpdating);
+            this.objEvents.raiseProp(PROP_NAME.isUpdating);
         }
     }
     get permissions(): IPermissions { return this._perms; }

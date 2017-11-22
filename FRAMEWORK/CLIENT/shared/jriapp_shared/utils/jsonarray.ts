@@ -24,25 +24,25 @@ export class JsonArray extends BaseObject {
         this._objId = coreUtils.getNewID("jsn");
         this._owner = owner;
         this._pathToArray = pathToArray;
-        this.owner.addOnPropertyChange("val", () => {
+        this.owner.objEvents.onProp("val", () => {
             if (!!this._list) {
                 this._list.setValues(this.getArray());
             }
         }, this._objId);
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
-        this._owner.removeNSHandlers(this._objId);
-        this._list.destroy();
+        this.setDisposing();
+        this._owner.objEvents.offNS(this._objId);
+        this._list.dispose();
         this._list = null;
         this._owner = null;
-        super.destroy();
+        super.dispose();
     }
-    _getEventNames() {
-        const baseEvents = super._getEventNames();
+    getEventNames() {
+        const baseEvents = super.getEventNames();
         return [BAG_EVENTS.validate_bag, BAG_EVENTS.validate_field].concat(baseEvents);
     }
     protected updateArray(arr: any[]): void {
@@ -50,16 +50,16 @@ export class JsonArray extends BaseObject {
         this._owner.updateJson();
     }
     addOnValidateBag(fn: TEventHandler<IPropertyBag, IBagValidateArgs<IPropertyBag>>, nmspace?: string, context?: any) {
-        this.addHandler(BAG_EVENTS.validate_bag, fn, nmspace, context);
+        this.objEvents.on(BAG_EVENTS.validate_bag, fn, nmspace, context);
     }
     removeOnValidateBag(nmspace?: string) {
-        this.removeHandler(BAG_EVENTS.validate_bag, nmspace);
+        this.objEvents.off(BAG_EVENTS.validate_bag, nmspace);
     }
     addOnValidateField(fn: TEventHandler<IPropertyBag, IFieldValidateArgs<IPropertyBag>>, nmspace?: string, context?: any) {
-        this.addHandler(BAG_EVENTS.validate_field, fn, nmspace, context);
+        this.objEvents.on(BAG_EVENTS.validate_field, fn, nmspace, context);
     }
     removeOnValidateField(nmspace?: string) {
-        this.removeHandler(BAG_EVENTS.validate_field, nmspace);
+        this.objEvents.off(BAG_EVENTS.validate_field, nmspace);
     }
     // error Notification Implementation
     protected _validateBag(bag: IAnyValItem): IValidationInfo[] {
@@ -67,7 +67,7 @@ export class JsonArray extends BaseObject {
             bag: bag,
             result: []
         };
-        this.raiseEvent(BAG_EVENTS.validate_bag, args);
+        this.objEvents.raise(BAG_EVENTS.validate_bag, args);
         return (!!args.result) ? args.result : [];
     }
     protected _validateField(bag: IAnyValItem, fieldName: string): IValidationInfo {
@@ -76,7 +76,7 @@ export class JsonArray extends BaseObject {
             fieldName: fieldName,
             errors: []
         };
-        this.raiseEvent(BAG_EVENTS.validate_field, args);
+        this.objEvents.raise(BAG_EVENTS.validate_field, args);
         return (!!args.errors && args.errors.length > 0) ? { fieldName: fieldName, errors: args.errors } : null;
     }
     getArray(): any[] {

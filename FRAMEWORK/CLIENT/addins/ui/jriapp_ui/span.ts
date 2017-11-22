@@ -12,8 +12,8 @@ export class SpanElView extends BaseElView {
         v = (v === null ? "" : str);
         if (x !== v) {
             el.textContent = v;
-            this.raisePropertyChanged(PROP_NAME.text);
-            this.raisePropertyChanged(PROP_NAME.value);
+            this.objEvents.raiseProp(PROP_NAME.text);
+            this.objEvents.raiseProp(PROP_NAME.value);
         }
     }
     get value() {
@@ -28,7 +28,7 @@ export class SpanElView extends BaseElView {
         v = v === null ? "" : str;
         if (x !== v) {
             el.innerHTML = v;
-            this.raisePropertyChanged(PROP_NAME.html);
+            this.objEvents.raiseProp(PROP_NAME.html);
         }
     }
 }

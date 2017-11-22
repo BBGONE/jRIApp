@@ -47,46 +47,46 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
         this._jsonChanged = jsonChanged;
         this._errors = {};
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
-        this._debounce.destroy();
+        this.setDisposing();
+        this._debounce.dispose();
         this._jsonChanged = null;
         this._json = void 0;
         this._val = {};
-        super.destroy();
+        super.dispose();
     }
-    _getEventNames() {
-        const baseEvents = super._getEventNames();
+    getEventNames() {
+        const baseEvents = super.getEventNames();
         return [BAG_EVENTS.validate_bag, BAG_EVENTS.validate_field].concat(baseEvents);
     }
     // override
-    _isHasProp(prop: string) {
+    isHasProp(prop: string) {
         // first check for indexed property name
         if (strUtils.startsWith(prop, "[")) {
             return true;
         }
-        return super._isHasProp(prop);
+        return super.isHasProp(prop);
     }
     addOnValidateBag(fn: TEventHandler<IPropertyBag, IBagValidateArgs<IPropertyBag>>, nmspace?: string, context?: any) {
-        this.addHandler(BAG_EVENTS.validate_bag, fn, nmspace, context);
+        this.objEvents.on(BAG_EVENTS.validate_bag, fn, nmspace, context);
     }
     removeOnValidateBag(nmspace?: string) {
-        this.removeHandler(BAG_EVENTS.validate_bag, nmspace);
+        this.objEvents.off(BAG_EVENTS.validate_bag, nmspace);
     }
     addOnValidateField(fn: TEventHandler<IPropertyBag, IFieldValidateArgs<IPropertyBag>>, nmspace?: string, context?: any) {
-        this.addHandler(BAG_EVENTS.validate_field, fn, nmspace, context);
+        this.objEvents.on(BAG_EVENTS.validate_field, fn, nmspace, context);
     }
     removeOnValidateField(nmspace?: string) {
-        this.removeHandler(BAG_EVENTS.validate_field, nmspace);
+        this.objEvents.off(BAG_EVENTS.validate_field, nmspace);
     }
     addOnErrorsChanged(fn: TEventHandler<JsonBag, any>, nmspace?: string, context?: any) {
-        this.addHandler(BAG_EVENTS.errors_changed, fn, nmspace, context);
+        this.objEvents.on(BAG_EVENTS.errors_changed, fn, nmspace, context);
     }
     removeOnErrorsChanged(nmspace?: string) {
-        this.removeHandler(BAG_EVENTS.errors_changed, nmspace);
+        this.objEvents.off(BAG_EVENTS.errors_changed, nmspace);
     }
 
     protected onChanged() {
@@ -100,9 +100,9 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
         if (this._json !== json) {
             this._json = json;
             this._val = (!json ? {} : JSON.parse(json));
-            this.raisePropertyChanged("json");
-            this.raisePropertyChanged("val");
-            this.raisePropertyChanged("[*]");
+            this.objEvents.raiseProp("json");
+            this.objEvents.raiseProp("val");
+            this.objEvents.raiseProp("[*]");
         }
     }
     updateJson(): boolean {
@@ -110,7 +110,7 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
         if (json !== this._json) {
             this._json = json;
             this.onChanged();
-            this.raisePropertyChanged("json");
+            this.objEvents.raiseProp("json");
             return true;
         }
         return false;
@@ -122,7 +122,7 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
             bag: this,
             result: []
         };
-        this.raiseEvent(BAG_EVENTS.validate_bag, args);
+        this.objEvents.raise(BAG_EVENTS.validate_bag, args);
         return (!!args.result) ? args.result : [];
     }
     protected _validateField(fieldName: string): IValidationInfo {
@@ -131,11 +131,11 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
             fieldName: fieldName,
             errors: []
         };
-        this.raiseEvent(BAG_EVENTS.validate_field, args);
+        this.objEvents.raise(BAG_EVENTS.validate_field, args);
         return (!!args.errors && args.errors.length > 0) ? { fieldName: fieldName, errors: args.errors } : null;
     }
     protected _onErrorsChanged(): void {
-        this.raiseEvent(BAG_EVENTS.errors_changed, {});
+        this.objEvents.raise(BAG_EVENTS.errors_changed, {});
     }
     protected _addErrors(errors: IValidationInfo[]): void {
         const self = this;
@@ -253,7 +253,7 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
             this._val = this._saveVal;
             this._saveVal = null;
             this._removeAllErrors();
-            this.raisePropertyChanged("[*]");
+            this.objEvents.raiseProp("[*]");
             return true;
         }
         return false;
@@ -273,7 +273,7 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
             try {
                 const fieldName = strUtils.trimBrackets(name);
                 coreUtils.setValue(this._val, fieldName, val, false, "->");
-                this.raisePropertyChanged(name);
+                this.objEvents.raiseProp(name);
                 this._removeError(name);
                 const validationInfo = this._validateField(name);
                 if (!!validationInfo && validationInfo.errors.length > 0) {

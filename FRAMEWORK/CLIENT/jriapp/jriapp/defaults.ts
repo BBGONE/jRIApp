@@ -42,7 +42,7 @@ export class Defaults extends BaseObject {
     set dateFormat(v) {
         if (this._dateFormat !== v) {
             this._dateFormat = v;
-            this.raisePropertyChanged(PROP_NAME.dateFormat);
+            this.objEvents.raiseProp(PROP_NAME.dateFormat);
        }
    }
     // uses moment.js format
@@ -50,14 +50,14 @@ export class Defaults extends BaseObject {
     set timeFormat(v) {
         if (this._timeFormat !== v) {
             this._timeFormat = v;
-            this.raisePropertyChanged(PROP_NAME.timeFormat);
+            this.objEvents.raiseProp(PROP_NAME.timeFormat);
        }
    }
     get dateTimeFormat() { return this._dateTimeFormat; }
     set dateTimeFormat(v) {
         if (this._dateTimeFormat !== v) {
             this._dateTimeFormat = v;
-            this.raisePropertyChanged(PROP_NAME.dateTimeFormat);
+            this.objEvents.raiseProp(PROP_NAME.dateTimeFormat);
        }
    }
     // path to where application images are stored
@@ -72,21 +72,21 @@ export class Defaults extends BaseObject {
            } else {
                 this._imagesPath = v;
            }
-           this.raisePropertyChanged(PROP_NAME.imagesPath);
+           this.objEvents.raiseProp(PROP_NAME.imagesPath);
        }
    }
     get decimalPoint() { return this._decimalPoint; }
     set decimalPoint(v) {
         if (this._decimalPoint !== v) {
             this._decimalPoint = v;
-            this.raisePropertyChanged(PROP_NAME.decimalPoint);
+            this.objEvents.raiseProp(PROP_NAME.decimalPoint);
        }
    }
     get thousandSep() { return this._thousandSep; }
     set thousandSep(v) {
         if (this._thousandSep !== v) {
             this._thousandSep = v;
-            this.raisePropertyChanged(PROP_NAME.thousandSep);
+            this.objEvents.raiseProp(PROP_NAME.thousandSep);
        }
    }
     // money decimal presision: defaults to 2
@@ -94,7 +94,7 @@ export class Defaults extends BaseObject {
     set decPrecision(v) {
         if (this._decPrecision !== v) {
             this._decPrecision = v;
-            this.raisePropertyChanged(PROP_NAME.decPrecision);
+            this.objEvents.raiseProp(PROP_NAME.decPrecision);
        }
    }
 

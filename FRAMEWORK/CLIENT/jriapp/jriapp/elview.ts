@@ -42,7 +42,7 @@ class ElViewRegister implements IElViewRegister, IExports {
         }
         return res;
     }
-    destroy(): void {
+    dispose(): void {
         this._exports = {};
     }
     getExports(): IIndexer<any> {
@@ -57,7 +57,7 @@ class ElViewStore implements IElViewStore {
         this._weakmap = createWeakMap();
     }
 
-    public destroy(): void {
+    public dispose(): void {
     }
     // get element view associated with HTML element(if any)
     getElView(el: HTMLElement): IElView {
@@ -82,15 +82,15 @@ class ElViewFactory extends BaseObject implements IElViewFactory {
         this._store = new ElViewStore();
         this._register = createElViewRegister(register);
     }
-    public destroy(): void {
+    public dispose(): void {
         if (!this._store) {
             return;
         }
-        this._store.destroy();
-        this._register.destroy();
+        this._store.dispose();
+        this._register.dispose();
         this._store = null;
         this._register = null;
-        super.destroy();
+        super.dispose();
     }
     createElView(viewInfo: {
         name: string;

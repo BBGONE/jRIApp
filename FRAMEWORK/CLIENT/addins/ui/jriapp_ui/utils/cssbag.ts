@@ -14,7 +14,7 @@ export class CSSBag extends BaseObject implements IPropertyBag {
         this._el = el;
     }
     // override
-    _isHasProp(prop: string) {
+    isHasProp(prop: string) {
         return true;
     }
     // implement IPropertyBag

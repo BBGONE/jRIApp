@@ -191,16 +191,16 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         this._createDialog();
     }
     addOnClose(fn: TEventHandler<DataEditDialog, any>, nmspace?: string, context?: IBaseObject) {
-        this.addHandler(DLG_EVENTS.close, fn, nmspace, context);
+        this.objEvents.on(DLG_EVENTS.close, fn, nmspace, context);
     }
     removeOnClose(nmspace?: string) {
-        this.removeHandler(DLG_EVENTS.close, nmspace);
+        this.objEvents.off(DLG_EVENTS.close, nmspace);
     }
     addOnRefresh(fn: TEventHandler<DataEditDialog, { isHandled: boolean; }>, nmspace?: string, context?: IBaseObject) {
-        this.addHandler(DLG_EVENTS.refresh, fn, nmspace, context);
+        this.objEvents.on(DLG_EVENTS.refresh, fn, nmspace, context);
     }
     removeOnRefresh(nmspace?: string) {
-        this.removeHandler(DLG_EVENTS.refresh, nmspace);
+        this.objEvents.off(DLG_EVENTS.refresh, nmspace);
     }
     protected _createDialog() {
         try {
@@ -212,15 +212,15 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             ERROR.reThrow(ex, this.handleError(ex, this));
         }
     }
-    _getEventNames() {
-        const baseEvents = super._getEventNames();
+    getEventNames() {
+        const baseEvents = super.getEventNames();
         return [DLG_EVENTS.close, DLG_EVENTS.refresh].concat(baseEvents);
     }
     templateLoading(template: ITemplate): void {
         // noop
     }
     templateLoaded(template: ITemplate, error?: any): void {
-        if (this.getIsDestroyCalled() || !!error) {
+        if (this.getIsDisposing() || !!error) {
             if (!!this._deferredTemplate) {
                 this._deferredTemplate.reject(error);
             }
@@ -243,7 +243,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     }
     protected _destroyTemplate() {
         if (!!this._template) {
-            this._template.destroy();
+            this._template.dispose();
         }
     }
     protected _getButtons(): IButton[] {
@@ -351,7 +351,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     }
     protected _onRefresh() {
         const args = { isHandled: false };
-        this.raiseEvent(DLG_EVENTS.refresh, args);
+        this.objEvents.raise(DLG_EVENTS.refresh, args);
         if (args.isHandled) {
             return;
         }
@@ -372,7 +372,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             if (!!this._fnOnClose) {
                 this._fnOnClose(this);
             }
-            this.raiseEvent(DLG_EVENTS.close, {});
+            this.objEvents.raise(DLG_EVENTS.close, {});
         } finally {
             this._template.dataContext = null;
             this._submitInfo = null;
@@ -390,12 +390,12 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     }
     show(): IPromise<DataEditDialog> {
         const self = this;
-        if (self.getIsDestroyCalled()) {
+        if (self.getIsDisposing()) {
             return utils.defer.createDeferred<DataEditDialog>().reject();
         }
         self._result = null;
         return this._deferredTemplate.promise().then((template) => {
-            if (self.getIsDestroyCalled() || !self._$dlgEl) {
+            if (self.getIsDisposing() || !self._$dlgEl) {
                 ERROR.abort();
             }
             (<any>self._$dlgEl).dialog("option", "buttons", self._getButtons());
@@ -405,7 +405,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         }).then(() => {
             return self;
         }, (err) => {
-            if (!self.getIsDestroyCalled()) {
+            if (!self.getIsDisposing()) {
                 self.handleError(err, self);
             }
             ERROR.abort();
@@ -428,25 +428,25 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         const self = this;
         (<any>self._$dlgEl).dialog("option", name, value);
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         this.hide();
         this._destroyTemplate();
         this._$dlgEl = null;
         this._template = null;
         this._dataContext = null;
         this._submitInfo = null;
-        super.destroy();
+        super.dispose();
     }
     get dataContext() { return this._dataContext; }
     set dataContext(v) {
         if (v !== this._dataContext) {
             this._dataContext = v;
             this._submitInfo = new SubmitInfo(this._dataContext);
-            this.raisePropertyChanged(PROP_NAME.dataContext);
+            this.objEvents.raiseProp(PROP_NAME.dataContext);
         }
     }
     get result() { return this._result; }
@@ -455,7 +455,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     set isSubmitOnOK(v) {
         if (this._submitOnOK !== v) {
             this._submitOnOK = v;
-            this.raisePropertyChanged(PROP_NAME.isSubmitOnOK);
+            this.objEvents.raiseProp(PROP_NAME.isSubmitOnOK);
         }
     }
     get width() { return this.getOption("width"); }
@@ -463,7 +463,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         const x = this.getOption("width");
         if (v !== x) {
             this.setOption("width", v);
-            this.raisePropertyChanged(PROP_NAME.width);
+            this.objEvents.raiseProp(PROP_NAME.width);
         }
     }
     get height() { return this.getOption("height"); }
@@ -471,7 +471,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         const x = this.getOption("height");
         if (v !== x) {
             this.setOption("height", v);
-            this.raisePropertyChanged(PROP_NAME.height);
+            this.objEvents.raiseProp(PROP_NAME.height);
         }
     }
     get title() { return this.getOption("title"); }
@@ -479,7 +479,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         const x = this.getOption("title");
         if (v !== x) {
             this.setOption("title", v);
-            this.raisePropertyChanged(PROP_NAME.title);
+            this.objEvents.raiseProp(PROP_NAME.title);
         }
     }
     get canRefresh() { return this._canRefresh; }
@@ -487,7 +487,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         const x = this._canRefresh;
         if (v !== x) {
             this._canRefresh = v;
-            this.raisePropertyChanged(PROP_NAME.canRefresh);
+            this.objEvents.raiseProp(PROP_NAME.canRefresh);
         }
     }
     get canCancel() { return this._canCancel; }
@@ -495,7 +495,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         const x = this._canCancel;
         if (v !== x) {
             this._canCancel = v;
-            this.raisePropertyChanged(PROP_NAME.canCancel);
+            this.objEvents.raiseProp(PROP_NAME.canCancel);
         }
     }
 }
@@ -541,17 +541,17 @@ export class DialogVM extends ViewModel<IApplication> {
         }
         return factory();
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         const self = this, keys = Object.keys(this._dialogs);
         keys.forEach((key: string) => {
-            self._dialogs[key].destroy();
+            self._dialogs[key].dispose();
         });
         this._factories = {};
         this._dialogs = {};
-        super.destroy();
+        super.dispose();
     }
 }

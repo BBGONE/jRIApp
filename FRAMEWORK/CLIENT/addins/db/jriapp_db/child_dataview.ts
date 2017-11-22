@@ -43,7 +43,7 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
         const self = this;
 
         this._getParent = () => {
-            if (self.getIsDestroyCalled()) {
+            if (self.getIsDisposing()) {
                 return null;
             }
             return parentItem;
@@ -51,9 +51,9 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
         this._setParent = (v: IEntityItem) => {
             if (parentItem !== v) {
                 parentItem = v;
-                self.raisePropertyChanged(PROP_NAME.parentItem);
+                self.objEvents.raiseProp(PROP_NAME.parentItem);
             }
-            if (self.getIsDestroyCalled()) {
+            if (self.getIsDisposing()) {
                 return;
             }
             if (self.items.length > 0) {
@@ -74,16 +74,16 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
             });
         }
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         this._setParent(null);
-        this._parentDebounce.destroy();
+        this._parentDebounce.dispose();
         this._parentDebounce = null;
         this._association = null;
-        super.destroy();
+        super.dispose();
     }
     toString() {
         return (!!this._association) ? ("ChildDataView for " + this._association.toString()) : "ChildDataView";

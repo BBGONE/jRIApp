@@ -25,7 +25,7 @@ export class EventBag extends BaseObject implements IPropertyBag {
         this._onChange = onChange;
     }
     // override
-    _isHasProp(prop: string) {
+    isHasProp(prop: string) {
         return true;
     }
    // implement IPropertyBag
@@ -54,7 +54,7 @@ export class EventBag extends BaseObject implements IPropertyBag {
                     oldVal: old,
                     newVal: null
                 });
-                this.raisePropertyChanged(name);
+                this.objEvents.raiseProp(name);
             }
             return;
         }
@@ -77,7 +77,7 @@ export class EventBag extends BaseObject implements IPropertyBag {
                 });
             }
 
-            this.raisePropertyChanged(name);
+            this.objEvents.raiseProp(name);
         }
     }
     get isPropertyBag() {
@@ -100,11 +100,11 @@ export class EventBag extends BaseObject implements IPropertyBag {
     toString() {
         return "EventBag";
     }
-    destroy() {
+    dispose() {
         if (!!this._dic) {
             this._dic = null;
         }
         this._onChange = null;
-        super.destroy();
+        super.dispose();
     }
 }

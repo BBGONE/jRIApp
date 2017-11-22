@@ -23,13 +23,13 @@ export class TextAreaElView extends BaseElView {
         }
         dom.events.on(this.el, "change", (e) => {
             e.stopPropagation();
-            self.raisePropertyChanged(PROP_NAME.value);
+            self.objEvents.raiseProp(PROP_NAME.value);
         }, this.uniqueID);
 
         dom.events.on(this.el, "keypress", (e) => {
             e.stopPropagation();
             const args: TKeyPressArgs = { keyCode: e.which, value: (<HTMLTextAreaElement>e.target).value, isCancel: false };
-            self.raiseEvent(TXTAREA_EVENTS.keypress, args);
+            self.objEvents.raise(TXTAREA_EVENTS.keypress, args);
             if (args.isCancel) {
                 e.preventDefault();
             }
@@ -38,19 +38,19 @@ export class TextAreaElView extends BaseElView {
         if (!!options.updateOnKeyUp) {
             dom.events.on(this.el, "keyup", (e) => {
                 e.stopPropagation();
-                self.raisePropertyChanged(PROP_NAME.value);
+                self.objEvents.raiseProp(PROP_NAME.value);
             }, this.uniqueID);
         }
     }
-    _getEventNames() {
-        const baseEvents = super._getEventNames();
+    getEventNames() {
+        const baseEvents = super.getEventNames();
         return [TXTAREA_EVENTS.keypress].concat(baseEvents);
     }
     addOnKeyPress(fn: (sender: TextAreaElView, args: TKeyPressArgs) => void, nmspace?: string) {
-        this.addHandler(TXTAREA_EVENTS.keypress, fn, nmspace);
+        this.objEvents.on(TXTAREA_EVENTS.keypress, fn, nmspace);
     }
     removeOnKeyPress(nmspace?: string) {
-        this.removeHandler(TXTAREA_EVENTS.keypress, nmspace);
+        this.objEvents.off(TXTAREA_EVENTS.keypress, nmspace);
     }
     toString() {
         return "TextAreaElView";
@@ -63,7 +63,7 @@ export class TextAreaElView extends BaseElView {
         v = (!v) ? "" : str;
         if (x !== v) {
             (<HTMLTextAreaElement>this.el).value = v;
-            this.raisePropertyChanged(PROP_NAME.value);
+            this.objEvents.raiseProp(PROP_NAME.value);
         }
     }
     get isEnabled() { return !(<HTMLTextAreaElement>this.el).disabled; }
@@ -71,7 +71,7 @@ export class TextAreaElView extends BaseElView {
         v = !v;
         if (v !== !this.isEnabled) {
             (<HTMLTextAreaElement>this.el).disabled = v;
-            this.raisePropertyChanged(PROP_NAME.isEnabled);
+            this.objEvents.raiseProp(PROP_NAME.isEnabled);
         }
     }
     get wrap() {
@@ -81,7 +81,7 @@ export class TextAreaElView extends BaseElView {
         const x = this.wrap;
         if (x !== v) {
             (<HTMLTextAreaElement>this.el).wrap = v;
-            this.raisePropertyChanged(PROP_NAME.wrap);
+            this.objEvents.raiseProp(PROP_NAME.wrap);
         }
     }
 }

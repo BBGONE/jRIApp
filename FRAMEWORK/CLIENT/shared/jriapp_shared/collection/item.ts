@@ -17,16 +17,16 @@ export class CollectionItem<TAspect extends ItemAspect<ICollectionItem, any>> ex
     get _key(): string {
         return this._aspect.key;
     }
-    destroy(): void {
-        if (this._isDestroyed) {
+    dispose(): void {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         const aspect = this._aspect;
-        if (!aspect.getIsDestroyCalled()) {
-            aspect.destroy();
+        if (!aspect.getIsDisposing()) {
+            aspect.dispose();
         }
-        super.destroy();
+        super.dispose();
     }
     toString(): string {
         return "CollectionItem";

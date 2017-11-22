@@ -18,7 +18,7 @@ export class PropWatcher extends BaseObject {
     }
     addPropWatch(obj: IBaseObject, prop: string, fnOnChange: (prop: string) => void) {
         const self = this;
-        obj.addOnPropertyChange(prop, function (s, a) {
+        obj.objEvents.onProp(prop, function (s, a) {
             fnOnChange(a.property);
         }, self.uniqueID);
 
@@ -28,7 +28,7 @@ export class PropWatcher extends BaseObject {
     }
     addWatch(obj: IBaseObject, props: string[], fnOnChange: (prop: string) => void) {
         const self = this;
-        obj.addOnPropertyChange("*", function (s, a) {
+        obj.objEvents.onProp("*", function (s, a) {
             if (props.indexOf(a.property) > -1) {
                 fnOnChange(a.property);
             }
@@ -39,19 +39,19 @@ export class PropWatcher extends BaseObject {
         }
     }
     removeWatch(obj: IBaseObject) {
-        obj.removeNSHandlers(this.uniqueID);
+        obj.objEvents.offNS(this.uniqueID);
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         const self = this;
         this._objs.forEach(function (obj) {
             self.removeWatch(obj);
         });
         this._objs = [];
-        super.destroy();
+        super.dispose();
     }
     toString() {
         return "PropWatcher " + this._objId;

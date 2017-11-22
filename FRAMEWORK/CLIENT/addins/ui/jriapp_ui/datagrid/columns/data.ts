@@ -53,17 +53,17 @@ export class DataColumn extends BaseColumn {
             });
         };
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         const self = this;
         utils.core.forEachProp(self._objCache, (key) => {
-            self._objCache[key].destroy();
+            self._objCache[key].dispose();
         });
         self._objCache = null;
-        super.destroy();
+        super.dispose();
     }
     toString() {
         return "DataColumn";
@@ -76,7 +76,7 @@ export class DataColumn extends BaseColumn {
             this._sortOrder = v;
             const styles = [(v === SORT_ORDER.ASC ? "+" : "-") + css.colSortAsc, (v === SORT_ORDER.DESC ? "+" : "-") + css.colSortDesc];
             dom.setClasses([this.col], styles);
-            this.raisePropertyChanged(PROP_NAME.sortOrder);
+            this.objEvents.raiseProp(PROP_NAME.sortOrder);
         }
     }
 }

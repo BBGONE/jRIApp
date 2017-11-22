@@ -45,7 +45,7 @@ export class DetailsRow extends BaseObject {
         this._item = null;
         this._cell.item = null;
         dom.removeNode(this.tr);
-        if (!row || row.getIsDestroyCalled()) {
+        if (!row || row.getIsDisposing()) {
             this._parentRow = null;
             return;
         }
@@ -58,7 +58,7 @@ export class DetailsRow extends BaseObject {
         dom.insertAfter(this.tr, row.tr);
         this._show(() => {
             const parentRow = self._parentRow;
-            if (!parentRow || parentRow.getIsDestroyCalled()) {
+            if (!parentRow || parentRow.getIsDisposing()) {
                 return;
             }
             if (self.grid.options.isUseScrollIntoDetails) {
@@ -81,21 +81,21 @@ export class DetailsRow extends BaseObject {
         animation.beforeHide(this._cell.template.el);
         animation.hide(onEnd);
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
-        this._grid.removeNSHandlers(this._objId);
+        this.setDisposing();
+        this._grid.objEvents.offNS(this._objId);
         if (!!this._cell) {
-            this._cell.destroy();
+            this._cell.dispose();
             this._cell = null;
         }
         dom.removeNode(this._tr);
         this._item = null;
         this._tr = null;
         this._grid = null;
-        super.destroy();
+        super.dispose();
     }
     toString() {
         return "DetailsRow";

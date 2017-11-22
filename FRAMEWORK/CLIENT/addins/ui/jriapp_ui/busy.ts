@@ -45,18 +45,18 @@ export class BusyElView extends BaseElView {
         this.el.appendChild(this._img);
         this._isBusy = false;
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         if (!!this._timeOut) {
             clearTimeout(this._timeOut);
             this._timeOut = null;
         }
         dom.removeNode(this._img);
         this._img = null;
-        super.destroy();
+        super.dispose();
     }
     toString() {
         return "BusyElView";
@@ -90,14 +90,14 @@ export class BusyElView extends BaseElView {
                     self._img.style.display = "none";
                 }
             }
-            self.raisePropertyChanged(PROP_NAME.isBusy);
+            self.objEvents.raiseProp(PROP_NAME.isBusy);
         }
     }
     get delay() { return this._delay; }
     set delay(v) {
         if (v !== this._delay) {
             this._delay = v;
-            this.raisePropertyChanged(PROP_NAME.delay);
+            this.objEvents.raiseProp(PROP_NAME.delay);
         }
     }
 }

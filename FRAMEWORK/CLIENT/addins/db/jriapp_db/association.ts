@@ -507,8 +507,8 @@ export class Association extends BaseObject {
         return Object.keys(chngedKeys);
     }
     protected _onChildrenChanged(fkey: string, parent: IEntityItem) {
-        if (!!fkey && !!this._parentToChildrenName && !parent.getIsDestroyCalled()) {
-            parent.raisePropertyChanged(this._parentToChildrenName);
+        if (!!fkey && !!this._parentToChildrenName && !parent.getIsDisposing()) {
+            parent.objEvents.raiseProp(this._parentToChildrenName);
         }
     }
     protected _onParentChanged(fkey: string, map: IIndexer<IEntityItem>) {
@@ -518,8 +518,8 @@ export class Association extends BaseObject {
             const keys = Object.keys(map), len = keys.length;
             for (let k = 0; k < len; k += 1) {
                 const item: IEntityItem = map[keys[k]];
-                if (!item.getIsDestroyCalled()) {
-                    item.raisePropertyChanged(self._childToParentName);
+                if (!item.getIsDisposing()) {
+                    item.objEvents.raiseProp(self._childToParentName);
                 }
             }
         }
@@ -556,14 +556,14 @@ export class Association extends BaseObject {
         if (!ds) {
             return;
         }
-        ds.removeNSHandlers(self._objId);
+        ds.objEvents.offNS(self._objId);
     }
     protected _unbindChildDS() {
         const self = this, ds = this.childDS;
         if (!ds) {
             return;
         }
-        ds.removeNSHandlers(self._objId);
+        ds.objEvents.offNS(self._objId);
     }
     protected refreshParentMap() {
         this._resetParentMap();
@@ -633,12 +633,12 @@ export class Association extends BaseObject {
         }
         return (!obj) ? null : obj;
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
-        this._debounce.destroy();
+        this.setDisposing();
+        this._debounce.dispose();
         this._debounce = null;
         this._changed = {};
         this._unbindParentDS();
@@ -647,7 +647,7 @@ export class Association extends BaseObject {
         this._childMap = null;
         this._parentFldInfos = null;
         this._childFldInfos = null;
-        super.destroy();
+        super.dispose();
     }
     toString() {
         return this._name;

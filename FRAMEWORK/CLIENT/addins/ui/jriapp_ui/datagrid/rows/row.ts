@@ -65,7 +65,7 @@ export class Row extends BaseObject {
         this._createCells();
         if (!!this._item) {
             if (!!this.isHasStateField) {
-                this._item.addOnPropertyChange(this._grid.options.rowStateField, () => {
+                this._item.objEvents.onProp(this._grid.options.rowStateField, () => {
                     fnState(self);
                 }, this._objId);
             }
@@ -138,11 +138,11 @@ export class Row extends BaseObject {
     cancelEdit() {
         return this._item._aspect.cancelEdit();
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         const grid = this._grid;
         if (!!grid) {
             if (!this._isDetached) {
@@ -151,16 +151,16 @@ export class Row extends BaseObject {
             dom.removeNode(this._tr);
             const cells = this._cells, len = cells.length;
             for (let i = 0; i < len; i += 1) {
-                cells[i].destroy();
+                cells[i].dispose();
             }
             this._cells = [];
         }
-        this._item.removeNSHandlers(this._objId);
+        this._item.objEvents.offNS(this._objId);
         this._item = null;
         this._expanderCell = null;
         this._tr = null;
         this._grid = null;
-        super.destroy();
+        super.dispose();
     }
     deleteRow() {
         this._item._aspect.deleteItem();
@@ -207,7 +207,7 @@ export class Row extends BaseObject {
             if (!!this._rowSelectorCell) {
                 this._rowSelectorCell.checked = this._isSelected;
             }
-            this.raisePropertyChanged(PROP_NAME.isSelected);
+            this.objEvents.raiseProp(PROP_NAME.isSelected);
             this.grid._getInternal().onRowSelectionChanged(this);
         }
     }

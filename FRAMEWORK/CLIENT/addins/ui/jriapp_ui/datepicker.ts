@@ -18,20 +18,20 @@ export class DatePickerElView extends TextBoxElView {
             throw new Error("IDatepicker service is not registered");
         }
         datepicker.attachTo(this.el, options.datepicker, () => {
-            this.raisePropertyChanged("value");
+            this.objEvents.raiseProp("value");
         });
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         const datepicker = boot.getSvc<IDatepicker>(DATEPICKER_SVC);
         if (!datepicker) {
             throw new Error("IDatepicker service is not registered");
         }
         datepicker.detachFrom(this.el);
-        super.destroy();
+        super.dispose();
     }
     toString() {
         return "DatePickerElView";

@@ -93,13 +93,13 @@ export class ActionsColumn extends BaseColumn {
     toString() {
         return "ActionsColumn";
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         dom.events.offNS(this.grid.table, this.uniqueID);
-        this.grid.removeNSHandlers(this.uniqueID);
-        super.destroy();
+        this.grid.objEvents.offNS(this.uniqueID);
+        super.dispose();
     }
 }

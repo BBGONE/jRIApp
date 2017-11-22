@@ -39,7 +39,7 @@ export class WaitQueue extends BaseObject {
         this._queue = {};
     }
     protected _checkQueue(prop: string, value: any) {
-        if (!this._owner || this._owner.getIsDestroyCalled()) {
+        if (!this._owner || this._owner.getIsDisposing()) {
             return;
         }
         const self = this, propQueue = this._queue[prop];
@@ -115,7 +115,7 @@ export class WaitQueue extends BaseObject {
         } finally {
             if (propQueue.length === 0) {
                 delete this._queue[prop];
-                this._owner.removeOnPropertyChange(prop, this.uniqueID);
+                this._owner.objEvents.offProp(prop, this.uniqueID);
             }
         }
     }
@@ -138,9 +138,9 @@ export class WaitQueue extends BaseObject {
         if (!propQueue) {
             propQueue = [];
             this._queue[property] = propQueue;
-            this._owner.addOnPropertyChange(property, function (s, a) {
+            this._owner.objEvents.onProp(property, function (s, a) {
                 setTimeout(function () {
-                    if (self.getIsDestroyCalled()) {
+                    if (self.getIsDisposing()) {
                         return;
                     }
                     self._checkQueue(property, (<any>self._owner)[property]);
@@ -158,21 +158,21 @@ export class WaitQueue extends BaseObject {
         propQueue.push(task);
         self._checkQueue(property, (<any>self._owner)[property]);
         setTimeout(function () {
-            if (self.getIsDestroyCalled()) {
+            if (self.getIsDisposing()) {
                 return;
             }
             self._checkQueue(property, (<any>self._owner)[property]);
         }, 0);
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
-        this._owner.removeNSHandlers(this.uniqueID);
+        this.setDisposing();
+        this._owner.objEvents.offNS(this.uniqueID);
         this._queue = {};
         this._owner = null;
-        super.destroy();
+        super.dispose();
     }
     toString() {
         return "WaitQueue " + this._objId;

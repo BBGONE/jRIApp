@@ -37,8 +37,8 @@ export class TCommand<TParam, TThis> extends BaseObject implements ITCommand<TPa
         this._thisObj = thisObj;
         this._predicate = fnCanExecute;
     }
-    _getEventNames() {
-        const baseEvents = super._getEventNames();
+    getEventNames() {
+        const baseEvents = super.getEventNames();
         return [CMD_EVENTS.can_execute_changed].concat(baseEvents);
     }
     protected _canExecute(sender: any, param: TParam, context: any): boolean {
@@ -53,10 +53,10 @@ export class TCommand<TParam, TThis> extends BaseObject implements ITCommand<TPa
         }
     }
     addOnCanExecuteChanged(fn: (sender: ITCommand<TParam>, args: any) => void, nmspace?: string, context?: IBaseObject) {
-        this.addHandler(CMD_EVENTS.can_execute_changed, fn, nmspace, context);
+        this.objEvents.on(CMD_EVENTS.can_execute_changed, fn, nmspace, context);
     }
     removeOnCanExecuteChanged(nmspace?: string) {
-        this.removeHandler(CMD_EVENTS.can_execute_changed, nmspace);
+        this.objEvents.off(CMD_EVENTS.can_execute_changed, nmspace);
     }
     canExecute(sender: any, param: TParam): boolean {
         return this._canExecute(sender, param, this._thisObj);
@@ -64,18 +64,18 @@ export class TCommand<TParam, TThis> extends BaseObject implements ITCommand<TPa
     execute(sender: any, param: TParam) {
         this._execute(sender, param, this._thisObj);
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         this._action = null;
         this._thisObj = null;
         this._predicate = null;
-        super.destroy();
+        super.dispose();
     }
     raiseCanExecuteChanged() {
-        this.raiseEvent(CMD_EVENTS.can_execute_changed, {});
+        this.objEvents.raise(CMD_EVENTS.can_execute_changed, {});
     }
     toString() {
         return "Command";
@@ -117,9 +117,9 @@ export class ViewModel<TApp extends IApplication> extends BaseObject {
     toString() {
         return "ViewModel";
     }
-    destroy() {
+    dispose() {
         this._app = null;
-        super.destroy();
+        super.dispose();
     }
     get uniqueID() {
         return this._objId;

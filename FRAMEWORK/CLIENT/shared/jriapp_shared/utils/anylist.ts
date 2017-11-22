@@ -35,7 +35,7 @@ export class AnyItemAspect extends ListItemAspect<IAnyValItem, IAnyVal> {
     _setProp(name: string, val: any) {
         if (this._getProp(name) !== val) {
             coreUtils.setValue(this._vals, name, val, false);
-            this.item.raisePropertyChanged(name);
+            this.item.objEvents.raiseProp(name);
         }
     }
     // override
@@ -49,12 +49,12 @@ export class AnyValListItem extends CollectionItem<AnyItemAspect> implements IAn
     get val(): any { return <any>this._aspect._getProp("val"); }
     set val(v: any) { this._aspect._setProp("val", v); }
     // override
-    _isHasProp(prop: string): boolean {
+    isHasProp(prop: string): boolean {
         // first check for indexed property name
         if (strUtils.startsWith(prop, "[")) {
             return true;
         }
-        return super._isHasProp(prop);
+        return super.isHasProp(prop);
     }
     getProp(name: string): any {
         const fieldName = strUtils.trimBrackets(name);
@@ -66,7 +66,7 @@ export class AnyValListItem extends CollectionItem<AnyItemAspect> implements IAn
             try {
                 const fieldName = strUtils.trimBrackets(name);
                 coreUtils.setValue(this.val, fieldName, val, false, "->");
-                this.raisePropertyChanged(name);
+                this.objEvents.raiseProp(name);
                 errors.removeError(this, name);
                 const validation: IValidationInfo = this._aspect._validateField(name);
                 if (!!validation && validation.errors.length > 0) {
@@ -116,7 +116,7 @@ export class AnyList extends BaseList<IAnyValItem, IAnyVal> {
 
             if (a.isCanceled) {
                 this._saveVal = null;
-                item.raisePropertyChanged("[*]");
+                item.objEvents.raiseProp("[*]");
                 return;
             }
             const oldVal = this._saveVal, newVal = JSON.parse(JSON.stringify(item.val));
@@ -139,14 +139,14 @@ export class AnyList extends BaseList<IAnyValItem, IAnyVal> {
             }
         });
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
-        this._debounce.destroy();
+        this.setDisposing();
+        this._debounce.dispose();
         this._onChanged = null;
-        super.destroy();
+        super.dispose();
     }
     // override
     itemFactory(aspect: AnyItemAspect): AnyValListItem {

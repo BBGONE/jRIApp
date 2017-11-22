@@ -119,7 +119,7 @@ export class BaseElView extends BaseObject implements IElView {
     }
     protected _onEventAdded(name: string, newVal: ICommand) {
         const self = this;
-        if (this.getIsDestroyCalled()) {
+        if (this.getIsDisposing()) {
             return;
         }
         dom.events.on(this.el, name, (e) => {
@@ -167,30 +167,30 @@ export class BaseElView extends BaseObject implements IElView {
     protected _setToolTip(el: Element, tip: string, isError?: boolean) {
         fn_addToolTip(el, tip, isError);
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         this._getStore().setElView(this.el, null);
         dom.events.offNS(this.el, this.uniqueID);
         this.validationErrors = null;
         this.toolTip = null;
         if (!!this._eventStore) {
-            this._eventStore.destroy();
+            this._eventStore.dispose();
             this._eventStore = null;
         }
         if (!!this._props) {
-            this._props.destroy();
+            this._props.dispose();
             this._props = checks.undefined;
         }
         if (!!this._classes) {
-            this._classes.destroy();
+            this._classes.dispose();
             this._classes = checks.undefined;
         }
         this._display = null;
         this._css = null;
-        super.destroy();
+        super.dispose();
     }
     toString(): string {
         return "BaseElView";
@@ -216,14 +216,14 @@ export class BaseElView extends BaseObject implements IElView {
             } else {
                 this.el.style.display = (!this._display ? "" : this._display);
             }
-            this.raisePropertyChanged(PROP_NAME.isVisible);
+            this.objEvents.raiseProp(PROP_NAME.isVisible);
         }
     }
     get validationErrors(): IValidationInfo[] { return this._errors; }
     set validationErrors(v: IValidationInfo[]) {
         if (v !== this._errors) {
             this._errors = v;
-            this.raisePropertyChanged(PROP_NAME.validationErrors);
+            this.objEvents.raiseProp(PROP_NAME.validationErrors);
             this._updateErrorUI(this.el, this._errors);
         }
     }
@@ -233,13 +233,13 @@ export class BaseElView extends BaseObject implements IElView {
         if (this._toolTip !== v) {
             this._toolTip = v;
             this._setToolTip(this.el, v);
-            this.raisePropertyChanged(PROP_NAME.toolTip);
+            this.objEvents.raiseProp(PROP_NAME.toolTip);
         }
     }
     // stores commands for data binding to the HtmlElement's events
     get events(): IPropertyBag {
         if (!this._eventStore) {
-            if (this.getIsDestroyCalled()) {
+            if (this.getIsDisposing()) {
                 return null;
             }
 
@@ -252,7 +252,7 @@ export class BaseElView extends BaseObject implements IElView {
     // exposes All HTML Element properties for data binding directly to them
     get props(): IPropertyBag {
         if (!this._props) {
-            if (this.getIsDestroyCalled()) {
+            if (this.getIsDisposing()) {
                 return checks.undefined;
             }
             this._props = new PropertyBag(this.el);
@@ -262,7 +262,7 @@ export class BaseElView extends BaseObject implements IElView {
     // exposes All CSS Classes for data binding directly to them
     get classes(): IPropertyBag {
         if (!this._classes) {
-            if (this.getIsDestroyCalled()) {
+            if (this.getIsDisposing()) {
                 return checks.undefined;
             }
             this._classes = new CSSBag(this.el);
@@ -282,7 +282,7 @@ export class BaseElView extends BaseObject implements IElView {
             }
 
             dom.setClasses([this._el], arr);
-            this.raisePropertyChanged(PROP_NAME.css);
+            this.objEvents.raiseProp(PROP_NAME.css);
         }
     }
     get app(): IApplication {

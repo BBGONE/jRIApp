@@ -47,7 +47,7 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
                     throw new Error(ERRS.ERR_FIELD_READONLY);
                 }
                 coreUtils.setValue(this._vals, name, val, false);
-                item.raisePropertyChanged(name);
+                item.objEvents.raiseProp(name);
                 errors.removeError(item, name);
                 const validationInfo = this._validateField(name);
                 if (!!validationInfo && validationInfo.errors.length > 0) {
@@ -156,7 +156,7 @@ export abstract class BaseList<TItem extends IListItem, TObj> extends BaseCollec
             });
 
             if (newItems.length > 0) {
-                this.raisePropertyChanged(PROP_NAME.count);
+                this.objEvents.raiseProp(PROP_NAME.count);
             }
         } finally {
             this._onCollectionChanged({

@@ -28,10 +28,10 @@ export class Lazy<T> implements IDisposable {
 
         return this._val;
     }
-    public destroy() {
+    public dispose() {
         if (this.IsValueCreated) {
-            if ("destroy" in this._val) {
-                (<any>this._val).destroy();
+            if ("dispose" in this._val) {
+                (<any>this._val).dispose();
             }
         }
         this._val = void 0;
@@ -40,7 +40,7 @@ export class Lazy<T> implements IDisposable {
     get IsValueCreated(): boolean {
         return !checks.isNt(this._val);
     }
-    get IsDestroyed(): boolean {
+    getIsDisposed(): boolean {
         return this._val === void 0;
     }
 }

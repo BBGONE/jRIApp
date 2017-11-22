@@ -43,7 +43,7 @@ export class ButtonElView extends CommandElView {
                 (<HTMLInputElement>this.el).value = v;
             }
 
-            this.raisePropertyChanged(PROP_NAME.value);
+            this.objEvents.raiseProp(PROP_NAME.value);
         }
     }
     get text() {
@@ -54,7 +54,7 @@ export class ButtonElView extends CommandElView {
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
             this.el.textContent = v;
-            this.raisePropertyChanged(PROP_NAME.text);
+            this.objEvents.raiseProp(PROP_NAME.text);
         }
     }
     get html() {
@@ -69,7 +69,7 @@ export class ButtonElView extends CommandElView {
             } else {
                 (<HTMLInputElement>this.el).value = v;
             }
-            this.raisePropertyChanged(PROP_NAME.html);
+            this.objEvents.raiseProp(PROP_NAME.html);
         }
     }
 }

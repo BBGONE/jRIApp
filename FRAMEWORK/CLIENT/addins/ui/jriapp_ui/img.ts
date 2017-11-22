@@ -15,7 +15,7 @@ export class ImgElView extends BaseElView {
         const x = this.src;
         if (x !== v) {
             (<HTMLImageElement>this.el).src = v;
-            this.raisePropertyChanged(PROP_NAME.src);
+            this.objEvents.raiseProp(PROP_NAME.src);
         }
     }
 }

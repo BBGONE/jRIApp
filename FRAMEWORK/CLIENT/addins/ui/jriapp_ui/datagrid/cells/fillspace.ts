@@ -22,15 +22,15 @@ export class FillSpaceCell extends BaseObject {
         this._div.className = css.fillVSpace;
         this._td.appendChild(this._div);
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         this._row = null;
         this._td = null;
         this._div = null;
-        super.destroy();
+        super.dispose();
     }
     toString(): string {
         return "FillSpaceCell";

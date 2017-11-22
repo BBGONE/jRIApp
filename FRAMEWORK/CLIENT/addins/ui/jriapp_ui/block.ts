@@ -16,7 +16,7 @@ export class BlockElView extends SpanElView {
         const x = this.width;
         if (v !== x) {
             this.el.style.width = v + "px";
-            this.raisePropertyChanged(PROP_NAME.width);
+            this.objEvents.raiseProp(PROP_NAME.width);
         }
     }
     get height() {
@@ -26,7 +26,7 @@ export class BlockElView extends SpanElView {
         const x = this.height;
         if (v !== x) {
             this.el.style.height = v + "px";
-            this.raisePropertyChanged(PROP_NAME.height);
+            this.objEvents.raiseProp(PROP_NAME.height);
         }
     }
 }

@@ -69,16 +69,16 @@ export class DataCell extends BaseCell<DataColumn> {
             this._content.isEditing = false;
         }
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         if (!!this._content) {
-            this._content.destroy();
+            this._content.dispose();
             this._content = null;
         }
-        super.destroy();
+        super.dispose();
     }
     toString() {
         return "DataCell";

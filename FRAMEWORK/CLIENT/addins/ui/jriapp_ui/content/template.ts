@@ -63,7 +63,7 @@ export class TemplateContent extends BaseObject implements IContent {
     }
     protected cleanUp() {
         if (!!this._template) {
-            this._template.destroy();
+            this._template.dispose();
             this._template = null;
             this._templateID = null;
         }
@@ -81,17 +81,17 @@ export class TemplateContent extends BaseObject implements IContent {
             ERROR.reThrow(ex, this.handleError(ex, this));
         }
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         dom.removeClass([this._parentEl], css.content);
         this.cleanUp();
         this._parentEl = null;
         this._dataContext = null;
         this._templateInfo = null;
-        super.destroy();
+        super.dispose();
     }
     toString() {
         return "TemplateContent";

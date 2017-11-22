@@ -25,19 +25,19 @@ export class FillSpaceRow extends BaseObject {
         const td: HTMLTableCellElement = <HTMLTableCellElement>document.createElement("td");
         this._cell = new FillSpaceCell({ row: this, td: td });
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         if (!!this._cell) {
-            this._cell.destroy();
+            this._cell.dispose();
             this._cell = null;
         }
         dom.removeNode(this.tr);
         this._tr = null;
         this._grid = null;
-        super.destroy();
+        super.dispose();
     }
     toString() {
         return "FillSpaceRow";

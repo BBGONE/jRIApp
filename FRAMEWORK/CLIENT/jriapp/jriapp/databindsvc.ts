@@ -114,7 +114,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
     }
     private _cleanUp() {
         if (!!this._objLifeTime) {
-            this._objLifeTime.destroy();
+            this._objLifeTime.dispose();
             this._objLifeTime = null;
         }
     }
@@ -228,8 +228,8 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
         this._cleanUp();
         const promise = this.bindElements(defScope, defaultDataContext, false, false);
         return promise.then((lftm) => {
-            if (self.getIsDestroyCalled()) {
-                lftm.destroy();
+            if (self.getIsDisposing()) {
+                lftm.dispose();
                 return;
             }
             self._objLifeTime = lftm;
@@ -238,10 +238,10 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
     bind(opts: IBindingOptions): Binding {
         return new Binding(opts);
     }
-    destroy() {
+    dispose() {
         this._cleanUp();
         this._elViewFactory = null;
         this._mloader = null;
-        super.destroy();
+        super.dispose();
     }
 }

@@ -2,14 +2,14 @@
 import { IDisposable } from "jriapp_shared";
 
 export class DblClick implements IDisposable {
-    private _isDestroyed: boolean;
+    private _isDisposed: boolean;
     private _timer: number;
     private _interval: number;
     private _fnOnClick: () => any;
     private _fnOnDblClick: () => any;
 
     constructor(interval: number = 0) {
-        this._isDestroyed = false;
+        this._isDisposed = false;
         this._timer = null;
         this._interval = !interval ? 0 : interval;
         this._fnOnClick = null;
@@ -37,27 +37,24 @@ export class DblClick implements IDisposable {
         }
     }
     add(fnOnClick: () => any, fnOnDblClick?: () => any) {
-        if (this._isDestroyed) {
+        if (this.getIsDisposed()) {
             return;
         }
         this._fnOnClick = fnOnClick;
         this._fnOnDblClick = fnOnDblClick;
     }
-    destroy(): void {
-        if (this._isDestroyed) {
+    dispose(): void {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyed = true;
+        this._isDisposed = true;
         clearTimeout(this._timer);
         this._timer = null;
         this._fnOnClick = null;
         this._fnOnDblClick = null;
     }
-    getIsDestroyed(): boolean {
-        return this._isDestroyed;
-    }
-    getIsDestroyCalled(): boolean {
-        return this._isDestroyed;
+    getIsDisposed(): boolean {
+        return this._isDisposed;
     }
     get interval() {
         return this._interval;

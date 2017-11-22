@@ -78,14 +78,10 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         }
     }
     protected _onFieldChanged(fieldName: string, fieldInfo: IFieldInfo) {
-        const self = this;
-        if (self._isDestroyCalled) {
-            return;
-        }
-        self.item.raisePropertyChanged(fieldName);
+        this.item.objEvents.raiseProp(fieldName);
         if (!!fieldInfo.dependents && fieldInfo.dependents.length > 0) {
             fieldInfo.dependents.forEach((d) => {
-                self.item.raisePropertyChanged(d);
+                this.item.objEvents.raiseProp(d);
             });
         }
     }
@@ -287,7 +283,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
     }
     _refreshValues(rowInfo: IRowInfo, refreshMode: REFRESH_MODE) {
         const self = this, oldStatus = this.status;
-        if (!this._isDestroyed) {
+        if (!this.getIsDisposed()) {
             if (!refreshMode) {
                 refreshMode = REFRESH_MODE.RefreshCurrent;
             }
@@ -331,9 +327,6 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         coreUtils.setValue(this._vals, fieldName, null, false);
     }
     _getFieldVal(fieldName: string) {
-        if (this._isDestroyCalled) {
-            return null;
-        }
         return coreUtils.getValue(this._vals, fieldName);
     }
     _setFieldVal(fieldName: string, val: any): boolean {
@@ -395,15 +388,15 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         this._srvKey = v;
     }
     _acceptChanges(rowInfo?: IRowInfo): void {
-        if (this.getIsDestroyed()) {
+        if (this.getIsDisposed()) {
             return;
         }
         const oldStatus = this.status, dbSet = this.dbSet, internal = dbSet._getInternal(),  errors = dbSet.errors;
         if (oldStatus !== ITEM_STATUS.None) {
             internal.onCommitChanges(this.item, true, false, oldStatus);
             if (oldStatus === ITEM_STATUS.Deleted) {
-                if (!this.getIsDestroyCalled()) {
-                   this.destroy();
+                if (!this.getIsDisposing()) {
+                   this.dispose();
                 }
                 return;
             }
@@ -434,7 +427,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         return this.deleteOnSubmit();
     }
     deleteOnSubmit(): boolean {
-        if (this.getIsDestroyCalled()) {
+        if (this.getIsDisposing()) {
             return false;
         }
         const oldStatus = this.status, dbSet = this.dbSet;
@@ -454,15 +447,15 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         this._acceptChanges(null);
     }
     rejectChanges(): void {
-        if (this.getIsDestroyed()) {
+        if (this.getIsDisposed()) {
             return;
         }
         const self = this, oldStatus = self.status, dbSet = self.dbSet, internal = dbSet._getInternal(), errors = dbSet.errors;
         if (oldStatus !== ITEM_STATUS.None) {
             internal.onCommitChanges(self.item, true, true, oldStatus);
             if (oldStatus === ITEM_STATUS.Added) {
-                if (!this.getIsDestroyCalled()) {
-                    this.destroy();
+                if (!this.getIsDisposing()) {
+                    this.dispose();
                 }
                 return;
             }
@@ -508,14 +501,14 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         const dbxt = this.dbSet.dbContext;
         return <IStatefulPromise<TItem>>dbxt._getInternal().refreshItem(this.item);
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         this.cancelEdit();
         this.rejectChanges();
-        super.destroy();
+        super.dispose();
     }
     toString() {
         return this.dbSetName + "EntityAspect";

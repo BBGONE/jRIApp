@@ -24,30 +24,30 @@ export class TemplateLoader extends BaseObject {
         this._promises = [];
         this._waitQueue = new WaitQueue(self);
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         const self = this;
         self._promises = [];
         self._templateLoaders = {};
         self._templateGroups = {};
         if (!!self._waitQueue) {
-            self._waitQueue.destroy();
+            self._waitQueue.dispose();
             self._waitQueue = null;
         }
-        super.destroy();
+        super.dispose();
     }
-    _getEventNames() {
-        const baseEvents = super._getEventNames();
+    getEventNames() {
+        const baseEvents = super.getEventNames();
         return ["loaded"].concat(baseEvents);
     }
     addOnLoaded(fn: (sender: TemplateLoader, args: { html: string; app: IApplication; }) => void, nmspace?: string) {
-        this.addHandler("loaded", fn, nmspace);
+        this.objEvents.on("loaded", fn, nmspace);
     }
     removeOnLoaded(nmspace?: string) {
-        this.removeHandler("loaded", nmspace);
+        this.objEvents.off("loaded", nmspace);
     }
     public waitForNotLoading(callback: (...args: any[]) => any, callbackArgs: any): void {
         this._waitQueue.enQueue({
@@ -59,7 +59,7 @@ export class TemplateLoader extends BaseObject {
         });
     }
     private _onLoaded(html: string, app: IApplication) {
-        this.raiseEvent("loaded", { html: html, app: app });
+        this.objEvents.raise("loaded", { html: html, app: app });
     }
     private _getTemplateGroup(name: string): ITemplateGroupInfoEx {
         return coreUtils.getValue(this._templateGroups, name);
@@ -74,7 +74,7 @@ export class TemplateLoader extends BaseObject {
         const self = this, promise = fnLoader(), old = self.isLoading;
         self._promises.push(promise);
         if (self.isLoading !== old) {
-            self.raisePropertyChanged(PROP_NAME.isLoading);
+            self.objEvents.raiseProp(PROP_NAME.isLoading);
         }
         const res = promise.then((html: string) => {
             self._onLoaded(html, app);
@@ -83,7 +83,7 @@ export class TemplateLoader extends BaseObject {
         res.always(() => {
             utils.arr.remove(self._promises, promise);
             if (!self.isLoading) {
-                self.raisePropertyChanged(PROP_NAME.isLoading);
+                self.objEvents.raiseProp(PROP_NAME.isLoading);
             }
         });
         return res;

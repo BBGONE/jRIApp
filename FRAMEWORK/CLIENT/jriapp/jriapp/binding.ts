@@ -319,18 +319,18 @@ export class Binding extends BaseObject implements IBinding {
         };
     }
     private _addOnPropChanged(obj: IBaseObject, prop: string, fn: (s: any, a: any) => void) {
-        obj.addOnPropertyChange(prop, fn, this._objId);
+        obj.objEvents.onProp(prop, fn, this._objId);
 
         // for PropertyBag also listen for all property changes notification
         if (prop !== "[*]" && sys.isPropBag(obj)) {
-            obj.addOnPropertyChange("[*]", fn, this._objId);
+            obj.objEvents.onProp("[*]", fn, this._objId);
         }
     }
     private _parseSrc(obj: any, path: string[], lvl: number) {
         const self = this;
         self._srcEnd = null;
 
-        if (sys.isBaseObj(obj) && (<IBaseObject>obj).getIsDestroyCalled()) {
+        if (sys.isBaseObj(obj) && (<IBaseObject>obj).getIsDisposing()) {
             return;
         }
 
@@ -354,10 +354,10 @@ export class Binding extends BaseObject implements IBinding {
         const self = this, isBaseObj = sys.isBaseObj(obj);
 
         if (isBaseObj) {
-            if ((<IBaseObject>obj).getIsDestroyCalled()) {
+            if ((<IBaseObject>obj).getIsDisposing()) {
                 return;
             }
-            (<IBaseObject>obj).addOnDestroyed(self._onSrcDestroyed, self._objId, self);
+            (<IBaseObject>obj).addOnDisposed(self._onSrcDestroyed, self._objId, self);
             self._setPathItem(obj, BindTo.Source, lvl, path);
         }
 
@@ -379,7 +379,7 @@ export class Binding extends BaseObject implements IBinding {
         }
 
         if (!!obj && path.length === 1) {
-            const isValidProp =  (!debug.isDebugging() ? true : (isBaseObj ? (<IBaseObject>obj)._isHasProp(path[0]) : checks.isHasProp(obj, path[0])));
+            const isValidProp =  (!debug.isDebugging() ? true : (isBaseObj ? (<IBaseObject>obj).isHasProp(path[0]) : checks.isHasProp(obj, path[0])));
 
             if (isValidProp) {
                 const updateOnChange = isBaseObj && (self._mode === BINDING_MODE.OneWay || self._mode === BINDING_MODE.TwoWay);
@@ -406,7 +406,7 @@ export class Binding extends BaseObject implements IBinding {
     private _parseTgt(obj: any, path: string[], lvl: number) {
         const self = this;
         self._tgtEnd = null;
-        if (sys.isBaseObj(obj) && (<IBaseObject>obj).getIsDestroyCalled()) {
+        if (sys.isBaseObj(obj) && (<IBaseObject>obj).getIsDisposing()) {
             return;
         }
 
@@ -431,11 +431,11 @@ export class Binding extends BaseObject implements IBinding {
         const self = this, isBaseObj = sys.isBaseObj(obj);
 
         if (isBaseObj) {
-            if ((<IBaseObject>obj).getIsDestroyCalled()) {
+            if ((<IBaseObject>obj).getIsDisposing()) {
                 return;
             }
 
-            (<IBaseObject>obj).addOnDestroyed(self._onTgtDestroyed, self._objId, self);
+            (<IBaseObject>obj).addOnDisposed(self._onTgtDestroyed, self._objId, self);
             self._setPathItem(obj, BindTo.Target, lvl, path);
         }
 
@@ -457,7 +457,7 @@ export class Binding extends BaseObject implements IBinding {
         }
 
         if (!!obj && path.length === 1) {
-            const isValidProp = (!debug.isDebugging() ? true : (isBaseObj ? (<IBaseObject>obj)._isHasProp(path[0]) : checks.isHasProp(obj, path[0])));
+            const isValidProp = (!debug.isDebugging() ? true : (isBaseObj ? (<IBaseObject>obj).isHasProp(path[0]) : checks.isHasProp(obj, path[0])));
 
             if (isValidProp) {
                 const updateOnChange = isBaseObj && (self._mode === BINDING_MODE.TwoWay || self._mode === BINDING_MODE.BackWay);
@@ -497,7 +497,7 @@ export class Binding extends BaseObject implements IBinding {
     }
     private _cleanUp(obj: IBaseObject) {
         if (!!obj) {
-            obj.removeNSHandlers(this._objId);
+            obj.objEvents.offNS(this._objId);
             const errNotif = sys.getErrorNotification(obj);
             if (!!errNotif) {
                 errNotif.removeOnErrorsChanged(this._objId);
@@ -506,7 +506,7 @@ export class Binding extends BaseObject implements IBinding {
     }
     private _onTgtDestroyed(sender: any) {
         const self = this;
-        if (self.getIsDestroyCalled()) {
+        if (self.getIsDisposing()) {
             return;
         }
 
@@ -516,7 +516,7 @@ export class Binding extends BaseObject implements IBinding {
         } else {
             self._setPathItem(null, BindTo.Target, 0, self._tgtPath);
             utils.queue.enque(() => {
-                if (self.getIsDestroyCalled()) {
+                if (self.getIsDisposing()) {
                     return;
                 }
                 // rebind after the target is destroyed
@@ -527,7 +527,7 @@ export class Binding extends BaseObject implements IBinding {
     }
     private _onSrcDestroyed(sender: any) {
         const self = this;
-        if (self.getIsDestroyCalled()) {
+        if (self.getIsDisposing()) {
             return;
         }
 
@@ -537,7 +537,7 @@ export class Binding extends BaseObject implements IBinding {
         } else {
             self._setPathItem(null, BindTo.Source, 0, self._srcPath);
             utils.queue.enque(() => {
-                if (self.getIsDestroyCalled()) {
+                if (self.getIsDisposing()) {
                     return;
                 }
                 // rebind after the source is destroyed
@@ -547,7 +547,7 @@ export class Binding extends BaseObject implements IBinding {
         }
     }
     private _updateTarget() {
-        if (this.getIsDestroyCalled()) {
+        if (this.getIsDisposing()) {
             return;
         }
         try {
@@ -561,7 +561,7 @@ export class Binding extends BaseObject implements IBinding {
         }
     }
     private _updateSource() {
-        if (this.getIsDestroyCalled()) {
+        if (this.getIsDisposing()) {
             return;
         }
         try {
@@ -635,11 +635,11 @@ export class Binding extends BaseObject implements IBinding {
             this._parseSrc(this._source, this._srcPath, 0);
         }
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         const self = this;
         coreUtils.forEachProp(this._pathItems, (key, old) => {
             self._cleanUp(old);
@@ -657,7 +657,7 @@ export class Binding extends BaseObject implements IBinding {
         this._source = null;
         this._target = null;
         this._umask = 0;
-        super.destroy();
+        super.dispose();
     }
     toString() {
         return "Binding";

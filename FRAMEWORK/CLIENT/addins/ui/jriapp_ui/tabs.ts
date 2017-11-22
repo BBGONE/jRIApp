@@ -46,23 +46,23 @@ export class TabsElView extends BaseElView implements ITabs {
                 if (!!self._tabsEvents) {
                     self._tabsEvents.onTabSelected(self);
                 }
-                self.raisePropertyChanged(PROP_NAME.tabIndex);
+                self.objEvents.raiseProp(PROP_NAME.tabIndex);
             }
         };
         tabOpts = coreUtils.extend(tabOpts, self._tabOpts);
         (<any>$el).tabs(tabOpts);
         utils.queue.enque(() => {
-            if (self.getIsDestroyCalled()) {
+            if (self.getIsDisposing()) {
                 return;
             }
             self._tabsCreated = true;
             self._onTabsCreated();
-            self.raisePropertyChanged(PROP_NAME.tabIndex);
+            self.objEvents.raiseProp(PROP_NAME.tabIndex);
        });
    }
     protected _destroyTabs() {
         const $el = $(this.el);
-        JQueryUtils.destroy$Plugin($el, "tabs");
+        JQueryUtils.dispose$Plugin($el, "tabs");
         this._tabsCreated = false;
         if (!!this._tabsEvents) {
             this._tabsEvents.removeTabs();
@@ -78,14 +78,14 @@ export class TabsElView extends BaseElView implements ITabs {
             self._tabsEvents.onTabSelected(self);
        }
    }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         this._destroyTabs();
         this._tabsEvents = null;
-        super.destroy();
+        super.dispose();
    }
     toString() {
         return "TabsElView";
@@ -98,7 +98,7 @@ export class TabsElView extends BaseElView implements ITabs {
                 old.removeTabs();
             }
             this._tabsEvents = v;
-            this.raisePropertyChanged(PROP_NAME.tabsEvents);
+            this.objEvents.raiseProp(PROP_NAME.tabsEvents);
             if (this._tabsCreated) {
                 this._onTabsCreated();
            }

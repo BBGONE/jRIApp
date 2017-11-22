@@ -32,7 +32,7 @@ export class CommandElView extends BaseElView {
         this.isEnabled = cmd.canExecute(this, this._commandParam);
     }
     protected _onCommandChanged() {
-        this.raisePropertyChanged(PROP_NAME.command);
+        this.objEvents.raiseProp(PROP_NAME.command);
     }
     protected invokeCommand(args: any, isAsync: boolean) {
         const self = this;
@@ -40,7 +40,7 @@ export class CommandElView extends BaseElView {
         if (!!self.command && self.command.canExecute(self, args)) {
             if (isAsync) {
                 utils.queue.enque(() => {
-                    if (self.getIsDestroyCalled()) {
+                    if (self.getIsDisposing()) {
                         return;
                     }
                     // repeat the check after timeout
@@ -57,17 +57,17 @@ export class CommandElView extends BaseElView {
             }
         }
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         if (sys.isBaseObj(this._command)) {
-            (<IBaseObject><any>this._command).removeNSHandlers(this.uniqueID);
+            (<IBaseObject><any>this._command).objEvents.offNS(this.uniqueID);
         }
         this.command = null;
         this._commandParam = null;
-        super.destroy();
+        super.dispose();
     }
     toString(): string {
         return "CommandElView";
@@ -90,7 +90,7 @@ export class CommandElView extends BaseElView {
             }
 
             dom.setClass([this.el], css.disabled, !!v);
-            this.raisePropertyChanged(PROP_NAME.isEnabled);
+            this.objEvents.raiseProp(PROP_NAME.isEnabled);
         }
     }
     get command(): ICommand { return this._command; }
@@ -98,7 +98,7 @@ export class CommandElView extends BaseElView {
         const self = this;
         if (v !== this._command) {
             if (sys.isBaseObj(this._command)) {
-                (<IBaseObject><any>this._command).removeNSHandlers(this.uniqueID);
+                (<IBaseObject><any>this._command).objEvents.offNS(this.uniqueID);
             }
             this._command = v;
             if (!!this._command) {
@@ -114,7 +114,7 @@ export class CommandElView extends BaseElView {
     set commandParam(v) {
         if (v !== this._commandParam) {
             this._commandParam = v;
-            this.raisePropertyChanged(PROP_NAME.commandParam);
+            this.objEvents.raiseProp(PROP_NAME.commandParam);
         }
     }
     get preventDefault() {

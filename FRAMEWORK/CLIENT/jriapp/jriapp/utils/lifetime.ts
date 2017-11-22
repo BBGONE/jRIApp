@@ -30,18 +30,18 @@ export class LifeTimeScope extends BaseObject implements ILifeTimeScope {
     getObjs() {
         return this._objs;
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         this._objs.forEach(function (obj) {
-            if (!obj.getIsDestroyCalled()) {
-                obj.destroy();
+            if (!obj.getIsDisposing()) {
+                obj.dispose();
             }
         });
         this._objs = [];
-        super.destroy();
+        super.dispose();
     }
     toString() {
         return "LifeTimeScope";

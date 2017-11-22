@@ -58,20 +58,20 @@ export class BaseCell<TColumn extends BaseColumn> extends BaseObject {
     scrollIntoView() {
         this.row.scrollIntoView();
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         if (!!this._click) {
-            this._click.destroy();
+            this._click.dispose();
             this._click = null;
         }
         dom.removeData(this._td);
         this._row = null;
         this._td = null;
         this._column = null;
-        super.destroy();
+        super.dispose();
     }
     toString(): string {
         return "BaseCell";

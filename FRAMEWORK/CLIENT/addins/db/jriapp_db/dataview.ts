@@ -61,8 +61,8 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         });
         this._bindDS();
     }
-    _getEventNames() {
-        const baseEvents = super._getEventNames();
+    getEventNames() {
+        const baseEvents = super.getEventNames();
         return [VIEW_EVENTS.refreshed].concat(baseEvents);
     }
     // override
@@ -70,10 +70,10 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         // noop
     }
     addOnViewRefreshed(fn: TEventHandler<DataView<TItem>, any>, nmspace?: string) {
-        this.addHandler(VIEW_EVENTS.refreshed, fn, nmspace);
+        this.objEvents.on(VIEW_EVENTS.refreshed, fn, nmspace);
     }
     removeOnViewRefreshed(nmspace?: string) {
-        this.removeHandler(VIEW_EVENTS.refreshed, nmspace);
+        this.objEvents.off(VIEW_EVENTS.refreshed, nmspace);
     }
     protected _filterForPaging(items: TItem[]) {
         let skip = 0, take = 0, pos = -1, cnt = -1;
@@ -93,16 +93,16 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         return result;
     }
     protected _onViewRefreshed(args: {}) {
-        this.raiseEvent(VIEW_EVENTS.refreshed, args);
+        this.objEvents.raise(VIEW_EVENTS.refreshed, args);
     }
     protected _refresh(reason: COLL_CHANGE_REASON): void {
-        if (this.getIsDestroyCalled()) {
+        if (this.getIsDisposing()) {
             return;
         }
         try {
             let items: TItem[];
             const ds = this._dataSource;
-            if (!ds || ds.getIsDestroyCalled()) {
+            if (!ds || ds.getIsDisposing()) {
                 this.clear();
                 this._onViewRefreshed({});
                 return;
@@ -314,7 +314,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         if (!ds) {
             return;
         }
-        ds.removeNSHandlers(self.uniqueID);
+        ds.objEvents.offNS(self.uniqueID);
     }
     protected _checkCurrentChanging(newCurrent: TItem) {
         const ds = this._dataSource;
@@ -341,7 +341,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         return (<BaseCollection<TItem>>this._dataSource)._getInternal().getStrValue(val, fieldInfo);
     }
     appendItems(items: TItem[]) {
-        if (this._isDestroyCalled) {
+        if (this.getIsDisposing()) {
             return [];
         }
         return this._fillItems({ items: items, reason: COLL_CHANGE_REASON.None, clear: false, isAppend: true });
@@ -394,18 +394,18 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
             this._refresh(COLL_CHANGE_REASON.None);
         });
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
-        this._refreshDebounce.destroy();
+        this.setDisposing();
+        this._refreshDebounce.dispose();
         this._refreshDebounce = null;
         this._unbindDS();
         this._dataSource = null;
         this._fnFilter = null;
         this._fnSort = null;
-        super.destroy();
+        super.dispose();
     }
     get errors(): Errors<TItem> {
         return (<BaseCollection<TItem>>this._dataSource).errors;
@@ -415,7 +415,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
     set isPagingEnabled(v) {
         if (this.options.enablePaging !== v) {
             this.options.enablePaging = v;
-            this.raisePropertyChanged(PROP_NAME.isPagingEnabled);
+            this.objEvents.raiseProp(PROP_NAME.isPagingEnabled);
             this._refresh(COLL_CHANGE_REASON.None);
         }
     }

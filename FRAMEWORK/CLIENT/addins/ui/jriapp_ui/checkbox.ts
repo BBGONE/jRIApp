@@ -42,7 +42,7 @@ export class CheckBoxElView extends InputElView {
             const chk = <HTMLInputElement>this.el;
             chk.checked = !!v;
             this._updateState();
-            this.raisePropertyChanged(PROP_NAME.checked);
+            this.objEvents.raiseProp(PROP_NAME.checked);
         }
     }
 }

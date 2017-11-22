@@ -29,7 +29,7 @@ export class RowSelectorColumn extends BaseColumn {
         this._chk = chk;
         dom.events.on(chk, "change", (e) => {
             e.stopPropagation();
-            self.raisePropertyChanged(PROP_NAME.checked);
+            self.objEvents.raiseProp(PROP_NAME.checked);
             self.grid.selectRows(chk.checked);
         }, this.uniqueID);
 
@@ -37,7 +37,7 @@ export class RowSelectorColumn extends BaseColumn {
         dom.events.on(this.grid.table, "click", (e) => {
             e.stopPropagation();
             const chk = <HTMLInputElement>e.target, cell = <RowSelectorCell>dom.getData(chk, "cell");
-            if (!!cell && !cell.getIsDestroyCalled()) {
+            if (!!cell && !cell.getIsDisposing()) {
                 cell.row.isSelected = cell.checked;
             }
         }, {
@@ -63,16 +63,16 @@ export class RowSelectorColumn extends BaseColumn {
         const bv = !!v, chk = this._chk;
         if (bv !== chk.checked) {
             chk.checked = bv;
-            this.raisePropertyChanged(PROP_NAME.checked);
+            this.objEvents.raiseProp(PROP_NAME.checked);
         }
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         dom.events.offNS(this._chk, this.uniqueID);
         dom.events.offNS(this.grid.table, this.uniqueID);
-        super.destroy();
+        super.dispose();
     }
 }

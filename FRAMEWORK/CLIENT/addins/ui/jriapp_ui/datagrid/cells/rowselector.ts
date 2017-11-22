@@ -36,13 +36,13 @@ export class RowSelectorCell extends BaseCell<RowSelectorColumn> {
             this._chk.checked = bv;
         }
     }
-    destroy() {
-        if (this._isDestroyed) {
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._isDestroyCalled = true;
+        this.setDisposing();
         dom.removeData(this._chk);
-        super.destroy();
+        super.dispose();
     }
     toString() {
         return "RowSelectorCell";
