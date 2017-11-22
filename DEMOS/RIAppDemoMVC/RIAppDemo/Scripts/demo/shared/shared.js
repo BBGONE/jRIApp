@@ -56,7 +56,7 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
                 v = (!v) ? "" : ("" + v);
                 if (x !== v) {
                     el.textContent = v;
-                    this.raisePropertyChanged('text');
+                    this.objEvents.raiseProp('text');
                 }
             },
             enumerable: true,
@@ -71,7 +71,7 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
                 v = (!v) ? "" : ("" + v);
                 if (x !== v) {
                     this.el.href = v;
-                    this.raisePropertyChanged("href");
+                    this.objEvents.raiseProp("href");
                 }
             },
             enumerable: true,
@@ -85,7 +85,7 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
                 if (x !== v) {
                     this._id = v;
                     this.href = this._baseUri + '/' + this._id;
-                    this.raisePropertyChanged('id');
+                    this.objEvents.raiseProp('id');
                 }
             },
             enumerable: true,
@@ -107,12 +107,12 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
             _this._fileName = null;
             return _this;
         }
-        FileImgElView.prototype.destroy = function () {
-            if (this._isDestroyed)
+        FileImgElView.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
-            this._debounce.destroy();
-            _super.prototype.destroy.call(this);
+            this.setDisposing();
+            this._debounce.dispose();
+            _super.prototype.dispose.call(this);
         };
         FileImgElView.prototype.reloadImg = function () {
             if (!!this.src) {
@@ -131,7 +131,7 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
                 var x = this._fileName;
                 if (x !== v) {
                     this._fileName = v;
-                    this.raisePropertyChanged('fileName');
+                    this.objEvents.raiseProp('fileName');
                     this.reloadImg();
                 }
             },
@@ -146,7 +146,7 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
                 var _this = this;
                 if (this._src !== v) {
                     this._src = v;
-                    this.raisePropertyChanged('src');
+                    this.objEvents.raiseProp('src');
                 }
                 var img = this.el;
                 img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
@@ -170,7 +170,7 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
                         this.src = null;
                     else
                         this.src = this._baseUri + '/' + this._id;
-                    this.raisePropertyChanged('id');
+                    this.objEvents.raiseProp('id');
                 }
             },
             enumerable: true,
@@ -198,7 +198,7 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
                 fn_OnShow: function (dialog) {
                     while (!!self.error && !!self.error.origError) {
                         self._error = self.error.origError;
-                        self.raisePropertyChanged('error');
+                        self.objEvents.raiseProp('error');
                     }
                     if (self.error instanceof dbMOD.AccessDeniedError)
                         self.title = "ACCESS DENIED";
@@ -218,8 +218,8 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
                     self._error = null;
                     self._errors = [];
                     self._message = null;
-                    self.raisePropertyChanged('error');
-                    self.raisePropertyChanged('message');
+                    self.objEvents.raiseProp('error');
+                    self.objEvents.raiseProp('message');
                 }
             };
             _this._dialogVM.createDialog('errorDialog', dialogOptions);
@@ -228,16 +228,16 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
         ErrorViewModel.prototype.showDialog = function () {
             this._dialogVM.showDialog('errorDialog', this);
         };
-        ErrorViewModel.prototype.destroy = function () {
-            if (this._isDestroyed)
+        ErrorViewModel.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
-            this._dialogVM.destroy();
+            this.setDisposing();
+            this._dialogVM.dispose();
             this._dialogVM = null;
             this._error = null;
             this._errors = [];
             this._message = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         Object.defineProperty(ErrorViewModel.prototype, "error", {
             get: function () { return this._error; },
@@ -251,11 +251,11 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
                     else
                         msg = 'Error!';
                     this.message = msg;
-                    this.raisePropertyChanged('error');
+                    this.objEvents.raiseProp('error');
                 }
                 else {
                     this._errors.push(v);
-                    this.raisePropertyChanged('errorCount');
+                    this.objEvents.raiseProp('errorCount');
                 }
             },
             enumerable: true,
@@ -267,7 +267,7 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
                 var old = this._title;
                 if (old !== v) {
                     this._title = v;
-                    this.raisePropertyChanged('title');
+                    this.objEvents.raiseProp('title');
                 }
             },
             enumerable: true,
@@ -279,7 +279,7 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
                 var old = this._message;
                 if (old !== v) {
                     this._message = v;
-                    this.raisePropertyChanged('message');
+                    this.objEvents.raiseProp('message');
                 }
             },
             enumerable: true,
@@ -342,7 +342,7 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             $el.on('change.' + _this.uniqueID, function (e) {
                 e.stopPropagation();
                 self._onTextChange();
-                self.raisePropertyChanged('value');
+                self.objEvents.raiseProp('value');
             });
             $el.on('keyup.' + _this.uniqueID, function (e) {
                 e.stopPropagation();
@@ -375,7 +375,7 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
         AutoCompleteElView.prototype.templateLoading = function (template) {
         };
         AutoCompleteElView.prototype.templateLoaded = function (template, error) {
-            if (this.getIsDestroyCalled() || error)
+            if (this.getIsDisposing() || error)
                 return;
             var self = this, gridElView = findElemViewInTemplate(template, 'lookupGrid');
             if (!!gridElView) {
@@ -406,8 +406,8 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             }
             return dbContext;
         };
-        AutoCompleteElView.prototype._getEventNames = function () {
-            var base_events = _super.prototype._getEventNames.call(this);
+        AutoCompleteElView.prototype.getEventNames = function () {
+            var base_events = _super.prototype.getEventNames.call(this);
             return ['hide', 'show'].concat(base_events);
         };
         AutoCompleteElView.prototype._createTemplate = function () {
@@ -422,7 +422,7 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             clearTimeout(this._loadTimeout);
             if (!!text && text.length >= self._minTextLength) {
                 this._loadTimeout = setTimeout(function () {
-                    if (self.getIsDestroyCalled()) {
+                    if (self.getIsDisposing()) {
                         return;
                     }
                     if (self._prevText != text) {
@@ -468,11 +468,11 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             });
         };
         AutoCompleteElView.prototype._onShow = function () {
-            this.raiseEvent('show', {});
+            this.objEvents.raise('show', {});
         };
         AutoCompleteElView.prototype._onHide = function () {
-            this.raiseEvent('hide', {});
-            this.raisePropertyChanged("value");
+            this.objEvents.raise('hide', {});
+            this.objEvents.raiseProp("value");
         };
         AutoCompleteElView.prototype._open = function () {
             if (this._isOpen)
@@ -506,7 +506,7 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
                 return;
             $(dom.document).off('.' + this.uniqueID);
             if (!!this._lookupGrid) {
-                this._lookupGrid.removeNSHandlers(this.uniqueID);
+                this._lookupGrid.objEvents.offNS(this.uniqueID);
             }
             this._$dropDown.css({ left: "-2000px" });
             this._isOpen = false;
@@ -519,10 +519,10 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             COMMON.addTextQuery(query, this._fieldName, str + '%');
             query.orderBy(this._fieldName);
             this._isLoading = true;
-            this.raisePropertyChanged('isLoading');
+            this.objEvents.raiseProp('isLoading');
             query.load().always(function (res) {
                 self._isLoading = false;
-                self.raisePropertyChanged('isLoading');
+                self.objEvents.raiseProp('isLoading');
             });
         };
         AutoCompleteElView.prototype.getDataContext = function () {
@@ -532,32 +532,32 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             var old = this._dataContext;
             if (this._dataContext !== v) {
                 if (!!old) {
-                    old.removeNSHandlers(this.uniqueID);
+                    old.objEvents.offNS(this.uniqueID);
                 }
                 this._dataContext = v;
-                this.raisePropertyChanged('dataContext');
+                this.objEvents.raiseProp('dataContext');
                 if (!this._dataContext) {
                     this._hideAsync();
                 }
             }
         };
-        AutoCompleteElView.prototype.destroy = function () {
-            if (this._isDestroyed)
+        AutoCompleteElView.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             this._hide();
             $(this.el).off('.' + this.uniqueID);
             if (!!this._lookupGrid) {
                 this._lookupGrid = null;
             }
             if (!!this._template) {
-                this._template.destroy();
+                this._template.dispose();
                 this._template = null;
                 this._$dropDown = null;
             }
             this._gridDataSource = null;
             this._dataContext = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         Object.defineProperty(AutoCompleteElView.prototype, "fieldName", {
             get: function () { return this._fieldName; },
@@ -609,7 +609,7 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
                 if (x !== v) {
                     this.el.value = v;
                     this._prevText = v;
-                    this.raisePropertyChanged("value");
+                    this.objEvents.raiseProp("value");
                 }
             },
             enumerable: true,
@@ -656,12 +656,12 @@ define("header", ["require", "exports", "jriapp", "jriapp_ui"], function (requir
             }, self);
             return _this;
         }
-        HeaderVM.prototype._getEventNames = function () {
-            var base_events = _super.prototype._getEventNames.call(this);
+        HeaderVM.prototype.getEventNames = function () {
+            var base_events = _super.prototype.getEventNames.call(this);
             return ['updateUI'].concat(base_events);
         };
         HeaderVM.prototype.addOnUpdateUI = function (fn, namespace) {
-            this.addHandler('updateUI', fn, namespace);
+            this.objEvents.on('updateUI', fn, namespace);
         };
         HeaderVM.prototype.expand = function () {
             var _this = this;
@@ -673,7 +673,7 @@ define("header", ["require", "exports", "jriapp", "jriapp_ui"], function (requir
         };
         HeaderVM.prototype.updateUI = function (isUp) {
             var args = { isHandled: false, isUp: isUp };
-            this.raiseEvent('updateUI', args);
+            this.objEvents.raise('updateUI', args);
             if (args.isHandled)
                 return;
             if (!!this._$contentPanel) {
@@ -741,8 +741,8 @@ define("ssevents", ["require", "exports", "jriapp"], function (require, exports,
                 return false;
             }
         };
-        SSEventsVM.prototype._getEventNames = function () {
-            var base_events = _super.prototype._getEventNames.call(this);
+        SSEventsVM.prototype.getEventNames = function () {
+            var base_events = _super.prototype.getEventNames.call(this);
             return ['open', 'close', 'error', 'message'].concat(base_events);
         };
         SSEventsVM.prototype._onEsOpen = function (event) {
@@ -759,7 +759,7 @@ define("ssevents", ["require", "exports", "jriapp"], function (require, exports,
         };
         SSEventsVM.prototype._onMsg = function (event) {
             var data = JSON.parse(event.data);
-            this.raiseEvent('message', { message: event.data, data: data });
+            this.objEvents.raise('message', { message: event.data, data: data });
         };
         SSEventsVM.prototype._close = function () {
             if (!!this._timeOut)
@@ -782,7 +782,7 @@ define("ssevents", ["require", "exports", "jriapp"], function (require, exports,
             }
         };
         SSEventsVM.prototype.addOnMessage = function (fn, namespace) {
-            this.addHandler('message', fn, namespace);
+            this.objEvents.on('message', fn, namespace);
         };
         SSEventsVM.prototype.open = function () {
             var self = this;
@@ -829,15 +829,15 @@ define("ssevents", ["require", "exports", "jriapp"], function (require, exports,
             var req_promise = utils.http.postAjax(this._postMsgUrl, postData);
             return req_promise;
         };
-        SSEventsVM.prototype.destroy = function () {
-            if (this._isDestroyed)
+        SSEventsVM.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             try {
                 this.close();
             }
             finally {
-                _super.prototype.destroy.call(this);
+                _super.prototype.dispose.call(this);
             }
         };
         Object.defineProperty(SSEventsVM.prototype, "es", {
@@ -886,15 +886,15 @@ define("uploader", ["require", "exports", "jriapp_shared"], function (require, e
             _this._file = file;
             return _this;
         }
-        Uploader.prototype._getEventNames = function () {
-            var base_events = _super.prototype._getEventNames.call(this);
+        Uploader.prototype.getEventNames = function () {
+            var base_events = _super.prototype.getEventNames.call(this);
             return ['progress', 'addheaders'].concat(base_events);
         };
         Uploader.prototype.addOnProgress = function (fn, nmspace) {
-            this.addHandler('progress', fn, nmspace);
+            this.objEvents.on('progress', fn, nmspace);
         };
         Uploader.prototype.addOnAddHeaders = function (fn, nmspace) {
-            this.addHandler('addheaders', fn, nmspace);
+            this.objEvents.on('addheaders', fn, nmspace);
         };
         Uploader.prototype.uploadFile = function () {
             var self = this, chunks = [], file = this._file, FILE_SIZE = file.size;
@@ -907,7 +907,7 @@ define("uploader", ["require", "exports", "jriapp_shared"], function (require, e
             var len = chunks.length;
             var funcs = chunks.map(function (chunk, i) { return function () { return self.uploadFileChunk(file, chunk, i + 1, len); }; });
             var res = _async.promiseSerial(funcs).then(function (res) {
-                self.raiseEvent('progress', 100);
+                self.objEvents.raise('progress', 100);
                 return file.name;
             });
             return res;
@@ -922,7 +922,7 @@ define("uploader", ["require", "exports", "jriapp_shared"], function (require, e
             upload.onerror = function (e) {
                 deffered.reject(new Error("Uploading file " + file.name + " error"));
             };
-            deffered.promise().then(function () { return self.raiseEvent('progress', part / total); });
+            deffered.promise().then(function () { return self.objEvents.raise('progress', part / total); });
             xhr.open("post", self.uploadUrl, true);
             var name = encodeURIComponent(file.name);
             xhr.setRequestHeader("Content-Type", "multipart/form-data");
@@ -933,7 +933,7 @@ define("uploader", ["require", "exports", "jriapp_shared"], function (require, e
             xhr.setRequestHeader("X-Chunk-Size", chunk.size.toString());
             xhr.setRequestHeader("X-Chunk-Count", total.toString());
             var args = { xhr: xhr, promise: null };
-            self.raiseEvent('addheaders', args);
+            self.objEvents.raise('addheaders', args);
             var addHeadersPromise = !args.promise ? _async.resolve() : args.promise;
             return addHeadersPromise.then(function () {
                 xhr.send(chunk);
@@ -995,8 +995,8 @@ define("websocket", ["require", "exports", "jriapp"], function (require, exports
                 return false;
             }
         };
-        WebSocketsVM.prototype._getEventNames = function () {
-            var base_events = _super.prototype._getEventNames.call(this);
+        WebSocketsVM.prototype.getEventNames = function () {
+            var base_events = _super.prototype.getEventNames.call(this);
             return ['open', 'close', 'error', 'message'].concat(base_events);
         };
         WebSocketsVM.prototype._onWsOpen = function (event) {
@@ -1014,7 +1014,7 @@ define("websocket", ["require", "exports", "jriapp"], function (require, exports
                 this._deffered.reject("Websocket closed");
                 this._deffered = null;
             }
-            this.raiseEvent('close', {});
+            this.objEvents.raise('close', {});
         };
         WebSocketsVM.prototype._onWsError = function (event) {
             this.handleError("Websocket error", this);
@@ -1035,14 +1035,14 @@ define("websocket", ["require", "exports", "jriapp"], function (require, exports
                 this.close();
             }
             else if (res.Tag == "message") {
-                this.raiseEvent('message', { message: event.data, data: res.Payload });
+                this.objEvents.raise('message', { message: event.data, data: res.Payload });
             }
             else {
                 console.log(event.data);
             }
         };
         WebSocketsVM.prototype.addOnMessage = function (fn, nmspace, context) {
-            this.addHandler('message', fn, nmspace, context);
+            this.objEvents.on('message', fn, nmspace, context);
         };
         WebSocketsVM.prototype.open = function () {
             var self = this;
@@ -1095,15 +1095,15 @@ define("websocket", ["require", "exports", "jriapp"], function (require, exports
                 }
             }
         };
-        WebSocketsVM.prototype.destroy = function () {
-            if (this._isDestroyed)
+        WebSocketsVM.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             try {
                 this.close();
             }
             finally {
-                _super.prototype.destroy.call(this);
+                _super.prototype.dispose.call(this);
             }
         };
         Object.defineProperty(WebSocketsVM.prototype, "ws", {

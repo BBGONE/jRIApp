@@ -35,7 +35,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
         this._propWatcher = new RIAPP.PropWatcher();
         this._uiMainRoute = new MainRoute();
         this._uiCustDetRoute = new CustDetRoute();
-        this._uiMainRoute.addOnPropertyChange('viewName', function (sender, a) {
+        this._uiMainRoute.objEvents.onProp('viewName', function (sender, a) {
             self._uiCustDetRoute.reset();
             if (sender.viewName == sender.custTemplName) {
                 setTimeout(function () {
@@ -54,7 +54,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
         }, self.uniqueID);
 
         this._dbSet.addOnPageIndexChanged(function (sender, args) {
-            self.raiseEvent('page_changed', {});
+            self.objEvents.raise('page_changed', {});
         }, self.uniqueID);
 
         this._dbSet.addOnItemAdded((s, args) => {
@@ -157,13 +157,13 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
         this._ordersVM = new OrderVM(this);
         this._customerAddressVM = new CustomerAddressVM(this);
     }
-    _getEventNames() {
-        let base_events = super._getEventNames();
+    getEventNames() {
+        let base_events = super.getEventNames();
         return ['row_expanded', 'page_changed'].concat(base_events);
     }
     protected _onCurrentChanged() {
         this._custAdressView.parentItem = this._dbSet.currentItem;
-        this.raisePropertyChanged('currentItem');
+        this.objEvents.raiseProp('currentItem');
     }
 
     _onGridPageChanged() {
@@ -171,10 +171,10 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
     _onGridRowSelected(item: DEMODB.Customer) {
     }
     _onGridRowExpanded(item: DEMODB.Customer) {
-        this.raiseEvent('row_expanded', { customer: item, isExpanded: true });
+        this.objEvents.raise('row_expanded', { customer: item, isExpanded: true });
     }
     _onGridRowCollapsed(item: DEMODB.Customer) {
-        this.raiseEvent('row_expanded', { customer: item, isExpanded: false });
+        this.objEvents.raise('row_expanded', { customer: item, isExpanded: false });
     }
     //returns promise
     load() {
@@ -184,25 +184,25 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
         query.orderBy('ComplexProp.LastName').thenBy('ComplexProp.MiddleName').thenBy('ComplexProp.FirstName');
         return this.dbContext.load(query);
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
-        this._propWatcher.destroy();
+        this.setDisposing();
+        this._propWatcher.dispose();
         this._propWatcher = null;
 
         if (!!this._dbSet) {
-            this._dbSet.removeNSHandlers(this.uniqueID);
+            this._dbSet.objEvents.offNS(this.uniqueID);
         }
-        this._gridEvents.destroy();
+        this._gridEvents.dispose();
         this._gridEvents = null;
-        this._ordersVM.destroy()
+        this._ordersVM.dispose()
         this._ordersVM = null;
-        this._customerAddressVM.destroy();
+        this._customerAddressVM.dispose();
         this._customerAddressVM = null;
-        this._custAdressView.destroy();
+        this._custAdressView.dispose();
         this._custAdressView = null;
-        super.destroy();
+        super.dispose();
     }
     get dbContext() { return this.app.dbContext; }
     get dbSets() { return this.dbContext.dbSets; }

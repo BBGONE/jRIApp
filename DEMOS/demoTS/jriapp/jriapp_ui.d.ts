@@ -51,7 +51,7 @@ declare module "jriapp_ui/content/basic" {
         }): IElView;
         protected getFieldInfo(): IFieldInfo;
         render(): void;
-        destroy(): void;
+        dispose(): void;
         toString(): string;
         readonly parentEl: HTMLElement;
         readonly target: IElView;
@@ -75,7 +75,7 @@ declare module "jriapp_ui/content/template" {
         private createTemplate();
         protected cleanUp(): void;
         render(): void;
-        destroy(): void;
+        dispose(): void;
         toString(): string;
         readonly parentEl: HTMLElement;
         readonly template: ITemplate;
@@ -103,13 +103,13 @@ declare module "jriapp_ui/utils/eventbag" {
         private _dic;
         private _onChange;
         constructor(onChange: (sender: EventBag, args: IEventChangedArgs) => void);
-        _isHasProp(prop: string): boolean;
+        isHasProp(prop: string): boolean;
         getProp(name: string): ICommand;
         setProp(name: string, command: ICommand): void;
         readonly isPropertyBag: boolean;
         trigger(eventName: string, args?: any): void;
         toString(): string;
-        destroy(): void;
+        dispose(): void;
     }
 }
 declare module "jriapp_ui/utils/propbag" {
@@ -117,7 +117,7 @@ declare module "jriapp_ui/utils/propbag" {
     export class PropertyBag extends BaseObject implements IPropertyBag {
         private _el;
         constructor(el: HTMLElement);
-        _isHasProp(prop: string): boolean;
+        isHasProp(prop: string): boolean;
         getProp(name: string): any;
         setProp(name: string, val: any): void;
         readonly isPropertyBag: boolean;
@@ -129,7 +129,7 @@ declare module "jriapp_ui/utils/cssbag" {
     export class CSSBag extends BaseObject implements IPropertyBag {
         private _el;
         constructor(el: Element);
-        _isHasProp(prop: string): boolean;
+        isHasProp(prop: string): boolean;
         getProp(name: string): any;
         setProp(name: string, val: any): void;
         readonly isPropertyBag: boolean;
@@ -140,7 +140,7 @@ declare module "jriapp_ui/utils/jquery" {
     export const $: JQueryStatic;
     export class JQueryUtils {
         static $: JQueryStatic;
-        static destroy$Plugin($el: JQuery, name: string): void;
+        static dispose$Plugin($el: JQuery, name: string): void;
     }
 }
 declare module "jriapp_ui/utils/tooltip" {
@@ -220,7 +220,7 @@ declare module "jriapp_ui/baseview" {
         protected _setFieldError(isError: boolean): void;
         protected _updateErrorUI(el: HTMLElement, errors: IValidationInfo[]): void;
         protected _setToolTip(el: Element, tip: string, isError?: boolean): void;
-        destroy(): void;
+        dispose(): void;
         toString(): string;
         readonly el: HTMLElement;
         readonly uniqueID: string;
@@ -256,7 +256,7 @@ declare module "jriapp_ui/textbox" {
     };
     export class TextBoxElView extends InputElView {
         constructor(options: ITextBoxOptions);
-        _getEventNames(): string[];
+        getEventNames(): string[];
         addOnKeyPress(fn: (sender: TextBoxElView, args: TKeyPressArgs) => void, nmspace?: string): void;
         removeOnKeyPress(nmspace?: string): void;
         toString(): string;
@@ -282,7 +282,7 @@ declare module "jriapp_ui/textarea" {
     }
     export class TextAreaElView extends BaseElView {
         constructor(options: ITextAreaOptions);
-        _getEventNames(): string[];
+        getEventNames(): string[];
         addOnKeyPress(fn: (sender: TextAreaElView, args: TKeyPressArgs) => void, nmspace?: string): void;
         removeOnKeyPress(nmspace?: string): void;
         toString(): string;
@@ -327,7 +327,7 @@ declare module "jriapp_ui/content/bool" {
         protected createTargetElement(): IElView;
         protected updateCss(): void;
         render(): void;
-        destroy(): void;
+        dispose(): void;
         toString(): string;
     }
 }
@@ -409,8 +409,8 @@ declare module "jriapp_ui/listbox" {
         private _fnCheckChanges;
         private _isDSFilled;
         constructor(options: IListBoxConstructorOptions);
-        destroy(): void;
-        _getEventNames(): string[];
+        dispose(): void;
+        getEventNames(): string[];
         addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any): void;
         removeOnRefreshed(nmspace?: string): void;
         protected _onChanged(): void;
@@ -457,7 +457,7 @@ declare module "jriapp_ui/listbox" {
     export class ListBoxElView extends BaseElView {
         private _listBox;
         constructor(options: IListBoxViewOptions);
-        destroy(): void;
+        dispose(): void;
         toString(): string;
         isEnabled: boolean;
         dataSource: ICollection<ICollectionItem>;
@@ -509,7 +509,7 @@ declare module "jriapp_ui/content/listbox" {
         private _value;
         private _objId;
         constructor(options: IConstructorContentOptions);
-        _getEventNames(): string[];
+        getEventNames(): string[];
         addOnObjectCreated(fn: (sender: any, args: TObjCreatedArgs) => void, nmspace?: string): void;
         removeOnObjectCreated(nmspace?: string): void;
         addOnObjectNeeded(fn: (sender: any, args: TObjNeededArgs) => void, nmspace?: string): void;
@@ -526,7 +526,7 @@ declare module "jriapp_ui/content/listbox" {
         protected bindToValue(): IBinding;
         protected bindToList(selectView: ListBoxElView): IBinding;
         render(): void;
-        destroy(): void;
+        dispose(): void;
         toString(): string;
         value: any;
         readonly uniqueID: string;
@@ -593,7 +593,7 @@ declare module "jriapp_ui/dialog" {
         }>, nmspace?: string, context?: IBaseObject): void;
         removeOnRefresh(nmspace?: string): void;
         protected _createDialog(): void;
-        _getEventNames(): string[];
+        getEventNames(): string[];
         templateLoading(template: ITemplate): void;
         templateLoaded(template: ITemplate, error?: any): void;
         templateUnLoading(template: ITemplate): void;
@@ -614,7 +614,7 @@ declare module "jriapp_ui/dialog" {
         hide(): void;
         getOption(name: string): any;
         setOption(name: string, value: any): void;
-        destroy(): void;
+        dispose(): void;
         dataContext: any;
         readonly result: "ok" | "cancel";
         readonly template: ITemplate;
@@ -632,7 +632,7 @@ declare module "jriapp_ui/dialog" {
         createDialog(name: string, options: IDialogConstructorOptions): () => DataEditDialog;
         showDialog(name: string, dataContext: any): DataEditDialog;
         getDialog(name: string): DataEditDialog;
-        destroy(): void;
+        dispose(): void;
     }
 }
 declare module "jriapp_ui/dynacontent" {
@@ -663,7 +663,7 @@ declare module "jriapp_ui/dynacontent" {
         templateLoaded(template: ITemplate, error?: any): void;
         templateUnLoading(template: ITemplate): void;
         private _templateChanging(oldName, newName);
-        destroy(): void;
+        dispose(): void;
         readonly template: ITemplate;
         templateID: string;
         dataContext: any;
@@ -746,13 +746,13 @@ declare module "jriapp_ui/datagrid/animation" {
         beforeHide(el: HTMLElement): void;
         hide(onEnd: () => void): void;
         stop(): void;
-        destroy(): void;
+        dispose(): void;
     }
 }
 declare module "jriapp_ui/utils/dblclick" {
     import { IDisposable } from "jriapp_shared";
     export class DblClick implements IDisposable {
-        private _isDestroyed;
+        private _isDisposed;
         private _timer;
         private _interval;
         private _fnOnClick;
@@ -760,9 +760,8 @@ declare module "jriapp_ui/utils/dblclick" {
         constructor(interval?: number);
         click(): void;
         add(fnOnClick: () => any, fnOnDblClick?: () => any): void;
-        destroy(): void;
-        getIsDestroyed(): boolean;
-        getIsDestroyCalled(): boolean;
+        dispose(): void;
+        getIsDisposed(): boolean;
         interval: number;
     }
 }
@@ -795,7 +794,7 @@ declare module "jriapp_ui/datagrid/columns/base" {
         private _col;
         private _template;
         constructor(grid: DataGrid, options: ICellInfo);
-        destroy(): void;
+        dispose(): void;
         templateLoading(template: ITemplate): void;
         templateLoaded(template: ITemplate, error?: any): void;
         templateUnLoading(template: ITemplate): void;
@@ -846,7 +845,7 @@ declare module "jriapp_ui/datagrid/columns/data" {
         protected _cacheObject(key: string, obj: IBaseObject): void;
         protected _getCachedObject(key: string): IBaseObject;
         _getInitContentFn(): (content: IExternallyCachable) => void;
-        destroy(): void;
+        dispose(): void;
         toString(): string;
         readonly isSortable: boolean;
         readonly sortMemberName: string;
@@ -862,7 +861,7 @@ declare module "jriapp_ui/datagrid/cells/data" {
         protected _initContent(): void;
         _beginEdit(): void;
         _endEdit(isCanceled: boolean): void;
-        destroy(): void;
+        dispose(): void;
         toString(): string;
     }
 }
@@ -879,7 +878,7 @@ declare module "jriapp_ui/datagrid/columns/actions" {
         protected _onDelete(cell: ActionsCell): void;
         protected _onEdit(cell: ActionsCell): void;
         toString(): string;
-        destroy(): void;
+        dispose(): void;
     }
 }
 declare module "jriapp_ui/datagrid/cells/actions" {
@@ -889,7 +888,7 @@ declare module "jriapp_ui/datagrid/cells/actions" {
     export class ActionsCell extends BaseCell<ActionsColumn> {
         private _isEditing;
         constructor(options: ICellOptions);
-        destroy(): void;
+        dispose(): void;
         private _setupButtons(buttons);
         protected readonly editBtnsHTML: string;
         protected readonly viewBtnsHTML: string;
@@ -908,7 +907,7 @@ declare module "jriapp_ui/datagrid/columns/rowselector" {
         constructor(grid: DataGrid, options: ICellInfo);
         toString(): string;
         checked: any;
-        destroy(): void;
+        dispose(): void;
     }
 }
 declare module "jriapp_ui/datagrid/cells/rowselector" {
@@ -918,7 +917,7 @@ declare module "jriapp_ui/datagrid/cells/rowselector" {
         private _chk;
         constructor(options: ICellOptions);
         checked: boolean;
-        destroy(): void;
+        dispose(): void;
         toString(): string;
     }
 }
@@ -956,7 +955,7 @@ declare module "jriapp_ui/datagrid/rows/row" {
         beginEdit(): boolean;
         endEdit(): boolean;
         cancelEdit(): boolean;
-        destroy(): void;
+        dispose(): void;
         deleteRow(): void;
         updateErrorState(): void;
         updateUIState(): void;
@@ -1007,7 +1006,7 @@ declare module "jriapp_ui/datagrid/cells/base" {
         protected _onDblClicked(row?: Row): void;
         click(): void;
         scrollIntoView(): void;
-        destroy(): void;
+        dispose(): void;
         toString(): string;
         readonly td: HTMLTableCellElement;
         readonly row: Row;
@@ -1033,7 +1032,7 @@ declare module "jriapp_ui/datagrid/cells/details" {
             td: HTMLTableCellElement;
             details_id: string;
         });
-        destroy(): void;
+        dispose(): void;
         toString(): string;
         readonly td: HTMLTableCellElement;
         readonly row: DetailsRow;
@@ -1066,7 +1065,7 @@ declare module "jriapp_ui/datagrid/rows/details" {
         private _initShow();
         private _show(onEnd);
         private _hide(onEnd);
-        destroy(): void;
+        dispose(): void;
         toString(): string;
         readonly rect: ClientRect;
         readonly height: number;
@@ -1092,7 +1091,7 @@ declare module "jriapp_ui/datagrid/cells/fillspace" {
             row: FillSpaceRow;
             td: HTMLTableCellElement;
         });
-        destroy(): void;
+        dispose(): void;
         toString(): string;
         readonly td: HTMLTableCellElement;
         readonly row: FillSpaceRow;
@@ -1114,7 +1113,7 @@ declare module "jriapp_ui/datagrid/rows/fillspace" {
             tr: HTMLTableRowElement;
         });
         private _createCell();
-        destroy(): void;
+        dispose(): void;
         toString(): string;
         attach(): void;
         detach(): void;
@@ -1213,7 +1212,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         private _pageDebounce;
         private _updateCurrent;
         constructor(options: IDataGridConstructorOptions);
-        _getEventNames(): string[];
+        getEventNames(): string[];
         addOnRowExpanded(fn: TEventHandler<DataGrid, {
             collapsedRow: Row;
             expandedRow: Row;
@@ -1294,7 +1293,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         scrollToCurrent(pos?: ROW_POSITION, animate?: boolean): void;
         focus(): void;
         addNew(): void;
-        destroy(): void;
+        dispose(): void;
         readonly table: HTMLTableElement;
         readonly options: IDataGridConstructorOptions;
         readonly _tBodyEl: HTMLTableSectionElement;
@@ -1325,7 +1324,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         private _stateDebounce;
         constructor(options: IDataGridViewOptions);
         toString(): string;
-        destroy(): void;
+        dispose(): void;
         private _bindGridEvents();
         dataSource: ICollection<ICollectionItem>;
         readonly grid: DataGrid;
@@ -1368,7 +1367,7 @@ declare module "jriapp_ui/pager" {
         protected _onPageSizeChanged(ds: ICollection<ICollectionItem>): void;
         protected _onPageIndexChanged(ds: ICollection<ICollectionItem>): void;
         protected _onTotalCountChanged(ds: ICollection<ICollectionItem>): void;
-        destroy(): void;
+        dispose(): void;
         protected _bindDS(): void;
         protected _unbindDS(): void;
         protected _clearContent(): void;
@@ -1404,7 +1403,7 @@ declare module "jriapp_ui/pager" {
     export class PagerElView extends BaseElView {
         private _pager;
         constructor(options: IPagerViewOptions);
-        destroy(): void;
+        dispose(): void;
         toString(): string;
         dataSource: ICollection<ICollectionItem>;
         readonly pager: Pager;
@@ -1435,7 +1434,7 @@ declare module "jriapp_ui/stackpanel" {
         private _isKeyNavigation;
         private _debounce;
         constructor(options: IStackPanelConstructorOptions);
-        _getEventNames(): string[];
+        getEventNames(): string[];
         addOnItemClicked(fn: TEventHandler<StackPanel, {
             item: ICollectionItem;
         }>, nmspace?: string, context?: IBaseObject): void;
@@ -1458,7 +1457,7 @@ declare module "jriapp_ui/stackpanel" {
         protected _removeItem(item: ICollectionItem): void;
         protected _refresh(): void;
         protected _setDataSource(v: ICollection<ICollectionItem>): void;
-        destroy(): void;
+        dispose(): void;
         getISelectable(): ISelectable;
         scrollToItem(item: ICollectionItem, isUp?: boolean): void;
         scrollToCurrent(isUp?: boolean): void;
@@ -1481,7 +1480,7 @@ declare module "jriapp_ui/stackpanel" {
         private _panel;
         private _panelEvents;
         constructor(options: IStackPanelViewOptions);
-        destroy(): void;
+        dispose(): void;
         toString(): string;
         dataSource: ICollection<ICollectionItem>;
         panelEvents: IPanelEvents;
@@ -1512,7 +1511,7 @@ declare module "jriapp_ui/tabs" {
         protected _createTabs(): void;
         protected _destroyTabs(): void;
         protected _onTabsCreated(): void;
-        destroy(): void;
+        dispose(): void;
         toString(): string;
         tabsEvents: ITabsEvents;
         tabIndex: number;
@@ -1536,7 +1535,7 @@ declare module "jriapp_ui/command" {
         private _onCanExecuteChanged(cmd, args);
         protected _onCommandChanged(): void;
         protected invokeCommand(args: any, isAsync: boolean): void;
-        destroy(): void;
+        dispose(): void;
         toString(): string;
         isEnabled: boolean;
         command: ICommand;
@@ -1605,7 +1604,7 @@ declare module "jriapp_ui/dataform" {
         private _bindDS();
         private _unbindDS();
         private _clearContent();
-        destroy(): void;
+        dispose(): void;
         toString(): string;
         readonly app: IApplication;
         readonly el: HTMLElement;
@@ -1620,7 +1619,7 @@ declare module "jriapp_ui/dataform" {
         constructor(options: IViewOptions);
         protected _getErrorTipInfo(errors: IValidationInfo[]): string;
         protected _updateErrorUI(el: HTMLElement, errors: IValidationInfo[]): void;
-        destroy(): void;
+        dispose(): void;
         toString(): string;
         dataContext: IBaseObject;
         readonly form: DataForm;
@@ -1633,7 +1632,7 @@ declare module "jriapp_ui/datepicker" {
     }
     export class DatePickerElView extends TextBoxElView {
         constructor(options: IDatePickerOptions);
-        destroy(): void;
+        dispose(): void;
         toString(): string;
     }
 }
@@ -1653,7 +1652,7 @@ declare module "jriapp_ui/anchor" {
         protected _onClick(e: Event): void;
         protected _updateImage(src: string): void;
         protected _updateGlyph(glyph: string): void;
-        destroy(): void;
+        dispose(): void;
         toString(): string;
         imageSrc: string;
         glyph: string;
@@ -1684,7 +1683,7 @@ declare module "jriapp_ui/busy" {
         private _img;
         private _isBusy;
         constructor(options: IBusyViewOptions);
-        destroy(): void;
+        dispose(): void;
         toString(): string;
         isBusy: boolean;
         delay: number;

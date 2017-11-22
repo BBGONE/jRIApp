@@ -1594,10 +1594,10 @@ define("manToManDemo/custAddressVM", ["require", "exports", "jriapp", "jriapp_db
             _this._custAdressView.addOnViewRefreshed(function (s, a) {
                 self._addressesView.refresh();
             }, self.uniqueID);
-            _this._customerVM.addOnPropertyChange('currentItem', function (sender, args) {
+            _this._customerVM.objEvents.onProp('currentItem', function (sender, args) {
                 self._currentCustomer = self._customerVM.currentItem;
                 self._custAdressView.parentItem = self._currentCustomer;
-                self.raisePropertyChanged('currentCustomer');
+                self.objEvents.raiseProp('currentCustomer');
             }, self.uniqueID);
             return _this;
         }
@@ -1634,24 +1634,24 @@ define("manToManDemo/custAddressVM", ["require", "exports", "jriapp", "jriapp_db
                 self._loadAddresses(addressIDs, true);
             });
         };
-        CustomerAddressVM.prototype.destroy = function () {
-            if (this._isDestroyed)
+        CustomerAddressVM.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             if (!!this._addressesDb) {
-                this._addressesDb.removeNSHandlers(this.uniqueID);
+                this._addressesDb.objEvents.offNS(this.uniqueID);
             }
             if (!!this._custAdressDb) {
-                this._custAdressDb.removeNSHandlers(this.uniqueID);
+                this._custAdressDb.objEvents.offNS(this.uniqueID);
             }
             if (!!this._customerVM) {
-                this._customerVM.removeNSHandlers(this.uniqueID);
+                this._customerVM.objEvents.offNS(this.uniqueID);
             }
             if (this._addAddressVM) {
-                this._addAddressVM.destroy();
+                this._addAddressVM.dispose();
                 this._addAddressVM = null;
             }
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         Object.defineProperty(CustomerAddressVM.prototype, "dbContext", {
             get: function () { return this.app.dbContext; },
@@ -1712,7 +1712,7 @@ define("manToManDemo/customerVM", ["require", "exports", "jriapp", "manToManDemo
             var self = _this;
             _this._dbSet = _this.dbSets.Customer;
             _this._dbSet.isSubmitOnDelete = true;
-            _this._dbSet.addOnPropertyChange('currentItem', function (sender, args) {
+            _this._dbSet.objEvents.onProp('currentItem', function (sender, args) {
                 self._onCurrentChanged();
             }, self.uniqueID);
             _this._dbSet.addOnItemDeleting(function (s, a) {
@@ -1725,7 +1725,7 @@ define("manToManDemo/customerVM", ["require", "exports", "jriapp", "manToManDemo
                 }
             }, self.uniqueID);
             _this._dbSet.addOnFill(function (sender, args) {
-                self.raiseEvent('data_filled', args);
+                self.objEvents.raise('data_filled', args);
             }, self.uniqueID);
             _this._dbSet.addOnItemAdded(function (s, args) {
                 args.item.NameStyle = false;
@@ -1760,12 +1760,12 @@ define("manToManDemo/customerVM", ["require", "exports", "jriapp", "manToManDemo
             _this._customerAddressVM = null;
             return _this;
         }
-        CustomerVM.prototype._getEventNames = function () {
-            var base_events = _super.prototype._getEventNames.call(this);
+        CustomerVM.prototype.getEventNames = function () {
+            var base_events = _super.prototype.getEventNames.call(this);
             return ['data_filled'].concat(base_events);
         };
         CustomerVM.prototype._onCurrentChanged = function () {
-            this.raisePropertyChanged('currentItem');
+            this.objEvents.raiseProp('currentItem');
         };
         CustomerVM.prototype.load = function () {
             var query = this.dbSet.createReadCustomerQuery({ includeNav: false });
@@ -1775,18 +1775,18 @@ define("manToManDemo/customerVM", ["require", "exports", "jriapp", "manToManDemo
             query.orderBy('ComplexProp.LastName').thenBy('ComplexProp.MiddleName').thenBy('ComplexProp.FirstName');
             return query.load();
         };
-        CustomerVM.prototype.destroy = function () {
-            if (this._isDestroyed)
+        CustomerVM.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             if (!!this._customerAddressVM) {
-                this._customerAddressVM.destroy();
+                this._customerAddressVM.dispose();
                 this._customerAddressVM = null;
             }
             if (!!this._dbSet) {
-                this._dbSet.removeNSHandlers(this.uniqueID);
+                this._dbSet.objEvents.offNS(this.uniqueID);
             }
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         Object.defineProperty(CustomerVM.prototype, "dbContext", {
             get: function () { return this.app.dbContext; },
@@ -1889,18 +1889,18 @@ define("manToManDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "comm
             this.errorVM.error = data.error;
             this.errorVM.showDialog();
         };
-        DemoApplication.prototype.destroy = function () {
-            if (this._isDestroyed)
+        DemoApplication.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             var self = this;
             try {
-                self._errorVM.destroy();
-                self._customerVM.destroy();
-                self._dbContext.destroy();
+                self._errorVM.dispose();
+                self._customerVM.dispose();
+                self._dbContext.dispose();
             }
             finally {
-                _super.prototype.destroy.call(this);
+                _super.prototype.dispose.call(this);
             }
         };
         Object.defineProperty(DemoApplication.prototype, "options", {
@@ -1976,8 +1976,8 @@ define("manToManDemo/addAddressVM", ["require", "exports", "jriapp", "jriapp_db"
                     custAdress._aspect.endEdit();
                     self._newAddress = null;
                     self._isAddingNew = false;
-                    self.raisePropertyChanged('newAddress');
-                    self.raisePropertyChanged('isAddingNew');
+                    self.objEvents.raiseProp('newAddress');
+                    self.objEvents.raiseProp('isAddingNew');
                     return 1;
                 },
                 fn_OnCancel: function (dialog) {
@@ -2002,16 +2002,16 @@ define("manToManDemo/addAddressVM", ["require", "exports", "jriapp", "jriapp_db"
             });
             _this._addressInfosView.isPagingEnabled = true;
             _this._addressInfosView.pageSize = 50;
-            _this._addressInfosView.addOnPropertyChange('currentItem', function (sender, args) {
-                self.raisePropertyChanged('currentAddressInfo');
+            _this._addressInfosView.objEvents.onProp('currentItem', function (sender, args) {
+                self.objEvents.raiseProp('currentAddressInfo');
                 self._linkCommand.raiseCanExecuteChanged();
             }, self.uniqueID);
-            _this._customerAddressVM.addOnPropertyChange('currentCustomer', function (sender, args) {
+            _this._customerAddressVM.objEvents.onProp('currentCustomer', function (sender, args) {
                 self._currentCustomer = self._customerAddressVM.currentCustomer;
-                self.raisePropertyChanged('customer');
+                self.objEvents.raiseProp('customer');
                 self._addNewCommand.raiseCanExecuteChanged();
             }, self.uniqueID);
-            _this.custAdressView.addOnPropertyChange('currentItem', function (sender, args) {
+            _this.custAdressView.objEvents.onProp('currentItem', function (sender, args) {
                 self._unLinkCommand.raiseCanExecuteChanged();
             }, self.uniqueID);
             _this._addNewCommand = new RIAPP.Command(function (sender, param) {
@@ -2050,7 +2050,7 @@ define("manToManDemo/addAddressVM", ["require", "exports", "jriapp", "jriapp_db"
         AddAddressVM.prototype._removeGrid = function () {
             if (!this._dataGrid)
                 return;
-            this._dataGrid.removeNSHandlers(this.uniqueID);
+            this._dataGrid.objEvents.offNS(this.uniqueID);
             this._dataGrid = null;
         };
         Object.defineProperty(AddAddressVM.prototype, "isCanSubmit", {
@@ -2067,8 +2067,8 @@ define("manToManDemo/addAddressVM", ["require", "exports", "jriapp", "jriapp_db"
             self._newAddress._aspect.rejectChanges();
             self._newAddress = null;
             self._isAddingNew = false;
-            self.raisePropertyChanged('newAddress');
-            self.raisePropertyChanged('isAddingNew');
+            self.objEvents.raiseProp('newAddress');
+            self.objEvents.raiseProp('isAddingNew');
         };
         AddAddressVM.prototype.loadAddressInfos = function () {
             var query = this._addressInfosDb.createReadAddressInfoQuery();
@@ -2080,8 +2080,8 @@ define("manToManDemo/addAddressVM", ["require", "exports", "jriapp", "jriapp_db"
         AddAddressVM.prototype._addNewAddress = function () {
             this._newAddress = this._customerAddressVM._addNewAddress();
             this._isAddingNew = true;
-            this.raisePropertyChanged('newAddress');
-            this.raisePropertyChanged('isAddingNew');
+            this.objEvents.raiseProp('newAddress');
+            this.objEvents.raiseProp('isAddingNew');
         };
         AddAddressVM.prototype._linkAddress = function () {
             var self = this, adrInfo = this.currentAddressInfo, adrView = self.custAdressView, adrID;
@@ -2146,25 +2146,25 @@ define("manToManDemo/addAddressVM", ["require", "exports", "jriapp", "jriapp_db"
                 this._addressInfosView.removeItem(item);
             }
         };
-        AddAddressVM.prototype.destroy = function () {
-            if (this._isDestroyed)
+        AddAddressVM.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             if (!!this._addressInfosDb) {
-                this._addressInfosDb.removeNSHandlers(this.uniqueID);
+                this._addressInfosDb.objEvents.offNS(this.uniqueID);
                 this._addressInfosDb.clear();
                 this._addressInfosDb = null;
             }
             if (!!this._addressInfosView) {
-                this._addressInfosView.destroy();
+                this._addressInfosView.dispose();
                 this._addressInfosView = null;
             }
-            this.custAdressView.removeNSHandlers(this.uniqueID);
+            this.custAdressView.objEvents.offNS(this.uniqueID);
             if (!!this._customerAddressVM) {
-                this._customerAddressVM.removeNSHandlers(this.uniqueID);
+                this._customerAddressVM.objEvents.offNS(this.uniqueID);
                 this._customerAddressVM = null;
             }
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         Object.defineProperty(AddAddressVM.prototype, "dbContext", {
             get: function () { return this.app.dbContext; },
@@ -2206,7 +2206,7 @@ define("manToManDemo/addAddressVM", ["require", "exports", "jriapp", "jriapp_db"
             set: function (v) {
                 if (this._searchString !== v) {
                     this._searchString = v;
-                    this.raisePropertyChanged('searchString');
+                    this.objEvents.raiseProp('searchString');
                 }
             },
             enumerable: true,

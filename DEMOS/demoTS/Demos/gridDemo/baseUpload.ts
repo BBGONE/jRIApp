@@ -163,11 +163,11 @@ export class BaseUploadVM<TApp extends RIAPP.IApplication> extends RIAPP.ViewMod
             args.promise = self._addHeaders(args.xhr, file);
         });
         uploader.uploadFile().then((fileName) => {
-            uploader.destroy();
+            uploader.dispose();
             self._onLoadComplete();
 
         }).catch((err) => {
-            uploader.destroy();
+            uploader.dispose();
             self._onLoadError();
         });
     }
@@ -178,7 +178,7 @@ export class BaseUploadVM<TApp extends RIAPP.IApplication> extends RIAPP.ViewMod
     set fileInfo(v) {
         if (this._fileInfo !== v) {
             this._fileInfo = v;
-            this.raisePropertyChanged('fileInfo');
+            this.objEvents.raiseProp('fileInfo');
             this._uploadCommand.raiseCanExecuteChanged();
         }
     }
@@ -186,7 +186,7 @@ export class BaseUploadVM<TApp extends RIAPP.IApplication> extends RIAPP.ViewMod
     set fileName(v) {
         if (this._fileName !== v) {
             this._fileName = v;
-            this.raisePropertyChanged('fileName');
+            this.objEvents.raiseProp('fileName');
         }
     }
     get uploadCommand() { return this._uploadCommand; }
@@ -196,7 +196,7 @@ export class BaseUploadVM<TApp extends RIAPP.IApplication> extends RIAPP.ViewMod
         let old = this._id;
         if (old !== v) {
             this._id = v;
-            this.raisePropertyChanged('id');
+            this.objEvents.raiseProp('id');
             this._onIDChanged();
         }
     }

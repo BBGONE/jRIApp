@@ -28,14 +28,14 @@ export class MainRoute extends RIAPP.BaseObject {
     set animation(v) {
         if (v !== this._animation) {
             this._animation = v;
-            this.raisePropertyChanged('animation');
+            this.objEvents.raiseProp('animation');
         }
     }
     get viewName() { return this._viewName; }
     set viewName(v) {
         if (v !== this._viewName) {
             this._viewName = v;
-            this.raisePropertyChanged('viewName');
+            this.objEvents.raiseProp('viewName');
         }
     }
     get custTemplName() { return this._custTemplName; }
@@ -68,14 +68,14 @@ export class CustDetRoute extends RIAPP.BaseObject {
     set animation(v) {
         if (v !== this._animation) {
             this._animation = v;
-            this.raisePropertyChanged('animation');
+            this.objEvents.raiseProp('animation');
         }
     }
     get viewName() { return this._viewName; }
     set viewName(v) {
         if (v !== this._viewName) {
             this._viewName = v;
-            this.raisePropertyChanged('viewName');
+            this.objEvents.raiseProp('viewName');
         }
     }
     get infoTemplName() { return this._infoTemplName; }
@@ -102,7 +102,7 @@ export class AddressRoute extends RIAPP.BaseObject {
     set viewName(v) {
         if (v !== this._viewName) {
             this._viewName = v;
-            this.raisePropertyChanged('viewName');
+            this.objEvents.raiseProp('viewName');
         }
     }
     get linkAdrTemplate() { return this._linkAdrTemplate; }

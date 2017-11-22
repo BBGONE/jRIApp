@@ -374,7 +374,7 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/uti
             if (!prop) {
                 return obj;
             }
-            if (self.isBaseObj(obj) && obj.getIsDestroyCalled()) {
+            if (self.isBaseObj(obj) && obj.getIsDisposing()) {
                 return checks.undefined;
             }
             if (strUtils.startsWith(prop, "[")) {
@@ -397,7 +397,7 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/uti
             if (!prop) {
                 throw new Error("Invalid operation: Empty Property name");
             }
-            if (self.isBaseObj(obj) && obj.getIsDestroyCalled()) {
+            if (self.isBaseObj(obj) && obj.getIsDisposing()) {
                 return;
             }
             if (strUtils.startsWith(prop, "[")) {
@@ -973,10 +973,10 @@ define("jriapp_shared/utils/error", ["require", "exports", "jriapp_shared/const"
     var ERROR = (function () {
         function ERROR() {
         }
-        ERROR.addHandler = function (name, handler) {
+        ERROR.addErrorHandler = function (name, handler) {
             ERROR._handlers[name] = handler;
         };
-        ERROR.removeHandler = function (name) {
+        ERROR.removeErrorHandler = function (name) {
             delete ERROR._handlers[name];
         };
         ERROR.handleError = function (sender, error, source) {
@@ -1036,24 +1036,6 @@ define("jriapp_shared/utils/error", ["require", "exports", "jriapp_shared/const"
     }());
     exports.ERROR = ERROR;
 });
-define("jriapp_shared/utils/debug", ["require", "exports", "jriapp_shared/const", "jriapp_shared/int"], function (require, exports, const_4, int_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var DEBUG = (function () {
-        function DEBUG() {
-        }
-        DEBUG.checkStartDebugger = function () {
-            if (int_1.DebugLevel === const_4.DEBUG_LEVEL.HIGH) {
-                debugger;
-            }
-        };
-        DEBUG.isDebugging = function () {
-            return int_1.DebugLevel > const_4.DEBUG_LEVEL.NONE;
-        };
-        return DEBUG;
-    }());
-    exports.DEBUG = DEBUG;
-});
 define("jriapp_shared/utils/weakmap", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -1103,6 +1085,24 @@ define("jriapp_shared/utils/weakmap", ["require", "exports"], function (require,
         };
         return WeakMap;
     }());
+});
+define("jriapp_shared/utils/debug", ["require", "exports", "jriapp_shared/const", "jriapp_shared/int"], function (require, exports, const_4, int_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var DEBUG = (function () {
+        function DEBUG() {
+        }
+        DEBUG.checkStartDebugger = function () {
+            if (int_1.DebugLevel === const_4.DEBUG_LEVEL.HIGH) {
+                debugger;
+            }
+        };
+        DEBUG.isDebugging = function () {
+            return int_1.DebugLevel > const_4.DEBUG_LEVEL.NONE;
+        };
+        return DEBUG;
+    }());
+    exports.DEBUG = DEBUG;
 });
 define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/checks", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/debug"], function (require, exports, lang_2, checks_3, strutils_2, debug_1) {
     "use strict";
@@ -1283,154 +1283,114 @@ define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/
     }());
     exports.EventHelper = EventHelper;
 });
-define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/error", "jriapp_shared/utils/debug", "jriapp_shared/utils/weakmap", "jriapp_shared/utils/eventhelper"], function (require, exports, lang_3, sysutils_2, checks_4, strUtils_2, coreutils_2, error_1, debug_2, weakmap_1, eventhelper_1) {
+define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/error", "jriapp_shared/utils/weakmap", "jriapp_shared/utils/eventhelper"], function (require, exports, lang_3, sysutils_2, checks_4, strUtils_2, coreutils_2, error_1, weakmap_1, eventhelper_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var OBJ_EVENTS = {
         error: "error",
         destroyed: "destroyed"
     };
-    var checks = checks_4.Checks, strUtils = strUtils_2.StringUtils, coreUtils = coreutils_2.CoreUtils, evHelper = eventhelper_1.EventHelper, debug = debug_2.DEBUG, sys = sysutils_2.SysUtils, weakmap = weakmap_1.createWeakMap();
+    var checks = checks_4.Checks, strUtils = strUtils_2.StringUtils, coreUtils = coreutils_2.CoreUtils, evHelper = eventhelper_1.EventHelper, sys = sysutils_2.SysUtils, weakmap = weakmap_1.createWeakMap();
     sys.isBaseObj = function (obj) {
         return (!!obj && !!weakmap.get(obj));
     };
     var ObjState;
     (function (ObjState) {
         ObjState[ObjState["None"] = 0] = "None";
-        ObjState[ObjState["DestroyCalled"] = 1] = "DestroyCalled";
-        ObjState[ObjState["Destroyed"] = 2] = "Destroyed";
+        ObjState[ObjState["Disposing"] = 1] = "Disposing";
+        ObjState[ObjState["Disposed"] = 2] = "Disposed";
     })(ObjState || (ObjState = {}));
-    function fn_addHandler(obj, name, handler, nmspace, context, priority) {
-        if (debug.isDebugging()) {
-            if (!!name && obj._getEventNames().indexOf(name) < 0) {
-                debug.checkStartDebugger();
-                throw new Error(strUtils.format(lang_3.ERRS.ERR_EVENT_INVALID, name));
+    var ObjectEvents = (function () {
+        function ObjectEvents(owner) {
+            this._events = null;
+            this._owner = owner;
+        }
+        ObjectEvents.prototype.canRaise = function (name) {
+            return evHelper.count(this._events, name) > 0;
+        };
+        ObjectEvents.prototype.on = function (name, handler, nmspace, context, priority) {
+            if (!this._events) {
+                this._events = {};
             }
-        }
-        var state = weakmap.get(obj);
-        if (state === void 0) {
-            throw new Error("Using uninitialized object");
-        }
-        if (state.objState !== 0) {
-            throw new Error(strUtils.format(lang_3.ERRS.ERR_ASSERTION_FAILED, "this._obj_state !== ObjState.None"));
-        }
-        if (!state.events) {
-            state.events = {};
-        }
-        evHelper.add(state.events, name, handler, nmspace, context, priority);
-    }
-    function fn_removeHandler(obj, name, nmspace) {
-        if (debug.isDebugging()) {
-            if (!!name && obj._getEventNames().indexOf(name) < 0) {
-                debug.checkStartDebugger();
-                throw new Error(strUtils.format(lang_3.ERRS.ERR_EVENT_INVALID, name));
+            evHelper.add(this._events, name, handler, nmspace, context, priority);
+        };
+        ObjectEvents.prototype.off = function (name, nmspace) {
+            if (!name && !nmspace) {
+                this._events = null;
+                return;
             }
-        }
-        var state = weakmap.get(obj);
-        evHelper.remove(state.events, name, nmspace);
-    }
-    function fn_isDestroyed(obj) {
-        var state = weakmap.get(obj);
-        return state.objState === 2;
-    }
-    function fn_isDestroyCalled(obj) {
-        var state = weakmap.get(obj);
-        return state.objState !== 0;
-    }
-    function fn_setIsDestroyCalled(obj, v) {
-        var state = weakmap.get(obj);
-        if (state.objState === 2) {
-            throw new Error(strUtils.format(lang_3.ERRS.ERR_ASSERTION_FAILED, "this._obj_state !== ObjState.Destroyed"));
-        }
-        state.objState = !v ? 0 : 1;
-    }
-    function fn_canRaiseEvent(obj, name) {
-        var state = weakmap.get(obj);
-        return evHelper.count(state.events, name) > 0;
-    }
-    function fn_raiseEvent(obj, name, args) {
-        var state = weakmap.get(obj);
-        if (!name) {
-            throw new Error(lang_3.ERRS.ERR_EVENT_INVALID);
-        }
-        evHelper.raise(obj, state.events, name, args);
-    }
-    function fn_raisePropChanged(obj, name) {
-        var state = weakmap.get(obj);
-        var data = { property: name }, parts = name.split("."), lastPropName = parts[parts.length - 1];
-        if (parts.length > 1) {
-            var owner = coreUtils.resolveOwner(obj, name);
-            if (debug.isDebugging() && checks.isUndefined(owner)) {
-                debug.checkStartDebugger();
-                throw new Error(strUtils.format(lang_3.ERRS.ERR_PROP_NAME_INVALID, name));
+            evHelper.remove(this._events, name, nmspace);
+        };
+        ObjectEvents.prototype.offNS = function (nmspace) {
+            this.off(null, nmspace);
+        };
+        ObjectEvents.prototype.raise = function (name, args) {
+            if (!name) {
+                throw new Error(lang_3.ERRS.ERR_EVENT_INVALID);
             }
-            if (sys.isBaseObj(obj)) {
-                obj.raisePropertyChanged(lastPropName);
+            evHelper.raise(this._owner, this._events, name, args);
+        };
+        ObjectEvents.prototype.raiseProp = function (name) {
+            if (!name) {
+                throw new Error(lang_3.ERRS.ERR_PROP_NAME_EMPTY);
             }
-        }
-        else {
-            if (debug.isDebugging() && !obj._isHasProp(lastPropName)) {
-                debug.checkStartDebugger();
-                throw new Error(strUtils.format(lang_3.ERRS.ERR_PROP_NAME_INVALID, lastPropName));
+            var data = { property: name }, parts = name.split("."), lastProp = parts[parts.length - 1];
+            if (parts.length > 1) {
+                var owner = coreUtils.resolveOwner(this._owner, name);
+                var state = weakmap.get(owner);
+                if (!!state && !!state.events) {
+                    state.events.raiseProp(lastProp);
+                }
             }
-            evHelper.raiseProp(obj, state.events, lastPropName, data);
-        }
-    }
-    function fn_addOnPropertyChange(obj, prop, handler, nmspace, context, priority) {
-        var state = weakmap.get(obj);
-        if (!prop) {
-            throw new Error(lang_3.ERRS.ERR_PROP_NAME_EMPTY);
-        }
-        if (debug.isDebugging() && prop !== "*" && !obj._isHasProp(prop)) {
-            debug.checkStartDebugger();
-            throw new Error(strUtils.format(lang_3.ERRS.ERR_PROP_NAME_INVALID, prop));
-        }
-        if (!state.events) {
-            state.events = {};
-        }
-        evHelper.add(state.events, "0" + prop, handler, nmspace, context, priority);
-    }
-    function fn_removeOnPropertyChange(obj, prop, nmspace) {
-        var state = weakmap.get(obj);
-        if (!!prop) {
-            if (debug.isDebugging() && prop !== "*" && !obj._isHasProp(prop)) {
-                debug.checkStartDebugger();
-                throw new Error(strUtils.format(lang_3.ERRS.ERR_PROP_NAME_INVALID, prop));
+            else {
+                evHelper.raiseProp(this._owner, this._events, lastProp, data);
             }
-            evHelper.remove(state.events, "0" + prop, nmspace);
-        }
-        else {
-            evHelper.removeNS(state.events, nmspace);
-        }
-    }
+        };
+        ObjectEvents.prototype.onProp = function (prop, handler, nmspace, context, priority) {
+            if (!prop) {
+                throw new Error(lang_3.ERRS.ERR_PROP_NAME_EMPTY);
+            }
+            if (!this._events) {
+                this._events = {};
+            }
+            evHelper.add(this._events, "0" + prop, handler, nmspace, context, priority);
+        };
+        ObjectEvents.prototype.offProp = function (prop, nmspace) {
+            if (!!prop) {
+                evHelper.remove(this._events, "0" + prop, nmspace);
+            }
+            else {
+                evHelper.removeNS(this._events, nmspace);
+            }
+        };
+        Object.defineProperty(ObjectEvents.prototype, "owner", {
+            get: function () {
+                return this._owner;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return ObjectEvents;
+    }());
+    exports.ObjectEvents = ObjectEvents;
     var BaseObject = (function () {
         function BaseObject() {
             weakmap.set(this, { objState: 0, events: null });
         }
-        Object.defineProperty(BaseObject.prototype, "_isDestroyed", {
-            get: function () {
-                return fn_isDestroyed(this);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BaseObject.prototype, "_isDestroyCalled", {
-            get: function () {
-                return fn_isDestroyCalled(this);
-            },
-            set: function (v) {
-                fn_setIsDestroyCalled(this, v);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        BaseObject.prototype._canRaiseEvent = function (name) {
-            return fn_canRaiseEvent(this, name);
+        BaseObject.prototype.setDisposing = function () {
+            var state = weakmap.get(this);
+            if (state.objState === 2) {
+                throw new Error(strUtils.format(lang_3.ERRS.ERR_ASSERTION_FAILED, "objState !== ObjState.Disposed"));
+            }
+            state.objState = 1;
         };
-        BaseObject.prototype._getEventNames = function () {
+        BaseObject.prototype._createObjEvents = function () {
+            return new ObjectEvents(this);
+        };
+        BaseObject.prototype.getEventNames = function () {
             return [OBJ_EVENTS.error, OBJ_EVENTS.destroyed];
         };
-        BaseObject.prototype._isHasProp = function (prop) {
+        BaseObject.prototype.isHasProp = function (prop) {
             return checks.isHasProp(this, prop);
         };
         BaseObject.prototype.handleError = function (error, source) {
@@ -1438,66 +1398,60 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
                 return true;
             }
             if (!error.message) {
-                error = new Error("Unexpected Error: " + error);
+                error = new Error("Error: " + error);
             }
-            var args = { error: error, source: source, isHandled: false }, state = weakmap.get(this);
-            evHelper.raise(this, state.events, OBJ_EVENTS.error, args);
+            var args = { error: error, source: source, isHandled: false };
+            this.objEvents.raise(OBJ_EVENTS.error, args);
             var isHandled = args.isHandled;
             if (!isHandled) {
                 isHandled = error_1.ERROR.handleError(this, error, source);
             }
             return isHandled;
         };
-        BaseObject.prototype.addHandler = function (name, handler, nmspace, context, priority) {
-            fn_addHandler(this, name, handler, nmspace, context, priority);
+        BaseObject.prototype.addOnDisposed = function (handler, nmspace, context, priority) {
+            this.objEvents.on(OBJ_EVENTS.destroyed, handler, nmspace, context, priority);
         };
-        BaseObject.prototype.removeHandler = function (name, nmspace) {
-            fn_removeHandler(this, name, nmspace);
-        };
-        BaseObject.prototype.addOnDestroyed = function (handler, nmspace, context, priority) {
-            fn_addHandler(this, OBJ_EVENTS.destroyed, handler, nmspace, context, priority);
-        };
-        BaseObject.prototype.removeOnDestroyed = function (nmspace) {
-            fn_removeHandler(this, OBJ_EVENTS.destroyed, nmspace);
+        BaseObject.prototype.removeOnDisposed = function (nmspace) {
+            this.objEvents.off(OBJ_EVENTS.destroyed, nmspace);
         };
         BaseObject.prototype.addOnError = function (handler, nmspace, context, priority) {
-            fn_addHandler(this, OBJ_EVENTS.error, handler, nmspace, context, priority);
+            this.objEvents.on(OBJ_EVENTS.error, handler, nmspace, context, priority);
         };
         BaseObject.prototype.removeOnError = function (nmspace) {
-            fn_removeHandler(this, OBJ_EVENTS.error, nmspace);
+            this.objEvents.off(OBJ_EVENTS.error, nmspace);
         };
-        BaseObject.prototype.removeNSHandlers = function (nmspace) {
-            fn_removeHandler(this, null, nmspace);
+        Object.defineProperty(BaseObject.prototype, "objEvents", {
+            get: function () {
+                var state = weakmap.get(this);
+                if (!state.events) {
+                    state.events = this._createObjEvents();
+                }
+                return state.events;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        BaseObject.prototype.getIsDisposed = function () {
+            var state = weakmap.get(this);
+            return state.objState == 2;
         };
-        BaseObject.prototype.raiseEvent = function (name, args) {
-            fn_raiseEvent(this, name, args);
+        BaseObject.prototype.getIsDisposing = function () {
+            var state = weakmap.get(this);
+            return state.objState !== 0;
         };
-        BaseObject.prototype.raisePropertyChanged = function (name) {
-            fn_raisePropChanged(this, name);
-        };
-        BaseObject.prototype.addOnPropertyChange = function (prop, handler, nmspace, context, priority) {
-            fn_addOnPropertyChange(this, prop, handler, nmspace, context, priority);
-        };
-        BaseObject.prototype.removeOnPropertyChange = function (prop, nmspace) {
-            fn_removeOnPropertyChange(this, prop, nmspace);
-        };
-        BaseObject.prototype.getIsDestroyed = function () {
-            return fn_isDestroyed(this);
-        };
-        BaseObject.prototype.getIsDestroyCalled = function () {
-            return fn_isDestroyCalled(this);
-        };
-        BaseObject.prototype.destroy = function () {
+        BaseObject.prototype.dispose = function () {
             var state = weakmap.get(this);
             if (state.objState === 2) {
                 return;
             }
             state.objState = 2;
-            try {
-                fn_raiseEvent(this, OBJ_EVENTS.destroyed, {});
-            }
-            finally {
-                state.events = null;
+            if (!!state.events) {
+                try {
+                    state.events.raise(OBJ_EVENTS.destroyed, {});
+                }
+                finally {
+                    state.events.off();
+                }
             }
         };
         return BaseObject;
@@ -1911,7 +1865,7 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
         }
         Debounce.prototype.enque = function (fn) {
             var _this = this;
-            if (this.IsDestroyed) {
+            if (this.getIsDisposing()) {
                 return;
             }
             if (!fn) {
@@ -1942,7 +1896,7 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
         Debounce.prototype.cancel = function () {
             this._fn = null;
         };
-        Debounce.prototype.destroy = function () {
+        Debounce.prototype.dispose = function () {
             if (!!this._timer) {
                 if (!this._interval) {
                     deferred_1.getTaskQueue().cancel(this._timer);
@@ -1961,13 +1915,12 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Debounce.prototype, "IsDestroyed", {
-            get: function () {
-                return this._timer === void 0;
-            },
-            enumerable: true,
-            configurable: true
-        });
+        Debounce.prototype.getIsDisposed = function () {
+            return this._timer === void 0;
+        };
+        Debounce.prototype.getIsDisposing = function () {
+            return this._timer === void 0;
+        };
         return Debounce;
     }());
     exports.Debounce = Debounce;
@@ -1994,44 +1947,44 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
             _this._errors = {};
             return _this;
         }
-        JsonBag.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        JsonBag.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
-            this._debounce.destroy();
+            this.setDisposing();
+            this._debounce.dispose();
             this._jsonChanged = null;
             this._json = void 0;
             this._val = {};
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
-        JsonBag.prototype._getEventNames = function () {
-            var baseEvents = _super.prototype._getEventNames.call(this);
+        JsonBag.prototype.getEventNames = function () {
+            var baseEvents = _super.prototype.getEventNames.call(this);
             return [BAG_EVENTS.validate_bag, BAG_EVENTS.validate_field].concat(baseEvents);
         };
-        JsonBag.prototype._isHasProp = function (prop) {
+        JsonBag.prototype.isHasProp = function (prop) {
             if (strUtils.startsWith(prop, "[")) {
                 return true;
             }
-            return _super.prototype._isHasProp.call(this, prop);
+            return _super.prototype.isHasProp.call(this, prop);
         };
         JsonBag.prototype.addOnValidateBag = function (fn, nmspace, context) {
-            this.addHandler(BAG_EVENTS.validate_bag, fn, nmspace, context);
+            this.objEvents.on(BAG_EVENTS.validate_bag, fn, nmspace, context);
         };
         JsonBag.prototype.removeOnValidateBag = function (nmspace) {
-            this.removeHandler(BAG_EVENTS.validate_bag, nmspace);
+            this.objEvents.off(BAG_EVENTS.validate_bag, nmspace);
         };
         JsonBag.prototype.addOnValidateField = function (fn, nmspace, context) {
-            this.addHandler(BAG_EVENTS.validate_field, fn, nmspace, context);
+            this.objEvents.on(BAG_EVENTS.validate_field, fn, nmspace, context);
         };
         JsonBag.prototype.removeOnValidateField = function (nmspace) {
-            this.removeHandler(BAG_EVENTS.validate_field, nmspace);
+            this.objEvents.off(BAG_EVENTS.validate_field, nmspace);
         };
         JsonBag.prototype.addOnErrorsChanged = function (fn, nmspace, context) {
-            this.addHandler(BAG_EVENTS.errors_changed, fn, nmspace, context);
+            this.objEvents.on(BAG_EVENTS.errors_changed, fn, nmspace, context);
         };
         JsonBag.prototype.removeOnErrorsChanged = function (nmspace) {
-            this.removeHandler(BAG_EVENTS.errors_changed, nmspace);
+            this.objEvents.off(BAG_EVENTS.errors_changed, nmspace);
         };
         JsonBag.prototype.onChanged = function () {
             var _this = this;
@@ -2046,9 +1999,9 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
             if (this._json !== json) {
                 this._json = json;
                 this._val = (!json ? {} : JSON.parse(json));
-                this.raisePropertyChanged("json");
-                this.raisePropertyChanged("val");
-                this.raisePropertyChanged("[*]");
+                this.objEvents.raiseProp("json");
+                this.objEvents.raiseProp("val");
+                this.objEvents.raiseProp("[*]");
             }
         };
         JsonBag.prototype.updateJson = function () {
@@ -2056,7 +2009,7 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
             if (json !== this._json) {
                 this._json = json;
                 this.onChanged();
-                this.raisePropertyChanged("json");
+                this.objEvents.raiseProp("json");
                 return true;
             }
             return false;
@@ -2066,7 +2019,7 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
                 bag: this,
                 result: []
             };
-            this.raiseEvent(BAG_EVENTS.validate_bag, args);
+            this.objEvents.raise(BAG_EVENTS.validate_bag, args);
             return (!!args.result) ? args.result : [];
         };
         JsonBag.prototype._validateField = function (fieldName) {
@@ -2075,11 +2028,11 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
                 fieldName: fieldName,
                 errors: []
             };
-            this.raiseEvent(BAG_EVENTS.validate_field, args);
+            this.objEvents.raise(BAG_EVENTS.validate_field, args);
             return (!!args.errors && args.errors.length > 0) ? { fieldName: fieldName, errors: args.errors } : null;
         };
         JsonBag.prototype._onErrorsChanged = function () {
-            this.raiseEvent(BAG_EVENTS.errors_changed, {});
+            this.objEvents.raise(BAG_EVENTS.errors_changed, {});
         };
         JsonBag.prototype._addErrors = function (errors) {
             var self = this;
@@ -2191,7 +2144,7 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
                 this._val = this._saveVal;
                 this._saveVal = null;
                 this._removeAllErrors();
-                this.raisePropertyChanged("[*]");
+                this.objEvents.raiseProp("[*]");
                 return true;
             }
             return false;
@@ -2213,7 +2166,7 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
                 try {
                     var fieldName = strUtils.trimBrackets(name);
                     coreUtils.setValue(this._val, fieldName, val, false, "->");
-                    this.raisePropertyChanged(name);
+                    this.objEvents.raiseProp(name);
                     this._removeError(name);
                     var validationInfo = this._validateField(name);
                     if (!!validationInfo && validationInfo.errors.length > 0) {
@@ -2496,7 +2449,7 @@ define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/s
     }());
     exports.HttpUtils = HttpUtils;
 });
-define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug", "jriapp_shared/utils/error", "jriapp_shared/utils/logger", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/async", "jriapp_shared/utils/http", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/deferred"], function (require, exports, coreutils_5, debug_3, error_3, logger_1, sysutils_4, async_2, http_1, strutils_4, checks_8, arrhelper_2, deferred_4) {
+define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug", "jriapp_shared/utils/error", "jriapp_shared/utils/logger", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/async", "jriapp_shared/utils/http", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/deferred"], function (require, exports, coreutils_5, debug_2, error_3, logger_1, sysutils_4, async_2, http_1, strutils_4, checks_8, arrhelper_2, deferred_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Utils = (function () {
@@ -2510,7 +2463,7 @@ define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/
         Utils.defer = async_2.AsyncUtils;
         Utils.err = error_3.ERROR;
         Utils.log = logger_1.LOGGER;
-        Utils.debug = debug_3.DEBUG;
+        Utils.debug = debug_2.DEBUG;
         Utils.sys = sysutils_4.SysUtils;
         Utils.queue = deferred_4.getTaskQueue();
         return Utils;
@@ -2531,7 +2484,7 @@ define("jriapp_shared/utils/waitqueue", ["require", "exports", "jriapp_shared/ob
             return _this;
         }
         WaitQueue.prototype._checkQueue = function (prop, value) {
-            if (!this._owner || this._owner.getIsDestroyCalled()) {
+            if (!this._owner || this._owner.getIsDisposing()) {
                 return;
             }
             var self = this, propQueue = this._queue[prop];
@@ -2601,7 +2554,7 @@ define("jriapp_shared/utils/waitqueue", ["require", "exports", "jriapp_shared/ob
             finally {
                 if (propQueue.length === 0) {
                     delete this._queue[prop];
-                    this._owner.removeOnPropertyChange(prop, this.uniqueID);
+                    this._owner.objEvents.offProp(prop, this.uniqueID);
                 }
             }
         };
@@ -2623,9 +2576,9 @@ define("jriapp_shared/utils/waitqueue", ["require", "exports", "jriapp_shared/ob
             if (!propQueue) {
                 propQueue = [];
                 this._queue[property] = propQueue;
-                this._owner.addOnPropertyChange(property, function (s, a) {
+                this._owner.objEvents.onProp(property, function (s, a) {
                     setTimeout(function () {
-                        if (self.getIsDestroyCalled()) {
+                        if (self.getIsDisposing()) {
                             return;
                         }
                         self._checkQueue(property, self._owner[property]);
@@ -2642,21 +2595,21 @@ define("jriapp_shared/utils/waitqueue", ["require", "exports", "jriapp_shared/ob
             propQueue.push(task);
             self._checkQueue(property, self._owner[property]);
             setTimeout(function () {
-                if (self.getIsDestroyCalled()) {
+                if (self.getIsDisposing()) {
                     return;
                 }
                 self._checkQueue(property, self._owner[property]);
             }, 0);
         };
-        WaitQueue.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        WaitQueue.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
-            this._owner.removeNSHandlers(this.uniqueID);
+            this.setDisposing();
+            this._owner.objEvents.offNS(this.uniqueID);
             this._queue = {};
             this._owner = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         WaitQueue.prototype.toString = function () {
             return "WaitQueue " + this._objId;
@@ -3101,14 +3054,14 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                     return self._onItemDeleting(args);
                 },
                 onErrorsChanged: function (args) {
-                    self.raiseEvent(COLL_EVENTS.errors_changed, args);
+                    self.objEvents.raise(COLL_EVENTS.errors_changed, args);
                 },
                 validateItemField: function (args) {
-                    self.raiseEvent(COLL_EVENTS.validate_field, args);
+                    self.objEvents.raise(COLL_EVENTS.validate_field, args);
                     return (!!args.errors && args.errors.length > 0) ? { fieldName: args.fieldName, errors: args.errors } : null;
                 },
                 validateItem: function (args) {
-                    self.raiseEvent(COLL_EVENTS.validate_item, args);
+                    self.objEvents.raise(COLL_EVENTS.validate_item, args);
                     return (!!args.result && args.result.length > 0) ? args.result : [];
                 }
             };
@@ -3135,130 +3088,130 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             };
             return fieldInfo;
         };
-        BaseCollection.prototype._getEventNames = function () {
-            var baseEvents = _super.prototype._getEventNames.call(this);
+        BaseCollection.prototype.getEventNames = function () {
+            var baseEvents = _super.prototype.getEventNames.call(this);
             var events = Object.keys(COLL_EVENTS).map(function (key) { return COLL_EVENTS[key]; });
             return events.concat(baseEvents);
         };
         BaseCollection.prototype.addOnClearing = function (fn, nmspace, context, priority) {
-            this.addHandler(COLL_EVENTS.clearing, fn, nmspace, context, priority);
+            this.objEvents.on(COLL_EVENTS.clearing, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnClearing = function (nmspace) {
-            this.removeHandler(COLL_EVENTS.clearing, nmspace);
+            this.objEvents.off(COLL_EVENTS.clearing, nmspace);
         };
         BaseCollection.prototype.addOnCleared = function (fn, nmspace, context, priority) {
-            this.addHandler(COLL_EVENTS.cleared, fn, nmspace, context, priority);
+            this.objEvents.on(COLL_EVENTS.cleared, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnCleared = function (nmspace) {
-            this.removeHandler(COLL_EVENTS.cleared, nmspace);
+            this.objEvents.off(COLL_EVENTS.cleared, nmspace);
         };
         BaseCollection.prototype.addOnCollChanged = function (fn, nmspace, context, priority) {
-            this.addHandler(COLL_EVENTS.collection_changed, fn, nmspace, context, priority);
+            this.objEvents.on(COLL_EVENTS.collection_changed, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnCollChanged = function (nmspace) {
-            this.removeHandler(COLL_EVENTS.collection_changed, nmspace);
+            this.objEvents.off(COLL_EVENTS.collection_changed, nmspace);
         };
         BaseCollection.prototype.addOnFill = function (fn, nmspace, context, priority) {
-            this.addHandler(COLL_EVENTS.fill, fn, nmspace, context, priority);
+            this.objEvents.on(COLL_EVENTS.fill, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnFill = function (nmspace) {
-            this.removeHandler(COLL_EVENTS.fill, nmspace);
+            this.objEvents.off(COLL_EVENTS.fill, nmspace);
         };
         BaseCollection.prototype.addOnValidateField = function (fn, nmspace, context, priority) {
-            this.addHandler(COLL_EVENTS.validate_field, fn, nmspace, context, priority);
+            this.objEvents.on(COLL_EVENTS.validate_field, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnValidateField = function (nmspace) {
-            this.removeHandler(COLL_EVENTS.validate_field, nmspace);
+            this.objEvents.off(COLL_EVENTS.validate_field, nmspace);
         };
         BaseCollection.prototype.addOnValidateItem = function (fn, nmspace, context, priority) {
-            this.addHandler(COLL_EVENTS.validate_item, fn, nmspace, context, priority);
+            this.objEvents.on(COLL_EVENTS.validate_item, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnValidateItem = function (nmspace) {
-            this.removeHandler(COLL_EVENTS.validate_item, nmspace);
+            this.objEvents.off(COLL_EVENTS.validate_item, nmspace);
         };
         BaseCollection.prototype.addOnItemDeleting = function (fn, nmspace, context, priority) {
-            this.addHandler(COLL_EVENTS.item_deleting, fn, nmspace, context, priority);
+            this.objEvents.on(COLL_EVENTS.item_deleting, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnItemDeleting = function (nmspace) {
-            this.removeHandler(COLL_EVENTS.item_deleting, nmspace);
+            this.objEvents.off(COLL_EVENTS.item_deleting, nmspace);
         };
         BaseCollection.prototype.addOnItemAdding = function (fn, nmspace, context, priority) {
-            this.addHandler(COLL_EVENTS.item_adding, fn, nmspace, context, priority);
+            this.objEvents.on(COLL_EVENTS.item_adding, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnItemAdding = function (nmspace) {
-            this.removeHandler(COLL_EVENTS.item_adding, nmspace);
+            this.objEvents.off(COLL_EVENTS.item_adding, nmspace);
         };
         BaseCollection.prototype.addOnItemAdded = function (fn, nmspace, context, priority) {
-            this.addHandler(COLL_EVENTS.item_added, fn, nmspace, context, priority);
+            this.objEvents.on(COLL_EVENTS.item_added, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnItemAdded = function (nmspace) {
-            this.removeHandler(COLL_EVENTS.item_added, nmspace);
+            this.objEvents.off(COLL_EVENTS.item_added, nmspace);
         };
         BaseCollection.prototype.addOnCurrentChanging = function (fn, nmspace, context, priority) {
-            this.addHandler(COLL_EVENTS.current_changing, fn, nmspace, context, priority);
+            this.objEvents.on(COLL_EVENTS.current_changing, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnCurrentChanging = function (nmspace) {
-            this.removeHandler(COLL_EVENTS.current_changing, nmspace);
+            this.objEvents.off(COLL_EVENTS.current_changing, nmspace);
         };
         BaseCollection.prototype.addOnPageChanging = function (fn, nmspace, context, priority) {
-            this.addHandler(COLL_EVENTS.page_changing, fn, nmspace, context, priority);
+            this.objEvents.on(COLL_EVENTS.page_changing, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnPageChanging = function (nmspace) {
-            this.removeHandler(COLL_EVENTS.page_changing, nmspace);
+            this.objEvents.off(COLL_EVENTS.page_changing, nmspace);
         };
         BaseCollection.prototype.addOnErrorsChanged = function (fn, nmspace, context, priority) {
-            this.addHandler(COLL_EVENTS.errors_changed, fn, nmspace, context, priority);
+            this.objEvents.on(COLL_EVENTS.errors_changed, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnErrorsChanged = function (nmspace) {
-            this.removeHandler(COLL_EVENTS.errors_changed, nmspace);
+            this.objEvents.off(COLL_EVENTS.errors_changed, nmspace);
         };
         BaseCollection.prototype.addOnBeginEdit = function (fn, nmspace, context, priority) {
-            this.addHandler(COLL_EVENTS.begin_edit, fn, nmspace, context, priority);
+            this.objEvents.on(COLL_EVENTS.begin_edit, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnBeginEdit = function (nmspace) {
-            this.removeHandler(COLL_EVENTS.begin_edit, nmspace);
+            this.objEvents.off(COLL_EVENTS.begin_edit, nmspace);
         };
         BaseCollection.prototype.addOnEndEdit = function (fn, nmspace, context, priority) {
-            this.addHandler(COLL_EVENTS.end_edit, fn, nmspace, context, priority);
+            this.objEvents.on(COLL_EVENTS.end_edit, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnEndEdit = function (nmspace) {
-            this.removeHandler(COLL_EVENTS.end_edit, nmspace);
+            this.objEvents.off(COLL_EVENTS.end_edit, nmspace);
         };
         BaseCollection.prototype.addOnBeforeBeginEdit = function (fn, nmspace, context, priority) {
-            this.addHandler(COLL_EVENTS.before_begin_edit, fn, nmspace, context, priority);
+            this.objEvents.on(COLL_EVENTS.before_begin_edit, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnBeforeBeginEdit = function (nmspace) {
-            this.removeHandler(COLL_EVENTS.before_begin_edit, nmspace);
+            this.objEvents.off(COLL_EVENTS.before_begin_edit, nmspace);
         };
         BaseCollection.prototype.addOnBeforeEndEdit = function (fn, nmspace, context, priority) {
-            this.addHandler(COLL_EVENTS.before_end_edit, fn, nmspace, context, priority);
+            this.objEvents.on(COLL_EVENTS.before_end_edit, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeBeforeOnEndEdit = function (nmspace) {
-            this.removeHandler(COLL_EVENTS.before_end_edit, nmspace);
+            this.objEvents.off(COLL_EVENTS.before_end_edit, nmspace);
         };
         BaseCollection.prototype.addOnCommitChanges = function (fn, nmspace, context, priority) {
-            this.addHandler(COLL_EVENTS.commit_changes, fn, nmspace, context, priority);
+            this.objEvents.on(COLL_EVENTS.commit_changes, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnCommitChanges = function (nmspace) {
-            this.removeHandler(COLL_EVENTS.commit_changes, nmspace);
+            this.objEvents.off(COLL_EVENTS.commit_changes, nmspace);
         };
         BaseCollection.prototype.addOnStatusChanged = function (fn, nmspace, context, priority) {
-            this.addHandler(COLL_EVENTS.status_changed, fn, nmspace, context, priority);
+            this.objEvents.on(COLL_EVENTS.status_changed, fn, nmspace, context, priority);
         };
         BaseCollection.prototype.removeOnStatusChanged = function (nmspace) {
-            this.removeHandler(COLL_EVENTS.status_changed, nmspace);
+            this.objEvents.off(COLL_EVENTS.status_changed, nmspace);
         };
         BaseCollection.prototype.addOnPageIndexChanged = function (handler, nmspace, context) {
-            this.addOnPropertyChange(int_2.PROP_NAME.pageIndex, handler, nmspace, context);
+            this.objEvents.onProp(int_2.PROP_NAME.pageIndex, handler, nmspace, context);
         };
         BaseCollection.prototype.addOnPageSizeChanged = function (handler, nmspace, context) {
-            this.addOnPropertyChange(int_2.PROP_NAME.pageSize, handler, nmspace, context);
+            this.objEvents.onProp(int_2.PROP_NAME.pageSize, handler, nmspace, context);
         };
         BaseCollection.prototype.addOnTotalCountChanged = function (handler, nmspace, context) {
-            this.addOnPropertyChange(int_2.PROP_NAME.totalCount, handler, nmspace, context);
+            this.objEvents.onProp(int_2.PROP_NAME.totalCount, handler, nmspace, context);
         };
         BaseCollection.prototype.addOnCurrentChanged = function (handler, nmspace, context) {
-            this.addOnPropertyChange(int_2.PROP_NAME.currentItem, handler, nmspace, context);
+            this.objEvents.onProp(int_2.PROP_NAME.currentItem, handler, nmspace, context);
         };
         BaseCollection.prototype._updatePermissions = function (perms) {
             this._perms = perms;
@@ -3289,36 +3242,36 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         };
         BaseCollection.prototype._onCurrentChanging = function (newCurrent) {
             this._checkCurrentChanging(newCurrent);
-            this.raiseEvent(COLL_EVENTS.current_changing, { newCurrent: newCurrent });
+            this.objEvents.raise(COLL_EVENTS.current_changing, { newCurrent: newCurrent });
         };
         BaseCollection.prototype._onCurrentChanged = function () {
-            this.raisePropertyChanged(int_2.PROP_NAME.currentItem);
+            this.objEvents.raiseProp(int_2.PROP_NAME.currentItem);
         };
         BaseCollection.prototype._onCountChanged = function () {
-            this.raisePropertyChanged(int_2.PROP_NAME.count);
+            this.objEvents.raiseProp(int_2.PROP_NAME.count);
         };
         BaseCollection.prototype._onEditingChanged = function () {
-            this.raisePropertyChanged(int_2.PROP_NAME.isEditing);
+            this.objEvents.raiseProp(int_2.PROP_NAME.isEditing);
         };
         BaseCollection.prototype._onItemStatusChanged = function (item, oldStatus) {
-            this.raiseEvent(COLL_EVENTS.status_changed, { item: item, oldStatus: oldStatus, key: item._key });
+            this.objEvents.raise(COLL_EVENTS.status_changed, { item: item, oldStatus: oldStatus, key: item._key });
         };
         BaseCollection.prototype._onCollectionChanged = function (args) {
-            this.raiseEvent(COLL_EVENTS.collection_changed, args);
+            this.objEvents.raise(COLL_EVENTS.collection_changed, args);
         };
         BaseCollection.prototype._onFillEnd = function (args) {
-            this.raiseEvent(COLL_EVENTS.fill, args);
+            this.objEvents.raise(COLL_EVENTS.fill, args);
         };
         BaseCollection.prototype._onItemAdding = function (item) {
             var args = { item: item, isCancel: false };
-            this.raiseEvent(COLL_EVENTS.item_adding, args);
+            this.objEvents.raise(COLL_EVENTS.item_adding, args);
             if (args.isCancel) {
                 utils.err.throwDummy(new Error("operation canceled"));
             }
         };
         BaseCollection.prototype._onItemAdded = function (item) {
             var args = { item: item, isAddNewHandled: false };
-            this.raiseEvent(COLL_EVENTS.item_added, args);
+            this.objEvents.raise(COLL_EVENTS.item_added, args);
         };
         BaseCollection.prototype._createNew = function () {
             throw new Error("_createNew Not implemented");
@@ -3353,7 +3306,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 new_key: item._key
             });
             item._aspect._onAttach();
-            this.raisePropertyChanged(int_2.PROP_NAME.count);
+            this.objEvents.raiseProp(int_2.PROP_NAME.count);
             this._onCurrentChanging(item);
             this._currentPos = pos;
             this._onCurrentChanged();
@@ -3371,14 +3324,14 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 });
             }
             finally {
-                this.raisePropertyChanged(int_2.PROP_NAME.count);
+                this.objEvents.raiseProp(int_2.PROP_NAME.count);
             }
         };
         BaseCollection.prototype._onPageSizeChanged = function () {
         };
         BaseCollection.prototype._onPageChanging = function () {
             var args = { page: this.pageIndex, isCancel: false };
-            this.raiseEvent(COLL_EVENTS.page_changing, args);
+            this.objEvents.raise(COLL_EVENTS.page_changing, args);
             if (!args.isCancel) {
                 try {
                     this.endEdit();
@@ -3422,15 +3375,15 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         BaseCollection.prototype._clearItems = function (items) {
             items.forEach(function (item) {
                 item._aspect._setIsAttached(false);
-                item.destroy();
+                item.dispose();
             });
         };
-        BaseCollection.prototype._isHasProp = function (prop) {
+        BaseCollection.prototype.isHasProp = function (prop) {
             if (strUtils.startsWith(prop, "[")) {
                 var res = sys.getProp(this, prop);
                 return !checks.isUndefined(res);
             }
-            return _super.prototype._isHasProp.call(this, prop);
+            return _super.prototype.isHasProp.call(this, prop);
         };
         BaseCollection.prototype._getEditingItem = function () {
             return this._EditingItem;
@@ -3444,10 +3397,10 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 return;
             }
             if (isBegin) {
-                this.raiseEvent(COLL_EVENTS.before_begin_edit, { item: item });
+                this.objEvents.raise(COLL_EVENTS.before_begin_edit, { item: item });
             }
             else {
-                this.raiseEvent(COLL_EVENTS.before_end_edit, { item: item, isCanceled: isCanceled });
+                this.objEvents.raise(COLL_EVENTS.before_end_edit, { item: item, isCanceled: isCanceled });
             }
         };
         BaseCollection.prototype._onEditing = function (item, isBegin, isCanceled) {
@@ -3456,41 +3409,41 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             }
             if (isBegin) {
                 this._EditingItem = item;
-                this.raiseEvent(COLL_EVENTS.begin_edit, { item: item });
+                this.objEvents.raise(COLL_EVENTS.begin_edit, { item: item });
                 this._onEditingChanged();
                 if (!!item) {
-                    item._aspect.raisePropertyChanged(int_2.PROP_NAME.isEditing);
+                    item._aspect.objEvents.raiseProp(int_2.PROP_NAME.isEditing);
                 }
             }
             else {
                 var oldItem = this._EditingItem;
                 this._EditingItem = null;
-                this.raiseEvent(COLL_EVENTS.end_edit, { item: item, isCanceled: isCanceled });
+                this.objEvents.raise(COLL_EVENTS.end_edit, { item: item, isCanceled: isCanceled });
                 this._onEditingChanged();
                 if (!!oldItem) {
-                    oldItem._aspect.raisePropertyChanged(int_2.PROP_NAME.isEditing);
+                    oldItem._aspect.objEvents.raiseProp(int_2.PROP_NAME.isEditing);
                 }
             }
         };
         BaseCollection.prototype._onCommitChanges = function (item, isBegin, isRejected, status) {
-            this.raiseEvent(COLL_EVENTS.commit_changes, { item: item, isBegin: isBegin, isRejected: isRejected, status: status });
+            this.objEvents.raise(COLL_EVENTS.commit_changes, { item: item, isBegin: isBegin, isRejected: isRejected, status: status });
         };
         BaseCollection.prototype._validateItem = function (item) {
             var args = { item: item, result: [] };
-            this.raiseEvent(COLL_EVENTS.validate_item, args);
+            this.objEvents.raise(COLL_EVENTS.validate_item, args);
             return (!!args.result && args.result.length > 0) ? args.result : [];
         };
         BaseCollection.prototype._validateItemField = function (item, fieldName) {
             var args = { item: item, fieldName: fieldName, errors: [] };
-            this.raiseEvent(COLL_EVENTS.validate_field, args);
+            this.objEvents.raise(COLL_EVENTS.validate_field, args);
             return (!!args.errors && args.errors.length > 0) ? { fieldName: fieldName, errors: args.errors } : null;
         };
         BaseCollection.prototype._onItemDeleting = function (args) {
-            this.raiseEvent(COLL_EVENTS.item_deleting, args);
+            this.objEvents.raise(COLL_EVENTS.item_deleting, args);
             return !args.isCancel;
         };
         BaseCollection.prototype._clear = function (reason, oper) {
-            this.raiseEvent(COLL_EVENTS.clearing, { reason: reason });
+            this.objEvents.raise(COLL_EVENTS.clearing, { reason: reason });
             this.cancelEdit();
             this._EditingItem = null;
             this._newKey = 0;
@@ -3509,7 +3462,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                         pos: []
                     });
                 }
-                this.raiseEvent(COLL_EVENTS.cleared, { reason: reason });
+                this.objEvents.raise(COLL_EVENTS.cleared, { reason: reason });
                 this._onCountChanged();
             }
             finally {
@@ -3519,7 +3472,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         BaseCollection.prototype._setIsLoading = function (v) {
             if (this._isLoading !== v) {
                 this._isLoading = v;
-                this.raisePropertyChanged(int_2.PROP_NAME.isLoading);
+                this.objEvents.raiseProp(int_2.PROP_NAME.isLoading);
             }
         };
         BaseCollection.prototype._getInternal = function () {
@@ -3787,8 +3740,8 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 }
             }
             finally {
-                if (!item.getIsDestroyCalled()) {
-                    item.destroy();
+                if (!item.getIsDisposing()) {
+                    item.dispose();
                 }
             }
         };
@@ -3824,17 +3777,17 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             this._clear(0, 0);
             this.totalCount = 0;
         };
-        BaseCollection.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        BaseCollection.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
-            this._waitQueue.destroy();
+            this.setDisposing();
+            this._waitQueue.dispose();
             this._waitQueue = null;
             this.clear();
             this._fieldMap = {};
             this._fieldInfos = [];
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         BaseCollection.prototype.waitForNotLoading = function (callback, groupName) {
             this._waitQueue.enQueue({
@@ -3880,8 +3833,8 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             set: function (v) {
                 if (v !== this._totalCount) {
                     this._totalCount = v;
-                    this.raisePropertyChanged(int_2.PROP_NAME.totalCount);
-                    this.raisePropertyChanged(int_2.PROP_NAME.pageCount);
+                    this.objEvents.raiseProp(int_2.PROP_NAME.totalCount);
+                    this.objEvents.raiseProp(int_2.PROP_NAME.pageCount);
                 }
             },
             enumerable: true,
@@ -3892,7 +3845,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             set: function (v) {
                 if (this._options.pageSize !== v) {
                     this._options.pageSize = v;
-                    this.raisePropertyChanged(int_2.PROP_NAME.pageSize);
+                    this.objEvents.raiseProp(int_2.PROP_NAME.pageSize);
                     this._onPageSizeChanged();
                 }
             },
@@ -3911,7 +3864,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                     }
                     this._pageIndex = v;
                     this._onPageChanged();
-                    this.raisePropertyChanged(int_2.PROP_NAME.pageIndex);
+                    this.objEvents.raiseProp(int_2.PROP_NAME.pageIndex);
                 }
             },
             enumerable: true,
@@ -3956,7 +3909,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             set: function (v) {
                 if (this._isUpdating !== v) {
                     this._isUpdating = v;
-                    this.raisePropertyChanged(int_2.PROP_NAME.isUpdating);
+                    this.objEvents.raiseProp(int_2.PROP_NAME.isUpdating);
                 }
             },
             enumerable: true,
@@ -4148,7 +4101,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             errNotification.removeOnErrorsChanged(nmspace);
         }
         if (entry.isOwnIt && sys.isBaseObj(val)) {
-            val.destroy();
+            val.dispose();
         }
     }
     function fn_checkDetached(aspect) {
@@ -4170,12 +4123,12 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             _this._valueBag = null;
             return _this;
         }
-        ItemAspect.prototype._getEventNames = function () {
-            var baseEvents = _super.prototype._getEventNames.call(this);
+        ItemAspect.prototype.getEventNames = function () {
+            var baseEvents = _super.prototype.getEventNames.call(this);
             return [int_3.ITEM_EVENTS.errors_changed].concat(baseEvents);
         };
         ItemAspect.prototype._onErrorsChanged = function () {
-            this.raiseEvent(int_3.ITEM_EVENTS.errors_changed, {});
+            this.objEvents.raise(int_3.ITEM_EVENTS.errors_changed, {});
         };
         ItemAspect.prototype._setIsEdited = function (v) {
             if (v) {
@@ -4247,7 +4200,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             coll.errors.removeAllErrors(item);
             coll.getFieldNames().forEach(function (name) {
                 if (changes[name] !== self._vals[name]) {
-                    item.raisePropertyChanged(name);
+                    item.objEvents.raiseProp(name);
                 }
             });
             return true;
@@ -4315,7 +4268,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                 else {
                     this._flags &= ~(1 << 2);
                 }
-                this.raisePropertyChanged(int_3.PROP_NAME.isRefreshing);
+                this.objEvents.raiseProp(int_3.PROP_NAME.isRefreshing);
             }
         };
         ItemAspect.prototype._onAttaching = function () {
@@ -4414,8 +4367,8 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                     return false;
                 }
                 internal.onEditing(item, false, true);
-                if (isNew && !this.isEdited && !this.getIsDestroyCalled()) {
-                    this.destroy();
+                if (isNew && !this.isEdited && !this.getIsDisposing()) {
+                    this.dispose();
                 }
             }
             finally {
@@ -4433,7 +4386,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             if (args.isCancel) {
                 return false;
             }
-            this.destroy();
+            this.dispose();
             return true;
         };
         ItemAspect.prototype.getIsHasErrors = function () {
@@ -4451,10 +4404,10 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             return res;
         };
         ItemAspect.prototype.addOnErrorsChanged = function (fn, nmspace, context) {
-            this.addHandler(int_3.ITEM_EVENTS.errors_changed, fn, nmspace, context);
+            this.objEvents.on(int_3.ITEM_EVENTS.errors_changed, fn, nmspace, context);
         };
         ItemAspect.prototype.removeOnErrorsChanged = function (nmspace) {
-            this.removeHandler(int_3.ITEM_EVENTS.errors_changed, nmspace);
+            this.objEvents.off(int_3.ITEM_EVENTS.errors_changed, nmspace);
         };
         ItemAspect.prototype.getFieldErrors = function (fieldName) {
             var res = [], itemErrors = this.collection.errors.getErrors(this.item);
@@ -4537,11 +4490,11 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             var obj = this._valueBag[name];
             return (!obj) ? null : obj.val;
         };
-        ItemAspect.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        ItemAspect.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             var coll = this._collection, item = this._item;
             if (!!item) {
                 this.cancelEdit();
@@ -4556,7 +4509,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                 }
             }
             this._flags = 0;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         ItemAspect.prototype.toString = function () {
             return "ItemAspect";
@@ -4696,16 +4649,16 @@ define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/ob
             enumerable: true,
             configurable: true
         });
-        CollectionItem.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        CollectionItem.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             var aspect = this._aspect;
-            if (!aspect.getIsDestroyCalled()) {
-                aspect.destroy();
+            if (!aspect.getIsDisposing()) {
+                aspect.dispose();
             }
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         CollectionItem.prototype.toString = function () {
             return "CollectionItem";
@@ -4743,7 +4696,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                         throw new Error(lang_7.ERRS.ERR_FIELD_READONLY);
                     }
                     coreUtils.setValue(this._vals, name, val, false);
-                    item.raisePropertyChanged(name);
+                    item.objEvents.raiseProp(name);
                     errors.removeError(item, name);
                     var validationInfo = this._validateField(name);
                     if (!!validationInfo && validationInfo.errors.length > 0) {
@@ -4857,7 +4810,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                     }
                 });
                 if (newItems.length > 0) {
-                    this.raisePropertyChanged(int_4.PROP_NAME.count);
+                    this.objEvents.raiseProp(int_4.PROP_NAME.count);
                 }
             }
             finally {
@@ -4916,7 +4869,7 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
         AnyItemAspect.prototype._setProp = function (name, val) {
             if (this._getProp(name) !== val) {
                 coreUtils.setValue(this._vals, name, val, false);
-                this.item.raisePropertyChanged(name);
+                this.item.objEvents.raiseProp(name);
             }
         };
         AnyItemAspect.prototype._getProp = function (name) {
@@ -4936,11 +4889,11 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
             enumerable: true,
             configurable: true
         });
-        AnyValListItem.prototype._isHasProp = function (prop) {
+        AnyValListItem.prototype.isHasProp = function (prop) {
             if (strUtils.startsWith(prop, "[")) {
                 return true;
             }
-            return _super.prototype._isHasProp.call(this, prop);
+            return _super.prototype.isHasProp.call(this, prop);
         };
         AnyValListItem.prototype.getProp = function (name) {
             var fieldName = strUtils.trimBrackets(name);
@@ -4952,7 +4905,7 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
                 try {
                     var fieldName = strUtils.trimBrackets(name);
                     coreUtils.setValue(this.val, fieldName, val, false, "->");
-                    this.raisePropertyChanged(name);
+                    this.objEvents.raiseProp(name);
                     errors.removeError(this, name);
                     var validation = this._aspect._validateField(name);
                     if (!!validation && validation.errors.length > 0) {
@@ -5008,7 +4961,7 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
                 var item = a.item;
                 if (a.isCanceled) {
                     _this._saveVal = null;
-                    item.raisePropertyChanged("[*]");
+                    item.objEvents.raiseProp("[*]");
                     return;
                 }
                 var oldVal = _this._saveVal, newVal = JSON.parse(JSON.stringify(item.val));
@@ -5030,14 +4983,14 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
             });
             return _this;
         }
-        AnyList.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        AnyList.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
-            this._debounce.destroy();
+            this.setDisposing();
+            this._debounce.dispose();
             this._onChanged = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         AnyList.prototype.itemFactory = function (aspect) {
             return new AnyValListItem(aspect);
@@ -5093,26 +5046,26 @@ define("jriapp_shared/utils/jsonarray", ["require", "exports", "jriapp_shared/ob
             _this._objId = coreUtils.getNewID("jsn");
             _this._owner = owner;
             _this._pathToArray = pathToArray;
-            _this.owner.addOnPropertyChange("val", function () {
+            _this.owner.objEvents.onProp("val", function () {
                 if (!!_this._list) {
                     _this._list.setValues(_this.getArray());
                 }
             }, _this._objId);
             return _this;
         }
-        JsonArray.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        JsonArray.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
-            this._owner.removeNSHandlers(this._objId);
-            this._list.destroy();
+            this.setDisposing();
+            this._owner.objEvents.offNS(this._objId);
+            this._list.dispose();
             this._list = null;
             this._owner = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
-        JsonArray.prototype._getEventNames = function () {
-            var baseEvents = _super.prototype._getEventNames.call(this);
+        JsonArray.prototype.getEventNames = function () {
+            var baseEvents = _super.prototype.getEventNames.call(this);
             return [BAG_EVENTS.validate_bag, BAG_EVENTS.validate_field].concat(baseEvents);
         };
         JsonArray.prototype.updateArray = function (arr) {
@@ -5120,23 +5073,23 @@ define("jriapp_shared/utils/jsonarray", ["require", "exports", "jriapp_shared/ob
             this._owner.updateJson();
         };
         JsonArray.prototype.addOnValidateBag = function (fn, nmspace, context) {
-            this.addHandler(BAG_EVENTS.validate_bag, fn, nmspace, context);
+            this.objEvents.on(BAG_EVENTS.validate_bag, fn, nmspace, context);
         };
         JsonArray.prototype.removeOnValidateBag = function (nmspace) {
-            this.removeHandler(BAG_EVENTS.validate_bag, nmspace);
+            this.objEvents.off(BAG_EVENTS.validate_bag, nmspace);
         };
         JsonArray.prototype.addOnValidateField = function (fn, nmspace, context) {
-            this.addHandler(BAG_EVENTS.validate_field, fn, nmspace, context);
+            this.objEvents.on(BAG_EVENTS.validate_field, fn, nmspace, context);
         };
         JsonArray.prototype.removeOnValidateField = function (nmspace) {
-            this.removeHandler(BAG_EVENTS.validate_field, nmspace);
+            this.objEvents.off(BAG_EVENTS.validate_field, nmspace);
         };
         JsonArray.prototype._validateBag = function (bag) {
             var args = {
                 bag: bag,
                 result: []
             };
-            this.raiseEvent(BAG_EVENTS.validate_bag, args);
+            this.objEvents.raise(BAG_EVENTS.validate_bag, args);
             return (!!args.result) ? args.result : [];
         };
         JsonArray.prototype._validateField = function (bag, fieldName) {
@@ -5145,7 +5098,7 @@ define("jriapp_shared/utils/jsonarray", ["require", "exports", "jriapp_shared/ob
                 fieldName: fieldName,
                 errors: []
             };
-            this.raiseEvent(BAG_EVENTS.validate_field, args);
+            this.objEvents.raise(BAG_EVENTS.validate_field, args);
             return (!!args.errors && args.errors.length > 0) ? { fieldName: fieldName, errors: args.errors } : null;
         };
         JsonArray.prototype.getArray = function () {
@@ -5263,12 +5216,12 @@ define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_sha
                     new_key: newkey
                 });
             }
-            this.raisePropertyChanged("[" + item._key + "]");
+            this.objEvents.raiseProp("[" + item._key + "]");
         };
         BaseDictionary.prototype._onRemoved = function (item, pos) {
             var key = item[this._keyName];
             _super.prototype._onRemoved.call(this, item, pos);
-            this.raisePropertyChanged("[" + key + "]");
+            this.objEvents.raiseProp("[" + key + "]");
         };
         Object.defineProperty(BaseDictionary.prototype, "keyName", {
             get: function () {
@@ -5310,10 +5263,10 @@ define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/c
             enumerable: true,
             configurable: true
         });
-        Lazy.prototype.destroy = function () {
+        Lazy.prototype.dispose = function () {
             if (this.IsValueCreated) {
-                if ("destroy" in this._val) {
-                    this._val.destroy();
+                if ("dispose" in this._val) {
+                    this._val.dispose();
                 }
             }
             this._val = void 0;
@@ -5326,13 +5279,9 @@ define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/c
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Lazy.prototype, "IsDestroyed", {
-            get: function () {
-                return this._val === void 0;
-            },
-            enumerable: true,
-            configurable: true
-        });
+        Lazy.prototype.getIsDisposed = function () {
+            return this._val === void 0;
+        };
         return Lazy;
     }());
     exports.Lazy = Lazy;

@@ -56,7 +56,7 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
             });
 
         //when currentItem property changes, invoke our viewmodel's method
-        this._dbSet.addOnPropertyChange('currentItem', function (sender, data) {
+        this._dbSet.objEvents.onProp('currentItem', function (sender, data) {
             self._onCurrentChanged();
         }, self.uniqueID);
 
@@ -204,7 +204,7 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
     protected _removeGrid(): void {
         if (!this._dataGrid)
             return;
-        this._dataGrid.removeNSHandlers(this.uniqueID);
+        this._dataGrid.objEvents.offNS(this.uniqueID);
         this._dataGrid = null;
     }
 
@@ -237,7 +237,7 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
     }
 
     protected _onCurrentChanged() {
-        this.raisePropertyChanged('currentItem');
+        this.objEvents.raiseProp('currentItem');
         this._columnCommand.raiseCanExecuteChanged();
     }
     protected _updateSelection() {
@@ -321,20 +321,20 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
     showDialog(name?: string) {
         this._dialogVM.showDialog(name || 'testDialog', this);
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
-        this._propWatcher.destroy();
+        this.setDisposing();
+        this._propWatcher.dispose();
         this._propWatcher = null;
 
         if (!!this._dbSet) {
-            this._dbSet.removeNSHandlers(this.uniqueID);
+            this._dbSet.objEvents.offNS(this.uniqueID);
         }
         if (!!this._dataGrid) {
-            this._dataGrid.removeNSHandlers(this.uniqueID);
+            this._dataGrid.objEvents.offNS(this.uniqueID);
         }
-        super.destroy();
+        super.dispose();
     }
     get dbSet() { return this._dbSet; }
     //get templateID() { return this._templateID; }
@@ -351,7 +351,7 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
         let old = this._selectedCount;
         if (old !== v) {
             this._selectedCount = v;
-            this.raisePropertyChanged('selectedCount');
+            this.objEvents.raiseProp('selectedCount');
         }
     }
     get selectedIDs() { return Object.keys(this._selected); }
@@ -360,7 +360,7 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
         let old = this._invokeResult;
         if (old !== v) {
             this._invokeResult = v;
-            this.raisePropertyChanged('invokeResult');
+            this.objEvents.raiseProp('invokeResult');
         }
     }
     get vwSalesOrderDet() { return this._vwSalesOrderDet; }

@@ -33,7 +33,7 @@ declare module "common" {
         private _debounce;
         private _src;
         constructor(options: IDLinkOptions);
-        destroy(): void;
+        dispose(): void;
         reloadImg(): void;
         fileName: string;
         src: string;
@@ -47,7 +47,7 @@ declare module "common" {
         _dialogVM: uiMOD.DialogVM;
         constructor(app: RIAPP.IApplication);
         showDialog(): void;
-        destroy(): void;
+        dispose(): void;
         error: any;
         title: string;
         message: string;
@@ -95,7 +95,7 @@ declare module "autocomplete" {
         constructor(options: IAutocompleteOptions);
         protected _createGridDataSource(): void;
         protected _getDbContext(): dbMOD.DbContext;
-        _getEventNames(): string[];
+        getEventNames(): string[];
         protected _createTemplate(): RIAPP.ITemplate;
         protected _onTextChange(): void;
         protected _onKeyUp(text: string, keyCode: number): void;
@@ -110,7 +110,7 @@ declare module "autocomplete" {
         load(str: string): void;
         protected getDataContext(): RIAPP.IBaseObject;
         protected setDataContext(v: RIAPP.IBaseObject): void;
-        destroy(): void;
+        dispose(): void;
         readonly fieldName: string;
         readonly templateId: string;
         readonly currentSelection: any;
@@ -132,7 +132,7 @@ declare module "header" {
         private _contentPanelHeight;
         private _expanderCommand;
         constructor(app: RIAPP.IApplication);
-        _getEventNames(): string[];
+        getEventNames(): string[];
         addOnUpdateUI(fn: (sender: HeaderVM, args: {
             isHandled: boolean;
             isUp: boolean;
@@ -160,7 +160,7 @@ declare module "ssevents" {
         private _timeOut;
         constructor(baseUrl: string, clientID: string);
         static isSupported(): boolean;
-        _getEventNames(): string[];
+        getEventNames(): string[];
         private _onEsOpen(event);
         private _onEsError(event);
         private _onMsg(event);
@@ -172,7 +172,7 @@ declare module "ssevents" {
         open(): RIAPP.IPromise<any>;
         close(): void;
         post(message: string, clientID?: string): RIAPP.IAbortablePromise<string>;
-        destroy(): void;
+        dispose(): void;
         readonly es: sse.IEventSourceStatic;
         readonly openESCommand: RIAPP.ICommand;
         readonly closeESCommand: RIAPP.ICommand;
@@ -191,7 +191,7 @@ declare module "uploader" {
         private _uploadUrl;
         private _file;
         constructor(uploadUrl: string, file: File);
-        _getEventNames(): string[];
+        getEventNames(): string[];
         addOnProgress(fn: (sender: Uploader, args: number) => void, nmspace?: string): void;
         addOnAddHeaders(fn: (sender: Uploader, args: IAddHeadersArgs) => void, nmspace?: string): void;
         uploadFile(): RIAPP.IPromise<string>;
@@ -213,7 +213,7 @@ declare module "websocket" {
         static createUrl(port: number, svcName?: string, isSSL?: boolean): string;
         constructor(url: string);
         static isSupported(): boolean;
-        _getEventNames(): string[];
+        getEventNames(): string[];
         protected _onWsOpen(event: any): void;
         protected _onWsClose(event: any): void;
         protected _onWsError(event: any): void;
@@ -224,7 +224,7 @@ declare module "websocket" {
         }) => void, nmspace?: string, context?: any): void;
         open(): RIAPP.IPromise<any>;
         close(): void;
-        destroy(): void;
+        dispose(): void;
         readonly ws: WebSocket;
         readonly openWsCommand: RIAPP.ICommand;
         readonly closeWsCommand: RIAPP.ICommand;

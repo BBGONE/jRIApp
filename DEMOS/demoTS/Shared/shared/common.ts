@@ -63,7 +63,7 @@ export class DownloadLinkElView extends uiMOD.BaseElView {
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
             el.textContent = v;
-            this.raisePropertyChanged('text');
+            this.objEvents.raiseProp('text');
         }
     }
     get href(): string {
@@ -74,7 +74,7 @@ export class DownloadLinkElView extends uiMOD.BaseElView {
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
             (<HTMLAnchorElement>this.el).href = v;
-            this.raisePropertyChanged("href");
+            this.objEvents.raiseProp("href");
         }
     }
     get id() { return this._id; }
@@ -84,7 +84,7 @@ export class DownloadLinkElView extends uiMOD.BaseElView {
         if (x !== v) {
             this._id = v;
             this.href = this._baseUri + '/' + this._id;
-            this.raisePropertyChanged('id');
+            this.objEvents.raiseProp('id');
         }
     }
 }
@@ -106,12 +106,12 @@ export class FileImgElView extends uiMOD.BaseElView {
         this._src = null;
         this._fileName = null;
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
-        this._debounce.destroy();
-        super.destroy();
+        this.setDisposing();
+        this._debounce.dispose();
+        super.dispose();
     }
     reloadImg(): void {
         if (!!this.src) {
@@ -129,7 +129,7 @@ export class FileImgElView extends uiMOD.BaseElView {
         let x = this._fileName;
         if (x !== v) {
             this._fileName = v;
-            this.raisePropertyChanged('fileName');
+            this.objEvents.raiseProp('fileName');
             this.reloadImg();
         }
     }
@@ -139,7 +139,7 @@ export class FileImgElView extends uiMOD.BaseElView {
     set src(v) {
         if (this._src !== v) {
             this._src = v;
-            this.raisePropertyChanged('src');
+            this.objEvents.raiseProp('src');
         }
         let img = this.el;
         //set empty image as a stub
@@ -161,7 +161,7 @@ export class FileImgElView extends uiMOD.BaseElView {
                 this.src = null;
             else
                 this.src = this._baseUri + '/' + this._id;
-            this.raisePropertyChanged('id');
+            this.objEvents.raiseProp('id');
         }
     }
 }
@@ -191,7 +191,7 @@ export class ErrorViewModel extends RIAPP.ViewModel<RIAPP.IApplication> {
                 while (!!self.error && !!self.error.origError) {
                     //get real error
                     self._error = self.error.origError;
-                    self.raisePropertyChanged('error');
+                    self.objEvents.raiseProp('error');
                 }
 
                 if (self.error instanceof dbMOD.AccessDeniedError)
@@ -213,8 +213,8 @@ export class ErrorViewModel extends RIAPP.ViewModel<RIAPP.IApplication> {
                 self._error = null;
                 self._errors = [];
                 self._message = null;
-                self.raisePropertyChanged('error');
-                self.raisePropertyChanged('message');
+                self.objEvents.raiseProp('error');
+                self.objEvents.raiseProp('message');
             }
         };
         //dialogs are distinguished by their given names
@@ -223,16 +223,16 @@ export class ErrorViewModel extends RIAPP.ViewModel<RIAPP.IApplication> {
     showDialog() {
         this._dialogVM.showDialog('errorDialog', this);
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
-        this._dialogVM.destroy();
+        this.setDisposing();
+        this._dialogVM.dispose();
         this._dialogVM = null;
         this._error = null;
         this._errors = [];
         this._message = null;
-        super.destroy();
+        super.dispose();
     }
     get error() { return this._error; }
     set error(v) {
@@ -245,11 +245,11 @@ export class ErrorViewModel extends RIAPP.ViewModel<RIAPP.IApplication> {
             else
                 msg = 'Error!';
             this.message = msg;
-            this.raisePropertyChanged('error');
+            this.objEvents.raiseProp('error');
         }
         else {
             this._errors.push(v);
-            this.raisePropertyChanged('errorCount');
+            this.objEvents.raiseProp('errorCount');
         }
     }
     get title() { return this._title; }
@@ -257,7 +257,7 @@ export class ErrorViewModel extends RIAPP.ViewModel<RIAPP.IApplication> {
         let old = this._title;
         if (old !== v) {
             this._title = v;
-            this.raisePropertyChanged('title');
+            this.objEvents.raiseProp('title');
         }
     }
     get message() { return this._message; }
@@ -265,7 +265,7 @@ export class ErrorViewModel extends RIAPP.ViewModel<RIAPP.IApplication> {
         let old = this._message;
         if (old !== v) {
             this._message = v;
-            this.raisePropertyChanged('message');
+            this.objEvents.raiseProp('message');
         }
     }
     get errorCount() {

@@ -51,8 +51,8 @@ export class SSEventsVM extends RIAPP.BaseObject {
             return false;
         }
     }
-    _getEventNames() {
-        const base_events = super._getEventNames();
+    getEventNames() {
+        const base_events = super.getEventNames();
         return ['open', 'close', 'error', 'message'].concat(base_events);
     }
     private _onEsOpen(event:any) {
@@ -69,7 +69,7 @@ export class SSEventsVM extends RIAPP.BaseObject {
     }
     private _onMsg(event:any) {
         const data = JSON.parse(event.data);
-        this.raiseEvent('message', { message: event.data, data: data });
+        this.objEvents.raise('message', { message: event.data, data: data });
     }
     private _close() {
         if (!!this._timeOut)
@@ -94,7 +94,7 @@ export class SSEventsVM extends RIAPP.BaseObject {
         }
     }
     addOnMessage(fn: (sender: any, args: { message: string; data: any; }) => void, namespace?: string) {
-        this.addHandler('message', fn, namespace);
+        this.objEvents.on('message', fn, namespace);
     }
     open(): RIAPP.IPromise<any> {
         const self = this;
@@ -143,14 +143,14 @@ export class SSEventsVM extends RIAPP.BaseObject {
         let req_promise = utils.http.postAjax(this._postMsgUrl, postData);
         return req_promise;
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         try {
             this.close();
         } finally {
-            super.destroy();
+            super.dispose();
         }
     }
     get es() { return this._es; }

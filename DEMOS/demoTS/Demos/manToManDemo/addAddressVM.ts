@@ -66,8 +66,8 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
                 custAdress._aspect.endEdit();
                 self._newAddress = null;
                 self._isAddingNew = false;
-                self.raisePropertyChanged('newAddress');
-                self.raisePropertyChanged('isAddingNew');
+                self.objEvents.raiseProp('newAddress');
+                self.objEvents.raiseProp('isAddingNew');
                 return uiMOD.DIALOG_ACTION.StayOpen;
             },
             fn_OnCancel: function (dialog) {
@@ -98,19 +98,19 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
         this._addressInfosView.isPagingEnabled = true;
         this._addressInfosView.pageSize = 50;
 
-        this._addressInfosView.addOnPropertyChange('currentItem', function (sender, args) {
-            self.raisePropertyChanged('currentAddressInfo');
+        this._addressInfosView.objEvents.onProp('currentItem', function (sender, args) {
+            self.objEvents.raiseProp('currentAddressInfo');
             self._linkCommand.raiseCanExecuteChanged();
         }, self.uniqueID);
 
-        this._customerAddressVM.addOnPropertyChange('currentCustomer', function (sender, args) {
+        this._customerAddressVM.objEvents.onProp('currentCustomer', function (sender, args) {
             self._currentCustomer = self._customerAddressVM.currentCustomer;
-            self.raisePropertyChanged('customer');
+            self.objEvents.raiseProp('customer');
             self._addNewCommand.raiseCanExecuteChanged();
         }, self.uniqueID);
 
         //this data is displayed on the left panel - addresses currently linked to the customer
-        this.custAdressView.addOnPropertyChange('currentItem', function (sender, args) {
+        this.custAdressView.objEvents.onProp('currentItem', function (sender, args) {
             self._unLinkCommand.raiseCanExecuteChanged();
         }, self.uniqueID);
 
@@ -158,7 +158,7 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
     protected _removeGrid(): void {
         if (!this._dataGrid)
             return;
-        this._dataGrid.removeNSHandlers(this.uniqueID);
+        this._dataGrid.objEvents.offNS(this.uniqueID);
         this._dataGrid = null;
     }
     get isCanSubmit(): boolean { return true; }
@@ -171,8 +171,8 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
         self._newAddress._aspect.rejectChanges();
         self._newAddress = null;
         self._isAddingNew = false;
-        self.raisePropertyChanged('newAddress');
-        self.raisePropertyChanged('isAddingNew');
+        self.objEvents.raiseProp('newAddress');
+        self.objEvents.raiseProp('isAddingNew');
     }
     //returns promise
     loadAddressInfos() {
@@ -185,8 +185,8 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
     _addNewAddress() {
         this._newAddress = this._customerAddressVM._addNewAddress();
         this._isAddingNew = true;
-        this.raisePropertyChanged('newAddress');
-        this.raisePropertyChanged('isAddingNew');
+        this.objEvents.raiseProp('newAddress');
+        this.objEvents.raiseProp('isAddingNew');
     }
     _linkAddress() {
         let self = this, adrInfo = this.currentAddressInfo, adrView = self.custAdressView, adrID: number;
@@ -265,25 +265,25 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
             this._addressInfosView.removeItem(item);
         }
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         if (!!this._addressInfosDb) {
-            this._addressInfosDb.removeNSHandlers(this.uniqueID);
+            this._addressInfosDb.objEvents.offNS(this.uniqueID);
             this._addressInfosDb.clear();
             this._addressInfosDb = null;
         }
         if (!!this._addressInfosView) {
-            this._addressInfosView.destroy();
+            this._addressInfosView.dispose();
             this._addressInfosView = null;
         }
-        this.custAdressView.removeNSHandlers(this.uniqueID);
+        this.custAdressView.objEvents.offNS(this.uniqueID);
         if (!!this._customerAddressVM) {
-            this._customerAddressVM.removeNSHandlers(this.uniqueID);
+            this._customerAddressVM.objEvents.offNS(this.uniqueID);
             this._customerAddressVM = null;
         }
-        super.destroy();
+        super.dispose();
     }
     get dbContext() { return this.app.dbContext; }
     get dbSets() { return this.dbContext.dbSets; }
@@ -296,7 +296,7 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
     set searchString(v) {
         if (this._searchString !== v) {
             this._searchString = v;
-            this.raisePropertyChanged('searchString');
+            this.objEvents.raiseProp('searchString');
         }
     }
     get addNewCommand() { return this._addNewCommand; }

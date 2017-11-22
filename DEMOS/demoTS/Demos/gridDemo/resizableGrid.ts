@@ -86,7 +86,7 @@ let onGripDrag = function (e: TouchEvent | MouseEvent): boolean {
     if (!drag)
         return false;
     let gripData: IGripData = DOM.getData(drag, SIGNATURE), elview: ResizableGrid = gripData.elview;
-    if (elview.getIsDestroyCalled())
+    if (elview.getIsDisposing())
         return false;
     let data: IResizeInfo = elview.getResizeIfo();
     let table = elview.grid.table;
@@ -154,7 +154,7 @@ let onGripDragOver = function (e: TouchEvent | MouseEvent): void {
         return;
     const gripData: IGripData = DOM.getData(drag, SIGNATURE);
     const elview: ResizableGrid = gripData.elview;
-    if (elview.getIsDestroyCalled())
+    if (elview.getIsDisposing())
         return;
     const data: IResizeInfo = elview.getResizeIfo(), table = elview.grid.table;
     //remove the grip's dragging css-class
@@ -188,7 +188,7 @@ let onGripDragOver = function (e: TouchEvent | MouseEvent): void {
 let onGripMouseDown = function (this: HTMLElement, e: TouchEvent | MouseEvent): boolean {
     const grip: HTMLElement = this;
     let gripData: IGripData = DOM.getData(grip, SIGNATURE), elview: ResizableGrid = gripData.elview;
-    if (elview.getIsDestroyCalled())
+    if (elview.getIsDisposing())
         return false;
     let data: IResizeInfo = elview.getResizeIfo();
     let touches = (<any>e).touches;   //touch or mouse event?
@@ -265,7 +265,7 @@ export class ResizableGrid extends uiMOD.DataGridElView {
         self.init(opts);
         self.bindDS(this._ds);
 
-        grid.addOnPropertyChange("dataSource", (s, a) => {
+        grid.objEvents.onProp("dataSource", (s, a) => {
             self.unBindDS(self._ds);
             self.bindDS(grid.dataSource);
             self._ds = grid.dataSource;
@@ -287,7 +287,7 @@ export class ResizableGrid extends uiMOD.DataGridElView {
     private unBindDS(ds: RIAPP.ICollection<RIAPP.ICollectionItem>) {
         if (!ds)
             return;
-        ds.removeNSHandlers(this.uniqueID);
+        ds.objEvents.offNS(this.uniqueID);
     }
     protected init(options: IOptions) {
         const table = this.grid.table, style = window.getComputedStyle(table, null);
@@ -368,7 +368,7 @@ export class ResizableGrid extends uiMOD.DataGridElView {
        * Function that places each grip in the correct position according to the current table layout	 
     */
     syncGrips() {
-        if (this.getIsDestroyCalled())
+        if (this.getIsDisposing())
             return;
         const data: IResizeInfo = this._resizeInfo;
         data.gripContainer.style.width = (data.w + PX);	//the grip's container width is updated
@@ -395,7 +395,7 @@ export class ResizableGrid extends uiMOD.DataGridElView {
 	* @param {bool} isOver - to identify when the function is being called from the onGripDragOver event	
     */
     syncCols(i: number, isOver: boolean) {
-        if (this.getIsDestroyCalled())
+        if (this.getIsDisposing())
             return;
         const table = this.grid.table, data: IResizeInfo = this._resizeInfo, gripData: IGripData = DOM.getData(drag, SIGNATURE);
         const inc = gripData.x - gripData.l, c: IColumnInfo = data.columns[i];
@@ -424,7 +424,7 @@ export class ResizableGrid extends uiMOD.DataGridElView {
 	* of max-width).
     */
     applyBounds() {
-        if (this.getIsDestroyCalled())
+        if (this.getIsDisposing())
             return;
         const table = this.grid.table;
         const data: IResizeInfo = this._resizeInfo;
@@ -453,10 +453,10 @@ export class ResizableGrid extends uiMOD.DataGridElView {
         const viewport = this.grid._getInternal().getWrapper();
         viewport.style.width = (table.offsetWidth + (viewport.offsetWidth - viewport.clientWidth)) + PX;
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         _gridDestroyed(this);
         this.unBindDS(this._ds);
         this._ds = null;
@@ -465,7 +465,7 @@ export class ResizableGrid extends uiMOD.DataGridElView {
             data.gripContainer.remove();
         DOM.removeClass([table], SIGNATURE + " " + FLEX);
         this._resizeInfo = null;
-        super.destroy();
+        super.dispose();
     }
 
     getResizeIfo(): IResizeInfo {

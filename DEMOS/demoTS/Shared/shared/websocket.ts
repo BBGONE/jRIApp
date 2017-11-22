@@ -44,8 +44,8 @@ export class WebSocketsVM extends RIAPP.BaseObject {
             return false;
         }
     }
-    _getEventNames() {
-        const base_events = super._getEventNames();
+    getEventNames() {
+        const base_events = super.getEventNames();
         return ['open', 'close', 'error', 'message'].concat(base_events);
     }
     protected _onWsOpen(event:any) {
@@ -64,7 +64,7 @@ export class WebSocketsVM extends RIAPP.BaseObject {
             this._deffered.reject("Websocket closed");
             this._deffered = null;
         }
-        this.raiseEvent('close', {});
+        this.objEvents.raise('close', {});
     }
     protected _onWsError(event:any) {
         this.handleError("Websocket error", this);
@@ -83,13 +83,13 @@ export class WebSocketsVM extends RIAPP.BaseObject {
         } else if (res.Tag == "closed") {
             this.close();
         } else if (res.Tag == "message") {
-            this.raiseEvent('message', { message: event.data, data: res.Payload });
+            this.objEvents.raise('message', { message: event.data, data: res.Payload });
         } else {
             console.log(event.data);
         }
     }
     addOnMessage(fn: (sender: WebSocketsVM, args: { message: string; data: any; }) => void, nmspace?: string, context?: any) {
-        this.addHandler('message', fn, nmspace, context);
+        this.objEvents.on('message', fn, nmspace, context);
     }
     open(): RIAPP.IPromise<any> {
         const self = this;
@@ -145,14 +145,14 @@ export class WebSocketsVM extends RIAPP.BaseObject {
             }
         }
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         try {
             this.close();
         } finally {
-            super.destroy();
+            super.dispose();
         }
     }
     get ws() { return this._ws; }

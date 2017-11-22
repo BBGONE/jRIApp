@@ -150,12 +150,12 @@ declare module "jriapp/int" {
     export interface IElViewStore {
         getElView(el: HTMLElement): IElView;
         setElView(el: HTMLElement, view?: IElView): void;
-        destroy(): void;
+        dispose(): void;
     }
     export interface IElViewRegister {
         registerElView(name: string, vwType: IViewType): void;
         getElViewType(name: string): IViewType;
-        destroy(): void;
+        dispose(): void;
     }
     export interface IElViewFactory {
         createElView(viewInfo: {
@@ -169,7 +169,7 @@ declare module "jriapp/int" {
         };
         store: IElViewStore;
         register: IElViewRegister;
-        destroy(): void;
+        dispose(): void;
     }
     export interface IViewType {
         new (options: IViewOptions): IElView;
@@ -373,8 +373,8 @@ declare module "jriapp/utils/tloader" {
         private _promises;
         private _waitQueue;
         constructor();
-        destroy(): void;
-        _getEventNames(): string[];
+        dispose(): void;
+        getEventNames(): string[];
         addOnLoaded(fn: (sender: TemplateLoader, args: {
             html: string;
             app: IApplication;
@@ -613,7 +613,7 @@ declare module "jriapp/utils/sloader" {
     }
 }
 declare module "jriapp/bootstrap" {
-    import { IIndexer, IBaseObject, IPromise, TEventHandler, TPriority, BaseObject } from "jriapp_shared";
+    import { IIndexer, IBaseObject, IPromise, TEventHandler, BaseObject, IObjectEvents } from "jriapp_shared";
     import { IApplication, ISelectableProvider, IExports, IConverter, ISvcStore, IContentFactoryList, IElViewRegister, IStylesLoader } from "jriapp/int";
     import { Defaults } from "jriapp/defaults";
     import { TemplateLoader } from "jriapp/utils/tloader";
@@ -634,7 +634,7 @@ declare module "jriapp/bootstrap" {
         Initialized = 2,
         Ready = 3,
         Error = 4,
-        Destroyed = 5,
+        Disposed = 5,
     }
     export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         static _initFramework(): void;
@@ -655,8 +655,8 @@ declare module "jriapp/bootstrap" {
         private _processTemplates(root, app?);
         private _processHTMLTemplates();
         private _processTemplate(name, html, app);
-        _getEventNames(): string[];
-        addHandler(name: string, fn: (sender: any, args: any) => void, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
+        protected _createObjEvents(): IObjectEvents;
+        getEventNames(): string[];
         private _init();
         private _initialize();
         private _trackSelectable(selectable);
@@ -678,7 +678,7 @@ declare module "jriapp/bootstrap" {
         getApp(): IApplication;
         init(onInit: (bootstrap: Bootstrap) => void): void;
         startApp<TApp extends IApplication>(appFactory: () => TApp, onStartUp?: (app: TApp) => void): IPromise<TApp>;
-        destroy(): void;
+        dispose(): void;
         registerSvc(name: string, obj: any): void;
         unregisterSvc(name: string): any;
         getSvc<T>(name: string): T;
@@ -804,7 +804,7 @@ declare module "jriapp/binding" {
         private _updateSource();
         protected _setTarget(value: any): void;
         protected _setSource(value: any): void;
-        destroy(): void;
+        dispose(): void;
         toString(): string;
         readonly uniqueID: string;
         target: IBaseObject;
@@ -842,7 +842,7 @@ declare module "jriapp/utils/lifetime" {
         addObj(b: IBaseObject): void;
         removeObj(b: IBaseObject): void;
         getObjs(): IBaseObject[];
-        destroy(): void;
+        dispose(): void;
         toString(): string;
     }
 }
@@ -856,7 +856,7 @@ declare module "jriapp/utils/propwatcher" {
         addPropWatch(obj: IBaseObject, prop: string, fnOnChange: (prop: string) => void): void;
         addWatch(obj: IBaseObject, props: string[], fnOnChange: (prop: string) => void): void;
         removeWatch(obj: IBaseObject): void;
-        destroy(): void;
+        dispose(): void;
         toString(): string;
         readonly uniqueID: string;
     }
@@ -882,14 +882,14 @@ declare module "jriapp/mvvm" {
         protected _predicate: TPredicate<TParam, TThis>;
         private _objId;
         constructor(fnAction: TAction<TParam, TThis>, thisObj?: TThis, fnCanExecute?: TPredicate<TParam, TThis>);
-        _getEventNames(): string[];
+        getEventNames(): string[];
         protected _canExecute(sender: any, param: TParam, context: any): boolean;
         protected _execute(sender: any, param: TParam, context: any): void;
         addOnCanExecuteChanged(fn: (sender: ITCommand<TParam>, args: any) => void, nmspace?: string, context?: IBaseObject): void;
         removeOnCanExecuteChanged(nmspace?: string): void;
         canExecute(sender: any, param: TParam): boolean;
         execute(sender: any, param: TParam): void;
-        destroy(): void;
+        dispose(): void;
         raiseCanExecuteChanged(): void;
         toString(): string;
         readonly uniqueID: string;
@@ -908,7 +908,7 @@ declare module "jriapp/mvvm" {
         private _app;
         constructor(app: TApp);
         toString(): string;
-        destroy(): void;
+        dispose(): void;
         readonly uniqueID: string;
         readonly app: TApp;
     }
@@ -939,7 +939,7 @@ declare module "jriapp/app" {
         constructor(options?: IAppOptions);
         private _cleanUpObjMaps();
         private _initAppModules();
-        _getEventNames(): string[];
+        getEventNames(): string[];
         protected onStartUp(): any;
         _getInternal(): IInternalAppMethods;
         addOnStartUp(fn: TEventHandler<IApplication, any>, nmspace?: string, context?: IBaseObject): void;
@@ -960,7 +960,7 @@ declare module "jriapp/app" {
         registerTemplateById(name: string, templateId: string): void;
         getTemplateLoader(name: string): () => IPromise<string>;
         registerTemplateGroup(name: string, group: ITemplateGroupInfo): void;
-        destroy(): void;
+        dispose(): void;
         toString(): string;
         readonly uniqueID: string;
         readonly options: IAppOptions;
@@ -989,5 +989,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand, TCommand, ITCommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "1.8.1";
+    export const VERSION = "1.8.2";
 }

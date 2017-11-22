@@ -51,18 +51,18 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
 
         this._createDynaTree();
     }
-    _getEventNames() {
-        let base_events = super._getEventNames();
+    getEventNames() {
+        let base_events = super.getEventNames();
         return ['node_selected'].concat(base_events);
     }
     addOnNodeSelected(fn: (sender: FolderBrowser, args: { item: FOLDERBROWSER_SVC.FileSystemObject; }) => void, namespace?: string) {
-        this.addHandler('node_selected', fn, namespace);
+        this.objEvents.on('node_selected', fn, namespace);
     }
     private _createDynaTree() {
         let self = this;
         (<any>this._$tree).dynatree({
             onActivate: function (node: any) {
-                self.raiseEvent('node_selected', { item: node.data.item });
+                self.objEvents.raise('node_selected', { item: node.data.item });
             },
             onClick: function (node: any, event: any) {
             },
@@ -133,18 +133,18 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
     private _addItemsToTree(items: FOLDERBROWSER_SVC.FileSystemObject[]) {
         this._addItemsToNode(this._$treeRoot, items);
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         if (!!this._$treeRoot)
             this._$treeRoot.removeChildren();
-        super.destroy();
+        super.dispose();
     }
     get dbContext() { return this.app.dbContext; }
     get loadRootCommand() { return this._loadRootCommand; }
     get infotype() { return this._infotype; }
-    set infotype(v) { if (this._infotype !== v) { this._infotype = v; this.raisePropertyChanged('infotype'); } }
+    set infotype(v) { if (this._infotype !== v) { this._infotype = v; this.objEvents.raiseProp('infotype'); } }
     get dbSet() { return this._dbSet; }
 }
 
@@ -187,7 +187,7 @@ export class FolderBrowserVM extends RIAPP.ViewModel<DemoApplication> {
                 self._folderBrowser.addOnNodeSelected(function (s, a) {
                     self.selectedItem = a.item;
                 }, self.uniqueID)
-                self.raisePropertyChanged('folderBrowser');
+                self.objEvents.raiseProp('folderBrowser');
             },
             fn_OnShow: function (dialog) {
                 self.selectedItem = null;
@@ -213,30 +213,30 @@ export class FolderBrowserVM extends RIAPP.ViewModel<DemoApplication> {
             return true;
         });
     }
-    _getEventNames() {
-        let base_events = super._getEventNames();
+    getEventNames() {
+        let base_events = super.getEventNames();
         return ['item_selected'].concat(base_events);
     }
     addOnItemSelected(fn: (sender: FolderBrowserVM, args: { fullPath: string }) => void, namespace?: string) {
-        this.addHandler('item_selected', fn, namespace);
+        this.objEvents.on('item_selected', fn, namespace);
     }
     _onSelected(item: RIAPP.ICollectionItem, fullPath: string) {
-        this.raiseEvent('item_selected', { fullPath: fullPath });
+        this.objEvents.raise('item_selected', { fullPath: fullPath });
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         let self = this;
         if (!!self._folderBrowser) {
-            self._folderBrowser.destroy();
+            self._folderBrowser.dispose();
             self._folderBrowser = null;
         }
         if (!!self._dialogVM) {
-            self._dialogVM.destroy();
+            self._dialogVM.dispose();
             self._dialogVM = null;
         }
-        super.destroy();
+        super.dispose();
     }
     showDialog() {
         this._dialogVM.showDialog('folderBrowser', this);
@@ -246,13 +246,13 @@ export class FolderBrowserVM extends RIAPP.ViewModel<DemoApplication> {
     set selectedItem(v) {
         if (v !== this._selectedItem) {
             this._selectedItem = v;
-            this.raisePropertyChanged('selectedItem');
+            this.objEvents.raiseProp('selectedItem');
         }
     }
     get dialogCommand() { return this._dialogCommand; }
     get includeFiles() { return this._options.includeFiles; }
     get infotype() { return this._infotype; }
-    set infotype(v) { if (this._infotype !== v) { this._infotype = v; this.raisePropertyChanged('infotype'); } }
+    set infotype(v) { if (this._infotype !== v) { this._infotype = v; this.objEvents.raiseProp('infotype'); } }
 }
 
 export class DemoApplication extends RIAPP.Application {
@@ -291,11 +291,11 @@ export class DemoApplication extends RIAPP.Application {
         this._fbrowserVM2.infotype = "BASE_ROOT";
         this._fbrowserVM1.addOnItemSelected((s, a) => {
             self._selectedPath = s.infotype + '\\' + a.fullPath;
-            self.raisePropertyChanged('selectedPath');
+            self.objEvents.raiseProp('selectedPath');
         });
         this._fbrowserVM2.addOnItemSelected((s, a) => {
             self._selectedPath = s.infotype + '\\' + a.fullPath;
-            self.raisePropertyChanged('selectedPath');
+            self.objEvents.raiseProp('selectedPath');
         });
         //here we could process application's errors
         this.addOnError(function (sender, data) {
@@ -325,18 +325,18 @@ export class DemoApplication extends RIAPP.Application {
     getFullPath(item: FOLDERBROWSER_SVC.FileSystemObject) {
         return this._getFullPath(item, null);
     }
-    //really, the destroy method is redundant here because application lives till the page lives
-    destroy() {
-        if (this._isDestroyed)
+    //really, the dispose method is redundant here because application lives till the page lives
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         let self = this;
         try {
-            self._errorVM.destroy();
-            self._fbrowserVM1.destroy();
-            self._fbrowserVM2.destroy();
+            self._errorVM.dispose();
+            self._fbrowserVM1.dispose();
+            self._fbrowserVM2.dispose();
         } finally {
-            super.destroy();
+            super.dispose();
         }
     }
     get options() { return <IMainOptions>this._options; }

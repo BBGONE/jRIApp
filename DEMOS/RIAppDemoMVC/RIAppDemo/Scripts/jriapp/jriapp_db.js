@@ -187,13 +187,13 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
             }
             return this._query.dbSet.createEntityFromObj(kv.val, kv.key);
         };
-        DataCache.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        DataCache.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             this.clear();
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         DataCache.prototype.toString = function () {
             return "DataCache";
@@ -235,7 +235,7 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
                 }
                 if (v !== this._totalCount) {
                     this._totalCount = v;
-                    this.raisePropertyChanged(const_1.PROP_NAME.totalCount);
+                    this.objEvents.raiseProp(const_1.PROP_NAME.totalCount);
                 }
             },
             enumerable: true,
@@ -353,7 +353,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
         };
         DataQuery.prototype._clearCache = function () {
             if (!!this._dataCache) {
-                this._dataCache.destroy();
+                this._dataCache.dispose();
                 this._dataCache = null;
             }
             this._resetCacheInvalidated();
@@ -422,13 +422,13 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
         DataQuery.prototype.load = function () {
             return this.dbSet.dbContext.load(this);
         };
-        DataQuery.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        DataQuery.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             this._clearCache();
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         DataQuery.prototype.toString = function () {
             return "DataQuery";
@@ -525,7 +525,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
                     if (v === 1 || this.isForAppend) {
                         this._clearCache();
                     }
-                    this.raisePropertyChanged(const_2.PROP_NAME.loadPageCount);
+                    this.objEvents.raiseProp(const_2.PROP_NAME.loadPageCount);
                 }
             },
             enumerable: true,
@@ -536,7 +536,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             set: function (v) {
                 if (this._isClearCacheOnEveryLoad !== v) {
                     this._isClearCacheOnEveryLoad = v;
-                    this.raisePropertyChanged(const_2.PROP_NAME.isClearCacheOnEveryLoad);
+                    this.objEvents.raiseProp(const_2.PROP_NAME.isClearCacheOnEveryLoad);
                 }
             },
             enumerable: true,
@@ -547,7 +547,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             set: function (v) {
                 if (this._isForAppend !== v) {
                     this._isForAppend = v;
-                    this.raisePropertyChanged(const_2.PROP_NAME.isForAppend);
+                    this.objEvents.raiseProp(const_2.PROP_NAME.isForAppend);
                 }
             },
             enumerable: true,
@@ -675,19 +675,19 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 }
             };
             coreUtils.merge(internalObj, _this._internal);
-            _this.dbContext.addOnPropertyChange(const_3.PROP_NAME.isSubmiting, function (s, a) {
-                self.raisePropertyChanged(const_3.PROP_NAME.isBusy);
+            _this.dbContext.objEvents.onProp(const_3.PROP_NAME.isSubmiting, function (s, a) {
+                self.objEvents.raiseProp(const_3.PROP_NAME.isBusy);
             }, _this.dbSetName);
-            _this.addOnPropertyChange(const_3.PROP_NAME.isLoading, function (s, a) {
-                self.raisePropertyChanged(const_3.PROP_NAME.isBusy);
+            _this.objEvents.onProp(const_3.PROP_NAME.isLoading, function (s, a) {
+                self.objEvents.raiseProp(const_3.PROP_NAME.isBusy);
             });
             return _this;
         }
         DbSet.prototype.handleError = function (error, source) {
             return (!this._dbContext) ? _super.prototype.handleError.call(this, error, source) : this._dbContext.handleError(error, source);
         };
-        DbSet.prototype._getEventNames = function () {
-            var baseEvents = _super.prototype._getEventNames.call(this);
+        DbSet.prototype.getEventNames = function () {
+            var baseEvents = _super.prototype.getEventNames.call(this);
             return [DBSET_EVENTS.loaded].concat(baseEvents);
         };
         DbSet.prototype._mapAssocFields = function () {
@@ -922,7 +922,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 this._query.pageIndex = 0;
             }
             if (!!oldQuery && oldQuery !== query) {
-                oldQuery.destroy();
+                oldQuery.dispose();
             }
             if (query.pageSize !== this.pageSize) {
                 this._ignorePageChanged = true;
@@ -973,7 +973,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         DbSet.prototype._fillFromService = function (info) {
             var self = this, res = info.res, fieldNames = res.names, rows = res.rows || [], isPagingEnabled = this.isPagingEnabled, query = info.query;
             var isClearAll = true;
-            if (!!query && !query.getIsDestroyCalled()) {
+            if (!!query && !query.getIsDisposing()) {
                 isClearAll = query.isClearPrevData;
                 if (query.isClearCacheOnEveryLoad) {
                     query._getInternal().clearCache();
@@ -997,7 +997,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 return item;
             });
             var arr = fetchedItems;
-            if (!!query && !query.getIsDestroyCalled()) {
+            if (!!query && !query.getIsDisposing()) {
                 if (query.isIncludeTotalCount && !checks.isNt(res.totalCount)) {
                     this.totalCount = res.totalCount;
                 }
@@ -1047,7 +1047,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             if (!query) {
                 throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_ASSERTION_FAILED, "query is not null"));
             }
-            if (query.getIsDestroyCalled()) {
+            if (query.getIsDisposing()) {
                 throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_ASSERTION_FAILED, "query not destroyed"));
             }
             var dataCache = query._getInternal().getCache(), arr = dataCache.getPageItems(query.pageIndex);
@@ -1147,7 +1147,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 this._changeCache[item._key] = item;
                 this._changeCount += 1;
                 if (this._changeCount === 1) {
-                    this.raisePropertyChanged(const_3.PROP_NAME.isHasChanges);
+                    this.objEvents.raiseProp(const_3.PROP_NAME.isHasChanges);
                 }
             }
         };
@@ -1159,7 +1159,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 delete this._changeCache[key];
                 this._changeCount -= 1;
                 if (this._changeCount === 0) {
-                    this.raisePropertyChanged(const_3.PROP_NAME.isHasChanges);
+                    this.objEvents.raiseProp(const_3.PROP_NAME.isHasChanges);
                 }
             }
         };
@@ -1174,16 +1174,16 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             _super.prototype._onRemoved.call(this, item, pos);
         };
         DbSet.prototype._onLoaded = function (items) {
-            if (this._canRaiseEvent(DBSET_EVENTS.loaded)) {
+            if (this.objEvents.canRaise(DBSET_EVENTS.loaded)) {
                 var vals = items.map(function (item) { return item._aspect.vals; });
-                this.raiseEvent(DBSET_EVENTS.loaded, { vals: vals });
+                this.objEvents.raise(DBSET_EVENTS.loaded, { vals: vals });
             }
         };
         DbSet.prototype._destroyQuery = function () {
             var query = this._query;
             this._query = null;
             if (!!query) {
-                query.destroy();
+                query.dispose();
             }
         };
         DbSet.prototype._getNames = function () {
@@ -1320,10 +1320,10 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             return result;
         };
         DbSet.prototype.addOnLoaded = function (fn, nmspace, context, priority) {
-            this.addHandler(DBSET_EVENTS.loaded, fn, nmspace, context, priority);
+            this.objEvents.on(DBSET_EVENTS.loaded, fn, nmspace, context, priority);
         };
         DbSet.prototype.removeOnLoaded = function (nmspace) {
-            this.removeHandler(DBSET_EVENTS.loaded, nmspace);
+            this.objEvents.off(DBSET_EVENTS.loaded, nmspace);
         };
         DbSet.prototype.waitForNotBusy = function (callback, groupName) {
             this._waitQueue.enQueue({
@@ -1409,22 +1409,22 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             }
             return new dataquery_1.DataQuery(this, queryInfo);
         };
-        DbSet.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        DbSet.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
-            this._pageDebounce.destroy();
+            this.setDisposing();
+            this._pageDebounce.dispose();
             this._pageDebounce = null;
             this.clear();
             var dbContext = this.dbContext;
             this._dbContext = null;
             if (!!dbContext) {
-                dbContext.removeNSHandlers(this.dbSetName);
+                dbContext.objEvents.offNS(this.dbSetName);
             }
             this._navfldMap = {};
             this._calcfldMap = {};
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         DbSet.prototype.toString = function () {
             return this.dbSetName;
@@ -1473,7 +1473,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             set: function (v) {
                 if (this._isSubmitOnDelete !== v) {
                     this._isSubmitOnDelete = !!v;
-                    this.raisePropertyChanged(const_3.PROP_NAME.isSubmitOnDelete);
+                    this.objEvents.raiseProp(const_3.PROP_NAME.isSubmitOnDelete);
                 }
             },
             enumerable: true,
@@ -1504,7 +1504,7 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared", "jriapp_db/co
         DbSets.prototype._dbSetCreated = function (dbSet) {
             var self = this;
             this._arrDbSets.push(dbSet);
-            dbSet.addOnPropertyChange(const_4.PROP_NAME.isHasChanges, function (sender, args) {
+            dbSet.objEvents.onProp(const_4.PROP_NAME.isHasChanges, function (sender, args) {
                 self._dbContext._getInternal().onDbSetHasChangesChanged(sender);
             });
         };
@@ -1547,18 +1547,18 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared", "jriapp_db/co
             }
             return dbSet;
         };
-        DbSets.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        DbSets.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             this._arrDbSets.forEach(function (dbSet) {
-                dbSet.destroy();
+                dbSet.dispose();
             });
             this._arrDbSets = [];
             this._dbSets = null;
             this._dbContext = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         return DbSets;
     }(jriapp_shared_4.BaseObject));
@@ -2033,8 +2033,8 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             return Object.keys(chngedKeys);
         };
         Association.prototype._onChildrenChanged = function (fkey, parent) {
-            if (!!fkey && !!this._parentToChildrenName && !parent.getIsDestroyCalled()) {
-                parent.raisePropertyChanged(this._parentToChildrenName);
+            if (!!fkey && !!this._parentToChildrenName && !parent.getIsDisposing()) {
+                parent.objEvents.raiseProp(this._parentToChildrenName);
             }
         };
         Association.prototype._onParentChanged = function (fkey, map) {
@@ -2043,8 +2043,8 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
                 var keys = Object.keys(map), len = keys.length;
                 for (var k = 0; k < len; k += 1) {
                     var item = map[keys[k]];
-                    if (!item.getIsDestroyCalled()) {
-                        item.raisePropertyChanged(self._childToParentName);
+                    if (!item.getIsDisposing()) {
+                        item.objEvents.raiseProp(self._childToParentName);
                     }
                 }
             }
@@ -2079,14 +2079,14 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             if (!ds) {
                 return;
             }
-            ds.removeNSHandlers(self._objId);
+            ds.objEvents.offNS(self._objId);
         };
         Association.prototype._unbindChildDS = function () {
             var self = this, ds = this.childDS;
             if (!ds) {
                 return;
             }
-            ds.removeNSHandlers(self._objId);
+            ds.objEvents.offNS(self._objId);
         };
         Association.prototype.refreshParentMap = function () {
             this._resetParentMap();
@@ -2153,12 +2153,12 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             }
             return (!obj) ? null : obj;
         };
-        Association.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        Association.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
-            this._debounce.destroy();
+            this.setDisposing();
+            this._debounce.dispose();
             this._debounce = null;
             this._changed = {};
             this._unbindParentDS();
@@ -2167,7 +2167,7 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             this._childMap = null;
             this._parentFldInfos = null;
             this._childFldInfos = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         Association.prototype.toString = function () {
             return this._name;
@@ -2377,18 +2377,18 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                     return self._load(query, reason);
                 }
             };
-            _this.addOnPropertyChange(const_5.PROP_NAME.isSubmiting, function () {
-                self.raisePropertyChanged(const_5.PROP_NAME.isBusy);
+            _this.objEvents.onProp(const_5.PROP_NAME.isSubmiting, function () {
+                self.objEvents.raiseProp(const_5.PROP_NAME.isBusy);
             });
             return _this;
         }
         DbContext.prototype._checkDestroy = function () {
-            if (this.getIsDestroyCalled()) {
+            if (this.getIsDisposing()) {
                 ERROR.abort("dbContext destroyed");
             }
         };
-        DbContext.prototype._getEventNames = function () {
-            var baseEvents = _super.prototype._getEventNames.call(this);
+        DbContext.prototype.getEventNames = function () {
+            var baseEvents = _super.prototype.getEventNames.call(this);
             return [DBCTX_EVENTS.submit_err].concat(baseEvents);
         };
         DbContext.prototype._initDbSets = function () {
@@ -2462,20 +2462,20 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             var self = this, item = { req: req, operType: operType, name: name }, cnt = self._requests.length, oldBusy = this.isBusy;
             self._requests.push(item);
             req.always(function () {
-                if (self.getIsDestroyCalled())
+                if (self.getIsDisposing())
                     return;
                 var oldBusy = self.isBusy;
                 utils.arr.remove(self._requests, item);
-                self.raisePropertyChanged(const_5.PROP_NAME.requestCount);
+                self.objEvents.raiseProp(const_5.PROP_NAME.requestCount);
                 if (oldBusy !== self.isBusy) {
-                    self.raisePropertyChanged(const_5.PROP_NAME.isBusy);
+                    self.objEvents.raiseProp(const_5.PROP_NAME.isBusy);
                 }
             });
             if (cnt !== self._requests.length) {
-                self.raisePropertyChanged(const_5.PROP_NAME.requestCount);
+                self.objEvents.raiseProp(const_5.PROP_NAME.requestCount);
             }
             if (oldBusy !== self.isBusy) {
-                self.raisePropertyChanged(const_5.PROP_NAME.isBusy);
+                self.objEvents.raiseProp(const_5.PROP_NAME.isBusy);
             }
         };
         DbContext.prototype._tryAbortRequest = function (operType, name) {
@@ -2639,7 +2639,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 return;
             }
             var args = { error: error, isHandled: false };
-            this.raiseEvent(DBCTX_EVENTS.submit_err, args);
+            this.objEvents.raise(DBCTX_EVENTS.submit_err, args);
             if (!args.isHandled) {
                 this._onDataOperError(error, 1);
             }
@@ -2718,7 +2718,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 fn_checkError(res.error, 4);
                 if (!res.rowInfo) {
                     item._aspect.dbSet.removeItem(item);
-                    item.destroy();
+                    item.dispose();
                     throw new Error(jriapp_shared_7.LocaleERRS.ERR_ITEM_DELETED_BY_ANOTHER_USER);
                 }
                 else {
@@ -2816,7 +2816,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 }
             }
             if (this._isHasChanges !== old) {
-                this.raisePropertyChanged(const_5.PROP_NAME.isHasChanges);
+                this.objEvents.raiseProp(const_5.PROP_NAME.isHasChanges);
             }
         };
         DbContext.prototype._load = function (query, reason) {
@@ -2893,7 +2893,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 self._checkDestroy();
                 args.fn_onOk();
             }).catch(function (er) {
-                if (!self.getIsDestroyCalled() && ERROR.checkIsAbort(er) && er.reason === no_changes) {
+                if (!self.getIsDisposing() && ERROR.checkIsAbort(er) && er.reason === no_changes) {
                     args.fn_onOk();
                 }
                 else {
@@ -2933,7 +2933,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             }).then(function (res) {
                 self._checkDestroy();
                 self._updatePermissions(res);
-                self.raisePropertyChanged(const_5.PROP_NAME.isInitialized);
+                self.objEvents.raiseProp(const_5.PROP_NAME.isInitialized);
             }).catch(function (err) {
                 self._onDataOperError(err, 5);
                 ERROR.throwDummy(err);
@@ -2941,10 +2941,10 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             return this._initState;
         };
         DbContext.prototype.addOnSubmitError = function (fn, nmspace, context) {
-            this.addHandler(DBCTX_EVENTS.submit_err, fn, nmspace, context);
+            this.objEvents.on(DBCTX_EVENTS.submit_err, fn, nmspace, context);
         };
         DbContext.prototype.removeOnSubmitError = function (nmspace) {
-            this.removeHandler(DBCTX_EVENTS.submit_err, nmspace);
+            this.objEvents.off(DBCTX_EVENTS.submit_err, nmspace);
         };
         DbContext.prototype.getDbSet = function (name) {
             return this._dbSets.getDbSet(name);
@@ -2970,14 +2970,14 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 fn_onStart: function () {
                     if (!self._isSubmiting) {
                         self._isSubmiting = true;
-                        self.raisePropertyChanged(const_5.PROP_NAME.isSubmiting);
+                        self.objEvents.raiseProp(const_5.PROP_NAME.isSubmiting);
                     }
                     self._pendingSubmit = null;
                 },
                 fn_onEnd: function () {
                     if (self._isSubmiting) {
                         self._isSubmiting = false;
-                        self.raisePropertyChanged(const_5.PROP_NAME.isSubmiting);
+                        self.objEvents.raiseProp(const_5.PROP_NAME.isSubmiting);
                     }
                 },
                 fn_onErr: function (ex) {
@@ -3036,20 +3036,20 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 promise.req.abort(reason);
             }
         };
-        DbContext.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        DbContext.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             this.abortRequests();
-            this._waitQueue.destroy();
+            this._waitQueue.dispose();
             this._waitQueue = null;
             this._arrAssoc.forEach(function (assoc) {
-                assoc.destroy();
+                assoc.dispose();
             });
             this._arrAssoc = [];
             this._assoc = {};
-            this._dbSets.destroy();
+            this._dbSets.dispose();
             this._dbSets = null;
             this._svcMethods = {};
             this._queryInf = {};
@@ -3057,7 +3057,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             this._initState = null;
             this._isSubmiting = false;
             this._isHasChanges = false;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         Object.defineProperty(DbContext.prototype, "serviceUrl", {
             get: function () { return this._serviceUrl; },
@@ -3171,14 +3171,11 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             return _this;
         }
         EntityAspect.prototype._onFieldChanged = function (fieldName, fieldInfo) {
-            var self = this;
-            if (self._isDestroyCalled) {
-                return;
-            }
-            self.item.raisePropertyChanged(fieldName);
+            var _this = this;
+            this.item.objEvents.raiseProp(fieldName);
             if (!!fieldInfo.dependents && fieldInfo.dependents.length > 0) {
                 fieldInfo.dependents.forEach(function (d) {
-                    self.item.raisePropertyChanged(d);
+                    _this.item.objEvents.raiseProp(d);
                 });
             }
         };
@@ -3380,7 +3377,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
         };
         EntityAspect.prototype._refreshValues = function (rowInfo, refreshMode) {
             var self = this, oldStatus = this.status;
-            if (!this._isDestroyed) {
+            if (!this.getIsDisposed()) {
                 if (!refreshMode) {
                     refreshMode = 1;
                 }
@@ -3423,9 +3420,6 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             coreUtils.setValue(this._vals, fieldName, null, false);
         };
         EntityAspect.prototype._getFieldVal = function (fieldName) {
-            if (this._isDestroyCalled) {
-                return null;
-            }
             return coreUtils.getValue(this._vals, fieldName);
         };
         EntityAspect.prototype._setFieldVal = function (fieldName, val) {
@@ -3486,15 +3480,15 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             this._srvKey = v;
         };
         EntityAspect.prototype._acceptChanges = function (rowInfo) {
-            if (this.getIsDestroyed()) {
+            if (this.getIsDisposed()) {
                 return;
             }
             var oldStatus = this.status, dbSet = this.dbSet, internal = dbSet._getInternal(), errors = dbSet.errors;
             if (oldStatus !== 0) {
                 internal.onCommitChanges(this.item, true, false, oldStatus);
                 if (oldStatus === 3) {
-                    if (!this.getIsDestroyCalled()) {
-                        this.destroy();
+                    if (!this.getIsDisposing()) {
+                        this.dispose();
                     }
                     return;
                 }
@@ -3525,7 +3519,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             return this.deleteOnSubmit();
         };
         EntityAspect.prototype.deleteOnSubmit = function () {
-            if (this.getIsDestroyCalled()) {
+            if (this.getIsDisposing()) {
                 return false;
             }
             var oldStatus = this.status, dbSet = this.dbSet;
@@ -3546,15 +3540,15 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             this._acceptChanges(null);
         };
         EntityAspect.prototype.rejectChanges = function () {
-            if (this.getIsDestroyed()) {
+            if (this.getIsDisposed()) {
                 return;
             }
             var self = this, oldStatus = self.status, dbSet = self.dbSet, internal = dbSet._getInternal(), errors = dbSet.errors;
             if (oldStatus !== 0) {
                 internal.onCommitChanges(self.item, true, true, oldStatus);
                 if (oldStatus === 1) {
-                    if (!this.getIsDestroyCalled()) {
-                        this.destroy();
+                    if (!this.getIsDisposing()) {
+                        this.dispose();
                     }
                     return;
                 }
@@ -3597,14 +3591,14 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             var dbxt = this.dbSet.dbContext;
             return dbxt._getInternal().refreshItem(this.item);
         };
-        EntityAspect.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        EntityAspect.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             this.cancelEdit();
             this.rejectChanges();
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         EntityAspect.prototype.toString = function () {
             return this.dbSetName + "EntityAspect";
@@ -3678,17 +3672,17 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             _this._bindDS();
             return _this;
         }
-        DataView.prototype._getEventNames = function () {
-            var baseEvents = _super.prototype._getEventNames.call(this);
+        DataView.prototype.getEventNames = function () {
+            var baseEvents = _super.prototype.getEventNames.call(this);
             return [VIEW_EVENTS.refreshed].concat(baseEvents);
         };
         DataView.prototype._clearItems = function (items) {
         };
         DataView.prototype.addOnViewRefreshed = function (fn, nmspace) {
-            this.addHandler(VIEW_EVENTS.refreshed, fn, nmspace);
+            this.objEvents.on(VIEW_EVENTS.refreshed, fn, nmspace);
         };
         DataView.prototype.removeOnViewRefreshed = function (nmspace) {
-            this.removeHandler(VIEW_EVENTS.refreshed, nmspace);
+            this.objEvents.off(VIEW_EVENTS.refreshed, nmspace);
         };
         DataView.prototype._filterForPaging = function (items) {
             var skip = 0, take = 0, pos = -1, cnt = -1;
@@ -3708,16 +3702,16 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             return result;
         };
         DataView.prototype._onViewRefreshed = function (args) {
-            this.raiseEvent(VIEW_EVENTS.refreshed, args);
+            this.objEvents.raise(VIEW_EVENTS.refreshed, args);
         };
         DataView.prototype._refresh = function (reason) {
-            if (this.getIsDestroyCalled()) {
+            if (this.getIsDisposing()) {
                 return;
             }
             try {
                 var items = void 0;
                 var ds = this._dataSource;
-                if (!ds || ds.getIsDestroyCalled()) {
+                if (!ds || ds.getIsDisposing()) {
                     this.clear();
                     this._onViewRefreshed({});
                     return;
@@ -3917,7 +3911,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             if (!ds) {
                 return;
             }
-            ds.removeNSHandlers(self.uniqueID);
+            ds.objEvents.offNS(self.uniqueID);
         };
         DataView.prototype._checkCurrentChanging = function (newCurrent) {
             var ds = this._dataSource;
@@ -3945,7 +3939,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             return this._dataSource._getInternal().getStrValue(val, fieldInfo);
         };
         DataView.prototype.appendItems = function (items) {
-            if (this._isDestroyCalled) {
+            if (this.getIsDisposing()) {
                 return [];
             }
             return this._fillItems({ items: items, reason: 0, clear: false, isAppend: true });
@@ -3999,18 +3993,18 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                 _this._refresh(0);
             });
         };
-        DataView.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        DataView.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
-            this._refreshDebounce.destroy();
+            this.setDisposing();
+            this._refreshDebounce.dispose();
             this._refreshDebounce = null;
             this._unbindDS();
             this._dataSource = null;
             this._fnFilter = null;
             this._fnSort = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         Object.defineProperty(DataView.prototype, "errors", {
             get: function () {
@@ -4029,7 +4023,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             set: function (v) {
                 if (this.options.enablePaging !== v) {
                     this.options.enablePaging = v;
-                    this.raisePropertyChanged(const_6.PROP_NAME.isPagingEnabled);
+                    this.objEvents.raiseProp(const_6.PROP_NAME.isPagingEnabled);
                     this._refresh(0);
                 }
             },
@@ -4102,7 +4096,7 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
             _this = _super.call(this, opts) || this;
             var self = _this;
             _this._getParent = function () {
-                if (self.getIsDestroyCalled()) {
+                if (self.getIsDisposing()) {
                     return null;
                 }
                 return parentItem;
@@ -4110,9 +4104,9 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
             _this._setParent = function (v) {
                 if (parentItem !== v) {
                     parentItem = v;
-                    self.raisePropertyChanged(const_7.PROP_NAME.parentItem);
+                    self.objEvents.raiseProp(const_7.PROP_NAME.parentItem);
                 }
-                if (self.getIsDestroyCalled()) {
+                if (self.getIsDisposing()) {
                     return;
                 }
                 if (self.items.length > 0) {
@@ -4133,16 +4127,16 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
             }
             return _this;
         }
-        ChildDataView.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        ChildDataView.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             this._setParent(null);
-            this._parentDebounce.destroy();
+            this._parentDebounce.dispose();
             this._parentDebounce = null;
             this._association = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         ChildDataView.prototype.toString = function () {
             return (!!this._association) ? ("ChildDataView for " + this._association.toString()) : "ChildDataView";

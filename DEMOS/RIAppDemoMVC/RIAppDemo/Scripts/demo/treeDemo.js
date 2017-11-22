@@ -43,32 +43,32 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
                 if (!!self._clickTimeOut) {
                     clearTimeout(self._clickTimeOut);
                     self._clickTimeOut = null;
-                    self.raiseEvent('dblclicked', { item: self._item });
+                    self.objEvents.raise('dblclicked', { item: self._item });
                 }
                 else {
                     self._clickTimeOut = setTimeout(function () {
                         self._clickTimeOut = null;
-                        self.raiseEvent('clicked', { item: self._item });
+                        self.objEvents.raise('clicked', { item: self._item });
                     }, 350);
                 }
             }, self, null);
             return _this;
         }
-        ExProps.prototype._getEventNames = function () {
-            var base_events = _super.prototype._getEventNames.call(this);
+        ExProps.prototype.getEventNames = function () {
+            var base_events = _super.prototype.getEventNames.call(this);
             return ['clicked', 'dblclicked'].concat(base_events);
         };
         ExProps.prototype.addOnClicked = function (fn, nmspace) {
-            this.addHandler('clicked', fn, nmspace);
+            this.objEvents.on('clicked', fn, nmspace);
         };
         ExProps.prototype.removeOnClicked = function (nmspace) {
-            this.removeHandler('clicked', nmspace);
+            this.objEvents.off('clicked', nmspace);
         };
         ExProps.prototype.addOnDblClicked = function (fn, nmspace) {
-            this.addHandler('dblclicked', fn, nmspace);
+            this.objEvents.on('dblclicked', fn, nmspace);
         };
         ExProps.prototype.removeOnDblClicked = function (nmspace) {
-            this.removeHandler('dblclicked', nmspace);
+            this.objEvents.off('dblclicked', nmspace);
         };
         ExProps.prototype.createChildView = function () {
             var self = this;
@@ -87,25 +87,25 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
             var promise = query.load();
             return promise;
         };
-        ExProps.prototype.destroy = function () {
-            if (this._isDestroyed)
+        ExProps.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             var self = this;
             clearTimeout(self._clickTimeOut);
             if (!!this._childView) {
                 this._childView.parentItem = null;
-                this._childView.destroy();
+                this._childView.dispose();
                 this._childView = null;
             }
             this._dbSet = null;
             this._dbContext = null;
             this._item = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         ExProps.prototype.refreshCss = function () {
-            this.raisePropertyChanged('css1');
-            this.raisePropertyChanged('css2');
+            this.objEvents.raiseProp('css1');
+            this.objEvents.raiseProp('css2');
         };
         Object.defineProperty(ExProps.prototype, "item", {
             get: function () { return this._item; },
@@ -250,11 +250,11 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
             var promise = query.load();
             return promise;
         };
-        FolderBrowser.prototype.destroy = function () {
-            if (this._isDestroyed)
+        FolderBrowser.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
-            _super.prototype.destroy.call(this);
+            this.setDisposing();
+            _super.prototype.dispose.call(this);
         };
         Object.defineProperty(FolderBrowser.prototype, "dbContext", {
             get: function () { return this.app.dbContext; },
@@ -309,17 +309,17 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
             });
             _super.prototype.onStartUp.call(this);
         };
-        DemoApplication.prototype.destroy = function () {
-            if (this._isDestroyed)
+        DemoApplication.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             var self = this;
             try {
-                self._errorVM.destroy();
-                self._fbrowserVM.destroy();
+                self._errorVM.dispose();
+                self._fbrowserVM.dispose();
             }
             finally {
-                _super.prototype.destroy.call(this);
+                _super.prototype.dispose.call(this);
             }
         };
         Object.defineProperty(DemoApplication.prototype, "options", {

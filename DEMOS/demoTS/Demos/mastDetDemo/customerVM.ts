@@ -34,7 +34,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
         }, self.uniqueID);
 
         this._dbSet.addOnPageIndexChanged(function (sender, args) {
-            self.raiseEvent('page_changed', {});
+            self.objEvents.raise('page_changed', {});
         }, self.uniqueID);
 
         //example of using custom validation on client (in addition to a built-in validation)
@@ -129,26 +129,26 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
     protected _removeGrid(): void {
         if (!this._dataGrid)
             return;
-        this._dataGrid.removeNSHandlers(this.uniqueID);
+        this._dataGrid.objEvents.offNS(this.uniqueID);
         this._dataGrid = null;
     }
     protected onRowExpanded(row: uiMOD.DataGridRow): void {
-        this.raiseEvent('row_expanded', { customer: row.item, isExpanded: true });
+        this.objEvents.raise('row_expanded', { customer: row.item, isExpanded: true });
     }
     protected onRowCollapsed(row: uiMOD.DataGridRow): void {
-        this.raiseEvent('row_expanded', { customer: row.item, isExpanded: false });
+        this.objEvents.raise('row_expanded', { customer: row.item, isExpanded: false });
     }
     protected onCellDblClicked(cell: uiMOD.DataGridCell): void {
         alert("You double clicked " + cell.uniqueID);
     }
 
-    _getEventNames() {
-        let base_events = super._getEventNames();
+    getEventNames() {
+        let base_events = super.getEventNames();
         return ['row_expanded', 'page_changed'].concat(base_events);
     }
     protected _onCurrentChanged() {
         this._custAdressView.parentItem = this._dbSet.currentItem;
-        this.raisePropertyChanged('currentItem');
+        this.objEvents.raiseProp('currentItem');
     }
     //returns promise
     load() {
@@ -169,23 +169,23 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
         */
         return res;
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
-        this._propWatcher.destroy();
+        this.setDisposing();
+        this._propWatcher.dispose();
         this._propWatcher = null;
 
         if (!!this._dbSet) {
-            this._dbSet.removeNSHandlers(this.uniqueID);
+            this._dbSet.objEvents.offNS(this.uniqueID);
         }
         if (!!this._dataGrid) {
-            this._dataGrid.removeNSHandlers(this.uniqueID);
+            this._dataGrid.objEvents.offNS(this.uniqueID);
         }
 
-        this._ordersVM.destroy()
+        this._ordersVM.dispose()
         this._ordersVM = null;
-        super.destroy();
+        super.dispose();
     }
     get dbContext() { return this.app.dbContext; }
     get dbSets() { return this.dbContext.dbSets; }

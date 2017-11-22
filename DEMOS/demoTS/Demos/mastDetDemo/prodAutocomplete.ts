@@ -53,7 +53,7 @@ export class ProductAutoComplete extends AUTOCOMPLETE.AutoCompleteElView {
         if (old !== v) {
             const dxt = v;
             if (!!dxt) {
-                dxt.addOnPropertyChange('ProductID', (sender, a) => {
+                dxt.objEvents.onProp('ProductID', (sender, a) => {
                     self._updateValue();
                 }, this.uniqueID);
             }

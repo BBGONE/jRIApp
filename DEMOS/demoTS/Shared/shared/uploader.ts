@@ -16,15 +16,15 @@ export class Uploader extends RIAPP.BaseObject {
         this._uploadUrl = uploadUrl;
         this._file = file;
     }
-    _getEventNames() {
-        const base_events = super._getEventNames();
+    getEventNames() {
+        const base_events = super.getEventNames();
         return ['progress', 'addheaders'].concat(base_events);
     }
     addOnProgress(fn: (sender: Uploader, args: number) => void, nmspace?: string) {
-        this.addHandler('progress', fn, nmspace);
+        this.objEvents.on('progress', fn, nmspace);
     }
     addOnAddHeaders(fn: (sender: Uploader, args: IAddHeadersArgs) => void, nmspace?: string) {
-        this.addHandler('addheaders', fn, nmspace);
+        this.objEvents.on('addheaders', fn, nmspace);
     }
     uploadFile(): RIAPP.IPromise<string> {
         const self = this, chunks: Blob[] = [],
@@ -38,7 +38,7 @@ export class Uploader extends RIAPP.BaseObject {
         const len = chunks.length;
         const funcs = chunks.map((chunk, i) => () => self.uploadFileChunk(file, chunk, i + 1, len));
         const res = _async.promiseSerial(funcs).then((res) => {
-            self.raiseEvent('progress', 100);
+            self.objEvents.raise('progress', 100);
             return file.name;
         });
         return res;
@@ -55,7 +55,7 @@ export class Uploader extends RIAPP.BaseObject {
         upload.onerror = function (e) {
             deffered.reject(new Error("Uploading file " + file.name + " error"));
         };
-        deffered.promise().then(() => self.raiseEvent('progress', part / total));
+        deffered.promise().then(() => self.objEvents.raise('progress', part / total));
         xhr.open("post", self.uploadUrl, true);
         let name = encodeURIComponent(file.name);
         xhr.setRequestHeader("Content-Type", "multipart/form-data");
@@ -66,7 +66,7 @@ export class Uploader extends RIAPP.BaseObject {
         xhr.setRequestHeader("X-Chunk-Size", chunk.size.toString());
         xhr.setRequestHeader("X-Chunk-Count", total.toString());
         const args: IAddHeadersArgs = { xhr: xhr, promise: null };
-        self.raiseEvent('addheaders', args);
+        self.objEvents.raise('addheaders', args);
         const addHeadersPromise = !args.promise ? _async.resolve() : args.promise;
         return addHeadersPromise.then(() => {
             xhr.send(chunk);

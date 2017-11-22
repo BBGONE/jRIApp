@@ -64,30 +64,30 @@ export class ExProps extends RIAPP.BaseObject {
             if (!!self._clickTimeOut) {
                 clearTimeout(self._clickTimeOut);
                 self._clickTimeOut = null;
-                self.raiseEvent('dblclicked', { item: self._item });
+                self.objEvents.raise('dblclicked', { item: self._item });
             } else {
                 self._clickTimeOut = setTimeout(function () {
                     self._clickTimeOut = null;
-                    self.raiseEvent('clicked', { item: self._item });
+                    self.objEvents.raise('clicked', { item: self._item });
                 }, 350);
             }
         }, self, null);
     }
-    _getEventNames() {
-        let base_events = super._getEventNames();
+    getEventNames() {
+        let base_events = super.getEventNames();
         return ['clicked', 'dblclicked'].concat(base_events);
     }
     addOnClicked(fn: (sender: ExProps, args: { item: FOLDERBROWSER_SVC.FileSystemObject; }) => void, nmspace?: string) {
-        this.addHandler('clicked', fn, nmspace);
+        this.objEvents.on('clicked', fn, nmspace);
     }
     removeOnClicked(nmspace?: string) {
-        this.removeHandler('clicked', nmspace);
+        this.objEvents.off('clicked', nmspace);
     }
     addOnDblClicked(fn: (sender: ExProps, args: { item: FOLDERBROWSER_SVC.FileSystemObject; }) => void, nmspace?: string) {
-        this.addHandler('dblclicked', fn, nmspace);
+        this.objEvents.on('dblclicked', fn, nmspace);
     }
     removeOnDblClicked(nmspace?: string) {
-        this.removeHandler('dblclicked', nmspace);
+        this.objEvents.off('dblclicked', nmspace);
     }
     createChildView() {
         let self = this;
@@ -107,25 +107,25 @@ export class ExProps extends RIAPP.BaseObject {
         let promise = query.load();
         return promise;
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         let self = this;
         clearTimeout(self._clickTimeOut);
         if (!!this._childView) {
             this._childView.parentItem = null;
-            this._childView.destroy();
+            this._childView.dispose();
             this._childView = null;
         }
         this._dbSet = null;
         this._dbContext = null;
         this._item = null;
-        super.destroy();
+        super.dispose();
     }
     refreshCss() {
-        this.raisePropertyChanged('css1');
-        this.raisePropertyChanged('css2');
+        this.objEvents.raiseProp('css1');
+        this.objEvents.raiseProp('css2');
     }
     get item() { return this._item; }
     get childView() { return this._childView; }
@@ -265,11 +265,11 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
         let promise = query.load();
         return promise;
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
-        super.destroy();
+        this.setDisposing();
+        super.dispose();
     }
     get dbContext() { return this.app.dbContext; }
     get collapseCommand() { return this._collapseCommand; }
@@ -308,17 +308,17 @@ export class DemoApplication extends RIAPP.Application {
         });
         super.onStartUp();
     }
-    //really, the destroy method is redundant here because application lives till the page lives
-    destroy() {
-        if (this._isDestroyed)
+    //really, the dispose method is redundant here because application lives till the page lives
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         let self = this;
         try {
-            self._errorVM.destroy();
-            self._fbrowserVM.destroy();
+            self._errorVM.dispose();
+            self._fbrowserVM.dispose();
         } finally {
-            super.destroy();
+            super.dispose();
         }
     }
     get options() { return <IMainOptions>this._options; }

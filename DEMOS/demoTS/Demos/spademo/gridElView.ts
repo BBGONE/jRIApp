@@ -42,15 +42,15 @@ export class GridElView extends uiMOD.DataGridElView {
             }
         }
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         if (!!this._myGridEvents) {
             this._myGridEvents.regFocusGridFunc(null);
         }
         this._myGridEvents = null;
-        super.destroy();
+        super.dispose();
     }
     get myGridEvents() { return this._myGridEvents; }
     set myGridEvents(v) {
@@ -60,7 +60,7 @@ export class GridElView extends uiMOD.DataGridElView {
                 this._myGridEvents.regFocusGridFunc(null);
             }
             this._myGridEvents= v;
-            this.raisePropertyChanged('myGridEvents');
+            this.objEvents.raiseProp('myGridEvents');
             //a new gridEvents object was set
             if (!!this._myGridEvents) {
                 this._myGridEvents.regFocusGridFunc(() => {

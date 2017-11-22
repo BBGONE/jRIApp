@@ -96,8 +96,8 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             set: function (v) {
                 if (this._testProperty1 != v) {
                     this._testProperty1 = v;
-                    this.raisePropertyChanged('testProperty1');
-                    this.raisePropertyChanged('isEnabled');
+                    this.objEvents.raiseProp('testProperty1');
+                    this.objEvents.raiseProp('isEnabled');
                     this._testCommand.raiseCanExecuteChanged();
                 }
             },
@@ -109,7 +109,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             set: function (v) {
                 if (this._testProperty2 != v) {
                     this._testProperty2 = v;
-                    this.raisePropertyChanged('testProperty2');
+                    this.objEvents.raiseProp('testProperty2');
                 }
             },
             enumerable: true,
@@ -120,7 +120,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             set: function (v) {
                 if (this._testProperty3 != v) {
                     this._testProperty3 = v;
-                    this.raisePropertyChanged('testProperty3');
+                    this.objEvents.raiseProp('testProperty3');
                 }
             },
             enumerable: true,
@@ -131,7 +131,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             set: function (v) {
                 if (this._boolProperty != v) {
                     this._boolProperty = v;
-                    this.raisePropertyChanged('boolProperty');
+                    this.objEvents.raiseProp('boolProperty');
                 }
             },
             enumerable: true,
@@ -160,7 +160,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             set: function (v) {
                 if (this._format !== v) {
                     this._format = v;
-                    this.raisePropertyChanged('format');
+                    this.objEvents.raiseProp('format');
                 }
             },
             enumerable: true,
@@ -171,7 +171,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             set: function (v) {
                 if (this._formatItem !== v) {
                     this._formatItem = v;
-                    this.raisePropertyChanged('formatItem');
+                    this.objEvents.raiseProp('formatItem');
                 }
             },
             enumerable: true,
@@ -194,7 +194,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             set: function (v) {
                 if (v !== this._month) {
                     this._month = v;
-                    this.raisePropertyChanged('month');
+                    this.objEvents.raiseProp('month');
                 }
             },
             enumerable: true,
@@ -228,19 +228,19 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             });
             _super.prototype.onStartUp.call(this);
         };
-        DemoApplication.prototype.destroy = function () {
-            if (this._isDestroyed)
+        DemoApplication.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             var self = this;
             try {
-                self._errorVM.destroy();
-                self._testObject.destroy();
+                self._errorVM.dispose();
+                self._testObject.dispose();
                 if (!!self.UC.createdBinding)
-                    self.UC.createdBinding.destroy();
+                    self.UC.createdBinding.dispose();
             }
             finally {
-                _super.prototype.destroy.call(this);
+                _super.prototype.dispose.call(this);
             }
         };
         Object.defineProperty(DemoApplication.prototype, "errorVM", {

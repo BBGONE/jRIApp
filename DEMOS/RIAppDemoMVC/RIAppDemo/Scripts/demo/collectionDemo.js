@@ -44,19 +44,19 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             ], true);
             return _this;
         }
-        RadioDemoVM.prototype._getEventNames = function () {
-            var base_events = _super.prototype._getEventNames.call(this);
+        RadioDemoVM.prototype.getEventNames = function () {
+            var base_events = _super.prototype.getEventNames.call(this);
             return ['radio_value_changed'].concat(base_events);
         };
         RadioDemoVM.prototype._onRadioValueChanged = function () {
-            this.raiseEvent('radio_value_changed', { value: this.radioValue });
+            this.objEvents.raise('radio_value_changed', { value: this.radioValue });
         };
         Object.defineProperty(RadioDemoVM.prototype, "radioValue", {
             get: function () { return this._radioValue; },
             set: function (v) {
                 if (this._radioValue !== v) {
                     this._radioValue = v;
-                    this.raisePropertyChanged('radioValue');
+                    this.objEvents.raiseProp('radioValue');
                     this._onRadioValueChanged();
                 }
             },
@@ -84,7 +84,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             if (!!currentValue)
                 _this.radioValue = currentValue;
             _this._historyList = new DEMODB.HistoryList();
-            _this._historyList.addOnPropertyChange('count', function (s, a) {
+            _this._historyList.objEvents.onProp('count', function (s, a) {
                 self._clearListCommand.raiseCanExecuteChanged();
             }, _this.uniqueID);
             _this._clearListCommand = new RIAPP.Command(function (sender, param) {
@@ -140,17 +140,17 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             });
             _super.prototype.onStartUp.call(this);
         };
-        DemoApplication.prototype.destroy = function () {
-            if (this._isDestroyed)
+        DemoApplication.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             var self = this;
             try {
-                self._errorVM.destroy();
-                self._demoVM.destroy();
+                self._errorVM.dispose();
+                self._demoVM.dispose();
             }
             finally {
-                _super.prototype.destroy.call(this);
+                _super.prototype.dispose.call(this);
             }
         };
         Object.defineProperty(DemoApplication.prototype, "errorVM", {

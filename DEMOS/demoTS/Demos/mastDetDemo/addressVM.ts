@@ -20,12 +20,12 @@ export class AddressVM extends RIAPP.ViewModel<DemoApplication> {
             self.loadAddressesForOrders(args.items);
         }, self.uniqueID);
 
-        this._dbSet.addOnPropertyChange('currentItem', function (sender, args) {
+        this._dbSet.objEvents.onProp('currentItem', function (sender, args) {
             self._onCurrentChanged();
         }, self.uniqueID);
     }
     protected _onCurrentChanged() {
-        this.raisePropertyChanged('currentItem');
+        this.objEvents.raiseProp('currentItem');
     }
     //returns promise
     loadAddressesForOrders(orders: DEMODB.SalesOrderHeader[]) {
@@ -50,17 +50,17 @@ export class AddressVM extends RIAPP.ViewModel<DemoApplication> {
     clear() {
         this.dbSet.clear();
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         if (!!this._dbSet) {
-            this._dbSet.removeNSHandlers(this.uniqueID);
+            this._dbSet.objEvents.offNS(this.uniqueID);
         }
-        this._customerDbSet.removeNSHandlers(this.uniqueID);
-        this._orderVM.removeNSHandlers(this.uniqueID);
+        this._customerDbSet.objEvents.offNS(this.uniqueID);
+        this._orderVM.objEvents.offNS(this.uniqueID);
         this._orderVM = null;
-        super.destroy();
+        super.dispose();
     }
     get _customerDbSet() { return this._orderVM.customerVM.dbSet; }
     get dbContext() { return this.app.dbContext; }

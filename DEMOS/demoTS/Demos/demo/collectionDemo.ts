@@ -37,19 +37,19 @@ export class RadioDemoVM extends RIAPP.ViewModel<DemoApplication> {
         ], true);
         //console.log(this._testDict.items2[3].SomeProperty2[0]);
     }
-    _getEventNames() {
-        let base_events = super._getEventNames();
+    getEventNames() {
+        let base_events = super.getEventNames();
         return ['radio_value_changed'].concat(base_events);
     }
     //can be overriden in descendants as in his example
     _onRadioValueChanged() {
-        this.raiseEvent('radio_value_changed', { value: this.radioValue })
+        this.objEvents.raise('radio_value_changed', { value: this.radioValue })
     }
     get radioValue() { return this._radioValue; }
     set radioValue(v) {
         if (this._radioValue !== v) {
             this._radioValue = v;
-            this.raisePropertyChanged('radioValue');
+            this.objEvents.raiseProp('radioValue');
             this._onRadioValueChanged();
         }
     }
@@ -68,7 +68,7 @@ export class RadioDemo2VM extends RadioDemoVM {
         if (!!currentValue)
             this.radioValue = currentValue;
         this._historyList = new DEMODB.HistoryList();
-        this._historyList.addOnPropertyChange('count', function (s, a) {
+        this._historyList.objEvents.onProp('count', function (s, a) {
             self._clearListCommand.raiseCanExecuteChanged();
         }, this.uniqueID);
         this._clearListCommand = new RIAPP.Command(function (sender, param) {
@@ -127,16 +127,16 @@ export class DemoApplication extends RIAPP.Application {
         });
         super.onStartUp();
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         let self = this;
         try {
-            self._errorVM.destroy();
-            self._demoVM.destroy();
+            self._errorVM.dispose();
+            self._demoVM.dispose();
         } finally {
-            super.destroy();
+            super.dispose();
         }
     }
     get errorVM() { return this._errorVM; }

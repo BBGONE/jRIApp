@@ -33,12 +33,12 @@ export class HeaderVM extends RIAPP.ViewModel<RIAPP.IApplication> {
         }, self);
 
     }
-    _getEventNames() {
-        const base_events = super._getEventNames();
+    getEventNames() {
+        const base_events = super.getEventNames();
         return ['updateUI'].concat(base_events);
     }
     addOnUpdateUI(fn: (sender: HeaderVM, args: { isHandled: boolean; isUp: boolean; }) => void, namespace?: string) {
-        this.addHandler('updateUI', fn, namespace);
+        this.objEvents.on('updateUI', fn, namespace);
     }
     expand() {
         this._$topPanel.slideDown('fast', () => this.updateUI(false));
@@ -48,7 +48,7 @@ export class HeaderVM extends RIAPP.ViewModel<RIAPP.IApplication> {
     }
     updateUI(isUp: boolean) {
         const args = { isHandled: false, isUp: isUp };
-        this.raiseEvent('updateUI', args);
+        this.objEvents.raise('updateUI', args);
         if (args.isHandled)
             return;
         if (!!this._$contentPanel) {

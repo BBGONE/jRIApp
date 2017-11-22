@@ -64,7 +64,7 @@ export class DemoApplication extends RIAPP.Application {
 
         if (!!options.sse_url && SSEVENTS.SSEventsVM.isSupported()) {
             this._sseVM = new SSEVENTS.SSEventsVM(options.sse_url, options.sse_clientID);
-            this._sseVM.addOnMessage((s, a) => { self._sseMessage = a.data.message; self.raisePropertyChanged('sseMessage'); });
+            this._sseVM.addOnMessage((s, a) => { self._sseMessage = a.data.message; self.objEvents.raiseProp('sseMessage'); });
             this._sseVM.addOnError(handleError);
         }
 
@@ -90,24 +90,24 @@ export class DemoApplication extends RIAPP.Application {
         this.errorVM.showDialog();
     }
     private _onWebsockMsg(sender: WEBSOCK.WebSocketsVM, args: { message: string; data: any; }) {
-        this._sseMessage = args.data.message; this.raisePropertyChanged('sseMessage');
+        this._sseMessage = args.data.message; this.objEvents.raiseProp('sseMessage');
     }
-    //really, the destroy method is redundant here because the application lives while the page lives
-    destroy() {
-        if (this._isDestroyed)
+    //really, the dispose method is redundant here because the application lives while the page lives
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         let self = this;
         try {
-            self._errorVM.destroy();
-            self._headerVM.destroy();
-            self._productVM.destroy();
-            self._uploadVM.destroy();
-            self._dbContext.destroy();
+            self._errorVM.dispose();
+            self._headerVM.dispose();
+            self._productVM.dispose();
+            self._uploadVM.dispose();
+            self._dbContext.dispose();
             if (!!self._sseVM)
-                self._sseVM.destroy();
+                self._sseVM.dispose();
         } finally {
-            super.destroy();
+            super.dispose();
         }
     }
     get options() { return <IMainOptions>this._options; }

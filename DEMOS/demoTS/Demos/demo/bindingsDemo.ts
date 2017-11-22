@@ -96,8 +96,8 @@ export class TestObject extends RIAPP.BaseObject {
     set testProperty1(v: string) {
         if (this._testProperty1 != v) {
             this._testProperty1 = v;
-            this.raisePropertyChanged('testProperty1');
-            this.raisePropertyChanged('isEnabled');
+            this.objEvents.raiseProp('testProperty1');
+            this.objEvents.raiseProp('isEnabled');
 
             //let the command to evaluate its availability
             this._testCommand.raiseCanExecuteChanged();
@@ -107,21 +107,21 @@ export class TestObject extends RIAPP.BaseObject {
     set testProperty2(v: string) {
         if (this._testProperty2 != v) {
             this._testProperty2 = v;
-            this.raisePropertyChanged('testProperty2');
+            this.objEvents.raiseProp('testProperty2');
         }
     }
     get testProperty3(): string { return this._testProperty3; }
     set testProperty3(v: string) {
         if (this._testProperty3 != v) {
             this._testProperty3 = v;
-            this.raisePropertyChanged('testProperty3');
+            this.objEvents.raiseProp('testProperty3');
         }
     }
     get boolProperty(): boolean { return this._boolProperty; }
     set boolProperty(v: boolean) {
         if (this._boolProperty != v) {
             this._boolProperty = v;
-            this.raisePropertyChanged('boolProperty');
+            this.objEvents.raiseProp('boolProperty');
         }
     }
     get testCommand(): RIAPP.ICommand { return this._testCommand; }
@@ -134,14 +134,14 @@ export class TestObject extends RIAPP.BaseObject {
     set format(v) {
         if (this._format !== v) {
             this._format = v;
-            this.raisePropertyChanged('format');
+            this.objEvents.raiseProp('format');
         }
     }
     get formatItem(): DEMODB.StrKeyValListItem { return this._formatItem; }
     set formatItem(v) {
         if (this._formatItem !== v) {
             this._formatItem = v;
-            this.raisePropertyChanged('formatItem');
+            this.objEvents.raiseProp('formatItem');
         }
     }
     get isEnabled(): boolean {
@@ -152,7 +152,7 @@ export class TestObject extends RIAPP.BaseObject {
     set month(v) {
         if (v !== this._month) {
             this._month = v;
-            this.raisePropertyChanged('month');
+            this.objEvents.raiseProp('month');
         }
     }
     get months() { return this._months; }
@@ -181,18 +181,18 @@ export class DemoApplication extends RIAPP.Application {
 
         super.onStartUp();
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         let self = this;
         try {
-            self._errorVM.destroy();
-            self._testObject.destroy();
+            self._errorVM.dispose();
+            self._testObject.dispose();
             if (!!self.UC.createdBinding)
-                self.UC.createdBinding.destroy();
+                self.UC.createdBinding.dispose();
         } finally {
-            super.destroy();
+            super.dispose();
         }
     }
     get errorVM() { return this._errorVM; }

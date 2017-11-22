@@ -45,16 +45,16 @@ export class FadeAnimation extends RIAPP.BaseObject implements uiMOD.IDynaConten
     get isAnimateFirstShow() {
         return true;
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         try {
             this.stop();
             this._$animatedEl = null;
         }
         finally {
-            super.destroy();
+            super.dispose();
         }
     }
 }
@@ -99,16 +99,16 @@ export class SlideAnimation extends RIAPP.BaseObject implements uiMOD.IDynaConte
     get isAnimateFirstShow() {
         return true;
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         try {
             this.stop();
             this._$animatedEl = null;
         }
         finally {
-            super.destroy();
+            super.dispose();
         }
     }
 }

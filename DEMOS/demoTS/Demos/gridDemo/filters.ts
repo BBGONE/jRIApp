@@ -94,21 +94,21 @@ export class ProductsFilter extends RIAPP.BaseObject {
     set prodNumber(v) {
         if (this._prodNumber != v) {
             this._prodNumber = v;
-            this.raisePropertyChanged('prodNumber');
+            this.objEvents.raiseProp('prodNumber');
         }
     }
     get name() { return this._name; }
     set name(v) {
         if (this._name != v) {
             this._name = v;
-            this.raisePropertyChanged('name');
+            this.objEvents.raiseProp('name');
         }
     }
     get parentCategoryID() { return this._parentCategoryID; }
     set parentCategoryID(v) {
         if (this._parentCategoryID != v) {
             this._parentCategoryID = v;
-            this.raisePropertyChanged('parentCategoryID');
+            this.objEvents.raiseProp('parentCategoryID');
             this._childCategories.refresh();
         }
     }
@@ -116,28 +116,28 @@ export class ProductsFilter extends RIAPP.BaseObject {
     set childCategoryID(v) {
         if (this._childCategoryID != v) {
             this._childCategoryID = v;
-            this.raisePropertyChanged('childCategoryID');
+            this.objEvents.raiseProp('childCategoryID');
         }
     }
     get modelID() { return this._modelID; }
     set modelID(v) {
         if (this._modelID != v) {
             this._modelID = v;
-            this.raisePropertyChanged('modelID');
+            this.objEvents.raiseProp('modelID');
         }
     }
     get saleStart1() { return this._saleStart1; }
     set saleStart1(v) {
         if (this._saleStart1 != v) {
             this._saleStart1 = v;
-            this.raisePropertyChanged('saleStart1');
+            this.objEvents.raiseProp('saleStart1');
         }
     }
     get saleStart2() { return this._saleStart2; }
     set saleStart2(v) {
         if (this._saleStart2 != v) {
             this._saleStart2 = v;
-            this.raisePropertyChanged('saleStart2');
+            this.objEvents.raiseProp('saleStart2');
         }
     }
     get dbSets() { return this.dbContext.dbSets; }
@@ -151,14 +151,14 @@ export class ProductsFilter extends RIAPP.BaseObject {
     set selectedCategory(v) {
         if (this._selectedCategory != v) {
             this._selectedCategory = v;
-            this.raisePropertyChanged('selectedCategory');
+            this.objEvents.raiseProp('selectedCategory');
         }
     }
     get selectedModel() { return this._selectedModel; }
     set selectedModel(v) {
         if (this._selectedModel != v) {
             this._selectedModel = v;
-            this.raisePropertyChanged('selectedModel');
+            this.objEvents.raiseProp('selectedModel');
         }
     }
     get sizes() { return this._sizes; }
@@ -166,7 +166,7 @@ export class ProductsFilter extends RIAPP.BaseObject {
     set size(v) {
         if (this._size != v) {
             this._size = v;
-            this.raisePropertyChanged('size');
+            this.objEvents.raiseProp('size');
         }
     }
     set modelData(data: {

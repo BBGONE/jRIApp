@@ -18,7 +18,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
         this._dbSet = this.dbSets.Customer;
         this._dbSet.isSubmitOnDelete = true;
 
-        this._dbSet.addOnPropertyChange('currentItem', function (sender, args) {
+        this._dbSet.objEvents.onProp('currentItem', function (sender, args) {
             self._onCurrentChanged();
         }, self.uniqueID);
 
@@ -36,7 +36,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
 
         this._dbSet.addOnFill(function (sender, args) {
             //when filled, then raise our custom event
-            self.raiseEvent('data_filled', args);
+            self.objEvents.raise('data_filled', args);
         }, self.uniqueID);
 
         this._dbSet.addOnItemAdded((s, args) => {
@@ -90,12 +90,12 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
         this._customerAddressVM = null;
     }
     //here we added a custom event
-    _getEventNames() {
-        let base_events = super._getEventNames();
+    getEventNames() {
+        let base_events = super.getEventNames();
         return ['data_filled'].concat(base_events);
     }
     _onCurrentChanged() {
-        this.raisePropertyChanged('currentItem');
+        this.objEvents.raiseProp('currentItem');
     }
     load() {
         let query = this.dbSet.createReadCustomerQuery({ includeNav: false });
@@ -109,18 +109,18 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
         return query.load();
 
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         if (!!this._customerAddressVM) {
-            this._customerAddressVM.destroy();
+            this._customerAddressVM.dispose();
             this._customerAddressVM = null;
         }
         if (!!this._dbSet) {
-            this._dbSet.removeNSHandlers(this.uniqueID);
+            this._dbSet.objEvents.offNS(this.uniqueID);
         }
-        super.destroy();
+        super.dispose();
     }
     get dbContext() { return this.app.dbContext; }
     get dbSets() { return this.dbContext.dbSets; }

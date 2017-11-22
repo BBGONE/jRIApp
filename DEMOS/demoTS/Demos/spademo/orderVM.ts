@@ -38,7 +38,7 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
         this._tabs = null;
 
         //loads the data only when customer's row is expanded
-        this._customerVM.addHandler('row_expanded', function (sender, args) {
+        this._customerVM.objEvents.on('row_expanded', function (sender, args) {
             if (args.isExpanded) {
                 self.currentCustomer = args.customer;
             }
@@ -47,7 +47,7 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
             }
         }, self.uniqueID);
 
-        this._dbSet.addOnPropertyChange('currentItem', function (sender, args) {
+        this._dbSet.objEvents.onProp('currentItem', function (sender, args) {
             self._onCurrentChanged();
         }, self.uniqueID);
 
@@ -77,8 +77,8 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
         this._addressVM = new AddressVM(this);
         this._orderDetailVM = new OrderDetailVM(this);
     }
-    _getEventNames() {
-        let base_events = super._getEventNames();
+    getEventNames() {
+        let base_events = super.getEventNames();
         return ['row_expanded'].concat(base_events);
     }
     //#begin uiMOD.ITabsEvents
@@ -90,7 +90,7 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
     }
     onTabSelected(tabs: uiMOD.ITabs): void {
         this._selectedTabIndex = tabs.tabIndex;
-        this.raisePropertyChanged('selectedTabIndex');
+        this.objEvents.raiseProp('selectedTabIndex');
 
         if (this._selectedTabIndex == 2) {
             //load details only when the tab which contains the details grid is selected
@@ -104,16 +104,16 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
     _onGridRowSelected(item: DEMODB.SalesOrderHeader) {
     }
     _onGridRowExpanded(item: DEMODB.SalesOrderHeader) {
-        this.raiseEvent('row_expanded', { order: item, isExpanded: true });
+        this.objEvents.raise('row_expanded', { order: item, isExpanded: true });
         if (!!this._tabs)
             this.onTabSelected(this._tabs);
     }
     _onGridRowCollapsed(item: DEMODB.SalesOrderHeader) {
-        this.raiseEvent('row_expanded', { order: item, isExpanded: false });
+        this.objEvents.raise('row_expanded', { order: item, isExpanded: false });
     }
 
     protected _onCurrentChanged() {
-        this.raisePropertyChanged('currentItem');
+        this.objEvents.raiseProp('currentItem');
     }
     clear() {
         this.dbSet.clear();
@@ -132,22 +132,22 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
         query.orderBy('OrderDate').thenBy('SalesOrderID');
         return query.load();
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         if (!!this._dbSet) {
-            this._dbSet.removeNSHandlers(this.uniqueID);
+            this._dbSet.objEvents.offNS(this.uniqueID);
         }
         this.currentCustomer = null;
-        this._gridEvents.destroy();
+        this._gridEvents.dispose();
         this._gridEvents = null;
-        this._addressVM.destroy();
+        this._addressVM.dispose();
         this._addressVM = null;
-        this._orderDetailVM.destroy();
+        this._orderDetailVM.dispose();
         this._orderDetailVM = null;
         this._customerVM = null;
-        super.destroy();
+        super.dispose();
     }
     get dbContext() { return this.app.dbContext; }
     get dbSets() { return this.dbContext.dbSets; }
@@ -159,7 +159,7 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
     set currentCustomer(v: DEMODB.Customer) {
         if (v !== this._currentCustomer) {
             this._currentCustomer = v;
-            this.raisePropertyChanged('currentCustomer');
+            this.objEvents.raiseProp('currentCustomer');
             this.load();
         }
     }

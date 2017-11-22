@@ -29,18 +29,18 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
             _this._createDynaTree();
             return _this;
         }
-        FolderBrowser.prototype._getEventNames = function () {
-            var base_events = _super.prototype._getEventNames.call(this);
+        FolderBrowser.prototype.getEventNames = function () {
+            var base_events = _super.prototype.getEventNames.call(this);
             return ['node_selected'].concat(base_events);
         };
         FolderBrowser.prototype.addOnNodeSelected = function (fn, namespace) {
-            this.addHandler('node_selected', fn, namespace);
+            this.objEvents.on('node_selected', fn, namespace);
         };
         FolderBrowser.prototype._createDynaTree = function () {
             var self = this;
             this._$tree.dynatree({
                 onActivate: function (node) {
-                    self.raiseEvent('node_selected', { item: node.data.item });
+                    self.objEvents.raise('node_selected', { item: node.data.item });
                 },
                 onClick: function (node, event) {
                 },
@@ -109,13 +109,13 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
         FolderBrowser.prototype._addItemsToTree = function (items) {
             this._addItemsToNode(this._$treeRoot, items);
         };
-        FolderBrowser.prototype.destroy = function () {
-            if (this._isDestroyed)
+        FolderBrowser.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             if (!!this._$treeRoot)
                 this._$treeRoot.removeChildren();
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         Object.defineProperty(FolderBrowser.prototype, "dbContext", {
             get: function () { return this.app.dbContext; },
@@ -131,7 +131,7 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
             get: function () { return this._infotype; },
             set: function (v) { if (this._infotype !== v) {
                 this._infotype = v;
-                this.raisePropertyChanged('infotype');
+                this.objEvents.raiseProp('infotype');
             } },
             enumerable: true,
             configurable: true
@@ -175,7 +175,7 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
                     self._folderBrowser.addOnNodeSelected(function (s, a) {
                         self.selectedItem = a.item;
                     }, self.uniqueID);
-                    self.raisePropertyChanged('folderBrowser');
+                    self.objEvents.raiseProp('folderBrowser');
                 },
                 fn_OnShow: function (dialog) {
                     self.selectedItem = null;
@@ -201,30 +201,30 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
             });
             return _this;
         }
-        FolderBrowserVM.prototype._getEventNames = function () {
-            var base_events = _super.prototype._getEventNames.call(this);
+        FolderBrowserVM.prototype.getEventNames = function () {
+            var base_events = _super.prototype.getEventNames.call(this);
             return ['item_selected'].concat(base_events);
         };
         FolderBrowserVM.prototype.addOnItemSelected = function (fn, namespace) {
-            this.addHandler('item_selected', fn, namespace);
+            this.objEvents.on('item_selected', fn, namespace);
         };
         FolderBrowserVM.prototype._onSelected = function (item, fullPath) {
-            this.raiseEvent('item_selected', { fullPath: fullPath });
+            this.objEvents.raise('item_selected', { fullPath: fullPath });
         };
-        FolderBrowserVM.prototype.destroy = function () {
-            if (this._isDestroyed)
+        FolderBrowserVM.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             var self = this;
             if (!!self._folderBrowser) {
-                self._folderBrowser.destroy();
+                self._folderBrowser.dispose();
                 self._folderBrowser = null;
             }
             if (!!self._dialogVM) {
-                self._dialogVM.destroy();
+                self._dialogVM.dispose();
                 self._dialogVM = null;
             }
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         FolderBrowserVM.prototype.showDialog = function () {
             this._dialogVM.showDialog('folderBrowser', this);
@@ -239,7 +239,7 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
             set: function (v) {
                 if (v !== this._selectedItem) {
                     this._selectedItem = v;
-                    this.raisePropertyChanged('selectedItem');
+                    this.objEvents.raiseProp('selectedItem');
                 }
             },
             enumerable: true,
@@ -259,7 +259,7 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
             get: function () { return this._infotype; },
             set: function (v) { if (this._infotype !== v) {
                 this._infotype = v;
-                this.raisePropertyChanged('infotype');
+                this.objEvents.raiseProp('infotype');
             } },
             enumerable: true,
             configurable: true
@@ -297,11 +297,11 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
             this._fbrowserVM2.infotype = "BASE_ROOT";
             this._fbrowserVM1.addOnItemSelected(function (s, a) {
                 self._selectedPath = s.infotype + '\\' + a.fullPath;
-                self.raisePropertyChanged('selectedPath');
+                self.objEvents.raiseProp('selectedPath');
             });
             this._fbrowserVM2.addOnItemSelected(function (s, a) {
                 self._selectedPath = s.infotype + '\\' + a.fullPath;
-                self.raisePropertyChanged('selectedPath');
+                self.objEvents.raiseProp('selectedPath');
             });
             this.addOnError(function (sender, data) {
                 debugger;
@@ -330,18 +330,18 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
         DemoApplication.prototype.getFullPath = function (item) {
             return this._getFullPath(item, null);
         };
-        DemoApplication.prototype.destroy = function () {
-            if (this._isDestroyed)
+        DemoApplication.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             var self = this;
             try {
-                self._errorVM.destroy();
-                self._fbrowserVM1.destroy();
-                self._fbrowserVM2.destroy();
+                self._errorVM.dispose();
+                self._fbrowserVM1.dispose();
+                self._fbrowserVM2.dispose();
             }
             finally {
-                _super.prototype.destroy.call(this);
+                _super.prototype.dispose.call(this);
             }
         };
         Object.defineProperty(DemoApplication.prototype, "options", {

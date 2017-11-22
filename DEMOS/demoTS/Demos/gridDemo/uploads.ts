@@ -30,7 +30,7 @@ export class UploadThumbnailVM extends BaseUploadVM<RIAPP.Application> {
             fn_OnClose: function (dialog: uiMOD.DataEditDialog) {
                 if (dialog.result == 'ok' && self._onDialogClose()) {
                     //raise our custom event
-                    self.raiseEvent('files_uploaded', { id: self.id, product: self._product });
+                    self.objEvents.raise('files_uploaded', { id: self.id, product: self._product });
                 }
             }
         };
@@ -50,8 +50,8 @@ export class UploadThumbnailVM extends BaseUploadVM<RIAPP.Application> {
             return true;
         });
     }
-    _getEventNames() {
-        let base_events = super._getEventNames();
+    getEventNames() {
+        let base_events = super.getEventNames();
         return ['files_uploaded'].concat(base_events);
     }
     protected _onDialogClose() {
@@ -62,18 +62,18 @@ export class UploadThumbnailVM extends BaseUploadVM<RIAPP.Application> {
         return this._onDialogClose();
     }
     addOnFilesUploaded(fn: (sender: UploadThumbnailVM, args: { id: string; product: dbMOD.IEntityItem; }) => void, nmspace?: string) {
-        this.addHandler('files_uploaded', fn, nmspace);
+        this.objEvents.on('files_uploaded', fn, nmspace);
     }
     removeOnFilesUploaded(nmspace?: string) {
-        this.removeHandler('files_uploaded', nmspace);
+        this.objEvents.off('files_uploaded', nmspace);
     }
     get dialogCommand() { return this._dialogCommand; }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
-        this._dialogVM.destroy();
+        this.setDisposing();
+        this._dialogVM.dispose();
         this._dialogVM = null;
-        super.destroy();
+        super.dispose();
     }
 }

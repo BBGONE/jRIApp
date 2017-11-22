@@ -29,7 +29,7 @@ export class CustomerBag extends RIAPP.JsonBag {
             }
         });
 
-        item.addOnPropertyChange("Data", (s, a) => {
+        item.objEvents.onProp("Data", (s, a) => {
             this.resetJson(item.Data);
         }, null, null, RIAPP.TPriority.AboveNormal);
 
@@ -124,18 +124,18 @@ export class CustomerBag extends RIAPP.JsonBag {
         });
     }
 
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         if (!!this._addresses) {
-            this._addresses.destroy();
+            this._addresses.dispose();
         }
         this._addresses = null;
-        super.destroy();
+        super.dispose();
     }
     get Addresses() {
-        if (this._isDestroyCalled)
+        if (this.getIsDisposing())
             return void 0;
         if (!this._addresses) {
             this._addresses = new RIAPP.JsonArray(this, "Addresses");
@@ -161,7 +161,7 @@ export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
         this._propWatcher = new RIAPP.PropWatcher();
      
         //when currentItem property changes, invoke our viewmodel's method
-        this._dbSet.addOnPropertyChange('currentItem', function (sender, data) {
+        this._dbSet.objEvents.onProp('currentItem', function (sender, data) {
             self._onCurrentChanged();
         }, self.uniqueID);
 
@@ -230,7 +230,7 @@ export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
     }
     protected _onCurrentChanged() {
         this._addNewAddrCommand.raiseCanExecuteChanged();
-        this.raisePropertyChanged('currentItem');
+        this.objEvents.raiseProp('currentItem');
     }
     load() {
         let query = this.dbSet.createReadCustomerJSONQuery();
@@ -238,14 +238,14 @@ export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
         query.orderBy('CustomerID');
         return query.load();
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         if (!!this._dbSet) {
-            this._dbSet.removeNSHandlers(this.uniqueID);
+            this._dbSet.objEvents.offNS(this.uniqueID);
         }
-        super.destroy();
+        super.dispose();
     }
     get dbSet() { return this._dbSet; }
     get addNewCommand() { return this._addNewCommand; }
@@ -296,18 +296,18 @@ export class DemoApplication extends RIAPP.Application {
         this.errorVM.error = data.error;
         this.errorVM.showDialog();
     }
-    //really, the destroy method is redundant here because the application lives while the page lives
-    destroy() {
-        if (this._isDestroyed)
+    //really, the dispose method is redundant here because the application lives while the page lives
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         const self = this;
         try {
-            self._errorVM.destroy();
-            self._customerVM.destroy();
-            self._dbContext.destroy();
+            self._errorVM.dispose();
+            self._customerVM.dispose();
+            self._dbContext.dispose();
         } finally {
-            super.destroy();
+            super.dispose();
         }
     }
     get options() { return <IMainOptions>this._options; }

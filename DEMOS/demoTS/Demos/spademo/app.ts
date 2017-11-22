@@ -60,18 +60,18 @@ export class DemoApplication extends RIAPP.Application {
         this.errorVM.error = data.error;
         this.errorVM.showDialog();
     }
-    //really, the destroy method is redundant here because the application lives while the page lives
-    destroy() {
-        if (this._isDestroyed)
+    //really, the dispose method is redundant here because the application lives while the page lives
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         let self = this;
         try {
-            self._errorVM.destroy();
-            self._customerVM.destroy();
-            self._dbContext.destroy();
+            self._errorVM.dispose();
+            self._customerVM.dispose();
+            self._dbContext.dispose();
         } finally {
-            super.destroy();
+            super.dispose();
         }
     }
     get options() { return <IMainOptions>this._options; }

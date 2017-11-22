@@ -96,10 +96,10 @@ export class CustomerAddressVM extends RIAPP.ViewModel<DemoApplication> {
             self._addressesView.refresh();
         }, self.uniqueID);
 
-        this._customerVM.addOnPropertyChange('currentItem', function (sender, args) {
+        this._customerVM.objEvents.onProp('currentItem', function (sender, args) {
             self._currentCustomer = self._customerVM.currentItem;
             self._custAdressView.parentItem = self._currentCustomer;
-            self.raisePropertyChanged('currentCustomer');
+            self.objEvents.raiseProp('currentCustomer');
         }, self.uniqueID);
 
     }
@@ -147,25 +147,25 @@ export class CustomerAddressVM extends RIAPP.ViewModel<DemoApplication> {
             self._loadAddresses(addressIDs, true);
         });
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
 
         if (!!this._addressesDb) {
-            this._addressesDb.removeNSHandlers(this.uniqueID);
+            this._addressesDb.objEvents.offNS(this.uniqueID);
         }
         if (!!this._custAdressDb) {
-            this._custAdressDb.removeNSHandlers(this.uniqueID);
+            this._custAdressDb.objEvents.offNS(this.uniqueID);
         }
         if (!!this._customerVM) {
-            this._customerVM.removeNSHandlers(this.uniqueID);
+            this._customerVM.objEvents.offNS(this.uniqueID);
         }
         if (this._addAddressVM) {
-            this._addAddressVM.destroy();
+            this._addAddressVM.dispose();
             this._addAddressVM = null;
         }
-        super.destroy();
+        super.dispose();
     }
     get dbContext() { return this.app.dbContext; }
     get dbSets() { return this.dbContext.dbSets; }

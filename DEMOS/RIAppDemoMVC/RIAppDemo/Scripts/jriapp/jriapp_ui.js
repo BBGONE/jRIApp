@@ -178,7 +178,7 @@ define("jriapp_ui/content/basic", ["require", "exports", "jriapp_shared", "jriap
         };
         BasicContent.prototype.cleanUp = function () {
             if (!!this._lfScope) {
-                this._lfScope.destroy();
+                this._lfScope.dispose();
                 this._lfScope = null;
             }
             if (!!this._el) {
@@ -217,11 +217,11 @@ define("jriapp_ui/content/basic", ["require", "exports", "jriapp_shared", "jriap
                 utils.err.reThrow(ex, this.handleError(ex, this));
             }
         };
-        BasicContent.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        BasicContent.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             var displayInfo = this._options.displayInfo;
             dom.removeClass([this._parentEl], int_1.css.content);
             dom.removeClass([this._parentEl], int_1.css.required);
@@ -235,7 +235,7 @@ define("jriapp_ui/content/basic", ["require", "exports", "jriapp_shared", "jriap
             this._parentEl = null;
             this._dataContext = null;
             this._options = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         BasicContent.prototype.toString = function () {
             return "BasicContent";
@@ -331,7 +331,7 @@ define("jriapp_ui/content/template", ["require", "exports", "jriapp_shared", "jr
         };
         TemplateContent.prototype.cleanUp = function () {
             if (!!this._template) {
-                this._template.destroy();
+                this._template.dispose();
                 this._template = null;
                 this._templateID = null;
             }
@@ -350,17 +350,17 @@ define("jriapp_ui/content/template", ["require", "exports", "jriapp_shared", "jr
                 ERROR.reThrow(ex, this.handleError(ex, this));
             }
         };
-        TemplateContent.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        TemplateContent.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             dom.removeClass([this._parentEl], int_2.css.content);
             this.cleanUp();
             this._parentEl = null;
             this._dataContext = null;
             this._templateInfo = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         TemplateContent.prototype.toString = function () {
             return "TemplateContent";
@@ -427,7 +427,7 @@ define("jriapp_ui/utils/eventbag", ["require", "exports", "jriapp_shared"], func
             _this._onChange = onChange;
             return _this;
         }
-        EventBag.prototype._isHasProp = function (prop) {
+        EventBag.prototype.isHasProp = function (prop) {
             return true;
         };
         EventBag.prototype.getProp = function (name) {
@@ -454,7 +454,7 @@ define("jriapp_ui/utils/eventbag", ["require", "exports", "jriapp_shared"], func
                         oldVal: old,
                         newVal: null
                     });
-                    this.raisePropertyChanged(name);
+                    this.objEvents.raiseProp(name);
                 }
                 return;
             }
@@ -476,7 +476,7 @@ define("jriapp_ui/utils/eventbag", ["require", "exports", "jriapp_shared"], func
                         newVal: command
                     });
                 }
-                this.raisePropertyChanged(name);
+                this.objEvents.raiseProp(name);
             }
         };
         Object.defineProperty(EventBag.prototype, "isPropertyBag", {
@@ -502,12 +502,12 @@ define("jriapp_ui/utils/eventbag", ["require", "exports", "jriapp_shared"], func
         EventBag.prototype.toString = function () {
             return "EventBag";
         };
-        EventBag.prototype.destroy = function () {
+        EventBag.prototype.dispose = function () {
             if (!!this._dic) {
                 this._dic = null;
             }
             this._onChange = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         return EventBag;
     }(jriapp_shared_4.BaseObject));
@@ -524,7 +524,7 @@ define("jriapp_ui/utils/propbag", ["require", "exports", "jriapp_shared"], funct
             _this._el = el;
             return _this;
         }
-        PropertyBag.prototype._isHasProp = function (prop) {
+        PropertyBag.prototype.isHasProp = function (prop) {
             var propName = strUtils.trimBrackets(prop);
             return (propName in this._el);
         };
@@ -537,7 +537,7 @@ define("jriapp_ui/utils/propbag", ["require", "exports", "jriapp_shared"], funct
             var old = this._el[propName];
             if (old !== val) {
                 this._el[propName] = val;
-                this.raisePropertyChanged(name);
+                this.objEvents.raiseProp(name);
             }
         };
         Object.defineProperty(PropertyBag.prototype, "isPropertyBag", {
@@ -565,7 +565,7 @@ define("jriapp_ui/utils/cssbag", ["require", "exports", "jriapp_shared", "jriapp
             _this._el = el;
             return _this;
         }
-        CSSBag.prototype._isHasProp = function (prop) {
+        CSSBag.prototype.isHasProp = function (prop) {
             return true;
         };
         CSSBag.prototype.getProp = function (name) {
@@ -614,7 +614,7 @@ define("jriapp_ui/utils/jquery", ["require", "exports", "jriapp_shared"], functi
     var JQueryUtils = (function () {
         function JQueryUtils() {
         }
-        JQueryUtils.destroy$Plugin = function ($el, name) {
+        JQueryUtils.dispose$Plugin = function ($el, name) {
             var plugin = $el.data(name);
             if (!!plugin) {
                 $el[name]("destroy");
@@ -665,7 +665,7 @@ define("jriapp_ui/utils/tooltip", ["require", "exports", "jriapp_ui/utils/jquery
             };
             if (!!$el.data("qtip")) {
                 if (!tip) {
-                    $el.qtip("destroy", true);
+                    $el.qtip("dispose", true);
                 }
                 else {
                     $el.qtip("option", "content.text", tip);
@@ -720,7 +720,7 @@ define("jriapp_ui/utils/datepicker", ["require", "exports", "jriapp_shared", "jr
             }
         };
         Datepicker.prototype.detachFrom = function (el) {
-            jquery_2.JQueryUtils.destroy$Plugin(jquery_2.$(el), "datepicker");
+            jquery_2.JQueryUtils.dispose$Plugin(jquery_2.$(el), "datepicker");
         };
         Datepicker.prototype.parseDate = function (str) {
             return this.datePickerFn.parseDate(this.dateFormat, str);
@@ -746,7 +746,7 @@ define("jriapp_ui/utils/datepicker", ["require", "exports", "jriapp_shared", "jr
                         regional.dateFormat = this._dateFormat;
                         this.datePickerFn.setDefaults(regional);
                     }
-                    this.raisePropertyChanged(PROP_NAME.dateFormat);
+                    this.objEvents.raiseProp(PROP_NAME.dateFormat);
                 }
             },
             enumerable: true,
@@ -765,7 +765,7 @@ define("jriapp_ui/utils/datepicker", ["require", "exports", "jriapp_shared", "jr
                         this._datepickerRegion = v;
                         regional.dateFormat = oldDateFormat;
                         this.datePickerFn.setDefaults(regional);
-                        this.raisePropertyChanged(PROP_NAME.datepickerRegion);
+                        this.objEvents.raiseProp(PROP_NAME.datepickerRegion);
                     }
                 }
             },
@@ -870,7 +870,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
         };
         BaseElView.prototype._onEventAdded = function (name, newVal) {
             var self = this;
-            if (this.getIsDestroyCalled()) {
+            if (this.getIsDisposing()) {
                 return;
             }
             dom.events.on(this.el, name, function (e) {
@@ -919,30 +919,30 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
         BaseElView.prototype._setToolTip = function (el, tip, isError) {
             fn_addToolTip(el, tip, isError);
         };
-        BaseElView.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        BaseElView.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             this._getStore().setElView(this.el, null);
             dom.events.offNS(this.el, this.uniqueID);
             this.validationErrors = null;
             this.toolTip = null;
             if (!!this._eventStore) {
-                this._eventStore.destroy();
+                this._eventStore.dispose();
                 this._eventStore = null;
             }
             if (!!this._props) {
-                this._props.destroy();
+                this._props.dispose();
                 this._props = checks.undefined;
             }
             if (!!this._classes) {
-                this._classes.destroy();
+                this._classes.dispose();
                 this._classes = checks.undefined;
             }
             this._display = null;
             this._css = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         BaseElView.prototype.toString = function () {
             return "BaseElView";
@@ -977,7 +977,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
                     else {
                         this.el.style.display = (!this._display ? "" : this._display);
                     }
-                    this.raisePropertyChanged(exports.PROP_NAME.isVisible);
+                    this.objEvents.raiseProp(exports.PROP_NAME.isVisible);
                 }
             },
             enumerable: true,
@@ -988,7 +988,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
             set: function (v) {
                 if (v !== this._errors) {
                     this._errors = v;
-                    this.raisePropertyChanged(exports.PROP_NAME.validationErrors);
+                    this.objEvents.raiseProp(exports.PROP_NAME.validationErrors);
                     this._updateErrorUI(this.el, this._errors);
                 }
             },
@@ -1006,7 +1006,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
                 if (this._toolTip !== v) {
                     this._toolTip = v;
                     this._setToolTip(this.el, v);
-                    this.raisePropertyChanged(exports.PROP_NAME.toolTip);
+                    this.objEvents.raiseProp(exports.PROP_NAME.toolTip);
                 }
             },
             enumerable: true,
@@ -1016,7 +1016,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
             get: function () {
                 var _this = this;
                 if (!this._eventStore) {
-                    if (this.getIsDestroyCalled()) {
+                    if (this.getIsDisposing()) {
                         return null;
                     }
                     this._eventStore = new eventbag_1.EventBag(function (s, a) {
@@ -1031,7 +1031,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
         Object.defineProperty(BaseElView.prototype, "props", {
             get: function () {
                 if (!this._props) {
-                    if (this.getIsDestroyCalled()) {
+                    if (this.getIsDisposing()) {
                         return checks.undefined;
                     }
                     this._props = new propbag_1.PropertyBag(this.el);
@@ -1044,7 +1044,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
         Object.defineProperty(BaseElView.prototype, "classes", {
             get: function () {
                 if (!this._classes) {
-                    if (this.getIsDestroyCalled()) {
+                    if (this.getIsDisposing()) {
                         return checks.undefined;
                     }
                     this._classes = new cssbag_1.CSSBag(this.el);
@@ -1067,7 +1067,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
                         arr.push("+" + this._css);
                     }
                     dom.setClasses([this._el], arr);
-                    this.raisePropertyChanged(exports.PROP_NAME.css);
+                    this.objEvents.raiseProp(exports.PROP_NAME.css);
                 }
             },
             enumerable: true,
@@ -1106,7 +1106,7 @@ define("jriapp_ui/input", ["require", "exports", "jriapp_ui/baseview"], function
                 var el = this.el;
                 if (v !== !this.isEnabled) {
                     el.disabled = v;
-                    this.raisePropertyChanged(baseview_1.PROP_NAME.isEnabled);
+                    this.objEvents.raiseProp(baseview_1.PROP_NAME.isEnabled);
                 }
             },
             enumerable: true,
@@ -1121,7 +1121,7 @@ define("jriapp_ui/input", ["require", "exports", "jriapp_ui/baseview"], function
                 v = (!v) ? "" : str;
                 if (x !== v) {
                     this.el.value = v;
-                    this.raisePropertyChanged(baseview_1.PROP_NAME.value);
+                    this.objEvents.raiseProp(baseview_1.PROP_NAME.value);
                 }
             },
             enumerable: true,
@@ -1145,12 +1145,12 @@ define("jriapp_ui/textbox", ["require", "exports", "jriapp/utils/dom", "jriapp/b
             var self = _this;
             dom.events.on(_this.el, "change", function (e) {
                 e.stopPropagation();
-                self.raisePropertyChanged(baseview_2.PROP_NAME.value);
+                self.objEvents.raiseProp(baseview_2.PROP_NAME.value);
             }, _this.uniqueID);
             dom.events.on(_this.el, "keypress", function (e) {
                 e.stopPropagation();
                 var args = { keyCode: e.which, value: e.target.value, isCancel: false };
-                self.raiseEvent(TXTBOX_EVENTS.keypress, args);
+                self.objEvents.raise(TXTBOX_EVENTS.keypress, args);
                 if (args.isCancel) {
                     e.preventDefault();
                 }
@@ -1158,20 +1158,20 @@ define("jriapp_ui/textbox", ["require", "exports", "jriapp/utils/dom", "jriapp/b
             if (!!options.updateOnKeyUp) {
                 dom.events.on(_this.el, "keyup", function (e) {
                     e.stopPropagation();
-                    self.raisePropertyChanged(baseview_2.PROP_NAME.value);
+                    self.objEvents.raiseProp(baseview_2.PROP_NAME.value);
                 }, _this.uniqueID);
             }
             return _this;
         }
-        TextBoxElView.prototype._getEventNames = function () {
-            var baseEvents = _super.prototype._getEventNames.call(this);
+        TextBoxElView.prototype.getEventNames = function () {
+            var baseEvents = _super.prototype.getEventNames.call(this);
             return [TXTBOX_EVENTS.keypress].concat(baseEvents);
         };
         TextBoxElView.prototype.addOnKeyPress = function (fn, nmspace) {
-            this.addHandler(TXTBOX_EVENTS.keypress, fn, nmspace);
+            this.objEvents.on(TXTBOX_EVENTS.keypress, fn, nmspace);
         };
         TextBoxElView.prototype.removeOnKeyPress = function (nmspace) {
-            this.removeHandler(TXTBOX_EVENTS.keypress, nmspace);
+            this.objEvents.off(TXTBOX_EVENTS.keypress, nmspace);
         };
         TextBoxElView.prototype.toString = function () {
             return "TextBoxElView";
@@ -1184,7 +1184,7 @@ define("jriapp_ui/textbox", ["require", "exports", "jriapp/utils/dom", "jriapp/b
                 var x = this.el.style.color;
                 if (v !== x) {
                     this.el.style.color = v;
-                    this.raisePropertyChanged(baseview_2.PROP_NAME.color);
+                    this.objEvents.raiseProp(baseview_2.PROP_NAME.color);
                 }
             },
             enumerable: true,
@@ -1253,12 +1253,12 @@ define("jriapp_ui/textarea", ["require", "exports", "jriapp/utils/dom", "jriapp/
             }
             dom.events.on(_this.el, "change", function (e) {
                 e.stopPropagation();
-                self.raisePropertyChanged(baseview_3.PROP_NAME.value);
+                self.objEvents.raiseProp(baseview_3.PROP_NAME.value);
             }, _this.uniqueID);
             dom.events.on(_this.el, "keypress", function (e) {
                 e.stopPropagation();
                 var args = { keyCode: e.which, value: e.target.value, isCancel: false };
-                self.raiseEvent(TXTAREA_EVENTS.keypress, args);
+                self.objEvents.raise(TXTAREA_EVENTS.keypress, args);
                 if (args.isCancel) {
                     e.preventDefault();
                 }
@@ -1266,20 +1266,20 @@ define("jriapp_ui/textarea", ["require", "exports", "jriapp/utils/dom", "jriapp/
             if (!!options.updateOnKeyUp) {
                 dom.events.on(_this.el, "keyup", function (e) {
                     e.stopPropagation();
-                    self.raisePropertyChanged(baseview_3.PROP_NAME.value);
+                    self.objEvents.raiseProp(baseview_3.PROP_NAME.value);
                 }, _this.uniqueID);
             }
             return _this;
         }
-        TextAreaElView.prototype._getEventNames = function () {
-            var baseEvents = _super.prototype._getEventNames.call(this);
+        TextAreaElView.prototype.getEventNames = function () {
+            var baseEvents = _super.prototype.getEventNames.call(this);
             return [TXTAREA_EVENTS.keypress].concat(baseEvents);
         };
         TextAreaElView.prototype.addOnKeyPress = function (fn, nmspace) {
-            this.addHandler(TXTAREA_EVENTS.keypress, fn, nmspace);
+            this.objEvents.on(TXTAREA_EVENTS.keypress, fn, nmspace);
         };
         TextAreaElView.prototype.removeOnKeyPress = function (nmspace) {
-            this.removeHandler(TXTAREA_EVENTS.keypress, nmspace);
+            this.objEvents.off(TXTAREA_EVENTS.keypress, nmspace);
         };
         TextAreaElView.prototype.toString = function () {
             return "TextAreaElView";
@@ -1293,7 +1293,7 @@ define("jriapp_ui/textarea", ["require", "exports", "jriapp/utils/dom", "jriapp/
                 v = (!v) ? "" : str;
                 if (x !== v) {
                     this.el.value = v;
-                    this.raisePropertyChanged(baseview_3.PROP_NAME.value);
+                    this.objEvents.raiseProp(baseview_3.PROP_NAME.value);
                 }
             },
             enumerable: true,
@@ -1305,7 +1305,7 @@ define("jriapp_ui/textarea", ["require", "exports", "jriapp/utils/dom", "jriapp/
                 v = !v;
                 if (v !== !this.isEnabled) {
                     this.el.disabled = v;
-                    this.raisePropertyChanged(baseview_3.PROP_NAME.isEnabled);
+                    this.objEvents.raiseProp(baseview_3.PROP_NAME.isEnabled);
                 }
             },
             enumerable: true,
@@ -1319,7 +1319,7 @@ define("jriapp_ui/textarea", ["require", "exports", "jriapp/utils/dom", "jriapp/
                 var x = this.wrap;
                 if (x !== v) {
                     this.el.wrap = v;
-                    this.raisePropertyChanged(baseview_3.PROP_NAME.wrap);
+                    this.objEvents.raiseProp(baseview_3.PROP_NAME.wrap);
                 }
             },
             enumerable: true,
@@ -1429,7 +1429,7 @@ define("jriapp_ui/checkbox", ["require", "exports", "jriapp_shared", "jriapp/uti
                     var chk = this.el;
                     chk.checked = !!v;
                     this._updateState();
-                    this.raisePropertyChanged(baseview_4.PROP_NAME.checked);
+                    this.objEvents.raiseProp(baseview_4.PROP_NAME.checked);
                 }
             },
             enumerable: true,
@@ -1496,20 +1496,20 @@ define("jriapp_ui/content/bool", ["require", "exports", "jriapp/utils/dom", "jri
             this.cleanUp();
             this.updateCss();
         };
-        BoolContent.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        BoolContent.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             if (!!this._lfScope) {
-                this._lfScope.destroy();
+                this._lfScope.dispose();
                 this._lfScope = null;
             }
             if (!!this._target) {
-                this._target.destroy();
+                this._target.dispose();
                 this._target = null;
             }
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         BoolContent.prototype.toString = function () {
             return "BoolContent";
@@ -1722,7 +1722,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             _this._valMap = {};
             _this._savedVal = checks.undefined;
             _this._fnState = function (data) {
-                if (!data || !data.item || data.item.getIsDestroyCalled()) {
+                if (!data || !data.item || data.item.getIsDisposing()) {
                     return;
                 }
                 var item = data.item, path = self.statePath, val = !path ? null : sys.resolvePath(item, path), spr = self._stateProvider;
@@ -1732,15 +1732,15 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             _this._setDataSource(ds);
             return _this;
         }
-        ListBox.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        ListBox.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
-            this._dsDebounce.destroy();
-            this._stDebounce.destroy();
-            this._txtDebounce.destroy();
-            this._changeDebounce.destroy();
+            this.setDisposing();
+            this._dsDebounce.dispose();
+            this._stDebounce.dispose();
+            this._txtDebounce.dispose();
+            this._changeDebounce.dispose();
             this._fnCheckChanges = null;
             this._unbindDS();
             dom.events.offNS(this._el, this._objId);
@@ -1752,20 +1752,20 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             this._textProvider = null;
             this._stateProvider = null;
             this._isDSFilled = false;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
-        ListBox.prototype._getEventNames = function () {
-            var baseEvents = _super.prototype._getEventNames.call(this);
+        ListBox.prototype.getEventNames = function () {
+            var baseEvents = _super.prototype.getEventNames.call(this);
             var events = Object.keys(LISTBOX_EVENTS).map(function (key) {
                 return LISTBOX_EVENTS[key];
             });
             return events.concat(baseEvents);
         };
         ListBox.prototype.addOnRefreshed = function (fn, nmspace, context) {
-            this.addHandler(LISTBOX_EVENTS.refreshed, fn, nmspace, context);
+            this.objEvents.on(LISTBOX_EVENTS.refreshed, fn, nmspace, context);
         };
         ListBox.prototype.removeOnRefreshed = function (nmspace) {
-            this.removeHandler(LISTBOX_EVENTS.refreshed, nmspace);
+            this.objEvents.off(LISTBOX_EVENTS.refreshed, nmspace);
         };
         ListBox.prototype._onChanged = function () {
             var data = this.getByIndex(this.selectedIndex);
@@ -1954,7 +1954,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             if (!ds) {
                 return;
             }
-            ds.removeNSHandlers(self._objId);
+            ds.objEvents.offNS(self._objId);
         };
         ListBox.prototype._addOption = function (item, first) {
             var key = !item ? "" : item._key;
@@ -1994,7 +1994,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             }
             if (!!item) {
                 if (!!this.statePath) {
-                    item.addOnPropertyChange(this.statePath, this._fnState, this._objId);
+                    item.objEvents.onProp(this.statePath, this._fnState, this._objId);
                 }
                 this._fnState(data);
             }
@@ -2029,7 +2029,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 if (!data) {
                     return;
                 }
-                item.removeNSHandlers(this._objId);
+                item.objEvents.offNS(this._objId);
                 this.el.remove(data.op.index);
                 var val = fn_Str(this._getValue(item));
                 delete this._keyMap[key];
@@ -2047,7 +2047,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             keys.forEach(function (key) {
                 var data = self._keyMap[key];
                 if (!!data && !!data.item) {
-                    data.item.removeNSHandlers(self._objId);
+                    data.item.objEvents.offNS(self._objId);
                 }
             });
             this.el.options.length = 0;
@@ -2082,10 +2082,10 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 self._isRefreshing = false;
                 this.checkChanges();
             }
-            this.raiseEvent(LISTBOX_EVENTS.refreshed, {});
+            this.objEvents.raise(LISTBOX_EVENTS.refreshed, {});
         };
         ListBox.prototype.getItemIndex = function (item) {
-            if (!item || item.getIsDestroyCalled()) {
+            if (!item || item.getIsDisposing()) {
                 return -1;
             }
             var data = this._keyMap[item._key];
@@ -2126,10 +2126,10 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 self._fnCheckChanges = null;
                 var newVal = fn_Str(self.selectedValue), newItem = self.selectedItem;
                 if (prevVal !== newVal) {
-                    self.raisePropertyChanged(PROP_NAME.selectedValue);
+                    self.objEvents.raiseProp(PROP_NAME.selectedValue);
                 }
                 if (prevItem !== newItem) {
-                    self.raisePropertyChanged(PROP_NAME.selectedItem);
+                    self.objEvents.raiseProp(PROP_NAME.selectedItem);
                 }
             };
         };
@@ -2160,7 +2160,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     var ds = _this._options.dataSource;
                     _this._txtDebounce.cancel();
                     _this._stDebounce.cancel();
-                    if (!!ds && !ds.getIsDestroyCalled()) {
+                    if (!!ds && !ds.getIsDisposing()) {
                         _this._bindDS();
                         _this._refresh();
                     }
@@ -2200,7 +2200,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             set: function (v) {
                 if (this.dataSource !== v) {
                     this._setDataSource(v);
-                    this.raisePropertyChanged(PROP_NAME.dataSource);
+                    this.objEvents.raiseProp(PROP_NAME.dataSource);
                 }
             },
             enumerable: true,
@@ -2216,9 +2216,9 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     this._selectedValue = v;
                     this.updateSelected(v);
                     this._fnCheckChanges = null;
-                    this.raisePropertyChanged(PROP_NAME.selectedValue);
+                    this.objEvents.raiseProp(PROP_NAME.selectedValue);
                     if (oldItem !== this.selectedItem) {
-                        this.raisePropertyChanged(PROP_NAME.selectedItem);
+                        this.objEvents.raiseProp(PROP_NAME.selectedItem);
                     }
                 }
             },
@@ -2237,9 +2237,9 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     var item = this.getByValue(newVal);
                     this.selectedIndex = (!item ? 0 : item.op.index);
                     this._fnCheckChanges = null;
-                    this.raisePropertyChanged(PROP_NAME.selectedValue);
+                    this.objEvents.raiseProp(PROP_NAME.selectedValue);
                     if (oldItem !== this.selectedItem) {
-                        this.raisePropertyChanged(PROP_NAME.selectedItem);
+                        this.objEvents.raiseProp(PROP_NAME.selectedItem);
                     }
                 }
             },
@@ -2252,7 +2252,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 if (v !== this.valuePath) {
                     this._options.valuePath = v;
                     this._mapByValue();
-                    this.raisePropertyChanged(PROP_NAME.valuePath);
+                    this.objEvents.raiseProp(PROP_NAME.valuePath);
                 }
             },
             enumerable: true,
@@ -2264,7 +2264,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 if (v !== this.textPath) {
                     this._options.textPath = v;
                     this._resetText();
-                    this.raisePropertyChanged(PROP_NAME.textPath);
+                    this.objEvents.raiseProp(PROP_NAME.textPath);
                 }
             },
             enumerable: true,
@@ -2280,7 +2280,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             set: function (v) {
                 if (v !== this.isEnabled) {
                     this._setIsEnabled(this.el, v);
-                    this.raisePropertyChanged(PROP_NAME.isEnabled);
+                    this.objEvents.raiseProp(PROP_NAME.isEnabled);
                 }
             },
             enumerable: true,
@@ -2295,7 +2295,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     this._txtDebounce.enque(function () {
                         _this._resetText();
                     });
-                    this.raisePropertyChanged(PROP_NAME.textProvider);
+                    this.objEvents.raiseProp(PROP_NAME.textProvider);
                 }
             },
             enumerable: true,
@@ -2310,7 +2310,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     this._stDebounce.enque(function () {
                         _this._resetState();
                     });
-                    this.raisePropertyChanged(PROP_NAME.stateProvider);
+                    this.objEvents.raiseProp(PROP_NAME.stateProvider);
                 }
             },
             enumerable: true,
@@ -2330,7 +2330,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             var _this = _super.call(this, options) || this;
             var self = _this;
             self._listBox = new ListBox(options);
-            self._listBox.addOnPropertyChange("*", function (sender, args) {
+            self._listBox.objEvents.onProp("*", function (sender, args) {
                 switch (args.property) {
                     case PROP_NAME.dataSource:
                     case PROP_NAME.isEnabled:
@@ -2340,21 +2340,21 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     case PROP_NAME.textPath:
                     case PROP_NAME.textProvider:
                     case PROP_NAME.stateProvider:
-                        self.raisePropertyChanged(args.property);
+                        self.objEvents.raiseProp(args.property);
                         break;
                 }
             }, self.uniqueID);
             return _this;
         }
-        ListBoxElView.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        ListBoxElView.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
-            if (!this._listBox.getIsDestroyCalled()) {
-                this._listBox.destroy();
+            this.setDisposing();
+            if (!this._listBox.getIsDisposing()) {
+                this._listBox.dispose();
             }
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         ListBoxElView.prototype.toString = function () {
             return "ListBoxElView";
@@ -2365,7 +2365,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 v = !v;
                 if (v !== !this.isEnabled) {
                     this.el.disabled = v;
-                    this.raisePropertyChanged(PROP_NAME.isEnabled);
+                    this.objEvents.raiseProp(PROP_NAME.isEnabled);
                 }
             },
             enumerable: true,
@@ -2386,7 +2386,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         });
         Object.defineProperty(ListBoxElView.prototype, "selectedValue", {
             get: function () {
-                return (this.getIsDestroyCalled()) ? checks.undefined : this._listBox.selectedValue;
+                return (this.getIsDisposing()) ? checks.undefined : this._listBox.selectedValue;
             },
             set: function (v) {
                 if (this._listBox.selectedValue !== v) {
@@ -2398,7 +2398,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         });
         Object.defineProperty(ListBoxElView.prototype, "selectedItem", {
             get: function () {
-                return (this.getIsDestroyCalled()) ? checks.undefined : this._listBox.selectedItem;
+                return (this.getIsDisposing()) ? checks.undefined : this._listBox.selectedItem;
             },
             set: function (v) {
                 this._listBox.selectedItem = v;
@@ -2466,8 +2466,8 @@ define("jriapp_ui/span", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/b
                 v = (v === null ? "" : str);
                 if (x !== v) {
                     el.textContent = v;
-                    this.raisePropertyChanged(baseview_6.PROP_NAME.text);
-                    this.raisePropertyChanged(baseview_6.PROP_NAME.value);
+                    this.objEvents.raiseProp(baseview_6.PROP_NAME.text);
+                    this.objEvents.raiseProp(baseview_6.PROP_NAME.value);
                 }
             },
             enumerable: true,
@@ -2490,7 +2490,7 @@ define("jriapp_ui/span", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/b
                 v = v === null ? "" : str;
                 if (x !== v) {
                     el.innerHTML = v;
-                    this.raisePropertyChanged(baseview_6.PROP_NAME.html);
+                    this.objEvents.raiseProp(baseview_6.PROP_NAME.html);
                 }
             },
             enumerable: true,
@@ -2541,21 +2541,21 @@ define("jriapp_ui/content/listbox", ["require", "exports", "jriapp_shared", "jri
             }
             return _this;
         }
-        LookupContent.prototype._getEventNames = function () {
-            var baseEvents = _super.prototype._getEventNames.call(this);
+        LookupContent.prototype.getEventNames = function () {
+            var baseEvents = _super.prototype.getEventNames.call(this);
             return [LOOKUP_EVENTS.obj_created, LOOKUP_EVENTS.obj_needed].concat(baseEvents);
         };
         LookupContent.prototype.addOnObjectCreated = function (fn, nmspace) {
-            this.addHandler(LOOKUP_EVENTS.obj_created, fn, nmspace);
+            this.objEvents.on(LOOKUP_EVENTS.obj_created, fn, nmspace);
         };
         LookupContent.prototype.removeOnObjectCreated = function (nmspace) {
-            this.removeHandler(LOOKUP_EVENTS.obj_created, nmspace);
+            this.objEvents.off(LOOKUP_EVENTS.obj_created, nmspace);
         };
         LookupContent.prototype.addOnObjectNeeded = function (fn, nmspace) {
-            this.addHandler(LOOKUP_EVENTS.obj_needed, fn, nmspace);
+            this.objEvents.on(LOOKUP_EVENTS.obj_needed, fn, nmspace);
         };
         LookupContent.prototype.removeOnObjectNeeded = function (nmspace) {
-            this.removeHandler(LOOKUP_EVENTS.obj_needed, nmspace);
+            this.objEvents.off(LOOKUP_EVENTS.obj_needed, nmspace);
         };
         LookupContent.prototype.getListBoxElView = function () {
             if (!!this._listBoxElView) {
@@ -2563,7 +2563,7 @@ define("jriapp_ui/content/listbox", ["require", "exports", "jriapp_shared", "jri
             }
             var lookUpOptions = this._options.options, objectKey = "listBoxElView";
             var args1 = { objectKey: objectKey, object: null };
-            this.raiseEvent(LOOKUP_EVENTS.obj_needed, args1);
+            this.objEvents.raise(LOOKUP_EVENTS.obj_needed, args1);
             if (!!args1.object) {
                 this._isListBoxCachedExternally = true;
                 this._listBoxElView = args1.object;
@@ -2574,7 +2574,7 @@ define("jriapp_ui/content/listbox", ["require", "exports", "jriapp_shared", "jri
             }
             var listBoxElView = this.createListBoxElView(lookUpOptions);
             var args2 = { objectKey: objectKey, object: listBoxElView, isCachedExternally: false };
-            this.raiseEvent(LOOKUP_EVENTS.obj_created, args2);
+            this.objEvents.raise(LOOKUP_EVENTS.obj_created, args2);
             this._isListBoxCachedExternally = args2.isCachedExternally;
             this._listBoxElView = listBoxElView;
             this._listBoxElView.listBox.addOnRefreshed(this.onListRefreshed, this.uniqueID, this);
@@ -2637,15 +2637,15 @@ define("jriapp_ui/content/listbox", ["require", "exports", "jriapp_shared", "jri
                 this._el = null;
             }
             if (!!this._listBinding) {
-                this._listBinding.destroy();
+                this._listBinding.dispose();
                 this._listBinding = null;
             }
             if (!!this._valBinding) {
-                this._valBinding.destroy();
+                this._valBinding.dispose();
                 this._valBinding = null;
             }
             if (!!this._listBoxElView && this._isListBoxCachedExternally) {
-                this._listBoxElView.listBox.removeNSHandlers(this.uniqueID);
+                this._listBoxElView.listBox.objEvents.offNS(this.uniqueID);
                 this._listBoxElView = null;
             }
         };
@@ -2686,24 +2686,24 @@ define("jriapp_ui/content/listbox", ["require", "exports", "jriapp_shared", "jri
             this.createTargetElement();
             this._parentEl.appendChild(this._el);
         };
-        LookupContent.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        LookupContent.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             this.cleanUp();
             if (!!this._listBoxElView) {
-                this._listBoxElView.listBox.removeNSHandlers(this.uniqueID);
-                if (!this._isListBoxCachedExternally && !this._listBoxElView.getIsDestroyCalled()) {
-                    this._listBoxElView.destroy();
+                this._listBoxElView.listBox.objEvents.offNS(this.uniqueID);
+                if (!this._isListBoxCachedExternally && !this._listBoxElView.getIsDisposing()) {
+                    this._listBoxElView.dispose();
                 }
                 this._listBoxElView = null;
             }
             if (!!this._spanView) {
-                this._spanView.destroy();
+                this._spanView.dispose();
                 this._spanView = null;
             }
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         LookupContent.prototype.toString = function () {
             return "LookupContent";
@@ -2713,7 +2713,7 @@ define("jriapp_ui/content/listbox", ["require", "exports", "jriapp_shared", "jri
             set: function (v) {
                 if (this._value !== v) {
                     this._value = v;
-                    this.raisePropertyChanged(PROP_NAME.value);
+                    this.objEvents.raiseProp(PROP_NAME.value);
                 }
                 this.updateTextValue();
             },
@@ -2950,16 +2950,16 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
             return _this;
         }
         DataEditDialog.prototype.addOnClose = function (fn, nmspace, context) {
-            this.addHandler(DLG_EVENTS.close, fn, nmspace, context);
+            this.objEvents.on(DLG_EVENTS.close, fn, nmspace, context);
         };
         DataEditDialog.prototype.removeOnClose = function (nmspace) {
-            this.removeHandler(DLG_EVENTS.close, nmspace);
+            this.objEvents.off(DLG_EVENTS.close, nmspace);
         };
         DataEditDialog.prototype.addOnRefresh = function (fn, nmspace, context) {
-            this.addHandler(DLG_EVENTS.refresh, fn, nmspace, context);
+            this.objEvents.on(DLG_EVENTS.refresh, fn, nmspace, context);
         };
         DataEditDialog.prototype.removeOnRefresh = function (nmspace) {
-            this.removeHandler(DLG_EVENTS.refresh, nmspace);
+            this.objEvents.off(DLG_EVENTS.refresh, nmspace);
         };
         DataEditDialog.prototype._createDialog = function () {
             try {
@@ -2972,14 +2972,14 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
                 ERROR.reThrow(ex, this.handleError(ex, this));
             }
         };
-        DataEditDialog.prototype._getEventNames = function () {
-            var baseEvents = _super.prototype._getEventNames.call(this);
+        DataEditDialog.prototype.getEventNames = function () {
+            var baseEvents = _super.prototype.getEventNames.call(this);
             return [DLG_EVENTS.close, DLG_EVENTS.refresh].concat(baseEvents);
         };
         DataEditDialog.prototype.templateLoading = function (template) {
         };
         DataEditDialog.prototype.templateLoaded = function (template, error) {
-            if (this.getIsDestroyCalled() || !!error) {
+            if (this.getIsDisposing() || !!error) {
                 if (!!this._deferredTemplate) {
                     this._deferredTemplate.reject(error);
                 }
@@ -3002,7 +3002,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
         };
         DataEditDialog.prototype._destroyTemplate = function () {
             if (!!this._template) {
-                this._template.destroy();
+                this._template.dispose();
             }
         };
         DataEditDialog.prototype._getButtons = function () {
@@ -3106,7 +3106,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
         };
         DataEditDialog.prototype._onRefresh = function () {
             var args = { isHandled: false };
-            this.raiseEvent(DLG_EVENTS.refresh, args);
+            this.objEvents.raise(DLG_EVENTS.refresh, args);
             if (args.isHandled) {
                 return;
             }
@@ -3128,7 +3128,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
                 if (!!this._fnOnClose) {
                     this._fnOnClose(this);
                 }
-                this.raiseEvent(DLG_EVENTS.close, {});
+                this.objEvents.raise(DLG_EVENTS.close, {});
             }
             finally {
                 this._template.dataContext = null;
@@ -3147,12 +3147,12 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
         };
         DataEditDialog.prototype.show = function () {
             var self = this;
-            if (self.getIsDestroyCalled()) {
+            if (self.getIsDisposing()) {
                 return utils.defer.createDeferred().reject();
             }
             self._result = null;
             return this._deferredTemplate.promise().then(function (template) {
-                if (self.getIsDestroyCalled() || !self._$dlgEl) {
+                if (self.getIsDisposing() || !self._$dlgEl) {
                     ERROR.abort();
                 }
                 self._$dlgEl.dialog("option", "buttons", self._getButtons());
@@ -3162,7 +3162,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
             }).then(function () {
                 return self;
             }, function (err) {
-                if (!self.getIsDestroyCalled()) {
+                if (!self.getIsDisposing()) {
                     self.handleError(err, self);
                 }
                 ERROR.abort();
@@ -3185,18 +3185,18 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
             var self = this;
             self._$dlgEl.dialog("option", name, value);
         };
-        DataEditDialog.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        DataEditDialog.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             this.hide();
             this._destroyTemplate();
             this._$dlgEl = null;
             this._template = null;
             this._dataContext = null;
             this._submitInfo = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         Object.defineProperty(DataEditDialog.prototype, "dataContext", {
             get: function () { return this._dataContext; },
@@ -3204,7 +3204,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
                 if (v !== this._dataContext) {
                     this._dataContext = v;
                     this._submitInfo = new SubmitInfo(this._dataContext);
-                    this.raisePropertyChanged(PROP_NAME.dataContext);
+                    this.objEvents.raiseProp(PROP_NAME.dataContext);
                 }
             },
             enumerable: true,
@@ -3225,7 +3225,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
             set: function (v) {
                 if (this._submitOnOK !== v) {
                     this._submitOnOK = v;
-                    this.raisePropertyChanged(PROP_NAME.isSubmitOnOK);
+                    this.objEvents.raiseProp(PROP_NAME.isSubmitOnOK);
                 }
             },
             enumerable: true,
@@ -3237,7 +3237,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
                 var x = this.getOption("width");
                 if (v !== x) {
                     this.setOption("width", v);
-                    this.raisePropertyChanged(PROP_NAME.width);
+                    this.objEvents.raiseProp(PROP_NAME.width);
                 }
             },
             enumerable: true,
@@ -3249,7 +3249,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
                 var x = this.getOption("height");
                 if (v !== x) {
                     this.setOption("height", v);
-                    this.raisePropertyChanged(PROP_NAME.height);
+                    this.objEvents.raiseProp(PROP_NAME.height);
                 }
             },
             enumerable: true,
@@ -3261,7 +3261,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
                 var x = this.getOption("title");
                 if (v !== x) {
                     this.setOption("title", v);
-                    this.raisePropertyChanged(PROP_NAME.title);
+                    this.objEvents.raiseProp(PROP_NAME.title);
                 }
             },
             enumerable: true,
@@ -3273,7 +3273,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
                 var x = this._canRefresh;
                 if (v !== x) {
                     this._canRefresh = v;
-                    this.raisePropertyChanged(PROP_NAME.canRefresh);
+                    this.objEvents.raiseProp(PROP_NAME.canRefresh);
                 }
             },
             enumerable: true,
@@ -3285,7 +3285,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
                 var x = this._canCancel;
                 if (v !== x) {
                     this._canCancel = v;
-                    this.raisePropertyChanged(PROP_NAME.canCancel);
+                    this.objEvents.raiseProp(PROP_NAME.canCancel);
                 }
             },
             enumerable: true,
@@ -3332,18 +3332,18 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
             }
             return factory();
         };
-        DialogVM.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        DialogVM.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             var self = this, keys = Object.keys(this._dialogs);
             keys.forEach(function (key) {
-                self._dialogs[key].destroy();
+                self._dialogs[key].dispose();
             });
             this._factories = {};
             this._dialogs = {};
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         return DialogVM;
     }(mvvm_1.ViewModel));
@@ -3373,7 +3373,7 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
             return _this;
         }
         DynaContentElView.prototype.templateLoading = function (template) {
-            if (this.getIsDestroyCalled()) {
+            if (this.getIsDisposing()) {
                 return;
             }
             var isFirstShow = !this._prevTemplateID, canShow = !!this._animation && (this._animation.isAnimateFirstShow || (!this._animation.isAnimateFirstShow && !isFirstShow));
@@ -3382,7 +3382,7 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
             }
         };
         DynaContentElView.prototype.templateLoaded = function (template, error) {
-            if (this.getIsDestroyCalled()) {
+            if (this.getIsDisposing()) {
                 return;
             }
             if (!dom.isContained(template.el, this.el)) {
@@ -3403,32 +3403,32 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
                         self._animation.stop();
                         self._animation.beforeHide(self._template);
                         self._animation.hide(self._template).always(function () {
-                            if (self.getIsDestroyCalled()) {
+                            if (self.getIsDisposing()) {
                                 return;
                             }
-                            self._template.destroy();
+                            self._template.dispose();
                             self._template = null;
-                            self.raisePropertyChanged(PROP_NAME.template);
+                            self.objEvents.raiseProp(PROP_NAME.template);
                         });
                     }
                     else {
-                        self._template.destroy();
+                        self._template.dispose();
                         self._template = null;
-                        self.raisePropertyChanged(PROP_NAME.template);
+                        self.objEvents.raiseProp(PROP_NAME.template);
                     }
                     return;
                 }
                 if (!self._template) {
                     self._template = template_4.createTemplate(self._dataContext, self);
                     self._template.templateID = newName;
-                    self.raisePropertyChanged(PROP_NAME.template);
+                    self.objEvents.raiseProp(PROP_NAME.template);
                     return;
                 }
                 if (!!self._animation && !!self._template.loadedElem) {
                     self._animation.stop();
                     self._animation.beforeHide(self._template);
                     self._animation.hide(self._template).always(function () {
-                        if (self.getIsDestroyCalled()) {
+                        if (self.getIsDisposing()) {
                             return;
                         }
                         self._template.templateID = newName;
@@ -3442,25 +3442,25 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
                 utils.err.reThrow(ex, self.handleError(ex, self));
             }
         };
-        DynaContentElView.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        DynaContentElView.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
-            this._tDebounce.destroy();
-            this._dsDebounce.destroy();
+            this.setDisposing();
+            this._tDebounce.dispose();
+            this._dsDebounce.dispose();
             var a = this._animation;
             this._animation = null;
             var t = this._template;
             this._template = null;
             if (sys.isBaseObj(a)) {
-                a.destroy();
+                a.dispose();
             }
             if (!!t) {
-                t.destroy();
+                t.dispose();
             }
             this._dataContext = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         Object.defineProperty(DynaContentElView.prototype, "template", {
             get: function () { return this._template; },
@@ -3479,7 +3479,7 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
                     this._tDebounce.enque(function () {
                         self._templateChanging(old, v);
                     });
-                    this.raisePropertyChanged(PROP_NAME.templateID);
+                    this.objEvents.raiseProp(PROP_NAME.templateID);
                 }
             },
             enumerable: true,
@@ -3497,7 +3497,7 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
                             _this._template.dataContext = ds;
                         }
                     });
-                    this.raisePropertyChanged(PROP_NAME.dataContext);
+                    this.objEvents.raiseProp(PROP_NAME.dataContext);
                 }
             },
             enumerable: true,
@@ -3508,7 +3508,7 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
             set: function (v) {
                 if (this._animation !== v) {
                     this._animation = v;
-                    this.raisePropertyChanged(PROP_NAME.animation);
+                    this.objEvents.raiseProp(PROP_NAME.animation);
                 }
             },
             enumerable: true,
@@ -3617,16 +3617,16 @@ define("jriapp_ui/datagrid/animation", ["require", "exports", "jriapp_shared", "
                 this._$el = null;
             }
         };
-        DefaultAnimation.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        DefaultAnimation.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             try {
                 this.stop();
             }
             finally {
-                _super.prototype.destroy.call(this);
+                _super.prototype.dispose.call(this);
             }
         };
         return DefaultAnimation;
@@ -3639,7 +3639,7 @@ define("jriapp_ui/utils/dblclick", ["require", "exports"], function (require, ex
     var DblClick = (function () {
         function DblClick(interval) {
             if (interval === void 0) { interval = 0; }
-            this._isDestroyed = false;
+            this._isDisposed = false;
             this._timer = null;
             this._interval = !interval ? 0 : interval;
             this._fnOnClick = null;
@@ -3669,27 +3669,24 @@ define("jriapp_ui/utils/dblclick", ["require", "exports"], function (require, ex
             }
         };
         DblClick.prototype.add = function (fnOnClick, fnOnDblClick) {
-            if (this._isDestroyed) {
+            if (this.getIsDisposed()) {
                 return;
             }
             this._fnOnClick = fnOnClick;
             this._fnOnDblClick = fnOnDblClick;
         };
-        DblClick.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        DblClick.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyed = true;
+            this._isDisposed = true;
             clearTimeout(this._timer);
             this._timer = null;
             this._fnOnClick = null;
             this._fnOnDblClick = null;
         };
-        DblClick.prototype.getIsDestroyed = function () {
-            return this._isDestroyed;
-        };
-        DblClick.prototype.getIsDestroyCalled = function () {
-            return this._isDestroyed;
+        DblClick.prototype.getIsDisposed = function () {
+            return this._isDisposed;
         };
         Object.defineProperty(DblClick.prototype, "interval", {
             get: function () {
@@ -3763,17 +3760,17 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_shared"
             }
             return _this;
         }
-        BaseColumn.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        BaseColumn.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             dom.events.offNS(this.grid.table, this.uniqueID);
             if (!!this._options.tip) {
                 baseview_8.fn_addToolTip(this._col, null);
             }
             if (!!this._template) {
-                this._template.destroy();
+                this._template.dispose();
                 this._template = null;
             }
             dom.events.offNS(this._col, this.uniqueID);
@@ -3781,7 +3778,7 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_shared"
             this._th = null;
             this._grid = null;
             this._options = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         BaseColumn.prototype.templateLoading = function (template) {
         };
@@ -3790,7 +3787,7 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_shared"
         BaseColumn.prototype.templateUnLoading = function (template) {
         };
         BaseColumn.prototype.scrollIntoView = function (isUp) {
-            if (this.getIsDestroyCalled()) {
+            if (this.getIsDisposing()) {
                 return;
             }
             this._col.scrollIntoView(!!isUp);
@@ -3955,17 +3952,17 @@ define("jriapp_ui/datagrid/columns/data", ["require", "exports", "jriapp_shared"
                 });
             };
         };
-        DataColumn.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        DataColumn.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             var self = this;
             utils.core.forEachProp(self._objCache, function (key) {
-                self._objCache[key].destroy();
+                self._objCache[key].dispose();
             });
             self._objCache = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         DataColumn.prototype.toString = function () {
             return "DataColumn";
@@ -3987,7 +3984,7 @@ define("jriapp_ui/datagrid/columns/data", ["require", "exports", "jriapp_shared"
                     this._sortOrder = v;
                     var styles = [(v === 0 ? "+" : "-") + const_6.css.colSortAsc, (v === 1 ? "+" : "-") + const_6.css.colSortDesc];
                     dom.setClasses([this.col], styles);
-                    this.raisePropertyChanged(const_6.PROP_NAME.sortOrder);
+                    this.objEvents.raiseProp(const_6.PROP_NAME.sortOrder);
                 }
             },
             enumerable: true,
@@ -4056,16 +4053,16 @@ define("jriapp_ui/datagrid/cells/data", ["require", "exports", "jriapp_shared", 
                 this._content.isEditing = false;
             }
         };
-        DataCell.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        DataCell.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             if (!!this._content) {
-                this._content.destroy();
+                this._content.dispose();
                 this._content = null;
             }
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         DataCell.prototype.toString = function () {
             return "DataCell";
@@ -4158,14 +4155,14 @@ define("jriapp_ui/datagrid/columns/actions", ["require", "exports", "jriapp/cons
         ActionsColumn.prototype.toString = function () {
             return "ActionsColumn";
         };
-        ActionsColumn.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        ActionsColumn.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             dom.events.offNS(this.grid.table, this.uniqueID);
-            this.grid.removeNSHandlers(this.uniqueID);
-            _super.prototype.destroy.call(this);
+            this.grid.objEvents.offNS(this.uniqueID);
+            _super.prototype.dispose.call(this);
         };
         return ActionsColumn;
     }(base_5.BaseColumn));
@@ -4188,16 +4185,16 @@ define("jriapp_ui/datagrid/cells/actions", ["require", "exports", "jriapp_shared
             _this._createButtons(_this.row.isEditing);
             return _this;
         }
-        ActionsCell.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        ActionsCell.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             var td = this.td, btns = dom.queryAll(td, const_11.actionsSelector);
             btns.forEach(function (img) {
                 dom.removeData(img);
             });
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         ActionsCell.prototype._setupButtons = function (buttons) {
             var self = this;
@@ -4306,13 +4303,13 @@ define("jriapp_ui/datagrid/columns/rowselector", ["require", "exports", "jriapp_
             _this._chk = chk;
             dom.events.on(chk, "change", function (e) {
                 e.stopPropagation();
-                self.raisePropertyChanged(const_13.PROP_NAME.checked);
+                self.objEvents.raiseProp(const_13.PROP_NAME.checked);
                 self.grid.selectRows(chk.checked);
             }, _this.uniqueID);
             dom.events.on(_this.grid.table, "click", function (e) {
                 e.stopPropagation();
                 var chk = e.target, cell = dom.getData(chk, "cell");
-                if (!!cell && !cell.getIsDestroyCalled()) {
+                if (!!cell && !cell.getIsDisposing()) {
                     cell.row.isSelected = cell.checked;
                 }
             }, {
@@ -4338,20 +4335,20 @@ define("jriapp_ui/datagrid/columns/rowselector", ["require", "exports", "jriapp_
                 var bv = !!v, chk = this._chk;
                 if (bv !== chk.checked) {
                     chk.checked = bv;
-                    this.raisePropertyChanged(const_13.PROP_NAME.checked);
+                    this.objEvents.raiseProp(const_13.PROP_NAME.checked);
                 }
             },
             enumerable: true,
             configurable: true
         });
-        RowSelectorColumn.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        RowSelectorColumn.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             dom.events.offNS(this._chk, this.uniqueID);
             dom.events.offNS(this.grid.table, this.uniqueID);
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         return RowSelectorColumn;
     }(base_7.BaseColumn));
@@ -4393,13 +4390,13 @@ define("jriapp_ui/datagrid/cells/rowselector", ["require", "exports", "jriapp/ut
             enumerable: true,
             configurable: true
         });
-        RowSelectorCell.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        RowSelectorCell.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             dom.removeData(this._chk);
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         RowSelectorCell.prototype.toString = function () {
             return "RowSelectorCell";
@@ -4440,7 +4437,7 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_shared", "j
             _this._createCells();
             if (!!_this._item) {
                 if (!!_this.isHasStateField) {
-                    _this._item.addOnPropertyChange(_this._grid.options.rowStateField, function () {
+                    _this._item.objEvents.onProp(_this._grid.options.rowStateField, function () {
                         fnState(self);
                     }, _this._objId);
                 }
@@ -4516,11 +4513,11 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_shared", "j
         Row.prototype.cancelEdit = function () {
             return this._item._aspect.cancelEdit();
         };
-        Row.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        Row.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             var grid = this._grid;
             if (!!grid) {
                 if (!this._isDetached) {
@@ -4529,16 +4526,16 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_shared", "j
                 dom.removeNode(this._tr);
                 var cells = this._cells, len = cells.length;
                 for (var i = 0; i < len; i += 1) {
-                    cells[i].destroy();
+                    cells[i].dispose();
                 }
                 this._cells = [];
             }
-            this._item.removeNSHandlers(this._objId);
+            this._item.objEvents.offNS(this._objId);
             this._item = null;
             this._expanderCell = null;
             this._tr = null;
             this._grid = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         Row.prototype.deleteRow = function () {
             this._item._aspect.deleteItem();
@@ -4629,7 +4626,7 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_shared", "j
                     if (!!this._rowSelectorCell) {
                         this._rowSelectorCell.checked = this._isSelected;
                     }
-                    this.raisePropertyChanged(const_16.PROP_NAME.isSelected);
+                    this.objEvents.raiseProp(const_16.PROP_NAME.isSelected);
                     this.grid._getInternal().onRowSelectionChanged(this);
                 }
             },
@@ -4740,20 +4737,20 @@ define("jriapp_ui/datagrid/cells/base", ["require", "exports", "jriapp_shared", 
         BaseCell.prototype.scrollIntoView = function () {
             this.row.scrollIntoView();
         };
-        BaseCell.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        BaseCell.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             if (!!this._click) {
-                this._click.destroy();
+                this._click.dispose();
                 this._click = null;
             }
             dom.removeData(this._td);
             this._row = null;
             this._td = null;
             this._column = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         BaseCell.prototype.toString = function () {
             return "BaseCell";
@@ -4816,18 +4813,18 @@ define("jriapp_ui/datagrid/cells/details", ["require", "exports", "jriapp_shared
             _this._td.appendChild(_this._template.el);
             return _this;
         }
-        DetailsCell.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        DetailsCell.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             if (!!this._template) {
-                this._template.destroy();
+                this._template.dispose();
                 this._template = null;
             }
             this._row = null;
             this._td = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         DetailsCell.prototype.toString = function () {
             return "DetailsCell";
@@ -4900,7 +4897,7 @@ define("jriapp_ui/datagrid/rows/details", ["require", "exports", "jriapp_shared"
             this._item = null;
             this._cell.item = null;
             dom.removeNode(this.tr);
-            if (!row || row.getIsDestroyCalled()) {
+            if (!row || row.getIsDisposing()) {
                 this._parentRow = null;
                 return;
             }
@@ -4913,7 +4910,7 @@ define("jriapp_ui/datagrid/rows/details", ["require", "exports", "jriapp_shared"
             dom.insertAfter(this.tr, row.tr);
             this._show(function () {
                 var parentRow = self._parentRow;
-                if (!parentRow || parentRow.getIsDestroyCalled()) {
+                if (!parentRow || parentRow.getIsDisposing()) {
                     return;
                 }
                 if (self.grid.options.isUseScrollIntoDetails) {
@@ -4936,21 +4933,21 @@ define("jriapp_ui/datagrid/rows/details", ["require", "exports", "jriapp_shared"
             animation.beforeHide(this._cell.template.el);
             animation.hide(onEnd);
         };
-        DetailsRow.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        DetailsRow.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
-            this._grid.removeNSHandlers(this._objId);
+            this.setDisposing();
+            this._grid.objEvents.offNS(this._objId);
             if (!!this._cell) {
-                this._cell.destroy();
+                this._cell.dispose();
                 this._cell = null;
             }
             dom.removeNode(this._tr);
             this._item = null;
             this._tr = null;
             this._grid = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         DetailsRow.prototype.toString = function () {
             return "DetailsRow";
@@ -5052,15 +5049,15 @@ define("jriapp_ui/datagrid/cells/fillspace", ["require", "exports", "jriapp_shar
             _this._td.appendChild(_this._div);
             return _this;
         }
-        FillSpaceCell.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        FillSpaceCell.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             this._row = null;
             this._td = null;
             this._div = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         FillSpaceCell.prototype.toString = function () {
             return "FillSpaceCell";
@@ -5117,19 +5114,19 @@ define("jriapp_ui/datagrid/rows/fillspace", ["require", "exports", "jriapp_share
             var td = document.createElement("td");
             this._cell = new fillspace_1.FillSpaceCell({ row: this, td: td });
         };
-        FillSpaceRow.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        FillSpaceRow.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             if (!!this._cell) {
-                this._cell.destroy();
+                this._cell.dispose();
                 this._cell = null;
             }
             dom.removeNode(this.tr);
             this._tr = null;
             this._grid = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         FillSpaceRow.prototype.toString = function () {
             return "FillSpaceRow";
@@ -5218,7 +5215,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
     function _checkGridWidth() {
         coreUtils.forEachProp(_createdGrids, function (id) {
             var grid = _createdGrids[id];
-            if (grid.getIsDestroyCalled()) {
+            if (grid.getIsDisposing()) {
                 return;
             }
             grid._getInternal().columnWidthCheck();
@@ -5335,7 +5332,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                     self._expandDetails(parentRow, expanded);
                 },
                 columnWidthCheck: function () {
-                    if (self.getIsDestroyCalled()) {
+                    if (self.getIsDisposing()) {
                         return;
                     }
                     var tw2 = table.offsetWidth;
@@ -5352,46 +5349,46 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             _this._setDataSource(ds);
             return _this;
         }
-        DataGrid.prototype._getEventNames = function () {
-            var baseEvents = _super.prototype._getEventNames.call(this);
+        DataGrid.prototype.getEventNames = function () {
+            var baseEvents = _super.prototype.getEventNames.call(this);
             var events = Object.keys(GRID_EVENTS).map(function (key) { return GRID_EVENTS[key]; });
             return events.concat(baseEvents);
         };
         DataGrid.prototype.addOnRowExpanded = function (fn, nmspace, context) {
-            this.addHandler(GRID_EVENTS.row_expanded, fn, nmspace, context);
+            this.objEvents.on(GRID_EVENTS.row_expanded, fn, nmspace, context);
         };
         DataGrid.prototype.removeOnRowExpanded = function (nmspace) {
-            this.removeHandler(GRID_EVENTS.row_expanded, nmspace);
+            this.objEvents.off(GRID_EVENTS.row_expanded, nmspace);
         };
         DataGrid.prototype.addOnRowSelected = function (fn, nmspace, context) {
-            this.addHandler(GRID_EVENTS.row_selected, fn, nmspace, context);
+            this.objEvents.on(GRID_EVENTS.row_selected, fn, nmspace, context);
         };
         DataGrid.prototype.removeOnRowSelected = function (nmspace) {
-            this.removeHandler(GRID_EVENTS.row_selected, nmspace);
+            this.objEvents.off(GRID_EVENTS.row_selected, nmspace);
         };
         DataGrid.prototype.addOnPageChanged = function (fn, nmspace, context) {
-            this.addHandler(GRID_EVENTS.page_changed, fn, nmspace, context);
+            this.objEvents.on(GRID_EVENTS.page_changed, fn, nmspace, context);
         };
         DataGrid.prototype.removeOnPageChanged = function (nmspace) {
-            this.removeHandler(GRID_EVENTS.page_changed, nmspace);
+            this.objEvents.off(GRID_EVENTS.page_changed, nmspace);
         };
         DataGrid.prototype.addOnRowStateChanged = function (fn, nmspace, context) {
-            this.addHandler(GRID_EVENTS.row_state_changed, fn, nmspace, context);
+            this.objEvents.on(GRID_EVENTS.row_state_changed, fn, nmspace, context);
         };
         DataGrid.prototype.removeOnRowStateChanged = function (nmspace) {
-            this.removeHandler(GRID_EVENTS.row_state_changed, nmspace);
+            this.objEvents.off(GRID_EVENTS.row_state_changed, nmspace);
         };
         DataGrid.prototype.addOnCellDblClicked = function (fn, nmspace, context) {
-            this.addHandler(GRID_EVENTS.cell_dblclicked, fn, nmspace, context);
+            this.objEvents.on(GRID_EVENTS.cell_dblclicked, fn, nmspace, context);
         };
         DataGrid.prototype.removeOnCellDblClicked = function (nmspace) {
-            this.removeHandler(GRID_EVENTS.cell_dblclicked, nmspace);
+            this.objEvents.off(GRID_EVENTS.cell_dblclicked, nmspace);
         };
         DataGrid.prototype.addOnRowAction = function (fn, nmspace, context) {
-            this.addHandler(GRID_EVENTS.row_action, fn, nmspace, context);
+            this.objEvents.on(GRID_EVENTS.row_action, fn, nmspace, context);
         };
         DataGrid.prototype.removeOnRowAction = function (nmspace) {
-            this.removeHandler(GRID_EVENTS.row_action, nmspace);
+            this.objEvents.off(GRID_EVENTS.row_action, nmspace);
         };
         DataGrid.prototype._onKeyDown = function (key, event) {
             var ds = this.dataSource, self = this;
@@ -5460,10 +5457,10 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                     if (!!currentRow && !!this._actionsCol) {
                         event.preventDefault();
                         if (currentRow.isEditing) {
-                            this.raiseEvent(GRID_EVENTS.row_action, { row: currentRow, action: 0 });
+                            this.objEvents.raise(GRID_EVENTS.row_action, { row: currentRow, action: 0 });
                         }
                         else {
-                            this.raiseEvent(GRID_EVENTS.row_action, { row: currentRow, action: 1 });
+                            this.objEvents.raise(GRID_EVENTS.row_action, { row: currentRow, action: 1 });
                         }
                     }
                     break;
@@ -5471,7 +5468,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                     if (!!currentRow && !!this._actionsCol) {
                         if (currentRow.isEditing) {
                             event.preventDefault();
-                            this.raiseEvent(GRID_EVENTS.row_action, { row: currentRow, action: 2 });
+                            this.objEvents.raise(GRID_EVENTS.row_action, { row: currentRow, action: 2 });
                         }
                     }
                     break;
@@ -5497,15 +5494,15 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
         };
         DataGrid.prototype._onRowStateChanged = function (row, val) {
             var args = { row: row, val: val, css: null };
-            this.raiseEvent(GRID_EVENTS.row_state_changed, args);
+            this.objEvents.raise(GRID_EVENTS.row_state_changed, args);
             return args.css;
         };
         DataGrid.prototype._onCellDblClicked = function (cell) {
             var args = { cell: cell };
-            this.raiseEvent(GRID_EVENTS.cell_dblclicked, args);
+            this.objEvents.raise(GRID_EVENTS.cell_dblclicked, args);
         };
         DataGrid.prototype._onRowSelectionChanged = function (row) {
-            this.raiseEvent(GRID_EVENTS.row_selected, { row: row });
+            this.objEvents.raise(GRID_EVENTS.row_selected, { row: row });
         };
         DataGrid.prototype._resetColumnsSort = function () {
             this.columns.forEach(function (col) {
@@ -5535,8 +5532,8 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             var rowkey = row.itemKey, i = utils.arr.remove(this._rows, row);
             try {
                 if (i > -1) {
-                    if (!row.getIsDestroyCalled()) {
-                        row.destroy();
+                    if (!row.getIsDisposing()) {
+                        row.dispose();
                     }
                 }
             }
@@ -5579,7 +5576,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             if (old !== parentRow && !!old) {
                 old.expanderCell.toggleImage();
             }
-            this.raiseEvent(GRID_EVENTS.row_expanded, { collapsedRow: old, expandedRow: parentRow, isExpanded: expanded });
+            this.objEvents.raise(GRID_EVENTS.row_expanded, { collapsedRow: old, expandedRow: parentRow, isExpanded: expanded });
         };
         DataGrid.prototype._parseColumnAttr = function (columnAttr, contentAttr) {
             var defaultOp = {
@@ -5651,11 +5648,11 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 var oldRow = !prevCurrent ? null : this._rowMap[prevCurrent._key];
                 var newRow = !newCurrent ? null : this._rowMap[newCurrent._key];
                 if (!!oldRow) {
-                    oldRow.raisePropertyChanged(const_22.PROP_NAME.isCurrent);
+                    oldRow.objEvents.raiseProp(const_22.PROP_NAME.isCurrent);
                     dom.removeClass([oldRow.tr], const_22.css.rowHighlight);
                 }
                 if (!!newRow) {
-                    newRow.raisePropertyChanged(const_22.PROP_NAME.isCurrent);
+                    newRow.objEvents.raiseProp(const_22.PROP_NAME.isCurrent);
                     dom.addClass([newRow.tr], const_22.css.rowHighlight);
                 }
             }
@@ -5726,7 +5723,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             if (!!this._rowSelectorCol) {
                 this._rowSelectorCol.checked = false;
             }
-            this.raiseEvent(GRID_EVENTS.page_changed, {});
+            this.objEvents.raise(GRID_EVENTS.page_changed, {});
         };
         DataGrid.prototype._onItemEdit = function (item, isBegin, isCanceled) {
             var row = this._rowMap[item._key];
@@ -5741,7 +5738,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 row._onEndEdit(isCanceled);
                 this._editingRow = null;
             }
-            this.raisePropertyChanged(const_22.PROP_NAME.editingRow);
+            this.objEvents.raiseProp(const_22.PROP_NAME.editingRow);
         };
         DataGrid.prototype._onItemAdded = function (sender, args) {
             var item = args.item, row = this._rowMap[item._key];
@@ -5817,7 +5814,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             if (!ds) {
                 return;
             }
-            ds.removeNSHandlers(self._objId);
+            ds.objEvents.offNS(self._objId);
         };
         DataGrid.prototype._clearGrid = function () {
             if (this._rows.length === 0) {
@@ -5831,7 +5828,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             this._rowMap = {};
             rows.forEach(function (row) {
                 row.isDetached = true;
-                row.destroy();
+                row.dispose();
             });
         };
         DataGrid.prototype._wrapTable = function () {
@@ -5937,7 +5934,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
         };
         DataGrid.prototype._refresh = function (isPageChanged) {
             var self = this, ds = this.dataSource;
-            if (!ds || self.getIsDestroyCalled()) {
+            if (!ds || self.getIsDisposing()) {
                 return;
             }
             this._clearGrid();
@@ -6007,7 +6004,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             this._options.dataSource = v;
             this._dsDebounce.enque(function () {
                 var ds = _this._options.dataSource;
-                if (!!ds && !ds.getIsDestroyCalled()) {
+                if (!!ds && !ds.getIsDisposing()) {
                     _this._bindDS();
                     _this._refresh(false);
                 }
@@ -6020,7 +6017,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             return this._internal;
         };
         DataGrid.prototype.updateColumnsSize = function () {
-            if (this.getIsDestroyCalled()) {
+            if (this.getIsDisposing()) {
                 return;
             }
             var width = 0;
@@ -6162,25 +6159,25 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 ERROR.reThrow(ex, this.handleError(ex, this));
             }
         };
-        DataGrid.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        DataGrid.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
-            this._scrollDebounce.destroy();
-            this._dsDebounce.destroy();
-            this._pageDebounce.destroy();
+            this.setDisposing();
+            this._scrollDebounce.dispose();
+            this._dsDebounce.dispose();
+            this._pageDebounce.dispose();
             this._updateCurrent = function () { };
             this._clearGrid();
             this._unbindDS();
             _gridDestroyed(this);
             boot._getInternal().untrackSelectable(this);
             if (!!this._details) {
-                this._details.destroy();
+                this._details.dispose();
                 this._details = null;
             }
             if (!!this._fillSpace) {
-                this._fillSpace.destroy();
+                this._fillSpace.dispose();
                 this._fillSpace = null;
             }
             if (this._options.animation) {
@@ -6188,19 +6185,19 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 this._options.animation = null;
             }
             if (!!this._dialog) {
-                this._dialog.destroy();
+                this._dialog.dispose();
                 this._dialog = null;
             }
             this._unWrapTable();
             dom.removeClass([this._table], const_22.css.dataTable);
             dom.removeClass([this._tHeadRow], const_22.css.columnInfo);
-            this._columns.forEach(function (col) { col.destroy(); });
+            this._columns.forEach(function (col) { col.dispose(); });
             this._columns = [];
             this._table = null;
             this._options = {};
             this._selectable = null;
             this._internal = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         Object.defineProperty(DataGrid.prototype, "table", {
             get: function () {
@@ -6268,7 +6265,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             set: function (v) {
                 if (v !== this.dataSource) {
                     this._setDataSource(v);
-                    this.raisePropertyChanged(const_22.PROP_NAME.dataSource);
+                    this.objEvents.raiseProp(const_22.PROP_NAME.dataSource);
                 }
             },
             enumerable: true,
@@ -6305,7 +6302,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 return (!cur) ? null : this._rowMap[cur._key];
             },
             set: function (row) {
-                if (!!row && !row.getIsDestroyCalled()) {
+                if (!!row && !row.getIsDisposing()) {
                     if (row.item !== this.currentItem) {
                         this.currentItem = row.item;
                     }
@@ -6396,17 +6393,17 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
         DataGridElView.prototype.toString = function () {
             return "DataGridElView";
         };
-        DataGridElView.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        DataGridElView.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
-            this._stateDebounce.destroy();
-            if (!this._grid.getIsDestroyCalled()) {
-                this._grid.destroy();
+            this.setDisposing();
+            this._stateDebounce.dispose();
+            if (!this._grid.getIsDisposing()) {
+                this._grid.dispose();
             }
             this._stateProvider = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         DataGridElView.prototype._bindGridEvents = function () {
             var self = this;
@@ -6423,7 +6420,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             set: function (v) {
                 if (this.dataSource !== v) {
                     this.grid.dataSource = v;
-                    this.raisePropertyChanged(const_22.PROP_NAME.dataSource);
+                    this.objEvents.raiseProp(const_22.PROP_NAME.dataSource);
                 }
             },
             enumerable: true,
@@ -6441,14 +6438,14 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 if (v !== this._stateProvider) {
                     this._stateProvider = v;
                     this._stateDebounce.enque(function () {
-                        if (!_this._grid || _this._grid.getIsDestroyCalled()) {
+                        if (!_this._grid || _this._grid.getIsDisposing()) {
                             return;
                         }
                         _this._grid.rows.forEach(function (row) {
                             row.updateUIState();
                         });
                     });
-                    this.raisePropertyChanged(const_22.PROP_NAME.stateProvider);
+                    this.objEvents.raiseProp(const_22.PROP_NAME.stateProvider);
                 }
             },
             enumerable: true,
@@ -6461,7 +6458,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             set: function (v) {
                 if (this.animation !== v) {
                     this._grid.options.animation = v;
-                    this.raisePropertyChanged(const_22.PROP_NAME.animation);
+                    this.objEvents.raiseProp(const_22.PROP_NAME.animation);
                 }
             },
             enumerable: true,
@@ -6625,20 +6622,20 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/const"
         Pager.prototype._onTotalCountChanged = function (ds) {
             this.rowCount = ds.totalCount;
         };
-        Pager.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        Pager.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
-            this._pageDebounce.destroy();
-            this._dsDebounce.destroy();
+            this.setDisposing();
+            this._pageDebounce.dispose();
+            this._dsDebounce.dispose();
             this._unbindDS();
             this._clearContent();
             dom.events.offNS(this._el, this._objId);
             dom.removeClass([this.el], css.pager);
             this._el = null;
             this._options = {};
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         Pager.prototype._bindDS = function () {
             var self = this, ds = this.dataSource;
@@ -6666,7 +6663,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/const"
             if (!ds) {
                 return;
             }
-            ds.removeNSHandlers(self._objId);
+            ds.objEvents.offNS(self._objId);
         };
         Pager.prototype._clearContent = function () {
             this._el.innerHTML = "";
@@ -6791,7 +6788,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/const"
             set: function (v) {
                 if (v !== this.dataSource) {
                     this._setDataSource(v);
-                    this.raisePropertyChanged(PROP_NAME.dataSource);
+                    this.objEvents.raiseProp(PROP_NAME.dataSource);
                 }
             },
             enumerable: true,
@@ -6822,7 +6819,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/const"
                 if (this._rowCount !== v) {
                     this._rowCount = v;
                     this.render();
-                    this.raisePropertyChanged(PROP_NAME.rowCount);
+                    this.objEvents.raiseProp(PROP_NAME.rowCount);
                 }
             },
             enumerable: true,
@@ -6845,7 +6842,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/const"
                 if (this._currentPage !== v) {
                     this._currentPage = v;
                     this.render();
-                    this.raisePropertyChanged(PROP_NAME.currentPage);
+                    this.objEvents.raiseProp(PROP_NAME.currentPage);
                 }
             },
             enumerable: true,
@@ -6957,7 +6954,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/const"
                     else {
                         this.el.style.display = (!this._display ? "" : this._display);
                     }
-                    this.raisePropertyChanged("isVisible");
+                    this.objEvents.raiseProp("isVisible");
                 }
             },
             enumerable: true,
@@ -6973,15 +6970,15 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/const"
             _this._pager = new Pager(options);
             return _this;
         }
-        PagerElView.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        PagerElView.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
-            if (!this._pager.getIsDestroyCalled()) {
-                this._pager.destroy();
+            this.setDisposing();
+            if (!this._pager.getIsDisposing()) {
+                this._pager.dispose();
             }
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         PagerElView.prototype.toString = function () {
             return "PagerElView";
@@ -6993,7 +6990,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/const"
             set: function (v) {
                 if (this.dataSource !== v) {
                     this._pager.dataSource = v;
-                    this.raisePropertyChanged(PROP_NAME.dataSource);
+                    this.objEvents.raiseProp(PROP_NAME.dataSource);
                 }
             },
             enumerable: true,
@@ -7091,15 +7088,15 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             _this._setDataSource(ds);
             return _this;
         }
-        StackPanel.prototype._getEventNames = function () {
-            var baseEvents = _super.prototype._getEventNames.call(this);
+        StackPanel.prototype.getEventNames = function () {
+            var baseEvents = _super.prototype.getEventNames.call(this);
             return [PNL_EVENTS.item_clicked].concat(baseEvents);
         };
         StackPanel.prototype.addOnItemClicked = function (fn, nmspace, context) {
-            this.addHandler(PNL_EVENTS.item_clicked, fn, nmspace, context);
+            this.objEvents.on(PNL_EVENTS.item_clicked, fn, nmspace, context);
         };
         StackPanel.prototype.removeOnItemClicked = function (nmspace) {
-            this.removeHandler(PNL_EVENTS.item_clicked, nmspace);
+            this.objEvents.off(PNL_EVENTS.item_clicked, nmspace);
         };
         StackPanel.prototype._getContainerEl = function () { return this.el; };
         StackPanel.prototype._onKeyDown = function (key, event) {
@@ -7167,7 +7164,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
                         }
                     }
                 }
-                this.raisePropertyChanged(PROP_NAME.currentItem);
+                this.objEvents.raiseProp(PROP_NAME.currentItem);
             }
         };
         StackPanel.prototype._onDSCurrentChanged = function () {
@@ -7259,12 +7256,12 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             if (!ds) {
                 return;
             }
-            ds.removeNSHandlers(self._objId);
+            ds.objEvents.offNS(self._objId);
         };
         StackPanel.prototype._onItemClicked = function (div, item) {
             this._updateCurrent(item, false);
             this.dataSource.currentItem = item;
-            this.raiseEvent(PNL_EVENTS.item_clicked, { item: item });
+            this.objEvents.raise(PNL_EVENTS.item_clicked, { item: item });
         };
         StackPanel.prototype._clearContent = function () {
             var self = this, keys = Object.keys(self._itemMap);
@@ -7282,7 +7279,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
                 return;
             }
             delete self._itemMap[key];
-            mappedItem.template.destroy();
+            mappedItem.template.dispose();
             mappedItem.template = null;
             dom.removeNode(mappedItem.el);
         };
@@ -7307,7 +7304,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             this._options.dataSource = v;
             this._debounce.enque(function () {
                 var ds = _this._options.dataSource;
-                if (!!ds && !ds.getIsDestroyCalled()) {
+                if (!!ds && !ds.getIsDisposing()) {
                     _this._bindDS();
                     _this._refresh();
                 }
@@ -7316,12 +7313,12 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
                 }
             });
         };
-        StackPanel.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        StackPanel.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
-            this._debounce.destroy();
+            this.setDisposing();
+            this._debounce.dispose();
             boot._getInternal().untrackSelectable(this);
             this._unbindDS();
             this._clearContent();
@@ -7333,7 +7330,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             this._currentItem = null;
             this._itemMap = {};
             this._options = {};
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         StackPanel.prototype.getISelectable = function () {
             return this._selectable;
@@ -7402,7 +7399,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             set: function (v) {
                 if (v !== this.dataSource) {
                     this._setDataSource(v);
-                    this.raisePropertyChanged(PROP_NAME.dataSource);
+                    this.objEvents.raiseProp(PROP_NAME.dataSource);
                 }
             },
             enumerable: true,
@@ -7430,16 +7427,16 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             }, _this.uniqueID);
             return _this;
         }
-        StackPanelElView.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        StackPanelElView.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
-            if (!this._panel.getIsDestroyCalled()) {
-                this._panel.destroy();
+            this.setDisposing();
+            if (!this._panel.getIsDisposing()) {
+                this._panel.dispose();
             }
             this._panelEvents = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         StackPanelElView.prototype.toString = function () {
             return "StackPanelElView";
@@ -7451,7 +7448,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             set: function (v) {
                 if (this.dataSource !== v) {
                     this._panel.dataSource = v;
-                    this.raisePropertyChanged(PROP_NAME.dataSource);
+                    this.objEvents.raiseProp(PROP_NAME.dataSource);
                 }
             },
             enumerable: true,
@@ -7463,7 +7460,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
                 var old = this._panelEvents;
                 if (v !== old) {
                     this._panelEvents = v;
-                    this.raisePropertyChanged(PROP_NAME.panelEvents);
+                    this.objEvents.raiseProp(PROP_NAME.panelEvents);
                 }
             },
             enumerable: true,
@@ -7506,23 +7503,23 @@ define("jriapp_ui/tabs", ["require", "exports", "jriapp_shared", "jriapp_ui/util
                     if (!!self._tabsEvents) {
                         self._tabsEvents.onTabSelected(self);
                     }
-                    self.raisePropertyChanged(PROP_NAME.tabIndex);
+                    self.objEvents.raiseProp(PROP_NAME.tabIndex);
                 }
             };
             tabOpts = coreUtils.extend(tabOpts, self._tabOpts);
             $el.tabs(tabOpts);
             utils.queue.enque(function () {
-                if (self.getIsDestroyCalled()) {
+                if (self.getIsDisposing()) {
                     return;
                 }
                 self._tabsCreated = true;
                 self._onTabsCreated();
-                self.raisePropertyChanged(PROP_NAME.tabIndex);
+                self.objEvents.raiseProp(PROP_NAME.tabIndex);
             });
         };
         TabsElView.prototype._destroyTabs = function () {
             var $el = jquery_6.$(this.el);
-            jquery_6.JQueryUtils.destroy$Plugin($el, "tabs");
+            jquery_6.JQueryUtils.dispose$Plugin($el, "tabs");
             this._tabsCreated = false;
             if (!!this._tabsEvents) {
                 this._tabsEvents.removeTabs();
@@ -7537,14 +7534,14 @@ define("jriapp_ui/tabs", ["require", "exports", "jriapp_shared", "jriapp_ui/util
                 self._tabsEvents.onTabSelected(self);
             }
         };
-        TabsElView.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        TabsElView.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             this._destroyTabs();
             this._tabsEvents = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         TabsElView.prototype.toString = function () {
             return "TabsElView";
@@ -7558,7 +7555,7 @@ define("jriapp_ui/tabs", ["require", "exports", "jriapp_shared", "jriapp_ui/util
                         old.removeTabs();
                     }
                     this._tabsEvents = v;
-                    this.raisePropertyChanged(PROP_NAME.tabsEvents);
+                    this.objEvents.raiseProp(PROP_NAME.tabsEvents);
                     if (this._tabsCreated) {
                         this._onTabsCreated();
                     }
@@ -7604,7 +7601,7 @@ define("jriapp_ui/command", ["require", "exports", "jriapp_shared", "jriapp/util
             this.isEnabled = cmd.canExecute(this, this._commandParam);
         };
         CommandElView.prototype._onCommandChanged = function () {
-            this.raisePropertyChanged(baseview_14.PROP_NAME.command);
+            this.objEvents.raiseProp(baseview_14.PROP_NAME.command);
         };
         CommandElView.prototype.invokeCommand = function (args, isAsync) {
             var self = this;
@@ -7612,7 +7609,7 @@ define("jriapp_ui/command", ["require", "exports", "jriapp_shared", "jriapp/util
             if (!!self.command && self.command.canExecute(self, args)) {
                 if (isAsync) {
                     utils.queue.enque(function () {
-                        if (self.getIsDestroyCalled()) {
+                        if (self.getIsDisposing()) {
                             return;
                         }
                         try {
@@ -7630,17 +7627,17 @@ define("jriapp_ui/command", ["require", "exports", "jriapp_shared", "jriapp/util
                 }
             }
         };
-        CommandElView.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        CommandElView.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             if (sys.isBaseObj(this._command)) {
-                this._command.removeNSHandlers(this.uniqueID);
+                this._command.objEvents.offNS(this.uniqueID);
             }
             this.command = null;
             this._commandParam = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         CommandElView.prototype.toString = function () {
             return "CommandElView";
@@ -7665,7 +7662,7 @@ define("jriapp_ui/command", ["require", "exports", "jriapp_shared", "jriapp/util
                         this._disabled = !v;
                     }
                     dom.setClass([this.el], baseview_14.css.disabled, !!v);
-                    this.raisePropertyChanged(baseview_14.PROP_NAME.isEnabled);
+                    this.objEvents.raiseProp(baseview_14.PROP_NAME.isEnabled);
                 }
             },
             enumerable: true,
@@ -7677,7 +7674,7 @@ define("jriapp_ui/command", ["require", "exports", "jriapp_shared", "jriapp/util
                 var self = this;
                 if (v !== this._command) {
                     if (sys.isBaseObj(this._command)) {
-                        this._command.removeNSHandlers(this.uniqueID);
+                        this._command.objEvents.offNS(this.uniqueID);
                     }
                     this._command = v;
                     if (!!this._command) {
@@ -7698,7 +7695,7 @@ define("jriapp_ui/command", ["require", "exports", "jriapp_shared", "jriapp/util
             set: function (v) {
                 if (v !== this._commandParam) {
                     this._commandParam = v;
-                    this.raisePropertyChanged(baseview_14.PROP_NAME.commandParam);
+                    this.objEvents.raiseProp(baseview_14.PROP_NAME.commandParam);
                 }
             },
             enumerable: true,
@@ -7760,7 +7757,7 @@ define("jriapp_ui/template", ["require", "exports", "jriapp_shared", "jriapp/mvv
                 self._template = template;
                 var args = { template: template, isLoaded: true };
                 self.invokeCommand(args, false);
-                this.raisePropertyChanged(PROP_NAME.template);
+                this.objEvents.raiseProp(PROP_NAME.template);
             }
             catch (ex) {
                 ERROR.reThrow(ex, this.handleError(ex, this));
@@ -7778,7 +7775,7 @@ define("jriapp_ui/template", ["require", "exports", "jriapp_shared", "jriapp/mvv
             finally {
                 self._template = null;
             }
-            this.raisePropertyChanged(PROP_NAME.template);
+            this.objEvents.raiseProp(PROP_NAME.template);
         };
         TemplateElView.prototype.toString = function () {
             return "TemplateElView";
@@ -7788,7 +7785,7 @@ define("jriapp_ui/template", ["require", "exports", "jriapp_shared", "jriapp/mvv
             set: function (v) {
                 if (this._isEnabled !== v) {
                     this._isEnabled = v;
-                    this.raisePropertyChanged(PROP_NAME.isEnabled);
+                    this.objEvents.raiseProp(PROP_NAME.isEnabled);
                 }
             },
             enumerable: true,
@@ -7929,9 +7926,9 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             var parent = viewChecks.getParentDataForm(null, _this._el);
             if (!!parent) {
                 self._parentDataForm = _this.app.viewFactory.getOrCreateElView(parent);
-                self._parentDataForm.addOnDestroyed(function () {
-                    if (!self._isDestroyCalled) {
-                        self.destroy();
+                self._parentDataForm.addOnDisposed(function () {
+                    if (!self.getIsDisposing()) {
+                        self.dispose();
                     }
                 }, self._objId);
             }
@@ -7974,8 +7971,8 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             });
             var promise = self.app._getInternal().bindElements(this._el, dctx, true, this.isInsideTemplate);
             return promise.then(function (lftm) {
-                if (self.getIsDestroyCalled()) {
-                    lftm.destroy();
+                if (self.getIsDisposing()) {
+                    lftm.dispose();
                     return;
                 }
                 self._lfTime = lftm;
@@ -8015,12 +8012,12 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
                 else {
                     if (!!self._contentPromise) {
                         self._contentPromise.then(function () {
-                            if (self.getIsDestroyCalled()) {
+                            if (self.getIsDisposing()) {
                                 return;
                             }
                             self._updateCreatedContent();
                         }, function (err) {
-                            if (self.getIsDestroyCalled()) {
+                            if (self.getIsDisposing()) {
                                 return;
                             }
                             self.handleError(err, self);
@@ -8052,11 +8049,11 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
                 this._editable = sys.getEditable(dataContext);
                 this._errNotification = sys.getErrorNotification(dataContext);
             }
-            dataContext.addOnDestroyed(function () {
+            dataContext.addOnDisposed(function () {
                 self.dataContext = null;
             }, self._objId);
             if (!!this._editable) {
-                this._editable.addOnPropertyChange(PROP_NAME.isEditing, self._onIsEditingChanged, self._objId, self);
+                this._editable.objEvents.onProp(PROP_NAME.isEditing, self._onIsEditingChanged, self._objId, self);
             }
             if (!!this._errNotification) {
                 this._errNotification.addOnErrorsChanged(self._onDSErrorsChanged, self._objId, self);
@@ -8065,10 +8062,10 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
         DataForm.prototype._unbindDS = function () {
             var dataContext = this._dataContext;
             this.validationErrors = null;
-            if (!!dataContext && !dataContext.getIsDestroyCalled()) {
-                dataContext.removeNSHandlers(this._objId);
+            if (!!dataContext && !dataContext.getIsDisposing()) {
+                dataContext.objEvents.offNS(this._objId);
                 if (!!this._editable) {
-                    this._editable.removeNSHandlers(this._objId);
+                    this._editable.objEvents.offNS(this._objId);
                 }
                 if (!!this._errNotification) {
                     this._errNotification.removeOnErrorsChanged(this._objId);
@@ -8079,33 +8076,33 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
         };
         DataForm.prototype._clearContent = function () {
             this._content.forEach(function (content) {
-                content.destroy();
+                content.dispose();
             });
             this._content = [];
             if (!!this._lfTime) {
-                this._lfTime.destroy();
+                this._lfTime.dispose();
                 this._lfTime = null;
             }
             this._contentCreated = false;
         };
-        DataForm.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        DataForm.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             this._clearContent();
             dom.removeClass([this.el], exports.css.dataform);
             this._el = null;
             this._unbindDS();
             var parentDataForm = this._parentDataForm;
             this._parentDataForm = null;
-            if (!!parentDataForm && !parentDataForm.getIsDestroyCalled()) {
-                parentDataForm.removeNSHandlers(this._objId);
+            if (!!parentDataForm && !parentDataForm.getIsDisposing()) {
+                parentDataForm.objEvents.offNS(this._objId);
             }
             this._dataContext = null;
             this._contentCreated = false;
             this._contentPromise = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         DataForm.prototype.toString = function () {
             return "DataForm";
@@ -8141,7 +8138,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
                         this._onDSErrorsChanged();
                     }
                 }
-                this.raisePropertyChanged(PROP_NAME.dataContext);
+                this.objEvents.raiseProp(PROP_NAME.dataContext);
             },
             enumerable: true,
             configurable: true
@@ -8161,7 +8158,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
                 if (!editable && v !== isEditing) {
                     this._isEditing = v;
                     this._updateContent();
-                    this.raisePropertyChanged(PROP_NAME.isEditing);
+                    this.objEvents.raiseProp(PROP_NAME.isEditing);
                     return;
                 }
                 if (v !== isEditing && !!editable) {
@@ -8180,7 +8177,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
                 if (!!editable && editable.isEditing !== isEditing) {
                     this._isEditing = editable.isEditing;
                     this._updateContent();
-                    this.raisePropertyChanged(PROP_NAME.isEditing);
+                    this.objEvents.raiseProp(PROP_NAME.isEditing);
                 }
             },
             enumerable: true,
@@ -8191,7 +8188,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             set: function (v) {
                 if (v !== this._errors) {
                     this._errors = v;
-                    this.raisePropertyChanged(PROP_NAME.validationErrors);
+                    this.objEvents.raiseProp(PROP_NAME.validationErrors);
                 }
             },
             enumerable: true,
@@ -8217,13 +8214,13 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             var self = _this;
             _this._form = new DataForm(options);
             _this._errorGliph = null;
-            _this._form.addOnPropertyChange("*", function (form, args) {
+            _this._form.objEvents.onProp("*", function (form, args) {
                 switch (args.property) {
                     case PROP_NAME.validationErrors:
                         self.validationErrors = form.validationErrors;
                         break;
                     case PROP_NAME.dataContext:
-                        self.raisePropertyChanged(args.property);
+                        self.objEvents.raiseProp(args.property);
                         break;
                 }
             }, _this.uniqueID);
@@ -8272,19 +8269,19 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
                 this._setFieldError(false);
             }
         };
-        DataFormElView.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        DataFormElView.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             if (!!this._errorGliph) {
                 dom.removeNode(this._errorGliph);
                 this._errorGliph = null;
             }
-            if (!this._form.getIsDestroyCalled()) {
-                this._form.destroy();
+            if (!this._form.getIsDisposing()) {
+                this._form.dispose();
             }
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         DataFormElView.prototype.toString = function () {
             return "DataFormElView";
@@ -8324,21 +8321,21 @@ define("jriapp_ui/datepicker", ["require", "exports", "jriapp/const", "jriapp/bo
                 throw new Error("IDatepicker service is not registered");
             }
             datepicker.attachTo(_this.el, options.datepicker, function () {
-                _this.raisePropertyChanged("value");
+                _this.objEvents.raiseProp("value");
             });
             return _this;
         }
-        DatePickerElView.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        DatePickerElView.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             var datepicker = boot.getSvc(const_27.DATEPICKER_SVC);
             if (!datepicker) {
                 throw new Error("IDatepicker service is not registered");
             }
             datepicker.detachFrom(this.el);
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         DatePickerElView.prototype.toString = function () {
             return "DatePickerElView";
@@ -8425,15 +8422,15 @@ define("jriapp_ui/anchor", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
                 dom.addClass([this._span], glyph);
             }
         };
-        AnchorElView.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        AnchorElView.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             dom.removeClass([this.el], baseview_16.css.commandLink);
             this.imageSrc = null;
             this.glyph = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         AnchorElView.prototype.toString = function () {
             return "AnchorElView";
@@ -8444,7 +8441,7 @@ define("jriapp_ui/anchor", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
                 var x = this._imageSrc;
                 if (x !== v) {
                     this._updateImage(v);
-                    this.raisePropertyChanged(baseview_16.PROP_NAME.imageSrc);
+                    this.objEvents.raiseProp(baseview_16.PROP_NAME.imageSrc);
                 }
             },
             enumerable: true,
@@ -8456,7 +8453,7 @@ define("jriapp_ui/anchor", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
                 var x = this._glyph;
                 if (x !== v) {
                     this._updateGlyph(v);
-                    this.raisePropertyChanged(baseview_16.PROP_NAME.glyph);
+                    this.objEvents.raiseProp(baseview_16.PROP_NAME.glyph);
                 }
             },
             enumerable: true,
@@ -8471,7 +8468,7 @@ define("jriapp_ui/anchor", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
                 v = (!v) ? "" : ("" + v);
                 if (x !== v) {
                     this.el.innerHTML = v;
-                    this.raisePropertyChanged(baseview_16.PROP_NAME.html);
+                    this.objEvents.raiseProp(baseview_16.PROP_NAME.html);
                 }
             },
             enumerable: true,
@@ -8486,7 +8483,7 @@ define("jriapp_ui/anchor", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
                 v = (!v) ? "" : ("" + v);
                 if (x !== v) {
                     this.el.textContent = v;
-                    this.raisePropertyChanged(baseview_16.PROP_NAME.text);
+                    this.objEvents.raiseProp(baseview_16.PROP_NAME.text);
                 }
             },
             enumerable: true,
@@ -8501,7 +8498,7 @@ define("jriapp_ui/anchor", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
                 v = (!v) ? "" : ("" + v);
                 if (x !== v) {
                     this.el.href = v;
-                    this.raisePropertyChanged(baseview_16.PROP_NAME.href);
+                    this.objEvents.raiseProp(baseview_16.PROP_NAME.href);
                 }
             },
             enumerable: true,
@@ -8533,7 +8530,7 @@ define("jriapp_ui/block", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/
                 var x = this.width;
                 if (v !== x) {
                     this.el.style.width = v + "px";
-                    this.raisePropertyChanged(baseview_17.PROP_NAME.width);
+                    this.objEvents.raiseProp(baseview_17.PROP_NAME.width);
                 }
             },
             enumerable: true,
@@ -8547,7 +8544,7 @@ define("jriapp_ui/block", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/
                 var x = this.height;
                 if (v !== x) {
                     this.el.style.height = v + "px";
-                    this.raisePropertyChanged(baseview_17.PROP_NAME.height);
+                    this.objEvents.raiseProp(baseview_17.PROP_NAME.height);
                 }
             },
             enumerable: true,
@@ -8590,18 +8587,18 @@ define("jriapp_ui/busy", ["require", "exports", "jriapp_shared", "jriapp_ui/util
             _this._isBusy = false;
             return _this;
         }
-        BusyElView.prototype.destroy = function () {
-            if (this._isDestroyed) {
+        BusyElView.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
                 return;
             }
-            this._isDestroyCalled = true;
+            this.setDisposing();
             if (!!this._timeOut) {
                 clearTimeout(this._timeOut);
                 this._timeOut = null;
             }
             dom.removeNode(this._img);
             this._img = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         BusyElView.prototype.toString = function () {
             return "BusyElView";
@@ -8634,7 +8631,7 @@ define("jriapp_ui/busy", ["require", "exports", "jriapp_shared", "jriapp_ui/util
                             self._img.style.display = "none";
                         }
                     }
-                    self.raisePropertyChanged(baseview_18.PROP_NAME.isBusy);
+                    self.objEvents.raiseProp(baseview_18.PROP_NAME.isBusy);
                 }
             },
             enumerable: true,
@@ -8645,7 +8642,7 @@ define("jriapp_ui/busy", ["require", "exports", "jriapp_shared", "jriapp_ui/util
             set: function (v) {
                 if (v !== this._delay) {
                     this._delay = v;
-                    this.raisePropertyChanged(baseview_18.PROP_NAME.delay);
+                    this.objEvents.raiseProp(baseview_18.PROP_NAME.delay);
                 }
             },
             enumerable: true,
@@ -8698,7 +8695,7 @@ define("jriapp_ui/button", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
                     else {
                         this.el.value = v;
                     }
-                    this.raisePropertyChanged(baseview_19.PROP_NAME.value);
+                    this.objEvents.raiseProp(baseview_19.PROP_NAME.value);
                 }
             },
             enumerable: true,
@@ -8713,7 +8710,7 @@ define("jriapp_ui/button", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
                 v = (!v) ? "" : ("" + v);
                 if (x !== v) {
                     this.el.textContent = v;
-                    this.raisePropertyChanged(baseview_19.PROP_NAME.text);
+                    this.objEvents.raiseProp(baseview_19.PROP_NAME.text);
                 }
             },
             enumerable: true,
@@ -8733,7 +8730,7 @@ define("jriapp_ui/button", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
                     else {
                         this.el.value = v;
                     }
-                    this.raisePropertyChanged(baseview_19.PROP_NAME.html);
+                    this.objEvents.raiseProp(baseview_19.PROP_NAME.html);
                 }
             },
             enumerable: true,
@@ -8787,7 +8784,7 @@ define("jriapp_ui/checkbox3", ["require", "exports", "jriapp_shared", "jriapp/ut
                     chk.checked = !!v;
                     chk.indeterminate = this._checked === null;
                     this._updateState();
-                    this.raisePropertyChanged(baseview_20.PROP_NAME.checked);
+                    this.objEvents.raiseProp(baseview_20.PROP_NAME.checked);
                 }
             },
             enumerable: true,
@@ -8821,7 +8818,7 @@ define("jriapp_ui/expander", ["require", "exports", "jriapp/bootstrap", "jriapp_
             return _this;
         }
         ExpanderElView.prototype.refresh = function () {
-            if (this.getIsDestroyCalled()) {
+            if (this.getIsDisposing()) {
                 return;
             }
             this.imageSrc = this._isExpanded ? this._expandedsrc : this._collapsedsrc;
@@ -8849,7 +8846,7 @@ define("jriapp_ui/expander", ["require", "exports", "jriapp/bootstrap", "jriapp_
                 if (this._isExpanded !== v) {
                     this._isExpanded = v;
                     this.invokeCommand();
-                    this.raisePropertyChanged(exports.PROP_NAME.isExpanded);
+                    this.objEvents.raiseProp(exports.PROP_NAME.isExpanded);
                 }
             },
             enumerable: true,
@@ -8893,7 +8890,7 @@ define("jriapp_ui/img", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/ba
                 var x = this.src;
                 if (x !== v) {
                     this.el.src = v;
-                    this.raisePropertyChanged(baseview_21.PROP_NAME.src);
+                    this.objEvents.raiseProp(baseview_21.PROP_NAME.src);
                 }
             },
             enumerable: true,
@@ -8922,7 +8919,7 @@ define("jriapp_ui/radio", ["require", "exports", "jriapp_shared", "jriapp/bootst
                 var strv = checks.isNt(v) ? "" : ("" + v);
                 if (strv !== this.value) {
                     this.el.value = strv;
-                    this.raisePropertyChanged(baseview_22.PROP_NAME.value);
+                    this.objEvents.raiseProp(baseview_22.PROP_NAME.value);
                 }
             },
             enumerable: true,

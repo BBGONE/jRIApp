@@ -1628,7 +1628,7 @@ define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/d
             set: function (v) {
                 if (this._prodNumber != v) {
                     this._prodNumber = v;
-                    this.raisePropertyChanged('prodNumber');
+                    this.objEvents.raiseProp('prodNumber');
                 }
             },
             enumerable: true,
@@ -1639,7 +1639,7 @@ define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/d
             set: function (v) {
                 if (this._name != v) {
                     this._name = v;
-                    this.raisePropertyChanged('name');
+                    this.objEvents.raiseProp('name');
                 }
             },
             enumerable: true,
@@ -1650,7 +1650,7 @@ define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/d
             set: function (v) {
                 if (this._parentCategoryID != v) {
                     this._parentCategoryID = v;
-                    this.raisePropertyChanged('parentCategoryID');
+                    this.objEvents.raiseProp('parentCategoryID');
                     this._childCategories.refresh();
                 }
             },
@@ -1662,7 +1662,7 @@ define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/d
             set: function (v) {
                 if (this._childCategoryID != v) {
                     this._childCategoryID = v;
-                    this.raisePropertyChanged('childCategoryID');
+                    this.objEvents.raiseProp('childCategoryID');
                 }
             },
             enumerable: true,
@@ -1673,7 +1673,7 @@ define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/d
             set: function (v) {
                 if (this._modelID != v) {
                     this._modelID = v;
-                    this.raisePropertyChanged('modelID');
+                    this.objEvents.raiseProp('modelID');
                 }
             },
             enumerable: true,
@@ -1684,7 +1684,7 @@ define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/d
             set: function (v) {
                 if (this._saleStart1 != v) {
                     this._saleStart1 = v;
-                    this.raisePropertyChanged('saleStart1');
+                    this.objEvents.raiseProp('saleStart1');
                 }
             },
             enumerable: true,
@@ -1695,7 +1695,7 @@ define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/d
             set: function (v) {
                 if (this._saleStart2 != v) {
                     this._saleStart2 = v;
-                    this.raisePropertyChanged('saleStart2');
+                    this.objEvents.raiseProp('saleStart2');
                 }
             },
             enumerable: true,
@@ -1741,7 +1741,7 @@ define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/d
             set: function (v) {
                 if (this._selectedCategory != v) {
                     this._selectedCategory = v;
-                    this.raisePropertyChanged('selectedCategory');
+                    this.objEvents.raiseProp('selectedCategory');
                 }
             },
             enumerable: true,
@@ -1752,7 +1752,7 @@ define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/d
             set: function (v) {
                 if (this._selectedModel != v) {
                     this._selectedModel = v;
-                    this.raisePropertyChanged('selectedModel');
+                    this.objEvents.raiseProp('selectedModel');
                 }
             },
             enumerable: true,
@@ -1768,7 +1768,7 @@ define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/d
             set: function (v) {
                 if (this._size != v) {
                     this._size = v;
-                    this.raisePropertyChanged('size');
+                    this.objEvents.raiseProp('size');
                 }
             },
             enumerable: true,
@@ -1854,7 +1854,7 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
                 association: sodAssoc,
                 fn_sort: function (a, b) { return a.SalesOrderDetailID - b.SalesOrderDetailID; }
             });
-            _this._dbSet.addOnPropertyChange('currentItem', function (sender, data) {
+            _this._dbSet.objEvents.onProp('currentItem', function (sender, data) {
                 self._onCurrentChanged();
             }, self.uniqueID);
             _this._dbSet.addOnItemDeleting(function (sender, args) {
@@ -1969,7 +1969,7 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
         ProductViewModel.prototype._removeGrid = function () {
             if (!this._dataGrid)
                 return;
-            this._dataGrid.removeNSHandlers(this.uniqueID);
+            this._dataGrid.objEvents.offNS(this.uniqueID);
             this._dataGrid = null;
         };
         ProductViewModel.prototype.addTabs = function (tabs) {
@@ -1996,7 +1996,7 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
             alert("You double clicked " + cell.uniqueID);
         };
         ProductViewModel.prototype._onCurrentChanged = function () {
-            this.raisePropertyChanged('currentItem');
+            this.objEvents.raiseProp('currentItem');
             this._columnCommand.raiseCanExecuteChanged();
         };
         ProductViewModel.prototype._updateSelection = function () {
@@ -2071,19 +2071,19 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
         ProductViewModel.prototype.showDialog = function (name) {
             this._dialogVM.showDialog(name || 'testDialog', this);
         };
-        ProductViewModel.prototype.destroy = function () {
-            if (this._isDestroyed)
+        ProductViewModel.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
-            this._propWatcher.destroy();
+            this.setDisposing();
+            this._propWatcher.dispose();
             this._propWatcher = null;
             if (!!this._dbSet) {
-                this._dbSet.removeNSHandlers(this.uniqueID);
+                this._dbSet.objEvents.offNS(this.uniqueID);
             }
             if (!!this._dataGrid) {
-                this._dataGrid.removeNSHandlers(this.uniqueID);
+                this._dataGrid.objEvents.offNS(this.uniqueID);
             }
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         Object.defineProperty(ProductViewModel.prototype, "dbSet", {
             get: function () { return this._dbSet; },
@@ -2136,7 +2136,7 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
                 var old = this._selectedCount;
                 if (old !== v) {
                     this._selectedCount = v;
-                    this.raisePropertyChanged('selectedCount');
+                    this.objEvents.raiseProp('selectedCount');
                 }
             },
             enumerable: true,
@@ -2153,7 +2153,7 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
                 var old = this._invokeResult;
                 if (old !== v) {
                     this._invokeResult = v;
-                    this.raisePropertyChanged('invokeResult');
+                    this.objEvents.raiseProp('invokeResult');
                 }
             },
             enumerable: true,
@@ -2349,10 +2349,10 @@ define("gridDemo/baseUpload", ["require", "exports", "jriapp", "jriapp_ui", "upl
                 args.promise = self._addHeaders(args.xhr, file);
             });
             uploader.uploadFile().then(function (fileName) {
-                uploader.destroy();
+                uploader.dispose();
                 self._onLoadComplete();
             }).catch(function (err) {
-                uploader.destroy();
+                uploader.dispose();
                 self._onLoadError();
             });
         };
@@ -2376,7 +2376,7 @@ define("gridDemo/baseUpload", ["require", "exports", "jriapp", "jriapp_ui", "upl
             set: function (v) {
                 if (this._fileInfo !== v) {
                     this._fileInfo = v;
-                    this.raisePropertyChanged('fileInfo');
+                    this.objEvents.raiseProp('fileInfo');
                     this._uploadCommand.raiseCanExecuteChanged();
                 }
             },
@@ -2388,7 +2388,7 @@ define("gridDemo/baseUpload", ["require", "exports", "jriapp", "jriapp_ui", "upl
             set: function (v) {
                 if (this._fileName !== v) {
                     this._fileName = v;
-                    this.raisePropertyChanged('fileName');
+                    this.objEvents.raiseProp('fileName');
                 }
             },
             enumerable: true,
@@ -2405,7 +2405,7 @@ define("gridDemo/baseUpload", ["require", "exports", "jriapp", "jriapp_ui", "upl
                 var old = this._id;
                 if (old !== v) {
                     this._id = v;
-                    this.raisePropertyChanged('id');
+                    this.objEvents.raiseProp('id');
                     this._onIDChanged();
                 }
             },
@@ -2453,7 +2453,7 @@ define("gridDemo/uploads", ["require", "exports", "jriapp", "jriapp_ui", "gridDe
                 },
                 fn_OnClose: function (dialog) {
                     if (dialog.result == 'ok' && self._onDialogClose()) {
-                        self.raiseEvent('files_uploaded', { id: self.id, product: self._product });
+                        self.objEvents.raise('files_uploaded', { id: self.id, product: self._product });
                     }
                 }
             };
@@ -2472,8 +2472,8 @@ define("gridDemo/uploads", ["require", "exports", "jriapp", "jriapp_ui", "gridDe
             });
             return _this;
         }
-        UploadThumbnailVM.prototype._getEventNames = function () {
-            var base_events = _super.prototype._getEventNames.call(this);
+        UploadThumbnailVM.prototype.getEventNames = function () {
+            var base_events = _super.prototype.getEventNames.call(this);
             return ['files_uploaded'].concat(base_events);
         };
         UploadThumbnailVM.prototype._onDialogClose = function () {
@@ -2483,23 +2483,23 @@ define("gridDemo/uploads", ["require", "exports", "jriapp", "jriapp_ui", "gridDe
             return this._onDialogClose();
         };
         UploadThumbnailVM.prototype.addOnFilesUploaded = function (fn, nmspace) {
-            this.addHandler('files_uploaded', fn, nmspace);
+            this.objEvents.on('files_uploaded', fn, nmspace);
         };
         UploadThumbnailVM.prototype.removeOnFilesUploaded = function (nmspace) {
-            this.removeHandler('files_uploaded', nmspace);
+            this.objEvents.off('files_uploaded', nmspace);
         };
         Object.defineProperty(UploadThumbnailVM.prototype, "dialogCommand", {
             get: function () { return this._dialogCommand; },
             enumerable: true,
             configurable: true
         });
-        UploadThumbnailVM.prototype.destroy = function () {
-            if (this._isDestroyed)
+        UploadThumbnailVM.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
-            this._dialogVM.destroy();
+            this.setDisposing();
+            this._dialogVM.dispose();
             this._dialogVM = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         return UploadThumbnailVM;
     }(baseUpload_1.BaseUploadVM));
@@ -2540,7 +2540,7 @@ define("gridDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "common",
             this._dbContext.addOnError(handleError);
             if (!!options.sse_url && SSEVENTS.SSEventsVM.isSupported()) {
                 this._sseVM = new SSEVENTS.SSEventsVM(options.sse_url, options.sse_clientID);
-                this._sseVM.addOnMessage(function (s, a) { self._sseMessage = a.data.message; self.raisePropertyChanged('sseMessage'); });
+                this._sseVM.addOnMessage(function (s, a) { self._sseMessage = a.data.message; self.objEvents.raiseProp('sseMessage'); });
                 this._sseVM.addOnError(handleError);
             }
             if (WEBSOCK.WebSocketsVM.isSupported()) {
@@ -2561,24 +2561,24 @@ define("gridDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "common",
         };
         DemoApplication.prototype._onWebsockMsg = function (sender, args) {
             this._sseMessage = args.data.message;
-            this.raisePropertyChanged('sseMessage');
+            this.objEvents.raiseProp('sseMessage');
         };
-        DemoApplication.prototype.destroy = function () {
-            if (this._isDestroyed)
+        DemoApplication.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             var self = this;
             try {
-                self._errorVM.destroy();
-                self._headerVM.destroy();
-                self._productVM.destroy();
-                self._uploadVM.destroy();
-                self._dbContext.destroy();
+                self._errorVM.dispose();
+                self._headerVM.dispose();
+                self._productVM.dispose();
+                self._uploadVM.dispose();
+                self._dbContext.dispose();
                 if (!!self._sseVM)
-                    self._sseVM.destroy();
+                    self._sseVM.dispose();
             }
             finally {
-                _super.prototype.destroy.call(this);
+                _super.prototype.dispose.call(this);
             }
         };
         Object.defineProperty(DemoApplication.prototype, "options", {
@@ -2660,7 +2660,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
         if (!drag)
             return false;
         var gripData = DOM.getData(drag, SIGNATURE), elview = gripData.elview;
-        if (elview.getIsDestroyCalled())
+        if (elview.getIsDisposing())
             return false;
         var data = elview.getResizeIfo();
         var table = elview.grid.table;
@@ -2720,7 +2720,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
             return;
         var gripData = DOM.getData(drag, SIGNATURE);
         var elview = gripData.elview;
-        if (elview.getIsDestroyCalled())
+        if (elview.getIsDisposing())
             return;
         var data = elview.getResizeIfo(), table = elview.grid.table;
         DOM.removeClass([drag], data.options.draggingClass);
@@ -2749,7 +2749,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
     var onGripMouseDown = function (e) {
         var grip = this;
         var gripData = DOM.getData(grip, SIGNATURE), elview = gripData.elview;
-        if (elview.getIsDestroyCalled())
+        if (elview.getIsDisposing())
             return false;
         var data = elview.getResizeIfo();
         var touches = e.touches;
@@ -2807,7 +2807,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
             var opts = utils.core.extend(defaults, options);
             self.init(opts);
             self.bindDS(_this._ds);
-            grid.addOnPropertyChange("dataSource", function (s, a) {
+            grid.objEvents.onProp("dataSource", function (s, a) {
                 self.unBindDS(self._ds);
                 self.bindDS(grid.dataSource);
                 self._ds = grid.dataSource;
@@ -2829,7 +2829,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
         ResizableGrid.prototype.unBindDS = function (ds) {
             if (!ds)
                 return;
-            ds.removeNSHandlers(this.uniqueID);
+            ds.objEvents.offNS(this.uniqueID);
         };
         ResizableGrid.prototype.init = function (options) {
             var table = this.grid.table, style = window.getComputedStyle(table, null);
@@ -2895,7 +2895,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
             this.syncGrips();
         };
         ResizableGrid.prototype.syncGrips = function () {
-            if (this.getIsDestroyCalled())
+            if (this.getIsDisposing())
                 return;
             var data = this._resizeInfo;
             data.gripContainer.style.width = (data.w + PX);
@@ -2912,7 +2912,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
             this.grid.updateColumnsSize();
         };
         ResizableGrid.prototype.syncCols = function (i, isOver) {
-            if (this.getIsDestroyCalled())
+            if (this.getIsDisposing())
                 return;
             var table = this.grid.table, data = this._resizeInfo, gripData = DOM.getData(drag, SIGNATURE);
             var inc = gripData.x - gripData.l, c = data.columns[i];
@@ -2934,7 +2934,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
             }
         };
         ResizableGrid.prototype.applyBounds = function () {
-            if (this.getIsDestroyCalled())
+            if (this.getIsDisposing())
                 return;
             var table = this.grid.table;
             var data = this._resizeInfo;
@@ -2955,10 +2955,10 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
             var viewport = this.grid._getInternal().getWrapper();
             viewport.style.width = (table.offsetWidth + (viewport.offsetWidth - viewport.clientWidth)) + PX;
         };
-        ResizableGrid.prototype.destroy = function () {
-            if (this._isDestroyed)
+        ResizableGrid.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             _gridDestroyed(this);
             this.unBindDS(this._ds);
             this._ds = null;
@@ -2967,7 +2967,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
                 data.gripContainer.remove();
             DOM.removeClass([table], SIGNATURE + " " + FLEX);
             this._resizeInfo = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         ResizableGrid.prototype.getResizeIfo = function () {
             return this._resizeInfo;

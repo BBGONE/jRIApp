@@ -30,7 +30,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
                 }
             }) || this;
             _this._addresses = null;
-            item.addOnPropertyChange("Data", function (s, a) {
+            item.objEvents.onProp("Data", function (s, a) {
                 _this.resetJson(item.Data);
             }, null, null, 1);
             _this.initCustomerValidations();
@@ -116,19 +116,19 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
                 });
             });
         };
-        CustomerBag.prototype.destroy = function () {
-            if (this._isDestroyed)
+        CustomerBag.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             if (!!this._addresses) {
-                this._addresses.destroy();
+                this._addresses.dispose();
             }
             this._addresses = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         Object.defineProperty(CustomerBag.prototype, "Addresses", {
             get: function () {
-                if (this._isDestroyCalled)
+                if (this.getIsDisposing())
                     return void 0;
                 if (!this._addresses) {
                     this._addresses = new RIAPP.JsonArray(this, "Addresses");
@@ -149,7 +149,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             var self = _this;
             _this._dbSet = _this.dbSets.CustomerJSON;
             _this._propWatcher = new RIAPP.PropWatcher();
-            _this._dbSet.addOnPropertyChange('currentItem', function (sender, data) {
+            _this._dbSet.objEvents.onProp('currentItem', function (sender, data) {
                 self._onCurrentChanged();
             }, self.uniqueID);
             _this._dbSet.addOnItemDeleting(function (sender, args) {
@@ -196,7 +196,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
         }
         CustomerViewModel.prototype._onCurrentChanged = function () {
             this._addNewAddrCommand.raiseCanExecuteChanged();
-            this.raisePropertyChanged('currentItem');
+            this.objEvents.raiseProp('currentItem');
         };
         CustomerViewModel.prototype.load = function () {
             var query = this.dbSet.createReadCustomerJSONQuery();
@@ -204,14 +204,14 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             query.orderBy('CustomerID');
             return query.load();
         };
-        CustomerViewModel.prototype.destroy = function () {
-            if (this._isDestroyed)
+        CustomerViewModel.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             if (!!this._dbSet) {
-                this._dbSet.removeNSHandlers(this.uniqueID);
+                this._dbSet.objEvents.offNS(this.uniqueID);
             }
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         Object.defineProperty(CustomerViewModel.prototype, "dbSet", {
             get: function () { return this._dbSet; },
@@ -290,18 +290,18 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             this.errorVM.error = data.error;
             this.errorVM.showDialog();
         };
-        DemoApplication.prototype.destroy = function () {
-            if (this._isDestroyed)
+        DemoApplication.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             var self = this;
             try {
-                self._errorVM.destroy();
-                self._customerVM.destroy();
-                self._dbContext.destroy();
+                self._errorVM.dispose();
+                self._customerVM.dispose();
+                self._dbContext.dispose();
             }
             finally {
-                _super.prototype.destroy.call(this);
+                _super.prototype.dispose.call(this);
             }
         };
         Object.defineProperty(DemoApplication.prototype, "options", {

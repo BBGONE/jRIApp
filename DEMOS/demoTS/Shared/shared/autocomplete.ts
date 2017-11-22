@@ -52,7 +52,7 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
         //noop
     }
     templateLoaded(template: RIAPP.ITemplate, error?: any): void {
-        if (this.getIsDestroyCalled() || error)
+        if (this.getIsDisposing() || error)
             return;
         const self = this, gridElView = <uiMOD.DataGridElView>findElemViewInTemplate(template, 'lookupGrid');
         if (!!gridElView) {
@@ -97,7 +97,7 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
         $el.on('change.' + this.uniqueID, function (e) {
             e.stopPropagation();
             self._onTextChange();
-            self.raisePropertyChanged('value');
+            self.objEvents.raiseProp('value');
         });
         $el.on('keyup.' + this.uniqueID, function (e) {
             e.stopPropagation();
@@ -141,8 +141,8 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
         }
         return dbContext;
     }
-    _getEventNames() {
-        const base_events = super._getEventNames();
+    getEventNames() {
+        const base_events = super.getEventNames();
         return ['hide', 'show'].concat(base_events);
     }
     protected _createTemplate(): RIAPP.ITemplate {
@@ -157,7 +157,7 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
         clearTimeout(this._loadTimeout);
         if (!!text && text.length >= self._minTextLength) {
             this._loadTimeout = setTimeout(function () {
-                if (self.getIsDestroyCalled()) {
+                if (self.getIsDisposing()) {
                     return;
                 }
 
@@ -204,11 +204,11 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
         });
     }
     protected _onShow() {
-        this.raiseEvent('show', {});
+        this.objEvents.raise('show', {});
     }
     protected _onHide() {
-        this.raiseEvent('hide', {});
-        this.raisePropertyChanged("value");
+        this.objEvents.raise('hide', {});
+        this.objEvents.raiseProp("value");
     }
     protected _open() {
         if (this._isOpen)
@@ -247,7 +247,7 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
             return;
         $(dom.document).off('.' + this.uniqueID);
         if (!!this._lookupGrid) {
-            this._lookupGrid.removeNSHandlers(this.uniqueID);
+            this._lookupGrid.objEvents.offNS(this.uniqueID);
         }
         this._$dropDown.css({ left: "-2000px" });
         this._isOpen = false;
@@ -260,10 +260,10 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
         COMMON.addTextQuery(query, this._fieldName, str + '%');
         query.orderBy(this._fieldName);
         this._isLoading = true;
-        this.raisePropertyChanged('isLoading');
+        this.objEvents.raiseProp('isLoading');
         query.load().always(function (res) {
             self._isLoading = false;
-            self.raisePropertyChanged('isLoading');
+            self.objEvents.raiseProp('isLoading');
         });
     }
     protected getDataContext(): RIAPP.IBaseObject {
@@ -273,32 +273,32 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
         const old: RIAPP.IBaseObject = this._dataContext;
         if (this._dataContext !== v) {
             if (!!old) {
-                old.removeNSHandlers(this.uniqueID);
+                old.objEvents.offNS(this.uniqueID);
             }
             this._dataContext = v;
-            this.raisePropertyChanged('dataContext');
+            this.objEvents.raiseProp('dataContext');
             if (!this._dataContext) {
                 this._hideAsync();
             }
         }
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         this._hide();
         $(this.el).off('.' + this.uniqueID);
         if (!!this._lookupGrid) {
             this._lookupGrid = null;
         }
         if (!!this._template) {
-            this._template.destroy();
+            this._template.dispose();
             this._template = null;
             this._$dropDown = null;
         }
         this._gridDataSource = null;
         this._dataContext = null;
-        super.destroy();
+        super.dispose();
     }
     //field name for lookup in dbSet
     get fieldName() { return this._fieldName; }
@@ -328,7 +328,7 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
         if (x !== v) {
             (<HTMLInputElement>this.el).value = v;
             this._prevText = v;
-            this.raisePropertyChanged("value");
+            this.objEvents.raiseProp("value");
         }
     }
     get isLoading() {

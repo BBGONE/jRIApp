@@ -26,12 +26,12 @@ export class ProductVM extends RIAPP.ViewModel<DemoApplication> {
             self.loadProductsForOrderDetails(args.items);
         }, self.uniqueID);
 
-        this._dbSet.addOnPropertyChange('currentItem', function (sender, args) {
+        this._dbSet.objEvents.onProp('currentItem', function (sender, args) {
             self._onCurrentChanged();
         }, self.uniqueID);
     }
     _onCurrentChanged() {
-        this.raisePropertyChanged('currentItem');
+        this.objEvents.raiseProp('currentItem');
     }
     clear() {
         this.dbSet.clear();
@@ -52,17 +52,17 @@ export class ProductVM extends RIAPP.ViewModel<DemoApplication> {
         query.isClearPrevData = isClearTable;
         return query.load();
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         if (!!this._dbSet) {
-            this._dbSet.removeNSHandlers(this.uniqueID);
+            this._dbSet.objEvents.offNS(this.uniqueID);
         }
-        this._customerDbSet.removeNSHandlers(this.uniqueID);
-        this._orderDetailVM.removeNSHandlers(this.uniqueID);
+        this._customerDbSet.objEvents.offNS(this.uniqueID);
+        this._orderDetailVM.objEvents.offNS(this.uniqueID);
         this._orderDetailVM = null;
-        super.destroy();
+        super.dispose();
     }
     get _customerDbSet() { return this._orderDetailVM.orderVM.customerVM.dbSet; }
     get dbContext() { return this.app.dbContext; }

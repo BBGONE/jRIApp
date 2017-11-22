@@ -1035,7 +1035,7 @@ declare namespace JQueryUI {
 interface JQuery {
 
     accordion(): JQuery;
-    accordion(methodName: 'destroy'): void;
+    accordion(methodName: 'dispose'): void;
     accordion(methodName: 'disable'): void;
     accordion(methodName: 'enable'): void;
     accordion(methodName: 'refresh'): void;
@@ -1048,7 +1048,7 @@ interface JQuery {
 
     autocomplete(): JQuery;
     autocomplete(methodName: 'close'): void;
-    autocomplete(methodName: 'destroy'): void;
+    autocomplete(methodName: 'dispose'): void;
     autocomplete(methodName: 'disable'): void;
     autocomplete(methodName: 'enable'): void;
     autocomplete(methodName: 'search', value?: string): void;
@@ -1060,7 +1060,7 @@ interface JQuery {
     autocomplete(optionLiteral: string, optionName: string, optionValue: any): JQuery;
 
     button(): JQuery;
-    button(methodName: 'destroy'): void;
+    button(methodName: 'dispose'): void;
     button(methodName: 'disable'): void;
     button(methodName: 'enable'): void;
     button(methodName: 'refresh'): void;
@@ -1072,7 +1072,7 @@ interface JQuery {
     button(optionLiteral: string, optionName: string, optionValue: any): JQuery;
 
     buttonset(): JQuery;
-    buttonset(methodName: 'destroy'): void;
+    buttonset(methodName: 'dispose'): void;
     buttonset(methodName: 'disable'): void;
     buttonset(methodName: 'enable'): void;
     buttonset(methodName: 'refresh'): void;
@@ -1090,9 +1090,9 @@ interface JQuery {
     /**
      * Removes the datepicker functionality completely. This will return the element back to its pre-init state.
      *
-     * @param methodName 'destroy'
+     * @param methodName 'dispose'
      */
-    datepicker(methodName: 'destroy'): JQuery;
+    datepicker(methodName: 'dispose'): JQuery;
     /**
      * Opens the datepicker in a dialog box.
      *
@@ -1607,7 +1607,7 @@ interface JQuery {
 
     dialog(): JQuery;
     dialog(methodName: 'close'): JQuery;
-    dialog(methodName: 'destroy'): JQuery;
+    dialog(methodName: 'dispose'): JQuery;
     dialog(methodName: 'isOpen'): boolean;
     dialog(methodName: 'moveToTop'): JQuery;
     dialog(methodName: 'open'): JQuery;
@@ -1619,7 +1619,7 @@ interface JQuery {
     dialog(optionLiteral: string, optionName: string, optionValue: any): JQuery;
 
     draggable(): JQuery;
-    draggable(methodName: 'destroy'): void;
+    draggable(methodName: 'dispose'): void;
     draggable(methodName: 'disable'): void;
     draggable(methodName: 'enable'): void;
     draggable(methodName: 'widget'): JQuery;
@@ -1630,7 +1630,7 @@ interface JQuery {
     draggable(optionLiteral: string, optionName: string, optionValue: any): JQuery;
 
     droppable(): JQuery;
-    droppable(methodName: 'destroy'): void;
+    droppable(methodName: 'dispose'): void;
     droppable(methodName: 'disable'): void;
     droppable(methodName: 'enable'): void;
     droppable(methodName: 'widget'): JQuery;
@@ -1645,7 +1645,7 @@ interface JQuery {
         (methodName: 'blur'): void;
         (methodName: 'collapse', event?: JQueryEventObject): void;
         (methodName: 'collapseAll', event?: JQueryEventObject, all?: boolean): void;
-        (methodName: 'destroy'): void;
+        (methodName: 'dispose'): void;
         (methodName: 'disable'): void;
         (methodName: 'enable'): void;
         (methodName: string, event: JQueryEventObject, item: JQuery): void;
@@ -1668,7 +1668,7 @@ interface JQuery {
     }
 
     progressbar(): JQuery;
-    progressbar(methodName: 'destroy'): void;
+    progressbar(methodName: 'dispose'): void;
     progressbar(methodName: 'disable'): void;
     progressbar(methodName: 'enable'): void;
     progressbar(methodName: 'refresh'): void;
@@ -1683,7 +1683,7 @@ interface JQuery {
     progressbar(optionLiteral: string, optionName: string, optionValue: any): JQuery;
 
     resizable(): JQuery;
-    resizable(methodName: 'destroy'): void;
+    resizable(methodName: 'dispose'): void;
     resizable(methodName: 'disable'): void;
     resizable(methodName: 'enable'): void;
     resizable(methodName: 'widget'): JQuery;
@@ -1694,7 +1694,7 @@ interface JQuery {
     resizable(optionLiteral: string, optionName: string, optionValue: any): JQuery;
 
     selectable(): JQuery;
-    selectable(methodName: 'destroy'): void;
+    selectable(methodName: 'dispose'): void;
     selectable(methodName: 'disable'): void;
     selectable(methodName: 'enable'): void;
     selectable(methodName: 'widget'): JQuery;
@@ -1706,7 +1706,7 @@ interface JQuery {
 
     selectmenu(): JQuery;
     selectmenu(methodName: 'close'): JQuery;
-    selectmenu(methodName: 'destroy'): JQuery;
+    selectmenu(methodName: 'dispose'): JQuery;
     selectmenu(methodName: 'disable'): JQuery;
     selectmenu(methodName: 'enable'): JQuery;
     selectmenu(methodName: 'instance'): any;
@@ -1721,7 +1721,7 @@ interface JQuery {
     selectmenu(optionLiteral: string, optionName: string, optionValue: any): JQuery;
 
     slider(): JQuery;
-    slider(methodName: 'destroy'): void;
+    slider(methodName: 'dispose'): void;
     slider(methodName: 'disable'): void;
     slider(methodName: 'enable'): void;
     slider(methodName: 'refresh'): void;
@@ -1741,7 +1741,7 @@ interface JQuery {
     slider(optionLiteral: string, optionName: string, optionValue: any): JQuery;
 
     sortable(): JQuery;
-    sortable(methodName: 'destroy'): void;
+    sortable(methodName: 'dispose'): void;
     sortable(methodName: 'disable'): void;
     sortable(methodName: 'enable'): void;
     sortable(methodName: 'widget'): JQuery;
@@ -1754,7 +1754,7 @@ interface JQuery {
     sortable(optionLiteral: string, optionName: string, optionValue: any): JQuery;
 
     spinner(): JQuery;
-    spinner(methodName: 'destroy'): void;
+    spinner(methodName: 'dispose'): void;
     spinner(methodName: 'disable'): void;
     spinner(methodName: 'enable'): void;
     spinner(methodName: 'pageDown', pages?: number): void;
@@ -1771,7 +1771,7 @@ interface JQuery {
     spinner(optionLiteral: string, optionName: string, optionValue: any): JQuery;
 
     tabs(): JQuery;
-    tabs(methodName: 'destroy'): void;
+    tabs(methodName: 'dispose'): void;
     tabs(methodName: 'disable'): void;
     tabs(methodName: 'enable'): void;
     tabs(methodName: 'load', index: number): void;
@@ -1784,7 +1784,7 @@ interface JQuery {
     tabs(optionLiteral: string, optionName: string, optionValue: any): JQuery;
 
     tooltip(): JQuery;
-    tooltip(methodName: 'destroy'): void;
+    tooltip(methodName: 'dispose'): void;
     tooltip(methodName: 'disable'): void;
     tooltip(methodName: 'enable'): void;
     tooltip(methodName: 'open'): void;

@@ -1536,13 +1536,13 @@ define("addressVM", ["require", "exports", "jriapp"], function (require, exports
             _this._orderVM.dbSet.addOnFill(function (sender, args) {
                 self.loadAddressesForOrders(args.items);
             }, self.uniqueID);
-            _this._dbSet.addOnPropertyChange('currentItem', function (sender, args) {
+            _this._dbSet.objEvents.onProp('currentItem', function (sender, args) {
                 self._onCurrentChanged();
             }, self.uniqueID);
             return _this;
         }
         AddressVM.prototype._onCurrentChanged = function () {
-            this.raisePropertyChanged('currentItem');
+            this.objEvents.raiseProp('currentItem');
         };
         AddressVM.prototype.loadAddressesForOrders = function (orders) {
             var ids1 = orders.map(function (item) {
@@ -1564,17 +1564,17 @@ define("addressVM", ["require", "exports", "jriapp"], function (require, exports
         AddressVM.prototype.clear = function () {
             this.dbSet.clear();
         };
-        AddressVM.prototype.destroy = function () {
-            if (this._isDestroyed)
+        AddressVM.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             if (!!this._dbSet) {
-                this._dbSet.removeNSHandlers(this.uniqueID);
+                this._dbSet.objEvents.offNS(this.uniqueID);
             }
-            this._customerDbSet.removeNSHandlers(this.uniqueID);
-            this._orderVM.removeNSHandlers(this.uniqueID);
+            this._customerDbSet.objEvents.offNS(this.uniqueID);
+            this._orderVM.objEvents.offNS(this.uniqueID);
             this._orderVM = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         Object.defineProperty(AddressVM.prototype, "_customerDbSet", {
             get: function () { return this._orderVM.customerVM.dbSet; },
@@ -1626,13 +1626,13 @@ define("productVM", ["require", "exports", "jriapp"], function (require, exports
             _this._orderDetailVM.dbSet.addOnFill(function (sender, args) {
                 self.loadProductsForOrderDetails(args.items);
             }, self.uniqueID);
-            _this._dbSet.addOnPropertyChange('currentItem', function (sender, args) {
+            _this._dbSet.objEvents.onProp('currentItem', function (sender, args) {
                 self._onCurrentChanged();
             }, self.uniqueID);
             return _this;
         }
         ProductVM.prototype._onCurrentChanged = function () {
-            this.raisePropertyChanged('currentItem');
+            this.objEvents.raiseProp('currentItem');
         };
         ProductVM.prototype.clear = function () {
             this.dbSet.clear();
@@ -1650,17 +1650,17 @@ define("productVM", ["require", "exports", "jriapp"], function (require, exports
             query.isClearPrevData = isClearTable;
             return query.load();
         };
-        ProductVM.prototype.destroy = function () {
-            if (this._isDestroyed)
+        ProductVM.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             if (!!this._dbSet) {
-                this._dbSet.removeNSHandlers(this.uniqueID);
+                this._dbSet.objEvents.offNS(this.uniqueID);
             }
-            this._customerDbSet.removeNSHandlers(this.uniqueID);
-            this._orderDetailVM.removeNSHandlers(this.uniqueID);
+            this._customerDbSet.objEvents.offNS(this.uniqueID);
+            this._orderDetailVM.objEvents.offNS(this.uniqueID);
             this._orderDetailVM = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         Object.defineProperty(ProductVM.prototype, "_customerDbSet", {
             get: function () { return this._orderDetailVM.orderVM.customerVM.dbSet; },
@@ -1706,14 +1706,14 @@ define("orderDetVM", ["require", "exports", "jriapp", "productVM"], function (re
             _this._orderVM.dbSet.addOnCleared(function (s, a) {
                 self.clear();
             }, self.uniqueID);
-            _this._dbSet.addOnPropertyChange('currentItem', function (sender, args) {
+            _this._dbSet.objEvents.onProp('currentItem', function (sender, args) {
                 self._onCurrentChanged();
             }, self.uniqueID);
             _this._productVM = new productVM_1.ProductVM(_this);
             return _this;
         }
         OrderDetailVM.prototype._onCurrentChanged = function () {
-            this.raisePropertyChanged('currentItem');
+            this.objEvents.raiseProp('currentItem');
         };
         OrderDetailVM.prototype.load = function () {
             this.clear();
@@ -1730,19 +1730,19 @@ define("orderDetVM", ["require", "exports", "jriapp", "productVM"], function (re
         OrderDetailVM.prototype.clear = function () {
             this.dbSet.clear();
         };
-        OrderDetailVM.prototype.destroy = function () {
-            if (this._isDestroyed)
+        OrderDetailVM.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             if (!!this._dbSet) {
-                this._dbSet.removeNSHandlers(this.uniqueID);
+                this._dbSet.objEvents.offNS(this.uniqueID);
             }
             this.currentOrder = null;
-            this._productVM.destroy();
-            this._orderVM.dbSet.removeNSHandlers(this.uniqueID);
-            this._orderVM.removeNSHandlers(this.uniqueID);
+            this._productVM.dispose();
+            this._orderVM.dbSet.objEvents.offNS(this.uniqueID);
+            this._orderVM.objEvents.offNS(this.uniqueID);
             this._orderVM = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         Object.defineProperty(OrderDetailVM.prototype, "dbContext", {
             get: function () { return this.app.dbContext; },
@@ -1769,7 +1769,7 @@ define("orderDetVM", ["require", "exports", "jriapp", "productVM"], function (re
             set: function (v) {
                 if (v !== this._currentOrder) {
                     this._currentOrder = v;
-                    this.raisePropertyChanged('currentOrder');
+                    this.objEvents.raiseProp('currentOrder');
                     this.load();
                 }
             },
@@ -1804,7 +1804,7 @@ define("orderVM", ["require", "exports", "jriapp", "domainModel", "gridEvents", 
                 { key: 2, val: 'Status 2' }, { key: 3, val: 'Status 3' },
                 { key: 4, val: 'Status 4' }, { key: 5, val: 'Completed Order' }], true);
             _this._tabs = null;
-            _this._customerVM.addHandler('row_expanded', function (sender, args) {
+            _this._customerVM.objEvents.on('row_expanded', function (sender, args) {
                 if (args.isExpanded) {
                     self.currentCustomer = args.customer;
                 }
@@ -1812,7 +1812,7 @@ define("orderVM", ["require", "exports", "jriapp", "domainModel", "gridEvents", 
                     self.currentCustomer = null;
                 }
             }, self.uniqueID);
-            _this._dbSet.addOnPropertyChange('currentItem', function (sender, args) {
+            _this._dbSet.objEvents.onProp('currentItem', function (sender, args) {
                 self._onCurrentChanged();
             }, self.uniqueID);
             _this._dbSet.addOnItemDeleting(function (sender, args) {
@@ -1835,8 +1835,8 @@ define("orderVM", ["require", "exports", "jriapp", "domainModel", "gridEvents", 
             _this._orderDetailVM = new orderDetVM_1.OrderDetailVM(_this);
             return _this;
         }
-        OrderVM.prototype._getEventNames = function () {
-            var base_events = _super.prototype._getEventNames.call(this);
+        OrderVM.prototype.getEventNames = function () {
+            var base_events = _super.prototype.getEventNames.call(this);
             return ['row_expanded'].concat(base_events);
         };
         OrderVM.prototype.addTabs = function (tabs) {
@@ -1847,7 +1847,7 @@ define("orderVM", ["require", "exports", "jriapp", "domainModel", "gridEvents", 
         };
         OrderVM.prototype.onTabSelected = function (tabs) {
             this._selectedTabIndex = tabs.tabIndex;
-            this.raisePropertyChanged('selectedTabIndex');
+            this.objEvents.raiseProp('selectedTabIndex');
             if (this._selectedTabIndex == 2) {
                 this._orderDetailVM.currentOrder = this.dbSet.currentItem;
             }
@@ -1857,15 +1857,15 @@ define("orderVM", ["require", "exports", "jriapp", "domainModel", "gridEvents", 
         OrderVM.prototype._onGridRowSelected = function (item) {
         };
         OrderVM.prototype._onGridRowExpanded = function (item) {
-            this.raiseEvent('row_expanded', { order: item, isExpanded: true });
+            this.objEvents.raise('row_expanded', { order: item, isExpanded: true });
             if (!!this._tabs)
                 this.onTabSelected(this._tabs);
         };
         OrderVM.prototype._onGridRowCollapsed = function (item) {
-            this.raiseEvent('row_expanded', { order: item, isExpanded: false });
+            this.objEvents.raise('row_expanded', { order: item, isExpanded: false });
         };
         OrderVM.prototype._onCurrentChanged = function () {
-            this.raisePropertyChanged('currentItem');
+            this.objEvents.raiseProp('currentItem');
         };
         OrderVM.prototype.clear = function () {
             this.dbSet.clear();
@@ -1882,22 +1882,22 @@ define("orderVM", ["require", "exports", "jriapp", "domainModel", "gridEvents", 
             query.orderBy('OrderDate').thenBy('SalesOrderID');
             return query.load();
         };
-        OrderVM.prototype.destroy = function () {
-            if (this._isDestroyed)
+        OrderVM.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             if (!!this._dbSet) {
-                this._dbSet.removeNSHandlers(this.uniqueID);
+                this._dbSet.objEvents.offNS(this.uniqueID);
             }
             this.currentCustomer = null;
-            this._gridEvents.destroy();
+            this._gridEvents.dispose();
             this._gridEvents = null;
-            this._addressVM.destroy();
+            this._addressVM.dispose();
             this._addressVM = null;
-            this._orderDetailVM.destroy();
+            this._orderDetailVM.dispose();
             this._orderDetailVM = null;
             this._customerVM = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         Object.defineProperty(OrderVM.prototype, "dbContext", {
             get: function () { return this.app.dbContext; },
@@ -1934,7 +1934,7 @@ define("orderVM", ["require", "exports", "jriapp", "domainModel", "gridEvents", 
             set: function (v) {
                 if (v !== this._currentCustomer) {
                     this._currentCustomer = v;
-                    this.raisePropertyChanged('currentCustomer');
+                    this.objEvents.raiseProp('currentCustomer');
                     this.load();
                 }
             },
@@ -2000,12 +2000,12 @@ define("gridEvents", ["require", "exports", "jriapp"], function (require, export
             if (!!this._doFocus)
                 this._doFocus();
         };
-        CustomerGridEvents.prototype.destroy = function () {
-            if (this._isDestroyed)
+        CustomerGridEvents.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             this._doFocus = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         return CustomerGridEvents;
     }(RIAPP.BaseObject));
@@ -2037,12 +2037,12 @@ define("gridEvents", ["require", "exports", "jriapp"], function (require, export
             if (!!this._doFocus)
                 this._doFocus();
         };
-        OrderGridEvents.prototype.destroy = function () {
-            if (this._isDestroyed)
+        OrderGridEvents.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             this._doFocus = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         return OrderGridEvents;
     }(RIAPP.BaseObject));
@@ -2095,16 +2095,16 @@ define("animation", ["require", "exports", "jriapp"], function (require, exports
             enumerable: true,
             configurable: true
         });
-        FadeAnimation.prototype.destroy = function () {
-            if (this._isDestroyed)
+        FadeAnimation.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             try {
                 this.stop();
                 this._$animatedEl = null;
             }
             finally {
-                _super.prototype.destroy.call(this);
+                _super.prototype.dispose.call(this);
             }
         };
         return FadeAnimation;
@@ -2152,16 +2152,16 @@ define("animation", ["require", "exports", "jriapp"], function (require, exports
             enumerable: true,
             configurable: true
         });
-        SlideAnimation.prototype.destroy = function () {
-            if (this._isDestroyed)
+        SlideAnimation.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             try {
                 this.stop();
                 this._$animatedEl = null;
             }
             finally {
-                _super.prototype.destroy.call(this);
+                _super.prototype.dispose.call(this);
             }
         };
         return SlideAnimation;
@@ -2199,7 +2199,7 @@ define("routes", ["require", "exports", "jriapp", "animation"], function (requir
             set: function (v) {
                 if (v !== this._animation) {
                     this._animation = v;
-                    this.raisePropertyChanged('animation');
+                    this.objEvents.raiseProp('animation');
                 }
             },
             enumerable: true,
@@ -2210,7 +2210,7 @@ define("routes", ["require", "exports", "jriapp", "animation"], function (requir
             set: function (v) {
                 if (v !== this._viewName) {
                     this._viewName = v;
-                    this.raisePropertyChanged('viewName');
+                    this.objEvents.raiseProp('viewName');
                 }
             },
             enumerable: true,
@@ -2253,7 +2253,7 @@ define("routes", ["require", "exports", "jriapp", "animation"], function (requir
             set: function (v) {
                 if (v !== this._animation) {
                     this._animation = v;
-                    this.raisePropertyChanged('animation');
+                    this.objEvents.raiseProp('animation');
                 }
             },
             enumerable: true,
@@ -2264,7 +2264,7 @@ define("routes", ["require", "exports", "jriapp", "animation"], function (requir
             set: function (v) {
                 if (v !== this._viewName) {
                     this._viewName = v;
-                    this.raisePropertyChanged('viewName');
+                    this.objEvents.raiseProp('viewName');
                 }
             },
             enumerable: true,
@@ -2303,7 +2303,7 @@ define("routes", ["require", "exports", "jriapp", "animation"], function (requir
             set: function (v) {
                 if (v !== this._viewName) {
                     this._viewName = v;
-                    this.raisePropertyChanged('viewName');
+                    this.objEvents.raiseProp('viewName');
                 }
             },
             enumerable: true,
@@ -2386,9 +2386,9 @@ define("custAddressVM", ["require", "exports", "jriapp", "jriapp_db", "addAddres
             _this._custAdressView.addOnViewRefreshed(function (s, a) {
                 self._addressesView.refresh();
             }, self.uniqueID);
-            _this._customerVM.addOnPropertyChange('currentItem', function (sender, args) {
+            _this._customerVM.objEvents.onProp('currentItem', function (sender, args) {
                 self._currentCustomer = self._customerVM.currentItem;
-                self.raisePropertyChanged('currentCustomer');
+                self.objEvents.raiseProp('currentCustomer');
             }, self.uniqueID);
             return _this;
         }
@@ -2418,27 +2418,27 @@ define("custAddressVM", ["require", "exports", "jriapp", "jriapp_db", "addAddres
             var query = this._custAdressDb.createReadAddressForCustomersQuery({ custIDs: custIDs });
             query.load();
         };
-        CustomerAddressVM.prototype.destroy = function () {
-            if (this._isDestroyed)
+        CustomerAddressVM.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             if (!!this._addressesDb) {
-                this._addressesDb.removeNSHandlers(this.uniqueID);
+                this._addressesDb.objEvents.offNS(this.uniqueID);
             }
             if (!!this._custAdressDb) {
-                this._custAdressDb.removeNSHandlers(this.uniqueID);
+                this._custAdressDb.objEvents.offNS(this.uniqueID);
             }
             if (!!this._customerVM) {
-                this._customerVM.removeNSHandlers(this.uniqueID);
+                this._customerVM.objEvents.offNS(this.uniqueID);
             }
             if (!!this._custAdressView) {
-                this._custAdressView.removeNSHandlers(this.uniqueID);
+                this._custAdressView.objEvents.offNS(this.uniqueID);
             }
             if (this._addAddressVM) {
-                this._addAddressVM.destroy();
+                this._addAddressVM.dispose();
                 this._addAddressVM = null;
             }
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         Object.defineProperty(CustomerAddressVM.prototype, "_custAdressView", {
             get: function () { return this._customerVM.custAdressView; },
@@ -2507,7 +2507,7 @@ define("customerVM", ["require", "exports", "jriapp", "jriapp_db", "gridEvents",
             _this._propWatcher = new RIAPP.PropWatcher();
             _this._uiMainRoute = new routes_1.MainRoute();
             _this._uiCustDetRoute = new routes_1.CustDetRoute();
-            _this._uiMainRoute.addOnPropertyChange('viewName', function (sender, a) {
+            _this._uiMainRoute.objEvents.onProp('viewName', function (sender, a) {
                 self._uiCustDetRoute.reset();
                 if (sender.viewName == sender.custTemplName) {
                     setTimeout(function () {
@@ -2523,7 +2523,7 @@ define("customerVM", ["require", "exports", "jriapp", "jriapp_db", "gridEvents",
                     args.isCancel = true;
             }, self.uniqueID);
             _this._dbSet.addOnPageIndexChanged(function (sender, args) {
-                self.raiseEvent('page_changed', {});
+                self.objEvents.raise('page_changed', {});
             }, self.uniqueID);
             _this._dbSet.addOnItemAdded(function (s, args) {
                 args.item.NameStyle = false;
@@ -2594,23 +2594,23 @@ define("customerVM", ["require", "exports", "jriapp", "jriapp_db", "gridEvents",
             _this._customerAddressVM = new custAddressVM_1.CustomerAddressVM(_this);
             return _this;
         }
-        CustomerVM.prototype._getEventNames = function () {
-            var base_events = _super.prototype._getEventNames.call(this);
+        CustomerVM.prototype.getEventNames = function () {
+            var base_events = _super.prototype.getEventNames.call(this);
             return ['row_expanded', 'page_changed'].concat(base_events);
         };
         CustomerVM.prototype._onCurrentChanged = function () {
             this._custAdressView.parentItem = this._dbSet.currentItem;
-            this.raisePropertyChanged('currentItem');
+            this.objEvents.raiseProp('currentItem');
         };
         CustomerVM.prototype._onGridPageChanged = function () {
         };
         CustomerVM.prototype._onGridRowSelected = function (item) {
         };
         CustomerVM.prototype._onGridRowExpanded = function (item) {
-            this.raiseEvent('row_expanded', { customer: item, isExpanded: true });
+            this.objEvents.raise('row_expanded', { customer: item, isExpanded: true });
         };
         CustomerVM.prototype._onGridRowCollapsed = function (item) {
-            this.raiseEvent('row_expanded', { customer: item, isExpanded: false });
+            this.objEvents.raise('row_expanded', { customer: item, isExpanded: false });
         };
         CustomerVM.prototype.load = function () {
             var query = this._dbSet.createReadCustomerQuery({ includeNav: true });
@@ -2618,24 +2618,24 @@ define("customerVM", ["require", "exports", "jriapp", "jriapp_db", "gridEvents",
             query.orderBy('ComplexProp.LastName').thenBy('ComplexProp.MiddleName').thenBy('ComplexProp.FirstName');
             return this.dbContext.load(query);
         };
-        CustomerVM.prototype.destroy = function () {
-            if (this._isDestroyed)
+        CustomerVM.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
-            this._propWatcher.destroy();
+            this.setDisposing();
+            this._propWatcher.dispose();
             this._propWatcher = null;
             if (!!this._dbSet) {
-                this._dbSet.removeNSHandlers(this.uniqueID);
+                this._dbSet.objEvents.offNS(this.uniqueID);
             }
-            this._gridEvents.destroy();
+            this._gridEvents.dispose();
             this._gridEvents = null;
-            this._ordersVM.destroy();
+            this._ordersVM.dispose();
             this._ordersVM = null;
-            this._customerAddressVM.destroy();
+            this._customerAddressVM.dispose();
             this._customerAddressVM = null;
-            this._custAdressView.destroy();
+            this._custAdressView.dispose();
             this._custAdressView = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         Object.defineProperty(CustomerVM.prototype, "dbContext", {
             get: function () { return this.app.dbContext; },
@@ -2779,18 +2779,18 @@ define("app", ["require", "exports", "jriapp", "domainModel", "common", "custome
             this.errorVM.error = data.error;
             this.errorVM.showDialog();
         };
-        DemoApplication.prototype.destroy = function () {
-            if (this._isDestroyed)
+        DemoApplication.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             var self = this;
             try {
-                self._errorVM.destroy();
-                self._customerVM.destroy();
-                self._dbContext.destroy();
+                self._errorVM.dispose();
+                self._customerVM.dispose();
+                self._dbContext.dispose();
             }
             finally {
-                _super.prototype.destroy.call(this);
+                _super.prototype.dispose.call(this);
             }
         };
         Object.defineProperty(DemoApplication.prototype, "options", {
@@ -2866,7 +2866,7 @@ define("addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"
                     custAdress._aspect.endEdit();
                     self._newAddress = null;
                     self.uiAddressRoute.goToLinkAdr();
-                    self.raisePropertyChanged('newAddress');
+                    self.objEvents.raiseProp('newAddress');
                     return 1;
                 },
                 fn_OnCancel: function (dialog) {
@@ -2891,16 +2891,16 @@ define("addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"
             });
             _this._addressInfosView.isPagingEnabled = true;
             _this._addressInfosView.pageSize = 50;
-            _this._addressInfosView.addOnPropertyChange('currentItem', function (sender, args) {
-                self.raisePropertyChanged('currentAddressInfo');
+            _this._addressInfosView.objEvents.onProp('currentItem', function (sender, args) {
+                self.objEvents.raiseProp('currentAddressInfo');
                 self._linkCommand.raiseCanExecuteChanged();
             }, self.uniqueID);
-            _this._customerAddressVM.addOnPropertyChange('currentCustomer', function (sender, args) {
+            _this._customerAddressVM.objEvents.onProp('currentCustomer', function (sender, args) {
                 self._currentCustomer = self._customerAddressVM.currentCustomer;
-                self.raisePropertyChanged('customer');
+                self.objEvents.raiseProp('customer');
                 self._addNewCommand.raiseCanExecuteChanged();
             }, self.uniqueID);
-            _this.custAdressView.addOnPropertyChange('currentItem', function (sender, args) {
+            _this.custAdressView.objEvents.onProp('currentItem', function (sender, args) {
                 self._unLinkCommand.raiseCanExecuteChanged();
             }, self.uniqueID);
             _this._addNewCommand = new RIAPP.Command(function (sender, param) {
@@ -2942,7 +2942,7 @@ define("addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"
         AddAddressVM.prototype._removeGrid = function () {
             if (!this._dataGrid)
                 return;
-            this._dataGrid.removeNSHandlers(this.uniqueID);
+            this._dataGrid.objEvents.offNS(this.uniqueID);
             this._dataGrid = null;
         };
         AddAddressVM.prototype._cancelAddNewAddress = function () {
@@ -2951,12 +2951,12 @@ define("addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"
             self._newAddress._aspect.rejectChanges();
             self._newAddress = null;
             self.uiAddressRoute.goToLinkAdr();
-            self.raisePropertyChanged('newAddress');
+            self.objEvents.raiseProp('newAddress');
         };
         AddAddressVM.prototype._addNewAddress = function () {
             this._newAddress = this._customerAddressVM._addNewAddress();
             this.uiAddressRoute.goToNewAdr();
-            this.raisePropertyChanged('newAddress');
+            this.objEvents.raiseProp('newAddress');
         };
         AddAddressVM.prototype._linkAddress = function () {
             var self = this, adrInfo = this.currentAddressInfo, adrView = self.custAdressView, adrID;
@@ -3030,25 +3030,25 @@ define("addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"
         };
         AddAddressVM.prototype.submitChanges = function () { return this.dbContext.submitChanges(); };
         AddAddressVM.prototype.rejectChanges = function () { };
-        AddAddressVM.prototype.destroy = function () {
-            if (this._isDestroyed)
+        AddAddressVM.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             if (!!this._addressInfosDb) {
-                this._addressInfosDb.removeNSHandlers(this.uniqueID);
+                this._addressInfosDb.objEvents.offNS(this.uniqueID);
                 this._addressInfosDb.clear();
                 this._addressInfosDb = null;
             }
             if (!!this._addressInfosView) {
-                this._addressInfosView.destroy();
+                this._addressInfosView.dispose();
                 this._addressInfosView = null;
             }
-            this.custAdressView.removeNSHandlers(this.uniqueID);
+            this.custAdressView.objEvents.offNS(this.uniqueID);
             if (!!this._customerAddressVM) {
-                this._customerAddressVM.removeNSHandlers(this.uniqueID);
+                this._customerAddressVM.objEvents.offNS(this.uniqueID);
                 this._customerAddressVM = null;
             }
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         Object.defineProperty(AddAddressVM.prototype, "dbContext", {
             get: function () { return this.app.dbContext; },
@@ -3095,7 +3095,7 @@ define("addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"
             set: function (v) {
                 if (this._searchString !== v) {
                     this._searchString = v;
-                    this.raisePropertyChanged('searchString');
+                    this.objEvents.raiseProp('searchString');
                 }
             },
             enumerable: true,
@@ -3202,15 +3202,15 @@ define("gridElView", ["require", "exports", "jriapp_ui"], function (require, exp
                 }
             }
         };
-        GridElView.prototype.destroy = function () {
-            if (this._isDestroyed)
+        GridElView.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             if (!!this._myGridEvents) {
                 this._myGridEvents.regFocusGridFunc(null);
             }
             this._myGridEvents = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         Object.defineProperty(GridElView.prototype, "myGridEvents", {
             get: function () { return this._myGridEvents; },
@@ -3221,7 +3221,7 @@ define("gridElView", ["require", "exports", "jriapp_ui"], function (require, exp
                         this._myGridEvents.regFocusGridFunc(null);
                     }
                     this._myGridEvents = v;
-                    this.raisePropertyChanged('myGridEvents');
+                    this.objEvents.raiseProp('myGridEvents');
                     if (!!this._myGridEvents) {
                         this._myGridEvents.regFocusGridFunc(function () {
                             if (!!self.grid) {
@@ -3291,7 +3291,7 @@ define("prodAutocomplete", ["require", "exports", "autocomplete"], function (req
             if (old !== v) {
                 var dxt = v;
                 if (!!dxt) {
-                    dxt.addOnPropertyChange('ProductID', function (sender, a) {
+                    dxt.objEvents.onProp('ProductID', function (sender, a) {
                         self._updateValue();
                     }, this.uniqueID);
                 }
