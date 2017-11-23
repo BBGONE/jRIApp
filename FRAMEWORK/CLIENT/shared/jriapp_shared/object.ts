@@ -42,7 +42,7 @@ export class ObjectEvents implements IObjectEvents {
     canRaise(name: string): boolean {
         return evHelper.count(this._events, name) > 0;
     }
-    on(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void {
+    on(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void {
         if (!this._events) {
             this._events = {};
         }
@@ -83,7 +83,7 @@ export class ObjectEvents implements IObjectEvents {
         }
     }
     // to subscribe for changes on all properties, pass in the prop parameter: '*'
-    onProp(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject, priority?: TPriority): void {
+    onProp(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: object, priority?: TPriority): void {
         if (!prop) {
             throw new Error(ERRS.ERR_PROP_NAME_EMPTY);
         }
@@ -98,6 +98,18 @@ export class ObjectEvents implements IObjectEvents {
         } else {
             evHelper.removeNS(this._events, nmspace);
         }
+    }
+    addOnDisposed(handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void {
+        this.on(OBJ_EVENTS.destroyed, handler, nmspace, context, priority);
+    }
+    removeOnDisposed(nmspace?: string): void {
+        this.off(OBJ_EVENTS.destroyed, nmspace);
+    }
+    addOnError(handler: TErrorHandler, nmspace?: string, context?: object, priority?: TPriority): void {
+        this.on(OBJ_EVENTS.error, handler, nmspace, context, priority);
+    }
+    removeOnError(nmspace?: string): void {
+        this.off(OBJ_EVENTS.error, nmspace);
     }
     get owner(): object {
         return this._owner;
@@ -141,18 +153,6 @@ export class BaseObject implements IBaseObject {
 
         return isHandled;
     }
-    addOnDisposed(handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void {
-        this.objEvents.on(OBJ_EVENTS.destroyed, handler, nmspace, context, priority);
-    }
-    removeOnDisposed(nmspace?: string): void {
-        this.objEvents.off(OBJ_EVENTS.destroyed, nmspace);
-    }
-    addOnError(handler: TErrorHandler, nmspace?: string, context?: object, priority?: TPriority): void {
-        this.objEvents.on(OBJ_EVENTS.error, handler, nmspace, context, priority);
-    }
-    removeOnError(nmspace?: string): void {
-        this.objEvents.off(OBJ_EVENTS.error, nmspace);
-    }
     get objEvents(): IObjectEvents {
         const state = <IObjState>weakmap.get(this);
         if (!state.events) {
@@ -181,6 +181,5 @@ export class BaseObject implements IBaseObject {
                 state.events.off();
             }
         }
-       
     }
 }

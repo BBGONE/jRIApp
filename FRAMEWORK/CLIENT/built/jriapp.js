@@ -1655,7 +1655,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
                 }
                 self._onTemplateLoaded(a.html, a.app);
             });
-            _this._templateLoader.addOnError(function (s, a) {
+            _this._templateLoader.objEvents.addOnError(function (s, a) {
                 if (!s) {
                     throw new Error("Invalid operation");
                 }
@@ -3853,9 +3853,10 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/const", "jr
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_19.Utils, dom = dom_6.DomUtils, doc = dom.document, boot = bootstrap_6.bootstrap, sys = utils.sys, ERRS = jriapp_shared_19.LocaleERRS;
-    var APP_EVENTS = {
-        startup: "startup"
-    };
+    var APP_EVENTS;
+    (function (APP_EVENTS) {
+        APP_EVENTS["startup"] = "startup";
+    })(APP_EVENTS || (APP_EVENTS = {}));
     var AppState;
     (function (AppState) {
         AppState[AppState["None"] = 0] = "None";
@@ -3918,8 +3919,8 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/const", "jr
             });
         };
         Application.prototype.getEventNames = function () {
-            var baseEvents = _super.prototype.getEventNames.call(this);
-            return [APP_EVENTS.startup].concat(baseEvents);
+            var baseEvents = _super.prototype.getEventNames.call(this), events = ["startup"];
+            return events.concat(baseEvents);
         };
         Application.prototype.onStartUp = function () {
         };
@@ -3927,10 +3928,10 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/const", "jr
             return this._internal;
         };
         Application.prototype.addOnStartUp = function (fn, nmspace, context) {
-            this.objEvents.on(APP_EVENTS.startup, fn, nmspace, context);
+            this.objEvents.on("startup", fn, nmspace, context);
         };
         Application.prototype.removeOnStartUp = function (nmspace) {
-            this.objEvents.off(APP_EVENTS.startup, nmspace);
+            this.objEvents.off("startup", nmspace);
         };
         Application.prototype.getExports = function () {
             return this._exports;
@@ -3976,7 +3977,7 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/const", "jr
         Application.prototype.registerObject = function (name, obj) {
             var self = this, name2 = const_5.STORE_KEY.OBJECT + name;
             if (sys.isBaseObj(obj)) {
-                obj.addOnDisposed(function () {
+                obj.objEvents.addOnDisposed(function () {
                     boot._getInternal().unregisterObject(self, name2);
                 }, self.uniqueID);
             }
@@ -4006,7 +4007,7 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/const", "jr
                         setupPromise1 = utils.defer.createDeferred().resolve();
                     }
                     var promise_1 = setupPromise1.then(function () {
-                        self.objEvents.raise(APP_EVENTS.startup, {});
+                        self.objEvents.raise("startup", {});
                         var onStartupRes2 = (!!onStartUp) ? onStartUp.apply(self, [self]) : null;
                         var setupPromise2;
                         if (utils.check.isThenable(onStartupRes2)) {
@@ -4188,6 +4189,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.1.0";
+    exports.VERSION = "2.2.0";
     bootstrap_7.Bootstrap._initFramework();
 });

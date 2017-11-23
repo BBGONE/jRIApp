@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    TErrorHandler, TPriority, IIndexer, IBaseObject, TEventHandler
+    TErrorHandler, TPriority, IIndexer, TEventHandler
 } from "../int";
 import { ERRS } from "../lang";
 import { Checks } from "./checks";
@@ -126,7 +126,7 @@ export class EventHelper {
             }
         }
     }
-    static add(ev: IIndexer<IEventList>, name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void {
+    static add(ev: IIndexer<IEventList>, name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void {
         if (!ev) {
             debug.checkStartDebugger();
             throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "ev is a valid object"));

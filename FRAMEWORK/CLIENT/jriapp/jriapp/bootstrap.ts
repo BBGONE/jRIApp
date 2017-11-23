@@ -136,7 +136,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             }
             self._onTemplateLoaded(a.html, a.app);
         });
-        this._templateLoader.addOnError((s, a) => {
+        this._templateLoader.objEvents.addOnError((s, a) => {
             if (!s) {
                 throw new Error("Invalid operation");
             }

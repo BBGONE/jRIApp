@@ -173,7 +173,7 @@ export class DataForm extends BaseObject {
         // subscribe for parent's dispose event
         if (!!parent) {
             self._parentDataForm = this.app.viewFactory.getOrCreateElView(parent);
-            self._parentDataForm.addOnDisposed(() => {
+            self._parentDataForm.objEvents.addOnDisposed(() => {
                 // dispose itself if parent form is destroyed
                 if (!self.getIsStateDirty()) {
                     self.dispose();
@@ -303,12 +303,12 @@ export class DataForm extends BaseObject {
             this._errNotification = sys.getErrorNotification(dataContext);
         }
 
-        dataContext.addOnDisposed(() => {
+        dataContext.objEvents.addOnDisposed(() => {
             self.dataContext = null;
         }, self._objId);
 
         if (!!this._editable) {
-            (<IBaseObject>this._editable).objEvents.onProp(PROP_NAME.isEditing, self._onIsEditingChanged, self._objId, self);
+            this._editable.objEvents.onProp(PROP_NAME.isEditing, self._onIsEditingChanged, self._objId, self);
         }
 
         if (!!this._errNotification) {
@@ -321,7 +321,7 @@ export class DataForm extends BaseObject {
         if (!!dataContext && !dataContext.getIsStateDirty()) {
             dataContext.objEvents.offNS(this._objId);
             if (!!this._editable) {
-                (<IBaseObject>this._editable).objEvents.offNS(this._objId);
+                this._editable.objEvents.offNS(this._objId);
             }
             if (!!this._errNotification) {
                 this._errNotification.removeOnErrorsChanged(this._objId);

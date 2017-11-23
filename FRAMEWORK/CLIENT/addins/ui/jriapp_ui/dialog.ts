@@ -49,10 +49,11 @@ interface IDialogOptions {
     buttons: IButton[];
 }
 
-const DLG_EVENTS = {
-    close: "close",
-    refresh: "refresh"
-};
+const enum DLG_EVENTS {
+    close = "close",
+    refresh = "refresh"
+}
+
 const PROP_NAME = {
     dataContext: "dataContext",
     isSubmitOnOK: "isSubmitOnOK",
@@ -212,9 +213,9 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             ERROR.reThrow(ex, this.handleError(ex, this));
         }
     }
-    getEventNames() {
-        const baseEvents = super.getEventNames();
-        return [DLG_EVENTS.close, DLG_EVENTS.refresh].concat(baseEvents);
+    getEventNames(): string[] {
+        const baseEvents = super.getEventNames(), events: string[] = [DLG_EVENTS.close, DLG_EVENTS.refresh];
+        return events.concat(baseEvents);
     }
     templateLoading(template: ITemplate): void {
         // noop

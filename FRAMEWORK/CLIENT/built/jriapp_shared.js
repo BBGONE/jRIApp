@@ -1364,6 +1364,18 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
                 evHelper.removeNS(this._events, nmspace);
             }
         };
+        ObjectEvents.prototype.addOnDisposed = function (handler, nmspace, context, priority) {
+            this.on("destroyed", handler, nmspace, context, priority);
+        };
+        ObjectEvents.prototype.removeOnDisposed = function (nmspace) {
+            this.off("destroyed", nmspace);
+        };
+        ObjectEvents.prototype.addOnError = function (handler, nmspace, context, priority) {
+            this.on("error", handler, nmspace, context, priority);
+        };
+        ObjectEvents.prototype.removeOnError = function (nmspace) {
+            this.off("error", nmspace);
+        };
         Object.defineProperty(ObjectEvents.prototype, "owner", {
             get: function () {
                 return this._owner;
@@ -1408,18 +1420,6 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
                 isHandled = error_1.ERROR.handleError(this, error, source);
             }
             return isHandled;
-        };
-        BaseObject.prototype.addOnDisposed = function (handler, nmspace, context, priority) {
-            this.objEvents.on("destroyed", handler, nmspace, context, priority);
-        };
-        BaseObject.prototype.removeOnDisposed = function (nmspace) {
-            this.objEvents.off("destroyed", nmspace);
-        };
-        BaseObject.prototype.addOnError = function (handler, nmspace, context, priority) {
-            this.objEvents.on("error", handler, nmspace, context, priority);
-        };
-        BaseObject.prototype.removeOnError = function (nmspace) {
-            this.objEvents.off("error", nmspace);
         };
         Object.defineProperty(BaseObject.prototype, "objEvents", {
             get: function () {

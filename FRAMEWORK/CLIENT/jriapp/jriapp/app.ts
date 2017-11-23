@@ -17,9 +17,9 @@ import { createDataBindSvc } from "./databindsvc";
 const utils = Utils, dom = DomUtils, doc = dom.document,
     boot = bootstrap, sys = utils.sys, ERRS = LocaleERRS;
 
-const APP_EVENTS = {
-    startup: "startup"
-};
+const enum APP_EVENTS {
+    startup = "startup"
+}
 
 const enum AppState { None, Starting, Started, Disposed, Error }
 
@@ -89,9 +89,9 @@ export class Application extends BaseObject implements IApplication {
             initFn(<IApplication>self);
         });
     }
-    getEventNames() {
-        const baseEvents = super.getEventNames();
-        return [APP_EVENTS.startup].concat(baseEvents);
+    getEventNames(): string[] {
+        const baseEvents = super.getEventNames(), events: string[] = [APP_EVENTS.startup];
+        return events.concat(baseEvents);
     }
     /**
     can be overriden in derived classes
@@ -156,7 +156,7 @@ export class Application extends BaseObject implements IApplication {
     registerObject(name: string, obj: any): void {
         const self = this, name2 = STORE_KEY.OBJECT + name;
         if (sys.isBaseObj(obj)) {
-            (<IBaseObject>obj).addOnDisposed(() => {
+            (<IBaseObject>obj).objEvents.addOnDisposed(() => {
                 boot._getInternal().unregisterObject(self, name2);
             }, self.uniqueID);
         }
