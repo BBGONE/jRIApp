@@ -14,7 +14,7 @@ export class Debounce implements IDisposable {
     }
     enque(fn: TFunc) {
         // important, no error (just return with no action)!!!
-        if (this.getIsDisposing()) {
+        if (this.getIsStateDirty()) {
             return;
         }
         if (!fn) {
@@ -68,7 +68,7 @@ export class Debounce implements IDisposable {
     getIsDisposed(): boolean {
         return this._timer === void 0;
     }
-    getIsDisposing(): boolean {
+    getIsStateDirty(): boolean {
         return this._timer === void 0;
     }
 }

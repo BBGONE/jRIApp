@@ -507,7 +507,7 @@ export class Association extends BaseObject {
         return Object.keys(chngedKeys);
     }
     protected _onChildrenChanged(fkey: string, parent: IEntityItem) {
-        if (!!fkey && !!this._parentToChildrenName && !parent.getIsDisposing()) {
+        if (!!fkey && !!this._parentToChildrenName && !parent.getIsStateDirty()) {
             parent.objEvents.raiseProp(this._parentToChildrenName);
         }
     }
@@ -518,7 +518,7 @@ export class Association extends BaseObject {
             const keys = Object.keys(map), len = keys.length;
             for (let k = 0; k < len; k += 1) {
                 const item: IEntityItem = map[keys[k]];
-                if (!item.getIsDisposing()) {
+                if (!item.getIsStateDirty()) {
                     item.objEvents.raiseProp(self._childToParentName);
                 }
             }

@@ -55,7 +55,7 @@ export interface IObjectEvents {
 }
 
 export interface IBaseObject extends IErrorHandler, IDisposable {
-    getIsDisposing(): boolean;
+    getIsStateDirty(): boolean;
     getEventNames(): string[];
     isHasProp(prop: string): boolean;
     addOnError(handler: TErrorHandler, nmspace?: string, context?: object, priority?: TPriority): void;
@@ -65,14 +65,14 @@ export interface IBaseObject extends IErrorHandler, IDisposable {
     readonly objEvents: IObjectEvents;
 }
 
-export interface IEditable {
+export interface IEditable extends IBaseObject {
     beginEdit(): boolean;
     endEdit(): boolean;
     cancelEdit(): boolean;
     readonly isEditing: boolean;
 }
 
-export interface ISubmittable {
+export interface ISubmittable extends IBaseObject {
     submitChanges(): IVoidPromise;
     rejectChanges(): void;
     readonly isCanSubmit: boolean;
@@ -83,7 +83,7 @@ export interface IValidationInfo {
     errors: string[];
 }
 
-export interface IErrorNotification {
+export interface IErrorNotification extends IBaseObject {
     getIsHasErrors(): boolean;
     addOnErrorsChanged(fn: TEventHandler<any, any>, nmspace?: string, context?: any): void;
     removeOnErrorsChanged(nmspace?: string): void;

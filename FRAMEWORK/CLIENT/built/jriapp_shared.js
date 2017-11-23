@@ -374,7 +374,7 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/uti
             if (!prop) {
                 return obj;
             }
-            if (self.isBaseObj(obj) && obj.getIsDisposing()) {
+            if (self.isBaseObj(obj) && obj.getIsStateDirty()) {
                 return checks.undefined;
             }
             if (strUtils.startsWith(prop, "[")) {
@@ -397,7 +397,7 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/uti
             if (!prop) {
                 throw new Error("Invalid operation: Empty Property name");
             }
-            if (self.isBaseObj(obj) && obj.getIsDisposing()) {
+            if (self.isBaseObj(obj) && obj.getIsStateDirty()) {
                 return;
             }
             if (strUtils.startsWith(prop, "[")) {
@@ -1286,10 +1286,11 @@ define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/
 define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/error", "jriapp_shared/utils/weakmap", "jriapp_shared/utils/eventhelper"], function (require, exports, lang_3, sysutils_2, checks_4, strUtils_2, coreutils_2, error_1, weakmap_1, eventhelper_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var OBJ_EVENTS = {
-        error: "error",
-        destroyed: "destroyed"
-    };
+    var OBJ_EVENTS;
+    (function (OBJ_EVENTS) {
+        OBJ_EVENTS["error"] = "error";
+        OBJ_EVENTS["destroyed"] = "destroyed";
+    })(OBJ_EVENTS || (OBJ_EVENTS = {}));
     var checks = checks_4.Checks, strUtils = strUtils_2.StringUtils, coreUtils = coreutils_2.CoreUtils, evHelper = eventhelper_1.EventHelper, sys = sysutils_2.SysUtils, weakmap = weakmap_1.createWeakMap();
     sys.isBaseObj = function (obj) {
         return (!!obj && !!weakmap.get(obj));
@@ -1388,7 +1389,7 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
             return new ObjectEvents(this);
         };
         BaseObject.prototype.getEventNames = function () {
-            return [OBJ_EVENTS.error, OBJ_EVENTS.destroyed];
+            return ["error", "destroyed"];
         };
         BaseObject.prototype.isHasProp = function (prop) {
             return checks.isHasProp(this, prop);
@@ -1401,7 +1402,7 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
                 error = new Error("Error: " + error);
             }
             var args = { error: error, source: source, isHandled: false };
-            this.objEvents.raise(OBJ_EVENTS.error, args);
+            this.objEvents.raise("error", args);
             var isHandled = args.isHandled;
             if (!isHandled) {
                 isHandled = error_1.ERROR.handleError(this, error, source);
@@ -1409,16 +1410,16 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
             return isHandled;
         };
         BaseObject.prototype.addOnDisposed = function (handler, nmspace, context, priority) {
-            this.objEvents.on(OBJ_EVENTS.destroyed, handler, nmspace, context, priority);
+            this.objEvents.on("destroyed", handler, nmspace, context, priority);
         };
         BaseObject.prototype.removeOnDisposed = function (nmspace) {
-            this.objEvents.off(OBJ_EVENTS.destroyed, nmspace);
+            this.objEvents.off("destroyed", nmspace);
         };
         BaseObject.prototype.addOnError = function (handler, nmspace, context, priority) {
-            this.objEvents.on(OBJ_EVENTS.error, handler, nmspace, context, priority);
+            this.objEvents.on("error", handler, nmspace, context, priority);
         };
         BaseObject.prototype.removeOnError = function (nmspace) {
-            this.objEvents.off(OBJ_EVENTS.error, nmspace);
+            this.objEvents.off("error", nmspace);
         };
         Object.defineProperty(BaseObject.prototype, "objEvents", {
             get: function () {
@@ -1435,7 +1436,7 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
             var state = weakmap.get(this);
             return state.objState == 2;
         };
-        BaseObject.prototype.getIsDisposing = function () {
+        BaseObject.prototype.getIsStateDirty = function () {
             var state = weakmap.get(this);
             return state.objState !== 0;
         };
@@ -1447,7 +1448,7 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
             state.objState = 2;
             if (!!state.events) {
                 try {
-                    state.events.raise(OBJ_EVENTS.destroyed, {});
+                    state.events.raise("destroyed", {});
                 }
                 finally {
                     state.events.off();
@@ -1865,7 +1866,7 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
         }
         Debounce.prototype.enque = function (fn) {
             var _this = this;
-            if (this.getIsDisposing()) {
+            if (this.getIsStateDirty()) {
                 return;
             }
             if (!fn) {
@@ -1918,7 +1919,7 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
         Debounce.prototype.getIsDisposed = function () {
             return this._timer === void 0;
         };
-        Debounce.prototype.getIsDisposing = function () {
+        Debounce.prototype.getIsStateDirty = function () {
             return this._timer === void 0;
         };
         return Debounce;
@@ -2484,7 +2485,7 @@ define("jriapp_shared/utils/waitqueue", ["require", "exports", "jriapp_shared/ob
             return _this;
         }
         WaitQueue.prototype._checkQueue = function (prop, value) {
-            if (!this._owner || this._owner.getIsDisposing()) {
+            if (!this._owner || this._owner.getIsStateDirty()) {
                 return;
             }
             var self = this, propQueue = this._queue[prop];
@@ -2578,7 +2579,7 @@ define("jriapp_shared/utils/waitqueue", ["require", "exports", "jriapp_shared/ob
                 this._queue[property] = propQueue;
                 this._owner.objEvents.onProp(property, function (s, a) {
                     setTimeout(function () {
-                        if (self.getIsDisposing()) {
+                        if (self.getIsStateDirty()) {
                             return;
                         }
                         self._checkQueue(property, self._owner[property]);
@@ -2595,7 +2596,7 @@ define("jriapp_shared/utils/waitqueue", ["require", "exports", "jriapp_shared/ob
             propQueue.push(task);
             self._checkQueue(property, self._owner[property]);
             setTimeout(function () {
-                if (self.getIsDisposing()) {
+                if (self.getIsStateDirty()) {
                     return;
                 }
                 self._checkQueue(property, self._owner[property]);
@@ -3740,7 +3741,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 }
             }
             finally {
-                if (!item.getIsDisposing()) {
+                if (!item.getIsStateDirty()) {
                     item.dispose();
                 }
             }
@@ -4367,7 +4368,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                     return false;
                 }
                 internal.onEditing(item, false, true);
-                if (isNew && !this.isEdited && !this.getIsDisposing()) {
+                if (isNew && !this.isEdited && !this.getIsStateDirty()) {
                     this.dispose();
                 }
             }
@@ -4655,7 +4656,7 @@ define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/ob
             }
             this.setDisposing();
             var aspect = this._aspect;
-            if (!aspect.getIsDisposing()) {
+            if (!aspect.getIsStateDirty()) {
                 aspect.dispose();
             }
             _super.prototype.dispose.call(this);

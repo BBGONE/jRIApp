@@ -124,7 +124,7 @@ export class SysUtils {
             return obj;
         }
 
-        if (self.isBaseObj(obj) && obj.getIsDisposing()) {
+        if (self.isBaseObj(obj) && obj.getIsStateDirty()) {
             return checks.undefined;
         }
 
@@ -150,7 +150,7 @@ export class SysUtils {
             throw new Error("Invalid operation: Empty Property name");
         }
 
-        if (self.isBaseObj(obj) && obj.getIsDisposing()) {
+        if (self.isBaseObj(obj) && obj.getIsStateDirty()) {
             return;
         }
 

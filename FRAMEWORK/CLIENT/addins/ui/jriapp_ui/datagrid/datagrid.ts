@@ -98,7 +98,7 @@ function _gridDestroyed(grid: DataGrid) {
 function _checkGridWidth() {
     coreUtils.forEachProp(_createdGrids, (id) => {
         const grid = _createdGrids[id];
-        if (grid.getIsDisposing()) {
+        if (grid.getIsStateDirty()) {
             return;
         }
         grid._getInternal().columnWidthCheck();
@@ -291,7 +291,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 self._expandDetails(parentRow, expanded);
             },
             columnWidthCheck: () => {
-                if (self.getIsDisposing()) {
+                if (self.getIsStateDirty()) {
                     return;
                 }
                 const tw2 = table.offsetWidth;
@@ -491,7 +491,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         const rowkey = row.itemKey, i = utils.arr.remove(this._rows, row);
         try {
             if (i > -1) {
-                if (!row.getIsDisposing()) {
+                if (!row.getIsStateDirty()) {
                     row.dispose();
                 }
             }
@@ -904,7 +904,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     }
     protected _refresh(isPageChanged: boolean) {
         const self = this, ds = this.dataSource;
-        if (!ds || self.getIsDisposing()) {
+        if (!ds || self.getIsStateDirty()) {
             return;
         }
         this._clearGrid();
@@ -971,7 +971,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._options.dataSource = v;
         this._dsDebounce.enque(() => {
             const ds = this._options.dataSource;
-            if (!!ds && !ds.getIsDisposing()) {
+            if (!!ds && !ds.getIsStateDirty()) {
                 this._bindDS();
                 this._refresh(false);
             } else {
@@ -983,7 +983,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         return this._internal;
     }
     updateColumnsSize() {
-        if (this.getIsDisposing()) {
+        if (this.getIsStateDirty()) {
             return;
         }
         let width = 0;
@@ -1234,7 +1234,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         return (!cur) ? null : this._rowMap[cur._key];
     }
     set currentRow(row) {
-        if (!!row && !row.getIsDisposing()) {
+        if (!!row && !row.getIsStateDirty()) {
             if (row.item !== this.currentItem) {
                 this.currentItem = row.item;
             }
@@ -1305,7 +1305,7 @@ export class DataGridElView extends BaseElView {
         }
         this.setDisposing();
         this._stateDebounce.dispose();
-        if (!this._grid.getIsDisposing()) {
+        if (!this._grid.getIsStateDirty()) {
             this._grid.dispose();
         }
         this._stateProvider = null;
@@ -1334,7 +1334,7 @@ export class DataGridElView extends BaseElView {
         if (v !== this._stateProvider) {
             this._stateProvider = v;
             this._stateDebounce.enque(() => {
-                if (!this._grid || this._grid.getIsDisposing()) {
+                if (!this._grid || this._grid.getIsStateDirty()) {
                     return;
                 }
                 this._grid.rows.forEach((row) => {

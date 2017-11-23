@@ -23,7 +23,7 @@ export class CollectionItem<TAspect extends ItemAspect<ICollectionItem, any>> ex
         }
         this.setDisposing();
         const aspect = this._aspect;
-        if (!aspect.getIsDisposing()) {
+        if (!aspect.getIsStateDirty()) {
             aspect.dispose();
         }
         super.dispose();

@@ -395,7 +395,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         if (oldStatus !== ITEM_STATUS.None) {
             internal.onCommitChanges(this.item, true, false, oldStatus);
             if (oldStatus === ITEM_STATUS.Deleted) {
-                if (!this.getIsDisposing()) {
+                if (!this.getIsStateDirty()) {
                    this.dispose();
                 }
                 return;
@@ -427,7 +427,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         return this.deleteOnSubmit();
     }
     deleteOnSubmit(): boolean {
-        if (this.getIsDisposing()) {
+        if (this.getIsStateDirty()) {
             return false;
         }
         const oldStatus = this.status, dbSet = this.dbSet;
@@ -454,7 +454,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         if (oldStatus !== ITEM_STATUS.None) {
             internal.onCommitChanges(self.item, true, true, oldStatus);
             if (oldStatus === ITEM_STATUS.Added) {
-                if (!this.getIsDisposing()) {
+                if (!this.getIsStateDirty()) {
                     this.dispose();
                 }
                 return;

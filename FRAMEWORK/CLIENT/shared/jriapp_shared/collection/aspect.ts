@@ -324,7 +324,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
                 return false;
             }
             internal.onEditing(item, false, true);
-            if (isNew && !this.isEdited && !this.getIsDisposing()) {
+            if (isNew && !this.isEdited && !this.getIsStateDirty()) {
                 this.dispose();
             }
         } finally {

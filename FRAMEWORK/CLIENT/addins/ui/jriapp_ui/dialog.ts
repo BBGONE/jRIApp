@@ -220,7 +220,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         // noop
     }
     templateLoaded(template: ITemplate, error?: any): void {
-        if (this.getIsDisposing() || !!error) {
+        if (this.getIsStateDirty() || !!error) {
             if (!!this._deferredTemplate) {
                 this._deferredTemplate.reject(error);
             }
@@ -390,12 +390,12 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     }
     show(): IPromise<DataEditDialog> {
         const self = this;
-        if (self.getIsDisposing()) {
+        if (self.getIsStateDirty()) {
             return utils.defer.createDeferred<DataEditDialog>().reject();
         }
         self._result = null;
         return this._deferredTemplate.promise().then((template) => {
-            if (self.getIsDisposing() || !self._$dlgEl) {
+            if (self.getIsStateDirty() || !self._$dlgEl) {
                 ERROR.abort();
             }
             (<any>self._$dlgEl).dialog("option", "buttons", self._getButtons());
@@ -405,7 +405,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         }).then(() => {
             return self;
         }, (err) => {
-            if (!self.getIsDisposing()) {
+            if (!self.getIsStateDirty()) {
                 self.handleError(err, self);
             }
             ERROR.abort();

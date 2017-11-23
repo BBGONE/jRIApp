@@ -117,7 +117,7 @@ export class ListBox extends BaseObject {
         this._valMap = {};
         this._savedVal = checks.undefined;
         this._fnState = (data: IMappedItem) => {
-            if (!data || !data.item || data.item.getIsDisposing()) {
+            if (!data || !data.item || data.item.getIsStateDirty()) {
                 return;
             }
             const item = data.item, path = self.statePath,
@@ -487,7 +487,7 @@ export class ListBox extends BaseObject {
         this.objEvents.raise(LISTBOX_EVENTS.refreshed, {});
     }
     protected getItemIndex(item: ICollectionItem) {
-        if (!item || item.getIsDisposing()) {
+        if (!item || item.getIsStateDirty()) {
             return -1;
         }
         const data: IMappedItem = this._keyMap[item._key];
@@ -562,7 +562,7 @@ export class ListBox extends BaseObject {
                 this._txtDebounce.cancel();
                 this._stDebounce.cancel();
 
-                if (!!ds && !ds.getIsDisposing()) {
+                if (!!ds && !ds.getIsStateDirty()) {
                     this._bindDS();
                     this._refresh();
                 } else {
@@ -707,7 +707,7 @@ export class ListBoxElView extends BaseElView {
             return;
         }
         this.setDisposing();
-        if (!this._listBox.getIsDisposing()) {
+        if (!this._listBox.getIsStateDirty()) {
             this._listBox.dispose();
         }
         super.dispose();
@@ -733,7 +733,7 @@ export class ListBoxElView extends BaseElView {
         }
     }
     get selectedValue() {
-        return (this.getIsDisposing()) ? checks.undefined : this._listBox.selectedValue;
+        return (this.getIsStateDirty()) ? checks.undefined : this._listBox.selectedValue;
     }
     set selectedValue(v) {
         if (this._listBox.selectedValue !== v) {
@@ -741,7 +741,7 @@ export class ListBoxElView extends BaseElView {
         }
     }
     get selectedItem() {
-        return (this.getIsDisposing()) ? checks.undefined : this._listBox.selectedItem;
+        return (this.getIsStateDirty()) ? checks.undefined : this._listBox.selectedItem;
     }
     set selectedItem(v: ICollectionItem) {
         this._listBox.selectedItem = v;

@@ -227,7 +227,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         this.cleanUp();
         if (!!this._listBoxElView) {
             this._listBoxElView.listBox.objEvents.offNS(this.uniqueID);
-            if (!this._isListBoxCachedExternally && !this._listBoxElView.getIsDisposing()) {
+            if (!this._isListBoxCachedExternally && !this._listBoxElView.getIsStateDirty()) {
                 this._listBoxElView.dispose();
             }
             this._listBoxElView = null;

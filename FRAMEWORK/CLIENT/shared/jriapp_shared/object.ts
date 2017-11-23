@@ -12,10 +12,10 @@ import { ERROR } from "./utils/error";
 import { createWeakMap } from "./utils/weakmap";
 import { EventHelper, IEventList } from "./utils/eventhelper";
 
-const OBJ_EVENTS = {
-    error: "error",
-    destroyed: "destroyed"
-};
+const enum OBJ_EVENTS {
+    error = "error",
+    destroyed = "destroyed"
+}
 
 const checks = Checks, strUtils = StringUtils, coreUtils = CoreUtils,
     evHelper = EventHelper, sys = SysUtils, weakmap = createWeakMap();
@@ -164,7 +164,7 @@ export class BaseObject implements IBaseObject {
         const state = <IObjState>weakmap.get(this);
         return state.objState == ObjState.Disposed;
     }
-    getIsDisposing(): boolean {
+    getIsStateDirty(): boolean {
         const state = <IObjState>weakmap.get(this);
         return state.objState !== ObjState.None;
     }

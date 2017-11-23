@@ -48,7 +48,7 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
         this._dsDebounce = new Debounce();
     }
     templateLoading(template: ITemplate): void {
-        if (this.getIsDisposing()) {
+        if (this.getIsStateDirty()) {
             return;
         }
         const isFirstShow = !this._prevTemplateID,
@@ -58,7 +58,7 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
         }
     }
     templateLoaded(template: ITemplate, error?: any): void {
-        if (this.getIsDisposing()) {
+        if (this.getIsStateDirty()) {
             return;
         }
         if (!dom.isContained(template.el, this.el)) {
@@ -82,7 +82,7 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
                     self._animation.stop();
                     self._animation.beforeHide(self._template);
                     self._animation.hide(self._template).always(() => {
-                        if (self.getIsDisposing()) {
+                        if (self.getIsStateDirty()) {
                             return;
                         }
                         self._template.dispose();
@@ -108,7 +108,7 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
                 self._animation.stop();
                 self._animation.beforeHide(self._template);
                 self._animation.hide(self._template).always(() => {
-                    if (self.getIsDisposing()) {
+                    if (self.getIsStateDirty()) {
                         return;
                     }
                     self._template.templateID = newName;

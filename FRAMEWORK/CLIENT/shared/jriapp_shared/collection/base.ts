@@ -881,7 +881,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
                 this._onCurrentChanged();
             }
         } finally {
-            if (!item.getIsDisposing()) {
+            if (!item.getIsStateDirty()) {
                 item.dispose();
             }
         }

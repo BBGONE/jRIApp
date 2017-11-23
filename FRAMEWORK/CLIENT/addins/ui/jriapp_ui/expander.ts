@@ -31,7 +31,7 @@ export class ExpanderElView extends AnchorElView {
         this.isExpanded = isExpanded;
     }
     protected refresh(): void {
-        if (this.getIsDisposing()) {
+        if (this.getIsStateDirty()) {
             return;
         }
         this.imageSrc = this._isExpanded ? this._expandedsrc : this._collapsedsrc;

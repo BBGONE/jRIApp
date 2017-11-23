@@ -526,7 +526,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
             isPagingEnabled = this.isPagingEnabled, query = info.query;
         let isClearAll = true;
 
-        if (!!query && !query.getIsDisposing()) {
+        if (!!query && !query.getIsStateDirty()) {
             isClearAll = query.isClearPrevData;
             if (query.isClearCacheOnEveryLoad) {
                 query._getInternal().clearCache();
@@ -555,7 +555,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
 
         let arr = fetchedItems;
 
-        if (!!query && !query.getIsDisposing()) {
+        if (!!query && !query.getIsStateDirty()) {
             if (query.isIncludeTotalCount && !checks.isNt(res.totalCount)) {
                 this.totalCount = res.totalCount;
             }
@@ -609,7 +609,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
         if (!query) {
             throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "query is not null"));
         }
-        if (query.getIsDisposing()) {
+        if (query.getIsStateDirty()) {
             throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "query not destroyed"));
         }
         const dataCache = query._getInternal().getCache(),

@@ -52,7 +52,7 @@ export class TabsElView extends BaseElView implements ITabs {
         tabOpts = coreUtils.extend(tabOpts, self._tabOpts);
         (<any>$el).tabs(tabOpts);
         utils.queue.enque(() => {
-            if (self.getIsDisposing()) {
+            if (self.getIsStateDirty()) {
                 return;
             }
             self._tabsCreated = true;

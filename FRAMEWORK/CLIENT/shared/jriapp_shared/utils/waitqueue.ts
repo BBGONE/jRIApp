@@ -39,7 +39,7 @@ export class WaitQueue extends BaseObject {
         this._queue = {};
     }
     protected _checkQueue(prop: string, value: any) {
-        if (!this._owner || this._owner.getIsDisposing()) {
+        if (!this._owner || this._owner.getIsStateDirty()) {
             return;
         }
         const self = this, propQueue = this._queue[prop];
@@ -140,7 +140,7 @@ export class WaitQueue extends BaseObject {
             this._queue[property] = propQueue;
             this._owner.objEvents.onProp(property, function (s, a) {
                 setTimeout(function () {
-                    if (self.getIsDisposing()) {
+                    if (self.getIsStateDirty()) {
                         return;
                     }
                     self._checkQueue(property, (<any>self._owner)[property]);
@@ -158,7 +158,7 @@ export class WaitQueue extends BaseObject {
         propQueue.push(task);
         self._checkQueue(property, (<any>self._owner)[property]);
         setTimeout(function () {
-            if (self.getIsDisposing()) {
+            if (self.getIsStateDirty()) {
                 return;
             }
             self._checkQueue(property, (<any>self._owner)[property]);

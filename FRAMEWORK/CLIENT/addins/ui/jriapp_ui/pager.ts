@@ -514,7 +514,7 @@ export class PagerElView extends BaseElView {
             return;
         }
         this.setDisposing();
-        if (!this._pager.getIsDisposing()) {
+        if (!this._pager.getIsStateDirty()) {
             this._pager.dispose();
         }
         super.dispose();

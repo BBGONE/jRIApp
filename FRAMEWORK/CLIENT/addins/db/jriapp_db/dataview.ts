@@ -96,13 +96,13 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         this.objEvents.raise(VIEW_EVENTS.refreshed, args);
     }
     protected _refresh(reason: COLL_CHANGE_REASON): void {
-        if (this.getIsDisposing()) {
+        if (this.getIsStateDirty()) {
             return;
         }
         try {
             let items: TItem[];
             const ds = this._dataSource;
-            if (!ds || ds.getIsDisposing()) {
+            if (!ds || ds.getIsStateDirty()) {
                 this.clear();
                 this._onViewRefreshed({});
                 return;
@@ -341,7 +341,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         return (<BaseCollection<TItem>>this._dataSource)._getInternal().getStrValue(val, fieldInfo);
     }
     appendItems(items: TItem[]) {
-        if (this.getIsDisposing()) {
+        if (this.getIsStateDirty()) {
             return [];
         }
         return this._fillItems({ items: items, reason: COLL_CHANGE_REASON.None, clear: false, isAppend: true });

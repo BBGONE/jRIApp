@@ -129,7 +129,7 @@ class Template extends BaseObject implements ITemplate {
                 });
 
                 bindPromise.catch((err) => {
-                    if (self.getIsDisposing()) {
+                    if (self.getIsStateDirty()) {
                         return;
                     }
                     self._onFail(templateEl, err);
@@ -167,7 +167,7 @@ class Template extends BaseObject implements ITemplate {
     }
     private _dataBind(templateEl: HTMLElement, loadedEl: HTMLElement): IPromise<HTMLElement> {
         const self = this;
-        if (self.getIsDisposing()) {
+        if (self.getIsStateDirty()) {
             ERROR.abort();
         }
         if (!loadedEl) {
@@ -183,7 +183,7 @@ class Template extends BaseObject implements ITemplate {
         templateEl.appendChild(loadedEl);
         const promise = self.app._getInternal().bindTemplateElements(loadedEl);
         return promise.then((lftm) => {
-            if (self.getIsDisposing()) {
+            if (self.getIsStateDirty()) {
                 lftm.dispose();
                 ERROR.abort();
             }
@@ -195,7 +195,7 @@ class Template extends BaseObject implements ITemplate {
     }
     private _onFail(templateEl: HTMLElement, err: any): void {
         const self = this;
-        if (self.getIsDisposing()) {
+        if (self.getIsStateDirty()) {
             return;
         }
         self._onLoaded(err);

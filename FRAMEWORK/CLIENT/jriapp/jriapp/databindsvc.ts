@@ -228,7 +228,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
         this._cleanUp();
         const promise = this.bindElements(defScope, defaultDataContext, false, false);
         return promise.then((lftm) => {
-            if (self.getIsDisposing()) {
+            if (self.getIsStateDirty()) {
                 lftm.dispose();
                 return;
             }

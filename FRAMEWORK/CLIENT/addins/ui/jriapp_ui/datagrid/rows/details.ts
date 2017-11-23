@@ -45,7 +45,7 @@ export class DetailsRow extends BaseObject {
         this._item = null;
         this._cell.item = null;
         dom.removeNode(this.tr);
-        if (!row || row.getIsDisposing()) {
+        if (!row || row.getIsStateDirty()) {
             this._parentRow = null;
             return;
         }
@@ -58,7 +58,7 @@ export class DetailsRow extends BaseObject {
         dom.insertAfter(this.tr, row.tr);
         this._show(() => {
             const parentRow = self._parentRow;
-            if (!parentRow || parentRow.getIsDisposing()) {
+            if (!parentRow || parentRow.getIsStateDirty()) {
                 return;
             }
             if (self.grid.options.isUseScrollIntoDetails) {

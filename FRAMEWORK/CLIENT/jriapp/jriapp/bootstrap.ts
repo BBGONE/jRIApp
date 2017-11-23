@@ -272,7 +272,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             self.objEvents.off(GLOB_EVENTS.initialized);
 
             return _async.delay(() => {
-                if (self.getIsDisposing()) {
+                if (self.getIsStateDirty()) {
                     throw new Error("Bootstrap is in destroyed state");
                 }
                 self._processHTMLTemplates();
@@ -342,7 +342,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     }
     private _destroyApp(): void {
         const self = this, app = self._appInst;
-        if (!!app && !app.getIsDisposing()) {
+        if (!!app && !app.getIsStateDirty()) {
             app.dispose();
         }
     }

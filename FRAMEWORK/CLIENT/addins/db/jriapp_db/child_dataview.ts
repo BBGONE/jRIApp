@@ -43,7 +43,7 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
         const self = this;
 
         this._getParent = () => {
-            if (self.getIsDisposing()) {
+            if (self.getIsStateDirty()) {
                 return null;
             }
             return parentItem;
@@ -53,7 +53,7 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
                 parentItem = v;
                 self.objEvents.raiseProp(PROP_NAME.parentItem);
             }
-            if (self.getIsDisposing()) {
+            if (self.getIsStateDirty()) {
                 return;
             }
             if (self.items.length > 0) {

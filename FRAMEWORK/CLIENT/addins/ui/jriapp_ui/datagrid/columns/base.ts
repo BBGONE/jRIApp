@@ -134,7 +134,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         // noop
     }
     scrollIntoView(isUp: boolean) {
-        if (this.getIsDisposing()) {
+        if (this.getIsStateDirty()) {
             return;
         }
         this._col.scrollIntoView(!!isUp);

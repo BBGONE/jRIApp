@@ -343,7 +343,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         this._options.dataSource = v;
         this._debounce.enque(() => {
             const ds = this._options.dataSource;
-            if (!!ds && !ds.getIsDisposing()) {
+            if (!!ds && !ds.getIsStateDirty()) {
                 this._bindDS();
                 this._refresh();
             } else {
@@ -466,7 +466,7 @@ export class StackPanelElView extends BaseElView {
             return;
         }
         this.setDisposing();
-        if (!this._panel.getIsDisposing()) {
+        if (!this._panel.getIsStateDirty()) {
             this._panel.dispose();
         }
         this._panelEvents = null;

@@ -129,7 +129,7 @@ export class DbContext extends BaseObject {
         });
     }
     protected _checkDestroy() {
-        if (this.getIsDisposing()) {
+        if (this.getIsStateDirty()) {
             ERROR.abort("dbContext destroyed");
         }
     }
@@ -210,7 +210,7 @@ export class DbContext extends BaseObject {
 
         self._requests.push(item);
         req.always(() => {
-            if (self.getIsDisposing())
+            if (self.getIsStateDirty())
                 return;
             const oldBusy = self.isBusy;
             utils.arr.remove(self._requests, item);
@@ -687,7 +687,7 @@ export class DbContext extends BaseObject {
             self._checkDestroy();
             args.fn_onOk();
         }).catch((er) => {
-            if (!self.getIsDisposing() && ERROR.checkIsAbort(er) && er.reason === no_changes) {
+            if (!self.getIsStateDirty() && ERROR.checkIsAbort(er) && er.reason === no_changes) {
                 args.fn_onOk();
             } else {
                 args.fn_onErr(er);

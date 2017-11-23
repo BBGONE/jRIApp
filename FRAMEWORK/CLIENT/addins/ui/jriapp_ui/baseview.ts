@@ -119,7 +119,7 @@ export class BaseElView extends BaseObject implements IElView {
     }
     protected _onEventAdded(name: string, newVal: ICommand) {
         const self = this;
-        if (this.getIsDisposing()) {
+        if (this.getIsStateDirty()) {
             return;
         }
         dom.events.on(this.el, name, (e) => {
@@ -239,7 +239,7 @@ export class BaseElView extends BaseObject implements IElView {
     // stores commands for data binding to the HtmlElement's events
     get events(): IPropertyBag {
         if (!this._eventStore) {
-            if (this.getIsDisposing()) {
+            if (this.getIsStateDirty()) {
                 return null;
             }
 
@@ -252,7 +252,7 @@ export class BaseElView extends BaseObject implements IElView {
     // exposes All HTML Element properties for data binding directly to them
     get props(): IPropertyBag {
         if (!this._props) {
-            if (this.getIsDisposing()) {
+            if (this.getIsStateDirty()) {
                 return checks.undefined;
             }
             this._props = new PropertyBag(this.el);
@@ -262,7 +262,7 @@ export class BaseElView extends BaseObject implements IElView {
     // exposes All CSS Classes for data binding directly to them
     get classes(): IPropertyBag {
         if (!this._classes) {
-            if (this.getIsDisposing()) {
+            if (this.getIsStateDirty()) {
                 return checks.undefined;
             }
             this._classes = new CSSBag(this.el);

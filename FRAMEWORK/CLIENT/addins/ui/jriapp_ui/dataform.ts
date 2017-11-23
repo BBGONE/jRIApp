@@ -127,12 +127,12 @@ function getFieldInfo(obj: any, fieldName: string): IFieldInfo {
     }
 }
 
-const PROP_NAME = {
-    dataContext: "dataContext",
-    isEditing: "isEditing",
-    validationErrors: "validationErrors",
-    form: "form"
-};
+const enum PROP_NAME {
+    dataContext = "dataContext",
+    isEditing = "isEditing",
+    validationErrors = "validationErrors",
+    form = "form"
+}
 
 export class DataForm extends BaseObject {
     private static _DATA_FORM_SELECTOR = ["*[", DATA_ATTR.DATA_FORM, "]"].join("");
@@ -175,7 +175,7 @@ export class DataForm extends BaseObject {
             self._parentDataForm = this.app.viewFactory.getOrCreateElView(parent);
             self._parentDataForm.addOnDisposed(() => {
                 // dispose itself if parent form is destroyed
-                if (!self.getIsDisposing()) {
+                if (!self.getIsStateDirty()) {
                     self.dispose();
                 }
             }, self._objId);
@@ -226,7 +226,7 @@ export class DataForm extends BaseObject {
 
         const promise = self.app._getInternal().bindElements(this._el, dctx, true, this.isInsideTemplate);
         return promise.then((lftm) => {
-            if (self.getIsDisposing()) {
+            if (self.getIsStateDirty()) {
                 lftm.dispose();
                 return;
             }
@@ -266,12 +266,12 @@ export class DataForm extends BaseObject {
             } else {
                 if (!!self._contentPromise) {
                     self._contentPromise.then(() => {
-                        if (self.getIsDisposing()) {
+                        if (self.getIsStateDirty()) {
                             return;
                         }
                         self._updateCreatedContent();
                     }, (err) => {
-                        if (self.getIsDisposing()) {
+                        if (self.getIsStateDirty()) {
                             return;
                         }
                         self.handleError(err, self);
@@ -308,7 +308,7 @@ export class DataForm extends BaseObject {
         }, self._objId);
 
         if (!!this._editable) {
-            (<IBaseObject><any>this._editable).objEvents.onProp(PROP_NAME.isEditing, self._onIsEditingChanged, self._objId, self);
+            (<IBaseObject>this._editable).objEvents.onProp(PROP_NAME.isEditing, self._onIsEditingChanged, self._objId, self);
         }
 
         if (!!this._errNotification) {
@@ -318,10 +318,10 @@ export class DataForm extends BaseObject {
     private _unbindDS() {
         const dataContext = this._dataContext;
         this.validationErrors = null;
-        if (!!dataContext && !dataContext.getIsDisposing()) {
+        if (!!dataContext && !dataContext.getIsStateDirty()) {
             dataContext.objEvents.offNS(this._objId);
             if (!!this._editable) {
-                (<IBaseObject><any>this._editable).objEvents.offNS(this._objId);
+                (<IBaseObject>this._editable).objEvents.offNS(this._objId);
             }
             if (!!this._errNotification) {
                 this._errNotification.removeOnErrorsChanged(this._objId);
@@ -352,7 +352,7 @@ export class DataForm extends BaseObject {
         this._unbindDS();
         const parentDataForm = this._parentDataForm;
         this._parentDataForm = null;
-        if (!!parentDataForm && !parentDataForm.getIsDisposing()) {
+        if (!!parentDataForm && !parentDataForm.getIsStateDirty()) {
             parentDataForm.objEvents.offNS(this._objId);
         }
         this._dataContext = null;
@@ -513,7 +513,7 @@ export class DataFormElView extends BaseElView {
             dom.removeNode(this._errorGliph);
             this._errorGliph = null;
         }
-        if (!this._form.getIsDisposing()) {
+        if (!this._form.getIsStateDirty()) {
             this._form.dispose();
         }
         super.dispose();

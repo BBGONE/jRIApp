@@ -330,7 +330,7 @@ export class Binding extends BaseObject implements IBinding {
         const self = this;
         self._srcEnd = null;
 
-        if (sys.isBaseObj(obj) && (<IBaseObject>obj).getIsDisposing()) {
+        if (sys.isBaseObj(obj) && (<IBaseObject>obj).getIsStateDirty()) {
             return;
         }
 
@@ -354,10 +354,12 @@ export class Binding extends BaseObject implements IBinding {
         const self = this, isBaseObj = sys.isBaseObj(obj);
 
         if (isBaseObj) {
-            if ((<IBaseObject>obj).getIsDisposing()) {
+            if ((<IBaseObject>obj).getIsStateDirty()) {
                 return;
             }
+            /*
             (<IBaseObject>obj).addOnDisposed(self._onSrcDestroyed, self._objId, self);
+            */
             self._setPathItem(obj, BindTo.Source, lvl, path);
         }
 
@@ -406,7 +408,7 @@ export class Binding extends BaseObject implements IBinding {
     private _parseTgt(obj: any, path: string[], lvl: number) {
         const self = this;
         self._tgtEnd = null;
-        if (sys.isBaseObj(obj) && (<IBaseObject>obj).getIsDisposing()) {
+        if (sys.isBaseObj(obj) && (<IBaseObject>obj).getIsStateDirty()) {
             return;
         }
 
@@ -431,11 +433,12 @@ export class Binding extends BaseObject implements IBinding {
         const self = this, isBaseObj = sys.isBaseObj(obj);
 
         if (isBaseObj) {
-            if ((<IBaseObject>obj).getIsDisposing()) {
+            if ((<IBaseObject>obj).getIsStateDirty()) {
                 return;
             }
-
+            /*
             (<IBaseObject>obj).addOnDisposed(self._onTgtDestroyed, self._objId, self);
+            */
             self._setPathItem(obj, BindTo.Target, lvl, path);
         }
 
@@ -504,9 +507,10 @@ export class Binding extends BaseObject implements IBinding {
             }
         }
     }
+    /*
     private _onTgtDestroyed(sender: any) {
         const self = this;
-        if (self.getIsDisposing()) {
+        if (self.getIsStateDirty()) {
             return;
         }
 
@@ -516,7 +520,7 @@ export class Binding extends BaseObject implements IBinding {
         } else {
             self._setPathItem(null, BindTo.Target, 0, self._tgtPath);
             utils.queue.enque(() => {
-                if (self.getIsDisposing()) {
+                if (self.getIsStateDirty()) {
                     return;
                 }
                 // rebind after the target is destroyed
@@ -527,7 +531,7 @@ export class Binding extends BaseObject implements IBinding {
     }
     private _onSrcDestroyed(sender: any) {
         const self = this;
-        if (self.getIsDisposing()) {
+        if (self.getIsStateDirty()) {
             return;
         }
 
@@ -537,7 +541,7 @@ export class Binding extends BaseObject implements IBinding {
         } else {
             self._setPathItem(null, BindTo.Source, 0, self._srcPath);
             utils.queue.enque(() => {
-                if (self.getIsDisposing()) {
+                if (self.getIsStateDirty()) {
                     return;
                 }
                 // rebind after the source is destroyed
@@ -546,8 +550,9 @@ export class Binding extends BaseObject implements IBinding {
             });
         }
     }
+    */
     private _updateTarget() {
-        if (this.getIsDisposing()) {
+        if (this.getIsStateDirty()) {
             return;
         }
         try {
@@ -561,7 +566,7 @@ export class Binding extends BaseObject implements IBinding {
         }
     }
     private _updateSource() {
-        if (this.getIsDisposing()) {
+        if (this.getIsStateDirty()) {
             return;
         }
         try {
