@@ -301,7 +301,7 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
             });
             this._errorVM = new COMMON.ErrorViewModel(this);
             this._fbrowserVM = new FolderBrowser(this, { service_url: options.service_url, permissionInfo: options.permissionInfo });
-            this.addOnError(function (sender, data) {
+            this.objEvents.addOnError(function (sender, data) {
                 debugger;
                 data.isHandled = true;
                 self.errorVM.error = data.error;
@@ -350,7 +350,7 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
         return DemoApplication;
     }(RIAPP.Application));
     exports.DemoApplication = DemoApplication;
-    RIAPP.bootstrap.addOnError(function (sender, args) {
+    RIAPP.bootstrap.objEvents.addOnError(function (sender, args) {
         debugger;
         alert(args.error.message);
     });

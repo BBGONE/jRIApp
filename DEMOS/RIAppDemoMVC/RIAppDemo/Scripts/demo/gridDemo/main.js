@@ -2536,17 +2536,17 @@ define("gridDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "common",
                 self._handleError(sender, data);
             }
             ;
-            this.addOnError(handleError);
-            this._dbContext.addOnError(handleError);
+            this.objEvents.addOnError(handleError);
+            this._dbContext.objEvents.addOnError(handleError);
             if (!!options.sse_url && SSEVENTS.SSEventsVM.isSupported()) {
                 this._sseVM = new SSEVENTS.SSEventsVM(options.sse_url, options.sse_clientID);
                 this._sseVM.addOnMessage(function (s, a) { self._sseMessage = a.data.message; self.objEvents.raiseProp('sseMessage'); });
-                this._sseVM.addOnError(handleError);
+                this._sseVM.objEvents.addOnError(handleError);
             }
             if (WEBSOCK.WebSocketsVM.isSupported()) {
                 this._websockVM = new WEBSOCK.WebSocketsVM(WEBSOCK.WebSocketsVM.createUrl(81, 'PollingService', false));
                 this._websockVM.addOnMessage(this._onWebsockMsg, this.uniqueID, this);
-                this._websockVM.addOnError(handleError);
+                this._websockVM.objEvents.addOnError(handleError);
             }
             this._uploadVM.addOnFilesUploaded(function (s, a) {
                 a.product._aspect.refresh();
@@ -3016,7 +3016,7 @@ define("gridDemo/main", ["require", "exports", "jriapp", "common", "gridDemo/app
         return SizeConverter;
     }(RIAPP.BaseConverter));
     exports.SizeConverter = SizeConverter;
-    bootstrap.addOnError(function (sender, args) {
+    bootstrap.objEvents.addOnError(function (sender, args) {
         debugger;
         alert(args.error.message);
         args.isHandled = true;

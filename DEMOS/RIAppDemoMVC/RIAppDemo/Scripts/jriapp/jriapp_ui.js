@@ -2824,10 +2824,11 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
         DIALOG_ACTION[DIALOG_ACTION["StayOpen"] = 1] = "StayOpen";
     })(DIALOG_ACTION = exports.DIALOG_ACTION || (exports.DIALOG_ACTION = {}));
     ;
-    var DLG_EVENTS = {
-        close: "close",
-        refresh: "refresh"
-    };
+    var DLG_EVENTS;
+    (function (DLG_EVENTS) {
+        DLG_EVENTS["close"] = "close";
+        DLG_EVENTS["refresh"] = "refresh";
+    })(DLG_EVENTS || (DLG_EVENTS = {}));
     var PROP_NAME = {
         dataContext: "dataContext",
         isSubmitOnOK: "isSubmitOnOK",
@@ -2950,16 +2951,16 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
             return _this;
         }
         DataEditDialog.prototype.addOnClose = function (fn, nmspace, context) {
-            this.objEvents.on(DLG_EVENTS.close, fn, nmspace, context);
+            this.objEvents.on("close", fn, nmspace, context);
         };
         DataEditDialog.prototype.removeOnClose = function (nmspace) {
-            this.objEvents.off(DLG_EVENTS.close, nmspace);
+            this.objEvents.off("close", nmspace);
         };
         DataEditDialog.prototype.addOnRefresh = function (fn, nmspace, context) {
-            this.objEvents.on(DLG_EVENTS.refresh, fn, nmspace, context);
+            this.objEvents.on("refresh", fn, nmspace, context);
         };
         DataEditDialog.prototype.removeOnRefresh = function (nmspace) {
-            this.objEvents.off(DLG_EVENTS.refresh, nmspace);
+            this.objEvents.off("refresh", nmspace);
         };
         DataEditDialog.prototype._createDialog = function () {
             try {
@@ -2973,8 +2974,8 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
             }
         };
         DataEditDialog.prototype.getEventNames = function () {
-            var baseEvents = _super.prototype.getEventNames.call(this);
-            return [DLG_EVENTS.close, DLG_EVENTS.refresh].concat(baseEvents);
+            var baseEvents = _super.prototype.getEventNames.call(this), events = ["close", "refresh"];
+            return events.concat(baseEvents);
         };
         DataEditDialog.prototype.templateLoading = function (template) {
         };
@@ -3106,7 +3107,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
         };
         DataEditDialog.prototype._onRefresh = function () {
             var args = { isHandled: false };
-            this.objEvents.raise(DLG_EVENTS.refresh, args);
+            this.objEvents.raise("refresh", args);
             if (args.isHandled) {
                 return;
             }
@@ -3128,7 +3129,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
                 if (!!this._fnOnClose) {
                     this._fnOnClose(this);
                 }
-                this.objEvents.raise(DLG_EVENTS.close, {});
+                this.objEvents.raise("close", {});
             }
             finally {
                 this._template.dataContext = null;
@@ -7927,7 +7928,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             var parent = viewChecks.getParentDataForm(null, _this._el);
             if (!!parent) {
                 self._parentDataForm = _this.app.viewFactory.getOrCreateElView(parent);
-                self._parentDataForm.addOnDisposed(function () {
+                self._parentDataForm.objEvents.addOnDisposed(function () {
                     if (!self.getIsStateDirty()) {
                         self.dispose();
                     }
@@ -8050,7 +8051,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
                 this._editable = sys.getEditable(dataContext);
                 this._errNotification = sys.getErrorNotification(dataContext);
             }
-            dataContext.addOnDisposed(function () {
+            dataContext.objEvents.addOnDisposed(function () {
                 self.dataContext = null;
             }, self._objId);
             if (!!this._editable) {

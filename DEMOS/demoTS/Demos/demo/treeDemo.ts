@@ -300,7 +300,7 @@ export class DemoApplication extends RIAPP.Application {
         this._fbrowserVM = new FolderBrowser(this, { service_url: options.service_url, permissionInfo: options.permissionInfo });
 
         //here we could process application's errors
-        this.addOnError(function (sender, data) {
+        this.objEvents.addOnError(function (sender, data) {
             debugger;
             data.isHandled = true;
             self.errorVM.error = data.error;
@@ -329,7 +329,7 @@ export class DemoApplication extends RIAPP.Application {
 }
 
 //bootstrap error handler - the last resort (typically display message to the user)
-RIAPP.bootstrap.addOnError(function (sender, args) {
+RIAPP.bootstrap.objEvents.addOnError(function (sender, args) {
     debugger;
     alert(args.error.message);
 });

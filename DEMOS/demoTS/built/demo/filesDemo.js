@@ -303,7 +303,7 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
                 self._selectedPath = s.infotype + '\\' + a.fullPath;
                 self.objEvents.raiseProp('selectedPath');
             });
-            this.addOnError(function (sender, data) {
+            this.objEvents.addOnError(function (sender, data) {
                 debugger;
                 data.isHandled = true;
                 self.errorVM.error = data.error;
@@ -382,7 +382,7 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
         return DemoApplication;
     }(RIAPP.Application));
     exports.DemoApplication = DemoApplication;
-    RIAPP.bootstrap.addOnError(function (sender, args) {
+    RIAPP.bootstrap.objEvents.addOnError(function (sender, args) {
         debugger;
         alert(args.error.message);
     });

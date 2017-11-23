@@ -141,15 +141,15 @@ declare module "jriapp_shared/int" {
         raiseProp(name: string): void;
         onProp(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: object, priority?: TPriority): void;
         offProp(prop?: string, nmspace?: string): void;
+        addOnError(handler: TErrorHandler, nmspace?: string, context?: object, priority?: TPriority): void;
+        removeOnError(nmspace?: string): void;
+        addOnDisposed(handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void;
+        removeOnDisposed(nmspace?: string): void;
     }
     export interface IBaseObject extends IErrorHandler, IDisposable {
         getIsStateDirty(): boolean;
         getEventNames(): string[];
         isHasProp(prop: string): boolean;
-        addOnError(handler: TErrorHandler, nmspace?: string, context?: object, priority?: TPriority): void;
-        removeOnError(nmspace?: string): void;
-        addOnDisposed(handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void;
-        removeOnDisposed(nmspace?: string): void;
         readonly objEvents: IObjectEvents;
     }
     export interface IEditable extends IBaseObject {
@@ -453,7 +453,7 @@ declare module "jriapp_shared/utils/debug" {
     }
 }
 declare module "jriapp_shared/utils/eventhelper" {
-    import { TPriority, IIndexer, IBaseObject, TEventHandler } from "jriapp_shared/int";
+    import { TPriority, IIndexer, TEventHandler } from "jriapp_shared/int";
     export type TEventNode = {
         context: any;
         fn: TEventHandler<any, any>;
@@ -467,7 +467,7 @@ declare module "jriapp_shared/utils/eventhelper" {
     }
     export class EventHelper {
         static removeNS(ev: IIndexer<IEventList>, ns?: string): void;
-        static add(ev: IIndexer<IEventList>, name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
+        static add(ev: IIndexer<IEventList>, name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void;
         static remove(ev: IIndexer<IEventList>, name?: string, nmspace?: string): void;
         static count(ev: IIndexer<IEventList>, name: string): number;
         static raise(sender: any, ev: IIndexer<IEventList>, name: string, args: any): void;
@@ -481,13 +481,17 @@ declare module "jriapp_shared/object" {
         private _owner;
         constructor(owner: object);
         canRaise(name: string): boolean;
-        on(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
+        on(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void;
         off(name?: string, nmspace?: string): void;
         offNS(nmspace?: string): void;
         raise(name: string, args: any): void;
         raiseProp(name: string): void;
-        onProp(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
+        onProp(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: object, priority?: TPriority): void;
         offProp(prop?: string, nmspace?: string): void;
+        addOnDisposed(handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void;
+        removeOnDisposed(nmspace?: string): void;
+        addOnError(handler: TErrorHandler, nmspace?: string, context?: object, priority?: TPriority): void;
+        removeOnError(nmspace?: string): void;
         readonly owner: object;
     }
     export class BaseObject implements IBaseObject {
@@ -497,10 +501,6 @@ declare module "jriapp_shared/object" {
         getEventNames(): string[];
         isHasProp(prop: string): boolean;
         handleError(error: any, source: any): boolean;
-        addOnDisposed(handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void;
-        removeOnDisposed(nmspace?: string): void;
-        addOnError(handler: TErrorHandler, nmspace?: string, context?: object, priority?: TPriority): void;
-        removeOnError(nmspace?: string): void;
         readonly objEvents: IObjectEvents;
         getIsDisposed(): boolean;
         getIsStateDirty(): boolean;

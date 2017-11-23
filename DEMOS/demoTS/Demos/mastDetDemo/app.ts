@@ -46,8 +46,8 @@ export class DemoApplication extends RIAPP.Application {
             self._handleError(sender, data);
         };
         //here we could process application's errors
-        this.addOnError(handleError);
-        this._dbContext.addOnError(handleError);
+        this.objEvents.addOnError(handleError);
+        this._dbContext.objEvents.addOnError(handleError);
 
         //testing returning  a promise from this method
         /*

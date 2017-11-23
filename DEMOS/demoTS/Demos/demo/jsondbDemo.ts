@@ -285,8 +285,8 @@ export class DemoApplication extends RIAPP.Application {
             self._handleError(sender, data);
         };
         //here we could process application's errors
-        this.addOnError(handleError);
-        this._dbContext.addOnError(handleError);
+        this.objEvents.addOnError(handleError);
+        this._dbContext.objEvents.addOnError(handleError);
 
         super.onStartUp();
     }
@@ -317,7 +317,7 @@ export class DemoApplication extends RIAPP.Application {
 }
 
 //bootstrap error handler - the last resort (typically display message to the user)
-bootstrap.addOnError(function (sender, args) {
+bootstrap.objEvents.addOnError(function (sender, args) {
     debugger;
     alert(args.error.message);
     args.isHandled = true;

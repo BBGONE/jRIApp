@@ -2769,8 +2769,8 @@ define("app", ["require", "exports", "jriapp", "domainModel", "common", "custome
                 self._handleError(sender, data);
             }
             ;
-            this.addOnError(handleError);
-            this._dbContext.addOnError(handleError);
+            this.objEvents.addOnError(handleError);
+            this._dbContext.objEvents.addOnError(handleError);
             _super.prototype.onStartUp.call(this);
         };
         DemoApplication.prototype._handleError = function (sender, data) {
@@ -3324,7 +3324,7 @@ define("prodAutocomplete", ["require", "exports", "autocomplete"], function (req
 define("main", ["require", "exports", "jriapp", "app", "common", "autocomplete", "gridElView", "prodAutocomplete"], function (require, exports, RIAPP, app_1, COMMON, AUTOCOMPLETE, GRIDELVIEW, PRODAUTOCOMPLETE) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    RIAPP.bootstrap.addOnError(function (sender, args) {
+    RIAPP.bootstrap.objEvents.addOnError(function (sender, args) {
         debugger;
         alert(args.error.message);
     });

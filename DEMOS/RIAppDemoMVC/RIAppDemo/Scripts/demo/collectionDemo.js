@@ -132,7 +132,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             var self = this;
             this._errorVM = new COMMON.ErrorViewModel(this);
             this._demoVM = new RadioDemo2VM(this);
-            this.addOnError(function (sender, data) {
+            this.objEvents.addOnError(function (sender, data) {
                 debugger;
                 data.isHandled = true;
                 self.errorVM.error = data.error;
@@ -171,7 +171,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
         return DemoApplication;
     }(RIAPP.Application));
     exports.DemoApplication = DemoApplication;
-    bootstrap.addOnError(function (sender, args) {
+    bootstrap.objEvents.addOnError(function (sender, args) {
         debugger;
         alert(args.error.message);
     });

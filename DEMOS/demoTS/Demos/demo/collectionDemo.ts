@@ -119,7 +119,7 @@ export class DemoApplication extends RIAPP.Application {
         this._demoVM = new RadioDemo2VM(this);
 
         //here we could process application's errors
-        this.addOnError(function (sender, data) {
+        this.objEvents.addOnError(function (sender, data) {
             debugger;
             data.isHandled = true;
             self.errorVM.error = data.error;
@@ -145,7 +145,7 @@ export class DemoApplication extends RIAPP.Application {
 }
 
 //bootstrap error handler - the last resort (typically display message to the user)
-bootstrap.addOnError(function (sender, args) {
+bootstrap.objEvents.addOnError(function (sender, args) {
     debugger;
     alert(args.error.message);
 });

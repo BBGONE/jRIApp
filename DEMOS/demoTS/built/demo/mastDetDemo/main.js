@@ -2134,8 +2134,8 @@ define("mastDetDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "commo
                 self._handleError(sender, data);
             }
             ;
-            this.addOnError(handleError);
-            this._dbContext.addOnError(handleError);
+            this.objEvents.addOnError(handleError);
+            this._dbContext.objEvents.addOnError(handleError);
         };
         DemoApplication.prototype._handleError = function (sender, data) {
             debugger;
@@ -2356,7 +2356,7 @@ define("mastDetDemo/main", ["require", "exports", "jriapp", "common", "autocompl
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var bootstrap = RIAPP.bootstrap;
-    bootstrap.addOnError(function (sender, args) {
+    bootstrap.objEvents.addOnError(function (sender, args) {
         debugger;
         alert(args.error.message);
     });

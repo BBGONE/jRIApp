@@ -58,21 +58,21 @@ export class DemoApplication extends RIAPP.Application {
             self._handleError(sender, data);
         };
         //here we could process application's errors
-        this.addOnError(handleError);
-        this._dbContext.addOnError(handleError);
+        this.objEvents.addOnError(handleError);
+        this._dbContext.objEvents.addOnError(handleError);
         //instead of server side events i added websocket
 
         if (!!options.sse_url && SSEVENTS.SSEventsVM.isSupported()) {
             this._sseVM = new SSEVENTS.SSEventsVM(options.sse_url, options.sse_clientID);
             this._sseVM.addOnMessage((s, a) => { self._sseMessage = a.data.message; self.objEvents.raiseProp('sseMessage'); });
-            this._sseVM.addOnError(handleError);
+            this._sseVM.objEvents.addOnError(handleError);
         }
 
 
         if (WEBSOCK.WebSocketsVM.isSupported()) {
             this._websockVM = new WEBSOCK.WebSocketsVM(WEBSOCK.WebSocketsVM.createUrl(81, 'PollingService', false));
             this._websockVM.addOnMessage(this._onWebsockMsg, this.uniqueID, this);
-            this._websockVM.addOnError(handleError);
+            this._websockVM.objEvents.addOnError(handleError);
         }
 
         //adding event handler for our custom event

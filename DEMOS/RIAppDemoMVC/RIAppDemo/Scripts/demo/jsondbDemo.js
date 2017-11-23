@@ -280,8 +280,8 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
                 self._handleError(sender, data);
             }
             ;
-            this.addOnError(handleError);
-            this._dbContext.addOnError(handleError);
+            this.objEvents.addOnError(handleError);
+            this._dbContext.objEvents.addOnError(handleError);
             _super.prototype.onStartUp.call(this);
         };
         DemoApplication.prototype._handleError = function (sender, data) {
@@ -327,7 +327,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
         return DemoApplication;
     }(RIAPP.Application));
     exports.DemoApplication = DemoApplication;
-    bootstrap.addOnError(function (sender, args) {
+    bootstrap.objEvents.addOnError(function (sender, args) {
         debugger;
         alert(args.error.message);
         args.isHandled = true;
