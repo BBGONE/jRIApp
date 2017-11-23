@@ -798,8 +798,6 @@ declare module "jriapp/binding" {
         private _parseTgt2(obj, path, lvl);
         private _setPathItem(newObj, bindingTo, lvl, path);
         private _cleanUp(obj);
-        private _onTgtDestroyed(sender);
-        private _onSrcDestroyed(sender);
         private _updateTarget();
         private _updateSource();
         protected _setTarget(value: any): void;
@@ -989,5 +987,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand, TCommand, ITCommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.0.1";
+    export const VERSION = "2.1.0";
 }

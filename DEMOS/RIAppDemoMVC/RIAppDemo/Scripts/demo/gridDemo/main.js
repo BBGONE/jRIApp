@@ -2660,7 +2660,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
         if (!drag)
             return false;
         var gripData = DOM.getData(drag, SIGNATURE), elview = gripData.elview;
-        if (elview.getIsDisposing())
+        if (elview.getIsStateDirty())
             return false;
         var data = elview.getResizeIfo();
         var table = elview.grid.table;
@@ -2720,7 +2720,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
             return;
         var gripData = DOM.getData(drag, SIGNATURE);
         var elview = gripData.elview;
-        if (elview.getIsDisposing())
+        if (elview.getIsStateDirty())
             return;
         var data = elview.getResizeIfo(), table = elview.grid.table;
         DOM.removeClass([drag], data.options.draggingClass);
@@ -2749,7 +2749,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
     var onGripMouseDown = function (e) {
         var grip = this;
         var gripData = DOM.getData(grip, SIGNATURE), elview = gripData.elview;
-        if (elview.getIsDisposing())
+        if (elview.getIsStateDirty())
             return false;
         var data = elview.getResizeIfo();
         var touches = e.touches;
@@ -2895,7 +2895,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
             this.syncGrips();
         };
         ResizableGrid.prototype.syncGrips = function () {
-            if (this.getIsDisposing())
+            if (this.getIsStateDirty())
                 return;
             var data = this._resizeInfo;
             data.gripContainer.style.width = (data.w + PX);
@@ -2912,7 +2912,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
             this.grid.updateColumnsSize();
         };
         ResizableGrid.prototype.syncCols = function (i, isOver) {
-            if (this.getIsDisposing())
+            if (this.getIsStateDirty())
                 return;
             var table = this.grid.table, data = this._resizeInfo, gripData = DOM.getData(drag, SIGNATURE);
             var inc = gripData.x - gripData.l, c = data.columns[i];
@@ -2934,7 +2934,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
             }
         };
         ResizableGrid.prototype.applyBounds = function () {
-            if (this.getIsDisposing())
+            if (this.getIsStateDirty())
                 return;
             var table = this.grid.table;
             var data = this._resizeInfo;

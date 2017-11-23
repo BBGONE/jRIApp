@@ -86,7 +86,7 @@ let onGripDrag = function (e: TouchEvent | MouseEvent): boolean {
     if (!drag)
         return false;
     let gripData: IGripData = DOM.getData(drag, SIGNATURE), elview: ResizableGrid = gripData.elview;
-    if (elview.getIsDisposing())
+    if (elview.getIsStateDirty())
         return false;
     let data: IResizeInfo = elview.getResizeIfo();
     let table = elview.grid.table;
@@ -154,7 +154,7 @@ let onGripDragOver = function (e: TouchEvent | MouseEvent): void {
         return;
     const gripData: IGripData = DOM.getData(drag, SIGNATURE);
     const elview: ResizableGrid = gripData.elview;
-    if (elview.getIsDisposing())
+    if (elview.getIsStateDirty())
         return;
     const data: IResizeInfo = elview.getResizeIfo(), table = elview.grid.table;
     //remove the grip's dragging css-class
@@ -188,7 +188,7 @@ let onGripDragOver = function (e: TouchEvent | MouseEvent): void {
 let onGripMouseDown = function (this: HTMLElement, e: TouchEvent | MouseEvent): boolean {
     const grip: HTMLElement = this;
     let gripData: IGripData = DOM.getData(grip, SIGNATURE), elview: ResizableGrid = gripData.elview;
-    if (elview.getIsDisposing())
+    if (elview.getIsStateDirty())
         return false;
     let data: IResizeInfo = elview.getResizeIfo();
     let touches = (<any>e).touches;   //touch or mouse event?
@@ -368,7 +368,7 @@ export class ResizableGrid extends uiMOD.DataGridElView {
        * Function that places each grip in the correct position according to the current table layout	 
     */
     syncGrips() {
-        if (this.getIsDisposing())
+        if (this.getIsStateDirty())
             return;
         const data: IResizeInfo = this._resizeInfo;
         data.gripContainer.style.width = (data.w + PX);	//the grip's container width is updated
@@ -395,7 +395,7 @@ export class ResizableGrid extends uiMOD.DataGridElView {
 	* @param {bool} isOver - to identify when the function is being called from the onGripDragOver event	
     */
     syncCols(i: number, isOver: boolean) {
-        if (this.getIsDisposing())
+        if (this.getIsStateDirty())
             return;
         const table = this.grid.table, data: IResizeInfo = this._resizeInfo, gripData: IGripData = DOM.getData(drag, SIGNATURE);
         const inc = gripData.x - gripData.l, c: IColumnInfo = data.columns[i];
@@ -424,7 +424,7 @@ export class ResizableGrid extends uiMOD.DataGridElView {
 	* of max-width).
     */
     applyBounds() {
-        if (this.getIsDisposing())
+        if (this.getIsStateDirty())
             return;
         const table = this.grid.table;
         const data: IResizeInfo = this._resizeInfo;

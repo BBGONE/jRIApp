@@ -135,7 +135,7 @@ export class CustomerBag extends RIAPP.JsonBag {
         super.dispose();
     }
     get Addresses() {
-        if (this.getIsDisposing())
+        if (this.getIsStateDirty())
             return void 0;
         if (!this._addresses) {
             this._addresses = new RIAPP.JsonArray(this, "Addresses");

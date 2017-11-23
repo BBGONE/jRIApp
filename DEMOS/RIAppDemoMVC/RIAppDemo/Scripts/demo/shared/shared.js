@@ -375,7 +375,7 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
         AutoCompleteElView.prototype.templateLoading = function (template) {
         };
         AutoCompleteElView.prototype.templateLoaded = function (template, error) {
-            if (this.getIsDisposing() || error)
+            if (this.getIsStateDirty() || error)
                 return;
             var self = this, gridElView = findElemViewInTemplate(template, 'lookupGrid');
             if (!!gridElView) {
@@ -422,7 +422,7 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             clearTimeout(this._loadTimeout);
             if (!!text && text.length >= self._minTextLength) {
                 this._loadTimeout = setTimeout(function () {
-                    if (self.getIsDisposing()) {
+                    if (self.getIsStateDirty()) {
                         return;
                     }
                     if (self._prevText != text) {

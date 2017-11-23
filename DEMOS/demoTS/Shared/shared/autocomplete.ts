@@ -52,7 +52,7 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
         //noop
     }
     templateLoaded(template: RIAPP.ITemplate, error?: any): void {
-        if (this.getIsDisposing() || error)
+        if (this.getIsStateDirty() || error)
             return;
         const self = this, gridElView = <uiMOD.DataGridElView>findElemViewInTemplate(template, 'lookupGrid');
         if (!!gridElView) {
@@ -157,7 +157,7 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
         clearTimeout(this._loadTimeout);
         if (!!text && text.length >= self._minTextLength) {
             this._loadTimeout = setTimeout(function () {
-                if (self.getIsDisposing()) {
+                if (self.getIsStateDirty()) {
                     return;
                 }
 

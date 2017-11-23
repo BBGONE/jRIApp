@@ -1781,7 +1781,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
                 self.objEvents.raise(GLOB_EVENTS.initialized, {});
                 self.objEvents.off(GLOB_EVENTS.initialized);
                 return _async.delay(function () {
-                    if (self.getIsDisposing()) {
+                    if (self.getIsStateDirty()) {
                         throw new Error("Bootstrap is in destroyed state");
                     }
                     self._processHTMLTemplates();
@@ -1849,7 +1849,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/const
         };
         Bootstrap.prototype._destroyApp = function () {
             var self = this, app = self._appInst;
-            if (!!app && !app.getIsDisposing()) {
+            if (!!app && !app.getIsStateDirty()) {
                 app.dispose();
             }
         };
@@ -2574,7 +2574,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
         Binding.prototype._parseSrc = function (obj, path, lvl) {
             var self = this;
             self._srcEnd = null;
-            if (sys.isBaseObj(obj) && obj.getIsDisposing()) {
+            if (sys.isBaseObj(obj) && obj.getIsStateDirty()) {
                 return;
             }
             if (path.length === 0) {
@@ -2597,10 +2597,9 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
         Binding.prototype._parseSrc2 = function (obj, path, lvl) {
             var self = this, isBaseObj = sys.isBaseObj(obj);
             if (isBaseObj) {
-                if (obj.getIsDisposing()) {
+                if (obj.getIsStateDirty()) {
                     return;
                 }
-                obj.addOnDisposed(self._onSrcDestroyed, self._objId, self);
                 self._setPathItem(obj, 0, lvl, path);
             }
             if (path.length > 1) {
@@ -2646,7 +2645,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
         Binding.prototype._parseTgt = function (obj, path, lvl) {
             var self = this;
             self._tgtEnd = null;
-            if (sys.isBaseObj(obj) && obj.getIsDisposing()) {
+            if (sys.isBaseObj(obj) && obj.getIsStateDirty()) {
                 return;
             }
             if (path.length === 0) {
@@ -2669,10 +2668,9 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
         Binding.prototype._parseTgt2 = function (obj, path, lvl) {
             var self = this, isBaseObj = sys.isBaseObj(obj);
             if (isBaseObj) {
-                if (obj.getIsDisposing()) {
+                if (obj.getIsStateDirty()) {
                     return;
                 }
-                obj.addOnDisposed(self._onTgtDestroyed, self._objId, self);
                 self._setPathItem(obj, 1, lvl, path);
             }
             if (path.length > 1) {
@@ -2737,48 +2735,8 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                 }
             }
         };
-        Binding.prototype._onTgtDestroyed = function (sender) {
-            var self = this;
-            if (self.getIsDisposing()) {
-                return;
-            }
-            if (sender === self.target) {
-                this._setTarget(null);
-                this._update();
-            }
-            else {
-                self._setPathItem(null, 1, 0, self._tgtPath);
-                utils.queue.enque(function () {
-                    if (self.getIsDisposing()) {
-                        return;
-                    }
-                    self._parseTgt(self.target, self._tgtPath, 0);
-                    self._update();
-                });
-            }
-        };
-        Binding.prototype._onSrcDestroyed = function (sender) {
-            var self = this;
-            if (self.getIsDisposing()) {
-                return;
-            }
-            if (sender === self.source) {
-                self._setSource(null);
-                self._update();
-            }
-            else {
-                self._setPathItem(null, 0, 0, self._srcPath);
-                utils.queue.enque(function () {
-                    if (self.getIsDisposing()) {
-                        return;
-                    }
-                    self._parseSrc(self.source, self._srcPath, 0);
-                    self._update();
-                });
-            }
-        };
         Binding.prototype._updateTarget = function () {
-            if (this.getIsDisposing()) {
+            if (this.getIsStateDirty()) {
                 return;
             }
             try {
@@ -2794,7 +2752,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
             }
         };
         Binding.prototype._updateSource = function () {
-            if (this.getIsDisposing()) {
+            if (this.getIsStateDirty()) {
                 return;
             }
             try {
@@ -3124,7 +3082,7 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/const"
                         return self._dataBind(templateEl, loadedEl);
                     });
                     bindPromise.catch(function (err) {
-                        if (self.getIsDisposing()) {
+                        if (self.getIsStateDirty()) {
                             return;
                         }
                         self._onFail(templateEl, err);
@@ -3164,7 +3122,7 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/const"
         };
         Template.prototype._dataBind = function (templateEl, loadedEl) {
             var self = this;
-            if (self.getIsDisposing()) {
+            if (self.getIsStateDirty()) {
                 ERROR.abort();
             }
             if (!loadedEl) {
@@ -3179,7 +3137,7 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/const"
             templateEl.appendChild(loadedEl);
             var promise = self.app._getInternal().bindTemplateElements(loadedEl);
             return promise.then(function (lftm) {
-                if (self.getIsDisposing()) {
+                if (self.getIsStateDirty()) {
                     lftm.dispose();
                     ERROR.abort();
                 }
@@ -3191,7 +3149,7 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/const"
         };
         Template.prototype._onFail = function (templateEl, err) {
             var self = this;
-            if (self.getIsDisposing()) {
+            if (self.getIsStateDirty()) {
                 return;
             }
             self._onLoaded(err);
@@ -3343,7 +3301,7 @@ define("jriapp/utils/lifetime", ["require", "exports", "jriapp_shared"], functio
             }
             this.setDisposing();
             this._objs.forEach(function (obj) {
-                if (!obj.getIsDisposing()) {
+                if (!obj.getIsStateDirty()) {
                     obj.dispose();
                 }
             });
@@ -3872,7 +3830,7 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/con
             this._cleanUp();
             var promise = this.bindElements(defScope, defaultDataContext, false, false);
             return promise.then(function (lftm) {
-                if (self.getIsDisposing()) {
+                if (self.getIsStateDirty()) {
                     lftm.dispose();
                     return;
                 }
@@ -4230,6 +4188,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.0.1";
+    exports.VERSION = "2.1.0";
     bootstrap_7.Bootstrap._initFramework();
 });

@@ -973,7 +973,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         DbSet.prototype._fillFromService = function (info) {
             var self = this, res = info.res, fieldNames = res.names, rows = res.rows || [], isPagingEnabled = this.isPagingEnabled, query = info.query;
             var isClearAll = true;
-            if (!!query && !query.getIsDisposing()) {
+            if (!!query && !query.getIsStateDirty()) {
                 isClearAll = query.isClearPrevData;
                 if (query.isClearCacheOnEveryLoad) {
                     query._getInternal().clearCache();
@@ -997,7 +997,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 return item;
             });
             var arr = fetchedItems;
-            if (!!query && !query.getIsDisposing()) {
+            if (!!query && !query.getIsStateDirty()) {
                 if (query.isIncludeTotalCount && !checks.isNt(res.totalCount)) {
                     this.totalCount = res.totalCount;
                 }
@@ -1047,7 +1047,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             if (!query) {
                 throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_ASSERTION_FAILED, "query is not null"));
             }
-            if (query.getIsDisposing()) {
+            if (query.getIsStateDirty()) {
                 throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_ASSERTION_FAILED, "query not destroyed"));
             }
             var dataCache = query._getInternal().getCache(), arr = dataCache.getPageItems(query.pageIndex);
@@ -2033,7 +2033,7 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             return Object.keys(chngedKeys);
         };
         Association.prototype._onChildrenChanged = function (fkey, parent) {
-            if (!!fkey && !!this._parentToChildrenName && !parent.getIsDisposing()) {
+            if (!!fkey && !!this._parentToChildrenName && !parent.getIsStateDirty()) {
                 parent.objEvents.raiseProp(this._parentToChildrenName);
             }
         };
@@ -2043,7 +2043,7 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
                 var keys = Object.keys(map), len = keys.length;
                 for (var k = 0; k < len; k += 1) {
                     var item = map[keys[k]];
-                    if (!item.getIsDisposing()) {
+                    if (!item.getIsStateDirty()) {
                         item.objEvents.raiseProp(self._childToParentName);
                     }
                 }
@@ -2383,7 +2383,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             return _this;
         }
         DbContext.prototype._checkDestroy = function () {
-            if (this.getIsDisposing()) {
+            if (this.getIsStateDirty()) {
                 ERROR.abort("dbContext destroyed");
             }
         };
@@ -2462,7 +2462,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             var self = this, item = { req: req, operType: operType, name: name }, cnt = self._requests.length, oldBusy = this.isBusy;
             self._requests.push(item);
             req.always(function () {
-                if (self.getIsDisposing())
+                if (self.getIsStateDirty())
                     return;
                 var oldBusy = self.isBusy;
                 utils.arr.remove(self._requests, item);
@@ -2893,7 +2893,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 self._checkDestroy();
                 args.fn_onOk();
             }).catch(function (er) {
-                if (!self.getIsDisposing() && ERROR.checkIsAbort(er) && er.reason === no_changes) {
+                if (!self.getIsStateDirty() && ERROR.checkIsAbort(er) && er.reason === no_changes) {
                     args.fn_onOk();
                 }
                 else {
@@ -3487,7 +3487,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             if (oldStatus !== 0) {
                 internal.onCommitChanges(this.item, true, false, oldStatus);
                 if (oldStatus === 3) {
-                    if (!this.getIsDisposing()) {
+                    if (!this.getIsStateDirty()) {
                         this.dispose();
                     }
                     return;
@@ -3519,7 +3519,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             return this.deleteOnSubmit();
         };
         EntityAspect.prototype.deleteOnSubmit = function () {
-            if (this.getIsDisposing()) {
+            if (this.getIsStateDirty()) {
                 return false;
             }
             var oldStatus = this.status, dbSet = this.dbSet;
@@ -3547,7 +3547,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             if (oldStatus !== 0) {
                 internal.onCommitChanges(self.item, true, true, oldStatus);
                 if (oldStatus === 1) {
-                    if (!this.getIsDisposing()) {
+                    if (!this.getIsStateDirty()) {
                         this.dispose();
                     }
                     return;
@@ -3705,13 +3705,13 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             this.objEvents.raise(VIEW_EVENTS.refreshed, args);
         };
         DataView.prototype._refresh = function (reason) {
-            if (this.getIsDisposing()) {
+            if (this.getIsStateDirty()) {
                 return;
             }
             try {
                 var items = void 0;
                 var ds = this._dataSource;
-                if (!ds || ds.getIsDisposing()) {
+                if (!ds || ds.getIsStateDirty()) {
                     this.clear();
                     this._onViewRefreshed({});
                     return;
@@ -3939,7 +3939,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             return this._dataSource._getInternal().getStrValue(val, fieldInfo);
         };
         DataView.prototype.appendItems = function (items) {
-            if (this.getIsDisposing()) {
+            if (this.getIsStateDirty()) {
                 return [];
             }
             return this._fillItems({ items: items, reason: 0, clear: false, isAppend: true });
@@ -4096,7 +4096,7 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
             _this = _super.call(this, opts) || this;
             var self = _this;
             _this._getParent = function () {
-                if (self.getIsDisposing()) {
+                if (self.getIsStateDirty()) {
                     return null;
                 }
                 return parentItem;
@@ -4106,7 +4106,7 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
                     parentItem = v;
                     self.objEvents.raiseProp(const_7.PROP_NAME.parentItem);
                 }
-                if (self.getIsDisposing()) {
+                if (self.getIsStateDirty()) {
                     return;
                 }
                 if (self.items.length > 0) {

@@ -143,7 +143,7 @@ declare module "jriapp_shared/int" {
         offProp(prop?: string, nmspace?: string): void;
     }
     export interface IBaseObject extends IErrorHandler, IDisposable {
-        getIsDisposing(): boolean;
+        getIsStateDirty(): boolean;
         getEventNames(): string[];
         isHasProp(prop: string): boolean;
         addOnError(handler: TErrorHandler, nmspace?: string, context?: object, priority?: TPriority): void;
@@ -152,13 +152,13 @@ declare module "jriapp_shared/int" {
         removeOnDisposed(nmspace?: string): void;
         readonly objEvents: IObjectEvents;
     }
-    export interface IEditable {
+    export interface IEditable extends IBaseObject {
         beginEdit(): boolean;
         endEdit(): boolean;
         cancelEdit(): boolean;
         readonly isEditing: boolean;
     }
-    export interface ISubmittable {
+    export interface ISubmittable extends IBaseObject {
         submitChanges(): IVoidPromise;
         rejectChanges(): void;
         readonly isCanSubmit: boolean;
@@ -167,7 +167,7 @@ declare module "jriapp_shared/int" {
         readonly fieldName: string;
         errors: string[];
     }
-    export interface IErrorNotification {
+    export interface IErrorNotification extends IBaseObject {
         getIsHasErrors(): boolean;
         addOnErrorsChanged(fn: TEventHandler<any, any>, nmspace?: string, context?: any): void;
         removeOnErrorsChanged(nmspace?: string): void;
@@ -503,7 +503,7 @@ declare module "jriapp_shared/object" {
         removeOnError(nmspace?: string): void;
         readonly objEvents: IObjectEvents;
         getIsDisposed(): boolean;
-        getIsDisposing(): boolean;
+        getIsStateDirty(): boolean;
         dispose(): void;
     }
 }
@@ -601,7 +601,7 @@ declare module "jriapp_shared/utils/debounce" {
         dispose(): void;
         readonly interval: number;
         getIsDisposed(): boolean;
-        getIsDisposing(): boolean;
+        getIsStateDirty(): boolean;
     }
 }
 declare module "jriapp_shared/utils/jsonbag" {
