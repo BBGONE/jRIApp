@@ -95,7 +95,6 @@ declare module "autocomplete" {
         constructor(options: IAutocompleteOptions);
         protected _createGridDataSource(): void;
         protected _getDbContext(): dbMOD.DbContext;
-        getEventNames(): string[];
         protected _createTemplate(): RIAPP.ITemplate;
         protected _onTextChange(): void;
         protected _onKeyUp(text: string, keyCode: number): void;
@@ -132,7 +131,6 @@ declare module "header" {
         private _contentPanelHeight;
         private _expanderCommand;
         constructor(app: RIAPP.IApplication);
-        getEventNames(): string[];
         addOnUpdateUI(fn: (sender: HeaderVM, args: {
             isHandled: boolean;
             isUp: boolean;
@@ -191,7 +189,6 @@ declare module "uploader" {
         private _uploadUrl;
         private _file;
         constructor(uploadUrl: string, file: File);
-        getEventNames(): string[];
         addOnProgress(fn: (sender: Uploader, args: number) => void, nmspace?: string): void;
         addOnAddHeaders(fn: (sender: Uploader, args: IAddHeadersArgs) => void, nmspace?: string): void;
         uploadFile(): RIAPP.IPromise<string>;

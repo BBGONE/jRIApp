@@ -33,7 +33,7 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
 
     constructor(app: DemoApplication) {
         super(app);
-        let self = this;
+        const self = this;
         this._filter = new ProductsFilter(app);
         this._dbSet = this.dbSets.Product;
         this._dataGrid = null;
@@ -181,7 +181,7 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
         this._dialogVM.createDialog('testDialog', dialogOptions);
     }
     protected _addGrid(grid: uiMOD.DataGrid): void {
-        let self = this;
+        const self = this;
         if (!!this._dataGrid)
             this._removeGrid();
         this._dataGrid = grid;
@@ -241,7 +241,7 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
         this._columnCommand.raiseCanExecuteChanged();
     }
     protected _updateSelection() {
-        let self = this, keys = self.selectedIDs, grid = self._dataGrid;
+        const self = this, keys = self.selectedIDs, grid = self._dataGrid;
         keys.forEach(function (key) {
             let item = self.dbSet.getItemByKey(key);
             if (!!item) {

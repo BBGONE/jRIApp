@@ -1748,10 +1748,6 @@ define("mastDetDemo/orderVM", ["require", "exports", "jriapp", "jriapp_ui", "dem
             _this._orderDetailVM = new orderDetVM_1.OrderDetailVM(_this);
             return _this;
         }
-        OrderVM.prototype.getEventNames = function () {
-            var base_events = _super.prototype.getEventNames.call(this);
-            return ['row_expanded'].concat(base_events);
-        };
         OrderVM.prototype._addGrid = function (grid) {
             var self = this;
             if (!!this._dataGrid)
@@ -2003,10 +1999,6 @@ define("mastDetDemo/customerVM", ["require", "exports", "jriapp", "jriapp_db", "
         };
         CustomerVM.prototype.onCellDblClicked = function (cell) {
             alert("You double clicked " + cell.uniqueID);
-        };
-        CustomerVM.prototype.getEventNames = function () {
-            var base_events = _super.prototype.getEventNames.call(this);
-            return ['row_expanded', 'page_changed'].concat(base_events);
         };
         CustomerVM.prototype._onCurrentChanged = function () {
             this._custAdressView.parentItem = this._dbSet.currentItem;

@@ -256,7 +256,6 @@ declare module "jriapp_ui/textbox" {
     };
     export class TextBoxElView extends InputElView {
         constructor(options: ITextBoxOptions);
-        getEventNames(): string[];
         addOnKeyPress(fn: (sender: TextBoxElView, args: TKeyPressArgs) => void, nmspace?: string): void;
         removeOnKeyPress(nmspace?: string): void;
         toString(): string;
@@ -282,7 +281,6 @@ declare module "jriapp_ui/textarea" {
     }
     export class TextAreaElView extends BaseElView {
         constructor(options: ITextAreaOptions);
-        getEventNames(): string[];
         addOnKeyPress(fn: (sender: TextAreaElView, args: TKeyPressArgs) => void, nmspace?: string): void;
         removeOnKeyPress(nmspace?: string): void;
         toString(): string;
@@ -410,7 +408,6 @@ declare module "jriapp_ui/listbox" {
         private _isDSFilled;
         constructor(options: IListBoxConstructorOptions);
         dispose(): void;
-        getEventNames(): string[];
         addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any): void;
         removeOnRefreshed(nmspace?: string): void;
         protected _onChanged(): void;
@@ -509,10 +506,9 @@ declare module "jriapp_ui/content/listbox" {
         private _value;
         private _objId;
         constructor(options: IConstructorContentOptions);
-        getEventNames(): string[];
-        addOnObjectCreated(fn: (sender: any, args: TObjCreatedArgs) => void, nmspace?: string): void;
+        addOnObjectCreated(fn: (sender: LookupContent, args: TObjCreatedArgs) => void, nmspace?: string): void;
         removeOnObjectCreated(nmspace?: string): void;
-        addOnObjectNeeded(fn: (sender: any, args: TObjNeededArgs) => void, nmspace?: string): void;
+        addOnObjectNeeded(fn: (sender: LookupContent, args: TObjNeededArgs) => void, nmspace?: string): void;
         removeOnObjectNeeded(nmspace?: string): void;
         protected getListBoxElView(): ListBoxElView;
         protected onListRefreshed(): void;
@@ -593,7 +589,6 @@ declare module "jriapp_ui/dialog" {
         }>, nmspace?: string, context?: IBaseObject): void;
         removeOnRefresh(nmspace?: string): void;
         protected _createDialog(): void;
-        getEventNames(): string[];
         templateLoading(template: ITemplate): void;
         templateLoaded(template: ITemplate, error?: any): void;
         templateUnLoading(template: ITemplate): void;
@@ -1212,7 +1207,6 @@ declare module "jriapp_ui/datagrid/datagrid" {
         private _pageDebounce;
         private _updateCurrent;
         constructor(options: IDataGridConstructorOptions);
-        getEventNames(): string[];
         addOnRowExpanded(fn: TEventHandler<DataGrid, {
             collapsedRow: Row;
             expandedRow: Row;
@@ -1434,7 +1428,6 @@ declare module "jriapp_ui/stackpanel" {
         private _isKeyNavigation;
         private _debounce;
         constructor(options: IStackPanelConstructorOptions);
-        getEventNames(): string[];
         addOnItemClicked(fn: TEventHandler<StackPanel, {
             item: ICollectionItem;
         }>, nmspace?: string, context?: IBaseObject): void;

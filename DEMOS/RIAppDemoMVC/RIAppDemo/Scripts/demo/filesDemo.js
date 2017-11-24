@@ -29,10 +29,6 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
             _this._createDynaTree();
             return _this;
         }
-        FolderBrowser.prototype.getEventNames = function () {
-            var base_events = _super.prototype.getEventNames.call(this);
-            return ['node_selected'].concat(base_events);
-        };
         FolderBrowser.prototype.addOnNodeSelected = function (fn, namespace) {
             this.objEvents.on('node_selected', fn, namespace);
         };
@@ -201,10 +197,6 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
             });
             return _this;
         }
-        FolderBrowserVM.prototype.getEventNames = function () {
-            var base_events = _super.prototype.getEventNames.call(this);
-            return ['item_selected'].concat(base_events);
-        };
         FolderBrowserVM.prototype.addOnItemSelected = function (fn, namespace) {
             this.objEvents.on('item_selected', fn, namespace);
         };
@@ -312,7 +304,8 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
             _super.prototype.onStartUp.call(this);
         };
         DemoApplication.prototype._getFullPath = function (item, path) {
-            var self = this, part;
+            var self = this;
+            var part;
             if (utils.check.isNt(path))
                 path = '';
             if (!path)

@@ -16,7 +16,7 @@ export class CustomerAddressVM extends RIAPP.ViewModel<DemoApplication> {
 
     constructor(customerVM: CustomerVM) {
         super(customerVM.app);
-        let self = this;
+        const self = this;
         this._customerVM = customerVM;
         this._addAddressVM = null;
         this._currentCustomer = null;
@@ -130,7 +130,7 @@ export class CustomerAddressVM extends RIAPP.ViewModel<DemoApplication> {
         return ca;
     }
     load(customers: DEMODB.Customer[]) {
-        let self = this, custArr = customers || [];
+        const self = this, custArr = customers || [];
         let custIDs = custArr.map(function (item) {
             return item.CustomerID;
         });

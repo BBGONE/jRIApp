@@ -14,7 +14,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
 
     constructor(app: DemoApplication) {
         super(app);
-        let self = this;
+        const self = this;
         this._dbSet = this.dbSets.Customer;
         this._dbSet.isSubmitOnDelete = true;
 
@@ -47,7 +47,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
 
         //initialize new item with default values
         this._dbSet.addOnItemAdded(function (sender, args) {
-            let item = args.item;
+            const item = args.item;
             item.NameStyle = false;
         }, self.uniqueID);
 
@@ -88,11 +88,6 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
         }, self, null);
 
         this._customerAddressVM = null;
-    }
-    //here we added a custom event
-    getEventNames() {
-        let base_events = super.getEventNames();
-        return ['data_filled'].concat(base_events);
     }
     _onCurrentChanged() {
         this.objEvents.raiseProp('currentItem');

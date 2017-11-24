@@ -1835,10 +1835,6 @@ define("orderVM", ["require", "exports", "jriapp", "domainModel", "gridEvents", 
             _this._orderDetailVM = new orderDetVM_1.OrderDetailVM(_this);
             return _this;
         }
-        OrderVM.prototype.getEventNames = function () {
-            var base_events = _super.prototype.getEventNames.call(this);
-            return ['row_expanded'].concat(base_events);
-        };
         OrderVM.prototype.addTabs = function (tabs) {
             this._tabs = tabs;
         };
@@ -2594,10 +2590,6 @@ define("customerVM", ["require", "exports", "jriapp", "jriapp_db", "gridEvents",
             _this._customerAddressVM = new custAddressVM_1.CustomerAddressVM(_this);
             return _this;
         }
-        CustomerVM.prototype.getEventNames = function () {
-            var base_events = _super.prototype.getEventNames.call(this);
-            return ['row_expanded', 'page_changed'].concat(base_events);
-        };
         CustomerVM.prototype._onCurrentChanged = function () {
             this._custAdressView.parentItem = this._dbSet.currentItem;
             this.objEvents.raiseProp('currentItem');
@@ -2959,12 +2951,12 @@ define("addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"
             this.objEvents.raiseProp('newAddress');
         };
         AddAddressVM.prototype._linkAddress = function () {
-            var self = this, adrInfo = this.currentAddressInfo, adrView = self.custAdressView, adrID;
+            var self = this, adrInfo = this.currentAddressInfo, adrView = self.custAdressView;
             if (!adrInfo) {
                 alert('_linkAddress error: adrInfoEntity is null');
                 return;
             }
-            adrID = adrInfo.AddressID;
+            var adrID = adrInfo.AddressID;
             var existedAddr = adrView.items.some(function (item) {
                 return item.AddressID === adrID;
             });

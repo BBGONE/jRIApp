@@ -141,10 +141,6 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
         }
         return dbContext;
     }
-    getEventNames() {
-        const base_events = super.getEventNames();
-        return ['hide', 'show'].concat(base_events);
-    }
     protected _createTemplate(): RIAPP.ITemplate {
         const t = RIAPP.createTemplate(this, this);
         t.templateID = this._templateId;

@@ -37,10 +37,6 @@ export class RadioDemoVM extends RIAPP.ViewModel<DemoApplication> {
         ], true);
         //console.log(this._testDict.items2[3].SomeProperty2[0]);
     }
-    getEventNames() {
-        let base_events = super.getEventNames();
-        return ['radio_value_changed'].concat(base_events);
-    }
     //can be overriden in descendants as in his example
     _onRadioValueChanged() {
         this.objEvents.raise('radio_value_changed', { value: this.radioValue })
@@ -64,7 +60,7 @@ export class RadioDemo2VM extends RadioDemoVM {
 
     constructor(app: DemoApplication, currentValue?: string) {
         super(app);
-        let self = this;
+        const self = this;
         if (!!currentValue)
             this.radioValue = currentValue;
         this._historyList = new DEMODB.HistoryList();
@@ -114,7 +110,7 @@ export class DemoApplication extends RIAPP.Application {
         this._demoVM = null;
     }
     onStartUp() {
-        let self = this;
+        const self = this;
         this._errorVM = new COMMON.ErrorViewModel(this);
         this._demoVM = new RadioDemo2VM(this);
 
@@ -131,7 +127,7 @@ export class DemoApplication extends RIAPP.Application {
         if (this.getIsDisposed())
             return;
         this.setDisposing();
-        let self = this;
+        const self = this;
         try {
             self._errorVM.dispose();
             self._demoVM.dispose();

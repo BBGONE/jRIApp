@@ -29,7 +29,7 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
 
     constructor(customerAddressVM: CustomerAddressVM) {
         super(customerAddressVM.app);
-        let self = this;
+        const self = this;
         this._customerAddressVM = customerAddressVM;
         this._addressInfosDb = this.dbContext.dbSets.AddressInfo;
         this._currentCustomer = self._customerAddressVM.currentCustomer;
@@ -170,7 +170,7 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
         this._dataGrid = null;
     }
     protected _cancelAddNewAddress() {
-        let self = this;
+        const self = this;
         self._newAddress._aspect.cancelEdit();
         self._newAddress._aspect.rejectChanges();
         self._newAddress = null;
@@ -183,12 +183,12 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
         this.objEvents.raiseProp('newAddress');
     }
     protected _linkAddress() {
-        let self = this, adrInfo = this.currentAddressInfo, adrView = self.custAdressView, adrID: number;
+        const self = this, adrInfo = this.currentAddressInfo, adrView = self.custAdressView;
         if (!adrInfo) {
             alert('_linkAddress error: adrInfoEntity is null');
             return;
         }
-        adrID = adrInfo.AddressID;
+        let adrID = adrInfo.AddressID;
         let existedAddr: boolean = adrView.items.some(function (item) {
             return item.AddressID === adrID;
         });
@@ -229,7 +229,7 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
             return deferred.promise();
         }
         //if we are here, we need to load the address from the server
-        let self = this, query = this._addressInfosDb.createReadAddressInfoQuery();
+        const self = this, query = this._addressInfosDb.createReadAddressInfoQuery();
         //dont clear, append to the existing
         query.isClearPrevData = false;
         query.where('AddressID', RIAPP.FILTER_TYPE.Equals, [addressID]);

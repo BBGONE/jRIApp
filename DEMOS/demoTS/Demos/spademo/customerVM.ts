@@ -29,7 +29,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
 
     constructor(app: DemoApplication) {
         super(app);
-        let self = this;
+        const self = this;
         this._dbSet = this.dbSets.Customer;
         this._dbSet.isSubmitOnDelete = true;
         this._propWatcher = new RIAPP.PropWatcher();
@@ -156,10 +156,6 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
 
         this._ordersVM = new OrderVM(this);
         this._customerAddressVM = new CustomerAddressVM(this);
-    }
-    getEventNames() {
-        let base_events = super.getEventNames();
-        return ['row_expanded', 'page_changed'].concat(base_events);
     }
     protected _onCurrentChanged() {
         this._custAdressView.parentItem = this._dbSet.currentItem;

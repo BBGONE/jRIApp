@@ -13,7 +13,7 @@ export class AddressVM extends RIAPP.ViewModel<DemoApplication> {
 
     constructor(orderVM: OrderVM) {
         super(orderVM.app);
-        let self = this;
+        const self = this;
         this._orderVM = orderVM;
         this._dbSet = this.dbSets.Address;
         this._orderVM.dbSet.addOnFill(function (sender, args) {

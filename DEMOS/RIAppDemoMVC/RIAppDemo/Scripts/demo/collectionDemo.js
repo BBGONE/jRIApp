@@ -44,10 +44,6 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             ], true);
             return _this;
         }
-        RadioDemoVM.prototype.getEventNames = function () {
-            var base_events = _super.prototype.getEventNames.call(this);
-            return ['radio_value_changed'].concat(base_events);
-        };
         RadioDemoVM.prototype._onRadioValueChanged = function () {
             this.objEvents.raise('radio_value_changed', { value: this.radioValue });
         };

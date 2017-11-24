@@ -52,8 +52,7 @@ export class SSEventsVM extends RIAPP.BaseObject {
         }
     }
     getEventNames() {
-        const base_events = super.getEventNames();
-        return ['open', 'close', 'error', 'message'].concat(base_events);
+        return ['open', 'close', 'error', 'message'];
     }
     private _onEsOpen(event:any) {
         clearTimeout(this._timeOut);

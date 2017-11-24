@@ -16,7 +16,7 @@ export class CustomerAddressVM extends RIAPP.ViewModel<DemoApplication> {
 
     constructor(customerVM: CustomerVM) {
         super(customerVM.app);
-        let self = this;
+        const self = this;
         this._customerVM = customerVM;
         this._addAddressVM = null;
         this._currentCustomer = self._customerVM.currentItem;

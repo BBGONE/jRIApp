@@ -1760,10 +1760,6 @@ define("manToManDemo/customerVM", ["require", "exports", "jriapp", "manToManDemo
             _this._customerAddressVM = null;
             return _this;
         }
-        CustomerVM.prototype.getEventNames = function () {
-            var base_events = _super.prototype.getEventNames.call(this);
-            return ['data_filled'].concat(base_events);
-        };
         CustomerVM.prototype._onCurrentChanged = function () {
             this.objEvents.raiseProp('currentItem');
         };
@@ -2084,12 +2080,12 @@ define("manToManDemo/addAddressVM", ["require", "exports", "jriapp", "jriapp_db"
             this.objEvents.raiseProp('isAddingNew');
         };
         AddAddressVM.prototype._linkAddress = function () {
-            var self = this, adrInfo = this.currentAddressInfo, adrView = self.custAdressView, adrID;
+            var self = this, adrInfo = this.currentAddressInfo, adrView = self.custAdressView;
             if (!adrInfo) {
                 alert('_linkAddress error: adrInfoEntity is null');
                 return;
             }
-            adrID = adrInfo.AddressID;
+            var adrID = adrInfo.AddressID;
             var existedAddr = adrView.items.some(function (item) {
                 return item.AddressID === adrID;
             });

@@ -26,7 +26,7 @@ export class ProductsFilter extends RIAPP.BaseObject {
 
     constructor(app: DemoApplication) {
         super();
-        let self = this;
+        const self = this;
         this._app = app;
         this._prodNumber = null;
         this._name = null;

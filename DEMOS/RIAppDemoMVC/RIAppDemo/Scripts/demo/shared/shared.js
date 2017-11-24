@@ -406,10 +406,6 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             }
             return dbContext;
         };
-        AutoCompleteElView.prototype.getEventNames = function () {
-            var base_events = _super.prototype.getEventNames.call(this);
-            return ['hide', 'show'].concat(base_events);
-        };
         AutoCompleteElView.prototype._createTemplate = function () {
             var t = RIAPP.createTemplate(this, this);
             t.templateID = this._templateId;
@@ -656,10 +652,6 @@ define("header", ["require", "exports", "jriapp", "jriapp_ui"], function (requir
             }, self);
             return _this;
         }
-        HeaderVM.prototype.getEventNames = function () {
-            var base_events = _super.prototype.getEventNames.call(this);
-            return ['updateUI'].concat(base_events);
-        };
         HeaderVM.prototype.addOnUpdateUI = function (fn, namespace) {
             this.objEvents.on('updateUI', fn, namespace);
         };
@@ -742,8 +734,7 @@ define("ssevents", ["require", "exports", "jriapp"], function (require, exports,
             }
         };
         SSEventsVM.prototype.getEventNames = function () {
-            var base_events = _super.prototype.getEventNames.call(this);
-            return ['open', 'close', 'error', 'message'].concat(base_events);
+            return ['open', 'close', 'error', 'message'];
         };
         SSEventsVM.prototype._onEsOpen = function (event) {
             clearTimeout(this._timeOut);
@@ -886,10 +877,6 @@ define("uploader", ["require", "exports", "jriapp_shared"], function (require, e
             _this._file = file;
             return _this;
         }
-        Uploader.prototype.getEventNames = function () {
-            var base_events = _super.prototype.getEventNames.call(this);
-            return ['progress', 'addheaders'].concat(base_events);
-        };
         Uploader.prototype.addOnProgress = function (fn, nmspace) {
             this.objEvents.on('progress', fn, nmspace);
         };
@@ -996,8 +983,7 @@ define("websocket", ["require", "exports", "jriapp"], function (require, exports
             }
         };
         WebSocketsVM.prototype.getEventNames = function () {
-            var base_events = _super.prototype.getEventNames.call(this);
-            return ['open', 'close', 'error', 'message'].concat(base_events);
+            return ['open', 'close', 'error', 'message'];
         };
         WebSocketsVM.prototype._onWsOpen = function (event) {
         };

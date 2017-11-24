@@ -16,10 +16,6 @@ export class Uploader extends RIAPP.BaseObject {
         this._uploadUrl = uploadUrl;
         this._file = file;
     }
-    getEventNames() {
-        const base_events = super.getEventNames();
-        return ['progress', 'addheaders'].concat(base_events);
-    }
     addOnProgress(fn: (sender: Uploader, args: number) => void, nmspace?: string) {
         this.objEvents.on('progress', fn, nmspace);
     }

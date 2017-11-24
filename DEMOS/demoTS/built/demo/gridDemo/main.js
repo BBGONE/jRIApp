@@ -2472,10 +2472,6 @@ define("gridDemo/uploads", ["require", "exports", "jriapp", "jriapp_ui", "gridDe
             });
             return _this;
         }
-        UploadThumbnailVM.prototype.getEventNames = function () {
-            var base_events = _super.prototype.getEventNames.call(this);
-            return ['files_uploaded'].concat(base_events);
-        };
         UploadThumbnailVM.prototype._onDialogClose = function () {
             return this.fileUploaded;
         };

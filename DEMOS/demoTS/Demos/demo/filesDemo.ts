@@ -36,7 +36,7 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
 
     constructor(app: DemoApplication, options: IFolderBrowserOptions) {
         super(app);
-        let self = this;
+        const self = this;
         self._includeFiles = options.includeFiles;
         self._$tree = options.$tree;
         this._infotype = null;
@@ -51,15 +51,11 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
 
         this._createDynaTree();
     }
-    getEventNames() {
-        let base_events = super.getEventNames();
-        return ['node_selected'].concat(base_events);
-    }
     addOnNodeSelected(fn: (sender: FolderBrowser, args: { item: FOLDERBROWSER_SVC.FileSystemObject; }) => void, namespace?: string) {
         this.objEvents.on('node_selected', fn, namespace);
     }
     private _createDynaTree() {
-        let self = this;
+        const self = this;
         (<any>this._$tree).dynatree({
             onActivate: function (node: any) {
                 self.objEvents.raise('node_selected', { item: node.data.item });
@@ -92,7 +88,7 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
         this._$treeRoot = (<any>this._$tree).dynatree("getRoot");
     }
     loadRootFolder() {
-        let self = this, query = self._dbSet.createReadRootQuery({ includeFiles: self._includeFiles, infoType: self.infotype });
+        const self = this, query = self._dbSet.createReadRootQuery({ includeFiles: self._includeFiles, infoType: self.infotype });
         query.isClearPrevData = true;
         let promise = query.load();
         promise.then(function (res) {
@@ -101,7 +97,7 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
         return promise;
     }
     loadChildren(item: FOLDERBROWSER_SVC.FileSystemObject) {
-        let self = this, query = self._dbSet.createReadChildrenQuery({ parentKey: item.Key, level: item.Level + 1, path: item.fullPath, includeFiles: self._includeFiles, infoType: self.infotype });
+        const self = this, query = self._dbSet.createReadChildrenQuery({ parentKey: item.Key, level: item.Level + 1, path: item.fullPath, includeFiles: self._includeFiles, infoType: self.infotype });
         query.isClearPrevData = false;
         let promise = query.load();
         promise.then(function (res) {
@@ -166,7 +162,7 @@ export class FolderBrowserVM extends RIAPP.ViewModel<DemoApplication> {
 
     constructor(app: DemoApplication, options: IOptions) {
         super(app);
-        let self: FolderBrowserVM = this;
+        const self: FolderBrowserVM = this;
         this._selectedItem = null;
         //we defined this custom type in common.js
         this._dialogVM = new uiMOD.DialogVM(app);
@@ -213,10 +209,6 @@ export class FolderBrowserVM extends RIAPP.ViewModel<DemoApplication> {
             return true;
         });
     }
-    getEventNames() {
-        let base_events = super.getEventNames();
-        return ['item_selected'].concat(base_events);
-    }
     addOnItemSelected(fn: (sender: FolderBrowserVM, args: { fullPath: string }) => void, namespace?: string) {
         this.objEvents.on('item_selected', fn, namespace);
     }
@@ -227,7 +219,7 @@ export class FolderBrowserVM extends RIAPP.ViewModel<DemoApplication> {
         if (this.getIsDisposed())
             return;
         this.setDisposing();
-        let self = this;
+        const self = this;
         if (!!self._folderBrowser) {
             self._folderBrowser.dispose();
             self._folderBrowser = null;
@@ -270,7 +262,7 @@ export class DemoApplication extends RIAPP.Application {
         this._selectedPath = null;
     }
     onStartUp() {
-        let self = this, options: IMainOptions = self.options;
+        const self = this, options: IMainOptions = self.options;
         self._dbContext = new FOLDERBROWSER_SVC.DbContext();
         self._dbContext.initialize({
             serviceUrl: options.service_url,
@@ -307,7 +299,8 @@ export class DemoApplication extends RIAPP.Application {
         super.onStartUp();
     }
     private _getFullPath(item: FOLDERBROWSER_SVC.FileSystemObject, path: string): string {
-        let self = this, part: string;
+        const self = this;
+        let part: string;
         if (utils.check.isNt(path))
             path = '';
         if (!path)
@@ -330,7 +323,7 @@ export class DemoApplication extends RIAPP.Application {
         if (this.getIsDisposed())
             return;
         this.setDisposing();
-        let self = this;
+        const self = this;
         try {
             self._errorVM.dispose();
             self._fbrowserVM1.dispose();

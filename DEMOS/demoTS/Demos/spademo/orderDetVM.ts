@@ -16,7 +16,7 @@ export class OrderDetailVM extends RIAPP.ViewModel<DemoApplication> {
 
     constructor(orderVM: OrderVM) {
         super(orderVM.app);
-        let self = this;
+        const self = this;
         this._dbSet = this.dbSets.SalesOrderDetail;
         this._orderVM = orderVM;
         this._currentOrder = null;

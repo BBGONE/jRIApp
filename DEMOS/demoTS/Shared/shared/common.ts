@@ -175,7 +175,7 @@ export class ErrorViewModel extends RIAPP.ViewModel<RIAPP.IApplication> {
 
     constructor(app: RIAPP.IApplication) {
         super(app);
-        let self = this;
+        const self = this;
         this._error = null;
         this._errors = [];
         this._message = null;
@@ -236,7 +236,7 @@ export class ErrorViewModel extends RIAPP.ViewModel<RIAPP.IApplication> {
     }
     get error() { return this._error; }
     set error(v) {
-        let self = this, old = this._error;
+        const self = this, old = this._error;
         if (!old) {
             this._error = v;
             let msg: string = '';

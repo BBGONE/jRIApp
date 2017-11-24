@@ -8,7 +8,7 @@ export class GridElView extends uiMOD.DataGridElView {
 
     constructor(options: uiMOD.IDataGridViewOptions) {
         super(options);
-        let self = this, grid = self.grid;
+        const self = this, grid = self.grid;
         //example of binding to dataGrid events using strongly typed methods
         if (!!grid) {
             grid.addOnPageChanged(function (s, a) {
@@ -54,7 +54,7 @@ export class GridElView extends uiMOD.DataGridElView {
     }
     get myGridEvents() { return this._myGridEvents; }
     set myGridEvents(v) {
-        let self = this;
+        const self = this;
         if (this._myGridEvents !== v) {
             if (!!this._myGridEvents) {
                 this._myGridEvents.regFocusGridFunc(null);

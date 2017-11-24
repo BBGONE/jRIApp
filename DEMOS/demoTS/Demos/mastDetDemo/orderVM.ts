@@ -25,7 +25,7 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
 
     constructor(customerVM: CustomerVM) {
         super(customerVM.app);
-        let self = this;
+        const self = this;
         this._customerVM = customerVM;
         this._dbSet = this.dbSets.SalesOrderHeader;
         this._currentCustomer = null;
@@ -77,12 +77,8 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
         this._addressVM = new AddressVM(this);
         this._orderDetailVM = new OrderDetailVM(this);
     }
-    getEventNames() {
-        let base_events = super.getEventNames();
-        return ['row_expanded'].concat(base_events);
-    }
     protected _addGrid(grid: uiMOD.DataGrid): void {
-        let self = this;
+        const self = this;
         if (!!this._dataGrid)
             this._removeGrid();
         this._dataGrid = grid;

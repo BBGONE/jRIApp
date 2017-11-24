@@ -22,7 +22,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
 
     constructor(app: DemoApplication) {
         super(app);
-        let self = this;
+        const self = this;
         this._dataGrid = null;
         this._dbSet = this.dbSets.Customer;
         this._dbSet.isSubmitOnDelete = true;
@@ -112,7 +112,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
         this._ordersVM = new OrderVM(this);
     }
     protected _addGrid(grid: uiMOD.DataGrid): void {
-        let self = this;
+        const self = this;
         if (!!this._dataGrid)
             this._removeGrid();
         this._dataGrid = grid;
@@ -141,18 +141,13 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
     protected onCellDblClicked(cell: uiMOD.DataGridCell): void {
         alert("You double clicked " + cell.uniqueID);
     }
-
-    getEventNames() {
-        let base_events = super.getEventNames();
-        return ['row_expanded', 'page_changed'].concat(base_events);
-    }
     protected _onCurrentChanged() {
         this._custAdressView.parentItem = this._dbSet.currentItem;
         this.objEvents.raiseProp('currentItem');
     }
     //returns promise
     load() {
-        let self = this, query = this._dbSet.createReadCustomerQuery({ includeNav: true });
+        const self = this, query = this._dbSet.createReadCustomerQuery({ includeNav: true });
         query.pageSize = 50;
         query.orderBy('ComplexProp.LastName').thenBy('ComplexProp.MiddleName').thenBy('ComplexProp.FirstName');
         let res = query.load();

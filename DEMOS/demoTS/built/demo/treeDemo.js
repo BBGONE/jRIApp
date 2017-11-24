@@ -54,10 +54,6 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
             }, self, null);
             return _this;
         }
-        ExProps.prototype.getEventNames = function () {
-            var base_events = _super.prototype.getEventNames.call(this);
-            return ['clicked', 'dblclicked'].concat(base_events);
-        };
         ExProps.prototype.addOnClicked = function (fn, nmspace) {
             this.objEvents.on('clicked', fn, nmspace);
         };
@@ -192,7 +188,8 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
             alert("double clicked item: " + item.fullPath);
         };
         FolderBrowser.prototype._getFullPath = function (item, path) {
-            var self = this, part;
+            var self = this;
+            var part;
             if (utils.check.isNt(path))
                 path = '';
             if (!path)

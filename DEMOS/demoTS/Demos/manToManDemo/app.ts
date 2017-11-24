@@ -21,7 +21,7 @@ export class DemoApplication extends RIAPP.Application {
         this._customerVM = null;
     }
     onStartUp() {
-        let self = this, options: IMainOptions = self.options;
+        const self = this, options: IMainOptions = self.options;
         this._dbContext = new DEMODB.DbContext();
         this._dbContext.initialize({ serviceUrl: options.service_url, permissions: options.permissionInfo });
         function toText(str: any) {
@@ -58,7 +58,7 @@ export class DemoApplication extends RIAPP.Application {
         if (this.getIsDisposed())
             return;
         this.setDisposing();
-        let self = this;
+        const self = this;
         try {
             self._errorVM.dispose();
             self._customerVM.dispose();

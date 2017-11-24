@@ -10,7 +10,7 @@ export class ProductVM extends RIAPP.ViewModel<DemoApplication> {
 
     constructor(orderDetailVM: OrderDetailVM) {
         super(orderDetailVM.app);
-        let self = this;
+        const self = this;
         this._orderDetailVM = orderDetailVM;
         this._dbSet = this.dbSets.Product;
 

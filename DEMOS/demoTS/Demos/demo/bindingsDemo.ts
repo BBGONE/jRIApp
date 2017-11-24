@@ -168,7 +168,7 @@ export class DemoApplication extends RIAPP.Application {
         this._testObject = null;
     }
     onStartUp() {
-        let self = this;
+        const self = this;
         this._errorVM = new COMMON.ErrorViewModel(this);
         this._testObject = new TestObject('some initial text');
         //here we could process application's errors
@@ -185,7 +185,7 @@ export class DemoApplication extends RIAPP.Application {
         if (this.getIsDisposed())
             return;
         this.setDisposing();
-        let self = this;
+        const self = this;
         try {
             self._errorVM.dispose();
             self._testObject.dispose();

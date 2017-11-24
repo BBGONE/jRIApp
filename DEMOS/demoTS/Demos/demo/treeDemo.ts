@@ -34,7 +34,7 @@ export class ExProps extends RIAPP.BaseObject {
 
     constructor(item: FOLDERBROWSER_SVC.FileSystemObject, dbContext: FOLDERBROWSER_SVC.DbContext) {
         super();
-        let self: ExProps = this;
+        const self: ExProps = this;
         this._item = item;
         this._dbContext = dbContext;
         this._childView = null;
@@ -73,10 +73,6 @@ export class ExProps extends RIAPP.BaseObject {
             }
         }, self, null);
     }
-    getEventNames() {
-        let base_events = super.getEventNames();
-        return ['clicked', 'dblclicked'].concat(base_events);
-    }
     addOnClicked(fn: (sender: ExProps, args: { item: FOLDERBROWSER_SVC.FileSystemObject; }) => void, nmspace?: string) {
         this.objEvents.on('clicked', fn, nmspace);
     }
@@ -90,7 +86,7 @@ export class ExProps extends RIAPP.BaseObject {
         this.objEvents.off('dblclicked', nmspace);
     }
     createChildView() {
-        let self = this;
+        const self = this;
         let dvw = new dbMOD.ChildDataView<FOLDERBROWSER_SVC.FileSystemObject>(
             {
                 association: self._dbContext.associations.getChildToParent(),
@@ -102,7 +98,7 @@ export class ExProps extends RIAPP.BaseObject {
         return dvw;
     }
     loadChildren() {
-        let self = this, query = self._dbSet.createReadChildrenQuery({ parentKey: self.item.Key, level: self.item.Level + 1, path: self.item.fullPath, includeFiles: false, infoType: infoType });
+        const self = this, query = self._dbSet.createReadChildrenQuery({ parentKey: self.item.Key, level: self.item.Level + 1, path: self.item.fullPath, includeFiles: false, infoType: infoType });
         query.isClearPrevData = false;
         let promise = query.load();
         return promise;
@@ -111,7 +107,7 @@ export class ExProps extends RIAPP.BaseObject {
         if (this.getIsDisposed())
             return;
         this.setDisposing();
-        let self = this;
+        const self = this;
         clearTimeout(self._clickTimeOut);
         if (!!this._childView) {
             this._childView.parentItem = null;
@@ -160,7 +156,7 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
 
     constructor(app: DemoApplication, options: IFolderBrowserOptions) {
         super(app);
-        let self = this;
+        const self = this;
         self._dbSet = self.dbContext.dbSets.FileSystemObject;
 
         self._collapseCommand = new RIAPP.Command(function (s, a) {
@@ -202,7 +198,8 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
         alert("double clicked item: " + item.fullPath);
     }
     private _getFullPath(item: FOLDERBROWSER_SVC.FileSystemObject, path: string): string {
-        let self = this, part: string;
+        const self = this
+        let part: string;
         if (utils.check.isNt(path))
             path = '';
         if (!path)
@@ -221,7 +218,7 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
         return this._getFullPath(item, null);
     }
     private createDataView() {
-        let self = this;
+        const self = this;
         let res = new dbMOD.DataView<FOLDERBROWSER_SVC.FileSystemObject>(
             {
                 dataSource: self._dbSet,
@@ -233,7 +230,7 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
         return res;
     }
     collapse() {
-        let self = this;
+        const self = this;
         let items = self._dbSet.items.filter((item) => {
             return (item.Level > 0);
         });
@@ -251,7 +248,7 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
         });
     }
     loadRootFolder() {
-        let self = this, query = self._dbSet.createReadRootQuery({ includeFiles: false, infoType: infoType });
+        const self = this, query = self._dbSet.createReadRootQuery({ includeFiles: false, infoType: infoType });
         query.isClearPrevData = true;
         let promise = query.load();
         promise.then(function (res) {
@@ -260,7 +257,7 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
         return promise;
     }
     loadAll() {
-        let self = this, query = self._dbSet.createReadAllQuery({ includeFiles: false, infoType: infoType });
+        const self = this, query = self._dbSet.createReadAllQuery({ includeFiles: false, infoType: infoType });
         query.isClearPrevData = true;
         let promise = query.load();
         return promise;
@@ -289,7 +286,7 @@ export class DemoApplication extends RIAPP.Application {
         this._fbrowserVM = null;
     }
     onStartUp() {
-        let self = this, options: IMainOptions = self.options;
+        const self = this, options: IMainOptions = self.options;
         self._dbContext = new FOLDERBROWSER_SVC.DbContext();
         self._dbContext.initialize({
             serviceUrl: options.service_url,
@@ -313,7 +310,7 @@ export class DemoApplication extends RIAPP.Application {
         if (this.getIsDisposed())
             return;
         this.setDisposing();
-        let self = this;
+        const self = this;
         try {
             self._errorVM.dispose();
             self._fbrowserVM.dispose();
