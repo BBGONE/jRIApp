@@ -32,13 +32,13 @@ function fn_isNotSubmittable(fieldInfo: IFieldInfo) {
     }
 }
 
-function _fn_traverseChanges(name: string, val: IValueChange, fn: (name: string, val: IValueChange) => void) {
+function _fn_walkChanges(name: string, val: IValueChange, fn: (name: string, val: IValueChange) => void) {
     if (!!val.nested && val.nested.length > 0) {
         const len = val.nested.length;
         for (let i = 0; i < len; i += 1) {
             const prop: IValueChange = val.nested[i];
             if (!!prop.nested && prop.nested.length > 0) {
-                _fn_traverseChanges(name + "." + prop.fieldName, prop, fn);
+                _fn_walkChanges(name + "." + prop.fieldName, prop, fn);
             } else {
                 fn(name + "." + prop.fieldName, prop);
             }
@@ -48,8 +48,8 @@ function _fn_traverseChanges(name: string, val: IValueChange, fn: (name: string,
     }
 }
 
-function fn_traverseChanges(val: IValueChange, fn: (name: string, val: IValueChange) => void): void {
-    _fn_traverseChanges(val.fieldName, val, fn);
+function fn_walkChanges(val: IValueChange, fn: (name: string, val: IValueChange) => void): void {
+    _fn_walkChanges(val.fieldName, val, fn);
 }
 
 export interface IEntityAspectConstructor<TItem extends IEntityItem, TObj, TDbContext extends DbContext> {
@@ -288,7 +288,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
                 refreshMode = REFRESH_MODE.RefreshCurrent;
             }
             rowInfo.values.forEach((val) => {
-                fn_traverseChanges(val, (fullName, vc) => {
+                fn_walkChanges(val, (fullName, vc) => {
                     if ((vc.flags & FLAGS.Refreshed)) {
                         self._refreshValue(vc.val, fullName, refreshMode);
                     }
@@ -471,7 +471,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
             self._setStatus(ITEM_STATUS.None);
             errors.removeAllErrors(this.item);
             changes.forEach((v) => {
-                fn_traverseChanges(v, (fullName) => {
+                fn_walkChanges(v, (fullName) => {
                     self._onFieldChanged(fullName, dbSet.getFieldInfo(fullName));
                 });
             });

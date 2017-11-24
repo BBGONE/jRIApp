@@ -613,12 +613,12 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             _this._ignorePageChanged = false;
             fieldInfos.forEach(function (f) {
                 self._fieldMap[f.fieldName] = f;
-                colUtils.traverseField(f, function (fld, fullName) {
+                colUtils.walkField(f, function (fld, fullName) {
                     fld.dependents = [];
                     fld.fullName = fullName;
                 });
             });
-            colUtils.traverseFields(fieldInfos, function (fld, fullName) {
+            colUtils.walkFields(fieldInfos, function (fld, fullName) {
                 if (fld.fieldType === 3) {
                     coreUtils.setValue(self._navfldMap, fullName, self._doNavigationField(opts, fld), true);
                 }
@@ -1188,7 +1188,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         };
         DbSet.prototype._getNames = function () {
             var fieldInfos = this.getFieldInfos(), names = [];
-            colUtils.traverseFields(fieldInfos, function (fld, fullName, arr) {
+            colUtils.walkFields(fieldInfos, function (fld, fullName, arr) {
                 if (fld.fieldType === 5) {
                     var res = [];
                     arr.push({
@@ -3130,13 +3130,13 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 return false;
         }
     }
-    function _fn_traverseChanges(name, val, fn) {
+    function _fn_walkChanges(name, val, fn) {
         if (!!val.nested && val.nested.length > 0) {
             var len = val.nested.length;
             for (var i = 0; i < len; i += 1) {
                 var prop = val.nested[i];
                 if (!!prop.nested && prop.nested.length > 0) {
-                    _fn_traverseChanges(name + "." + prop.fieldName, prop, fn);
+                    _fn_walkChanges(name + "." + prop.fieldName, prop, fn);
                 }
                 else {
                     fn(name + "." + prop.fieldName, prop);
@@ -3147,8 +3147,8 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             fn(name, val);
         }
     }
-    function fn_traverseChanges(val, fn) {
-        _fn_traverseChanges(val.fieldName, val, fn);
+    function fn_walkChanges(val, fn) {
+        _fn_walkChanges(val.fieldName, val, fn);
     }
     var EntityAspect = (function (_super) {
         __extends(EntityAspect, _super);
@@ -3382,7 +3382,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                     refreshMode = 1;
                 }
                 rowInfo.values.forEach(function (val) {
-                    fn_traverseChanges(val, function (fullName, vc) {
+                    fn_walkChanges(val, function (fullName, vc) {
                         if ((vc.flags & 4)) {
                             self._refreshValue(vc.val, fullName, refreshMode);
                         }
@@ -3563,7 +3563,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 self._setStatus(0);
                 errors.removeAllErrors(this.item);
                 changes.forEach(function (v) {
-                    fn_traverseChanges(v, function (fullName) {
+                    fn_walkChanges(v, function (fullName) {
                         self._onFieldChanged(fullName, dbSet.getFieldInfo(fullName));
                     });
                 });

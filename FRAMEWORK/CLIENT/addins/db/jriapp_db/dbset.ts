@@ -134,12 +134,12 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
         this._ignorePageChanged = false;
         fieldInfos.forEach((f) => {
             self._fieldMap[f.fieldName] = f;
-            colUtils.traverseField(f, (fld, fullName) => {
+            colUtils.walkField(f, (fld, fullName) => {
                 fld.dependents = [];
                 fld.fullName = fullName;
             });
         });
-        colUtils.traverseFields(fieldInfos, (fld, fullName) => {
+        colUtils.walkFields(fieldInfos, (fld, fullName) => {
             if (fld.fieldType === FIELD_TYPE.Navigation) {
                 // navigation fields can NOT be on nested fields
                 coreUtils.setValue(self._navfldMap, fullName, self._doNavigationField(opts, fld), true);
@@ -762,7 +762,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
     }
     protected _getNames(): IFieldName[] {
         const fieldInfos = this.getFieldInfos(), names: IFieldName[] = [];
-        colUtils.traverseFields(fieldInfos, (fld, fullName, arr) => {
+        colUtils.walkFields(fieldInfos, (fld, fullName, arr) => {
             if (fld.fieldType === FIELD_TYPE.Object) {
                 const res: any[] = [];
                 arr.push({

@@ -185,7 +185,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         const self = this, fieldInfos = this.collection.getFieldInfos(),
             res: IValidationInfo[] = [];
         // revalidate all fields one by one
-        collUtils.traverseFields(fieldInfos, (fld, fullName) => {
+        collUtils.walkFields(fieldInfos, (fld, fullName) => {
             if (fld.fieldType !== FIELD_TYPE.Object) {
                 const fieldValidation: IValidationInfo = self._validateField(fullName);
                 if (!!fieldValidation && fieldValidation.errors.length > 0) {

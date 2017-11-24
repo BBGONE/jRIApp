@@ -2817,25 +2817,25 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
             return res;
         }
     };
-    function _traverseField(fldName, fld, fn, parentRes) {
+    function fn_walkField(fldName, fld, cb, parentRes) {
         if (fld.fieldType === 5) {
-            var res = fn(fld, fldName, parentRes);
+            var res = cb(fld, fldName, parentRes);
             if (!!fld.nested && fld.nested.length > 0) {
                 var nestedFld = void 0;
                 var len = fld.nested.length;
                 for (var i = 0; i < len; i += 1) {
                     nestedFld = fld.nested[i];
                     if (nestedFld.fieldType === 5) {
-                        _traverseField(fldName + "." + nestedFld.fieldName, nestedFld, fn, res);
+                        fn_walkField(fldName + "." + nestedFld.fieldName, nestedFld, cb, res);
                     }
                     else {
-                        fn(nestedFld, fldName + "." + nestedFld.fieldName, res);
+                        cb(nestedFld, fldName + "." + nestedFld.fieldName, res);
                     }
                 }
             }
         }
         else {
-            fn(fld, fldName, parentRes);
+            cb(fld, fldName, parentRes);
         }
     }
     exports.CollUtils = {
@@ -2846,12 +2846,12 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
             }
             return arrFlds[0];
         },
-        traverseField: function (fld, fn, parentRes) {
-            _traverseField(fld.fieldName, fld, fn, parentRes);
+        walkField: function (fld, fn, parentRes) {
+            fn_walkField(fld.fieldName, fld, fn, parentRes);
         },
-        traverseFields: function (flds, fn, parentRes) {
+        walkFields: function (flds, fn, parentRes) {
             for (var i = 0; i < flds.length; i += 1) {
-                _traverseField(flds[i].fieldName, flds[i], fn, parentRes);
+                fn_walkField(flds[i].fieldName, flds[i], fn, parentRes);
             }
         },
         getPKFields: function (fieldInfos) {
@@ -2867,7 +2867,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
             });
         },
         initVals: function (flds, vals) {
-            exports.CollUtils.traverseFields(flds, function (fld, fullName) {
+            exports.CollUtils.walkFields(flds, function (fld, fullName) {
                 if (fld.fieldType === 5) {
                     coreUtils.setValue(vals, fullName, {});
                 }
@@ -2880,7 +2880,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
             return vals;
         },
         copyVals: function (flds, from, to) {
-            exports.CollUtils.traverseFields(flds, function (fld, fullName) {
+            exports.CollUtils.walkFields(flds, function (fld, fullName) {
                 if (fld.fieldType === 5) {
                     coreUtils.setValue(to, fullName, {});
                 }
@@ -4231,7 +4231,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         };
         ItemAspect.prototype._validateFields = function () {
             var self = this, fieldInfos = this.collection.getFieldInfos(), res = [];
-            collUtils.traverseFields(fieldInfos, function (fld, fullName) {
+            collUtils.walkFields(fieldInfos, function (fld, fullName) {
                 if (fld.fieldType !== 5) {
                     var fieldValidation = self._validateField(fullName);
                     if (!!fieldValidation && fieldValidation.errors.length > 0) {
@@ -4759,7 +4759,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                 fldInfo.dataType = prop.dtype;
                 self._fieldMap[prop.name] = fldInfo;
                 self._fieldInfos.push(fldInfo);
-                collUtils.traverseField(fldInfo, function (fld, fullName) {
+                collUtils.walkField(fldInfo, function (fld, fullName) {
                     fld.dependents = null;
                     fld.fullName = fullName;
                 });

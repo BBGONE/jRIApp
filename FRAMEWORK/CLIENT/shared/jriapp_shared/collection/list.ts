@@ -102,7 +102,7 @@ export abstract class BaseList<TItem extends IListItem, TObj> extends BaseCollec
             fldInfo.dataType = prop.dtype;
             self._fieldMap[prop.name] = fldInfo;
             self._fieldInfos.push(fldInfo);
-            collUtils.traverseField(fldInfo, (fld, fullName) => {
+            collUtils.walkField(fldInfo, (fld, fullName) => {
                 fld.dependents = null;
                 fld.fullName = fullName;
             });

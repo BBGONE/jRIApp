@@ -1063,11 +1063,11 @@ declare module "jriapp_shared/collection/utils" {
     import { IFieldInfo } from "jriapp_shared/collection/int";
     import { IValueUtils } from "jriapp_shared/collection/int";
     export const ValueUtils: IValueUtils;
-    export type TraveseFieldCB<T> = (fld: IFieldInfo, name: string, parentRes?: T) => T;
+    export type WalkFieldCB<T> = (fld: IFieldInfo, name: string, parentRes?: T) => T;
     export const CollUtils: {
         getObjectField: (name: string, flds: IFieldInfo[]) => IFieldInfo;
-        traverseField: <T>(fld: IFieldInfo, fn: TraveseFieldCB<T>, parentRes?: T) => void;
-        traverseFields: <T>(flds: IFieldInfo[], fn: TraveseFieldCB<T>, parentRes?: T) => void;
+        walkField: <T>(fld: IFieldInfo, fn: WalkFieldCB<T>, parentRes?: T) => void;
+        walkFields: <T>(flds: IFieldInfo[], fn: WalkFieldCB<T>, parentRes?: T) => void;
         getPKFields(fieldInfos: IFieldInfo[]): IFieldInfo[];
         initVals: (flds: IFieldInfo[], vals: any) => any;
         copyVals: (flds: IFieldInfo[], from: any, to: any) => any;

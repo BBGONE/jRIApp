@@ -196,11 +196,11 @@ export const ValueUtils: IValueUtils = {
     }
 };
 
-export type TraveseFieldCB<T> = (fld: IFieldInfo, name: string, parentRes?: T) => T;
+export type WalkFieldCB<T> = (fld: IFieldInfo, name: string, parentRes?: T) => T;
 
-function _traverseField<T>(fldName: string, fld: IFieldInfo, fn: TraveseFieldCB<T>, parentRes?: T): void {
+function fn_walkField<T>(fldName: string, fld: IFieldInfo, cb: WalkFieldCB<T>, parentRes?: T): void {
     if (fld.fieldType === FIELD_TYPE.Object) {
-        const res = fn(fld, fldName, parentRes);
+        const res = cb(fld, fldName, parentRes);
 
         // for object fields traverse their nested fields
         if (!!fld.nested && fld.nested.length > 0) {
@@ -209,14 +209,14 @@ function _traverseField<T>(fldName: string, fld: IFieldInfo, fn: TraveseFieldCB<
             for (let i = 0; i < len; i += 1) {
                 nestedFld = fld.nested[i];
                 if (nestedFld.fieldType === FIELD_TYPE.Object) {
-                    _traverseField(fldName + "." + nestedFld.fieldName, nestedFld, fn, res);
+                    fn_walkField(fldName + "." + nestedFld.fieldName, nestedFld, cb, res);
                 } else {
-                    fn(nestedFld, fldName + "." + nestedFld.fieldName, res);
+                    cb(nestedFld, fldName + "." + nestedFld.fieldName, res);
                 }
             }
         }
     } else {
-        fn(fld, fldName, parentRes);
+        cb(fld, fldName, parentRes);
     }
 }
 
@@ -228,12 +228,12 @@ export const CollUtils = {
         }
         return arrFlds[0];
     },
-    traverseField: function <T>(fld: IFieldInfo, fn: TraveseFieldCB<T>, parentRes?: T): void {
-        _traverseField(fld.fieldName, fld, fn, parentRes);
+    walkField: function <T>(fld: IFieldInfo, fn: WalkFieldCB<T>, parentRes?: T): void {
+        fn_walkField<T>(fld.fieldName, fld, fn, parentRes);
     },
-    traverseFields: function <T>(flds: IFieldInfo[], fn: TraveseFieldCB<T>, parentRes?: T): void {
+    walkFields: function <T>(flds: IFieldInfo[], fn: WalkFieldCB<T>, parentRes?: T): void {
         for (let i = 0; i < flds.length; i += 1) {
-            _traverseField(flds[i].fieldName, flds[i], fn, parentRes);
+            fn_walkField<T>(flds[i].fieldName, flds[i], fn, parentRes);
         }
     },
     getPKFields(fieldInfos: IFieldInfo[]): IFieldInfo[] {
@@ -250,7 +250,7 @@ export const CollUtils = {
         });
     },
     initVals: function (flds: IFieldInfo[], vals: any): any {
-        CollUtils.traverseFields(flds, (fld, fullName) => {
+        CollUtils.walkFields(flds, (fld, fullName) => {
             if (fld.fieldType === FIELD_TYPE.Object) {
                 coreUtils.setValue(vals, fullName, {});
             } else {
@@ -262,7 +262,7 @@ export const CollUtils = {
         return vals;
     },
     copyVals: function (flds: IFieldInfo[], from: any, to: any): any {
-        CollUtils.traverseFields(flds, (fld, fullName) => {
+        CollUtils.walkFields(flds, (fld, fullName) => {
             if (fld.fieldType === FIELD_TYPE.Object) {
                 coreUtils.setValue(to, fullName, {});
             } else {
