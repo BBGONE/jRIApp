@@ -6,10 +6,10 @@ import { IIndexer, IErrorHandler } from "../int";
 export class ERROR {
     private static _handlers: IIndexer<IErrorHandler> = {};
 
-    static addErrorHandler(name: string, handler: IErrorHandler): void {
+    static addHandler(name: string, handler: IErrorHandler): void {
         ERROR._handlers[name] = handler;
     }
-    static removeErrorHandler(name: string): void {
+    static removeHandler(name: string): void {
         delete ERROR._handlers[name];
     }
     static handleError(sender: any, error: any, source: any): boolean {

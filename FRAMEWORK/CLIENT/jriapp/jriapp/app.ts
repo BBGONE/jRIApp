@@ -89,10 +89,6 @@ export class Application extends BaseObject implements IApplication {
             initFn(<IApplication>self);
         });
     }
-    getEventNames(): string[] {
-        const baseEvents = super.getEventNames(), events: string[] = [APP_EVENTS.startup];
-        return events.concat(baseEvents);
-    }
     /**
     can be overriden in derived classes
     it can return a promise when it's needed

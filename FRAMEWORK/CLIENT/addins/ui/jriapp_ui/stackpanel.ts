@@ -48,9 +48,9 @@ export interface IStackPanelConstructorOptions extends IStackPanelOptions {
 }
 
 
-const PNL_EVENTS = {
-    item_clicked: "item_clicked"
-};
+const enum PNL_EVENTS {
+    item_clicked = "item_clicked"
+}
 
 export class StackPanel extends BaseObject implements ISelectableProvider {
     private _el: HTMLElement;
@@ -128,10 +128,6 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
 
         const ds = this._options.dataSource;
         this._setDataSource(ds);
-    }
-    getEventNames() {
-        const baseEvents = super.getEventNames();
-        return [PNL_EVENTS.item_clicked].concat(baseEvents);
     }
     addOnItemClicked(fn: TEventHandler<StackPanel, { item: ICollectionItem; }>, nmspace?: string, context?: IBaseObject) {
         this.objEvents.on(PNL_EVENTS.item_clicked, fn, nmspace, context);

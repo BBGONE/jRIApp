@@ -584,9 +584,10 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             }
         });
     }
-    var DBSET_EVENTS = {
-        loaded: "loaded"
-    };
+    var DBSET_EVENTS;
+    (function (DBSET_EVENTS) {
+        DBSET_EVENTS["loaded"] = "dbset_loaded";
+    })(DBSET_EVENTS || (DBSET_EVENTS = {}));
     var DbSet = (function (_super) {
         __extends(DbSet, _super);
         function DbSet(opts) {
@@ -685,10 +686,6 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         }
         DbSet.prototype.handleError = function (error, source) {
             return (!this._dbContext) ? _super.prototype.handleError.call(this, error, source) : this._dbContext.handleError(error, source);
-        };
-        DbSet.prototype.getEventNames = function () {
-            var baseEvents = _super.prototype.getEventNames.call(this);
-            return [DBSET_EVENTS.loaded].concat(baseEvents);
         };
         DbSet.prototype._mapAssocFields = function () {
             var trackAssoc = this._trackAssoc, tasKeys = Object.keys(trackAssoc), trackAssocMap = this._trackAssocMap;
@@ -1174,9 +1171,9 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             _super.prototype._onRemoved.call(this, item, pos);
         };
         DbSet.prototype._onLoaded = function (items) {
-            if (this.objEvents.canRaise(DBSET_EVENTS.loaded)) {
+            if (this.objEvents.canRaise("dbset_loaded")) {
                 var vals = items.map(function (item) { return item._aspect.vals; });
-                this.objEvents.raise(DBSET_EVENTS.loaded, { vals: vals });
+                this.objEvents.raise("dbset_loaded", { vals: vals });
             }
         };
         DbSet.prototype._destroyQuery = function () {
@@ -1320,10 +1317,10 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             return result;
         };
         DbSet.prototype.addOnLoaded = function (fn, nmspace, context, priority) {
-            this.objEvents.on(DBSET_EVENTS.loaded, fn, nmspace, context, priority);
+            this.objEvents.on("dbset_loaded", fn, nmspace, context, priority);
         };
         DbSet.prototype.removeOnLoaded = function (nmspace) {
-            this.objEvents.off(DBSET_EVENTS.loaded, nmspace);
+            this.objEvents.off("dbset_loaded", nmspace);
         };
         DbSet.prototype.waitForNotBusy = function (callback, groupName) {
             this._waitQueue.enQueue({
@@ -2338,9 +2335,10 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 throw new error_1.DataOperationError(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_UNEXPECTED_SVC_ERROR, svcError.message), oper);
         }
     }
-    var DBCTX_EVENTS = {
-        submit_err: "submit_error"
-    };
+    var DBCTX_EVENTS;
+    (function (DBCTX_EVENTS) {
+        DBCTX_EVENTS["submit_err"] = "submit_error";
+    })(DBCTX_EVENTS || (DBCTX_EVENTS = {}));
     var DbContext = (function (_super) {
         __extends(DbContext, _super);
         function DbContext() {
@@ -2386,10 +2384,6 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             if (this.getIsStateDirty()) {
                 ERROR.abort("dbContext destroyed");
             }
-        };
-        DbContext.prototype.getEventNames = function () {
-            var baseEvents = _super.prototype.getEventNames.call(this);
-            return [DBCTX_EVENTS.submit_err].concat(baseEvents);
         };
         DbContext.prototype._initDbSets = function () {
             if (this.isInitialized) {
@@ -2639,7 +2633,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 return;
             }
             var args = { error: error, isHandled: false };
-            this.objEvents.raise(DBCTX_EVENTS.submit_err, args);
+            this.objEvents.raise("submit_error", args);
             if (!args.isHandled) {
                 this._onDataOperError(error, 1);
             }
@@ -2941,10 +2935,10 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             return this._initState;
         };
         DbContext.prototype.addOnSubmitError = function (fn, nmspace, context) {
-            this.objEvents.on(DBCTX_EVENTS.submit_err, fn, nmspace, context);
+            this.objEvents.on("submit_error", fn, nmspace, context);
         };
         DbContext.prototype.removeOnSubmitError = function (nmspace) {
-            this.objEvents.off(DBCTX_EVENTS.submit_err, nmspace);
+            this.objEvents.off("submit_error", nmspace);
         };
         DbContext.prototype.getDbSet = function (name) {
             return this._dbSets.getDbSet(name);
@@ -3640,9 +3634,10 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_9.Utils, _async = utils.defer, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr, ERROR = utils.err, sys = utils.sys;
-    var VIEW_EVENTS = {
-        refreshed: "view_refreshed"
-    };
+    var VIEW_EVENTS;
+    (function (VIEW_EVENTS) {
+        VIEW_EVENTS["refreshed"] = "view_refreshed";
+    })(VIEW_EVENTS || (VIEW_EVENTS = {}));
     var DataView = (function (_super) {
         __extends(DataView, _super);
         function DataView(options) {
@@ -3672,17 +3667,13 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             _this._bindDS();
             return _this;
         }
-        DataView.prototype.getEventNames = function () {
-            var baseEvents = _super.prototype.getEventNames.call(this);
-            return [VIEW_EVENTS.refreshed].concat(baseEvents);
-        };
         DataView.prototype._clearItems = function (items) {
         };
         DataView.prototype.addOnViewRefreshed = function (fn, nmspace) {
-            this.objEvents.on(VIEW_EVENTS.refreshed, fn, nmspace);
+            this.objEvents.on("view_refreshed", fn, nmspace);
         };
         DataView.prototype.removeOnViewRefreshed = function (nmspace) {
-            this.objEvents.off(VIEW_EVENTS.refreshed, nmspace);
+            this.objEvents.off("view_refreshed", nmspace);
         };
         DataView.prototype._filterForPaging = function (items) {
             var skip = 0, take = 0, pos = -1, cnt = -1;
@@ -3702,7 +3693,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             return result;
         };
         DataView.prototype._onViewRefreshed = function (args) {
-            this.objEvents.raise(VIEW_EVENTS.refreshed, args);
+            this.objEvents.raise("view_refreshed", args);
         };
         DataView.prototype._refresh = function (reason) {
             if (this.getIsStateDirty()) {

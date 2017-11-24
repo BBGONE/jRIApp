@@ -6,9 +6,13 @@ const utils = Utils, checks = utils.check, coreUtils = utils.core,
     strUtils = utils.str, defer = utils.defer, ERRS = LocaleERRS, DEBUG = utils.debug,
     LOG = utils.log, http = utils.http;
 
-const PROP_NAME = {
-    isLoading: "isLoading"
-};
+const enum PROP_NAME {
+    isLoading = "isLoading"
+}
+
+const enum LOADER_EVENTS {
+    loaded = "loaded"
+}
 
 export class TemplateLoader extends BaseObject {
     private _templateLoaders: any;
@@ -39,15 +43,11 @@ export class TemplateLoader extends BaseObject {
         }
         super.dispose();
     }
-    getEventNames() {
-        const baseEvents = super.getEventNames();
-        return ["loaded"].concat(baseEvents);
-    }
     addOnLoaded(fn: (sender: TemplateLoader, args: { html: string; app: IApplication; }) => void, nmspace?: string) {
-        this.objEvents.on("loaded", fn, nmspace);
+        this.objEvents.on(LOADER_EVENTS.loaded, fn, nmspace);
     }
     removeOnLoaded(nmspace?: string) {
-        this.objEvents.off("loaded", nmspace);
+        this.objEvents.off(LOADER_EVENTS.loaded, nmspace);
     }
     public waitForNotLoading(callback: (...args: any[]) => any, callbackArgs: any): void {
         this._waitQueue.enQueue({
@@ -59,7 +59,7 @@ export class TemplateLoader extends BaseObject {
         });
     }
     private _onLoaded(html: string, app: IApplication) {
-        this.objEvents.raise("loaded", { html: html, app: app });
+        this.objEvents.raise(LOADER_EVENTS.loaded, { html: html, app: app });
     }
     private _getTemplateGroup(name: string): ITemplateGroupInfoEx {
         return coreUtils.getValue(this._templateGroups, name);

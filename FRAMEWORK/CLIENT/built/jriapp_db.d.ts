@@ -214,7 +214,6 @@ declare module "jriapp_db/dbset" {
         constructor(opts: IDbSetConstuctorOptions);
         abstract itemFactory(aspect: EntityAspect<TItem, TObj, TDbContext>): TItem;
         handleError(error: any, source: any): boolean;
-        getEventNames(): string[];
         protected _mapAssocFields(): void;
         protected _doNavigationField(opts: IDbSetConstuctorOptions, fieldInfo: IFieldInfo): INavFieldImpl<TItem>;
         protected _doCalculatedField(opts: IDbSetConstuctorOptions, fieldInfo: IFieldInfo): ICalcFieldImpl<TItem>;
@@ -432,7 +431,6 @@ declare module "jriapp_db/dbcontext" {
         private _internal;
         constructor();
         protected _checkDestroy(): void;
-        getEventNames(): string[];
         protected _initDbSets(): void;
         protected _initAssociations(associations: IAssociationInfo[]): void;
         protected _initMethods(methods: IQueryInfo[]): void;
@@ -805,7 +803,6 @@ declare module "jriapp_db/dataview" {
         private _isAddingNew;
         private _refreshDebounce;
         constructor(options: IDataViewOptions<TItem>);
-        getEventNames(): string[];
         protected _clearItems(items: TItem[]): void;
         addOnViewRefreshed(fn: TEventHandler<DataView<TItem>, any>, nmspace?: string): void;
         removeOnViewRefreshed(nmspace?: string): void;

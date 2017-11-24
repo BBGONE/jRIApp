@@ -73,10 +73,6 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         this._flags = 0;
         this._valueBag = null;
     }
-    getEventNames() {
-        const baseEvents = super.getEventNames();
-        return [ITEM_EVENTS.errors_changed].concat(baseEvents);
-    }
     protected _onErrorsChanged() {
         this.objEvents.raise(ITEM_EVENTS.errors_changed, {});
     }

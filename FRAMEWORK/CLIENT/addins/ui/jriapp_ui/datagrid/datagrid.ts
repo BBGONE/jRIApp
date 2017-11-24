@@ -105,14 +105,14 @@ function _checkGridWidth() {
     });
 }
 
-const GRID_EVENTS = {
-    row_expanded: "row_expanded",
-    row_selected: "row_selected",
-    page_changed: "page_changed",
-    row_state_changed: "row_state_changed",
-    cell_dblclicked: "cell_dblclicked",
-    row_action: "row_action"
-};
+const enum GRID_EVENTS {
+    row_expanded = "row_expanded",
+    row_selected = "row_selected",
+    page_changed = "page_changed",
+    row_state_changed = "row_state_changed",
+    cell_dblclicked = "cell_dblclicked",
+    row_action = "row_action"
+}
 
 export interface IRowStateProvider {
     getCSS(item: ICollectionItem, val: any): string;
@@ -308,11 +308,6 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
 
         const ds = this._options.dataSource;
         this._setDataSource(ds);
-    }
-    getEventNames() {
-        const baseEvents = super.getEventNames();
-        const events = Object.keys(GRID_EVENTS).map((key) => { return <string>(<any>GRID_EVENTS)[key]; });
-        return events.concat(baseEvents);
     }
     addOnRowExpanded(fn: TEventHandler<DataGrid, { collapsedRow: Row; expandedRow: Row; isExpanded: boolean; }>, nmspace?: string, context?: any) {
         this.objEvents.on(GRID_EVENTS.row_expanded, fn, nmspace, context);

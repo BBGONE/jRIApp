@@ -66,9 +66,9 @@ interface IRequestPromise {
     name: string;
 }
 
-const DBCTX_EVENTS = {
-    submit_err: "submit_error"
-};
+const enum DBCTX_EVENTS {
+    submit_err = "submit_error"
+}
 
 export class DbContext extends BaseObject {
     private _requestHeaders: IIndexer<string>;
@@ -132,10 +132,6 @@ export class DbContext extends BaseObject {
         if (this.getIsStateDirty()) {
             ERROR.abort("dbContext destroyed");
         }
-    }
-    getEventNames() {
-        const baseEvents = super.getEventNames();
-        return [DBCTX_EVENTS.submit_err].concat(baseEvents);
     }
     protected _initDbSets() {
         if (this.isInitialized) {

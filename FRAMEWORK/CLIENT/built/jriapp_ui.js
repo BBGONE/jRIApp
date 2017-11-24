@@ -1135,9 +1135,10 @@ define("jriapp_ui/textbox", ["require", "exports", "jriapp/utils/dom", "jriapp/b
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var dom = dom_6.DomUtils;
-    var TXTBOX_EVENTS = {
-        keypress: "keypress"
-    };
+    var TXTBOX_EVENTS;
+    (function (TXTBOX_EVENTS) {
+        TXTBOX_EVENTS["keypress"] = "keypress";
+    })(TXTBOX_EVENTS || (TXTBOX_EVENTS = {}));
     var TextBoxElView = (function (_super) {
         __extends(TextBoxElView, _super);
         function TextBoxElView(options) {
@@ -1150,7 +1151,7 @@ define("jriapp_ui/textbox", ["require", "exports", "jriapp/utils/dom", "jriapp/b
             dom.events.on(_this.el, "keypress", function (e) {
                 e.stopPropagation();
                 var args = { keyCode: e.which, value: e.target.value, isCancel: false };
-                self.objEvents.raise(TXTBOX_EVENTS.keypress, args);
+                self.objEvents.raise("keypress", args);
                 if (args.isCancel) {
                     e.preventDefault();
                 }
@@ -1163,15 +1164,11 @@ define("jriapp_ui/textbox", ["require", "exports", "jriapp/utils/dom", "jriapp/b
             }
             return _this;
         }
-        TextBoxElView.prototype.getEventNames = function () {
-            var baseEvents = _super.prototype.getEventNames.call(this);
-            return [TXTBOX_EVENTS.keypress].concat(baseEvents);
-        };
         TextBoxElView.prototype.addOnKeyPress = function (fn, nmspace) {
-            this.objEvents.on(TXTBOX_EVENTS.keypress, fn, nmspace);
+            this.objEvents.on("keypress", fn, nmspace);
         };
         TextBoxElView.prototype.removeOnKeyPress = function (nmspace) {
-            this.objEvents.off(TXTBOX_EVENTS.keypress, nmspace);
+            this.objEvents.off("keypress", nmspace);
         };
         TextBoxElView.prototype.toString = function () {
             return "TextBoxElView";
@@ -1240,9 +1237,10 @@ define("jriapp_ui/textarea", ["require", "exports", "jriapp/utils/dom", "jriapp/
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var dom = dom_7.DomUtils;
-    var TXTAREA_EVENTS = {
-        keypress: "keypress"
-    };
+    var TXTAREA_EVENTS;
+    (function (TXTAREA_EVENTS) {
+        TXTAREA_EVENTS["keypress"] = "keypress";
+    })(TXTAREA_EVENTS || (TXTAREA_EVENTS = {}));
     var TextAreaElView = (function (_super) {
         __extends(TextAreaElView, _super);
         function TextAreaElView(options) {
@@ -1258,7 +1256,7 @@ define("jriapp_ui/textarea", ["require", "exports", "jriapp/utils/dom", "jriapp/
             dom.events.on(_this.el, "keypress", function (e) {
                 e.stopPropagation();
                 var args = { keyCode: e.which, value: e.target.value, isCancel: false };
-                self.objEvents.raise(TXTAREA_EVENTS.keypress, args);
+                self.objEvents.raise("keypress", args);
                 if (args.isCancel) {
                     e.preventDefault();
                 }
@@ -1271,15 +1269,11 @@ define("jriapp_ui/textarea", ["require", "exports", "jriapp/utils/dom", "jriapp/
             }
             return _this;
         }
-        TextAreaElView.prototype.getEventNames = function () {
-            var baseEvents = _super.prototype.getEventNames.call(this);
-            return [TXTAREA_EVENTS.keypress].concat(baseEvents);
-        };
         TextAreaElView.prototype.addOnKeyPress = function (fn, nmspace) {
-            this.objEvents.on(TXTAREA_EVENTS.keypress, fn, nmspace);
+            this.objEvents.on("keypress", fn, nmspace);
         };
         TextAreaElView.prototype.removeOnKeyPress = function (nmspace) {
-            this.objEvents.off(TXTAREA_EVENTS.keypress, nmspace);
+            this.objEvents.off("keypress", nmspace);
         };
         TextAreaElView.prototype.toString = function () {
             return "TextAreaElView";
@@ -1678,9 +1672,10 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         textProvider: "textProvider",
         stateProvider: "stateProvider"
     };
-    var LISTBOX_EVENTS = {
-        refreshed: "refreshed"
-    };
+    var LISTBOX_EVENTS;
+    (function (LISTBOX_EVENTS) {
+        LISTBOX_EVENTS["refreshed"] = "refreshed";
+    })(LISTBOX_EVENTS || (LISTBOX_EVENTS = {}));
     function fn_Str(v) {
         return (checks.isNt(v)) ? "" : ("" + v);
     }
@@ -1754,18 +1749,11 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             this._isDSFilled = false;
             _super.prototype.dispose.call(this);
         };
-        ListBox.prototype.getEventNames = function () {
-            var baseEvents = _super.prototype.getEventNames.call(this);
-            var events = Object.keys(LISTBOX_EVENTS).map(function (key) {
-                return LISTBOX_EVENTS[key];
-            });
-            return events.concat(baseEvents);
-        };
         ListBox.prototype.addOnRefreshed = function (fn, nmspace, context) {
-            this.objEvents.on(LISTBOX_EVENTS.refreshed, fn, nmspace, context);
+            this.objEvents.on("refreshed", fn, nmspace, context);
         };
         ListBox.prototype.removeOnRefreshed = function (nmspace) {
-            this.objEvents.off(LISTBOX_EVENTS.refreshed, nmspace);
+            this.objEvents.off("refreshed", nmspace);
         };
         ListBox.prototype._onChanged = function () {
             var data = this.getByIndex(this.selectedIndex);
@@ -2082,7 +2070,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 self._isRefreshing = false;
                 this.checkChanges();
             }
-            this.objEvents.raise(LISTBOX_EVENTS.refreshed, {});
+            this.objEvents.raise("refreshed", {});
         };
         ListBox.prototype.getItemIndex = function (item) {
             if (!item || item.getIsStateDirty()) {
@@ -2517,10 +2505,11 @@ define("jriapp_ui/content/listbox", ["require", "exports", "jriapp_shared", "jri
         textProvider: "textProvider",
         stateProvider: "stateProvider"
     };
-    var LOOKUP_EVENTS = {
-        obj_created: "object_created",
-        obj_needed: "object_needed"
-    };
+    var LOOKUP_EVENTS;
+    (function (LOOKUP_EVENTS) {
+        LOOKUP_EVENTS["obj_created"] = "object_created";
+        LOOKUP_EVENTS["obj_needed"] = "object_needed";
+    })(LOOKUP_EVENTS || (LOOKUP_EVENTS = {}));
     var LookupContent = (function (_super) {
         __extends(LookupContent, _super);
         function LookupContent(options) {
@@ -2541,21 +2530,17 @@ define("jriapp_ui/content/listbox", ["require", "exports", "jriapp_shared", "jri
             }
             return _this;
         }
-        LookupContent.prototype.getEventNames = function () {
-            var baseEvents = _super.prototype.getEventNames.call(this);
-            return [LOOKUP_EVENTS.obj_created, LOOKUP_EVENTS.obj_needed].concat(baseEvents);
-        };
         LookupContent.prototype.addOnObjectCreated = function (fn, nmspace) {
-            this.objEvents.on(LOOKUP_EVENTS.obj_created, fn, nmspace);
+            this.objEvents.on("object_created", fn, nmspace);
         };
         LookupContent.prototype.removeOnObjectCreated = function (nmspace) {
-            this.objEvents.off(LOOKUP_EVENTS.obj_created, nmspace);
+            this.objEvents.off("object_created", nmspace);
         };
         LookupContent.prototype.addOnObjectNeeded = function (fn, nmspace) {
-            this.objEvents.on(LOOKUP_EVENTS.obj_needed, fn, nmspace);
+            this.objEvents.on("object_needed", fn, nmspace);
         };
         LookupContent.prototype.removeOnObjectNeeded = function (nmspace) {
-            this.objEvents.off(LOOKUP_EVENTS.obj_needed, nmspace);
+            this.objEvents.off("object_needed", nmspace);
         };
         LookupContent.prototype.getListBoxElView = function () {
             if (!!this._listBoxElView) {
@@ -2563,7 +2548,7 @@ define("jriapp_ui/content/listbox", ["require", "exports", "jriapp_shared", "jri
             }
             var lookUpOptions = this._options.options, objectKey = "listBoxElView";
             var args1 = { objectKey: objectKey, object: null };
-            this.objEvents.raise(LOOKUP_EVENTS.obj_needed, args1);
+            this.objEvents.raise("object_needed", args1);
             if (!!args1.object) {
                 this._isListBoxCachedExternally = true;
                 this._listBoxElView = args1.object;
@@ -2574,7 +2559,7 @@ define("jriapp_ui/content/listbox", ["require", "exports", "jriapp_shared", "jri
             }
             var listBoxElView = this.createListBoxElView(lookUpOptions);
             var args2 = { objectKey: objectKey, object: listBoxElView, isCachedExternally: false };
-            this.objEvents.raise(LOOKUP_EVENTS.obj_created, args2);
+            this.objEvents.raise("object_created", args2);
             this._isListBoxCachedExternally = args2.isCachedExternally;
             this._listBoxElView = listBoxElView;
             this._listBoxElView.listBox.addOnRefreshed(this.onListRefreshed, this.uniqueID, this);
@@ -2972,10 +2957,6 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
             catch (ex) {
                 ERROR.reThrow(ex, this.handleError(ex, this));
             }
-        };
-        DataEditDialog.prototype.getEventNames = function () {
-            var baseEvents = _super.prototype.getEventNames.call(this), events = ["close", "refresh"];
-            return events.concat(baseEvents);
         };
         DataEditDialog.prototype.templateLoading = function (template) {
         };
@@ -5222,14 +5203,15 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             grid._getInternal().columnWidthCheck();
         });
     }
-    var GRID_EVENTS = {
-        row_expanded: "row_expanded",
-        row_selected: "row_selected",
-        page_changed: "page_changed",
-        row_state_changed: "row_state_changed",
-        cell_dblclicked: "cell_dblclicked",
-        row_action: "row_action"
-    };
+    var GRID_EVENTS;
+    (function (GRID_EVENTS) {
+        GRID_EVENTS["row_expanded"] = "row_expanded";
+        GRID_EVENTS["row_selected"] = "row_selected";
+        GRID_EVENTS["page_changed"] = "page_changed";
+        GRID_EVENTS["row_state_changed"] = "row_state_changed";
+        GRID_EVENTS["cell_dblclicked"] = "cell_dblclicked";
+        GRID_EVENTS["row_action"] = "row_action";
+    })(GRID_EVENTS || (GRID_EVENTS = {}));
     var DataGrid = (function (_super) {
         __extends(DataGrid, _super);
         function DataGrid(options) {
@@ -5350,46 +5332,41 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             _this._setDataSource(ds);
             return _this;
         }
-        DataGrid.prototype.getEventNames = function () {
-            var baseEvents = _super.prototype.getEventNames.call(this);
-            var events = Object.keys(GRID_EVENTS).map(function (key) { return GRID_EVENTS[key]; });
-            return events.concat(baseEvents);
-        };
         DataGrid.prototype.addOnRowExpanded = function (fn, nmspace, context) {
-            this.objEvents.on(GRID_EVENTS.row_expanded, fn, nmspace, context);
+            this.objEvents.on("row_expanded", fn, nmspace, context);
         };
         DataGrid.prototype.removeOnRowExpanded = function (nmspace) {
-            this.objEvents.off(GRID_EVENTS.row_expanded, nmspace);
+            this.objEvents.off("row_expanded", nmspace);
         };
         DataGrid.prototype.addOnRowSelected = function (fn, nmspace, context) {
-            this.objEvents.on(GRID_EVENTS.row_selected, fn, nmspace, context);
+            this.objEvents.on("row_selected", fn, nmspace, context);
         };
         DataGrid.prototype.removeOnRowSelected = function (nmspace) {
-            this.objEvents.off(GRID_EVENTS.row_selected, nmspace);
+            this.objEvents.off("row_selected", nmspace);
         };
         DataGrid.prototype.addOnPageChanged = function (fn, nmspace, context) {
-            this.objEvents.on(GRID_EVENTS.page_changed, fn, nmspace, context);
+            this.objEvents.on("page_changed", fn, nmspace, context);
         };
         DataGrid.prototype.removeOnPageChanged = function (nmspace) {
-            this.objEvents.off(GRID_EVENTS.page_changed, nmspace);
+            this.objEvents.off("page_changed", nmspace);
         };
         DataGrid.prototype.addOnRowStateChanged = function (fn, nmspace, context) {
-            this.objEvents.on(GRID_EVENTS.row_state_changed, fn, nmspace, context);
+            this.objEvents.on("row_state_changed", fn, nmspace, context);
         };
         DataGrid.prototype.removeOnRowStateChanged = function (nmspace) {
-            this.objEvents.off(GRID_EVENTS.row_state_changed, nmspace);
+            this.objEvents.off("row_state_changed", nmspace);
         };
         DataGrid.prototype.addOnCellDblClicked = function (fn, nmspace, context) {
-            this.objEvents.on(GRID_EVENTS.cell_dblclicked, fn, nmspace, context);
+            this.objEvents.on("cell_dblclicked", fn, nmspace, context);
         };
         DataGrid.prototype.removeOnCellDblClicked = function (nmspace) {
-            this.objEvents.off(GRID_EVENTS.cell_dblclicked, nmspace);
+            this.objEvents.off("cell_dblclicked", nmspace);
         };
         DataGrid.prototype.addOnRowAction = function (fn, nmspace, context) {
-            this.objEvents.on(GRID_EVENTS.row_action, fn, nmspace, context);
+            this.objEvents.on("row_action", fn, nmspace, context);
         };
         DataGrid.prototype.removeOnRowAction = function (nmspace) {
-            this.objEvents.off(GRID_EVENTS.row_action, nmspace);
+            this.objEvents.off("row_action", nmspace);
         };
         DataGrid.prototype._onKeyDown = function (key, event) {
             var ds = this.dataSource, self = this;
@@ -5458,10 +5435,10 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                     if (!!currentRow && !!this._actionsCol) {
                         event.preventDefault();
                         if (currentRow.isEditing) {
-                            this.objEvents.raise(GRID_EVENTS.row_action, { row: currentRow, action: 0 });
+                            this.objEvents.raise("row_action", { row: currentRow, action: 0 });
                         }
                         else {
-                            this.objEvents.raise(GRID_EVENTS.row_action, { row: currentRow, action: 1 });
+                            this.objEvents.raise("row_action", { row: currentRow, action: 1 });
                         }
                     }
                     break;
@@ -5469,7 +5446,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                     if (!!currentRow && !!this._actionsCol) {
                         if (currentRow.isEditing) {
                             event.preventDefault();
-                            this.objEvents.raise(GRID_EVENTS.row_action, { row: currentRow, action: 2 });
+                            this.objEvents.raise("row_action", { row: currentRow, action: 2 });
                         }
                     }
                     break;
@@ -5495,15 +5472,15 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
         };
         DataGrid.prototype._onRowStateChanged = function (row, val) {
             var args = { row: row, val: val, css: null };
-            this.objEvents.raise(GRID_EVENTS.row_state_changed, args);
+            this.objEvents.raise("row_state_changed", args);
             return args.css;
         };
         DataGrid.prototype._onCellDblClicked = function (cell) {
             var args = { cell: cell };
-            this.objEvents.raise(GRID_EVENTS.cell_dblclicked, args);
+            this.objEvents.raise("cell_dblclicked", args);
         };
         DataGrid.prototype._onRowSelectionChanged = function (row) {
-            this.objEvents.raise(GRID_EVENTS.row_selected, { row: row });
+            this.objEvents.raise("row_selected", { row: row });
         };
         DataGrid.prototype._resetColumnsSort = function () {
             this.columns.forEach(function (col) {
@@ -5577,7 +5554,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             if (old !== parentRow && !!old) {
                 old.expanderCell.toggleImage();
             }
-            this.objEvents.raise(GRID_EVENTS.row_expanded, { collapsedRow: old, expandedRow: parentRow, isExpanded: expanded });
+            this.objEvents.raise("row_expanded", { collapsedRow: old, expandedRow: parentRow, isExpanded: expanded });
         };
         DataGrid.prototype._parseColumnAttr = function (columnAttr, contentAttr) {
             var defaultOp = {
@@ -5724,7 +5701,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             if (!!this._rowSelectorCol) {
                 this._rowSelectorCol.checked = false;
             }
-            this.objEvents.raise(GRID_EVENTS.page_changed, {});
+            this.objEvents.raise("page_changed", {});
         };
         DataGrid.prototype._onItemEdit = function (item, isBegin, isCanceled) {
             var row = this._rowMap[item._key];
@@ -7025,9 +7002,10 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
         panelEvents: "panelEvents"
     };
     var VERTICAL = "vertical", HORIZONTAL = "horizontal";
-    var PNL_EVENTS = {
-        item_clicked: "item_clicked"
-    };
+    var PNL_EVENTS;
+    (function (PNL_EVENTS) {
+        PNL_EVENTS["item_clicked"] = "item_clicked";
+    })(PNL_EVENTS || (PNL_EVENTS = {}));
     var StackPanel = (function (_super) {
         __extends(StackPanel, _super);
         function StackPanel(options) {
@@ -7089,15 +7067,11 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             _this._setDataSource(ds);
             return _this;
         }
-        StackPanel.prototype.getEventNames = function () {
-            var baseEvents = _super.prototype.getEventNames.call(this);
-            return [PNL_EVENTS.item_clicked].concat(baseEvents);
-        };
         StackPanel.prototype.addOnItemClicked = function (fn, nmspace, context) {
-            this.objEvents.on(PNL_EVENTS.item_clicked, fn, nmspace, context);
+            this.objEvents.on("item_clicked", fn, nmspace, context);
         };
         StackPanel.prototype.removeOnItemClicked = function (nmspace) {
-            this.objEvents.off(PNL_EVENTS.item_clicked, nmspace);
+            this.objEvents.off("item_clicked", nmspace);
         };
         StackPanel.prototype._getContainerEl = function () { return this.el; };
         StackPanel.prototype._onKeyDown = function (key, event) {
@@ -7262,7 +7236,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
         StackPanel.prototype._onItemClicked = function (div, item) {
             this._updateCurrent(item, false);
             this.dataSource.currentItem = item;
-            this.objEvents.raise(PNL_EVENTS.item_clicked, { item: item });
+            this.objEvents.raise("item_clicked", { item: item });
         };
         StackPanel.prototype._clearContent = function () {
             var self = this, keys = Object.keys(self._itemMap);

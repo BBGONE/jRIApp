@@ -10,11 +10,11 @@ import { ValidationError } from "../errors";
 
 const coreUtils = CoreUtils, strUtils = StringUtils, checks = Checks, sys = SysUtils;
 
-const BAG_EVENTS = {
-    errors_changed: "errors_changed",
-    validate_bag: "validate_bag",
-    validate_field: "validate_field"
-};
+const enum BAG_EVENTS {
+    errors_changed = "errors_changed",
+    validate_bag = "validate_bag",
+    validate_field = "validate_field"
+}
 
 export interface IBagErrors {
     [fieldName: string]: string[];
@@ -57,10 +57,6 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
         this._json = void 0;
         this._val = {};
         super.dispose();
-    }
-    getEventNames() {
-        const baseEvents = super.getEventNames();
-        return [BAG_EVENTS.validate_bag, BAG_EVENTS.validate_field].concat(baseEvents);
     }
     // override
     isHasProp(prop: string) {

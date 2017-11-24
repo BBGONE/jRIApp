@@ -53,16 +53,16 @@ const utils = Utils, dom = DomUtils, win = dom.window, doc = win.document,
 const _TEMPLATE_SELECTOR = 'script[type="text/html"]';
 const _stylesLoader: IStylesLoader = createCssLoader();
 
-const GLOB_EVENTS = {
-    load: "load",
-    unload: "unload",
-    initialized: "initialize"
-};
+const enum GLOB_EVENTS {
+    load = "load",
+    unload = "unload",
+    initialized = "initialize"
+}
 
-const PROP_NAME = {
-    curSelectable: "currentSelectable",
-    isReady: "isReady"
-};
+const enum PROP_NAME {
+    curSelectable = "currentSelectable",
+    isReady = "isReady"
+}
 
 export interface IInternalBootstrapMethods {
     initialize(): IPromise<Bootstrap>;
@@ -177,7 +177,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         this.defaults.imagesPath = PathHelper.getFrameworkImgPath();
         // load jriapp.css (it will load only if it is not loaded yet)
         _stylesLoader.loadOwnStyle();
-        ERROR.addErrorHandler("*", this);
+        ERROR.addHandler("*", this);
     }
     private _bindGlobalEvents(): void {
         const self = this;
@@ -249,13 +249,6 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     protected _createObjEvents(): IObjectEvents {
         return new _ObjectEvents(this);
     }
-    getEventNames(): string[] {
-        const baseEvents = super.getEventNames(),
-            events = Object.keys(GLOB_EVENTS).map((key) => {
-                return <string>(<any>GLOB_EVENTS)[key];
-            });
-        return events.concat(baseEvents);
-    }
     private _init(): IPromise<Bootstrap> {
         const self = this;
         const promise: IPromise<Bootstrap> = self.stylesLoader.whenAllLoaded().then(() => {
@@ -325,7 +318,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             throw new Error("Application already registered");
         }
         this._appInst = app;
-        ERROR.addErrorHandler(app.appName, app);
+        ERROR.addHandler(app.appName, app);
     }
     private _unregisterApp(app: IApplication): void {
         if (!this._appInst || this._appInst.appName !== app.appName) {
@@ -333,7 +326,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         }
 
         try {
-            ERROR.removeErrorHandler(app.appName);
+            ERROR.removeHandler(app.appName);
             this.templateLoader.unRegisterTemplateGroup(app.appName);
             this.templateLoader.unRegisterTemplateLoader(app.appName);
         } finally {
@@ -458,7 +451,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         dom.events.offNS(doc, this._objId);
         dom.events.offNS(win, this._objId);
         win.onerror = null;
-        ERROR.removeErrorHandler("*");
+        ERROR.removeHandler("*");
         this._bootState = BootstrapState.Disposed;
         super.dispose();
     }

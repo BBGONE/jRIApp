@@ -75,9 +75,9 @@ export interface IInternalDbSetMethods<TItem extends IEntityItem, TObj> extends 
     onItemStatusChanged(item: TItem, oldStatus: ITEM_STATUS): void;
 }
 
-const DBSET_EVENTS = {
-    loaded: "loaded"
-};
+const enum DBSET_EVENTS {
+    loaded = "dbset_loaded"
+}
 
 export interface IDbSetConstructor<TItem extends IEntityItem, TObj> {
     new (dbContext: DbContext): DbSet<TItem, TObj, DbContext>;
@@ -208,10 +208,6 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
     abstract itemFactory(aspect: EntityAspect<TItem, TObj, TDbContext>): TItem;
     public handleError(error: any, source: any): boolean {
         return (!this._dbContext) ? super.handleError(error, source) : this._dbContext.handleError(error, source);
-    }
-    getEventNames() {
-        const baseEvents = super.getEventNames();
-        return [DBSET_EVENTS.loaded].concat(baseEvents);
     }
     protected _mapAssocFields() {
         const trackAssoc = this._trackAssoc, tasKeys = Object.keys(trackAssoc), trackAssocMap = this._trackAssocMap;

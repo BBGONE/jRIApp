@@ -34,10 +34,10 @@ export interface ILookupOptions {
     statePath?: string;
 }
 
-const LOOKUP_EVENTS = {
-    obj_created: "object_created",
-    obj_needed: "object_needed"
-};
+const enum LOOKUP_EVENTS {
+    obj_created = "object_created",
+    obj_needed = "object_needed"
+}
 
 export type TObjCreatedArgs = { objectKey: string; object: IBaseObject; isCachedExternally: boolean; };
 export type TObjNeededArgs = { objectKey: string; object: IBaseObject; };
@@ -67,17 +67,13 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
             this._options.initContentFn(this);
         }
     }
-    getEventNames() {
-        const baseEvents = super.getEventNames();
-        return [LOOKUP_EVENTS.obj_created, LOOKUP_EVENTS.obj_needed].concat(baseEvents);
-    }
-    addOnObjectCreated(fn: (sender: any, args: TObjCreatedArgs) => void, nmspace?: string) {
+    addOnObjectCreated(fn: (sender: LookupContent, args: TObjCreatedArgs) => void, nmspace?: string) {
         this.objEvents.on(LOOKUP_EVENTS.obj_created, fn, nmspace);
     }
     removeOnObjectCreated(nmspace?: string) {
         this.objEvents.off(LOOKUP_EVENTS.obj_created, nmspace);
     }
-    addOnObjectNeeded(fn: (sender: any, args: TObjNeededArgs) => void, nmspace?: string) {
+    addOnObjectNeeded(fn: (sender: LookupContent, args: TObjNeededArgs) => void, nmspace?: string) {
         this.objEvents.on(LOOKUP_EVENTS.obj_needed, fn, nmspace);
     }
     removeOnObjectNeeded(nmspace?: string) {

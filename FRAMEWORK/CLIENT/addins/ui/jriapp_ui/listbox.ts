@@ -53,9 +53,9 @@ const PROP_NAME = {
     stateProvider: "stateProvider"
 };
 
-const LISTBOX_EVENTS = {
-    refreshed: "refreshed"
-};
+const enum LISTBOX_EVENTS {
+    refreshed = "refreshed"
+}
 
  function fn_Str(v: any): string {
     return (checks.isNt(v)) ? "" : ("" + v);
@@ -149,13 +149,6 @@ export class ListBox extends BaseObject {
         this._stateProvider = null;
         this._isDSFilled = false;
         super.dispose();
-    }
-    getEventNames() {
-        const baseEvents = super.getEventNames();
-        const events = Object.keys(LISTBOX_EVENTS).map((key) => {
-            return <string>(<any>LISTBOX_EVENTS)[key];
-        });
-        return events.concat(baseEvents);
     }
     addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any) {
         this.objEvents.on(LISTBOX_EVENTS.refreshed, fn, nmspace, context);

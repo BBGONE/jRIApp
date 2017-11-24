@@ -148,7 +148,6 @@ declare module "jriapp_shared/int" {
     }
     export interface IBaseObject extends IErrorHandler, IDisposable {
         getIsStateDirty(): boolean;
-        getEventNames(): string[];
         isHasProp(prop: string): boolean;
         readonly objEvents: IObjectEvents;
     }
@@ -432,8 +431,8 @@ declare module "jriapp_shared/utils/error" {
     import { IErrorHandler } from "jriapp_shared/int";
     export class ERROR {
         private static _handlers;
-        static addErrorHandler(name: string, handler: IErrorHandler): void;
-        static removeErrorHandler(name: string): void;
+        static addHandler(name: string, handler: IErrorHandler): void;
+        static removeHandler(name: string): void;
         static handleError(sender: any, error: any, source: any): boolean;
         static throwDummy(err: any): void;
         static checkIsDummy(error: any): boolean;
@@ -475,7 +474,8 @@ declare module "jriapp_shared/utils/eventhelper" {
     }
 }
 declare module "jriapp_shared/object" {
-    import { IBaseObject, TPriority, TEventHandler, TErrorHandler, TPropChangedHandler, IObjectEvents } from "jriapp_shared/int";
+    import { IBaseObject, TPriority, TEventHandler, TErrorHandler, TPropChangedHandler, IObjectEvents, IWeakMap } from "jriapp_shared/int";
+    export const objStateMap: IWeakMap;
     export class ObjectEvents implements IObjectEvents {
         private _events;
         private _owner;
@@ -498,7 +498,6 @@ declare module "jriapp_shared/object" {
         constructor();
         protected setDisposing(): void;
         protected _createObjEvents(): IObjectEvents;
-        getEventNames(): string[];
         isHasProp(prop: string): boolean;
         handleError(error: any, source: any): boolean;
         readonly objEvents: IObjectEvents;
@@ -628,7 +627,6 @@ declare module "jriapp_shared/utils/jsonbag" {
         private _errors;
         constructor(json: string, jsonChanged: (json: string) => void);
         dispose(): void;
-        getEventNames(): string[];
         isHasProp(prop: string): boolean;
         addOnValidateBag(fn: TEventHandler<IPropertyBag, IBagValidateArgs<IPropertyBag>>, nmspace?: string, context?: any): void;
         removeOnValidateBag(nmspace?: string): void;
@@ -748,10 +746,10 @@ declare module "jriapp_shared/collection/int" {
         isLoading: string;
         isRefreshing: string;
     };
-    export const ITEM_EVENTS: {
-        errors_changed: string;
-        destroyed: string;
-    };
+    export const enum ITEM_EVENTS {
+        errors_changed = "errors_changed",
+        destroyed = "destroyed",
+    }
     export interface IFieldInfo {
         fieldName: string;
         isPrimaryKey: number;
@@ -1119,7 +1117,6 @@ declare module "jriapp_shared/collection/base" {
         protected _internal: IInternalCollMethods<TItem>;
         constructor();
         static getEmptyFieldInfo(fieldName: string): IFieldInfo;
-        getEventNames(): string[];
         addOnClearing(fn: TEventHandler<ICollection<TItem>, {
             reason: COLL_CHANGE_REASON;
         }>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
@@ -1266,7 +1263,6 @@ declare module "jriapp_shared/collection/aspect" {
         private _flags;
         private _valueBag;
         constructor(collection: BaseCollection<TItem>);
-        getEventNames(): string[];
         protected _onErrorsChanged(): void;
         protected _setIsEdited(v: boolean): void;
         protected _setIsCancelling(v: boolean): void;
@@ -1418,7 +1414,6 @@ declare module "jriapp_shared/utils/jsonarray" {
         private _objId;
         constructor(owner: JsonBag, pathToArray: string);
         dispose(): void;
-        getEventNames(): string[];
         protected updateArray(arr: any[]): void;
         addOnValidateBag(fn: TEventHandler<IPropertyBag, IBagValidateArgs<IPropertyBag>>, nmspace?: string, context?: any): void;
         removeOnValidateBag(nmspace?: string): void;

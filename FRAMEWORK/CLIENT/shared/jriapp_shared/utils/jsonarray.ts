@@ -7,11 +7,11 @@ import { AnyList, IAnyValItem } from "./anylist";
 
 const coreUtils = CoreUtils;
 
-const BAG_EVENTS = {
-    errors_changed: "errors_changed",
-    validate_bag: "validate_bag",
-    validate_field: "validate_field"
-};
+const enum BAG_EVENTS {
+    errors_changed = "errors_changed",
+    validate_bag = "validate_bag",
+    validate_field = "validate_field"
+}
 
 export class JsonArray extends BaseObject {
     private _owner: JsonBag;
@@ -40,10 +40,6 @@ export class JsonArray extends BaseObject {
         this._list = null;
         this._owner = null;
         super.dispose();
-    }
-    getEventNames() {
-        const baseEvents = super.getEventNames();
-        return [BAG_EVENTS.validate_bag, BAG_EVENTS.validate_field].concat(baseEvents);
     }
     protected updateArray(arr: any[]): void {
         coreUtils.setValue(this._owner.val, this._pathToArray, arr, false, "->");

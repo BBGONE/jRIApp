@@ -6,9 +6,9 @@ import { BaseElView, PROP_NAME } from "./baseview";
 
 const dom = DomUtils;
 
-const TXTAREA_EVENTS = {
-    keypress: "keypress"
-};
+const enum TXTAREA_EVENTS {
+    keypress = "keypress"
+}
 
 export interface ITextAreaOptions extends ITextBoxOptions {
      wrap?: string;
@@ -41,10 +41,6 @@ export class TextAreaElView extends BaseElView {
                 self.objEvents.raiseProp(PROP_NAME.value);
             }, this.uniqueID);
         }
-    }
-    getEventNames() {
-        const baseEvents = super.getEventNames();
-        return [TXTAREA_EVENTS.keypress].concat(baseEvents);
     }
     addOnKeyPress(fn: (sender: TextAreaElView, args: TKeyPressArgs) => void, nmspace?: string) {
         this.objEvents.on(TXTAREA_EVENTS.keypress, fn, nmspace);

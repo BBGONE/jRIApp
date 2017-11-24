@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
     IBaseObject, IIndexer, TPriority, TEventHandler, TErrorHandler,
-    TErrorArgs, TPropChangedHandler, IObjectEvents
+    TErrorArgs, TPropChangedHandler, IObjectEvents, IWeakMap
 } from "./int";
 import { ERRS } from "./lang";
 import { SysUtils } from "./utils/sysutils";
@@ -19,6 +19,8 @@ const enum OBJ_EVENTS {
 
 const checks = Checks, strUtils = StringUtils, coreUtils = CoreUtils,
     evHelper = EventHelper, sys = SysUtils, weakmap = createWeakMap();
+//can be used in external IBaseObject implementations
+export const objStateMap: IWeakMap = weakmap;
 
 sys.isBaseObj = function (obj: any): boolean {
     return (!!obj && !!weakmap.get(obj));
@@ -129,9 +131,6 @@ export class BaseObject implements IBaseObject {
     }
     protected _createObjEvents(): IObjectEvents {
         return new ObjectEvents(this);
-    }
-    getEventNames(): string[] {
-        return [OBJ_EVENTS.error, OBJ_EVENTS.destroyed];
     }
     isHasProp(prop: string): boolean {
         return checks.isHasProp(this, prop);

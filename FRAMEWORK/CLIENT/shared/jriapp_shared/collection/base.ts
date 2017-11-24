@@ -29,26 +29,26 @@ const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = util
 // REPLACE DUMMY IMPLEMENTATIONS
 sys.isCollection = (obj) => { return (!!obj && obj instanceof BaseCollection); };
 
-const COLL_EVENTS = {
-    begin_edit: "begin_edit",
-    end_edit: "end_edit",
-    before_begin_edit: "before_be",
-    before_end_edit: "before_ee",
-    collection_changed: "coll_changed",
-    fill: "fill",
-    item_deleting: "item_deleting",
-    item_adding: "item_adding",
-    item_added: "item_added",
-    validate_field: "validate_field",
-    validate_item: "validate_item",
-    current_changing: "current_changing",
-    page_changing: "page_changing",
-    errors_changed: "errors_changed",
-    status_changed: "status_changed",
-    clearing: "clearing",
-    cleared: "cleared",
-    commit_changes: "commit_changes"
-};
+const enum COLL_EVENTS {
+    begin_edit = "begin_edit",
+    end_edit = "end_edit",
+    before_begin_edit = "before_be",
+    before_end_edit = "before_ee",
+    collection_changed = "coll_changed",
+    fill = "fill",
+    item_deleting = "item_deleting",
+    item_adding = "item_adding",
+    item_added = "item_added",
+    validate_field = "validate_field",
+    validate_item = "validate_item",
+    current_changing = "current_changing",
+    page_changing = "page_changing",
+    errors_changed = "errors_changed",
+    status_changed = "status_changed",
+    clearing = "clearing",
+    cleared = "cleared",
+    commit_changes = "commit_changes"
+}
 
 export class Errors<TItem extends ICollectionItem> {
     private _errors: IErrorsList;
@@ -231,11 +231,6 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
             fullName: null
         };
         return fieldInfo;
-    }
-    getEventNames(): string[] {
-        const baseEvents = super.getEventNames();
-        const events = Object.keys(COLL_EVENTS).map((key) => { return <string>(<any>COLL_EVENTS)[key]; });
-        return events.concat(baseEvents);
     }
     addOnClearing(fn: TEventHandler<ICollection<TItem>, { reason: COLL_CHANGE_REASON; }>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
         this.objEvents.on(COLL_EVENTS.clearing, fn, nmspace, context, priority);

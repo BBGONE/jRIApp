@@ -7,9 +7,9 @@ import { InputElView } from "./input";
 
 const dom = DomUtils;
 
-const TXTBOX_EVENTS = {
-    keypress: "keypress"
-};
+const enum TXTBOX_EVENTS {
+    keypress = "keypress"
+}
 
 export interface ITextBoxOptions extends IViewOptions {
     updateOnKeyUp?: boolean;
@@ -41,10 +41,6 @@ export class TextBoxElView extends InputElView {
                 self.objEvents.raiseProp(PROP_NAME.value);
             }, this.uniqueID);
         }
-    }
-    getEventNames() {
-        const baseEvents = super.getEventNames();
-        return [TXTBOX_EVENTS.keypress].concat(baseEvents);
     }
     addOnKeyPress(fn: (sender: TextBoxElView, args: TKeyPressArgs) => void, nmspace?: string) {
         this.objEvents.on(TXTBOX_EVENTS.keypress, fn, nmspace);

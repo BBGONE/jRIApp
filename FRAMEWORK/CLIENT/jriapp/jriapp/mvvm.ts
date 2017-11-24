@@ -15,9 +15,9 @@ export interface ITCommand<TParam> {
 }
 export type ICommand = ITCommand<any>;
 
-const CMD_EVENTS = {
-    can_execute_changed: "canExecute_changed"
-};
+const enum CMD_EVENTS {
+    can_execute_changed = "canExecute_changed"
+}
 
 export type TAction<TParam, TThis> = (this: TThis, sender: any, param: TParam) => void;
 export type Action = TAction<any, any>;
@@ -36,10 +36,6 @@ export class TCommand<TParam, TThis> extends BaseObject implements ITCommand<TPa
         this._action = fnAction;
         this._thisObj = thisObj;
         this._predicate = fnCanExecute;
-    }
-    getEventNames() {
-        const baseEvents = super.getEventNames();
-        return [CMD_EVENTS.can_execute_changed].concat(baseEvents);
     }
     protected _canExecute(sender: any, param: TParam, context: any): boolean {
         if (!this._predicate) {

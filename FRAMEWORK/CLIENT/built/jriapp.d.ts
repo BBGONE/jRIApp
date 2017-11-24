@@ -374,7 +374,6 @@ declare module "jriapp/utils/tloader" {
         private _waitQueue;
         constructor();
         dispose(): void;
-        getEventNames(): string[];
         addOnLoaded(fn: (sender: TemplateLoader, args: {
             html: string;
             app: IApplication;
@@ -656,7 +655,6 @@ declare module "jriapp/bootstrap" {
         private _processHTMLTemplates();
         private _processTemplate(name, html, app);
         protected _createObjEvents(): IObjectEvents;
-        getEventNames(): string[];
         private _init();
         private _initialize();
         private _trackSelectable(selectable);
@@ -880,7 +878,6 @@ declare module "jriapp/mvvm" {
         protected _predicate: TPredicate<TParam, TThis>;
         private _objId;
         constructor(fnAction: TAction<TParam, TThis>, thisObj?: TThis, fnCanExecute?: TPredicate<TParam, TThis>);
-        getEventNames(): string[];
         protected _canExecute(sender: any, param: TParam, context: any): boolean;
         protected _execute(sender: any, param: TParam, context: any): void;
         addOnCanExecuteChanged(fn: (sender: ITCommand<TParam>, args: any) => void, nmspace?: string, context?: IBaseObject): void;
@@ -937,7 +934,6 @@ declare module "jriapp/app" {
         constructor(options?: IAppOptions);
         private _cleanUpObjMaps();
         private _initAppModules();
-        getEventNames(): string[];
         protected onStartUp(): any;
         _getInternal(): IInternalAppMethods;
         addOnStartUp(fn: TEventHandler<IApplication, any>, nmspace?: string, context?: IBaseObject): void;
@@ -987,5 +983,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand, TCommand, ITCommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.2.1";
+    export const VERSION = "2.3.0";
 }

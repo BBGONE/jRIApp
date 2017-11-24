@@ -213,10 +213,6 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             ERROR.reThrow(ex, this.handleError(ex, this));
         }
     }
-    getEventNames(): string[] {
-        const baseEvents = super.getEventNames(), events: string[] = [DLG_EVENTS.close, DLG_EVENTS.refresh];
-        return events.concat(baseEvents);
-    }
     templateLoading(template: ITemplate): void {
         // noop
     }

@@ -22,10 +22,10 @@ export const PROP_NAME = {
     isRefreshing: "isRefreshing"
 };
 
-export const ITEM_EVENTS = {
-    errors_changed: "errors_changed",
-    destroyed: "destroyed"
-};
+export const enum ITEM_EVENTS {
+    errors_changed = "errors_changed",
+    destroyed = "destroyed"
+}
 
 // Collection interfaces
 export interface IFieldInfo {

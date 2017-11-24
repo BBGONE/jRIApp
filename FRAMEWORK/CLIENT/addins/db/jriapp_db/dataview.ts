@@ -15,9 +15,9 @@ const utils = Utils, _async = utils.defer, checks = utils.check,
     strUtils = utils.str, coreUtils = utils.core,
     arrHelper = utils.arr, ERROR = utils.err, sys = utils.sys;
 
-const VIEW_EVENTS = {
-    refreshed: "view_refreshed"
-};
+const enum VIEW_EVENTS {
+    refreshed = "view_refreshed"
+}
 
 export interface IDataViewOptions<TItem extends ICollectionItem> {
     dataSource: ICollection<TItem>;
@@ -60,10 +60,6 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
             self._fieldMap[name] = ds.getFieldInfo(name);
         });
         this._bindDS();
-    }
-    getEventNames() {
-        const baseEvents = super.getEventNames();
-        return [VIEW_EVENTS.refreshed].concat(baseEvents);
     }
     // override
     protected _clearItems(items: TItem[]) {

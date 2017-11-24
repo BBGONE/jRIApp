@@ -60,7 +60,6 @@ export interface IObjectEvents {
 
 export interface IBaseObject extends IErrorHandler, IDisposable {
     getIsStateDirty(): boolean;
-    getEventNames(): string[];
     isHasProp(prop: string): boolean;
     readonly objEvents: IObjectEvents;
 }
