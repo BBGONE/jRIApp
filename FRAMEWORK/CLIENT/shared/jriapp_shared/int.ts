@@ -41,11 +41,11 @@ export const enum TPriority {
     Normal = 0, AboveNormal = 1, High = 2
 }
 
-export interface IObjectEvents {
+export interface IEvents {
     canRaise(name: string): boolean;
     on(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void;
     off(name?: string, nmspace?: string): void;
-   // remove event handlers by their namespace
+    // remove event handlers by their namespace
     offNS(nmspace?: string): void;
     raise(name: string, args: any): void;
     raiseProp(name: string): void;
@@ -62,6 +62,10 @@ export interface IBaseObject extends IErrorHandler, IDisposable {
     getIsStateDirty(): boolean;
     isHasProp(prop: string): boolean;
     readonly objEvents: IObjectEvents;
+}
+
+export interface IObjectEvents extends IEvents {
+    readonly owner: IBaseObject;
 }
 
 export interface IEditable extends IBaseObject {

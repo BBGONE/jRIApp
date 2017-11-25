@@ -35,9 +35,9 @@ interface IObjState {
 
 export class ObjectEvents implements IObjectEvents {
     private _events: IIndexer<IEventList>;
-    private _owner: object;
+    private _owner: IBaseObject;
 
-    constructor(owner: object) {
+    constructor(owner: IBaseObject) {
         this._events = null;
         this._owner = owner;
     }
@@ -113,7 +113,7 @@ export class ObjectEvents implements IObjectEvents {
     removeOnError(nmspace?: string): void {
         this.off(OBJ_EVENTS.error, nmspace);
     }
-    get owner(): object {
+    get owner(): IBaseObject {
         return this._owner;
     }
 }
@@ -152,13 +152,6 @@ export class BaseObject implements IBaseObject {
 
         return isHandled;
     }
-    get objEvents(): IObjectEvents {
-        const state = <IObjState>weakmap.get(this);
-        if (!state.events) {
-            state.events = this._createObjEvents();
-        }
-        return state.events;
-    }
     getIsDisposed(): boolean {
         const state = <IObjState>weakmap.get(this);
         return state.objState == ObjState.Disposed;
@@ -180,5 +173,12 @@ export class BaseObject implements IBaseObject {
                 state.events.off();
             }
         }
+    }
+    get objEvents(): IObjectEvents {
+        const state = <IObjState>weakmap.get(this);
+        if (!state.events) {
+            state.events = this._createObjEvents();
+        }
+        return state.events;
     }
 }

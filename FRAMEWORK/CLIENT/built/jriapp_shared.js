@@ -1419,17 +1419,6 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
             }
             return isHandled;
         };
-        Object.defineProperty(BaseObject.prototype, "objEvents", {
-            get: function () {
-                var state = weakmap.get(this);
-                if (!state.events) {
-                    state.events = this._createObjEvents();
-                }
-                return state.events;
-            },
-            enumerable: true,
-            configurable: true
-        });
         BaseObject.prototype.getIsDisposed = function () {
             var state = weakmap.get(this);
             return state.objState == 2;
@@ -1453,6 +1442,17 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
                 }
             }
         };
+        Object.defineProperty(BaseObject.prototype, "objEvents", {
+            get: function () {
+                var state = weakmap.get(this);
+                if (!state.events) {
+                    state.events = this._createObjEvents();
+                }
+                return state.events;
+            },
+            enumerable: true,
+            configurable: true
+        });
         return BaseObject;
     }());
     exports.BaseObject = BaseObject;

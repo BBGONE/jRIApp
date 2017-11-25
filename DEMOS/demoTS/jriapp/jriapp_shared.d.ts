@@ -132,7 +132,7 @@ declare module "jriapp_shared/int" {
         AboveNormal = 1,
         High = 2,
     }
-    export interface IObjectEvents {
+    export interface IEvents {
         canRaise(name: string): boolean;
         on(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void;
         off(name?: string, nmspace?: string): void;
@@ -150,6 +150,9 @@ declare module "jriapp_shared/int" {
         getIsStateDirty(): boolean;
         isHasProp(prop: string): boolean;
         readonly objEvents: IObjectEvents;
+    }
+    export interface IObjectEvents extends IEvents {
+        readonly owner: IBaseObject;
     }
     export interface IEditable extends IBaseObject {
         beginEdit(): boolean;
@@ -479,7 +482,7 @@ declare module "jriapp_shared/object" {
     export class ObjectEvents implements IObjectEvents {
         private _events;
         private _owner;
-        constructor(owner: object);
+        constructor(owner: IBaseObject);
         canRaise(name: string): boolean;
         on(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void;
         off(name?: string, nmspace?: string): void;
@@ -492,7 +495,7 @@ declare module "jriapp_shared/object" {
         removeOnDisposed(nmspace?: string): void;
         addOnError(handler: TErrorHandler, nmspace?: string, context?: object, priority?: TPriority): void;
         removeOnError(nmspace?: string): void;
-        readonly owner: object;
+        readonly owner: IBaseObject;
     }
     export class BaseObject implements IBaseObject {
         constructor();
@@ -500,10 +503,10 @@ declare module "jriapp_shared/object" {
         protected _createObjEvents(): IObjectEvents;
         isHasProp(prop: string): boolean;
         handleError(error: any, source: any): boolean;
-        readonly objEvents: IObjectEvents;
         getIsDisposed(): boolean;
         getIsStateDirty(): boolean;
         dispose(): void;
+        readonly objEvents: IObjectEvents;
     }
 }
 declare module "jriapp_shared/utils/arrhelper" {
