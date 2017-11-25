@@ -74,8 +74,8 @@ export class Application extends BaseObject implements IApplication {
             utils.core.forEachProp(objMap, (name) => {
                 const obj = objMap[name];
                 if (sys.isBaseObj(obj)) {
-                    if (!(<IBaseObject>obj).getIsDisposed()) {
-                        (<IBaseObject>obj).objEvents.offNS(self.uniqueID);
+                    if (!obj.getIsDisposed()) {
+                        obj.objEvents.offNS(self.uniqueID);
                     }
                 }
             });
@@ -152,7 +152,7 @@ export class Application extends BaseObject implements IApplication {
     registerObject(name: string, obj: any): void {
         const self = this, name2 = STORE_KEY.OBJECT + name;
         if (sys.isBaseObj(obj)) {
-            (<IBaseObject>obj).objEvents.addOnDisposed(() => {
+            obj.objEvents.addOnDisposed(() => {
                 boot._getInternal().unregisterObject(self, name2);
             }, self.uniqueID);
         }

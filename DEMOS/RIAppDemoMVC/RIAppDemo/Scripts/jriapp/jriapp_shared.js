@@ -279,12 +279,16 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/uti
     var SysUtils = (function () {
         function SysUtils() {
         }
+        SysUtils.isBaseObj = function (obj) {
+            return SysUtils._isBaseObj(obj);
+        };
         SysUtils.isEditable = function (obj) {
-            var isBO = SysUtils.isBaseObj(obj);
-            return isBO && checks.isFunc(obj.beginEdit) && !!obj.endEdit && !!obj.cancelEdit && checks_1.Checks.isHasProp(obj, "isEditing");
+            var isBO = SysUtils._isBaseObj(obj);
+            return isBO && checks.isFunc(obj.beginEdit) && checks.isFunc(obj.endEdit) && checks.isFunc(obj.cancelEdit) && checks.isHasProp(obj, "isEditing");
         };
         SysUtils.isSubmittable = function (obj) {
-            return !!obj && checks.isFunc(obj.submitChanges) && checks.isHasProp(obj, "isCanSubmit");
+            var isBO = SysUtils._isBaseObj(obj);
+            return isBO && checks.isFunc(obj.submitChanges) && checks.isHasProp(obj, "isCanSubmit");
         };
         SysUtils.isErrorNotification = function (obj) {
             if (!obj) {
@@ -300,7 +304,7 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/uti
             if (!obj) {
                 return null;
             }
-            else if (!!obj._aspect && SysUtils.isErrorNotification(obj._aspect)) {
+            if (!!obj._aspect && SysUtils.isErrorNotification(obj._aspect)) {
                 return obj._aspect.getIErrorNotification();
             }
             else if (SysUtils.isErrorNotification(obj)) {
@@ -312,7 +316,7 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/uti
             if (!obj) {
                 return null;
             }
-            else if (!!obj._aspect && SysUtils.isEditable(obj._aspect)) {
+            if (!!obj._aspect && SysUtils.isEditable(obj._aspect)) {
                 return obj._aspect;
             }
             else if (SysUtils.isEditable(obj)) {
@@ -324,7 +328,7 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/uti
             if (!obj) {
                 return null;
             }
-            else if (!!obj._aspect && SysUtils.isSubmittable(obj._aspect)) {
+            if (!!obj._aspect && SysUtils.isSubmittable(obj._aspect)) {
                 return obj._aspect;
             }
             else if (SysUtils.isSubmittable(obj)) {
@@ -428,7 +432,7 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/uti
             }
             return self.getProp(res, parts[maxindex]);
         };
-        SysUtils.isBaseObj = function () { return false; };
+        SysUtils._isBaseObj = function () { return false; };
         SysUtils.isBinding = function () { return false; };
         SysUtils.isPropBag = function (obj) {
             return !!obj && obj.isPropertyBag;
@@ -1293,7 +1297,7 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
     })(OBJ_EVENTS || (OBJ_EVENTS = {}));
     var checks = checks_4.Checks, strUtils = strUtils_2.StringUtils, coreUtils = coreutils_2.CoreUtils, evHelper = eventhelper_1.EventHelper, sys = sysutils_2.SysUtils, weakmap = weakmap_1.createWeakMap();
     exports.objStateMap = weakmap;
-    sys.isBaseObj = function (obj) {
+    sys._isBaseObj = function (obj) {
         return (!!obj && !!weakmap.get(obj));
     };
     var ObjState;

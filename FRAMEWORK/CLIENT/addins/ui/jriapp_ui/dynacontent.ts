@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { Utils, IVoidPromise, IBaseObject, Debounce } from "jriapp_shared";
+import { Utils, IVoidPromise, Debounce } from "jriapp_shared";
 import { ITemplate, ITemplateEvents, IViewOptions } from "jriapp/int";
 import { DomUtils } from "jriapp/utils/dom";
 import { createTemplate } from "jriapp/template";
@@ -21,12 +21,12 @@ export interface IDynaContentOptions extends IViewOptions {
     animate?: string;
 }
 
-const PROP_NAME = {
-    template: "template",
-    templateID: "templateID",
-    dataContext: "dataContext",
-    animation: "animation"
-};
+const enum PROP_NAME {
+    template = "template",
+    templateID = "templateID",
+    dataContext = "dataContext",
+    animation = "animation"
+}
 
 export class DynaContentElView extends BaseElView implements ITemplateEvents {
     private _dataContext: any;
@@ -133,7 +133,7 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
         this._template = null;
 
         if (sys.isBaseObj(a)) {
-            (<IBaseObject><any>a).dispose();
+            a.dispose();
         }
         if (!!t) {
             t.dispose();

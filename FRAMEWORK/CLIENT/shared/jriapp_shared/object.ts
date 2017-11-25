@@ -22,7 +22,7 @@ const checks = Checks, strUtils = StringUtils, coreUtils = CoreUtils,
 //can be used in external IBaseObject implementations
 export const objStateMap: IWeakMap = weakmap;
 
-sys.isBaseObj = function (obj: any): boolean {
+sys._isBaseObj = function (obj: any): boolean {
     return (!!obj && !!weakmap.get(obj));
 };
 

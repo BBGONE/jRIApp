@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    ISubmittable, IErrorNotification, IEditable, IPropertyBag
+    ISubmittable, IErrorNotification, IEditable, IPropertyBag, IBaseObject
 } from "../int";
 import { Checks } from "./checks";
 import { StringUtils } from "./strUtils";
@@ -11,7 +11,7 @@ const INDEX_PROP_RX = /(\b\w+\b)?\s*(\[.*?\])/gi, trimQuotsRX = /^(['"])+|(['"])
 
 export class SysUtils {
     // DUMMY implementations
-    static isBaseObj: (obj: any) => boolean = () => { return false; };
+    static _isBaseObj: (obj: any) => boolean = () => { return false; };
     static isBinding: (obj: any) => boolean = () => { return false; };
     static isPropBag: (obj: any) => boolean = (obj) => {
         return !!obj && obj.isPropertyBag;
@@ -23,12 +23,16 @@ export class SysUtils {
     static isValidationError: (obj: any) => boolean = () => { return false; };
 
     // System  Helper functions
+    static isBaseObj(obj: any): obj is IBaseObject {
+        return SysUtils._isBaseObj(obj);
+    }
     static isEditable(obj: any): obj is IEditable {
-        const isBO = SysUtils.isBaseObj(obj);
-        return isBO && checks.isFunc(obj.beginEdit) && !!obj.endEdit && !!obj.cancelEdit && Checks.isHasProp(obj, "isEditing");
+        const isBO = SysUtils._isBaseObj(obj);
+        return isBO && checks.isFunc(obj.beginEdit) && checks.isFunc(obj.endEdit) && checks.isFunc(obj.cancelEdit) && checks.isHasProp(obj, "isEditing");
     }
     static isSubmittable(obj: any): obj is ISubmittable {
-        return !!obj && checks.isFunc(obj.submitChanges) && checks.isHasProp(obj, "isCanSubmit");
+        const isBO = SysUtils._isBaseObj(obj);
+        return isBO && checks.isFunc(obj.submitChanges) && checks.isHasProp(obj, "isCanSubmit");
     }
     static isErrorNotification(obj: any): obj is IErrorNotification {
         if (!obj) {
@@ -43,10 +47,11 @@ export class SysUtils {
     static getErrorNotification(obj: any): IErrorNotification {
         if (!obj) {
             return null;
-        } else if (!!obj._aspect && SysUtils.isErrorNotification(obj._aspect)) {
-            return <IErrorNotification>obj._aspect.getIErrorNotification();
+        }
+        if (!!obj._aspect && SysUtils.isErrorNotification(obj._aspect)) {
+            return obj._aspect.getIErrorNotification();
         } else if (SysUtils.isErrorNotification(obj)) {
-            return <IErrorNotification>obj.getIErrorNotification();
+            return obj.getIErrorNotification();
         }
 
         return null;
@@ -54,10 +59,11 @@ export class SysUtils {
     static getEditable(obj: any): IEditable {
         if (!obj) {
             return null;
-        } else if (!!obj._aspect && SysUtils.isEditable(obj._aspect)) {
-            return <IEditable>obj._aspect;
+        }
+        if (!!obj._aspect && SysUtils.isEditable(obj._aspect)) {
+            return obj._aspect;
         } else if (SysUtils.isEditable(obj)) {
-            return <IEditable>obj;
+            return obj;
         }
 
         return null;
@@ -65,10 +71,11 @@ export class SysUtils {
     static getSubmittable(obj: any): ISubmittable {
         if (!obj) {
             return null;
-        } else if (!!obj._aspect && SysUtils.isSubmittable(obj._aspect)) {
-            return <ISubmittable>obj._aspect;
+        }
+        if (!!obj._aspect && SysUtils.isSubmittable(obj._aspect)) {
+            return obj._aspect;
         } else if (SysUtils.isSubmittable(obj)) {
-            return <ISubmittable>obj;
+            return obj;
         }
 
         return null;

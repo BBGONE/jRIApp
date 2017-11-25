@@ -31,45 +31,45 @@ export function fn_addToolTip(el: Element, tip: string, isError?: boolean, pos?:
     svc.addToolTip(el, tip, isError, pos);
 }
 
-export const css = {
-    fieldError: "ria-field-error",
-    commandLink: "ria-command-link",
-    checkedNull: "ria-checked-null",
-    disabled: "disabled",
-    opacity: "opacity",
-    color: "color",
-    fontSize: "font-size"
-};
+export const enum css {
+    fieldError = "ria-field-error",
+    commandLink = "ria-command-link",
+    checkedNull = "ria-checked-null",
+    disabled = "disabled",
+    opacity = "opacity",
+    color = "color",
+    fontSize = "font-size"
+}
 
-export const PROP_NAME = {
-    isVisible: "isVisible",
-    validationErrors: "validationErrors",
-    toolTip: "toolTip",
-    css: "css",
-    isEnabled: "isEnabled",
-    value: "value",
-    command: "command",
-    disabled: "disabled",
-    commandParam: "commandParam",
-    isBusy: "isBusy",
-    delay: "delay",
-    checked: "checked",
-    color: "color",
-    wrap: "wrap",
-    text: "text",
-    html: "html",
-    preventDefault: "preventDefault",
-    imageSrc: "imageSrc",
-    glyph: "glyph",
-    href: "href",
-    fontSize: "fontSize",
-    borderColor: "borderColor",
-    borderStyle: "borderStyle",
-    width: "width",
-    height: "height",
-    src: "src",
-    click: "click"
-};
+export const enum PROP_NAME {
+    isVisible = "isVisible",
+    validationErrors = "validationErrors",
+    toolTip = "toolTip",
+    css = "css",
+    isEnabled = "isEnabled",
+    value = "value",
+    command = "command",
+    disabled = "disabled",
+    commandParam = "commandParam",
+    isBusy = "isBusy",
+    delay = "delay",
+    checked = "checked",
+    color = "color",
+    wrap = "wrap",
+    text = "text",
+    html = "html",
+    preventDefault = "preventDefault",
+    imageSrc = "imageSrc",
+    glyph = "glyph",
+    href = "href",
+    fontSize = "fontSize",
+    borderColor = "borderColor",
+    borderStyle = "borderStyle",
+    width = "width",
+    height = "height",
+    src = "src",
+    click = "click"
+}
 
 export class BaseElView extends BaseObject implements IElView {
     private _objId: string;

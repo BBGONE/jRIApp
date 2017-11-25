@@ -19,7 +19,7 @@ export class DataColumn extends BaseColumn {
         // the DataCell caches here listbox (for the LookupContent)
         // so not to create it for every cell - it is only one per column!
         this._objCache = {};
-        let colClass = css.dataColumn;
+        let colClass: string = css.dataColumn;
         this._sortOrder = null;
         if (this.isSortable) {
             colClass += (" " + css.colSortable);

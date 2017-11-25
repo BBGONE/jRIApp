@@ -330,7 +330,7 @@ export class Binding extends BaseObject implements IBinding {
         const self = this;
         self._srcEnd = null;
 
-        if (sys.isBaseObj(obj) && (<IBaseObject>obj).getIsStateDirty()) {
+        if (sys.isBaseObj(obj) && obj.getIsStateDirty()) {
             return;
         }
 
@@ -408,7 +408,7 @@ export class Binding extends BaseObject implements IBinding {
     private _parseTgt(obj: any, path: string[], lvl: number) {
         const self = this;
         self._tgtEnd = null;
-        if (sys.isBaseObj(obj) && (<IBaseObject>obj).getIsStateDirty()) {
+        if (sys.isBaseObj(obj) && obj.getIsStateDirty()) {
             return;
         }
 

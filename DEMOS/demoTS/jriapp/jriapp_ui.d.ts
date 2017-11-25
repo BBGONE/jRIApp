@@ -162,44 +162,44 @@ declare module "jriapp_ui/baseview" {
     import { EVENT_CHANGE_TYPE, IEventChangedArgs } from "jriapp_ui/utils/eventbag";
     export { IEventChangedArgs, EVENT_CHANGE_TYPE };
     export function fn_addToolTip(el: Element, tip: string, isError?: boolean, pos?: string): void;
-    export const css: {
-        fieldError: string;
-        commandLink: string;
-        checkedNull: string;
-        disabled: string;
-        opacity: string;
-        color: string;
-        fontSize: string;
-    };
-    export const PROP_NAME: {
-        isVisible: string;
-        validationErrors: string;
-        toolTip: string;
-        css: string;
-        isEnabled: string;
-        value: string;
-        command: string;
-        disabled: string;
-        commandParam: string;
-        isBusy: string;
-        delay: string;
-        checked: string;
-        color: string;
-        wrap: string;
-        text: string;
-        html: string;
-        preventDefault: string;
-        imageSrc: string;
-        glyph: string;
-        href: string;
-        fontSize: string;
-        borderColor: string;
-        borderStyle: string;
-        width: string;
-        height: string;
-        src: string;
-        click: string;
-    };
+    export const enum css {
+        fieldError = "ria-field-error",
+        commandLink = "ria-command-link",
+        checkedNull = "ria-checked-null",
+        disabled = "disabled",
+        opacity = "opacity",
+        color = "color",
+        fontSize = "font-size",
+    }
+    export const enum PROP_NAME {
+        isVisible = "isVisible",
+        validationErrors = "validationErrors",
+        toolTip = "toolTip",
+        css = "css",
+        isEnabled = "isEnabled",
+        value = "value",
+        command = "command",
+        disabled = "disabled",
+        commandParam = "commandParam",
+        isBusy = "isBusy",
+        delay = "delay",
+        checked = "checked",
+        color = "color",
+        wrap = "wrap",
+        text = "text",
+        html = "html",
+        preventDefault = "preventDefault",
+        imageSrc = "imageSrc",
+        glyph = "glyph",
+        href = "href",
+        fontSize = "fontSize",
+        borderColor = "borderColor",
+        borderStyle = "borderStyle",
+        width = "width",
+        height = "height",
+        src = "src",
+        click = "click",
+    }
     export class BaseElView extends BaseObject implements IElView {
         private _objId;
         private _el;
@@ -667,12 +667,12 @@ declare module "jriapp_ui/dynacontent" {
 }
 declare module "jriapp_ui/datagrid/const" {
     import { IIndexer } from "jriapp_shared";
-    export const COLUMN_TYPE: {
-        DATA: string;
-        ROW_EXPANDER: string;
-        ROW_ACTIONS: string;
-        ROW_SELECTOR: string;
-    };
+    export const enum COLUMN_TYPE {
+        DATA = "data",
+        ROW_EXPANDER = "row_expander",
+        ROW_ACTIONS = "row_actions",
+        ROW_SELECTOR = "row_selector",
+    }
     export const enum ROW_POSITION {
         Up = 0,
         Bottom = 1,
@@ -684,45 +684,45 @@ declare module "jriapp_ui/datagrid/const" {
         CANCEL = 2,
         DELETE = 3,
     }
-    export const css: {
-        container: string;
-        dataTable: string;
-        columnInfo: string;
-        column: string;
-        headerDiv: string;
-        wrapDiv: string;
-        dataColumn: string;
-        dataCell: string;
-        rowCollapsed: string;
-        rowExpanded: string;
-        rowExpander: string;
-        columnSelected: string;
-        rowActions: string;
-        rowDetails: string;
-        rowSelector: string;
-        rowHighlight: string;
-        rowDeleted: string;
-        rowError: string;
-        fillVSpace: string;
-        nobr: string;
-        colSortable: string;
-        colSortAsc: string;
-        colSortDesc: string;
-    };
+    export const enum css {
+        container = "ria-table-container",
+        dataTable = "ria-data-table",
+        columnInfo = "ria-col-info",
+        column = "ria-col-ex",
+        headerDiv = "ria-table-header",
+        wrapDiv = "ria-table-wrap",
+        dataColumn = "ria-data-column",
+        dataCell = "ria-data-cell",
+        rowCollapsed = "ria-row-collapsed",
+        rowExpanded = "ria-row-expanded",
+        rowExpander = "ria-row-expander",
+        columnSelected = "ria-col-selected",
+        rowActions = "ria-row-actions",
+        rowDetails = "ria-row-details",
+        rowSelector = "ria-row-selector",
+        rowHighlight = "ria-row-highlight",
+        rowDeleted = "ria-row-deleted",
+        rowError = "ria-row-error",
+        fillVSpace = "ria-fill-vspace",
+        nobr = "ria-nobr",
+        colSortable = "ria-sortable",
+        colSortAsc = "ria-sort-asc",
+        colSortDesc = "ria-sort-desc",
+    }
     export const actionsSelector = "span[data-role=\"row-action\"]";
     export const txtMap: IIndexer<string>;
-    export const PROP_NAME: {
-        isCurrent: string;
-        isSelected: string;
-        sortOrder: string;
-        checked: string;
-        editingRow: string;
-        dataSource: string;
-        currentRow: string;
-        grid: string;
-        animation: string;
-        stateProvider: string;
-    };
+    export const enum PROP_NAME {
+        isCurrent = "isCurrent",
+        isSelected = "isSelected",
+        sortOrder = "sortOrder",
+        checked = "checked",
+        editingRow = "editingRow",
+        dataSource = "dataSource",
+        currentRow = "currentRow",
+        grid = "grid",
+        animation = "animation",
+        stateProvider = "stateProvider",
+    }
 }
 declare module "jriapp_ui/datagrid/animation" {
     import { BaseObject } from "jriapp_shared";
@@ -1713,9 +1713,9 @@ declare module "jriapp_ui/expander" {
         collapsedsrc?: string;
         isExpanded?: boolean;
     }
-    export const PROP_NAME: {
-        isExpanded: string;
-    };
+    export const enum PROP_NAME {
+        isExpanded = "isExpanded",
+    }
     export class ExpanderElView extends AnchorElView {
         private _expandedsrc;
         private _collapsedsrc;

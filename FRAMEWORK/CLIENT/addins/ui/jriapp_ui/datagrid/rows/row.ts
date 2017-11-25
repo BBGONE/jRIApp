@@ -18,12 +18,12 @@ import { DataGrid } from "../datagrid";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, sys = utils.sys;
 
-const fnState = (row: Row) => {
+function fnState(row: Row): void {
     const path = row.grid.options.rowStateField,
         val = (!row.item || !path) ? null : sys.resolvePath(row.item, path),
         css = row.grid._getInternal().onRowStateChanged(row, val);
     row._setState(css);
-};
+}
 
 export class Row extends BaseObject {
     private _grid: DataGrid;

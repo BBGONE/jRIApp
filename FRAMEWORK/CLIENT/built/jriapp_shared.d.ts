@@ -228,14 +228,15 @@ declare module "jriapp_shared/utils/strUtils" {
     }
 }
 declare module "jriapp_shared/utils/sysutils" {
-    import { ISubmittable, IErrorNotification, IEditable } from "jriapp_shared/int";
+    import { ISubmittable, IErrorNotification, IEditable, IBaseObject } from "jriapp_shared/int";
     export class SysUtils {
-        static isBaseObj: (obj: any) => boolean;
+        static _isBaseObj: (obj: any) => boolean;
         static isBinding: (obj: any) => boolean;
         static isPropBag: (obj: any) => boolean;
         static isCollection: (obj: any) => boolean;
         static getItemByProp: (obj: any, prop: string) => any;
         static isValidationError: (obj: any) => boolean;
+        static isBaseObj(obj: any): obj is IBaseObject;
         static isEditable(obj: any): obj is IEditable;
         static isSubmittable(obj: any): obj is ISubmittable;
         static isErrorNotification(obj: any): obj is IErrorNotification;

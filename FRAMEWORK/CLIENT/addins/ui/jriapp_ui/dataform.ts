@@ -391,9 +391,11 @@ export class DataForm extends BaseObject {
 
         this.objEvents.raiseProp(PROP_NAME.dataContext);
     }
-    get isEditing(): boolean { return this._isEditing; }
+    get isEditing(): boolean {
+        return this._isEditing;
+    }
     set isEditing(v) {
-        const dataContext: any = this._dataContext;
+        const dataContext = this._dataContext;
         if (!dataContext) {
             return;
         }

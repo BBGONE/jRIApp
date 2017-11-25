@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { Utils, IBaseObject } from "jriapp_shared";
+import { Utils } from "jriapp_shared";
 import { IViewOptions } from "jriapp/int";
 import { DomUtils } from "jriapp/utils/dom";
 import { ICommand } from "jriapp/mvvm";
@@ -63,7 +63,7 @@ export class CommandElView extends BaseElView {
         }
         this.setDisposing();
         if (sys.isBaseObj(this._command)) {
-            (<IBaseObject><any>this._command).objEvents.offNS(this.uniqueID);
+            this._command.objEvents.offNS(this.uniqueID);
         }
         this.command = null;
         this._commandParam = null;
@@ -98,7 +98,7 @@ export class CommandElView extends BaseElView {
         const self = this;
         if (v !== this._command) {
             if (sys.isBaseObj(this._command)) {
-                (<IBaseObject><any>this._command).objEvents.offNS(this.uniqueID);
+                this._command.objEvents.offNS(this.uniqueID);
             }
             this._command = v;
             if (!!this._command) {

@@ -54,15 +54,15 @@ const enum DLG_EVENTS {
     refresh = "refresh"
 }
 
-const PROP_NAME = {
-    dataContext: "dataContext",
-    isSubmitOnOK: "isSubmitOnOK",
-    width: "width",
-    height: "height",
-    title: "title",
-    canRefresh: "canRefresh",
-    canCancel: "canCancel"
-};
+const enum PROP_NAME {
+    dataContext = "dataContext",
+    isSubmitOnOK = "isSubmitOnOK",
+    width = "width",
+    height = "height",
+    title = "title",
+    canRefresh = "canRefresh",
+    canCancel = "canCancel"
+}
 
 class SubmitInfo
 {
@@ -85,7 +85,7 @@ class SubmitInfo
         const promise = submittable.submitChanges();
         promise.then(() => {
             self._submitError = false;
-        }, (err) => {
+        }).catch(() => {
             self._submitError = true;
         });
         return promise;

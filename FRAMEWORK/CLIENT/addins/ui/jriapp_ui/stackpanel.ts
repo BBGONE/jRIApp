@@ -18,20 +18,20 @@ import { bootstrap } from "jriapp";
 const utils = Utils, dom = DomUtils, doc = dom.document, sys = utils.sys,
     strUtils = utils.str, coreUtils = utils.core, boot = bootstrap;
 
-const css = {
-    stackpanel: "ria-stackpanel",
-    item: "ria-stackpanel-item",
-    horizontal: "ria-horizontal-panel",
-    currentItem: "ria-current-item",
-    itemDeleted: "ria-item-deleted"
-};
+const enum css {
+    stackpanel = "ria-stackpanel",
+    item = "ria-stackpanel-item",
+    horizontal = "ria-horizontal-panel",
+    currentItem = "ria-current-item",
+    itemDeleted = "ria-item-deleted"
+}
 
-const PROP_NAME = {
-    dataSource: "dataSource",
-    currentItem: "currentItem",
-    panel: "panel",
-    panelEvents: "panelEvents"
-};
+const enum PROP_NAME {
+    dataSource = "dataSource",
+    currentItem = "currentItem",
+    panel = "panel",
+    panelEvents = "panelEvents"
+}
 
 const VERTICAL = "vertical", HORIZONTAL = "horizontal";
 

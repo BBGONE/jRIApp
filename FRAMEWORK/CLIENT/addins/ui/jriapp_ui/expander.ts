@@ -8,9 +8,9 @@ export interface IExpanderOptions extends IAncorOptions {
     isExpanded?: boolean;
 }
 
-export const PROP_NAME = {
-    isExpanded: "isExpanded"
-};
+export const enum PROP_NAME {
+    isExpanded = "isExpanded"
+}
 
 const COLLAPSE_IMG = "collapse.jpg", EXPAND_IMG = "expand.jpg";
 // const COLLAPSE_IMG = "icon icon-arrow-up", EXPAND_IMG = "icon  icon-arrow-down";

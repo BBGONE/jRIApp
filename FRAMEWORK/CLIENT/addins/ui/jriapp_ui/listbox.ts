@@ -40,18 +40,18 @@ export interface IMappedItem {
     op: HTMLOptionElement;
 }
 
-const PROP_NAME = {
-    dataSource: "dataSource",
-    selectedItem: "selectedItem",
-    selectedValue: "selectedValue",
-    valuePath: "valuePath",
-    textPath: "textPath",
-    isEnabled: "isEnabled",
-    listBox: "listBox",
-    value: "value",
-    textProvider: "textProvider",
-    stateProvider: "stateProvider"
-};
+const enum PROP_NAME {
+    dataSource = "dataSource",
+    selectedItem = "selectedItem",
+    selectedValue = "selectedValue",
+    valuePath = "valuePath",
+    textPath = "textPath",
+    isEnabled = "isEnabled",
+    listBox = "listBox",
+    value = "value",
+    textProvider = "textProvider",
+    stateProvider = "stateProvider"
+}
 
 const enum LISTBOX_EVENTS {
     refreshed = "refreshed"
