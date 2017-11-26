@@ -12,11 +12,6 @@ import { ERROR } from "./utils/error";
 import { createWeakMap } from "./utils/weakmap";
 import { EventHelper, IEventList } from "./utils/eventhelper";
 
-const enum OBJ_EVENTS {
-    error = "error",
-    destroyed = "destroyed"
-}
-
 const checks = Checks, strUtils = StringUtils, coreUtils = CoreUtils,
     evHelper = EventHelper, sys = SysUtils, weakmap = createWeakMap();
 //can be used in external IBaseObject implementations
@@ -25,6 +20,11 @@ export const objStateMap: IWeakMap = weakmap;
 sys._isBaseObj = function (obj: any): boolean {
     return (!!obj && !!weakmap.get(obj));
 };
+
+const enum OBJ_EVENTS {
+    error = "error",
+    destroyed = "destroyed"
+}
 
 const enum ObjState { None = 0, Disposing = 1, Disposed = 2 }
 
@@ -101,13 +101,13 @@ export class ObjectEvents implements IObjectEvents {
             evHelper.removeNS(this._events, nmspace);
         }
     }
-    addOnDisposed(handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void {
+    addOnDisposed(handler: TEventHandler<IBaseObject, any>, nmspace?: string, context?: object, priority?: TPriority): void {
         this.on(OBJ_EVENTS.destroyed, handler, nmspace, context, priority);
     }
     removeOnDisposed(nmspace?: string): void {
         this.off(OBJ_EVENTS.destroyed, nmspace);
     }
-    addOnError(handler: TErrorHandler, nmspace?: string, context?: object, priority?: TPriority): void {
+    addOnError(handler: TErrorHandler<IBaseObject>, nmspace?: string, context?: object, priority?: TPriority): void {
         this.on(OBJ_EVENTS.error, handler, nmspace, context, priority);
     }
     removeOnError(nmspace?: string): void {

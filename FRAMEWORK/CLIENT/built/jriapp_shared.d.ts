@@ -104,7 +104,7 @@ declare module "jriapp_shared/int" {
         source: any;
         isHandled: boolean;
     };
-    export type TErrorHandler = (sender: any, args: TErrorArgs) => void;
+    export type TErrorHandler<T> = (sender: T, args: TErrorArgs) => void;
     export type TPropChangedHandler = (sender: any, args: {
         property: string;
     }) => void;
@@ -148,9 +148,9 @@ declare module "jriapp_shared/int" {
         readonly objEvents: IObjectEvents;
     }
     export interface IObjectEvents extends IEvents {
-        addOnError(handler: TErrorHandler, nmspace?: string, context?: object, priority?: TPriority): void;
+        addOnError(handler: TErrorHandler<IBaseObject>, nmspace?: string, context?: object, priority?: TPriority): void;
         removeOnError(nmspace?: string): void;
-        addOnDisposed(handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void;
+        addOnDisposed(handler: TEventHandler<IBaseObject, any>, nmspace?: string, context?: object, priority?: TPriority): void;
         removeOnDisposed(nmspace?: string): void;
         readonly owner: IBaseObject;
     }
@@ -492,9 +492,9 @@ declare module "jriapp_shared/object" {
         raiseProp(name: string): void;
         onProp(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: object, priority?: TPriority): void;
         offProp(prop?: string, nmspace?: string): void;
-        addOnDisposed(handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void;
+        addOnDisposed(handler: TEventHandler<IBaseObject, any>, nmspace?: string, context?: object, priority?: TPriority): void;
         removeOnDisposed(nmspace?: string): void;
-        addOnError(handler: TErrorHandler, nmspace?: string, context?: object, priority?: TPriority): void;
+        addOnError(handler: TErrorHandler<IBaseObject>, nmspace?: string, context?: object, priority?: TPriority): void;
         removeOnError(nmspace?: string): void;
         readonly owner: IBaseObject;
     }

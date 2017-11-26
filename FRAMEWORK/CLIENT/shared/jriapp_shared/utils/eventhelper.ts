@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    TErrorHandler, TPriority, IIndexer, TEventHandler
+    TPriority, IIndexer, TEventHandler
 } from "../int";
 import { ERRS } from "../lang";
 import { Checks } from "./checks";
@@ -29,7 +29,7 @@ class EventList {
     static Create(): IEventList {
         return {};
     }
-    static Node(handler: TErrorHandler, context?: any): TEventNode {
+    static Node(handler: TEventHandler<any, any>, context?: any): TEventNode {
         return { fn: handler, context: !context ? null : context };
     }
     static count(list: IEventList): number {

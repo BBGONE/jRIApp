@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    APP_NAME, IIndexer, TEventHandler, IPromise,
+    APP_NAME, IIndexer, TEventHandler, IPromise, TErrorHandler,
     IBaseObject, IThenable, LocaleERRS, BaseObject, Utils
 } from "jriapp_shared";
 import { STORE_KEY } from "./const";
@@ -97,6 +97,18 @@ export class Application extends BaseObject implements IApplication {
     }
     _getInternal(): IInternalAppMethods {
         return this._internal;
+    }
+    addOnDisposed(handler: TEventHandler<IApplication, any>, nmspace?: string, context?: object): void {
+        this.objEvents.addOnDisposed(handler, nmspace, context);
+    }
+    removeOnDisposed(nmspace?: string): void {
+        this.objEvents.removeOnDisposed(nmspace);
+    }
+    addOnError(handler: TErrorHandler<IApplication>, nmspace?: string, context?: object): void {
+        this.objEvents.addOnError(handler, nmspace, context);
+    }
+    removeOnError(nmspace?: string): void {
+        this.objEvents.removeOnError(nmspace);
     }
     addOnStartUp(fn: TEventHandler<IApplication, any>, nmspace?: string, context?: IBaseObject): void {
         this.objEvents.on(APP_EVENTS.startup, fn, nmspace, context);

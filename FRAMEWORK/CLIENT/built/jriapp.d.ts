@@ -858,7 +858,7 @@ declare module "jriapp/utils/propwatcher" {
     }
 }
 declare module "jriapp/mvvm" {
-    import { BaseObject, IBaseObject } from "jriapp_shared";
+    import { BaseObject, IBaseObject, TEventHandler, TErrorHandler } from "jriapp_shared";
     import { IApplication } from "jriapp/int";
     export interface ITCommand<TParam> {
         canExecute: (sender: any, param: TParam) => boolean;
@@ -902,8 +902,11 @@ declare module "jriapp/mvvm" {
         private _objId;
         private _app;
         constructor(app: TApp);
+        addOnDisposed(handler: TEventHandler<ViewModel<TApp>, any>, nmspace?: string, context?: object): void;
+        removeOnDisposed(nmspace?: string): void;
+        addOnError(handler: TErrorHandler<ViewModel<TApp>>, nmspace?: string, context?: object): void;
+        removeOnError(nmspace?: string): void;
         toString(): string;
-        dispose(): void;
         readonly uniqueID: string;
         readonly app: TApp;
     }
@@ -917,7 +920,7 @@ declare module "jriapp/databindsvc" {
     export function createDataBindSvc(root: Document | HTMLElement, elViewFactory: IElViewFactory): IDataBindingService;
 }
 declare module "jriapp/app" {
-    import { IIndexer, TEventHandler, IPromise, IBaseObject, BaseObject } from "jriapp_shared";
+    import { IIndexer, TEventHandler, IPromise, TErrorHandler, IBaseObject, BaseObject } from "jriapp_shared";
     import { IElViewFactory, IViewType, IApplication, IBindingOptions, IAppOptions, IInternalAppMethods, IConverter, ITemplateGroupInfo, IBinding } from "jriapp/int";
     export class Application extends BaseObject implements IApplication {
         private _UC;
@@ -936,6 +939,10 @@ declare module "jriapp/app" {
         private _initAppModules();
         protected onStartUp(): any;
         _getInternal(): IInternalAppMethods;
+        addOnDisposed(handler: TEventHandler<IApplication, any>, nmspace?: string, context?: object): void;
+        removeOnDisposed(nmspace?: string): void;
+        addOnError(handler: TErrorHandler<IApplication>, nmspace?: string, context?: object): void;
+        removeOnError(nmspace?: string): void;
         addOnStartUp(fn: TEventHandler<IApplication, any>, nmspace?: string, context?: IBaseObject): void;
         removeOnStartUp(nmspace?: string): void;
         getExports(): IIndexer<any>;

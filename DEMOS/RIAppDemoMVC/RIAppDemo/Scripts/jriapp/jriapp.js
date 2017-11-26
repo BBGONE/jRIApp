@@ -3472,12 +3472,20 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
             _this._objId = coreUtils.getNewID("vm");
             return _this;
         }
+        ViewModel.prototype.addOnDisposed = function (handler, nmspace, context) {
+            this.objEvents.addOnDisposed(handler, nmspace, context);
+        };
+        ViewModel.prototype.removeOnDisposed = function (nmspace) {
+            this.objEvents.removeOnDisposed(nmspace);
+        };
+        ViewModel.prototype.addOnError = function (handler, nmspace, context) {
+            this.objEvents.addOnError(handler, nmspace, context);
+        };
+        ViewModel.prototype.removeOnError = function (nmspace) {
+            this.objEvents.removeOnError(nmspace);
+        };
         ViewModel.prototype.toString = function () {
             return "ViewModel";
-        };
-        ViewModel.prototype.dispose = function () {
-            this._app = null;
-            _super.prototype.dispose.call(this);
         };
         Object.defineProperty(ViewModel.prototype, "uniqueID", {
             get: function () {
@@ -3916,6 +3924,18 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/const", "jr
         };
         Application.prototype._getInternal = function () {
             return this._internal;
+        };
+        Application.prototype.addOnDisposed = function (handler, nmspace, context) {
+            this.objEvents.addOnDisposed(handler, nmspace, context);
+        };
+        Application.prototype.removeOnDisposed = function (nmspace) {
+            this.objEvents.removeOnDisposed(nmspace);
+        };
+        Application.prototype.addOnError = function (handler, nmspace, context) {
+            this.objEvents.addOnError(handler, nmspace, context);
+        };
+        Application.prototype.removeOnError = function (nmspace) {
+            this.objEvents.removeOnError(nmspace);
         };
         Application.prototype.addOnStartUp = function (fn, nmspace, context) {
             this.objEvents.on("startup", fn, nmspace, context);

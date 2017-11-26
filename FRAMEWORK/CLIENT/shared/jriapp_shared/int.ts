@@ -13,7 +13,7 @@ export let DebugLevel = (!Config.debugLevel) ? DEBUG_LEVEL.NONE : Config.debugLe
 
 export type TEventHandler<T, U> = (sender: T, args: U) => void;
 export type TErrorArgs = { error: any; source: any; isHandled: boolean; };
-export type TErrorHandler = (sender: any, args: TErrorArgs) => void;
+export type TErrorHandler<T> = (sender: T, args: TErrorArgs) => void;
 export type TPropChangedHandler = (sender: any, args: { property: string; }) => void;
 export type TFunc = { (...args: any[]): void; };
 export type TAnyConstructor<T> = new (...args: any[]) => T;
@@ -61,9 +61,9 @@ export interface IBaseObject extends IErrorHandler, IDisposable {
 }
 
 export interface IObjectEvents extends IEvents {
-    addOnError(handler: TErrorHandler, nmspace?: string, context?: object, priority?: TPriority): void;
+    addOnError(handler: TErrorHandler<IBaseObject>, nmspace?: string, context?: object, priority?: TPriority): void;
     removeOnError(nmspace?: string): void;
-    addOnDisposed(handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void;
+    addOnDisposed(handler: TEventHandler<IBaseObject, any>, nmspace?: string, context?: object, priority?: TPriority): void;
     removeOnDisposed(nmspace?: string): void;
     readonly owner: IBaseObject;
 }

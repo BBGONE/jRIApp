@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    BaseObject, Utils, IBaseObject
+    BaseObject, Utils, IBaseObject, TEventHandler, TErrorHandler
 } from "jriapp_shared";
 import { IApplication } from "./int";
 
@@ -110,12 +110,20 @@ export class ViewModel<TApp extends IApplication> extends BaseObject {
         this._app = app;
         this._objId = coreUtils.getNewID("vm");
     }
+    addOnDisposed(handler: TEventHandler<ViewModel<TApp>, any>, nmspace?: string, context?: object): void {
+        this.objEvents.addOnDisposed(handler, nmspace, context);
+    }
+    removeOnDisposed(nmspace?: string): void {
+        this.objEvents.removeOnDisposed(nmspace);
+    }
+    addOnError(handler: TErrorHandler<ViewModel<TApp>>, nmspace?: string, context?: object): void {
+        this.objEvents.addOnError(handler, nmspace, context);
+    }
+    removeOnError(nmspace?: string): void {
+        this.objEvents.removeOnError(nmspace);
+    }
     toString() {
         return "ViewModel";
-    }
-    dispose() {
-        this._app = null;
-        super.dispose();
     }
     get uniqueID() {
         return this._objId;

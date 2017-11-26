@@ -1290,16 +1290,16 @@ define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/
 define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/error", "jriapp_shared/utils/weakmap", "jriapp_shared/utils/eventhelper"], function (require, exports, lang_3, sysutils_2, checks_4, strUtils_2, coreutils_2, error_1, weakmap_1, eventhelper_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var OBJ_EVENTS;
-    (function (OBJ_EVENTS) {
-        OBJ_EVENTS["error"] = "error";
-        OBJ_EVENTS["destroyed"] = "destroyed";
-    })(OBJ_EVENTS || (OBJ_EVENTS = {}));
     var checks = checks_4.Checks, strUtils = strUtils_2.StringUtils, coreUtils = coreutils_2.CoreUtils, evHelper = eventhelper_1.EventHelper, sys = sysutils_2.SysUtils, weakmap = weakmap_1.createWeakMap();
     exports.objStateMap = weakmap;
     sys._isBaseObj = function (obj) {
         return (!!obj && !!weakmap.get(obj));
     };
+    var OBJ_EVENTS;
+    (function (OBJ_EVENTS) {
+        OBJ_EVENTS["error"] = "error";
+        OBJ_EVENTS["destroyed"] = "destroyed";
+    })(OBJ_EVENTS || (OBJ_EVENTS = {}));
     var ObjState;
     (function (ObjState) {
         ObjState[ObjState["None"] = 0] = "None";
