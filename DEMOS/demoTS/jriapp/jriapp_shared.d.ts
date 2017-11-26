@@ -141,10 +141,6 @@ declare module "jriapp_shared/int" {
         raiseProp(name: string): void;
         onProp(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: object, priority?: TPriority): void;
         offProp(prop?: string, nmspace?: string): void;
-        addOnError(handler: TErrorHandler, nmspace?: string, context?: object, priority?: TPriority): void;
-        removeOnError(nmspace?: string): void;
-        addOnDisposed(handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void;
-        removeOnDisposed(nmspace?: string): void;
     }
     export interface IBaseObject extends IErrorHandler, IDisposable {
         getIsStateDirty(): boolean;
@@ -152,6 +148,10 @@ declare module "jriapp_shared/int" {
         readonly objEvents: IObjectEvents;
     }
     export interface IObjectEvents extends IEvents {
+        addOnError(handler: TErrorHandler, nmspace?: string, context?: object, priority?: TPriority): void;
+        removeOnError(nmspace?: string): void;
+        addOnDisposed(handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void;
+        removeOnDisposed(nmspace?: string): void;
         readonly owner: IBaseObject;
     }
     export interface IEditable extends IBaseObject {

@@ -52,10 +52,6 @@ export interface IEvents {
     // to subscribe for changes on all properties, pass in the prop parameter: '*'
     onProp(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: object, priority?: TPriority): void;
     offProp(prop?: string, nmspace?: string): void;
-    addOnError(handler: TErrorHandler, nmspace?: string, context?: object, priority?: TPriority): void;
-    removeOnError(nmspace?: string): void;
-    addOnDisposed(handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void;
-    removeOnDisposed(nmspace?: string): void;
 }
 
 export interface IBaseObject extends IErrorHandler, IDisposable {
@@ -65,6 +61,10 @@ export interface IBaseObject extends IErrorHandler, IDisposable {
 }
 
 export interface IObjectEvents extends IEvents {
+    addOnError(handler: TErrorHandler, nmspace?: string, context?: object, priority?: TPriority): void;
+    removeOnError(nmspace?: string): void;
+    addOnDisposed(handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void;
+    removeOnDisposed(nmspace?: string): void;
     readonly owner: IBaseObject;
 }
 
