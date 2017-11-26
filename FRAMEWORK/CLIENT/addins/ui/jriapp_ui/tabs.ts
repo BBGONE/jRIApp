@@ -7,10 +7,10 @@ import { BaseElView } from "./baseview";
 
 const utils = Utils, coreUtils = utils.core;
 
-const PROP_NAME = {
-    tabIndex: "tabIndex",
-    tabsEvents: "tabsEvents"
-};
+const enum PROP_NAME {
+    tabIndex = "tabIndex",
+    tabsEvents = "tabsEvents"
+}
 
 export interface ITabs {
     readonly uniqueID: string;
@@ -58,26 +58,26 @@ export class TabsElView extends BaseElView implements ITabs {
             self._tabsCreated = true;
             self._onTabsCreated();
             self.objEvents.raiseProp(PROP_NAME.tabIndex);
-       });
-   }
+        });
+    }
     protected _destroyTabs() {
         const $el = $(this.el);
         JQueryUtils.dispose$Plugin($el, "tabs");
         this._tabsCreated = false;
         if (!!this._tabsEvents) {
             this._tabsEvents.removeTabs();
-       }
+        }
 
-   }
+    }
     protected _onTabsCreated() {
-       const self = this;
+        const self = this;
         if (!!self._tabsEvents) {
             self._tabsEvents.addTabs(self);
-       }
+        }
         if (!!self._tabsEvents) {
             self._tabsEvents.onTabSelected(self);
-       }
-   }
+        }
+    }
     dispose() {
         if (this.getIsDisposed()) {
             return;
@@ -86,10 +86,10 @@ export class TabsElView extends BaseElView implements ITabs {
         this._destroyTabs();
         this._tabsEvents = null;
         super.dispose();
-   }
+    }
     toString() {
         return "TabsElView";
-   }
+    }
     get tabsEvents() { return this._tabsEvents; }
     set tabsEvents(v) {
         const old = this._tabsEvents;
@@ -101,17 +101,17 @@ export class TabsElView extends BaseElView implements ITabs {
             this.objEvents.raiseProp(PROP_NAME.tabsEvents);
             if (this._tabsCreated) {
                 this._onTabsCreated();
-           }
-       }
-   }
+            }
+        }
+    }
     get tabIndex(): number {
         const $el = <any>$(this.el);
         return $el.tabs("option", "active");
-   }
+    }
     set tabIndex(v: number) {
         const $el = <any>$(this.el);
         $el.tabs("option", "active", v);
-   }
+    }
 }
 
 bootstrap.registerElView("tabs", TabsElView);

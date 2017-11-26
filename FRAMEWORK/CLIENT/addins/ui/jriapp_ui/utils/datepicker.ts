@@ -8,10 +8,10 @@ import { JQueryUtils, $ } from "./jquery";
 
 const ERRS = LocaleERRS;
 
-const PROP_NAME = {
-    dateFormat: "dateFormat",
-    datepickerRegion: "datepickerRegion"
-};
+const enum PROP_NAME {
+    dateFormat = "dateFormat",
+    datepickerRegion = "datepickerRegion"
+}
 
 export function createDatepickerSvc(): IDatepicker {
     return new Datepicker();

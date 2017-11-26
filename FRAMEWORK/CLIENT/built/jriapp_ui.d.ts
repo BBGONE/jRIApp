@@ -145,10 +145,10 @@ declare module "jriapp_ui/utils/jquery" {
 }
 declare module "jriapp_ui/utils/tooltip" {
     import { ITooltipService } from "jriapp/int";
-    export const css: {
-        toolTip: string;
-        toolTipError: string;
-    };
+    export const enum css {
+        toolTip = "qtip",
+        toolTipError = "qtip-red",
+    }
     export function createToolTipSvc(): ITooltipService;
 }
 declare module "jriapp_ui/utils/datepicker" {
@@ -1567,10 +1567,10 @@ declare module "jriapp_ui/dataform" {
     import { IBaseObject, IValidationInfo, BaseObject } from "jriapp_shared";
     import { IViewOptions, IApplication } from "jriapp/int";
     import { BaseElView } from "jriapp_ui/baseview";
-    export const css: {
-        dataform: string;
-        error: string;
-    };
+    export const enum css {
+        dataform = "ria-dataform",
+        error = "ria-form-error",
+    }
     export class DataForm extends BaseObject {
         private static _DATA_FORM_SELECTOR;
         private static _DATA_CONTENT_SELECTOR;

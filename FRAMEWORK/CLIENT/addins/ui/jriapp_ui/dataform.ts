@@ -18,10 +18,10 @@ import { parseContentAttr } from "./content/int";
 const utils = Utils, dom = DomUtils, checks = utils.check, coreUtils = utils.core, strUtils = utils.str,
     sys = utils.sys, parser = Parser, boot = bootstrap, viewChecks = ViewChecks, _async = utils.defer;
 
-export const css = {
-    dataform: "ria-dataform",
-    error: "ria-form-error"
-};
+export const enum css {
+    dataform = "ria-dataform",
+    error = "ria-form-error"
+}
 
 viewChecks.setIsInsideTemplate = (elView: BaseElView) => {
     if (!!elView && elView instanceof DataFormElView) {

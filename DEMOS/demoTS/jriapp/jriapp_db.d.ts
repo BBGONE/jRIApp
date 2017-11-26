@@ -25,22 +25,22 @@ declare module "jriapp_db/const" {
         Refresh = 4,
         Init = 5,
     }
-    export const PROP_NAME: {
-        isHasChanges: string;
-        isSubmitOnDelete: string;
-        isInitialized: string;
-        isBusy: string;
-        isSubmiting: string;
-        isPagingEnabled: string;
-        parentItem: string;
-        totalCount: string;
-        loadPageCount: string;
-        isClearCacheOnEveryLoad: string;
-        isForAppend: string;
-        isRefreshing: string;
-        requestCount: string;
-        isLoading: string;
-    };
+    export const enum PROP_NAME {
+        isHasChanges = "isHasChanges",
+        isSubmitOnDelete = "isSubmitOnDelete",
+        isInitialized = "isInitialized",
+        isBusy = "isBusy",
+        isSubmiting = "isSubmiting",
+        isPagingEnabled = "isPagingEnabled",
+        parentItem = "parentItem",
+        totalCount = "totalCount",
+        loadPageCount = "loadPageCount",
+        isClearCacheOnEveryLoad = "isClearCacheOnEveryLoad",
+        isForAppend = "isForAppend",
+        isRefreshing = "isRefreshing",
+        requestCount = "requestCount",
+        isLoading = "isLoading",
+    }
 }
 declare module "jriapp_db/datacache" {
     import { BaseObject } from "jriapp_shared";
@@ -399,7 +399,7 @@ declare module "jriapp_db/error" {
 }
 declare module "jriapp_db/dbcontext" {
     import { COLL_CHANGE_REASON } from "jriapp_shared/collection/const";
-    import { IIndexer, IVoidPromise, IBaseObject, TEventHandler, BaseObject, IStatefulPromise, IAbortablePromise } from "jriapp_shared";
+    import { IIndexer, IVoidPromise, IBaseObject, TEventHandler, TErrorHandler, BaseObject, IStatefulPromise, IAbortablePromise } from "jriapp_shared";
     import { IEntityItem, IRefreshRowInfo, IQueryResult, IQueryInfo, IAssociationInfo, IPermissionsInfo, IInvokeRequest, IInvokeResponse, IQueryResponse, IChangeSet } from "jriapp_db/int";
     import { DATA_OPER } from "jriapp_db/const";
     import { TDbSet } from "jriapp_db/dbset";
@@ -492,6 +492,10 @@ declare module "jriapp_db/dbcontext" {
             serviceUrl: string;
             permissions?: IPermissionsInfo;
         }): IVoidPromise;
+        addOnDisposed(handler: TEventHandler<DbContext, any>, nmspace?: string, context?: object): void;
+        removeOnDisposed(nmspace?: string): void;
+        addOnError(handler: TErrorHandler<DbContext>, nmspace?: string, context?: object): void;
+        removeOnError(nmspace?: string): void;
         addOnSubmitError(fn: TEventHandler<DbContext, {
             error: any;
             isHandled: boolean;

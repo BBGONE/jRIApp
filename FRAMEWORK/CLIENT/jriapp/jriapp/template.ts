@@ -13,17 +13,17 @@ const utils = Utils, _async = utils.defer, dom = DomUtils, viewChecks = ViewChec
     doc = dom.document, checks = utils.check, strUtils = utils.str,
     arrHelper = utils.arr, sys = utils.sys, boot = bootstrap, ERRS = LocaleERRS, ERROR = utils.err;
 
-export const css = {
-    templateContainer: "ria-template-container",
-    templateError: "ria-template-error"
-};
+export const enum css {
+    templateContainer = "ria-template-container",
+    templateError = "ria-template-error"
+}
 
-const PROP_NAME = {
-    dataContext: "dataContext",
-    templateID: "templateID",
-    template: "template",
-    isEnabled: "isEnabled"
-};
+const enum PROP_NAME {
+    dataContext = "dataContext",
+    templateID = "templateID",
+    template = "template",
+    isEnabled = "isEnabled"
+}
 
 export interface ITemplateOptions {
     dataContext?: any;

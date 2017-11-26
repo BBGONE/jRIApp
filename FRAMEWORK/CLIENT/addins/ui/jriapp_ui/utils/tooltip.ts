@@ -5,10 +5,10 @@ import { DomUtils } from "jriapp/utils/dom";
 
 const window = DomUtils.window;
 
-export const css = {
-    toolTip: "qtip",
-    toolTipError: "qtip-red"
-};
+export const enum css {
+    toolTip = "qtip",
+    toolTipError = "qtip-red"
+}
 
 export function createToolTipSvc(): ITooltipService {
     return new TooltipService();

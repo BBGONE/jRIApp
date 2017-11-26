@@ -40,24 +40,25 @@ define("jriapp_db/const", ["require", "exports"], function (require, exports) {
         DATA_OPER[DATA_OPER["Refresh"] = 4] = "Refresh";
         DATA_OPER[DATA_OPER["Init"] = 5] = "Init";
     })(DATA_OPER = exports.DATA_OPER || (exports.DATA_OPER = {}));
-    exports.PROP_NAME = {
-        isHasChanges: "isHasChanges",
-        isSubmitOnDelete: "isSubmitOnDelete",
-        isInitialized: "isInitialized",
-        isBusy: "isBusy",
-        isSubmiting: "isSubmiting",
-        isPagingEnabled: "isPagingEnabled",
-        parentItem: "parentItem",
-        totalCount: "totalCount",
-        loadPageCount: "loadPageCount",
-        isClearCacheOnEveryLoad: "isClearCacheOnEveryLoad",
-        isForAppend: "isForAppend",
-        isRefreshing: "isRefreshing",
-        requestCount: "requestCount",
-        isLoading: "isLoading"
-    };
+    var PROP_NAME;
+    (function (PROP_NAME) {
+        PROP_NAME["isHasChanges"] = "isHasChanges";
+        PROP_NAME["isSubmitOnDelete"] = "isSubmitOnDelete";
+        PROP_NAME["isInitialized"] = "isInitialized";
+        PROP_NAME["isBusy"] = "isBusy";
+        PROP_NAME["isSubmiting"] = "isSubmiting";
+        PROP_NAME["isPagingEnabled"] = "isPagingEnabled";
+        PROP_NAME["parentItem"] = "parentItem";
+        PROP_NAME["totalCount"] = "totalCount";
+        PROP_NAME["loadPageCount"] = "loadPageCount";
+        PROP_NAME["isClearCacheOnEveryLoad"] = "isClearCacheOnEveryLoad";
+        PROP_NAME["isForAppend"] = "isForAppend";
+        PROP_NAME["isRefreshing"] = "isRefreshing";
+        PROP_NAME["requestCount"] = "requestCount";
+        PROP_NAME["isLoading"] = "isLoading";
+    })(PROP_NAME = exports.PROP_NAME || (exports.PROP_NAME = {}));
 });
-define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db/const"], function (require, exports, jriapp_shared_1, const_1) {
+define("jriapp_db/datacache", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_1.Utils, checks = utils.check, coreUtils = utils.core;
@@ -235,7 +236,7 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
                 }
                 if (v !== this._totalCount) {
                     this._totalCount = v;
-                    this.objEvents.raiseProp(const_1.PROP_NAME.totalCount);
+                    this.objEvents.raiseProp("totalCount");
                 }
             },
             enumerable: true,
@@ -253,7 +254,7 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared", "jriapp_db
     }(jriapp_shared_1.BaseObject));
     exports.DataCache = DataCache;
 });
-define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/utils", "jriapp_db/const", "jriapp_db/datacache"], function (require, exports, jriapp_shared_2, utils_1, const_2, datacache_1) {
+define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/utils", "jriapp_db/datacache"], function (require, exports, jriapp_shared_2, utils_1, datacache_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_2.Utils, checks = utils.check, strUtils = utils.str, arrHelper = utils.arr, valUtils = utils_1.ValueUtils;
@@ -525,7 +526,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
                     if (v === 1 || this.isForAppend) {
                         this._clearCache();
                     }
-                    this.objEvents.raiseProp(const_2.PROP_NAME.loadPageCount);
+                    this.objEvents.raiseProp("loadPageCount");
                 }
             },
             enumerable: true,
@@ -536,7 +537,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             set: function (v) {
                 if (this._isClearCacheOnEveryLoad !== v) {
                     this._isClearCacheOnEveryLoad = v;
-                    this.objEvents.raiseProp(const_2.PROP_NAME.isClearCacheOnEveryLoad);
+                    this.objEvents.raiseProp("isClearCacheOnEveryLoad");
                 }
             },
             enumerable: true,
@@ -547,7 +548,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             set: function (v) {
                 if (this._isForAppend !== v) {
                     this._isForAppend = v;
-                    this.objEvents.raiseProp(const_2.PROP_NAME.isForAppend);
+                    this.objEvents.raiseProp("isForAppend");
                 }
             },
             enumerable: true,
@@ -562,7 +563,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
     }(jriapp_shared_2.BaseObject));
     exports.DataQuery = DataQuery;
 });
-define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/base", "jriapp_shared/collection/utils", "jriapp_db/const", "jriapp_db/dataquery", "jriapp_db/entity_aspect"], function (require, exports, jriapp_shared_3, base_1, utils_2, const_3, dataquery_1, entity_aspect_1) {
+define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/base", "jriapp_shared/collection/utils", "jriapp_db/dataquery", "jriapp_db/entity_aspect"], function (require, exports, jriapp_shared_3, base_1, utils_2, dataquery_1, entity_aspect_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_3.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err, valUtils = utils_2.ValueUtils, colUtils = utils_2.CollUtils;
@@ -676,11 +677,11 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 }
             };
             coreUtils.merge(internalObj, _this._internal);
-            _this.dbContext.objEvents.onProp(const_3.PROP_NAME.isSubmiting, function (s, a) {
-                self.objEvents.raiseProp(const_3.PROP_NAME.isBusy);
+            _this.dbContext.objEvents.onProp("isSubmiting", function (s, a) {
+                self.objEvents.raiseProp("isBusy");
             }, _this.dbSetName);
-            _this.objEvents.onProp(const_3.PROP_NAME.isLoading, function (s, a) {
-                self.objEvents.raiseProp(const_3.PROP_NAME.isBusy);
+            _this.objEvents.onProp("isLoading", function (s, a) {
+                self.objEvents.raiseProp("isBusy");
             });
             return _this;
         }
@@ -1144,7 +1145,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 this._changeCache[item._key] = item;
                 this._changeCount += 1;
                 if (this._changeCount === 1) {
-                    this.objEvents.raiseProp(const_3.PROP_NAME.isHasChanges);
+                    this.objEvents.raiseProp("isHasChanges");
                 }
             }
         };
@@ -1156,7 +1157,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 delete this._changeCache[key];
                 this._changeCount -= 1;
                 if (this._changeCount === 0) {
-                    this.objEvents.raiseProp(const_3.PROP_NAME.isHasChanges);
+                    this.objEvents.raiseProp("isHasChanges");
                 }
             }
         };
@@ -1324,7 +1325,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         };
         DbSet.prototype.waitForNotBusy = function (callback, groupName) {
             this._waitQueue.enQueue({
-                prop: const_3.PROP_NAME.isBusy,
+                prop: "isBusy",
                 groupName: groupName,
                 predicate: function (val) {
                     return !val;
@@ -1470,7 +1471,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             set: function (v) {
                 if (this._isSubmitOnDelete !== v) {
                     this._isSubmitOnDelete = !!v;
-                    this.objEvents.raiseProp(const_3.PROP_NAME.isSubmitOnDelete);
+                    this.objEvents.raiseProp("isSubmitOnDelete");
                 }
             },
             enumerable: true,
@@ -1485,7 +1486,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
     }(base_1.BaseCollection));
     exports.DbSet = DbSet;
 });
-define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared", "jriapp_db/const"], function (require, exports, jriapp_shared_4, const_4) {
+define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_4.Utils, strUtils = utils.str;
@@ -1501,7 +1502,7 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared", "jriapp_db/co
         DbSets.prototype._dbSetCreated = function (dbSet) {
             var self = this;
             this._arrDbSets.push(dbSet);
-            dbSet.objEvents.onProp(const_4.PROP_NAME.isHasChanges, function (sender, args) {
+            dbSet.objEvents.onProp("isHasChanges", function (sender, args) {
                 self._dbContext._getInternal().onDbSetHasChangesChanged(sender);
             });
         };
@@ -2307,17 +2308,18 @@ define("jriapp_db/error", ["require", "exports", "jriapp_shared"], function (req
     }(DataOperationError));
     exports.SubmitError = SubmitError;
 });
-define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/utils", "jriapp_db/const", "jriapp_db/association", "jriapp_db/error"], function (require, exports, jriapp_shared_7, utils_3, const_5, association_1, error_1) {
+define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/utils", "jriapp_db/association", "jriapp_db/error"], function (require, exports, jriapp_shared_7, utils_3, association_1, error_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_7.Utils, http = utils.http, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err, valUtils = utils_3.ValueUtils, _async = utils.defer;
-    var DATA_SVC_METH = {
-        Invoke: "invoke",
-        Query: "query",
-        Permissions: "permissions",
-        Submit: "save",
-        Refresh: "refresh"
-    };
+    var DATA_SVC_METH;
+    (function (DATA_SVC_METH) {
+        DATA_SVC_METH["Invoke"] = "invoke";
+        DATA_SVC_METH["Query"] = "query";
+        DATA_SVC_METH["Permissions"] = "permissions";
+        DATA_SVC_METH["Submit"] = "save";
+        DATA_SVC_METH["Refresh"] = "refresh";
+    })(DATA_SVC_METH || (DATA_SVC_METH = {}));
     function fn_checkError(svcError, oper) {
         if (!svcError || ERROR.checkIsDummy(svcError)) {
             return;
@@ -2375,8 +2377,8 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                     return self._load(query, reason);
                 }
             };
-            _this.objEvents.onProp(const_5.PROP_NAME.isSubmiting, function () {
-                self.objEvents.raiseProp(const_5.PROP_NAME.isBusy);
+            _this.objEvents.onProp("isSubmiting", function () {
+                self.objEvents.raiseProp("isBusy");
             });
             return _this;
         }
@@ -2460,16 +2462,16 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                     return;
                 var oldBusy = self.isBusy;
                 utils.arr.remove(self._requests, item);
-                self.objEvents.raiseProp(const_5.PROP_NAME.requestCount);
+                self.objEvents.raiseProp("requestCount");
                 if (oldBusy !== self.isBusy) {
-                    self.objEvents.raiseProp(const_5.PROP_NAME.isBusy);
+                    self.objEvents.raiseProp("isBusy");
                 }
             });
             if (cnt !== self._requests.length) {
-                self.objEvents.raiseProp(const_5.PROP_NAME.requestCount);
+                self.objEvents.raiseProp("requestCount");
             }
             if (oldBusy !== self.isBusy) {
-                self.objEvents.raiseProp(const_5.PROP_NAME.isBusy);
+                self.objEvents.raiseProp("isBusy");
             }
         };
         DbContext.prototype._tryAbortRequest = function (operType, name) {
@@ -2520,7 +2522,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 return JSON.stringify(data);
             }).then(function (postData) {
                 self._checkDestroy();
-                var invokeUrl = _this._getUrl(DATA_SVC_METH.Invoke), reqPromise = http.postAjax(invokeUrl, postData, self.requestHeaders);
+                var invokeUrl = _this._getUrl("invoke"), reqPromise = http.postAjax(invokeUrl, postData, self.requestHeaders);
                 self._addRequestPromise(reqPromise, 3);
                 return reqPromise;
             }).then(function (res) {
@@ -2640,7 +2642,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         };
         DbContext.prototype.waitForNotBusy = function (callback) {
             this._waitQueue.enQueue({
-                prop: const_5.PROP_NAME.isBusy,
+                prop: "isBusy",
                 groupName: null,
                 predicate: function (val) {
                     return !val;
@@ -2651,7 +2653,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         };
         DbContext.prototype.waitForNotSubmiting = function (callback) {
             this._waitQueue.enQueue({
-                prop: const_5.PROP_NAME.isSubmiting,
+                prop: "isSubmiting",
                 predicate: function (val) {
                     return !val;
                 },
@@ -2692,7 +2694,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                     paramInfo: self._getMethodParams(context.query._getInternal().getQueryInfo(), context.query.params).paramInfo,
                     queryName: context.query.queryName
                 };
-                var reqPromise = http.postAjax(self._getUrl(DATA_SVC_METH.Query), JSON.stringify(requestInfo), self.requestHeaders);
+                var reqPromise = http.postAjax(self._getUrl("query"), JSON.stringify(requestInfo), self.requestHeaders);
                 self._addRequestPromise(reqPromise, 2, requestInfo.dbSetName);
                 return reqPromise.then(function (res) {
                     return JSON.parse(res);
@@ -2735,7 +2737,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                     error: null
                 };
                 args.item._aspect._checkCanRefresh();
-                var url = self._getUrl(DATA_SVC_METH.Refresh), reqPromise = http.postAjax(url, JSON.stringify(request), self.requestHeaders);
+                var url = self._getUrl("refresh"), reqPromise = http.postAjax(url, JSON.stringify(request), self.requestHeaders);
                 self._addRequestPromise(reqPromise, 4);
                 return reqPromise;
             }).then(function (res) {
@@ -2810,7 +2812,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 }
             }
             if (this._isHasChanges !== old) {
-                this.objEvents.raiseProp(const_5.PROP_NAME.isHasChanges);
+                this.objEvents.raiseProp("isHasChanges");
             }
         };
         DbContext.prototype._load = function (query, reason) {
@@ -2875,7 +2877,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 }
                 return res;
             }).then(function (changes) {
-                var reqPromise = http.postAjax(self._getUrl(DATA_SVC_METH.Submit), JSON.stringify(changes), self.requestHeaders);
+                var reqPromise = http.postAjax(self._getUrl("save"), JSON.stringify(changes), self.requestHeaders);
                 self._addRequestPromise(reqPromise, 1);
                 return reqPromise;
             }).then(function (res) {
@@ -2917,7 +2919,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                     return opts.permissions;
                 }
                 else {
-                    var loadUrl = _this._getUrl(DATA_SVC_METH.Permissions);
+                    var loadUrl = _this._getUrl("permissions");
                     var ajaxPromise = http.getAjax(loadUrl, self.requestHeaders);
                     _this._addRequestPromise(ajaxPromise, 5);
                     return ajaxPromise.then(function (permissions) {
@@ -2927,12 +2929,24 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             }).then(function (res) {
                 self._checkDestroy();
                 self._updatePermissions(res);
-                self.objEvents.raiseProp(const_5.PROP_NAME.isInitialized);
+                self.objEvents.raiseProp("isInitialized");
             }).catch(function (err) {
                 self._onDataOperError(err, 5);
                 ERROR.throwDummy(err);
             });
             return this._initState;
+        };
+        DbContext.prototype.addOnDisposed = function (handler, nmspace, context) {
+            this.objEvents.addOnDisposed(handler, nmspace, context);
+        };
+        DbContext.prototype.removeOnDisposed = function (nmspace) {
+            this.objEvents.removeOnDisposed(nmspace);
+        };
+        DbContext.prototype.addOnError = function (handler, nmspace, context) {
+            this.objEvents.addOnError(handler, nmspace, context);
+        };
+        DbContext.prototype.removeOnError = function (nmspace) {
+            this.objEvents.removeOnError(nmspace);
         };
         DbContext.prototype.addOnSubmitError = function (fn, nmspace, context) {
             this.objEvents.on("submit_error", fn, nmspace, context);
@@ -2964,14 +2978,14 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 fn_onStart: function () {
                     if (!self._isSubmiting) {
                         self._isSubmiting = true;
-                        self.objEvents.raiseProp(const_5.PROP_NAME.isSubmiting);
+                        self.objEvents.raiseProp("isSubmiting");
                     }
                     self._pendingSubmit = null;
                 },
                 fn_onEnd: function () {
                     if (self._isSubmiting) {
                         self._isSubmiting = false;
-                        self.objEvents.raiseProp(const_5.PROP_NAME.isSubmiting);
+                        self.objEvents.raiseProp("isSubmiting");
                     }
                 },
                 fn_onErr: function (ex) {
@@ -3630,7 +3644,7 @@ define("jriapp_db/int", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/base", "jriapp_db/const"], function (require, exports, jriapp_shared_9, base_2, const_6) {
+define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/base"], function (require, exports, jriapp_shared_9, base_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_9.Utils, _async = utils.defer, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr, ERROR = utils.err, sys = utils.sys;
@@ -4014,7 +4028,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             set: function (v) {
                 if (this.options.enablePaging !== v) {
                     this.options.enablePaging = v;
-                    this.objEvents.raiseProp(const_6.PROP_NAME.isPagingEnabled);
+                    this.objEvents.raiseProp("isPagingEnabled");
                     this._refresh(0);
                 }
             },
@@ -4063,7 +4077,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
     }(base_2.BaseCollection));
     exports.DataView = DataView;
 });
-define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jriapp_db/const", "jriapp_db/dataview"], function (require, exports, jriapp_shared_10, const_7, dataview_1) {
+define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jriapp_db/dataview"], function (require, exports, jriapp_shared_10, dataview_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_10.Utils, coreUtils = utils.core;
@@ -4095,7 +4109,7 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
             _this._setParent = function (v) {
                 if (parentItem !== v) {
                     parentItem = v;
-                    self.objEvents.raiseProp(const_7.PROP_NAME.parentItem);
+                    self.objEvents.raiseProp("parentItem");
                 }
                 if (self.getIsStateDirty()) {
                     return;
@@ -4292,7 +4306,7 @@ define("jriapp_db/complexprop", ["require", "exports", "jriapp_shared"], functio
     }(BaseComplexProperty));
     exports.ChildComplexProperty = ChildComplexProperty;
 });
-define("jriapp_db", ["require", "exports", "jriapp_db/dbset", "jriapp_db/dataview", "jriapp_db/child_dataview", "jriapp_db/association", "jriapp_db/const", "jriapp_db/dbcontext", "jriapp_db/dbsets", "jriapp_db/dataquery", "jriapp_db/entity_aspect", "jriapp_db/error", "jriapp_db/complexprop"], function (require, exports, dbset_1, dataview_2, child_dataview_1, association_2, const_8, dbcontext_1, dbsets_1, dataquery_2, entity_aspect_2, error_3, complexprop_1) {
+define("jriapp_db", ["require", "exports", "jriapp_db/dbset", "jriapp_db/dataview", "jriapp_db/child_dataview", "jriapp_db/association", "jriapp_db/const", "jriapp_db/dbcontext", "jriapp_db/dbsets", "jriapp_db/dataquery", "jriapp_db/entity_aspect", "jriapp_db/error", "jriapp_db/complexprop"], function (require, exports, dbset_1, dataview_2, child_dataview_1, association_2, const_1, dbcontext_1, dbsets_1, dataquery_2, entity_aspect_2, error_3, complexprop_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -4302,10 +4316,10 @@ define("jriapp_db", ["require", "exports", "jriapp_db/dbset", "jriapp_db/datavie
     __export(dataview_2);
     __export(child_dataview_1);
     __export(association_2);
-    exports.REFRESH_MODE = const_8.REFRESH_MODE;
-    exports.DELETE_ACTION = const_8.DELETE_ACTION;
-    exports.DATA_OPER = const_8.DATA_OPER;
-    exports.FLAGS = const_8.FLAGS;
+    exports.REFRESH_MODE = const_1.REFRESH_MODE;
+    exports.DELETE_ACTION = const_1.DELETE_ACTION;
+    exports.DATA_OPER = const_1.DATA_OPER;
+    exports.FLAGS = const_1.FLAGS;
     __export(dbcontext_1);
     __export(dbsets_1);
     __export(dataquery_2);

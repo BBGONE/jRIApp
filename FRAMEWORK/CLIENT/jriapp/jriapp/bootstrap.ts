@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
-    DUMY_ERROR, IIndexer, IBaseObject, IPromise,
+    DUMY_ERROR, IIndexer, IBaseObject, IPromise, TErrorHandler,
     TEventHandler, TPriority, LocaleERRS, BaseObject, Utils, ObjectEvents, IObjectEvents
 } from "jriapp_shared";
 import { STORE_KEY } from "./const";
@@ -373,6 +373,18 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     }
     _getInternal(): IInternalBootstrapMethods {
         return this._internal;
+    }
+    addOnDisposed(handler: TEventHandler<Bootstrap, any>, nmspace?: string, context?: object): void {
+        this.objEvents.addOnDisposed(handler, nmspace, context);
+    }
+    removeOnDisposed(nmspace?: string): void {
+        this.objEvents.removeOnDisposed(nmspace);
+    }
+    addOnError(handler: TErrorHandler<Bootstrap>, nmspace?: string, context?: object): void {
+        this.objEvents.addOnError(handler, nmspace, context);
+    }
+    removeOnError(nmspace?: string): void {
+        this.objEvents.removeOnError(nmspace);
     }
     addOnLoad(fn: TEventHandler<Bootstrap, any>, nmspace?: string, context?: IBaseObject) {
         this.objEvents.on(GLOB_EVENTS.load, fn, nmspace, context);

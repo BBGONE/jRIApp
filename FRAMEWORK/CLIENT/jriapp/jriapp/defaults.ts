@@ -4,16 +4,16 @@ import { ButtonCss } from "./int";
 
 const utils = Utils, strUtils = utils.str;
 
-const PROP_NAME = {
-    dateFormat: "dateFormat",
-    timeFormat: "timeFormat",
-    dateTimeFormat: "dateTimeFormat",
-    datepicker: "datepicker",
-    imagesPath: "imagesPath",
-    decimalPoint: "decimalPoint",
-    thousandSep: "thousandSep",
-    decPrecision: "decPrecision"
-};
+const enum PROP_NAME {
+    dateFormat = "dateFormat",
+    timeFormat = "timeFormat",
+    dateTimeFormat = "dateTimeFormat",
+    datepicker = "datepicker",
+    imagesPath = "imagesPath",
+    decimalPoint = "decimalPoint",
+    thousandSep = "thousandSep",
+    decPrecision = "decPrecision"
+}
 
 export class Defaults extends BaseObject {
     private _imagesPath: string;

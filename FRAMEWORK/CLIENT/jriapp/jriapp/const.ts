@@ -2,23 +2,23 @@
 export const TOOLTIP_SVC = "tooltipSVC";
 export const DATEPICKER_SVC = "IDatepicker";
 
-export const STORE_KEY = {
-    SVC: "svc.",
-    CONVERTER: "cnv.",
-    OBJECT: "obj."
-};
+export const enum STORE_KEY {
+    SVC = "svc.",
+    CONVERTER = "cnv.",
+    OBJECT = "obj."
+}
 
-export const DATA_ATTR = {
-    DATA_BIND: "data-bind",
-    DATA_VIEW: "data-view",
-    DATA_EVENT_SCOPE: "data-scope",
-    DATA_ITEM_KEY: "data-key",
-    DATA_CONTENT: "data-content",
-    DATA_COLUMN: "data-column",
-    DATA_NAME: "data-name",
-    DATA_FORM: "data-form",
-    DATA_REQUIRE: "data-require"
-};
+export const enum DATA_ATTR {
+    DATA_BIND = "data-bind",
+    DATA_VIEW = "data-view",
+    DATA_EVENT_SCOPE = "data-scope",
+    DATA_ITEM_KEY = "data-key",
+    DATA_CONTENT = "data-content",
+    DATA_COLUMN = "data-column",
+    DATA_NAME = "data-name",
+    DATA_FORM = "data-form",
+    DATA_REQUIRE = "data-require"
+}
 
 export const enum KEYS {
     backspace = 8,
@@ -37,8 +37,8 @@ export const enum KEYS {
     del = 127
 }
 
-export const ELVIEW_NM = { DataForm: "dataform" };
-export const LOADER_GIF = { Small: "loader2.gif", Default: "loader.gif" };
+export const enum ELVIEW_NM { DataForm = "dataform" };
+export const enum LOADER_GIF { Small = "loader2.gif", Default = "loader.gif" }
 
 export const enum BindTo {
     Source = 0, Target = 1

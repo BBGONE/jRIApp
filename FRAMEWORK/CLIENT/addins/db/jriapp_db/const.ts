@@ -4,19 +4,19 @@ export const enum REFRESH_MODE { NONE = 0, RefreshCurrent = 1, MergeIntoCurrent 
 export const enum DELETE_ACTION { NoAction = 0, Cascade = 1, SetNulls = 2 }
 export const enum DATA_OPER { None, Submit, Query, Invoke, Refresh, Init }
 
-export const PROP_NAME = {
-    isHasChanges: "isHasChanges",
-    isSubmitOnDelete: "isSubmitOnDelete",
-    isInitialized: "isInitialized",
-    isBusy: "isBusy",
-    isSubmiting: "isSubmiting",
-    isPagingEnabled: "isPagingEnabled",
-    parentItem: "parentItem",
-    totalCount: "totalCount",
-    loadPageCount: "loadPageCount",
-    isClearCacheOnEveryLoad: "isClearCacheOnEveryLoad",
-    isForAppend: "isForAppend",
-    isRefreshing: "isRefreshing",
-    requestCount: "requestCount",
-    isLoading: "isLoading"
-};
+export const enum PROP_NAME {
+    isHasChanges = "isHasChanges",
+    isSubmitOnDelete = "isSubmitOnDelete",
+    isInitialized = "isInitialized",
+    isBusy = "isBusy",
+    isSubmiting = "isSubmiting",
+    isPagingEnabled = "isPagingEnabled",
+    parentItem = "parentItem",
+    totalCount = "totalCount",
+    loadPageCount = "loadPageCount",
+    isClearCacheOnEveryLoad = "isClearCacheOnEveryLoad",
+    isForAppend = "isForAppend",
+    isRefreshing = "isRefreshing",
+    requestCount = "requestCount",
+    isLoading = "isLoading"
+}

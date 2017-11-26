@@ -4,22 +4,22 @@
 declare module "jriapp/const" {
     export const TOOLTIP_SVC = "tooltipSVC";
     export const DATEPICKER_SVC = "IDatepicker";
-    export const STORE_KEY: {
-        SVC: string;
-        CONVERTER: string;
-        OBJECT: string;
-    };
-    export const DATA_ATTR: {
-        DATA_BIND: string;
-        DATA_VIEW: string;
-        DATA_EVENT_SCOPE: string;
-        DATA_ITEM_KEY: string;
-        DATA_CONTENT: string;
-        DATA_COLUMN: string;
-        DATA_NAME: string;
-        DATA_FORM: string;
-        DATA_REQUIRE: string;
-    };
+    export const enum STORE_KEY {
+        SVC = "svc.",
+        CONVERTER = "cnv.",
+        OBJECT = "obj.",
+    }
+    export const enum DATA_ATTR {
+        DATA_BIND = "data-bind",
+        DATA_VIEW = "data-view",
+        DATA_EVENT_SCOPE = "data-scope",
+        DATA_ITEM_KEY = "data-key",
+        DATA_CONTENT = "data-content",
+        DATA_COLUMN = "data-column",
+        DATA_NAME = "data-name",
+        DATA_FORM = "data-form",
+        DATA_REQUIRE = "data-require",
+    }
     export const enum KEYS {
         backspace = 8,
         tab = 9,
@@ -36,13 +36,13 @@ declare module "jriapp/const" {
         down = 40,
         del = 127,
     }
-    export const ELVIEW_NM: {
-        DataForm: string;
-    };
-    export const LOADER_GIF: {
-        Small: string;
-        Default: string;
-    };
+    export const enum ELVIEW_NM {
+        DataForm = "dataform",
+    }
+    export const enum LOADER_GIF {
+        Small = "loader2.gif",
+        Default = "loader.gif",
+    }
     export const enum BindTo {
         Source = 0,
         Target = 1,
@@ -612,7 +612,7 @@ declare module "jriapp/utils/sloader" {
     }
 }
 declare module "jriapp/bootstrap" {
-    import { IIndexer, IBaseObject, IPromise, TEventHandler, BaseObject, IObjectEvents } from "jriapp_shared";
+    import { IIndexer, IBaseObject, IPromise, TErrorHandler, TEventHandler, BaseObject, IObjectEvents } from "jriapp_shared";
     import { IApplication, ISelectableProvider, IExports, IConverter, ISvcStore, IContentFactoryList, IElViewRegister, IStylesLoader } from "jriapp/int";
     import { Defaults } from "jriapp/defaults";
     import { TemplateLoader } from "jriapp/utils/tloader";
@@ -668,6 +668,10 @@ declare module "jriapp/bootstrap" {
         private _getConverter(name);
         private _waitLoaded(onLoad);
         _getInternal(): IInternalBootstrapMethods;
+        addOnDisposed(handler: TEventHandler<Bootstrap, any>, nmspace?: string, context?: object): void;
+        removeOnDisposed(nmspace?: string): void;
+        addOnError(handler: TErrorHandler<Bootstrap>, nmspace?: string, context?: object): void;
+        removeOnError(nmspace?: string): void;
         addOnLoad(fn: TEventHandler<Bootstrap, any>, nmspace?: string, context?: IBaseObject): void;
         addOnUnLoad(fn: TEventHandler<Bootstrap, any>, nmspace?: string, context?: IBaseObject): void;
         addOnInitialize(fn: TEventHandler<Bootstrap, any>, nmspace?: string, context?: IBaseObject): void;
@@ -818,10 +822,10 @@ declare module "jriapp/binding" {
 }
 declare module "jriapp/template" {
     import { ITemplate, ITemplateEvents } from "jriapp/int";
-    export const css: {
-        templateContainer: string;
-        templateError: string;
-    };
+    export const enum css {
+        templateContainer = "ria-template-container",
+        templateError = "ria-template-error",
+    }
     export interface ITemplateOptions {
         dataContext?: any;
         templEvents?: ITemplateEvents;

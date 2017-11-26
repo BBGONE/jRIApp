@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { DATA_TYPE, COLL_CHANGE_REASON } from "jriapp_shared/collection/const";
 import {
-    IIndexer, IVoidPromise, IBaseObject, TEventHandler, LocaleERRS as ERRS,
+    IIndexer, IVoidPromise, IBaseObject, TEventHandler, TErrorHandler, LocaleERRS as ERRS,
     BaseObject, Utils, WaitQueue, Lazy, IStatefulPromise, IAbortablePromise, PromiseState
 } from "jriapp_shared";
 import { ValueUtils } from "jriapp_shared/collection/utils";
@@ -23,13 +23,13 @@ import {
 const utils = Utils, http = utils.http, checks = utils.check, strUtils = utils.str,
     coreUtils = utils.core, ERROR = utils.err, valUtils = ValueUtils, _async = utils.defer;
 
-const DATA_SVC_METH = {
-    Invoke: "invoke",
-    Query: "query",
-    Permissions: "permissions",
-    Submit: "save",
-    Refresh: "refresh"
-};
+const enum DATA_SVC_METH {
+    Invoke = "invoke",
+    Query = "query",
+    Permissions = "permissions",
+    Submit = "save",
+    Refresh = "refresh"
+}
 
 function fn_checkError(svcError: { name: string; message?: string; }, oper: DATA_OPER) {
     if (!svcError || ERROR.checkIsDummy(svcError)) {
@@ -732,6 +732,18 @@ export class DbContext extends BaseObject {
         });
 
         return this._initState;
+    }
+    addOnDisposed(handler: TEventHandler<DbContext, any>, nmspace?: string, context?: object): void {
+        this.objEvents.addOnDisposed(handler, nmspace, context);
+    }
+    removeOnDisposed(nmspace?: string): void {
+        this.objEvents.removeOnDisposed(nmspace);
+    }
+    addOnError(handler: TErrorHandler<DbContext>, nmspace?: string, context?: object): void {
+        this.objEvents.addOnError(handler, nmspace, context);
+    }
+    removeOnError(nmspace?: string): void {
+        this.objEvents.removeOnError(nmspace);
     }
     addOnSubmitError(fn: TEventHandler<DbContext, { error: any; isHandled: boolean; }>, nmspace?: string, context?: IBaseObject): void {
         this.objEvents.on(DBCTX_EVENTS.submit_err, fn, nmspace, context);

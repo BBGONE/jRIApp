@@ -12,10 +12,10 @@ viewChecks.isTemplateElView = (obj: any) => {
     return !!obj && obj instanceof TemplateElView;
 };
 
-const PROP_NAME = {
-    template: "template",
-    isEnabled: "isEnabled"
-};
+const enum PROP_NAME {
+    template = "template",
+    isEnabled = "isEnabled"
+}
 
 export interface ITemplateOptions {
     dataContext?: any;

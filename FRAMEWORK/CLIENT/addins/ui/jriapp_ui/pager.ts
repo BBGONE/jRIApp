@@ -14,12 +14,12 @@ const utils = Utils, dom = DomUtils, doc = dom.document, sys = utils.sys,
     strUtils = utils.str, coreUtils = utils.core, boot = bootstrap;
 const _STRS = STRS.PAGER;
 
-const css = {
-    pager: "ria-pager",
-    info: "ria-pager-info",
-    currentPage: "ria-pager-current-page",
-    otherPage: "ria-pager-other-page"
-};
+const enum css {
+    pager = "ria-pager",
+    info = "ria-pager-info",
+    currentPage = "ria-pager-current-page",
+    otherPage = "ria-pager-other-page"
+}
 
 export interface IPagerOptions {
     showTip?: boolean;
@@ -37,12 +37,12 @@ export interface IPagerConstructorOptions extends IPagerOptions {
     dataSource: ICollection<ICollectionItem>;
 }
 
-const PROP_NAME = {
-    dataSource: "dataSource",
-    rowCount: "rowCount",
-    currentPage: "currentPage",
-    pager: "pager"
-};
+const enum PROP_NAME {
+    dataSource = "dataSource",
+    rowCount = "rowCount",
+    currentPage = "currentPage",
+    pager = "pager"
+}
 
 export class Pager extends BaseObject {
     private _el: HTMLElement;
