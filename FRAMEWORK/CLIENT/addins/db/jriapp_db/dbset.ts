@@ -4,7 +4,7 @@ import {
 } from "jriapp_shared/collection/const";
 import {
     IIndexer, IValidationInfo, TEventHandler, IBaseObject,
-    IPromise, TPriority, LocaleERRS as ERRS, Debounce, Utils
+    IPromise, TPriority, LocaleERRS as ERRS, Debounce, Utils, IStatefulPromise
 } from "jriapp_shared";
 import {
     IInternalCollMethods, IFieldInfo
@@ -24,7 +24,7 @@ import { DbContext } from "./dbcontext";
 import { EntityAspect } from "./entity_aspect";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err,
-    valUtils = ValueUtils, colUtils = CollUtils;
+    valUtils = ValueUtils, colUtils = CollUtils, _async = utils.defer;
 
 function doFieldDependences(dbSet: TDbSet, info: IFieldInfo) {
     if (!info.dependentOn) {
@@ -49,7 +49,7 @@ export interface IFillFromServiceArgs {
     res: IQueryResponse;
     reason: COLL_CHANGE_REASON;
     query: TDataQuery;
-    onFillEnd: () => void;
+    onFillEnd: () => IPromise<any>;
 }
 
 export interface IFillFromCacheArgs {
@@ -64,8 +64,8 @@ export interface IInternalDbSetMethods<TItem extends IEntityItem, TObj> extends 
     beforeLoad(query: DataQuery<TItem, TObj>, oldQuery: DataQuery<TItem, TObj>): void;
     updatePermissions(perms: IPermissions): void;
     getChildToParentNames(childFieldName: string): string[];
-    fillFromService(info: IFillFromServiceArgs): IQueryResult<TItem>;
-    fillFromCache(info: IFillFromCacheArgs): IQueryResult<TItem>;
+    fillFromService(info: IFillFromServiceArgs): IStatefulPromise<IQueryResult<TItem>>;
+    fillFromCache(info: IFillFromCacheArgs): IStatefulPromise<IQueryResult<TItem>>;
     commitChanges(rows: IRowInfo[]): void;
     setItemInvalid(row: IRowInfo): TItem;
     getChanges(): IRowInfo[];
@@ -489,8 +489,10 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
             query._getInternal().clearCache();
         }
     }
-    protected _getChildToParentNames(childFieldName: string): string[] { return this._trackAssocMap[childFieldName]; }
-    protected _afterFill(result: IQueryResult<TItem>, isClearAll?: boolean) {
+    protected _getChildToParentNames(childFieldName: string): string[] {
+        return this._trackAssocMap[childFieldName];
+    }
+    protected _afterFill(result: IQueryResult<TItem>, isClearAll?: boolean): void {
         const self = this;
         // fetchedItems is null when loaded from the data cache
         if (!checks.isNt(result.fetchedItems)) {
@@ -517,128 +519,142 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
             self.moveFirst();
         }
     }
-    protected _fillFromService(info: IFillFromServiceArgs): IQueryResult<TItem> {
-        const self = this, res = info.res, fieldNames = res.names, rows = res.rows || [],
-            isPagingEnabled = this.isPagingEnabled, query = info.query;
-        let isClearAll = true;
+    protected _fillFromService(info: IFillFromServiceArgs): IStatefulPromise<IQueryResult<TItem>> {
+        const self = this;
+        return _async.delay(() => {
+            const res = info.res, fieldNames = res.names, rows = res.rows || [],
+                isPagingEnabled = this.isPagingEnabled, query = info.query;
+            let isClearAll = true;
 
-        if (!!query && !query.getIsStateDirty()) {
-            isClearAll = query.isClearPrevData;
-            if (query.isClearCacheOnEveryLoad) {
-                query._getInternal().clearCache();
-            }
-            if (isClearAll) {
-                this._clear(info.reason, COLL_CHANGE_OPER.Fill);
-            }
-        }
-
-        const fetchedItems = rows.map((row) => {
-            // row.key already a string value generated on server (no need to convert to string)
-            const key = row.k;
-            if (!key) {
-                throw new Error(ERRS.ERR_KEY_IS_EMPTY);
-            }
-
-            let item = self._itemsByKey[key];
-            if (!item) {
-                item = self.createEntityFromData(row, fieldNames);
-            } else {
-                self._refreshValues("", item, row.v, fieldNames, REFRESH_MODE.RefreshCurrent);
-            }
-
-            return item;
-        });
-
-        let arr = fetchedItems;
-
-        if (!!query && !query.getIsStateDirty()) {
-            if (query.isIncludeTotalCount && !checks.isNt(res.totalCount)) {
-                this.totalCount = res.totalCount;
-            }
-
-            if (query.loadPageCount > 1 && isPagingEnabled) {
-                const dataCache = query._getInternal().getCache();
-                if (query.isIncludeTotalCount && !checks.isNt(res.totalCount)) {
-                    dataCache.totalCount = res.totalCount;
+            if (!!query && !query.getIsStateDirty()) {
+                isClearAll = query.isClearPrevData;
+                if (query.isClearCacheOnEveryLoad) {
+                    query._getInternal().clearCache();
                 }
-                dataCache.fill(res.pageIndex, fetchedItems);
-                arr = <TItem[]>dataCache.getPageItems(query.pageIndex);
+                if (isClearAll) {
+                    this._clear(info.reason, COLL_CHANGE_OPER.Fill);
+                }
             }
-        }
 
-        const newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];
-        arr.forEach((item) => {
-            const oldItem = self._itemsByKey[item._key];
-            if (!oldItem) {
-                self._items.push(item);
-                positions.push(self._items.length - 1);
+            const fetchedItems = rows.map((row) => {
+                // row.key already a string value generated on server (no need to convert to string)
+                const key = row.k;
+                if (!key) {
+                    throw new Error(ERRS.ERR_KEY_IS_EMPTY);
+                }
+
+                let item = self._itemsByKey[key];
+                if (!item) {
+                    item = self.createEntityFromData(row, fieldNames);
+                } else {
+                    self._refreshValues("", item, row.v, fieldNames, REFRESH_MODE.RefreshCurrent);
+                }
+
+                return item;
+            });
+
+            let arr = fetchedItems;
+
+            if (!!query && !query.getIsStateDirty()) {
+                if (query.isIncludeTotalCount && !checks.isNt(res.totalCount)) {
+                    this.totalCount = res.totalCount;
+                }
+
+                if (query.loadPageCount > 1 && isPagingEnabled) {
+                    const dataCache = query._getInternal().getCache();
+                    if (query.isIncludeTotalCount && !checks.isNt(res.totalCount)) {
+                        dataCache.totalCount = res.totalCount;
+                    }
+                    dataCache.fill(res.pageIndex, fetchedItems);
+                    arr = <TItem[]>dataCache.getPageItems(query.pageIndex);
+                }
+            }
+
+            const newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];
+            arr.forEach((item) => {
+                const oldItem = self._itemsByKey[item._key];
+                if (!oldItem) {
+                    self._items.push(item);
+                    positions.push(self._items.length - 1);
+                    self._itemsByKey[item._key] = item;
+                    newItems.push(item);
+                    items.push(item);
+                    item._aspect._setIsAttached(true);
+                } else {
+                    items.push(oldItem);
+                }
+            });
+
+            if (newItems.length > 0) {
+                this._onCountChanged();
+            }
+
+            const result: IQueryResult<TItem> = {
+                newItems: {
+                    items: newItems,
+                    pos: positions
+                },
+                fetchedItems: fetchedItems,
+                items: items,
+                reason: info.reason,
+                outOfBandData: info.res.extraInfo
+            };
+
+            return {
+                result: result,
+                isClearAll: isClearAll
+            };
+        }).then((res) => {
+            return info.onFillEnd().then(() => res);
+        }).then((res) => {
+            this._afterFill(res.result, res.isClearAll);
+            return res.result;
+        });
+    }
+    protected _fillFromCache(args: IFillFromCacheArgs): IStatefulPromise<IQueryResult<TItem>> {
+        const self = this;
+        return _async.delay(() => {
+            const query = args.query;
+            if (!query) {
+                throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "query is not null"));
+            }
+            if (query.getIsStateDirty()) {
+                throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "query not destroyed"));
+            }
+            const dataCache = query._getInternal().getCache(),
+                arr = <TItem[]>dataCache.getPageItems(query.pageIndex);
+
+            this._clear(args.reason, COLL_CHANGE_OPER.Fill);
+            this._items = arr;
+
+            const positions: number[] = [], items: TItem[] = [];
+            arr.forEach((item, index) => {
                 self._itemsByKey[item._key] = item;
-                newItems.push(item);
+                positions.push(index);
                 items.push(item);
                 item._aspect._setIsAttached(true);
-            } else {
-                items.push(oldItem);
+            });
+
+            if (items.length > 0) {
+                this._onCountChanged();
             }
-        });
 
-        if (newItems.length > 0) {
-            this._onCountChanged();
-        }
-
-        const result: IQueryResult<TItem> = {
-            newItems: {
-                items: newItems,
-                pos: positions
-            },
-            fetchedItems: fetchedItems,
-            items: items,
-            reason: info.reason,
-            outOfBandData: info.res.extraInfo
-        };
-
-        info.onFillEnd();
-        this._afterFill(result, isClearAll);
-        return result;
-    }
-    protected _fillFromCache(args: IFillFromCacheArgs): IQueryResult<TItem> {
-        const self = this, query = args.query;
-        if (!query) {
-            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "query is not null"));
-        }
-        if (query.getIsStateDirty()) {
-            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "query not destroyed"));
-        }
-        const dataCache = query._getInternal().getCache(),
-            arr = <TItem[]>dataCache.getPageItems(query.pageIndex);
-
-        this._clear(args.reason, COLL_CHANGE_OPER.Fill);
-        this._items = arr;
-
-        const positions: number[] = [], items: TItem[] = [];
-        arr.forEach((item, index) => {
-            self._itemsByKey[item._key] = item;
-            positions.push(index);
-            items.push(item);
-            item._aspect._setIsAttached(true);
-        });
-
-        if (items.length > 0) {
-            this._onCountChanged();
-        }
-
-        const result: IQueryResult<TItem> = {
-            newItems: {
+            const result: IQueryResult<TItem> = {
+                newItems: {
+                    items: items,
+                    pos: positions
+                },
+                fetchedItems: null,
                 items: items,
-                pos: positions
-            },
-            fetchedItems: null,
-            items: items,
-            reason: args.reason,
-            outOfBandData: null
-        };
+                reason: args.reason,
+                outOfBandData: null
+            };
 
-        this._afterFill(result, true);
-        return result;
+            return result;
+        }).then((res) => {
+            this._afterFill(res, true);
+            return res;
+        });
     }
     protected _commitChanges(rows: IRowInfo[]): void {
         const self = this;

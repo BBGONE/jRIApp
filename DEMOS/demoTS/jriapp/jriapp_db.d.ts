@@ -149,7 +149,7 @@ declare module "jriapp_db/dataquery" {
 }
 declare module "jriapp_db/dbset" {
     import { SORT_ORDER, COLL_CHANGE_REASON, COLL_CHANGE_OPER, ITEM_STATUS } from "jriapp_shared/collection/const";
-    import { TEventHandler, IBaseObject, IPromise, TPriority } from "jriapp_shared";
+    import { TEventHandler, IBaseObject, IPromise, TPriority, IStatefulPromise } from "jriapp_shared";
     import { IInternalCollMethods, IFieldInfo } from "jriapp_shared/collection/int";
     import { BaseCollection } from "jriapp_shared/collection/base";
     import { IFieldName, IEntityItem, IRowInfo, ITrackAssoc, IQueryResponse, IPermissions, IDbSetConstuctorOptions, ICalcFieldImpl, INavFieldImpl, IQueryResult, IRowData, IDbSetLoadedArgs } from "jriapp_db/int";
@@ -161,7 +161,7 @@ declare module "jriapp_db/dbset" {
         res: IQueryResponse;
         reason: COLL_CHANGE_REASON;
         query: TDataQuery;
-        onFillEnd: () => void;
+        onFillEnd: () => IPromise<any>;
     }
     export interface IFillFromCacheArgs {
         reason: COLL_CHANGE_REASON;
@@ -174,8 +174,8 @@ declare module "jriapp_db/dbset" {
         beforeLoad(query: DataQuery<TItem, TObj>, oldQuery: DataQuery<TItem, TObj>): void;
         updatePermissions(perms: IPermissions): void;
         getChildToParentNames(childFieldName: string): string[];
-        fillFromService(info: IFillFromServiceArgs): IQueryResult<TItem>;
-        fillFromCache(info: IFillFromCacheArgs): IQueryResult<TItem>;
+        fillFromService(info: IFillFromServiceArgs): IStatefulPromise<IQueryResult<TItem>>;
+        fillFromCache(info: IFillFromCacheArgs): IStatefulPromise<IQueryResult<TItem>>;
         commitChanges(rows: IRowInfo[]): void;
         setItemInvalid(row: IRowInfo): TItem;
         getChanges(): IRowInfo[];
@@ -234,8 +234,8 @@ declare module "jriapp_db/dbset" {
         protected _beforeLoad(query: DataQuery<TItem, TObj>, oldQuery: DataQuery<TItem, TObj>): void;
         protected _getChildToParentNames(childFieldName: string): string[];
         protected _afterFill(result: IQueryResult<TItem>, isClearAll?: boolean): void;
-        protected _fillFromService(info: IFillFromServiceArgs): IQueryResult<TItem>;
-        protected _fillFromCache(args: IFillFromCacheArgs): IQueryResult<TItem>;
+        protected _fillFromService(info: IFillFromServiceArgs): IStatefulPromise<IQueryResult<TItem>>;
+        protected _fillFromCache(args: IFillFromCacheArgs): IStatefulPromise<IQueryResult<TItem>>;
         protected _commitChanges(rows: IRowInfo[]): void;
         protected _setItemInvalid(row: IRowInfo): TItem;
         protected _getChanges(): IRowInfo[];
@@ -446,7 +446,7 @@ declare module "jriapp_db/dbcontext" {
             [paramName: string]: any;
         }): IStatefulPromise<IInvokeResponse>;
         protected _loadFromCache(query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
-        protected _loadSubsets(response: IQueryResponse, isClearAll: boolean): void;
+        protected _loadSubsets(response: IQueryResponse, isClearAll: boolean): IStatefulPromise<IQueryResult<IEntityItem>[]>;
         protected _onLoaded(response: IQueryResponse, query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
         protected _dataSaved(changes: IChangeSet): void;
         protected _getChanges(): IChangeSet;
