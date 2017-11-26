@@ -290,20 +290,15 @@ export class DbContext extends BaseObject {
             return dbSet._getInternal().fillFromCache({ reason: reason, query: query });
         });
     }
-    protected _loadSubsets(response: IQueryResponse, isClearAll: boolean): IStatefulPromise<IQueryResult<IEntityItem>[]> {
+    protected _loadSubsets(response: IQueryResponse, isClearAll: boolean): void {
         const self = this, isHasSubsets = checks.isArray(response.subsets) && response.subsets.length > 0;
         if (!isHasSubsets) {
-            return _async.delay(() => { return <IQueryResult<IEntityItem>[]>[]; });
+            return;
         }
-        const loadPromises = response.subsets.map((subset) => {
-            return () => {
-                return _async.delay(() => {
-                    const dbSet = self.getDbSet(subset.dbSetName);
-                    return dbSet.fillData(subset, !isClearAll);
-                });
-            };
+        response.subsets.forEach((loadResult) => {
+            const dbSet = self.getDbSet(loadResult.dbSetName);
+            dbSet.fillData(loadResult, !isClearAll);
         });
-        return _async.promiseSerial(loadPromises);
     }
     protected _onLoaded(response: IQueryResponse, query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
         const self = this;
@@ -323,10 +318,7 @@ export class DbContext extends BaseObject {
                     res: response,
                     reason: reason,
                     query: query,
-                    onFillEnd: () => {
-                        self._checkDestroy();
-                        return self._loadSubsets(response, isClearAll);
-                    }
+                    onFillEnd: () => { self._loadSubsets(response, isClearAll); }
                 });
         });
     }

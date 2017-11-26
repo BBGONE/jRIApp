@@ -566,7 +566,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
 define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/base", "jriapp_shared/collection/utils", "jriapp_db/dataquery", "jriapp_db/entity_aspect"], function (require, exports, jriapp_shared_3, base_1, utils_2, dataquery_1, entity_aspect_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_3.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err, valUtils = utils_2.ValueUtils, colUtils = utils_2.CollUtils, _async = utils.defer;
+    var utils = jriapp_shared_3.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err, valUtils = utils_2.ValueUtils, colUtils = utils_2.CollUtils;
     function doFieldDependences(dbSet, info) {
         if (!info.dependentOn) {
             return;
@@ -945,9 +945,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 query._getInternal().clearCache();
             }
         };
-        DbSet.prototype._getChildToParentNames = function (childFieldName) {
-            return this._trackAssocMap[childFieldName];
-        };
+        DbSet.prototype._getChildToParentNames = function (childFieldName) { return this._trackAssocMap[childFieldName]; };
         DbSet.prototype._afterFill = function (result, isClearAll) {
             var self = this;
             if (!checks.isNt(result.fetchedItems)) {
@@ -971,126 +969,110 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             }
         };
         DbSet.prototype._fillFromService = function (info) {
-            var _this = this;
-            var self = this;
-            return _async.delay(function () {
-                var res = info.res, fieldNames = res.names, rows = res.rows || [], isPagingEnabled = _this.isPagingEnabled, query = info.query;
-                var isClearAll = true;
-                if (!!query && !query.getIsStateDirty()) {
-                    isClearAll = query.isClearPrevData;
-                    if (query.isClearCacheOnEveryLoad) {
-                        query._getInternal().clearCache();
-                    }
-                    if (isClearAll) {
-                        _this._clear(info.reason, 1);
-                    }
+            var self = this, res = info.res, fieldNames = res.names, rows = res.rows || [], isPagingEnabled = this.isPagingEnabled, query = info.query;
+            var isClearAll = true;
+            if (!!query && !query.getIsStateDirty()) {
+                isClearAll = query.isClearPrevData;
+                if (query.isClearCacheOnEveryLoad) {
+                    query._getInternal().clearCache();
                 }
-                var fetchedItems = rows.map(function (row) {
-                    var key = row.k;
-                    if (!key) {
-                        throw new Error(jriapp_shared_3.LocaleERRS.ERR_KEY_IS_EMPTY);
-                    }
-                    var item = self._itemsByKey[key];
-                    if (!item) {
-                        item = self.createEntityFromData(row, fieldNames);
-                    }
-                    else {
-                        self._refreshValues("", item, row.v, fieldNames, 1);
-                    }
-                    return item;
-                });
-                var arr = fetchedItems;
-                if (!!query && !query.getIsStateDirty()) {
-                    if (query.isIncludeTotalCount && !checks.isNt(res.totalCount)) {
-                        _this.totalCount = res.totalCount;
-                    }
-                    if (query.loadPageCount > 1 && isPagingEnabled) {
-                        var dataCache = query._getInternal().getCache();
-                        if (query.isIncludeTotalCount && !checks.isNt(res.totalCount)) {
-                            dataCache.totalCount = res.totalCount;
-                        }
-                        dataCache.fill(res.pageIndex, fetchedItems);
-                        arr = dataCache.getPageItems(query.pageIndex);
-                    }
+                if (isClearAll) {
+                    this._clear(info.reason, 1);
                 }
-                var newItems = [], positions = [], items = [];
-                arr.forEach(function (item) {
-                    var oldItem = self._itemsByKey[item._key];
-                    if (!oldItem) {
-                        self._items.push(item);
-                        positions.push(self._items.length - 1);
-                        self._itemsByKey[item._key] = item;
-                        newItems.push(item);
-                        items.push(item);
-                        item._aspect._setIsAttached(true);
-                    }
-                    else {
-                        items.push(oldItem);
-                    }
-                });
-                if (newItems.length > 0) {
-                    _this._onCountChanged();
+            }
+            var fetchedItems = rows.map(function (row) {
+                var key = row.k;
+                if (!key) {
+                    throw new Error(jriapp_shared_3.LocaleERRS.ERR_KEY_IS_EMPTY);
                 }
-                var result = {
-                    newItems: {
-                        items: newItems,
-                        pos: positions
-                    },
-                    fetchedItems: fetchedItems,
-                    items: items,
-                    reason: info.reason,
-                    outOfBandData: info.res.extraInfo
-                };
-                return {
-                    result: result,
-                    isClearAll: isClearAll
-                };
-            }).then(function (res) {
-                return info.onFillEnd().then(function () { return res; });
-            }).then(function (res) {
-                _this._afterFill(res.result, res.isClearAll);
-                return res.result;
+                var item = self._itemsByKey[key];
+                if (!item) {
+                    item = self.createEntityFromData(row, fieldNames);
+                }
+                else {
+                    self._refreshValues("", item, row.v, fieldNames, 1);
+                }
+                return item;
             });
-        };
-        DbSet.prototype._fillFromCache = function (args) {
-            var _this = this;
-            var self = this;
-            return _async.delay(function () {
-                var query = args.query;
-                if (!query) {
-                    throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_ASSERTION_FAILED, "query is not null"));
+            var arr = fetchedItems;
+            if (!!query && !query.getIsStateDirty()) {
+                if (query.isIncludeTotalCount && !checks.isNt(res.totalCount)) {
+                    this.totalCount = res.totalCount;
                 }
-                if (query.getIsStateDirty()) {
-                    throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_ASSERTION_FAILED, "query not destroyed"));
+                if (query.loadPageCount > 1 && isPagingEnabled) {
+                    var dataCache = query._getInternal().getCache();
+                    if (query.isIncludeTotalCount && !checks.isNt(res.totalCount)) {
+                        dataCache.totalCount = res.totalCount;
+                    }
+                    dataCache.fill(res.pageIndex, fetchedItems);
+                    arr = dataCache.getPageItems(query.pageIndex);
                 }
-                var dataCache = query._getInternal().getCache(), arr = dataCache.getPageItems(query.pageIndex);
-                _this._clear(args.reason, 1);
-                _this._items = arr;
-                var positions = [], items = [];
-                arr.forEach(function (item, index) {
+            }
+            var newItems = [], positions = [], items = [];
+            arr.forEach(function (item) {
+                var oldItem = self._itemsByKey[item._key];
+                if (!oldItem) {
+                    self._items.push(item);
+                    positions.push(self._items.length - 1);
                     self._itemsByKey[item._key] = item;
-                    positions.push(index);
+                    newItems.push(item);
                     items.push(item);
                     item._aspect._setIsAttached(true);
-                });
-                if (items.length > 0) {
-                    _this._onCountChanged();
                 }
-                var result = {
-                    newItems: {
-                        items: items,
-                        pos: positions
-                    },
-                    fetchedItems: null,
-                    items: items,
-                    reason: args.reason,
-                    outOfBandData: null
-                };
-                return result;
-            }).then(function (res) {
-                _this._afterFill(res, true);
-                return res;
+                else {
+                    items.push(oldItem);
+                }
             });
+            if (newItems.length > 0) {
+                this._onCountChanged();
+            }
+            var result = {
+                newItems: {
+                    items: newItems,
+                    pos: positions
+                },
+                fetchedItems: fetchedItems,
+                items: items,
+                reason: info.reason,
+                outOfBandData: info.res.extraInfo
+            };
+            info.onFillEnd();
+            this._afterFill(result, isClearAll);
+            return result;
+        };
+        DbSet.prototype._fillFromCache = function (args) {
+            var self = this, query = args.query;
+            if (!query) {
+                throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_ASSERTION_FAILED, "query is not null"));
+            }
+            if (query.getIsStateDirty()) {
+                throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_ASSERTION_FAILED, "query not destroyed"));
+            }
+            var dataCache = query._getInternal().getCache(), arr = dataCache.getPageItems(query.pageIndex);
+            this._clear(args.reason, 1);
+            this._items = arr;
+            var positions = [], items = [];
+            arr.forEach(function (item, index) {
+                self._itemsByKey[item._key] = item;
+                positions.push(index);
+                items.push(item);
+                item._aspect._setIsAttached(true);
+            });
+            if (items.length > 0) {
+                this._onCountChanged();
+            }
+            var result = {
+                newItems: {
+                    items: items,
+                    pos: positions
+                },
+                fetchedItems: null,
+                items: items,
+                reason: args.reason,
+                outOfBandData: null
+            };
+            this._afterFill(result, true);
+            return result;
         };
         DbSet.prototype._commitChanges = function (rows) {
             var self = this;
@@ -2558,17 +2540,12 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         DbContext.prototype._loadSubsets = function (response, isClearAll) {
             var self = this, isHasSubsets = checks.isArray(response.subsets) && response.subsets.length > 0;
             if (!isHasSubsets) {
-                return _async.delay(function () { return []; });
+                return;
             }
-            var loadPromises = response.subsets.map(function (subset) {
-                return function () {
-                    return _async.delay(function () {
-                        var dbSet = self.getDbSet(subset.dbSetName);
-                        return dbSet.fillData(subset, !isClearAll);
-                    });
-                };
+            response.subsets.forEach(function (loadResult) {
+                var dbSet = self.getDbSet(loadResult.dbSetName);
+                dbSet.fillData(loadResult, !isClearAll);
             });
-            return _async.promiseSerial(loadPromises);
         };
         DbContext.prototype._onLoaded = function (response, query, reason) {
             var self = this;
@@ -2587,10 +2564,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                     res: response,
                     reason: reason,
                     query: query,
-                    onFillEnd: function () {
-                        self._checkDestroy();
-                        return self._loadSubsets(response, isClearAll);
-                    }
+                    onFillEnd: function () { self._loadSubsets(response, isClearAll); }
                 });
             });
         };
