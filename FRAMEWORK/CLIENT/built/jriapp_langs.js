@@ -6,7 +6,7 @@ define("jriapp_ru", ["require", "exports", "jriapp_shared/lang", "jriapp/bootstr
         lastText: ">>",
         previousText: "<",
         nextText: ">",
-        pageInfo: "Страница {0} из {1}",
+        pageInfo: "Записи с <span class='ria-pager-info-num'>{0}</span> по <span class='ria-pager-info-num'>{1}</span> из <span class='ria-pager-info-num'>{2}</span>",
         firstPageTip: "на 1 страницу",
         prevPageTip: "назад на {0}",
         nextPageTip: "вперед на {0}",

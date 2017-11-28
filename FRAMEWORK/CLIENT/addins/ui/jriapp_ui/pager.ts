@@ -112,37 +112,16 @@ export class Pager extends BaseObject {
     }
     protected render() {
         const el = this._el;
-        let rowCount: number, currentPage: number, pageCount: number;
         this._clearContent();
 
         if (this.rowsPerPage <= 0) {
             return;
         }
 
-        rowCount = this.rowCount;
-        if (rowCount === 0) {
-            return;
-        }
-        currentPage = this.currentPage;
-        if (currentPage === 0) {
-            return;
-        }
+        const rowCount = this.rowCount, currentPage = this.currentPage,
+            pageCount = this.pageCount;
 
-        pageCount = this.pageCount;
-
-        if (this.hideOnSinglePage && (pageCount === 1)) {
-            this.isVisible = false;
-        } else {
-            this.isVisible = true;
-
-            if (this.showInfo) {
-                const span = this._createElement("span");
-                const info = strUtils.format(_STRS.pageInfo, currentPage, pageCount);
-                dom.addClass([span], css.info);
-                span.textContent = info;
-                span.appendChild(el);
-            }
-
+        if (currentPage > 0 && rowCount > 0 && !(this.hideOnSinglePage && (pageCount === 1))) {
             if (this.showFirstAndLast && (currentPage !== 1)) {
                 el.appendChild(this._createFirst());
             }
@@ -196,6 +175,21 @@ export class Pager extends BaseObject {
                 el.appendChild(this._createLast());
             }
         }
+
+        if (this.showInfo && rowCount > 0 && currentPage > 0) {
+            const rowsPerPage = this.rowsPerPage,
+                start = rowCount === 0 ? 0 : (((currentPage - 1) * rowsPerPage) + 1),
+                end = rowCount === 0 ? 0 : ((currentPage === pageCount) ? rowCount : (currentPage * rowsPerPage));
+
+            const span = this._createElement("span");
+            const info = strUtils.format(_STRS.pageInfo, start, end, rowCount);
+            dom.addClass([span], css.info);
+            span.innerHTML = info;
+            const spacer = this._createElement("span");
+            spacer.innerHTML = "&nbsp;&nbsp;";
+            el.appendChild(spacer);
+            el.appendChild(span);
+        } 
     }
     protected _onPageSizeChanged(ds: ICollection<ICollectionItem>) {
         this.rowsPerPage = ds.pageSize;

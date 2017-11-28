@@ -759,7 +759,7 @@ define("jriapp_shared/lang", ["require", "exports", "jriapp_shared/utils/coreuti
         lastText: ">>",
         previousText: "<",
         nextText: ">",
-        pageInfo: "Page {0} of {1}",
+        pageInfo: "Rows from <span class='ria-pager-info-num'>{0}</span> to <span class='ria-pager-info-num'>{1}</span> of <span class='ria-pager-info-num'>{2}</span>",
         firstPageTip: "to first page",
         prevPageTip: "back to page {0}",
         nextPageTip: "next to page {0}",

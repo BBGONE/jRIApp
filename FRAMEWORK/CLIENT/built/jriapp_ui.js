@@ -6533,32 +6533,12 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
         };
         Pager.prototype.render = function () {
             var el = this._el;
-            var rowCount, currentPage, pageCount;
             this._clearContent();
             if (this.rowsPerPage <= 0) {
                 return;
             }
-            rowCount = this.rowCount;
-            if (rowCount === 0) {
-                return;
-            }
-            currentPage = this.currentPage;
-            if (currentPage === 0) {
-                return;
-            }
-            pageCount = this.pageCount;
-            if (this.hideOnSinglePage && (pageCount === 1)) {
-                this.isVisible = false;
-            }
-            else {
-                this.isVisible = true;
-                if (this.showInfo) {
-                    var span = this._createElement("span");
-                    var info = strUtils.format(_STRS.pageInfo, currentPage, pageCount);
-                    dom.addClass([span], "ria-pager-info");
-                    span.textContent = info;
-                    span.appendChild(el);
-                }
+            var rowCount = this.rowCount, currentPage = this.currentPage, pageCount = this.pageCount;
+            if (currentPage > 0 && rowCount > 0 && !(this.hideOnSinglePage && (pageCount === 1))) {
                 if (this.showFirstAndLast && (currentPage !== 1)) {
                     el.appendChild(this._createFirst());
                 }
@@ -6601,6 +6581,17 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                 if (this.showFirstAndLast && (currentPage !== pageCount)) {
                     el.appendChild(this._createLast());
                 }
+            }
+            if (this.showInfo && rowCount > 0 && currentPage > 0) {
+                var rowsPerPage = this.rowsPerPage, start = rowCount === 0 ? 0 : (((currentPage - 1) * rowsPerPage) + 1), end = rowCount === 0 ? 0 : ((currentPage === pageCount) ? rowCount : (currentPage * rowsPerPage));
+                var span = this._createElement("span");
+                var info = strUtils.format(_STRS.pageInfo, start, end, rowCount);
+                dom.addClass([span], "ria-pager-info");
+                span.innerHTML = info;
+                var spacer = this._createElement("span");
+                spacer.innerHTML = "&nbsp;&nbsp;";
+                el.appendChild(spacer);
+                el.appendChild(span);
             }
         };
         Pager.prototype._onPageSizeChanged = function (ds) {

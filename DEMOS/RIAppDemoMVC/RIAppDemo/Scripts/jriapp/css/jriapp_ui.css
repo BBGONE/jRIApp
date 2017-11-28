@@ -237,9 +237,7 @@ td.ria-row-selector input[type="checkbox"] {
         box-sizing: border-box !important;
     }
 
-
 /* ************** Pager styles ***************** */
-
 .ria-pager {
     font-family: Frutiger Linotype, Trebuchet MS, Tahoma, Arial;
     font-size: 10pt;
@@ -248,14 +246,19 @@ td.ria-row-selector input[type="checkbox"] {
     box-sizing: border-box;
 }
 
-    .ria-pager .ria-pager-info {
+    .ria-pager-info {
         font-family: Frutiger Linotype, Trebuchet MS, Tahoma, Arial;
         font-size: 10pt;
         padding: 2px;
         box-sizing: border-box;
+        color: black;
     }
 
-    .ria-pager .ria-pager-current-page {
+    .ria-pager-info-num {
+        color: Highlight;
+    }
+
+    .ria-pager-current-page {
         font-family: Frutiger Linotype, Trebuchet MS, Tahoma, Arial;
         font-size: 10pt;
         font-weight: bold;
@@ -267,7 +270,7 @@ td.ria-row-selector input[type="checkbox"] {
         box-sizing: border-box;
     }
 
-    .ria-pager .ria-pager-other-page {
+    .ria-pager-other-page {
         font-family: Frutiger Linotype, Trebuchet MS, Tahoma, Arial;
         font-size: 10pt;
         background-color: #f0f1f2;
@@ -285,8 +288,7 @@ td.ria-row-selector input[type="checkbox"] {
     box-sizing: border-box;
 }
 
-
-    .ria-stackpanel .ria-stackpanel-item {
+    .ria-stackpanel-item {
         margin: 1px 3px 1px 3px;
         box-sizing: border-box;
     }
