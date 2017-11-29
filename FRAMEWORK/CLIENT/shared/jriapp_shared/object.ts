@@ -17,7 +17,7 @@ const checks = Checks, coreUtils = CoreUtils,
 export const objSignature: object = signature;
 
 sys._isBaseObj = function (obj: any): boolean {
-    return (!!obj && obj.objectSig === signature);
+    return (!!obj && obj.__objSig === signature);
 };
 
 const enum OBJ_EVENTS {
@@ -170,8 +170,9 @@ export class ObjectEvents implements IObjectEvents {
     }
 }
 
+const dummyEvents = new DummyEvents();
+
 export class BaseObject implements IBaseObject {
-    static _dummyEvents = new DummyEvents();
     constructor() {
         weakmap.set(this, { objState: ObjState.None, events: null });
     }
@@ -206,8 +207,7 @@ export class BaseObject implements IBaseObject {
         return isHandled;
     }
     getIsDisposed(): boolean {
-        const state = <IObjState>weakmap.get(this);
-        return !state;
+        return !weakmap.get(this);
     }
     getIsStateDirty(): boolean {
         const state = <IObjState>weakmap.get(this);
@@ -233,14 +233,14 @@ export class BaseObject implements IBaseObject {
     get objEvents(): IObjectEvents {
         const state = <IObjState>weakmap.get(this);
         if (!state) {
-            return BaseObject._dummyEvents;
+            return dummyEvents;
         }
         if (!state.events) {
             state.events = this._createObjEvents();
         }
         return state.events;
     }
-    get objectSig(): object {
+    get __objSig(): object {
         return signature;
     }
 }

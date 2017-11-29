@@ -1293,7 +1293,7 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
     var checks = checks_4.Checks, coreUtils = coreutils_2.CoreUtils, evHelper = eventhelper_1.EventHelper, sys = sysutils_2.SysUtils, weakmap = weakmap_1.createWeakMap(), signature = { signature: "BaseObject" };
     exports.objSignature = signature;
     sys._isBaseObj = function (obj) {
-        return (!!obj && obj.objectSig === signature);
+        return (!!obj && obj.__objSig === signature);
     };
     var OBJ_EVENTS;
     (function (OBJ_EVENTS) {
@@ -1446,6 +1446,7 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
         return ObjectEvents;
     }());
     exports.ObjectEvents = ObjectEvents;
+    var dummyEvents = new DummyEvents();
     var BaseObject = (function () {
         function BaseObject() {
             weakmap.set(this, { objState: 0, events: null });
@@ -1479,8 +1480,7 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
             return isHandled;
         };
         BaseObject.prototype.getIsDisposed = function () {
-            var state = weakmap.get(this);
-            return !state;
+            return !weakmap.get(this);
         };
         BaseObject.prototype.getIsStateDirty = function () {
             var state = weakmap.get(this);
@@ -1509,7 +1509,7 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
             get: function () {
                 var state = weakmap.get(this);
                 if (!state) {
-                    return BaseObject._dummyEvents;
+                    return dummyEvents;
                 }
                 if (!state.events) {
                     state.events = this._createObjEvents();
@@ -1519,14 +1519,13 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(BaseObject.prototype, "objectSig", {
+        Object.defineProperty(BaseObject.prototype, "__objSig", {
             get: function () {
                 return signature;
             },
             enumerable: true,
             configurable: true
         });
-        BaseObject._dummyEvents = new DummyEvents();
         return BaseObject;
     }());
     exports.BaseObject = BaseObject;

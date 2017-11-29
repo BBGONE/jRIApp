@@ -514,7 +514,6 @@ declare module "jriapp_shared/object" {
         readonly owner: IBaseObject;
     }
     export class BaseObject implements IBaseObject {
-        static _dummyEvents: DummyEvents;
         constructor();
         protected setDisposing(): void;
         protected _createObjEvents(): IObjectEvents;
@@ -524,7 +523,7 @@ declare module "jriapp_shared/object" {
         getIsStateDirty(): boolean;
         dispose(): void;
         readonly objEvents: IObjectEvents;
-        readonly objectSig: object;
+        readonly __objSig: object;
     }
 }
 declare module "jriapp_shared/utils/arrhelper" {
