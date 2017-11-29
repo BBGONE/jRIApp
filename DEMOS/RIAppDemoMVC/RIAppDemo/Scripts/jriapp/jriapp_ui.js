@@ -8583,7 +8583,6 @@ define("jriapp_ui/busy", ["require", "exports", "jriapp_shared", "jriapp_ui/util
                 this._timeOut = null;
             }
             dom.removeNode(this._img);
-            this._img = null;
             _super.prototype.dispose.call(this);
         };
         BusyElView.prototype.toString = function () {

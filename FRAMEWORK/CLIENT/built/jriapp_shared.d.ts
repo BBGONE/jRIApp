@@ -478,8 +478,23 @@ declare module "jriapp_shared/utils/eventhelper" {
     }
 }
 declare module "jriapp_shared/object" {
-    import { IBaseObject, TPriority, TEventHandler, TErrorHandler, TPropChangedHandler, IObjectEvents, IWeakMap } from "jriapp_shared/int";
-    export const objStateMap: IWeakMap;
+    import { IBaseObject, TPriority, TEventHandler, TErrorHandler, TPropChangedHandler, IObjectEvents } from "jriapp_shared/int";
+    export const objSignature: object;
+    export class DummyEvents implements IObjectEvents {
+        canRaise(name: string): boolean;
+        on(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void;
+        off(name?: string, nmspace?: string): void;
+        offNS(nmspace?: string): void;
+        raise(name: string, args: any): void;
+        raiseProp(name: string): void;
+        onProp(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: object, priority?: TPriority): void;
+        offProp(prop?: string, nmspace?: string): void;
+        addOnDisposed(handler: TEventHandler<IBaseObject, any>, nmspace?: string, context?: object, priority?: TPriority): void;
+        removeOnDisposed(nmspace?: string): void;
+        addOnError(handler: TErrorHandler<IBaseObject>, nmspace?: string, context?: object, priority?: TPriority): void;
+        removeOnError(nmspace?: string): void;
+        readonly owner: IBaseObject;
+    }
     export class ObjectEvents implements IObjectEvents {
         private _events;
         private _owner;
@@ -499,6 +514,7 @@ declare module "jriapp_shared/object" {
         readonly owner: IBaseObject;
     }
     export class BaseObject implements IBaseObject {
+        static _dummyEvents: DummyEvents;
         constructor();
         protected setDisposing(): void;
         protected _createObjEvents(): IObjectEvents;
@@ -508,6 +524,7 @@ declare module "jriapp_shared/object" {
         getIsStateDirty(): boolean;
         dispose(): void;
         readonly objEvents: IObjectEvents;
+        readonly objectSig: object;
     }
 }
 declare module "jriapp_shared/utils/arrhelper" {

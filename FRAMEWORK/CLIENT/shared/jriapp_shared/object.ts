@@ -1,24 +1,23 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
     IBaseObject, IIndexer, TPriority, TEventHandler, TErrorHandler,
-    TErrorArgs, TPropChangedHandler, IObjectEvents, IWeakMap
+    TErrorArgs, TPropChangedHandler, IObjectEvents
 } from "./int";
 import { ERRS } from "./lang";
 import { SysUtils } from "./utils/sysutils";
 import { Checks } from "./utils/checks";
-import { StringUtils } from "./utils/strUtils";
 import { CoreUtils } from "./utils/coreutils";
 import { ERROR } from "./utils/error";
 import { createWeakMap } from "./utils/weakmap";
 import { EventHelper, IEventList } from "./utils/eventhelper";
 
-const checks = Checks, strUtils = StringUtils, coreUtils = CoreUtils,
-    evHelper = EventHelper, sys = SysUtils, weakmap = createWeakMap();
+const checks = Checks, coreUtils = CoreUtils,
+    evHelper = EventHelper, sys = SysUtils, weakmap = createWeakMap(), signature = { signature: "BaseObject" };
 //can be used in external IBaseObject implementations
-export const objStateMap: IWeakMap = weakmap;
+export const objSignature: object = signature;
 
 sys._isBaseObj = function (obj: any): boolean {
-    return (!!obj && !!weakmap.get(obj));
+    return (!!obj && obj.objectSig === signature);
 };
 
 const enum OBJ_EVENTS {
@@ -26,11 +25,50 @@ const enum OBJ_EVENTS {
     destroyed = "destroyed"
 }
 
-const enum ObjState { None = 0, Disposing = 1, Disposed = 2 }
+const enum ObjState { None = 0, Disposing = 1 }
 
 interface IObjState {
     objState: ObjState;
     events: IObjectEvents;
+}
+
+export class DummyEvents implements IObjectEvents {
+    canRaise(name: string): boolean {
+        return false;
+    }
+    on(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void {
+        throw new Error("Object disposed");
+    }
+    off(name?: string, nmspace?: string): void {
+    }
+    // remove event handlers by their namespace
+    offNS(nmspace?: string): void {
+    }
+    raise(name: string, args: any): void {
+    }
+    raiseProp(name: string): void {
+    }
+    // to subscribe for changes on all properties, pass in the prop parameter: '*'
+    onProp(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: object, priority?: TPriority): void {
+        throw new Error("Object disposed");
+    }
+    offProp(prop?: string, nmspace?: string): void {
+    }
+    addOnDisposed(handler: TEventHandler<IBaseObject, any>, nmspace?: string, context?: object, priority?: TPriority): void {
+        this.on(OBJ_EVENTS.destroyed, handler, nmspace, context, priority);
+    }
+    removeOnDisposed(nmspace?: string): void {
+        this.off(OBJ_EVENTS.destroyed, nmspace);
+    }
+    addOnError(handler: TErrorHandler<IBaseObject>, nmspace?: string, context?: object, priority?: TPriority): void {
+        this.on(OBJ_EVENTS.error, handler, nmspace, context, priority);
+    }
+    removeOnError(nmspace?: string): void {
+        this.off(OBJ_EVENTS.error, nmspace);
+    }
+    get owner(): IBaseObject {
+        return null;
+    }
 }
 
 export class ObjectEvents implements IObjectEvents {
@@ -45,12 +83,18 @@ export class ObjectEvents implements IObjectEvents {
         return evHelper.count(this._events, name) > 0;
     }
     on(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void {
+        if (this._owner.getIsDisposed())
+            throw new Error("Object disposed");
+
         if (!this._events) {
             this._events = {};
         }
         evHelper.add(this._events, name, handler, nmspace, context, priority);
     }
     off(name?: string, nmspace?: string): void {
+        if (this._owner.getIsDisposed())
+            return;
+
         if (!name && !nmspace) {
             this._events = null;
             return;
@@ -65,12 +109,16 @@ export class ObjectEvents implements IObjectEvents {
         if (!name) {
             throw new Error(ERRS.ERR_EVENT_INVALID);
         }
+        if (this._owner.getIsDisposed())
+            return;
         evHelper.raise(this._owner, this._events, name, args);
     }
     raiseProp(name: string): void {
         if (!name) {
             throw new Error(ERRS.ERR_PROP_NAME_EMPTY);
         }
+        if (this._owner.getIsDisposed())
+            return;
         //in case of complex name like: prop1.prop2.prop3
         const data = { property: name }, parts = name.split("."),
             lastProp = parts[parts.length - 1];
@@ -89,12 +137,16 @@ export class ObjectEvents implements IObjectEvents {
         if (!prop) {
             throw new Error(ERRS.ERR_PROP_NAME_EMPTY);
         }
+        if (this._owner.getIsDisposed())
+            throw new Error("Object disposed");
         if (!this._events) {
             this._events = {};
         }
         evHelper.add(this._events, "0" + prop, handler, nmspace, context, priority);
     }
     offProp(prop?: string, nmspace?: string): void {
+        if (this._owner.getIsDisposed())
+            return;
         if (!!prop) {
             evHelper.remove(this._events, "0" + prop, nmspace);
         } else {
@@ -119,13 +171,14 @@ export class ObjectEvents implements IObjectEvents {
 }
 
 export class BaseObject implements IBaseObject {
+    static _dummyEvents = new DummyEvents();
     constructor() {
         weakmap.set(this, { objState: ObjState.None, events: null });
     }
     protected setDisposing() {
         const state = <IObjState>weakmap.get(this);
-        if (state.objState === ObjState.Disposed) {
-            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "objState !== ObjState.Disposed"));
+        if (!state) {
+            return;
         }
         state.objState = ObjState.Disposing;
     }
@@ -154,31 +207,40 @@ export class BaseObject implements IBaseObject {
     }
     getIsDisposed(): boolean {
         const state = <IObjState>weakmap.get(this);
-        return state.objState == ObjState.Disposed;
+        return !state;
     }
     getIsStateDirty(): boolean {
         const state = <IObjState>weakmap.get(this);
-        return state.objState !== ObjState.None;
+        return !state || state.objState !== ObjState.None;
     }
     dispose(): void {
         const state = <IObjState>weakmap.get(this);
-        if (state.objState === ObjState.Disposed) {
+        if (!state) {
             return;
         }
-        state.objState = ObjState.Disposed;
-        if (!!state.events) {
-            try {
-                state.events.raise(OBJ_EVENTS.destroyed, {});
-            } finally {
-                state.events.off();
+        try {
+            if (!!state.events) {
+                try {
+                    state.events.raise(OBJ_EVENTS.destroyed, {});
+                } finally {
+                    state.events.off();
+                }
             }
+        } finally {
+            weakmap.delete(this);
         }
     }
     get objEvents(): IObjectEvents {
         const state = <IObjState>weakmap.get(this);
+        if (!state) {
+            return BaseObject._dummyEvents;
+        }
         if (!state.events) {
             state.events = this._createObjEvents();
         }
         return state.events;
+    }
+    get objectSig(): object {
+        return signature;
     }
 }

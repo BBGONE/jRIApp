@@ -55,7 +55,6 @@ export class BusyElView extends BaseElView {
             this._timeOut = null;
         }
         dom.removeNode(this._img);
-        this._img = null;
         super.dispose();
     }
     toString() {
