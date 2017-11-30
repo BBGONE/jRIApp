@@ -524,7 +524,7 @@ declare module "jriapp_db/dbcontext" {
 }
 declare module "jriapp_db/entity_aspect" {
     import { ITEM_STATUS } from "jriapp_shared/collection/const";
-    import { IVoidPromise, IStatefulPromise } from "jriapp_shared";
+    import { IBaseObject, IVoidPromise, IStatefulPromise } from "jriapp_shared";
     import { IFieldInfo } from "jriapp_shared/collection/int";
     import { ItemAspect } from "jriapp_shared/collection/aspect";
     import { REFRESH_MODE } from "jriapp_db/const";
@@ -538,6 +538,7 @@ declare module "jriapp_db/entity_aspect" {
         private _srvKey;
         private _origVals;
         private _savedStatus;
+        private _ownedObjs;
         constructor(dbSet: DbSet<TItem, TObj, TDbContext>, vals: TObj, key: string, isNew: boolean);
         protected _onFieldChanged(fieldName: string, fieldInfo: IFieldInfo): void;
         protected _getValueChange(fullName: string, fieldInfo: IFieldInfo, changedOnly: boolean): IValueChange;
@@ -548,6 +549,7 @@ declare module "jriapp_db/entity_aspect" {
         protected _endEdit(): boolean;
         protected _cancelEdit(): boolean;
         protected _setStatus(v: ITEM_STATUS): void;
+        _addOwnedObject(obj: IBaseObject): void;
         _updateKeys(key: string): void;
         _checkCanRefresh(): void;
         _refreshValue(val: any, fullName: string, refreshMode: REFRESH_MODE): void;
@@ -869,22 +871,23 @@ declare module "jriapp_db/child_dataview" {
     export type TChildDataView = ChildDataView<IEntityItem>;
 }
 declare module "jriapp_db/complexprop" {
-    import { IErrorNotification, IValidationInfo, TEventHandler, BaseObject } from "jriapp_shared";
+    import { IErrorNotification, IValidationInfo, TEventHandler, BaseObject, IBaseObject } from "jriapp_shared";
     import { IFieldInfo } from "jriapp_shared/collection/int";
     import { IEntityItem } from "jriapp_db/int";
     import { EntityAspect } from "jriapp_db/entity_aspect";
     import { DbContext } from "jriapp_db/dbcontext";
-    export class BaseComplexProperty extends BaseObject implements IErrorNotification {
+    export abstract class BaseComplexProperty extends BaseObject implements IErrorNotification {
         private _name;
         constructor(name: string);
-        _getFullPath(path: string): string;
         getName(): string;
-        setValue(fullName: string, value: any): void;
-        getValue(fullName: string): any;
-        getFieldInfo(): IFieldInfo;
-        getProperties(): IFieldInfo[];
-        getFullPath(name: string): string;
-        getEntity(): EntityAspect<IEntityItem, any, DbContext>;
+        abstract _addOwnedObject(obj: IBaseObject): void;
+        abstract _getFullPath(path: string): string;
+        abstract setValue(fullName: string, value: any): void;
+        abstract getValue(fullName: string): any;
+        abstract getFieldInfo(): IFieldInfo;
+        abstract getProperties(): IFieldInfo[];
+        abstract getFullPath(name: string): string;
+        abstract getEntity(): EntityAspect<IEntityItem, any, DbContext>;
         getPropertyByName(name: string): IFieldInfo;
         getIsHasErrors(): boolean;
         addOnErrorsChanged(fn: TEventHandler<EntityAspect<IEntityItem, any, DbContext>, any>, nmspace?: string, context?: any): void;
@@ -896,6 +899,7 @@ declare module "jriapp_db/complexprop" {
     export class RootComplexProperty extends BaseComplexProperty {
         private _entity;
         constructor(name: string, owner: EntityAspect<IEntityItem, any, DbContext>);
+        _addOwnedObject(obj: IBaseObject): void;
         _getFullPath(path: string): string;
         setValue(fullName: string, value: any): void;
         getValue(fullName: string): any;
@@ -907,6 +911,7 @@ declare module "jriapp_db/complexprop" {
     export class ChildComplexProperty extends BaseComplexProperty {
         private _parent;
         constructor(name: string, parent: BaseComplexProperty);
+        _addOwnedObject(obj: IBaseObject): void;
         _getFullPath(path: string): string;
         setValue(fullName: string, value: any): void;
         getValue(fullName: string): any;

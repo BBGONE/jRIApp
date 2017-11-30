@@ -3,7 +3,7 @@ import {
     FIELD_TYPE, DATA_TYPE, ITEM_STATUS
 } from "jriapp_shared/collection/const";
 import {
-    IIndexer, IVoidPromise, IStatefulPromise, LocaleERRS as ERRS, Utils
+    IBaseObject, IIndexer, IVoidPromise, IStatefulPromise, LocaleERRS as ERRS, Utils
 } from "jriapp_shared";
 import { ValidationError } from "jriapp_shared/errors";
 import { ICancellableArgs, IFieldInfo } from "jriapp_shared/collection/int";
@@ -60,11 +60,13 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
     private _srvKey: string;
     private _origVals: IIndexer<any>;
     private _savedStatus: ITEM_STATUS;
+    private _ownedObjs: Array<IBaseObject>;
 
     constructor(dbSet: DbSet<TItem, TObj, TDbContext>, vals: TObj, key: string, isNew: boolean) {
         super(dbSet);
         this._srvKey = null;
         this._origVals = null;
+        this._ownedObjs = null;
         this._savedStatus = null;
         this._vals = vals;
         const item = dbSet.itemFactory(this);
@@ -156,13 +158,13 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         });
         return res2;
     }
-    protected _fldChanging(fieldName: string, fieldInfo: IFieldInfo, oldV: any, newV: any) {
+    protected _fldChanging(fieldName: string, fieldInfo: IFieldInfo, oldV: any, newV: any): boolean {
         if (!this._origVals) {
             this._origVals = collUtils.cloneVals(this.dbSet.getFieldInfos(), this._vals); // coreUtils.clone(this._vals);
         }
         return true;
     }
-    protected _skipValidate(fieldInfo: IFieldInfo, val: any) {
+    protected _skipValidate(fieldInfo: IFieldInfo, val: any): boolean {
         const childToParentNames = this.dbSet._getInternal().getChildToParentNames(fieldInfo.fieldName);
         let res = false;
         if (!!childToParentNames && val === null) {
@@ -176,21 +178,21 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         }
         return res;
     }
-    protected _beginEdit() {
+    protected _beginEdit(): boolean {
         if (!super._beginEdit()) {
             return false;
         }
         this._savedStatus = this.status;
         return true;
     }
-    protected _endEdit() {
+    protected _endEdit(): boolean {
         if (!super._endEdit()) {
             return false;
         }
         this._savedStatus = null;
         return true;
     }
-    protected _cancelEdit() {
+    protected _cancelEdit(): boolean {
         if (!this.isEditing) {
             return false;
         }
@@ -209,7 +211,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         });
         return true;
     }
-    protected _setStatus(v: ITEM_STATUS) {
+    protected _setStatus(v: ITEM_STATUS): void {
         if (this._status !== v) {
             const oldStatus = this._status;
             this._status = v;
@@ -221,16 +223,22 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
             this.dbSet._getInternal().onItemStatusChanged(this.item, oldStatus);
         }
     }
-    _updateKeys(key: string) {
+    _addOwnedObject(obj: IBaseObject): void {
+        if (!this._ownedObjs) {
+            this._ownedObjs = [];
+        }
+        this._ownedObjs.push(obj);
+    }
+    _updateKeys(key: string): void {
         this._setSrvKey(key);
         this._setKey(key);
     }
-    _checkCanRefresh() {
+    _checkCanRefresh(): void {
         if (this.key === null || this.status === ITEM_STATUS.Added) {
             throw new Error(ERRS.ERR_OPER_REFRESH_INVALID);
         }
     }
-    _refreshValue(val: any, fullName: string, refreshMode: REFRESH_MODE) {
+    _refreshValue(val: any, fullName: string, refreshMode: REFRESH_MODE): void {
         const self = this, fld = self.dbSet.getFieldInfo(fullName);
         if (!fld) {
             throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fullName));
@@ -281,7 +289,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
                 throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "refreshMode", refreshMode));
         }
     }
-    _refreshValues(rowInfo: IRowInfo, refreshMode: REFRESH_MODE) {
+    _refreshValues(rowInfo: IRowInfo, refreshMode: REFRESH_MODE): void {
         const self = this, oldStatus = this.status;
         if (!this.getIsDisposed()) {
             if (!refreshMode) {
@@ -304,7 +312,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
             }
         }
     }
-    _getRowInfo() {
+    _getRowInfo(): IRowInfo {
         const res: IRowInfo = {
             values: this._getValueChanges(false),
             changeType: this.status,
@@ -314,19 +322,19 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         };
         return res;
     }
-    _getCalcFieldVal(fieldName: string) {
+    _getCalcFieldVal(fieldName: string): any {
         return this.dbSet._getInternal().getCalcFieldVal(fieldName, this.item);
     }
-    _getNavFieldVal(fieldName: string) {
+    _getNavFieldVal(fieldName: string): any {
         return this.dbSet._getInternal().getNavFieldVal(fieldName, this.item);
     }
-    _setNavFieldVal(fieldName: string, value: any) {
+    _setNavFieldVal(fieldName: string, value: any): void {
         this.dbSet._getInternal().setNavFieldVal(fieldName, this.item, value);
     }
-    _clearFieldVal(fieldName: string) {
+    _clearFieldVal(fieldName: string): void {
         coreUtils.setValue(this._vals, fieldName, null, false);
     }
-    _getFieldVal(fieldName: string) {
+    _getFieldVal(fieldName: string): any {
         return coreUtils.getValue(this._vals, fieldName);
     }
     _setFieldVal(fieldName: string, val: any): boolean {
@@ -384,7 +392,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         }
         return res;
     }
-    _setSrvKey(v: string) {
+    _setSrvKey(v: string): void {
         this._srvKey = v;
     }
     _acceptChanges(rowInfo?: IRowInfo): void {
@@ -506,9 +514,21 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
             return;
         }
         this.setDisposing();
-        this.cancelEdit();
-        this.rejectChanges();
-        super.dispose();
+        try {
+            this.cancelEdit();
+            this.rejectChanges();
+            const ownedObjs = this._ownedObjs;
+            if (!!ownedObjs && ownedObjs.length > 0) {
+                this._ownedObjs = null;
+                const k = ownedObjs.length - 1;
+                //destroy objects which we own: such as complex properties
+                for (let i = k; i >= 0; --i) {
+                    ownedObjs[i].dispose();
+                }
+            }
+        } finally {
+            super.dispose();
+        }
     }
     toString() {
         return this.dbSetName + "EntityAspect";

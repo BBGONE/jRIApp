@@ -8,11 +8,10 @@ import { SysUtils } from "./utils/sysutils";
 import { Checks } from "./utils/checks";
 import { CoreUtils } from "./utils/coreutils";
 import { ERROR } from "./utils/error";
-import { createWeakMap } from "./utils/weakmap";
 import { EventHelper, IEventList } from "./utils/eventhelper";
 
 const checks = Checks, coreUtils = CoreUtils,
-    evHelper = EventHelper, sys = SysUtils, weakmap = createWeakMap(), signature = { signature: "BaseObject" };
+    evHelper = EventHelper, sys = SysUtils, signature = { signature: "BaseObject" };
 //can be used in external IBaseObject implementations
 export const objSignature: object = signature;
 
@@ -25,12 +24,7 @@ const enum OBJ_EVENTS {
     destroyed = "destroyed"
 }
 
-const enum ObjState { None = 0, Disposing = 1 }
-
-interface IObjState {
-    objState: ObjState;
-    events: IObjectEvents;
-}
+const enum ObjState { None = 0, Disposing = 1, Disposed = 2 }
 
 export class DummyEvents implements IObjectEvents {
     canRaise(name: string): boolean {
@@ -80,26 +74,19 @@ export class ObjectEvents implements IObjectEvents {
         this._owner = owner;
     }
     canRaise(name: string): boolean {
-        return evHelper.count(this._events, name) > 0;
+        return !!this._events && evHelper.count(this._events, name) > 0;
     }
     on(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void {
-        if (this._owner.getIsDisposed())
-            throw new Error("Object disposed");
-
         if (!this._events) {
             this._events = {};
         }
         evHelper.add(this._events, name, handler, nmspace, context, priority);
     }
     off(name?: string, nmspace?: string): void {
-        if (this._owner.getIsDisposed())
-            return;
-
+        evHelper.remove(this._events, name, nmspace);
         if (!name && !nmspace) {
             this._events = null;
-            return;
         }
-        evHelper.remove(this._events, name, nmspace);
     }
     // remove event handlers by their namespace
     offNS(nmspace?: string): void {
@@ -109,24 +96,19 @@ export class ObjectEvents implements IObjectEvents {
         if (!name) {
             throw new Error(ERRS.ERR_EVENT_INVALID);
         }
-        if (this._owner.getIsDisposed())
-            return;
         evHelper.raise(this._owner, this._events, name, args);
     }
     raiseProp(name: string): void {
         if (!name) {
             throw new Error(ERRS.ERR_PROP_NAME_EMPTY);
         }
-        if (this._owner.getIsDisposed())
-            return;
         //in case of complex name like: prop1.prop2.prop3
         const data = { property: name }, parts = name.split("."),
             lastProp = parts[parts.length - 1];
         if (parts.length > 1) {
             const owner = coreUtils.resolveOwner(this._owner, name);
-            const state = <IObjState>weakmap.get(owner);
-            if (!!state && !!state.events) {
-                state.events.raiseProp(lastProp);
+            if (!!owner && !!sys.isBaseObj(owner)) {
+                owner.objEvents.raiseProp(lastProp);
             }
         } else {
             evHelper.raiseProp(this._owner, this._events, lastProp, data);
@@ -137,8 +119,6 @@ export class ObjectEvents implements IObjectEvents {
         if (!prop) {
             throw new Error(ERRS.ERR_PROP_NAME_EMPTY);
         }
-        if (this._owner.getIsDisposed())
-            throw new Error("Object disposed");
         if (!this._events) {
             this._events = {};
         }
@@ -173,15 +153,15 @@ export class ObjectEvents implements IObjectEvents {
 const dummyEvents = new DummyEvents();
 
 export class BaseObject implements IBaseObject {
+    private _objState: ObjState;
+    private _objEvents: IObjectEvents;
+
     constructor() {
-        weakmap.set(this, { objState: ObjState.None, events: null });
+        this._objState = ObjState.None;
+        this._objEvents = null;
     }
     protected setDisposing() {
-        const state = <IObjState>weakmap.get(this);
-        if (!state) {
-            return;
-        }
-        state.objState = ObjState.Disposing;
+        this._objState = ObjState.Disposing;
     }
     protected _createObjEvents(): IObjectEvents {
         return new ObjectEvents(this);
@@ -207,38 +187,33 @@ export class BaseObject implements IBaseObject {
         return isHandled;
     }
     getIsDisposed(): boolean {
-        return !weakmap.get(this);
+        return this._objState === ObjState.Disposed;
     }
     getIsStateDirty(): boolean {
-        const state = <IObjState>weakmap.get(this);
-        return !state || state.objState !== ObjState.None;
+        return this._objState !== ObjState.None;
     }
     dispose(): void {
-        const state = <IObjState>weakmap.get(this);
-        if (!state) {
+        if (this._objState === ObjState.Disposed) {
             return;
         }
         try {
-            if (!!state.events) {
-                try {
-                    state.events.raise(OBJ_EVENTS.destroyed, {});
-                } finally {
-                    state.events.off();
-                }
+            if (!!this._objEvents) {
+                this._objEvents.raise(OBJ_EVENTS.destroyed, {});
+                this._objEvents.off();
+                this._objEvents = null;
             }
         } finally {
-            weakmap.delete(this);
+            this._objState = ObjState.Disposed;
         }
     }
     get objEvents(): IObjectEvents {
-        const state = <IObjState>weakmap.get(this);
-        if (!state) {
+        if (this._objState === ObjState.Disposed) {
             return dummyEvents;
         }
-        if (!state.events) {
-            state.events = this._createObjEvents();
+        if (!this._objEvents) {
+            this._objEvents = this._createObjEvents();
         }
-        return state.events;
+        return this._objEvents;
     }
     get __objSig(): object {
         return signature;

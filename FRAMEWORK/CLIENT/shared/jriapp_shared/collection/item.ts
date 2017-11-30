@@ -2,27 +2,26 @@
 import { BaseObject } from "../object";
 import { ICollectionItem } from "./int";
 import { ItemAspect } from "./aspect";
-import { createWeakMap } from "../utils/weakmap";
-
-const weakmap = createWeakMap();
 
 export class CollectionItem<TAspect extends ItemAspect<ICollectionItem, any>> extends BaseObject implements ICollectionItem {
+    private __aspect: TAspect;
+
     constructor(aspect: TAspect) {
         super();
-        weakmap.set(this, aspect);
+        this.__aspect = aspect;
     }
     get _aspect(): TAspect {
-        return <TAspect>weakmap.get(this);
+        return this.__aspect;
     }
     get _key(): string {
-        return this._aspect.key;
+        return this.__aspect.key;
     }
     dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
         this.setDisposing();
-        const aspect = this._aspect;
+        const aspect = this.__aspect;
         if (!aspect.getIsStateDirty()) {
             aspect.dispose();
         }

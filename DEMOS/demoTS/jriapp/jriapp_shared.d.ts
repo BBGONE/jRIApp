@@ -445,10 +445,6 @@ declare module "jriapp_shared/utils/error" {
         static abort(reason?: string): void;
     }
 }
-declare module "jriapp_shared/utils/weakmap" {
-    import { IWeakMap } from "jriapp_shared/int";
-    export function createWeakMap(): IWeakMap;
-}
 declare module "jriapp_shared/utils/debug" {
     export class DEBUG {
         static checkStartDebugger(): void;
@@ -514,6 +510,8 @@ declare module "jriapp_shared/object" {
         readonly owner: IBaseObject;
     }
     export class BaseObject implements IBaseObject {
+        private _objState;
+        private _objEvents;
         constructor();
         protected setDisposing(): void;
         protected _createObjEvents(): IObjectEvents;
@@ -1343,6 +1341,7 @@ declare module "jriapp_shared/collection/item" {
     import { ICollectionItem } from "jriapp_shared/collection/int";
     import { ItemAspect } from "jriapp_shared/collection/aspect";
     export class CollectionItem<TAspect extends ItemAspect<ICollectionItem, any>> extends BaseObject implements ICollectionItem {
+        private __aspect;
         constructor(aspect: TAspect);
         readonly _aspect: TAspect;
         readonly _key: string;
@@ -1446,6 +1445,10 @@ declare module "jriapp_shared/utils/jsonarray" {
         readonly owner: JsonBag;
         readonly list: AnyList;
     }
+}
+declare module "jriapp_shared/utils/weakmap" {
+    import { IWeakMap } from "jriapp_shared/int";
+    export function createWeakMap(): IWeakMap;
 }
 declare module "jriapp_shared/collection/dictionary" {
     import { IPropInfo } from "jriapp_shared/collection/int";

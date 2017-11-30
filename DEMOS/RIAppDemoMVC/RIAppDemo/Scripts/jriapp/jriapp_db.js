@@ -3164,6 +3164,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             var _this = _super.call(this, dbSet) || this;
             _this._srvKey = null;
             _this._origVals = null;
+            _this._ownedObjs = null;
             _this._savedStatus = null;
             _this._vals = vals;
             var item = dbSet.itemFactory(_this);
@@ -3323,6 +3324,12 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 }
                 this.dbSet._getInternal().onItemStatusChanged(this.item, oldStatus);
             }
+        };
+        EntityAspect.prototype._addOwnedObject = function (obj) {
+            if (!this._ownedObjs) {
+                this._ownedObjs = [];
+            }
+            this._ownedObjs.push(obj);
         };
         EntityAspect.prototype._updateKeys = function (key) {
             this._setSrvKey(key);
@@ -3604,9 +3611,21 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 return;
             }
             this.setDisposing();
-            this.cancelEdit();
-            this.rejectChanges();
-            _super.prototype.dispose.call(this);
+            try {
+                this.cancelEdit();
+                this.rejectChanges();
+                var ownedObjs = this._ownedObjs;
+                if (!!ownedObjs && ownedObjs.length > 0) {
+                    this._ownedObjs = null;
+                    var k = ownedObjs.length - 1;
+                    for (var i = k; i >= 0; --i) {
+                        ownedObjs[i].dispose();
+                    }
+                }
+            }
+            finally {
+                _super.prototype.dispose.call(this);
+            }
         };
         EntityAspect.prototype.toString = function () {
             return this.dbSetName + "EntityAspect";
@@ -4176,29 +4195,8 @@ define("jriapp_db/complexprop", ["require", "exports", "jriapp_shared"], functio
             _this._name = name;
             return _this;
         }
-        BaseComplexProperty.prototype._getFullPath = function (path) {
-            throw new Error("Not Implemented");
-        };
         BaseComplexProperty.prototype.getName = function () {
             return this._name;
-        };
-        BaseComplexProperty.prototype.setValue = function (fullName, value) {
-            throw new Error("Not Implemented");
-        };
-        BaseComplexProperty.prototype.getValue = function (fullName) {
-            throw new Error("Not Implemented");
-        };
-        BaseComplexProperty.prototype.getFieldInfo = function () {
-            throw new Error("Not Implemented");
-        };
-        BaseComplexProperty.prototype.getProperties = function () {
-            throw new Error("Not Implemented");
-        };
-        BaseComplexProperty.prototype.getFullPath = function (name) {
-            throw new Error("Not Implemented");
-        };
-        BaseComplexProperty.prototype.getEntity = function () {
-            throw new Error("Not Implemented");
         };
         BaseComplexProperty.prototype.getPropertyByName = function (name) {
             var arrProps = this.getProperties().filter(function (f) { return f.fieldName === name; });
@@ -4234,8 +4232,12 @@ define("jriapp_db/complexprop", ["require", "exports", "jriapp_shared"], functio
         function RootComplexProperty(name, owner) {
             var _this = _super.call(this, name) || this;
             _this._entity = owner;
+            _this._entity._addOwnedObject(_this);
             return _this;
         }
+        RootComplexProperty.prototype._addOwnedObject = function (obj) {
+            this._entity._addOwnedObject(obj);
+        };
         RootComplexProperty.prototype._getFullPath = function (path) {
             return this.getName() + "." + path;
         };
@@ -4265,8 +4267,12 @@ define("jriapp_db/complexprop", ["require", "exports", "jriapp_shared"], functio
         function ChildComplexProperty(name, parent) {
             var _this = _super.call(this, name) || this;
             _this._parent = parent;
+            _this._parent._addOwnedObject(_this);
             return _this;
         }
+        ChildComplexProperty.prototype._addOwnedObject = function (obj) {
+            this._parent._addOwnedObject(obj);
+        };
         ChildComplexProperty.prototype._getFullPath = function (path) {
             return this._parent._getFullPath(this.getName() + "." + path);
         };
