@@ -29,19 +29,23 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
             return;
         }
         this.setDisposing();
-        const td = this.td, btns = dom.queryAll<HTMLElement>(td, actionsSelector);
-        btns.forEach((img) => {
-            dom.removeData(img);
-        });
+        this._cleanUp();
         super.dispose();
     }
-    private _setupButtons(buttons: HTMLElement[]) {
+    private _setupButtons(btns: HTMLElement[]) {
         const self = this;
-        buttons.forEach((btn) => {
-            dom.setData(btn, "cell", self);
-            const name = btn.getAttribute(DATA_ATTR.DATA_NAME);
-            fn_addToolTip(btn, STRS.TEXT[txtMap[name]]);
-            btn.setAttribute(DATA_ATTR.DATA_EVENT_SCOPE, self.column.uniqueID);
+        btns.forEach((el) => {
+            dom.setData(el, "cell", self);
+            const name = el.getAttribute(DATA_ATTR.DATA_NAME);
+            fn_addToolTip(el, STRS.TEXT[txtMap[name]]);
+            el.setAttribute(DATA_ATTR.DATA_EVENT_SCOPE, self.column.uniqueID);
+        });
+    }
+    private _cleanUp():void {
+        const td = this.td, btns = dom.queryAll<HTMLElement>(td, actionsSelector);
+        btns.forEach((el) => {
+            dom.removeData(el);
+            fn_addToolTip(el, null);
         });
     }
     protected get editBtnsHTML() {
@@ -62,6 +66,7 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
         }
 
         const self = this, td = this.td;
+        this._cleanUp();
         td.innerHTML = "";
 
         if (isEditing) {

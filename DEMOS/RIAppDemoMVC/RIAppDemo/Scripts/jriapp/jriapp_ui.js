@@ -4182,19 +4182,23 @@ define("jriapp_ui/datagrid/cells/actions", ["require", "exports", "jriapp_shared
                 return;
             }
             this.setDisposing();
-            var td = this.td, btns = dom.queryAll(td, const_2.actionsSelector);
-            btns.forEach(function (img) {
-                dom.removeData(img);
-            });
+            this._cleanUp();
             _super.prototype.dispose.call(this);
         };
-        ActionsCell.prototype._setupButtons = function (buttons) {
+        ActionsCell.prototype._setupButtons = function (btns) {
             var self = this;
-            buttons.forEach(function (btn) {
-                dom.setData(btn, "cell", self);
-                var name = btn.getAttribute("data-name");
-                baseview_7.fn_addToolTip(btn, jriapp_shared_22.LocaleSTRS.TEXT[const_2.txtMap[name]]);
-                btn.setAttribute("data-scope", self.column.uniqueID);
+            btns.forEach(function (el) {
+                dom.setData(el, "cell", self);
+                var name = el.getAttribute("data-name");
+                baseview_7.fn_addToolTip(el, jriapp_shared_22.LocaleSTRS.TEXT[const_2.txtMap[name]]);
+                el.setAttribute("data-scope", self.column.uniqueID);
+            });
+        };
+        ActionsCell.prototype._cleanUp = function () {
+            var td = this.td, btns = dom.queryAll(td, const_2.actionsSelector);
+            btns.forEach(function (el) {
+                dom.removeData(el);
+                baseview_7.fn_addToolTip(el, null);
             });
         };
         Object.defineProperty(ActionsCell.prototype, "editBtnsHTML", {
@@ -4222,6 +4226,7 @@ define("jriapp_ui/datagrid/cells/actions", ["require", "exports", "jriapp_shared
                 return;
             }
             var self = this, td = this.td;
+            this._cleanUp();
             td.innerHTML = "";
             if (isEditing) {
                 self._isEditing = true;
@@ -6505,6 +6510,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             _this._rowsPerPage = 0;
             _this._rowCount = 0;
             _this._currentPage = 1;
+            _this._toolTips = [];
             _this._pageDebounce = new jriapp_shared_31.Debounce();
             _this._dsDebounce = new jriapp_shared_31.Debounce();
             dom.events.on(_this._el, "click", function (e) {
@@ -6528,6 +6534,20 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             _this._bindDS();
             return _this;
         }
+        Pager.prototype._addToolTip = function (el, tip) {
+            baseview_9.fn_addToolTip(el, tip);
+            if (!!tip) {
+                this._toolTips.push(el);
+            }
+        };
+        Pager.prototype._cleanUp = function () {
+            var _this = this;
+            var arr = this._toolTips;
+            this._toolTips = [];
+            arr.forEach(function (el) {
+                _this._addToolTip(el, null);
+            });
+        };
         Pager.prototype._createElement = function (tag) {
             return doc.createElement(tag);
         };
@@ -6647,6 +6667,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             ds.objEvents.offNS(self._objId);
         };
         Pager.prototype._clearContent = function () {
+            this._cleanUp();
             this._el.innerHTML = "";
         };
         Pager.prototype._reset = function () {
@@ -6668,7 +6689,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             a.textContent = ("" + text);
             a.setAttribute("href", "javascript:void(0)");
             if (!!tip) {
-                baseview_9.fn_addToolTip(a, tip);
+                this._addToolTip(a, tip);
             }
             a.setAttribute("data-scope", this._objId);
             a.setAttribute("data-page", "" + page);
@@ -6700,7 +6721,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             var span = this._createElement("span"), currentPage = this.currentPage;
             span.textContent = ("" + currentPage);
             if (this.showTip) {
-                baseview_9.fn_addToolTip(span, this._buildTip(currentPage));
+                this._addToolTip(span, this._buildTip(currentPage));
             }
             dom.addClass([span], "ria-pager-current-page");
             return span;

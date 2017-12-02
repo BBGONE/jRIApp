@@ -55,6 +55,8 @@ export class Pager extends BaseObject {
     private _dsDebounce: Debounce;
     // saves old display before making display: none
     private _display: string;
+    //an array of elements to which the toolTips are added
+    private _toolTips: Element[];
 
     constructor(options: IPagerConstructorOptions) {
         super();
@@ -83,6 +85,7 @@ export class Pager extends BaseObject {
         this._rowsPerPage = 0;
         this._rowCount = 0;
         this._currentPage = 1;
+        this._toolTips = [];
         this._pageDebounce = new Debounce();
         this._dsDebounce = new Debounce();
         dom.events.on(this._el, "click", (e) => {
@@ -106,6 +109,19 @@ export class Pager extends BaseObject {
                 }
             });
         this._bindDS();
+    }
+    protected _addToolTip(el: Element, tip: string) {
+        fn_addToolTip(el, tip);
+        if (!!tip) {
+            this._toolTips.push(el);
+        }
+    }
+    protected _cleanUp() {
+        const arr = this._toolTips;
+        this._toolTips = [];
+        arr.forEach((el) => {
+            this._addToolTip(el, null);
+        });
     }
     protected _createElement(tag: string): HTMLElement {
         return doc.createElement(tag);
@@ -244,6 +260,7 @@ export class Pager extends BaseObject {
         ds.objEvents.offNS(self._objId);
     }
     protected _clearContent() {
+        this._cleanUp();
         this._el.innerHTML = "";
     }
     protected _reset() {
@@ -266,7 +283,7 @@ export class Pager extends BaseObject {
         a.setAttribute("href", "javascript:void(0)");
 
         if (!!tip) {
-            fn_addToolTip(a, tip);
+            this._addToolTip(a, tip);
         }
         a.setAttribute(DATA_ATTR.DATA_EVENT_SCOPE, this._objId);
         a.setAttribute("data-page", "" + page);
@@ -303,7 +320,7 @@ export class Pager extends BaseObject {
         span.textContent = ("" + currentPage);
 
         if (this.showTip) {
-            fn_addToolTip(span, this._buildTip(currentPage));
+            this._addToolTip(span, this._buildTip(currentPage));
         }
         dom.addClass([span], css.currentPage);
         return span;

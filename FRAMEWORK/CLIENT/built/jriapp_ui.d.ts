@@ -884,7 +884,8 @@ declare module "jriapp_ui/datagrid/cells/actions" {
         private _isEditing;
         constructor(options: ICellOptions);
         dispose(): void;
-        private _setupButtons(buttons);
+        private _setupButtons(btns);
+        private _cleanUp();
         protected readonly editBtnsHTML: string;
         protected readonly viewBtnsHTML: string;
         protected _createButtons(isEditing: boolean): void;
@@ -1355,7 +1356,10 @@ declare module "jriapp_ui/pager" {
         private _pageDebounce;
         private _dsDebounce;
         private _display;
+        private _toolTips;
         constructor(options: IPagerConstructorOptions);
+        protected _addToolTip(el: Element, tip: string): void;
+        protected _cleanUp(): void;
         protected _createElement(tag: string): HTMLElement;
         protected render(): void;
         protected _onPageSizeChanged(ds: ICollection<ICollectionItem>): void;
