@@ -928,6 +928,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
                 return;
             }
             this.setDisposing();
+            this.validationErrors = null;
             this._getStore().setElView(this.el, null);
             dom.events.offNS(this.el, this.uniqueID);
             if (!!this._eventStore) {
