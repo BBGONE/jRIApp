@@ -172,24 +172,28 @@ export class BaseElView extends BaseObject implements IElView {
             return;
         }
         this.setDisposing();
-        this.validationErrors = null;
-        this._getStore().setElView(this.el, null);
-        dom.events.offNS(this.el, this.uniqueID);
-        if (!!this._eventStore) {
-            this._eventStore.dispose();
-            this._eventStore = null;
+        try {
+            dom.events.offNS(this.el, this.uniqueID);
+            this.css = null;
+            this._toolTip = null;
+            this._setToolTip(this.el, null);
+            this.validationErrors = null;
+            if (!!this._eventStore) {
+                this._eventStore.dispose();
+                this._eventStore = null;
+            }
+            if (!!this._props) {
+                this._props.dispose();
+                this._props = null;
+            }
+            if (!!this._classes) {
+                this._classes.dispose();
+                this._classes = null;
+            }
+        } finally {
+            this._getStore().setElView(this.el, null);
+            super.dispose();
         }
-        if (!!this._props) {
-            this._props.dispose();
-            this._props = null;
-        }
-        if (!!this._classes) {
-            this._classes.dispose();
-            this._classes = null;
-        }
-        this._display = null;
-        this._errors = null;
-        super.dispose();
     }
     toString(): string {
         return "BaseElView";
@@ -218,7 +222,9 @@ export class BaseElView extends BaseObject implements IElView {
             this.objEvents.raiseProp(PROP_NAME.isVisible);
         }
     }
-    get validationErrors(): IValidationInfo[] { return this._errors; }
+    get validationErrors(): IValidationInfo[] {
+        return this._errors;
+    }
     set validationErrors(v: IValidationInfo[]) {
         if (v !== this._errors) {
             this._errors = v;
@@ -226,8 +232,12 @@ export class BaseElView extends BaseObject implements IElView {
             this._updateErrorUI(this.el, this._errors);
         }
     }
-    get dataName(): string { return this._el.getAttribute(DATA_ATTR.DATA_NAME); }
-    get toolTip(): string { return this._toolTip; }
+    get dataName(): string {
+        return this._el.getAttribute(DATA_ATTR.DATA_NAME);
+    }
+    get toolTip(): string {
+        return this._toolTip;
+    }
     set toolTip(v: string) {
         if (this._toolTip !== v) {
             this._toolTip = v;
@@ -267,7 +277,9 @@ export class BaseElView extends BaseObject implements IElView {
         }
         return this._classes;
     }
-    get css() { return this._css; }
+    get css() {
+        return this._css;
+    }
     set css(v: string) {
         const arr: string[] = [];
         if (this._css !== v) {
