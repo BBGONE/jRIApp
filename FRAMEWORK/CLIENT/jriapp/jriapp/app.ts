@@ -101,19 +101,19 @@ export class Application extends BaseObject implements IApplication {
     addOnDisposed(handler: TEventHandler<IApplication, any>, nmspace?: string, context?: object): void {
         this.objEvents.addOnDisposed(handler, nmspace, context);
     }
-    removeOnDisposed(nmspace?: string): void {
-        this.objEvents.removeOnDisposed(nmspace);
+    offOnDisposed(nmspace?: string): void {
+        this.objEvents.offOnDisposed(nmspace);
     }
     addOnError(handler: TErrorHandler<IApplication>, nmspace?: string, context?: object): void {
         this.objEvents.addOnError(handler, nmspace, context);
     }
-    removeOnError(nmspace?: string): void {
-        this.objEvents.removeOnError(nmspace);
+    offOnError(nmspace?: string): void {
+        this.objEvents.offOnError(nmspace);
     }
     addOnStartUp(fn: TEventHandler<IApplication, any>, nmspace?: string, context?: IBaseObject): void {
         this.objEvents.on(APP_EVENTS.startup, fn, nmspace, context);
     }
-    removeOnStartUp(nmspace?: string): void {
+    offOnStartUp(nmspace?: string): void {
         this.objEvents.off(APP_EVENTS.startup, nmspace);
     }
     getExports(): IIndexer<any> {

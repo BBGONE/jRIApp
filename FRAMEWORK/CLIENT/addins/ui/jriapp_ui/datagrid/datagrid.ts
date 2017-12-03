@@ -312,37 +312,37 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     addOnRowExpanded(fn: TEventHandler<DataGrid, { collapsedRow: Row; expandedRow: Row; isExpanded: boolean; }>, nmspace?: string, context?: any) {
         this.objEvents.on(GRID_EVENTS.row_expanded, fn, nmspace, context);
     }
-    removeOnRowExpanded(nmspace?: string) {
+    offOnRowExpanded(nmspace?: string) {
         this.objEvents.off(GRID_EVENTS.row_expanded, nmspace);
     }
     addOnRowSelected(fn: TEventHandler<DataGrid, { row: Row; }>, nmspace?: string, context?: any) {
         this.objEvents.on(GRID_EVENTS.row_selected, fn, nmspace, context);
     }
-    removeOnRowSelected(nmspace?: string) {
+    offOnRowSelected(nmspace?: string) {
         this.objEvents.off(GRID_EVENTS.row_selected, nmspace);
     }
     addOnPageChanged(fn: TEventHandler<DataGrid, any>, nmspace?: string, context?: any) {
         this.objEvents.on(GRID_EVENTS.page_changed, fn, nmspace, context);
     }
-    removeOnPageChanged(nmspace?: string) {
+    offOnPageChanged(nmspace?: string) {
         this.objEvents.off(GRID_EVENTS.page_changed, nmspace);
     }
     addOnRowStateChanged(fn: TEventHandler<DataGrid, { row: Row; val: any; css: string; }>, nmspace?: string, context?: any) {
         this.objEvents.on(GRID_EVENTS.row_state_changed, fn, nmspace, context);
     }
-    removeOnRowStateChanged(nmspace?: string) {
+    offOnRowStateChanged(nmspace?: string) {
         this.objEvents.off(GRID_EVENTS.row_state_changed, nmspace);
     }
     addOnCellDblClicked(fn: TEventHandler<DataGrid, { cell: BaseCell<BaseColumn>; }>, nmspace?: string, context?: any) {
         this.objEvents.on(GRID_EVENTS.cell_dblclicked, fn, nmspace, context);
     }
-    removeOnCellDblClicked(nmspace?: string) {
+    offOnCellDblClicked(nmspace?: string) {
         this.objEvents.off(GRID_EVENTS.cell_dblclicked, nmspace);
     }
     addOnRowAction(fn: TEventHandler<DataGrid, { row: Row; action: ROW_ACTION; }>, nmspace?: string, context?: any) {
         this.objEvents.on(GRID_EVENTS.row_action, fn, nmspace, context);
     }
-    removeOnRowAction(nmspace?: string) {
+    offOnRowAction(nmspace?: string) {
         this.objEvents.off(GRID_EVENTS.row_action, nmspace);
     }
     protected _onKeyDown(key: number, event: Event): void {

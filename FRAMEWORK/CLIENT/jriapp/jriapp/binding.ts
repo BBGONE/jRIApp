@@ -503,7 +503,7 @@ export class Binding extends BaseObject implements IBinding {
             obj.objEvents.offNS(this._objId);
             const errNotif = sys.getErrorNotification(obj);
             if (!!errNotif) {
-                errNotif.removeOnErrorsChanged(this._objId);
+                errNotif.offOnErrorsChanged(this._objId);
             }
         }
     }

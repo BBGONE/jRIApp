@@ -2481,7 +2481,7 @@ define("gridDemo/uploads", ["require", "exports", "jriapp", "jriapp_ui", "gridDe
         UploadThumbnailVM.prototype.addOnFilesUploaded = function (fn, nmspace) {
             this.objEvents.on('files_uploaded', fn, nmspace);
         };
-        UploadThumbnailVM.prototype.removeOnFilesUploaded = function (nmspace) {
+        UploadThumbnailVM.prototype.offOnFilesUploaded = function (nmspace) {
             this.objEvents.off('files_uploaded', nmspace);
         };
         Object.defineProperty(UploadThumbnailVM.prototype, "dialogCommand", {

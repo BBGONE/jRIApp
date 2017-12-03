@@ -624,7 +624,7 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
         TemplateLoader.prototype.addOnLoaded = function (fn, nmspace) {
             this.objEvents.on("loaded", fn, nmspace);
         };
-        TemplateLoader.prototype.removeOnLoaded = function (nmspace) {
+        TemplateLoader.prototype.offOnLoaded = function (nmspace) {
             this.objEvents.off("loaded", nmspace);
         };
         TemplateLoader.prototype.waitForNotLoading = function (callback, callbackArgs) {
@@ -1899,14 +1899,14 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
         Bootstrap.prototype.addOnDisposed = function (handler, nmspace, context) {
             this.objEvents.addOnDisposed(handler, nmspace, context);
         };
-        Bootstrap.prototype.removeOnDisposed = function (nmspace) {
-            this.objEvents.removeOnDisposed(nmspace);
+        Bootstrap.prototype.offOnDisposed = function (nmspace) {
+            this.objEvents.offOnDisposed(nmspace);
         };
         Bootstrap.prototype.addOnError = function (handler, nmspace, context) {
             this.objEvents.addOnError(handler, nmspace, context);
         };
-        Bootstrap.prototype.removeOnError = function (nmspace) {
-            this.objEvents.removeOnError(nmspace);
+        Bootstrap.prototype.offOnError = function (nmspace) {
+            this.objEvents.offOnError(nmspace);
         };
         Bootstrap.prototype.addOnLoad = function (fn, nmspace, context) {
             this.objEvents.on("load", fn, nmspace, context);
@@ -2751,7 +2751,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                 obj.objEvents.offNS(this._objId);
                 var errNotif = sys.getErrorNotification(obj);
                 if (!!errNotif) {
-                    errNotif.removeOnErrorsChanged(this._objId);
+                    errNotif.offOnErrorsChanged(this._objId);
                 }
             }
         };
@@ -3433,7 +3433,7 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
         TCommand.prototype.addOnCanExecuteChanged = function (fn, nmspace, context) {
             this.objEvents.on("canExecute_changed", fn, nmspace, context);
         };
-        TCommand.prototype.removeOnCanExecuteChanged = function (nmspace) {
+        TCommand.prototype.offOnCanExecuteChanged = function (nmspace) {
             this.objEvents.off("canExecute_changed", nmspace);
         };
         TCommand.prototype.canExecute = function (sender, param) {
@@ -3500,14 +3500,14 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
         ViewModel.prototype.addOnDisposed = function (handler, nmspace, context) {
             this.objEvents.addOnDisposed(handler, nmspace, context);
         };
-        ViewModel.prototype.removeOnDisposed = function (nmspace) {
-            this.objEvents.removeOnDisposed(nmspace);
+        ViewModel.prototype.offOnDisposed = function (nmspace) {
+            this.objEvents.offOnDisposed(nmspace);
         };
         ViewModel.prototype.addOnError = function (handler, nmspace, context) {
             this.objEvents.addOnError(handler, nmspace, context);
         };
-        ViewModel.prototype.removeOnError = function (nmspace) {
-            this.objEvents.removeOnError(nmspace);
+        ViewModel.prototype.offOnError = function (nmspace) {
+            this.objEvents.offOnError(nmspace);
         };
         ViewModel.prototype.toString = function () {
             return "ViewModel";
@@ -3953,19 +3953,19 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
         Application.prototype.addOnDisposed = function (handler, nmspace, context) {
             this.objEvents.addOnDisposed(handler, nmspace, context);
         };
-        Application.prototype.removeOnDisposed = function (nmspace) {
-            this.objEvents.removeOnDisposed(nmspace);
+        Application.prototype.offOnDisposed = function (nmspace) {
+            this.objEvents.offOnDisposed(nmspace);
         };
         Application.prototype.addOnError = function (handler, nmspace, context) {
             this.objEvents.addOnError(handler, nmspace, context);
         };
-        Application.prototype.removeOnError = function (nmspace) {
-            this.objEvents.removeOnError(nmspace);
+        Application.prototype.offOnError = function (nmspace) {
+            this.objEvents.offOnError(nmspace);
         };
         Application.prototype.addOnStartUp = function (fn, nmspace, context) {
             this.objEvents.on("startup", fn, nmspace, context);
         };
-        Application.prototype.removeOnStartUp = function (nmspace) {
+        Application.prototype.offOnStartUp = function (nmspace) {
             this.objEvents.off("startup", nmspace);
         };
         Application.prototype.getExports = function () {

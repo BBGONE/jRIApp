@@ -153,7 +153,7 @@ export class ListBox extends BaseObject {
     addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any) {
         this.objEvents.on(LISTBOX_EVENTS.refreshed, fn, nmspace, context);
     }
-    removeOnRefreshed(nmspace?: string) {
+    offOnRefreshed(nmspace?: string) {
         this.objEvents.off(LISTBOX_EVENTS.refreshed, nmspace);
     }
     protected _onChanged() {

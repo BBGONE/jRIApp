@@ -46,7 +46,7 @@ export class TemplateLoader extends BaseObject {
     addOnLoaded(fn: (sender: TemplateLoader, args: { html: string; app: IApplication; }) => void, nmspace?: string) {
         this.objEvents.on(LOADER_EVENTS.loaded, fn, nmspace);
     }
-    removeOnLoaded(nmspace?: string) {
+    offOnLoaded(nmspace?: string) {
         this.objEvents.off(LOADER_EVENTS.loaded, nmspace);
     }
     public waitForNotLoading(callback: (...args: any[]) => any, callbackArgs: any): void {

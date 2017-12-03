@@ -194,13 +194,13 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     addOnClose(fn: TEventHandler<DataEditDialog, any>, nmspace?: string, context?: IBaseObject) {
         this.objEvents.on(DLG_EVENTS.close, fn, nmspace, context);
     }
-    removeOnClose(nmspace?: string) {
+    offOnClose(nmspace?: string) {
         this.objEvents.off(DLG_EVENTS.close, nmspace);
     }
     addOnRefresh(fn: TEventHandler<DataEditDialog, { isHandled: boolean; }>, nmspace?: string, context?: IBaseObject) {
         this.objEvents.on(DLG_EVENTS.refresh, fn, nmspace, context);
     }
-    removeOnRefresh(nmspace?: string) {
+    offOnRefresh(nmspace?: string) {
         this.objEvents.off(DLG_EVENTS.refresh, nmspace);
     }
     protected _createDialog() {

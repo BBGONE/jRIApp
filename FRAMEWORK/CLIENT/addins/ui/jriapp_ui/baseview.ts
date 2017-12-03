@@ -174,22 +174,20 @@ export class BaseElView extends BaseObject implements IElView {
         this.setDisposing();
         this._getStore().setElView(this.el, null);
         dom.events.offNS(this.el, this.uniqueID);
-        this.validationErrors = null;
-        this.toolTip = null;
         if (!!this._eventStore) {
             this._eventStore.dispose();
             this._eventStore = null;
         }
         if (!!this._props) {
             this._props.dispose();
-            this._props = checks.undefined;
+            this._props = null;
         }
         if (!!this._classes) {
             this._classes.dispose();
-            this._classes = checks.undefined;
+            this._classes = null;
         }
         this._display = null;
-        this._css = null;
+        this._errors = null;
         super.dispose();
     }
     toString(): string {
@@ -240,9 +238,8 @@ export class BaseElView extends BaseObject implements IElView {
     get events(): IPropertyBag {
         if (!this._eventStore) {
             if (this.getIsStateDirty()) {
-                return null;
+                return checks.undefined;
             }
-
             this._eventStore = new EventBag((s, a) => {
                 this._onEventChanged(a);
             });

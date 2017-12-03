@@ -45,7 +45,7 @@ export class TextAreaElView extends BaseElView {
     addOnKeyPress(fn: (sender: TextAreaElView, args: TKeyPressArgs) => void, nmspace?: string) {
         this.objEvents.on(TXTAREA_EVENTS.keypress, fn, nmspace);
     }
-    removeOnKeyPress(nmspace?: string) {
+    offOnKeyPress(nmspace?: string) {
         this.objEvents.off(TXTAREA_EVENTS.keypress, nmspace);
     }
     toString() {

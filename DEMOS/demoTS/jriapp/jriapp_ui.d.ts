@@ -257,7 +257,7 @@ declare module "jriapp_ui/textbox" {
     export class TextBoxElView extends InputElView {
         constructor(options: ITextBoxOptions);
         addOnKeyPress(fn: (sender: TextBoxElView, args: TKeyPressArgs) => void, nmspace?: string): void;
-        removeOnKeyPress(nmspace?: string): void;
+        offOnKeyPress(nmspace?: string): void;
         toString(): string;
         color: string;
     }
@@ -282,7 +282,7 @@ declare module "jriapp_ui/textarea" {
     export class TextAreaElView extends BaseElView {
         constructor(options: ITextAreaOptions);
         addOnKeyPress(fn: (sender: TextAreaElView, args: TKeyPressArgs) => void, nmspace?: string): void;
-        removeOnKeyPress(nmspace?: string): void;
+        offOnKeyPress(nmspace?: string): void;
         toString(): string;
         value: string;
         isEnabled: boolean;
@@ -409,7 +409,7 @@ declare module "jriapp_ui/listbox" {
         constructor(options: IListBoxConstructorOptions);
         dispose(): void;
         addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any): void;
-        removeOnRefreshed(nmspace?: string): void;
+        offOnRefreshed(nmspace?: string): void;
         protected _onChanged(): void;
         protected _getValue(item: ICollectionItem): any;
         protected _getText(item: ICollectionItem, index: number): string;
@@ -507,9 +507,9 @@ declare module "jriapp_ui/content/listbox" {
         private _objId;
         constructor(options: IConstructorContentOptions);
         addOnObjectCreated(fn: (sender: LookupContent, args: TObjCreatedArgs) => void, nmspace?: string): void;
-        removeOnObjectCreated(nmspace?: string): void;
+        offOnObjectCreated(nmspace?: string): void;
         addOnObjectNeeded(fn: (sender: LookupContent, args: TObjNeededArgs) => void, nmspace?: string): void;
-        removeOnObjectNeeded(nmspace?: string): void;
+        offOnObjectNeeded(nmspace?: string): void;
         protected getListBoxElView(): ListBoxElView;
         protected onListRefreshed(): void;
         protected createListBoxElView(lookUpOptions: ILookupOptions): ListBoxElView;
@@ -583,11 +583,11 @@ declare module "jriapp_ui/dialog" {
         private _deferredTemplate;
         constructor(options: IDialogConstructorOptions);
         addOnClose(fn: TEventHandler<DataEditDialog, any>, nmspace?: string, context?: IBaseObject): void;
-        removeOnClose(nmspace?: string): void;
+        offOnClose(nmspace?: string): void;
         addOnRefresh(fn: TEventHandler<DataEditDialog, {
             isHandled: boolean;
         }>, nmspace?: string, context?: IBaseObject): void;
-        removeOnRefresh(nmspace?: string): void;
+        offOnRefresh(nmspace?: string): void;
         protected _createDialog(): void;
         templateLoading(template: ITemplate): void;
         templateLoaded(template: ITemplate, error?: any): void;
@@ -1213,28 +1213,28 @@ declare module "jriapp_ui/datagrid/datagrid" {
             expandedRow: Row;
             isExpanded: boolean;
         }>, nmspace?: string, context?: any): void;
-        removeOnRowExpanded(nmspace?: string): void;
+        offOnRowExpanded(nmspace?: string): void;
         addOnRowSelected(fn: TEventHandler<DataGrid, {
             row: Row;
         }>, nmspace?: string, context?: any): void;
-        removeOnRowSelected(nmspace?: string): void;
+        offOnRowSelected(nmspace?: string): void;
         addOnPageChanged(fn: TEventHandler<DataGrid, any>, nmspace?: string, context?: any): void;
-        removeOnPageChanged(nmspace?: string): void;
+        offOnPageChanged(nmspace?: string): void;
         addOnRowStateChanged(fn: TEventHandler<DataGrid, {
             row: Row;
             val: any;
             css: string;
         }>, nmspace?: string, context?: any): void;
-        removeOnRowStateChanged(nmspace?: string): void;
+        offOnRowStateChanged(nmspace?: string): void;
         addOnCellDblClicked(fn: TEventHandler<DataGrid, {
             cell: BaseCell<BaseColumn>;
         }>, nmspace?: string, context?: any): void;
-        removeOnCellDblClicked(nmspace?: string): void;
+        offOnCellDblClicked(nmspace?: string): void;
         addOnRowAction(fn: TEventHandler<DataGrid, {
             row: Row;
             action: ROW_ACTION;
         }>, nmspace?: string, context?: any): void;
-        removeOnRowAction(nmspace?: string): void;
+        offOnRowAction(nmspace?: string): void;
         protected _onKeyDown(key: number, event: Event): void;
         protected _onKeyUp(key: number, event: Event): void;
         protected _isRowExpanded(row: Row): boolean;
@@ -1435,7 +1435,7 @@ declare module "jriapp_ui/stackpanel" {
         addOnItemClicked(fn: TEventHandler<StackPanel, {
             item: ICollectionItem;
         }>, nmspace?: string, context?: IBaseObject): void;
-        removeOnItemClicked(nmspace?: string): void;
+        offOnItemClicked(nmspace?: string): void;
         protected _getContainerEl(): HTMLElement;
         protected _onKeyDown(key: number, event: Event): void;
         protected _onKeyUp(key: number, event: Event): void;

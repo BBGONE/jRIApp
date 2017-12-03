@@ -256,7 +256,7 @@ declare module "jriapp_db/dbset" {
         }, isAppend?: boolean): IQueryResult<TItem>;
         fillItems(data: TObj[], isAppend?: boolean): IQueryResult<TItem>;
         addOnLoaded(fn: TEventHandler<DbSet<TItem, TObj, TDbContext>, IDbSetLoadedArgs<TObj>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-        removeOnLoaded(nmspace?: string): void;
+        offOnLoaded(nmspace?: string): void;
         waitForNotBusy(callback: () => void, groupName: string): void;
         getFieldInfo(fieldName: string): IFieldInfo;
         sort(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any>;
@@ -493,14 +493,14 @@ declare module "jriapp_db/dbcontext" {
             permissions?: IPermissionsInfo;
         }): IVoidPromise;
         addOnDisposed(handler: TEventHandler<DbContext, any>, nmspace?: string, context?: object): void;
-        removeOnDisposed(nmspace?: string): void;
+        offOnDisposed(nmspace?: string): void;
         addOnError(handler: TErrorHandler<DbContext>, nmspace?: string, context?: object): void;
-        removeOnError(nmspace?: string): void;
+        offOnError(nmspace?: string): void;
         addOnSubmitError(fn: TEventHandler<DbContext, {
             error: any;
             isHandled: boolean;
         }>, nmspace?: string, context?: IBaseObject): void;
-        removeOnSubmitError(nmspace?: string): void;
+        offOnSubmitError(nmspace?: string): void;
         getDbSet(name: string): TDbSet;
         findDbSet(name: string): TDbSet;
         getAssociation(name: string): Association;
@@ -811,7 +811,7 @@ declare module "jriapp_db/dataview" {
         constructor(options: IDataViewOptions<TItem>);
         protected _clearItems(items: TItem[]): void;
         addOnViewRefreshed(fn: TEventHandler<DataView<TItem>, any>, nmspace?: string): void;
-        removeOnViewRefreshed(nmspace?: string): void;
+        offOnViewRefreshed(nmspace?: string): void;
         protected _filterForPaging(items: TItem[]): TItem[];
         protected _onViewRefreshed(args: {}): void;
         protected _refresh(reason: COLL_CHANGE_REASON): void;
@@ -891,7 +891,7 @@ declare module "jriapp_db/complexprop" {
         getPropertyByName(name: string): IFieldInfo;
         getIsHasErrors(): boolean;
         addOnErrorsChanged(fn: TEventHandler<EntityAspect<IEntityItem, any, DbContext>, any>, nmspace?: string, context?: any): void;
-        removeOnErrorsChanged(nmspace?: string): void;
+        offOnErrorsChanged(nmspace?: string): void;
         getFieldErrors(fieldName: string): IValidationInfo[];
         getAllErrors(): IValidationInfo[];
         getIErrorNotification(): IErrorNotification;

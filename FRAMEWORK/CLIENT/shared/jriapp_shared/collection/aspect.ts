@@ -38,7 +38,7 @@ function fn_destroyVal(entry: ICustomVal, nmspace: string): void {
 
     const errNotification = sys.getErrorNotification(val);
     if (!!errNotification) {
-        errNotification.removeOnErrorsChanged(nmspace);
+        errNotification.offOnErrorsChanged(nmspace);
     }
 
     if (entry.isOwnIt && sys.isBaseObj(val)) {
@@ -358,7 +358,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
     addOnErrorsChanged(fn: TEventHandler<ItemAspect<TItem, TObj>, any>, nmspace?: string, context?: any) {
         this.objEvents.on(ITEM_EVENTS.errors_changed, fn, nmspace, context);
     }
-    removeOnErrorsChanged(nmspace?: string) {
+    offOnErrorsChanged(nmspace?: string) {
         this.objEvents.off(ITEM_EVENTS.errors_changed, nmspace);
     }
     getFieldErrors(fieldName: string): IValidationInfo[] {

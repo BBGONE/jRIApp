@@ -30,7 +30,7 @@ const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = util
 sys.isCollection = (obj) => { return (!!obj && obj instanceof BaseCollection); };
 
 const enum COLL_EVENTS {
-    begin_edit = "begin_edit",
+    begin_edit = "beg_edit",
     end_edit = "end_edit",
     before_begin_edit = "before_be",
     before_end_edit = "before_ee",
@@ -235,91 +235,91 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
     addOnClearing(fn: TEventHandler<ICollection<TItem>, { reason: COLL_CHANGE_REASON; }>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
         this.objEvents.on(COLL_EVENTS.clearing, fn, nmspace, context, priority);
     }
-    removeOnClearing(nmspace?: string) {
+    offOnClearing(nmspace?: string) {
         this.objEvents.off(COLL_EVENTS.clearing, nmspace);
     }
     addOnCleared(fn: TEventHandler<ICollection<TItem>, { reason: COLL_CHANGE_REASON; }>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
         this.objEvents.on(COLL_EVENTS.cleared, fn, nmspace, context, priority);
     }
-    removeOnCleared(nmspace?: string) {
+    offOnCleared(nmspace?: string) {
         this.objEvents.off(COLL_EVENTS.cleared, nmspace);
     }
     addOnCollChanged(fn: TEventHandler<ICollection<TItem>, ICollChangedArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
         this.objEvents.on(COLL_EVENTS.collection_changed, fn, nmspace, context, priority);
     }
-    removeOnCollChanged(nmspace?: string) {
+    offOnCollChanged(nmspace?: string) {
         this.objEvents.off(COLL_EVENTS.collection_changed, nmspace);
     }
     addOnFill(fn: TEventHandler<ICollection<TItem>, ICollFillArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
         this.objEvents.on(COLL_EVENTS.fill, fn, nmspace, context, priority);
     }
-    removeOnFill(nmspace?: string) {
+    offOnFill(nmspace?: string) {
         this.objEvents.off(COLL_EVENTS.fill, nmspace);
     }
     addOnValidateField(fn: TEventHandler<ICollection<TItem>, ICollValidateFieldArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
         this.objEvents.on(COLL_EVENTS.validate_field, fn, nmspace, context, priority);
     }
-    removeOnValidateField(nmspace?: string) {
+    offOnValidateField(nmspace?: string) {
         this.objEvents.off(COLL_EVENTS.validate_field, nmspace);
     }
     addOnValidateItem(fn: TEventHandler<ICollection<TItem>, ICollValidateItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
         this.objEvents.on(COLL_EVENTS.validate_item, fn, nmspace, context, priority);
     }
-    removeOnValidateItem(nmspace?: string) {
+    offOnValidateItem(nmspace?: string) {
         this.objEvents.off(COLL_EVENTS.validate_item, nmspace);
     }
     addOnItemDeleting(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
         this.objEvents.on(COLL_EVENTS.item_deleting, fn, nmspace, context, priority);
     }
-    removeOnItemDeleting(nmspace?: string) {
+    offOnItemDeleting(nmspace?: string) {
         this.objEvents.off(COLL_EVENTS.item_deleting, nmspace);
     }
     addOnItemAdding(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
         this.objEvents.on(COLL_EVENTS.item_adding, fn, nmspace, context, priority);
     }
-    removeOnItemAdding(nmspace?: string) {
+    offOnItemAdding(nmspace?: string) {
         this.objEvents.off(COLL_EVENTS.item_adding, nmspace);
     }
     addOnItemAdded(fn: TEventHandler<ICollection<TItem>, IItemAddedArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
         this.objEvents.on(COLL_EVENTS.item_added, fn, nmspace, context, priority);
     }
-    removeOnItemAdded(nmspace?: string) {
+    offOnItemAdded(nmspace?: string) {
         this.objEvents.off(COLL_EVENTS.item_added, nmspace);
     }
     addOnCurrentChanging(fn: TEventHandler<ICollection<TItem>, ICurrentChangingArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
         this.objEvents.on(COLL_EVENTS.current_changing, fn, nmspace, context, priority);
     }
-    removeOnCurrentChanging(nmspace?: string) {
+    offOnCurrentChanging(nmspace?: string) {
         this.objEvents.off(COLL_EVENTS.current_changing, nmspace);
     }
     addOnPageChanging(fn: TEventHandler<ICollection<TItem>, IPageChangingArgs>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
         this.objEvents.on(COLL_EVENTS.page_changing, fn, nmspace, context, priority);
     }
-    removeOnPageChanging(nmspace?: string) {
+    offOnPageChanging(nmspace?: string) {
         this.objEvents.off(COLL_EVENTS.page_changing, nmspace);
     }
     addOnErrorsChanged(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
         this.objEvents.on(COLL_EVENTS.errors_changed, fn, nmspace, context, priority);
     }
-    removeOnErrorsChanged(nmspace?: string) {
+    offOnErrorsChanged(nmspace?: string) {
         this.objEvents.off(COLL_EVENTS.errors_changed, nmspace);
     }
     addOnBeginEdit(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
         this.objEvents.on(COLL_EVENTS.begin_edit, fn, nmspace, context, priority);
     }
-    removeOnBeginEdit(nmspace?: string) {
+    offOnBeginEdit(nmspace?: string) {
         this.objEvents.off(COLL_EVENTS.begin_edit, nmspace);
     }
     addOnEndEdit(fn: TEventHandler<ICollection<TItem>, ICollEndEditArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
         this.objEvents.on(COLL_EVENTS.end_edit, fn, nmspace, context, priority);
     }
-    removeOnEndEdit(nmspace?: string) {
+    offOnEndEdit(nmspace?: string) {
         this.objEvents.off(COLL_EVENTS.end_edit, nmspace);
     }
     addOnBeforeBeginEdit(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
         this.objEvents.on(COLL_EVENTS.before_begin_edit, fn, nmspace, context, priority);
     }
-    removeOnBeforeBeginEdit(nmspace?: string) {
+    offOnBeforeBeginEdit(nmspace?: string) {
         this.objEvents.off(COLL_EVENTS.before_begin_edit, nmspace);
     }
     addOnBeforeEndEdit(fn: TEventHandler<ICollection<TItem>, ICollEndEditArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
@@ -331,13 +331,13 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
     addOnCommitChanges(fn: TEventHandler<ICollection<TItem>, ICommitChangesArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
         this.objEvents.on(COLL_EVENTS.commit_changes, fn, nmspace, context, priority);
     }
-    removeOnCommitChanges(nmspace?: string) {
+    offOnCommitChanges(nmspace?: string) {
         this.objEvents.off(COLL_EVENTS.commit_changes, nmspace);
     }
     addOnStatusChanged(fn: TEventHandler<ICollection<TItem>, ICollItemStatusArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
         this.objEvents.on(COLL_EVENTS.status_changed, fn, nmspace, context, priority);
     }
-    removeOnStatusChanged(nmspace?: string) {
+    offOnStatusChanged(nmspace?: string) {
         this.objEvents.off(COLL_EVENTS.status_changed, nmspace);
     }
     addOnPageIndexChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void {

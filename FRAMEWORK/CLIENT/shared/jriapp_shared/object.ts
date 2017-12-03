@@ -51,13 +51,13 @@ export class DummyEvents implements IObjectEvents {
     addOnDisposed(handler: TEventHandler<IBaseObject, any>, nmspace?: string, context?: object, priority?: TPriority): void {
         this.on(OBJ_EVENTS.destroyed, handler, nmspace, context, priority);
     }
-    removeOnDisposed(nmspace?: string): void {
+    offOnDisposed(nmspace?: string): void {
         this.off(OBJ_EVENTS.destroyed, nmspace);
     }
     addOnError(handler: TErrorHandler<IBaseObject>, nmspace?: string, context?: object, priority?: TPriority): void {
         this.on(OBJ_EVENTS.error, handler, nmspace, context, priority);
     }
-    removeOnError(nmspace?: string): void {
+    offOnError(nmspace?: string): void {
         this.off(OBJ_EVENTS.error, nmspace);
     }
     get owner(): IBaseObject {
@@ -136,13 +136,13 @@ export class ObjectEvents implements IObjectEvents {
     addOnDisposed(handler: TEventHandler<IBaseObject, any>, nmspace?: string, context?: object, priority?: TPriority): void {
         this.on(OBJ_EVENTS.destroyed, handler, nmspace, context, priority);
     }
-    removeOnDisposed(nmspace?: string): void {
+    offOnDisposed(nmspace?: string): void {
         this.off(OBJ_EVENTS.destroyed, nmspace);
     }
     addOnError(handler: TErrorHandler<IBaseObject>, nmspace?: string, context?: object, priority?: TPriority): void {
         this.on(OBJ_EVENTS.error, handler, nmspace, context, priority);
     }
-    removeOnError(nmspace?: string): void {
+    offOnError(nmspace?: string): void {
         this.off(OBJ_EVENTS.error, nmspace);
     }
     get owner(): IBaseObject {

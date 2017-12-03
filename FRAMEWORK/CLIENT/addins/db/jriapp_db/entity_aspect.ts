@@ -488,7 +488,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
     }
     submitChanges(): IVoidPromise {
         const removeHandler = () => {
-            dbxt.removeOnSubmitError(uniqueID);
+            dbxt.offOnSubmitError(uniqueID);
         };
         const dbxt = this.dbSet.dbContext, uniqueID = coreUtils.uuid();
         dbxt.addOnSubmitError((sender, args) => {

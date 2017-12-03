@@ -324,7 +324,7 @@ export class DataForm extends BaseObject {
                 this._editable.objEvents.offNS(this._objId);
             }
             if (!!this._errNotification) {
-                this._errNotification.removeOnErrorsChanged(this._objId);
+                this._errNotification.offOnErrorsChanged(this._objId);
             }
         }
         this._editable = null;

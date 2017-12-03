@@ -377,14 +377,14 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     addOnDisposed(handler: TEventHandler<Bootstrap, any>, nmspace?: string, context?: object): void {
         this.objEvents.addOnDisposed(handler, nmspace, context);
     }
-    removeOnDisposed(nmspace?: string): void {
-        this.objEvents.removeOnDisposed(nmspace);
+    offOnDisposed(nmspace?: string): void {
+        this.objEvents.offOnDisposed(nmspace);
     }
     addOnError(handler: TErrorHandler<Bootstrap>, nmspace?: string, context?: object): void {
         this.objEvents.addOnError(handler, nmspace, context);
     }
-    removeOnError(nmspace?: string): void {
-        this.objEvents.removeOnError(nmspace);
+    offOnError(nmspace?: string): void {
+        this.objEvents.offOnError(nmspace);
     }
     addOnLoad(fn: TEventHandler<Bootstrap, any>, nmspace?: string, context?: IBaseObject) {
         this.objEvents.on(GLOB_EVENTS.load, fn, nmspace, context);

@@ -132,7 +132,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
     addOnItemClicked(fn: TEventHandler<StackPanel, { item: ICollectionItem; }>, nmspace?: string, context?: IBaseObject) {
         this.objEvents.on(PNL_EVENTS.item_clicked, fn, nmspace, context);
     }
-    removeOnItemClicked(nmspace?: string) {
+    offOnItemClicked(nmspace?: string) {
         this.objEvents.off(PNL_EVENTS.item_clicked, nmspace);
     }
     protected _getContainerEl() { return this.el; }

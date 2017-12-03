@@ -60,7 +60,7 @@ export class UploadThumbnailVM extends BaseUploadVM<RIAPP.Application> {
     addOnFilesUploaded(fn: (sender: UploadThumbnailVM, args: { id: string; product: dbMOD.IEntityItem; }) => void, nmspace?: string) {
         this.objEvents.on('files_uploaded', fn, nmspace);
     }
-    removeOnFilesUploaded(nmspace?: string) {
+    offOnFilesUploaded(nmspace?: string) {
         this.objEvents.off('files_uploaded', nmspace);
     }
     get dialogCommand() { return this._dialogCommand; }

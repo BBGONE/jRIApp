@@ -908,7 +908,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
     addOnLoaded(fn: TEventHandler<DbSet<TItem, TObj, TDbContext>, IDbSetLoadedArgs<TObj>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
         this.objEvents.on(DBSET_EVENTS.loaded, fn, nmspace, context, priority);
     }
-    removeOnLoaded(nmspace?: string) {
+    offOnLoaded(nmspace?: string) {
         this.objEvents.off(DBSET_EVENTS.loaded, nmspace);
     }
     waitForNotBusy(callback: () => void, groupName: string) {

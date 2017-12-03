@@ -1320,7 +1320,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         DbSet.prototype.addOnLoaded = function (fn, nmspace, context, priority) {
             this.objEvents.on("dbset_loaded", fn, nmspace, context, priority);
         };
-        DbSet.prototype.removeOnLoaded = function (nmspace) {
+        DbSet.prototype.offOnLoaded = function (nmspace) {
             this.objEvents.off("dbset_loaded", nmspace);
         };
         DbSet.prototype.waitForNotBusy = function (callback, groupName) {
@@ -2939,19 +2939,19 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         DbContext.prototype.addOnDisposed = function (handler, nmspace, context) {
             this.objEvents.addOnDisposed(handler, nmspace, context);
         };
-        DbContext.prototype.removeOnDisposed = function (nmspace) {
-            this.objEvents.removeOnDisposed(nmspace);
+        DbContext.prototype.offOnDisposed = function (nmspace) {
+            this.objEvents.offOnDisposed(nmspace);
         };
         DbContext.prototype.addOnError = function (handler, nmspace, context) {
             this.objEvents.addOnError(handler, nmspace, context);
         };
-        DbContext.prototype.removeOnError = function (nmspace) {
-            this.objEvents.removeOnError(nmspace);
+        DbContext.prototype.offOnError = function (nmspace) {
+            this.objEvents.offOnError(nmspace);
         };
         DbContext.prototype.addOnSubmitError = function (fn, nmspace, context) {
             this.objEvents.on("submit_error", fn, nmspace, context);
         };
-        DbContext.prototype.removeOnSubmitError = function (nmspace) {
+        DbContext.prototype.offOnSubmitError = function (nmspace) {
             this.objEvents.off("submit_error", nmspace);
         };
         DbContext.prototype.getDbSet = function (name) {
@@ -3587,7 +3587,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
         };
         EntityAspect.prototype.submitChanges = function () {
             var removeHandler = function () {
-                dbxt.removeOnSubmitError(uniqueID);
+                dbxt.offOnSubmitError(uniqueID);
             };
             var dbxt = this.dbSet.dbContext, uniqueID = coreUtils.uuid();
             dbxt.addOnSubmitError(function (sender, args) {
@@ -3705,7 +3705,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
         DataView.prototype.addOnViewRefreshed = function (fn, nmspace) {
             this.objEvents.on("view_refreshed", fn, nmspace);
         };
-        DataView.prototype.removeOnViewRefreshed = function (nmspace) {
+        DataView.prototype.offOnViewRefreshed = function (nmspace) {
             this.objEvents.off("view_refreshed", nmspace);
         };
         DataView.prototype._filterForPaging = function (items) {
@@ -4211,8 +4211,8 @@ define("jriapp_db/complexprop", ["require", "exports", "jriapp_shared"], functio
         BaseComplexProperty.prototype.addOnErrorsChanged = function (fn, nmspace, context) {
             this.getEntity().addOnErrorsChanged(fn, nmspace, context);
         };
-        BaseComplexProperty.prototype.removeOnErrorsChanged = function (nmspace) {
-            this.getEntity().removeOnErrorsChanged(nmspace);
+        BaseComplexProperty.prototype.offOnErrorsChanged = function (nmspace) {
+            this.getEntity().offOnErrorsChanged(nmspace);
         };
         BaseComplexProperty.prototype.getFieldErrors = function (fieldName) {
             var fullName = this.getFullPath(fieldName);

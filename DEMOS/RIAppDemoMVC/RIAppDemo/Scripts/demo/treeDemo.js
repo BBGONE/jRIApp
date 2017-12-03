@@ -57,13 +57,13 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
         ExProps.prototype.addOnClicked = function (fn, nmspace) {
             this.objEvents.on('clicked', fn, nmspace);
         };
-        ExProps.prototype.removeOnClicked = function (nmspace) {
+        ExProps.prototype.offOnClicked = function (nmspace) {
             this.objEvents.off('clicked', nmspace);
         };
         ExProps.prototype.addOnDblClicked = function (fn, nmspace) {
             this.objEvents.on('dblclicked', fn, nmspace);
         };
-        ExProps.prototype.removeOnDblClicked = function (nmspace) {
+        ExProps.prototype.offOnDblClicked = function (nmspace) {
             this.objEvents.off('dblclicked', nmspace);
         };
         ExProps.prototype.createChildView = function () {

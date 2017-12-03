@@ -1281,13 +1281,13 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
         DummyEvents.prototype.addOnDisposed = function (handler, nmspace, context, priority) {
             this.on("destroyed", handler, nmspace, context, priority);
         };
-        DummyEvents.prototype.removeOnDisposed = function (nmspace) {
+        DummyEvents.prototype.offOnDisposed = function (nmspace) {
             this.off("destroyed", nmspace);
         };
         DummyEvents.prototype.addOnError = function (handler, nmspace, context, priority) {
             this.on("error", handler, nmspace, context, priority);
         };
-        DummyEvents.prototype.removeOnError = function (nmspace) {
+        DummyEvents.prototype.offOnError = function (nmspace) {
             this.off("error", nmspace);
         };
         Object.defineProperty(DummyEvents.prototype, "owner", {
@@ -1366,13 +1366,13 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
         ObjectEvents.prototype.addOnDisposed = function (handler, nmspace, context, priority) {
             this.on("destroyed", handler, nmspace, context, priority);
         };
-        ObjectEvents.prototype.removeOnDisposed = function (nmspace) {
+        ObjectEvents.prototype.offOnDisposed = function (nmspace) {
             this.off("destroyed", nmspace);
         };
         ObjectEvents.prototype.addOnError = function (handler, nmspace, context, priority) {
             this.on("error", handler, nmspace, context, priority);
         };
-        ObjectEvents.prototype.removeOnError = function (nmspace) {
+        ObjectEvents.prototype.offOnError = function (nmspace) {
             this.off("error", nmspace);
         };
         Object.defineProperty(ObjectEvents.prototype, "owner", {
@@ -1970,19 +1970,19 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
         JsonBag.prototype.addOnValidateBag = function (fn, nmspace, context) {
             this.objEvents.on("validate_bag", fn, nmspace, context);
         };
-        JsonBag.prototype.removeOnValidateBag = function (nmspace) {
+        JsonBag.prototype.offOnValidateBag = function (nmspace) {
             this.objEvents.off("validate_bag", nmspace);
         };
         JsonBag.prototype.addOnValidateField = function (fn, nmspace, context) {
             this.objEvents.on("validate_field", fn, nmspace, context);
         };
-        JsonBag.prototype.removeOnValidateField = function (nmspace) {
+        JsonBag.prototype.offOnValidateField = function (nmspace) {
             this.objEvents.off("validate_field", nmspace);
         };
         JsonBag.prototype.addOnErrorsChanged = function (fn, nmspace, context) {
             this.objEvents.on("errors_changed", fn, nmspace, context);
         };
-        JsonBag.prototype.removeOnErrorsChanged = function (nmspace) {
+        JsonBag.prototype.offOnErrorsChanged = function (nmspace) {
             this.objEvents.off("errors_changed", nmspace);
         };
         JsonBag.prototype.onChanged = function () {
@@ -2907,7 +2907,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
     sys.isCollection = function (obj) { return (!!obj && obj instanceof BaseCollection); };
     var COLL_EVENTS;
     (function (COLL_EVENTS) {
-        COLL_EVENTS["begin_edit"] = "begin_edit";
+        COLL_EVENTS["begin_edit"] = "beg_edit";
         COLL_EVENTS["end_edit"] = "end_edit";
         COLL_EVENTS["before_begin_edit"] = "before_be";
         COLL_EVENTS["before_end_edit"] = "before_ee";
@@ -3092,91 +3092,91 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         BaseCollection.prototype.addOnClearing = function (fn, nmspace, context, priority) {
             this.objEvents.on("clearing", fn, nmspace, context, priority);
         };
-        BaseCollection.prototype.removeOnClearing = function (nmspace) {
+        BaseCollection.prototype.offOnClearing = function (nmspace) {
             this.objEvents.off("clearing", nmspace);
         };
         BaseCollection.prototype.addOnCleared = function (fn, nmspace, context, priority) {
             this.objEvents.on("cleared", fn, nmspace, context, priority);
         };
-        BaseCollection.prototype.removeOnCleared = function (nmspace) {
+        BaseCollection.prototype.offOnCleared = function (nmspace) {
             this.objEvents.off("cleared", nmspace);
         };
         BaseCollection.prototype.addOnCollChanged = function (fn, nmspace, context, priority) {
             this.objEvents.on("coll_changed", fn, nmspace, context, priority);
         };
-        BaseCollection.prototype.removeOnCollChanged = function (nmspace) {
+        BaseCollection.prototype.offOnCollChanged = function (nmspace) {
             this.objEvents.off("coll_changed", nmspace);
         };
         BaseCollection.prototype.addOnFill = function (fn, nmspace, context, priority) {
             this.objEvents.on("fill", fn, nmspace, context, priority);
         };
-        BaseCollection.prototype.removeOnFill = function (nmspace) {
+        BaseCollection.prototype.offOnFill = function (nmspace) {
             this.objEvents.off("fill", nmspace);
         };
         BaseCollection.prototype.addOnValidateField = function (fn, nmspace, context, priority) {
             this.objEvents.on("validate_field", fn, nmspace, context, priority);
         };
-        BaseCollection.prototype.removeOnValidateField = function (nmspace) {
+        BaseCollection.prototype.offOnValidateField = function (nmspace) {
             this.objEvents.off("validate_field", nmspace);
         };
         BaseCollection.prototype.addOnValidateItem = function (fn, nmspace, context, priority) {
             this.objEvents.on("validate_item", fn, nmspace, context, priority);
         };
-        BaseCollection.prototype.removeOnValidateItem = function (nmspace) {
+        BaseCollection.prototype.offOnValidateItem = function (nmspace) {
             this.objEvents.off("validate_item", nmspace);
         };
         BaseCollection.prototype.addOnItemDeleting = function (fn, nmspace, context, priority) {
             this.objEvents.on("item_deleting", fn, nmspace, context, priority);
         };
-        BaseCollection.prototype.removeOnItemDeleting = function (nmspace) {
+        BaseCollection.prototype.offOnItemDeleting = function (nmspace) {
             this.objEvents.off("item_deleting", nmspace);
         };
         BaseCollection.prototype.addOnItemAdding = function (fn, nmspace, context, priority) {
             this.objEvents.on("item_adding", fn, nmspace, context, priority);
         };
-        BaseCollection.prototype.removeOnItemAdding = function (nmspace) {
+        BaseCollection.prototype.offOnItemAdding = function (nmspace) {
             this.objEvents.off("item_adding", nmspace);
         };
         BaseCollection.prototype.addOnItemAdded = function (fn, nmspace, context, priority) {
             this.objEvents.on("item_added", fn, nmspace, context, priority);
         };
-        BaseCollection.prototype.removeOnItemAdded = function (nmspace) {
+        BaseCollection.prototype.offOnItemAdded = function (nmspace) {
             this.objEvents.off("item_added", nmspace);
         };
         BaseCollection.prototype.addOnCurrentChanging = function (fn, nmspace, context, priority) {
             this.objEvents.on("current_changing", fn, nmspace, context, priority);
         };
-        BaseCollection.prototype.removeOnCurrentChanging = function (nmspace) {
+        BaseCollection.prototype.offOnCurrentChanging = function (nmspace) {
             this.objEvents.off("current_changing", nmspace);
         };
         BaseCollection.prototype.addOnPageChanging = function (fn, nmspace, context, priority) {
             this.objEvents.on("page_changing", fn, nmspace, context, priority);
         };
-        BaseCollection.prototype.removeOnPageChanging = function (nmspace) {
+        BaseCollection.prototype.offOnPageChanging = function (nmspace) {
             this.objEvents.off("page_changing", nmspace);
         };
         BaseCollection.prototype.addOnErrorsChanged = function (fn, nmspace, context, priority) {
             this.objEvents.on("errors_changed", fn, nmspace, context, priority);
         };
-        BaseCollection.prototype.removeOnErrorsChanged = function (nmspace) {
+        BaseCollection.prototype.offOnErrorsChanged = function (nmspace) {
             this.objEvents.off("errors_changed", nmspace);
         };
         BaseCollection.prototype.addOnBeginEdit = function (fn, nmspace, context, priority) {
-            this.objEvents.on("begin_edit", fn, nmspace, context, priority);
+            this.objEvents.on("beg_edit", fn, nmspace, context, priority);
         };
-        BaseCollection.prototype.removeOnBeginEdit = function (nmspace) {
-            this.objEvents.off("begin_edit", nmspace);
+        BaseCollection.prototype.offOnBeginEdit = function (nmspace) {
+            this.objEvents.off("beg_edit", nmspace);
         };
         BaseCollection.prototype.addOnEndEdit = function (fn, nmspace, context, priority) {
             this.objEvents.on("end_edit", fn, nmspace, context, priority);
         };
-        BaseCollection.prototype.removeOnEndEdit = function (nmspace) {
+        BaseCollection.prototype.offOnEndEdit = function (nmspace) {
             this.objEvents.off("end_edit", nmspace);
         };
         BaseCollection.prototype.addOnBeforeBeginEdit = function (fn, nmspace, context, priority) {
             this.objEvents.on("before_be", fn, nmspace, context, priority);
         };
-        BaseCollection.prototype.removeOnBeforeBeginEdit = function (nmspace) {
+        BaseCollection.prototype.offOnBeforeBeginEdit = function (nmspace) {
             this.objEvents.off("before_be", nmspace);
         };
         BaseCollection.prototype.addOnBeforeEndEdit = function (fn, nmspace, context, priority) {
@@ -3188,13 +3188,13 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         BaseCollection.prototype.addOnCommitChanges = function (fn, nmspace, context, priority) {
             this.objEvents.on("commit_changes", fn, nmspace, context, priority);
         };
-        BaseCollection.prototype.removeOnCommitChanges = function (nmspace) {
+        BaseCollection.prototype.offOnCommitChanges = function (nmspace) {
             this.objEvents.off("commit_changes", nmspace);
         };
         BaseCollection.prototype.addOnStatusChanged = function (fn, nmspace, context, priority) {
             this.objEvents.on("status_changed", fn, nmspace, context, priority);
         };
-        BaseCollection.prototype.removeOnStatusChanged = function (nmspace) {
+        BaseCollection.prototype.offOnStatusChanged = function (nmspace) {
             this.objEvents.off("status_changed", nmspace);
         };
         BaseCollection.prototype.addOnPageIndexChanged = function (handler, nmspace, context) {
@@ -3405,7 +3405,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             }
             if (isBegin) {
                 this._EditingItem = item;
-                this.objEvents.raise("begin_edit", { item: item });
+                this.objEvents.raise("beg_edit", { item: item });
                 this._onEditingChanged();
                 if (!!item) {
                     item._aspect.objEvents.raiseProp(int_2.PROP_NAME.isEditing);
@@ -4094,7 +4094,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         }
         var errNotification = sys.getErrorNotification(val);
         if (!!errNotification) {
-            errNotification.removeOnErrorsChanged(nmspace);
+            errNotification.offOnErrorsChanged(nmspace);
         }
         if (entry.isOwnIt && sys.isBaseObj(val)) {
             val.dispose();
@@ -4398,7 +4398,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         ItemAspect.prototype.addOnErrorsChanged = function (fn, nmspace, context) {
             this.objEvents.on("errors_changed", fn, nmspace, context);
         };
-        ItemAspect.prototype.removeOnErrorsChanged = function (nmspace) {
+        ItemAspect.prototype.offOnErrorsChanged = function (nmspace) {
             this.objEvents.off("errors_changed", nmspace);
         };
         ItemAspect.prototype.getFieldErrors = function (fieldName) {
@@ -5063,13 +5063,13 @@ define("jriapp_shared/utils/jsonarray", ["require", "exports", "jriapp_shared/ob
         JsonArray.prototype.addOnValidateBag = function (fn, nmspace, context) {
             this.objEvents.on("validate_bag", fn, nmspace, context);
         };
-        JsonArray.prototype.removeOnValidateBag = function (nmspace) {
+        JsonArray.prototype.offOnValidateBag = function (nmspace) {
             this.objEvents.off("validate_bag", nmspace);
         };
         JsonArray.prototype.addOnValidateField = function (fn, nmspace, context) {
             this.objEvents.on("validate_field", fn, nmspace, context);
         };
-        JsonArray.prototype.removeOnValidateField = function (nmspace) {
+        JsonArray.prototype.offOnValidateField = function (nmspace) {
             this.objEvents.off("validate_field", nmspace);
         };
         JsonArray.prototype._validateBag = function (bag) {

@@ -290,7 +290,7 @@ declare module "jriapp/int" {
     export interface IApplication extends IErrorHandler, IExports, IBaseObject {
         _getInternal(): IInternalAppMethods;
         addOnStartUp(fn: TEventHandler<IApplication, any>, nmspace?: string, context?: IBaseObject): void;
-        removeOnStartUp(nmspace?: string): void;
+        offOnStartUp(nmspace?: string): void;
         registerElView(name: string, vwType: IViewType): void;
         registerConverter(name: string, obj: IConverter): void;
         getConverter(name: string): IConverter;
@@ -378,7 +378,7 @@ declare module "jriapp/utils/tloader" {
             html: string;
             app: IApplication;
         }) => void, nmspace?: string): void;
-        removeOnLoaded(nmspace?: string): void;
+        offOnLoaded(nmspace?: string): void;
         waitForNotLoading(callback: (...args: any[]) => any, callbackArgs: any): void;
         private _onLoaded(html, app);
         private _getTemplateGroup(name);
@@ -669,9 +669,9 @@ declare module "jriapp/bootstrap" {
         private _waitLoaded(onLoad);
         _getInternal(): IInternalBootstrapMethods;
         addOnDisposed(handler: TEventHandler<Bootstrap, any>, nmspace?: string, context?: object): void;
-        removeOnDisposed(nmspace?: string): void;
+        offOnDisposed(nmspace?: string): void;
         addOnError(handler: TErrorHandler<Bootstrap>, nmspace?: string, context?: object): void;
-        removeOnError(nmspace?: string): void;
+        offOnError(nmspace?: string): void;
         addOnLoad(fn: TEventHandler<Bootstrap, any>, nmspace?: string, context?: IBaseObject): void;
         addOnUnLoad(fn: TEventHandler<Bootstrap, any>, nmspace?: string, context?: IBaseObject): void;
         addOnInitialize(fn: TEventHandler<Bootstrap, any>, nmspace?: string, context?: IBaseObject): void;
@@ -869,7 +869,7 @@ declare module "jriapp/mvvm" {
         execute: (sender: any, param: TParam) => void;
         raiseCanExecuteChanged: () => void;
         addOnCanExecuteChanged(fn: (sender: ITCommand<TParam>, args: any) => void, nmspace?: string, context?: IBaseObject): void;
-        removeOnCanExecuteChanged(nmspace?: string): void;
+        offOnCanExecuteChanged(nmspace?: string): void;
     }
     export type ICommand = ITCommand<any>;
     export type TAction<TParam, TThis> = (this: TThis, sender: any, param: TParam) => void;
@@ -885,7 +885,7 @@ declare module "jriapp/mvvm" {
         protected _canExecute(sender: any, param: TParam, context: any): boolean;
         protected _execute(sender: any, param: TParam, context: any): void;
         addOnCanExecuteChanged(fn: (sender: ITCommand<TParam>, args: any) => void, nmspace?: string, context?: IBaseObject): void;
-        removeOnCanExecuteChanged(nmspace?: string): void;
+        offOnCanExecuteChanged(nmspace?: string): void;
         canExecute(sender: any, param: TParam): boolean;
         execute(sender: any, param: TParam): void;
         dispose(): void;
@@ -907,9 +907,9 @@ declare module "jriapp/mvvm" {
         private _app;
         constructor(app: TApp);
         addOnDisposed(handler: TEventHandler<ViewModel<TApp>, any>, nmspace?: string, context?: object): void;
-        removeOnDisposed(nmspace?: string): void;
+        offOnDisposed(nmspace?: string): void;
         addOnError(handler: TErrorHandler<ViewModel<TApp>>, nmspace?: string, context?: object): void;
-        removeOnError(nmspace?: string): void;
+        offOnError(nmspace?: string): void;
         toString(): string;
         readonly uniqueID: string;
         readonly app: TApp;
@@ -944,11 +944,11 @@ declare module "jriapp/app" {
         protected onStartUp(): any;
         _getInternal(): IInternalAppMethods;
         addOnDisposed(handler: TEventHandler<IApplication, any>, nmspace?: string, context?: object): void;
-        removeOnDisposed(nmspace?: string): void;
+        offOnDisposed(nmspace?: string): void;
         addOnError(handler: TErrorHandler<IApplication>, nmspace?: string, context?: object): void;
-        removeOnError(nmspace?: string): void;
+        offOnError(nmspace?: string): void;
         addOnStartUp(fn: TEventHandler<IApplication, any>, nmspace?: string, context?: IBaseObject): void;
-        removeOnStartUp(nmspace?: string): void;
+        offOnStartUp(nmspace?: string): void;
         getExports(): IIndexer<any>;
         bind(opts: IBindingOptions): IBinding;
         registerConverter(name: string, obj: IConverter): void;

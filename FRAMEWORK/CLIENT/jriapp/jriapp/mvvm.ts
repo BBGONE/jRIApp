@@ -11,7 +11,7 @@ export interface ITCommand<TParam> {
     execute: (sender: any, param: TParam) => void;
     raiseCanExecuteChanged: () => void;
     addOnCanExecuteChanged(fn: (sender: ITCommand<TParam>, args: any) => void, nmspace?: string, context?: IBaseObject): void;
-    removeOnCanExecuteChanged(nmspace?: string): void;
+    offOnCanExecuteChanged(nmspace?: string): void;
 }
 export type ICommand = ITCommand<any>;
 
@@ -51,7 +51,7 @@ export class TCommand<TParam, TThis> extends BaseObject implements ITCommand<TPa
     addOnCanExecuteChanged(fn: (sender: ITCommand<TParam>, args: any) => void, nmspace?: string, context?: IBaseObject) {
         this.objEvents.on(CMD_EVENTS.can_execute_changed, fn, nmspace, context);
     }
-    removeOnCanExecuteChanged(nmspace?: string) {
+    offOnCanExecuteChanged(nmspace?: string) {
         this.objEvents.off(CMD_EVENTS.can_execute_changed, nmspace);
     }
     canExecute(sender: any, param: TParam): boolean {
@@ -113,14 +113,14 @@ export class ViewModel<TApp extends IApplication> extends BaseObject {
     addOnDisposed(handler: TEventHandler<ViewModel<TApp>, any>, nmspace?: string, context?: object): void {
         this.objEvents.addOnDisposed(handler, nmspace, context);
     }
-    removeOnDisposed(nmspace?: string): void {
-        this.objEvents.removeOnDisposed(nmspace);
+    offOnDisposed(nmspace?: string): void {
+        this.objEvents.offOnDisposed(nmspace);
     }
     addOnError(handler: TErrorHandler<ViewModel<TApp>>, nmspace?: string, context?: object): void {
         this.objEvents.addOnError(handler, nmspace, context);
     }
-    removeOnError(nmspace?: string): void {
-        this.objEvents.removeOnError(nmspace);
+    offOnError(nmspace?: string): void {
+        this.objEvents.offOnError(nmspace);
     }
     toString() {
         return "ViewModel";

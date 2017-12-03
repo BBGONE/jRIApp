@@ -274,7 +274,7 @@ export interface IInternalAppMethods {
 export interface IApplication extends IErrorHandler, IExports, IBaseObject {
     _getInternal(): IInternalAppMethods;
     addOnStartUp(fn: TEventHandler<IApplication, any>, nmspace?: string, context?: IBaseObject): void;
-    removeOnStartUp(nmspace?: string): void;
+    offOnStartUp(nmspace?: string): void;
     registerElView(name: string, vwType: IViewType): void;
     registerConverter(name: string, obj: IConverter): void;
     getConverter(name: string): IConverter;

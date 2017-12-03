@@ -69,19 +69,19 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
     addOnValidateBag(fn: TEventHandler<IPropertyBag, IBagValidateArgs<IPropertyBag>>, nmspace?: string, context?: any) {
         this.objEvents.on(BAG_EVENTS.validate_bag, fn, nmspace, context);
     }
-    removeOnValidateBag(nmspace?: string) {
+    offOnValidateBag(nmspace?: string) {
         this.objEvents.off(BAG_EVENTS.validate_bag, nmspace);
     }
     addOnValidateField(fn: TEventHandler<IPropertyBag, IFieldValidateArgs<IPropertyBag>>, nmspace?: string, context?: any) {
         this.objEvents.on(BAG_EVENTS.validate_field, fn, nmspace, context);
     }
-    removeOnValidateField(nmspace?: string) {
+    offOnValidateField(nmspace?: string) {
         this.objEvents.off(BAG_EVENTS.validate_field, nmspace);
     }
     addOnErrorsChanged(fn: TEventHandler<JsonBag, any>, nmspace?: string, context?: any) {
         this.objEvents.on(BAG_EVENTS.errors_changed, fn, nmspace, context);
     }
-    removeOnErrorsChanged(nmspace?: string) {
+    offOnErrorsChanged(nmspace?: string) {
         this.objEvents.off(BAG_EVENTS.errors_changed, nmspace);
     }
 

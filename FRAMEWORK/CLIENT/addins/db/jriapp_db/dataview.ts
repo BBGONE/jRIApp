@@ -68,7 +68,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
     addOnViewRefreshed(fn: TEventHandler<DataView<TItem>, any>, nmspace?: string) {
         this.objEvents.on(VIEW_EVENTS.refreshed, fn, nmspace);
     }
-    removeOnViewRefreshed(nmspace?: string) {
+    offOnViewRefreshed(nmspace?: string) {
         this.objEvents.off(VIEW_EVENTS.refreshed, nmspace);
     }
     protected _filterForPaging(items: TItem[]) {

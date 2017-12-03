@@ -45,7 +45,7 @@ export class TextBoxElView extends InputElView {
     addOnKeyPress(fn: (sender: TextBoxElView, args: TKeyPressArgs) => void, nmspace?: string) {
         this.objEvents.on(TXTBOX_EVENTS.keypress, fn, nmspace);
     }
-    removeOnKeyPress(nmspace?: string) {
+    offOnKeyPress(nmspace?: string) {
         this.objEvents.off(TXTBOX_EVENTS.keypress, nmspace);
     }
     toString() {

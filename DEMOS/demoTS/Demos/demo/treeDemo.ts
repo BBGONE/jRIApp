@@ -76,13 +76,13 @@ export class ExProps extends RIAPP.BaseObject {
     addOnClicked(fn: (sender: ExProps, args: { item: FOLDERBROWSER_SVC.FileSystemObject; }) => void, nmspace?: string) {
         this.objEvents.on('clicked', fn, nmspace);
     }
-    removeOnClicked(nmspace?: string) {
+    offOnClicked(nmspace?: string) {
         this.objEvents.off('clicked', nmspace);
     }
     addOnDblClicked(fn: (sender: ExProps, args: { item: FOLDERBROWSER_SVC.FileSystemObject; }) => void, nmspace?: string) {
         this.objEvents.on('dblclicked', fn, nmspace);
     }
-    removeOnDblClicked(nmspace?: string) {
+    offOnDblClicked(nmspace?: string) {
         this.objEvents.off('dblclicked', nmspace);
     }
     createChildView() {

@@ -70,13 +70,13 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
     addOnObjectCreated(fn: (sender: LookupContent, args: TObjCreatedArgs) => void, nmspace?: string) {
         this.objEvents.on(LOOKUP_EVENTS.obj_created, fn, nmspace);
     }
-    removeOnObjectCreated(nmspace?: string) {
+    offOnObjectCreated(nmspace?: string) {
         this.objEvents.off(LOOKUP_EVENTS.obj_created, nmspace);
     }
     addOnObjectNeeded(fn: (sender: LookupContent, args: TObjNeededArgs) => void, nmspace?: string) {
         this.objEvents.on(LOOKUP_EVENTS.obj_needed, fn, nmspace);
     }
-    removeOnObjectNeeded(nmspace?: string) {
+    offOnObjectNeeded(nmspace?: string) {
         this.objEvents.off(LOOKUP_EVENTS.obj_needed, nmspace);
     }
     protected getListBoxElView(): ListBoxElView {

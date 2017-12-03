@@ -62,9 +62,9 @@ export interface IBaseObject extends IErrorHandler, IDisposable {
 
 export interface IObjectEvents extends IEvents {
     addOnError(handler: TErrorHandler<IBaseObject>, nmspace?: string, context?: object, priority?: TPriority): void;
-    removeOnError(nmspace?: string): void;
+    offOnError(nmspace?: string): void;
     addOnDisposed(handler: TEventHandler<IBaseObject, any>, nmspace?: string, context?: object, priority?: TPriority): void;
-    removeOnDisposed(nmspace?: string): void;
+    offOnDisposed(nmspace?: string): void;
     readonly owner: IBaseObject;
 }
 
@@ -89,7 +89,7 @@ export interface IValidationInfo {
 export interface IErrorNotification extends IBaseObject {
     getIsHasErrors(): boolean;
     addOnErrorsChanged(fn: TEventHandler<any, any>, nmspace?: string, context?: any): void;
-    removeOnErrorsChanged(nmspace?: string): void;
+    offOnErrorsChanged(nmspace?: string): void;
     getFieldErrors(fieldName: string): IValidationInfo[];
     getAllErrors(): IValidationInfo[];
     getIErrorNotification(): IErrorNotification;

@@ -930,22 +930,20 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
             this.setDisposing();
             this._getStore().setElView(this.el, null);
             dom.events.offNS(this.el, this.uniqueID);
-            this.validationErrors = null;
-            this.toolTip = null;
             if (!!this._eventStore) {
                 this._eventStore.dispose();
                 this._eventStore = null;
             }
             if (!!this._props) {
                 this._props.dispose();
-                this._props = checks.undefined;
+                this._props = null;
             }
             if (!!this._classes) {
                 this._classes.dispose();
-                this._classes = checks.undefined;
+                this._classes = null;
             }
             this._display = null;
-            this._css = null;
+            this._errors = null;
             _super.prototype.dispose.call(this);
         };
         BaseElView.prototype.toString = function () {
@@ -1021,7 +1019,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
                 var _this = this;
                 if (!this._eventStore) {
                     if (this.getIsStateDirty()) {
-                        return null;
+                        return checks.undefined;
                     }
                     this._eventStore = new eventbag_1.EventBag(function (s, a) {
                         _this._onEventChanged(a);
@@ -1171,7 +1169,7 @@ define("jriapp_ui/textbox", ["require", "exports", "jriapp/utils/dom", "jriapp/b
         TextBoxElView.prototype.addOnKeyPress = function (fn, nmspace) {
             this.objEvents.on("keypress", fn, nmspace);
         };
-        TextBoxElView.prototype.removeOnKeyPress = function (nmspace) {
+        TextBoxElView.prototype.offOnKeyPress = function (nmspace) {
             this.objEvents.off("keypress", nmspace);
         };
         TextBoxElView.prototype.toString = function () {
@@ -1276,7 +1274,7 @@ define("jriapp_ui/textarea", ["require", "exports", "jriapp/utils/dom", "jriapp/
         TextAreaElView.prototype.addOnKeyPress = function (fn, nmspace) {
             this.objEvents.on("keypress", fn, nmspace);
         };
-        TextAreaElView.prototype.removeOnKeyPress = function (nmspace) {
+        TextAreaElView.prototype.offOnKeyPress = function (nmspace) {
             this.objEvents.off("keypress", nmspace);
         };
         TextAreaElView.prototype.toString = function () {
@@ -1757,7 +1755,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         ListBox.prototype.addOnRefreshed = function (fn, nmspace, context) {
             this.objEvents.on("refreshed", fn, nmspace, context);
         };
-        ListBox.prototype.removeOnRefreshed = function (nmspace) {
+        ListBox.prototype.offOnRefreshed = function (nmspace) {
             this.objEvents.off("refreshed", nmspace);
         };
         ListBox.prototype._onChanged = function () {
@@ -2538,13 +2536,13 @@ define("jriapp_ui/content/listbox", ["require", "exports", "jriapp_shared", "jri
         LookupContent.prototype.addOnObjectCreated = function (fn, nmspace) {
             this.objEvents.on("object_created", fn, nmspace);
         };
-        LookupContent.prototype.removeOnObjectCreated = function (nmspace) {
+        LookupContent.prototype.offOnObjectCreated = function (nmspace) {
             this.objEvents.off("object_created", nmspace);
         };
         LookupContent.prototype.addOnObjectNeeded = function (fn, nmspace) {
             this.objEvents.on("object_needed", fn, nmspace);
         };
-        LookupContent.prototype.removeOnObjectNeeded = function (nmspace) {
+        LookupContent.prototype.offOnObjectNeeded = function (nmspace) {
             this.objEvents.off("object_needed", nmspace);
         };
         LookupContent.prototype.getListBoxElView = function () {
@@ -2944,13 +2942,13 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
         DataEditDialog.prototype.addOnClose = function (fn, nmspace, context) {
             this.objEvents.on("close", fn, nmspace, context);
         };
-        DataEditDialog.prototype.removeOnClose = function (nmspace) {
+        DataEditDialog.prototype.offOnClose = function (nmspace) {
             this.objEvents.off("close", nmspace);
         };
         DataEditDialog.prototype.addOnRefresh = function (fn, nmspace, context) {
             this.objEvents.on("refresh", fn, nmspace, context);
         };
-        DataEditDialog.prototype.removeOnRefresh = function (nmspace) {
+        DataEditDialog.prototype.offOnRefresh = function (nmspace) {
             this.objEvents.off("refresh", nmspace);
         };
         DataEditDialog.prototype._createDialog = function () {
@@ -5350,37 +5348,37 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
         DataGrid.prototype.addOnRowExpanded = function (fn, nmspace, context) {
             this.objEvents.on("row_expanded", fn, nmspace, context);
         };
-        DataGrid.prototype.removeOnRowExpanded = function (nmspace) {
+        DataGrid.prototype.offOnRowExpanded = function (nmspace) {
             this.objEvents.off("row_expanded", nmspace);
         };
         DataGrid.prototype.addOnRowSelected = function (fn, nmspace, context) {
             this.objEvents.on("row_selected", fn, nmspace, context);
         };
-        DataGrid.prototype.removeOnRowSelected = function (nmspace) {
+        DataGrid.prototype.offOnRowSelected = function (nmspace) {
             this.objEvents.off("row_selected", nmspace);
         };
         DataGrid.prototype.addOnPageChanged = function (fn, nmspace, context) {
             this.objEvents.on("page_changed", fn, nmspace, context);
         };
-        DataGrid.prototype.removeOnPageChanged = function (nmspace) {
+        DataGrid.prototype.offOnPageChanged = function (nmspace) {
             this.objEvents.off("page_changed", nmspace);
         };
         DataGrid.prototype.addOnRowStateChanged = function (fn, nmspace, context) {
             this.objEvents.on("row_state_changed", fn, nmspace, context);
         };
-        DataGrid.prototype.removeOnRowStateChanged = function (nmspace) {
+        DataGrid.prototype.offOnRowStateChanged = function (nmspace) {
             this.objEvents.off("row_state_changed", nmspace);
         };
         DataGrid.prototype.addOnCellDblClicked = function (fn, nmspace, context) {
             this.objEvents.on("cell_dblclicked", fn, nmspace, context);
         };
-        DataGrid.prototype.removeOnCellDblClicked = function (nmspace) {
+        DataGrid.prototype.offOnCellDblClicked = function (nmspace) {
             this.objEvents.off("cell_dblclicked", nmspace);
         };
         DataGrid.prototype.addOnRowAction = function (fn, nmspace, context) {
             this.objEvents.on("row_action", fn, nmspace, context);
         };
-        DataGrid.prototype.removeOnRowAction = function (nmspace) {
+        DataGrid.prototype.offOnRowAction = function (nmspace) {
             this.objEvents.off("row_action", nmspace);
         };
         DataGrid.prototype._onKeyDown = function (key, event) {
@@ -7096,7 +7094,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
         StackPanel.prototype.addOnItemClicked = function (fn, nmspace, context) {
             this.objEvents.on("item_clicked", fn, nmspace, context);
         };
-        StackPanel.prototype.removeOnItemClicked = function (nmspace) {
+        StackPanel.prototype.offOnItemClicked = function (nmspace) {
             this.objEvents.off("item_clicked", nmspace);
         };
         StackPanel.prototype._getContainerEl = function () { return this.el; };
@@ -8073,7 +8071,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
                     this._editable.objEvents.offNS(this._objId);
                 }
                 if (!!this._errNotification) {
-                    this._errNotification.removeOnErrorsChanged(this._objId);
+                    this._errNotification.offOnErrorsChanged(this._objId);
                 }
             }
             this._editable = null;

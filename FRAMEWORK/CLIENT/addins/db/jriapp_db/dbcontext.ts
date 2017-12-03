@@ -736,19 +736,19 @@ export class DbContext extends BaseObject {
     addOnDisposed(handler: TEventHandler<DbContext, any>, nmspace?: string, context?: object): void {
         this.objEvents.addOnDisposed(handler, nmspace, context);
     }
-    removeOnDisposed(nmspace?: string): void {
-        this.objEvents.removeOnDisposed(nmspace);
+    offOnDisposed(nmspace?: string): void {
+        this.objEvents.offOnDisposed(nmspace);
     }
     addOnError(handler: TErrorHandler<DbContext>, nmspace?: string, context?: object): void {
         this.objEvents.addOnError(handler, nmspace, context);
     }
-    removeOnError(nmspace?: string): void {
-        this.objEvents.removeOnError(nmspace);
+    offOnError(nmspace?: string): void {
+        this.objEvents.offOnError(nmspace);
     }
     addOnSubmitError(fn: TEventHandler<DbContext, { error: any; isHandled: boolean; }>, nmspace?: string, context?: IBaseObject): void {
         this.objEvents.on(DBCTX_EVENTS.submit_err, fn, nmspace, context);
     }
-    removeOnSubmitError(nmspace?: string): void {
+    offOnSubmitError(nmspace?: string): void {
         this.objEvents.off(DBCTX_EVENTS.submit_err, nmspace);
     }
     getDbSet(name: string): TDbSet {
